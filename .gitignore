@@ -4,3 +4,4 @@ tasks/extract_filepaths_for_granule/__pycache__
 tasks/request_files/.coverage
 tasks/request_files/.idea
 tasks/request_files/__pycache__
+terraform.tfvars
