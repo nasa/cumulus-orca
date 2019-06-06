@@ -1,3 +1,7 @@
+variable "archive_bucket" {
+  default = ""
+}
+
 variable "ngap_subnet" {
   default = []
 }

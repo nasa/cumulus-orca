@@ -1,3 +1,4 @@
+archive_bucket          =
 ngap_subnet             =
 ngap_sgs                = 
 lambda_processing_role  =
