@@ -9,8 +9,7 @@ import json
 class ExtractFilePathsError(Exception):
     """Exception to be raised if any errors occur"""
 
-
-def task(event, context):  #pylint: disable-msg=unused-argument
+def task(event):
     """
     Task called by the handler to perform the work.
 
@@ -47,7 +46,7 @@ def task(event, context):  #pylint: disable-msg=unused-argument
         raise ExtractFilePathsError(f"KeyError: '{level}{val}' is required")
     return result
 
-def handler(event, context):
+def handler(event, context):            #pylint: disable-msg=unused-argument
     """Lambda handler. Extracts the filepath's for a granule from an input dict.
 
         Args:
@@ -93,5 +92,5 @@ def handler(event, context):
         Raises:
             ExtractFilePathsError: An error occurred parsing the input.
     """
-    result = task(event, context)
+    result = task(event)
     return json.dumps(result)
