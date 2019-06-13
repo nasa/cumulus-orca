@@ -32,9 +32,9 @@ test_handler_two_granules (test_request_files.TestRequestFiles) ... ok
 
 Name               Stmts   Miss  Cover
 --------------------------------------
-request_files.py      61      0   100%
+request_files.py      65      0   100%
 ----------------------------------------------------------------------
-Ran 8 tests in 0.639s
+Ran 8 tests in 1.641s
 
 ```
 ## Linting
