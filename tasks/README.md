@@ -21,7 +21,7 @@
 >git clone https://git.earthdata.nasa.gov/scm/pocumulus/dr-podaac-swot.git
 
 Create an alias called origin to your main remote repository (in this case, ECC):
->git remote add origin https://lbaatz@git.earthdata.nasa.gov/scm/pocumulus/dr-podaac-swot.git
+>git remote add origin https://erosuser@git.earthdata.nasa.gov/scm/pocumulus/dr-podaac-swot.git
 
 ## Prepare the virtual environment.
 
