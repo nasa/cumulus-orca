@@ -1,6 +1,9 @@
 tasks/extract_filepaths_for_granule/.coverage
 tasks/extract_filepaths_for_granule/.idea
 tasks/extract_filepaths_for_granule/__pycache__
+tasks/extract_filepaths_for_granule/test/__pycache__/
 tasks/request_files/.coverage
 tasks/request_files/.idea
 tasks/request_files/__pycache__
+tasks/request_files/test/__pycache__
+tasks/.idea/
