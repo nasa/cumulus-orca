@@ -70,7 +70,6 @@ def task(event, exp_days, retries, retry_sleep_secs):
 
     s3 = boto3.client('s3')  # pylint: disable-msg=invalid-name
     attempt = 1
-    #retry = True
     while attempt <= retries:
         for afile in gran['files']:
             if not afile['success']:
@@ -79,9 +78,6 @@ def task(event, exp_days, retries, retry_sleep_secs):
                 logging.info(f'Attempt {attempt} success status of submit request to restore '
                              f'{afile["filepath"]} from {glacier_bucket} = {success}')
         attempt = attempt + 1
-        #if attempt > retries:
-        #    retry = False
-        #else:
         if attempt <= retries:
             time.sleep(retry_sleep_secs)
 
