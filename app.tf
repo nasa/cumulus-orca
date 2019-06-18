@@ -7,7 +7,7 @@ provider "aws" {
 resource "aws_lambda_function" "extract_filepaths_for_granule_lambda" {
   filename      = "tasks/extract_filepaths_for_granule/task.zip"
   function_name = "extract_filepaths_for_granule_tf"
-  role          = var.lambda_processing_role
+  role          = aws_iam_role.restore_object_role.arn
   handler       = "extract_filepaths_for_granule.handler"
   runtime       = "python3.6"
 
@@ -22,18 +22,18 @@ resource "aws_lambda_function" "request_files_lambda" {
   function_name = "request_files_tf"
   // this is going to need processing_role permissions, too
   // because of the CMA
-  role          = aws_iam_role.restore_object_role.id
+  role          = aws_iam_role.restore_object_role.arn
   handler       = "request_files.handler"
   runtime       = "python3.6"
 
   vpc_config {
-    subnet_ids = [var.ngap_subnet]
+    subnet_ids         = [var.ngap_subnet]
     security_group_ids = var.ngap_sgs
   }
 
   environment {
     variables = {
-      restore_expire_days = var.restore_expire_days
+      restore_expire_days     = var.restore_expire_days
       restore_request_retries = var.restore_request_retries
     }
   }

@@ -2,6 +2,26 @@ variable "archive_bucket" {
   default = ""
 }
 
+variable "private_bucket" {
+  default = ""
+}
+
+variable "protected_bucket" {
+  default = ""
+}
+
+variable "internal_bucket" {
+  default = ""
+}
+
+variable "public_bucket" {
+  default = ""
+}
+
+variable "permissions_boundary_arn" {
+  default = ""
+}
+
 variable "ngap_subnet" {
   default = []
 }
