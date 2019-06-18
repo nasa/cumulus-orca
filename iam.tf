@@ -29,6 +29,15 @@ data "aws_iam_policy_document" "restore_object_role_policy_document" {
   }
   statement {
     actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:DescribeLogStreams",
+      "logs:PutLogEvents"
+    ]
+    resources = ["*"]
+  }
+  statement {
+    actions = [
       "s3:GetBucket",
       "s3:ListBucket",
       "s3:PutBucket"
