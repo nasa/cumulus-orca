@@ -20,8 +20,6 @@ resource "aws_lambda_function" "extract_filepaths_for_granule_lambda" {
 resource "aws_lambda_function" "request_files_lambda" {
   filename      = "tasks/request_files/task.zip"
   function_name = "request_files_tf"
-  // this is going to need processing_role permissions, too
-  // because of the CMA
   role          = aws_iam_role.restore_object_role.arn
   handler       = "request_files.handler"
   runtime       = "python3.6"

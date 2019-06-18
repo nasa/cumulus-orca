@@ -30,10 +30,6 @@ variable "ngap_sgs" {
   default = []
 }
 
-variable "lambda_processing_role" {
-  default = ""
-}
-
 variable "profile" {
   default = "default"
 }
