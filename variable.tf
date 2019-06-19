@@ -1,4 +1,4 @@
-variable "archive_bucket" {
+variable "glacier_bucket" {
   default = ""
 }
 
@@ -43,5 +43,9 @@ variable "restore_expire_days" {
 }
 
 variable "restore_request_retries" {
-  default = 2
+  default = 3
+}
+
+variable "restore_retry_sleep_secs" {
+  default = 0
 }

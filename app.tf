@@ -31,8 +31,9 @@ resource "aws_lambda_function" "request_files_lambda" {
 
   environment {
     variables = {
-      restore_expire_days     = var.restore_expire_days
-      restore_request_retries = var.restore_request_retries
+      restore_expire_days      = var.restore_expire_days
+      restore_request_retries  = var.restore_request_retries
+      restore_retry_sleep_secs = var.restore_retry_sleep_secs
     }
   }
 }

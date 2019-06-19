@@ -43,7 +43,7 @@ data "aws_iam_policy_document" "restore_object_role_policy_document" {
       "s3:PutBucket"
     ]
     resources = [
-      "arn:aws:s3:::${var.archive_bucket}",
+      "arn:aws:s3:::${var.glacier_bucket}",
       "arn:aws:s3:::${var.public_bucket}",
       "arn:aws:s3:::${var.private_bucket}",
       "arn:aws:s3:::${var.internal_bucket}",
@@ -60,7 +60,7 @@ data "aws_iam_policy_document" "restore_object_role_policy_document" {
       "s3:DeleteObjectVersion"
     ]
     resources = [
-      "arn:aws:s3:::${var.archive_bucket}/*",
+      "arn:aws:s3:::${var.glacier_bucket}/*",
       "arn:aws:s3:::${var.public_bucket}/*",
       "arn:aws:s3:::${var.private_bucket}/*",
       "arn:aws:s3:::${var.internal_bucket}/*",
@@ -73,8 +73,8 @@ data "aws_iam_policy_document" "restore_object_role_policy_document" {
       "s3:GetObject"
     ]
     resources = [
-      "arn:aws:s3:::${var.archive_bucket}",
-      "arn:aws:s3:::${var.archive_bucket}/*"
+      "arn:aws:s3:::${var.glacier_bucket}",
+      "arn:aws:s3:::${var.glacier_bucket}/*"
     ]
   }
 }

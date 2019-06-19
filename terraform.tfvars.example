@@ -1,7 +1,7 @@
 ngap_subnet              = "subnet-12345"
 ngap_sgs                 =  ["sg-12345"]
 profile                  = "my-great-profile"
-archive_bucket           = "my-great-bucket"
+glacier_bucket           = "my-great-glacier-bucket"
 public_bucket            = "my-great-public-bucket"
 private_bucket           = "my-great-private-bucket"
 internal_bucket          = "my-great-internal-bucket"
