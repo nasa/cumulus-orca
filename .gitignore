@@ -7,3 +7,7 @@ tasks/request_files/.idea
 tasks/request_files/__pycache__
 tasks/request_files/test/__pycache__
 tasks/.idea/
+terraform\.tfvars
+\.terraform/
+*.zip
+terraform\.tfstate*
