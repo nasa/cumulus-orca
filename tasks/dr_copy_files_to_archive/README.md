@@ -6,14 +6,17 @@
   * [Linting](#linting)
 - [Integration Testing](#integration-testing)
 - [Deployment](#deployment)
-- [pydoc dr_copy_files_to_archive](#pydoc-request-files)
+- [pydoc dr_copy_files_to_archive](#pydoc)
 
 # Setup
+<a name="setup"></a>
     See the README in the tasks folder for general development setup instructions
 
 # Development
+<a name="development"></a>
 
 ## Unit Testing and Coverage
+<a name="unit-testing-and-coverage"></a>
 ```
 Run the unit tests with code coverage:
 
@@ -37,6 +40,7 @@ Ran 8 tests in 4.667s
 
 ```
 ## Linting
+<a name="linting"></a>
 ```
 Run pylint against the code:
 
@@ -47,6 +51,7 @@ Run pylint against the code:
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 ```
 ## Integration Testing
+<a name="integration-testing"></a>
 ```
 Run the request_files lambda to make a restore request for a granule:
 
@@ -68,11 +73,13 @@ should be triggered. View the logs in Cloud Watch for /aws/lambda/dr_copy_files_
 
 ```
 ## Deployment
+<a name="deployment"></a>
 ```
     cd tasks\dr_copy_files_to_archive
     zip task.zip *.py
 ```
 ## pydoc dr_copy_files_to_archive
+<a name="pydoc"></a>
 ```
 NAME
     dr_copy_files_to_archive - Name: dr_copy_files_to_archive.py
