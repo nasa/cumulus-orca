@@ -23,6 +23,7 @@ Run the unit tests with code coverage:
 λ activate podr
 
 (podr) λ cd C:\devpy\poswotdr\tasks\dr_copy_files_to_archive
+(podr) λ nosetests --with-coverage --cover-erase --cover-package=dr_copy_files_to_archive -v
 test_handler_no_bucket_map (test_dr_copy_files_to_archive.TestCopyFiles) ... ok
 test_handler_no_ext_in_bucket_map (test_dr_copy_files_to_archive.TestCopyFiles) ... ok
 test_handler_no_object_key_in_event (test_dr_copy_files_to_archive.TestCopyFiles) ... ok
@@ -30,13 +31,14 @@ test_handler_no_other_in_bucket_map (test_dr_copy_files_to_archive.TestCopyFiles
 test_handler_one_file_fail_3x (test_dr_copy_files_to_archive.TestCopyFiles) ... ok
 test_handler_one_file_retry2_success (test_dr_copy_files_to_archive.TestCopyFiles) ... ok
 test_handler_one_file_success (test_dr_copy_files_to_archive.TestCopyFiles) ... ok
+test_handler_two_records_one_fail_one_success (test_dr_copy_files_to_archive.TestCopyFiles) ... ok
 test_handler_two_records_success (test_dr_copy_files_to_archive.TestCopyFiles) ... ok
 
 Name                          Stmts   Miss  Cover
 -------------------------------------------------
 dr_copy_files_to_archive.py      79      0   100%
 ----------------------------------------------------------------------
-Ran 8 tests in 4.667s
+Ran 9 tests in 5.650s
 
 ```
 <a name="linting"></a>
@@ -85,8 +87,8 @@ NAME
     dr_copy_files_to_archive - Name: dr_copy_files_to_archive.py
 
 DESCRIPTION
-    Description:  Lambda function that copies files for a granule that was
-    restored from Glacier to the archive location.
+    Description:  Lambda function that copies files from one s3 bucket
+    to another s3 bucket.
 
 CLASSES
     builtins.Exception(builtins.BaseException)
@@ -114,15 +116,13 @@ FUNCTIONS
                           ".txt": "my-great-public-bucket",
                           "other": "my-great-protected-bucket"}
                 copy_retries (number, optional, default = 3): The number of
-                    attempts to retry a restore_request that failed to submit.
+                    attempts to retry a copy that failed.
                 copy_retry_sleep_secs (number, optional, default = 0): The number of seconds
                     to sleep between retry attempts.
 
             Args:
                 event (dict): A dict with the following keys:
 
-                    glacierBucket (string) :  The name of the glacier bucket from which the files
-                        will be restored.
                     Records (list(dict)): A list of dict with the following keys:
                         s3 (dict): A dict with the following keys:
                             bucket (dict):  A dict with the following keys:
