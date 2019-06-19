@@ -10,8 +10,6 @@ class TestCopyFiles(unittest.TestCase):
 
     def setUp(self):
         self.mock_boto3_client = boto3.client
-        os.environ['protected_bucket'] = 'unittest_protected_bucket'
-        os.environ['public_bucket'] = 'unittest_public_bucket'
         os.environ['copy_retries'] = '2'
         os.environ['copy_retry_sleep_secs'] = '1'
         self.exp_other_bucket = "unittest_protected_bucket"
@@ -63,8 +61,6 @@ class TestCopyFiles(unittest.TestCase):
             del os.environ['bucket_map']
             del os.environ['copy_retry_sleep_secs']
             del os.environ['copy_retries']
-            del os.environ['public_bucket']
-            del os.environ['protected_bucket']
         except KeyError as ke:
             pass
 
@@ -74,11 +70,9 @@ class TestCopyFiles(unittest.TestCase):
         boto3.client = Mock()
         s3 = boto3.client('s3')
         s3.copy_object = Mock(side_effect=[None])
-        print("exp_event: ", self.exp_event)
         result = dr_copy_files_to_archive.handler(self.exp_event, self.exp_context)
         os.environ['copy_retries'] = '2'
         os.environ['copy_retry_sleep_secs'] = '1'
-        print("result1: ", result)
         boto3.client.assert_called_with('s3')
         exp_result = json.dumps([{"success": True, "source_bucket": self.exp_src_bucket, "source_key": self.exp_file_key1, "target_bucket": self.exp_target_bucket, "err_msg": ""}])
         self.assertEqual(exp_result, result)
@@ -88,14 +82,12 @@ class TestCopyFiles(unittest.TestCase):
                                           Key=self.exp_file_key1)
 
     def test_handler_two_records_success(self):
-        #TODO I don't know if this is even a valid input...
+        #TODO I don't know if this is even a valid input event...
         boto3.client = Mock()
         s3 = boto3.client('s3')
         s3.copy_object = Mock(side_effect=[None, None])
         self.exp_event["Records"].append(self.exp_rec_2)
-        print("exp_event: ", self.exp_event)
         result = dr_copy_files_to_archive.handler(self.exp_event, self.exp_context)
-        print("result1: ", result)
         boto3.client.assert_called_with('s3')
         exp_result = json.dumps([{"success": True, "source_bucket": self.exp_src_bucket,
                                   "source_key": self.exp_file_key1,
@@ -115,13 +107,46 @@ class TestCopyFiles(unittest.TestCase):
                                                    'Key': self.exp_file_key3},
                                        Key=self.exp_file_key3)
 
+    def test_handler_two_records_one_fail_one_success(self):
+        #TODO I don't know if this is even a valid input event...
+        boto3.client = Mock()
+        s3 = boto3.client('s3')
+        s3.copy_object = Mock(side_effect=[ClientError({'Error': {'Code': 'AccessDenied'}}, 'copy_object'),
+                                           ClientError({'Error': {'Code': 'AccessDenied'}}, 'copy_object'),
+                                           ClientError({'Error': {'Code': 'AccessDenied'}}, 'copy_object'),
+                                           None])
+        self.exp_event["Records"].append(self.exp_rec_2)
+        exp_result = [{"success": False, "source_bucket": self.exp_src_bucket,
+                     "source_key": self.exp_file_key1,
+                     "target_bucket": self.exp_target_bucket,
+                     "err_msg": "An error occurred (AccessDenied) when calling the copy_object operation: Unknown"},
+                     {"success": True, "source_bucket": self.exp_src_bucket,
+                     "source_key": self.exp_file_key3,
+                     "target_bucket": "unittest_hdf_bucket",
+                     "err_msg": ""}]
+        exp_error =  f'File copy failed. {exp_result}'
+        try:
+            result = dr_copy_files_to_archive.handler(self.exp_event, self.exp_context)
+            self.fail("expected CopyRequestError")
+        except dr_copy_files_to_archive.CopyRequestError as ex:
+            self.assertEqual(exp_error, str(ex))
+
+        boto3.client.assert_called_with('s3')
+        s3.copy_object.assert_any_call(Bucket=self.exp_target_bucket,
+                                          CopySource={'Bucket': self.exp_src_bucket,
+                                                      'Key': self.exp_file_key1},
+                                          Key=self.exp_file_key1)
+        s3.copy_object.assert_any_call(Bucket='unittest_hdf_bucket',
+                                       CopySource={'Bucket': self.exp_src_bucket,
+                                                   'Key': self.exp_file_key3},
+                                       Key=self.exp_file_key3)
+
     def test_handler_one_file_fail_3x(self):
         boto3.client = Mock()
         s3 = boto3.client('s3')
         s3.copy_object = Mock(side_effect=[ClientError({'Error': {'Code': 'AccessDenied'}}, 'copy_object'),
                                               ClientError({'Error': {'Code': 'AccessDenied'}}, 'copy_object'),
                                               ClientError({'Error': {'Code': 'AccessDenied'}}, 'copy_object')])
-        print("exp_event: ", self.exp_event)
         exp_msg = 'An error occurred (AccessDenied) when calling the copy_object operation: Unknown'
         exp_result = [{'success': False, 'source_bucket': self.exp_src_bucket, 'source_key': self.exp_file_key1, 'target_bucket': self.exp_target_bucket, 'err_msg': exp_msg}]
 
@@ -146,11 +171,9 @@ class TestCopyFiles(unittest.TestCase):
         s3 = boto3.client('s3')
         s3.copy_object = Mock(side_effect=[ClientError({'Error': {'Code': 'AccessDenied'}}, 'copy_object'),
                                            None])
-        print("exp_event: ", self.exp_event)
         result = dr_copy_files_to_archive.handler(self.exp_event, self.exp_context)
         os.environ['copy_retries'] = '2'
         os.environ['copy_retry_sleep_secs'] = '1'
-        print("result1: ", result)
         boto3.client.assert_called_with('s3')
         exp_result = json.dumps([{"success": True, "source_bucket": self.exp_src_bucket, "source_key": self.exp_file_key1, "target_bucket": self.exp_target_bucket, "err_msg": ""}])
         self.assertEqual(exp_result, result)
@@ -164,7 +187,6 @@ class TestCopyFiles(unittest.TestCase):
         boto3.client = Mock()
         s3 = boto3.client('s3')
         s3.copy_object = Mock(side_effect=[None])
-        print("exp_event: ", self.exp_event)
         exp_err = 'bucket_map: {} does not contain values for ".txt" or "other"'
         try:
             result = dr_copy_files_to_archive.handler(self.exp_event, self.exp_context)
@@ -179,9 +201,7 @@ class TestCopyFiles(unittest.TestCase):
         s3 = boto3.client('s3')
         s3.copy_object = Mock(side_effect=[None])
         self.exp_event["Records"][0]["s3"]["object"]["key"] = self.exp_file_key2
-        print("exp_event: ", self.exp_event)
         result = dr_copy_files_to_archive.handler(self.exp_event, self.exp_context)
-        print("result1: ", result)
         boto3.client.assert_called_with('s3')
         exp_result = json.dumps([{"success": True, "source_bucket": self.exp_src_bucket, "source_key": self.exp_file_key2, "target_bucket": self.exp_other_bucket, "err_msg": ""}])
         self.assertEqual(exp_result, result)
@@ -198,7 +218,6 @@ class TestCopyFiles(unittest.TestCase):
         os.environ['bucket_map'] = json.dumps(bucket_map)
 
         self.exp_event["Records"][0]["s3"]["object"]["key"] = self.exp_file_key2
-        print("exp_event: ", self.exp_event)
         exp_err = f'bucket_map: {bucket_map} does not contain values for ".xml" or "other"'
         try:
             result = dr_copy_files_to_archive.handler(self.exp_event, self.exp_context)
@@ -213,9 +232,7 @@ class TestCopyFiles(unittest.TestCase):
         s3 = boto3.client('s3')
         s3.copy_object = Mock(side_effect=[None])
         mydict = self.exp_event["Records"][0]["s3"]["object"]
-        print(f'mydict: {mydict}')
         mydict.pop('key')
-        print("exp_event: ", self.exp_event)
         exp_err = f'event record: "{self.exp_event["Records"][0]}" does not contain a value for Records["s3"]["object"]["key"]'
         try:
             result = dr_copy_files_to_archive.handler(self.exp_event, self.exp_context)
