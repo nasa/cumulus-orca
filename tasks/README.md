@@ -3,28 +3,31 @@
 - [Environment](#environment)
 - [Setting up your development environment](#setting-up-your-development-environment)
   * [Git clone](#git-clone)
-  * [Prepare the virtual environment](#prepare-the-virtual-environment)
+  * [Prepare the virtual environment](#virtual-environment)
     + [Windows](#windows)
   * [Pycharm](#pycharm)
 - [Helpful Links](#helpful-links)
 
-
+<a name="environment"></a>
 # Environment
 ```
    Python3.6
    Cmder
 ```
-
+<a name="setting-up-your-development-environment"></a>
 # Setting up your development environment
 
+<a name="git-clone"></a>
 ## Git clone
 >git clone https://git.earthdata.nasa.gov/scm/pocumulus/dr-podaac-swot.git
 
 Create an alias called origin to your main remote repository (in this case, ECC):
 >git remote add origin https://erosuser@git.earthdata.nasa.gov/scm/pocumulus/dr-podaac-swot.git
 
+<a name="virtual-environment"></a>
 ## Prepare the virtual environment.
 
+<a name="windows"></a>
 ### Windows:
 ```
 1.  Substitute the directory where you cloned git repo or installed this README.md for $SCRIPTDIR. ex: c:\devpy\poswotdr
@@ -70,7 +73,7 @@ Create an alias called origin to your main remote repository (in this case, ECC)
           Default output format [None]: json
 
 ```
-
+<a name="pycharm"></a>
 ## Pycharm
 If you choose to use Pycharm for development:
 Substitute the directory where you cloned git repo or installed this README.md for $SCRIPTDIR. ex: c:\devpy\poswotdr
@@ -84,6 +87,7 @@ Project Interpreter
        File|Settings|Project Tasks|Project Interpreter
        Set value to: Python3.6 (lambda) C:\Anaconda3\env\podr\python.exe
 
+<a name="helpful-links"></a>
 # Helpful Links
 ```
 https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html
