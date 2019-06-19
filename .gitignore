@@ -11,3 +11,7 @@ tasks/dr_copy_files_to_archive/.coverage
 tasks/dr_copy_files_to_archive/.idea
 tasks/dr_copy_files_to_archive/__pycache__
 tasks/dr_copy_files_to_archive/test/__pycache__
+terraform\.tfvars
+\.terraform/
+*.zip
+terraform\.tfstate*
