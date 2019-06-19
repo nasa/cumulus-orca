@@ -22,7 +22,8 @@ First, run a `mv terraform.tfvars.example terraform.tfvars` to get a template `t
 * profile - AWS CLI Profile (configured via `aws configure`) to use. Defaults to `default`.
 * region - Your AWS region. Defaults to `us-west-2`
 * restore_expire_days - How many days to restore a file for. Defaults to 5.
-* restore_request_retries - How many times to retry a restore request to Glacier. Defaults to 2.
+* restore_request_retries - How many times to retry a restore request to Glacier. Defaults to 3.
+* restore_retry_sleep_secs - How many seconds to wait between retry calls to `restore_object`. Defaults to 3.
 
 ## Deploying with Terraform
 Visit the [Terraform documentation](https://learn.hashicorp.com/terraform/getting-started/install.html) for installation instructions.
