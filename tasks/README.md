@@ -75,6 +75,7 @@ Create an alias called origin to your main remote repository (in this case, ECC)
 ```
 <a name="pycharm"></a>
 ## Pycharm
+```
 If you choose to use Pycharm for development:
 Substitute the directory where you cloned git repo or installed this README.md for $SCRIPTDIR. ex: c:\devpy\poswotdr
 Open $SCRIPTDIR
@@ -86,7 +87,7 @@ Project Interpreter
    windows:
        File|Settings|Project Tasks|Project Interpreter
        Set value to: Python3.6 (lambda) C:\Anaconda3\env\podr\python.exe
-
+```
 <a name="helpful-links"></a>
 # Helpful Links
 ```
