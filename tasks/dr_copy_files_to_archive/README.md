@@ -1,4 +1,4 @@
-**Lambda function request_files **
+**Lambda function dr_copy_files_to_archive **
 
 - [Setup](#setup)
 - [Development](#development)
@@ -6,7 +6,7 @@
   * [Linting](#linting)
 - [Integration Testing](#integration-testing)
 - [Deployment](#deployment)
-- [pydoc request_files](#pydoc-request-files)
+- [pydoc dr_copy_files_to_archive](#pydoc-request-files)
 
 # Setup
     See the README in the tasks folder for general development setup instructions
@@ -20,14 +20,20 @@ Run the unit tests with code coverage:
 λ activate podr
 
 (podr) λ cd C:\devpy\poswotdr\tasks\dr_copy_files_to_archive
-(podr) λ nosetests --with-coverage --cover-erase --cover-package=dr_copy_files_to_archive -v
+test_handler_no_bucket_map (test_dr_copy_files_to_archive.TestCopyFiles) ... ok
+test_handler_no_ext_in_bucket_map (test_dr_copy_files_to_archive.TestCopyFiles) ... ok
+test_handler_no_object_key_in_event (test_dr_copy_files_to_archive.TestCopyFiles) ... ok
+test_handler_no_other_in_bucket_map (test_dr_copy_files_to_archive.TestCopyFiles) ... ok
+test_handler_one_file_fail_3x (test_dr_copy_files_to_archive.TestCopyFiles) ... ok
+test_handler_one_file_retry2_success (test_dr_copy_files_to_archive.TestCopyFiles) ... ok
 test_handler_one_file_success (test_dr_copy_files_to_archive.TestCopyFiles) ... ok
+test_handler_two_records_success (test_dr_copy_files_to_archive.TestCopyFiles) ... ok
 
 Name                          Stmts   Miss  Cover
 -------------------------------------------------
-dr_copy_files_to_archive.py      82     18    78%
+dr_copy_files_to_archive.py      79      0   100%
 ----------------------------------------------------------------------
-Ran 1 test in 1.626s
+Ran 8 tests in 4.667s
 
 ```
 ## Linting
@@ -42,12 +48,9 @@ Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 ```
 ## Integration Testing
 ```
-Create an S3 bucket, for example, my-dr-fake-glacier-bucket
-Create a folder in the bucket, for example, dr-glacier
-Upload some small dummy test files to the folder.
-Make a restore request:
+Run the request_files lambda to make a restore request for a granule:
 
-input:
+ex input to request_files lambda:
 {
   "glacierBucket": "my-dr-fake-glacier-bucket",
   "granules": [
@@ -67,7 +70,7 @@ should be triggered. View the logs in Cloud Watch for /aws/lambda/dr_copy_files_
 ## Deployment
 ```
     cd tasks\dr_copy_files_to_archive
-    zip dr_copy_files_to_archive.zip *.py
+    zip task.zip *.py
 ```
 ## pydoc dr_copy_files_to_archive
 ```
@@ -89,15 +92,20 @@ FUNCTIONS
     handler(event, context)
         Lambda handler. Copies a file from it's temporary s3 bucket to the s3 archive.
 
-        If the copy for any file in the request fails, the entire lambda
-        (workflow) fails. Environment variables can be set to override how
-        many times to retry a copy, and how long to wait between retries.
+        If the copy for a file in the request fails, the lambda
+        throws an exception. Environment variables can be set to override how many
+        times to retry a copy before failing, and how long to wait between retries.
 
             Environment Vars:
-                protected_bucket (string): The name of the protected bucket where the data
-                    files will be written.
-                public_bucket (string): The name of the public bucket where the non-data
-                    files will be written.
+                bucket_map (dict): A dict of key:value entries, where the key is a file
+                    extension (including the .) ex. ".hdf", and the value is the destination
+                    bucket for files with that extension. One of the keys can be "other"
+                    to designate a bucket for any extensions that are not explicitly
+                    mapped.
+                    ex.  {".hdf": "my-great-protected-bucket",
+                          ".met": "my-great-protected-bucket",
+                          ".txt": "my-great-public-bucket",
+                          "other": "my-great-protected-bucket"}
                 copy_retries (number, optional, default = 3): The number of
                     attempts to retry a restore_request that failed to submit.
                 copy_retry_sleep_secs (number, optional, default = 0): The number of seconds
@@ -116,25 +124,25 @@ FUNCTIONS
                                 key (string): The key of the restored file
 
                     Example: event: {"Records": [{"eventVersion": "2.1",
-                                      "eventSource": "aws:s3",
-                                      "awsRegion": "us-west-2",
-                                      "eventTime": "2019-06-17T18:54:06.686Z",
-                                      "eventName": "ObjectRestore:Post",
-                                      "userIdentity": {
-                                      "principalId": "AWS:AROAJWMHUPO:request_files"},
-                                      "requestParameters": {"sourceIPAddress": "1.001.001.001"},
-                                      "responseElements": {"x-amz-request-id": "0364DB32C0",
-                                                           "x-amz-id-2":
-                                         "4TpisFevIyonOLD/z1OGUE/Ee3w/Et+pr7c5F2RbnAnU="},
-                                      "s3": {"s3SchemaVersion": "1.0",
-                                            "configurationId": "dr_restore_complete",
-                                            "bucket": {"name": exp_src_bucket,
-                                                       "ownerIdentity":
-                                                       {"principalId": "A1BCXDGCJ9"},
-                                                       "arn": "arn:aws:s3:::my-dr-fake-glacier-bucket"},
-                                            "object": {"key": exp_file_key1,
-                                                       "size": 645,
-                                                       "sequencer": "005C54A126FB"}}}]}
+                                          "eventSource": "aws:s3",
+                                          "awsRegion": "us-west-2",
+                                          "eventTime": "2019-06-17T18:54:06.686Z",
+                                          "eventName": "ObjectRestore:Post",
+                                          "userIdentity": {
+                                          "principalId": "AWS:AROAJWMHUPO:request_files"},
+                                          "requestParameters": {"sourceIPAddress": "1.001.001.001"},
+                                          "responseElements": {"x-amz-request-id": "0364DB32C0",
+                                                               "x-amz-id-2":
+                                             "4TpisFevIyonOLD/z1OGUE/Ee3w/Et+pr7c5F2RbnAnU="},
+                                          "s3": {"s3SchemaVersion": "1.0",
+                                                "configurationId": "dr_restore_complete",
+                                                "bucket": {"name": exp_src_bucket,
+                                                           "ownerIdentity":
+                                                           {"principalId": "A1BCXDGCJ9"},
+                                                   "arn": "arn:aws:s3:::my-dr-fake-glacier-bucket"},
+                                                "object": {"key": exp_file_key1,
+                                                           "size": 645,
+                                                           "sequencer": "005C54A126FB"}}}]}
 
                 context (Object): None
 
