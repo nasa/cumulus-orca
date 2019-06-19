@@ -1,8 +1,8 @@
 """
 Name: dr_copy_files_to_archive.py
 
-Description:  Lambda function that copies files for a granule that was
-restored from Glacier to the archive location.
+Description:  Lambda function that copies files from one s3 bucket
+to another s3 bucket.
 """
 
 import json
@@ -28,6 +28,9 @@ def task(records, bucket_map, retries, retry_sleep_secs):
         Args:
             records (dict): passed through from the handler
             bucket_map (dict): Mapping of file extensions to bucket names
+            retries (number): The number of attempts to retry a failed copy.
+            retry_sleep_secs (number): The number of seconds
+                to sleep between retry attempts.
 
         Returns:
             files: A list of dicts with the following keys:
@@ -37,11 +40,15 @@ def task(records, bucket_map, retries, retry_sleep_secs):
                 'target_bucket': The name of the archive s3 bucket
                 'success' (boolean): True, if the copy was successful,
                     otherwise False.
+                'err_msg' (string): when success is False, this will contain
+                    the error message from the copy error
 
                 Example:  [{'source_key': 'file1.xml', 'source_bucket': 'my-dr-fake-glacier-bucket',
-                              'target_bucket': 'unittest_xml_bucket', 'success': True},
+                              'target_bucket': 'unittest_xml_bucket', 'success': True,
+                              'err_msg': ''},
                            {'source_key': 'file2.txt', 'source_bucket': 'my-dr-fake-glacier-bucket',
-                              'target_bucket': 'unittest_txt_bucket', 'success': True}]
+                              'target_bucket': 'unittest_txt_bucket', 'success': True,
+                              'err_msg': ''}]
 
         Raises:
             CopyRequestError: Thrown if there are errors with the input records.
@@ -101,7 +108,7 @@ def copy_object(s3_cli, src_bucket_name, src_object_name,
         Args:
             s3_cli (object): An instance of boto3 s3 client
             src_bucket_name (string): The source S3 bucket name
-            src_object_name (string): The key of the s3 object being restored
+            src_object_name (string): The key of the s3 object being copied
             dest_bucket_name (string): The target S3 bucket name
             dest_object_name (string, optional, default = src_object_name): The key of
                 the destination object. If dest bucket/object exists, it is overwritten.
@@ -143,15 +150,13 @@ def handler(event, context):      #pylint: disable-msg=unused-argument
                       ".txt": "my-great-public-bucket",
                       "other": "my-great-protected-bucket"}
             copy_retries (number, optional, default = 3): The number of
-                attempts to retry a restore_request that failed to submit.
+                attempts to retry a copy that failed.
             copy_retry_sleep_secs (number, optional, default = 0): The number of seconds
                 to sleep between retry attempts.
 
         Args:
             event (dict): A dict with the following keys:
 
-                glacierBucket (string) :  The name of the glacier bucket from which the files
-                    will be restored.
                 Records (list(dict)): A list of dict with the following keys:
                     s3 (dict): A dict with the following keys:
                         bucket (dict):  A dict with the following keys:
