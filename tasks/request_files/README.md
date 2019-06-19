@@ -80,7 +80,7 @@ check status of restore request
 ## Deployment
 ```
     cd tasks\request_files
-    zip request_files.zip *.py
+    zip task.zip *.py
 ```
 <a name="pydoc"></a>
 ## pydoc request_files

@@ -54,7 +54,7 @@ Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 ## Deployment
 ```
     cd tasks\extract_filepaths_for_granule
-    zip extract_filepaths_for_granule.zip *.py
+    zip task.zip *.py
 ```
 <a name="pydoc"></a>
 ## pydoc extract_filepaths_for_granule
