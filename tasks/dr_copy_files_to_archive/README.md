@@ -64,7 +64,7 @@ Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 1.  Upload the files in /tasks/testfiles/ to the test glacier bucket.
     It may take overnight for the files to be moved to Glacier.
 2.  Once the files are in Glacier, run the request_files lambda to restore them.
-    You can use the test event in /tasks/request_files/test/testevents/restore_test_files.json
+    You can use the test event in /tasks/request_files/test/testevents/RestoreTestFiles.json
     The restore may take up to 5 hours.
 3.  When the restore completes, the ObjectRestore:Post event should trigger the
     dr_copy_files_to_archive lambda. You can also test it using the
