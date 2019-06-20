@@ -72,7 +72,7 @@ def task(records, bucket_map, retries, retry_sleep_secs):
                 try:
                     afile['target_bucket'] = bucket_map["other"]
                 except KeyError:
-                    raise CopyRequestError(f'bucket_map: {bucket_map} does not contain '
+                    raise CopyRequestError(f'BUCKET_MAP: {bucket_map} does not contain '
                                            f'values for "{ext}" or "other"')
             files.append(afile)
         except KeyError:
@@ -140,7 +140,7 @@ def handler(event, context):      #pylint: disable-msg=unused-argument
     times to retry a copy before failing, and how long to wait between retries.
 
         Environment Vars:
-            bucket_map (dict): A dict of key:value entries, where the key is a file
+            BUCKET_MAP (dict): A dict of key:value entries, where the key is a file
                 extension (including the .) ex. ".hdf", and the value is the destination
                 bucket for files with that extension. One of the keys can be "other"
                 to designate a bucket for any extensions that are not explicitly
@@ -149,9 +149,9 @@ def handler(event, context):      #pylint: disable-msg=unused-argument
                       ".met": "my-great-protected-bucket",
                       ".txt": "my-great-public-bucket",
                       "other": "my-great-protected-bucket"}
-            copy_retries (number, optional, default = 3): The number of
+            COPY_RETRIES (number, optional, default = 3): The number of
                 attempts to retry a copy that failed.
-            copy_retry_sleep_secs (number, optional, default = 0): The number of seconds
+            COPY_RETRY_SLEEP_SECS (number, optional, default = 0): The number of seconds
                 to sleep between retry attempts.
 
         Args:
@@ -200,18 +200,18 @@ def handler(event, context):      #pylint: disable-msg=unused-argument
     logging.basicConfig(level=logging.DEBUG,
                         format='%(levelname)s: %(asctime)s: %(message)s')
     try:
-        bucket_map = json.loads(os.environ['bucket_map'])
+        bucket_map = json.loads(os.environ['BUCKET_MAP'])
     except KeyError:
         bucket_map = {}
 
     try:
-        str_env_val = os.environ['copy_retries']
+        str_env_val = os.environ['COPY_RETRIES']
         retries = int(str_env_val)
     except KeyError:
         retries = 3
 
     try:
-        str_env_val = os.environ['copy_retry_sleep_secs']
+        str_env_val = os.environ['COPY_RETRY_SLEEP_SECS']
         retry_sleep_secs = float(str_env_val)
     except KeyError:
         retry_sleep_secs = 0

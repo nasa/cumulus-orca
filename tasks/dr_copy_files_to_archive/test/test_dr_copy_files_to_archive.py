@@ -10,11 +10,11 @@ class TestCopyFiles(unittest.TestCase):
 
     def setUp(self):
         self.mock_boto3_client = boto3.client
-        os.environ['copy_retries'] = '2'
-        os.environ['copy_retry_sleep_secs'] = '1'
+        os.environ['COPY_RETRIES'] = '2'
+        os.environ['COPY_RETRY_SLEEP_SECS'] = '1'
         self.exp_other_bucket = "unittest_protected_bucket"
         self.bucket_map = {".hdf": "unittest_hdf_bucket", ".txt": "unittest_txt_bucket", "other": self.exp_other_bucket}
-        os.environ['bucket_map'] = json.dumps(self.bucket_map)
+        os.environ['BUCKET_MAP'] = json.dumps(self.bucket_map)
 
         self.exp_src_bucket = 'my-dr-fake-glacier-bucket'
         self.exp_target_bucket = 'unittest_txt_bucket'
@@ -58,21 +58,21 @@ class TestCopyFiles(unittest.TestCase):
     def tearDown(self):
         boto3.client = self.mock_boto3_client
         try:
-            del os.environ['bucket_map']
-            del os.environ['copy_retry_sleep_secs']
-            del os.environ['copy_retries']
+            del os.environ['BUCKET_MAP']
+            del os.environ['COPY_RETRY_SLEEP_SECS']
+            del os.environ['COPY_RETRIES']
         except KeyError as ke:
             pass
 
     def test_handler_one_file_success(self):
-        del os.environ['copy_retry_sleep_secs']
-        del os.environ['copy_retries']
+        del os.environ['COPY_RETRY_SLEEP_SECS']
+        del os.environ['COPY_RETRIES']
         boto3.client = Mock()
         s3 = boto3.client('s3')
         s3.copy_object = Mock(side_effect=[None])
         result = dr_copy_files_to_archive.handler(self.exp_event, self.exp_context)
-        os.environ['copy_retries'] = '2'
-        os.environ['copy_retry_sleep_secs'] = '1'
+        os.environ['COPY_RETRIES'] = '2'
+        os.environ['COPY_RETRY_SLEEP_SECS'] = '1'
         boto3.client.assert_called_with('s3')
         exp_result = json.dumps([{"success": True, "source_bucket": self.exp_src_bucket, "source_key": self.exp_file_key1, "target_bucket": self.exp_target_bucket, "err_msg": ""}])
         self.assertEqual(exp_result, result)
@@ -163,8 +163,8 @@ class TestCopyFiles(unittest.TestCase):
                                           Key=self.exp_file_key1)
 
     def test_handler_one_file_retry2_success(self):
-        del os.environ['copy_retry_sleep_secs']
-        del os.environ['copy_retries']
+        del os.environ['COPY_RETRY_SLEEP_SECS']
+        del os.environ['COPY_RETRIES']
         import time
         time.sleep(1)
         boto3.client = Mock()
@@ -172,8 +172,8 @@ class TestCopyFiles(unittest.TestCase):
         s3.copy_object = Mock(side_effect=[ClientError({'Error': {'Code': 'AccessDenied'}}, 'copy_object'),
                                            None])
         result = dr_copy_files_to_archive.handler(self.exp_event, self.exp_context)
-        os.environ['copy_retries'] = '2'
-        os.environ['copy_retry_sleep_secs'] = '1'
+        os.environ['COPY_RETRIES'] = '2'
+        os.environ['COPY_RETRY_SLEEP_SECS'] = '1'
         boto3.client.assert_called_with('s3')
         exp_result = json.dumps([{"success": True, "source_bucket": self.exp_src_bucket, "source_key": self.exp_file_key1, "target_bucket": self.exp_target_bucket, "err_msg": ""}])
         self.assertEqual(exp_result, result)
@@ -183,17 +183,17 @@ class TestCopyFiles(unittest.TestCase):
                                           Key=self.exp_file_key1)
 
     def test_handler_no_bucket_map(self):
-        del os.environ['bucket_map']
+        del os.environ['BUCKET_MAP']
         boto3.client = Mock()
         s3 = boto3.client('s3')
         s3.copy_object = Mock(side_effect=[None])
-        exp_err = 'bucket_map: {} does not contain values for ".txt" or "other"'
+        exp_err = 'BUCKET_MAP: {} does not contain values for ".txt" or "other"'
         try:
             result = dr_copy_files_to_archive.handler(self.exp_event, self.exp_context)
             self.fail("expected CopyRequestError")
         except dr_copy_files_to_archive.CopyRequestError as ex:
             self.assertEqual(exp_err, str(ex))
-        os.environ['bucket_map'] = json.dumps(self.bucket_map)
+        os.environ['BUCKET_MAP'] = json.dumps(self.bucket_map)
         boto3.client.assert_called_with('s3')
 
     def test_handler_no_ext_in_bucket_map(self):
@@ -215,10 +215,10 @@ class TestCopyFiles(unittest.TestCase):
         s3 = boto3.client('s3')
         s3.copy_object = Mock(side_effect=[None])
         bucket_map = {".hdf": "unittest_hdf_bucket", ".txt": "unittest_txt_bucket"}
-        os.environ['bucket_map'] = json.dumps(bucket_map)
+        os.environ['BUCKET_MAP'] = json.dumps(bucket_map)
 
         self.exp_event["Records"][0]["s3"]["object"]["key"] = self.exp_file_key2
-        exp_err = f'bucket_map: {bucket_map} does not contain values for ".xml" or "other"'
+        exp_err = f'BUCKET_MAP: {bucket_map} does not contain values for ".xml" or "other"'
         try:
             result = dr_copy_files_to_archive.handler(self.exp_event, self.exp_context)
             self.fail("expected CopyRequestError")
