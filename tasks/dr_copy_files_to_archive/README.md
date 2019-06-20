@@ -4,8 +4,8 @@
 - [Development](#development)
   * [Unit Testing and Coverage](#unit-testing-and-coverage)
   * [Linting](#linting)
-- [Integration Testing](#integration-testing)
 - [Deployment](#deployment)
+  * [Deployment Validation](#deployment-validation)
 - [pydoc dr_copy_files_to_archive](#pydoc)
 
 <a name="setup"></a>
@@ -52,33 +52,24 @@ Run pylint against the code:
 --------------------------------------------------------------------
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 ```
-<a name="integration-testing"></a>
-## Integration Testing
-```
-Run the request_files lambda to make a restore request for a granule:
-
-ex input to request_files lambda:
-{
-  "glacierBucket": "my-dr-fake-glacier-bucket",
-  "granules": [
-    {
-      "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
-      "filepaths": [
-        "dr-glacier/MOD09GQ.A0219115.N5aUCG.006.0656338553321.hdf.txt"
-      ]
-    }
-  ]
-}
-
-The restore request could take up to 5 hours. When it completes, the dr_copy_files_to_archive lambda
-should be triggered. View the logs in Cloud Watch for /aws/lambda/dr_copy_files_to_archive
-
-```
 <a name="deployment"></a>
 ## Deployment
 ```
     cd tasks\dr_copy_files_to_archive
     zip task.zip *.py
+```
+<a name="deployment-validation"></a>
+### Deployment Validation
+```
+1.  Upload the files in /tasks/testfiles/ to the test glacier bucket.
+    It may take overnight for the files to be moved to Glacier.
+2.  Once the files are in Glacier, run the request_files lambda to restore them.
+    You can use the test event in /tasks/request_files/test/testevents/restore_test_files.json
+    The restore may take up to 5 hours.
+3.  When the restore completes, the ObjectRestore:Post event should trigger the
+    dr_copy_files_to_archive lambda. You can also test it using the
+    test events in /tasks/dr_copy_files_to_archive/test/testevents. You
+    can view the logs in Cloud Watch for /aws/lambda/dr_copy_files_to_archive
 ```
 <a name="pydoc"></a>
 ## pydoc dr_copy_files_to_archive
@@ -161,4 +152,6 @@ FUNCTIONS
                 CopyRequestError: An error occurred calling copy_object for one or more files.
                 The same dict that is returned for a successful copy, will be included in the
                 message, with 'success' = False for the files for which the copy failed.
+
+                context (Object): None
 ```

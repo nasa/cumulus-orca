@@ -43,12 +43,12 @@ def task(records, bucket_map, retries, retry_sleep_secs):
                 'err_msg' (string): when success is False, this will contain
                     the error message from the copy error
 
-                Example:  [{'source_key': 'file1.xml', 'source_bucket': 'my-dr-fake-glacier-bucket',
-                              'target_bucket': 'unittest_xml_bucket', 'success': True,
-                              'err_msg': ''},
-                           {'source_key': 'file2.txt', 'source_bucket': 'my-dr-fake-glacier-bucket',
-                              'target_bucket': 'unittest_txt_bucket', 'success': True,
-                              'err_msg': ''}]
+            Example:  [{'source_key': 'file1.xml', 'source_bucket': 'my-dr-fake-glacier-bucket',
+                          'target_bucket': 'unittest_xml_bucket', 'success': True,
+                          'err_msg': ''},
+                      {'source_key': 'file2.txt', 'source_bucket': 'my-dr-fake-glacier-bucket',
+                          'target_bucket': 'unittest_txt_bucket', 'success': True,
+                          'err_msg': ''}]
 
         Raises:
             CopyRequestError: Thrown if there are errors with the input records.
