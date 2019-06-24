@@ -10,13 +10,13 @@ class TestRequestFiles(unittest.TestCase):
 
     def setUp(self):
         self.mock_boto3_client = boto3.client
-        os.environ['restore_expire_days'] = '5'
-        os.environ['restore_request_retries'] = '3'
+        os.environ['RESTORE_EXPIRE_DAYS'] = '5'
+        os.environ['RESTORE_REQUEST_RETRIES'] = '3'
 
     def tearDown(self):
         boto3.client = self.mock_boto3_client
-        del os.environ['restore_expire_days']
-        del os.environ['restore_request_retries']
+        del os.environ['RESTORE_EXPIRE_DAYS']
+        del os.environ['RESTORE_REQUEST_RETRIES']
 
     def test_handler_one_granule_4_files_success(self):
         file1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf"
@@ -63,21 +63,25 @@ class TestRequestFiles(unittest.TestCase):
         expFile = {}
         expFile['filepath'] = file1
         expFile['success'] = True
+        expFile['err_msg'] = ''
         expFiles.append(expFile)
 
         expFile = {}
         expFile['filepath'] = file2
         expFile['success'] = True
+        expFile['err_msg'] = ''
         expFiles.append(expFile)
 
         expFile = {}
         expFile['filepath'] = file3
         expFile['success'] = True
+        expFile['err_msg'] = ''
         expFiles.append(expFile)
 
         expFile = {}
         expFile['filepath'] = file4
         expFile['success'] = True
+        expFile['err_msg'] = ''
         expFiles.append(expFile)
 
         expGran['files'] = expFiles
@@ -122,7 +126,7 @@ class TestRequestFiles(unittest.TestCase):
 
 
     def test_handler_no_retries_env_var(self):
-        del os.environ['restore_request_retries']
+        del os.environ['RESTORE_REQUEST_RETRIES']
         exp_event = {}
         exp_event["glacierBucket"] = "some_bucket"
         file1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf"
@@ -141,19 +145,20 @@ class TestRequestFiles(unittest.TestCase):
         expFile = {}
         expFile['filepath'] = file1
         expFile['success'] = True
+        expFile['err_msg'] = ''
         expFiles.append(expFile)
 
         expGran['files'] = expFiles
         result = request_files.handler(exp_event, exp_context)
         exp_result = json.dumps(expGran)
         self.assertEqual(exp_result,result)
-        os.environ['restore_request_retries'] = '3'
+        os.environ['RESTORE_REQUEST_RETRIES'] = '3'
 
         boto3.client.assert_called_with('s3')
         s3.restore_object.assert_any_call(Bucket='some_bucket', Key='MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf', RestoreRequest={'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}})
 
     def test_handler_no_expire_days_env_var(self):
-        del os.environ['restore_expire_days']
+        del os.environ['RESTORE_EXPIRE_DAYS']
         exp_event = {}
         exp_event["glacierBucket"] = "some_bucket"
         file1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf"
@@ -172,13 +177,14 @@ class TestRequestFiles(unittest.TestCase):
         expFile = {}
         expFile['filepath'] = file1
         expFile['success'] = True
+        expFile['err_msg'] = ''
         expFiles.append(expFile)
 
         expGran['files'] = expFiles
         result = request_files.handler(exp_event, exp_context)
         exp_result = json.dumps(expGran)
         self.assertEqual(exp_result,result)
-        os.environ['restore_expire_days'] = '3'
+        os.environ['RESTORE_EXPIRE_DAYS'] = '3'
 
         boto3.client.assert_called_with('s3')
         s3.restore_object.assert_any_call(Bucket='some_bucket', Key='MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf', RestoreRequest={'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}})
@@ -191,7 +197,7 @@ class TestRequestFiles(unittest.TestCase):
                                   "filepaths": [file1]}]
 
         exp_context = None
-        os.environ['restore_retry_sleep_secs'] = '.5'
+        os.environ['RESTORE_RETRY_SLEEP_SECS'] = '.5'
         boto3.client = Mock()
         s3 = boto3.client('s3')
         s3.restore_object = Mock(side_effect=[ClientError({'Error': {'Code': 'NoSuchBucket'}}, 'restore_object'),
@@ -205,6 +211,7 @@ class TestRequestFiles(unittest.TestCase):
         expFile = {}
         expFile['filepath'] = file1
         expFile['success'] = False
+        expFile['err_msg'] = 'An error occurred (NoSuchBucket) when calling the restore_object operation: Unknown'
         expFiles.append(expFile)
 
         expGran['files'] = expFiles
@@ -215,7 +222,7 @@ class TestRequestFiles(unittest.TestCase):
             self.fail("RestoreRequestError expected")
         except request_files.RestoreRequestError as err:
             self.assertEqual(expErr,str(err))
-        del os.environ['restore_retry_sleep_secs']
+        del os.environ['RESTORE_RETRY_SLEEP_SECS']
         boto3.client.assert_called_with('s3')
         s3.restore_object.assert_any_call(Bucket='some_bucket', Key='MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf', RestoreRequest={'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}})
 
@@ -254,21 +261,25 @@ class TestRequestFiles(unittest.TestCase):
         expFile = {}
         expFile['filepath'] = file1
         expFile['success'] = True
+        expFile['err_msg'] = ''
         expFiles.append(expFile)
 
         expFile = {}
         expFile['filepath'] = file2
         expFile['success'] = True
+        expFile['err_msg'] = ''
         expFiles.append(expFile)
 
         expFile = {}
         expFile['filepath'] = file3
         expFile['success'] = True
+        expFile['err_msg'] = ''
         expFiles.append(expFile)
 
         expFile = {}
         expFile['filepath'] = file4
         expFile['success'] = False
+        expFile['err_msg'] = 'An error occurred (NoSuchKey) when calling the restore_object operation: Unknown'
         expFiles.append(expFile)
 
         expGran['files'] = expFiles
@@ -311,11 +322,13 @@ class TestRequestFiles(unittest.TestCase):
         expFile = {}
         expFile['filepath'] = file1
         expFile['success'] = True
+        expFile['err_msg'] = ''
         expFiles.append(expFile)
 
         expFile = {}
         expFile['filepath'] = file2
         expFile['success'] = True
+        expFile['err_msg'] = ''
         expFiles.append(expFile)
 
         expGran['files'] = expFiles

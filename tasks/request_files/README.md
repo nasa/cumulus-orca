@@ -4,8 +4,8 @@
 - [Development](#development)
   * [Unit Testing and Coverage](#unit-testing-and-coverage)
   * [Linting](#linting)
-- [Integration Testing](#integration-testing)
 - [Deployment](#deployment)
+  * [Deployment Validation](#deployment-validation)
 - [pydoc request_files](#pydoc)
 
 <a name="setup"></a>
@@ -35,9 +35,9 @@ test_handler_two_granules (test_request_files.TestRequestFiles) ... ok
 
 Name               Stmts   Miss  Cover
 --------------------------------------
-request_files.py      65      0   100%
+request_files.py      69      0   100%
 ----------------------------------------------------------------------
-Ran 8 tests in 1.641s
+Ran 8 tests in 1.627s
 
 ```
 <a name="linting"></a>
@@ -51,36 +51,23 @@ Run pylint against the code:
 --------------------------------------------------------------------
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 ```
-<a name="integration-testing"></a>
-## Integration Testing
-```
-Create an S3 bucket, for example, my-dr-fake-glacier-bucket
-Create a folder in the bucket, for example, dr-glacier
-Upload some small dummy test files to the folder.
-Make a restore request:
-
-input:
-{
-  "glacierBucket": "my-dr-fake-glacier-bucket",
-  "granules": [
-    {
-      "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
-      "filepaths": [
-        "dr-glacier/MOD09GQ.A0219115.N5aUCG.006.0656338553321.hdf.txt"
-      ]
-    }
-  ]
-}
-
-check status of restore request
-(podr) λ aws s3api head-object --bucket my-dr-fake-glacier-bucket --key dr-glacier/MOD09GQ.A0219115.N5aUCG.006.0656338553321.hdf.txt
-
-```
 <a name="deployment"></a>
 ## Deployment
 ```
     cd tasks\request_files
     zip task.zip *.py
+```
+<a name="deployment-validation"></a>
+### Deployment Validation
+```
+1.  Upload the files in /tasks/testfiles/ to the test glacier bucket.
+    It may take overnight for the files to be moved to Glacier.
+2.  Once the files are in Glacier, run the request_files lambda to restore them.
+    You can use the test event in /tasks/request_files/test/testevents/RestoreTestFiles.json
+    The restore may take up to 5 hours.
+
+Use the AWS CLI to check status of restore request:
+ex> (podr) λ aws s3api head-object --bucket podaac-sndbx-cumulus-glacier --key L0A_RAD_RAW_product_0001-of-0020.iso.xml
 ```
 <a name="pydoc"></a>
 ## pydoc request_files
@@ -111,11 +98,11 @@ FUNCTIONS
         many times to retry a restore_request, and how long to wait between retries.
 
             Environment Vars:
-                restore_expire_days (number, optional, default = 5): The number of days
+                RESTORE_EXPIRE_DAYS (number, optional, default = 5): The number of days
                     the restored file will be accessible in the S3 bucket before it expires.
-                restore_request_retries (number, optional, default = 3): The number of
+                RESTORE_REQUEST_RETRIES (number, optional, default = 3): The number of
                     attempts to retry a restore_request that failed to submit.
-                restore_retry_sleep_secs (number, optional, default = 0): The number of seconds
+                RESTORE_RETRY_SLEEP_SECS (number, optional, default = 0): The number of seconds
                     to sleep between retry attempts.
 
             Args:

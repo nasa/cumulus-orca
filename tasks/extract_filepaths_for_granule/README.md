@@ -5,6 +5,7 @@
   * [Unit Testing and Coverage](#unit-testing-and-coverage)
   * [Linting](#linting)
 - [Deployment](#deployment)
+  * [Deployment Validation](#deployment-validation)
 - [pydoc extract_filepaths_for_granule](#pydoc)
 
 <a name="setup"></a>
@@ -55,6 +56,11 @@ Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 ```
     cd tasks\extract_filepaths_for_granule
     zip task.zip *.py
+```
+<a name="deployment-validation"></a>
+### Deployment Validation
+```
+1.  You can use the test event in /tasks/extract_filepaths_for_granule/test/testevents/ExtractFiles.json
 ```
 <a name="pydoc"></a>
 ## pydoc extract_filepaths_for_granule
