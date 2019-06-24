@@ -51,6 +51,15 @@ Run pylint against the code:
 
 --------------------------------------------------------------------
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
+
+(podr) λ cd C:\devpy\poswotdr\tasks\dr_copy_files_to_archive\test
+(podr) λ pylint test_dr_copy_files_to_archive.py
+************* Module test_dr_copy_files_to_archive
+test_dr_copy_files_to_archive.py:12:0: E0401: Unable to import 'dr_copy_files_to_archive' (import-error)
+test_dr_copy_files_to_archive.py:14:0: R0902: Too many instance attributes (11/7) (too-many-instance-attributes)
+
+------------------------------------------------------------------
+Your code has been rated at 9.60/10 (previous run: 9.60/10, +0.00)
 ```
 <a name="deployment"></a>
 ## Deployment
