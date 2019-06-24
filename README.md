@@ -54,7 +54,7 @@ $ aws s3api create-bucket \
     --bucket "${state-bucket}"
     --create-bucket-configuration LocationConstraint=us-west-2
 $ aws s3api put-bucket-versioning \
-    --bucket dr-podaac-tf-state \
+    --bucket "${state-bucket}" \
     --versioning-configuration Status=Enabled
 ```
 **Note:** The `--create-bucket-configuration` line is only necessary if you are creating your bucket outside of `us-east-1`.
