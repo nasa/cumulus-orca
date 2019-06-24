@@ -11,7 +11,7 @@ First, run a `mv terraform.tfvars.example terraform.tfvars` to get a template `t
 **Necessary:**
 * ngap_subnet - NGAP Subnet
 * ngap_sgs - NGAP Security Groups
-* archive_bucket - Bucket with Glacier policy
+* glacier_bucket - Bucket with Glacier policy
 * public_bucket - Bucket with public permissions (Cumulus public bucket)
 * private_bucket - Bucket with private permissions (Cumulus private bucket)
 * internal_bucket - Analogous to the Cumulus internal bucket 
