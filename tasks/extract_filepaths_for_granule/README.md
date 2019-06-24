@@ -5,13 +5,16 @@
   * [Unit Testing and Coverage](#unit-testing-and-coverage)
   * [Linting](#linting)
 - [Deployment](#deployment)
-- [pydoc extract_filepaths_for_granule](#pydoc-extract-filepaths-for-granule)
+- [pydoc extract_filepaths_for_granule](#pydoc)
 
+<a name="setup"></a>
 # Setup
     See the README in the tasks folder for general development setup instructions
 
+<a name="development"></a>
 # Development
 
+<a name="unit-testing-and-coverage"></a>
 ## Unit Testing and Coverage
 ```
 Run the unit tests with code coverage:
@@ -36,6 +39,7 @@ extract_filepaths_for_granule.py      26      0   100%
 Ran 8 tests in 0.045s
 
 ```
+<a name="linting"></a>
 ## Linting
 ```
 Run pylint against the code:
@@ -46,11 +50,13 @@ Run pylint against the code:
 --------------------------------------------------------------------
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 ```
+<a name="deployment"></a>
 ## Deployment
 ```
     cd tasks\extract_filepaths_for_granule
-    zip extract_filepaths_for_granule.zip *.py
+    zip task.zip *.py
 ```
+<a name="pydoc"></a>
 ## pydoc extract_filepaths_for_granule
 ```
 NAME
