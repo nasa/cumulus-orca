@@ -1,7 +1,7 @@
 ## Build lambdas
 Before you can deploy this infrastructure, the lambda function source-code must be built.
 
-`./build_tasks.sh` will crawl the `tasks` directory and build a `task.zip` (currently by just `zipping` all python files) in each of it's sub-directories. The individual `task.zip` files are then referenced in the `app.tf` lamdba definitions.
+`./bin/build_tasks.sh` will crawl the `tasks` directory and build a `task.zip` (currently by just `zipping` all python files) in each of it's sub-directories. That `task.zip` is then referenced in the `app.tf` lamdba definitions.
 
 ## Setting up the Terraform deployment
 
