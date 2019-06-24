@@ -1,3 +1,7 @@
+variable "prefix" {
+  default = "dr"
+}
+
 variable "glacier_bucket" {
   default = ""
 }
@@ -22,7 +26,7 @@ variable "permissions_boundary_arn" {
   default = ""
 }
 
-variable "ngap_subnet" {
+variable "ngap_subnets" {
   default = []
 }
 
@@ -48,4 +52,16 @@ variable "restore_request_retries" {
 
 variable "restore_retry_sleep_secs" {
   default = 0
+}
+
+variable "copy_retries" {
+  default = 3
+}
+
+variable "copy_retry_sleep_secs" {
+  default = 0
+}
+
+variable "copy_bucket_map" {
+  default = "{\\\".hdf\\\": \\\"my-great-protected-bucket\\\", \\\".met\\\": \\\"my-great-protected-bucket\\\", \\\".txt\\\": \\\"my-great-public-bucket\\\", \\\"other\\\": \\\"my-great-protected-bucket\\\"}"
 }

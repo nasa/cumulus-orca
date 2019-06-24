@@ -15,3 +15,4 @@ terraform\.tfvars
 \.terraform/
 *.zip
 terraform\.tfstate*
+terraform.tf
