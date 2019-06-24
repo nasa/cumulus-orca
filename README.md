@@ -19,6 +19,7 @@ First, run a `mv terraform.tfvars.example terraform.tfvars` to get a template `t
 * permissions_boundary_arn - Permission Boundary Arn (Policy) for NGAP compliance
 
 **Optional:**
+* prefix - Prefix that will be pre-pended to resource names created by terraform. Defaults to `dr`.
 * profile - AWS CLI Profile (configured via `aws configure`) to use. Defaults to `default`.
 * region - Your AWS region. Defaults to `us-west-2`
 * restore_expire_days - How many days to restore a file for. Defaults to 5.
