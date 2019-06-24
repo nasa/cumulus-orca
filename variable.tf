@@ -59,5 +59,5 @@ variable "copy_retry_sleep_secs" {
 }
 
 variable "bucket_map" {
-  default = ""
+  default = "{\\\".hdf\\\": \\\"my-great-protected-bucket\\\", \\\".met\\\": \\\"my-great-protected-bucket\\\", \\\".txt\\\": \\\"my-great-public-bucket\\\", \\\"other\\\": \\\"my-great-protected-bucket\\\"}"
 }

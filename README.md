@@ -26,6 +26,7 @@ First, run a `mv terraform.tfvars.example terraform.tfvars` to get a template `t
 * restore_retry_sleep_secs - How many seconds to wait between retry calls to `restore_object`. Defaults to 3.
 * copy_retries - How many times to retry a copy request from the restore location to the archive location. Defaults to 3.
 * copy_retry_sleep_secs - How many seconds to wait between retry calls to `copy_object`. Defaults to 0.
+* copy_bucket_map - Stringified JSON object mapping file extensions to `Public` or `Private` buckets.
 
 ## Deploying with Terraform
 Visit the [Terraform documentation](https://learn.hashicorp.com/terraform/getting-started/install.html) for installation instructions.
