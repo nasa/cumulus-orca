@@ -50,6 +50,12 @@ Run pylint against the code:
 
 --------------------------------------------------------------------
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
+
+(podr) λ cd C:\devpy\poswotdr\tasks\extract_filepaths_for_granule\test
+(podr) λ pylint test_extract_file_paths_for_granule.py
+
+--------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 ```
 <a name="deployment"></a>
 ## Deployment

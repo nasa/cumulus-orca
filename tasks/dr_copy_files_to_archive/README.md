@@ -51,6 +51,12 @@ Run pylint against the code:
 
 --------------------------------------------------------------------
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
+
+(podr) λ cd C:\devpy\poswotdr\tasks\dr_copy_files_to_archive\test
+(podr) λ pylint test_dr_copy_files_to_archive.py
+
+--------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 ```
 <a name="deployment"></a>
 ## Deployment
