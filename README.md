@@ -9,8 +9,8 @@ Before you can deploy this infrastructure, the lambda function source-code must 
 First, run a `mv terraform.tfvars.example terraform.tfvars` to get a template `terraform.tfvars` in your working directory. This is where you will place input variables to Terraform.
 
 **Necessary:**
-* ngap_subnet - NGAP Subnet
-* ngap_sgs - NGAP Security Groups
+* ngap_subnets - NGAP Subnets (array)
+* ngap_sgs - NGAP Security Groups (array)
 * glacier_bucket - Bucket with Glacier policy
 * public_bucket - Bucket with public permissions (Cumulus public bucket)
 * private_bucket - Bucket with private permissions (Cumulus private bucket)
