@@ -50,6 +50,12 @@ Run pylint against the code:
 
 --------------------------------------------------------------------
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
+
+(podr) λ cd C:\devpy\poswotdr\tasks\request_files\test
+(podr) λ pylint test_request_files.py
+
+--------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 ```
 <a name="deployment"></a>
 ## Deployment
