@@ -12,7 +12,7 @@ class TestExtractFilePaths(unittest.TestCase):
     TestExtractFilePaths.
     """
     def setUp(self):
-        with open('testevents/exp_event.json') as f:
+        with open('test/testevents/exp_event.json') as f:
             self.exp_event = json.load(f)
         self.exp_context = None
 

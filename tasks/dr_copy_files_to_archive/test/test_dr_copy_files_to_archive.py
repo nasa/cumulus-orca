@@ -30,7 +30,7 @@ class TestCopyFiles(unittest.TestCase):
 
         self.exp_file_key1 = 'dr-glacier/MOD09GQ.A0219114.N5aUCG.006.0656338553321.txt'
 
-        with open('testevents/exp_event_1.json') as f:
+        with open('test/testevents/exp_event_1.json') as f:
             self.exp_event = json.load(f)
 
     def tearDown(self):
@@ -74,7 +74,7 @@ class TestCopyFiles(unittest.TestCase):
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.copy_object = Mock(side_effect=[None, None])
-        with open('testevents/exp_event_2.json') as f:
+        with open('test/testevents/exp_event_2.json') as f:
             exp_rec_2 = json.load(f)
         self.exp_event["Records"].append(exp_rec_2)
         result = dr_copy_files_to_archive.handler(self.exp_event, None)
@@ -113,7 +113,7 @@ class TestCopyFiles(unittest.TestCase):
                                                ClientError({'Error': {'Code': 'AccessDenied'}},
                                                            'copy_object'),
                                                None])
-        with open('testevents/exp_event_2.json') as f:
+        with open('test/testevents/exp_event_2.json') as f:
             exp_rec_2 = json.load(f)
         self.exp_event["Records"].append(exp_rec_2)
         exp_result = [{"success": False, "source_bucket": self.exp_src_bucket,
