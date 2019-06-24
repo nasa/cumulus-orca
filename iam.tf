@@ -9,7 +9,7 @@ data "aws_iam_policy_document" "assume_lambda_role" {
 }
 
 resource "aws_iam_role" "restore_object_role" {
-  name                 = "restore_object_role"
+  name                 = "${var.prefix}_restore_object_role"
   assume_role_policy   = data.aws_iam_policy_document.assume_lambda_role.json
   permissions_boundary = var.permissions_boundary_arn
 }
@@ -80,7 +80,7 @@ data "aws_iam_policy_document" "restore_object_role_policy_document" {
 }
 
 resource "aws_iam_role_policy" "restore_object_role_policy" {
-  name   = "restore_object_role_policy"
+  name   = "${var.prefix}_restore_object_role_policy"
   role   = aws_iam_role.restore_object_role.id
   policy = data.aws_iam_policy_document.restore_object_role_policy_document.json
 }
