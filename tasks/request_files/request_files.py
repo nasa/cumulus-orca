@@ -40,6 +40,8 @@ def task(event, exp_days, retries, retry_sleep_secs):
                     'filepath': The glacier key (filepath) of the file to restore
                     'success' (boolean): True, indicating the restore request was submitted
                         successfully, otherwise False.
+                    'err_msg' (string): when success is False, this will contain
+                        the error message from the restore error
 
                 Example:  {'granuleId': 'granxyz',
                       'files': [{'filepath': 'path1', 'success': True},
@@ -65,6 +67,7 @@ def task(event, exp_days, retries, retry_sleep_secs):
             afile = {}
             afile['filepath'] = file_key
             afile['success'] = False
+            afile['err_msg'] = ''
             files.append(afile)
         gran['files'] = files
 
@@ -73,10 +76,16 @@ def task(event, exp_days, retries, retry_sleep_secs):
     while attempt <= retries:
         for afile in gran['files']:
             if not afile['success']:
-                success = restore_object(s3, glacier_bucket, afile['filepath'], exp_days)
-                afile['success'] = success
-                logging.info(f'Attempt {attempt} success status of submit request to restore '
-                             f'{afile["filepath"]} from {glacier_bucket} = {success}')
+                err_msg = restore_object(s3, glacier_bucket, afile['filepath'], exp_days)
+                if err_msg:
+                    afile['err_msg'] = err_msg
+                else:
+                    afile['success'] = True
+                    afile['err_msg'] = ''
+                    logging.info(
+                        f'restore {afile["filepath"]} from {glacier_bucket} '
+                        f'attempt {attempt} successful.')
+
         attempt = attempt + 1
         if attempt <= retries:
             time.sleep(retry_sleep_secs)
@@ -96,7 +105,7 @@ def restore_object(s3_cli, bucket_name, object_name, days, retrieval_type='Stand
                 Valid values are 'Standard'|'Bulk'|'Expedited'.
 
         Returns:
-            boolean: True if a request to restore archived object was submitted, otherwise False.
+            string: None if restore request was submitted, otherwise contains error message.
     """
     request = {'Days': days,
                'GlacierJobParameters': {'Tier': retrieval_type}}
@@ -108,8 +117,8 @@ def restore_object(s3_cli, bucket_name, object_name, days, retrieval_type='Stand
         # NoSuchBucket, NoSuchKey, or InvalidObjectState error == the object's
         # storage class was not GLACIER
         logging.error(err)
-        return False
-    return True
+        return str(err)
+    return None
 
 def handler(event, context):      #pylint: disable-msg=unused-argument
     """Lambda handler. Initiates a restore_object request from glacier for each file of a granule.
@@ -123,11 +132,11 @@ def handler(event, context):      #pylint: disable-msg=unused-argument
     many times to retry a restore_request, and how long to wait between retries.
 
         Environment Vars:
-            restore_expire_days (number, optional, default = 5): The number of days
+            RESTORE_EXPIRE_DAYS (number, optional, default = 5): The number of days
                 the restored file will be accessible in the S3 bucket before it expires.
-            restore_request_retries (number, optional, default = 3): The number of
+            RESTORE_REQUEST_RETRIES (number, optional, default = 3): The number of
                 attempts to retry a restore_request that failed to submit.
-            restore_retry_sleep_secs (number, optional, default = 0): The number of seconds
+            RESTORE_RETRY_SLEEP_SECS (number, optional, default = 0): The number of seconds
                 to sleep between retry attempts.
 
         Args:
@@ -160,17 +169,17 @@ def handler(event, context):      #pylint: disable-msg=unused-argument
     logging.basicConfig(level=logging.DEBUG,
                         format='%(levelname)s: %(asctime)s: %(message)s')
     try:
-        exp_days = int(os.environ['restore_expire_days'])
+        exp_days = int(os.environ['RESTORE_EXPIRE_DAYS'])
     except KeyError:
         exp_days = 5
 
     try:
-        retries = int(os.environ['restore_request_retries'])
+        retries = int(os.environ['RESTORE_REQUEST_RETRIES'])
     except KeyError:
         retries = 3
 
     try:
-        retry_sleep_secs = float(os.environ['restore_retry_sleep_secs'])
+        retry_sleep_secs = float(os.environ['RESTORE_RETRY_SLEEP_SECS'])
     except KeyError:
         retry_sleep_secs = 0
 

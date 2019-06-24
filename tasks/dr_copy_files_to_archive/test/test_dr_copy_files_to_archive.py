@@ -9,7 +9,7 @@ import os
 import json
 import boto3
 from botocore.exceptions import ClientError
-import dr_copy_files_to_archive
+import dr_copy_files_to_archive                  #pylint: disable-import-error
 
 class TestCopyFiles(unittest.TestCase):
     """
@@ -27,45 +27,11 @@ class TestCopyFiles(unittest.TestCase):
 
         self.exp_src_bucket = 'my-dr-fake-glacier-bucket'
         self.exp_target_bucket = 'unittest_txt_bucket'
+
         self.exp_file_key1 = 'dr-glacier/MOD09GQ.A0219114.N5aUCG.006.0656338553321.txt'
-        self.exp_file_key2 = 'dr-glacier/MOD09GQ.A0219114.N5aUCG.006.0656338553321.xml'
-        self.exp_file_key3 = 'dr-glacier/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf'
-        self.exp_event = {"Records": [{"eventVersion": "2.1",
-                                       "eventSource": "aws:s3",
-                                       "awsRegion": "us-west-2",
-                                       "eventTime": "2019-06-17T18:54:06.686Z",
-                                       "eventName": "ObjectRestore:Post",
-                                       "userIdentity": {"principalId": "AWS:AROXSO:request_files"},
-                                       "requestParameters": {"sourceIPAddress": "34.217.126.178"},
-                                       "responseElements": {"x-amz-request-id": "0364DD02830B32C0",
-                                                            "x-amz-id-2": "4TpigLzkLqdD5F2RbnAnU="},
-                                       "s3": {"s3SchemaVersion": "1.0",
-                                              "configurationId": "dr_restore_complete",
-                                              "bucket": {"name": self.exp_src_bucket,
-                                                         "ownerIdentity": {"principalId": "A1BCJ9"},
-                                                         "arn":
-                                                             "arn:aws:s3::"
-                                                             ":my-dr-fake-glacier-bucket"},
-                                              "object": {"key": self.exp_file_key1,
-                                                         "size": 645, "sequencer": "0054A126FB"}}}]}
-        self.exp_rec_2 = {"eventVersion": "2.1",
-                          "eventSource": "aws:s3",
-                          "awsRegion": "us-west-2",
-                          "eventTime": "2019-06-17T18:54:06.686Z",
-                          "eventName": "ObjectRestore:Post",
-                          "userIdentity": {"principalId": "AWS:AROAJXMHUPO:request_files"},
-                          "requestParameters": {"sourceIPAddress": "34.217.126.178"},
-                          "responseElements": {"x-amz-request-id": "0364DD02830B32C0",
-                                               "x-amz-id-2": "4gzKLAPacP+xkLqdD5F2RbnAnU="},
-                          "s3": {"s3SchemaVersion": "1.0",
-                                 "configurationId": "dr_restore_complete",
-                                 "bucket": {"name": self.exp_src_bucket,
-                                            "ownerIdentity": {"principalId": "A1BC3XDGCJ9"},
-                                            "arn": "arn:aws:s3:::my-dr-fake-glacier-bucket"},
-                                 "object": {"key": self.exp_file_key3,
-                                            "size": 645,
-                                            "sequencer": "005CED5BF54A126FB"}}}
-        self.exp_context = None
+
+        with open('test/testevents/exp_event_1.json') as f:
+            self.exp_event = json.load(f)
 
     def tearDown(self):
         boto3.client = self.mock_boto3_client
@@ -104,34 +70,40 @@ class TestCopyFiles(unittest.TestCase):
         """
         Test copy lambda with two files, expecting successful result.
         """
+        exp_file_key = 'dr-glacier/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf'
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.copy_object = Mock(side_effect=[None, None])
-        self.exp_event["Records"].append(self.exp_rec_2)
+        with open('test/testevents/exp_event_2.json') as f:
+            exp_rec_2 = json.load(f)
+        self.exp_event["Records"].append(exp_rec_2)
         result = dr_copy_files_to_archive.handler(self.exp_event, None)
+
         boto3.client.assert_called_with('s3')
         exp_result = json.dumps([{"success": True, "source_bucket": self.exp_src_bucket,
                                   "source_key": self.exp_file_key1,
                                   "target_bucket": self.exp_target_bucket,
                                   "err_msg": ""},
                                  {"success": True, "source_bucket": self.exp_src_bucket,
-                                  "source_key": self.exp_file_key3,
+                                  "source_key": exp_file_key,
                                   "target_bucket": "unittest_hdf_bucket",
                                   "err_msg": ""}])
         self.assertEqual(exp_result, result)
+
         s3_cli.copy_object.assert_any_call(Bucket=self.exp_target_bucket,
                                            CopySource={'Bucket': self.exp_src_bucket,
                                                        'Key': self.exp_file_key1},
                                            Key=self.exp_file_key1)
         s3_cli.copy_object.assert_any_call(Bucket='unittest_hdf_bucket',
                                            CopySource={'Bucket': self.exp_src_bucket,
-                                                       'Key': self.exp_file_key3},
-                                           Key=self.exp_file_key3)
+                                                       'Key': exp_file_key},
+                                           Key=exp_file_key)
 
     def test_handler_two_records_one_fail_one_success(self):
         """
         Test copy lambda with two files, one successful copy, one failed copy.
         """
+        exp_file_key = 'dr-glacier/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf'
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.copy_object = Mock(side_effect=[ClientError({'Error': {'Code': 'AccessDenied'}},
@@ -141,14 +113,16 @@ class TestCopyFiles(unittest.TestCase):
                                                ClientError({'Error': {'Code': 'AccessDenied'}},
                                                            'copy_object'),
                                                None])
-        self.exp_event["Records"].append(self.exp_rec_2)
+        with open('test/testevents/exp_event_2.json') as f:
+            exp_rec_2 = json.load(f)
+        self.exp_event["Records"].append(exp_rec_2)
         exp_result = [{"success": False, "source_bucket": self.exp_src_bucket,
                        "source_key": self.exp_file_key1,
                        "target_bucket": self.exp_target_bucket,
                        "err_msg": "An error occurred (AccessDenied) when calling the copy_object "
                                   "operation: Unknown"},
                       {"success": True, "source_bucket": self.exp_src_bucket,
-                       "source_key": self.exp_file_key3,
+                       "source_key": exp_file_key,
                        "target_bucket": "unittest_hdf_bucket",
                        "err_msg": ""}]
         exp_error = f'File copy failed. {exp_result}'
@@ -165,8 +139,8 @@ class TestCopyFiles(unittest.TestCase):
                                            Key=self.exp_file_key1)
         s3_cli.copy_object.assert_any_call(Bucket='unittest_hdf_bucket',
                                            CopySource={'Bucket': self.exp_src_bucket,
-                                                       'Key': self.exp_file_key3},
-                                           Key=self.exp_file_key3)
+                                                       'Key': exp_file_key},
+                                           Key=exp_file_key)
 
     def test_handler_one_file_fail_3x(self):
         """
@@ -246,33 +220,35 @@ class TestCopyFiles(unittest.TestCase):
         """
         Test copy lambda with missing file extension in BUCKET_MAP.
         """
+        exp_file_key = 'dr-glacier/MOD09GQ.A0219114.N5aUCG.006.0656338553321.xml'
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.copy_object = Mock(side_effect=[None])
-        self.exp_event["Records"][0]["s3"]["object"]["key"] = self.exp_file_key2
+        self.exp_event["Records"][0]["s3"]["object"]["key"] = exp_file_key
         result = dr_copy_files_to_archive.handler(self.exp_event, None)
         boto3.client.assert_called_with('s3')
         exp_result = json.dumps([{"success": True, "source_bucket": self.exp_src_bucket,
-                                  "source_key": self.exp_file_key2,
+                                  "source_key": exp_file_key,
                                   "target_bucket": self.exp_other_bucket,
                                   "err_msg": ""}])
         self.assertEqual(exp_result, result)
         s3_cli.copy_object.assert_called_with(Bucket=self.exp_other_bucket,
                                               CopySource={'Bucket': self.exp_src_bucket,
-                                                          'Key': self.exp_file_key2},
-                                              Key=self.exp_file_key2)
+                                                          'Key': exp_file_key},
+                                              Key=exp_file_key)
 
     def test_handler_no_other_in_bucket_map(self):
         """
         Test copy lambda with missing "other" key in BUCKET_MAP.
         """
+        exp_file_key = 'dr-glacier/MOD09GQ.A0219114.N5aUCG.006.0656338553321.xml'
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.copy_object = Mock(side_effect=[None])
         bucket_map = {".hdf": "unittest_hdf_bucket", ".txt": "unittest_txt_bucket"}
         os.environ['BUCKET_MAP'] = json.dumps(bucket_map)
 
-        self.exp_event["Records"][0]["s3"]["object"]["key"] = self.exp_file_key2
+        self.exp_event["Records"][0]["s3"]["object"]["key"] = exp_file_key
         exp_err = f'BUCKET_MAP: {bucket_map} does not contain values for ".xml" or "other"'
         try:
             dr_copy_files_to_archive.handler(self.exp_event, None)

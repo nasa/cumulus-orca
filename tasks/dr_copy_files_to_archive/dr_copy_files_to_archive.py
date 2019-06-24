@@ -51,7 +51,7 @@ def task(records, bucket_map, retries, retry_sleep_secs):
                           'err_msg': ''}]
 
         Raises:
-            CopyRequestError: Thrown if there are errors with the input records.
+            CopyRequestError: Thrown if there are errors with the input records or the copy failed.
     """
 
     files = []
