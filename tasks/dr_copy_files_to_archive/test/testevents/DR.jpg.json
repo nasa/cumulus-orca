@@ -27,7 +27,7 @@
           "arn": "arn:aws:s3:::podaac-sndbx-cumulus-glacier"
         },
         "object": {
-          "key": "Test.pdf",
+          "key": "DR.jpg",
           "size": 645,
           "sequencer": "005CED95BF54A126FB"
         }
