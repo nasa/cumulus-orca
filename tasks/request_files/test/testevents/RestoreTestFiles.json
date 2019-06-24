@@ -1,0 +1,16 @@
+{
+  "glacierBucket": "podaac-sndbx-cumulus-glacier",
+  "granules": [
+    {
+      "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
+      "filepaths": [
+        "L0A_RAD_RAW_product_0001-of-0020.h5",
+		"L0A_RAD_RAW_product_0001-of-0020.iso.xml",
+		"L0A_RAD_RAW_product_0002-of-0020.h5",
+		"L0A_RAD_RAW_product_0002-of-0020.iso.xml",
+		"DR.jpg",
+		"Test.pdf"
+      ]
+    }
+  ]
+}

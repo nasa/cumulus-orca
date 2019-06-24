@@ -6,13 +6,16 @@
   * [Linting](#linting)
 - [Integration Testing](#integration-testing)
 - [Deployment](#deployment)
-- [pydoc request_files](#pydoc-request-files)
+- [pydoc request_files](#pydoc)
 
+<a name="setup"></a>
 # Setup
     See the README in the tasks folder for general development setup instructions
 
+<a name="development"></a>
 # Development
 
+<a name="unit-testing-and-coverage"></a>
 ## Unit Testing and Coverage
 ```
 Run the unit tests with code coverage:
@@ -37,6 +40,7 @@ request_files.py      65      0   100%
 Ran 8 tests in 1.641s
 
 ```
+<a name="linting"></a>
 ## Linting
 ```
 Run pylint against the code:
@@ -47,6 +51,7 @@ Run pylint against the code:
 --------------------------------------------------------------------
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 ```
+<a name="integration-testing"></a>
 ## Integration Testing
 ```
 Create an S3 bucket, for example, my-dr-fake-glacier-bucket
@@ -71,11 +76,13 @@ check status of restore request
 (podr) λ aws s3api head-object --bucket my-dr-fake-glacier-bucket --key dr-glacier/MOD09GQ.A0219115.N5aUCG.006.0656338553321.hdf.txt
 
 ```
+<a name="deployment"></a>
 ## Deployment
 ```
     cd tasks\request_files
-    zip request_files.zip *.py
+    zip task.zip *.py
 ```
+<a name="pydoc"></a>
 ## pydoc request_files
 ```
 NAME
