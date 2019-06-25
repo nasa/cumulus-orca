@@ -4,8 +4,6 @@ Name: extract_filepaths_for_granule.py
 Description:  Lambda handler that extracts the filepath's for a granule from an input dict.
 """
 
-import json
-
 class ExtractFilePathsError(Exception):
     """Exception to be raised if any errors occur"""
 
@@ -93,4 +91,4 @@ def handler(event, context):            #pylint: disable-msg=unused-argument
             ExtractFilePathsError: An error occurred parsing the input.
     """
     result = task(event)
-    return json.dumps(result)
+    return result

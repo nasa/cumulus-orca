@@ -4,7 +4,6 @@ Name: request_files.py
 Description:  Lambda function that makes a restore request from glacier for each input file.
 """
 
-import json
 import os
 import time
 import logging
@@ -190,4 +189,5 @@ def handler(event, context):      #pylint: disable-msg=unused-argument
             logging.error(
                 f'One or more files failed to be requested from {event["glacierBucket"]}. {result}')
             raise RestoreRequestError(f'One or more files failed to be requested. {result}')
-    return json.dumps(result)
+    #return json.dumps(result)
+    return result

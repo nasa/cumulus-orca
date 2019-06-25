@@ -30,8 +30,12 @@ class TestCopyFiles(unittest.TestCase):
 
         self.exp_file_key1 = 'dr-glacier/MOD09GQ.A0219114.N5aUCG.006.0656338553321.txt'
 
-        with open('test/testevents/exp_event_1.json') as f:
-            self.exp_event = json.load(f)
+        try:
+            with open('test/testevents/exp_event_1.json') as f:
+                self.exp_event = json.load(f)
+        except EnvironmentError: # parent of IOError, OSError *and* WindowsError where available
+            with open('testevents/exp_event_1.json') as f:
+                self.exp_event = json.load(f)
 
     def tearDown(self):
         boto3.client = self.mock_boto3_client
@@ -55,11 +59,11 @@ class TestCopyFiles(unittest.TestCase):
         os.environ['COPY_RETRIES'] = '2'
         os.environ['COPY_RETRY_SLEEP_SECS'] = '1'
         boto3.client.assert_called_with('s3')
-        exp_result = json.dumps([{"success": True,
-                                  "source_bucket": self.exp_src_bucket,
-                                  "source_key": self.exp_file_key1,
-                                  "target_bucket": self.exp_target_bucket,
-                                  "err_msg": ""}])
+        exp_result = [{"success": True,
+                       "source_bucket": self.exp_src_bucket,
+                       "source_key": self.exp_file_key1,
+                       "target_bucket": self.exp_target_bucket,
+                       "err_msg": ""}]
         self.assertEqual(exp_result, result)
         s3_cli.copy_object.assert_called_with(Bucket=self.exp_target_bucket,
                                               CopySource={'Bucket': self.exp_src_bucket,
@@ -74,20 +78,24 @@ class TestCopyFiles(unittest.TestCase):
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.copy_object = Mock(side_effect=[None, None])
-        with open('test/testevents/exp_event_2.json') as f:
-            exp_rec_2 = json.load(f)
+        try:
+            with open('test/testevents/exp_event_2.json') as f:
+                exp_rec_2 = json.load(f)
+        except EnvironmentError: # parent of IOError, OSError *and* WindowsError where available
+            with open('testevents/exp_event_2.json') as f:
+                exp_rec_2 = json.load(f)
         self.exp_event["Records"].append(exp_rec_2)
         result = dr_copy_files_to_archive.handler(self.exp_event, None)
 
         boto3.client.assert_called_with('s3')
-        exp_result = json.dumps([{"success": True, "source_bucket": self.exp_src_bucket,
-                                  "source_key": self.exp_file_key1,
-                                  "target_bucket": self.exp_target_bucket,
-                                  "err_msg": ""},
-                                 {"success": True, "source_bucket": self.exp_src_bucket,
-                                  "source_key": exp_file_key,
-                                  "target_bucket": "unittest_hdf_bucket",
-                                  "err_msg": ""}])
+        exp_result = [{"success": True, "source_bucket": self.exp_src_bucket,
+                       "source_key": self.exp_file_key1,
+                       "target_bucket": self.exp_target_bucket,
+                       "err_msg": ""},
+                      {"success": True, "source_bucket": self.exp_src_bucket,
+                       "source_key": exp_file_key,
+                       "target_bucket": "unittest_hdf_bucket",
+                       "err_msg": ""}]
         self.assertEqual(exp_result, result)
 
         s3_cli.copy_object.assert_any_call(Bucket=self.exp_target_bucket,
@@ -113,8 +121,12 @@ class TestCopyFiles(unittest.TestCase):
                                                ClientError({'Error': {'Code': 'AccessDenied'}},
                                                            'copy_object'),
                                                None])
-        with open('test/testevents/exp_event_2.json') as f:
-            exp_rec_2 = json.load(f)
+        try:
+            with open('test/testevents/exp_event_2.json') as f:
+                exp_rec_2 = json.load(f)
+        except EnvironmentError: # parent of IOError, OSError *and* WindowsError where available
+            with open('testevents/exp_event_2.json') as f:
+                exp_rec_2 = json.load(f)
         self.exp_event["Records"].append(exp_rec_2)
         exp_result = [{"success": False, "source_bucket": self.exp_src_bucket,
                        "source_key": self.exp_file_key1,
@@ -189,10 +201,10 @@ class TestCopyFiles(unittest.TestCase):
         os.environ['COPY_RETRIES'] = '2'
         os.environ['COPY_RETRY_SLEEP_SECS'] = '1'
         boto3.client.assert_called_with('s3')
-        exp_result = json.dumps([{"success": True, "source_bucket": self.exp_src_bucket,
-                                  "source_key": self.exp_file_key1,
-                                  "target_bucket": self.exp_target_bucket,
-                                  "err_msg": ""}])
+        exp_result = [{"success": True, "source_bucket": self.exp_src_bucket,
+                       "source_key": self.exp_file_key1,
+                       "target_bucket": self.exp_target_bucket,
+                       "err_msg": ""}]
         self.assertEqual(exp_result, result)
         s3_cli.copy_object.assert_called_with(Bucket=self.exp_target_bucket,
                                               CopySource={'Bucket': self.exp_src_bucket,
@@ -227,10 +239,10 @@ class TestCopyFiles(unittest.TestCase):
         self.exp_event["Records"][0]["s3"]["object"]["key"] = exp_file_key
         result = dr_copy_files_to_archive.handler(self.exp_event, None)
         boto3.client.assert_called_with('s3')
-        exp_result = json.dumps([{"success": True, "source_bucket": self.exp_src_bucket,
-                                  "source_key": exp_file_key,
-                                  "target_bucket": self.exp_other_bucket,
-                                  "err_msg": ""}])
+        exp_result = [{"success": True, "source_bucket": self.exp_src_bucket,
+                       "source_key": exp_file_key,
+                       "target_bucket": self.exp_other_bucket,
+                       "err_msg": ""}]
         self.assertEqual(exp_result, result)
         s3_cli.copy_object.assert_called_with(Bucket=self.exp_other_bucket,
                                               CopySource={'Bucket': self.exp_src_bucket,

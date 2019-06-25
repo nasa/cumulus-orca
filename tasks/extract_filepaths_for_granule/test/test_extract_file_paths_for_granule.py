@@ -12,8 +12,12 @@ class TestExtractFilePaths(unittest.TestCase):
     TestExtractFilePaths.
     """
     def setUp(self):
-        with open('test/testevents/exp_event.json') as f:
-            self.exp_event = json.load(f)
+        try:
+            with open('test/testevents/exp_event.json') as f:
+                self.exp_event = json.load(f)
+        except EnvironmentError: # parent of IOError, OSError *and* WindowsError where available
+            with open('testevents/exp_event.json') as f:
+                self.exp_event = json.load(f)
         self.exp_context = None
 
     def tearDown(self):
@@ -41,9 +45,7 @@ class TestExtractFilePaths(unittest.TestCase):
         exp_grans.append(exp_gran)
 
         exp_result['granules'] = exp_grans
-        expected_result = json.dumps(exp_result)
-        print("expected_result: ", expected_result)
-        self.assertEqual(expected_result, result)
+        self.assertEqual(exp_result, result)
 
     def test_handler_no_glacier_bucket(self):
         """
@@ -129,10 +131,9 @@ class TestExtractFilePaths(unittest.TestCase):
                         "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
                     "bucket": "cumulus-test-sandbox-protected-2"
                 }]}]
-        exp_result = '{"glacierBucket": "some_bucket", "granules": [{' \
-                    '"granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321", ' \
-                    '"filepaths": [' \
-                    '"MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml"]}]}'
+        exp_result = {'glacierBucket': 'some_bucket', 'granules': [
+            {'filepaths': ['MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml'],
+             'granuleId': 'MOD09GQ.A0219114.N5aUCG.006.0656338553321'}]}
         result = extract_filepaths_for_granule.handler(self.exp_event, self.exp_context)
         self.assertEqual(exp_result, result)
 
@@ -161,11 +162,12 @@ class TestExtractFilePaths(unittest.TestCase):
                  ]
              }
              ]
-        exp_result = '{"glacierBucket": "some_bucket", ' \
-                    '"granules": [{"granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321", ' \
-                    '"filepaths": ["MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml"]}, ' \
-                    '{"granuleId": "MOD09GQ.A0219115.N5aUCG.006.0656338553321", ' \
-                    '"filepaths": ["MOD/MOD09GQ.A0219115.N5aUCG.006.0656338553321.cmr.xml"]}]}'
+        exp_result = {'glacierBucket': 'some_bucket',
+                      'granules': [
+                          {'filepaths': ['MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml'],
+                           'granuleId': 'MOD09GQ.A0219114.N5aUCG.006.0656338553321'},
+                          {'filepaths': ['MOD/MOD09GQ.A0219115.N5aUCG.006.0656338553321.cmr.xml'],
+                           'granuleId': 'MOD09GQ.A0219115.N5aUCG.006.0656338553321'}]}
         result = extract_filepaths_for_granule.handler(self.exp_event, self.exp_context)
         self.assertEqual(exp_result, result)
 

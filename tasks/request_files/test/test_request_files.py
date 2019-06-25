@@ -6,7 +6,6 @@ Description:  Unit tests for request_files.py.
 import unittest
 from unittest.mock import Mock
 import os
-import json
 import boto3
 from botocore.exceptions import ClientError
 import request_files
@@ -49,9 +48,7 @@ class TestRequestFiles(unittest.TestCase):
                                                   None,
                                                   None
                                                   ])
-        print("exp_event1: ", exp_event)
         result = request_files.handler(exp_event, exp_context)
-        print("result1: ", result)
         boto3.client.assert_called_with('s3')
         s3_cli.restore_object.assert_any_call(
             Bucket='my-dr-fake-glacier-bucket',
@@ -103,9 +100,7 @@ class TestRequestFiles(unittest.TestCase):
         exp_files.append(exp_file)
 
         exp_gran['files'] = exp_files
-
-        exp_result = json.dumps(exp_gran)
-        self.assertEqual(exp_result, result)
+        self.assertEqual(exp_gran, result)
 
     def test_handler_no_bucket(self):
         """
@@ -118,7 +113,6 @@ class TestRequestFiles(unittest.TestCase):
 
         exp_context = None
 
-        print("exp_event1: ", exp_event)
         exp_err = "request: {'granules': [{'granuleId': 'xyz', " \
                  "'filepaths': ['file1.hdf']}]} does not contain a value for glacierBucket"
         try:
@@ -142,7 +136,6 @@ class TestRequestFiles(unittest.TestCase):
 
         exp_context = None
 
-        print("exp_event1: ", exp_event)
         exp_err = "request_files can only accept 1 granule in the list. This input contains 2"
         try:
             request_files.handler(exp_event, exp_context)
@@ -179,8 +172,7 @@ class TestRequestFiles(unittest.TestCase):
 
         exp_gran['files'] = exp_files
         result = request_files.handler(exp_event, exp_context)
-        exp_result = json.dumps(exp_gran)
-        self.assertEqual(exp_result, result)
+        self.assertEqual(exp_gran, result)
         os.environ['RESTORE_REQUEST_RETRIES'] = '3'
 
         boto3.client.assert_called_with('s3')
@@ -217,8 +209,7 @@ class TestRequestFiles(unittest.TestCase):
 
         exp_gran['files'] = exp_files
         result = request_files.handler(exp_event, exp_context)
-        exp_result = json.dumps(exp_gran)
-        self.assertEqual(exp_result, result)
+        self.assertEqual(exp_gran, result)
         os.environ['RESTORE_EXPIRE_DAYS'] = '3'
 
         boto3.client.assert_called_with('s3')
@@ -259,7 +250,6 @@ class TestRequestFiles(unittest.TestCase):
 
         exp_gran['files'] = exp_files
         exp_err = f"One or more files failed to be requested. {exp_gran}"
-        print("exp_event2: ", exp_event)
         try:
             request_files.handler(exp_event, exp_context)
             self.fail("RestoreRequestError expected")
@@ -328,7 +318,6 @@ class TestRequestFiles(unittest.TestCase):
 
         exp_gran['files'] = exp_files
         exp_err = f"One or more files failed to be requested. {exp_gran}"
-        print("exp_event3: ", exp_event)
         try:
             request_files.handler(exp_event, exp_context)
             self.fail("RestoreRequestError expected")
@@ -384,10 +373,8 @@ class TestRequestFiles(unittest.TestCase):
         exp_files.append(exp_file)
 
         exp_gran['files'] = exp_files
-        print("exp_event4: ", exp_event)
         result = request_files.handler(exp_event, exp_context)
-        exp_result = json.dumps(exp_gran)
-        self.assertEqual(exp_result, result)
+        self.assertEqual(exp_gran, result)
 
         boto3.client.assert_called_with('s3')
         s3_cli.restore_object.assert_any_call(
