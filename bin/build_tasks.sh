@@ -7,7 +7,10 @@ do
   if [ ${TASK} != 'tasks/testfiles/' ]; then
     echo "Building `pwd`/${TASK}"
     cd "`pwd`/${TASK}"
-    zip task.zip *.py
+    rm -rf build
+    mkdir build
+    pip install -r requirements.txt -t build
+    cd build && zip -r ../task.zip . && cd ..
     cd ../../
   fi 
 done
