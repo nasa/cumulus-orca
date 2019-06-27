@@ -1,0 +1,74 @@
+{
+  "Comment": "Recover files from a granule",
+  "StartAt": "Report",
+  "States": {
+    "Report": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-west-2:065089468788:function:lab-cumulus-SfSnsReport:SfSnsReport-282da1a3b4f8493441acc178396b846857bc1068",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "ExtractFilepaths"
+    },
+    "ExtractFilepaths": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-west-2:065089468788:function:extract_filepaths_for_granule:$LATEST",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "RequestFiles"
+    },
+    "RequestFiles": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-west-2:065089468788:function:request_files:$LATEST",
+      "Next": "StopStatus"
+    },
+    "StopStatus": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-west-2:065089468788:function:lab-cumulus-SfSnsReport:SfSnsReport-282da1a3b4f8493441acc178396b846857bc1068",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "WorkflowFailed"
+        }
+      ],
+      "End": true
+    },
+    "WorkflowFailed": {
+      "Type": "Fail",
+      "Cause": "Workflow Failed"
+    }
+  }
+}
