@@ -6,16 +6,20 @@ Description:  Lambda function that makes a restore request from glacier for each
 
 import os
 import time
-import logging
 import boto3
 from botocore.exceptions import ClientError
+
+from run_cumulus_task import run_cumulus_task
+from cumulus_logger import CumulusLogger
+
+logger = CumulusLogger()
 
 class RestoreRequestError(Exception):
     """
     Exception to be raised if the restore request fails submission for any of the files.
     """
 
-def task(event, exp_days, retries, retry_sleep_secs):
+def task(event, context):
     """
     Task called by the handler to perform the work.
 
@@ -50,12 +54,27 @@ def task(event, exp_days, retries, retry_sleep_secs):
             RestoreRequestError: Thrown if there are errors with the input request.
     """
     try:
-        glacier_bucket = event["glacierBucket"]
+        exp_days = int(os.environ['RESTORE_EXPIRE_DAYS'])
     except KeyError:
-        raise RestoreRequestError(f'request: {event} does not contain a value for glacierBucket')
+        exp_days = 5
+
+    try:
+        retries = int(os.environ['RESTORE_REQUEST_RETRIES'])
+    except KeyError:
+        retries = 3
+
+    try:
+        retry_sleep_secs = float(os.environ['RESTORE_RETRY_SLEEP_SECS'])
+    except KeyError:
+        retry_sleep_secs = 0
+
+    try:
+        glacier_bucket = event['config']['glacierBucket']
+    except KeyError:
+        raise RestoreRequestError(f'request: {event} does not contain a config value for glacierBucket')
 
     gran = {}
-    granules = event['granules']
+    granules = event['input']['granules']
     if len(granules) > 1:
         raise RestoreRequestError(f'request_files can only accept 1 granule in the list. '
                                   f'This input contains {len(granules)}')
@@ -81,14 +100,19 @@ def task(event, exp_days, retries, retry_sleep_secs):
                 else:
                     afile['success'] = True
                     afile['err_msg'] = ''
-                    logging.info(
-                        f'restore {afile["filepath"]} from {glacier_bucket} '
-                        f'attempt {attempt} successful.')
+                    logger.info("restore {} from {} attempt {} successful.",
+                                afile["filepath"], glacier_bucket, attempt)
 
         attempt = attempt + 1
         if attempt <= retries:
             time.sleep(retry_sleep_secs)
 
+    for afile in gran['files']:
+        #if any file failed, the whole granule will fail
+        if not afile['success']:
+            logger.error("One or more files failed to be requested from {}. {}",
+                         event["config"]["glacierBucket"], gran)
+            raise RestoreRequestError(f'One or more files failed to be requested. {gran}')
     return gran
 
 def restore_object(s3_cli, bucket_name, object_name, days, retrieval_type='Standard'):
@@ -115,8 +139,8 @@ def restore_object(s3_cli, bucket_name, object_name, days, retrieval_type='Stand
     except ClientError as err:
         # NoSuchBucket, NoSuchKey, or InvalidObjectState error == the object's
         # storage class was not GLACIER
-        logging.error(err)
-        return str(err)
+        logger.error("{}. bucket: {} file: {}", err, bucket_name, object_name)
+        return err
     return None
 
 def handler(event, context):      #pylint: disable-msg=unused-argument
@@ -164,30 +188,5 @@ def handler(event, context):      #pylint: disable-msg=unused-argument
             message, with 'success' = False for the files for which the restore request failed to
             submit.
     """
-
-    logging.basicConfig(level=logging.DEBUG,
-                        format='%(levelname)s: %(asctime)s: %(message)s')
-    try:
-        exp_days = int(os.environ['RESTORE_EXPIRE_DAYS'])
-    except KeyError:
-        exp_days = 5
-
-    try:
-        retries = int(os.environ['RESTORE_REQUEST_RETRIES'])
-    except KeyError:
-        retries = 3
-
-    try:
-        retry_sleep_secs = float(os.environ['RESTORE_RETRY_SLEEP_SECS'])
-    except KeyError:
-        retry_sleep_secs = 0
-
-    result = task(event, exp_days, retries, retry_sleep_secs)
-    for afile in result['files']:
-        #if any file failed, the whole granule will fail
-        if not afile['success']:
-            logging.error(
-                f'One or more files failed to be requested from {event["glacierBucket"]}. {result}')
-            raise RestoreRequestError(f'One or more files failed to be requested. {result}')
-    #return json.dumps(result)
-    return result
+    logger.setMetadata(event, context)
+    return run_cumulus_task(task, event, context)

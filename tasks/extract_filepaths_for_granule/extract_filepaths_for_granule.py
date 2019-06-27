@@ -4,10 +4,15 @@ Name: extract_filepaths_for_granule.py
 Description:  Lambda handler that extracts the filepath's for a granule from an input dict.
 """
 
+from run_cumulus_task import run_cumulus_task
+from cumulus_logger import CumulusLogger
+
+logger = CumulusLogger()
+
 class ExtractFilePathsError(Exception):
     """Exception to be raised if any errors occur"""
 
-def task(event):
+def task(event, context):
     """
     Task called by the handler to perform the work.
 
@@ -26,9 +31,9 @@ def task(event):
     result = {}
     try:
         level = "event."
-        result['glacierBucket'] = event['glacierBucket']
+        result['glacierBucket'] = event['config']['glacierBucket']
         grans = []
-        for ev_granule in event['granules']:
+        for ev_granule in event['input']['granules']:
             gran = {}
             files = []
             level = "event.granules[{"
@@ -90,5 +95,6 @@ def handler(event, context):            #pylint: disable-msg=unused-argument
         Raises:
             ExtractFilePathsError: An error occurred parsing the input.
     """
-    result = task(event)
+    logger.setMetadata(event, context)
+    result = run_cumulus_task(task, event, context)
     return result
