@@ -19,6 +19,14 @@ class RestoreRequestError(Exception):
     Exception to be raised if the restore request fails submission for any of the files.
     """
 
+def object_exists(glacier_bucket, file_key, s3client):
+    try:
+        # head_object will fail with a thrown 404 if the object doesn't exist
+        s3client.head_object(Bucket=glacier_bucket, Key=file_key)
+        return True
+    except:
+        return False
+
 def task(event, context):
     """
     Task called by the handler to perform the work.
@@ -79,18 +87,21 @@ def task(event, context):
     if len(granules) > 1:
         raise RestoreRequestError(f'request_files can only accept 1 granule in the list. '
                                   f'This input contains {len(granules)}')
+    s3 = boto3.client('s3')  # pylint: disable-msg=invalid-name
+
     for granule in granules:
         gran['granuleId'] = granule['granuleId']
         files = []
         for file_key in granule['filepaths']:
-            afile = {}
-            afile['filepath'] = file_key
-            afile['success'] = False
-            afile['err_msg'] = ''
-            files.append(afile)
-        gran['files'] = files
+            if object_exists(glacier_bucket, file_key, s3):
+                logger.info("Added {} to the list of files we'll attempt to recover.", file_key)
+                afile = {}
+                afile['filepath'] = file_key
+                afile['success'] = False
+                afile['err_msg'] = ''
+                files.append(afile)
+                gran['files'] = files
 
-    s3 = boto3.client('s3')  # pylint: disable-msg=invalid-name
     attempt = 1
     while attempt <= retries:
         for afile in gran['files']:
