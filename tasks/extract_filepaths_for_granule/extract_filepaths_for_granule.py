@@ -31,7 +31,8 @@ def task(event, context):
     result = {}
     try:
         level = "event."
-        result['glacierBucket'] = event['config']['glacierBucket']
+        # result['glacierBucket'] = event['config']['glacierBucket']
+        result['glacierBucket'] = event['config']['glacier-bucket']
         grans = []
         for ev_granule in event['input']['granules']:
             gran = {}
@@ -40,7 +41,8 @@ def task(event, context):
             gran['granuleId'] = ev_granule['granuleId']
             for afile in ev_granule['files']:
                 level = "event.granules[{files[{"
-                files.append(afile['filepath'])
+                # files.append(afile['filepath'])
+                files.append(afile['key'])
             gran["filepaths"] = files
             grans.append(gran)
         result['granules'] = grans

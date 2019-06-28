@@ -69,7 +69,8 @@ def task(event, context):
         retry_sleep_secs = 0
 
     try:
-        glacier_bucket = event['config']['glacierBucket']
+        # glacier_bucket = event['config']['glacierBucket']
+        glacier_bucket = event['config']['glacier-bucket']
     except KeyError:
         raise RestoreRequestError(f'request: {event} does not contain a config value for glacierBucket')
 
