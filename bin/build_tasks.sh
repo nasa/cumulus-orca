@@ -10,7 +10,9 @@ do
     rm -rf build
     mkdir build
     pip install -r requirements.txt -t build
-    cd build && zip -r ../task.zip . && cd ..
-    cd ../../
+    cp *.py build/
+    cd build
+    zip -r ../task.zip .
+    cd ../../../
   fi 
 done

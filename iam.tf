@@ -29,6 +29,18 @@ data "aws_iam_policy_document" "restore_object_role_policy_document" {
   }
   statement {
     actions = [
+      "states:SendTaskFailure",
+      "states:SendTaskSuccess",
+      "states:GetActivityTask",
+      "states:GetExecutionHistory",
+      "states:DescribeActivity",
+      "states:DescribeExecution",
+      "states:ListStateMachines"
+    ]
+    resources = ["arn:aws:states:*:*:*"]
+  }
+  statement {
+    actions = [
       "logs:CreateLogGroup",
       "logs:CreateLogStream",
       "logs:DescribeLogStreams",
