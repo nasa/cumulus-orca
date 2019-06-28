@@ -32,7 +32,7 @@ def task(event, context):
     try:
         level = "event."
         # result['glacierBucket'] = event['config']['glacierBucket']
-        result['glacierBucket'] = event['config']['glacier-bucket']
+        result['glacier-bucket'] = event['config']['glacier-bucket']
         grans = []
         for ev_granule in event['input']['granules']:
             gran = {}

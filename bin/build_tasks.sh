@@ -8,8 +8,12 @@ do
     echo "Building `pwd`/${TASK}"
     cd "`pwd`/${TASK}"
     rm -rf build
+    rm -rf venv
     mkdir build
-    pip install -r requirements.txt -t build
+    python3 -m venv venv
+    source venv/bin/activate
+    pip3 install -t build -r requirements.txt
+    deactivate
     cp *.py build/
     cd build
     zip -r ../task.zip .

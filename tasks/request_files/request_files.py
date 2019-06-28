@@ -112,7 +112,7 @@ def task(event, context):
         #if any file failed, the whole granule will fail
         if not afile['success']:
             logger.error("One or more files failed to be requested from {}. {}",
-                         event["config"]["glacierBucket"], gran)
+                         event["config"]["glacier-bucket"], gran)
             raise RestoreRequestError(f'One or more files failed to be requested. {gran}')
     return gran
 
