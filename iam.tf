@@ -41,6 +41,13 @@ data "aws_iam_policy_document" "restore_object_role_policy_document" {
   }
   statement {
     actions = [
+      "sns:publish",
+      "sns:List*"
+    ]
+    resources = ["*"]
+  }
+  statement {
+    actions = [
       "logs:CreateLogGroup",
       "logs:CreateLogStream",
       "logs:DescribeLogStreams",

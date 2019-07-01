@@ -80,7 +80,7 @@ def task(event, context):
         # glacier_bucket = event['config']['glacierBucket']
         glacier_bucket = event['config']['glacier-bucket']
     except KeyError:
-        raise RestoreRequestError(f'request: {event} does not contain a config value for glacierBucket')
+        raise RestoreRequestError(f'request: {event} does not contain a config value for glacier-bucket')
 
     gran = {}
     granules = event['input']['granules']
