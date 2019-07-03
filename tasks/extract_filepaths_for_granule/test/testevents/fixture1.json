@@ -1,0 +1,139 @@
+{
+  "cumulus_meta": {
+    "task": "extract_filepaths_for_granule",
+    "message_source": "local",
+    "workflow_start_time": "2019-06-27T14:15:47.752014",
+    "execution_name": "DrRecovery59",
+    "system_bucket": "lab-cumulus-internal"
+  },
+  "meta": {
+    "templates": {
+      "HelloWorldWorkflow": "s3://lab-cumulus-internal/lab-cumulus/workflows/HelloWorldWorkflow.json",
+      "DrRecoveryWorkflow": "s3://lab-cumulus-internal/lab-cumulus/workflows/DrRecoveryWorkflow.json"
+    },
+  "queues": {
+      "dbIndexerDeadLetterQueue": "https://sqs.us-west-2.amazonaws.com/065089468788/lab-cumulus-dbIndexerDeadLetterQueue",
+      "jobsDeadLetterQueue": "https://sqs.us-west-2.amazonaws.com/065089468788/lab-cumulus-jobsDeadLetterQueue",
+      "log2elasticsearchDeadLetterQueue": "https://sqs.us-west-2.amazonaws.com/065089468788/lab-cumulus-log2elasticsearchDeadLetterQueue",
+      "triggerLambdaFailure": "https://sqs.us-west-2.amazonaws.com/065089468788/lab-cumulus-triggerLambdaFailure",
+      "EmsReportDeadLetterQueue": "https://sqs.us-west-2.amazonaws.com/065089468788/lab-cumulus-EmsReportDeadLetterQueue",
+      "startSF": "https://sqs.us-west-2.amazonaws.com/065089468788/lab-cumulus-startSF",
+      "cleanExecutionsDeadLetterQueue": "https://sqs.us-west-2.amazonaws.com/065089468788/lab-cumulus-cleanExecutionsDeadLetterQueue",
+      "ScheduleSFDeadLetterQueue": "https://sqs.us-west-2.amazonaws.com/065089468788/lab-cumulus-ScheduleSFDeadLetterQueue",
+      "sns2elasticsearchDeadLetterQueue": "https://sqs.us-west-2.amazonaws.com/065089468788/lab-cumulus-sns2elasticsearchDeadLetterQueue",
+      "kinesisFailure": "https://sqs.us-west-2.amazonaws.com/065089468788/lab-cumulus-kinesisFailure"
+    },
+    "workflow_name": "DrRecoveryWorkflow",
+    "collection": {
+      "meta": {
+        "response-endpoint": "arn:aws:sns:us-west-2:065089468788:providerResponseSNS",
+        "granuleRecoveryWorkflow": "DrRecoveryWorkflow",
+        "glacier-bucket": "podaac-sndbx-cumulus-glacier"
+      }
+    },
+    "stack": "lab-cumulus",
+    "provider": {},
+    "buckets": {
+      "protected": {
+        "type": "protected",
+        "name": "lab-cumulus-protected"
+      },
+      "internal": {
+        "type": "internal",
+        "name": "lab-cumulus-internal"
+      },
+      "private": {
+        "type": "private",
+        "name": "lab-cumulus-private"
+      },
+      "public": {
+        "type": "public",
+        "name": "lab-cumulus-public"
+      }
+    },
+    "distribution_endpoint": "https://lwz78ijzai.execute-api.us-west-2.amazonaws.com/dev/",
+    "cmr": {
+      "username": "CmrUser",
+      "password": "Eb3Is48atgZkworRCkmU8O2gNYd+asHiP/v6zDUbNOOq5FsVo7T4ppLU+QWu+/4dI8Ny5etCc+5TdxPOu3Xh0eMUDW02BXzeyYIP6y5UIRD/gPOqGwcoEjFP99FTH/6eIR1eOJTB9jQl2v/cubrnQbwljR5WzgUPD/gH/KlHJuU2OLUVpIz0h+nUHzAXY5NV86F0zN54fickcYof5nWasH4JhowICHw8nq3NBuD1FXAzJGye7LACLW59Jw+aXz60kegID11WLBnKYzeBa/UYxBKwbbR59+Gkl2qarTBW/xvEUNCQ1eVm0ebQ674+9zUM+5nKUxKg3934WsuIJKGjIA==",
+      "clientId": "CUMULUS",
+      "provider": "CUMULUS"
+    }
+  },
+  "payload": {
+    "granules": [
+      {
+        "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
+        "dataType": "MOD09GQ_test-jk2-IngestGranuleSuccess-1558420117156",
+        "version": "006",
+        "files": [
+          {
+            "name": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf",
+            "key": "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf",
+            "bucket": "cumulus-test-sandbox-protected",
+            "filename": "s3://cumulus-test-sandbox-protected/MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf",
+            "path": "jk2-IngestGranuleSuccess-1558420117156-test-data/files",
+            "url_path": "{cmrMetadata.Granule.Collection.ShortName}___{cmrMetadata.Granule.Collection.VersionId}/{extractYear(cmrMetadata.Granule.Temporal.RangeDateTime.BeginningDateTime)}/{substring(file.name, 0, 3)}",
+            "type": "data",
+            "duplicate_found": "True",
+            "size": 1098034
+          },
+          {
+            "name": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf.met",
+            "key": "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf.met",
+            "bucket": "cumulus-test-sandbox-private",
+            "filename": "s3://cumulus-test-sandbox-private/MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf.met",
+            "path": "jk2-IngestGranuleSuccess-1558420117156-test-data/files",
+            "url_path": "{cmrMetadata.Granule.Collection.ShortName}___{cmrMetadata.Granule.Collection.VersionId}/{substring(file.name, 0, 3)}",
+            "type": "metadata",
+            "duplicate_found": "True",
+            "size": 21708
+          },
+          {
+            "name": "MOD09GQ.A0219114.N5aUCG.006.0656338553321_ndvi.jpg",
+            "key": "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321_ndvi.jpg",
+            "bucket": "cumulus-test-sandbox-public",
+            "filename": "s3://cumulus-test-sandbox-public/MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321_ndvi.jpg",
+            "path": "jk2-IngestGranuleSuccess-1558420117156-test-data/files",
+            "url_path": "{cmrMetadata.Granule.Collection.ShortName}___{cmrMetadata.Granule.Collection.VersionId}/{substring(file.name, 0, 3)}",
+            "type": "browse",
+            "duplicate_found": "True",
+            "size": 9728
+          },
+          {
+            "name": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
+            "key": "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
+            "bucket": "cumulus-test-sandbox-protected-2",
+            "filename": "s3://cumulus-test-sandbox-protected-2/MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
+            "url_path": "{cmrMetadata.Granule.Collection.ShortName}___{cmrMetadata.Granule.Collection.VersionId}/{substring(file.name, 0, 3)}",
+            "type": "metadata"
+          }
+        ]
+      }
+    ]
+  },
+  "exception": "None",
+  "workflow_config": {
+    "Report": {
+      "cumulus_message": {
+        "input": "{{$}}"
+      }
+    },
+    "RequestFiles": {
+      "glacier-bucket": "{{$.meta.collection.meta.glacier-bucket}}"
+    },
+    "WorkflowFailed": {},
+    "ExtractFilepaths": {
+      "glacier-bucket": "{{$.meta.collection.meta.glacier-bucket}}"
+    },
+    "StopStatus": {
+      "stateMachine": "{{$.cumulus_meta.state_machine}}",
+      "sfnEnd": true,
+      "executionName": "{{$.cumulus_meta.execution_name}}",
+      "bucket": "{{$.meta.buckets.internal.name}}",
+      "cumulus_message": {
+        "input": "{{$}}"
+      },
+      "stack": "{{$.meta.stack}}"
+    }
+  }
+}
