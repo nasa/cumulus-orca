@@ -53,8 +53,11 @@ Create an alias called origin to your main remote repository (in this case, ECC)
 
 5.  Execute
 
+        bash
         export PIP_DEFAULT_TIMEOUT=100
-		pip install boto3
+        pip install boto3
+        pip install cumulus-message-adapter
+        pip install cumulus-message-adapter-python
 
 		for development:
 		pip install coverage
