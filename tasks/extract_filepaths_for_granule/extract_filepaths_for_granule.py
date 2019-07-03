@@ -1,22 +1,22 @@
 """
 Name: extract_filepaths_for_granule.py
 
-Description:  Lambda handler that extracts the filepath's for a granule from an input dict.
+Description:  Lambda handler that extracts the keys for a granule's files from an input dict.
 """
 
 from run_cumulus_task import run_cumulus_task
 from cumulus_logger import CumulusLogger
 
-logger = CumulusLogger()
+LOGGER = CumulusLogger()
 
 class ExtractFilePathsError(Exception):
     """Exception to be raised if any errors occur"""
 
-def task(event, context):
+def task(event, context):    #pylint: disable-msg=unused-argument
     """
     Task called by the handler to perform the work.
 
-    This task will parse the input, removing the granuleId and filepaths for a granule.
+    This task will parse the input, removing the granuleId and file keys for a granule.
 
         Args:
             event (dict): passed through from the handler
@@ -30,25 +30,21 @@ def task(event, context):
     """
     result = {}
     try:
-        level = "event."
-        # result['glacierBucket'] = event['config']['glacierBucket']
-        result['glacier-bucket'] = event['config']['glacier-bucket']
+        level = "event['input']"
         grans = []
         for ev_granule in event['input']['granules']:
             gran = {}
             files = []
-            level = "event.granules[{"
+            level = "event['input']['granules'][]"
             gran['granuleId'] = ev_granule['granuleId']
             for afile in ev_granule['files']:
-                level = "event.granules[{files[{"
-                # files.append(afile['filepath'])
+                level = "event['input']['granules'][]['files']"
                 files.append(afile['key'])
             gran["filepaths"] = files
             grans.append(gran)
         result['granules'] = grans
     except KeyError as err:
-        val = str(err).strip("\'")
-        raise ExtractFilePathsError(f"KeyError: '{level}{val}' is required")
+        raise ExtractFilePathsError(f'KeyError: "{level}[{str(err)}]" is required')
     return result
 
 def handler(event, context):            #pylint: disable-msg=unused-argument
@@ -57,21 +53,19 @@ def handler(event, context):            #pylint: disable-msg=unused-argument
         Args:
             event (dict): A dict with the following keys:
 
-                glacierBucket (string) :  The name of a glacier bucket.
                 granules (list(dict)): A list of dict with the following keys:
                     granuleId (string): The id of a granule.
                     files (list(dict)): list of dict with the following keys:
-                        filepath (string): The key (filepath) of the file.
-                        other keys may be included, but are not used.
-                    other keys may be included, but are not used.
+                        key (string): The key of the file to be returned.
+                        other dictionary keys may be included, but are not used.
+                    other dictionary keys may be included, but are not used.
 
-                Example: event: {'glacierBucket': 'some_bucket',
-                                 'granules': [
+                Example: event: {'granules': [
                                       {'granuleId': 'granxyz',
                                        'version": '006',
                                        'files': [
                                             {'name': 'file1',
-                                             'filepath': 'filepath1',
+                                             'key': 'filepath1',
                                              'filename': 's3://dr-test-sandbox-protected/file1',
                                              'type': 'metadata'} ]
                                        }
@@ -83,20 +77,18 @@ def handler(event, context):            #pylint: disable-msg=unused-argument
         Returns:
             dict: A dict with the following keys:
 
-                'glacierBucket' (string): The name of a glacier bucket.
                 'granules' (list(dict)): list of dict with the following keys:
                     'granuleId' (string): The id of a granule.
                     'filepaths' (list(string)): list of filepaths for the granule.
 
             Example:
-                {"glacierBucket": "some_bucket",
-                 "granules": [{"granuleId": "granxyz",
+                {"granules": [{"granuleId": "granxyz",
                              "filepaths": ["filepath1",
                                            "filepath2"]}]}
 
         Raises:
             ExtractFilePathsError: An error occurred parsing the input.
     """
-    logger.setMetadata(event, context)
+    LOGGER.setMetadata(event, context)
     result = run_cumulus_task(task, event, context)
     return result
