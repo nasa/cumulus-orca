@@ -89,8 +89,7 @@ Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
         "task": "extract_filepaths_for_granule",
         "message_source": "local",
 
-    b) removing these lines:
-    "topic_arn": "arn:aws:sns:us-west-2:065089468788:lab-cumulus-sftrackerSns-1MMTZADVEIFUD",
+    b) removing the "workflow_tasks" lines. ex:
     "workflow_tasks": {
       "Report": {
         "version": "1",

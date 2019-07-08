@@ -1,9 +1,9 @@
 {
   "cumulus_meta": {
-    "task": "extract_filepaths_for_granule",
+    "task": "request_files",
     "message_source": "local",
     "workflow_start_time": "2019-06-27T14:15:47.752014",
-    "execution_name": "DrRecovery59",
+    "execution_name": "DrRecovery54",
     "system_bucket": "lab-cumulus-internal"
   },
   "meta": {
@@ -11,7 +11,7 @@
       "HelloWorldWorkflow": "s3://lab-cumulus-internal/lab-cumulus/workflows/HelloWorldWorkflow.json",
       "DrRecoveryWorkflow": "s3://lab-cumulus-internal/lab-cumulus/workflows/DrRecoveryWorkflow.json"
     },
-  "queues": {
+    "queues": {
       "dbIndexerDeadLetterQueue": "https://sqs.us-west-2.amazonaws.com/065089468788/lab-cumulus-dbIndexerDeadLetterQueue",
       "jobsDeadLetterQueue": "https://sqs.us-west-2.amazonaws.com/065089468788/lab-cumulus-jobsDeadLetterQueue",
       "log2elasticsearchDeadLetterQueue": "https://sqs.us-west-2.amazonaws.com/065089468788/lab-cumulus-log2elasticsearchDeadLetterQueue",
@@ -32,6 +32,7 @@
       }
     },
     "stack": "lab-cumulus",
+    "topic_arn": "arn:aws:sns:us-west-2:065089468788:lab-cumulus-sftrackerSns-1MMTZADVEIFUD",
     "provider": {},
     "buckets": {
       "protected": {
@@ -63,20 +64,8 @@
     "granules": [
       {
         "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
-        "dataType": "MOD09GQ_test-jk2-IngestGranuleSuccess-1558420117156",
-        "version": "006",
-        "files": [
-          {
-            "name": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf",
-            "bucket": "cumulus-test-sandbox-protected",
-            "filename": "s3://cumulus-test-sandbox-protected/MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf",
-            "key": "L0A_LR_RAW_product_0010-of-0092.h5",
-            "path": "jk2-IngestGranuleSuccess-1558420117156-test-data/files",
-            "url_path": "{cmrMetadata.Granule.Collection.ShortName}___{cmrMetadata.Granule.Collection.VersionId}/{extractYear(cmrMetadata.Granule.Temporal.RangeDateTime.BeginningDateTime)}/{substring(file.name, 0, 3)}",
-            "type": "data",
-            "duplicate_found": true,
-            "size": 1098034
-          }
+        "filepaths": [
+          "L0A_LR_RAW_product_0010-of-0092.h5"
         ]
       }
     ]

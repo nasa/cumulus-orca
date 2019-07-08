@@ -1,7 +1,7 @@
 from os import path
 import json
 
-def create_event():
+def create_handler_event():
     try:
         with open('test/testevents/fixture1.json') as f:
             event = json.load(f)
@@ -10,19 +10,14 @@ def create_event():
             event = json.load(f)
     return event
 
-
-def create_handler_config():
-    return {
-        "task": {
-            "root": path.join(path.dirname(path.realpath(__file__)), "fixtures"),
-            "schemas": {
-                "input": "schemas/input.json",
-                "config": "schemas/config.json",
-                "output": "schemas/output.json"
-            }
-        }
-    }
-
+def create_task_event():
+    try:
+        with open('test/testevents/task_event.json') as f:
+            event = json.load(f)
+    except EnvironmentError:  # parent of IOError, OSError *and* WindowsError where available
+        with open('testevents/task_event.json') as f:
+            event = json.load(f)
+    return event
 
 class LambdaContextMock:
     def __init__(self):
