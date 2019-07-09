@@ -25,14 +25,11 @@ Run the unit tests with code coverage:
 (podr) λ cd C:\devpy\poswotdr\tasks\extract_filepaths_for_granule
 (podr) λ nosetests --with-coverage --cover-erase --cover-package=extract_filepaths_for_granule -v
 Test successful with four filepaths returned. ... ok
-Test no filepath in input event. ... {"message": "KeyError: \"event['input']['granules'][]['files']['key']\" is required", "level": "error", "executions": ["DrRecovery58"], "timestamp": "2019-07-03T09:31:42.365209", "sender": "extract_filepaths_for_granule", "version": 1}
-ok
-Test no files in input event. ... {"message": "KeyError: \"event['input']['granules'][]['files']\" is required", "level": "error", "executions": ["DrRecovery58"], "timestamp": "2019-07-03T09:31:42.369207", "sender": "extract_filepaths_for_granule", "version": 1}
-ok
-Test no granuleId in input event. ... {"message": "KeyError: \"event['input']['granules'][]['granuleId']\" is required", "level": "error", "executions": ["DrRecovery58"], "timestamp": "2019-07-03T09:31:42.372210", "sender": "extract_filepaths_for_granule", "version": 1}
-ok
-Test no 'granules' key in input event. ... {"message": "KeyError: \"event['input']['granules']\" is required", "level": "error", "executions": ["DrRecovery58"], "timestamp": "2019-07-03T09:31:42.375212", "sender": "extract_filepaths_for_granule", "version": 1}
-ok
+Test no granuleId in input event. ... ok
+Test successful with four filepaths returned. ... ok
+Test no filepath in input event. ... ok
+Test no files in input event. ... ok
+Test no 'granules' key in input event. ... ok
 Test with one valid file in input. ... ok
 Test with two granules, one filepath each. ... ok
 
@@ -40,7 +37,7 @@ Name                               Stmts   Miss  Cover
 ------------------------------------------------------
 extract_filepaths_for_granule.py      27      0   100%
 ----------------------------------------------------------------------
-Ran 7 tests in 0.792s
+Ran 8 tests in 0.745s
 
 ```
 <a name="linting"></a>
