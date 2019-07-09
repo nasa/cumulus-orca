@@ -19,3 +19,4 @@ terraform\.tfvars
 *.zip
 terraform\.tfstate*
 terraform.tf
+venv/
