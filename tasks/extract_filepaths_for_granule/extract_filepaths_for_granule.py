@@ -1,7 +1,7 @@
 """
 Name: extract_filepaths_for_granule.py
 
-Description:  Lambda handler that extracts the keys for a granule's files from an input dict.
+Description:  Extracts the keys (filepaths) for a granule's files from a Cumulus Message.
 """
 
 from run_cumulus_task import run_cumulus_task
@@ -23,7 +23,7 @@ def task(event, context):    #pylint: disable-msg=unused-argument
             context (Object): passed through from the handler
 
         Returns:
-            dict: dict containing granuleId and filepaths. See handler for detail.
+            dict: dict containing granuleId and keys. See handler for detail.
 
         Raises:
             ExtractFilePathsError: An error occurred parsing the input.
@@ -40,7 +40,7 @@ def task(event, context):    #pylint: disable-msg=unused-argument
             for afile in ev_granule['files']:
                 level = "event['input']['granules'][]['files']"
                 files.append(afile['key'])
-            gran["filepaths"] = files
+            gran["keys"] = files
             grans.append(gran)
         result['granules'] = grans
     except KeyError as err:
@@ -48,7 +48,7 @@ def task(event, context):    #pylint: disable-msg=unused-argument
     return result
 
 def handler(event, context):            #pylint: disable-msg=unused-argument
-    """Lambda handler. Extracts the filepath's for a granule from an input dict.
+    """Lambda handler. Extracts the key's for a granule from an input dict.
 
         Args:
             event (dict): A dict with the following keys:
@@ -65,7 +65,7 @@ def handler(event, context):            #pylint: disable-msg=unused-argument
                                        'version": '006',
                                        'files': [
                                             {'name': 'file1',
-                                             'key': 'filepath1',
+                                             'key': 'key1',
                                              'filename': 's3://dr-test-sandbox-protected/file1',
                                              'type': 'metadata'} ]
                                        }
@@ -79,12 +79,12 @@ def handler(event, context):            #pylint: disable-msg=unused-argument
 
                 'granules' (list(dict)): list of dict with the following keys:
                     'granuleId' (string): The id of a granule.
-                    'filepaths' (list(string)): list of filepaths for the granule.
+                    'keys' (list(string)): list of keys for the granule.
 
             Example:
                 {"granules": [{"granuleId": "granxyz",
-                             "filepaths": ["filepath1",
-                                           "filepath2"]}]}
+                             "keys": ["key1",
+                                           "key2"]}]}
 
         Raises:
             ExtractFilePathsError: An error occurred parsing the input.

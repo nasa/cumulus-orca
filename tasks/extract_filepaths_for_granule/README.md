@@ -24,20 +24,20 @@ Run the unit tests with code coverage:
 
 (podr) λ cd C:\devpy\poswotdr\tasks\extract_filepaths_for_granule
 (podr) λ nosetests --with-coverage --cover-erase --cover-package=extract_filepaths_for_granule -v
-Test successful with four filepaths returned. ... ok
+Test successful with four keys returned. ... ok
 Test no granuleId in input event. ... ok
-Test successful with four filepaths returned. ... ok
-Test no filepath in input event. ... ok
+Test successful with four keys returned. ... ok
+Test no key in input event. ... ok
 Test no files in input event. ... ok
 Test no 'granules' key in input event. ... ok
 Test with one valid file in input. ... ok
-Test with two granules, one filepath each. ... ok
+Test with two granules, one key each. ... ok
 
 Name                               Stmts   Miss  Cover
 ------------------------------------------------------
 extract_filepaths_for_granule.py      27      0   100%
 ----------------------------------------------------------------------
-Ran 8 tests in 0.745s
+Ran 8 tests in 0.752s
 
 ```
 <a name="linting"></a>
@@ -102,7 +102,7 @@ NAME
     extract_filepaths_for_granule - Name: extract_filepaths_for_granule.py
 
 DESCRIPTION
-    Description:  Lambda handler that extracts the keys for a granule's files from an input dict.
+    Description:  Extracts the keys (filepaths) for a granule's files from a Cumulus Message.
 
 CLASSES
     builtins.Exception(builtins.BaseException)
@@ -113,7 +113,7 @@ CLASSES
      
 FUNCTIONS
     handler(event, context)
-        Lambda handler. Extracts the filepath's for a granule from an input dict.
+        Lambda handler. Extracts the key's for a granule from an input dict.
 
         Args:
             event (dict): A dict with the following keys:
@@ -130,7 +130,7 @@ FUNCTIONS
                                        'version": '006',
                                        'files': [
                                             {'name': 'file1',
-                                             'key': 'filepath1',
+                                             'key': 'key1',
                                              'filename': 's3://dr-test-sandbox-protected/file1',
                                              'type': 'metadata'} ]
                                        }
@@ -144,12 +144,12 @@ FUNCTIONS
 
                 'granules' (list(dict)): list of dict with the following keys:
                     'granuleId' (string): The id of a granule.
-                    'filepaths' (list(string)): list of filepaths for the granule.
+                    'keys' (list(string)): list of keys for the granule.
 
             Example:
                 {"granules": [{"granuleId": "granxyz",
-                             "filepaths": ["filepath1",
-                                           "filepath2"]}]}
+                             "keys": ["key1",
+                                           "key2"]}]}
 
         Raises:
             ExtractFilePathsError: An error occurred parsing the input.

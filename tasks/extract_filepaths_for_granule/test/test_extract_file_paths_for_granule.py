@@ -23,7 +23,7 @@ class TestExtractFilePaths(unittest.TestCase):
 
     def test_handler(self):
         """
-        Test successful with four filepaths returned.
+        Test successful with four keys returned.
         """
         handler_input_event = create_handler_event()
         result = extract_filepaths_for_granule.handler(handler_input_event, self.context)
@@ -36,7 +36,7 @@ class TestExtractFilePaths(unittest.TestCase):
         exp_files.append(handler_input_event['payload']['granules'][0]['files'][1]['key'])
         exp_files.append(handler_input_event['payload']['granules'][0]['files'][2]['key'])
         exp_files.append(handler_input_event['payload']['granules'][0]['files'][3]['key'])
-        exp_gran['filepaths'] = exp_files
+        exp_gran['keys'] = exp_files
         exp_grans.append(exp_gran)
 
         exp_result['granules'] = exp_grans
@@ -44,7 +44,7 @@ class TestExtractFilePaths(unittest.TestCase):
 
     def test_task(self):
         """
-        Test successful with four filepaths returned.
+        Test successful with four keys returned.
         """
         result = extract_filepaths_for_granule.task(self.task_input_event, self.context)
         exp_result = {}
@@ -56,7 +56,7 @@ class TestExtractFilePaths(unittest.TestCase):
         exp_files.append(self.task_input_event['input']['granules'][0]['files'][1]['key'])
         exp_files.append(self.task_input_event['input']['granules'][0]['files'][2]['key'])
         exp_files.append(self.task_input_event['input']['granules'][0]['files'][3]['key'])
-        exp_gran['filepaths'] = exp_files
+        exp_gran['keys'] = exp_files
         exp_grans.append(exp_gran)
 
         exp_result['granules'] = exp_grans
@@ -108,7 +108,7 @@ class TestExtractFilePaths(unittest.TestCase):
 
     def test_task_no_filepath(self):
         """
-        Test no filepath in input event.
+        Test no key in input event.
         """
         self.task_input_event['input'].pop('granules', None)
         self.task_input_event['input']['granules'] = [{
@@ -139,14 +139,14 @@ class TestExtractFilePaths(unittest.TestCase):
                     "bucket": "cumulus-test-sandbox-protected-2"
                 }]}]
         exp_result = {'granules': [
-            {'filepaths': ['MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml'],
+            {'keys': ['MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml'],
              'granuleId': 'MOD09GQ.A0219114.N5aUCG.006.0656338553321'}]}
         result = extract_filepaths_for_granule.task(self.task_input_event, self.context)
         self.assertEqual(exp_result, result)
 
     def test_task_two_granules(self):
         """
-        Test with two granules, one filepath each.
+        Test with two granules, one key each.
         """
 
         self.task_input_event['input']['granules'] = \
@@ -171,9 +171,9 @@ class TestExtractFilePaths(unittest.TestCase):
              }
              ]
         exp_result = {'granules': [
-            {'filepaths': ['MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml'],
+            {'keys': ['MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml'],
              'granuleId': 'MOD09GQ.A0219114.N5aUCG.006.0656338553321'},
-            {'filepaths': ['MOD/MOD09GQ.A0219115.N5aUCG.006.0656338553321.cmr.xml'],
+            {'keys': ['MOD/MOD09GQ.A0219115.N5aUCG.006.0656338553321.cmr.xml'],
              'granuleId': 'MOD09GQ.A0219115.N5aUCG.006.0656338553321'}]}
 
         result = extract_filepaths_for_granule.task(self.task_input_event, self.context)

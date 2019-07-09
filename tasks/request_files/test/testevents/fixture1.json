@@ -64,7 +64,7 @@
     "granules": [
       {
         "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
-        "filepaths": [
+        "keys": [
           "L0A_LR_RAW_product_0010-of-0092.h5"
         ]
       }

@@ -59,7 +59,7 @@ class TestRequestFiles(unittest.TestCase):
                 "granules": [
                     {
                         "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
-                        "filepaths": [
+                        "keys": [
                             file1,
                             file2,
                             file3,
@@ -117,25 +117,25 @@ class TestRequestFiles(unittest.TestCase):
         exp_files = []
 
         exp_file = {}
-        exp_file['filepath'] = file1
+        exp_file['key'] = file1
         exp_file['success'] = True
         exp_file['err_msg'] = ''
         exp_files.append(exp_file)
 
         exp_file = {}
-        exp_file['filepath'] = file2
+        exp_file['key'] = file2
         exp_file['success'] = True
         exp_file['err_msg'] = ''
         exp_files.append(exp_file)
 
         exp_file = {}
-        exp_file['filepath'] = file3
+        exp_file['key'] = file3
         exp_file['success'] = True
         exp_file['err_msg'] = ''
         exp_files.append(exp_file)
 
         exp_file = {}
-        exp_file['filepath'] = file4
+        exp_file['key'] = file4
         exp_file['success'] = True
         exp_file['err_msg'] = ''
         exp_files.append(exp_file)
@@ -153,9 +153,9 @@ class TestRequestFiles(unittest.TestCase):
         exp_event = {}
         exp_event["input"] = {
             "granules": [{"granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
-                          "filepaths": [file1]},
+                          "keys": [file1]},
                          {"granuleId": "MOD09GQ.A0219115.N5aUCG.006.0656338553321",
-                          "filepaths": [file2]}]}
+                          "keys": [file2]}]}
         exp_event["config"] = {"glacier-bucket": "my-bucket"}
 
         exp_err = "request_files can only accept 1 granule in the list. This input contains 2"
@@ -173,7 +173,7 @@ class TestRequestFiles(unittest.TestCase):
         exp_event = {}
         exp_event["input"] = {
             "granules": [{"granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
-                          "filepaths": [file1]}]}
+                          "keys": [file1]}]}
         exp_event["config"] = {"glacier-bucket": "my-bucket"}
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
@@ -195,7 +195,7 @@ class TestRequestFiles(unittest.TestCase):
         file1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf"
         exp_event["input"] = {
             "granules": [{"granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
-                          "filepaths": [file1]}]}
+                          "keys": [file1]}]}
         exp_event["config"] = {"glacier-bucket": "some_bucket"}
 
         boto3.client = Mock()
@@ -209,7 +209,7 @@ class TestRequestFiles(unittest.TestCase):
         exp_files = []
 
         exp_file = {}
-        exp_file['filepath'] = file1
+        exp_file['key'] = file1
         exp_file['success'] = True
         exp_file['err_msg'] = ''
         exp_files.append(exp_file)
@@ -238,7 +238,7 @@ class TestRequestFiles(unittest.TestCase):
         file1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf"
         exp_event["input"] = {
             "granules": [{"granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
-                          "filepaths": [file1]}]}
+                          "keys": [file1]}]}
 
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
@@ -251,7 +251,7 @@ class TestRequestFiles(unittest.TestCase):
         exp_files = []
 
         exp_file = {}
-        exp_file['filepath'] = file1
+        exp_file['key'] = file1
         exp_file['success'] = True
         exp_file['err_msg'] = ''
         exp_files.append(exp_file)
@@ -277,7 +277,7 @@ class TestRequestFiles(unittest.TestCase):
         file1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf"
         exp_event["input"] = {
             "granules": [{"granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
-                          "filepaths": [file1]}]}
+                          "keys": [file1]}]}
 
         exp_err = f"request: {exp_event} does not contain a config value for glacier-bucket"
         CumulusLogger.error = Mock()
@@ -296,7 +296,7 @@ class TestRequestFiles(unittest.TestCase):
         file1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf"
         exp_event["input"] = {
             "granules": [{"granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
-                          "filepaths": [file1]}]}
+                          "keys": [file1]}]}
 
         os.environ['RESTORE_RETRY_SLEEP_SECS'] = '.5'
         boto3.client = Mock()
@@ -314,12 +314,12 @@ class TestRequestFiles(unittest.TestCase):
         exp_files = []
 
         exp_file = {}
-        exp_file['filepath'] = file1
+        exp_file['key'] = file1
         exp_file['success'] = False
         exp_files.append(exp_file)
 
         exp_gran = {'granuleId': 'MOD09GQ.A0219114.N5aUCG.006.0656338553321', 'files': [
-            {'filepath': file1,
+            {'key': file1,
              'success': False,
              'err_msg': 'An error occurred (NoSuchBucket) when calling the restore_object '
                         'operation: Unknown'}]}
@@ -350,11 +350,11 @@ class TestRequestFiles(unittest.TestCase):
         exp_event["config"] = {"glacier-bucket": "some_bucket"}
         gran = {}
         gran["granuleId"] = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
-        filepaths = []
-        filepaths.append(file1)
-        filepaths.append(file3)
-        filepaths.append(file4)
-        gran["filepaths"] = filepaths
+        keys = []
+        keys.append(file1)
+        keys.append(file3)
+        keys.append(file4)
+        gran["keys"] = keys
         exp_event["input"] = {
             "granules": [gran]}
 
@@ -377,20 +377,20 @@ class TestRequestFiles(unittest.TestCase):
         exp_files = []
 
         exp_file = {}
-        exp_file['filepath'] = file1
+        exp_file['key'] = file1
         exp_file['success'] = True
         exp_file['err_msg'] = ''
         exp_files.append(exp_file)
 
         exp_file = {}
-        exp_file['filepath'] = file3
+        exp_file['key'] = file3
         exp_file['success'] = False
         exp_file['err_msg'] = 'An error occurred (NoSuchKey) when calling the restore_object ' \
                               'operation: Unknown'
         exp_files.append(exp_file)
 
         exp_file = {}
-        exp_file['filepath'] = file4
+        exp_file['key'] = file4
         exp_file['success'] = True
         exp_file['err_msg'] = ''
         exp_files.append(exp_file)
@@ -421,10 +421,10 @@ class TestRequestFiles(unittest.TestCase):
         exp_event["config"] = {"glacier-bucket": "some_bucket"}
         gran = {}
         gran["granuleId"] = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
-        filepaths = []
-        filepaths.append(file1)
-        filepaths.append(file2)
-        gran["filepaths"] = filepaths
+        keys = []
+        keys.append(file1)
+        keys.append(file2)
+        gran["keys"] = keys
         exp_event["input"] = {
             "granules": [gran]}
 
@@ -445,13 +445,13 @@ class TestRequestFiles(unittest.TestCase):
         exp_files = []
 
         exp_file = {}
-        exp_file['filepath'] = file1
+        exp_file['key'] = file1
         exp_file['success'] = True
         exp_file['err_msg'] = ''
         exp_files.append(exp_file)
 
         exp_file = {}
-        exp_file['filepath'] = file2
+        exp_file['key'] = file2
         exp_file['success'] = True
         exp_file['err_msg'] = ''
         exp_files.append(exp_file)

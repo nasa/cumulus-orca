@@ -40,15 +40,15 @@ def task(event, context):              #pylint: disable-msg=unused-argument
 
                 'granuleId' (string): The id of the granule being restored.
                 'files' (list(dict)): A list of dicts with the following keys:
-                    'filepath': The glacier key (filepath) of the file to restore
+                    'key': The glacier key of the file to restore
                     'success' (boolean): True, indicating the restore request was submitted
                         successfully, otherwise False.
                     'err_msg' (string): when success is False, this will contain
                         the error message from the restore error
 
                 Example:  {'granuleId': 'granxyz',
-                      'files': [{'filepath': 'path1', 'success': True},
-                                {'filepath': 'path2', 'success': False, 'err_msg': 'because'}]}
+                      'files': [{'key': 'path1', 'success': True},
+                                {'key': 'path2', 'success': False, 'err_msg': 'because'}]}
 
         Raises:
             RestoreRequestError: Thrown if there are errors with the input request.
@@ -74,11 +74,11 @@ def task(event, context):              #pylint: disable-msg=unused-argument
     for granule in granules:
         gran['granuleId'] = granule['granuleId']
         files = []
-        for file_key in granule['filepaths']:
+        for file_key in granule['keys']:
             if object_exists(s3, glacier_bucket, file_key):
                 LOGGER.info("Added {} to the list of files we'll attempt to recover.", file_key)
                 afile = {}
-                afile['filepath'] = file_key
+                afile['key'] = file_key
                 afile['success'] = False
                 afile['err_msg'] = ''
                 files.append(afile)
@@ -116,11 +116,11 @@ def process_granules(s3, gran, glacier_bucket, exp_days):        # pylint: disab
         for afile in gran['files']:
             if not afile['success']:
                 try:
-                    restore_object(s3, glacier_bucket, afile['filepath'], exp_days)
+                    restore_object(s3, glacier_bucket, afile['key'], exp_days)
                     afile['success'] = True
                     afile['err_msg'] = ''
                     LOGGER.info("restore {} from {} attempt {} successful.",
-                                afile["filepath"], glacier_bucket, attempt)
+                                afile["key"], glacier_bucket, attempt)
                 except ClientError as err:
                     afile['err_msg'] = str(err)
 
@@ -207,11 +207,11 @@ def handler(event, context):      #pylint: disable-msg=unused-argument
                     will be restored.
                 granules (list(dict)): A list of dict with the following keys:
                     granuleId (string): The id of the granule being restored.
-                    filepaths (list(string)): list of filepaths (glacier keys) for the granule
+                    keys (list(string)): list of keys (glacier keys) for the granule
 
                 Example: event: {'glacierBucket': 'some_bucket',
                             'granules': [{'granuleId': 'granxyz',
-                                        'filepaths': ['path1', 'path2']}]
+                                        'keys': ['path1', 'path2']}]
                            }
 
             context (Object): None
