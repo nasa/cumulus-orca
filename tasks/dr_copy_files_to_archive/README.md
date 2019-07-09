@@ -24,22 +24,21 @@ Run the unit tests with code coverage:
 
 (podr) λ cd C:\devpy\poswotdr\tasks\dr_copy_files_to_archive
 (podr) λ nosetests --with-coverage --cover-erase --cover-package=dr_copy_files_to_archive -v
-test_handler_no_bucket_map (test_dr_copy_files_to_archive.TestCopyFiles) ... ok
-test_handler_no_ext_in_bucket_map (test_dr_copy_files_to_archive.TestCopyFiles) ... ok
-test_handler_no_object_key_in_event (test_dr_copy_files_to_archive.TestCopyFiles) ... ok
-test_handler_no_other_in_bucket_map (test_dr_copy_files_to_archive.TestCopyFiles) ... ok
-test_handler_one_file_fail_3x (test_dr_copy_files_to_archive.TestCopyFiles) ... ok
-test_handler_one_file_retry2_success (test_dr_copy_files_to_archive.TestCopyFiles) ... ok
-test_handler_one_file_success (test_dr_copy_files_to_archive.TestCopyFiles) ... ok
-test_handler_two_records_one_fail_one_success (test_dr_copy_files_to_archive.TestCopyFiles) ... ok
-test_handler_two_records_success (test_dr_copy_files_to_archive.TestCopyFiles) ... ok
+Test copy lambda with no BUCKET_MAP environment variable. ... ok
+Test copy lambda with missing file extension in BUCKET_MAP. ... ok
+Test copy lambda with missing "object" key in input event. ... ok
+Test copy lambda with missing "other" key in BUCKET_MAP. ... ok
+Test copy lambda with one failed copy after 3 retries. ... ok
+Test copy lambda with two failed copy attempts, third attempt successful. ... ok
+Test copy lambda with one file, expecting successful result. ... ok
+Test copy lambda with two files, one successful copy, one failed copy. ... ok
+Test copy lambda with two files, expecting successful result. ... ok
 
 Name                          Stmts   Miss  Cover
 -------------------------------------------------
 dr_copy_files_to_archive.py      79      0   100%
 ----------------------------------------------------------------------
-Ran 9 tests in 5.650s
-
+Ran 9 tests in 5.671s
 ```
 <a name="linting"></a>
 ## Linting
@@ -67,15 +66,8 @@ Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 <a name="deployment-validation"></a>
 ### Deployment Validation
 ```
-1.  Upload the files in /tasks/testfiles/ to the test glacier bucket.
-    It may take overnight for the files to be moved to Glacier.
-2.  Once the files are in Glacier, run the request_files lambda to restore them.
-    You can use the test event in /tasks/request_files/test/testevents/RestoreTestFiles.json
-    The restore may take up to 5 hours.
-3.  When the restore completes, the ObjectRestore:Post event should trigger the
-    dr_copy_files_to_archive lambda. You can also test it using the
-    test events in /tasks/dr_copy_files_to_archive/test/testevents. You
-    can view the logs in Cloud Watch for /aws/lambda/dr_copy_files_to_archive
+    You can test using the test events in /tasks/dr_copy_files_to_archive/test/testevents.
+    You can view the logs in Cloud Watch for /aws/lambda/dr_copy_files_to_archive
 ```
 <a name="pydoc"></a>
 ## pydoc dr_copy_files_to_archive
@@ -158,6 +150,4 @@ FUNCTIONS
                 CopyRequestError: An error occurred calling copy_object for one or more files.
                 The same dict that is returned for a successful copy, will be included in the
                 message, with 'success' = False for the files for which the copy failed.
-
-                context (Object): None
 ```
