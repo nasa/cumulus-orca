@@ -71,8 +71,12 @@ Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 ```
 1.  Upload the files in /tasks/testfiles/ to the test glacier bucket.
     It may take overnight for the files to be moved to Glacier.
-2.  Once the files are in Glacier, run the request_files lambda to restore them.
-    You can use the test event in /tasks/request_files/test/testevents/RestoreTestFiles.json
+2.  I haven't figured out how to write an input event that populates the 'config' part, but you
+    can use the test event in /tasks/request_files/test/testevents/RestoreTestFiles.json, and expect
+    an error ending with 'does not contain a config value for glacier-bucket'
+2.  Once the files are in Glacier, use the CumulusDrRecoveryWorkflowStateMachine to restore them.
+    You can use the test event in tasks/extract_filepaths_for_granule/test/testevents/StepFunction.json.
+    Edit the ['payload']['granules']['keys'] values as needed to be the file(s) you wish to restore.
     The restore may take up to 5 hours.
 
 Use the AWS CLI to check status of restore request:
