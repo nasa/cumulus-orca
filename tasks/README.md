@@ -3,6 +3,8 @@
 - [Environment](#environment)
 - [Setting up your development environment](#setting-up-your-development-environment)
   * [Git clone](#git-clone)
+  * [Install the AWS client](#aws-client)
+    + [Windows](#windows-cli)
   * [Prepare the virtual environment](#virtual-environment)
     + [Windows](#windows)
   * [Pycharm](#pycharm)
@@ -24,6 +26,29 @@
 Create an alias called origin to your main remote repository (in this case, ECC):
 >git remote add origin https://erosuser@git.earthdata.nasa.gov/scm/pocumulus/dr-podaac-swot.git
 
+<a name="aws-client"></a>
+## Install the AWS client.
+
+<a name="windows-cli"></a>
+### Windows:
+```
+    check if you already have it:
+         aws --version
+
+    if you have it, and need to upgrade:
+        pip3 install awscli --upgrade --user
+
+    if you don't have it:
+        pip3 install awscli
+
+        verify:   aws --version
+
+        aws configure
+          AWS Access Key ID [None]: AKIAIOSFODNN7EXAMPLE
+          AWS Secret Access Key [None]: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+          Default region name [None]: us-west-2
+          Default output format [None]: json
+```
 <a name="virtual-environment"></a>
 ## Prepare the virtual environment.
 
@@ -65,15 +90,6 @@ Create an alias called origin to your main remote repository (in this case, ECC)
 		pip install pylint
 
 	to get all the python requirements.
-
-6.   Install the Amazon CLI
-        pip3 install awscli --upgrade --user
-
-        aws configure
-          AWS Access Key ID [None]: AKIAIOSFODNN7EXAMPLE
-          AWS Secret Access Key [None]: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-          Default region name [None]: us-west-2
-          Default output format [None]: json
 
 ```
 <a name="pycharm"></a>
