@@ -1,9 +1,9 @@
 {
   "cumulus_meta": {
-    "state_machine": "arn:aws:states:us-west-2:065089468788:stateMachine:labCumulusDrRecoveryWorkflowStateMachine-aiTLe4uNdy0X",
-    "message_source": "sfn",
+    "task": "request_files",
+    "message_source": "local",
     "workflow_start_time": "2019-06-27T14:15:47.752014",
-    "execution_name": "DrRecovery62",
+    "execution_name": "DrRecovery54",
     "system_bucket": "lab-cumulus-internal"
   },
   "meta": {
@@ -33,18 +33,6 @@
     },
     "stack": "lab-cumulus",
     "topic_arn": "arn:aws:sns:us-west-2:065089468788:lab-cumulus-sftrackerSns-1MMTZADVEIFUD",
-    "workflow_tasks": {
-      "Report": {
-        "version": "1",
-        "name": "lab-cumulus-SfSnsReport",
-        "arn": "arn:aws:lambda:us-west-2:065089468788:function:lab-cumulus-SfSnsReport:SfSnsReport-282da1a3b4f8493441acc178396b846857bc1068"
-      },
-      "ExtractFilepaths": {
-        "name": "extract_filepaths_for_granule",
-        "version": "$LATEST",
-        "arn": "arn:aws:lambda:us-west-2:065089468788:function:extract_filepaths_for_granule:$LATEST"
-      }
-    },
     "provider": {},
     "buckets": {
       "protected": {

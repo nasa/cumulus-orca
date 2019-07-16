@@ -1,0 +1,55 @@
+{
+  "input": {
+    "granules": [
+      {
+        "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
+        "dataType": "MOD09GQ_test-jk2-IngestGranuleSuccess-1558420117156",
+        "version": "006",
+        "files": [
+          {
+            "name": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf",
+            "key": "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf",
+            "bucket": "cumulus-test-sandbox-protected",
+            "filename": "s3://cumulus-test-sandbox-protected/MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf",
+            "path": "jk2-IngestGranuleSuccess-1558420117156-test-data/files",
+            "url_path": "{cmrMetadata.Granule.Collection.ShortName}___{cmrMetadata.Granule.Collection.VersionId}/{extractYear(cmrMetadata.Granule.Temporal.RangeDateTime.BeginningDateTime)}/{substring(file.name, 0, 3)}",
+            "type": "data",
+            "duplicate_found": "True",
+            "size": 1098034
+          },
+          {
+            "name": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf.met",
+            "key": "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf.met",
+            "bucket": "cumulus-test-sandbox-private",
+            "filename": "s3://cumulus-test-sandbox-private/MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf.met",
+            "path": "jk2-IngestGranuleSuccess-1558420117156-test-data/files",
+            "url_path": "{cmrMetadata.Granule.Collection.ShortName}___{cmrMetadata.Granule.Collection.VersionId}/{substring(file.name, 0, 3)}",
+            "type": "metadata",
+            "duplicate_found": "True",
+            "size": 21708
+          },
+          {
+            "name": "MOD09GQ.A0219114.N5aUCG.006.0656338553321_ndvi.jpg",
+            "key": "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321_ndvi.jpg",
+            "bucket": "cumulus-test-sandbox-public",
+            "filename": "s3://cumulus-test-sandbox-public/MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321_ndvi.jpg",
+            "path": "jk2-IngestGranuleSuccess-1558420117156-test-data/files",
+            "url_path": "{cmrMetadata.Granule.Collection.ShortName}___{cmrMetadata.Granule.Collection.VersionId}/{substring(file.name, 0, 3)}",
+            "type": "browse",
+            "duplicate_found": "True",
+            "size": 9728
+          },
+          {
+            "name": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
+            "key": "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
+            "bucket": "cumulus-test-sandbox-protected-2",
+            "filename": "s3://cumulus-test-sandbox-protected-2/MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
+            "url_path": "{cmrMetadata.Granule.Collection.ShortName}___{cmrMetadata.Granule.Collection.VersionId}/{substring(file.name, 0, 3)}",
+            "type": "metadata"
+          }
+        ]
+      }
+    ]
+  },
+  "config": {}
+}

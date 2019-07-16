@@ -24,20 +24,20 @@ Run the unit tests with code coverage:
 
 (podr) λ cd C:\devpy\poswotdr\tasks\extract_filepaths_for_granule
 (podr) λ nosetests --with-coverage --cover-erase --cover-package=extract_filepaths_for_granule -v
-test_handler (test_extract_file_paths_for_granule.TestExtractFilePaths) ... ok
-test_handler_no_filepath (test_extract_file_paths_for_granule.TestExtractFilePaths) ... ok
-test_handler_no_files (test_extract_file_paths_for_granule.TestExtractFilePaths) ... ok
-test_handler_no_glacier_bucket (test_extract_file_paths_for_granule.TestExtractFilePaths) ... ok
-test_handler_no_granule (test_extract_file_paths_for_granule.TestExtractFilePaths) ... ok
-test_handler_no_granules (test_extract_file_paths_for_granule.TestExtractFilePaths) ... ok
-test_handler_one_file (test_extract_file_paths_for_granule.TestExtractFilePaths) ... ok
-test_handler_two_granules (test_extract_file_paths_for_granule.TestExtractFilePaths) ... ok
+Test successful with four keys returned. ... ok
+Test no granuleId in input event. ... ok
+Test successful with four keys returned. ... ok
+Test no key in input event. ... ok
+Test no files in input event. ... ok
+Test no 'granules' key in input event. ... ok
+Test with one valid file in input. ... ok
+Test with two granules, one key each. ... ok
 
 Name                               Stmts   Miss  Cover
 ------------------------------------------------------
-extract_filepaths_for_granule.py      26      0   100%
+extract_filepaths_for_granule.py      27      0   100%
 ----------------------------------------------------------------------
-Ran 8 tests in 0.045s
+Ran 8 tests in 0.752s
 
 ```
 <a name="linting"></a>
@@ -61,12 +61,39 @@ Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 ## Deployment
 ```
     cd tasks\extract_filepaths_for_granule
-    zip task.zip *.py
+    rm -rf build
+    rm -rf venv
+    mkdir build
+    python3 -m venv venv
+    source venv/bin/activate
+    pip3 install -t build -r requirements.txt
+    deactivate
+    cp *.py build/
+    cd build
+    zip -r ../task.zip .
 ```
 <a name="deployment-validation"></a>
 ### Deployment Validation
 ```
-1.  You can use the test event in /tasks/extract_filepaths_for_granule/test/testevents/ExtractFiles.json
+1.  Use the test event in /tasks/extract_filepaths_for_granule/test/testevents/fixture2.json to test the lambda.
+    This test event was created by taking the input to the lambda from the DrRecoveryWorkflowStateMachine, and
+    a) replacing
+    "cumulus_meta": {
+        "state_machine": "arn:aws:states:us-west-2:065089468788:stateMachine:labCumulusDrRecoveryWorkflowStateMachine-aiTLe4uNdy0X",
+        "message_source": "sfn",
+    with:
+    "cumulus_meta": {
+        "task": "extract_filepaths_for_granule",
+        "message_source": "local",
+
+    b) removing the "workflow_tasks" lines. ex:
+    "workflow_tasks": {
+      "Report": {
+        "version": "1",
+        "name": "lab-cumulus-SfSnsReport",
+        "arn": "arn:aws:lambda:us-west-2:065089468788:function:lab-cumulus-SfSnsReport:SfSnsReport-282da1a3b4f8493441acc178396b846857bc1068"
+      }
+    },
 ```
 <a name="pydoc"></a>
 ## pydoc extract_filepaths_for_granule
@@ -75,7 +102,7 @@ NAME
     extract_filepaths_for_granule - Name: extract_filepaths_for_granule.py
 
 DESCRIPTION
-    Description:  Lambda handler that extracts the filepath's for a granule from an input dict.
+    Description:  Extracts the keys (filepaths) for a granule's files from a Cumulus Message.
 
 CLASSES
     builtins.Exception(builtins.BaseException)
@@ -86,26 +113,24 @@ CLASSES
      
 FUNCTIONS
     handler(event, context)
-        Lambda handler. Extracts the filepath's for a granule from an input dict.
+        Lambda handler. Extracts the key's for a granule from an input dict.
 
         Args:
             event (dict): A dict with the following keys:
 
-                glacierBucket (string) :  The name of a glacier bucket.
                 granules (list(dict)): A list of dict with the following keys:
                     granuleId (string): The id of a granule.
                     files (list(dict)): list of dict with the following keys:
-                        filepath (string): The key (filepath) of the file.
-                        other keys may be included, but are not used.
-                    other keys may be included, but are not used.
+                        key (string): The key of the file to be returned.
+                        other dictionary keys may be included, but are not used.
+                    other dictionary keys may be included, but are not used.
 
-                Example: event: {'glacierBucket': 'some_bucket',
-                                 'granules': [
+                Example: event: {'granules': [
                                       {'granuleId': 'granxyz',
                                        'version": '006',
                                        'files': [
                                             {'name': 'file1',
-                                             'filepath': 'filepath1',
+                                             'key': 'key1',
                                              'filename': 's3://dr-test-sandbox-protected/file1',
                                              'type': 'metadata'} ]
                                        }
@@ -117,16 +142,14 @@ FUNCTIONS
         Returns:
             dict: A dict with the following keys:
 
-                'glacierBucket' (string): The name of a glacier bucket.
                 'granules' (list(dict)): list of dict with the following keys:
                     'granuleId' (string): The id of a granule.
-                    'filepaths' (list(string)): list of filepaths for the granule.
+                    'keys' (list(string)): list of keys for the granule.
 
             Example:
-                {"glacierBucket": "some_bucket",
-                 "granules": [{"granuleId": "granxyz",
-                             "filepaths": ["filepath1",
-                                           "filepath2"]}]}
+                {"granules": [{"granuleId": "granxyz",
+                             "keys": ["key1",
+                                           "key2"]}]}
 
         Raises:
             ExtractFilePathsError: An error occurred parsing the input.

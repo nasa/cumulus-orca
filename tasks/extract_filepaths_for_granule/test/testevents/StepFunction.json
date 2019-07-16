@@ -3,7 +3,7 @@
     "state_machine": "arn:aws:states:us-west-2:065089468788:stateMachine:labCumulusDrRecoveryWorkflowStateMachine-aiTLe4uNdy0X",
     "message_source": "sfn",
     "workflow_start_time": "2019-06-27T14:15:47.752014",
-    "execution_name": "DrRecovery62",
+    "execution_name": "DrRecovery59",
     "system_bucket": "lab-cumulus-internal"
   },
   "meta": {
@@ -11,6 +11,7 @@
       "HelloWorldWorkflow": "s3://lab-cumulus-internal/lab-cumulus/workflows/HelloWorldWorkflow.json",
       "DrRecoveryWorkflow": "s3://lab-cumulus-internal/lab-cumulus/workflows/DrRecoveryWorkflow.json"
     },
+    "workflow_name": "DrRecoveryWorkflow",
     "queues": {
       "dbIndexerDeadLetterQueue": "https://sqs.us-west-2.amazonaws.com/065089468788/lab-cumulus-dbIndexerDeadLetterQueue",
       "jobsDeadLetterQueue": "https://sqs.us-west-2.amazonaws.com/065089468788/lab-cumulus-jobsDeadLetterQueue",
@@ -23,12 +24,11 @@
       "sns2elasticsearchDeadLetterQueue": "https://sqs.us-west-2.amazonaws.com/065089468788/lab-cumulus-sns2elasticsearchDeadLetterQueue",
       "kinesisFailure": "https://sqs.us-west-2.amazonaws.com/065089468788/lab-cumulus-kinesisFailure"
     },
-    "workflow_name": "DrRecoveryWorkflow",
     "collection": {
       "meta": {
         "response-endpoint": "arn:aws:sns:us-west-2:065089468788:providerResponseSNS",
-        "granuleRecoveryWorkflow": "DrRecoveryWorkflow",
-        "glacier-bucket": "podaac-sndbx-cumulus-glacier"
+        "glacier-bucket": "podaac-sndbx-cumulus-glacier",
+        "granuleRecoveryWorkflow": "DrRecoveryWorkflow"
       }
     },
     "stack": "lab-cumulus",
@@ -38,11 +38,6 @@
         "version": "1",
         "name": "lab-cumulus-SfSnsReport",
         "arn": "arn:aws:lambda:us-west-2:065089468788:function:lab-cumulus-SfSnsReport:SfSnsReport-282da1a3b4f8493441acc178396b846857bc1068"
-      },
-      "ExtractFilepaths": {
-        "name": "extract_filepaths_for_granule",
-        "version": "$LATEST",
-        "arn": "arn:aws:lambda:us-west-2:065089468788:function:extract_filepaths_for_granule:$LATEST"
       }
     },
     "provider": {},
@@ -76,8 +71,20 @@
     "granules": [
       {
         "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
-        "keys": [
-          "L0A_LR_RAW_product_0010-of-0092.h5"
+        "dataType": "MOD09GQ_test-jk2-IngestGranuleSuccess-1558420117156",
+        "version": "006",
+        "files": [
+          {
+            "name": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf",
+            "key": "L0A_LR_RAW_product_0010-of-0092.h5",
+            "bucket": "cumulus-test-sandbox-protected",
+            "filename": "s3://cumulus-test-sandbox-protected/MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf",
+            "path": "jk2-IngestGranuleSuccess-1558420117156-test-data/files",
+            "url_path": "{cmrMetadata.Granule.Collection.ShortName}___{cmrMetadata.Granule.Collection.VersionId}/{extractYear(cmrMetadata.Granule.Temporal.RangeDateTime.BeginningDateTime)}/{substring(file.name, 0, 3)}",
+            "type": "data",
+            "duplicate_found": true,
+            "size": 1098034
+          }
         ]
       }
     ]

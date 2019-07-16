@@ -129,7 +129,7 @@ def copy_object(s3_cli, src_bucket_name, src_object_name,
                            Key=dest_object_name)
     except ClientError as ex:
         logging.error(ex)
-        return str(ex)
+        return ex
     return None
 
 def handler(event, context):      #pylint: disable-msg=unused-argument
@@ -225,4 +225,4 @@ def handler(event, context):      #pylint: disable-msg=unused-argument
             logging.error(
                 f'File copy failed. {result}')
             raise CopyRequestError(f'File copy failed. {result}')
-    return json.dumps(result)
+    return result

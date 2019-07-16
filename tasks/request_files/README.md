@@ -24,20 +24,23 @@ Run the unit tests with code coverage:
 
 (podr) λ cd C:\devpy\poswotdr\tasks\request_files
 (podr) λ nosetests --with-coverage --cover-erase --cover-package=request_files -v
-test_handler_client_error_2_times (test_request_files.TestRequestFiles) ... ok
-test_handler_client_error_3_times (test_request_files.TestRequestFiles) ... ok
-test_handler_client_error_one_file (test_request_files.TestRequestFiles) ... ok
-test_handler_no_bucket (test_request_files.TestRequestFiles) ... ok
-test_handler_no_expire_days_env_var (test_request_files.TestRequestFiles) ... ok
-test_handler_no_retries_env_var (test_request_files.TestRequestFiles) ... ok
-test_handler_one_granule_4_files_success (test_request_files.TestRequestFiles) ... ok
-test_handler_two_granules (test_request_files.TestRequestFiles) ... ok
+Tests the handler ... {"message": "request: {'input': {'granules': [{'granuleId': 'MOD09GQ.A0219114.N5aUCG.006.0656338553321', 'keys': ['L0A_LR_RAW_product_0010-of-0092.h5']}]}, 'config': {}} does not contain a config value for glacier-bucket", "level": "error", "executions": ["DrRecovery54"], "timestamp": "2019-07-09T09:34:15.167271", "sender": "request_files", "version": 1}
+ok
+Test two files, first successful, second has two errors, then success. ... ok
+Test four files, first 3 successful, fourth errors on all retries and fails. ... ok
+Test retries for restore error for one file. ... ok
+Test a file that is not in glacier. ... ok
+Test environment var RESTORE_EXPIRE_DAYS not set - use default. ... ok
+Test for missing glacier-bucket in config. ... ok
+Test environment var RESTORE_REQUEST_RETRIES not set - use default. ... ok
+Test four files for one granule - successful ... ok
+Test two granules with one file each - successful. ... ok
 
 Name               Stmts   Miss  Cover
 --------------------------------------
-request_files.py      69      0   100%
+request_files.py      80      0   100%
 ----------------------------------------------------------------------
-Ran 8 tests in 1.627s
+Ran 10 tests in 1.741s
 
 ```
 <a name="linting"></a>
@@ -68,8 +71,12 @@ Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 ```
 1.  Upload the files in /tasks/testfiles/ to the test glacier bucket.
     It may take overnight for the files to be moved to Glacier.
-2.  Once the files are in Glacier, run the request_files lambda to restore them.
-    You can use the test event in /tasks/request_files/test/testevents/RestoreTestFiles.json
+2.  I haven't figured out how to write an input event that populates the 'config' part, but you
+    can use the test event in /tasks/request_files/test/testevents/RestoreTestFiles.json, and expect
+    an error ending with 'does not contain a config value for glacier-bucket'
+2.  Once the files are in Glacier, use the CumulusDrRecoveryWorkflowStateMachine to restore them.
+    You can use the test event in tasks/extract_filepaths_for_granule/test/testevents/StepFunction.json.
+    Edit the ['payload']['granules']['keys'] values as needed to be the file(s) you wish to restore.
     The restore may take up to 5 hours.
 
 Use the AWS CLI to check status of restore request:
@@ -118,11 +125,11 @@ FUNCTIONS
                         will be restored.
                     granules (list(dict)): A list of dict with the following keys:
                         granuleId (string): The id of the granule being restored.
-                        filepaths (list(string)): list of filepaths (glacier keys) for the granule
+                        keys (list(string)): list of keys (glacier keys) for the granule
 
                     Example: event: {'glacierBucket': 'some_bucket',
-                                'granules': [{'granuleId': 'granxyz',
-                                            'filepaths': ['path1', 'path2']}]
+                                     'granules': [{'granuleId': 'granxyz',
+                                            'keys': ['path1', 'path2']}]
                                }
 
                 context (Object): None
