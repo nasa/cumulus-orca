@@ -77,7 +77,7 @@ class TestExtractFilePaths(unittest.TestCase):
         except extract_filepaths_for_granule.ExtractFilePathsError as ex:
             self.assertEqual(exp_err, str(ex))
 
-    def test_tasak_no_granule(self):
+    def test_task_no_granule(self):
         """
         Test no granuleId in input event.
         """

@@ -225,5 +225,4 @@ def handler(event, context):      #pylint: disable-msg=unused-argument
             logging.error(
                 f'File copy failed. {result}')
             raise CopyRequestError(f'File copy failed. {result}')
-    #return json.dumps(result)
     return result
