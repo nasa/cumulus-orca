@@ -20,6 +20,10 @@ class TestRequestFiles(unittest.TestCase):
         self.mock_boto3_client = boto3.client
         self.mock_info = CumulusLogger.info
         self.mock_error = CumulusLogger.error
+        os.environ["DATABASE_HOST"] = "elpdvx143.cr.usgs.gov"
+        os.environ["DATABASE_NAME"] = "labsndbx"
+        os.environ["DATABASE_USER"] = "druser"
+        os.environ["DATABASE_PW"] = "July2019"
         os.environ['RESTORE_EXPIRE_DAYS'] = '5'
         os.environ['RESTORE_REQUEST_RETRIES'] = '3'
         self.context = LambdaContextMock()
@@ -30,6 +34,10 @@ class TestRequestFiles(unittest.TestCase):
         boto3.client = self.mock_boto3_client
         del os.environ['RESTORE_EXPIRE_DAYS']
         del os.environ['RESTORE_REQUEST_RETRIES']
+        del os.environ["DATABASE_HOST"]
+        del os.environ["DATABASE_NAME"]
+        del os.environ["DATABASE_USER"]
+        del os.environ["DATABASE_PW"]
 
     def test_handler(self):
         """

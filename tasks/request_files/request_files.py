@@ -11,6 +11,7 @@ from botocore.exceptions import ClientError
 
 from run_cumulus_task import run_cumulus_task
 from cumulus_logger import CumulusLogger
+import requests
 
 LOGGER = CumulusLogger()
 
@@ -112,11 +113,14 @@ def process_granules(s3, gran, glacier_bucket, exp_days):        # pylint: disab
         retry_sleep_secs = 0
 
     attempt = 1
+    request_id = requests.request_id_generator()
+    granule_id = gran['granuleId']
     while attempt <= retries:
         for afile in gran['files']:
             if not afile['success']:
                 try:
-                    restore_object(s3, glacier_bucket, afile['key'], exp_days)
+                    restore_object(s3, request_id, granule_id, glacier_bucket,
+                                   afile['key'], exp_days)
                     afile['success'] = True
                     afile['err_msg'] = ''
                     LOGGER.info("restore {} from {} attempt {} successful.",
@@ -154,11 +158,14 @@ def object_exists(s3_cli, glacier_bucket, file_key):
     except ClientError as err:              #pylint: disable-msg=unused-variable
         return False
 
-def restore_object(s3_cli, bucket_name, object_name, days, retrieval_type='Standard'):
+def restore_object(s3_cli, request_id, granule_id, bucket_name, object_name,
+                   days, retrieval_type='Standard'):
     """Restore an archived S3 Glacier object in an Amazon S3 bucket.
 
         Args:
             s3_cli (object): An instance of boto3 s3 client
+            request_id (string): A uuid identifying all objects in a granule restore request
+            granule_id (string): The granule_id to which the object_name being restored belongs
             bucket_name (string): The S3 bucket name
             object_name (string): The key of the Glacier object being restored
             days (number): The number of days the restored file will be accessible in the S3 bucket
@@ -175,10 +182,22 @@ def restore_object(s3_cli, bucket_name, object_name, days, retrieval_type='Stand
     # Submit the request
     try:
         s3_cli.restore_object(Bucket=bucket_name, Key=object_name, RestoreRequest=request)
+        data = requests.create_data(request_id, granule_id, object_name, "restore",
+                                    bucket_name, "inprogress", None, None)
+        try:
+            requests.submit_request(data)
+        except requests.DatabaseError as err:
+            LOGGER.error(f"Failed to log request in database: {data}")
     except ClientError as err:
         # NoSuchBucket, NoSuchKey, or InvalidObjectState error == the object's
         # storage class was not GLACIER
         LOGGER.error("{}. bucket: {} file: {}", err, bucket_name, object_name)
+        data = requests.create_data(request_id, granule_id, object_name, "restore",
+                                    bucket_name, "error", None, None)
+        try:
+            requests.submit_request(data)
+        except requests.DatabaseError as err:
+            LOGGER.error(f"Failed to log request in database: {data}")
         raise err
 
 def handler(event, context):      #pylint: disable-msg=unused-argument

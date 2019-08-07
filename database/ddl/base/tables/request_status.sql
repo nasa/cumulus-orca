@@ -23,7 +23,7 @@ BEGIN;
     CREATE TABLE request_status  
         (
           job_id              bigserial NOT NULL
-        , request_id          int8 NOT NULL    
+        , request_id          varchar(50) NOT NULL    
         , granule_id          varchar(100) NOT NULL
         , object_key          varchar(255) NOT NULL
         , job_type            varchar(12) NULL DEFAULT 'restore' CHECK (job_type IN ('restore', 'regenerate'))

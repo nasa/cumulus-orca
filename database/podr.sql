@@ -42,7 +42,7 @@ SET default_with_oids = false;
 
 CREATE TABLE dr.request_status (
     job_id bigint NOT NULL,
-    request_id bigint NOT NULL,
+    request_id character varying(50) NOT NULL,
     granule_id character varying(100) NOT NULL,
     object_key character varying(255) NOT NULL,
     job_type character varying(12) DEFAULT 'restore'::character varying,
@@ -153,21 +153,6 @@ ALTER SEQUENCE dr.request_status_job_id_seq OWNED BY dr.request_status.job_id;
 --
 
 ALTER TABLE ONLY dr.request_status ALTER COLUMN job_id SET DEFAULT nextval('dr.request_status_job_id_seq'::regclass);
-
-
---
--- Data for Name: request_status; Type: TABLE DATA; Schema: dr; Owner: dbo
---
-
-COPY dr.request_status (job_id, request_id, granule_id, object_key, job_type, restore_bucket_dest, job_status, request_time, last_update_time) FROM stdin;
-\.
-
-
---
--- Name: request_status_job_id_seq; Type: SEQUENCE SET; Schema: dr; Owner: dbo
---
-
-SELECT pg_catalog.setval('dr.request_status_job_id_seq', 1, false);
 
 
 --

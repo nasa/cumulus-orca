@@ -1,5 +1,9 @@
-from os import path
+"""
+This module contains helper functions for the unit tests.
+"""
 import json
+
+
 
 def create_handler_event():
     try:
@@ -9,6 +13,7 @@ def create_handler_event():
         with open('testevents/fixture1.json') as f:
             event = json.load(f)
     return event
+
 
 class LambdaContextMock:
     def __init__(self):
