@@ -7,6 +7,7 @@ tasks/request_files/.coverage
 tasks/request_files/.idea
 tasks/request_files/__pycache__
 tasks/request_files/test/__pycache__
+tasks/request_files/utils/__pycache__
 tasks/request_files/build/
 tasks/.idea/
 tasks/dr_copy_files_to_archive/.coverage
