@@ -1,4 +1,6 @@
 -- Create the DAAC database
+DROP DATABASE IF EXISTS labsndbx;
+
 CREATE DATABASE labsndbx
     OWNER postgres
     TEMPLATE template0

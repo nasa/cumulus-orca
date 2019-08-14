@@ -1,13 +1,13 @@
 /*
 ** SCHEMA: dr
-** 
+**
 */
 
---CREATE SCHEMA dr 
+--CREATE SCHEMA dr
 CREATE SCHEMA IF NOT EXISTS dr AUTHORIZATION dbo;
 
 -- Comment
-COMMENT ON SCHEMA dr 
+COMMENT ON SCHEMA dr
     IS 'Contains all the objects needed to operate the dr application';
 
 -- GRANT the privelages needed

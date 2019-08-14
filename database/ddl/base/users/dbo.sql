@@ -1,14 +1,15 @@
 DO LANGUAGE plpgsql
 $$
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_user where usename='dbo') THEN
+        DROP ROLE IF EXISTS dbo;
+        IF NOT EXISTS (SELECT 1 FROM pg_user where usename='dbo') THEN
         -- Create dbo
         CREATE ROLE dbo
             LOGIN
             INHERIT;
 
         -- Add Comment
-        COMMENT ON ROLE dbo 
+        COMMENT ON ROLE dbo
             IS 'GROUP: owner, DESCRIPTION: Non privelaged user who owns all application objects.';
 
         -- Set Default Session settings

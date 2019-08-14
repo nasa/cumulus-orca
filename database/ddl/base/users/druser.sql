@@ -1,6 +1,6 @@
 /*
 ** SCHEMA: dr
-** 
+**
 ** USER: druser
 **
 */
@@ -9,12 +9,13 @@
 DO LANGUAGE plpgsql
 $$
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_user WHERE usename = 'druser' ) THEN
+        DROP ROLE IF EXISTS druser;
+        IF NOT EXISTS (SELECT 1 FROM pg_user WHERE usename = 'druser' ) THEN
         -- Create druser
         CREATE ROLE druser
             LOGIN
             INHERIT
-	    IN ROLE dr_role;
+            IN ROLE dr_role;
 
         -- Add comment
         COMMENT ON ROLE druser

@@ -1,6 +1,6 @@
 /*
 ** SCHEMA: dr
-** 
+**
 ** ROLE: dr_role
 **
 */
@@ -9,7 +9,8 @@
 DO LANGUAGE plpgsql
 $$
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_group WHERE groname = 'dr_role' ) THEN
+        DROP ROLE IF EXISTS dr_role;
+        IF NOT EXISTS (SELECT 1 FROM pg_group WHERE groname = 'dr_role' ) THEN
         -- Create Application Role
         CREATE ROLE dr_role
             NOLOGIN

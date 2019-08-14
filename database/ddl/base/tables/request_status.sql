@@ -20,15 +20,15 @@ BEGIN;
     DROP TABLE IF EXISTS request_status;
 
     -- Create table
-    CREATE TABLE request_status  
+    CREATE TABLE request_status
         (
           job_id              bigserial NOT NULL
-        , request_id          varchar(50) NOT NULL    
+        , request_id          varchar(50) NOT NULL
         , granule_id          varchar(100) NOT NULL
         , object_key          varchar(255) NOT NULL
         , job_type            varchar(12) NULL DEFAULT 'restore' CHECK (job_type IN ('restore', 'regenerate'))
-        , restore_bucket_dest varchar(100)  
-        , job_status          varchar(12) NULL DEFAULT 'inprogress' CHECK (job_status IN ('inprogress', 'complete', 'error'))
+        , restore_bucket_dest varchar(100)
+        , job_status          varchar(12) NULL DEFAULT 'inprogress' CHECK (job_status IN ('inprogress', 'complete','error'))
         , request_time        timestamptz NOT NULL
         , last_update_time    timestamptz NOT NULL
         , PRIMARY KEY(job_id)
@@ -52,14 +52,12 @@ BEGIN;
 
     --DROP INDEX IF EXISTS idx_reqstat_reqidgranid;
     CREATE INDEX idx_reqstat_reqidgranid
-	 ON request_status USING btree (request_id, granule_id);
+         ON request_status USING btree (request_id, granule_id);
 
     CREATE INDEX idx_reqstat_keystatus
-	 ON request_status USING btree (object_key, job_status);
+         ON request_status USING btree (object_key, job_status);
 
 
     -- Additional Grants
 
 COMMIT;
-
-

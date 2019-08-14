@@ -23,6 +23,9 @@
 ## Git clone
 >git clone https://git.earthdata.nasa.gov/scm/pocumulus/dr-podaac-swot.git
 
+>cd tasks/request_files
+>git clone https://github.com/jkehler/awslambda-psycopg2.git
+
 Create an alias called origin to your main remote repository (in this case, ECC):
 >git remote add origin https://erosuser@git.earthdata.nasa.gov/scm/pocumulus/dr-podaac-swot.git
 
