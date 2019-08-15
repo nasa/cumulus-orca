@@ -23,7 +23,7 @@ Run the unit tests with code coverage:
 λ activate podr
 
 (podr) λ cd C:\devpy\poswotdr\tasks\request_files
-(podr) λ nosetests --with-coverage --cover-erase --cover-package=request_files -v
+(podr) λ nosetests --with-coverage --cover-erase --cover-package=request_files --cover-package=request_status --cover-package=copy_files_to_archive -v
 Tests the handler ... {"message": "request: {'input': {'granules': [{'granuleId': 'MOD09GQ.A0219114.N5aUCG.006.0656338553321', 'keys': ['L0A_LR_RAW_product_0010-of-0092.h5']}]}, 'config': {}} does not contain a config value for glacier-bucket", "level": "error", "executions": ["DrRecovery54"], "timestamp": "2019-07-09T09:34:15.167271", "sender": "request_files", "version": 1}
 ok
 Test two files, first successful, second has two errors, then success. ... ok

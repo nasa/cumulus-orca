@@ -3,6 +3,7 @@ Name: test_requests.py
 
 Description:  Unit tests for requests.py.
 """
+#TODO mock single_query, etc. develop tests for database.py later. in those. mock psycopg2.cursor, etc
 
 import os
 import time
@@ -30,8 +31,20 @@ class TestRequests(unittest.TestCase):
         os.environ["PREFIX"] = prefix
         os.environ["DATABASE_HOST"] = "elpdvx143.cr.usgs.gov"
         os.environ["DATABASE_NAME"] = "labsndbx"
-        os.environ["DATABASE_USER"] = "druser"
+        os.environ["DATABASE_USER"] = "postgres"
         os.environ["DATABASE_PW"] = "July2019"
+
+        self.job_id_1 = None
+        self.job_id_2 = None
+        self.job_id_3 = None
+        self.job_id_4 = None
+        self.job_id_5 = None
+        self.job_id_6 = None
+        self.job_id_7 = None
+        self.job_id_8 = None
+        self.job_id_9 = None
+        self.job_id_10 = None
+        self.job_id_11 = None
         self.utc_now_exp_1 = requests.get_utc_now_iso()
         time.sleep(1)
         self.request_id_exp_1 = requests.request_id_generator()
@@ -216,7 +229,7 @@ class TestRequests(unittest.TestCase):
         except requests.DatabaseError as err:
             self.assertEqual(exp_err, str(err))
 
-    def test_submit_request(self):
+    def test_submit_request_inprogress_status(self):
         """
         Tests that a job is written to the db
         """
@@ -241,12 +254,48 @@ class TestRequests(unittest.TestCase):
             self.fail(f"submit_request. {str(err)}")
 
         try:
-            result = requests.get_request_by_job_id(job_id)
+            result = requests.get_job_by_job_id(job_id)
             result.pop("job_id")
             data["last_update_time"] = utc_now_exp
             self.assertEqual(data, result)
         except requests.DatabaseError as err:
-            self.fail(f"get_request_by_job_id. {str(err)}")
+            self.fail(f"get_job_by_job_id. {str(err)}")
+
+    def test_submit_request_error_status(self):
+        """
+        Tests that a job is written to the db
+        """
+        self.create_test_requests()
+        utc_now_exp = "2019-07-31 18:05:19.161362+00:00"
+        request_id_exp = "0000a0a0-a000-00a0-00a0-0000a0000000"
+        requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
+        requests.request_id_generator = Mock(return_value=request_id_exp)
+
+        data = {}
+        data["err_msg"] = "restore request error message here"
+        data["request_id"] = requests.request_id_generator()
+        data["granule_id"] = "granule_1"
+        data["object_key"] = "thisisanobjectkey"
+        data["job_type"] = "restore"
+        data["restore_bucket_dest"] = "my_s3_bucket"
+        data["job_status"] = "error"
+        data["request_time"] = utc_now_exp
+
+        try:
+            job_id = requests.submit_request(data)
+            print("job_id: ", job_id)
+            self.assertGreater(job_id, 0, "job_id should be greater than 0")
+        except requests.DatabaseError as err:
+            self.fail(f"submit_request. {str(err)}")
+
+        try:
+            result = requests.get_job_by_job_id(job_id)
+            result.pop("job_id")
+            data["last_update_time"] = utc_now_exp
+            self.assertEqual(data, result)
+        except requests.DatabaseError as err:
+            self.fail(f"get_job_by_job_id. {str(err)}")
+
 
     def test_get_request_not_found(self):
         """
@@ -254,11 +303,8 @@ class TestRequests(unittest.TestCase):
         """
         job_id = 500000
 
-        try:
-            requests.get_request_by_job_id(job_id)
-            self.fail("expected NotFound")
-        except requests.NotFound as err:
-            self.assertEqual(f"Unknown job_id: {job_id}", str(err))
+        result = requests.get_job_by_job_id(job_id)
+        self.assertEqual([], result)
 
     def test_get_request_exception(self):
         """
@@ -269,7 +315,7 @@ class TestRequests(unittest.TestCase):
         #    "Internal database error, please contact LP DAAC User Services")])
         os.environ["DATABASE_HOST"] = "unknown.cr.usgs.gov"
         try:
-            requests.get_request_by_job_id('x')
+            requests.get_job_by_job_id('x')
             self.fail("expected DatabaseError")
         except requests.DatabaseError as err:
             exp_msg = ('Database Error. could not connect to server: Connection timed out')
@@ -345,12 +391,16 @@ class TestRequests(unittest.TestCase):
         utc_now_exp = "2019-07-31 19:21:38.263364+00:00"
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
         object_key = "objectkey_5"
+        granule_id = "granule_5"
         job_status = "error"
+        err_msg = "copy error msg goes here"
         try:
-            result = requests.update_request_status(object_key, job_status)
+            result = requests.update_request_status(object_key, job_status, err_msg)
             self.assertEqual([], result)
         except requests.DatabaseError as err:
             self.fail(f"update_request_status. {str(err)}")
+        result = requests.get_jobs_by_granule_id(granule_id)
+        self.assertEqual(err_msg, result[0]["err_msg"])
 
     def test_update_request_status_exception(self):
         """
@@ -433,11 +483,8 @@ class TestRequests(unittest.TestCase):
         """
         self.create_test_requests()
         status = "noexist"
-        try:
-            result = requests.get_requests_by_status(status)
-            self.fail("expected NotFound")
-        except requests.NotFound as err:
-            self.assertEqual("No jobs found", str(err))
+        result = requests.get_requests_by_status(status)
+        self.assertEqual([], result)
 
         status = "complete"
         result = requests.get_requests_by_status(status)
@@ -454,11 +501,8 @@ class TestRequests(unittest.TestCase):
         """
         self.create_test_requests()
         status = "noexist"
-        try:
-            result = requests.get_requests_by_status(status)
-            self.fail("expected NotFound")
-        except requests.NotFound as err:
-            self.assertEqual("No jobs found", str(err))
+        result = requests.get_requests_by_status(status)
+        self.assertEqual([], result)
 
         status = "complete"
         result = requests.get_requests_by_status(status, 5)
@@ -516,3 +560,16 @@ class TestRequests(unittest.TestCase):
         except requests.DatabaseError as err:
             self.assertEqual("Database Error. Internal database error, "
                              "please contact LP DAAC User Services", str(err))
+
+    def test_delete_all_requests(self):
+        """
+        Tests deleting all requests from the request_status table
+        """
+        try:
+            self.create_test_requests()
+            requests.delete_all_requests()
+            self.fail("expected NotFound")
+        except requests.NotFound as nfd:
+            self.assertEqual("x", str(nfd))
+        except requests.DatabaseError as err:
+            self.fail(f"delete_all_requests. {str(err)}")

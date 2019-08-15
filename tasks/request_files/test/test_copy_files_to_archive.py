@@ -1,16 +1,19 @@
 """
-Name: test_dr_copy_files_to_archive.py
+Name: test_copy_files_to_archive.py
 
-Description:  Unit tests for dr_copy_files_to_archive.py.
+Description:  Unit tests for copy_files_to_archive.py.
 """
+import json
+import os
 import unittest
 from unittest.mock import Mock
-from helpers import create_handler_event, create_event2
-import os
-import json
+
 import boto3
 from botocore.exceptions import ClientError
-import dr_copy_files_to_archive                  #pylint: disable-import-error
+
+import copy_files_to_archive  # pylint: disable-import-error
+from copy_helpers import create_event2, create_handler_event
+
 
 class TestCopyFiles(unittest.TestCase):
     """
@@ -50,7 +53,7 @@ class TestCopyFiles(unittest.TestCase):
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.copy_object = Mock(side_effect=[None])
-        result = dr_copy_files_to_archive.handler(self.handler_input_event, None)
+        result = copy_files_to_archive.handler(self.handler_input_event, None)
         os.environ['COPY_RETRIES'] = '2'
         os.environ['COPY_RETRY_SLEEP_SECS'] = '1'
         boto3.client.assert_called_with('s3')
@@ -75,7 +78,7 @@ class TestCopyFiles(unittest.TestCase):
         s3_cli.copy_object = Mock(side_effect=[None, None])
         exp_rec_2 = create_event2()
         self.handler_input_event["Records"].append(exp_rec_2)
-        result = dr_copy_files_to_archive.handler(self.handler_input_event, None)
+        result = copy_files_to_archive.handler(self.handler_input_event, None)
 
         boto3.client.assert_called_with('s3')
         exp_result = [{"success": True, "source_bucket": self.exp_src_bucket,
@@ -121,14 +124,14 @@ class TestCopyFiles(unittest.TestCase):
                     f"'source_key': '{exp_file2_key}', " \
                     f"'target_bucket': '{self.exp_target_bucket}', " \
                     "'err_msg': ClientError('An error occurred (AccessDenied) when calling " \
-                    "the copy_object operation: Unknown',)}, {'success': True, " \
+                    "the copy_object operation: Unknown')}, {'success': True, " \
                     f"'source_bucket': '{self.exp_src_bucket}', " \
                     f"'source_key': '{exp_file_key}', " \
                     "'target_bucket': 'unittest_hdf_bucket', 'err_msg': ''}]"
         try:
-            dr_copy_files_to_archive.handler(self.handler_input_event, None)
+            copy_files_to_archive.handler(self.handler_input_event, None)
             self.fail("expected CopyRequestError")
-        except dr_copy_files_to_archive.CopyRequestError as ex:
+        except copy_files_to_archive.CopyRequestError as ex:
             self.assertEqual(exp_error, str(ex))
 
         boto3.client.assert_called_with('s3')
@@ -159,11 +162,11 @@ class TestCopyFiles(unittest.TestCase):
                     f"'source_key': '{self.exp_file_key1}', " \
                     f"'target_bucket': '{self.exp_target_bucket}', " \
                     "'err_msg': ClientError('An error occurred (AccessDenied) when calling " \
-                    "the copy_object operation: Unknown',)}]"
+                    "the copy_object operation: Unknown')}]"
         try:
-            dr_copy_files_to_archive.handler(self.handler_input_event, None)
+            copy_files_to_archive.handler(self.handler_input_event, None)
             self.fail("expected CopyRequestError")
-        except dr_copy_files_to_archive.CopyRequestError as ex:
+        except copy_files_to_archive.CopyRequestError as ex:
             self.assertEqual(exp_error, str(ex))
         boto3.client.assert_called_with('s3')
         s3_cli.copy_object.assert_called_with(Bucket=self.exp_target_bucket,
@@ -184,7 +187,7 @@ class TestCopyFiles(unittest.TestCase):
         s3_cli.copy_object = Mock(side_effect=[ClientError({'Error': {'Code': 'AccessDenied'}},
                                                            'copy_object'),
                                                None])
-        result = dr_copy_files_to_archive.handler(self.handler_input_event, None)
+        result = copy_files_to_archive.handler(self.handler_input_event, None)
         os.environ['COPY_RETRIES'] = '2'
         os.environ['COPY_RETRY_SLEEP_SECS'] = '1'
         boto3.client.assert_called_with('s3')
@@ -208,9 +211,9 @@ class TestCopyFiles(unittest.TestCase):
         s3_cli.copy_object = Mock(side_effect=[None])
         exp_err = 'BUCKET_MAP: {} does not contain values for ".txt" or "other"'
         try:
-            dr_copy_files_to_archive.handler(self.handler_input_event, None)
+            copy_files_to_archive.handler(self.handler_input_event, None)
             self.fail("expected CopyRequestError")
-        except dr_copy_files_to_archive.CopyRequestError as ex:
+        except copy_files_to_archive.CopyRequestError as ex:
             self.assertEqual(exp_err, str(ex))
         os.environ['BUCKET_MAP'] = json.dumps(self.bucket_map)
         boto3.client.assert_called_with('s3')
@@ -224,7 +227,7 @@ class TestCopyFiles(unittest.TestCase):
         s3_cli = boto3.client('s3')
         s3_cli.copy_object = Mock(side_effect=[None])
         self.handler_input_event["Records"][0]["s3"]["object"]["key"] = exp_file_key
-        result = dr_copy_files_to_archive.handler(self.handler_input_event, None)
+        result = copy_files_to_archive.handler(self.handler_input_event, None)
         boto3.client.assert_called_with('s3')
         exp_result = [{"success": True, "source_bucket": self.exp_src_bucket,
                        "source_key": exp_file_key,
@@ -250,9 +253,9 @@ class TestCopyFiles(unittest.TestCase):
         self.handler_input_event["Records"][0]["s3"]["object"]["key"] = exp_file_key
         exp_err = f'BUCKET_MAP: {bucket_map} does not contain values for ".xml" or "other"'
         try:
-            dr_copy_files_to_archive.handler(self.handler_input_event, None)
+            copy_files_to_archive.handler(self.handler_input_event, None)
             self.fail("expected CopyRequestError")
-        except dr_copy_files_to_archive.CopyRequestError as ex:
+        except copy_files_to_archive.CopyRequestError as ex:
             self.assertEqual(exp_err, str(ex))
 
         boto3.client.assert_called_with('s3')
@@ -269,9 +272,9 @@ class TestCopyFiles(unittest.TestCase):
         exp_err = f'event record: "{self.handler_input_event["Records"][0]}" does not contain a ' \
                   f'value for Records["s3"]["object"]["key"]'
         try:
-            dr_copy_files_to_archive.handler(self.handler_input_event, None)
+            copy_files_to_archive.handler(self.handler_input_event, None)
             self.fail("expected CopyRequestError")
-        except dr_copy_files_to_archive.CopyRequestError as ex:
+        except copy_files_to_archive.CopyRequestError as ex:
             self.assertEqual(exp_err, str(ex))
 
 

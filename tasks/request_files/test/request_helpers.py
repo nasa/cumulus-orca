@@ -7,10 +7,10 @@ import json
 
 def create_handler_event():
     try:
-        with open('test/testevents/fixture1.json') as f:
+        with open('test/testevents/request_files_fixture1.json') as f:
             event = json.load(f)
     except EnvironmentError:  # parent of IOError, OSError *and* WindowsError where available
-        with open('testevents/fixture1.json') as f:
+        with open('testevents/request_files_fixture1.json') as f:
             event = json.load(f)
     return event
 

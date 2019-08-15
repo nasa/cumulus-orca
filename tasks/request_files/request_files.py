@@ -185,7 +185,8 @@ def restore_object(s3_cli, request_id, granule_id, bucket_name, object_name,
         data = requests.create_data(request_id, granule_id, object_name, "restore",
                                     bucket_name, "inprogress", None, None)
         try:
-            requests.submit_request(data)
+            job_id = requests.submit_request(data)
+            LOGGER.info(f"Job {job_id} created.")
         except requests.DatabaseError as err:
             LOGGER.error(f"Failed to log request in database: {data}")
     except ClientError as err:
@@ -193,9 +194,9 @@ def restore_object(s3_cli, request_id, granule_id, bucket_name, object_name,
         # storage class was not GLACIER
         LOGGER.error("{}. bucket: {} file: {}", err, bucket_name, object_name)
         data = requests.create_data(request_id, granule_id, object_name, "restore",
-                                    bucket_name, "error", None, None)
+                                    bucket_name, "error", None, None, str(err))
         try:
-            requests.submit_request(data)
+            job_id = requests.submit_request(data)
         except requests.DatabaseError as err:
             LOGGER.error(f"Failed to log request in database: {data}")
         raise err

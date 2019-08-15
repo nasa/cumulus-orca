@@ -6,10 +6,8 @@ queries, simply using the "query()" fuction will likely suffice.
 
 import logging
 
-# from json import loads
 import os
 
-# from psycopg2 import ProgrammingError, InternalError, DataError
 from contextlib import contextmanager
 
 from psycopg2 import DataError, ProgrammingError
@@ -17,7 +15,6 @@ from psycopg2 import connect as psycopg2_connect
 from psycopg2.extras import RealDictCursor
 
 LOGGER = logging.getLogger(__name__)
-
 
 class DbError(Exception):
     """
@@ -39,7 +36,6 @@ def get_connection():
             user=os.environ["DATABASE_USER"],
             password=os.environ["DATABASE_PW"],
         )
-
         yield connection
 
     except Exception as ex:
@@ -56,9 +52,7 @@ def get_cursor():
     Retrieves the cursor from the connection and yields it. Automatically
     commits the transaction if no exception occurred.
     """
-
     with get_connection() as conn:
-
         cursor = conn.cursor(cursor_factory=RealDictCursor)
         try:
             yield cursor
@@ -80,7 +74,6 @@ def single_query(sql, params=None):
 
     For multi-query transactions, see multi_query().
     """
-
     rows = []
     with get_cursor() as cursor:
         rows = _query(sql, params, cursor)

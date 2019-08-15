@@ -63,23 +63,22 @@ def submit_request(data):
 
     Returns the request id if successful, otherwise raises BadRequestError.
     """
-
     # build and run the insert
     sql = """
         INSERT INTO request_status (
             request_id, granule_id,
             object_key, job_type,
             restore_bucket_dest,
-            job_status, request_time, last_update_time
+            job_status, request_time, last_update_time,
+            err_msg
       
         ) VALUES (
-            %s, %s,
+            %s, %s, %s,
             %s, %s, %s,
             %s, %s, %s
         )
         RETURNING job_id
         """
-
     # date might be provided, if not use current utc date
     date = get_utc_now_iso()
 
@@ -95,6 +94,9 @@ def submit_request(data):
 
     if not "restore_bucket_dest" in data:
         data["restore_bucket_dest"] = None
+    if not "err_msg" in data:
+        data["err_msg"] = None
+
     try:
         params = (
             data["request_id"],
@@ -105,23 +107,26 @@ def submit_request(data):
             data["job_status"],
             rq_date,
             lu_date,
+            data["err_msg"],
         )
     except KeyError as err:
         raise BadRequestError(f"Missing {str(err)} in input data")
     try:
         rows = single_query(sql, params)
-        job_id = rows[0]["job_id"]
+        job_id = None
+        if rows:
+            job_id = rows[0]["job_id"]
     except DbError as err:
+        LOGGER.exception(f"DbError: {str(err)}")
         raise DatabaseError(str(err))
 
     return job_id
 
 
-def get_request_by_job_id(job_id):
+def get_job_by_job_id(job_id):
     """
     Reads a row from request_status by job_id.
     """
-
     sql = """
         SELECT
             job_id,
@@ -132,7 +137,8 @@ def get_request_by_job_id(job_id):
             restore_bucket_dest,
             job_status,
             request_time,
-            last_update_time
+            last_update_time,
+            err_msg
         FROM
             request_status
         WHERE
@@ -141,19 +147,52 @@ def get_request_by_job_id(job_id):
     try:
         rows = single_query(sql, (job_id,))
     except DbError as err:
+        LOGGER.exception(f"DbError: {str(err)}")
         raise DatabaseError(str(err))
 
-    # if len(rows) == 0:
-    if not rows:
-        raise NotFound("Unknown job_id: {}".format(job_id))
-
-    request = rows[0]
-    # request["event_center_point"] = postgis_point_to_dict(request["event_center_point"])
+    #if not rows:
+    #    raise NotFound("Unknown job_id: {}".format(job_id))
+    if rows:
+        request = rows[0]
+    else:
+        request = []
 
     return json.loads(json.dumps(request, default=myconverter))
 
+def get_jobs_by_granule_id(granule_id):
+    """
+    Reads rows from request_status by granule_id.
+    """
+    sql = """
+        SELECT
+            job_id,
+            request_id,
+            granule_id,
+            object_key,
+            job_type,
+            restore_bucket_dest,
+            job_status,
+            request_time,
+            last_update_time,
+            err_msg
+        FROM
+            request_status
+        WHERE
+            granule_id = %s
+        """
+    try:
+        rows = single_query(sql, (granule_id,))
+    except DbError as err:
+        LOGGER.exception(f"DbError: {str(err)}")
+        raise DatabaseError(str(err))
 
-def update_request_status(object_key, status):
+    #if not rows:
+    #    raise NotFound("Unknown granule_id: {}".format(granule_id))
+
+    return json.loads(json.dumps(rows, default=myconverter))
+
+
+def update_request_status(object_key, status, err_msg=None):
     """
     Updates the status of an inprogress request.
     """
@@ -164,6 +203,9 @@ def update_request_status(object_key, status):
     if status is None:
         raise BadRequestError("A new status must be provided")
 
+    #if not err_msg:
+    #    err_msg = Null
+
     date = get_utc_now_iso()
 
     # run the update
@@ -173,14 +215,17 @@ def update_request_status(object_key, status):
             request_status
         SET
             job_status = %s,
-            last_update_time = %s
+            last_update_time = %s,
+            err_msg = %s
         WHERE
             object_key = %s
             and job_status = %s
     """
     try:
-        result = single_query(sql, (status, date, object_key, "inprogress"))
+        result = single_query(sql, (status, date, err_msg, object_key, "inprogress"))
     except DbError as err:
+        msg = f"DbError updating status for {object_key} from 'inprogress' to {status}. {str(err)}"
+        LOGGER.exception(msg)
         raise DatabaseError(str(err))
     return result
 
@@ -200,8 +245,31 @@ def delete_request(job_id):
     try:
         result = single_query(sql, (job_id,))
     except DbError as err:
+        LOGGER.exception(f"DbError: {str(err)}")
         raise DatabaseError(str(err))
     return result
+
+def delete_all_requests():
+    """
+    Deletes everything from the request_status table.
+    """
+    try:
+        result = get_all_requests()
+        for job in result:
+            try:
+                delete_request(job["job_id"])
+            except NotFound:
+                pass
+            except DbError as err:
+                LOGGER.exception(f"DbError: {str(err)}")
+                raise DatabaseError(str(err))
+        result = get_all_requests()
+        return result
+    except NotFound:
+        return []
+    except DbError as err:
+        LOGGER.exception(f"DbError: {str(err)}")
+        raise DatabaseError(str(err))
 
 def get_all_requests():
     """
@@ -217,7 +285,8 @@ def get_all_requests():
             restore_bucket_dest,
             job_status,
             request_time,
-            last_update_time
+            last_update_time,
+            err_msg
         FROM
             request_status
         ORDER BY job_id """
@@ -225,15 +294,17 @@ def get_all_requests():
     try:
         rows = single_query(sql, ())
     except DbError as err:
+        LOGGER.exception(f"DbError: {str(err)}")
         raise DatabaseError(str(err))
 
-    if not rows:
-        raise NotFound("No jobs found")
+    #if not rows:
+    #    raise NotFound("No jobs found")
 
     return json.loads(json.dumps(rows, default=myconverter))
 
 def create_data(request_id=None, granule_id=None, object_key=None, job_type=None,
-                restore_bucket=None, job_status=None, request_time=None, last_update_time=None):
+                restore_bucket=None, job_status=None, request_time=None,
+                last_update_time=None, err_msg=None):
     """
     Creates a dict containing the input data for submit_request.
     """
@@ -254,6 +325,8 @@ def create_data(request_id=None, granule_id=None, object_key=None, job_type=None
         data["request_time"] = request_time
     if last_update_time:
         data["last_update_time"] = last_update_time
+    if err_msg:
+        data["err_msg"] = err_msg
     return data
 
 def get_requests_by_status(status, max_days_old=None):
@@ -273,7 +346,8 @@ def get_requests_by_status(status, max_days_old=None):
             restore_bucket_dest,
             job_status,
             request_time,
-            last_update_time
+            last_update_time,
+            err_msg
         FROM
             request_status
         WHERE
@@ -289,9 +363,47 @@ def get_requests_by_status(status, max_days_old=None):
             sql = sql + orderby
             rows = single_query(sql, (status,))
     except DbError as err:
+        LOGGER.exception(f"DbError: {str(err)}")
         raise DatabaseError(str(err))
 
-    if not rows:
-        raise NotFound("No jobs found")
+    #if not rows:
+    #    raise NotFound("No jobs found")
+
+    return json.loads(json.dumps(rows, default=myconverter))
+
+def get_jobs_by_request_id(request_id):
+    """
+    Returns rows from request_status for a request_id
+    """
+    if request_id is None:
+        raise BadRequestError("A request_id must be provided")
+
+    sql = """
+        SELECT
+            job_id,
+            request_id,
+            granule_id,
+            object_key,
+            job_type,
+            restore_bucket_dest,
+            job_status,
+            request_time,
+            last_update_time,
+            err_msg
+        FROM
+            request_status
+        WHERE
+        request_id = %s
+        """
+    orderby = """ order by last_update_time """
+    try:
+        sql = sql + orderby
+        rows = single_query(sql, (request_id,))
+    except DbError as err:
+        LOGGER.exception(f"DbError: {str(err)}")
+        raise DatabaseError(str(err))
+
+    #if not rows:
+    #    raise NotFound("Unknown request_id: {}".format(request_id))
 
     return json.loads(json.dumps(rows, default=myconverter))

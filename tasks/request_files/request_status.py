@@ -7,9 +7,13 @@ Description:  Queries the request_status table.
 #from run_cumulus_task import run_cumulus_task
 #from cumulus_logger import CumulusLogger
 
+import logging
+
 #LOGGER = CumulusLogger()
 import requests
 
+# Set Global Variables
+_LOG = logging.getLogger(__name__)
 #class ExtractFilePathsError(Exception):
 #    """Exception to be raised if any errors occur"""
 
@@ -30,37 +34,80 @@ def task(event, context):    #pylint: disable-msg=unused-argument
             ExtractFilePathsError: An error occurred parsing the input.
     """
     result = {}
-    try:
-        function = event['function']
-    except KeyError as err:
-        raise
+    _LOG.warning(f"event: '{event}' ")
+    _LOG.info(f"event: '{event}' ")
+    #try:
+    function = event['function']
+    _LOG.warning(f"function: {function}")
+    #except KeyError:
+    #    raise
 
     if function == "query":
         try:
             granule_id = event['granule_id']
-        except KeyError as err:
-            pass
+            _LOG.warning(f"granule_id: {granule_id}")
+        except KeyError:
+            granule_id = None
         try:
             request_id = event['request_id']
-        except KeyError as err:
-            pass
-        result = requests.get_all_requests()
-    else:
-        if function == "add":
-            data = {}
-            data["request_id"] = "request_id"
-            data["granule_id"] = "granule_1"
-            data["object_key"] = "my_test_filename"
-            data["job_type"] = "restore"
-            data["restore_bucket_dest"] = "my_test_bucket"
-            data["job_status"] = "error"
-            job_id = requests.submit_request(data)
+            _LOG.warning(f"request_id: {request_id}")
+        except KeyError:
+            request_id = None
+        try:
+            job_id = event['job_id']
+            _LOG.warning(f"job_id: {job_id}")
+        except KeyError:
+            job_id = None
+        if job_id:
+            result = requests.get_job_by_job_id(job_id)
+        else:
+            if request_id:
+                result = requests.get_jobs_by_request_id(request_id)
+            else:
+                if granule_id:
+                    result = requests.get_jobs_by_granule_id(granule_id)
+                else:
+                    result = requests.get_all_requests()
+        return result
+
+    if function == "add":
+        try:
+            granule_id = event['granule_id']
+            _LOG.warning(f"granule_id: {granule_id}")
+        except KeyError:
+            granule_id = "granule_id_1"
+        try:
+            request_id = event['request_id']
+            _LOG.warning(f"request_id: {request_id}")
+        except KeyError:
+            request_id = "request_id_1"
+        try:
+            status = event['status']
+            _LOG.warning(f"status: {status}")
+        except KeyError:
+            status = "error"
+
+        data = {}
+        data["request_id"] = request_id
+        data["granule_id"] = granule_id
+        data["object_key"] = "my_test_filename"
+        data["job_type"] = "restore"
+        data["restore_bucket_dest"] = "my_test_bucket"
+        data["job_status"] = status
+        if status == "error":
+            data["err_msg"] = "error message goes here"
+        _LOG.warning(f"data: '{data}'")
+        job_id = requests.submit_request(data)
+        _LOG.warning(f"job_id: {job_id}")
+        result = requests.get_job_by_job_id(job_id)
+        return result
 
     #if granule_id is None and request_id is None:
     #    raise ExtractFilePathsError(f'KeyError: granule_id or request_id is required')
+    if function == "clear":
+        result = requests.delete_all_requests()
+        return result
 
-    result = requests.get_all_requests()
-    return result
 
 def handler(event, context):            #pylint: disable-msg=unused-argument
     """Lambda handler. Extracts the key's for a granule from an input dict.
@@ -94,5 +141,6 @@ def handler(event, context):            #pylint: disable-msg=unused-argument
     """
     #LOGGER.setMetadata(event, context)
     #result = run_cumulus_task(task, event, context)
+    _LOG.warning("in handler")
     result = task(event, context)
     return result

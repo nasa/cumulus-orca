@@ -9,7 +9,7 @@ import os
 import boto3
 from botocore.exceptions import ClientError
 from cumulus_logger import CumulusLogger
-from helpers import LambdaContextMock, create_handler_event
+from request_helpers import LambdaContextMock, create_handler_event
 import request_files
 
 class TestRequestFiles(unittest.TestCase):
@@ -22,7 +22,7 @@ class TestRequestFiles(unittest.TestCase):
         self.mock_error = CumulusLogger.error
         os.environ["DATABASE_HOST"] = "elpdvx143.cr.usgs.gov"
         os.environ["DATABASE_NAME"] = "labsndbx"
-        os.environ["DATABASE_USER"] = "druser"
+        os.environ["DATABASE_USER"] = "postgres"
         os.environ["DATABASE_PW"] = "July2019"
         os.environ['RESTORE_EXPIRE_DAYS'] = '5'
         os.environ['RESTORE_REQUEST_RETRIES'] = '3'
