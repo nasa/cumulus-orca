@@ -23,14 +23,15 @@ BEGIN;
     CREATE TABLE request_status
         (
           job_id              bigserial NOT NULL
-        , request_id          varchar(50) NOT NULL
+        , request_id          uuid NOT NULL
         , granule_id          varchar(100) NOT NULL
-        , object_key          varchar(255) NOT NULL
+        , object_key          text NOT NULL
         , job_type            varchar(12) NULL DEFAULT 'restore' CHECK (job_type IN ('restore', 'regenerate'))
-        , restore_bucket_dest varchar(100)
+        , restore_bucket_dest text NULL
         , job_status          varchar(12) NULL DEFAULT 'inprogress' CHECK (job_status IN ('inprogress', 'complete','error'))
         , request_time        timestamptz NOT NULL
         , last_update_time    timestamptz NOT NULL
+        , err_msg             text NULL
         , PRIMARY KEY(job_id)
         )
     ;
@@ -47,6 +48,7 @@ BEGIN;
     COMMENT ON COLUMN request_status.job_status IS 'current status of the request';
     COMMENT ON COLUMN request_status.request_time IS 'Time the request was made';
     COMMENT ON COLUMN request_status.last_update_time IS 'The last time the request was updated';
+	COMMENT ON COLUMN request_status.err_msg IS 'The error message when job_status is error';
 
     -- Non-inline Constraints
 

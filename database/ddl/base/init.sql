@@ -7,11 +7,9 @@ commit;
 
 -- Create Schema and extensions in the new database
 \c labsndbx
+SET SESSION AUTHORIZATION dbo;
 \ir schema/init.sql;
-commit;
 
 -- Create the application objects
-SET SESSION AUTHORIZATION dbo;
 \ir tables/init.sql;
 commit;
-

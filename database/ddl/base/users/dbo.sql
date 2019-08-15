@@ -6,7 +6,8 @@ BEGIN
         -- Create dbo
         CREATE ROLE dbo
             LOGIN
-            INHERIT;
+            INHERIT
+            IN ROLE drdbo_role;
 
         -- Add Comment
         COMMENT ON ROLE dbo
