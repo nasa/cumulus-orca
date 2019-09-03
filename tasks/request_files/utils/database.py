@@ -16,6 +16,8 @@ from psycopg2.extras import RealDictCursor
 
 LOGGER = logging.getLogger(__name__)
 
+#TODO develop tests for database.py later. in those mock psycopg2.cursor, etc
+
 class DbError(Exception):
     """
     Exception to be raised if there is a database error.

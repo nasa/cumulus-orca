@@ -5,9 +5,11 @@ table in a single place.
 import json
 import logging
 import uuid
-from datetime import datetime
+import datetime
 import dateutil.parser
-from utils.database import single_query  # pylint: disable=no-name-in-module
+import utils
+import utils.database
+#from utils.database import single_query  # pylint: disable=no-name-in-module
 from utils.database import DbError                # pylint: disable=no-name-in-module
 
 LOGGER = logging.getLogger(__name__)
@@ -29,22 +31,12 @@ class DatabaseError(Exception):
     Exception to be raised when there's a database error.
     """
 
-
-def myconverter(obj):
-    """
-    Returns the current utc timestamp as a string in isoformat
-    ex. '2019-07-17T17:36:38.494918'
-    """
-    if isinstance(obj, datetime):
-        return obj.__str__()
-
-
 def get_utc_now_iso():
     """
     Returns the current utc timestamp as a string in isoformat
     ex. '2019-07-17T17:36:38.494918'
     """
-    return datetime.utcnow().isoformat()
+    return datetime.datetime.utcnow().isoformat()
 
 
 def request_id_generator():
@@ -112,7 +104,7 @@ def submit_request(data):
     except KeyError as err:
         raise BadRequestError(f"Missing {str(err)} in input data")
     try:
-        rows = single_query(sql, params)
+        rows = utils.database.single_query(sql, params)
         job_id = None
         if rows:
             job_id = rows[0]["job_id"]
@@ -145,19 +137,20 @@ def get_job_by_job_id(job_id):
             job_id = %s
         """
     try:
-        rows = single_query(sql, (job_id,))
+        rows = utils.database.single_query(sql, (job_id,))
+        result = result_to_json(rows)
     except DbError as err:
         LOGGER.exception(f"DbError: {str(err)}")
         raise DatabaseError(str(err))
 
     #if not rows:
     #    raise NotFound("Unknown job_id: {}".format(job_id))
-    if rows:
-        request = rows[0]
-    else:
-        request = []
+    #request = []
+    #if result:
+    #    print("result: ", result)
+    #    request.append(result)
 
-    return json.loads(json.dumps(request, default=myconverter))
+    return result
 
 def get_jobs_by_granule_id(granule_id):
     """
@@ -181,7 +174,8 @@ def get_jobs_by_granule_id(granule_id):
             granule_id = %s
         """
     try:
-        rows = single_query(sql, (granule_id,))
+        rows = utils.database.single_query(sql, (granule_id,))
+        result = result_to_json(rows)
     except DbError as err:
         LOGGER.exception(f"DbError: {str(err)}")
         raise DatabaseError(str(err))
@@ -189,7 +183,7 @@ def get_jobs_by_granule_id(granule_id):
     #if not rows:
     #    raise NotFound("Unknown granule_id: {}".format(granule_id))
 
-    return json.loads(json.dumps(rows, default=myconverter))
+    return result
 
 
 def update_request_status(object_key, status, err_msg=None):
@@ -222,7 +216,7 @@ def update_request_status(object_key, status, err_msg=None):
             and job_status = %s
     """
     try:
-        result = single_query(sql, (status, date, err_msg, object_key, "inprogress"))
+        result = utils.database.single_query(sql, (status, date, err_msg, object_key, "inprogress"))
     except DbError as err:
         msg = f"DbError updating status for {object_key} from 'inprogress' to {status}. {str(err)}"
         LOGGER.exception(msg)
@@ -243,7 +237,7 @@ def delete_request(job_id):
             job_id = %s
     """
     try:
-        result = single_query(sql, (job_id,))
+        result = utils.database.single_query(sql, (job_id,))
     except DbError as err:
         LOGGER.exception(f"DbError: {str(err)}")
         raise DatabaseError(str(err))
@@ -255,8 +249,10 @@ def delete_all_requests():
     """
     try:
         result = get_all_requests()
+        print("result: ", result)
         for job in result:
             try:
+                print("job: ", job)
                 delete_request(job["job_id"])
             except NotFound:
                 pass
@@ -292,7 +288,8 @@ def get_all_requests():
         ORDER BY job_id """
 
     try:
-        rows = single_query(sql, ())
+        rows = utils.database.single_query(sql, ())
+        result = result_to_json(rows)
     except DbError as err:
         LOGGER.exception(f"DbError: {str(err)}")
         raise DatabaseError(str(err))
@@ -300,7 +297,7 @@ def get_all_requests():
     #if not rows:
     #    raise NotFound("No jobs found")
 
-    return json.loads(json.dumps(rows, default=myconverter))
+    return result
 
 def create_data(request_id=None, granule_id=None, object_key=None, job_type=None,
                 restore_bucket=None, job_status=None, request_time=None,
@@ -358,10 +355,12 @@ def get_requests_by_status(status, max_days_old=None):
         if max_days_old:
             sql2 = """ and last_update_time > CURRENT_DATE at time zone 'utc' - INTERVAL '%s' DAY"""
             sql = sql +  sql2 + orderby
-            rows = single_query(sql, (status, max_days_old,))
+            rows = utils.database.single_query(sql, (status, max_days_old,))
+            result = result_to_json(rows)
         else:
             sql = sql + orderby
-            rows = single_query(sql, (status,))
+            rows = utils.database.single_query(sql, (status,))
+            result = result_to_json(rows)
     except DbError as err:
         LOGGER.exception(f"DbError: {str(err)}")
         raise DatabaseError(str(err))
@@ -369,7 +368,8 @@ def get_requests_by_status(status, max_days_old=None):
     #if not rows:
     #    raise NotFound("No jobs found")
 
-    return json.loads(json.dumps(rows, default=myconverter))
+    return result
+
 
 def get_jobs_by_request_id(request_id):
     """
@@ -398,7 +398,8 @@ def get_jobs_by_request_id(request_id):
     orderby = """ order by last_update_time """
     try:
         sql = sql + orderby
-        rows = single_query(sql, (request_id,))
+        rows = utils.database.single_query(sql, (request_id,))
+        result = result_to_json(rows)
     except DbError as err:
         LOGGER.exception(f"DbError: {str(err)}")
         raise DatabaseError(str(err))
@@ -406,4 +407,21 @@ def get_jobs_by_request_id(request_id):
     #if not rows:
     #    raise NotFound("Unknown request_id: {}".format(request_id))
 
-    return json.loads(json.dumps(rows, default=myconverter))
+    return result
+
+
+def result_to_json(result_rows):
+    """
+    Converts a database result to Json format
+    """
+    json_result = json.loads(json.dumps(result_rows, default=myconverter))
+    return json_result
+
+
+def myconverter(obj):
+    """
+    Returns the current utc timestamp as a string in isoformat
+    ex. '2019-07-17T17:36:38.494918'
+    """
+    if isinstance(obj, datetime.datetime):
+        return obj.__str__()

@@ -15,5 +15,6 @@
     ],
     "python.testing.nosetestArgs": [
         "test"
-    ]
+    ],
+    "python.formatting.provider": "black"
 }

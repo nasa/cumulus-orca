@@ -178,28 +178,34 @@ def restore_object(s3_cli, request_id, granule_id, bucket_name, object_name,
     """
     request = {'Days': days,
                'GlacierJobParameters': {'Tier': retrieval_type}}
-
+    count = 0
     # Submit the request
     try:
         s3_cli.restore_object(Bucket=bucket_name, Key=object_name, RestoreRequest=request)
         data = requests.create_data(request_id, granule_id, object_name, "restore",
                                     bucket_name, "inprogress", None, None)
         try:
+            print("count1: ", count)
             job_id = requests.submit_request(data)
             LOGGER.info(f"Job {job_id} created.")
         except requests.DatabaseError as err:
-            LOGGER.error(f"Failed to log request in database: {data}")
-    except ClientError as err:
+            print("DatabaseError1: ", str(err))
+            LOGGER.error("Failed to log request in database. Error {}. Request_Id: {}", 
+                         str(err), request_id)
+    except ClientError as c_err:
         # NoSuchBucket, NoSuchKey, or InvalidObjectState error == the object's
         # storage class was not GLACIER
-        LOGGER.error("{}. bucket: {} file: {}", err, bucket_name, object_name)
+        LOGGER.error("{}. bucket: {} file: {}", c_err, bucket_name, object_name)
         data = requests.create_data(request_id, granule_id, object_name, "restore",
-                                    bucket_name, "error", None, None, str(err))
+                                    bucket_name, "error", None, None, str(c_err))
         try:
+            print("count2: ", count)
             job_id = requests.submit_request(data)
+            LOGGER.info(f"Job {job_id} status updated.")
         except requests.DatabaseError as err:
-            LOGGER.error(f"Failed to log request in database: {data}")
-        raise err
+            print("DatabaseError2: ", str(err))
+            LOGGER.error(f"Failed to log request in database. Error {str(err)}. Request: {data}")
+        raise c_err
 
 def handler(event, context):      #pylint: disable-msg=unused-argument
     """Lambda handler. Initiates a restore_object request from glacier for each file of a granule.

@@ -3,21 +3,20 @@ Name: test_requests.py
 
 Description:  Unit tests for requests.py.
 """
-#TODO mock single_query, etc. develop tests for database.py later. in those. mock psycopg2.cursor, etc
 
 import os
-import time
 import unittest
 from unittest.mock import Mock
 
-import psycopg2
-
 import requests
-#import utils
-from requests import create_data
-
-#from psycopg2 import connect as psycopg2_connect
-
+import utils
+import utils.database
+from request_helpers import (
+    JOB_ID_1, JOB_ID_2, JOB_ID_3, JOB_ID_4, JOB_ID_5, JOB_ID_6, JOB_ID_7,
+    JOB_ID_8, JOB_ID_9, JOB_ID_10, JOB_ID_11, REQUEST_ID_EXP_1,
+    REQUEST_ID_EXP_2, UTC_NOW_EXP_1, UTC_NOW_EXP_4, create_insert_request,
+    create_select_requests)
+from requests import result_to_json
 
 
 class TestRequests(unittest.TestCase):
@@ -29,66 +28,18 @@ class TestRequests(unittest.TestCase):
 
         prefix = "lab"
         os.environ["PREFIX"] = prefix
-        os.environ["DATABASE_HOST"] = "elpdvx143.cr.usgs.gov"
-        os.environ["DATABASE_NAME"] = "labsndbx"
-        os.environ["DATABASE_USER"] = "postgres"
-        os.environ["DATABASE_PW"] = "July2019"
+        os.environ["DATABASE_HOST"] = "my.db.host.gov"
+        os.environ["DATABASE_NAME"] = "sndbx"
+        os.environ["DATABASE_USER"] = "unittestdbuser"
+        os.environ["DATABASE_PW"] = "unittestdbpw"
 
-        self.job_id_1 = None
-        self.job_id_2 = None
-        self.job_id_3 = None
-        self.job_id_4 = None
-        self.job_id_5 = None
-        self.job_id_6 = None
-        self.job_id_7 = None
-        self.job_id_8 = None
-        self.job_id_9 = None
-        self.job_id_10 = None
-        self.job_id_11 = None
-        self.utc_now_exp_1 = requests.get_utc_now_iso()
-        time.sleep(1)
-        self.request_id_exp_1 = requests.request_id_generator()
-        self.utc_now_exp_2 = requests.get_utc_now_iso()
-        time.sleep(1)
-        self.request_id_exp_2 = requests.request_id_generator()
-        self.utc_now_exp_3 = requests.get_utc_now_iso()
-        time.sleep(1)
-        self.utc_now_exp_4 = requests.get_utc_now_iso()
-        time.sleep(1)
-        self.request_id_exp_3 = requests.request_id_generator()
-        self.utc_now_exp_5 = requests.get_utc_now_iso()
-        time.sleep(1)
-        self.utc_now_exp_6 = requests.get_utc_now_iso()
-        time.sleep(1)
-        self.request_id_exp_4 = requests.request_id_generator()
-        self.utc_now_exp_7 = requests.get_utc_now_iso()
-        time.sleep(1)
-        self.utc_now_exp_8 = requests.get_utc_now_iso()
-        time.sleep(1)
-        self.request_id_exp_5 = requests.request_id_generator()
-        self.utc_now_exp_9 = requests.get_utc_now_iso()
-        time.sleep(1)
-        self.request_id_exp_6 = requests.request_id_generator()
-        self.utc_now_exp_10 = requests.get_utc_now_iso()
-        time.sleep(1)
-        self.utc_now_exp_11 = requests.get_utc_now_iso()
         self.mock_utcnow = requests.get_utc_now_iso
         self.mock_request_id = requests.request_id_generator
-        self.mock_connect = psycopg2.connect
+        self.mock_single_query = utils.database.single_query
 
 
     def tearDown(self):
-        try:
-            results = requests.get_all_requests()
-            for job in results:
-                print("job: ", job)
-            self.delete_all_requests()
-        except requests.NotFound:
-            pass
-        except requests.DatabaseError:
-            pass
-
-        psycopg2.connect = self.mock_connect
+        utils.database.single_query = self.mock_single_query
         requests.request_id_generator = self.mock_request_id
         requests.get_utc_now_iso = self.mock_utcnow
         del os.environ["PREFIX"]
@@ -97,99 +48,170 @@ class TestRequests(unittest.TestCase):
         del os.environ["DATABASE_USER"]
         del os.environ["DATABASE_PW"]
 
-    def delete_all_requests(self):
+
+    def test_delete_all_requests(self):
         """
-        Deletes all jobs from the request_status table
+        Tests deleting all requests from the request_status table
         """
+        exp_job_ids = [JOB_ID_1, JOB_ID_2, JOB_ID_3, JOB_ID_4, JOB_ID_5,
+                       JOB_ID_6, JOB_ID_7, JOB_ID_8, JOB_ID_9, JOB_ID_10,
+                       JOB_ID_11]
         try:
-            result = requests.get_all_requests()
-            for job in result:
-                requests.delete_request(job["job_id"])
-        except requests.NotFound:
-            pass
-        except requests.DatabaseError:
-            pass
-
-
-    def create_test_requests(self):
-        """
-        creates jobs in the db
-        """
-        #utc_now_exp = "2019-07-31 18:05:19.161362+00:00"
-        #request_id_exp = "0000a0a0-a000-00a0-00a0-0000a0000000"
-        requests.get_utc_now_iso = Mock(side_effect=[self.utc_now_exp_1, self.utc_now_exp_4,
-                                                     self.utc_now_exp_2, self.utc_now_exp_5,
-                                                     self.utc_now_exp_3, self.utc_now_exp_6,
-                                                     self.utc_now_exp_4, self.utc_now_exp_4,
-                                                     self.utc_now_exp_5, self.utc_now_exp_5,
-                                                     self.utc_now_exp_6, self.utc_now_exp_6,
-                                                     self.utc_now_exp_7, self.utc_now_exp_7,
-                                                     self.utc_now_exp_8, self.utc_now_exp_8,
-                                                     self.utc_now_exp_9, self.utc_now_exp_9,
-                                                     self.utc_now_exp_10, self.utc_now_exp_10,
-                                                     self.utc_now_exp_11, self.utc_now_exp_11])
-        requests.request_id_generator = Mock(side_effect=[self.request_id_exp_1,
-                                                          self.request_id_exp_2,
-                                                          self.request_id_exp_3,
-                                                          self.request_id_exp_4,
-                                                          self.request_id_exp_5,
-                                                          self.request_id_exp_6])
-
-        try:
-            data = create_data(self.request_id_exp_1, "granule_1", "objectkey_1",
-                               "restore", "my_s3_bucket",
-                               "complete", self.utc_now_exp_1, self.utc_now_exp_4)
-            self.job_id_1 = requests.submit_request(data)
-            data = create_data(self.request_id_exp_1, "granule_2", "objectkey_2",
-                               "restore", "my_s3_bucket",
-                               "complete", self.utc_now_exp_2, self.utc_now_exp_5)
-            self.job_id_2 = requests.submit_request(data)
-            data = create_data(self.request_id_exp_1, "granule_3", "objectkey_3",
-                               "restore", "my_s3_bucket",
-                               "complete", self.utc_now_exp_3, self.utc_now_exp_6)
-            self.job_id_3 = requests.submit_request(data)
-
-            data = create_data(self.request_id_exp_2, "granule_4", "objectkey_4",
-                               "restore", "my_s3_bucket",
-                               "error", self.utc_now_exp_4, None)
-            self.job_id_4 = requests.submit_request(data)
-
-            data = create_data(self.request_id_exp_3, "granule_5", "objectkey_5",
-                               "restore", "my_s3_bucket",
-                               "inprogress", self.utc_now_exp_5, self.utc_now_exp_5)
-            self.job_id_5 = requests.submit_request(data)
-            data = create_data(self.request_id_exp_3, "granule_6", "objectkey_6",
-                               "restore", "my_s3_bucket",
-                               "inprogress", self.utc_now_exp_6, self.utc_now_exp_6)
-            self.job_id_6 = requests.submit_request(data)
-
-            data = create_data(self.request_id_exp_4, "granule_4", "objectkey_4",
-                               "restore", "my_s3_bucket",
-                               "inprogress", self.utc_now_exp_7, self.utc_now_exp_7)
-            self.job_id_7 = requests.submit_request(data)
-
-            data = create_data(self.request_id_exp_5, "granule_1", "objectkey_1",
-                               "restore", "my_s3_bucket",
-                               "inprogress", self.utc_now_exp_8, self.utc_now_exp_8)
-            self.job_id_8 = requests.submit_request(data)
-            data = create_data(self.request_id_exp_5, "granule_2", "objectkey_2",
-                               "restore", "my_s3_bucket",
-                               "inprogress", self.utc_now_exp_9, self.utc_now_exp_9)
-            self.job_id_9 = requests.submit_request(data)
-            data = create_data(self.request_id_exp_5, "granule_3", "objectkey_3",
-                               "restore", "my_s3_bucket",
-                               "inprogress", self.utc_now_exp_10, self.utc_now_exp_10)
-            self.job_id_10 = requests.submit_request(data)
-
-            data = create_data(self.request_id_exp_6, "granule_7", "objectkey_7",
-                               "regenerate", None,
-                               "inprogress", self.utc_now_exp_11, self.utc_now_exp_11)
-            self.job_id_11 = requests.submit_request(data)
-            #results = requests.get_all_requests()
-            #for job in results:
-            #    print("job: ", job)
+            qresult = create_select_requests(exp_job_ids)
+            empty_result = []
+            utils.database.single_query = Mock(
+                side_effect=[qresult, empty_result, empty_result,
+                             empty_result, empty_result, empty_result,
+                             empty_result, empty_result, empty_result,
+                             empty_result, empty_result, empty_result,
+                             empty_result])
+            result = requests.delete_all_requests()
+            utils.database.single_query.assert_called()
+            self.assertEqual(empty_result, result)
         except requests.DatabaseError as err:
-            self.fail(f"submit_request. {str(err)}")
+            self.fail(f"delete_all_requests. {str(err)}")
+
+
+    def test_delete_request(self):
+        """
+        Tests deleting a job by job_id
+        """
+        try:
+            exp_result = []
+            utils.database.single_query = Mock(side_effect=[exp_result])
+            result = requests.delete_request(JOB_ID_1)
+            self.assertEqual(exp_result, result)
+            utils.database.single_query.assert_called_once()
+        except requests.DatabaseError as err:
+            self.fail(f"delete_request. {str(err)}")
+
+
+    def test_delete_request_exception(self):
+        """
+        Tests deleting a job by job_id
+        """
+        exp_err = 'Database Error. Internal database error, please contact LP DAAC User Services'
+        try:
+            utils.database.single_query = Mock(side_effect=[requests.DatabaseError(exp_err)])
+            requests.delete_request('x')
+            self.fail("expected DatabaseError")
+        except requests.DatabaseError as err:
+            self.assertEqual(exp_err, str(err))
+            utils.database.single_query.assert_called_once()
+
+
+    def test_get_all_requests(self):
+        """
+        Tests reading all requests
+        """
+        exp_job_ids = [JOB_ID_1, JOB_ID_2, JOB_ID_3, JOB_ID_4, JOB_ID_5,
+                       JOB_ID_6, JOB_ID_7, JOB_ID_8, JOB_ID_9, JOB_ID_10,
+                       JOB_ID_11]
+        qresult, exp_result = create_select_requests(exp_job_ids)
+        utils.database.single_query = Mock(side_effect=[qresult])
+        expected = result_to_json(exp_result)
+        result = requests.get_all_requests()
+        utils.database.single_query.assert_called_once()
+        self.assertEqual(expected, result)
+
+
+    def test_get_request_by_status_exception(self):
+        """
+        Tests getting a DatabaseError reading a job by status
+        """
+        utils.database.single_query = Mock(side_effect=[requests.BadRequestError(
+            'A status must be provided')])
+        status = None
+        try:
+            requests.get_requests_by_status(status)
+            self.fail("expected BadRequestError")
+        except requests.BadRequestError as err:
+            self.assertEqual('A status must be provided', str(err))
+
+        status = "error"
+        err_msg = ('Database Error. could not connect to server: Connection timed out '
+	           '(0x0000274C/10060) Is the server running on host "unknown.cr.usgs.gov" '
+	           '(136.177.41.212) and accepting TCP/IP connections on port 5432?')
+        utils.database.single_query = Mock(side_effect=[utils.database.DbError(
+            err_msg)])
+        os.environ["DATABASE_HOST"] = "unknown.cr.usgs.gov"
+        try:
+            requests.get_requests_by_status(status)
+            self.fail("expected DatabaseError")
+        except requests.DatabaseError as err:
+            utils.database.single_query.assert_called_once()
+            exp_msg = ('Database Error. could not connect to server: Connection timed out')
+            self.assertIn(exp_msg, str(err))
+
+
+    def test_get_request_exception(self):
+        """
+        Tests getting a DatabaseError reading a job
+        """
+        #create_select_requests([])
+        utils.database.single_query = Mock(side_effect=[requests.DatabaseError(
+            'Database Error. could not connect to server: Connection timed out '
+            '(0x0000274C/10060) Is the server running on host "unknown.cr.usgs.gov"'
+            ' (136.177.41.212) and accepting TCP/IP connections on port 5432?')])
+        os.environ["DATABASE_HOST"] = "unknown.cr.usgs.gov"
+        try:
+            requests.get_job_by_job_id('x')
+            self.fail("expected DatabaseError")
+        except requests.DatabaseError as err:
+            exp_msg = ('Database Error. could not connect to server: Connection timed out')
+            self.assertIn(exp_msg, str(err))
+            utils.database.single_query.assert_called_once()
+
+
+    def test_get_request_not_found(self):
+        """
+        Tests reading a job that doesn't exist
+        """
+        job_id = 500000
+        exp_result = []
+        utils.database.single_query = Mock(side_effect=[exp_result])
+        result = requests.get_job_by_job_id(job_id)
+        self.assertEqual(exp_result, result)
+        utils.database.single_query.assert_called_once()
+
+
+    def test_get_requests_by_status(self):
+        """
+        Tests reading by status
+        """
+        exp_job_ids = [JOB_ID_1, JOB_ID_2, JOB_ID_3]
+        qresult, exp_result_2 = create_select_requests(exp_job_ids)
+        status = "noexist"
+        exp_result_1 = []
+        utils.database.single_query = Mock(side_effect=[exp_result_1, exp_result_2])
+        result = requests.get_requests_by_status(status)
+        self.assertEqual(exp_result_1, result)
+        utils.database.single_query.assert_called_once()
+
+        status = "complete"
+        expected = result_to_json(exp_result_2)
+        result = requests.get_requests_by_status(status)
+        self.assertEqual(expected, result)
+        utils.database.single_query.assert_called()
+
+
+    def test_get_requests_by_status_max_days(self):
+        """
+        Tests reading by status
+        """
+        exp_job_ids = [JOB_ID_1, JOB_ID_2, JOB_ID_3]
+        qresult, exp_result = create_select_requests(exp_job_ids)
+        status = "noexist"
+        utils.database.single_query = Mock(side_effect=[[], exp_result])
+        result = requests.get_requests_by_status(status)
+        self.assertEqual([], result)
+        utils.database.single_query.assert_called_once()
+
+        status = "complete"
+        expected = result_to_json(exp_result)
+        result = requests.get_requests_by_status(status, 5)
+        self.assertEqual(expected, result)
+        utils.database.single_query.assert_called()
 
 
     def test_get_utc_now_iso(self):
@@ -200,14 +222,6 @@ class TestRequests(unittest.TestCase):
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
         self.assertEqual(utc_now_exp, requests.get_utc_now_iso())
 
-    def test_request_id_generator(self):
-        """
-        Tests the request_id_generator function
-        """
-        request_id = requests.request_id_generator()
-        #request_id = "0000a0a0-a000-00a0-00a0-0000a0000000"
-        requests.request_id_generator = Mock(return_value=request_id)
-        self.assertEqual(request_id, requests.request_id_generator())
 
     def test_no_db_connect(self):
         """
@@ -222,104 +236,24 @@ class TestRequests(unittest.TestCase):
         data["restore_bucket_dest"] = "my_s3_bucket"
         data["job_status"] = "inprogress"
         exp_err = 'Database Error. FATAL:  database "noexist" does not exist\n'
-
+        utils.database.single_query = Mock(side_effect=[requests.DatabaseError(
+            exp_err)])
         try:
             requests.submit_request(data)
             self.fail("expected DatabaseError")
         except requests.DatabaseError as err:
             self.assertEqual(exp_err, str(err))
+            utils.database.single_query.assert_called_once()
 
-    def test_submit_request_inprogress_status(self):
+
+    def test_request_id_generator(self):
         """
-        Tests that a job is written to the db
+        Tests the request_id_generator function
         """
-        self.create_test_requests()
-        utc_now_exp = "2019-07-31 18:05:19.161362+00:00"
-        request_id_exp = "0000a0a0-a000-00a0-00a0-0000a0000000"
-        requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
-        requests.request_id_generator = Mock(return_value=request_id_exp)
+        request_id = requests.request_id_generator()
+        requests.request_id_generator = Mock(return_value=request_id)
+        self.assertEqual(request_id, requests.request_id_generator())
 
-        data = {}
-        data["request_id"] = requests.request_id_generator()
-        data["granule_id"] = "granule_1"
-        data["object_key"] = "thisisanobjectkey"
-        data["job_type"] = "restore"
-        data["restore_bucket_dest"] = "my_s3_bucket"
-        data["job_status"] = "inprogress"
-        data["request_time"] = utc_now_exp
-        try:
-            job_id = requests.submit_request(data)
-            self.assertGreater(job_id, 0, "job_id should be greater than 0")
-        except requests.DatabaseError as err:
-            self.fail(f"submit_request. {str(err)}")
-
-        try:
-            result = requests.get_job_by_job_id(job_id)
-            result.pop("job_id")
-            data["last_update_time"] = utc_now_exp
-            self.assertEqual(data, result)
-        except requests.DatabaseError as err:
-            self.fail(f"get_job_by_job_id. {str(err)}")
-
-    def test_submit_request_error_status(self):
-        """
-        Tests that a job is written to the db
-        """
-        self.create_test_requests()
-        utc_now_exp = "2019-07-31 18:05:19.161362+00:00"
-        request_id_exp = "0000a0a0-a000-00a0-00a0-0000a0000000"
-        requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
-        requests.request_id_generator = Mock(return_value=request_id_exp)
-
-        data = {}
-        data["err_msg"] = "restore request error message here"
-        data["request_id"] = requests.request_id_generator()
-        data["granule_id"] = "granule_1"
-        data["object_key"] = "thisisanobjectkey"
-        data["job_type"] = "restore"
-        data["restore_bucket_dest"] = "my_s3_bucket"
-        data["job_status"] = "error"
-        data["request_time"] = utc_now_exp
-
-        try:
-            job_id = requests.submit_request(data)
-            print("job_id: ", job_id)
-            self.assertGreater(job_id, 0, "job_id should be greater than 0")
-        except requests.DatabaseError as err:
-            self.fail(f"submit_request. {str(err)}")
-
-        try:
-            result = requests.get_job_by_job_id(job_id)
-            result.pop("job_id")
-            data["last_update_time"] = utc_now_exp
-            self.assertEqual(data, result)
-        except requests.DatabaseError as err:
-            self.fail(f"get_job_by_job_id. {str(err)}")
-
-
-    def test_get_request_not_found(self):
-        """
-        Tests reading a job that doesn't exist
-        """
-        job_id = 500000
-
-        result = requests.get_job_by_job_id(job_id)
-        self.assertEqual([], result)
-
-    def test_get_request_exception(self):
-        """
-        Tests getting a DatabaseError reading a job
-        """
-        self.create_test_requests()
-        #psycopg2.connect = Mock(side_effect=[psycopg2.DbError(
-        #    "Internal database error, please contact LP DAAC User Services")])
-        os.environ["DATABASE_HOST"] = "unknown.cr.usgs.gov"
-        try:
-            requests.get_job_by_job_id('x')
-            self.fail("expected DatabaseError")
-        except requests.DatabaseError as err:
-            exp_msg = ('Database Error. could not connect to server: Connection timed out')
-            self.assertIn(exp_msg, str(err))
 
     def test_submit_request_bad_status(self):
         """
@@ -337,20 +271,106 @@ class TestRequests(unittest.TestCase):
         data["restore_bucket_dest"] = "my_s3_bucket"
         data["job_status"] = "invalid"
         data["last_update_time"] = utc_now_exp
+        mock_err = ('Database Error. new row for relation "request_status" violates '
+                    'check constraint "request_status_job_status_check" '
+                    f'DETAIL:  Failing row contains (1306, {request_id_exp}, '
+                    'granule_1, thisisanobjectkey, restore, my_s3_bucket, invalid, '
+                    '2019-07-31 18:05:19.161362+00, 2019-07-31 18:05:19.161362+00, null).')
+        exp_err = ('new row for relation "request_status" violates check constraint '
+                   '"request_status_job_status_check"')
+        utils.database.single_query = Mock(side_effect=[requests.DatabaseError(
+            mock_err)])
         try:
             requests.submit_request(data)
             self.fail("expected DatabaseError")
         except requests.DatabaseError as err:
-            exp_msg = ('new row for relation "request_status" violates check constraint '
-                       '"request_status_job_status_check"')
-            self.assertIn(exp_msg, str(err))
+            self.assertIn(exp_err, str(err))
+            utils.database.single_query.assert_called_once()
+
+
+    def test_submit_request_error_status(self):
+        """
+        Tests that a job is written to the db
+        """
+        utc_now_exp = UTC_NOW_EXP_4
+        request_id_exp = REQUEST_ID_EXP_2
+        requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
+        requests.request_id_generator = Mock(return_value=request_id_exp)
+
+        data = {}
+        data["err_msg"] = "Error message goes here"
+        data["request_id"] = requests.request_id_generator()
+        data["granule_id"] = "granule_4"
+        data["object_key"] = "objectkey_4"
+        data["job_type"] = "restore"
+        data["restore_bucket_dest"] = "my_s3_bucket"
+        data["job_status"] = "error"
+        data["request_time"] = utc_now_exp
+        qresult, exp_result = create_insert_request(
+            JOB_ID_4, data["request_id"],
+            data["granule_id"], data["object_key"], data["job_type"],
+            data["restore_bucket_dest"], data["job_status"], data["request_time"],
+            None, data["err_msg"])
+        utils.database.single_query = Mock(side_effect=[qresult, exp_result, None, None])
+        try:
+            job_id = requests.submit_request(data)
+            self.assertEqual(JOB_ID_4, job_id)
+            utils.database.single_query.assert_called_once()
+        except requests.DatabaseError as err:
+            self.fail(f"submit_request. {str(err)}")
+
+        try:
+            result = requests.get_job_by_job_id(job_id)
+            expected = result_to_json(exp_result)
+            self.assertEqual(expected, result)
+        except requests.DatabaseError as err:
+            self.fail(f"get_job_by_job_id. {str(err)}")
+
+
+    def test_submit_request_inprogress_status(self):
+        """
+        Tests that a job is written to the db
+        """
+        utc_now_exp = UTC_NOW_EXP_1
+        request_id_exp = REQUEST_ID_EXP_1
+        requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
+        requests.request_id_generator = Mock(return_value=request_id_exp)
+
+        data = {}
+        data["request_id"] = requests.request_id_generator()
+        data["granule_id"] = "granule_1"
+        data["object_key"] = "thisisanobjectkey"
+        data["job_type"] = "restore"
+        data["restore_bucket_dest"] = "my_s3_bucket"
+        data["job_status"] = "inprogress"
+        data["request_time"] = utc_now_exp
+        qresult, exp_result = create_insert_request(
+            JOB_ID_1, data["request_id"], data["granule_id"],
+            data["object_key"], data["job_type"],
+            data["restore_bucket_dest"], data["job_status"],
+            data["request_time"], None, None)
+        utils.database.single_query = Mock(side_effect=[qresult, exp_result, None, None])
+        try:
+            job_id = requests.submit_request(data)
+            self.assertEqual(JOB_ID_1, job_id)
+            utils.database.single_query.assert_called_once()
+        except requests.DatabaseError as err:
+            self.fail(f"submit_request. {str(err)}")
+
+        try:
+            result = requests.get_job_by_job_id(job_id)
+            expected = result_to_json(exp_result)
+            self.assertEqual(expected, result)
+        except requests.DatabaseError as err:
+            self.fail(f"get_job_by_job_id. {str(err)}")
+
 
     def test_submit_request_missing_granuleid(self):
         """
         Tests adding a job with no granule_id
         """
-        utc_now_exp = "2019-07-31 18:05:19.161362+00:00"
-        request_id_exp = "0000a0a0-a000-00a0-00a0-0000a0000000"
+        utc_now_exp = UTC_NOW_EXP_1
+        request_id_exp = REQUEST_ID_EXP_1
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
         requests.request_id_generator = Mock(return_value=request_id_exp)
         data = {}
@@ -368,70 +388,67 @@ class TestRequests(unittest.TestCase):
             exp_msg = "Missing 'granule_id' in input data"
             self.assertEqual(exp_msg, str(err))
 
+
     def test_update_request_status_complete(self):
         """
         Tests updating a job to a 'complete' status
         """
-        self.create_test_requests()
         utc_now_exp = "2019-07-31 21:07:15.234362+00:00"
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
         object_key = "thisisanobjectkey"
         job_status = "complete"
+        exp_result = []
+        utils.database.single_query = Mock(side_effect=[exp_result])
         try:
             result = requests.update_request_status(object_key, job_status)
             self.assertEqual([], result)
+            utils.database.single_query.assert_called_once()
         except requests.DatabaseError as err:
             self.fail(f"update_request_status. {str(err)}")
 
+
     def test_update_request_status_error(self):
         """
-        Tests updating a job to a 'error' status
+        Tests updating a job to an 'error' status
         """
-        self.create_test_requests()
+        qresult, exp_result = create_select_requests([JOB_ID_4])
         utc_now_exp = "2019-07-31 19:21:38.263364+00:00"
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
-        object_key = "objectkey_5"
-        granule_id = "granule_5"
+        object_key = "objectkey_4"
+        granule_id = "granule_4"
         job_status = "error"
-        err_msg = "copy error msg goes here"
+        err_msg = "Error message goes here"
+
+        empty_result = []
+        utils.database.single_query = Mock(side_effect=[empty_result, exp_result])
         try:
             result = requests.update_request_status(object_key, job_status, err_msg)
             self.assertEqual([], result)
+            utils.database.single_query.assert_called_once()
         except requests.DatabaseError as err:
             self.fail(f"update_request_status. {str(err)}")
         result = requests.get_jobs_by_granule_id(granule_id)
-        self.assertEqual(err_msg, result[0]["err_msg"])
+        self.assertEqual(err_msg, result["err_msg"])
+
 
     def test_update_request_status_exception(self):
         """
         Tests updating a job to an invalid status
         """
-        self.create_test_requests()
         utc_now_exp = "2019-07-31 19:21:38.263364+00:00"
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
         object_key = "objectkey_6"
         job_status = "invalid"
+        exp_msg = ('Database Error. new row for relation "request_status" violates '
+                   'check constraint "request_status_job_status_check"')
+        utils.database.single_query = Mock(side_effect=[requests.DatabaseError(exp_msg)])
         try:
             requests.update_request_status(object_key, job_status)
             self.fail("expected DatabaseError")
         except requests.DatabaseError as err:
-            exp_msg = ('Database Error. new row for relation "request_status" violates '
-                       'check constraint "request_status_job_status_check"')
             self.assertIn(exp_msg, str(err))
+            utils.database.single_query.assert_called_once()
 
-    def test_update_request_status_notfound(self):
-        """
-        Tests updating a job where the object_key doesn't exist
-        """
-        utc_now_exp = "2019-07-31 19:21:38.263364+00:00"
-        requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
-        object_key = "noexist"
-        job_status = "invalid"
-        try:
-            result = requests.update_request_status(object_key, job_status)
-            self.assertEqual([], result)
-        except requests.DatabaseError as err:
-            self.fail(f"update_request_status. {str(err)}")
 
     def test_update_request_status_missing_key(self):
         """
@@ -441,12 +458,14 @@ class TestRequests(unittest.TestCase):
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
         object_key = None
         job_status = "invalid"
+        exp_msg = "No object_key provided"
+        utils.database.single_query = Mock(side_effect=[requests.BadRequestError(exp_msg)])
         try:
-            result = requests.update_request_status(object_key, job_status)
-            self.assertEqual([], result)
+            requests.update_request_status(object_key, job_status)
+            self.fail("expected requests.BadRequestError")
         except requests.BadRequestError as err:
-            exp_msg = "No object_key provided"
             self.assertEqual(exp_msg, str(err))
+
 
     def test_update_request_status_missing_status(self):
         """
@@ -456,120 +475,27 @@ class TestRequests(unittest.TestCase):
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
         object_key = "noexist"
         job_status = None
+        exp_msg = "A new status must be provided"
         try:
             result = requests.update_request_status(object_key, job_status)
             self.assertEqual([], result)
         except requests.BadRequestError as err:
-            exp_msg = "A new status must be provided"
             self.assertEqual(exp_msg, str(err))
 
-    def test_get_all_requests(self):
-        """
-        Tests reading all requests
-        """
-        self.create_test_requests()
-        result = requests.get_all_requests()
-        exp_ids = [self.job_id_1, self.job_id_2, self.job_id_3, self.job_id_4, self.job_id_5,
-                   self.job_id_6, self.job_id_7, self.job_id_8, self.job_id_9, self.job_id_10,
-                   self.job_id_11]
-        idx = 0
-        for job in result:
-            self.assertEqual(exp_ids[idx], job["job_id"])
-            idx = idx + 1
 
-    def test_get_requests_by_status(self):
+    def test_update_request_status_notfound(self):
         """
-        Tests reading by status
+        Tests updating a job where the object_key doesn't exist
         """
-        self.create_test_requests()
-        status = "noexist"
-        result = requests.get_requests_by_status(status)
-        self.assertEqual([], result)
-
-        status = "complete"
-        result = requests.get_requests_by_status(status)
-        exp_ids = [self.job_id_1, self.job_id_2, self.job_id_3]
-        idx = 0
-        for job in result:
-            self.assertEqual(exp_ids[idx], job["job_id"])
-            idx = idx + 1
-
-
-    def test_get_requests_by_status_max_days(self):
-        """
-        Tests reading by status
-        """
-        self.create_test_requests()
-        status = "noexist"
-        result = requests.get_requests_by_status(status)
-        self.assertEqual([], result)
-
-        status = "complete"
-        result = requests.get_requests_by_status(status, 5)
-        exp_ids = [self.job_id_1, self.job_id_2, self.job_id_3]
-        idx = 0
-        for job in result:
-            self.assertEqual(exp_ids[idx], job["job_id"])
-            idx = idx + 1
-
-
-    def test_get_request_by_status_exception(self):
-        """
-        Tests getting a DatabaseError reading a job by status
-        """
-        self.create_test_requests()
-        status = None
+        utc_now_exp = "2019-07-31 19:21:38.263364+00:00"
+        requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
+        object_key = "noexist"
+        job_status = "invalid"
+        exp_result = []
+        utils.database.single_query = Mock(side_effect=[exp_result])
         try:
-            requests.get_requests_by_status(status)
-            self.fail("expected DatabaseError")
-        except requests.BadRequestError as err:
-            self.assertEqual('A status must be provided', str(err))
-
-        status = "error"
-        #psycopg2.connect = Mock(side_effect=[psycopg2.DbError(
-        #    "Internal database error, please contact LP DAAC User Services")])
-        os.environ["DATABASE_HOST"] = "unknown.cr.usgs.gov"
-        try:
-            requests.get_requests_by_status(status)
-            #os.environ["DATABASE_HOST"] = "elpdvx143.cr.usgs.gov"
-            self.fail("expected DatabaseError")
-        except requests.DatabaseError as err:
-            #os.environ["DATABASE_HOST"] = "elpdvx143.cr.usgs.gov"
-            exp_msg = ('Database Error. could not connect to server: Connection timed out')
-            self.assertIn(exp_msg, str(err))
-
-    def test_delete_request(self):
-        """
-        Tests deleting a job by job_id
-        """
-        try:
-            self.create_test_requests()
-            result = requests.delete_request(self.job_id_1)
+            result = requests.update_request_status(object_key, job_status)
             self.assertEqual([], result)
+            utils.database.single_query.assert_called_once()
         except requests.DatabaseError as err:
-            self.fail(f"delete_request. {str(err)}")
-
-    def test_delete_request_exception(self):
-        """
-        Tests deleting a job by job_id
-        """
-        try:
-            #self.create_test_requests()
-            requests.delete_request('x')
-            self.fail("expected DatabaseError")
-        except requests.DatabaseError as err:
-            self.assertEqual("Database Error. Internal database error, "
-                             "please contact LP DAAC User Services", str(err))
-
-    def test_delete_all_requests(self):
-        """
-        Tests deleting all requests from the request_status table
-        """
-        try:
-            self.create_test_requests()
-            requests.delete_all_requests()
-            self.fail("expected NotFound")
-        except requests.NotFound as nfd:
-            self.assertEqual("x", str(nfd))
-        except requests.DatabaseError as err:
-            self.fail(f"delete_all_requests. {str(err)}")
+            self.fail(f"update_request_status. {str(err)}")

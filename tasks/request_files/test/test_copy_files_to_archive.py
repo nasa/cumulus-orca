@@ -12,6 +12,8 @@ import boto3
 from botocore.exceptions import ClientError
 
 import copy_files_to_archive  # pylint: disable-import-error
+import utils
+import utils.database
 from copy_helpers import create_event2, create_handler_event
 
 
@@ -23,6 +25,10 @@ class TestCopyFiles(unittest.TestCase):
         self.mock_boto3_client = boto3.client
         os.environ['COPY_RETRIES'] = '2'
         os.environ['COPY_RETRY_SLEEP_SECS'] = '1'
+        os.environ["DATABASE_HOST"] = "my.db.host.gov"
+        os.environ["DATABASE_NAME"] = "sndbx"
+        os.environ["DATABASE_USER"] = "unittestdbuser"
+        os.environ["DATABASE_PW"] = "unittestdbpw"
         self.exp_other_bucket = "unittest_protected_bucket"
         self.bucket_map = {".hdf": "unittest_hdf_bucket",
                            ".txt": "unittest_txt_bucket",
@@ -34,13 +40,19 @@ class TestCopyFiles(unittest.TestCase):
 
         self.exp_file_key1 = 'dr-glacier/MOD09GQ.A0219114.N5aUCG.006.0656338553321.txt'
         self.handler_input_event = create_handler_event()
+        self.mock_single_query = utils.database.single_query
 
     def tearDown(self):
+        utils.database.single_query = self.mock_single_query
         boto3.client = self.mock_boto3_client
         try:
             del os.environ['BUCKET_MAP']
             del os.environ['COPY_RETRY_SLEEP_SECS']
             del os.environ['COPY_RETRIES']
+            del os.environ["DATABASE_HOST"]
+            del os.environ["DATABASE_NAME"]
+            del os.environ["DATABASE_USER"]
+            del os.environ["DATABASE_PW"]
         except KeyError:
             pass
 
@@ -53,6 +65,8 @@ class TestCopyFiles(unittest.TestCase):
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.copy_object = Mock(side_effect=[None])
+        exp_upd_result = []
+        utils.database.single_query = Mock(side_effect=[exp_upd_result])
         result = copy_files_to_archive.handler(self.handler_input_event, None)
         os.environ['COPY_RETRIES'] = '2'
         os.environ['COPY_RETRY_SLEEP_SECS'] = '1'
@@ -67,6 +81,7 @@ class TestCopyFiles(unittest.TestCase):
                                               CopySource={'Bucket': self.exp_src_bucket,
                                                           'Key': self.exp_file_key1},
                                               Key=self.exp_file_key1)
+        utils.database.single_query.assert_called_once()
 
     def test_handler_two_records_success(self):
         """
@@ -123,8 +138,8 @@ class TestCopyFiles(unittest.TestCase):
                     f"'source_bucket': '{self.exp_src_bucket}', " \
                     f"'source_key': '{exp_file2_key}', " \
                     f"'target_bucket': '{self.exp_target_bucket}', " \
-                    "'err_msg': ClientError('An error occurred (AccessDenied) when calling " \
-                    "the copy_object operation: Unknown')}, {'success': True, " \
+                    "'err_msg': 'An error occurred (AccessDenied) when calling " \
+                    "the copy_object operation: Unknown'}, {'success': True, " \
                     f"'source_bucket': '{self.exp_src_bucket}', " \
                     f"'source_key': '{exp_file_key}', " \
                     "'target_bucket': 'unittest_hdf_bucket', 'err_msg': ''}]"
@@ -161,8 +176,10 @@ class TestCopyFiles(unittest.TestCase):
                     f"'source_bucket': '{self.exp_src_bucket}', " \
                     f"'source_key': '{self.exp_file_key1}', " \
                     f"'target_bucket': '{self.exp_target_bucket}', " \
-                    "'err_msg': ClientError('An error occurred (AccessDenied) when calling " \
-                    "the copy_object operation: Unknown')}]"
+                    "'err_msg': 'An error occurred (AccessDenied) when calling " \
+                    "the copy_object operation: Unknown'}]"
+        exp_result = []
+        utils.database.single_query = Mock(side_effect=[exp_result, exp_result])
         try:
             copy_files_to_archive.handler(self.handler_input_event, None)
             self.fail("expected CopyRequestError")
@@ -173,6 +190,7 @@ class TestCopyFiles(unittest.TestCase):
                                               CopySource={'Bucket': self.exp_src_bucket,
                                                           'Key': self.exp_file_key1},
                                               Key=self.exp_file_key1)
+        utils.database.single_query.assert_called()
 
     def test_handler_one_file_retry2_success(self):
         """
@@ -187,6 +205,8 @@ class TestCopyFiles(unittest.TestCase):
         s3_cli.copy_object = Mock(side_effect=[ClientError({'Error': {'Code': 'AccessDenied'}},
                                                            'copy_object'),
                                                None])
+        exp_upd_result = []
+        utils.database.single_query = Mock(side_effect=[exp_upd_result, exp_upd_result])
         result = copy_files_to_archive.handler(self.handler_input_event, None)
         os.environ['COPY_RETRIES'] = '2'
         os.environ['COPY_RETRY_SLEEP_SECS'] = '1'
@@ -200,6 +220,7 @@ class TestCopyFiles(unittest.TestCase):
                                               CopySource={'Bucket': self.exp_src_bucket,
                                                           'Key': self.exp_file_key1},
                                               Key=self.exp_file_key1)
+        utils.database.single_query.assert_called()
 
     def test_handler_no_bucket_map(self):
         """
@@ -227,6 +248,8 @@ class TestCopyFiles(unittest.TestCase):
         s3_cli = boto3.client('s3')
         s3_cli.copy_object = Mock(side_effect=[None])
         self.handler_input_event["Records"][0]["s3"]["object"]["key"] = exp_file_key
+        exp_upd_result = []
+        utils.database.single_query = Mock(side_effect=[exp_upd_result])
         result = copy_files_to_archive.handler(self.handler_input_event, None)
         boto3.client.assert_called_with('s3')
         exp_result = [{"success": True, "source_bucket": self.exp_src_bucket,
@@ -238,6 +261,8 @@ class TestCopyFiles(unittest.TestCase):
                                               CopySource={'Bucket': self.exp_src_bucket,
                                                           'Key': exp_file_key},
                                               Key=exp_file_key)
+        utils.database.single_query.assert_called_once()
+
 
     def test_handler_no_other_in_bucket_map(self):
         """

@@ -11,6 +11,7 @@ import time
 import logging
 import boto3
 from botocore.exceptions import ClientError
+import requests
 
 class CopyRequestError(Exception):
     """
@@ -86,15 +87,25 @@ def task(records, bucket_map, retries, retry_sleep_secs):
             if not afile['success']:
                 err_msg = copy_object(s3, afile['source_bucket'], afile['source_key'],
                                       afile['target_bucket'])
-                if err_msg:
-                    afile['err_msg'] = err_msg
-                else:
-                    afile['success'] = True
-                    afile['err_msg'] = ''
-                    logging.info(
-                        f'copy {afile["source_key"]} from {afile["source_bucket"]} to '
-                        f'{afile["target_bucket"]} attempt {attempt} successful.')
-
+                try:
+                    if err_msg:
+                        afile['err_msg'] = err_msg
+                        status = "error"
+                        logging.error(f"Attempt {attempt}. Error copying file {afile['source_key']}"
+                                      f" from {afile['source_bucket']} to {afile['target_bucket']}."
+                                      f" msg: {err_msg}")
+                        requests.update_request_status(afile['source_key'], status, err_msg)
+                    else:
+                        afile['success'] = True
+                        afile['err_msg'] = ''
+                        status = "complete"
+                        logging.info(f"Attempt {attempt}. Success copying file "
+                                     f"{afile['source_key']} from {afile['source_bucket']} "
+                                     f"to {afile['target_bucket']}.")
+                        requests.update_request_status(afile['source_key'], status)
+                except requests.DatabaseError as err:
+                    logging.error(f"Failed to update request status in database. "
+                                  f"key: {afile['source_key']} status: {status}. Err: {str(err)}")
         attempt = attempt + 1
         if attempt <= retries:
             time.sleep(retry_sleep_secs)
@@ -129,7 +140,7 @@ def copy_object(s3_cli, src_bucket_name, src_object_name,
                            Key=dest_object_name)
     except ClientError as ex:
         logging.error(ex)
-        return ex
+        return str(ex)
     return None
 
 def handler(event, context):      #pylint: disable-msg=unused-argument
