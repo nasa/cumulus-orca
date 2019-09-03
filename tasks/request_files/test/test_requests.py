@@ -11,11 +11,12 @@ from unittest.mock import Mock
 import requests
 import utils
 import utils.database
+from utils.database import DbError 
 from request_helpers import (
     JOB_ID_1, JOB_ID_2, JOB_ID_3, JOB_ID_4, JOB_ID_5, JOB_ID_6, JOB_ID_7,
     JOB_ID_8, JOB_ID_9, JOB_ID_10, JOB_ID_11, REQUEST_ID_EXP_1,
-    REQUEST_ID_EXP_2, UTC_NOW_EXP_1, UTC_NOW_EXP_4, create_insert_request,
-    create_select_requests)
+    REQUEST_ID_EXP_2, REQUEST_ID_EXP_3, UTC_NOW_EXP_1, UTC_NOW_EXP_4,
+    create_insert_request, create_select_requests)
 from requests import result_to_json
 
 
@@ -71,6 +72,40 @@ class TestRequests(unittest.TestCase):
         except requests.DatabaseError as err:
             self.fail(f"delete_all_requests. {str(err)}")
 
+    def test_delete_all_requests_dberror(self):
+        """
+        Tests db error deleting all requests from the request_status table
+        """
+        exp_err = 'Database Error. Internal database error, please contact LP DAAC User Services'
+        try:
+            utils.database.single_query = Mock(
+                side_effect=[DbError(exp_err)])
+            requests.delete_all_requests()
+            self.fail("expected DatabaseError")
+        except requests.DatabaseError as err:
+            self.assertEqual(exp_err, str(err))
+        utils.database.single_query.assert_called_once()
+
+    def test_delete_all_requests_dberror2(self):
+        """
+        Tests db error deleting all requests from the request_status table
+        """
+        exp_err = 'Database Error. Internal database error, please contact LP DAAC User Services'
+        exp_job_ids = [JOB_ID_1, JOB_ID_2, JOB_ID_3, JOB_ID_4, JOB_ID_5,
+                       JOB_ID_6, JOB_ID_7, JOB_ID_8, JOB_ID_9, JOB_ID_10,
+                       JOB_ID_11]
+        try:
+            qresult = create_select_requests(exp_job_ids)
+            empty_result = []
+            utils.database.single_query = Mock(
+                side_effect=[qresult, empty_result,
+                             DbError(exp_err),
+                             empty_result])
+            result = requests.delete_all_requests()
+            self.fail("expected DatabaseError")
+        except requests.DatabaseError as err:
+            self.assertEqual(exp_err, str(err))
+        utils.database.single_query.assert_called()
 
     def test_delete_request(self):
         """
@@ -85,14 +120,26 @@ class TestRequests(unittest.TestCase):
         except requests.DatabaseError as err:
             self.fail(f"delete_request. {str(err)}")
 
+    def test_delete_request_no_job_id(self):
+        """
+        Tests no job_id for deleting a job by job_id
+        """
+        try:
+            exp_result = []
+            utils.database.single_query = Mock(side_effect=[requests.BadRequestError("No job_id provided")])
+            result = requests.delete_request(None)
+            self.fail("expected BadRequestError")
+        except requests.BadRequestError as err:
+            self.assertEqual("No job_id provided", str(err))
 
-    def test_delete_request_exception(self):
+
+    def test_delete_request_database_error(self):
         """
         Tests deleting a job by job_id
         """
         exp_err = 'Database Error. Internal database error, please contact LP DAAC User Services'
         try:
-            utils.database.single_query = Mock(side_effect=[requests.DatabaseError(exp_err)])
+            utils.database.single_query = Mock(side_effect=[DbError(exp_err)])
             requests.delete_request('x')
             self.fail("expected DatabaseError")
         except requests.DatabaseError as err:
@@ -115,7 +162,7 @@ class TestRequests(unittest.TestCase):
         self.assertEqual(expected, result)
 
 
-    def test_get_request_by_status_exception(self):
+    def test_get_jobs_by_status_exception(self):
         """
         Tests getting a DatabaseError reading a job by status
         """
@@ -123,7 +170,7 @@ class TestRequests(unittest.TestCase):
             'A status must be provided')])
         status = None
         try:
-            requests.get_requests_by_status(status)
+            requests.get_jobs_by_status(status)
             self.fail("expected BadRequestError")
         except requests.BadRequestError as err:
             self.assertEqual('A status must be provided', str(err))
@@ -132,11 +179,11 @@ class TestRequests(unittest.TestCase):
         err_msg = ('Database Error. could not connect to server: Connection timed out '
 	           '(0x0000274C/10060) Is the server running on host "unknown.cr.usgs.gov" '
 	           '(136.177.41.212) and accepting TCP/IP connections on port 5432?')
-        utils.database.single_query = Mock(side_effect=[utils.database.DbError(
+        utils.database.single_query = Mock(side_effect=[DbError(
             err_msg)])
         os.environ["DATABASE_HOST"] = "unknown.cr.usgs.gov"
         try:
-            requests.get_requests_by_status(status)
+            requests.get_jobs_by_status(status)
             self.fail("expected DatabaseError")
         except requests.DatabaseError as err:
             utils.database.single_query.assert_called_once()
@@ -149,17 +196,19 @@ class TestRequests(unittest.TestCase):
         Tests getting a DatabaseError reading a job
         """
         #create_select_requests([])
-        utils.database.single_query = Mock(side_effect=[requests.DatabaseError(
+        exp_msg = (
             'Database Error. could not connect to server: Connection timed out '
             '(0x0000274C/10060) Is the server running on host "unknown.cr.usgs.gov"'
-            ' (136.177.41.212) and accepting TCP/IP connections on port 5432?')])
+            ' (136.177.41.212) and accepting TCP/IP connections on port 5432?')
+        utils.database.single_query = Mock(side_effect=[requests.DatabaseError(exp_msg)])
         os.environ["DATABASE_HOST"] = "unknown.cr.usgs.gov"
         try:
             requests.get_job_by_job_id('x')
             self.fail("expected DatabaseError")
         except requests.DatabaseError as err:
-            exp_msg = ('Database Error. could not connect to server: Connection timed out')
-            self.assertIn(exp_msg, str(err))
+            #exp_msg = ('Database Error. could not connect to server: Connection timed out')
+            #self.assertIn(exp_msg, str(err))
+            self.assertEqual(exp_msg, str(err))
             utils.database.single_query.assert_called_once()
 
 
@@ -175,7 +224,52 @@ class TestRequests(unittest.TestCase):
         utils.database.single_query.assert_called_once()
 
 
-    def test_get_requests_by_status(self):
+    def test_get_jobs_by_request_id(self):
+        """
+        Tests reading by status
+        """
+        exp_job_ids = [JOB_ID_5, JOB_ID_6]
+        qresult, exp_result = create_select_requests(exp_job_ids)
+        utils.database.single_query = Mock(side_effect=[exp_result])
+        expected = result_to_json(exp_result)
+        try:
+            result = requests.get_jobs_by_request_id(None)
+            self.fail("expected BadRequestError")
+        except requests.BadRequestError as err:
+            self.assertEqual("A request_id must be provided", str(err))
+        try:
+            result = requests.get_jobs_by_request_id(REQUEST_ID_EXP_3)
+        except requests.BadRequestError as err:
+            self.fail(str(err))
+        self.assertEqual(expected, result)
+        utils.database.single_query.assert_called_once()
+
+    def test_get_jobs_by_granule_id_dberror(self):
+        """
+        Tests db error reading by granule_id
+        """
+        utils.database.single_query = Mock(side_effect=[DbError("DbError reading requests")])
+        try:
+            result = requests.get_jobs_by_granule_id("gran_1")
+            self.fail("expected DbError")
+        except requests.DatabaseError as err:
+            self.assertEqual("DbError reading requests", str(err))
+            utils.database.single_query.assert_called_once()
+
+
+    def test_get_jobs_by_status_dberror(self):
+        """
+        Tests reading by status
+        """
+        utils.database.single_query = Mock(side_effect=[DbError("DbError reading requests")])
+        try:
+            result = requests.get_jobs_by_status("complete")
+            self.fail("expected DbError")
+        except requests.DatabaseError as err:
+            self.assertEqual("DbError reading requests", str(err))
+            utils.database.single_query.assert_called_once()
+
+    def test_get_jobs_by_status(self):
         """
         Tests reading by status
         """
@@ -184,18 +278,18 @@ class TestRequests(unittest.TestCase):
         status = "noexist"
         exp_result_1 = []
         utils.database.single_query = Mock(side_effect=[exp_result_1, exp_result_2])
-        result = requests.get_requests_by_status(status)
+        result = requests.get_jobs_by_status(status)
         self.assertEqual(exp_result_1, result)
         utils.database.single_query.assert_called_once()
 
         status = "complete"
         expected = result_to_json(exp_result_2)
-        result = requests.get_requests_by_status(status)
+        result = requests.get_jobs_by_status(status)
         self.assertEqual(expected, result)
         utils.database.single_query.assert_called()
 
 
-    def test_get_requests_by_status_max_days(self):
+    def test_get_jobs_by_status_max_days(self):
         """
         Tests reading by status
         """
@@ -203,13 +297,13 @@ class TestRequests(unittest.TestCase):
         qresult, exp_result = create_select_requests(exp_job_ids)
         status = "noexist"
         utils.database.single_query = Mock(side_effect=[[], exp_result])
-        result = requests.get_requests_by_status(status)
+        result = requests.get_jobs_by_status(status)
         self.assertEqual([], result)
         utils.database.single_query.assert_called_once()
 
         status = "complete"
         expected = result_to_json(exp_result)
-        result = requests.get_requests_by_status(status, 5)
+        result = requests.get_jobs_by_status(status, 5)
         self.assertEqual(expected, result)
         utils.database.single_query.assert_called()
 

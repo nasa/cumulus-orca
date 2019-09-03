@@ -13,20 +13,17 @@ import utils
 import utils.database
 from request_helpers import (
     JOB_ID_1, JOB_ID_2, JOB_ID_3, JOB_ID_4, JOB_ID_5, JOB_ID_6, JOB_ID_7,
-    JOB_ID_8, JOB_ID_9, JOB_ID_10, JOB_ID_11, create_insert_request,
+    JOB_ID_8, JOB_ID_9, JOB_ID_10, JOB_ID_11, REQUEST_ID_EXP_1, create_insert_request,
     create_select_requests)
 from requests import result_to_json
 
 UTC_NOW_EXP_1 = requests.get_utc_now_iso()
-REQUEST_ID_EXP_1 = requests.request_id_generator()
 
 class TestRequestStatus(unittest.TestCase):
     """
     TestRequestStatus.
     """
     def setUp(self):
-        #self.context = LambdaContextMock()
-        #self.mock_error = CumulusLogger.error
         os.environ["DATABASE_HOST"] = "my.db.host.gov"
         os.environ["DATABASE_NAME"] = "sndbx"
         os.environ["DATABASE_USER"] = "unittestdbuser"
@@ -36,7 +33,6 @@ class TestRequestStatus(unittest.TestCase):
         self.mock_single_query = utils.database.single_query
 
     def tearDown(self):
-        #CumulusLogger.error = self.mock_error
         utils.database.single_query = self.mock_single_query
         requests.request_id_generator = self.mock_request_id
         requests.get_utc_now_iso = self.mock_utcnow
@@ -57,24 +53,55 @@ class TestRequestStatus(unittest.TestCase):
         requests.request_id_generator = Mock(return_value=request_id_exp)
         granule_id = 'granule_1'
         request_id = REQUEST_ID_EXP_1
-        status = "inprogress"
-        handler_input_event["granule_id"] = granule_id
-        handler_input_event["request_id"] = request_id
-        handler_input_event["status"] = status
+        status = "error"
+        req_err = "error submitting restore request"
         handler_input_event["function"] = "add"
+        handler_input_event["error"] = req_err
         qresult, ins_result = create_insert_request(JOB_ID_1, request_id, granule_id, "object_key",
-                                                    "restore", "my_s3_bucket", "inprogress",
-                                                    utc_now_exp, None, None)
+                                                    "restore", "my_s3_bucket", "error",
+                                                    utc_now_exp, None, req_err)
         utils.database.single_query = Mock(side_effect=[qresult, ins_result])
+        try:
+            result = request_status.handler(handler_input_event, None)
+            self.fail("expected BadRequestError")
+        except request_status.BadRequestError as err:
+            self.assertEqual("Missing 'granule_id' in input data", str(err))
+        handler_input_event["granule_id"] = granule_id
+        try:
+            result = request_status.handler(handler_input_event, None)
+            self.fail("expected BadRequestError")
+        except request_status.BadRequestError as err:
+            self.assertEqual("Missing 'request_id' in input data", str(err))
+        handler_input_event["request_id"] = request_id
         try:
             result = request_status.handler(handler_input_event, None)
             expected = result_to_json(ins_result)
             self.assertEqual(expected, result)
             utils.database.single_query.assert_called()
-        except requests.NotFound as err:
+        except request_status.BadRequestError as err:
             self.fail(err)
         except requests.DbError as err:
             self.fail(err)
+
+
+    def test_task_query_all(self):
+        """
+        Test query by granule_id.
+        """
+        exp_job_ids = [JOB_ID_1, JOB_ID_2, JOB_ID_3, JOB_ID_4, JOB_ID_5,
+                       JOB_ID_6, JOB_ID_7, JOB_ID_8, JOB_ID_9, JOB_ID_10,
+                       JOB_ID_11]
+        qresult, exp_result = create_select_requests(exp_job_ids)
+        handler_input_event = {}
+        handler_input_event["function"] = "query"
+        expected = result_to_json(exp_result)
+        utils.database.single_query = Mock(side_effect=[qresult])
+        try:
+            result = request_status.task(handler_input_event, None)
+            self.assertEqual(expected, result)
+            utils.database.single_query.assert_called()
+        except requests.NotFound as err:
+            self.fail(str(err))
 
 
     def test_task_query_granule_id(self):
@@ -89,7 +116,6 @@ class TestRequestStatus(unittest.TestCase):
         exp_job_ids = [JOB_ID_1]
         qresult, exp_result = create_select_requests(exp_job_ids)
         expected = result_to_json(exp_result)
-        #result = requests.get_requests_by_status(status)
         utils.database.single_query = Mock(side_effect=[exp_result])
         try:
             result = request_status.task(handler_input_event, None)
@@ -103,7 +129,7 @@ class TestRequestStatus(unittest.TestCase):
         Test query by request_id.
         """
         handler_input_event = {}
-        request_id = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
+        request_id = REQUEST_ID_EXP_1
         handler_input_event["request_id"] = request_id
         handler_input_event["function"] = "query"
         exp_result = []
@@ -114,8 +140,44 @@ class TestRequestStatus(unittest.TestCase):
         try:
             result = request_status.task(handler_input_event, None)
             self.assertEqual(expected, result)
+            utils.database.single_query.assert_called_once()
         except requests.NotFound as err:
             self.assertEqual(f"Unknown request_id: {request_id}", str(err))
+
+    def test_task_query_request_id_dberror(self):
+        """
+        Test query by request_id.
+        """
+        handler_input_event = {}
+        request_id = REQUEST_ID_EXP_1
+        handler_input_event["request_id"] = request_id
+        handler_input_event["function"] = "query"
+        utils.database.single_query = Mock(side_effect=[requests.DbError("Db call failed")])
+        try:
+            result = request_status.task(handler_input_event, None)
+            self.fail("expected DbError")
+        except requests.DatabaseError as err:
+            self.assertEqual("Db call failed", str(err))
+            utils.database.single_query.assert_called_once()
+
+    def test_task_query_request_id_notfound(self):
+        """
+        Test query by request_id.
+        """
+        handler_input_event = {}
+        request_id = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
+
+        handler_input_event["request_id"] = request_id
+        handler_input_event["function"] = "query"
+        exp_result = []
+        utils.database.single_query = Mock(side_effect=[exp_result])
+        try:
+            result = request_status.task(handler_input_event, None)
+            self.assertEqual(exp_result, result)
+            utils.database.single_query.assert_called_once()
+        except requests.NotFound as err:
+            self.fail(str(err))
+
 
     def test_task_query_job_id(self):
         """

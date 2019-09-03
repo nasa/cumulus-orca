@@ -14,8 +14,11 @@ import requests
 
 # Set Global Variables
 _LOG = logging.getLogger(__name__)
-#class ExtractFilePathsError(Exception):
-#    """Exception to be raised if any errors occur"""
+
+class BadRequestError(Exception):
+    """
+    Exception to be raised if there is a problem with the request.
+    """
 
 def task(event, context):    #pylint: disable-msg=unused-argument
     """
@@ -73,17 +76,14 @@ def task(event, context):    #pylint: disable-msg=unused-argument
     if function == "add":
         try:
             granule_id = event['granule_id']
-            _LOG.warning(f"granule_id: {granule_id}")
         except KeyError:
-            granule_id = "granule_id_1"
+            raise BadRequestError("Missing 'granule_id' in input data")
         try:
             request_id = event['request_id']
-            _LOG.warning(f"request_id: {request_id}")
         except KeyError:
-            request_id = "request_id_1"
+            raise BadRequestError("Missing 'request_id' in input data")
         try:
             status = event['status']
-            _LOG.warning(f"status: {status}")
         except KeyError:
             status = "error"
 
@@ -102,8 +102,6 @@ def task(event, context):    #pylint: disable-msg=unused-argument
         result = requests.get_job_by_job_id(job_id)
         return result
 
-    #if granule_id is None and request_id is None:
-    #    raise ExtractFilePathsError(f'KeyError: granule_id or request_id is required')
     if function == "clear":
         result = requests.delete_all_requests()
         return result

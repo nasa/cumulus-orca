@@ -11,14 +11,14 @@ from botocore.exceptions import ClientError
 from cumulus_logger import CumulusLogger
 from request_helpers import LambdaContextMock, create_handler_event
 from request_helpers import create_insert_request
-from request_helpers import JOB_ID_1
+from request_helpers import JOB_ID_1, REQUEST_ID_EXP_1
 import requests
 import request_files
 import utils
 import utils.database
 
 UTC_NOW_EXP_1 = requests.get_utc_now_iso()
-REQUEST_ID_EXP_1 = requests.request_id_generator()
+#REQUEST_ID_EXP_1 = requests.request_id_generator()
 
 class TestRequestFiles(unittest.TestCase):
     """
@@ -216,6 +216,7 @@ class TestRequestFiles(unittest.TestCase):
                                                   ])
         s3_cli.head_object = Mock()
         CumulusLogger.info = Mock()
+        CumulusLogger.error = Mock()
         '''qresult_1_inprogress, ins_result = create_insert_request(
             JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file1,
             "restore", "some_bucket", "inprogress",
@@ -223,16 +224,16 @@ class TestRequestFiles(unittest.TestCase):
         qresult_1_error, ins_result = create_insert_request(JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file1,
                                                     "restore", "some_bucket", "error",
                                                     UTC_NOW_EXP_1, None, "'Code': 'NoSuchBucket'")
- 
+
 
         utils.database.single_query = Mock(
-            side_effect=[requests.DatabaseError("lisa")])
+            side_effect=[requests.DatabaseError("mock insert failed error")])
 
         try:
             result = request_files.task(input_event, self.context)
         except requests.DatabaseError as err:
-            self.fail(str(err))
-            
+            self.assertEqual("mock insert failed error", str(err))
+
         boto3.client.assert_called_with('s3')
         s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
                                            Key=file1)
@@ -297,7 +298,7 @@ class TestRequestFiles(unittest.TestCase):
 
         try:
             result = request_files.task(exp_event, self.context)
-        
+
             self.assertEqual({'files': [], 'granuleId': granule_id},
                          result)
             boto3.client.assert_called_with('s3')

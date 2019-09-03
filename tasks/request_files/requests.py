@@ -143,13 +143,6 @@ def get_job_by_job_id(job_id):
         LOGGER.exception(f"DbError: {str(err)}")
         raise DatabaseError(str(err))
 
-    #if not rows:
-    #    raise NotFound("Unknown job_id: {}".format(job_id))
-    #request = []
-    #if result:
-    #    print("result: ", result)
-    #    request.append(result)
-
     return result
 
 def get_jobs_by_granule_id(granule_id):
@@ -226,6 +219,9 @@ def update_request_status(object_key, status, err_msg=None):
 def delete_request(job_id):
     """
     Deletes a job by job_id.
+
+    TODO: Currently this method is only used to facilitate testing,
+    so unit tests may not be complete.
     """
     if job_id is None:
         raise BadRequestError("No job_id provided")
@@ -246,6 +242,9 @@ def delete_request(job_id):
 def delete_all_requests():
     """
     Deletes everything from the request_status table.
+
+    TODO: Currently this method is only used to facilitate testing,
+    so unit tests may not be complete.
     """
     try:
         result = get_all_requests()
@@ -254,15 +253,11 @@ def delete_all_requests():
             try:
                 print("job: ", job)
                 delete_request(job["job_id"])
-            except NotFound:
-                pass
             except DbError as err:
                 LOGGER.exception(f"DbError: {str(err)}")
                 raise DatabaseError(str(err))
         result = get_all_requests()
         return result
-    except NotFound:
-        return []
     except DbError as err:
         LOGGER.exception(f"DbError: {str(err)}")
         raise DatabaseError(str(err))
@@ -294,9 +289,6 @@ def get_all_requests():
         LOGGER.exception(f"DbError: {str(err)}")
         raise DatabaseError(str(err))
 
-    #if not rows:
-    #    raise NotFound("No jobs found")
-
     return result
 
 def create_data(request_id=None, granule_id=None, object_key=None, job_type=None,
@@ -326,7 +318,7 @@ def create_data(request_id=None, granule_id=None, object_key=None, job_type=None
         data["err_msg"] = err_msg
     return data
 
-def get_requests_by_status(status, max_days_old=None):
+def get_jobs_by_status(status, max_days_old=None):
     """
     Returns rows from request_status by status, and optional days old
     """
@@ -365,9 +357,6 @@ def get_requests_by_status(status, max_days_old=None):
         LOGGER.exception(f"DbError: {str(err)}")
         raise DatabaseError(str(err))
 
-    #if not rows:
-    #    raise NotFound("No jobs found")
-
     return result
 
 
@@ -403,9 +392,6 @@ def get_jobs_by_request_id(request_id):
     except DbError as err:
         LOGGER.exception(f"DbError: {str(err)}")
         raise DatabaseError(str(err))
-
-    #if not rows:
-    #    raise NotFound("Unknown request_id: {}".format(request_id))
 
     return result
 

@@ -190,7 +190,7 @@ def restore_object(s3_cli, request_id, granule_id, bucket_name, object_name,
             LOGGER.info(f"Job {job_id} created.")
         except requests.DatabaseError as err:
             print("DatabaseError1: ", str(err))
-            LOGGER.error("Failed to log request in database. Error {}. Request_Id: {}", 
+            LOGGER.error("Failed to log request in database. Error {}. Request_Id: {}",
                          str(err), request_id)
     except ClientError as c_err:
         # NoSuchBucket, NoSuchKey, or InvalidObjectState error == the object's
