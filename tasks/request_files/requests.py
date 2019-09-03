@@ -248,10 +248,8 @@ def delete_all_requests():
     """
     try:
         result = get_all_requests()
-        print("result: ", result)
         for job in result:
             try:
-                print("job: ", job)
                 delete_request(job["job_id"])
             except DbError as err:
                 LOGGER.exception(f"DbError: {str(err)}")

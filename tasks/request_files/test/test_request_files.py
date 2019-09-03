@@ -100,26 +100,22 @@ class TestRequestFiles(unittest.TestCase):
                                                   ])
         s3_cli.head_object = Mock()
         CumulusLogger.info = Mock()
-        qresult_1_inprogress, ins_result = create_insert_request(
+        qresult_1_inprogress, _ = create_insert_request(
             JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file1,
             "restore", "some_bucket", "inprogress",
             UTC_NOW_EXP_1, None, None)
-        qresult_2_inprogress, ins_result = create_insert_request(
-            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file2,
-            "restore", "some_bucket", "inprogress",
-            UTC_NOW_EXP_1, None, None)
-        qresult_3_inprogress, ins_result = create_insert_request(
+        qresult_3_inprogress, _ = create_insert_request(
             JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file3,
             "restore", "some_bucket", "inprogress",
             UTC_NOW_EXP_1, None, None)
-        qresult_4_inprogress, ins_result = create_insert_request(
+        qresult_4_inprogress, _ = create_insert_request(
             JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file4,
             "restore", "some_bucket", "inprogress",
             UTC_NOW_EXP_1, None, None)
 
         utils.database.single_query = Mock(
             side_effect=[qresult_1_inprogress, qresult_1_inprogress,
-            qresult_3_inprogress, qresult_4_inprogress])
+                         qresult_3_inprogress, qresult_4_inprogress])
 
         try:
             result = request_files.task(input_event, self.context)
@@ -217,22 +213,17 @@ class TestRequestFiles(unittest.TestCase):
         s3_cli.head_object = Mock()
         CumulusLogger.info = Mock()
         CumulusLogger.error = Mock()
-        '''qresult_1_inprogress, ins_result = create_insert_request(
-            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file1,
-            "restore", "some_bucket", "inprogress",
-            UTC_NOW_EXP_1, None, None)'''
-        qresult_1_error, ins_result = create_insert_request(JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file1,
-                                                    "restore", "some_bucket", "error",
-                                                    UTC_NOW_EXP_1, None, "'Code': 'NoSuchBucket'")
-
 
         utils.database.single_query = Mock(
-            side_effect=[requests.DatabaseError("mock insert failed error")])
-
+            side_effect=[utils.database.DbError("mock insert failed error")])
+        exp_result = {'granuleId': granule_id, 'files': [{'key': file1,
+                                                          'success': True,
+                                                          'err_msg': ''}]}
         try:
             result = request_files.task(input_event, self.context)
+            self.assertEqual(exp_result, result)
         except requests.DatabaseError as err:
-            self.assertEqual("mock insert failed error", str(err))
+            self.fail(f"failed insert does not throw exception. {str(err)}")
 
         boto3.client.assert_called_with('s3')
         s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
@@ -299,11 +290,10 @@ class TestRequestFiles(unittest.TestCase):
         try:
             result = request_files.task(exp_event, self.context)
 
-            self.assertEqual({'files': [], 'granuleId': granule_id},
-                         result)
+            self.assertEqual({'files': [], 'granuleId': granule_id}, result)
             boto3.client.assert_called_with('s3')
             s3_cli.head_object.assert_called_with(Bucket='my-bucket', Key=file1)
-        except Exception as err:
+        except requests.DatabaseError as err:
             self.fail(str(err))
 
 
@@ -337,9 +327,9 @@ class TestRequestFiles(unittest.TestCase):
         exp_files.append(exp_file)
 
         exp_gran['files'] = exp_files
-        qresult_1_inprogress, ins_result = create_insert_request(JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file1,
-                                                    "restore", "some_bucket", "inprogress",
-                                                    UTC_NOW_EXP_1, None, None)
+        qresult_1_inprogress, _ = create_insert_request(
+            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file1, "restore", "some_bucket",
+            "inprogress", UTC_NOW_EXP_1, None, None)
         utils.database.single_query = Mock(side_effect=[qresult_1_inprogress])
         try:
             result = request_files.task(exp_event, self.context)
@@ -348,7 +338,7 @@ class TestRequestFiles(unittest.TestCase):
 
             boto3.client.assert_called_with('s3')
             s3_cli.head_object.assert_called_with(Bucket='some_bucket',
-                                                Key=file1)
+                                                  Key=file1)
 
             s3_cli.restore_object.assert_called_with(
                 Bucket='some_bucket',
@@ -390,9 +380,9 @@ class TestRequestFiles(unittest.TestCase):
 
         exp_gran['files'] = exp_files
 
-        qresult_1_inprogress, ins_result = create_insert_request(JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file1,
-                                                    "restore", "some_bucket", "inprogress",
-                                                    UTC_NOW_EXP_1, None, None)
+        qresult_1_inprogress, _ = create_insert_request(
+            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file1, "restore", "some_bucket",
+            "inprogress", UTC_NOW_EXP_1, None, None)
         utils.database.single_query = Mock(side_effect=[qresult_1_inprogress])
 
         try:
@@ -402,7 +392,7 @@ class TestRequestFiles(unittest.TestCase):
 
             boto3.client.assert_called_with('s3')
             s3_cli.head_object.assert_called_with(Bucket='some_bucket',
-                                                Key=file1)
+                                                  Key=file1)
             s3_cli.restore_object.assert_any_call(
                 Bucket='some_bucket',
                 Key=file1,
@@ -540,21 +530,21 @@ class TestRequestFiles(unittest.TestCase):
 
         exp_gran['files'] = exp_files
         exp_err = f"One or more files failed to be requested. {exp_gran}"
-        qresult_1_inprogress, ins_result = create_insert_request(JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file1,
-                                                    "restore", "some_bucket", "inprogress",
-                                                    UTC_NOW_EXP_1, None, None)
-        qresult_1_error, ins_result = create_insert_request(JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file1,
-                                                    "restore", "some_bucket", "error",
-                                                    UTC_NOW_EXP_1, None, "'Code': 'NoSuchBucket'")
-        qresult_3_inprogress, ins_result = create_insert_request(JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file3,
-                                                    "restore", "some_bucket", "inprogress",
-                                                    UTC_NOW_EXP_1, None, None)
-        qresult_4_inprogress, ins_result = create_insert_request(JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file4,
-                                                    "restore", "some_bucket", "inprogress",
-                                                    UTC_NOW_EXP_1, None, None)
-        qresult_3_error, ins_result = create_insert_request(JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file3,
-                                                    "restore", "some_bucket", "error",
-                                                    UTC_NOW_EXP_1, None, "'Code': 'NoSuchBucket'")
+        qresult_1_inprogress, _ = create_insert_request(
+            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file1, "restore", "some_bucket",
+            "inprogress", UTC_NOW_EXP_1, None, None)
+        qresult_1_error, _ = create_insert_request(
+            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file1, "restore", "some_bucket",
+            "error", UTC_NOW_EXP_1, None, "'Code': 'NoSuchBucket'")
+        qresult_3_inprogress, _ = create_insert_request(
+            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file3, "restore", "some_bucket",
+            "inprogress", UTC_NOW_EXP_1, None, None)
+        #_, ins_result = create_insert_request(
+        #    JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file4, "restore", "some_bucket",
+        #    "inprogress", UTC_NOW_EXP_1, None, None)
+        qresult_3_error, _ = create_insert_request(
+            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file3, "restore", "some_bucket",
+            "error", UTC_NOW_EXP_1, None, "'Code': 'NoSuchBucket'")
         utils.database.single_query = Mock(side_effect=[qresult_1_inprogress, qresult_1_error,
                                                         qresult_3_inprogress, qresult_1_error,
                                                         qresult_3_error])
@@ -621,17 +611,16 @@ class TestRequestFiles(unittest.TestCase):
 
         exp_gran['files'] = exp_files
 
-        qresult1, ins_result = create_insert_request(JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file1,
-                                                    "restore", "some_bucket", "inprogress",
-                                                     UTC_NOW_EXP_1, None, None)
-        qresult2, ins_result = create_insert_request(JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file1,
-                                                    "restore", "some_bucket", "error",
-                                                     UTC_NOW_EXP_1, None, "'Code': 'NoSuchBucket'")
-        qresult3, ins_result = create_insert_request(JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file2,
-                                                    "restore", "some_bucket", "inprogress",
-                                                     UTC_NOW_EXP_1, None, None)
+        qresult1, _ = create_insert_request(
+            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file1, "restore", "some_bucket",
+            "inprogress", UTC_NOW_EXP_1, None, None)
+        qresult2, _ = create_insert_request(
+            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file1, "restore", "some_bucket",
+            "error", UTC_NOW_EXP_1, None, "'Code': 'NoSuchBucket'")
+        qresult3, _ = create_insert_request(
+            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file2, "restore", "some_bucket",
+            "inprogress", UTC_NOW_EXP_1, None, None)
         utils.database.single_query = Mock(side_effect=[qresult1, qresult2, qresult2, qresult3])
-        #expected = result_to_json(ins_result)
 
         result = request_files.task(exp_event, self.context)
         self.assertEqual(exp_gran, result)

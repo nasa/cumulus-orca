@@ -9,13 +9,13 @@ from unittest.mock import Mock
 
 import request_status
 import requests
-import utils
-import utils.database
+from requests import result_to_json
 from request_helpers import (
     JOB_ID_1, JOB_ID_2, JOB_ID_3, JOB_ID_4, JOB_ID_5, JOB_ID_6, JOB_ID_7,
-    JOB_ID_8, JOB_ID_9, JOB_ID_10, JOB_ID_11, REQUEST_ID_EXP_1, create_insert_request,
-    create_select_requests)
-from requests import result_to_json
+    JOB_ID_8, JOB_ID_9, JOB_ID_10, JOB_ID_11, REQUEST_ID_EXP_1,
+    create_insert_request, create_select_requests)
+import utils
+import utils.database
 
 UTC_NOW_EXP_1 = requests.get_utc_now_iso()
 
@@ -58,7 +58,7 @@ class TestRequestStatus(unittest.TestCase):
         handler_input_event["function"] = "add"
         handler_input_event["error"] = req_err
         qresult, ins_result = create_insert_request(JOB_ID_1, request_id, granule_id, "object_key",
-                                                    "restore", "my_s3_bucket", "error",
+                                                    "restore", "my_s3_bucket", status,
                                                     utc_now_exp, None, req_err)
         utils.database.single_query = Mock(side_effect=[qresult, ins_result])
         try:
@@ -114,7 +114,7 @@ class TestRequestStatus(unittest.TestCase):
         handler_input_event["function"] = "query"
         exp_result = []
         exp_job_ids = [JOB_ID_1]
-        qresult, exp_result = create_select_requests(exp_job_ids)
+        _, exp_result = create_select_requests(exp_job_ids)
         expected = result_to_json(exp_result)
         utils.database.single_query = Mock(side_effect=[exp_result])
         try:
@@ -134,7 +134,7 @@ class TestRequestStatus(unittest.TestCase):
         handler_input_event["function"] = "query"
         exp_result = []
         exp_job_ids = [JOB_ID_1]
-        qresult, exp_result = create_select_requests(exp_job_ids)
+        _, exp_result = create_select_requests(exp_job_ids)
         expected = result_to_json(exp_result)
         utils.database.single_query = Mock(side_effect=[exp_result])
         try:
@@ -154,7 +154,7 @@ class TestRequestStatus(unittest.TestCase):
         handler_input_event["function"] = "query"
         utils.database.single_query = Mock(side_effect=[requests.DbError("Db call failed")])
         try:
-            result = request_status.task(handler_input_event, None)
+            request_status.task(handler_input_event, None)
             self.fail("expected DbError")
         except requests.DatabaseError as err:
             self.assertEqual("Db call failed", str(err))
@@ -189,7 +189,7 @@ class TestRequestStatus(unittest.TestCase):
         handler_input_event["function"] = "query"
         exp_result = []
         exp_job_ids = [JOB_ID_1]
-        qresult, exp_result = create_select_requests(exp_job_ids)
+        _, exp_result = create_select_requests(exp_job_ids)
         expected = result_to_json(exp_result)
         utils.database.single_query = Mock(side_effect=[exp_result])
         try:

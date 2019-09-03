@@ -178,18 +178,15 @@ def restore_object(s3_cli, request_id, granule_id, bucket_name, object_name,
     """
     request = {'Days': days,
                'GlacierJobParameters': {'Tier': retrieval_type}}
-    count = 0
     # Submit the request
     try:
         s3_cli.restore_object(Bucket=bucket_name, Key=object_name, RestoreRequest=request)
         data = requests.create_data(request_id, granule_id, object_name, "restore",
                                     bucket_name, "inprogress", None, None)
         try:
-            print("count1: ", count)
             job_id = requests.submit_request(data)
             LOGGER.info(f"Job {job_id} created.")
         except requests.DatabaseError as err:
-            print("DatabaseError1: ", str(err))
             LOGGER.error("Failed to log request in database. Error {}. Request_Id: {}",
                          str(err), request_id)
     except ClientError as c_err:
@@ -199,11 +196,9 @@ def restore_object(s3_cli, request_id, granule_id, bucket_name, object_name,
         data = requests.create_data(request_id, granule_id, object_name, "restore",
                                     bucket_name, "error", None, None, str(c_err))
         try:
-            print("count2: ", count)
             job_id = requests.submit_request(data)
             LOGGER.info(f"Job {job_id} status updated.")
         except requests.DatabaseError as err:
-            print("DatabaseError2: ", str(err))
             LOGGER.error(f"Failed to log request in database. Error {str(err)}. Request: {data}")
         raise c_err
 

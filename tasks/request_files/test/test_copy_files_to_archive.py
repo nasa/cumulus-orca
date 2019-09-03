@@ -11,7 +11,7 @@ from unittest.mock import Mock
 import boto3
 from botocore.exceptions import ClientError
 
-import copy_files_to_archive  # pylint: disable-import-error
+import copy_files_to_archive
 import utils
 import utils.database
 from copy_helpers import create_event2, create_handler_event

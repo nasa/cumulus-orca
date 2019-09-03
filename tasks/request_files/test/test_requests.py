@@ -9,15 +9,15 @@ import unittest
 from unittest.mock import Mock
 
 import requests
+from requests import result_to_json
 import utils
 import utils.database
-from utils.database import DbError 
+from utils.database import DbError
 from request_helpers import (
     JOB_ID_1, JOB_ID_2, JOB_ID_3, JOB_ID_4, JOB_ID_5, JOB_ID_6, JOB_ID_7,
     JOB_ID_8, JOB_ID_9, JOB_ID_10, JOB_ID_11, REQUEST_ID_EXP_1,
     REQUEST_ID_EXP_2, REQUEST_ID_EXP_3, UTC_NOW_EXP_1, UTC_NOW_EXP_4,
     create_insert_request, create_select_requests)
-from requests import result_to_json
 
 
 class TestRequests(unittest.TestCase):
@@ -101,7 +101,7 @@ class TestRequests(unittest.TestCase):
                 side_effect=[qresult, empty_result,
                              DbError(exp_err),
                              empty_result])
-            result = requests.delete_all_requests()
+            requests.delete_all_requests()
             self.fail("expected DatabaseError")
         except requests.DatabaseError as err:
             self.assertEqual(exp_err, str(err))
@@ -125,9 +125,9 @@ class TestRequests(unittest.TestCase):
         Tests no job_id for deleting a job by job_id
         """
         try:
-            exp_result = []
-            utils.database.single_query = Mock(side_effect=[requests.BadRequestError("No job_id provided")])
-            result = requests.delete_request(None)
+            utils.database.single_query = Mock(side_effect=
+                                               [requests.BadRequestError("No job_id provided")])
+            requests.delete_request(None)
             self.fail("expected BadRequestError")
         except requests.BadRequestError as err:
             self.assertEqual("No job_id provided", str(err))
@@ -176,9 +176,7 @@ class TestRequests(unittest.TestCase):
             self.assertEqual('A status must be provided', str(err))
 
         status = "error"
-        err_msg = ('Database Error. could not connect to server: Connection timed out '
-	           '(0x0000274C/10060) Is the server running on host "unknown.cr.usgs.gov" '
-	           '(136.177.41.212) and accepting TCP/IP connections on port 5432?')
+        err_msg = 'Database Error. could not connect to server'
         utils.database.single_query = Mock(side_effect=[DbError(
             err_msg)])
         os.environ["DATABASE_HOST"] = "unknown.cr.usgs.gov"
@@ -187,27 +185,20 @@ class TestRequests(unittest.TestCase):
             self.fail("expected DatabaseError")
         except requests.DatabaseError as err:
             utils.database.single_query.assert_called_once()
-            exp_msg = ('Database Error. could not connect to server: Connection timed out')
-            self.assertIn(exp_msg, str(err))
+            self.assertEqual(err_msg, str(err))
 
 
     def test_get_request_exception(self):
         """
         Tests getting a DatabaseError reading a job
         """
-        #create_select_requests([])
-        exp_msg = (
-            'Database Error. could not connect to server: Connection timed out '
-            '(0x0000274C/10060) Is the server running on host "unknown.cr.usgs.gov"'
-            ' (136.177.41.212) and accepting TCP/IP connections on port 5432?')
+        exp_msg = 'Database Error. could not connect to server'
         utils.database.single_query = Mock(side_effect=[requests.DatabaseError(exp_msg)])
         os.environ["DATABASE_HOST"] = "unknown.cr.usgs.gov"
         try:
             requests.get_job_by_job_id('x')
             self.fail("expected DatabaseError")
         except requests.DatabaseError as err:
-            #exp_msg = ('Database Error. could not connect to server: Connection timed out')
-            #self.assertIn(exp_msg, str(err))
             self.assertEqual(exp_msg, str(err))
             utils.database.single_query.assert_called_once()
 
@@ -229,7 +220,7 @@ class TestRequests(unittest.TestCase):
         Tests reading by status
         """
         exp_job_ids = [JOB_ID_5, JOB_ID_6]
-        qresult, exp_result = create_select_requests(exp_job_ids)
+        _, exp_result = create_select_requests(exp_job_ids)
         utils.database.single_query = Mock(side_effect=[exp_result])
         expected = result_to_json(exp_result)
         try:
@@ -250,7 +241,7 @@ class TestRequests(unittest.TestCase):
         """
         utils.database.single_query = Mock(side_effect=[DbError("DbError reading requests")])
         try:
-            result = requests.get_jobs_by_granule_id("gran_1")
+            requests.get_jobs_by_granule_id("gran_1")
             self.fail("expected DbError")
         except requests.DatabaseError as err:
             self.assertEqual("DbError reading requests", str(err))
@@ -263,7 +254,7 @@ class TestRequests(unittest.TestCase):
         """
         utils.database.single_query = Mock(side_effect=[DbError("DbError reading requests")])
         try:
-            result = requests.get_jobs_by_status("complete")
+            requests.get_jobs_by_status("complete")
             self.fail("expected DbError")
         except requests.DatabaseError as err:
             self.assertEqual("DbError reading requests", str(err))
@@ -274,7 +265,7 @@ class TestRequests(unittest.TestCase):
         Tests reading by status
         """
         exp_job_ids = [JOB_ID_1, JOB_ID_2, JOB_ID_3]
-        qresult, exp_result_2 = create_select_requests(exp_job_ids)
+        _, exp_result_2 = create_select_requests(exp_job_ids)
         status = "noexist"
         exp_result_1 = []
         utils.database.single_query = Mock(side_effect=[exp_result_1, exp_result_2])
@@ -294,7 +285,7 @@ class TestRequests(unittest.TestCase):
         Tests reading by status
         """
         exp_job_ids = [JOB_ID_1, JOB_ID_2, JOB_ID_3]
-        qresult, exp_result = create_select_requests(exp_job_ids)
+        _, exp_result = create_select_requests(exp_job_ids)
         status = "noexist"
         utils.database.single_query = Mock(side_effect=[[], exp_result])
         result = requests.get_jobs_by_status(status)
@@ -505,7 +496,8 @@ class TestRequests(unittest.TestCase):
         """
         Tests updating a job to an 'error' status
         """
-        qresult, exp_result = create_select_requests([JOB_ID_4])
+        _, exp_result = create_select_requests(
+            [JOB_ID_4])
         utc_now_exp = "2019-07-31 19:21:38.263364+00:00"
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
         object_key = "objectkey_4"
