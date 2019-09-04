@@ -3,13 +3,8 @@ Name: request_status.py
 
 Description:  Queries the request_status table.
 """
-
-#from run_cumulus_task import run_cumulus_task
-#from cumulus_logger import CumulusLogger
-
 import logging
 
-#LOGGER = CumulusLogger()
 import requests
 
 # Set Global Variables
@@ -39,11 +34,11 @@ def task(event, context):    #pylint: disable-msg=unused-argument
     result = {}
     _LOG.warning(f"event: '{event}' ")
     _LOG.info(f"event: '{event}' ")
-    #try:
-    function = event['function']
-    _LOG.warning(f"function: {function}")
-    #except KeyError:
-    #    raise
+    try:
+        function = event['function']
+        _LOG.warning(f"function: {function}")
+    except KeyError as err:
+        raise err
 
     if function == "query":
         try:
@@ -137,8 +132,6 @@ def handler(event, context):            #pylint: disable-msg=unused-argument
         Raises:
             ExtractFilePathsError: An error occurred parsing the input.
     """
-    #LOGGER.setMetadata(event, context)
-    #result = run_cumulus_task(task, event, context)
     _LOG.warning("in handler")
     result = task(event, context)
     return result

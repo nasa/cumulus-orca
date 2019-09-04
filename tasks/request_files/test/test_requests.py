@@ -88,7 +88,7 @@ class TestRequests(unittest.TestCase):
 
     def test_delete_all_requests_dberror2(self):
         """
-        Tests db error deleting all requests from the request_status table
+        Tests db error deleting one of the individual requests from the request_status table
         """
         exp_err = 'Database Error. Internal database error, please contact LP DAAC User Services'
         exp_job_ids = [JOB_ID_1, JOB_ID_2, JOB_ID_3, JOB_ID_4, JOB_ID_5,
@@ -122,7 +122,7 @@ class TestRequests(unittest.TestCase):
 
     def test_delete_request_no_job_id(self):
         """
-        Tests no job_id for deleting a job by job_id
+        Tests no job_id given for deleting a job by job_id
         """
         try:
             utils.database.single_query = Mock(side_effect=
@@ -135,7 +135,7 @@ class TestRequests(unittest.TestCase):
 
     def test_delete_request_database_error(self):
         """
-        Tests deleting a job by job_id
+        Tests database error while deleting a job by job_id
         """
         exp_err = 'Database Error. Internal database error, please contact LP DAAC User Services'
         try:
@@ -162,7 +162,7 @@ class TestRequests(unittest.TestCase):
         self.assertEqual(expected, result)
 
 
-    def test_get_jobs_by_status_exception(self):
+    def test_get_jobs_by_status_exceptions(self):
         """
         Tests getting a DatabaseError reading a job by status
         """
@@ -188,9 +188,9 @@ class TestRequests(unittest.TestCase):
             self.assertEqual(err_msg, str(err))
 
 
-    def test_get_request_exception(self):
+    def test_get_jobs_by_job_id_dberror(self):
         """
-        Tests getting a DatabaseError reading a job
+        Tests getting a DatabaseError reading a job by job_id
         """
         exp_msg = 'Database Error. could not connect to server'
         utils.database.single_query = Mock(side_effect=[requests.DatabaseError(exp_msg)])
@@ -217,7 +217,7 @@ class TestRequests(unittest.TestCase):
 
     def test_get_jobs_by_request_id(self):
         """
-        Tests reading by status
+        Tests reading a job by request_id
         """
         exp_job_ids = [JOB_ID_5, JOB_ID_6]
         _, exp_result = create_select_requests(exp_job_ids)
@@ -248,18 +248,6 @@ class TestRequests(unittest.TestCase):
             utils.database.single_query.assert_called_once()
 
 
-    def test_get_jobs_by_status_dberror(self):
-        """
-        Tests reading by status
-        """
-        utils.database.single_query = Mock(side_effect=[DbError("DbError reading requests")])
-        try:
-            requests.get_jobs_by_status("complete")
-            self.fail("expected DbError")
-        except requests.DatabaseError as err:
-            self.assertEqual("DbError reading requests", str(err))
-            utils.database.single_query.assert_called_once()
-
     def test_get_jobs_by_status(self):
         """
         Tests reading by status
@@ -282,7 +270,7 @@ class TestRequests(unittest.TestCase):
 
     def test_get_jobs_by_status_max_days(self):
         """
-        Tests reading by status
+        Tests reading by status for limited days
         """
         exp_job_ids = [JOB_ID_1, JOB_ID_2, JOB_ID_3]
         _, exp_result = create_select_requests(exp_job_ids)
@@ -375,7 +363,7 @@ class TestRequests(unittest.TestCase):
 
     def test_submit_request_error_status(self):
         """
-        Tests that a job is written to the db
+        Tests that an error job is written to the db
         """
         utc_now_exp = UTC_NOW_EXP_4
         request_id_exp = REQUEST_ID_EXP_2
@@ -414,7 +402,7 @@ class TestRequests(unittest.TestCase):
 
     def test_submit_request_inprogress_status(self):
         """
-        Tests that a job is written to the db
+        Tests that an inprogress job is written to the db
         """
         utc_now_exp = UTC_NOW_EXP_1
         request_id_exp = REQUEST_ID_EXP_1

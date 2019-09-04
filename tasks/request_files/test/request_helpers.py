@@ -8,11 +8,8 @@ import time
 import psycopg2
 import psycopg2.extras
 
-#import unittest
-#from unittest.mock import Mock
 import requests
 
-#import test_requests
 JOB_ID_1 = 101
 JOB_ID_2 = 102
 JOB_ID_3 = 103

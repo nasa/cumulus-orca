@@ -24,23 +24,14 @@ Run the unit tests with code coverage:
 
 (podr) λ cd C:\devpy\poswotdr\tasks\request_files
 (podr) λ nosetests --with-coverage --cover-erase --cover-package=request_files --cover-package=request_status --cover-package=copy_files_to_archive --cover-package=requests -v
-Tests the handler ... {"message": "request: {'input': {'granules': [{'granuleId': 'MOD09GQ.A0219114.N5aUCG.006.0656338553321', 'keys': ['L0A_LR_RAW_product_0010-of-0092.h5']}]}, 'config': {}} does not contain a config value for glacier-bucket", "level": "error", "executions": ["DrRecovery54"], "timestamp": "2019-07-09T09:34:15.167271", "sender": "request_files", "version": 1}
-ok
-Test two files, first successful, second has two errors, then success. ... ok
-Test four files, first 3 successful, fourth errors on all retries and fails. ... ok
-Test retries for restore error for one file. ... ok
-Test a file that is not in glacier. ... ok
-Test environment var RESTORE_EXPIRE_DAYS not set - use default. ... ok
-Test for missing glacier-bucket in config. ... ok
-Test environment var RESTORE_REQUEST_RETRIES not set - use default. ... ok
-Test four files for one granule - successful ... ok
-Test two granules with one file each - successful. ... ok
-
-Name               Stmts   Miss  Cover
---------------------------------------
-request_files.py      80      0   100%
-----------------------------------------------------------------------
-Ran 10 tests in 1.741s
+Name                       Stmts   Miss  Cover   Missing
+--------------------------------------------------------
+copy_files_to_archive.py      88      0   100%
+request_files.py              95      0   100%
+request_status.py             68      0   100%
+requests.py                  166      4    98%   255-256, 260-261
+--------------------------------------------------------
+TOTAL                        417      4    99%
 
 ```
 <a name="linting"></a>

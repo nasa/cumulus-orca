@@ -86,7 +86,7 @@ class TestRequestStatus(unittest.TestCase):
 
     def test_task_query_all(self):
         """
-        Test query by granule_id.
+        Test query all.
         """
         exp_job_ids = [JOB_ID_1, JOB_ID_2, JOB_ID_3, JOB_ID_4, JOB_ID_5,
                        JOB_ID_6, JOB_ID_7, JOB_ID_8, JOB_ID_9, JOB_ID_10,
@@ -132,7 +132,6 @@ class TestRequestStatus(unittest.TestCase):
         request_id = REQUEST_ID_EXP_1
         handler_input_event["request_id"] = request_id
         handler_input_event["function"] = "query"
-        exp_result = []
         exp_job_ids = [JOB_ID_1]
         _, exp_result = create_select_requests(exp_job_ids)
         expected = result_to_json(exp_result)
@@ -146,7 +145,7 @@ class TestRequestStatus(unittest.TestCase):
 
     def test_task_query_request_id_dberror(self):
         """
-        Test query by request_id.
+        Test dberror running query by request_id.
         """
         handler_input_event = {}
         request_id = REQUEST_ID_EXP_1
@@ -187,7 +186,6 @@ class TestRequestStatus(unittest.TestCase):
         job_id = 1
         handler_input_event["job_id"] = job_id
         handler_input_event["function"] = "query"
-        exp_result = []
         exp_job_ids = [JOB_ID_1]
         _, exp_result = create_select_requests(exp_job_ids)
         expected = result_to_json(exp_result)

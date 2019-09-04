@@ -18,7 +18,6 @@ import utils
 import utils.database
 
 UTC_NOW_EXP_1 = requests.get_utc_now_iso()
-#REQUEST_ID_EXP_1 = requests.request_id_generator()
 
 class TestRequestFiles(unittest.TestCase):
     """
@@ -473,7 +472,7 @@ class TestRequestFiles(unittest.TestCase):
 
     def test_task_client_error_3_times(self):
         """
-        Test four files, first 3 successful, fourth errors on all retries and fails.
+        Test three files, two successful, one errors on all retries and fails.
         """
         file1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf"
         file3 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321_ndvi.jpg"
@@ -539,9 +538,6 @@ class TestRequestFiles(unittest.TestCase):
         qresult_3_inprogress, _ = create_insert_request(
             JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file3, "restore", "some_bucket",
             "inprogress", UTC_NOW_EXP_1, None, None)
-        #_, ins_result = create_insert_request(
-        #    JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file4, "restore", "some_bucket",
-        #    "inprogress", UTC_NOW_EXP_1, None, None)
         qresult_3_error, _ = create_insert_request(
             JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file3, "restore", "some_bucket",
             "error", UTC_NOW_EXP_1, None, "'Code': 'NoSuchBucket'")

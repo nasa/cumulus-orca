@@ -9,8 +9,7 @@ import datetime
 import dateutil.parser
 import utils
 import utils.database
-#from utils.database import single_query  # pylint: disable=no-name-in-module
-from utils.database import DbError                # pylint: disable=no-name-in-module
+from utils.database import DbError
 
 LOGGER = logging.getLogger(__name__)
 
@@ -173,9 +172,6 @@ def get_jobs_by_granule_id(granule_id):
         LOGGER.exception(f"DbError: {str(err)}")
         raise DatabaseError(str(err))
 
-    #if not rows:
-    #    raise NotFound("Unknown granule_id: {}".format(granule_id))
-
     return result
 
 
@@ -189,9 +185,6 @@ def update_request_status(object_key, status, err_msg=None):
     # must have a status provided
     if status is None:
         raise BadRequestError("A new status must be provided")
-
-    #if not err_msg:
-    #    err_msg = Null
 
     date = get_utc_now_iso()
 
@@ -219,9 +212,6 @@ def update_request_status(object_key, status, err_msg=None):
 def delete_request(job_id):
     """
     Deletes a job by job_id.
-
-    TODO: Currently this method is only used to facilitate testing,
-    so unit tests may not be complete.
     """
     if job_id is None:
         raise BadRequestError("No job_id provided")
