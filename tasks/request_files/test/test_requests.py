@@ -400,9 +400,12 @@ class TestRequests(unittest.TestCase):
             self.fail(f"get_job_by_job_id. {str(err)}")
 
     def test_create_data(self):
+        """
+        Tests the create_data function
+        """
         utc_now_exp = "2019-07-31 18:05:19.161362+00:00"
         exp_data = {}
-        
+
         exp_data["request_id"] = "my_request_id"
         exp_data["granule_id"] = "granule_1"
         exp_data["object_key"] = "my_file"
@@ -413,8 +416,8 @@ class TestRequests(unittest.TestCase):
         exp_data["last_update_time"] = utc_now_exp
 
         data = requests.create_data("my_request_id", "granule_1", "my_file", "restore",
-                "my_bucket", "inprogress", utc_now_exp,
-                utc_now_exp)
+                                    "my_bucket", "inprogress", utc_now_exp,
+                                    utc_now_exp)
 
         self.assertEqual(exp_data, data)
 

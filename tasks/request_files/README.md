@@ -19,14 +19,15 @@
 ## Unit Testing and Coverage
 ```
 There are 4 unit test files in the test folder. These have everything mocked
-and are suitable for automation. The nosetests/code coverage here are using only these 4 files:
-
-Run the unit tests with code coverage:
+and are suitable for automation. The nosetests/code coverage here are using only these 4 files.
+Note that you might need to temporarily move the 3 test files in the dev_test folder to 
+somewhere that the tests won't pick them up (see 'Postgres Tests' below). 
 
 λ activate podr
 
 (podr) λ cd C:\devpy\poswotdr\tasks\request_files
 (podr) λ nosetests --with-coverage --cover-erase --cover-package=request_files --cover-package=request_status --cover-package=copy_files_to_archive --cover-package=requests -v
+
 Name                       Stmts   Miss  Cover
 ----------------------------------------------
 copy_files_to_archive.py      91      0   100%
@@ -38,6 +39,7 @@ TOTAL                        442      0   100%
 ----------------------------------------------------------------------
 Ran 59 tests in 17.041s
 
+Postgres Tests:
 There are 3 additional test files in the dev_test folder.
 These run against a Postgres database in a Docker container, and allow you to 
 develop against an actual database. The tests run successfully when run alone. However if
