@@ -16,8 +16,8 @@ DO LANGUAGE plpgsql
 
         END IF;
             -- Grants
-        GRANT CONNECT ON DATABASE labsndbx TO drdbo_role;
-        GRANT CREATE ON DATABASE labsndbx TO drdbo_role;
+        GRANT CONNECT ON DATABASE disaster_recovery TO drdbo_role;
+        GRANT CREATE ON DATABASE disaster_recovery TO drdbo_role;
     END
     $$;
 

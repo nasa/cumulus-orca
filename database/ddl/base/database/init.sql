@@ -1,1 +1,1 @@
-\ir labsndbx.sql;
+\ir disaster_recovery.sql;

@@ -6,7 +6,7 @@
 commit;
 
 -- Create Schema and extensions in the new database
-\c labsndbx
+\c disaster_recovery
 SET SESSION AUTHORIZATION dbo;
 \ir schema/init.sql;
 
