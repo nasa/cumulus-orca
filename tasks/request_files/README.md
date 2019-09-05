@@ -30,14 +30,14 @@ somewhere that the tests won't pick them up (see 'Postgres Tests' below).
 
 Name                       Stmts   Miss  Cover
 ----------------------------------------------
-copy_files_to_archive.py      91      0   100%
-request_files.py              98      0   100%
-request_status.py             71      0   100%
+copy_files_to_archive.py      97      0   100%
+request_files.py             104      0   100%
+request_status.py             75      0   100%
 requests.py                  182      0   100%
 ----------------------------------------------
-TOTAL                        442      0   100%
+TOTAL                        458      0   100%
 ----------------------------------------------------------------------
-Ran 59 tests in 17.041s
+Ran 59 tests in 17.173s
 
 Postgres Tests:
 There are 3 additional test files in the dev_test folder.
@@ -80,21 +80,53 @@ Run pylint against the code:
 
 (podr) λ cd C:\devpy\poswotdr\tasks\request_files
 (podr) λ pylint request_files.py
-
 --------------------------------------------------------------------
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 
-(podr) λ cd C:\devpy\poswotdr\tasks\request_files\test
-(podr) λ pylint test_request_files.py
+(podr) λ pylint copy_files_to_archive.py
+--------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 
+(podr) λ pylint request_status.py
+--------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
+
+(podr) λ pylint requests.py
+ --------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
+
+(podr) λ pylint utils/database.py
+************* Module utils.database
+utils\database.py:19:1: W0511: TODO develop tests for database.py later. in those mock psycopg2.cursor, etc (fixme)
+
+(podr) λ pylint test/copy_helpers.py
+--------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
+
+(podr) λ pylint test/request_helpers.py
+--------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
+
+(podr) λ pylint test/test_request_files.py
+--------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
+
+(podr) λ pylint test/test_copy_files_to_archive.py
+--------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
+
+(podr) λ pylint test/test_request_status.py
+--------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
+
+(podr) λ pylint test/test_requests.py
 --------------------------------------------------------------------
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 ```
 <a name="deployment"></a>
 ## Deployment
 ```
-    cd tasks\request_files
-    zip task.zip *.py
+    see /bin/build_tasks.sh to build the zip file. Upload the zip file to AWS.
 ```
 <a name="deployment-validation"></a>
 ### Deployment Validation

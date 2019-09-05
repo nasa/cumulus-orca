@@ -20,7 +20,7 @@ from request_helpers import (
     create_insert_request, create_select_requests)
 
 
-class TestRequests(unittest.TestCase):
+class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-methods
     """
     TestRequestFiles.
     """
@@ -404,8 +404,14 @@ class TestRequests(unittest.TestCase):
         Tests the create_data function
         """
         utc_now_exp = "2019-07-31 18:05:19.161362+00:00"
-        exp_data = {}
 
+        obj = {}
+        obj["request_id"] = "my_request_id"
+        obj["granule_id"] = "granule_1"
+        obj["glacier_bucket"] = "my_bucket"
+        obj["key"] = "my_file"
+
+        exp_data = {}
         exp_data["request_id"] = "my_request_id"
         exp_data["granule_id"] = "granule_1"
         exp_data["object_key"] = "my_file"
@@ -415,9 +421,8 @@ class TestRequests(unittest.TestCase):
         exp_data["request_time"] = utc_now_exp
         exp_data["last_update_time"] = utc_now_exp
 
-        data = requests.create_data("my_request_id", "granule_1", "my_file", "restore",
-                                    "my_bucket", "inprogress", utc_now_exp,
-                                    utc_now_exp)
+        data = requests.create_data(obj, "restore", "inprogress",
+                                    utc_now_exp, utc_now_exp)
 
         self.assertEqual(exp_data, data)
 

@@ -188,8 +188,7 @@ def restore_object(s3_cli, obj, attempt, retries, retrieval_type='Standard'):
     # Submit the request
     try:
         s3_cli.restore_object(Bucket=obj["glacier_bucket"], Key=obj["key"], RestoreRequest=request)
-        data = requests.create_data(obj["request_id"], obj["granule_id"], obj["key"], "restore",
-                                    obj["glacier_bucket"], "inprogress", None, None)
+        data = requests.create_data(obj, "restore", "inprogress", None, None)
         try:
             job_id = requests.submit_request(data)
             LOGGER.info(f"Job {job_id} created.")
@@ -203,9 +202,7 @@ def restore_object(s3_cli, obj, attempt, retries, retrieval_type='Standard'):
         LOGGER.error("{}. bucket: {} file: {}", c_err, obj["glacier_bucket"], obj["key"])
         if attempt == retries:
             try:
-                data = requests.create_data(obj["request_id"], obj["granule_id"], obj["key"],
-                                            "restore", obj["glacier_bucket"], "error", None, None,
-                                            str(c_err))
+                data = requests.create_data(obj, "restore", "error", None, None, str(c_err))
                 job_id = requests.submit_request(data)
                 LOGGER.info(f"Job {job_id} created.")
             except requests.DatabaseError as err:

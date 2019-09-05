@@ -17,7 +17,7 @@ import utils.database
 from copy_helpers import create_event2, create_handler_event
 
 
-class TestCopyFiles(unittest.TestCase):
+class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-attributes
     """
     TestCopyFiles.
     """

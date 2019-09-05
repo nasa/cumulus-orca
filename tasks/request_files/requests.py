@@ -318,23 +318,23 @@ def get_all_requests():
 
     return result
 
-def create_data(request_id=None, granule_id=None, object_key=None, job_type=None,
-                restore_bucket=None, job_status=None, request_time=None,
+def create_data(obj, job_type=None, #pylint: disable-msg=too-many-arguments
+                job_status=None, request_time=None,
                 last_update_time=None, err_msg=None):
     """
     Creates a dict containing the input data for submit_request.
     """
     data = {}
-    if request_id:
-        data["request_id"] = request_id
-    if granule_id:
-        data["granule_id"] = granule_id
-    if object_key:
-        data["object_key"] = object_key
+    if obj["request_id"]:
+        data["request_id"] = obj["request_id"]
+    if obj["granule_id"]:
+        data["granule_id"] = obj["granule_id"]
+    if obj["key"]:
+        data["object_key"] = obj["key"]
     if job_type:
         data["job_type"] = job_type
-    if restore_bucket:
-        data["restore_bucket_dest"] = restore_bucket
+    if obj["glacier_bucket"]:
+        data["restore_bucket_dest"] = obj["glacier_bucket"]
     if job_status:
         data["job_status"] = job_status
     if request_time:
@@ -431,7 +431,7 @@ def result_to_json(result_rows):
     return json_result
 
 
-def myconverter(obj):
+def myconverter(obj):       #pylint: disable-msg=inconsistent-return-statements
     """
     Returns the current utc timestamp as a string in isoformat
     ex. '2019-07-17T17:36:38.494918'

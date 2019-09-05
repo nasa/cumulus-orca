@@ -64,7 +64,7 @@ def create_handler_event():
     return event
 
 
-class LambdaContextMock:
+class LambdaContextMock:   #pylint: disable-msg=too-few-public-methods
     """
     create a lambda context for testing.
     """
@@ -170,7 +170,8 @@ def create_select_requests(job_ids):
     return qresult[0], exp_result[0]
 
 
-def create_insert_request(job_id, request_id, granule_id, object_key, job_type,
+def create_insert_request(job_id,          #pylint: disable-msg=too-many-arguments
+                          request_id, granule_id, object_key, job_type,
                           restore_bucket_dest, job_status, request_time,
                           last_update_time, err_msg):
     """
@@ -189,7 +190,8 @@ def create_insert_request(job_id, request_id, granule_id, object_key, job_type,
     return iresult, qresult
 
 
-def build_row(job_id, request_id, granule_id, object_key, job_type,
+def build_row(job_id,             #pylint: disable-msg=too-many-arguments
+              request_id, granule_id, object_key, job_type,
               restore_bucket_dest, job_status, rq_date,
               lu_date, err_msg):
     """

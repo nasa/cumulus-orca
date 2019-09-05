@@ -68,21 +68,20 @@ class TestRequestFiles(unittest.TestCase):
         Test four files for one granule - successful
         """
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
-        file1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf"
-        file2 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf.met"
-        file3 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321_ndvi.jpg"
-        file4 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml"
+        files = ["MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf",
+                 "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf.met",
+                 "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321_ndvi.jpg",
+                 "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml"]
+        #file1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf"
+        #file2 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf.met"
+        #file3 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321_ndvi.jpg"
+        #file4 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml"
         input_event = {
             "input": {
                 "granules": [
                     {
                         "granuleId": granule_id,
-                        "keys": [
-                            file1,
-                            file2,
-                            file3,
-                            file4
-                        ]
+                        "keys": files
                     }
                 ]
             },
@@ -100,15 +99,15 @@ class TestRequestFiles(unittest.TestCase):
         s3_cli.head_object = Mock()
         CumulusLogger.info = Mock()
         qresult_1_inprogress, _ = create_insert_request(
-            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file1,
+            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, files[0],
             "restore", "some_bucket", "inprogress",
             UTC_NOW_EXP_1, None, None)
         qresult_3_inprogress, _ = create_insert_request(
-            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file3,
+            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, files[2],
             "restore", "some_bucket", "inprogress",
             UTC_NOW_EXP_1, None, None)
         qresult_4_inprogress, _ = create_insert_request(
-            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file4,
+            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, files[3],
             "restore", "some_bucket", "inprogress",
             UTC_NOW_EXP_1, None, None)
 
@@ -123,36 +122,47 @@ class TestRequestFiles(unittest.TestCase):
 
         boto3.client.assert_called_with('s3')
         s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
-                                           Key=file1)
+                                           Key=files[0])
         s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
-                                           Key=file2)
+                                           Key=files[1])
         s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
-                                           Key=file3)
+                                           Key=files[2])
         s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
-                                           Key=file4)
+                                           Key=files[3])
         s3_cli.restore_object.assert_any_call(
             Bucket='my-dr-fake-glacier-bucket',
-            Key=file1,
+            Key=files[0],
             RestoreRequest={'Days': 5, 'GlacierJobParameters': {
                 'Tier': 'Standard'}})
         s3_cli.restore_object.assert_any_call(
             Bucket='my-dr-fake-glacier-bucket',
-            Key=file2,
+            Key=files[1],
             RestoreRequest={'Days': 5, 'GlacierJobParameters': {
                 'Tier': 'Standard'}})
         s3_cli.restore_object.assert_any_call(
             Bucket='my-dr-fake-glacier-bucket',
-            Key=file3,
+            Key=files[2],
             RestoreRequest={'Days': 5, 'GlacierJobParameters': {
                 'Tier': 'Standard'}})
         s3_cli.restore_object.assert_any_call(
             Bucket='my-dr-fake-glacier-bucket',
-            Key=file4,
+            Key=files[3],
             RestoreRequest={'Days': 5, 'GlacierJobParameters': {
                 'Tier': 'Standard'}})
 
         exp_gran = {}
         exp_gran['granuleId'] = granule_id
+
+        exp_files = self.get_expected_files(files[0], files[1], files[2], files[3])
+        exp_gran['files'] = exp_files
+        self.assertEqual(exp_gran, result)
+        utils.database.single_query.assert_called()  #called 4 times
+
+    @staticmethod
+    def get_expected_files(file1, file2, file3, file4):
+        """
+        builds a list of expected files
+        """
         exp_files = []
 
         exp_file = {}
@@ -178,10 +188,7 @@ class TestRequestFiles(unittest.TestCase):
         exp_file['success'] = True
         exp_file['err_msg'] = ''
         exp_files.append(exp_file)
-
-        exp_gran['files'] = exp_files
-        self.assertEqual(exp_gran, result)
-        utils.database.single_query.assert_called()  #called 4 times
+        return exp_files
 
     def test_task_one_granule_1_file_db_error(self):
         """
@@ -474,18 +481,15 @@ class TestRequestFiles(unittest.TestCase):
         """
         Test three files, two successful, one errors on all retries and fails.
         """
-        file1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf"
-        file3 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321_ndvi.jpg"
-        file4 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml"
+        keys = ["MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf",
+                "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321_ndvi.jpg",
+                "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml"]
+
         exp_event = {}
         exp_event["config"] = {"glacier-bucket": "some_bucket"}
         gran = {}
-        granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
-        gran["granuleId"] = granule_id
-        keys = []
-        keys.append(file1)
-        keys.append(file3)
-        keys.append(file4)
+        gran["granuleId"] = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
+
         gran["keys"] = keys
         exp_event["input"] = {
             "granules": [gran]}
@@ -505,41 +509,23 @@ class TestRequestFiles(unittest.TestCase):
         CumulusLogger.info = Mock()
         CumulusLogger.error = Mock()
         exp_gran = {}
-        exp_gran['granuleId'] = granule_id
-        exp_files = []
+        exp_gran['granuleId'] = gran["granuleId"]
 
-        exp_file = {}
-        exp_file['key'] = file1
-        exp_file['success'] = True
-        exp_file['err_msg'] = ''
-        exp_files.append(exp_file)
-
-        exp_file = {}
-        exp_file['key'] = file3
-        exp_file['success'] = False
-        exp_file['err_msg'] = 'An error occurred (NoSuchKey) when calling the restore_object ' \
-                              'operation: Unknown'
-        exp_files.append(exp_file)
-
-        exp_file = {}
-        exp_file['key'] = file4
-        exp_file['success'] = True
-        exp_file['err_msg'] = ''
-        exp_files.append(exp_file)
+        exp_files = self.get_exp_files_3_errs(keys)
 
         exp_gran['files'] = exp_files
         exp_err = f"One or more files failed to be requested. {exp_gran}"
         qresult_1_inprogress, _ = create_insert_request(
-            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file1, "restore", "some_bucket",
+            JOB_ID_1, REQUEST_ID_EXP_1, gran["granuleId"], keys[0], "restore", "some_bucket",
             "inprogress", UTC_NOW_EXP_1, None, None)
         qresult_1_error, _ = create_insert_request(
-            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file1, "restore", "some_bucket",
+            JOB_ID_1, REQUEST_ID_EXP_1, gran["granuleId"], keys[0], "restore", "some_bucket",
             "error", UTC_NOW_EXP_1, None, "'Code': 'NoSuchBucket'")
         qresult_3_inprogress, _ = create_insert_request(
-            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file3, "restore", "some_bucket",
+            JOB_ID_1, REQUEST_ID_EXP_1, gran["granuleId"], keys[1], "restore", "some_bucket",
             "inprogress", UTC_NOW_EXP_1, None, None)
         qresult_3_error, _ = create_insert_request(
-            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file3, "restore", "some_bucket",
+            JOB_ID_1, REQUEST_ID_EXP_1, gran["granuleId"], keys[1], "restore", "some_bucket",
             "error", UTC_NOW_EXP_1, None, "'Code': 'NoSuchBucket'")
         utils.database.single_query = Mock(side_effect=[qresult_1_inprogress, qresult_1_error,
                                                         qresult_3_inprogress, qresult_1_error,
@@ -552,27 +538,51 @@ class TestRequestFiles(unittest.TestCase):
 
         boto3.client.assert_called_with('s3')
         s3_cli.head_object.assert_any_call(Bucket='some_bucket',
-                                           Key=file1)
+                                           Key=keys[0])
         s3_cli.restore_object.assert_any_call(
             Bucket='some_bucket',
-            Key=file1,
+            Key=keys[0],
             RestoreRequest={'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}})
         utils.database.single_query.assert_called()  # 5 times
+
+    @staticmethod
+    def get_exp_files_3_errs(keys):
+        """
+        builds list of expected files for test case
+        """
+        exp_files = []
+
+        exp_file = {}
+        exp_file['key'] = keys[0]
+        exp_file['success'] = True
+        exp_file['err_msg'] = ''
+        exp_files.append(exp_file)
+
+        exp_file = {}
+        exp_file['key'] = keys[1]
+        exp_file['success'] = False
+        exp_file['err_msg'] = 'An error occurred (NoSuchKey) when calling the restore_object ' \
+                              'operation: Unknown'
+        exp_files.append(exp_file)
+
+        exp_file = {}
+        exp_file['key'] = keys[2]
+        exp_file['success'] = True
+        exp_file['err_msg'] = ''
+        exp_files.append(exp_file)
+        return exp_files
 
     def test_task_client_error_2_times(self):
         """
         Test two files, first successful, second has two errors, then success.
         """
-        file1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf"
-        file2 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf.met"
         exp_event = {}
         exp_event["config"] = {"glacier-bucket": "some_bucket"}
         gran = {}
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
         gran["granuleId"] = granule_id
-        keys = []
-        keys.append(file1)
-        keys.append(file2)
+        keys = ["MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf",
+                "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf.met"]
         gran["keys"] = keys
         exp_event["input"] = {
             "granules": [gran]}
@@ -594,13 +604,13 @@ class TestRequestFiles(unittest.TestCase):
         exp_files = []
 
         exp_file = {}
-        exp_file['key'] = file1
+        exp_file['key'] = keys[0]
         exp_file['success'] = True
         exp_file['err_msg'] = ''
         exp_files.append(exp_file)
 
         exp_file = {}
-        exp_file['key'] = file2
+        exp_file['key'] = keys[1]
         exp_file['success'] = True
         exp_file['err_msg'] = ''
         exp_files.append(exp_file)
@@ -608,13 +618,13 @@ class TestRequestFiles(unittest.TestCase):
         exp_gran['files'] = exp_files
 
         qresult1, _ = create_insert_request(
-            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file1, "restore", "some_bucket",
+            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, keys[0], "restore", "some_bucket",
             "inprogress", UTC_NOW_EXP_1, None, None)
         qresult2, _ = create_insert_request(
-            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file1, "restore", "some_bucket",
+            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, keys[0], "restore", "some_bucket",
             "error", UTC_NOW_EXP_1, None, "'Code': 'NoSuchBucket'")
         qresult3, _ = create_insert_request(
-            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file2, "restore", "some_bucket",
+            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, keys[1], "restore", "some_bucket",
             "inprogress", UTC_NOW_EXP_1, None, None)
         utils.database.single_query = Mock(side_effect=[qresult1, qresult2, qresult2, qresult3])
 
@@ -624,7 +634,7 @@ class TestRequestFiles(unittest.TestCase):
         boto3.client.assert_called_with('s3')
         s3_cli.restore_object.assert_any_call(
             Bucket='some_bucket',
-            Key=file1,
+            Key=keys[0],
             RestoreRequest={'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}})
         utils.database.single_query.assert_called()  # 4 times
 

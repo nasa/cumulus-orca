@@ -37,70 +37,82 @@ def task(event, context):    #pylint: disable-msg=unused-argument
     try:
         function = event['function']
         _LOG.warning(f"function: {function}")
-    except KeyError as err:
+    except KeyError:
         raise BadRequestError("Missing 'function' in input data")
 
     if function == "query":
-        try:
-            granule_id = event['granule_id']
-            _LOG.warning(f"granule_id: {granule_id}")
-        except KeyError:
-            granule_id = None
-        try:
-            request_id = event['request_id']
-            _LOG.warning(f"request_id: {request_id}")
-        except KeyError:
-            request_id = None
-        try:
-            job_id = event['job_id']
-            _LOG.warning(f"job_id: {job_id}")
-        except KeyError:
-            job_id = None
-        if job_id:
-            result = requests.get_job_by_job_id(job_id)
-        else:
-            if request_id:
-                result = requests.get_jobs_by_request_id(request_id)
-            else:
-                if granule_id:
-                    result = requests.get_jobs_by_granule_id(granule_id)
-                else:
-                    result = requests.get_all_requests()
-        return result
+        result = query_requests(event)
 
     if function == "add":
-        try:
-            granule_id = event['granule_id']
-        except KeyError:
-            raise BadRequestError("Missing 'granule_id' in input data")
-        try:
-            request_id = event['request_id']
-        except KeyError:
-            raise BadRequestError("Missing 'request_id' in input data")
-        try:
-            status = event['status']
-        except KeyError:
-            status = "error"
-
-        data = {}
-        data["request_id"] = request_id
-        data["granule_id"] = granule_id
-        data["object_key"] = "my_test_filename"
-        data["job_type"] = "restore"
-        data["restore_bucket_dest"] = "my_test_bucket"
-        data["job_status"] = status
-        if status == "error":
-            data["err_msg"] = "error message goes here"
-        _LOG.warning(f"data: '{data}'")
-        job_id = requests.submit_request(data)
-        _LOG.warning(f"job_id: {job_id}")
-        result = requests.get_job_by_job_id(job_id)
-        return result
+        result = add_request(event)
 
     if function == "clear":
         result = requests.delete_all_requests()
-        return result
 
+    return result
+
+def query_requests(event):
+    """
+    Queries the database for requests
+    """
+    try:
+        granule_id = event['granule_id']
+        _LOG.warning(f"granule_id: {granule_id}")
+    except KeyError:
+        granule_id = None
+    try:
+        request_id = event['request_id']
+        _LOG.warning(f"request_id: {request_id}")
+    except KeyError:
+        request_id = None
+    try:
+        job_id = event['job_id']
+        _LOG.warning(f"job_id: {job_id}")
+    except KeyError:
+        job_id = None
+    if job_id:
+        result = requests.get_job_by_job_id(job_id)
+    else:
+        if request_id:
+            result = requests.get_jobs_by_request_id(request_id)
+        else:
+            if granule_id:
+                result = requests.get_jobs_by_granule_id(granule_id)
+            else:
+                result = requests.get_all_requests()
+    return result
+
+def add_request(event):
+    """
+    Adds a request to the database
+    """
+    try:
+        granule_id = event['granule_id']
+    except KeyError:
+        raise BadRequestError("Missing 'granule_id' in input data")
+    try:
+        request_id = event['request_id']
+    except KeyError:
+        raise BadRequestError("Missing 'request_id' in input data")
+    try:
+        status = event['status']
+    except KeyError:
+        status = "error"
+
+    data = {}
+    data["request_id"] = request_id
+    data["granule_id"] = granule_id
+    data["object_key"] = "my_test_filename"
+    data["job_type"] = "restore"
+    data["restore_bucket_dest"] = "my_test_bucket"
+    data["job_status"] = status
+    if status == "error":
+        data["err_msg"] = "error message goes here"
+    _LOG.warning(f"data: '{data}'")
+    job_id = requests.submit_request(data)
+    _LOG.warning(f"job_id: {job_id}")
+    result = requests.get_job_by_job_id(job_id)
+    return result
 
 def handler(event, context):            #pylint: disable-msg=unused-argument
     """Lambda handler. Extracts the key's for a granule from an input dict.

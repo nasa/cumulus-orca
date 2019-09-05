@@ -62,37 +62,63 @@ def task(records, bucket_map, retries, retry_sleep_secs):
             if not afile['success']:
                 err_msg = copy_object(s3, afile['source_bucket'], afile['source_key'],
                                       afile['target_bucket'])
-                try:
-                    if err_msg:
-                        afile['err_msg'] = err_msg
-                        old_status = "inprogress"
-                        new_status = "error"
-                        logging.error(f"Attempt {attempt}. Error copying file {afile['source_key']}"
-                                      f" from {afile['source_bucket']} to {afile['target_bucket']}."
-                                      f" msg: {err_msg}")
-                        requests.update_request_status(afile['source_key'], old_status,
-                                                       new_status, err_msg)
-                    else:
-                        afile['success'] = True
-                        afile['err_msg'] = ''
-                        new_status = "complete"
-                        logging.info(f"Attempt {attempt}. Success copying file "
-                                     f"{afile['source_key']} from {afile['source_bucket']} "
-                                     f"to {afile['target_bucket']}.")
-                        if attempt == 1:
-                            old_status = "inprogress"
-                        else:
-                            old_status = "error"
-                        requests.update_request_status(afile['source_key'], old_status, new_status)
-                except requests.DatabaseError as err:
-                    logging.error(f"Failed to update request status in database. "
-                                  f"key: {afile['source_key']} old status: {old_status} "
-                                  f"new status: {new_status}. Err: {str(err)}")
+                update_status_in_db(afile, attempt, err_msg)
         attempt = attempt + 1
         if attempt <= retries:
             time.sleep(retry_sleep_secs)
 
     return files
+
+def update_status_in_db(afile, attempt, err_msg):
+    """
+    Updates the status for the job in the database.
+
+        Args:
+            afile: An input dict with keys for:
+            'attempt': The attempt number for the copy
+            'err_msg' (string): None, or the error message from the copy command
+
+        Returns:
+            afile: The input dict with additional keys for:
+                'success' (boolean): True, if the copy was successful,
+                    otherwise False.
+                'err_msg' (string): when success is False, this will contain
+                    the error message from the copy error
+
+            Example:  [{'source_key': 'file1.xml', 'source_bucket': 'my-dr-fake-glacier-bucket',
+                          'target_bucket': 'unittest_xml_bucket', 'success': True,
+                          'err_msg': ''},
+                      {'source_key': 'file2.txt', 'source_bucket': 'my-dr-fake-glacier-bucket',
+                          'target_bucket': 'unittest_txt_bucket', 'success': True,
+                          'err_msg': ''}]
+    """
+    try:
+        if err_msg:
+            afile['err_msg'] = err_msg
+            old_status = "inprogress"
+            new_status = "error"
+            logging.error(f"Attempt {attempt}. Error copying file {afile['source_key']}"
+                          f" from {afile['source_bucket']} to {afile['target_bucket']}."
+                          f" msg: {err_msg}")
+            requests.update_request_status(afile['source_key'], old_status,
+                                           new_status, err_msg)
+        else:
+            afile['success'] = True
+            afile['err_msg'] = ''
+            new_status = "complete"
+            logging.info(f"Attempt {attempt}. Success copying file "
+                         f"{afile['source_key']} from {afile['source_bucket']} "
+                         f"to {afile['target_bucket']}.")
+            if attempt == 1:
+                old_status = "inprogress"
+            else:
+                old_status = "error"
+            requests.update_request_status(afile['source_key'], old_status, new_status)
+    except requests.DatabaseError as err:
+        logging.error(f"Failed to update request status in database. "
+                      f"key: {afile['source_key']} old status: {old_status} "
+                      f"new status: {new_status}. Err: {str(err)}")
+    return afile
 
 def get_files_from_records(records, bucket_map):
     """
@@ -108,10 +134,6 @@ def get_files_from_records(records, bucket_map):
                 'source_bucket': The name of the s3 bucket where the restored
                     file was temporarily sitting
                 'target_bucket': The name of the archive s3 bucket
-                'success' (boolean): True, if the copy was successful,
-                    otherwise False.
-                'err_msg' (string): when success is False, this will contain
-                    the error message from the copy error
     """
     files = []
     for record in records:
