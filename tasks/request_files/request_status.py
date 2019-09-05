@@ -38,7 +38,7 @@ def task(event, context):    #pylint: disable-msg=unused-argument
         function = event['function']
         _LOG.warning(f"function: {function}")
     except KeyError as err:
-        raise err
+        raise BadRequestError("Missing 'function' in input data")
 
     if function == "query":
         try:

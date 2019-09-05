@@ -90,22 +90,29 @@ def task(records, bucket_map, retries, retry_sleep_secs):
                 try:
                     if err_msg:
                         afile['err_msg'] = err_msg
-                        status = "error"
+                        old_status = "inprogress"
+                        new_status = "error"
                         logging.error(f"Attempt {attempt}. Error copying file {afile['source_key']}"
                                       f" from {afile['source_bucket']} to {afile['target_bucket']}."
                                       f" msg: {err_msg}")
-                        requests.update_request_status(afile['source_key'], status, err_msg)
+                        requests.update_request_status(afile['source_key'], old_status,
+                                                       new_status, err_msg)
                     else:
                         afile['success'] = True
                         afile['err_msg'] = ''
-                        status = "complete"
+                        new_status = "complete"
                         logging.info(f"Attempt {attempt}. Success copying file "
                                      f"{afile['source_key']} from {afile['source_bucket']} "
                                      f"to {afile['target_bucket']}.")
-                        requests.update_request_status(afile['source_key'], status)
+                        if attempt == 1:
+                            old_status = "inprogress"
+                        else:
+                            old_status = "error"
+                        requests.update_request_status(afile['source_key'], old_status, new_status)
                 except requests.DatabaseError as err:
                     logging.error(f"Failed to update request status in database. "
-                                  f"key: {afile['source_key']} status: {status}. Err: {str(err)}")
+                                  f"key: {afile['source_key']} old status: {old_status} "
+                                  f"new status: {new_status}. Err: {str(err)}")
         attempt = attempt + 1
         if attempt <= retries:
             time.sleep(retry_sleep_secs)
@@ -139,7 +146,6 @@ def copy_object(s3_cli, src_bucket_name, src_object_name,
                            Bucket=dest_bucket_name,
                            Key=dest_object_name)
     except ClientError as ex:
-        logging.error(ex)
         return str(ex)
     return None
 

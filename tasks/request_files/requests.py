@@ -85,6 +85,7 @@ def submit_request(data):
 
     if not "restore_bucket_dest" in data:
         data["restore_bucket_dest"] = None
+
     if not "err_msg" in data:
         data["err_msg"] = None
 
@@ -175,7 +176,7 @@ def get_jobs_by_granule_id(granule_id):
     return result
 
 
-def update_request_status(object_key, status, err_msg=None):
+def update_request_status(object_key, old_status, new_status, err_msg=None):
     """
     Updates the status of an inprogress request.
     """
@@ -183,8 +184,10 @@ def update_request_status(object_key, status, err_msg=None):
         raise BadRequestError("No object_key provided")
 
     # must have a status provided
-    if status is None:
+    if new_status is None:
         raise BadRequestError("A new status must be provided")
+    if old_status is None:
+        raise BadRequestError("An old status must be provided")
 
     date = get_utc_now_iso()
 
@@ -202,12 +205,48 @@ def update_request_status(object_key, status, err_msg=None):
             and job_status = %s
     """
     try:
-        result = utils.database.single_query(sql, (status, date, err_msg, object_key, "inprogress"))
+        result = utils.database.single_query(sql, (new_status, date, err_msg,
+                                                   object_key, old_status))
     except DbError as err:
-        msg = f"DbError updating status for {object_key} from 'inprogress' to {status}. {str(err)}"
+        msg = (f"DbError updating status for {object_key} from {old_status} "
+               f"to {new_status}. {str(err)}")
         LOGGER.exception(msg)
         raise DatabaseError(str(err))
     return result
+
+def update_request_status_for_job(job_id, status, err_msg=None):
+    """
+    Updates the status of a job.
+    """
+    if job_id is None:
+        raise BadRequestError("No job_id provided")
+
+    # must have a status provided
+    if status is None:
+        raise BadRequestError("A new status must be provided")
+
+    date = get_utc_now_iso()
+
+    # run the update
+
+    sql = """
+        UPDATE
+            request_status
+        SET
+            job_status = %s,
+            last_update_time = %s,
+            err_msg = %s
+        WHERE
+            job_id = %s
+    """
+    try:
+        result = utils.database.single_query(sql, (status, date, err_msg, job_id))
+    except DbError as err:
+        msg = f"DbError updating status for job {job_id} to {status}. {str(err)}"
+        LOGGER.exception(msg)
+        raise DatabaseError(str(err))
+    return result
+
 
 def delete_request(job_id):
     """
@@ -241,12 +280,12 @@ def delete_all_requests():
         for job in result:
             try:
                 delete_request(job["job_id"])
-            except DbError as err:
-                LOGGER.exception(f"DbError: {str(err)}")
+            except DatabaseError as err:
+                LOGGER.exception(f"DatabaseError: {str(err)}")
                 raise DatabaseError(str(err))
         result = get_all_requests()
         return result
-    except DbError as err:
+    except DatabaseError as err:
         LOGGER.exception(f"DbError: {str(err)}")
         raise DatabaseError(str(err))
 

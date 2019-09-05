@@ -219,3 +219,13 @@ def build_row(job_id, request_id, granule_id, object_key, job_type,
     row.append(('last_update_time', lu_date))
     row.append(('err_msg', err_msg))
     return row
+
+def print_rows(label):
+    """
+    prints the rows of a list
+    """
+    rows = requests.get_all_requests()
+    print("**** ", label)
+    for row in rows:
+        print(row)
+    print("****")

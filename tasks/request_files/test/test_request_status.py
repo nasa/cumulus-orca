@@ -159,6 +159,18 @@ class TestRequestStatus(unittest.TestCase):
             self.assertEqual("Db call failed", str(err))
             utils.database.single_query.assert_called_once()
 
+    def test_task_no_function(self):
+        """
+        Test no function given.
+        """
+        handler_input_event = {}
+        try:
+            request_status.task(handler_input_event, None)
+            self.fail("expected BadRequestError")
+        except request_status.BadRequestError as err:
+            self.assertEqual("Missing 'function' in input data", str(err))
+
+
     def test_task_query_request_id_notfound(self):
         """
         Test query by request_id.

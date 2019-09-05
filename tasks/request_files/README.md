@@ -18,20 +18,57 @@
 <a name="unit-testing-and-coverage"></a>
 ## Unit Testing and Coverage
 ```
+There are 4 unit test files in the test folder. These have everything mocked
+and are suitable for automation. The nosetests/code coverage here are using only these 4 files:
+
 Run the unit tests with code coverage:
 
 λ activate podr
 
 (podr) λ cd C:\devpy\poswotdr\tasks\request_files
 (podr) λ nosetests --with-coverage --cover-erase --cover-package=request_files --cover-package=request_status --cover-package=copy_files_to_archive --cover-package=requests -v
-Name                       Stmts   Miss  Cover   Missing
---------------------------------------------------------
-copy_files_to_archive.py      88      0   100%
-request_files.py              95      0   100%
-request_status.py             68      0   100%
-requests.py                  166      4    98%   255-256, 260-261
---------------------------------------------------------
-TOTAL                        417      4    99%
+Name                       Stmts   Miss  Cover
+----------------------------------------------
+copy_files_to_archive.py      91      0   100%
+request_files.py              98      0   100%
+request_status.py             71      0   100%
+requests.py                  182      0   100%
+----------------------------------------------
+TOTAL                        442      0   100%
+----------------------------------------------------------------------
+Ran 59 tests in 17.041s
+
+There are 3 additional test files in the dev_test folder.
+These run against a Postgres database in a Docker container, and allow you to 
+develop against an actual database. The tests run successfully when run alone. However if
+moved to the 'test' folder and included in the nosetests/code coverage
+they introduce a lot of failures and poor coverage. I didn't take the time
+to figure it out (maybe duplicate test function names among the files?). 
+They do however allow you to test things that the mocked tests won't catch -
+such as a restore request that fails the first time and succeeds the second time. The mocked 
+tests didn't catch that it was actually inserting two rows ('error' and 'inprogress'), instead
+of inserting one 'error' row, then updating it to 'inprogress'.
+These 3 test files would need some work to be able to rely on them, such as more assert tests.
+For now they can be used as a development aid. To run them you'll need to define
+these 4 environment variables in a file named private_config.json. Do NOT check into GIT. 
+ex:
+(podr2) λ cat private_config.json 
+{"DATABASE_HOST": "db.host.gov_goes_here", 
+"DATABASE_NAME": "dbname_goes_here", 
+"DATABASE_USER": "dbusername_goes_here", 
+"DATABASE_PW": "db_pw_goes_here"}
+
+Eventually, it would be nice to move these to the test folder, but for now
+to run them, you can either temporarily move them to the /test folder
+Or copy the helper files to the dev_test folder:
+cp test/request_helpers.py /dev_test/
+cp test/copy_helpers.py /dev_test/ 
+
+Run the tests:
+C:\devpy\poswotdr\tasks\request_files (PCESA-1229 -> origin) 
+(podr2) λ nosetests dev_test/test_requests_postgres.py -v
+(podr2) λ nosetests dev_test/test_request_files_postgres.py -v
+(podr2) λ nosetests dev_test/test_copy_files_to_archive_postgres.py -v
 
 ```
 <a name="linting"></a>

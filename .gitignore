@@ -7,6 +7,9 @@ tasks/request_files/.coverage
 tasks/request_files/.idea
 tasks/request_files/__pycache__
 tasks/request_files/test/__pycache__
+tasks/request_files/dev_test/__pycache__
+tasks/request_files/dev_test/request_helpers.py
+tasks/request_files/dev_test/copy_helpers.py
 tasks/request_files/utils/__pycache__
 tasks/request_files/build/
 tasks/.idea/

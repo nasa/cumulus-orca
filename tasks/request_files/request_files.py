@@ -85,7 +85,7 @@ def task(event, context):              #pylint: disable-msg=unused-argument
                 files.append(afile)
         gran['files'] = files
 
-    process_granules(s3, gran, glacier_bucket, exp_days)
+    gran = process_granules(s3, gran, glacier_bucket, exp_days)
 
     return gran
 
@@ -119,12 +119,12 @@ def process_granules(s3, gran, glacier_bucket, exp_days):        # pylint: disab
         for afile in gran['files']:
             if not afile['success']:
                 try:
-                    restore_object(s3, request_id, granule_id, glacier_bucket,
-                                   afile['key'], exp_days)
+                    job_id = restore_object(s3, request_id, granule_id, glacier_bucket,
+                                            afile['key'], exp_days, attempt, retries)
                     afile['success'] = True
                     afile['err_msg'] = ''
-                    LOGGER.info("restore {} from {} attempt {} successful.",
-                                afile["key"], glacier_bucket, attempt)
+                    LOGGER.info("restore {} from {} attempt {} successful. Job: {}",
+                                afile["key"], glacier_bucket, attempt, job_id)
                 except ClientError as err:
                     afile['err_msg'] = str(err)
 
@@ -159,7 +159,7 @@ def object_exists(s3_cli, glacier_bucket, file_key):
         return False
 
 def restore_object(s3_cli, request_id, granule_id, bucket_name, object_name,
-                   days, retrieval_type='Standard'):
+                   days, attempt, retries, retrieval_type='Standard'):
     """Restore an archived S3 Glacier object in an Amazon S3 bucket.
 
         Args:
@@ -170,11 +170,13 @@ def restore_object(s3_cli, request_id, granule_id, bucket_name, object_name,
             object_name (string): The key of the Glacier object being restored
             days (number): The number of days the restored file will be accessible in the S3 bucket
                 before it expires
+            attempt (number): The attempt number for retry purposes
+            retries (number): The number of retries that will be attempted
             retrieval_type (string, optional, default=Standard): Glacier Tier.
                 Valid values are 'Standard'|'Bulk'|'Expedited'.
 
         Returns:
-            string: None if restore request was submitted, otherwise contains error message.
+            number: job_Id.
     """
     request = {'Days': days,
                'GlacierJobParameters': {'Tier': retrieval_type}}
@@ -187,20 +189,25 @@ def restore_object(s3_cli, request_id, granule_id, bucket_name, object_name,
             job_id = requests.submit_request(data)
             LOGGER.info(f"Job {job_id} created.")
         except requests.DatabaseError as err:
-            LOGGER.error("Failed to log request in database. Error {}. Request_Id: {}",
-                         str(err), request_id)
+            job_id = None
+            LOGGER.error("Failed to log request in database. Error {}. Request: {}",
+                         str(err), data)
     except ClientError as c_err:
         # NoSuchBucket, NoSuchKey, or InvalidObjectState error == the object's
         # storage class was not GLACIER
         LOGGER.error("{}. bucket: {} file: {}", c_err, bucket_name, object_name)
-        data = requests.create_data(request_id, granule_id, object_name, "restore",
-                                    bucket_name, "error", None, None, str(c_err))
-        try:
-            job_id = requests.submit_request(data)
-            LOGGER.info(f"Job {job_id} status updated.")
-        except requests.DatabaseError as err:
-            LOGGER.error(f"Failed to log request in database. Error {str(err)}. Request: {data}")
+        if attempt == retries:
+            try:
+                data = requests.create_data(request_id, granule_id, object_name, "restore",
+                                            bucket_name, "error", None, None, str(c_err))
+                job_id = requests.submit_request(data)
+                LOGGER.info(f"Job {job_id} created.")
+            except requests.DatabaseError as err:
+                LOGGER.error("Failed to log request in database. Error {}. Request: {}",
+                             str(err), data)
+
         raise c_err
+    return job_id
 
 def handler(event, context):      #pylint: disable-msg=unused-argument
     """Lambda handler. Initiates a restore_object request from glacier for each file of a granule.

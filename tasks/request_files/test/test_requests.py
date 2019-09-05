@@ -188,12 +188,12 @@ class TestRequests(unittest.TestCase):
             self.assertEqual(err_msg, str(err))
 
 
-    def test_get_jobs_by_job_id_dberror(self):
+    def test_get_job_by_job_id_dberror(self):
         """
         Tests getting a DatabaseError reading a job by job_id
         """
         exp_msg = 'Database Error. could not connect to server'
-        utils.database.single_query = Mock(side_effect=[requests.DatabaseError(exp_msg)])
+        utils.database.single_query = Mock(side_effect=[DbError(exp_msg)])
         os.environ["DATABASE_HOST"] = "unknown.cr.usgs.gov"
         try:
             requests.get_job_by_job_id('x')
@@ -376,13 +376,13 @@ class TestRequests(unittest.TestCase):
         data["granule_id"] = "granule_4"
         data["object_key"] = "objectkey_4"
         data["job_type"] = "restore"
-        data["restore_bucket_dest"] = "my_s3_bucket"
+        #data["restore_bucket_dest"] = ""
         data["job_status"] = "error"
         data["request_time"] = utc_now_exp
         qresult, exp_result = create_insert_request(
             JOB_ID_4, data["request_id"],
             data["granule_id"], data["object_key"], data["job_type"],
-            data["restore_bucket_dest"], data["job_status"], data["request_time"],
+            None, data["job_status"], data["request_time"],
             None, data["err_msg"])
         utils.database.single_query = Mock(side_effect=[qresult, exp_result, None, None])
         try:
@@ -399,6 +399,24 @@ class TestRequests(unittest.TestCase):
         except requests.DatabaseError as err:
             self.fail(f"get_job_by_job_id. {str(err)}")
 
+    def test_create_data(self):
+        utc_now_exp = "2019-07-31 18:05:19.161362+00:00"
+        exp_data = {}
+        
+        exp_data["request_id"] = "my_request_id"
+        exp_data["granule_id"] = "granule_1"
+        exp_data["object_key"] = "my_file"
+        exp_data["job_type"] = "restore"
+        exp_data["restore_bucket_dest"] = "my_bucket"
+        exp_data["job_status"] = "inprogress"
+        exp_data["request_time"] = utc_now_exp
+        exp_data["last_update_time"] = utc_now_exp
+
+        data = requests.create_data("my_request_id", "granule_1", "my_file", "restore",
+                "my_bucket", "inprogress", utc_now_exp,
+                utc_now_exp)
+
+        self.assertEqual(exp_data, data)
 
     def test_submit_request_inprogress_status(self):
         """
@@ -462,6 +480,57 @@ class TestRequests(unittest.TestCase):
             self.assertEqual(exp_msg, str(err))
 
 
+    def test_update_request_status_for_job(self):
+        """
+        Tests updating a job to an 'inprogress' status
+        """
+        utc_now_exp = "2019-07-31 21:07:15.234362+00:00"
+        requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
+        job_id = JOB_ID_3
+        job_status = "inprogress"
+        exp_result = []
+        utils.database.single_query = Mock(side_effect=[exp_result])
+        try:
+            result = requests.update_request_status_for_job(job_id, job_status)
+            self.assertEqual([], result)
+            utils.database.single_query.assert_called_once()
+        except requests.DatabaseError as err:
+            self.fail(f"update_request_status_for_job. {str(err)}")
+
+    def test_update_request_status_for_job_exceptions(self):
+        """
+        Tests updating a job to an 'inprogress' status
+        """
+        utc_now_exp = "2019-07-31 21:07:15.234362+00:00"
+        requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
+        job_id = JOB_ID_3
+        job_status = "inprogress"
+        exp_err = 'A new status must be provided'
+        try:
+            requests.update_request_status_for_job(job_id, None)
+            self.fail("expected BadRequestError")
+        except requests.BadRequestError as err:
+            self.assertEqual(exp_err, str(err))
+
+        exp_err = 'No job_id provided'
+        try:
+            requests.update_request_status_for_job(None, job_status)
+            self.fail("expected BadRequestError")
+        except requests.BadRequestError as err:
+            self.assertEqual(exp_err, str(err))
+
+        exp_err = 'Database Error. Internal database error, please contact LP DAAC User Services'
+        utils.database.single_query = Mock(side_effect=[DbError(exp_err)])
+        #exp_result = []
+        #utils.database.single_query = Mock(side_effect=[exp_result])
+        try:
+            requests.update_request_status_for_job(job_id, job_status)
+            self.fail("expected DatabaseError")
+        except requests.DatabaseError as err:
+            self.assertEqual(exp_err, str(err))
+            utils.database.single_query.assert_called_once()
+
+
     def test_update_request_status_complete(self):
         """
         Tests updating a job to a 'complete' status
@@ -469,11 +538,12 @@ class TestRequests(unittest.TestCase):
         utc_now_exp = "2019-07-31 21:07:15.234362+00:00"
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
         object_key = "thisisanobjectkey"
+        old_status = "inprogress"
         job_status = "complete"
         exp_result = []
         utils.database.single_query = Mock(side_effect=[exp_result])
         try:
-            result = requests.update_request_status(object_key, job_status)
+            result = requests.update_request_status(object_key, old_status, job_status)
             self.assertEqual([], result)
             utils.database.single_query.assert_called_once()
         except requests.DatabaseError as err:
@@ -490,13 +560,14 @@ class TestRequests(unittest.TestCase):
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
         object_key = "objectkey_4"
         granule_id = "granule_4"
+        old_status = "inprogress"
         job_status = "error"
         err_msg = "Error message goes here"
 
         empty_result = []
         utils.database.single_query = Mock(side_effect=[empty_result, exp_result])
         try:
-            result = requests.update_request_status(object_key, job_status, err_msg)
+            result = requests.update_request_status(object_key, old_status, job_status, err_msg)
             self.assertEqual([], result)
             utils.database.single_query.assert_called_once()
         except requests.DatabaseError as err:
@@ -512,12 +583,13 @@ class TestRequests(unittest.TestCase):
         utc_now_exp = "2019-07-31 19:21:38.263364+00:00"
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
         object_key = "objectkey_6"
+        old_status = "inprogress"
         job_status = "invalid"
         exp_msg = ('Database Error. new row for relation "request_status" violates '
                    'check constraint "request_status_job_status_check"')
         utils.database.single_query = Mock(side_effect=[requests.DatabaseError(exp_msg)])
         try:
-            requests.update_request_status(object_key, job_status)
+            requests.update_request_status(object_key, old_status, job_status)
             self.fail("expected DatabaseError")
         except requests.DatabaseError as err:
             self.assertIn(exp_msg, str(err))
@@ -531,11 +603,12 @@ class TestRequests(unittest.TestCase):
         utc_now_exp = "2019-07-31 19:21:38.263364+00:00"
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
         object_key = None
+        old_status = "inprogress"
         job_status = "invalid"
         exp_msg = "No object_key provided"
         utils.database.single_query = Mock(side_effect=[requests.BadRequestError(exp_msg)])
         try:
-            requests.update_request_status(object_key, job_status)
+            requests.update_request_status(object_key, old_status, job_status)
             self.fail("expected requests.BadRequestError")
         except requests.BadRequestError as err:
             self.assertEqual(exp_msg, str(err))
@@ -547,11 +620,21 @@ class TestRequests(unittest.TestCase):
         """
         utc_now_exp = "2019-07-31 19:21:38.263364+00:00"
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
+        old_status = "inprogress"
         object_key = "noexist"
         job_status = None
         exp_msg = "A new status must be provided"
         try:
-            result = requests.update_request_status(object_key, job_status)
+            result = requests.update_request_status(object_key, old_status, job_status)
+            self.assertEqual([], result)
+        except requests.BadRequestError as err:
+            self.assertEqual(exp_msg, str(err))
+
+        old_status = None
+        job_status = "complete"
+        exp_msg = "An old status must be provided"
+        try:
+            result = requests.update_request_status(object_key, old_status, job_status)
             self.assertEqual([], result)
         except requests.BadRequestError as err:
             self.assertEqual(exp_msg, str(err))
@@ -564,11 +647,12 @@ class TestRequests(unittest.TestCase):
         utc_now_exp = "2019-07-31 19:21:38.263364+00:00"
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
         object_key = "noexist"
+        old_status = "inprogress"
         job_status = "invalid"
         exp_result = []
         utils.database.single_query = Mock(side_effect=[exp_result])
         try:
-            result = requests.update_request_status(object_key, job_status)
+            result = requests.update_request_status(object_key, old_status, job_status)
             self.assertEqual([], result)
             utils.database.single_query.assert_called_once()
         except requests.DatabaseError as err:

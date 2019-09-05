@@ -1,4 +1,3 @@
-from os import path
 import json
 
 def create_handler_event():
