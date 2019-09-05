@@ -43,7 +43,7 @@ UTC_NOW_EXP_10 = requests.get_utc_now_iso()
 time.sleep(1)
 UTC_NOW_EXP_11 = requests.get_utc_now_iso()
 
-class TestRequestsPostgres(unittest.TestCase):
+class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-instance-attributes
     """
     TestRequestFiles.
     """
@@ -87,7 +87,7 @@ class TestRequestsPostgres(unittest.TestCase):
         del os.environ["DATABASE_USER"]
         del os.environ["DATABASE_PW"]
 
-    def create_test_requests(self):
+    def create_test_requests(self):   #pylint: disable-msg=too-many-statements
         """
         creates jobs in the db
         """
@@ -108,54 +108,84 @@ class TestRequestsPostgres(unittest.TestCase):
                                                           REQUEST_ID_EXP_4,
                                                           REQUEST_ID_EXP_5,
                                                           REQUEST_ID_EXP_6])
-
+        obj = {}
         try:
-            data = create_data(REQUEST_ID_EXP_1, "granule_1", "objectkey_1",
-                               "restore", "my_s3_bucket",
+            obj["request_id"] = REQUEST_ID_EXP_1
+            obj["granule_id"] = "granule_1"
+            obj["key"] = "objectkey_1"
+            obj["glacier_bucket"] = "my_s3_bucket"
+            data = create_data(obj, "restore",
                                "complete", UTC_NOW_EXP_1, UTC_NOW_EXP_4)
             self.job_id_1 = requests.submit_request(data)
-            data = create_data(REQUEST_ID_EXP_1, "granule_2", "objectkey_2",
-                               "restore", "my_s3_bucket",
+
+            obj["request_id"] = REQUEST_ID_EXP_1
+            obj["granule_id"] = "granule_2"
+            obj["key"] = "objectkey_2"
+            data = create_data(obj, "restore",
                                "complete", UTC_NOW_EXP_2, UTC_NOW_EXP_5)
             self.job_id_2 = requests.submit_request(data)
-            data = create_data(REQUEST_ID_EXP_1, "granule_3", "objectkey_3",
-                               "restore", "my_s3_bucket",
+
+            obj["request_id"] = REQUEST_ID_EXP_1
+            obj["granule_id"] = "granule_3"
+            obj["key"] = "objectkey_3"
+            data = create_data(obj, "restore",
                                "complete", UTC_NOW_EXP_3, UTC_NOW_EXP_6)
             self.job_id_3 = requests.submit_request(data)
 
-            data = create_data(REQUEST_ID_EXP_2, "granule_4", "objectkey_4",
-                               "restore", "my_s3_bucket",
+            obj["request_id"] = REQUEST_ID_EXP_2
+            obj["granule_id"] = "granule_4"
+            obj["key"] = "objectkey_4"
+            data = create_data(obj, "restore",
                                "error", UTC_NOW_EXP_4, None, "oh oh, an error happened")
             self.job_id_4 = requests.submit_request(data)
 
-            data = create_data(REQUEST_ID_EXP_3, "granule_5", "objectkey_5",
-                               "restore", "my_s3_bucket",
+            obj["request_id"] = REQUEST_ID_EXP_3
+            obj["granule_id"] = "granule_5"
+            obj["key"] = "objectkey_5"
+            data = create_data(obj, "restore",
                                "inprogress", UTC_NOW_EXP_5, UTC_NOW_EXP_5)
             self.job_id_5 = requests.submit_request(data)
-            data = create_data(REQUEST_ID_EXP_3, "granule_6", "objectkey_6",
-                               "restore", "my_s3_bucket",
+
+            obj["request_id"] = REQUEST_ID_EXP_3
+            obj["granule_id"] = "granule_6"
+            obj["key"] = "objectkey_6"
+            data = create_data(obj, "restore",
                                "inprogress", UTC_NOW_EXP_6, UTC_NOW_EXP_6)
             self.job_id_6 = requests.submit_request(data)
-            data = create_data(REQUEST_ID_EXP_4, "granule_4", "objectkey_4",
-                               "restore", "my_s3_bucket",
+
+            obj["request_id"] = REQUEST_ID_EXP_4
+            obj["granule_id"] = "granule_4"
+            obj["key"] = "objectkey_4"
+            data = create_data(obj, "restore",
                                "inprogress", UTC_NOW_EXP_7, UTC_NOW_EXP_7)
             self.job_id_7 = requests.submit_request(data)
 
-            data = create_data(REQUEST_ID_EXP_5, "granule_1", "objectkey_1",
-                               "restore", "my_s3_bucket",
+            obj["request_id"] = REQUEST_ID_EXP_5
+            obj["granule_id"] = "granule_1"
+            obj["key"] = "objectkey_1"
+            data = create_data(obj, "restore",
                                "inprogress", UTC_NOW_EXP_8, UTC_NOW_EXP_8)
             self.job_id_8 = requests.submit_request(data)
-            data = create_data(REQUEST_ID_EXP_5, "granule_2", "objectkey_2",
-                               "restore", "my_s3_bucket",
+
+            obj["request_id"] = REQUEST_ID_EXP_5
+            obj["granule_id"] = "granule_2"
+            obj["key"] = "objectkey_2"
+            data = create_data(obj, "restore",
                                "inprogress", UTC_NOW_EXP_9, UTC_NOW_EXP_9)
             self.job_id_9 = requests.submit_request(data)
-            data = create_data(REQUEST_ID_EXP_5, "granule_3", "objectkey_3",
-                               "restore", "my_s3_bucket",
+
+            obj["request_id"] = REQUEST_ID_EXP_5
+            obj["granule_id"] = "granule_3"
+            obj["key"] = "objectkey_3"
+            data = create_data(obj, "restore",
                                "inprogress", UTC_NOW_EXP_10, UTC_NOW_EXP_10)
             self.job_id_10 = requests.submit_request(data)
 
-            data = create_data(REQUEST_ID_EXP_6, "granule_7", "objectkey_7",
-                               "regenerate", None,
+            obj["request_id"] = REQUEST_ID_EXP_6
+            obj["granule_id"] = "granule_7"
+            obj["key"] = "objectkey_7"
+            obj["glacier_bucket"] = None
+            data = create_data(obj, "regenerate",
                                "inprogress", UTC_NOW_EXP_11, UTC_NOW_EXP_11)
             self.job_id_11 = requests.submit_request(data)
 

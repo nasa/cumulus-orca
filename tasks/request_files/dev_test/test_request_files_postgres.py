@@ -67,21 +67,16 @@ class TestRequestFilesPostgres(unittest.TestCase):
         Test four files for one granule - successful
         """
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
-        file1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf"
-        file2 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf.met"
-        file3 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321_ndvi.jpg"
-        file4 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml"
+        files = ["MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf",
+                 "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf.met",
+                 "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321_ndvi.jpg",
+                 "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml"]
         input_event = {
             "input": {
                 "granules": [
                     {
                         "granuleId": granule_id,
-                        "keys": [
-                            file1,
-                            file2,
-                            file3,
-                            file4
-                        ]
+                        "keys": files
                     }
                 ]
             },
@@ -109,25 +104,25 @@ class TestRequestFilesPostgres(unittest.TestCase):
         exp_files = []
 
         exp_file = {}
-        exp_file['key'] = file1
+        exp_file['key'] = files[0]
         exp_file['success'] = True
         exp_file['err_msg'] = ''
         exp_files.append(exp_file)
 
         exp_file = {}
-        exp_file['key'] = file2
+        exp_file['key'] = files[1]
         exp_file['success'] = True
         exp_file['err_msg'] = ''
         exp_files.append(exp_file)
 
         exp_file = {}
-        exp_file['key'] = file3
+        exp_file['key'] = files[2]
         exp_file['success'] = True
         exp_file['err_msg'] = ''
         exp_files.append(exp_file)
 
         exp_file = {}
-        exp_file['key'] = file4
+        exp_file['key'] = files[3]
         exp_file['success'] = True
         exp_file['err_msg'] = ''
         exp_files.append(exp_file)
