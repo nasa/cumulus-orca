@@ -54,32 +54,7 @@ def task(records, bucket_map, retries, retry_sleep_secs):
         Raises:
             CopyRequestError: Thrown if there are errors with the input records or the copy failed.
     """
-
-    files = []
-    for record in records:
-        afile = {}
-        afile['success'] = False
-        try:
-            log_str = 'Records["s3"]["bucket"]["name"]'
-            source_bucket = record["s3"]["bucket"]["name"]
-            afile['source_bucket'] = source_bucket
-            log_str = 'Records["s3"]["object"]["key"]'
-            source_key = record["s3"]["object"]["key"]
-            afile['source_key'] = source_key
-            root, ext = os.path.splitext(source_key)          #pylint: disable-msg=unused-variable
-            try:
-                afile['target_bucket'] = bucket_map[ext]
-            except KeyError:
-                try:
-                    afile['target_bucket'] = bucket_map["other"]
-                except KeyError:
-                    raise CopyRequestError(f'BUCKET_MAP: {bucket_map} does not contain '
-                                           f'values for "{ext}" or "other"')
-            files.append(afile)
-        except KeyError:
-            raise CopyRequestError(f'event record: "{record}" does not contain a '
-                                   f'value for {log_str}')
-
+    files = get_files_from_records(records, bucket_map)
     attempt = 1
     s3 = boto3.client('s3')  # pylint: disable-msg=invalid-name
     while attempt <= retries:
@@ -117,6 +92,51 @@ def task(records, bucket_map, retries, retry_sleep_secs):
         if attempt <= retries:
             time.sleep(retry_sleep_secs)
 
+    return files
+
+def get_files_from_records(records, bucket_map):
+    """
+    Parses the input records and returns the files to be restored.
+
+        Args:
+            records (dict): passed through from the handler
+            bucket_map (dict): Mapping of file extensions to bucket names
+
+        Returns:
+            files: A list of dicts with the following keys:
+                'source_key': The object key of the file that was restored
+                'source_bucket': The name of the s3 bucket where the restored
+                    file was temporarily sitting
+                'target_bucket': The name of the archive s3 bucket
+                'success' (boolean): True, if the copy was successful,
+                    otherwise False.
+                'err_msg' (string): when success is False, this will contain
+                    the error message from the copy error
+    """
+    files = []
+    for record in records:
+        afile = {}
+        afile['success'] = False
+        try:
+            log_str = 'Records["s3"]["bucket"]["name"]'
+            source_bucket = record["s3"]["bucket"]["name"]
+            afile['source_bucket'] = source_bucket
+            log_str = 'Records["s3"]["object"]["key"]'
+            source_key = record["s3"]["object"]["key"]
+            afile['source_key'] = source_key
+            _, ext = os.path.splitext(source_key)
+            try:
+                afile['target_bucket'] = bucket_map[ext]
+            except KeyError:
+                try:
+                    afile['target_bucket'] = bucket_map["other"]
+                except KeyError:
+                    raise CopyRequestError(f'BUCKET_MAP: {bucket_map} does not contain '
+                                           f'values for "{ext}" or "other"')
+            files.append(afile)
+        except KeyError:
+            raise CopyRequestError(f'event record: "{record}" does not contain a '
+                                   f'value for {log_str}')
     return files
 
 def copy_object(s3_cli, src_bucket_name, src_object_name,
