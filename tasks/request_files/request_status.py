@@ -32,11 +32,9 @@ def task(event, context):    #pylint: disable-msg=unused-argument
             ExtractFilePathsError: An error occurred parsing the input.
     """
     result = {}
-    _LOG.warning(f"event: '{event}' ")
     _LOG.info(f"event: '{event}' ")
     try:
         function = event['function']
-        _LOG.warning(f"function: {function}")
     except KeyError:
         raise BadRequestError("Missing 'function' in input data")
 
@@ -57,17 +55,14 @@ def query_requests(event):
     """
     try:
         granule_id = event['granule_id']
-        _LOG.warning(f"granule_id: {granule_id}")
     except KeyError:
         granule_id = None
     try:
         request_id = event['request_id']
-        _LOG.warning(f"request_id: {request_id}")
     except KeyError:
         request_id = None
     try:
         job_id = event['job_id']
-        _LOG.warning(f"job_id: {job_id}")
     except KeyError:
         job_id = None
     if job_id:
@@ -108,9 +103,7 @@ def add_request(event):
     data["job_status"] = status
     if status == "error":
         data["err_msg"] = "error message goes here"
-    _LOG.warning(f"data: '{data}'")
     job_id = requests.submit_request(data)
-    _LOG.warning(f"job_id: {job_id}")
     result = requests.get_job_by_job_id(job_id)
     return result
 
@@ -144,6 +137,5 @@ def handler(event, context):            #pylint: disable-msg=unused-argument
         Raises:
             ExtractFilePathsError: An error occurred parsing the input.
     """
-    _LOG.warning("in handler")
     result = task(event, context)
     return result
