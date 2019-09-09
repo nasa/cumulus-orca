@@ -9,4 +9,4 @@ CREATE DATABASE disaster_recovery
     LC_CTYPE 'en_US.UTF8';
 
 COMMENT ON DATABASE disaster_recovery
-    IS 'Lisa sandbox database.';
+    IS 'Disaster Recovery database.';
