@@ -9,7 +9,7 @@
 DO LANGUAGE plpgsql
 $$
 BEGIN
-        DROP ROLE IF EXISTS dr_role;
+        --DROP ROLE IF EXISTS dr_role;
         IF NOT EXISTS (SELECT 1 FROM pg_group WHERE groname = 'dr_role' ) THEN
         -- Create Application Role
         CREATE ROLE dr_role

@@ -1,2 +1,2 @@
 \ir dbo.sql;
-\ir druser.sql;
+\ir appuser.sql;

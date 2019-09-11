@@ -12,6 +12,7 @@ from contextlib import contextmanager
 
 from psycopg2 import DataError, ProgrammingError
 from psycopg2 import connect as psycopg2_connect
+from psycopg2 import sql
 from psycopg2.extras import RealDictCursor
 
 LOGGER = logging.getLogger(__name__)
@@ -23,6 +24,10 @@ class DbError(Exception):
     Exception to be raised if there is a database error.
     """
 
+class ResourceExists(Exception):
+    """
+    Exception to be raised if there is an existing database resource.
+    """
 
 @contextmanager
 def get_connection():
@@ -41,7 +46,7 @@ def get_connection():
         yield connection
 
     except Exception as ex:
-        raise DbError("Database Error. {}".format(str(ex)))
+        raise DbError(f"Database Error. {str(ex)}")
 
     finally:
         if connection:
@@ -68,7 +73,8 @@ def get_cursor():
             cursor.close()
 
 
-def single_query(sql, params=None):
+
+def single_query(sql_stmt, params=None):
     """
     This is a convenience function for running single statement transactions
     against the database. It will automatically commit the transaction and
@@ -78,12 +84,12 @@ def single_query(sql, params=None):
     """
     rows = []
     with get_cursor() as cursor:
-        rows = _query(sql, params, cursor)
+        rows = _query(sql_stmt, params, cursor)
 
     return rows
 
 
-def multi_query(sql, params, cursor):
+def multi_query(sql_stmt, params, cursor):
     """
     This function will use the provided cursor to run the query instead of
     retreiving one itself. This is intended to be used when the caller wants
@@ -93,10 +99,10 @@ def multi_query(sql, params, cursor):
     This function should be used within a context made by get_cursor().
     """
 
-    return _query(sql, params, cursor)
+    return _query(sql_stmt, params, cursor)
 
 
-def _query(sql, params, cursor):
+def _query(sql_stmt, params, cursor):
     """
     Wrapper for running queries that will automatically handle errors in a
     consistent manner.
@@ -105,7 +111,7 @@ def _query(sql, params, cursor):
     """
 
     try:
-        cursor.execute(sql, params)
+        cursor.execute(sql_stmt, params)
 
     except (ProgrammingError, DataError) as err:
         LOGGER.exception(f"database error - {err}")
@@ -119,3 +125,61 @@ def _query(sql, params, cursor):
         rows = []
 
     return rows
+
+def return_connection():
+    """
+    Retrieves a connection from the connection pool.
+    """
+    # create a connection
+    connection = None
+    try:
+        connection = psycopg2_connect(
+            host=os.environ["DATABASE_HOST"],
+            database=os.environ["DATABASE_NAME"],
+            user=os.environ["DATABASE_USER"],
+            password=os.environ["DATABASE_PW"]
+        )
+        return connection
+
+    except Exception as ex:
+        LOGGER.exception(f"Exception. {str(ex)}")
+        raise DbError(f"Database Error. {str(ex)}")
+
+
+def return_cursor(conn):
+    """
+    Retrieves the cursor from the connection.
+    """
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        return cursor
+    except Exception as ex:
+        LOGGER.exception(f"Exception. {str(ex)}")
+        raise DbError(f"Database Error. {str(ex)}")
+
+
+def query_no_params(cursor, sql_stmt):
+    """
+    This function will use the provided cursor to run the sql_stmt.
+    """
+    try:
+        cursor.execute(sql.SQL(sql_stmt))
+        return f"done executing {sql_stmt}"
+    except (ProgrammingError, DataError) as ex:
+        LOGGER.exception(f"Database Error - {ex}")
+        raise DbError(f"Database Error. {str(ex)}")
+
+def query_from_file(cursor, sql_file):
+    """
+    This function will execute the sql in a file.
+    """
+    try:
+        cursor.execute(open(sql_file, "r").read())
+        return f"sql from {sql_file} executed"
+    except (ProgrammingError, DataError) as ex:
+        msg = str(ex).replace("\n", "")
+        if msg.endswith("already exists"):
+            raise ResourceExists(ex)
+        else:
+            LOGGER.exception(f"Database Error. {str(ex)}")
+            raise DbError(f"Database Error. {str(ex)}")

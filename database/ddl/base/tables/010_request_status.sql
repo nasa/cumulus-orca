@@ -17,7 +17,7 @@ BEGIN;
     -- Remove Foreign Constraints if they exist
 
     -- Drop table if it exists
-    DROP TABLE IF EXISTS request_status;
+    --DROP TABLE IF EXISTS request_status;
 
     -- Create table
     CREATE TABLE request_status

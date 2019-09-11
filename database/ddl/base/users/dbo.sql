@@ -1,7 +1,7 @@
 DO LANGUAGE plpgsql
 $$
 BEGIN
-        DROP ROLE IF EXISTS dbo;
+        --DROP ROLE IF EXISTS dbo;
         IF NOT EXISTS (SELECT 1 FROM pg_user where usename='dbo') THEN
         -- Create dbo
         CREATE ROLE dbo

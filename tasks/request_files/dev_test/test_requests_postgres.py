@@ -53,6 +53,7 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
 
         prefix = "lab"
         os.environ["PREFIX"] = prefix
+        os.environ["PLATFORM"] = "ONPREM"
         db_config.set_env()
 
         self.job_id_1 = None
@@ -86,6 +87,7 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
         del os.environ["DATABASE_NAME"]
         del os.environ["DATABASE_USER"]
         del os.environ["DATABASE_PW"]
+        del os.environ["PLATFORM"]
 
     def create_test_requests(self):   #pylint: disable-msg=too-many-statements
         """
