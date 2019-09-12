@@ -111,7 +111,7 @@ def _query(sql_stmt, params, cursor):
     """
 
     try:
-        cursor.execute(sql_stmt, params)
+        cursor.execute(sql.SQL(sql_stmt), params)
 
     except (ProgrammingError, DataError) as err:
         LOGGER.exception(f"database error - {err}")
