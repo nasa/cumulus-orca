@@ -270,7 +270,6 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
         """
         self.create_test_requests()
         #print_rows("begin")
-        #utc_now_exp = "2019-07-31 21:07:15.234362+00:00"
         utc_now_exp = requests.get_utc_now_iso()
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
         job_id = self.job_id_4
@@ -299,7 +298,6 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
         job_status = "error"
         err_msg = "oh no an error"
-        #exp_result = []
         try:
             result = requests.update_request_status_for_job(job_id, job_status, err_msg)
             #print_rows("end")

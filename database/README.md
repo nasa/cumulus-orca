@@ -10,11 +10,11 @@ in a PostgreSQL cluster.
 Installation
 ------------
 
-Instalation of the DR application is straight forward and fairly automated. In all cases the
+Installation of the DR application is straight forward and fairly automated. In all cases the
 SQL commands should be run as the PostgreSQL super user. The super user is needed because the script
 will create the database, users, roles, schemas and objects necessary for the application.
 
-Prior to installing, verify the existance of the **disaster_recovery** database by logging into the PostgreSQL database
+Prior to installing, verify the existence of the **disaster_recovery** database by logging into the PostgreSQL database
 with the psql utility and run the *\l* command to see if the **disaster_recovery** database exists as seen below.
 
 ```bash
@@ -53,7 +53,7 @@ Use the following steps to install the the **DR** application into a PostgreSQL 
     ```bash
     $> cd database/ddl/base
     ```
-3. If the **disaster_recovery** database currently exists based on the prior database *\\l* command, modify the init.sql
+3. If the **disaster_recovery** database currently exists based on the prior database *\l* command, modify the init.sql
    file using a simple sed command seen below. The command will comment out the create syntax for the database.
    Otherwise skip this step and move on to step 4.
 
@@ -80,13 +80,8 @@ clarity, the command does not echo out the typed password characters in practice
     postgres=> commit;
     ```
 
-If a pooling application like [PgBouncer](https://pgbouncer.github.io/) is used to pool connections in
-front of the database, do not forget to configure connections to the newly created **disaster_recovery** database.
-In addition do not forget to add any administrative extensions or other maintenance code commonly used
-by the system administration staff.
 
-The application user, schema and objects are now installed. Configure the database user credentials in
-cloakware for the application.
+The application user, schema and objects are now installed. 
 
 
 Documentation
