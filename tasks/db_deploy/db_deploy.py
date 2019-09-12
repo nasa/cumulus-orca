@@ -2,6 +2,15 @@
 Name: db_deploy.py
 
 Description:  Deploys a database, roles, users, schema, and tables.
+
+It depends on environment variables:
+    DATABASE_HOST - the server where the database will reside.
+    DATABASE_NAME - the name of the database being created.
+    DATABASE_USER - the name of the application user.
+    DATABASE_PW - the password for the application user.
+    DROP_DATABASE - optional, default is False. When true, will
+        execute a DROP DATABASE command.
+    PLATFORM - 'onprem' or 'AWS'
 """
 import os
 from os import walk
@@ -14,6 +23,7 @@ from utils.database import DbError, ResourceExists
 
 # Set Global Variables
 _LOG = logging.getLogger(__name__)
+SEP = os.path.sep
 
 class DatabaseError(Exception):
     """
@@ -31,89 +41,114 @@ def task(event, context):    #pylint: disable-msg=unused-argument
             context (Object): passed through from the handler
 
         Returns:
-            dict: dict containing granuleId and keys. See handler for detail.
+            status: (string) description of status.
 
         Raises:
             DatabaseError: An error occurred.
     """
-    sep = os.path.sep
-    current_dir = os.getcwd()
-    print("current_dir: ", current_dir)
-    _LOG.info(f"current_dir: {current_dir}")
     status = log_status("start")
     db_name = os.environ["DATABASE_NAME"]
     db_user = os.environ["DATABASE_USER"]
     os.environ["DATABASE_NAME"] = "postgres"
     os.environ["DATABASE_USER"] = "postgres"
+    #connect as postgres to create the new database
     con = get_db_connnection()
     status = log_status("connected to postgres")
-    platform = os.environ["PLATFORM"]
-    print("platform: ", platform)
-    _LOG.info(f"platform: {platform}")
+    db_existed, status = create_database(con)
+    if not db_existed:
+        status = create_roles_and_users(con, db_user)
+    con.close()
 
+    #connect to the database we just created
+    os.environ["DATABASE_NAME"] = db_name
+    con = get_db_connnection()
+    status = log_status(f"connected to {db_name}")
+    status = create_schema(con)
+    con.close()
+
+    status = create_tables()
+
+    #con.commit()
+    #cur.close()
+    con.close()
+    status = log_status("database ddl execution complete")
+    return status
+
+def create_database(con):
+    """
+    Creates the database, dropping it first if requested.
+    """
     con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
     cur = get_cursor(con)
-    drop = os.environ["DROP_DATABASE"]
+    try:
+        drop = os.environ["DROP_DATABASE"]
+    except KeyError:
+        drop = "False"
     if drop == "True":
-        sql_file = f"database{sep}database_drop.sql"
+        sql_file = f"database{SEP}database_drop.sql"
         status = execute_sql_from_file(cur, sql_file, "drop database")
     try:
-        sql_file = f"database{sep}database_create.sql"
+        sql_file = f"database{SEP}database_create.sql"
         status = execute_sql_from_file(cur, sql_file, "database create")
-        sql_file = f"database{sep}database_comment.sql"
+        sql_file = f"database{SEP}database_comment.sql"
         status = execute_sql_from_file(cur, sql_file, "database comment")
         db_existed = False
     except ResourceExists as err:
         _LOG.warning(f"ResourceExists: {str(err)}")
         db_existed = True
         status = log_status("database already exists")
-    except DatabaseError as err:
-        _LOG.warning(f"ResourceExists: {str(err)}")
-        db_existed = True
-        status = log_status("DbError")
     cur.close()
+    return db_existed, status
 
-    print("db_existed: ", db_existed)
-    if not db_existed:
-        con.set_isolation_level(ISOLATION_LEVEL_READ_COMMITTED)
-        cur = get_cursor(con)
-        sql_file = f"roles{sep}app_role.sql"
-        status = execute_sql_from_file(cur, sql_file, "create application role")
-        sql_file = f"roles{sep}appdbo_role.sql"
-        status = execute_sql_from_file(cur, sql_file, "create appdbo role")
-        sql_file = f"users{sep}dbo.sql"
-        status = execute_sql_from_file(cur, sql_file, "create dbo user")
-        sql_file = f"users{sep}appuser.sql"
-        status = execute_sql_from_file(cur, sql_file, "create application user")
-        db_pw = os.environ["DATABASE_PW"]
-        sql_stmt = f"ALTER USER {db_user} WITH PASSWORD '{db_pw}';"
-        status = execute_sql(cur, sql_stmt, "set pw for application user")
-        sql_stmt = f"ALTER USER dbo WITH PASSWORD '{db_pw}';"
-        status = execute_sql(cur, sql_stmt, "set pw for dbo user")
-        con.commit()
-        cur.close()
-
-    con.close()
-    os.environ["DATABASE_NAME"] = db_name
-    con = get_db_connnection()
+def create_roles_and_users(con, db_user):
+    """
+    Creates the roles and users.
+    """
+    con.set_isolation_level(ISOLATION_LEVEL_READ_COMMITTED)
     cur = get_cursor(con)
-    status = log_status(f"connected to {db_name}")
+    sql_file = f"roles{SEP}app_role.sql"
+    status = execute_sql_from_file(cur, sql_file, "create application role")
+    sql_file = f"roles{SEP}appdbo_role.sql"
+    status = execute_sql_from_file(cur, sql_file, "create appdbo role")
+    sql_file = f"users{SEP}dbo.sql"
+    status = execute_sql_from_file(cur, sql_file, "create dbo user")
+    sql_file = f"users{SEP}appuser.sql"
+    status = execute_sql_from_file(cur, sql_file, "create application user")
+    db_pw = os.environ["DATABASE_PW"]
+    sql_stmt = f"ALTER USER {db_user} WITH PASSWORD '{db_pw}';"
+    status = execute_sql(cur, sql_stmt, "set pw for application user")
+    sql_stmt = f"ALTER USER dbo WITH PASSWORD '{db_pw}';"
+    status = execute_sql(cur, sql_stmt, "set pw for dbo user")
+    con.commit()
+    cur.close()
+    return status
 
+def create_schema(con):
+    """
+    Creates the database schema.
+    """
+    platform = os.environ["PLATFORM"]
+    _LOG.info(f"platform: {platform}")
+    cur = get_cursor(con)
     if platform == "AWS":
         sql_stmt = """SET SESSION AUTHORIZATION dbo;"""
         status = execute_sql(cur, sql_stmt, "auth dbo")
 
-    sql_file = f"schema{sep}app.sql"
+    sql_file = f"schema{SEP}app.sql"
     status = execute_sql_from_file(cur, sql_file, "create schema")
-    con.commit()
     cur.close()
-    con.close()
+    con.commit()
+    return status
 
-    schema_dir = os.environ["SCHEMA_DIR"]
-    table_dir = f"{schema_dir}{sep}tables"
+def create_tables():
+    """
+    Creates the database tables.
+    """
+    ddl_dir = os.environ["DDL_DIR"]
+    table_dir = f"{ddl_dir}{SEP}tables"
     sql_files = get_files_in_dir(table_dir)
     for file in sql_files:
-        sql_file = f"tables{sep}{file}"
+        sql_file = f"tables{SEP}{file}"
         try:
             con = get_db_connnection()
             cur = get_cursor(con)
@@ -123,11 +158,6 @@ def task(event, context):    #pylint: disable-msg=unused-argument
         except ResourceExists as dd_err:
             _LOG.warning(f"ResourceExists: {str(dd_err)}")
             status = log_status(f"table in {sql_file} already exists")
-
-    con.commit()
-    cur.close()
-    con.close()
-    status = log_status("database ddl execution complete")
     return status
 
 def get_files_in_dir(directory):
@@ -135,14 +165,11 @@ def get_files_in_dir(directory):
     Returns a list of all the filenames in the given directory.
     """
     dir_files = []
-    try:
-        for (_, _, filenames) in walk(directory):
-            for name in filenames:
-                if name != "init.sql":
-                    dir_files.append(name)
-    except Exception as ex:
-        _LOG.error(ex)
-        raise
+    print("directory: ", directory)
+    for (_, _, filenames) in walk(directory):
+        for name in filenames:
+            if name != "init.sql":
+                dir_files.append(name)
     dir_files.sort()
     return dir_files
 
@@ -198,10 +225,10 @@ def execute_sql_from_file(cur, sql_file, activity):
     """
     Executes the sql in a file.
     """
-    schema_dir = os.environ["SCHEMA_DIR"]
+    ddl_dir = os.environ["DDL_DIR"]
     try:
         status = log_status(f"{activity} started")
-        sql_path = f"{schema_dir}{sql_file}"
+        sql_path = f"{ddl_dir}{sql_file}"
         utils.database.query_from_file(cur, sql_path)
         status = log_status(f"{activity} completed")
     except DbError as err:
