@@ -3,6 +3,7 @@ tasks/extract_filepaths_for_granule/.idea
 tasks/extract_filepaths_for_granule/__pycache__
 tasks/extract_filepaths_for_granule/test/__pycache__/
 tasks/extract_filepaths_for_granule/build/
+tasks/request_files/private_config.json
 tasks/request_files/.coverage
 tasks/request_files/.idea
 tasks/request_files/__pycache__
@@ -14,6 +15,7 @@ tasks/request_files/utils/__pycache__
 tasks/request_files/build_rf
 tasks/request_files/build_rs
 tasks/request_files/build_cp
+tasks/db_deploy/private_config.json
 tasks/db_deploy/utils/__pycache__
 tasks/db_deploy/__pycache__
 tasks/db_deploy/.coverage

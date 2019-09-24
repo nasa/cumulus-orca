@@ -20,7 +20,7 @@
 ```
 There are 4 unit test files in the test folder. These have everything mocked
 and are suitable for automation. The nosetests/code coverage here are using only these 4 files.
-Note that you might need to temporarily move the 3 test files in the dev_test folder to 
+Note that you might need to temporarily move the 3 test files from the dev_test folder to 
 somewhere that the tests won't pick them up (see 'Postgres Tests' below). 
 
 λ activate podr
@@ -52,7 +52,7 @@ tests didn't catch that it was actually inserting two rows ('error' and 'inprogr
 of inserting one 'error' row, then updating it to 'inprogress'.
 These 3 test files would need some work to be able to rely on them, such as more assert tests.
 For now they can be used as a development aid. To run them you'll need to define
-these 4 environment variables in a file named private_config.json. Do NOT check into GIT. 
+these 4 environment variables in a file named private_config.json, but do NOT check it into GIT. 
 ex:
 (podr2) λ cat private_config.json 
 {"DATABASE_HOST": "db.host.gov_goes_here", 
@@ -139,6 +139,8 @@ Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 2.  Once the files are in Glacier, use the CumulusDrRecoveryWorkflowStateMachine to restore them.
     You can use the test event in tasks/extract_filepaths_for_granule/test/testevents/StepFunction.json.
     Edit the ['payload']['granules']['keys'] values as needed to be the file(s) you wish to restore.
+    Edit the ['cumulus_meta']['execution_name'] to be something unique (like yyyymmdd_hhmm). Then
+    copy and paste the same value to the execution name field above the input field.
     The restore may take up to 5 hours.
 
 Use the AWS CLI to check status of restore request:

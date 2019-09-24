@@ -88,6 +88,5 @@ def query_from_file(cursor, sql_file):
         msg = str(ex).replace("\n", "")
         if msg.endswith("already exists"):
             raise ResourceExists(ex)
-        else:
-            LOGGER.exception(f"Database Error. {str(ex)}")
-            raise DbError(f"Database Error. {str(ex)}")
+        LOGGER.exception(f"Database Error. {str(ex)}")
+        raise DbError(f"Database Error. {str(ex)}")

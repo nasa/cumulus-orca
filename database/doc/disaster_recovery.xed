@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?><Diagram version="1.0" type="POSTGRES" versionMajor="11" versionMinor="4" groupSchema="false" hide_inv="false">
+<Table id="0" name="request_status" schema="dr" database="disaster_recovery" background="16777165">
+<Text>Disaster recovery jobs status table</Text>
+<Column id="1" name="job_id" type="bigserial" length="0" nulls="false">
+<CP name="COMMENTS">unique job identifier</CP>
+</Column>
+<Column id="2" name="request_id" type="uuid" length="0" nulls="false">
+<CP name="COMMENTS">request identifier assigned to all objects being requested for the granule</CP>
+</Column>
+<Column id="3" name="granule_id" type="varchar" length="100" nulls="false">
+<CP name="COMMENTS">granule id of the granule being restored</CP>
+</Column>
+<Column id="4" name="object_key" type="text" length="0" nulls="false">
+<CP name="COMMENTS">object key being restored</CP>
+</Column>
+<Column id="5" name="job_type" type="varchar" length="12" nulls="true">
+<CP name="DEFAULT_VALUE">'restore'::character varying</CP>
+<CP name="COMMENTS">type of restore request that was made</CP>
+</Column>
+<Column id="6" name="restore_bucket_dest" type="text" length="0" nulls="true">
+<CP name="COMMENTS">S3 bucket to restore the file to</CP>
+</Column>
+<Column id="7" name="job_status" type="varchar" length="12" nulls="true">
+<CP name="DEFAULT_VALUE">'inprogress'::character varying</CP>
+<CP name="COMMENTS">current status of the request</CP>
+</Column>
+<Column id="8" name="request_time" type="timestamp with time zone" length="0" nulls="false">
+<CP name="COMMENTS">Time the request was made</CP>
+</Column>
+<Column id="9" name="last_update_time" type="timestamp with time zone" length="0" nulls="false">
+<CP name="COMMENTS">The last time the request was updated</CP>
+</Column>
+<Column id="10" name="err_msg" type="text" length="0" nulls="true">
+<CP name="COMMENTS">The error message when job_status is error</CP>
+</Column>
+<Storage name="Options" value="OIDS=FALSE"/>
+<Storage name="Compression" value="false"/>
+<Storage name="ValueCompression" value="false"/>
+<Storage name="DistributeRandom" value="false"/>
+<Storage name="Tablespace" value="pg_default"/>
+<Storage name="NoLogging" value="false"/>
+<Storage name="Hana_Logging" value="false"/>
+<Storage name="Encrypted" value="false"/>
+<Storage name="WithCRCols" value="false"/>
+<Storage name="automerge" value="false"/>
+<Storage name="schemaflexibiltiy" value="false"/>
+<Storage name="TDNoPrimaryIndex" value="false"/>
+<Storage name="TDPrimaryIndexUnique" value="false"/>
+<Storage name="transferTable" value="false"/>
+<Storage name="db2zVolatile" value="false"/>
+<Storage name="seriesequidistantmissingelement" value="false"/>
+<Storage name="db2zRestrictOnDrop" value="false"/>
+<Storage name="series" value="false"/>
+<Storage name="AppendMode" value="false"/>
+<Storage name="External" value="false"/>
+<Storage name="InterleavedSortKey" value="false"/>
+<Storage name="Capped" value="false"/>
+<Storage name="seriesequidistant" value="false"/>
+</Table>
+<Index table="0" name="idx_reqstat_keystatus" schema="dr" database="disaster_recovery">
+<Option name="unique" class="Boolean" value="false"/>
+<IndexColumn id="4" sequence="0" ascending="true"/>
+<IndexColumn id="7" sequence="1" ascending="true"/>
+</Index>
+<Index table="0" name="idx_reqstat_reqidgranid" schema="dr" database="disaster_recovery">
+<Option name="unique" class="Boolean" value="false"/>
+<IndexColumn id="2" sequence="0" ascending="true"/>
+<IndexColumn id="3" sequence="1" ascending="true"/>
+</Index>
+<Constraint table="0" name="request_status_pkey" type="PrimKey">
+<Option name="tablespace" class="String" value="&lt;DEFAULT&gt;"/>
+<ConstraintColumn id="1"/>
+</Constraint>
+<Constraint table="0" name="request_status_job_type_check" type="Check" condition="((job_type)::text = ANY ((ARRAY['restore'::character varying, 'regenerate'::character varying])::text[]))"/>
+<Constraint table="0" name="request_status_job_status_check" type="Check" condition="((job_status)::text = ANY ((ARRAY['inprogress'::character varying, 'complete'::character varying, 'error'::character varying])::text[]))"/>
+<Sheet name="dr docker - druser" id="11" disp_at="true" disp_ph="true" disp_co="true" disp_rn="true">
+<Place id="0" visible="true">10,10,250,210</Place>
+</Sheet>
+<Settings sheet="11" zoom="2.0"/>
+</Diagram>

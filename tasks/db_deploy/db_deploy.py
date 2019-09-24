@@ -2,15 +2,6 @@
 Name: db_deploy.py
 
 Description:  Deploys a database, roles, users, schema, and tables.
-
-It depends on environment variables:
-    DATABASE_HOST - the server where the database will reside.
-    DATABASE_NAME - the name of the database being created.
-    DATABASE_USER - the name of the application user.
-    DATABASE_PW - the password for the application user.
-    DROP_DATABASE - optional, default is False. When true, will
-        execute a DROP DATABASE command.
-    PLATFORM - 'onprem' or 'AWS'
 """
 import os
 from os import walk
@@ -34,14 +25,12 @@ def task(event, context):    #pylint: disable-msg=unused-argument
     """
     Task called by the handler to perform the work.
 
-    This task will create the database, roles, users, schema, and tables.
-
         Args:
             event (dict): passed through from the handler
             context (Object): passed through from the handler
 
         Returns:
-            status: (string) description of status.
+            string: description of status.
 
         Raises:
             DatabaseError: An error occurred.
@@ -68,15 +57,24 @@ def task(event, context):    #pylint: disable-msg=unused-argument
 
     status = create_tables()
 
-    #con.commit()
-    #cur.close()
-    con.close()
+    #con.close()
     status = log_status("database ddl execution complete")
     return status
 
 def create_database(con):
     """
     Creates the database, dropping it first if requested.
+
+        Args:
+            con (object): a connection to the postgres database
+
+        Returns:
+            bool: True if the database already existed
+                when the create was run.
+            string: description of status of create database.
+
+        Raises:
+            DatabaseError: An error occurred.
     """
     con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
     cur = get_cursor(con)
@@ -103,6 +101,16 @@ def create_database(con):
 def create_roles_and_users(con, db_user):
     """
     Creates the roles and users.
+
+        Args:
+            con (object): a connection to the postgres database
+            db_user (string): the application user
+
+        Returns:
+            string: description of status of create roles and users.
+
+        Raises:
+            DatabaseError: An error occurred.
     """
     con.set_isolation_level(ISOLATION_LEVEL_READ_COMMITTED)
     cur = get_cursor(con)
@@ -126,6 +134,15 @@ def create_roles_and_users(con, db_user):
 def create_schema(con):
     """
     Creates the database schema.
+
+        Args:
+            con (object): a connection to the new database just created
+
+        Returns:
+            string: description of status of create schema.
+
+        Raises:
+            DatabaseError: An error occurred.
     """
     platform = os.environ["PLATFORM"]
     _LOG.info(f"platform: {platform}")
@@ -143,6 +160,15 @@ def create_schema(con):
 def create_tables():
     """
     Creates the database tables.
+
+        Args:
+            con (object): a connection to the new database just created
+
+        Returns:
+            string: description of status of create tables.
+
+        Raises:
+            DatabaseError: An error occurred.
     """
     ddl_dir = os.environ["DDL_DIR"]
     table_dir = f"{ddl_dir}{SEP}tables"
@@ -155,6 +181,7 @@ def create_tables():
             sql_stmt = """SET SESSION AUTHORIZATION dbo;"""
             status = execute_sql(cur, sql_stmt, "auth dbo")
             status = execute_sql_from_file(cur, sql_file, f"create table in {sql_file}")
+            con.close()
         except ResourceExists as dd_err:
             _LOG.warning(f"ResourceExists: {str(dd_err)}")
             status = log_status(f"table in {sql_file} already exists")
@@ -163,6 +190,12 @@ def create_tables():
 def get_files_in_dir(directory):
     """
     Returns a list of all the filenames in the given directory.
+
+        Args:
+            directory (string): the name of the directory containing the files
+
+        Returns:
+            list(string): list of the files in the given directory.
     """
     dir_files = []
     print("directory: ", directory)
@@ -176,6 +209,12 @@ def get_files_in_dir(directory):
 def log_status(status):
     """
     Logs the status of the commands
+
+        Args:
+            status (string): the status to be logged
+
+        Returns:
+            string: the status, same as was input
     """
     _LOG.info(status)
     print(status)
@@ -184,6 +223,12 @@ def log_status(status):
 def get_db_connnection():
     """
     Gets a database connection.
+
+        Returns:
+            object: a connection to a database
+
+        Raises:
+            DatabaseError: An error occurred.
     """
     try:
         log_status(f"Connect to database started")
@@ -198,6 +243,15 @@ def get_db_connnection():
 def get_cursor(con):
     """
     Gets a cursor for the database connection.
+
+        Args:
+            con (object): a connection to a database
+
+        Returns:
+            object: a cursor for the given connection
+
+        Raises:
+            DatabaseError: An error occurred.
     """
     try:
         cursor = utils.database.return_cursor(con)
@@ -210,6 +264,17 @@ def get_cursor(con):
 def execute_sql(cur, sql_stmt, activity):
     """
     Executes the sql in a file.
+
+        Args:
+            cur (object): a cursor to the database
+            sql_stmt (string): the sql statment to execute
+            activity (string): brief description of what the sql does
+
+        Returns:
+            string: description of status of the sql_stmt.
+
+        Raises:
+            DatabaseError: An error occurred.
     """
     try:
         status = log_status(f"{activity} started")
@@ -224,6 +289,17 @@ def execute_sql(cur, sql_stmt, activity):
 def execute_sql_from_file(cur, sql_file, activity):
     """
     Executes the sql in a file.
+
+        Args:
+            cur (object): a cursor to the database
+            sql_file (string): the file containing a sql statment to execute
+            activity (string): brief description of what the sql does
+
+        Returns:
+            string: description of status of the sql_stmt.
+
+        Raises:
+            DatabaseError: An error occurred.
     """
     ddl_dir = os.environ["DDL_DIR"]
     try:
@@ -239,34 +315,28 @@ def execute_sql_from_file(cur, sql_file, activity):
 
 
 def handler(event, context):            #pylint: disable-msg=unused-argument
-    """Lambda handler. Extracts the key's for a granule from an input dict.
+    """
+    This task will create the database, roles, users, schema, and tables.
+
+        Environment Vars:
+            DATABASE_HOST (string): the server where the database will reside.
+            DATABASE_NAME (string): the name of the database being created.
+            DATABASE_USER (string): the name of the application user.
+            DATABASE_PW (string): the password for the application user.
+            DROP_DATABASE (bool, optional, default is False): When true, will
+                execute a DROP DATABASE command.
+            PLATFORM (string): 'onprem' or 'AWS'
 
         Args:
-            event (dict): A dict with one or more of the following keys:
-
-                granule_id (string): A granule_id to retrieve
-                request_id (string): A request_id (uuid) to retrieve
-
-                Example: event: {'granuleId': 'granxyz',
-                                 'request_id': 'd554f623-b926-452b-868e-f5543932e3da',
-                                }
-
+            event (dict): empty
+                Example: event: {}
             context (Object): None
 
         Returns:
-            dict: A dict with the following keys:
-
-                'granules' (list(dict)): list of dict with the following keys:
-                    'granuleId' (string): The id of a granule.
-                    'keys' (list(string)): list of keys for the granule.
-
-            Example:
-                {"granules": [{"granuleId": "granxyz",
-                             "keys": ["key1",
-                                           "key2"]}]}
+            string: status description.
 
         Raises:
-            ExtractFilePathsError: An error occurred parsing the input.
+            DatabaseError: An error occurred.
     """
     result = task(event, context)
     return result
