@@ -56,7 +56,7 @@ these 4 environment variables in a file named private_config.json, but do NOT ch
 ex:
 (podr2) λ cat private_config.json 
 {"DATABASE_HOST": "db.host.gov_goes_here",
-"DATABASE_PORT": "db.port.gov_goes_here", 
+"DATABASE_PORT": "dbport_goes_here", 
 "DATABASE_NAME": "dbname_goes_here", 
 "DATABASE_USER": "dbusername_goes_here", 
 "DATABASE_PW": "db_pw_goes_here"}

@@ -43,26 +43,6 @@ zip -r ../extract.zip .
 cd ../../../
 echo "pwd2 `pwd`"
 
-#TASK='tasks/request_files/'
-#echo "Building `pwd`/${TASK}/db_deploy"
-#cd "`pwd`/${TASK}"
-#rm -rf build_db
-#mkdir build_db
-#cp db_deploy.py build_db/
-#cd build_db
-#mkdir psycopg2
-#mkdir ddl
-#cd ..
-#cp awslambda-psycopg2/psycopg2-3.7/* build_db/psycopg2/
-#cp -r ../../database/ddl/base/* build_db/ddl/
-#cd build_db
-#mkdir utils
-#cp ../utils/*.py utils/
-#rm ../dbdeploy.zip
-#zip -r ../dbdeploy.zip .
-#cd ../../../
-#echo "pwd6 `pwd`"
-
 TASK='tasks/request_files/'
 echo "Building `pwd`/${TASK}/request_status"
 cd "`pwd`/${TASK}"
