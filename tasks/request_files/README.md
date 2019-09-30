@@ -9,7 +9,6 @@
 - [pydoc request_files](#pydoc-request-files)
 - [pydoc copy_files_to_archive](#pydoc-copy-files)
 - [pydoc request_status](#pydoc-request-status)
-pydoc-copy-files
 
 <a name="setup"></a>
 # Setup
