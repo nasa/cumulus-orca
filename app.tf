@@ -18,7 +18,7 @@ resource "aws_lambda_function" "db_deploy" {
 
   environment {
     variables = {
-      DATABASE_HOST            = "${module.db.this_db_instance_endpoint}"
+      DATABASE_HOST            = "${module.db.this_db_instance_address}"
       DATABASE_PORT            = var.database_port
       DATABASE_NAME            = var.database_name
       DATABASE_USER            = var.database_app_user
@@ -58,7 +58,7 @@ resource "aws_lambda_function" "request_files_lambda" {
 
   environment {
     variables = {
-      DATABASE_HOST            = "${module.db.this_db_instance_endpoint}"
+      DATABASE_HOST            = "${module.db.this_db_instance_address}"
       DATABASE_PORT            = var.database_port
       DATABASE_NAME            = var.database_name
       DATABASE_PW              = var.database_app_user_pw
@@ -87,7 +87,7 @@ resource "aws_lambda_function" "copy_files_to_archive" {
       BUCKET_MAP            = var.copy_bucket_map
       COPY_RETRIES          = var.copy_retries
       COPY_RETRY_SLEEP_SECS = var.copy_retry_sleep_secs
-      DATABASE_HOST            = "${module.db.this_db_instance_endpoint}"
+      DATABASE_HOST            = "${module.db.this_db_instance_address}"
       DATABASE_PORT            = var.database_port
       DATABASE_NAME            = var.database_name
       DATABASE_PW              = var.database_app_user_pw
@@ -110,7 +110,7 @@ resource "aws_lambda_function" "request_status" {
 
   environment {
     variables = {
-      DATABASE_HOST            = "${module.db.this_db_instance_endpoint}"
+      DATABASE_HOST            = "${module.db.this_db_instance_address}"
       DATABASE_PORT            = var.database_port
       DATABASE_NAME            = var.database_name
       DATABASE_PW              = var.database_app_user_pw
