@@ -21,8 +21,10 @@ The unit tests run against a Docker instance of Postgres. No methods are mocked.
 Setup the Database instance in Docker:
 Substitute actual values for these placeholders throughout this README:
     %DB_PW_HERE%    the actual password for the app users database login
+    %MASTER_USER_PW_HERE% the actual password for the master user
     %GIT_WORK_DIR%  the directory where you cloned the repo to (ex. '/home/myuser/dr-podaac-swot'
     %DOCKER_HOST%   the Docker hostname
+    %DB_PORT%       the datbase port. The standard is 5432.
     %DB_NAME%       from database/ddl/base/database/database_create.sql
     %APP_USER_NAME% from database/ddl/base/users/appuser.sql
 
@@ -53,7 +55,7 @@ Right click on ‘PostgreSQL Servers’ and click ‘Register Server’
 Choose PostgreSQL on the left.
 Name:  dr docker - postgres
 Login Name:  postgres       
-Password:    %DB_PW_HERE%
+Password:    %MASTER_USER_PW_HERE%
 Host:   %DOCKER_HOST%
 Port: 5432
 Database:  postgres  
@@ -64,14 +66,16 @@ Database:  postgres
 <a name="unit-testing-and-coverage"></a>
 ## Unit Testing and Coverage
 ```
-To run the tests you'll need to define these 4 environment variables in a file
+To run the tests you'll need to define these 5 environment variables in a file
 named private_config.json in the db_deploy folder. Do NOT check it into GIT. 
 ex:
 (podr2) λ cat private_config.json 
-{"DATABASE_HOST": "%DOCKER_HOST%", 
+{"DATABASE_HOST": "%DOCKER_HOST%",
+"DATABASE_PORT": "%DB_PORT%", 
 "DATABASE_NAME": "%DB_NAME%",
 "DATABASE_USER": "%APP_USER_NAME%",
-"DATABASE_PW": "%DB_PW_HERE%"}
+"DATABASE_PW": "%DB_PW_HERE%",
+"MASTER_USER_PW": %MASTER_USER_PW_HERE%}
 
 λ activate podr
 
@@ -80,7 +84,7 @@ ex:
 
 Name           Stmts   Miss  Cover
 ----------------------------------
-db_deploy.py     156      0   100%
+db_deploy.py     160      0   100%
 ----------------------------------------------------------------------
 Ran 8 tests in 87.100s
 
@@ -124,9 +128,11 @@ Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 
 2.  Set the following environment variables
     DATABASE_HOST   Amazon RDS | Databases | choose db instance | Connectivity & Security | Endpoint value
+    DATABASE_PORT   %DB_PORT%
     DATABASE_NAME   %DB_NAME%
     DATABASE_PW     %DB_PW_HERE%
     DATABASE_USER   %APP_USER_NAME%
+    MASTER_USER_PW  %MASTER_USER_PW_HERE%
     DDL_DIR         ddl/
     DROP_DATABASE   True to perform DROP_DATABASE, False to keep existing database
     PLATFORM        AWS 
@@ -157,9 +163,11 @@ FUNCTIONS
 
             Environment Vars:
                 DATABASE_HOST (string): the server where the database will reside.
+                DATABASE_PORT (string): the database port number
                 DATABASE_NAME (string): the name of the database being created.
                 DATABASE_USER (string): the name of the application user.
                 DATABASE_PW (string): the password for the application user.
+                MASTER_USER_PW (string): the password for the master user.
                 DROP_DATABASE (bool, optional, default is False): When true, will
                     execute a DROP DATABASE command.
                 PLATFORM (string): 'onprem' or 'AWS'

@@ -165,6 +165,7 @@ def get_jobs_by_granule_id(granule_id):
             request_status
         WHERE
             granule_id = %s
+        ORDER BY job_id desc
         """
     try:
         rows = utils.database.single_query(sql, (granule_id,))
@@ -307,7 +308,7 @@ def get_all_requests():
             err_msg
         FROM
             request_status
-        ORDER BY job_id """
+        ORDER BY job_id desc """
 
     try:
         rows = utils.database.single_query(sql, ())

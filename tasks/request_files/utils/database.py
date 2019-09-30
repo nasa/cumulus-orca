@@ -37,11 +37,17 @@ def get_connection():
     # create and yield a connection
     connection = None
     try:
+        db_port = os.environ["DATABASE_PORT"]
+    except ValueError:
+        db_port = 5432
+
+    try:
         connection = psycopg2_connect(
             host=os.environ["DATABASE_HOST"],
             database=os.environ["DATABASE_NAME"],
             user=os.environ["DATABASE_USER"],
             password=os.environ["DATABASE_PW"],
+            port=db_port
         )
         yield connection
 
@@ -133,8 +139,14 @@ def return_connection():
     # create a connection
     connection = None
     try:
+        db_port = os.environ["DATABASE_PORT"]
+    except ValueError:
+        db_port = 5432
+
+    try:
         connection = psycopg2_connect(
             host=os.environ["DATABASE_HOST"],
+            port=db_port,
             database=os.environ["DATABASE_NAME"],
             user=os.environ["DATABASE_USER"],
             password=os.environ["DATABASE_PW"]
@@ -180,6 +192,6 @@ def query_from_file(cursor, sql_file):
         msg = str(ex).replace("\n", "")
         if msg.endswith("already exists"):
             raise ResourceExists(ex)
-        else:
-            LOGGER.exception(f"Database Error. {str(ex)}")
-            raise DbError(f"Database Error. {str(ex)}")
+
+        LOGGER.exception(f"Database Error. {str(ex)}")
+        raise DbError(f"Database Error. {str(ex)}")

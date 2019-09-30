@@ -18,10 +18,12 @@ resource "aws_lambda_function" "db_deploy" {
 
   environment {
     variables = {
-      DATABASE_HOST            = var.database_host
+      DATABASE_HOST            = "${module.db.this_db_instance_endpoint}"
+      DATABASE_PORT            = var.database_port
       DATABASE_NAME            = var.database_name
-      DATABASE_PW              = var.database_app_user_pw
       DATABASE_USER            = var.database_app_user
+      DATABASE_PW              = var.database_app_user_pw
+      MASTER_USER_PW           = var.postgres_user_pw
       DDL_DIR                  = var.ddl_dir
       DROP_DATABASE            = var.drop_database
       PLATFORM                 = var.platform
@@ -56,7 +58,8 @@ resource "aws_lambda_function" "request_files_lambda" {
 
   environment {
     variables = {
-      DATABASE_HOST            = var.database_host
+      DATABASE_HOST            = "${module.db.this_db_instance_endpoint}"
+      DATABASE_PORT            = var.database_port
       DATABASE_NAME            = var.database_name
       DATABASE_PW              = var.database_app_user_pw
       DATABASE_USER            = var.database_app_user
@@ -84,7 +87,8 @@ resource "aws_lambda_function" "copy_files_to_archive" {
       BUCKET_MAP            = var.copy_bucket_map
       COPY_RETRIES          = var.copy_retries
       COPY_RETRY_SLEEP_SECS = var.copy_retry_sleep_secs
-      DATABASE_HOST            = var.database_host
+      DATABASE_HOST            = "${module.db.this_db_instance_endpoint}"
+      DATABASE_PORT            = var.database_port
       DATABASE_NAME            = var.database_name
       DATABASE_PW              = var.database_app_user_pw
       DATABASE_USER            = var.database_app_user
@@ -106,7 +110,8 @@ resource "aws_lambda_function" "request_status" {
 
   environment {
     variables = {
-      DATABASE_HOST            = var.database_host
+      DATABASE_HOST            = "${module.db.this_db_instance_endpoint}"
+      DATABASE_PORT            = var.database_port
       DATABASE_NAME            = var.database_name
       DATABASE_PW              = var.database_app_user_pw
       DATABASE_USER            = var.database_app_user

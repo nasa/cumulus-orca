@@ -30,6 +30,10 @@ variable "ngap_subnets" {
   default = []
 }
 
+variable "ngap_subnet_group" {
+  default = []
+}
+
 variable "ngap_sgs" {
   default = []
 }
@@ -66,43 +70,38 @@ variable "copy_bucket_map" {
   default = "{\\\".hdf\\\": \\\"my-great-protected-bucket\\\", \\\".met\\\": \\\"my-great-protected-bucket\\\", \\\".txt\\\": \\\"my-great-public-bucket\\\", \\\"other\\\": \\\"my-great-protected-bucket\\\"}"
 }
 
-
 variable "database_host" {
   default = ""
 }
 
+variable "database_port" {
+  default = "5432"
+}
 
 variable "postgres_user_pw" {
   default = ""
 }
 
-
 variable "database_name" {
   default = "disaster_recovery"
 }
-
 
 variable "database_app_user" {
   default = "druser"
 }
 
-
 variable "database_app_user_pw" {
   default = ""
 }
-
 
 variable "ddl_dir" {
   default = "ddl/"
 }
 
-
 variable "drop_database" {
   default = "False"
 }
 
-
 variable "platform" {
   default = "AWS"
 }
-

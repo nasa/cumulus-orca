@@ -38,11 +38,17 @@ def return_connection():
     # create a connection
     connection = None
     try:
+        db_port = os.environ["DATABASE_PORT"]
+    except ValueError:
+        db_port = 5432
+
+    try:
         connection = psycopg2_connect(
             host=os.environ["DATABASE_HOST"],
             database=os.environ["DATABASE_NAME"],
             user=os.environ["DATABASE_USER"],
-            password=os.environ["DATABASE_PW"]
+            password=os.environ["DATABASE_PW"],
+            port=db_port
         )
         return connection
 

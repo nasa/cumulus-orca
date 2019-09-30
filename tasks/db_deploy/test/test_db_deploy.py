@@ -22,9 +22,11 @@ class TestRequestStatus(unittest.TestCase):
 
     def tearDown(self):
         del os.environ["DATABASE_HOST"]
+        del os.environ["DATABASE_PORT"]
         del os.environ["DATABASE_NAME"]
         del os.environ["DATABASE_USER"]
         del os.environ["DATABASE_PW"]
+        del os.environ["MASTER_USER_PW"]
         del os.environ["PLATFORM"]
 
 

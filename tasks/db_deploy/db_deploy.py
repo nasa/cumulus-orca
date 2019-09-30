@@ -38,8 +38,11 @@ def task(event, context):    #pylint: disable-msg=unused-argument
     status = log_status("start")
     db_name = os.environ["DATABASE_NAME"]
     db_user = os.environ["DATABASE_USER"]
+    db_pw = os.environ["DATABASE_PW"]
+    master_user_pw = os.environ["MASTER_USER_PW"]
     os.environ["DATABASE_NAME"] = "postgres"
     os.environ["DATABASE_USER"] = "postgres"
+    os.environ["DATABASE_PW"] = master_user_pw
     #connect as postgres to create the new database
     con = get_db_connnection()
     status = log_status("connected to postgres")
@@ -50,6 +53,7 @@ def task(event, context):    #pylint: disable-msg=unused-argument
 
     #connect to the database we just created
     os.environ["DATABASE_NAME"] = db_name
+    os.environ["DATABASE_PW"] = db_pw
     con = get_db_connnection()
     status = log_status(f"connected to {db_name}")
     status = create_schema(con)
@@ -320,9 +324,11 @@ def handler(event, context):            #pylint: disable-msg=unused-argument
 
         Environment Vars:
             DATABASE_HOST (string): the server where the database will reside.
+            DATABASE_PORT (string): the database port. The standard is 5432.
             DATABASE_NAME (string): the name of the database being created.
             DATABASE_USER (string): the name of the application user.
             DATABASE_PW (string): the password for the application user.
+            MASTER_USER_PW (string): the password for the master user.
             DROP_DATABASE (bool, optional, default is False): When true, will
                 execute a DROP DATABASE command.
             PLATFORM (string): 'onprem' or 'AWS'
