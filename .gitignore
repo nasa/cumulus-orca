@@ -15,6 +15,8 @@ tasks/request_files/utils/__pycache__
 tasks/request_files/build_rf
 tasks/request_files/build_rs
 tasks/request_files/build_cp
+tasks/request_files/.pytest_cache/
+tasks/request_files/dev_test/test_requests_postgres_lisa.py
 tasks/db_deploy/private_config.json
 tasks/db_deploy/utils/__pycache__
 tasks/db_deploy/__pycache__
