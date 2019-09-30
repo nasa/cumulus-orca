@@ -33,9 +33,10 @@ First, run a `mv terraform.tfvars.example terraform.tfvars` to get a template `t
 * copy_retries - How many times to retry a copy request from the restore location to the archive location. Defaults to 3.
 * copy_retry_sleep_secs - How many seconds to wait between retry calls to `copy_object`. Defaults to 0.
 * copy_bucket_map - Stringified JSON object mapping file extensions to `Public` or `Private` buckets.
-* ddl_dir - the location of the ddl dir that contains the sql to create the application database. Defaults to "ddl/"
+* ddl_dir - the location of the ddl dir that contains the sql to create the application database. Defaults to 'ddl/'
 * drop_database - Whether or not to drop the database if it exists (True), or keep it (False). Defaults to False.
-* platform - indicates if running locally (onprem) or in AWS (AWS). Defaults to "AWS".
+* database_port - the port for the postgres database. Defaults to '5432'.
+* platform - indicates if running locally (onprem) or in AWS (AWS). Defaults to 'AWS'.
 
 ## Deploying with Terraform
 Visit the [Terraform documentation](https://learn.hashicorp.com/terraform/getting-started/install.html) for installation instructions.
