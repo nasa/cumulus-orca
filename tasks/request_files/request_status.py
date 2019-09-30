@@ -124,8 +124,17 @@ def handler(event, context):            #pylint: disable-msg=unused-argument
                 request_id (string): A request_id (uuid) to retrieve
                 job_id (string): A job_id to retrieve
 
-                Example: event: {'granuleId': 'granxyz'
-                                }
+                Examples: 
+                    event: {'function': 'query'}
+                    event: {"function": "query",
+                            "granule_id": "L0A_HR_RAW_product_0006-of-0420"
+                           }
+                    event: {"function": "query",
+                            "job_id": 14
+                           }
+                    event: {"function": "query",
+                            "request_id": "e91ef763-65bb-4dd2-8ba0-9851337e277e"
+                           }
 
             context (Object): None
 
