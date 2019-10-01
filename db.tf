@@ -1,3 +1,5 @@
+# https://registry.terraform.io/modules/terraform-aws-modules/rds/aws/2.5.0
+
 ##############################################################
 # Data sources to get VPC, subnets and security group details
 ##############################################################
@@ -56,10 +58,9 @@ module "db" {
   enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
 
   # DB subnet group
-  #db_subnet_group_name = "${var.ngap_subnet_group}"
+  db_subnet_group_name = "${var.ngap_subnet_group}"
   subnet_ids = "${var.ngap_subnets}"
 
-  db_subnet_group_name = "default-vpc-3a0f3643"
   parameter_group_name = "default.postgres11"
   # DB parameter group
   family = "postgres11"
