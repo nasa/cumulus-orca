@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?><Diagram version="1.0" type="POSTGRES" versionMajor="11" versionMinor="4" groupSchema="false" hide_inv="false">
 <Table id="0" name="request_status" schema="dr" database="disaster_recovery" background="16777165">
 <Text>Disaster recovery jobs status table</Text>
-<Column id="1" name="job_id" type="bigserial" length="0" nulls="false">
+<Column id="1" name="request_id" type="uuid" length="0" nulls="false">
 <CP name="COMMENTS">unique job identifier</CP>
 </Column>
-<Column id="2" name="request_id" type="uuid" length="0" nulls="false">
+<Column id="2" name="request_group_id" type="uuid" length="0" nulls="false">
 <CP name="COMMENTS">request identifier assigned to all objects being requested for the granule</CP>
 </Column>
 <Column id="3" name="granule_id" type="varchar" length="100" nulls="false">

@@ -32,29 +32,26 @@ somewhere that the tests won't pick them up (see 'Postgres Tests' below).
 
 Name                       Stmts   Miss  Cover
 ----------------------------------------------
-copy_files_to_archive.py      97      0   100%
-request_files.py             104      0   100%
-request_status.py             67      0   100%
-requests.py                  182      0   100%
+copy_files_to_archive.py     100      0   100%
+request_files.py             109      0   100%
+request_status.py             72      0   100%
+requests.py                  180      0   100%
 ----------------------------------------------
-TOTAL                        450      0   100%
+TOTAL                        461      0   100%
 ----------------------------------------------------------------------
 Ran 59 tests in 16.982s
 
 Postgres Tests:
 There are 3 additional test files in the dev_test folder.
 These run against a Postgres database in a Docker container, and allow you to 
-develop against an actual database. The tests run successfully when run alone. However if
-moved to the 'test' folder and included in the nosetests/code coverage
-they introduce a lot of failures and poor coverage. I didn't take the time
-to figure it out (maybe duplicate test function names among the files?). 
-They do however allow you to test things that the mocked tests won't catch -
+develop against an actual database. 
+They also allow you to test things that the mocked tests won't catch -
 such as a restore request that fails the first time and succeeds the second time. The mocked 
 tests didn't catch that it was actually inserting two rows ('error' and 'inprogress'), instead
 of inserting one 'error' row, then updating it to 'inprogress'.
 These 3 test files would need some work to be able to rely on them, such as more assert tests.
 For now they can be used as a development aid. To run them you'll need to define
-these 4 environment variables in a file named private_config.json, but do NOT check it into GIT. 
+these 5 environment variables in a file named private_config.json, but do NOT check it into GIT. 
 ex:
 (podr2) λ cat private_config.json 
 {"DATABASE_HOST": "db.host.gov_goes_here",
@@ -63,17 +60,13 @@ ex:
 "DATABASE_USER": "dbusername_goes_here", 
 "DATABASE_PW": "db_pw_goes_here"}
 
-Eventually, it would be nice to move these to the test folder, but for now
-to run them, you can either temporarily move them to the /test folder
-Or copy the helper files to the dev_test folder:
-cp test/request_helpers.py dev_test/
-cp test/copy_helpers.py dev_test/ 
+To run the tests, just temporarily move them to the /test folder.
 
 Run the tests:
 C:\devpy\poswotdr\tasks\request_files (PCESA-1229 -> origin) 
-(podr2) λ nosetests dev_test/test_requests_postgres.py -v
-(podr2) λ nosetests dev_test/test_request_files_postgres.py -v
-(podr2) λ nosetests dev_test/test_copy_files_to_archive_postgres.py -v
+(podr2) λ nosetests test/test_requests_postgres.py -v
+(podr2) λ nosetests test/test_request_files_postgres.py -v
+(podr2) λ nosetests test/test_copy_files_to_archive_postgres.py -v
 
 ```
 <a name="linting"></a>
@@ -336,8 +329,8 @@ FUNCTIONS
             event (dict): A dict with zero or one of the following keys:
 
                 granule_id (string): A granule_id to retrieve
-                request_id (string): A request_id (uuid) to retrieve
-                job_id (string): A job_id to retrieve
+                request_group_id (string): A request_group_id (uuid) to retrieve
+                request_id (string): A request_id to retrieve
 
                 Examples: 
                     event: {'function': 'query'}
@@ -345,18 +338,18 @@ FUNCTIONS
                             "granule_id": "L0A_HR_RAW_product_0006-of-0420"
                            }
                     event: {"function": "query",
-                            "job_id": 14
+                            "request_id": "B2FE0827DD30B8D1"
                            }
                     event: {"function": "query",
-                            "request_id": "e91ef763-65bb-4dd2-8ba0-9851337e277e"
+                            "request_group_id": "e91ef763-65bb-4dd2-8ba0-9851337e277e"
                            }
                            
             context (Object): None
 
         Returns:
             (list(dict)): A list of dict with the following keys:
-                'job_id' (number): Sequential id, uniquely identifying a table entry.
-                'request_id' (string): The request_id the job belongs to.
+                'request_id' (string): id uniquely identifying a table entry.
+                'request_group_id' (string): The request_group_id the job belongs to.
                 'granule_id' (string): The id of a granule.
                 'object_key' (string): The name of the file that was requested.
                 'job_type' (string): The type of job. "restore" or "regenerate"
@@ -369,8 +362,8 @@ FUNCTIONS
             Example:
                 [
                     {
-                        "job_id": 1,
-                        "request_id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+                        "request_id": "B2FE0827DD30B8D1",
+                        "request_group_id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
                         "granule_id": "granxyz",
                         "object_key": "my_test_filename",
                         "job_type": "restore",

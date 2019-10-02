@@ -11,7 +11,10 @@ from botocore.exceptions import ClientError
 from cumulus_logger import CumulusLogger
 from request_helpers import LambdaContextMock, create_handler_event
 from request_helpers import create_insert_request
-from request_helpers import JOB_ID_1, REQUEST_ID_EXP_1
+from request_helpers import (
+    REQUEST_ID1, REQUEST_ID2, REQUEST_ID3, REQUEST_GROUP_ID_EXP_1,
+    REQUEST_GROUP_ID_EXP_2,
+    REQUEST_GROUP_ID_EXP_3)
 import requests
 import request_files
 import utils
@@ -28,6 +31,7 @@ class TestRequestFiles(unittest.TestCase):
         self.mock_info = CumulusLogger.info
         self.mock_error = CumulusLogger.error
         self.mock_single_query = utils.database.single_query
+        self.mock_generator = requests.request_id_generator
         os.environ["DATABASE_HOST"] = "my.db.host.gov"
         os.environ["DATABASE_PORT"] = "54"
         os.environ["DATABASE_NAME"] = "sndbx"
@@ -38,6 +42,7 @@ class TestRequestFiles(unittest.TestCase):
         self.context = LambdaContextMock()
 
     def tearDown(self):
+        requests.request_id_generator = self.mock_generator
         utils.database.single_query = self.mock_single_query
         CumulusLogger.error = self.mock_error
         CumulusLogger.info = self.mock_info
@@ -48,6 +53,8 @@ class TestRequestFiles(unittest.TestCase):
         del os.environ["DATABASE_NAME"]
         del os.environ["DATABASE_USER"]
         del os.environ["DATABASE_PW"]
+        del os.environ["DATABASE_PORT"]
+
 
     def test_handler(self):
         """
@@ -73,10 +80,6 @@ class TestRequestFiles(unittest.TestCase):
                  "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf.met",
                  "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321_ndvi.jpg",
                  "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml"]
-        #file1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf"
-        #file2 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf.met"
-        #file3 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321_ndvi.jpg"
-        #file4 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml"
         input_event = {
             "input": {
                 "granules": [
@@ -90,28 +93,36 @@ class TestRequestFiles(unittest.TestCase):
                 "glacier-bucket": "my-dr-fake-glacier-bucket"
             }
         }
+        response1 = {'ResponseMetadata': {'RequestId': 'A1BC2345DE67F8A1', 'RetryAttempts': 0}}
+        response2 = {'ResponseMetadata': {'RequestId': 'A2BC2345DE67F8A1', 'RetryAttempts': 0}}
+        response3 = {'ResponseMetadata': {'RequestId': 'A3BC2345DE67F8A1', 'RetryAttempts': 0}}
+        response4 = {'ResponseMetadata': {'RequestId': 'A4BC2345DE67F8A1', 'RetryAttempts': 0}}
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
-        s3_cli.restore_object = Mock(side_effect=[None,
-                                                  None,
-                                                  None,
-                                                  None
+        s3_cli.restore_object = Mock(side_effect=[response1,
+                                                  response2,
+                                                  response3,
+                                                  response4
                                                   ])
         s3_cli.head_object = Mock()
         CumulusLogger.info = Mock()
         qresult_1_inprogress, _ = create_insert_request(
-            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, files[0],
+            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, files[0],
             "restore", "some_bucket", "inprogress",
             UTC_NOW_EXP_1, None, None)
         qresult_3_inprogress, _ = create_insert_request(
-            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, files[2],
+            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, files[2],
             "restore", "some_bucket", "inprogress",
             UTC_NOW_EXP_1, None, None)
         qresult_4_inprogress, _ = create_insert_request(
-            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, files[3],
+            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, files[3],
             "restore", "some_bucket", "inprogress",
             UTC_NOW_EXP_1, None, None)
 
+        requests.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
+                                                          REQUEST_GROUP_ID_EXP_1,
+                                                          REQUEST_GROUP_ID_EXP_1,
+                                                          REQUEST_GROUP_ID_EXP_1])
         utils.database.single_query = Mock(
             side_effect=[qresult_1_inprogress, qresult_1_inprogress,
                          qresult_3_inprogress, qresult_4_inprogress])
@@ -213,14 +224,15 @@ class TestRequestFiles(unittest.TestCase):
                 "glacier-bucket": "my-dr-fake-glacier-bucket"
             }
         }
+        response1 = {'ResponseMetadata': {'RequestId': 'A1BC2345DE67F8A1', 'RetryAttempts': 0}}
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
-        s3_cli.restore_object = Mock(side_effect=[None
+        s3_cli.restore_object = Mock(side_effect=[response1
                                                   ])
         s3_cli.head_object = Mock()
         CumulusLogger.info = Mock()
         CumulusLogger.error = Mock()
-
+        requests.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1])
         utils.database.single_query = Mock(
             side_effect=[utils.database.DbError("mock insert failed error")])
         exp_result = {'granuleId': granule_id, 'files': [{'key': file1,
@@ -293,7 +305,7 @@ class TestRequestFiles(unittest.TestCase):
         s3_cli.head_object = Mock(
             side_effect=[ClientError({'Error': {'Code': 'NotFound'}}, 'head_object')])
         CumulusLogger.info = Mock()
-
+        requests.request_id_generator = Mock(return_value=REQUEST_GROUP_ID_EXP_1)
         try:
             result = request_files.task(exp_event, self.context)
 
@@ -316,13 +328,13 @@ class TestRequestFiles(unittest.TestCase):
             "granules": [{"granuleId": granule_id,
                           "keys": [file1]}]}
         exp_event["config"] = {"glacier-bucket": "some_bucket"}
-
+        response1 = {'ResponseMetadata': {'RequestId': 'A1BC2345DE67F8A1', 'RetryAttempts': 0}}
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.head_object = Mock()
-        s3_cli.restore_object = Mock(side_effect=[None])
+        s3_cli.restore_object = Mock(side_effect=[response1])
         CumulusLogger.info = Mock()
-
+        requests.request_id_generator = Mock(return_value=REQUEST_GROUP_ID_EXP_1)
         exp_gran = {}
         exp_gran['granuleId'] = granule_id
         exp_files = []
@@ -335,13 +347,13 @@ class TestRequestFiles(unittest.TestCase):
 
         exp_gran['files'] = exp_files
         qresult_1_inprogress, _ = create_insert_request(
-            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file1, "restore", "some_bucket",
+            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, file1, "restore", "some_bucket",
             "inprogress", UTC_NOW_EXP_1, None, None)
         utils.database.single_query = Mock(side_effect=[qresult_1_inprogress])
         try:
             result = request_files.task(exp_event, self.context)
-            self.assertEqual(exp_gran, result)
             os.environ['RESTORE_REQUEST_RETRIES'] = '3'
+            self.assertEqual(exp_gran, result)
 
             boto3.client.assert_called_with('s3')
             s3_cli.head_object.assert_called_with(Bucket='some_bucket',
@@ -353,6 +365,7 @@ class TestRequestFiles(unittest.TestCase):
                 RestoreRequest={'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}})
             utils.database.single_query.assert_called_once()
         except request_files.RestoreRequestError as err:
+            os.environ['RESTORE_REQUEST_RETRIES'] = '3'
             self.fail(str(err))
 
 
@@ -368,13 +381,13 @@ class TestRequestFiles(unittest.TestCase):
         exp_event["input"] = {
             "granules": [{"granuleId": granule_id,
                           "keys": [file1]}]}
-
+        response1 = {'ResponseMetadata': {'RequestId': 'A1BC2345DE67F8A1', 'RetryAttempts': 0}}
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.head_object = Mock()
-        s3_cli.restore_object = Mock(side_effect=[None])
+        s3_cli.restore_object = Mock(side_effect=[response1])
         CumulusLogger.info = Mock()
-
+        requests.request_id_generator = Mock(return_value=REQUEST_GROUP_ID_EXP_1)
         exp_gran = {}
         exp_gran['granuleId'] = granule_id
         exp_files = []
@@ -388,7 +401,7 @@ class TestRequestFiles(unittest.TestCase):
         exp_gran['files'] = exp_files
 
         qresult_1_inprogress, _ = create_insert_request(
-            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, file1, "restore", "some_bucket",
+            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, file1, "restore", "some_bucket",
             "inprogress", UTC_NOW_EXP_1, None, None)
         utils.database.single_query = Mock(side_effect=[qresult_1_inprogress])
 
@@ -438,6 +451,8 @@ class TestRequestFiles(unittest.TestCase):
                           "keys": [file1]}]}
 
         os.environ['RESTORE_RETRY_SLEEP_SECS'] = '.5'
+        requests.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
+                                                          REQUEST_GROUP_ID_EXP_2])
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.head_object = Mock()
@@ -494,14 +509,17 @@ class TestRequestFiles(unittest.TestCase):
         gran["keys"] = keys
         exp_event["input"] = {
             "granules": [gran]}
-
+        response1 = {'ResponseMetadata': {'RequestId': 'A1BC2345DE67F8A1', 'RetryAttempts': 0}}
+        response3 = {'ResponseMetadata': {'RequestId': 'A3BC2345DE67F8A1', 'RetryAttempts': 0}}
+        requests.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
+                                                          REQUEST_GROUP_ID_EXP_3])
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.head_object = Mock()
-        s3_cli.restore_object = Mock(side_effect=[None,
+        s3_cli.restore_object = Mock(side_effect=[response1,
                                                   ClientError({'Error': {'Code': 'NoSuchBucket'}},
                                                               'restore_object'),
-                                                  None,
+                                                  response3,
                                                   ClientError({'Error': {'Code': 'NoSuchBucket'}},
                                                               'restore_object'),
                                                   ClientError({'Error': {'Code': 'NoSuchKey'}},
@@ -517,19 +535,25 @@ class TestRequestFiles(unittest.TestCase):
         exp_gran['files'] = exp_files
         exp_err = f"One or more files failed to be requested. {exp_gran}"
         qresult_1_inprogress, _ = create_insert_request(
-            JOB_ID_1, REQUEST_ID_EXP_1, gran["granuleId"], keys[0], "restore", "some_bucket",
+            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, gran["granuleId"], keys[0],
+            "restore", "some_bucket",
             "inprogress", UTC_NOW_EXP_1, None, None)
         qresult_1_error, _ = create_insert_request(
-            JOB_ID_1, REQUEST_ID_EXP_1, gran["granuleId"], keys[0], "restore", "some_bucket",
+            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, gran["granuleId"], keys[0],
+            "restore", "some_bucket",
             "error", UTC_NOW_EXP_1, None, "'Code': 'NoSuchBucket'")
         qresult_3_inprogress, _ = create_insert_request(
-            JOB_ID_1, REQUEST_ID_EXP_1, gran["granuleId"], keys[1], "restore", "some_bucket",
+            REQUEST_ID1, REQUEST_GROUP_ID_EXP_3, gran["granuleId"], keys[1],
+            "restore", "some_bucket",
             "inprogress", UTC_NOW_EXP_1, None, None)
         qresult_3_error, _ = create_insert_request(
-            JOB_ID_1, REQUEST_ID_EXP_1, gran["granuleId"], keys[1], "restore", "some_bucket",
+            REQUEST_ID1, REQUEST_GROUP_ID_EXP_3, gran["granuleId"], keys[1],
+            "restore", "some_bucket",
             "error", UTC_NOW_EXP_1, None, "'Code': 'NoSuchBucket'")
-        utils.database.single_query = Mock(side_effect=[qresult_1_inprogress, qresult_1_error,
-                                                        qresult_3_inprogress, qresult_1_error,
+        utils.database.single_query = Mock(side_effect=[qresult_1_inprogress,
+                                                        qresult_1_error,
+                                                        qresult_3_inprogress,
+                                                        qresult_1_error,
                                                         qresult_3_error])
         try:
             request_files.task(exp_event, self.context)
@@ -587,16 +611,18 @@ class TestRequestFiles(unittest.TestCase):
         gran["keys"] = keys
         exp_event["input"] = {
             "granules": [gran]}
-
+        requests.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1])
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.head_object = Mock()
-        s3_cli.restore_object = Mock(side_effect=[None,
+        response1 = {'ResponseMetadata': {'RequestId': 'A1BC2345DE67F8A1', 'RetryAttempts': 0}}
+        response2 = {'ResponseMetadata': {'RequestId': 'A2BC2345DE67F8A1', 'RetryAttempts': 0}}
+        s3_cli.restore_object = Mock(side_effect=[response1,
                                                   ClientError({'Error': {'Code': 'NoSuchBucket'}},
                                                               'restore_object'),
                                                   ClientError({'Error': {'Code': 'NoSuchBucket'}},
                                                               'restore_object'),
-                                                  None
+                                                  response2
                                                   ])
         CumulusLogger.info = Mock()
         CumulusLogger.error = Mock()
@@ -619,13 +645,13 @@ class TestRequestFiles(unittest.TestCase):
         exp_gran['files'] = exp_files
 
         qresult1, _ = create_insert_request(
-            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, keys[0], "restore", "some_bucket",
+            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, keys[0], "restore", "some_bucket",
             "inprogress", UTC_NOW_EXP_1, None, None)
         qresult2, _ = create_insert_request(
-            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, keys[0], "restore", "some_bucket",
+            REQUEST_ID2, REQUEST_GROUP_ID_EXP_1, granule_id, keys[0], "restore", "some_bucket",
             "error", UTC_NOW_EXP_1, None, "'Code': 'NoSuchBucket'")
         qresult3, _ = create_insert_request(
-            JOB_ID_1, REQUEST_ID_EXP_1, granule_id, keys[1], "restore", "some_bucket",
+            REQUEST_ID3, REQUEST_GROUP_ID_EXP_1, granule_id, keys[1], "restore", "some_bucket",
             "inprogress", UTC_NOW_EXP_1, None, None)
         utils.database.single_query = Mock(side_effect=[qresult1, qresult2, qresult2, qresult3])
 

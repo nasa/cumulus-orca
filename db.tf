@@ -20,7 +20,6 @@
 # DB
 #####
 module "db" {
-  #source = "../terraform-aws-rds"
   source = "terraform-aws-modules/rds/aws"
   version = "2.5.0"
 

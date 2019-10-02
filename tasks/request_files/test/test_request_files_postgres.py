@@ -11,7 +11,10 @@ from botocore.exceptions import ClientError
 from cumulus_logger import CumulusLogger
 import db_config
 from request_helpers import LambdaContextMock, create_handler_event
-from request_helpers import print_rows
+from request_helpers import (
+    REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_2,
+    REQUEST_GROUP_ID_EXP_3, REQUEST_GROUP_ID_EXP_4)
+#from request_helpers import print_rows
 import requests
 import request_files
 
@@ -25,6 +28,7 @@ class TestRequestFilesPostgres(unittest.TestCase):
         self.mock_boto3_client = boto3.client
         self.mock_info = CumulusLogger.info
         self.mock_error = CumulusLogger.error
+        self.mock_generator = requests.request_id_generator
         db_config.set_env()
         os.environ['RESTORE_EXPIRE_DAYS'] = '5'
         os.environ['RESTORE_REQUEST_RETRIES'] = '3'
@@ -37,6 +41,7 @@ class TestRequestFilesPostgres(unittest.TestCase):
             pass
         except requests.DatabaseError:
             pass
+        requests.request_id_generator = self.mock_generator
         CumulusLogger.error = self.mock_error
         CumulusLogger.info = self.mock_info
         boto3.client = self.mock_boto3_client
@@ -46,6 +51,8 @@ class TestRequestFilesPostgres(unittest.TestCase):
         del os.environ["DATABASE_NAME"]
         del os.environ["DATABASE_USER"]
         del os.environ["DATABASE_PW"]
+        del os.environ["DATABASE_PORT"]
+
 
     def test_handler(self):
         """
@@ -84,12 +91,23 @@ class TestRequestFilesPostgres(unittest.TestCase):
                 "glacier-bucket": "my-dr-fake-glacier-bucket"
             }
         }
+
+        requests.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
+                                                          REQUEST_GROUP_ID_EXP_2,
+                                                          REQUEST_GROUP_ID_EXP_3,
+                                                          REQUEST_GROUP_ID_EXP_4])
+
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
-        s3_cli.restore_object = Mock(side_effect=[None,
-                                                  None,
-                                                  None,
-                                                  None
+
+        response1 = {'ResponseMetadata': {'RequestId': 'A1BC2345DE67F8A1', 'RetryAttempts': 0}}
+        response2 = {'ResponseMetadata': {'RequestId': 'A2BC2345DE67F8A1', 'RetryAttempts': 0}}
+        response3 = {'ResponseMetadata': {'RequestId': 'A3BC2345DE67F8A1', 'RetryAttempts': 0}}
+        response4 = {'ResponseMetadata': {'RequestId': 'A4BC2345DE67F8A1', 'RetryAttempts': 0}}
+        s3_cli.restore_object = Mock(side_effect=[response1,
+                                                  response2,
+                                                  response3,
+                                                  response4
                                                   ])
         s3_cli.head_object = Mock()
         CumulusLogger.info = Mock()
@@ -147,6 +165,8 @@ class TestRequestFilesPostgres(unittest.TestCase):
                           "keys": [file1]}]}
 
         os.environ['RESTORE_RETRY_SLEEP_SECS'] = '.5'
+        requests.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
+                                                          REQUEST_GROUP_ID_EXP_2])
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.head_object = Mock()
@@ -206,14 +226,17 @@ class TestRequestFilesPostgres(unittest.TestCase):
         gran["keys"] = keys
         exp_event["input"] = {
             "granules": [gran]}
-
+        response1 = {'ResponseMetadata': {'RequestId': 'A1BC2345DE67F8A1', 'RetryAttempts': 0}}
+        response3 = {'ResponseMetadata': {'RequestId': 'A3BC2345DE67F8A1', 'RetryAttempts': 0}}
+        requests.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
+                                                          REQUEST_GROUP_ID_EXP_2])
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.head_object = Mock()
-        s3_cli.restore_object = Mock(side_effect=[None,
+        s3_cli.restore_object = Mock(side_effect=[response1,
                                                   ClientError({'Error': {'Code': 'NoSuchBucket'}},
                                                               'restore_object'),
-                                                  None,
+                                                  response3,
                                                   ClientError({'Error': {'Code': 'NoSuchBucket'}},
                                                               'restore_object'),
                                                   ClientError({'Error': {'Code': 'NoSuchKey'}},
@@ -247,13 +270,13 @@ class TestRequestFilesPostgres(unittest.TestCase):
         exp_gran['files'] = exp_files
         exp_err = f"One or more files failed to be requested. {exp_gran}"
 
-        print_rows("begin")
+        #print_rows("begin")
         try:
             request_files.task(exp_event, self.context)
             self.fail("RestoreRequestError expected")
         except request_files.RestoreRequestError as err:
             self.assertEqual(exp_err, str(err))
-        print_rows("end")
+        #print_rows("end")
 
 
     def test_task_client_error_2_times(self):
@@ -274,15 +297,19 @@ class TestRequestFilesPostgres(unittest.TestCase):
         exp_event["input"] = {
             "granules": [gran]}
 
+        requests.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
+                                                          REQUEST_GROUP_ID_EXP_2])
+        response1 = {'ResponseMetadata': {'RequestId': 'A1BC2345DE67F8A1', 'RetryAttempts': 0}}
+        response2 = {'ResponseMetadata': {'RequestId': 'A2BC2345DE67F8A1', 'RetryAttempts': 0}}
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.head_object = Mock()
-        s3_cli.restore_object = Mock(side_effect=[None,
+        s3_cli.restore_object = Mock(side_effect=[response1,
                                                   ClientError({'Error': {'Code': 'NoSuchBucket'}},
                                                               'restore_object'),
                                                   ClientError({'Error': {'Code': 'NoSuchBucket'}},
                                                               'restore_object'),
-                                                  None
+                                                  response2
                                                   ])
         CumulusLogger.info = Mock()
         CumulusLogger.error = Mock()
@@ -304,12 +331,12 @@ class TestRequestFilesPostgres(unittest.TestCase):
 
         exp_gran['files'] = exp_files
 
-        print_rows("begin")
+        #print_rows("begin")
 
         result = request_files.task(exp_event, self.context)
         self.assertEqual(exp_gran, result)
 
-        print_rows("end")
+        #print_rows("end")
 
 if __name__ == '__main__':
     unittest.main(argv=['start'])
