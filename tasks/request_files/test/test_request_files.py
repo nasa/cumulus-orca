@@ -13,8 +13,8 @@ from request_helpers import LambdaContextMock, create_handler_event
 from request_helpers import create_insert_request
 from request_helpers import (
     REQUEST_ID1, REQUEST_ID2, REQUEST_ID3, REQUEST_GROUP_ID_EXP_1,
-    REQUEST_GROUP_ID_EXP_2,
-    REQUEST_GROUP_ID_EXP_3)
+    REQUEST_GROUP_ID_EXP_2, REQUEST_GROUP_ID_EXP_3,
+    RESPONSE_1, RESPONSE_2, RESPONSE_3, RESPONSE_4)
 import requests
 import request_files
 import utils
@@ -93,16 +93,13 @@ class TestRequestFiles(unittest.TestCase):
                 "glacier-bucket": "my-dr-fake-glacier-bucket"
             }
         }
-        response1 = {'ResponseMetadata': {'RequestId': 'A1BC2345DE67F8A1', 'RetryAttempts': 0}}
-        response2 = {'ResponseMetadata': {'RequestId': 'A2BC2345DE67F8A1', 'RetryAttempts': 0}}
-        response3 = {'ResponseMetadata': {'RequestId': 'A3BC2345DE67F8A1', 'RetryAttempts': 0}}
-        response4 = {'ResponseMetadata': {'RequestId': 'A4BC2345DE67F8A1', 'RetryAttempts': 0}}
+
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
-        s3_cli.restore_object = Mock(side_effect=[response1,
-                                                  response2,
-                                                  response3,
-                                                  response4
+        s3_cli.restore_object = Mock(side_effect=[RESPONSE_1,
+                                                  RESPONSE_2,
+                                                  RESPONSE_3,
+                                                  RESPONSE_4
                                                   ])
         s3_cli.head_object = Mock()
         CumulusLogger.info = Mock()
@@ -224,10 +221,10 @@ class TestRequestFiles(unittest.TestCase):
                 "glacier-bucket": "my-dr-fake-glacier-bucket"
             }
         }
-        response1 = {'ResponseMetadata': {'RequestId': 'A1BC2345DE67F8A1', 'RetryAttempts': 0}}
+
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
-        s3_cli.restore_object = Mock(side_effect=[response1
+        s3_cli.restore_object = Mock(side_effect=[RESPONSE_1
                                                   ])
         s3_cli.head_object = Mock()
         CumulusLogger.info = Mock()
@@ -328,11 +325,11 @@ class TestRequestFiles(unittest.TestCase):
             "granules": [{"granuleId": granule_id,
                           "keys": [file1]}]}
         exp_event["config"] = {"glacier-bucket": "some_bucket"}
-        response1 = {'ResponseMetadata': {'RequestId': 'A1BC2345DE67F8A1', 'RetryAttempts': 0}}
+
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.head_object = Mock()
-        s3_cli.restore_object = Mock(side_effect=[response1])
+        s3_cli.restore_object = Mock(side_effect=[RESPONSE_1])
         CumulusLogger.info = Mock()
         requests.request_id_generator = Mock(return_value=REQUEST_GROUP_ID_EXP_1)
         exp_gran = {}
@@ -381,11 +378,11 @@ class TestRequestFiles(unittest.TestCase):
         exp_event["input"] = {
             "granules": [{"granuleId": granule_id,
                           "keys": [file1]}]}
-        response1 = {'ResponseMetadata': {'RequestId': 'A1BC2345DE67F8A1', 'RetryAttempts': 0}}
+
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.head_object = Mock()
-        s3_cli.restore_object = Mock(side_effect=[response1])
+        s3_cli.restore_object = Mock(side_effect=[RESPONSE_1])
         CumulusLogger.info = Mock()
         requests.request_id_generator = Mock(return_value=REQUEST_GROUP_ID_EXP_1)
         exp_gran = {}
@@ -509,17 +506,16 @@ class TestRequestFiles(unittest.TestCase):
         gran["keys"] = keys
         exp_event["input"] = {
             "granules": [gran]}
-        response1 = {'ResponseMetadata': {'RequestId': 'A1BC2345DE67F8A1', 'RetryAttempts': 0}}
-        response3 = {'ResponseMetadata': {'RequestId': 'A3BC2345DE67F8A1', 'RetryAttempts': 0}}
+
         requests.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
                                                           REQUEST_GROUP_ID_EXP_3])
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.head_object = Mock()
-        s3_cli.restore_object = Mock(side_effect=[response1,
+        s3_cli.restore_object = Mock(side_effect=[RESPONSE_1,
                                                   ClientError({'Error': {'Code': 'NoSuchBucket'}},
                                                               'restore_object'),
-                                                  response3,
+                                                  RESPONSE_3,
                                                   ClientError({'Error': {'Code': 'NoSuchBucket'}},
                                                               'restore_object'),
                                                   ClientError({'Error': {'Code': 'NoSuchKey'}},
@@ -615,14 +611,13 @@ class TestRequestFiles(unittest.TestCase):
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.head_object = Mock()
-        response1 = {'ResponseMetadata': {'RequestId': 'A1BC2345DE67F8A1', 'RetryAttempts': 0}}
-        response2 = {'ResponseMetadata': {'RequestId': 'A2BC2345DE67F8A1', 'RetryAttempts': 0}}
-        s3_cli.restore_object = Mock(side_effect=[response1,
+
+        s3_cli.restore_object = Mock(side_effect=[RESPONSE_1,
                                                   ClientError({'Error': {'Code': 'NoSuchBucket'}},
                                                               'restore_object'),
                                                   ClientError({'Error': {'Code': 'NoSuchBucket'}},
                                                               'restore_object'),
-                                                  response2
+                                                  RESPONSE_2
                                                   ])
         CumulusLogger.info = Mock()
         CumulusLogger.error = Mock()

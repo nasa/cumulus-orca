@@ -21,6 +21,12 @@ REQUEST_ID8 = "A8BC2345DE67F8A1"
 REQUEST_ID9 = "A9BC2345DE67F8A1"
 REQUEST_ID10 = "B1BC2345DE67F8A1"
 REQUEST_ID11 = "B2BC2345DE67F8A1"
+REQUEST_ID12 = "B3BC2345DE67F8A1"
+
+RESPONSE_1 = {'ResponseMetadata': {'RequestId': f'{REQUEST_ID1}', 'RetryAttempts': 0}}
+RESPONSE_2 = {'ResponseMetadata': {'RequestId': f'{REQUEST_ID2}', 'RetryAttempts': 0}}
+RESPONSE_3 = {'ResponseMetadata': {'RequestId': 'A3BC2345DE67F8A1', 'RetryAttempts': 0}}
+RESPONSE_4 = {'ResponseMetadata': {'RequestId': 'A4BC2345DE67F8A1', 'RetryAttempts': 0}}
 
 UTC_NOW_EXP_1 = requests.get_utc_now_iso()
 time.sleep(1)
@@ -63,15 +69,29 @@ def create_handler_event():
             event = json.load(fil)
     return event
 
+def create_copy_handler_event():
+    """
+    create a handler event for testing.
+    """
+    try:
+        with open('test/testevents/copy_exp_event_1.json') as fil:
+            event = json.load(fil)
+    except EnvironmentError:  # parent of IOError, OSError *and* WindowsError where available
+        with open('testevents/copy_exp_event_1.json') as fil:
+            event = json.load(fil)
+    return event
 
-class LambdaContextMock:   #pylint: disable-msg=too-few-public-methods
+def create_copy_event2():
     """
-    create a lambda context for testing.
+    create a second handler event for testing.
     """
-    def __init__(self):
-        self.function_name = "request_files"
-        self.function_version = 1
-        self.invoked_function_arn = "arn:aws:lambda:us-west-2:065089468788:function:request_files:1"
+    try:
+        with open('test/testevents/copy_exp_event_2.json') as fil:
+            event = json.load(fil)
+    except EnvironmentError:  # parent of IOError, OSError *and* WindowsError where available
+        with open('testevents/copy_exp_event_2.json') as fil:
+            event = json.load(fil)
+    return event
 
 
 def create_select_requests(request_ids):
@@ -231,3 +251,12 @@ def print_rows(label):
     for row in rows:
         print(row)
     print("****")
+
+class LambdaContextMock:   #pylint: disable-msg=too-few-public-methods
+    """
+    create a lambda context for testing.
+    """
+    def __init__(self):
+        self.function_name = "request_files"
+        self.function_version = 1
+        self.invoked_function_arn = "arn:aws:lambda:us-west-2:065089468788:function:request_files:1"

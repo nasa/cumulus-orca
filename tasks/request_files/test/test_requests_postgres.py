@@ -13,7 +13,9 @@ from requests import create_data
 from requests import result_to_json
 import db_config
 from request_helpers import (
-    REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_2,
+    REQUEST_ID1, REQUEST_ID2, REQUEST_ID3, REQUEST_ID4, REQUEST_ID5,
+    REQUEST_ID6, REQUEST_ID7, REQUEST_ID8, REQUEST_ID9, REQUEST_ID10,
+    REQUEST_ID11, REQUEST_ID12, REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_2,
     REQUEST_GROUP_ID_EXP_3, REQUEST_GROUP_ID_EXP_4, REQUEST_GROUP_ID_EXP_5,
     REQUEST_GROUP_ID_EXP_6, UTC_NOW_EXP_1, UTC_NOW_EXP_2, UTC_NOW_EXP_3,
     UTC_NOW_EXP_4, UTC_NOW_EXP_5, UTC_NOW_EXP_6, UTC_NOW_EXP_7, UTC_NOW_EXP_8,
@@ -33,19 +35,6 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
         os.environ["PREFIX"] = prefix
         os.environ["PLATFORM"] = "ONPREM"
         db_config.set_env()
-
-        self.REQUEST_ID1 = "A1BC2345DE67F8A1"
-        self.REQUEST_ID2 = "B1BC2345DE67F8A1"
-        self.REQUEST_ID3 = "C1BC2345DE67F8A1"
-        self.REQUEST_ID4 = "D1BC2345DE67F8A1"
-        self.REQUEST_ID5 = "E1BC2345DE67F8A1"
-        self.REQUEST_ID6 = "F1BC2345DE67F8A1"
-        self.REQUEST_ID7 = "G1BC2345DE67F8A1"
-        self.REQUEST_ID8 = "H1BC2345DE67F8A1"
-        self.REQUEST_ID9 = "I1BC2345DE67F8A1"
-        self.REQUEST_ID10 = "J1BC2345DE67F8A1"
-        self.REQUEST_ID11 = "K1BC2345DE67F8A1"
-        self.REQUEST_ID12 = "L1BC2345DE67F8A1"
 
         self.mock_utcnow = requests.get_utc_now_iso
         self.mock_request_group_id = requests.request_id_generator
@@ -95,70 +84,70 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
             obj["granule_id"] = "granule_1"
             obj["key"] = "objectkey_1"
             obj["glacier_bucket"] = "my_s3_bucket"
-            data = create_data(obj, self.REQUEST_ID1, "restore",
+            data = create_data(obj, REQUEST_ID1, "restore",
                                "complete", UTC_NOW_EXP_1, UTC_NOW_EXP_4)
             requests.submit_request(data)
 
             obj["request_group_id"] = REQUEST_GROUP_ID_EXP_1
             obj["granule_id"] = "granule_2"
             obj["key"] = "objectkey_2"
-            data = create_data(obj, self.REQUEST_ID2, "restore",
+            data = create_data(obj, REQUEST_ID2, "restore",
                                "complete", UTC_NOW_EXP_2, UTC_NOW_EXP_5)
             requests.submit_request(data)
 
             obj["request_group_id"] = REQUEST_GROUP_ID_EXP_1
             obj["granule_id"] = "granule_3"
             obj["key"] = "objectkey_3"
-            data = create_data(obj, self.REQUEST_ID3, "restore",
+            data = create_data(obj, REQUEST_ID3, "restore",
                                "complete", UTC_NOW_EXP_3, UTC_NOW_EXP_6)
             requests.submit_request(data)
 
             obj["request_group_id"] = REQUEST_GROUP_ID_EXP_2
             obj["granule_id"] = "granule_4"
             obj["key"] = "objectkey_4"
-            data = create_data(obj, self.REQUEST_ID4, "restore",
+            data = create_data(obj, REQUEST_ID4, "restore",
                                "error", UTC_NOW_EXP_4, None, "oh oh, an error happened")
             requests.submit_request(data)
 
             obj["request_group_id"] = REQUEST_GROUP_ID_EXP_3
             obj["granule_id"] = "granule_5"
             obj["key"] = "objectkey_5"
-            data = create_data(obj, self.REQUEST_ID5, "restore",
+            data = create_data(obj, REQUEST_ID5, "restore",
                                "inprogress", UTC_NOW_EXP_5, UTC_NOW_EXP_5)
             requests.submit_request(data)
 
             obj["request_group_id"] = REQUEST_GROUP_ID_EXP_3
             obj["granule_id"] = "granule_6"
             obj["key"] = "objectkey_6"
-            data = create_data(obj, self.REQUEST_ID6, "restore",
+            data = create_data(obj, REQUEST_ID6, "restore",
                                "inprogress", UTC_NOW_EXP_6, UTC_NOW_EXP_6)
             requests.submit_request(data)
 
             obj["request_group_id"] = REQUEST_GROUP_ID_EXP_4
             obj["granule_id"] = "granule_4"
             obj["key"] = "objectkey_4"
-            data = create_data(obj, self.REQUEST_ID7, "restore",
+            data = create_data(obj, REQUEST_ID7, "restore",
                                "inprogress", UTC_NOW_EXP_7, UTC_NOW_EXP_7)
             requests.submit_request(data)
 
             obj["request_group_id"] = REQUEST_GROUP_ID_EXP_5
             obj["granule_id"] = "granule_1"
             obj["key"] = "objectkey_1"
-            data = create_data(obj, self.REQUEST_ID8, "restore",
+            data = create_data(obj, REQUEST_ID8, "restore",
                                "inprogress", UTC_NOW_EXP_8, UTC_NOW_EXP_8)
             requests.submit_request(data)
 
             obj["request_group_id"] = REQUEST_GROUP_ID_EXP_5
             obj["granule_id"] = "granule_2"
             obj["key"] = "objectkey_2"
-            data = create_data(obj, self.REQUEST_ID9, "restore",
+            data = create_data(obj, REQUEST_ID9, "restore",
                                "inprogress", UTC_NOW_EXP_9, UTC_NOW_EXP_9)
             requests.submit_request(data)
 
             obj["request_group_id"] = REQUEST_GROUP_ID_EXP_5
             obj["granule_id"] = "granule_3"
             obj["key"] = "objectkey_3"
-            data = create_data(obj, self.REQUEST_ID10, "restore",
+            data = create_data(obj, REQUEST_ID10, "restore",
                                "inprogress", UTC_NOW_EXP_10, UTC_NOW_EXP_10)
             requests.submit_request(data)
 
@@ -166,7 +155,7 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
             obj["granule_id"] = "granule_7"
             obj["key"] = "objectkey_7"
             obj["glacier_bucket"] = None
-            data = create_data(obj, self.REQUEST_ID11, "regenerate",
+            data = create_data(obj, REQUEST_ID11, "regenerate",
                                "inprogress", UTC_NOW_EXP_11, UTC_NOW_EXP_11)
             requests.submit_request(data)
 
@@ -183,10 +172,9 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
         self.create_test_requests()
         utc_now_exp = "2019-07-31 18:05:19.161362+00:00"
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
-        #requests.request_id_generator = Mock(return_value=REQUEST_GROUP_ID_EXP_1)
 
         data = {}
-        data["request_id"] = self.REQUEST_ID12
+        data["request_id"] = REQUEST_ID12
         data["request_group_id"] = REQUEST_GROUP_ID_EXP_1
         data["granule_id"] = "granule_1"
         data["object_key"] = "thisisanobjectkey"
@@ -200,7 +188,7 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
             self.fail(f"submit_request. {str(err)}")
 
         try:
-            result = requests.get_job_by_request_id(self.REQUEST_ID12)
+            result = requests.get_job_by_request_id(REQUEST_ID12)
             data["last_update_time"] = utc_now_exp
             self.assertEqual(data, result[0])
         except requests.DatabaseError as err:
@@ -213,7 +201,6 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
         self.create_test_requests()
         utc_now_exp = "2019-07-31 18:05:19.161362+00:00"
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
-        #requests.request_id_generator = Mock(return_value=REQUEST_GROUP_ID_EXP_1)
 
         request_id = "ABCDE"
         data = {}
@@ -249,7 +236,7 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
         #print_rows("begin")
         utc_now_exp = requests.get_utc_now_iso()
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
-        request_id = self.REQUEST_ID4
+        request_id = REQUEST_ID4
         job_status = "inprogress"
         try:
             result = requests.update_request_status_for_job(request_id, job_status)
@@ -267,7 +254,7 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
         Tests updating an inprogress job to an 'error' status
         """
         self.create_test_requests()
-        request_id = self.REQUEST_ID8
+        request_id = REQUEST_ID8
         row = requests.get_job_by_request_id(request_id)
         self.assertEqual("inprogress", row[0]["job_status"])
         #print_rows("begin")
@@ -343,7 +330,7 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
 
         status = "complete"
         result = requests.get_jobs_by_status(status)
-        exp_ids = [self.REQUEST_ID1, self.REQUEST_ID2, self.REQUEST_ID3]
+        exp_ids = [REQUEST_ID1, REQUEST_ID2, REQUEST_ID3]
         idx = 0
         for job in result:
             self.assertEqual(exp_ids[idx], job["request_id"])
@@ -361,7 +348,7 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
 
         status = "complete"
         result = requests.get_jobs_by_status(status, 5)
-        exp_ids = [self.REQUEST_ID1, self.REQUEST_ID2, self.REQUEST_ID3]
+        exp_ids = [REQUEST_ID1, REQUEST_ID2, REQUEST_ID3]
         idx = 0
         print(" ")
         print("exp_ids: ", exp_ids)
@@ -379,7 +366,7 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
         """
         try:
             self.create_test_requests()
-            result = requests.delete_request(self.REQUEST_ID1)
+            result = requests.delete_request(REQUEST_ID1)
             self.assertEqual([], result)
         except requests.DatabaseError as err:
             self.fail(f"delete_request. {str(err)}")

@@ -42,7 +42,7 @@ TOTAL                        461      0   100%
 Ran 59 tests in 16.982s
 
 Postgres Tests:
-There are 3 additional test files in the dev_test folder.
+There are additional test files in the dev_test folder.
 These run against a Postgres database in a Docker container, and allow you to 
 develop against an actual database. 
 They also allow you to test things that the mocked tests won't catch -

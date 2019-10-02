@@ -335,7 +335,6 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         """
         utc_now_exp = "2019-07-31 18:05:19.161362+00:00"
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
-        #requests.request_id_generator = Mock(return_value=REQUEST_GROUP_ID_EXP_1)
         data = {}
         data["request_id"] = "ABCDE"
         data["request_group_id"] = REQUEST_GROUP_ID_EXP_1
@@ -368,7 +367,6 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         """
         utc_now_exp = UTC_NOW_EXP_4
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
-        #requests.request_id_generator = Mock(return_value=REQUEST_GROUP_ID_EXP_2)
 
         data = {}
         data["err_msg"] = "Error message goes here"
@@ -434,7 +432,6 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         """
         utc_now_exp = UTC_NOW_EXP_1
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
-        #requests.request_id_generator = Mock(return_value=REQUEST_GROUP_ID_EXP_1)
 
         data = {}
         data["request_id"] = REQUEST_ID1
@@ -471,7 +468,6 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         """
         utc_now_exp = UTC_NOW_EXP_1
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
-        #requests.request_id_generator = Mock(return_value=REQUEST_GROUP_ID_EXP_1)
         data = {}
         data["request_id"] = REQUEST_ID1
         data["request_group_id"] = REQUEST_GROUP_ID_EXP_1

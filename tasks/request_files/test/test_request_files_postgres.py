@@ -12,6 +12,7 @@ from cumulus_logger import CumulusLogger
 import db_config
 from request_helpers import LambdaContextMock, create_handler_event
 from request_helpers import (
+    RESPONSE_1, RESPONSE_2, RESPONSE_3, RESPONSE_4,
     REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_2,
     REQUEST_GROUP_ID_EXP_3, REQUEST_GROUP_ID_EXP_4)
 #from request_helpers import print_rows
@@ -100,14 +101,10 @@ class TestRequestFilesPostgres(unittest.TestCase):
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
 
-        response1 = {'ResponseMetadata': {'RequestId': 'A1BC2345DE67F8A1', 'RetryAttempts': 0}}
-        response2 = {'ResponseMetadata': {'RequestId': 'A2BC2345DE67F8A1', 'RetryAttempts': 0}}
-        response3 = {'ResponseMetadata': {'RequestId': 'A3BC2345DE67F8A1', 'RetryAttempts': 0}}
-        response4 = {'ResponseMetadata': {'RequestId': 'A4BC2345DE67F8A1', 'RetryAttempts': 0}}
-        s3_cli.restore_object = Mock(side_effect=[response1,
-                                                  response2,
-                                                  response3,
-                                                  response4
+        s3_cli.restore_object = Mock(side_effect=[RESPONSE_1,
+                                                  RESPONSE_2,
+                                                  RESPONSE_3,
+                                                  RESPONSE_4
                                                   ])
         s3_cli.head_object = Mock()
         CumulusLogger.info = Mock()
@@ -226,17 +223,16 @@ class TestRequestFilesPostgres(unittest.TestCase):
         gran["keys"] = keys
         exp_event["input"] = {
             "granules": [gran]}
-        response1 = {'ResponseMetadata': {'RequestId': 'A1BC2345DE67F8A1', 'RetryAttempts': 0}}
-        response3 = {'ResponseMetadata': {'RequestId': 'A3BC2345DE67F8A1', 'RetryAttempts': 0}}
+
         requests.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
                                                           REQUEST_GROUP_ID_EXP_2])
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.head_object = Mock()
-        s3_cli.restore_object = Mock(side_effect=[response1,
+        s3_cli.restore_object = Mock(side_effect=[RESPONSE_1,
                                                   ClientError({'Error': {'Code': 'NoSuchBucket'}},
                                                               'restore_object'),
-                                                  response3,
+                                                  RESPONSE_3,
                                                   ClientError({'Error': {'Code': 'NoSuchBucket'}},
                                                               'restore_object'),
                                                   ClientError({'Error': {'Code': 'NoSuchKey'}},
@@ -299,17 +295,15 @@ class TestRequestFilesPostgres(unittest.TestCase):
 
         requests.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
                                                           REQUEST_GROUP_ID_EXP_2])
-        response1 = {'ResponseMetadata': {'RequestId': 'A1BC2345DE67F8A1', 'RetryAttempts': 0}}
-        response2 = {'ResponseMetadata': {'RequestId': 'A2BC2345DE67F8A1', 'RetryAttempts': 0}}
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.head_object = Mock()
-        s3_cli.restore_object = Mock(side_effect=[response1,
+        s3_cli.restore_object = Mock(side_effect=[RESPONSE_1,
                                                   ClientError({'Error': {'Code': 'NoSuchBucket'}},
                                                               'restore_object'),
                                                   ClientError({'Error': {'Code': 'NoSuchBucket'}},
                                                               'restore_object'),
-                                                  response2
+                                                  RESPONSE_2
                                                   ])
         CumulusLogger.info = Mock()
         CumulusLogger.error = Mock()

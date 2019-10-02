@@ -14,7 +14,7 @@ from botocore.exceptions import ClientError
 import copy_files_to_archive
 import utils
 import utils.database
-from copy_helpers import create_event2, create_handler_event
+from request_helpers import create_copy_event2, create_copy_handler_event
 
 
 class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-attributes
@@ -40,7 +40,7 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
         self.exp_target_bucket = 'unittest_txt_bucket'
 
         self.exp_file_key1 = 'dr-glacier/MOD09GQ.A0219114.N5aUCG.006.0656338553321.txt'
-        self.handler_input_event = create_handler_event()
+        self.handler_input_event = create_copy_handler_event()
         self.mock_single_query = utils.database.single_query
 
     def tearDown(self):
@@ -92,7 +92,7 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.copy_object = Mock(side_effect=[None, None])
-        exp_rec_2 = create_event2()
+        exp_rec_2 = create_copy_event2()
         self.handler_input_event["Records"].append(exp_rec_2)
         result = copy_files_to_archive.handler(self.handler_input_event, None)
 
@@ -131,7 +131,7 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
                                                ClientError({'Error': {'Code': 'AccessDenied'}},
                                                            'copy_object'),
                                                None])
-        exp_rec_2 = create_event2()
+        exp_rec_2 = create_copy_event2()
         self.handler_input_event["Records"].append(exp_rec_2)
 
         exp_error = "File copy failed. " \
