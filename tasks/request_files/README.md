@@ -20,36 +20,15 @@
 <a name="unit-testing-and-coverage"></a>
 ## Unit Testing and Coverage
 ```
-There are 4 unit test files in the test folder. These have everything mocked
-and are suitable for automation. The nosetests/code coverage here are using only these 4 files.
-Note that you might need to temporarily move the 3 test files from the dev_test folder to 
-somewhere that the tests won't pick them up (see 'Postgres Tests' below). 
-
-λ activate podr
-
-(podr) λ cd C:\devpy\poswotdr\tasks\request_files
-(podr) λ nosetests --with-coverage --cover-erase --cover-package=request_files --cover-package=request_status --cover-package=copy_files_to_archive --cover-package=requests -v
-
-Name                       Stmts   Miss  Cover
-----------------------------------------------
-copy_files_to_archive.py     100      0   100%
-request_files.py             109      0   100%
-request_status.py             72      0   100%
-requests.py                  180      0   100%
-----------------------------------------------
-TOTAL                        461      0   100%
-----------------------------------------------------------------------
-Ran 59 tests in 16.982s
-
-Postgres Tests:
-There are additional test files in the dev_test folder.
-These run against a Postgres database in a Docker container, and allow you to 
-develop against an actual database. 
-They also allow you to test things that the mocked tests won't catch -
+Test files in the test folder that end with _postgres.py run
+against a Postgres database in a Docker container, and allow you to 
+develop against an actual database. You can create the database
+using task/db_deploy. 
+These postgres tests allow you to test things that the mocked tests won't catch -
 such as a restore request that fails the first time and succeeds the second time. The mocked 
 tests didn't catch that it was actually inserting two rows ('error' and 'inprogress'), instead
 of inserting one 'error' row, then updating it to 'inprogress'.
-These 3 test files would need some work to be able to rely on them, such as more assert tests.
+Note that these _postgres test files could use some more assert tests.
 For now they can be used as a development aid. To run them you'll need to define
 these 5 environment variables in a file named private_config.json, but do NOT check it into GIT. 
 ex:
@@ -60,14 +39,31 @@ ex:
 "DATABASE_USER": "dbusername_goes_here", 
 "DATABASE_PW": "db_pw_goes_here"}
 
-To run the tests, just temporarily move them to the /test folder.
+The remaining tests have everything mocked.
 
 Run the tests:
-C:\devpy\poswotdr\tasks\request_files (PCESA-1229 -> origin) 
-(podr2) λ nosetests test/test_requests_postgres.py -v
-(podr2) λ nosetests test/test_request_files_postgres.py -v
-(podr2) λ nosetests test/test_copy_files_to_archive_postgres.py -v
+C:\devpy\poswotdr\tasks\request_files  
+λ activate podr
+All tests:
+(podr) λ nosetests -v
 
+Individual tests (insert desired test file name):
+(podr) λ nosetests test/test_requests_postgres.py -v
+
+Code Coverage:
+(podr) λ cd C:\devpy\poswotdr\tasks\request_files
+(podr) λ nosetests --with-coverage --cover-erase --cover-package=request_files --cover-package=request_status --cover-package=copy_files_to_archive --cover-package=requests -v
+
+Name                       Stmts   Miss  Cover
+----------------------------------------------
+copy_files_to_archive.py     100      0   100%
+request_files.py             104      0   100%
+request_status.py             67      0   100%
+requests.py                  181      0   100%
+----------------------------------------------
+TOTAL                        452      0   100%
+----------------------------------------------------------------------
+Ran 59 tests in 16.982s
 ```
 <a name="linting"></a>
 ## Linting
@@ -96,10 +92,6 @@ Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 utils\database.py:19:1: W0511: TODO develop tests for database.py later. in those mock psycopg2.cursor, etc (fixme)
 ------------------------------------------------------------------
 Your code has been rated at 9.89/10 (previous run: 9.89/10, +0.00)
-
-(podr) λ pylint test/copy_helpers.py
---------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 
 (podr) λ pylint test/request_helpers.py
 --------------------------------------------------------------------

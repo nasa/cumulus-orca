@@ -12,9 +12,9 @@ from cumulus_logger import CumulusLogger
 from request_helpers import LambdaContextMock, create_handler_event
 from request_helpers import create_insert_request
 from request_helpers import (
-    REQUEST_ID1, REQUEST_ID2, REQUEST_ID3, REQUEST_GROUP_ID_EXP_1,
-    REQUEST_GROUP_ID_EXP_2, REQUEST_GROUP_ID_EXP_3,
-    RESPONSE_1, RESPONSE_2, RESPONSE_3, RESPONSE_4)
+    REQUEST_ID1, REQUEST_ID2, REQUEST_ID3, REQUEST_ID4,
+    REQUEST_GROUP_ID_EXP_1,
+    REQUEST_GROUP_ID_EXP_2, REQUEST_GROUP_ID_EXP_3)
 import requests
 import request_files
 import utils
@@ -96,10 +96,10 @@ class TestRequestFiles(unittest.TestCase):
 
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
-        s3_cli.restore_object = Mock(side_effect=[RESPONSE_1,
-                                                  RESPONSE_2,
-                                                  RESPONSE_3,
-                                                  RESPONSE_4
+        s3_cli.restore_object = Mock(side_effect=[None,
+                                                  None,
+                                                  None,
+                                                  None
                                                   ])
         s3_cli.head_object = Mock()
         CumulusLogger.info = Mock()
@@ -117,9 +117,10 @@ class TestRequestFiles(unittest.TestCase):
             UTC_NOW_EXP_1, None, None)
 
         requests.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
-                                                          REQUEST_GROUP_ID_EXP_1,
-                                                          REQUEST_GROUP_ID_EXP_1,
-                                                          REQUEST_GROUP_ID_EXP_1])
+                                                          REQUEST_ID1,
+                                                          REQUEST_ID2,
+                                                          REQUEST_ID3,
+                                                          REQUEST_ID4])
         utils.database.single_query = Mock(
             side_effect=[qresult_1_inprogress, qresult_1_inprogress,
                          qresult_3_inprogress, qresult_4_inprogress])
@@ -224,12 +225,13 @@ class TestRequestFiles(unittest.TestCase):
 
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
-        s3_cli.restore_object = Mock(side_effect=[RESPONSE_1
+        s3_cli.restore_object = Mock(side_effect=[None
                                                   ])
         s3_cli.head_object = Mock()
         CumulusLogger.info = Mock()
         CumulusLogger.error = Mock()
-        requests.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1])
+        requests.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
+                                                          REQUEST_ID1])
         utils.database.single_query = Mock(
             side_effect=[utils.database.DbError("mock insert failed error")])
         exp_result = {'granuleId': granule_id, 'files': [{'key': file1,
@@ -329,7 +331,7 @@ class TestRequestFiles(unittest.TestCase):
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.head_object = Mock()
-        s3_cli.restore_object = Mock(side_effect=[RESPONSE_1])
+        s3_cli.restore_object = Mock(side_effect=[None])
         CumulusLogger.info = Mock()
         requests.request_id_generator = Mock(return_value=REQUEST_GROUP_ID_EXP_1)
         exp_gran = {}
@@ -382,7 +384,7 @@ class TestRequestFiles(unittest.TestCase):
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.head_object = Mock()
-        s3_cli.restore_object = Mock(side_effect=[RESPONSE_1])
+        s3_cli.restore_object = Mock(side_effect=[None])
         CumulusLogger.info = Mock()
         requests.request_id_generator = Mock(return_value=REQUEST_GROUP_ID_EXP_1)
         exp_gran = {}
@@ -508,14 +510,16 @@ class TestRequestFiles(unittest.TestCase):
             "granules": [gran]}
 
         requests.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
-                                                          REQUEST_GROUP_ID_EXP_3])
+                                                          REQUEST_ID1,
+                                                          REQUEST_GROUP_ID_EXP_3,
+                                                          REQUEST_ID2,])
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.head_object = Mock()
-        s3_cli.restore_object = Mock(side_effect=[RESPONSE_1,
+        s3_cli.restore_object = Mock(side_effect=[None,
                                                   ClientError({'Error': {'Code': 'NoSuchBucket'}},
                                                               'restore_object'),
-                                                  RESPONSE_3,
+                                                  None,
                                                   ClientError({'Error': {'Code': 'NoSuchBucket'}},
                                                               'restore_object'),
                                                   ClientError({'Error': {'Code': 'NoSuchKey'}},
@@ -607,17 +611,20 @@ class TestRequestFiles(unittest.TestCase):
         gran["keys"] = keys
         exp_event["input"] = {
             "granules": [gran]}
-        requests.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1])
+        requests.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
+                                                          REQUEST_ID1,
+                                                          REQUEST_ID2,
+                                                          REQUEST_ID3])
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.head_object = Mock()
 
-        s3_cli.restore_object = Mock(side_effect=[RESPONSE_1,
+        s3_cli.restore_object = Mock(side_effect=[None,
                                                   ClientError({'Error': {'Code': 'NoSuchBucket'}},
                                                               'restore_object'),
                                                   ClientError({'Error': {'Code': 'NoSuchBucket'}},
                                                               'restore_object'),
-                                                  RESPONSE_2
+                                                  None
                                                   ])
         CumulusLogger.info = Mock()
         CumulusLogger.error = Mock()

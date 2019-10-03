@@ -301,10 +301,10 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         """
         Tests a database connection failure
         """
+        requests.request_id_generator = Mock(side_effect=[REQUEST_ID1])
         os.environ["DATABASE_NAME"] = "noexist"
         data = {}
         data["request_group_id"] = "0000a0a0-a000-00a0-00a0-0000a0000000"
-        data["request_id"] = "ABCDE"
         data["granule_id"] = "granule_1"
         data["object_key"] = "thisisanobjectkey"
         data["job_type"] = "restore"
@@ -335,8 +335,8 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         """
         utc_now_exp = "2019-07-31 18:05:19.161362+00:00"
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
+        requests.request_id_generator = Mock(side_effect=[REQUEST_ID1])
         data = {}
-        data["request_id"] = "ABCDE"
         data["request_group_id"] = REQUEST_GROUP_ID_EXP_1
         data["granule_id"] = "granule_1"
         data["object_key"] = "thisisanobjectkey"
@@ -367,15 +367,13 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         """
         utc_now_exp = UTC_NOW_EXP_4
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
-
+        requests.request_id_generator = Mock(side_effect=[REQUEST_ID4])
         data = {}
         data["err_msg"] = "Error message goes here"
         data["request_group_id"] = REQUEST_GROUP_ID_EXP_2
-        data["request_id"] = REQUEST_ID4
         data["granule_id"] = "granule_4"
         data["object_key"] = "objectkey_4"
         data["job_type"] = "restore"
-        #data["restore_bucket_dest"] = ""
         data["job_status"] = "error"
         data["request_time"] = utc_now_exp
         qresult, exp_result = create_insert_request(
@@ -410,8 +408,6 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         obj["key"] = "my_file"
 
         exp_data = {}
-        request_id = "ABCDE"
-        exp_data["request_id"] = request_id
         exp_data["request_group_id"] = "my_request_group_id"
         exp_data["granule_id"] = "granule_1"
         exp_data["object_key"] = "my_file"
@@ -421,7 +417,7 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         exp_data["request_time"] = utc_now_exp
         exp_data["last_update_time"] = utc_now_exp
 
-        data = requests.create_data(obj, request_id, "restore", "inprogress",
+        data = requests.create_data(obj, "restore", "inprogress",
                                     utc_now_exp, utc_now_exp)
 
         self.assertEqual(exp_data, data)
@@ -432,9 +428,9 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         """
         utc_now_exp = UTC_NOW_EXP_1
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
-
+        requests.request_id_generator = Mock(side_effect=[REQUEST_ID1])
         data = {}
-        data["request_id"] = REQUEST_ID1
+#        data["request_id"] = REQUEST_ID1
         data["request_group_id"] = REQUEST_GROUP_ID_EXP_1
         data["granule_id"] = "granule_1"
         data["object_key"] = "thisisanobjectkey"
@@ -468,10 +464,9 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         """
         utc_now_exp = UTC_NOW_EXP_1
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
+        requests.request_id_generator = Mock(side_effect=[REQUEST_ID1])
         data = {}
-        data["request_id"] = REQUEST_ID1
         data["request_group_id"] = REQUEST_GROUP_ID_EXP_1
-        #data["granule_id"] = "granule_1"
         data["object_key"] = "thisisanobjectkey"
         data["job_type"] = "restore"
         data["restore_bucket_dest"] = "my_s3_bucket"

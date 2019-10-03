@@ -65,12 +65,6 @@ class TestRequestStatus(unittest.TestCase):
             result = request_status.handler(handler_input_event, None)
             self.fail("expected BadRequestError")
         except request_status.BadRequestError as err:
-            self.assertEqual("Missing 'request_id' in input data", str(err))
-        handler_input_event["request_id"] = REQUEST_ID1
-        try:
-            result = request_status.handler(handler_input_event, None)
-            self.fail("expected BadRequestError")
-        except request_status.BadRequestError as err:
             self.assertEqual("Missing 'granule_id' in input data", str(err))
         handler_input_event["granule_id"] = granule_id
         try:

@@ -82,10 +82,6 @@ def add_request(event):
     Adds a request to the database
     """
     try:
-        request_id = event['request_id']
-    except KeyError:
-        raise BadRequestError("Missing 'request_id' in input data")
-    try:
         granule_id = event['granule_id']
     except KeyError:
         raise BadRequestError("Missing 'granule_id' in input data")
@@ -100,7 +96,6 @@ def add_request(event):
 
     data = {}
     data["request_group_id"] = request_group_id
-    data["request_id"] = request_id
     data["granule_id"] = granule_id
     data["object_key"] = "my_test_filename"
     data["job_type"] = "restore"
@@ -108,7 +103,7 @@ def add_request(event):
     data["job_status"] = status
     if status == "error":
         data["err_msg"] = "error message goes here"
-    requests.submit_request(data)
+    request_id = requests.submit_request(data)
     result = requests.get_job_by_request_id(request_id)
     return result
 

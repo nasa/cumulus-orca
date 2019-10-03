@@ -182,24 +182,21 @@ def restore_object(s3_cli, obj, attempt, retries, retrieval_type='Standard'):
                 Valid values are 'Standard'|'Bulk'|'Expedited'.
 
         Returns:
-            number: job_Id.
+            uuid: request_Id.
     """
     request = {'Days': obj["days"],
                'GlacierJobParameters': {'Tier': retrieval_type}}
     # Submit the request
+    request_id = None
     try:
-        response = s3_cli.restore_object(Bucket=obj["glacier_bucket"],
-                                         Key=obj["key"], RestoreRequest=request)
-        LOGGER.info("Restore response: {}", response)
-        print("Restore response: ", response)
-        request_id = response['ResponseMetadata']['RequestId']
-        LOGGER.info("request_Id: ", request_id)
-        data = requests.create_data(obj, request_id, "restore", "inprogress", None, None)
+        s3_cli.restore_object(Bucket=obj["glacier_bucket"],
+                              Key=obj["key"], RestoreRequest=request)
+
+        data = requests.create_data(obj, "restore", "inprogress", None, None)
         try:
-            requests.submit_request(data)
+            request_id = requests.submit_request(data)
             LOGGER.info(f"Job {request_id} created.")
         except requests.DatabaseError as err:
-            request_id = None
             LOGGER.error("Failed to log request in database. Error {}. Request: {}",
                          str(err), data)
     except ClientError as c_err:
@@ -208,10 +205,9 @@ def restore_object(s3_cli, obj, attempt, retries, retrieval_type='Standard'):
         LOGGER.error("{}. bucket: {} file: {}", c_err, obj["glacier_bucket"], obj["key"])
         if attempt == retries:
             try:
-                request_id = requests.request_id_generator()
-                data = requests.create_data(obj, request_id, "restore", "error",
+                data = requests.create_data(obj, "restore", "error",
                                             None, None, str(c_err))
-                requests.submit_request(data)
+                request_id = requests.submit_request(data)
                 LOGGER.info(f"Job {request_id} created.")
             except requests.DatabaseError as err:
                 LOGGER.error("Failed to log request in database. Error {}. Request: {}",

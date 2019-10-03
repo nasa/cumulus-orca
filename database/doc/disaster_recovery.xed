@@ -62,7 +62,7 @@
 <IndexColumn id="4" sequence="0" ascending="true"/>
 <IndexColumn id="7" sequence="1" ascending="true"/>
 </Index>
-<Index table="0" name="idx_reqstat_reqidgranid" schema="dr" database="disaster_recovery">
+<Index table="0" name="idx_reqstat_reqgidgranid" schema="dr" database="disaster_recovery">
 <Option name="unique" class="Boolean" value="false"/>
 <IndexColumn id="2" sequence="0" ascending="true"/>
 <IndexColumn id="3" sequence="1" ascending="true"/>
@@ -76,5 +76,5 @@
 <Sheet name="dr docker - druser" id="11" disp_at="true" disp_ph="true" disp_co="true" disp_rn="true">
 <Place id="0" visible="true">10,10,250,210</Place>
 </Sheet>
-<Settings sheet="11" zoom="2.0"/>
+<Settings sheet="11" zoom="1.0"/>
 </Diagram>

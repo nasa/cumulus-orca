@@ -22,7 +22,7 @@ BEGIN;
     -- Create table
     CREATE TABLE request_status
         (
-          request_id          varchar(36) NOT NULL
+          request_id          uuid NOT NULL
         , request_group_id    uuid NOT NULL
         , granule_id          varchar(100) NOT NULL
         , object_key          text NOT NULL

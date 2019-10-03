@@ -3,6 +3,7 @@ This module contains helper functions for the unit tests.
 """
 import datetime
 import json
+import os
 import time
 
 import psycopg2
@@ -10,23 +11,18 @@ import psycopg2.extras
 
 import requests
 
-REQUEST_ID1 = "A1BC2345DE67F8A1"
-REQUEST_ID2 = "A2BC2345DE67F8A1"
-REQUEST_ID3 = "A3BC2345DE67F8A1"
-REQUEST_ID4 = "A4BC2345DE67F8A1"
-REQUEST_ID5 = "A5BC2345DE67F8A1"
-REQUEST_ID6 = "A6BC2345DE67F8A1"
-REQUEST_ID7 = "A7BC2345DE67F8A1"
-REQUEST_ID8 = "A8BC2345DE67F8A1"
-REQUEST_ID9 = "A9BC2345DE67F8A1"
-REQUEST_ID10 = "B1BC2345DE67F8A1"
-REQUEST_ID11 = "B2BC2345DE67F8A1"
-REQUEST_ID12 = "B3BC2345DE67F8A1"
-
-RESPONSE_1 = {'ResponseMetadata': {'RequestId': f'{REQUEST_ID1}', 'RetryAttempts': 0}}
-RESPONSE_2 = {'ResponseMetadata': {'RequestId': f'{REQUEST_ID2}', 'RetryAttempts': 0}}
-RESPONSE_3 = {'ResponseMetadata': {'RequestId': 'A3BC2345DE67F8A1', 'RetryAttempts': 0}}
-RESPONSE_4 = {'ResponseMetadata': {'RequestId': 'A4BC2345DE67F8A1', 'RetryAttempts': 0}}
+REQUEST_ID1 = requests.request_id_generator()
+REQUEST_ID2 = requests.request_id_generator()
+REQUEST_ID3 = requests.request_id_generator()
+REQUEST_ID4 = requests.request_id_generator()
+REQUEST_ID5 = requests.request_id_generator()
+REQUEST_ID6 = requests.request_id_generator()
+REQUEST_ID7 = requests.request_id_generator()
+REQUEST_ID8 = requests.request_id_generator()
+REQUEST_ID9 = requests.request_id_generator()
+REQUEST_ID10 = requests.request_id_generator()
+REQUEST_ID11 = requests.request_id_generator()
+REQUEST_ID12 = requests.request_id_generator()
 
 UTC_NOW_EXP_1 = requests.get_utc_now_iso()
 time.sleep(1)
@@ -55,7 +51,6 @@ REQUEST_GROUP_ID_EXP_6 = requests.request_id_generator()
 UTC_NOW_EXP_10 = requests.get_utc_now_iso()
 time.sleep(1)
 UTC_NOW_EXP_11 = requests.get_utc_now_iso()
-
 
 def create_handler_event():
     """
@@ -246,11 +241,26 @@ def print_rows(label):
     """
     prints the rows of a list
     """
-    rows = requests.get_all_requests()
-    print("**** ", label)
-    for row in rows:
-        print(row)
-    print("****")
+    try:
+        develop_tests = os.environ['DEVELOP_TESTS']
+    except KeyError:
+        develop_tests = False
+
+    print("develop_tests: ", develop_tests)
+    if develop_tests:
+        print("****REQUEST_IDS: 1) ", REQUEST_ID1, " 2) ", REQUEST_ID2, " 3) ", REQUEST_ID3,
+              " 4) ", REQUEST_ID4, " 5) ", REQUEST_ID5, " 6) ", REQUEST_ID6,
+              " 7) ", REQUEST_ID7, " 8) ", REQUEST_ID8, " 9) ", REQUEST_ID9,
+              " 10) ", REQUEST_ID10, " 11) ", REQUEST_ID11, " 12) ", REQUEST_ID12)
+        print("****REQUEST_GROUP_EXP_IDs: 1) ", REQUEST_GROUP_ID_EXP_1,
+              " 2) ", REQUEST_GROUP_ID_EXP_2,
+              " 3) ", REQUEST_GROUP_ID_EXP_3, " 4) ", REQUEST_GROUP_ID_EXP_4,
+              " 5) ", REQUEST_GROUP_ID_EXP_5, " 6) ", REQUEST_GROUP_ID_EXP_6)
+        rows = requests.get_all_requests()
+        print("**** ", label)
+        for row in rows:
+            print(row)
+        print("****")
 
 class LambdaContextMock:   #pylint: disable-msg=too-few-public-methods
     """
