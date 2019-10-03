@@ -36,11 +36,11 @@ resource "aws_db_instance" "postgresql" {
 
 resource "null_resource" "bootstrap" {
   triggers = {
-    bootstrap_lambda_last_modified = aws_lambda_function.db_deploy.last_modified
+    bootstrap_lambda_hash = aws_lambda_function.db_deploy.source_code_hash
   }
 
   provisioner "local-exec" {
-    command = "aws lambda invoke --function-name ${aws_lambda_function.db_deploy.arn} 'invoke-response.out'"
+    command = "aws lambda invoke --function-name ${aws_lambda_function.db_deploy.arn} --region ${var.region} 'invoke-response.out'"
   }
 
   depends_on = [aws_db_instance.postgresql]
