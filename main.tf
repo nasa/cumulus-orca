@@ -1,6 +1,6 @@
 provider "aws" {
   version = "~> 2.13"
-  region  = "us-west-2"
+  region  = var.region
   profile = var.profile
 }
 
