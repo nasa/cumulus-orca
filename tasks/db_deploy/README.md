@@ -48,6 +48,12 @@ postgres-# \l
  template1         | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres           +
                    |          |          |            |            | postgres=CTc/postgres
 
+To change the password for the appuser:
+postgres=# \password %APP_USER_NAME%
+Enter new password:
+Enter it again:
+
+To exit psql:
 postgres=# \q
 
 Connect to the DB in AquaData Studio:
