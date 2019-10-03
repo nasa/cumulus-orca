@@ -10,6 +10,7 @@ resource "aws_lambda_function" "db_deploy" {
   role          = aws_iam_role.restore_object_role.arn
   handler       = "db_deploy.handler"
   runtime       = "python3.7"
+  timeout       = 300
 
   vpc_config {
     subnet_ids         = var.ngap_subnets
@@ -37,6 +38,7 @@ resource "aws_lambda_function" "extract_filepaths_for_granule_lambda" {
   role          = aws_iam_role.restore_object_role.arn
   handler       = "extract_filepaths_for_granule.handler"
   runtime       = "python3.7"
+  timeout       = 300
 
   vpc_config {
     subnet_ids         = var.ngap_subnets
@@ -50,6 +52,7 @@ resource "aws_lambda_function" "request_files_lambda" {
   role          = aws_iam_role.restore_object_role.arn
   handler       = "request_files.handler"
   runtime       = "python3.7"
+  timeout       = 300
 
   vpc_config {
     subnet_ids         = var.ngap_subnets
@@ -76,6 +79,7 @@ resource "aws_lambda_function" "copy_files_to_archive" {
   role          = aws_iam_role.restore_object_role.arn
   handler       = "copy_files_to_archive.handler"
   runtime       = "python3.7"
+  timeout       = 300
 
   vpc_config {
     subnet_ids         = var.ngap_subnets
@@ -102,6 +106,7 @@ resource "aws_lambda_function" "request_status" {
   role          = aws_iam_role.restore_object_role.arn
   handler       = "request_status.handler"
   runtime       = "python3.7"
+  timeout       = 300
 
   vpc_config {
     subnet_ids         = var.ngap_subnets
