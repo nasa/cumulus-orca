@@ -45,23 +45,23 @@ def task(event, context):    #pylint: disable-msg=unused-argument
     os.environ["DATABASE_PW"] = master_user_pw
     #connect as postgres to create the new database
     con = get_db_connnection()
+
     status = log_status("connected to postgres")
     db_existed, status = create_database(con)
     if not db_existed:
+        os.environ["DATABASE_PW"] = db_pw
         status = create_roles_and_users(con, db_user)
     con.close()
 
-    #connect to the database we just created
+    #connect to the database we just created as postgres
     os.environ["DATABASE_NAME"] = db_name
-    os.environ["DATABASE_PW"] = db_pw
+    os.environ["DATABASE_PW"] = master_user_pw
     con = get_db_connnection()
     status = log_status(f"connected to {db_name}")
     status = create_schema(con)
     con.close()
-
     status = create_tables()
 
-    #con.close()
     status = log_status("database ddl execution complete")
     return status
 
@@ -202,7 +202,6 @@ def get_files_in_dir(directory):
             list(string): list of the files in the given directory.
     """
     dir_files = []
-    print("directory: ", directory)
     for (_, _, filenames) in walk(directory):
         for name in filenames:
             if name != "init.sql":
@@ -221,7 +220,7 @@ def log_status(status):
             string: the status, same as was input
     """
     _LOG.info(status)
-    print(status)
+    #print(status)
     return status
 
 def get_db_connnection():
