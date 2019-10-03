@@ -8,6 +8,14 @@ pip install --upgrade pip
 deactivate
 echo "pwd1 `pwd`"
 
+echo "Pulling awslambda-psycopg2 in preparation for build"
+mkdir -p tasks/package
+cd tasks/package
+if [ ! -d "awslambda-psycopg2" ]; then
+  git clone https://github.com/jkehler/awslambda-psycopg2.git
+fi
+cd ../../
+
 TASK='tasks/db_deploy/'
 echo "Building `pwd`/${TASK}"
 cd "`pwd`/${TASK}"
@@ -23,7 +31,6 @@ cp -r ../../database/ddl/base/* build_db/ddl/
 cd build_db
 mkdir utils
 cp ../utils/*.py utils/
-rm ../dbdeploy.zip
 zip -r ../dbdeploy.zip .
 cd ../../../
 echo "pwd6 `pwd`"
@@ -38,7 +45,6 @@ pip install -t build -r requirements.txt
 deactivate
 cp *.py build/
 cd build
-rm ../extract.zip
 zip -r ../extract.zip .
 cd ../../../
 echo "pwd2 `pwd`"
@@ -57,7 +63,6 @@ cp ../package/awslambda-psycopg2/psycopg2-3.7/* build_rs/psycopg2/
 cd build_rs
 mkdir utils
 cp ../utils/*.py utils/
-rm ../status.zip
 zip -r ../status.zip .
 cd ../../../
 echo "pwd3 `pwd`"
@@ -77,7 +82,6 @@ cp ../package/awslambda-psycopg2/psycopg2-3.7/* build_cp/psycopg2/
 cd build_cp
 mkdir utils
 cp ../utils/*.py utils/
-rm ../copy.zip
 zip -r ../copy.zip .
 cd ../../../
 echo "pwd4 `pwd`"
@@ -99,7 +103,6 @@ cp ../package/awslambda-psycopg2/psycopg2-3.7/* build_rf/psycopg2/
 cd build_rf
 mkdir utils
 cp ../utils/*.py utils/
-rm ../request.zip
 zip -r ../request.zip .
 cd ../../../
 echo "pwd5 `pwd`"
