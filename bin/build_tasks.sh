@@ -33,7 +33,6 @@ mkdir utils
 cp ../utils/*.py utils/
 zip -r ../dbdeploy.zip .
 cd ../../../
-echo "pwd6 `pwd`"
 
 TASK='tasks/extract_filepaths_for_granule/'
 echo "Building `pwd`/${TASK}"
@@ -47,7 +46,6 @@ cp *.py build/
 cd build
 zip -r ../extract.zip .
 cd ../../../
-echo "pwd2 `pwd`"
 
 TASK='tasks/request_files/'
 echo "Building `pwd`/${TASK}/request_status"
@@ -65,7 +63,6 @@ mkdir utils
 cp ../utils/*.py utils/
 zip -r ../status.zip .
 cd ../../../
-echo "pwd3 `pwd`"
 
 TASK='tasks/request_files/'
 echo "Building `pwd`/${TASK}/copy_files"
@@ -84,7 +81,6 @@ mkdir utils
 cp ../utils/*.py utils/
 zip -r ../copy.zip .
 cd ../../../
-echo "pwd4 `pwd`"
 	
 TASK='tasks/request_files/'
 echo "Building `pwd`/${TASK}/request_files"
@@ -105,4 +101,3 @@ mkdir utils
 cp ../utils/*.py utils/
 zip -r ../request.zip .
 cd ../../../
-echo "pwd5 `pwd`"
