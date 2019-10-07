@@ -304,6 +304,7 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         requests.request_id_generator = Mock(side_effect=[REQUEST_ID1])
         os.environ["DATABASE_NAME"] = "noexist"
         data = {}
+        data["request_id"] = REQUEST_ID1
         data["request_group_id"] = "0000a0a0-a000-00a0-00a0-0000a0000000"
         data["granule_id"] = "granule_1"
         data["object_key"] = "thisisanobjectkey"
@@ -337,6 +338,7 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
         requests.request_id_generator = Mock(side_effect=[REQUEST_ID1])
         data = {}
+        data["request_id"] = REQUEST_ID1
         data["request_group_id"] = REQUEST_GROUP_ID_EXP_1
         data["granule_id"] = "granule_1"
         data["object_key"] = "thisisanobjectkey"
@@ -369,6 +371,7 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
         requests.request_id_generator = Mock(side_effect=[REQUEST_ID4])
         data = {}
+        data["request_id"] = REQUEST_ID4
         data["err_msg"] = "Error message goes here"
         data["request_group_id"] = REQUEST_GROUP_ID_EXP_2
         data["granule_id"] = "granule_4"
@@ -406,8 +409,9 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         obj["granule_id"] = "granule_1"
         obj["glacier_bucket"] = "my_bucket"
         obj["key"] = "my_file"
-
+        requests.request_id_generator = Mock(side_effect=[REQUEST_ID1])
         exp_data = {}
+        exp_data["request_id"] = REQUEST_ID1
         exp_data["request_group_id"] = "my_request_group_id"
         exp_data["granule_id"] = "granule_1"
         exp_data["object_key"] = "my_file"
@@ -430,7 +434,7 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
         requests.request_id_generator = Mock(side_effect=[REQUEST_ID1])
         data = {}
-#        data["request_id"] = REQUEST_ID1
+        data["request_id"] = REQUEST_ID1
         data["request_group_id"] = REQUEST_GROUP_ID_EXP_1
         data["granule_id"] = "granule_1"
         data["object_key"] = "thisisanobjectkey"
@@ -466,6 +470,7 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
         requests.request_id_generator = Mock(side_effect=[REQUEST_ID1])
         data = {}
+        data["request_id"] = REQUEST_ID1
         data["request_group_id"] = REQUEST_GROUP_ID_EXP_1
         data["object_key"] = "thisisanobjectkey"
         data["job_type"] = "restore"

@@ -71,8 +71,7 @@ def submit_request(data):
     # date might be provided, if not use current utc date
     date = get_utc_now_iso()
 
-    request_id = request_id_generator()
-    data["request_id"] = request_id
+    #data["request_id"] = request_id
 
     if "request_time" in data:
         rq_date = dateutil.parser.parse(data["request_time"])
@@ -110,7 +109,7 @@ def submit_request(data):
     except DbError as err:
         LOGGER.exception(f"DbError: {str(err)}")
         raise DatabaseError(str(err))
-    return request_id
+    return data["request_id"]
 
 def get_job_by_request_id(request_id):
     """
@@ -324,6 +323,7 @@ def create_data(obj,   #pylint: disable-msg=too-many-arguments
     Creates a dict containing the input data for submit_request.
     """
     data = {}
+    data["request_id"] = request_id_generator()
     if obj["request_group_id"]:
         data["request_group_id"] = obj["request_group_id"]
     if obj["granule_id"]:

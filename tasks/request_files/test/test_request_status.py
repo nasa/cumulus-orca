@@ -49,7 +49,7 @@ class TestRequestStatus(unittest.TestCase):
         handler_input_event = {}
         utc_now_exp = UTC_NOW_EXP_1
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
-        requests.request_id_generator = Mock(return_value=REQUEST_GROUP_ID_EXP_1)
+        requests.request_id_generator = Mock(return_value=REQUEST_ID1)
         granule_id = 'granule_1'
         status = "error"
         req_err = "error submitting restore request"

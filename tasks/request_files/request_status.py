@@ -95,6 +95,7 @@ def add_request(event):
         status = "error"
 
     data = {}
+    data["request_id"] = requests.request_id_generator()
     data["request_group_id"] = request_group_id
     data["granule_id"] = granule_id
     data["object_key"] = "my_test_filename"

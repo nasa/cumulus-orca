@@ -164,7 +164,9 @@ class TestRequestFilesPostgres(unittest.TestCase):
 
         os.environ['RESTORE_RETRY_SLEEP_SECS'] = '.5'
         requests.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
-                                                          REQUEST_GROUP_ID_EXP_2])
+                                                          REQUEST_ID1,
+                                                          REQUEST_ID2,
+                                                          REQUEST_ID3])
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.head_object = Mock()
@@ -199,11 +201,14 @@ class TestRequestFilesPostgres(unittest.TestCase):
         boto3.client.assert_called_with('s3')
         s3_cli.head_object.assert_called_with(Bucket='some_bucket',
                                               Key=file1)
-        s3_cli.restore_object.assert_any_call(
+        restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}}
+        #restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'},
+        #                   'OutputLocation': {'S3': {'UserMetadata': [{'Name': 'request_id',
+        #                                                               'Value': REQUEST_ID3}]}}}
+        s3_cli.restore_object.assert_called_with(
             Bucket='some_bucket',
             Key=file1,
-            RestoreRequest={'Days': 5, 'GlacierJobParameters': {
-                'Tier': 'Standard'}})
+            RestoreRequest=restore_req_exp)
 
     def test_task_client_error_3_times(self):
         """
@@ -228,7 +233,10 @@ class TestRequestFilesPostgres(unittest.TestCase):
         requests.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
                                                           REQUEST_ID1,
                                                           REQUEST_GROUP_ID_EXP_3,
-                                                          REQUEST_ID2,])
+                                                          REQUEST_ID2,
+                                                          REQUEST_ID3,
+                                                          REQUEST_ID4
+                                                          ])
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.head_object = Mock()
@@ -298,6 +306,7 @@ class TestRequestFilesPostgres(unittest.TestCase):
 
         requests.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
                                                           REQUEST_ID1,
+                                                          REQUEST_GROUP_ID_EXP_2,
                                                           REQUEST_ID2,
                                                           REQUEST_ID3])
         boto3.client = Mock()

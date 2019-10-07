@@ -184,17 +184,23 @@ def restore_object(s3_cli, obj, attempt, retries, retrieval_type='Standard'):
         Returns:
             uuid: request_Id.
     """
+    data = requests.create_data(obj, "restore", "inprogress", None, None)
+    request_id = data["request_id"]
     request = {'Days': obj["days"],
                'GlacierJobParameters': {'Tier': retrieval_type}}
+#               'GlacierJobParameters': {'Tier': retrieval_type},
+#               'OutputLocation': {'S3': {'UserMetadata': [
+#                   {
+#                       'Name': 'request_id',
+#                       'Value': request_id
+#                   }]}}}
     # Submit the request
-    request_id = None
     try:
         s3_cli.restore_object(Bucket=obj["glacier_bucket"],
-                              Key=obj["key"], RestoreRequest=request)
-
-        data = requests.create_data(obj, "restore", "inprogress", None, None)
+                              Key=obj["key"],
+                              RestoreRequest=request)
         try:
-            request_id = requests.submit_request(data)
+            requests.submit_request(data)
             LOGGER.info(f"Job {request_id} created.")
         except requests.DatabaseError as err:
             LOGGER.error("Failed to log request in database. Error {}. Request: {}",
@@ -205,9 +211,9 @@ def restore_object(s3_cli, obj, attempt, retries, retrieval_type='Standard'):
         LOGGER.error("{}. bucket: {} file: {}", c_err, obj["glacier_bucket"], obj["key"])
         if attempt == retries:
             try:
-                data = requests.create_data(obj, "restore", "error",
-                                            None, None, str(c_err))
-                request_id = requests.submit_request(data)
+                data["err_msg"] = str(c_err)
+                data["job_status"] = "error"
+                requests.submit_request(data)
                 LOGGER.info(f"Job {request_id} created.")
             except requests.DatabaseError as err:
                 LOGGER.error("Failed to log request in database. Error {}. Request: {}",

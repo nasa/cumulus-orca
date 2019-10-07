@@ -179,6 +179,7 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
         requests.request_id_generator = Mock(side_effect=[REQUEST_ID12])
         data = {}
+        data["request_id"] = REQUEST_ID12
         data["request_group_id"] = REQUEST_GROUP_ID_EXP_1
         data["granule_id"] = "granule_1"
         data["object_key"] = "thisisanobjectkey"
@@ -207,7 +208,7 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
         requests.request_id_generator = Mock(side_effect=[REQUEST_ID12])
         data = {}
-
+        data["request_id"] = REQUEST_ID12
         data["request_group_id"] = REQUEST_GROUP_ID_EXP_1
         data["granule_id"] = "granule_1"
         data["object_key"] = "thisisanobjectkey"
@@ -352,14 +353,9 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
         result = requests.get_jobs_by_status(status, 5)
         exp_ids = [REQUEST_ID1, REQUEST_ID2, REQUEST_ID3]
         idx = 0
-        print(" ")
-        print("exp_ids: ", exp_ids)
-        print(" ")
         for job in result:
-            print("Job: ", job)
             self.assertEqual(exp_ids[idx], job["request_id"])
             idx = idx + 1
-        print(" ")
 
 
     def test_delete_request(self):
