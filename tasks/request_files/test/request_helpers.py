@@ -246,7 +246,6 @@ def print_rows(label):
     except KeyError:
         develop_tests = False
 
-    print("develop_tests: ", develop_tests)
     if develop_tests:
         print("****REQUEST_IDS: 1) ", REQUEST_ID1, " 2) ", REQUEST_ID2, " 3) ", REQUEST_ID3,
               " 4) ", REQUEST_ID4, " 5) ", REQUEST_ID5, " 6) ", REQUEST_ID6,
