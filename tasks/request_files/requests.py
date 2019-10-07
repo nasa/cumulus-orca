@@ -368,7 +368,7 @@ def get_jobs_by_status(status, max_days_old=None):
         WHERE
             job_status = %s
         """
-    orderby = """ order by last_update_time """
+    orderby = """ order by last_update_time desc """
     try:
         if max_days_old:
             sql2 = """ and last_update_time > CURRENT_DATE at time zone 'utc' - INTERVAL '%s' DAY"""
@@ -410,7 +410,7 @@ def get_jobs_by_request_group_id(request_group_id):
         WHERE
         request_group_id = %s
         """
-    orderby = """ order by last_update_time """
+    orderby = """ order by last_update_time desc """
     try:
         sql = sql + orderby
         rows = utils.database.single_query(sql, (request_group_id,))

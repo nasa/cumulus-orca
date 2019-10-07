@@ -333,7 +333,7 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
 
         status = "complete"
         result = requests.get_jobs_by_status(status)
-        exp_ids = [REQUEST_ID1, REQUEST_ID2, REQUEST_ID3]
+        exp_ids = [REQUEST_ID3, REQUEST_ID2, REQUEST_ID1]
         idx = 0
         for job in result:
             self.assertEqual(exp_ids[idx], job["request_id"])
@@ -351,7 +351,7 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
 
         status = "complete"
         result = requests.get_jobs_by_status(status, 5)
-        exp_ids = [REQUEST_ID1, REQUEST_ID2, REQUEST_ID3]
+        exp_ids = [REQUEST_ID3, REQUEST_ID2, REQUEST_ID1]
         idx = 0
         for job in result:
             self.assertEqual(exp_ids[idx], job["request_id"])
