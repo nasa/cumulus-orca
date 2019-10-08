@@ -9,7 +9,7 @@ resource "aws_lambda_function" "extract_filepaths_for_granule_lambda" {
   function_name = "${var.prefix}_extract_filepaths_for_granule"
   role          = aws_iam_role.restore_object_role.arn
   handler       = "extract_filepaths_for_granule.handler"
-  runtime       = "python3.6"
+  runtime       = "python3.7"
 
   vpc_config {
     subnet_ids = var.ngap_subnets
@@ -22,7 +22,7 @@ resource "aws_lambda_function" "request_files_lambda" {
   function_name = "${var.prefix}_request_files"
   role          = aws_iam_role.restore_object_role.arn
   handler       = "request_files.handler"
-  runtime       = "python3.6"
+  runtime       = "python3.7"
 
   vpc_config {
     subnet_ids         = var.ngap_subnets
@@ -38,12 +38,12 @@ resource "aws_lambda_function" "request_files_lambda" {
   }
 }
 
-resource "aws_lambda_function" "dr_copy_files_to_archive" {
-  filename      = "tasks/dr_copy_files_to_archive/task.zip"
-  function_name = "${var.prefix}_dr_copy_files_to_archive"
+resource "aws_lambda_function" "copy_files_to_archive" {
+  filename      = "tasks/copy_files_to_archive/task.zip"
+  function_name = "${var.prefix}_copy_files_to_archive"
   role          = aws_iam_role.restore_object_role.arn
-  handler       = "dr_copy_files_to_archive.handler"
-  runtime       = "python3.6"
+  handler       = "copy_files_to_archive.handler"
+  runtime       = "python3.7"
 
   vpc_config {
     subnet_ids         = var.ngap_subnets

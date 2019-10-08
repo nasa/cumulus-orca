@@ -1,5 +1,5 @@
 """
-Name: dr_copy_files_to_archive.py
+Name: copy_files_to_archive.py
 
 Description:  Lambda function that copies files from one s3 bucket
 to another s3 bucket.
@@ -11,6 +11,7 @@ import time
 import logging
 import boto3
 from botocore.exceptions import ClientError
+import requests
 
 class CopyRequestError(Exception):
     """
@@ -53,7 +54,87 @@ def task(records, bucket_map, retries, retry_sleep_secs):
         Raises:
             CopyRequestError: Thrown if there are errors with the input records or the copy failed.
     """
+    files = get_files_from_records(records, bucket_map)
+    attempt = 1
+    s3 = boto3.client('s3')  # pylint: disable-msg=invalid-name
+    while attempt <= retries:
+        for afile in files:
+            if not afile['success']:
+                err_msg = copy_object(s3, afile['source_bucket'], afile['source_key'],
+                                      afile['target_bucket'])
+                update_status_in_db(afile, attempt, err_msg)
+        attempt = attempt + 1
+        if attempt <= retries:
+            time.sleep(retry_sleep_secs)
 
+    return files
+
+def update_status_in_db(afile, attempt, err_msg):
+    """
+    Updates the status for the job in the database.
+
+        Args:
+            afile: An input dict with keys for:
+            'attempt': The attempt number for the copy
+            'err_msg' (string): None, or the error message from the copy command
+
+        Returns:
+            afile: The input dict with additional keys for:
+                'success' (boolean): True, if the copy was successful,
+                    otherwise False.
+                'err_msg' (string): when success is False, this will contain
+                    the error message from the copy error
+
+            Example:  [{'source_key': 'file1.xml', 'source_bucket': 'my-dr-fake-glacier-bucket',
+                          'target_bucket': 'unittest_xml_bucket', 'success': True,
+                          'err_msg': ''},
+                      {'source_key': 'file2.txt', 'source_bucket': 'my-dr-fake-glacier-bucket',
+                          'target_bucket': 'unittest_txt_bucket', 'success': True,
+                          'err_msg': ''}]
+    """
+    try:
+        if err_msg:
+            afile['err_msg'] = err_msg
+            old_status = "inprogress"
+            new_status = "error"
+            logging.error(f"Attempt {attempt}. Error copying file {afile['source_key']}"
+                          f" from {afile['source_bucket']} to {afile['target_bucket']}."
+                          f" msg: {err_msg}")
+            requests.update_request_status(afile['source_key'], old_status,
+                                           new_status, err_msg)
+        else:
+            afile['success'] = True
+            afile['err_msg'] = ''
+            new_status = "complete"
+            logging.info(f"Attempt {attempt}. Success copying file "
+                         f"{afile['source_key']} from {afile['source_bucket']} "
+                         f"to {afile['target_bucket']}.")
+            if attempt == 1:
+                old_status = "inprogress"
+            else:
+                old_status = "error"
+            requests.update_request_status(afile['source_key'], old_status, new_status)
+    except requests.DatabaseError as err:
+        logging.error(f"Failed to update request status in database. "
+                      f"key: {afile['source_key']} old status: {old_status} "
+                      f"new status: {new_status}. Err: {str(err)}")
+    return afile
+
+def get_files_from_records(records, bucket_map):
+    """
+    Parses the input records and returns the files to be restored.
+
+        Args:
+            records (dict): passed through from the handler
+            bucket_map (dict): Mapping of file extensions to bucket names
+
+        Returns:
+            files: A list of dicts with the following keys:
+                'source_key': The object key of the file that was restored
+                'source_bucket': The name of the s3 bucket where the restored
+                    file was temporarily sitting
+                'target_bucket': The name of the archive s3 bucket
+    """
     files = []
     for record in records:
         afile = {}
@@ -65,7 +146,7 @@ def task(records, bucket_map, retries, retry_sleep_secs):
             log_str = 'Records["s3"]["object"]["key"]'
             source_key = record["s3"]["object"]["key"]
             afile['source_key'] = source_key
-            root, ext = os.path.splitext(source_key)          #pylint: disable-msg=unused-variable
+            _, ext = os.path.splitext(source_key)
             try:
                 afile['target_bucket'] = bucket_map[ext]
             except KeyError:
@@ -78,27 +159,6 @@ def task(records, bucket_map, retries, retry_sleep_secs):
         except KeyError:
             raise CopyRequestError(f'event record: "{record}" does not contain a '
                                    f'value for {log_str}')
-
-    attempt = 1
-    s3 = boto3.client('s3')  # pylint: disable-msg=invalid-name
-    while attempt <= retries:
-        for afile in files:
-            if not afile['success']:
-                err_msg = copy_object(s3, afile['source_bucket'], afile['source_key'],
-                                      afile['target_bucket'])
-                if err_msg:
-                    afile['err_msg'] = err_msg
-                else:
-                    afile['success'] = True
-                    afile['err_msg'] = ''
-                    logging.info(
-                        f'copy {afile["source_key"]} from {afile["source_bucket"]} to '
-                        f'{afile["target_bucket"]} attempt {attempt} successful.')
-
-        attempt = attempt + 1
-        if attempt <= retries:
-            time.sleep(retry_sleep_secs)
-
     return files
 
 def copy_object(s3_cli, src_bucket_name, src_object_name,
@@ -128,8 +188,7 @@ def copy_object(s3_cli, src_bucket_name, src_object_name,
                            Bucket=dest_bucket_name,
                            Key=dest_object_name)
     except ClientError as ex:
-        logging.error(ex)
-        return ex
+        return str(ex)
     return None
 
 def handler(event, context):      #pylint: disable-msg=unused-argument

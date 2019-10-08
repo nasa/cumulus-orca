@@ -11,6 +11,7 @@ from botocore.exceptions import ClientError
 
 from run_cumulus_task import run_cumulus_task
 from cumulus_logger import CumulusLogger
+import requests
 
 LOGGER = CumulusLogger()
 
@@ -84,7 +85,7 @@ def task(event, context):              #pylint: disable-msg=unused-argument
                 files.append(afile)
         gran['files'] = files
 
-    process_granules(s3, gran, glacier_bucket, exp_days)
+    gran = process_granules(s3, gran, glacier_bucket, exp_days)
 
     return gran
 
@@ -112,15 +113,23 @@ def process_granules(s3, gran, glacier_bucket, exp_days):        # pylint: disab
         retry_sleep_secs = 0
 
     attempt = 1
+    request_id = requests.request_id_generator()
+    granule_id = gran['granuleId']
     while attempt <= retries:
         for afile in gran['files']:
             if not afile['success']:
                 try:
-                    restore_object(s3, glacier_bucket, afile['key'], exp_days)
+                    obj = {}
+                    obj["request_id"] = request_id
+                    obj["granule_id"] = granule_id
+                    obj["glacier_bucket"] = glacier_bucket
+                    obj["key"] = afile['key']
+                    obj["days"] = exp_days
+                    job_id = restore_object(s3, obj, attempt, retries)
                     afile['success'] = True
                     afile['err_msg'] = ''
-                    LOGGER.info("restore {} from {} attempt {} successful.",
-                                afile["key"], glacier_bucket, attempt)
+                    LOGGER.info("restore {} from {} attempt {} successful. Job: {}",
+                                afile["key"], glacier_bucket, attempt, job_id)
                 except ClientError as err:
                     afile['err_msg'] = str(err)
 
@@ -154,32 +163,54 @@ def object_exists(s3_cli, glacier_bucket, file_key):
     except ClientError as err:              #pylint: disable-msg=unused-variable
         return False
 
-def restore_object(s3_cli, bucket_name, object_name, days, retrieval_type='Standard'):
+def restore_object(s3_cli, obj, attempt, retries, retrieval_type='Standard'):
     """Restore an archived S3 Glacier object in an Amazon S3 bucket.
 
         Args:
             s3_cli (object): An instance of boto3 s3 client
-            bucket_name (string): The S3 bucket name
-            object_name (string): The key of the Glacier object being restored
-            days (number): The number of days the restored file will be accessible in the S3 bucket
-                before it expires
+            obj (dict): A dictionary containing:
+                request_id (string): A uuid identifying all objects in a granule restore request
+                granule_id (string): The granule_id to which the object_name being restored belongs
+                glacier_bucket (string): The S3 bucket name
+                key (string): The key of the Glacier object being restored
+                days (number): How many days the restored file will be accessible in the S3 bucket
+                    before it expires
+            attempt (number): The attempt number for retry purposes
+            retries (number): The number of retries that will be attempted
             retrieval_type (string, optional, default=Standard): Glacier Tier.
                 Valid values are 'Standard'|'Bulk'|'Expedited'.
 
         Returns:
-            string: None if restore request was submitted, otherwise contains error message.
+            number: job_Id.
     """
-    request = {'Days': days,
+    request = {'Days': obj["days"],
                'GlacierJobParameters': {'Tier': retrieval_type}}
-
     # Submit the request
     try:
-        s3_cli.restore_object(Bucket=bucket_name, Key=object_name, RestoreRequest=request)
-    except ClientError as err:
+        s3_cli.restore_object(Bucket=obj["glacier_bucket"], Key=obj["key"], RestoreRequest=request)
+        data = requests.create_data(obj, "restore", "inprogress", None, None)
+        try:
+            job_id = requests.submit_request(data)
+            LOGGER.info(f"Job {job_id} created.")
+        except requests.DatabaseError as err:
+            job_id = None
+            LOGGER.error("Failed to log request in database. Error {}. Request: {}",
+                         str(err), data)
+    except ClientError as c_err:
         # NoSuchBucket, NoSuchKey, or InvalidObjectState error == the object's
         # storage class was not GLACIER
-        LOGGER.error("{}. bucket: {} file: {}", err, bucket_name, object_name)
-        raise err
+        LOGGER.error("{}. bucket: {} file: {}", c_err, obj["glacier_bucket"], obj["key"])
+        if attempt == retries:
+            try:
+                data = requests.create_data(obj, "restore", "error", None, None, str(c_err))
+                job_id = requests.submit_request(data)
+                LOGGER.info(f"Job {job_id} created.")
+            except requests.DatabaseError as err:
+                LOGGER.error("Failed to log request in database. Error {}. Request: {}",
+                             str(err), data)
+
+        raise c_err
+    return job_id
 
 def handler(event, context):      #pylint: disable-msg=unused-argument
     """Lambda handler. Initiates a restore_object request from glacier for each file of a granule.

@@ -3,19 +3,78 @@
 set -e
 rm -rf venv
 python3 -m venv venv
-for TASK in `ls -d tasks/*/`
-do
-  if [ ${TASK} != 'tasks/testfiles/' ]; then
-    echo "Building `pwd`/${TASK}"
-    cd "`pwd`/${TASK}"
-    rm -rf build
-    mkdir build
-    source ../../venv/bin/activate
-    pip3 install -t build -r requirements.txt
-    deactivate
-    cp *.py build/
-    cd build
-    zip -r ../task.zip .
-    cd ../../../
-  fi 
-done
+source venv/bin/activate
+pip install --upgrade pip    
+deactivate
+echo "pwd1 `pwd`"
+TASK='tasks/extract_filepaths_for_granule/'
+echo "Building `pwd`/${TASK}"
+cd "`pwd`/${TASK}"
+rm -rf build
+mkdir build
+source ../../venv/bin/activate
+pip install -t build -r requirements.txt
+deactivate
+cp *.py build/
+cd build
+zip -r ../extract.zip .
+cd ../../../
+echo "pwd2 `pwd`"
+
+TASK='tasks/request_files/'
+echo "Building `pwd`/${TASK}/request_status"
+cd "`pwd`/${TASK}"
+rm -rf build_rs
+mkdir build_rs
+cp request_status.py build_rs/
+cp requests.py build_rs/
+cd build_rs
+mkdir psycopg2
+cd ..
+cp awslambda-psycopg2/psycopg2-3.7/* build_rs/psycopg2/
+cd build_rs
+mkdir utils
+cp ../utils/*.py utils/
+zip -r ../status.zip .
+cd ../../../
+echo "pwd3 `pwd`"
+
+TASK='tasks/request_files/'
+echo "Building `pwd`/${TASK}/copy_files"
+cd "`pwd`/${TASK}"
+echo "pwd3b `pwd`"
+rm -rf build_cp
+mkdir build_cp
+cp copy_files_to_archive.py build_cp/
+cp requests.py build_cp/
+cd build_cp
+mkdir psycopg2
+cd ..
+cp awslambda-psycopg2/psycopg2-3.7/* build_cp/psycopg2/
+cd build_cp
+mkdir utils
+cp ../utils/*.py utils/
+zip -r ../copy.zip .
+cd ../../../
+echo "pwd4 `pwd`"
+	
+TASK='tasks/request_files/'
+echo "Building `pwd`/${TASK}/request_files"
+cd "`pwd`/${TASK}"
+rm -rf build_rf
+mkdir build_rf
+source ../../venv/bin/activate
+pip install -t build_rf -r requirements.txt
+deactivate
+cp request_files.py build_rf/
+cp requests.py build_rf/
+cd build_rf
+mkdir psycopg2
+cd ..
+cp awslambda-psycopg2/psycopg2-3.7/* build_rf/psycopg2/
+cd build_rf
+mkdir utils
+cp ../utils/*.py utils/
+zip -r ../request.zip .
+cd ../../../
+echo "pwd5 `pwd`"

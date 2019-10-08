@@ -18,29 +18,59 @@
 <a name="unit-testing-and-coverage"></a>
 ## Unit Testing and Coverage
 ```
-Run the unit tests with code coverage:
+There are 4 unit test files in the test folder. These have everything mocked
+and are suitable for automation. The nosetests/code coverage here are using only these 4 files.
+Note that you might need to temporarily move the 3 test files in the dev_test folder to 
+somewhere that the tests won't pick them up (see 'Postgres Tests' below). 
 
 λ activate podr
 
 (podr) λ cd C:\devpy\poswotdr\tasks\request_files
-(podr) λ nosetests --with-coverage --cover-erase --cover-package=request_files -v
-Tests the handler ... {"message": "request: {'input': {'granules': [{'granuleId': 'MOD09GQ.A0219114.N5aUCG.006.0656338553321', 'keys': ['L0A_LR_RAW_product_0010-of-0092.h5']}]}, 'config': {}} does not contain a config value for glacier-bucket", "level": "error", "executions": ["DrRecovery54"], "timestamp": "2019-07-09T09:34:15.167271", "sender": "request_files", "version": 1}
-ok
-Test two files, first successful, second has two errors, then success. ... ok
-Test four files, first 3 successful, fourth errors on all retries and fails. ... ok
-Test retries for restore error for one file. ... ok
-Test a file that is not in glacier. ... ok
-Test environment var RESTORE_EXPIRE_DAYS not set - use default. ... ok
-Test for missing glacier-bucket in config. ... ok
-Test environment var RESTORE_REQUEST_RETRIES not set - use default. ... ok
-Test four files for one granule - successful ... ok
-Test two granules with one file each - successful. ... ok
+(podr) λ nosetests --with-coverage --cover-erase --cover-package=request_files --cover-package=request_status --cover-package=copy_files_to_archive --cover-package=requests -v
 
-Name               Stmts   Miss  Cover
---------------------------------------
-request_files.py      80      0   100%
+Name                       Stmts   Miss  Cover
+----------------------------------------------
+copy_files_to_archive.py      97      0   100%
+request_files.py             104      0   100%
+request_status.py             75      0   100%
+requests.py                  182      0   100%
+----------------------------------------------
+TOTAL                        458      0   100%
 ----------------------------------------------------------------------
-Ran 10 tests in 1.741s
+Ran 59 tests in 17.173s
+
+Postgres Tests:
+There are 3 additional test files in the dev_test folder.
+These run against a Postgres database in a Docker container, and allow you to 
+develop against an actual database. The tests run successfully when run alone. However if
+moved to the 'test' folder and included in the nosetests/code coverage
+they introduce a lot of failures and poor coverage. I didn't take the time
+to figure it out (maybe duplicate test function names among the files?). 
+They do however allow you to test things that the mocked tests won't catch -
+such as a restore request that fails the first time and succeeds the second time. The mocked 
+tests didn't catch that it was actually inserting two rows ('error' and 'inprogress'), instead
+of inserting one 'error' row, then updating it to 'inprogress'.
+These 3 test files would need some work to be able to rely on them, such as more assert tests.
+For now they can be used as a development aid. To run them you'll need to define
+these 4 environment variables in a file named private_config.json. Do NOT check into GIT. 
+ex:
+(podr2) λ cat private_config.json 
+{"DATABASE_HOST": "db.host.gov_goes_here", 
+"DATABASE_NAME": "dbname_goes_here", 
+"DATABASE_USER": "dbusername_goes_here", 
+"DATABASE_PW": "db_pw_goes_here"}
+
+Eventually, it would be nice to move these to the test folder, but for now
+to run them, you can either temporarily move them to the /test folder
+Or copy the helper files to the dev_test folder:
+cp test/request_helpers.py /dev_test/
+cp test/copy_helpers.py /dev_test/ 
+
+Run the tests:
+C:\devpy\poswotdr\tasks\request_files (PCESA-1229 -> origin) 
+(podr2) λ nosetests dev_test/test_requests_postgres.py -v
+(podr2) λ nosetests dev_test/test_request_files_postgres.py -v
+(podr2) λ nosetests dev_test/test_copy_files_to_archive_postgres.py -v
 
 ```
 <a name="linting"></a>
@@ -50,21 +80,53 @@ Run pylint against the code:
 
 (podr) λ cd C:\devpy\poswotdr\tasks\request_files
 (podr) λ pylint request_files.py
-
 --------------------------------------------------------------------
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 
-(podr) λ cd C:\devpy\poswotdr\tasks\request_files\test
-(podr) λ pylint test_request_files.py
+(podr) λ pylint copy_files_to_archive.py
+--------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 
+(podr) λ pylint request_status.py
+--------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
+
+(podr) λ pylint requests.py
+ --------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
+
+(podr) λ pylint utils/database.py
+************* Module utils.database
+utils\database.py:19:1: W0511: TODO develop tests for database.py later. in those mock psycopg2.cursor, etc (fixme)
+
+(podr) λ pylint test/copy_helpers.py
+--------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
+
+(podr) λ pylint test/request_helpers.py
+--------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
+
+(podr) λ pylint test/test_request_files.py
+--------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
+
+(podr) λ pylint test/test_copy_files_to_archive.py
+--------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
+
+(podr) λ pylint test/test_request_status.py
+--------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
+
+(podr) λ pylint test/test_requests.py
 --------------------------------------------------------------------
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 ```
 <a name="deployment"></a>
 ## Deployment
 ```
-    cd tasks\request_files
-    zip task.zip *.py
+    see /bin/build_tasks.sh to build the zip file. Upload the zip file to AWS.
 ```
 <a name="deployment-validation"></a>
 ### Deployment Validation
