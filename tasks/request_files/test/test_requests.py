@@ -30,6 +30,7 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         prefix = "lab"
         os.environ["PREFIX"] = prefix
         os.environ["DATABASE_HOST"] = "my.db.host.gov"
+        os.environ["DATABASE_PORT"] = "50"
         os.environ["DATABASE_NAME"] = "sndbx"
         os.environ["DATABASE_USER"] = "unittestdbuser"
         os.environ["DATABASE_PW"] = "unittestdbpw"

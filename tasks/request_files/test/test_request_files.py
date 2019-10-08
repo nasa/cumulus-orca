@@ -29,6 +29,7 @@ class TestRequestFiles(unittest.TestCase):
         self.mock_error = CumulusLogger.error
         self.mock_single_query = utils.database.single_query
         os.environ["DATABASE_HOST"] = "my.db.host.gov"
+        os.environ["DATABASE_PORT"] = "54"
         os.environ["DATABASE_NAME"] = "sndbx"
         os.environ["DATABASE_USER"] = "unittestdbuser"
         os.environ["DATABASE_PW"] = "unittestdbpw"

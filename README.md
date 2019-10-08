@@ -11,12 +11,18 @@ First, run a `mv terraform.tfvars.example terraform.tfvars` to get a template `t
 **Necessary:**
 * ngap_subnets - NGAP Subnets (array)
 * ngap_sgs - NGAP Security Groups (array)
+* ngap_subnet_group - 
 * glacier_bucket - Bucket with Glacier policy
 * public_bucket - Bucket with public permissions (Cumulus public bucket)
 * private_bucket - Bucket with private permissions (Cumulus private bucket)
 * internal_bucket - Analogous to the Cumulus internal bucket 
 * protected_bucket - Analogous to the Cumulus protected bucket
 * permissions_boundary_arn - Permission Boundary Arn (Policy) for NGAP compliance
+* postgres_user_pw - password for the postgres user
+* database_host - the AWS endpoint for the database
+* database_name - the name of the database to be created for the application
+* database_app_user - the application user 
+* database_app_user_pw - the password for the application user
 
 **Optional:**
 * prefix - Prefix that will be pre-pended to resource names created by terraform. Defaults to `dr`.
@@ -28,6 +34,10 @@ First, run a `mv terraform.tfvars.example terraform.tfvars` to get a template `t
 * copy_retries - How many times to retry a copy request from the restore location to the archive location. Defaults to 3.
 * copy_retry_sleep_secs - How many seconds to wait between retry calls to `copy_object`. Defaults to 0.
 * copy_bucket_map - Stringified JSON object mapping file extensions to `Public` or `Private` buckets.
+* ddl_dir - the location of the ddl dir that contains the sql to create the application database. Defaults to 'ddl/'
+* drop_database - Whether or not to drop the database if it exists (True), or keep it (False). Defaults to False.
+* database_port - the port for the postgres database. Defaults to '5432'.
+* platform - indicates if running locally (onprem) or in AWS (AWS). Defaults to 'AWS'.
 
 ## Deploying with Terraform
 Visit the [Terraform documentation](https://learn.hashicorp.com/terraform/getting-started/install.html) for installation instructions.

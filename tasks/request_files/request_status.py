@@ -108,34 +108,67 @@ def add_request(event):
     return result
 
 def handler(event, context):            #pylint: disable-msg=unused-argument
-    """Lambda handler. Extracts the key's for a granule from an input dict.
+    """Lambda handler. Retrieves job(s) from the database.
+
+        Environment Vars:
+            DATABASE_HOST (string): the server where the database resides.
+            DATABASE_PORT (string): the database port. The standard is 5432.
+            DATABASE_NAME (string): the name of the database.
+            DATABASE_USER (string): the name of the application user.
+            DATABASE_PW (string): the password for the application user.
 
         Args:
-            event (dict): A dict with one or more of the following keys:
+            event (dict): A dict with zero or one of the following keys:
 
                 granule_id (string): A granule_id to retrieve
                 request_id (string): A request_id (uuid) to retrieve
+                job_id (string): A job_id to retrieve
 
-                Example: event: {'granuleId': 'granxyz',
-                                 'request_id': 'd554f623-b926-452b-868e-f5543932e3da',
-                                }
+                Examples: 
+                    event: {'function': 'query'}
+                    event: {"function": "query",
+                            "granule_id": "L0A_HR_RAW_product_0006-of-0420"
+                           }
+                    event: {"function": "query",
+                            "job_id": 14
+                           }
+                    event: {"function": "query",
+                            "request_id": "e91ef763-65bb-4dd2-8ba0-9851337e277e"
+                           }
 
             context (Object): None
 
         Returns:
-            dict: A dict with the following keys:
-
-                'granules' (list(dict)): list of dict with the following keys:
-                    'granuleId' (string): The id of a granule.
-                    'keys' (list(string)): list of keys for the granule.
+            (list(dict)): A list of dict with the following keys:
+                'job_id' (number): Sequential id, uniquely identifying a table entry.
+                'request_id' (string): The request_id the job belongs to.
+                'granule_id' (string): The id of a granule.
+                'object_key' (string): The name of the file that was requested.
+                'job_type' (string): The type of job. "restore" or "regenerate"
+                'restore_bucket_dest' (string): The bucket where the restored file will be put.
+                'job_status' (string): The current status of the job
+                'request_time' (string): UTC time that the request was initiated.
+                'last_update_time' (string): UTC time of the last update to job_status.
+                'err_msg' (string): Description of the error if the job_status is 'error'.
 
             Example:
-                {"granules": [{"granuleId": "granxyz",
-                             "keys": ["key1",
-                                           "key2"]}]}
+                [
+                    {
+                        "job_id": 1,
+                        "request_id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+                        "granule_id": "granxyz",
+                        "object_key": "my_test_filename",
+                        "job_type": "restore",
+                        "restore_bucket_dest": "my_test_bucket",
+                        "job_status": "inprogress",
+                        "request_time": "2019-09-30 18:24:38.370252+00:00",
+                        "last_update_time": "2019-09-30 18:24:38.370252+00:00",
+                        "err_msg": null
+                    }
+                ]
 
         Raises:
-            ExtractFilePathsError: An error occurred parsing the input.
+            BadRequestError: An error occurred parsing the input.
     """
     result = task(event, context)
     return result

@@ -17,3 +17,4 @@ def set_env():
     os.environ["DATABASE_NAME"] = private_config["DATABASE_NAME"]
     os.environ["DATABASE_USER"] = private_config["DATABASE_USER"]
     os.environ["DATABASE_PW"] = private_config["DATABASE_PW"]
+    os.environ["MASTER_USER_PW"] = private_config["MASTER_USER_PW"]

@@ -1,1 +1,1 @@
-\ir dr.sql;
+\ir app.sql;

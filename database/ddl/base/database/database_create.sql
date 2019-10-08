@@ -1,5 +1,4 @@
--- Create the DAAC database
-DROP DATABASE IF EXISTS disaster_recovery;
+-- Create the DR database
 
 CREATE DATABASE disaster_recovery
     OWNER postgres
@@ -7,6 +6,3 @@ CREATE DATABASE disaster_recovery
     ENCODING 'UTF8'
     LC_COLLATE 'en_US.UTF8'
     LC_CTYPE 'en_US.UTF8';
-
-COMMENT ON DATABASE disaster_recovery
-    IS 'Disaster Recovery database.';

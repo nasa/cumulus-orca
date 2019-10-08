@@ -26,6 +26,7 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
         os.environ['COPY_RETRIES'] = '2'
         os.environ['COPY_RETRY_SLEEP_SECS'] = '1'
         os.environ["DATABASE_HOST"] = "my.db.host.gov"
+        os.environ["DATABASE_PORT"] = "5400"
         os.environ["DATABASE_NAME"] = "sndbx"
         os.environ["DATABASE_USER"] = "unittestdbuser"
         os.environ["DATABASE_PW"] = "unittestdbpw"

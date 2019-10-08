@@ -40,13 +40,7 @@ time.sleep(1)
 UTC_NOW_EXP_8 = requests.get_utc_now_iso()
 time.sleep(1)
 REQUEST_ID_EXP_5 = requests.request_id_generator()
-UTC_NOW_EXP_9 = requests.get_utc_now_iso()
-time.sleep(1)
 REQUEST_ID_EXP_6 = requests.request_id_generator()
-UTC_NOW_EXP_10 = requests.get_utc_now_iso()
-time.sleep(1)
-UTC_NOW_EXP_11 = requests.get_utc_now_iso()
-
 
 
 class TestCopyFilesPostgres(unittest.TestCase):   #pylint: disable-msg=too-many-instance-attributes

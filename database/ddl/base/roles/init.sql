@@ -1,2 +1,2 @@
-\ir dr_role.sql;
-\ir drdbo_role.sql;
+\ir app_role.sql;
+\ir appdbo_role.sql;
