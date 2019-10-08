@@ -7,7 +7,6 @@
     + [Windows](#windows-cli)
   * [Prepare the virtual environment](#virtual-environment)
     + [Windows](#windows)
-  * [Pycharm](#pycharm)
 - [Helpful Links](#helpful-links)
 
 <a name="environment"></a>
@@ -22,6 +21,9 @@
 <a name="git-clone"></a>
 ## Git clone
 >git clone https://git.earthdata.nasa.gov/scm/pocumulus/dr-podaac-swot.git
+
+>cd tasks/request_files
+>git clone https://github.com/jkehler/awslambda-psycopg2.git
 
 Create an alias called origin to your main remote repository (in this case, ECC):
 >git remote add origin https://erosuser@git.earthdata.nasa.gov/scm/pocumulus/dr-podaac-swot.git
@@ -91,21 +93,6 @@ Create an alias called origin to your main remote repository (in this case, ECC)
 
 	to get all the python requirements.
 
-```
-<a name="pycharm"></a>
-## Pycharm
-```
-If you choose to use Pycharm for development:
-Substitute the directory where you cloned git repo or installed this README.md for $SCRIPTDIR. ex: c:\devpy\poswotdr
-Open $SCRIPTDIR
-Ctrl-1 :  project view
-Expand poswotdr
-
-File | Settings
-Project Interpreter
-   windows:
-       File|Settings|Project Tasks|Project Interpreter
-       Set value to: Python3.6 (lambda) C:\Anaconda3\env\podr\python.exe
 ```
 <a name="helpful-links"></a>
 # Helpful Links

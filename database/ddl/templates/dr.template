@@ -1,0 +1,41 @@
+/*
+** SCHEMA: dr
+** 
+** TABLE: <tablename>
+**
+** 
+*/
+
+-- Start a transaction
+BEGIN;
+    -- Set Save point
+    SAVEPOINT <tablename>;
+
+    -- Set search path
+    SET search_path TO dr, public;
+
+    -- Remove Foreign Constraints if they exist
+
+    -- Drop table if it exists
+    DROP TABLE IF EXISTS <tablename>;
+
+    -- Create table
+    CREATE TABLE <tablename>
+    ( column1   bigserial NOT NULL PRIMARY KEY
+    , column2   text      NOT NULL
+    ) ;
+
+    -- Comments
+    COMMENT ON TABLE <tablename> 
+        IS '';
+    COMMENT ON COLUMN <tablename>.column1 
+        IS '';
+    COMMENT ON COLUMN <tablename>.column2
+        IS '';
+
+    -- Non-inline Constraints
+
+
+    -- Additional Grants
+
+COMMIT;
