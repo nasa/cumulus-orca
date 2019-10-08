@@ -10,9 +10,9 @@ import db_deploy
 from db_deploy import DatabaseError
 
 
-class TestRequestStatus(unittest.TestCase):
+class TestDbDeploy(unittest.TestCase):
     """
-    TestRequestStatus.
+    TestDbDeploy.
     """
     def setUp(self):
         db_config.set_env()
