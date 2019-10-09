@@ -65,6 +65,11 @@ def query_requests(event):
         request_id = event['request_id']
     except KeyError:
         request_id = None
+    try:
+        object_key = event['object_key']
+    except KeyError:
+        object_key = None
+
     if request_id:
         result = requests.get_job_by_request_id(request_id)
     else:
@@ -74,7 +79,10 @@ def query_requests(event):
             if granule_id:
                 result = requests.get_jobs_by_granule_id(granule_id)
             else:
-                result = requests.get_all_requests()
+                if object_key:
+                    result = requests.get_jobs_by_object_key(object_key)
+                else:
+                    result = requests.get_all_requests()
     return result
 
 def add_request(event):
@@ -124,6 +132,7 @@ def handler(event, context):            #pylint: disable-msg=unused-argument
                 granule_id (string): A granule_id to retrieve
                 request_group_id (string): A request_group_id (uuid) to retrieve
                 request_id (string): A request_id to retrieve
+                object_key (string): An object_key to retrieve
 
                 Examples:
                     event: {'function': 'query'}
@@ -135,6 +144,9 @@ def handler(event, context):            #pylint: disable-msg=unused-argument
                            }
                     event: {"function": "query",
                             "request_group_id": "e91ef763-65bb-4dd2-8ba0-9851337e277e"
+                           }
+                    event: {"function": "query",
+                            "object_key": "L0A_HR_RAW_product_0006-of-0420.h5"
                            }
 
             context (Object): None

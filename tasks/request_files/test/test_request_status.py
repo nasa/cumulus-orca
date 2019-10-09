@@ -208,6 +208,24 @@ class TestRequestStatus(unittest.TestCase):
         except requests.NotFound as err:
             self.assertEqual(f"Unknown request_id: {request_id}", str(err))
 
+    def test_task_query_object_key(self):
+        """
+        Test query by object_key.
+        """
+        handler_input_event = {}
+        object_key = "objectkey_2"
+        handler_input_event["object_key"] = object_key
+        handler_input_event["function"] = "query"
+        exp_request_ids = [REQUEST_ID4, REQUEST_ID7]
+        _, exp_result = create_select_requests(exp_request_ids)
+        expected = result_to_json(exp_result)
+        utils.database.single_query = Mock(side_effect=[exp_result])
+        try:
+            result = request_status.task(handler_input_event, None)
+            self.assertEqual(expected, result)
+        except requests.NotFound as err:
+            self.assertEqual(f"Unknown object_key: {object_key}", str(err))
+
     def test_task_clear(self):
         """
         Test clearing the request_status table.

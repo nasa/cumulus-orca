@@ -337,6 +337,7 @@ FUNCTIONS
                 granule_id (string): A granule_id to retrieve
                 request_group_id (string): A request_group_id (uuid) to retrieve
                 request_id (string): A request_id to retrieve
+                object_key (string): An object_key to retrieve
 
                 Examples: 
                     event: {"function": "query"}
@@ -349,7 +350,9 @@ FUNCTIONS
                     event: {"function": "query",
                             "request_group_id": "e91ef763-65bb-4dd2-8ba0-9851337e277e"
                            }
-                           
+                    event: {"function": "query",
+                            "object_key": "L0A_HR_RAW_product_0006-of-0420.h5"
+                           }
             context (Object): None
 
         Returns:
