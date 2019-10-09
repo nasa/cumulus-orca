@@ -202,9 +202,6 @@ class TestRequestFilesPostgres(unittest.TestCase):
         s3_cli.head_object.assert_called_with(Bucket='some_bucket',
                                               Key=file1)
         restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}}
-        #restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'},
-        #                   'OutputLocation': {'S3': {'UserMetadata': [{'Name': 'request_id',
-        #                                                               'Value': REQUEST_ID3}]}}}
         s3_cli.restore_object.assert_called_with(
             Bucket='some_bucket',
             Key=file1,

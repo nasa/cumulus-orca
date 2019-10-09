@@ -199,12 +199,6 @@ def restore_object(s3_cli, obj, attempt, retries, retrieval_type='Standard'):
     request_id = data["request_id"]
     request = {'Days': obj["days"],
                'GlacierJobParameters': {'Tier': retrieval_type}}
-#               'GlacierJobParameters': {'Tier': retrieval_type},
-#               'OutputLocation': {'S3': {'UserMetadata': [
-#                   {
-#                       'Name': 'request_id',
-#                       'Value': request_id
-#                   }]}}}
     msg = f"request: {request}"
     LOGGER.info("{}", json.dumps(msg))
     # Submit the request

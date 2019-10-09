@@ -139,37 +139,24 @@ class TestRequestFiles(unittest.TestCase):
                                            Key=files[2])
         s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
                                            Key=files[3])
-        restore_req_exp_1 = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}}
-        restore_req_exp_2 = restore_req_exp_1
-        restore_req_exp_3 = restore_req_exp_1
-        restore_req_exp_4 = restore_req_exp_1
-
-        output_loc_1 = {'S3': {'UserMetadata': [{'Name': 'request_id', 'Value': REQUEST_ID1}]}}
-        output_loc_2 = {'S3': {'UserMetadata': [{'Name': 'request_id', 'Value': REQUEST_ID2}]}}
-        output_loc_3 = {'S3': {'UserMetadata': [{'Name': 'request_id', 'Value': REQUEST_ID3}]}}
-        output_loc_4 = {'S3': {'UserMetadata': [{'Name': 'request_id', 'Value': REQUEST_ID4}]}}
-        g_p = {'Tier': 'Standard'}
-        #restore_req_exp_1 = {'Days': 5, 'GlacierJobParameters': g_p, 'OutputLocation': output_loc_1}
-        #restore_req_exp_2 = {'Days': 5, 'GlacierJobParameters': g_p, 'OutputLocation': output_loc_2}
-        #restore_req_exp_3 = {'Days': 5, 'GlacierJobParameters': g_p, 'OutputLocation': output_loc_3}
-        #restore_req_exp_4 = {'Days': 5, 'GlacierJobParameters': g_p, 'OutputLocation': output_loc_4}
+        restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}}
 
         s3_cli.restore_object.assert_any_call(
             Bucket='my-dr-fake-glacier-bucket',
             Key=files[0],
-            RestoreRequest=restore_req_exp_1)
+            RestoreRequest=restore_req_exp)
         s3_cli.restore_object.assert_any_call(
             Bucket='my-dr-fake-glacier-bucket',
             Key=files[1],
-            RestoreRequest=restore_req_exp_2)
+            RestoreRequest=restore_req_exp)
         s3_cli.restore_object.assert_any_call(
             Bucket='my-dr-fake-glacier-bucket',
             Key=files[2],
-            RestoreRequest=restore_req_exp_3)
+            RestoreRequest=restore_req_exp)
         s3_cli.restore_object.assert_called_with(
             Bucket='my-dr-fake-glacier-bucket',
             Key=files[3],
-            RestoreRequest=restore_req_exp_4)
+            RestoreRequest=restore_req_exp)
 
         exp_gran = {}
         exp_gran['granuleId'] = granule_id
@@ -258,9 +245,6 @@ class TestRequestFiles(unittest.TestCase):
         s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
                                            Key=file1)
         restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}}
-        #restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'},
-        #                   'OutputLocation': {'S3': {'UserMetadata': [{'Name': 'request_id',
-        #                                                               'Value': REQUEST_ID1}]}}}
         s3_cli.restore_object.assert_any_call(
             Bucket='my-dr-fake-glacier-bucket',
             Key=file1,
@@ -373,9 +357,6 @@ class TestRequestFiles(unittest.TestCase):
             s3_cli.head_object.assert_called_with(Bucket='some_bucket',
                                                   Key=file1)
             restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}}
-            #restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'},
-            #                   'OutputLocation': {'S3': {'UserMetadata': [{'Name': 'request_id',
-            #                                                               'Value': REQUEST_ID1}]}}}
             s3_cli.restore_object.assert_called_with(
                 Bucket='some_bucket',
                 Key=file1,
@@ -432,9 +413,6 @@ class TestRequestFiles(unittest.TestCase):
             s3_cli.head_object.assert_called_with(Bucket='some_bucket',
                                                   Key=file1)
             restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Expedited'}}
-            #restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Expedited'},
-            #                   'OutputLocation': {'S3': {'UserMetadata': [{'Name': 'request_id',
-            #                                                               'Value': REQUEST_ID1}]}}}
             s3_cli.restore_object.assert_called_with(
                 Bucket='some_bucket',
                 Key=file1,
@@ -442,7 +420,6 @@ class TestRequestFiles(unittest.TestCase):
         except request_files.RestoreRequestError as err:
             self.fail(str(err))
         utils.database.single_query.assert_called_once()
-        
 
     def test_task_no_glacier_bucket(self):
         """
@@ -514,9 +491,6 @@ class TestRequestFiles(unittest.TestCase):
         s3_cli.head_object.assert_called_with(Bucket='some_bucket',
                                               Key=file1)
         restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}}
-        #restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'},
-        #                   'OutputLocation': {'S3': {'UserMetadata': [{'Name': 'request_id',
-        #                                                               'Value': REQUEST_ID1}]}}}
         s3_cli.restore_object.assert_any_call(
             Bucket='some_bucket',
             Key=file1,
@@ -597,14 +571,10 @@ class TestRequestFiles(unittest.TestCase):
         boto3.client.assert_called_with('s3')
         s3_cli.head_object.assert_any_call(Bucket='some_bucket',
                                            Key=keys[0])
-        restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}}
-        #restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'},
-        #                   'OutputLocation': {'S3': {'UserMetadata': [{'Name': 'request_id',
-        #                                                               'Value': REQUEST_ID1}]}}}
         s3_cli.restore_object.assert_any_call(
             Bucket='some_bucket',
             Key=keys[0],
-            RestoreRequest=restore_req_exp)
+            RestoreRequest={'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}})
         utils.database.single_query.assert_called()  # 5 times
 
     @staticmethod
@@ -699,14 +669,10 @@ class TestRequestFiles(unittest.TestCase):
         self.assertEqual(exp_gran, result)
 
         boto3.client.assert_called_with('s3')
-        restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}}
-        #restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'},
-        #                   'OutputLocation': {'S3': {'UserMetadata': [{'Name': 'request_id',
-        #                                                               'Value': REQUEST_ID1}]}}}
         s3_cli.restore_object.assert_any_call(
             Bucket='some_bucket',
             Key=keys[0],
-            RestoreRequest=restore_req_exp)
+            RestoreRequest={'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}})
         utils.database.single_query.assert_called()  # 4 times
 
 if __name__ == '__main__':
