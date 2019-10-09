@@ -7,6 +7,7 @@ import json
 import os
 import unittest
 from unittest.mock import Mock
+import time
 
 import boto3
 from botocore.exceptions import ClientError
@@ -14,6 +15,7 @@ from botocore.exceptions import ClientError
 import copy_files_to_archive
 import utils
 import utils.database
+import requests
 from request_helpers import create_copy_event2, create_copy_handler_event
 from request_helpers import create_select_requests, REQUEST_ID4, REQUEST_ID7
 
@@ -43,8 +45,10 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
         self.exp_file_key1 = 'dr-glacier/MOD09GQ.A0219114.N5aUCG.006.0656338553321.txt'
         self.handler_input_event = create_copy_handler_event()
         self.mock_single_query = utils.database.single_query
+        self.mock_time_sleep = time.sleep
 
     def tearDown(self):
+        time.sleep = self.mock_time_sleep
         utils.database.single_query = self.mock_single_query
         boto3.client = self.mock_boto3_client
         try:
@@ -86,6 +90,27 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
                        "err_msg": ""}]
         self.assertEqual(exp_result, result)
         utils.database.single_query.assert_called()
+
+    def test_handler_db_update_err(self):
+        """
+        Test copy lambda with error updating db.
+        """
+        boto3.client = Mock()
+        s3_cli = boto3.client('s3')
+        s3_cli.copy_object = Mock(side_effect=[None])
+        exp_request_ids = [REQUEST_ID7]
+        _, exp_result = create_select_requests(exp_request_ids)
+        time.sleep = Mock(side_effect=None)
+        exp_err = 'Database Error. Internal database error, please contact LP DAAC User Services'
+        utils.database.single_query = Mock(
+            side_effect=[exp_result, requests.DatabaseError(exp_err),
+                         requests.DatabaseError(exp_err)])
+        result = copy_files_to_archive.handler(self.handler_input_event, None)
+        exp_result = [{'success': True, 'source_bucket': 'my-dr-fake-glacier-bucket',
+                       'source_key': 'dr-glacier/MOD09GQ.A0219114.N5aUCG.006.0656338553321.txt',
+                       'target_bucket': 'unittest_txt_bucket', 'err_msg': ''}]
+        self.assertEqual(exp_result, result)
+
 
     def test_handler_two_records_success(self):
         """
@@ -172,7 +197,6 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
         """
         del os.environ['COPY_RETRY_SLEEP_SECS']
         del os.environ['COPY_RETRIES']
-        import time
         time.sleep(1)
         boto3.client = Mock()
         s3_cli = boto3.client('s3')

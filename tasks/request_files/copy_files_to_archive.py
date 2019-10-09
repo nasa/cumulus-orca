@@ -62,7 +62,14 @@ def task(records, bucket_map, retries, retry_sleep_secs):
             if not afile['success']:
                 err_msg = copy_object(s3, afile['source_bucket'], afile['source_key'],
                                       afile['target_bucket'])
-                update_status_in_db(afile, attempt, err_msg)
+                try:
+                    update_status_in_db(afile, attempt, err_msg)
+                except requests.DatabaseError:
+                    try:
+                        time.sleep(30)
+                        update_status_in_db(afile, attempt, err_msg)
+                    except requests.DatabaseError:
+                        continue
         attempt = attempt + 1
         if attempt <= retries:
             time.sleep(retry_sleep_secs)
@@ -126,6 +133,7 @@ def update_status_in_db(afile, attempt, err_msg):
         logging.error(f"Failed to update request status in database. "
                       f"key: {afile['source_key']} old status: {old_status} "
                       f"new status: {new_status}. Err: {str(err)}")
+        raise
     return afile
 
 def get_files_from_records(records, bucket_map):

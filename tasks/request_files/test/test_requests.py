@@ -567,13 +567,12 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         """
         utc_now_exp = "2019-07-31 21:07:15.234362+00:00"
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
-        object_key = "thisisanobjectkey"
-        old_status = "inprogress"
+        request_id = "thisisarequestid"
         job_status = "complete"
         exp_result = []
         utils.database.single_query = Mock(side_effect=[exp_result])
         try:
-            result = requests.update_request_status(object_key, old_status, job_status)
+            result = requests.update_request_status_for_job(request_id, job_status)
             self.assertEqual([], result)
             utils.database.single_query.assert_called_once()
         except requests.DatabaseError as err:
@@ -587,16 +586,14 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         _, exp_result = create_select_requests([REQUEST_ID4])
         utc_now_exp = "2019-07-31 19:21:38.263364+00:00"
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
-        object_key = "objectkey_4"
         granule_id = "granule_4"
-        old_status = "inprogress"
         job_status = "error"
         err_msg = "Error message goes here"
 
         empty_result = []
         utils.database.single_query = Mock(side_effect=[empty_result, exp_result])
         try:
-            result = requests.update_request_status(object_key, old_status, job_status, err_msg)
+            result = requests.update_request_status_for_job(REQUEST_ID4, job_status, err_msg)
             self.assertEqual([], result)
             utils.database.single_query.assert_called_once()
         except requests.DatabaseError as err:
@@ -611,14 +608,12 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         """
         utc_now_exp = "2019-07-31 19:21:38.263364+00:00"
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
-        object_key = "objectkey_6"
-        old_status = "inprogress"
         job_status = "invalid"
         exp_msg = ('Database Error. new row for relation "request_status" violates '
                    'check constraint "request_status_job_status_check"')
         utils.database.single_query = Mock(side_effect=[requests.DatabaseError(exp_msg)])
         try:
-            requests.update_request_status(object_key, old_status, job_status)
+            requests.update_request_status_for_job(REQUEST_ID6, job_status)
             self.fail("expected DatabaseError")
         except requests.DatabaseError as err:
             self.assertIn(exp_msg, str(err))
@@ -631,13 +626,11 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         """
         utc_now_exp = "2019-07-31 19:21:38.263364+00:00"
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
-        object_key = None
-        old_status = "inprogress"
         job_status = "invalid"
         exp_msg = "No object_key provided"
         utils.database.single_query = Mock(side_effect=[requests.BadRequestError(exp_msg)])
         try:
-            requests.update_request_status(object_key, old_status, job_status)
+            requests.update_request_status_for_job(REQUEST_ID1, job_status)
             self.fail("expected requests.BadRequestError")
         except requests.BadRequestError as err:
             self.assertEqual(exp_msg, str(err))
@@ -649,25 +642,14 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         """
         utc_now_exp = "2019-07-31 19:21:38.263364+00:00"
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
-        old_status = "inprogress"
-        object_key = "noexist"
+        request_id = None
         job_status = None
-        exp_msg = "A new status must be provided"
+        exp_msg = "No request_id provided"
         try:
-            result = requests.update_request_status(object_key, old_status, job_status)
+            result = requests.update_request_status_for_job(request_id, job_status)
             self.assertEqual([], result)
         except requests.BadRequestError as err:
             self.assertEqual(exp_msg, str(err))
-
-        old_status = None
-        job_status = "complete"
-        exp_msg = "An old status must be provided"
-        try:
-            result = requests.update_request_status(object_key, old_status, job_status)
-            self.assertEqual([], result)
-        except requests.BadRequestError as err:
-            self.assertEqual(exp_msg, str(err))
-
 
     def test_update_request_status_notfound(self):
         """
@@ -675,13 +657,12 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         """
         utc_now_exp = "2019-07-31 19:21:38.263364+00:00"
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
-        object_key = "noexist"
-        old_status = "inprogress"
+        request_id = "notexists"
         job_status = "invalid"
         exp_result = []
         utils.database.single_query = Mock(side_effect=[exp_result])
         try:
-            result = requests.update_request_status(object_key, old_status, job_status)
+            result = requests.update_request_status_for_job(request_id, job_status)
             self.assertEqual([], result)
             utils.database.single_query.assert_called_once()
         except requests.DatabaseError as err:

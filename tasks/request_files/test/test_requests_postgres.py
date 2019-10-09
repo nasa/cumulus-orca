@@ -283,14 +283,12 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
         self.create_test_requests()
         utc_now_exp = "2019-07-31 21:07:15.234362+00:00"
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
-        object_key = "thisisanobjectkey"
-        old_status = "inprogress"
         job_status = "complete"
         try:
-            result = requests.update_request_status(object_key, old_status, job_status)
+            result = requests.update_request_status_for_job(REQUEST_ID1, job_status)
             self.assertEqual([], result)
         except requests.DatabaseError as err:
-            self.fail(f"update_request_status. {str(err)}")
+            self.fail(f"update_request_status_for_job. {str(err)}")
 
     def test_update_request_status_error(self):
         """
@@ -299,16 +297,14 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
         self.create_test_requests()
         utc_now_exp = "2019-07-31 19:21:38.263364+00:00"
         requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
-        object_key = "objectkey_5"
         granule_id = "granule_5"
-        old_status = "inprogress"
         job_status = "error"
         err_msg = "copy error msg goes here"
         try:
-            result = requests.update_request_status(object_key, old_status, job_status, err_msg)
+            result = requests.update_request_status_for_job(REQUEST_ID5, job_status, err_msg)
             self.assertEqual([], result)
         except requests.DatabaseError as err:
-            self.fail(f"update_request_status. {str(err)}")
+            self.fail(f"update_request_status_for_job. {str(err)}")
         result = requests.get_jobs_by_granule_id(granule_id)
         self.assertEqual(err_msg, result[0]["err_msg"])
 
