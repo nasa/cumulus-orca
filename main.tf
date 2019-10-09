@@ -69,6 +69,7 @@ resource "aws_lambda_function" "request_files_lambda" {
       RESTORE_EXPIRE_DAYS      = var.restore_expire_days
       RESTORE_REQUEST_RETRIES  = var.restore_request_retries
       RESTORE_RETRY_SLEEP_SECS = var.restore_retry_sleep_secs
+      RESTORE_RETRIEVAL_TYPE   = var.restore_retrieval_type
     }
   }
 }
