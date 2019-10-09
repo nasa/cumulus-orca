@@ -219,7 +219,7 @@ class TestRequestStatus(unittest.TestCase):
                            REQUEST_ID6, REQUEST_ID7, REQUEST_ID8, REQUEST_ID9, REQUEST_ID10,
                            REQUEST_ID11]
         try:
-            qresult = create_select_requests(exp_request_ids)
+            qresult, _ = create_select_requests(exp_request_ids)
             empty_result = []
             utils.database.single_query = Mock(
                 side_effect=[qresult, empty_result, empty_result,

@@ -172,6 +172,36 @@ def get_jobs_by_granule_id(granule_id):
 
     return result
 
+def get_jobs_by_object_key(object_key):
+    """
+    Reads rows from request_status by object_key.
+    """
+    sql = """
+        SELECT
+            request_id,
+            request_group_id,
+            granule_id,
+            object_key,
+            job_type,
+            restore_bucket_dest,
+            job_status,
+            request_time,
+            last_update_time,
+            err_msg
+        FROM
+            request_status
+        WHERE
+            object_key = %s
+        ORDER BY last_update_time desc
+        """
+    try:
+        rows = utils.database.single_query(sql, (object_key,))
+        result = result_to_json(rows)
+    except DbError as err:
+        LOGGER.exception(f"DbError: {str(err)}")
+        raise DatabaseError(str(err))
+
+    return result
 
 def update_request_status(object_key, old_status, new_status, err_msg=None):
     """

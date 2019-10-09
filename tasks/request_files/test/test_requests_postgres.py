@@ -322,6 +322,25 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
         result = requests.get_all_requests()
         self.assertEqual(expected, result)
 
+    def test_get_jobs_by_object_key(self):
+        """
+        Tests reading by object_key
+        """
+        #os.environ['DEVELOP_TESTS'] = "True"
+        self.create_test_requests()
+        print_rows("begin")
+        object_key = "objectkey_4"
+        result = requests.get_jobs_by_object_key(object_key)
+
+        exp_ids = [REQUEST_ID7, REQUEST_ID4]
+        idx = 0
+        for job in result:
+            self.assertEqual(exp_ids[idx], job["request_id"])
+            idx = idx + 1
+
+        object_key = "objectkey_5"
+        result = requests.get_jobs_by_object_key(object_key)
+
     def test_get_jobs_by_status(self):
         """
         Tests reading by status

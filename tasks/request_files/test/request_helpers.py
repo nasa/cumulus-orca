@@ -95,68 +95,22 @@ def create_select_requests(request_ids):
     """
     qresult = []
     exp_result = []
-    row = build_row(REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, 'granule_1',
-                    'objectkey_1', 'restore', 'my_s3_bucket', 'complete',
-                    UTC_NOW_EXP_1,
-                    UTC_NOW_EXP_4,
+    row = build_row(REQUEST_ID11, REQUEST_GROUP_ID_EXP_6, 'granule_7',
+                    'objectkey_7', 'regenerate', None, 'inprogress',
+                    UTC_NOW_EXP_11,
+                    UTC_NOW_EXP_11,
                     None)
     qresult.append(psycopg2.extras.RealDictRow(row))
-    if REQUEST_ID1 in request_ids:
+    if REQUEST_ID11 in request_ids:
         exp_result.append(psycopg2.extras.RealDictRow(row))
-    row = build_row(REQUEST_ID2, REQUEST_GROUP_ID_EXP_1, 'granule_2',
-                    'objectkey_2', 'restore', 'my_s3_bucket', 'complete',
-                    UTC_NOW_EXP_2,
-                    UTC_NOW_EXP_5,
+
+    row = build_row(REQUEST_ID10, REQUEST_GROUP_ID_EXP_5, 'granule_3',
+                    'objectkey_3', 'restore', 'my_s3_bucket', 'inprogress',
+                    UTC_NOW_EXP_10,
+                    UTC_NOW_EXP_10,
                     None)
     qresult.append(psycopg2.extras.RealDictRow(row))
-    if REQUEST_ID2 in request_ids:
-        exp_result.append(psycopg2.extras.RealDictRow(row))
-    row = build_row(REQUEST_ID3, REQUEST_GROUP_ID_EXP_1, 'granule_3',
-                    'objectkey_3', 'restore', 'my_s3_bucket', 'complete',
-                    UTC_NOW_EXP_3,
-                    UTC_NOW_EXP_6,
-                    None)
-    qresult.append(psycopg2.extras.RealDictRow(row))
-    if REQUEST_ID3 in request_ids:
-        exp_result.append(psycopg2.extras.RealDictRow(row))
-    row = build_row(REQUEST_ID4, REQUEST_GROUP_ID_EXP_2, 'granule_4',
-                    'objectkey_4', 'restore', 'my_s3_bucket', 'error',
-                    UTC_NOW_EXP_4,
-                    None, "Error message goes here")
-    qresult.append(psycopg2.extras.RealDictRow(row))
-    if REQUEST_ID4 in request_ids:
-        exp_result.append(psycopg2.extras.RealDictRow(row))
-    row = build_row(REQUEST_ID5, REQUEST_GROUP_ID_EXP_3, 'granule_5',
-                    'objectkey_5', 'restore', 'my_s3_bucket', 'inprogress',
-                    UTC_NOW_EXP_5,
-                    UTC_NOW_EXP_5,
-                    None)
-    qresult.append(psycopg2.extras.RealDictRow(row))
-    if REQUEST_ID5 in request_ids:
-        exp_result.append(psycopg2.extras.RealDictRow(row))
-    row = build_row(REQUEST_ID6, REQUEST_GROUP_ID_EXP_3, 'granule_6',
-                    'objectkey_6', 'restore', 'my_s3_bucket', 'inprogress',
-                    UTC_NOW_EXP_6,
-                    UTC_NOW_EXP_6,
-                    None)
-    qresult.append(psycopg2.extras.RealDictRow(row))
-    if REQUEST_ID6 in request_ids:
-        exp_result.append(psycopg2.extras.RealDictRow(row))
-    row = build_row(REQUEST_ID7, REQUEST_GROUP_ID_EXP_4, 'granule_4',
-                    'objectkey_4', 'restore', 'my_s3_bucket', 'inprogress',
-                    UTC_NOW_EXP_7,
-                    UTC_NOW_EXP_7,
-                    None)
-    qresult.append(psycopg2.extras.RealDictRow(row))
-    if REQUEST_ID7 in request_ids:
-        exp_result.append(psycopg2.extras.RealDictRow(row))
-    row = build_row(REQUEST_ID8, REQUEST_GROUP_ID_EXP_5, 'granule_1',
-                    'objectkey_1', 'restore', 'my_s3_bucket', 'inprogress',
-                    UTC_NOW_EXP_8,
-                    UTC_NOW_EXP_8,
-                    None)
-    qresult.append(psycopg2.extras.RealDictRow(row))
-    if REQUEST_ID8 in request_ids:
+    if REQUEST_ID10 in request_ids:
         exp_result.append(psycopg2.extras.RealDictRow(row))
     row = build_row(REQUEST_ID9, REQUEST_GROUP_ID_EXP_5, 'granule_2',
                     'objectkey_2', 'restore', 'my_s3_bucket', 'inprogress',
@@ -166,23 +120,71 @@ def create_select_requests(request_ids):
     qresult.append(psycopg2.extras.RealDictRow(row))
     if REQUEST_ID9 in request_ids:
         exp_result.append(psycopg2.extras.RealDictRow(row))
-    row = build_row(REQUEST_ID10, REQUEST_GROUP_ID_EXP_5, 'granule_3',
-                    'objectkey_3', 'restore', 'my_s3_bucket', 'inprogress',
-                    UTC_NOW_EXP_10,
-                    UTC_NOW_EXP_10,
+    row = build_row(REQUEST_ID8, REQUEST_GROUP_ID_EXP_5, 'granule_1',
+                    'objectkey_1', 'restore', 'my_s3_bucket', 'inprogress',
+                    UTC_NOW_EXP_8,
+                    UTC_NOW_EXP_8,
                     None)
     qresult.append(psycopg2.extras.RealDictRow(row))
-    if REQUEST_ID10 in request_ids:
+    if REQUEST_ID8 in request_ids:
         exp_result.append(psycopg2.extras.RealDictRow(row))
-    row = build_row(REQUEST_ID11, REQUEST_GROUP_ID_EXP_6, 'granule_7',
-                    'objectkey_7', 'regenerate', None, 'inprogress',
-                    UTC_NOW_EXP_11,
-                    UTC_NOW_EXP_11,
+    row = build_row(REQUEST_ID7, REQUEST_GROUP_ID_EXP_4, 'granule_4',
+                    'objectkey_4', 'restore', 'my_s3_bucket', 'inprogress',
+                    UTC_NOW_EXP_7,
+                    UTC_NOW_EXP_7,
                     None)
     qresult.append(psycopg2.extras.RealDictRow(row))
-    if REQUEST_ID11 in request_ids:
+    if REQUEST_ID7 in request_ids:
         exp_result.append(psycopg2.extras.RealDictRow(row))
-    return qresult[0], exp_result[0]
+    row = build_row(REQUEST_ID6, REQUEST_GROUP_ID_EXP_3, 'granule_6',
+                    'objectkey_6', 'restore', 'my_s3_bucket', 'inprogress',
+                    UTC_NOW_EXP_6,
+                    UTC_NOW_EXP_6,
+                    None)
+    qresult.append(psycopg2.extras.RealDictRow(row))
+    if REQUEST_ID6 in request_ids:
+        exp_result.append(psycopg2.extras.RealDictRow(row))
+    row = build_row(REQUEST_ID5, REQUEST_GROUP_ID_EXP_3, 'granule_5',
+                    'objectkey_5', 'restore', 'my_s3_bucket', 'inprogress',
+                    UTC_NOW_EXP_5,
+                    UTC_NOW_EXP_5,
+                    None)
+    qresult.append(psycopg2.extras.RealDictRow(row))
+    if REQUEST_ID5 in request_ids:
+        exp_result.append(psycopg2.extras.RealDictRow(row))
+    row = build_row(REQUEST_ID4, REQUEST_GROUP_ID_EXP_2, 'granule_4',
+                    'objectkey_4', 'restore', 'my_s3_bucket', 'error',
+                    UTC_NOW_EXP_4,
+                    None, "Error message goes here")
+    qresult.append(psycopg2.extras.RealDictRow(row))
+    if REQUEST_ID4 in request_ids:
+        exp_result.append(psycopg2.extras.RealDictRow(row))
+    row = build_row(REQUEST_ID3, REQUEST_GROUP_ID_EXP_1, 'granule_3',
+                    'objectkey_3', 'restore', 'my_s3_bucket', 'complete',
+                    UTC_NOW_EXP_3,
+                    UTC_NOW_EXP_6,
+                    None)
+    qresult.append(psycopg2.extras.RealDictRow(row))
+    if REQUEST_ID3 in request_ids:
+        exp_result.append(psycopg2.extras.RealDictRow(row))
+    row = build_row(REQUEST_ID2, REQUEST_GROUP_ID_EXP_1, 'granule_2',
+                    'objectkey_2', 'restore', 'my_s3_bucket', 'complete',
+                    UTC_NOW_EXP_2,
+                    UTC_NOW_EXP_5,
+                    None)
+    qresult.append(psycopg2.extras.RealDictRow(row))
+    if REQUEST_ID2 in request_ids:
+        exp_result.append(psycopg2.extras.RealDictRow(row))
+    row = build_row(REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, 'granule_1',
+                    'objectkey_1', 'restore', 'my_s3_bucket', 'complete',
+                    UTC_NOW_EXP_1,
+                    UTC_NOW_EXP_4,
+                    None)
+    qresult.append(psycopg2.extras.RealDictRow(row))
+    if REQUEST_ID1 in request_ids:
+        exp_result.append(psycopg2.extras.RealDictRow(row))
+
+    return qresult, exp_result
 
 
 def create_insert_request(request_id,          #pylint: disable-msg=too-many-arguments

@@ -15,6 +15,7 @@ import copy_files_to_archive
 import utils
 import utils.database
 from request_helpers import create_copy_event2, create_copy_handler_event
+from request_helpers import create_select_requests, REQUEST_ID4, REQUEST_ID7
 
 
 class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-attributes
@@ -67,22 +68,24 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
         s3_cli = boto3.client('s3')
         s3_cli.copy_object = Mock(side_effect=[None])
         exp_upd_result = []
-        utils.database.single_query = Mock(side_effect=[exp_upd_result])
+        exp_request_ids = [REQUEST_ID7]
+        _, exp_result = create_select_requests(exp_request_ids)
+        utils.database.single_query = Mock(side_effect=[exp_result, exp_upd_result])
         result = copy_files_to_archive.handler(self.handler_input_event, None)
         os.environ['COPY_RETRIES'] = '2'
         os.environ['COPY_RETRY_SLEEP_SECS'] = '1'
         boto3.client.assert_called_with('s3')
+        s3_cli.copy_object.assert_called_with(Bucket=self.exp_target_bucket,
+                                              CopySource={'Bucket': self.exp_src_bucket,
+                                                          'Key': self.exp_file_key1},
+                                              Key=self.exp_file_key1)
         exp_result = [{"success": True,
                        "source_bucket": self.exp_src_bucket,
                        "source_key": self.exp_file_key1,
                        "target_bucket": self.exp_target_bucket,
                        "err_msg": ""}]
         self.assertEqual(exp_result, result)
-        s3_cli.copy_object.assert_called_with(Bucket=self.exp_target_bucket,
-                                              CopySource={'Bucket': self.exp_src_bucket,
-                                                          'Key': self.exp_file_key1},
-                                              Key=self.exp_file_key1)
-        utils.database.single_query.assert_called_once()
+        utils.database.single_query.assert_called()
 
     def test_handler_two_records_success(self):
         """
@@ -92,6 +95,12 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.copy_object = Mock(side_effect=[None, None])
+        exp_upd_result = []
+        exp_request_ids = [REQUEST_ID7]
+        _, exp_result = create_select_requests(exp_request_ids)
+        utils.database.single_query = Mock(side_effect=[exp_result, exp_upd_result,
+                                                        exp_result, exp_upd_result])
+
         exp_rec_2 = create_copy_event2()
         self.handler_input_event["Records"].append(exp_rec_2)
         result = copy_files_to_archive.handler(self.handler_input_event, None)
@@ -107,50 +116,6 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
                        "err_msg": ""}]
         self.assertEqual(exp_result, result)
 
-        s3_cli.copy_object.assert_any_call(Bucket=self.exp_target_bucket,
-                                           CopySource={'Bucket': self.exp_src_bucket,
-                                                       'Key': self.exp_file_key1},
-                                           Key=self.exp_file_key1)
-        s3_cli.copy_object.assert_any_call(Bucket='unittest_hdf_bucket',
-                                           CopySource={'Bucket': self.exp_src_bucket,
-                                                       'Key': exp_file_key},
-                                           Key=exp_file_key)
-
-    def test_handler_two_records_one_fail_one_success(self):
-        """
-        Test copy lambda with two files, one successful copy, one failed copy.
-        """
-        exp_file_key = 'dr-glacier/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf'
-        exp_file2_key = 'dr-glacier/MOD09GQ.A0219114.N5aUCG.006.0656338553321.txt'
-        boto3.client = Mock()
-        s3_cli = boto3.client('s3')
-        s3_cli.copy_object = Mock(side_effect=[ClientError({'Error': {'Code': 'AccessDenied'}},
-                                                           'copy_object'),
-                                               ClientError({'Error': {'Code': 'AccessDenied'}},
-                                                           'copy_object'),
-                                               ClientError({'Error': {'Code': 'AccessDenied'}},
-                                                           'copy_object'),
-                                               None])
-        exp_rec_2 = create_copy_event2()
-        self.handler_input_event["Records"].append(exp_rec_2)
-
-        exp_error = "File copy failed. " \
-                    "[{'success': False, " \
-                    f"'source_bucket': '{self.exp_src_bucket}', " \
-                    f"'source_key': '{exp_file2_key}', " \
-                    f"'target_bucket': '{self.exp_target_bucket}', " \
-                    "'err_msg': 'An error occurred (AccessDenied) when calling " \
-                    "the copy_object operation: Unknown'}, {'success': True, " \
-                    f"'source_bucket': '{self.exp_src_bucket}', " \
-                    f"'source_key': '{exp_file_key}', " \
-                    "'target_bucket': 'unittest_hdf_bucket', 'err_msg': ''}]"
-        try:
-            copy_files_to_archive.handler(self.handler_input_event, None)
-            self.fail("expected CopyRequestError")
-        except copy_files_to_archive.CopyRequestError as ex:
-            self.assertEqual(exp_error, str(ex))
-
-        boto3.client.assert_called_with('s3')
         s3_cli.copy_object.assert_any_call(Bucket=self.exp_target_bucket,
                                            CopySource={'Bucket': self.exp_src_bucket,
                                                        'Key': self.exp_file_key1},
@@ -179,8 +144,16 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
                     f"'target_bucket': '{self.exp_target_bucket}', " \
                     "'err_msg': 'An error occurred (AccessDenied) when calling " \
                     "the copy_object operation: Unknown'}]"
-        exp_result = []
-        utils.database.single_query = Mock(side_effect=[exp_result, exp_result])
+        exp_upd_result = []
+
+        exp_request_ids = [REQUEST_ID7, REQUEST_ID4]
+        _, exp_result = create_select_requests(exp_request_ids)
+
+        utils.database.single_query = Mock(side_effect=[exp_result,
+                                                        exp_result,
+                                                        exp_upd_result,
+                                                        exp_result,
+                                                        exp_upd_result])
         try:
             copy_files_to_archive.handler(self.handler_input_event, None)
             self.fail("expected CopyRequestError")
@@ -206,8 +179,13 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
         s3_cli.copy_object = Mock(side_effect=[ClientError({'Error': {'Code': 'AccessDenied'}},
                                                            'copy_object'),
                                                None])
+        exp_request_ids = [REQUEST_ID7, REQUEST_ID4]
+        _, exp_result = create_select_requests(exp_request_ids)
         exp_upd_result = []
-        utils.database.single_query = Mock(side_effect=[exp_upd_result, exp_upd_result])
+        utils.database.single_query = Mock(side_effect=[exp_result,
+                                                        exp_upd_result,
+                                                        exp_result,
+                                                        exp_upd_result])
         result = copy_files_to_archive.handler(self.handler_input_event, None)
         os.environ['COPY_RETRIES'] = '2'
         os.environ['COPY_RETRY_SLEEP_SECS'] = '1'
@@ -245,12 +223,15 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
         Test copy lambda with missing file extension in BUCKET_MAP.
         """
         exp_file_key = 'dr-glacier/MOD09GQ.A0219114.N5aUCG.006.0656338553321.xml'
+        exp_file_key = 'objectkey_5'
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.copy_object = Mock(side_effect=[None])
         self.handler_input_event["Records"][0]["s3"]["object"]["key"] = exp_file_key
         exp_upd_result = []
-        utils.database.single_query = Mock(side_effect=[exp_upd_result])
+        exp_request_ids = [REQUEST_ID7, REQUEST_ID4]
+        _, exp_result = create_select_requests(exp_request_ids)
+        utils.database.single_query = Mock(side_effect=[exp_result, exp_upd_result])
         result = copy_files_to_archive.handler(self.handler_input_event, None)
         boto3.client.assert_called_with('s3')
         exp_result = [{"success": True, "source_bucket": self.exp_src_bucket,
@@ -262,7 +243,7 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
                                               CopySource={'Bucket': self.exp_src_bucket,
                                                           'Key': exp_file_key},
                                               Key=exp_file_key)
-        utils.database.single_query.assert_called_once()
+        utils.database.single_query.assert_called()
 
 
     def test_handler_no_other_in_bucket_map(self):
