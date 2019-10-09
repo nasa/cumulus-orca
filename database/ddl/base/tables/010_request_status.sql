@@ -52,16 +52,15 @@ BEGIN;
 
     -- Non-inline Constraints
 
-    --DROP INDEX IF EXISTS idx_reqstat_reqgidgranid;
-    CREATE INDEX idx_reqstat_reqgidgranid
+    --DROP INDEX IF EXISTS idx_reqstat_reqgidlstupd;
+    CREATE INDEX idx_reqstat_reqgidlstupd
          ON request_status USING btree (request_group_id, last_update_time);
 
-    CREATE INDEX idx_reqstat_keystatus
+    CREATE INDEX idx_reqstat_keylstupd
          ON request_status USING btree (object_key, last_update_time);
 
-    CREATE INDEX idx_reqstat_keystatus
+    CREATE INDEX idx_reqstat_granidlstupd
          ON request_status USING btree (granule_id, last_update_time);
-
 
     -- Additional Grants
 
