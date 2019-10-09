@@ -313,6 +313,7 @@ class TestRequestFiles(unittest.TestCase):
             "granules": [{"granuleId": granule_id,
                           "keys": [file1]}]}
         exp_event["config"] = {"glacier-bucket": "my-bucket"}
+        os.environ['RESTORE_RETRIEVAL_TYPE'] = 'BadTypeUseDefault'
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.head_object = Mock(
@@ -327,7 +328,7 @@ class TestRequestFiles(unittest.TestCase):
             s3_cli.head_object.assert_called_with(Bucket='my-bucket', Key=file1)
         except requests.DatabaseError as err:
             self.fail(str(err))
-
+        del os.environ['RESTORE_RETRIEVAL_TYPE']
 
     def test_task_no_retries_env_var(self):
         """
@@ -390,6 +391,7 @@ class TestRequestFiles(unittest.TestCase):
         Test environment var RESTORE_EXPIRE_DAYS not set - use default.
         """
         del os.environ['RESTORE_EXPIRE_DAYS']
+        os.environ['RESTORE_RETRIEVAL_TYPE'] = 'Expedited'
         exp_event = {}
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
         exp_event["config"] = {"glacier-bucket": "some_bucket"}
@@ -425,12 +427,12 @@ class TestRequestFiles(unittest.TestCase):
             result = request_files.task(exp_event, self.context)
             self.assertEqual(exp_gran, result)
             os.environ['RESTORE_EXPIRE_DAYS'] = '3'
-
+            del os.environ['RESTORE_RETRIEVAL_TYPE']
             boto3.client.assert_called_with('s3')
             s3_cli.head_object.assert_called_with(Bucket='some_bucket',
                                                   Key=file1)
-            restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}}
-            #restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'},
+            restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Expedited'}}
+            #restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Expedited'},
             #                   'OutputLocation': {'S3': {'UserMetadata': [{'Name': 'request_id',
             #                                                               'Value': REQUEST_ID1}]}}}
             s3_cli.restore_object.assert_called_with(
@@ -440,6 +442,7 @@ class TestRequestFiles(unittest.TestCase):
         except request_files.RestoreRequestError as err:
             self.fail(str(err))
         utils.database.single_query.assert_called_once()
+        
 
     def test_task_no_glacier_bucket(self):
         """
@@ -484,7 +487,7 @@ class TestRequestFiles(unittest.TestCase):
                          ClientError({'Error': {'Code': 'NoSuchBucket'}}, 'restore_object')])
         CumulusLogger.info = Mock()
         CumulusLogger.error = Mock()
-
+        os.environ['RESTORE_RETRIEVAL_TYPE'] = 'Standard'
         exp_gran = {}
         exp_gran['granuleId'] = 'MOD09GQ.A0219114.N5aUCG.006.0656338553321'
         exp_files = []
@@ -506,6 +509,7 @@ class TestRequestFiles(unittest.TestCase):
         except request_files.RestoreRequestError as err:
             self.assertEqual(exp_err, str(err))
         del os.environ['RESTORE_RETRY_SLEEP_SECS']
+        del os.environ['RESTORE_RETRIEVAL_TYPE']
         boto3.client.assert_called_with('s3')
         s3_cli.head_object.assert_called_with(Bucket='some_bucket',
                                               Key=file1)

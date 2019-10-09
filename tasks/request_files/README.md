@@ -183,6 +183,8 @@ FUNCTIONS
                     attempts to retry a restore_request that failed to submit.
                 RESTORE_RETRY_SLEEP_SECS (number, optional, default = 0): The number of seconds
                     to sleep between retry attempts.
+                RESTORE_RETRIEVAL_TYPE (string, optional, default = 'Standard'): the Tier
+                    for the restore request. Valid valuesare 'Standard'|'Bulk'|'Expedited'.
                 DATABASE_HOST (string): the server where the database resides.
                 DATABASE_PORT (string): the database port. The standard is 5432.
                 DATABASE_NAME (string): the name of the database.

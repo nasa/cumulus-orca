@@ -112,6 +112,16 @@ def process_granules(s3, gran, glacier_bucket, exp_days):        # pylint: disab
     except KeyError:
         retry_sleep_secs = 0
 
+    try:
+        retrieval_type = os.environ['RESTORE_RETRIEVAL_TYPE']
+        if retrieval_type not in ('Standard', 'Bulk', 'Expedited'):
+            msg = (f"Invalid RESTORE_RETRIEVAL_TYPE: '{retrieval_type}'"
+                   " defaulting to 'Standard'")
+            LOGGER.info(msg)
+            retrieval_type = 'Standard'
+    except KeyError:
+        retrieval_type = 'Standard'
+
     attempt = 1
     request_group_id = requests.request_id_generator()
     granule_id = gran['granuleId']
@@ -125,7 +135,7 @@ def process_granules(s3, gran, glacier_bucket, exp_days):        # pylint: disab
                     obj["glacier_bucket"] = glacier_bucket
                     obj["key"] = afile['key']
                     obj["days"] = exp_days
-                    request_id = restore_object(s3, obj, attempt, retries)
+                    request_id = restore_object(s3, obj, attempt, retries, retrieval_type)
                     afile['success'] = True
                     afile['err_msg'] = ''
                     LOGGER.info("restore {} from {} attempt {} successful. Job: {}",
@@ -240,6 +250,8 @@ def handler(event, context):      #pylint: disable-msg=unused-argument
                 attempts to retry a restore_request that failed to submit.
             RESTORE_RETRY_SLEEP_SECS (number, optional, default = 0): The number of seconds
                 to sleep between retry attempts.
+            RESTORE_RETRIEVAL_TYPE (string, optional, default = 'Standard'): the Tier
+                for the restore request. Valid valuesare 'Standard'|'Bulk'|'Expedited'.
             DATABASE_HOST (string): the server where the database resides.
             DATABASE_PORT (string): the database port. The standard is 5432.
             DATABASE_NAME (string): the name of the database.
