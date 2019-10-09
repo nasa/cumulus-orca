@@ -200,9 +200,9 @@ FUNCTIONS
                         granuleId (string): The id of the granule being restored.
                         keys (list(string)): list of keys (glacier keys) for the granule
 
-                    Example: event: {'glacierBucket': 'some_bucket',
-                                     'granules': [{'granuleId': 'granxyz',
-                                            'keys': ['path1', 'path2']}]
+                    Example: event: {"glacierBucket": "some_bucket",
+                                     "granules": [{"granuleId": "granxyz",
+                                                   "keys": ["path1", "path2"]}]
                                }
 
                 context (Object): None
@@ -339,7 +339,7 @@ FUNCTIONS
                 request_id (string): A request_id to retrieve
 
                 Examples: 
-                    event: {'function': 'query'}
+                    event: {"function": "query"}
                     event: {"function": "query",
                             "granule_id": "L0A_HR_RAW_product_0006-of-0420"
                            }

@@ -6,6 +6,7 @@ Description:  Lambda function that makes a restore request from glacier for each
 
 import os
 import time
+import json
 import boto3
 from botocore.exceptions import ClientError
 
@@ -204,6 +205,8 @@ def restore_object(s3_cli, obj, attempt, retries, retrieval_type='Standard'):
 #                       'Name': 'request_id',
 #                       'Value': request_id
 #                   }]}}}
+    msg = f"request: {request}"
+    LOGGER.info("{}", json.dumps(msg))
     # Submit the request
     try:
         s3_cli.restore_object(Bucket=obj["glacier_bucket"],
