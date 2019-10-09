@@ -54,10 +54,13 @@ BEGIN;
 
     --DROP INDEX IF EXISTS idx_reqstat_reqgidgranid;
     CREATE INDEX idx_reqstat_reqgidgranid
-         ON request_status USING btree (request_group_id, granule_id);
+         ON request_status USING btree (request_group_id, last_update_time);
 
     CREATE INDEX idx_reqstat_keystatus
-         ON request_status USING btree (object_key, job_status);
+         ON request_status USING btree (object_key, last_update_time);
+
+    CREATE INDEX idx_reqstat_keystatus
+         ON request_status USING btree (granule_id, last_update_time);
 
 
     -- Additional Grants
