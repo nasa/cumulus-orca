@@ -22,8 +22,8 @@ BEGIN;
     -- Create table
     CREATE TABLE request_status
         (
-          job_id              bigserial NOT NULL
-        , request_id          uuid NOT NULL
+          request_id          uuid NOT NULL
+        , request_group_id    uuid NOT NULL
         , granule_id          varchar(100) NOT NULL
         , object_key          text NOT NULL
         , job_type            varchar(12) NULL DEFAULT 'restore' CHECK (job_type IN ('restore', 'regenerate'))
@@ -32,15 +32,15 @@ BEGIN;
         , request_time        timestamptz NOT NULL
         , last_update_time    timestamptz NOT NULL
         , err_msg             text NULL
-        , PRIMARY KEY(job_id)
+        , PRIMARY KEY(request_id)
         )
     ;
 
 
     -- Comments
     COMMENT ON TABLE request_status IS 'Disaster recovery jobs status table';
-    COMMENT ON COLUMN request_status.job_id IS 'unique job identifier';
-    COMMENT ON COLUMN request_status.request_id IS 'request identifier assigned to all objects being requested for the granule';
+    COMMENT ON COLUMN request_status.request_id IS 'unique job identifier';
+    COMMENT ON COLUMN request_status.request_group_id IS 'request identifier assigned to all objects being requested for the granule';
     COMMENT ON COLUMN request_status.granule_id IS 'granule id of the granule being restored';
     COMMENT ON COLUMN request_status.object_key IS 'object key being restored';
     COMMENT ON COLUMN request_status.job_type IS 'type of restore request that was made';
@@ -52,13 +52,15 @@ BEGIN;
 
     -- Non-inline Constraints
 
-    --DROP INDEX IF EXISTS idx_reqstat_reqidgranid;
-    CREATE INDEX idx_reqstat_reqidgranid
-         ON request_status USING btree (request_id, granule_id);
+    --DROP INDEX IF EXISTS idx_reqstat_reqgidlstupd;
+    CREATE INDEX idx_reqstat_reqgidlstupd
+         ON request_status USING btree (request_group_id, last_update_time);
 
-    CREATE INDEX idx_reqstat_keystatus
-         ON request_status USING btree (object_key, job_status);
+    CREATE INDEX idx_reqstat_keylstupd
+         ON request_status USING btree (object_key, last_update_time);
 
+    CREATE INDEX idx_reqstat_granidlstupd
+         ON request_status USING btree (granule_id, last_update_time);
 
     -- Additional Grants
 

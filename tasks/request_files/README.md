@@ -20,41 +20,17 @@
 <a name="unit-testing-and-coverage"></a>
 ## Unit Testing and Coverage
 ```
-There are 4 unit test files in the test folder. These have everything mocked
-and are suitable for automation. The nosetests/code coverage here are using only these 4 files.
-Note that you might need to temporarily move the 3 test files from the dev_test folder to 
-somewhere that the tests won't pick them up (see 'Postgres Tests' below). 
-
-λ activate podr
-
-(podr) λ cd C:\devpy\poswotdr\tasks\request_files
-(podr) λ nosetests --with-coverage --cover-erase --cover-package=request_files --cover-package=request_status --cover-package=copy_files_to_archive --cover-package=requests -v
-
-Name                       Stmts   Miss  Cover
-----------------------------------------------
-copy_files_to_archive.py      97      0   100%
-request_files.py             104      0   100%
-request_status.py             67      0   100%
-requests.py                  182      0   100%
-----------------------------------------------
-TOTAL                        450      0   100%
-----------------------------------------------------------------------
-Ran 59 tests in 16.982s
-
-Postgres Tests:
-There are 3 additional test files in the dev_test folder.
-These run against a Postgres database in a Docker container, and allow you to 
-develop against an actual database. The tests run successfully when run alone. However if
-moved to the 'test' folder and included in the nosetests/code coverage
-they introduce a lot of failures and poor coverage. I didn't take the time
-to figure it out (maybe duplicate test function names among the files?). 
-They do however allow you to test things that the mocked tests won't catch -
+Test files in the test folder that end with _postgres.py run
+against a Postgres database in a Docker container, and allow you to 
+develop against an actual database. You can create the database
+using task/db_deploy. 
+These postgres tests allow you to test things that the mocked tests won't catch -
 such as a restore request that fails the first time and succeeds the second time. The mocked 
 tests didn't catch that it was actually inserting two rows ('error' and 'inprogress'), instead
 of inserting one 'error' row, then updating it to 'inprogress'.
-These 3 test files would need some work to be able to rely on them, such as more assert tests.
+Note that these _postgres test files could use some more assert tests.
 For now they can be used as a development aid. To run them you'll need to define
-these 4 environment variables in a file named private_config.json, but do NOT check it into GIT. 
+these 5 environment variables in a file named private_config.json, but do NOT check it into GIT. 
 ex:
 (podr2) λ cat private_config.json 
 {"DATABASE_HOST": "db.host.gov_goes_here",
@@ -63,18 +39,31 @@ ex:
 "DATABASE_USER": "dbusername_goes_here", 
 "DATABASE_PW": "db_pw_goes_here"}
 
-Eventually, it would be nice to move these to the test folder, but for now
-to run them, you can either temporarily move them to the /test folder
-Or copy the helper files to the dev_test folder:
-cp test/request_helpers.py dev_test/
-cp test/copy_helpers.py dev_test/ 
+The remaining tests have everything mocked.
 
 Run the tests:
-C:\devpy\poswotdr\tasks\request_files (PCESA-1229 -> origin) 
-(podr2) λ nosetests dev_test/test_requests_postgres.py -v
-(podr2) λ nosetests dev_test/test_request_files_postgres.py -v
-(podr2) λ nosetests dev_test/test_copy_files_to_archive_postgres.py -v
+C:\devpy\poswotdr\tasks\request_files  
+λ activate podr
+All tests:
+(podr) λ nosetests -v
 
+Individual tests (insert desired test file name):
+(podr) λ nosetests test/test_requests_postgres.py -v
+
+Code Coverage:
+(podr) λ cd C:\devpy\poswotdr\tasks\request_files
+(podr) λ nosetests --with-coverage --cover-erase --cover-package=request_files --cover-package=request_status --cover-package=copy_files_to_archive --cover-package=requests -v
+
+Name                       Stmts   Miss  Cover
+----------------------------------------------
+copy_files_to_archive.py     100      0   100%
+request_files.py             104      0   100%
+request_status.py             67      0   100%
+requests.py                  181      0   100%
+----------------------------------------------
+TOTAL                        452      0   100%
+----------------------------------------------------------------------
+Ran 59 tests in 16.982s
 ```
 <a name="linting"></a>
 ## Linting
@@ -104,10 +93,6 @@ utils\database.py:19:1: W0511: TODO develop tests for database.py later. in thos
 ------------------------------------------------------------------
 Your code has been rated at 9.89/10 (previous run: 9.89/10, +0.00)
 
-(podr) λ pylint test/copy_helpers.py
---------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-
 (podr) λ pylint test/request_helpers.py
 --------------------------------------------------------------------
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
@@ -116,7 +101,15 @@ Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 --------------------------------------------------------------------
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 
+(podr) λ pylint test/test_request_files_postgres.py
+--------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
+
 (podr) λ pylint test/test_copy_files_to_archive.py
+--------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
+
+(podr) λ pylint test/test_copy_files_to_archive_postgres.py
 --------------------------------------------------------------------
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 
@@ -125,6 +118,10 @@ Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 
 (podr) λ pylint test/test_requests.py
+--------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
+
+(podr) λ pylint test/test_requests_postgres.py
 --------------------------------------------------------------------
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 ```
@@ -186,6 +183,8 @@ FUNCTIONS
                     attempts to retry a restore_request that failed to submit.
                 RESTORE_RETRY_SLEEP_SECS (number, optional, default = 0): The number of seconds
                     to sleep between retry attempts.
+                RESTORE_RETRIEVAL_TYPE (string, optional, default = 'Standard'): the Tier
+                    for the restore request. Valid valuesare 'Standard'|'Bulk'|'Expedited'.
                 DATABASE_HOST (string): the server where the database resides.
                 DATABASE_PORT (string): the database port. The standard is 5432.
                 DATABASE_NAME (string): the name of the database.
@@ -201,9 +200,9 @@ FUNCTIONS
                         granuleId (string): The id of the granule being restored.
                         keys (list(string)): list of keys (glacier keys) for the granule
 
-                    Example: event: {'glacierBucket': 'some_bucket',
-                                     'granules': [{'granuleId': 'granxyz',
-                                            'keys': ['path1', 'path2']}]
+                    Example: event: {"glacierBucket": "some_bucket",
+                                     "granules": [{"granuleId": "granxyz",
+                                                   "keys": ["path1", "path2"]}]
                                }
 
                 context (Object): None
@@ -336,27 +335,30 @@ FUNCTIONS
             event (dict): A dict with zero or one of the following keys:
 
                 granule_id (string): A granule_id to retrieve
-                request_id (string): A request_id (uuid) to retrieve
-                job_id (string): A job_id to retrieve
+                request_group_id (string): A request_group_id (uuid) to retrieve
+                request_id (string): A request_id to retrieve
+                object_key (string): An object_key to retrieve
 
                 Examples: 
-                    event: {'function': 'query'}
+                    event: {"function": "query"}
                     event: {"function": "query",
                             "granule_id": "L0A_HR_RAW_product_0006-of-0420"
                            }
                     event: {"function": "query",
-                            "job_id": 14
+                            "request_id": "B2FE0827DD30B8D1"
                            }
                     event: {"function": "query",
-                            "request_id": "e91ef763-65bb-4dd2-8ba0-9851337e277e"
+                            "request_group_id": "e91ef763-65bb-4dd2-8ba0-9851337e277e"
                            }
-                           
+                    event: {"function": "query",
+                            "object_key": "L0A_HR_RAW_product_0006-of-0420.h5"
+                           }
             context (Object): None
 
         Returns:
             (list(dict)): A list of dict with the following keys:
-                'job_id' (number): Sequential id, uniquely identifying a table entry.
-                'request_id' (string): The request_id the job belongs to.
+                'request_id' (string): id uniquely identifying a table entry.
+                'request_group_id' (string): The request_group_id the job belongs to.
                 'granule_id' (string): The id of a granule.
                 'object_key' (string): The name of the file that was requested.
                 'job_type' (string): The type of job. "restore" or "regenerate"
@@ -369,8 +371,8 @@ FUNCTIONS
             Example:
                 [
                     {
-                        "job_id": 1,
-                        "request_id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+                        "request_id": "B2FE0827DD30B8D1",
+                        "request_group_id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
                         "granule_id": "granxyz",
                         "object_key": "my_test_filename",
                         "job_type": "restore",

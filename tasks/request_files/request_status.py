@@ -58,23 +58,31 @@ def query_requests(event):
     except KeyError:
         granule_id = None
     try:
+        request_group_id = event['request_group_id']
+    except KeyError:
+        request_group_id = None
+    try:
         request_id = event['request_id']
     except KeyError:
         request_id = None
     try:
-        job_id = event['job_id']
+        object_key = event['object_key']
     except KeyError:
-        job_id = None
-    if job_id:
-        result = requests.get_job_by_job_id(job_id)
+        object_key = None
+
+    if request_id:
+        result = requests.get_job_by_request_id(request_id)
     else:
-        if request_id:
-            result = requests.get_jobs_by_request_id(request_id)
+        if request_group_id:
+            result = requests.get_jobs_by_request_group_id(request_group_id)
         else:
             if granule_id:
                 result = requests.get_jobs_by_granule_id(granule_id)
             else:
-                result = requests.get_all_requests()
+                if object_key:
+                    result = requests.get_jobs_by_object_key(object_key)
+                else:
+                    result = requests.get_all_requests()
     return result
 
 def add_request(event):
@@ -86,16 +94,17 @@ def add_request(event):
     except KeyError:
         raise BadRequestError("Missing 'granule_id' in input data")
     try:
-        request_id = event['request_id']
+        request_group_id = event['request_group_id']
     except KeyError:
-        raise BadRequestError("Missing 'request_id' in input data")
+        raise BadRequestError("Missing 'request_group_id' in input data")
     try:
         status = event['status']
     except KeyError:
         status = "error"
 
     data = {}
-    data["request_id"] = request_id
+    data["request_id"] = requests.request_id_generator()
+    data["request_group_id"] = request_group_id
     data["granule_id"] = granule_id
     data["object_key"] = "my_test_filename"
     data["job_type"] = "restore"
@@ -103,8 +112,8 @@ def add_request(event):
     data["job_status"] = status
     if status == "error":
         data["err_msg"] = "error message goes here"
-    job_id = requests.submit_request(data)
-    result = requests.get_job_by_job_id(job_id)
+    request_id = requests.submit_request(data)
+    result = requests.get_job_by_request_id(request_id)
     return result
 
 def handler(event, context):            #pylint: disable-msg=unused-argument
@@ -121,27 +130,31 @@ def handler(event, context):            #pylint: disable-msg=unused-argument
             event (dict): A dict with zero or one of the following keys:
 
                 granule_id (string): A granule_id to retrieve
-                request_id (string): A request_id (uuid) to retrieve
-                job_id (string): A job_id to retrieve
+                request_group_id (string): A request_group_id (uuid) to retrieve
+                request_id (string): A request_id to retrieve
+                object_key (string): An object_key to retrieve
 
-                Examples: 
+                Examples:
                     event: {'function': 'query'}
                     event: {"function": "query",
                             "granule_id": "L0A_HR_RAW_product_0006-of-0420"
                            }
                     event: {"function": "query",
-                            "job_id": 14
+                            "request_id": "B2FE0827DD30B8D1"
                            }
                     event: {"function": "query",
-                            "request_id": "e91ef763-65bb-4dd2-8ba0-9851337e277e"
+                            "request_group_id": "e91ef763-65bb-4dd2-8ba0-9851337e277e"
+                           }
+                    event: {"function": "query",
+                            "object_key": "L0A_HR_RAW_product_0006-of-0420.h5"
                            }
 
             context (Object): None
 
         Returns:
             (list(dict)): A list of dict with the following keys:
-                'job_id' (number): Sequential id, uniquely identifying a table entry.
-                'request_id' (string): The request_id the job belongs to.
+                'request_id' (string): id uniquely identifying a table entry.
+                'request_group_id' (string): The request_group_id the job belongs to.
                 'granule_id' (string): The id of a granule.
                 'object_key' (string): The name of the file that was requested.
                 'job_type' (string): The type of job. "restore" or "regenerate"
@@ -154,8 +167,8 @@ def handler(event, context):            #pylint: disable-msg=unused-argument
             Example:
                 [
                     {
-                        "job_id": 1,
-                        "request_id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+                        "request_id": "B2FE0827DD30B8D1",
+                        "request_group_id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
                         "granule_id": "granxyz",
                         "object_key": "my_test_filename",
                         "job_type": "restore",
