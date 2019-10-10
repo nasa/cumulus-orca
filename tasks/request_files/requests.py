@@ -40,11 +40,11 @@ def get_utc_now_iso():
 
 def request_id_generator():
     """
-    Returns a request_id (UUID) to be used to identify all the files for a granule
+    Returns a request_group_id (UUID) to be used to identify all the files for a granule
     ex. '0000a0a0-a000-00a0-00a0-0000a0000000'
     """
-    restore_request_id = uuid.uuid4()
-    return str(restore_request_id)
+    restore_request_group_id = uuid.uuid4()
+    return str(restore_request_group_id)
 
 
 def submit_request(data):
@@ -52,26 +52,26 @@ def submit_request(data):
     Takes the provided request data (as a dict) and attempts to update the
     database with a new request.
 
-    Returns the request id if successful, otherwise raises BadRequestError.
+    Raises BadRequestError if there is a problem with the input.
     """
     # build and run the insert
     sql = """
         INSERT INTO request_status (
-            request_id, granule_id,
+            request_id, request_group_id, granule_id,
             object_key, job_type,
             restore_bucket_dest,
             job_status, request_time, last_update_time,
             err_msg
       
         ) VALUES (
-            %s, %s, %s,
-            %s, %s, %s,
-            %s, %s, %s
+            %s, %s, %s, %s, %s,
+            %s, %s, %s, %s, %s
         )
-        RETURNING job_id
         """
     # date might be provided, if not use current utc date
     date = get_utc_now_iso()
+
+    #data["request_id"] = request_id
 
     if "request_time" in data:
         rq_date = dateutil.parser.parse(data["request_time"])
@@ -92,6 +92,7 @@ def submit_request(data):
     try:
         params = (
             data["request_id"],
+            data["request_group_id"],
             data["granule_id"],
             data["object_key"],
             data["job_type"],
@@ -104,25 +105,20 @@ def submit_request(data):
     except KeyError as err:
         raise BadRequestError(f"Missing {str(err)} in input data")
     try:
-        rows = utils.database.single_query(sql, params)
-        job_id = None
-        if rows:
-            job_id = rows[0]["job_id"]
+        utils.database.single_query(sql, params)
     except DbError as err:
         LOGGER.exception(f"DbError: {str(err)}")
         raise DatabaseError(str(err))
+    return data["request_id"]
 
-    return job_id
-
-
-def get_job_by_job_id(job_id):
+def get_job_by_request_id(request_id):
     """
-    Reads a row from request_status by job_id.
+    Reads a row from request_status by request_id.
     """
     sql = """
         SELECT
-            job_id,
             request_id,
+            request_group_id,
             granule_id,
             object_key,
             job_type,
@@ -134,10 +130,10 @@ def get_job_by_job_id(job_id):
         FROM
             request_status
         WHERE
-            job_id = %s
+            request_id = %s
         """
     try:
-        rows = utils.database.single_query(sql, (job_id,))
+        rows = utils.database.single_query(sql, (request_id,))
         result = result_to_json(rows)
     except DbError as err:
         LOGGER.exception(f"DbError: {str(err)}")
@@ -151,8 +147,8 @@ def get_jobs_by_granule_id(granule_id):
     """
     sql = """
         SELECT
-            job_id,
             request_id,
+            request_group_id,
             granule_id,
             object_key,
             job_type,
@@ -165,7 +161,7 @@ def get_jobs_by_granule_id(granule_id):
             request_status
         WHERE
             granule_id = %s
-        ORDER BY job_id desc
+        ORDER BY last_update_time desc
         """
     try:
         rows = utils.database.single_query(sql, (granule_id,))
@@ -176,51 +172,44 @@ def get_jobs_by_granule_id(granule_id):
 
     return result
 
-
-def update_request_status(object_key, old_status, new_status, err_msg=None):
+def get_jobs_by_object_key(object_key):
     """
-    Updates the status of an inprogress request.
+    Reads rows from request_status by object_key.
     """
-    if object_key is None:
-        raise BadRequestError("No object_key provided")
-
-    # must have a status provided
-    if new_status is None:
-        raise BadRequestError("A new status must be provided")
-    if old_status is None:
-        raise BadRequestError("An old status must be provided")
-
-    date = get_utc_now_iso()
-
-    # run the update
-
     sql = """
-        UPDATE
+        SELECT
+            request_id,
+            request_group_id,
+            granule_id,
+            object_key,
+            job_type,
+            restore_bucket_dest,
+            job_status,
+            request_time,
+            last_update_time,
+            err_msg
+        FROM
             request_status
-        SET
-            job_status = %s,
-            last_update_time = %s,
-            err_msg = %s
         WHERE
             object_key = %s
-            and job_status = %s
-    """
+        ORDER BY last_update_time desc
+        """
     try:
-        result = utils.database.single_query(sql, (new_status, date, err_msg,
-                                                   object_key, old_status))
+        rows = utils.database.single_query(sql, (object_key,))
+        result = result_to_json(rows)
     except DbError as err:
-        msg = (f"DbError updating status for {object_key} from {old_status} "
-               f"to {new_status}. {str(err)}")
-        LOGGER.exception(msg)
+        LOGGER.exception(f"DbError: {str(err)}")
         raise DatabaseError(str(err))
+
     return result
 
-def update_request_status_for_job(job_id, status, err_msg=None):
+
+def update_request_status_for_job(request_id, status, err_msg=None):
     """
     Updates the status of a job.
     """
-    if job_id is None:
-        raise BadRequestError("No job_id provided")
+    if request_id is None:
+        raise BadRequestError("No request_id provided")
 
     # must have a status provided
     if status is None:
@@ -238,32 +227,32 @@ def update_request_status_for_job(job_id, status, err_msg=None):
             last_update_time = %s,
             err_msg = %s
         WHERE
-            job_id = %s
+            request_id = %s
     """
     try:
-        result = utils.database.single_query(sql, (status, date, err_msg, job_id))
+        result = utils.database.single_query(sql, (status, date, err_msg, request_id))
     except DbError as err:
-        msg = f"DbError updating status for job {job_id} to {status}. {str(err)}"
+        msg = f"DbError updating status for job {request_id} to {status}. {str(err)}"
         LOGGER.exception(msg)
         raise DatabaseError(str(err))
     return result
 
 
-def delete_request(job_id):
+def delete_request(request_id):
     """
-    Deletes a job by job_id.
+    Deletes a job by request_id.
     """
-    if job_id is None:
-        raise BadRequestError("No job_id provided")
+    if request_id is None:
+        raise BadRequestError("No request_id provided")
 
     sql = """
         DELETE FROM
             request_status
         WHERE
-            job_id = %s
+            request_id = %s
     """
     try:
-        result = utils.database.single_query(sql, (job_id,))
+        result = utils.database.single_query(sql, (request_id,))
     except DbError as err:
         LOGGER.exception(f"DbError: {str(err)}")
         raise DatabaseError(str(err))
@@ -280,7 +269,7 @@ def delete_all_requests():
         result = get_all_requests()
         for job in result:
             try:
-                delete_request(job["job_id"])
+                delete_request(job["request_id"])
             except DatabaseError as err:
                 LOGGER.exception(f"DatabaseError: {str(err)}")
                 raise DatabaseError(str(err))
@@ -296,8 +285,8 @@ def get_all_requests():
     """
     sql = """
         SELECT
-            job_id,
             request_id,
+            request_group_id,
             granule_id,
             object_key,
             job_type,
@@ -308,7 +297,7 @@ def get_all_requests():
             err_msg
         FROM
             request_status
-        ORDER BY job_id desc """
+        ORDER BY last_update_time desc """
 
     try:
         rows = utils.database.single_query(sql, ())
@@ -319,15 +308,17 @@ def get_all_requests():
 
     return result
 
-def create_data(obj, job_type=None, #pylint: disable-msg=too-many-arguments
+def create_data(obj,   #pylint: disable-msg=too-many-arguments
+                job_type=None,
                 job_status=None, request_time=None,
                 last_update_time=None, err_msg=None):
     """
     Creates a dict containing the input data for submit_request.
     """
     data = {}
-    if obj["request_id"]:
-        data["request_id"] = obj["request_id"]
+    data["request_id"] = request_id_generator()
+    if obj["request_group_id"]:
+        data["request_group_id"] = obj["request_group_id"]
     if obj["granule_id"]:
         data["granule_id"] = obj["granule_id"]
     if obj["key"]:
@@ -355,8 +346,8 @@ def get_jobs_by_status(status, max_days_old=None):
 
     sql = """
         SELECT
-            job_id,
             request_id,
+            request_group_id,
             granule_id,
             object_key,
             job_type,
@@ -370,7 +361,7 @@ def get_jobs_by_status(status, max_days_old=None):
         WHERE
             job_status = %s
         """
-    orderby = """ order by last_update_time """
+    orderby = """ order by last_update_time desc """
     try:
         if max_days_old:
             sql2 = """ and last_update_time > CURRENT_DATE at time zone 'utc' - INTERVAL '%s' DAY"""
@@ -388,17 +379,17 @@ def get_jobs_by_status(status, max_days_old=None):
     return result
 
 
-def get_jobs_by_request_id(request_id):
+def get_jobs_by_request_group_id(request_group_id):
     """
-    Returns rows from request_status for a request_id
+    Returns rows from request_status for a request_group_id
     """
-    if request_id is None:
-        raise BadRequestError("A request_id must be provided")
+    if request_group_id is None:
+        raise BadRequestError("A request_group_id must be provided")
 
     sql = """
         SELECT
-            job_id,
             request_id,
+            request_group_id,
             granule_id,
             object_key,
             job_type,
@@ -410,12 +401,12 @@ def get_jobs_by_request_id(request_id):
         FROM
             request_status
         WHERE
-        request_id = %s
+        request_group_id = %s
         """
-    orderby = """ order by last_update_time """
+    orderby = """ order by last_update_time desc """
     try:
         sql = sql + orderby
-        rows = utils.database.single_query(sql, (request_id,))
+        rows = utils.database.single_query(sql, (request_group_id,))
         result = result_to_json(rows)
     except DbError as err:
         LOGGER.exception(f"DbError: {str(err)}")

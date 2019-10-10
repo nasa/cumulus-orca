@@ -58,6 +58,10 @@ variable "restore_retry_sleep_secs" {
   default = 0
 }
 
+variable "restore_retrieval_type" {
+  default = "Standard"
+}
+
 variable "copy_retries" {
   default = 3
 }

@@ -62,7 +62,14 @@ def task(records, bucket_map, retries, retry_sleep_secs):
             if not afile['success']:
                 err_msg = copy_object(s3, afile['source_bucket'], afile['source_key'],
                                       afile['target_bucket'])
-                update_status_in_db(afile, attempt, err_msg)
+                try:
+                    update_status_in_db(afile, attempt, err_msg)
+                except requests.DatabaseError:
+                    try:
+                        time.sleep(30)
+                        update_status_in_db(afile, attempt, err_msg)
+                    except requests.DatabaseError:
+                        continue
         attempt = attempt + 1
         if attempt <= retries:
             time.sleep(retry_sleep_secs)
@@ -92,32 +99,41 @@ def update_status_in_db(afile, attempt, err_msg):
                           'target_bucket': 'unittest_txt_bucket', 'success': True,
                           'err_msg': ''}]
     """
+    old_status = ""
+    new_status = ""
     try:
-        if err_msg:
-            afile['err_msg'] = err_msg
-            old_status = "inprogress"
-            new_status = "error"
-            logging.error(f"Attempt {attempt}. Error copying file {afile['source_key']}"
-                          f" from {afile['source_bucket']} to {afile['target_bucket']}."
-                          f" msg: {err_msg}")
-            requests.update_request_status(afile['source_key'], old_status,
-                                           new_status, err_msg)
+        request_id = None
+        jobs = requests.get_jobs_by_object_key(afile['source_key'])
+        for job in jobs:
+            if job["job_status"] != "complete":
+                request_id = job["request_id"]
+                old_status = job["job_status"]
+                break
+        if not request_id:
+            log_msg = ("Failed to update request status in database. "
+                       f"No incomplete entry found for object_key: {afile['source_key']}")
+            logging.error(log_msg)
         else:
-            afile['success'] = True
-            afile['err_msg'] = ''
-            new_status = "complete"
-            logging.info(f"Attempt {attempt}. Success copying file "
-                         f"{afile['source_key']} from {afile['source_bucket']} "
-                         f"to {afile['target_bucket']}.")
-            if attempt == 1:
-                old_status = "inprogress"
+            if err_msg:
+                afile['err_msg'] = err_msg
+                new_status = "error"
+                logging.error(f"Attempt {attempt}. Error copying file {afile['source_key']}"
+                              f" from {afile['source_bucket']} to {afile['target_bucket']}."
+                              f" msg: {err_msg}")
+                requests.update_request_status_for_job(request_id, new_status, err_msg)
             else:
-                old_status = "error"
-            requests.update_request_status(afile['source_key'], old_status, new_status)
+                afile['success'] = True
+                afile['err_msg'] = ''
+                new_status = "complete"
+                logging.info(f"Attempt {attempt}. Success copying file "
+                             f"{afile['source_key']} from {afile['source_bucket']} "
+                             f"to {afile['target_bucket']}.")
+                requests.update_request_status_for_job(request_id, new_status)
     except requests.DatabaseError as err:
         logging.error(f"Failed to update request status in database. "
                       f"key: {afile['source_key']} old status: {old_status} "
                       f"new status: {new_status}. Err: {str(err)}")
+        raise
     return afile
 
 def get_files_from_records(records, bucket_map):
@@ -184,9 +200,10 @@ def copy_object(s3_cli, src_bucket_name, src_object_name,
 
     # Copy the object
     try:
-        s3_cli.copy_object(CopySource=copy_source,
-                           Bucket=dest_bucket_name,
-                           Key=dest_object_name)
+        response = s3_cli.copy_object(CopySource=copy_source,
+                                      Bucket=dest_bucket_name,
+                                      Key=dest_object_name)
+        logging.info(f"Copy response: {response}")
     except ClientError as ex:
         return str(ex)
     return None
@@ -281,6 +298,7 @@ def handler(event, context):      #pylint: disable-msg=unused-argument
         retry_sleep_secs = 0
 
     logging.debug(f'event: {event}')
+    logging.warning(f'event: {event}')
     records = event["Records"]
     result = task(records, bucket_map, retries, retry_sleep_secs)
     for afile in result:
