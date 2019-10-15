@@ -29,10 +29,10 @@ Substitute actual values for these placeholders throughout this README:
     %APP_USER_NAME% from database/ddl/base/users/appuser.sql
 
 On a Docker server:
-->setenv PASS %DB_PW_HERE%; docker run -p 5432:5432 -e POSTGRES_PASSWORD=$PASS --name daac_db -d postgres:11.4 
+->setenv PASS %DB_PW_HERE%; docker run -p 5432:%DB_PORT% -e POSTGRES_PASSWORD=$PASS --name daac_db -d postgres:11.4 
 ->bash
-(this next command maps %GIT_WORK_DIR%/database/ddl to /data inside the container)
-bash-4.2$docker run -it --rm -v %GIT_WORK_DIR%/database/ddl:/data postgres:11.4 /bin/bash
+(this next command maps %GIT_WORK_DIR%/database to /data inside the container)
+bash-4.2$docker run -it --rm -v %GIT_WORK_DIR%/database:/data postgres:11.4 /bin/bash
 root@883bc270c77f:/# cd /data/base
 root@883bc270c77f:/data/base# psql -h %DOCKER_HOST% -U postgres postgres
 Password for user postgres:  %DB_PW_HERE%
@@ -63,7 +63,7 @@ Name:  dr docker - postgres
 Login Name:  postgres       
 Password:    %MASTER_USER_PW_HERE%
 Host:   %DOCKER_HOST%
-Port: 5432
+Port: %DB_PORT%
 Database:  postgres  
 ```
 <a name="development"></a>

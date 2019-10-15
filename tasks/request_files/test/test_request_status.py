@@ -8,16 +8,17 @@ import unittest
 from unittest.mock import Mock
 
 import request_status
-import requests
-from requests import result_to_json
-from request_helpers import (
-    REQUEST_ID1, REQUEST_ID2, REQUEST_ID3, REQUEST_ID4, REQUEST_ID5, REQUEST_ID6, REQUEST_ID7,
-    REQUEST_ID8, REQUEST_ID9, REQUEST_ID10, REQUEST_ID11, REQUEST_GROUP_ID_EXP_1,
-    create_insert_request, create_select_requests)
+from request_helpers import (REQUEST_GROUP_ID_EXP_1, REQUEST_ID1, REQUEST_ID2,
+                             REQUEST_ID3, REQUEST_ID4, REQUEST_ID5,
+                             REQUEST_ID6, REQUEST_ID7, REQUEST_ID8,
+                             REQUEST_ID9, REQUEST_ID10, REQUEST_ID11,
+                             create_insert_request, create_select_requests)
 import utils
 import utils.database
+from utils import requests_db
+from utils.requests_db import result_to_json
 
-UTC_NOW_EXP_1 = requests.get_utc_now_iso()
+UTC_NOW_EXP_1 = requests_db.get_utc_now_iso()
 
 class TestRequestStatus(unittest.TestCase):
     """
@@ -28,14 +29,14 @@ class TestRequestStatus(unittest.TestCase):
         os.environ["DATABASE_NAME"] = "sndbx"
         os.environ["DATABASE_USER"] = "unittestdbuser"
         os.environ["DATABASE_PW"] = "unittestdbpw"
-        self.mock_utcnow = requests.get_utc_now_iso
-        self.mock_request_group_id = requests.request_id_generator
+        self.mock_utcnow = requests_db.get_utc_now_iso
+        self.mock_request_group_id = requests_db.request_id_generator
         self.mock_single_query = utils.database.single_query
 
     def tearDown(self):
         utils.database.single_query = self.mock_single_query
-        requests.request_id_generator = self.mock_request_group_id
-        requests.get_utc_now_iso = self.mock_utcnow
+        requests_db.request_id_generator = self.mock_request_group_id
+        requests_db.get_utc_now_iso = self.mock_utcnow
         del os.environ["DATABASE_HOST"]
         del os.environ["DATABASE_NAME"]
         del os.environ["DATABASE_USER"]
@@ -48,8 +49,8 @@ class TestRequestStatus(unittest.TestCase):
         """
         handler_input_event = {}
         utc_now_exp = UTC_NOW_EXP_1
-        requests.get_utc_now_iso = Mock(return_value=utc_now_exp)
-        requests.request_id_generator = Mock(return_value=REQUEST_ID1)
+        requests_db.get_utc_now_iso = Mock(return_value=utc_now_exp)
+        requests_db.request_id_generator = Mock(return_value=REQUEST_ID1)
         granule_id = 'granule_1'
         status = "error"
         req_err = "error submitting restore request"
@@ -80,7 +81,7 @@ class TestRequestStatus(unittest.TestCase):
             utils.database.single_query.assert_called()
         except request_status.BadRequestError as err:
             self.fail(err)
-        except requests.DbError as err:
+        except requests_db.DbError as err:
             self.fail(err)
 
 
@@ -100,7 +101,7 @@ class TestRequestStatus(unittest.TestCase):
             result = request_status.task(handler_input_event, None)
             self.assertEqual(expected, result)
             utils.database.single_query.assert_called()
-        except requests.NotFound as err:
+        except requests_db.NotFound as err:
             self.fail(str(err))
 
 
@@ -120,7 +121,7 @@ class TestRequestStatus(unittest.TestCase):
         try:
             result = request_status.task(handler_input_event, None)
             self.assertEqual(expected, result)
-        except requests.NotFound as err:
+        except requests_db.NotFound as err:
             self.assertEqual(f"Unknown granule_id: {granule_id}", str(err))
 
 
@@ -140,7 +141,7 @@ class TestRequestStatus(unittest.TestCase):
             result = request_status.task(handler_input_event, None)
             self.assertEqual(expected, result)
             utils.database.single_query.assert_called_once()
-        except requests.NotFound as err:
+        except requests_db.NotFound as err:
             self.assertEqual(f"Unknown request_group_id: {request_group_id}", str(err))
 
     def test_task_query_request_group_id_dberror(self):
@@ -151,11 +152,11 @@ class TestRequestStatus(unittest.TestCase):
         request_group_id = REQUEST_GROUP_ID_EXP_1
         handler_input_event["request_group_id"] = request_group_id
         handler_input_event["function"] = "query"
-        utils.database.single_query = Mock(side_effect=[requests.DbError("Db call failed")])
+        utils.database.single_query = Mock(side_effect=[requests_db.DbError("Db call failed")])
         try:
             request_status.task(handler_input_event, None)
             self.fail("expected DbError")
-        except requests.DatabaseError as err:
+        except requests_db.DatabaseError as err:
             self.assertEqual("Db call failed", str(err))
             utils.database.single_query.assert_called_once()
 
@@ -186,7 +187,7 @@ class TestRequestStatus(unittest.TestCase):
             result = request_status.task(handler_input_event, None)
             self.assertEqual(exp_result, result)
             utils.database.single_query.assert_called_once()
-        except requests.NotFound as err:
+        except requests_db.NotFound as err:
             self.fail(str(err))
 
 
@@ -205,7 +206,7 @@ class TestRequestStatus(unittest.TestCase):
         try:
             result = request_status.task(handler_input_event, None)
             self.assertEqual(expected, result)
-        except requests.NotFound as err:
+        except requests_db.NotFound as err:
             self.assertEqual(f"Unknown request_id: {request_id}", str(err))
 
     def test_task_query_object_key(self):
@@ -223,7 +224,7 @@ class TestRequestStatus(unittest.TestCase):
         try:
             result = request_status.task(handler_input_event, None)
             self.assertEqual(expected, result)
-        except requests.NotFound as err:
+        except requests_db.NotFound as err:
             self.assertEqual(f"Unknown object_key: {object_key}", str(err))
 
     def test_task_clear(self):
@@ -247,7 +248,7 @@ class TestRequestStatus(unittest.TestCase):
                              empty_result])
             result = request_status.task(handler_input_event, None)
             self.assertEqual(exp_result, result)
-        except requests.NotFound as err:
+        except requests_db.NotFound as err:
             self.assertEqual("No granules found", str(err))
 
 

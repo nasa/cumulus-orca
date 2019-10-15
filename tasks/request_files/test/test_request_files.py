@@ -3,24 +3,25 @@ Name: test_request_files.py
 
 Description:  Unit tests for request_files.py.
 """
+import os
 import unittest
 from unittest.mock import Mock
-import os
+
 import boto3
 from botocore.exceptions import ClientError
 from cumulus_logger import CumulusLogger
-from request_helpers import LambdaContextMock, create_handler_event
-from request_helpers import create_insert_request
-from request_helpers import (
-    REQUEST_ID1, REQUEST_ID2, REQUEST_ID3, REQUEST_ID4,
-    REQUEST_GROUP_ID_EXP_1,
-    REQUEST_GROUP_ID_EXP_2, REQUEST_GROUP_ID_EXP_3)
-import requests
+
 import request_files
 import utils
 import utils.database
+from utils import requests_db
+from request_helpers import (REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_2,
+                             REQUEST_GROUP_ID_EXP_3, REQUEST_ID1, REQUEST_ID2,
+                             REQUEST_ID3, REQUEST_ID4, LambdaContextMock,
+                             create_handler_event, create_insert_request)
 
-UTC_NOW_EXP_1 = requests.get_utc_now_iso()
+
+UTC_NOW_EXP_1 = requests_db.get_utc_now_iso()
 
 class TestRequestFiles(unittest.TestCase):
     """
@@ -31,7 +32,7 @@ class TestRequestFiles(unittest.TestCase):
         self.mock_info = CumulusLogger.info
         self.mock_error = CumulusLogger.error
         self.mock_single_query = utils.database.single_query
-        self.mock_generator = requests.request_id_generator
+        self.mock_generator = requests_db.request_id_generator
         os.environ["DATABASE_HOST"] = "my.db.host.gov"
         os.environ["DATABASE_PORT"] = "54"
         os.environ["DATABASE_NAME"] = "sndbx"
@@ -42,7 +43,7 @@ class TestRequestFiles(unittest.TestCase):
         self.context = LambdaContextMock()
 
     def tearDown(self):
-        requests.request_id_generator = self.mock_generator
+        requests_db.request_id_generator = self.mock_generator
         utils.database.single_query = self.mock_single_query
         CumulusLogger.error = self.mock_error
         CumulusLogger.info = self.mock_info
@@ -116,18 +117,18 @@ class TestRequestFiles(unittest.TestCase):
             "restore", "some_bucket", "inprogress",
             UTC_NOW_EXP_1, None, None)
 
-        requests.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
-                                                          REQUEST_ID1,
-                                                          REQUEST_ID2,
-                                                          REQUEST_ID3,
-                                                          REQUEST_ID4])
+        requests_db.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
+                                                             REQUEST_ID1,
+                                                             REQUEST_ID2,
+                                                             REQUEST_ID3,
+                                                             REQUEST_ID4])
         utils.database.single_query = Mock(
             side_effect=[qresult_1_inprogress, qresult_1_inprogress,
                          qresult_3_inprogress, qresult_4_inprogress])
 
         try:
             result = request_files.task(input_event, self.context)
-        except requests.DatabaseError as err:
+        except requests_db.DatabaseError as err:
             self.fail(str(err))
 
         boto3.client.assert_called_with('s3')
@@ -228,8 +229,8 @@ class TestRequestFiles(unittest.TestCase):
         s3_cli.head_object = Mock()
         CumulusLogger.info = Mock()
         CumulusLogger.error = Mock()
-        requests.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
-                                                          REQUEST_ID1])
+        requests_db.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
+                                                             REQUEST_ID1])
         utils.database.single_query = Mock(
             side_effect=[utils.database.DbError("mock insert failed error")])
         exp_result = {'granuleId': granule_id, 'files': [{'key': file1,
@@ -238,7 +239,7 @@ class TestRequestFiles(unittest.TestCase):
         try:
             result = request_files.task(input_event, self.context)
             self.assertEqual(exp_result, result)
-        except requests.DatabaseError as err:
+        except requests_db.DatabaseError as err:
             self.fail(f"failed insert does not throw exception. {str(err)}")
 
         boto3.client.assert_called_with('s3')
@@ -303,14 +304,14 @@ class TestRequestFiles(unittest.TestCase):
         s3_cli.head_object = Mock(
             side_effect=[ClientError({'Error': {'Code': 'NotFound'}}, 'head_object')])
         CumulusLogger.info = Mock()
-        requests.request_id_generator = Mock(return_value=REQUEST_GROUP_ID_EXP_1)
+        requests_db.request_id_generator = Mock(return_value=REQUEST_GROUP_ID_EXP_1)
         try:
             result = request_files.task(exp_event, self.context)
 
             self.assertEqual({'files': [], 'granuleId': granule_id}, result)
             boto3.client.assert_called_with('s3')
             s3_cli.head_object.assert_called_with(Bucket='my-bucket', Key=file1)
-        except requests.DatabaseError as err:
+        except requests_db.DatabaseError as err:
             self.fail(str(err))
         del os.environ['RESTORE_RETRIEVAL_TYPE']
 
@@ -332,7 +333,7 @@ class TestRequestFiles(unittest.TestCase):
         s3_cli.head_object = Mock()
         s3_cli.restore_object = Mock(side_effect=[None])
         CumulusLogger.info = Mock()
-        requests.request_id_generator = Mock(return_value=REQUEST_ID1)
+        requests_db.request_id_generator = Mock(return_value=REQUEST_ID1)
         exp_gran = {}
         exp_gran['granuleId'] = granule_id
         exp_files = []
@@ -386,7 +387,7 @@ class TestRequestFiles(unittest.TestCase):
         s3_cli.head_object = Mock()
         s3_cli.restore_object = Mock(side_effect=[None])
         CumulusLogger.info = Mock()
-        requests.request_id_generator = Mock(return_value=REQUEST_ID1)
+        requests_db.request_id_generator = Mock(return_value=REQUEST_ID1)
         exp_gran = {}
         exp_gran['granuleId'] = granule_id
         exp_files = []
@@ -451,10 +452,10 @@ class TestRequestFiles(unittest.TestCase):
                           "keys": [file1]}]}
 
         os.environ['RESTORE_RETRY_SLEEP_SECS'] = '.5'
-        requests.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
-                                                          REQUEST_ID1,
-                                                          REQUEST_ID2,
-                                                          REQUEST_ID3])
+        requests_db.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
+                                                             REQUEST_ID1,
+                                                             REQUEST_ID2,
+                                                             REQUEST_ID3])
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.head_object = Mock()
@@ -513,13 +514,13 @@ class TestRequestFiles(unittest.TestCase):
         exp_event["input"] = {
             "granules": [gran]}
 
-        requests.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
-                                                          REQUEST_ID1,
-                                                          REQUEST_GROUP_ID_EXP_3,
-                                                          REQUEST_ID2,
-                                                          REQUEST_ID3,
-                                                          REQUEST_ID4
-                                                          ])
+        requests_db.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
+                                                             REQUEST_ID1,
+                                                             REQUEST_GROUP_ID_EXP_3,
+                                                             REQUEST_ID2,
+                                                             REQUEST_ID3,
+                                                             REQUEST_ID4
+                                                             ])
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.head_object = Mock()
@@ -618,11 +619,11 @@ class TestRequestFiles(unittest.TestCase):
         gran["keys"] = keys
         exp_event["input"] = {
             "granules": [gran]}
-        requests.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
-                                                          REQUEST_ID1,
-                                                          REQUEST_GROUP_ID_EXP_2,
-                                                          REQUEST_ID2,
-                                                          REQUEST_ID3])
+        requests_db.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
+                                                             REQUEST_ID1,
+                                                             REQUEST_GROUP_ID_EXP_2,
+                                                             REQUEST_ID2,
+                                                             REQUEST_ID3])
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.head_object = Mock()

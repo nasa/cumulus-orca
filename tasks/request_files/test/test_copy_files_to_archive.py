@@ -15,7 +15,7 @@ from botocore.exceptions import ClientError
 import copy_files_to_archive
 import utils
 import utils.database
-import requests
+from utils import requests_db
 from request_helpers import create_copy_event2, create_copy_handler_event
 from request_helpers import create_select_requests, REQUEST_ID4, REQUEST_ID7
 
@@ -103,8 +103,8 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
         time.sleep = Mock(side_effect=None)
         exp_err = 'Database Error. Internal database error, please contact LP DAAC User Services'
         utils.database.single_query = Mock(
-            side_effect=[exp_result, requests.DatabaseError(exp_err),
-                         requests.DatabaseError(exp_err)])
+            side_effect=[exp_result, requests_db.DatabaseError(exp_err),
+                         requests_db.DatabaseError(exp_err)])
         result = copy_files_to_archive.handler(self.handler_input_event, None)
         exp_result = [{'success': True, 'source_bucket': 'my-dr-fake-glacier-bucket',
                        'source_key': 'dr-glacier/MOD09GQ.A0219114.N5aUCG.006.0656338553321.txt',

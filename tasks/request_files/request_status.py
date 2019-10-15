@@ -5,7 +5,7 @@ Description:  Queries the request_status table.
 """
 import logging
 
-import requests
+from utils import requests_db
 
 # Set Global Variables
 _LOG = logging.getLogger(__name__)
@@ -45,7 +45,7 @@ def task(event, context):    #pylint: disable-msg=unused-argument
         result = add_request(event)
 
     if function == "clear":
-        result = requests.delete_all_requests()
+        result = requests_db.delete_all_requests()
 
     return result
 
@@ -71,18 +71,18 @@ def query_requests(event):
         object_key = None
 
     if request_id:
-        result = requests.get_job_by_request_id(request_id)
+        result = requests_db.get_job_by_request_id(request_id)
     else:
         if request_group_id:
-            result = requests.get_jobs_by_request_group_id(request_group_id)
+            result = requests_db.get_jobs_by_request_group_id(request_group_id)
         else:
             if granule_id:
-                result = requests.get_jobs_by_granule_id(granule_id)
+                result = requests_db.get_jobs_by_granule_id(granule_id)
             else:
                 if object_key:
-                    result = requests.get_jobs_by_object_key(object_key)
+                    result = requests_db.get_jobs_by_object_key(object_key)
                 else:
-                    result = requests.get_all_requests()
+                    result = requests_db.get_all_requests()
     return result
 
 def add_request(event):
@@ -103,7 +103,7 @@ def add_request(event):
         status = "error"
 
     data = {}
-    data["request_id"] = requests.request_id_generator()
+    data["request_id"] = requests_db.request_id_generator()
     data["request_group_id"] = request_group_id
     data["granule_id"] = granule_id
     data["object_key"] = "my_test_filename"
@@ -112,8 +112,8 @@ def add_request(event):
     data["job_status"] = status
     if status == "error":
         data["err_msg"] = "error message goes here"
-    request_id = requests.submit_request(data)
-    result = requests.get_job_by_request_id(request_id)
+    request_id = requests_db.submit_request(data)
+    result = requests_db.get_job_by_request_id(request_id)
     return result
 
 def handler(event, context):            #pylint: disable-msg=unused-argument

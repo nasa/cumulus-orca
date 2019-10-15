@@ -5,52 +5,55 @@ import datetime
 import json
 import os
 import time
+import uuid
 
 import psycopg2
 import psycopg2.extras
 
-import requests
+from utils import database
 
-REQUEST_ID1 = requests.request_id_generator()
-REQUEST_ID2 = requests.request_id_generator()
-REQUEST_ID3 = requests.request_id_generator()
-REQUEST_ID4 = requests.request_id_generator()
-REQUEST_ID5 = requests.request_id_generator()
-REQUEST_ID6 = requests.request_id_generator()
-REQUEST_ID7 = requests.request_id_generator()
-REQUEST_ID8 = requests.request_id_generator()
-REQUEST_ID9 = requests.request_id_generator()
-REQUEST_ID10 = requests.request_id_generator()
-REQUEST_ID11 = requests.request_id_generator()
-REQUEST_ID12 = requests.request_id_generator()
+#import restore_requests
 
-UTC_NOW_EXP_1 = requests.get_utc_now_iso()
+REQUEST_ID1 = str(uuid.uuid4())
+REQUEST_ID2 = str(uuid.uuid4())
+REQUEST_ID3 = str(uuid.uuid4())
+REQUEST_ID4 = str(uuid.uuid4())
+REQUEST_ID5 = str(uuid.uuid4())
+REQUEST_ID6 = str(uuid.uuid4())
+REQUEST_ID7 = str(uuid.uuid4())
+REQUEST_ID8 = str(uuid.uuid4())
+REQUEST_ID9 = str(uuid.uuid4())
+REQUEST_ID10 = str(uuid.uuid4())
+REQUEST_ID11 = str(uuid.uuid4())
+REQUEST_ID12 = str(uuid.uuid4())
+
+UTC_NOW_EXP_1 = datetime.datetime.utcnow().isoformat()
 time.sleep(1)
-REQUEST_GROUP_ID_EXP_1 = requests.request_id_generator()
-UTC_NOW_EXP_2 = requests.get_utc_now_iso()
+REQUEST_GROUP_ID_EXP_1 = str(uuid.uuid4())
+UTC_NOW_EXP_2 = datetime.datetime.utcnow().isoformat()
 time.sleep(1)
-REQUEST_GROUP_ID_EXP_2 = requests.request_id_generator()
-UTC_NOW_EXP_3 = requests.get_utc_now_iso()
+REQUEST_GROUP_ID_EXP_2 = str(uuid.uuid4())
+UTC_NOW_EXP_3 = datetime.datetime.utcnow().isoformat()
 time.sleep(1)
-UTC_NOW_EXP_4 = requests.get_utc_now_iso()
+UTC_NOW_EXP_4 = datetime.datetime.utcnow().isoformat()
 time.sleep(1)
-REQUEST_GROUP_ID_EXP_3 = requests.request_id_generator()
-UTC_NOW_EXP_5 = requests.get_utc_now_iso()
+REQUEST_GROUP_ID_EXP_3 = str(uuid.uuid4())
+UTC_NOW_EXP_5 = datetime.datetime.utcnow().isoformat()
 time.sleep(1)
-UTC_NOW_EXP_6 = requests.get_utc_now_iso()
+UTC_NOW_EXP_6 = datetime.datetime.utcnow().isoformat()
 time.sleep(1)
-REQUEST_GROUP_ID_EXP_4 = requests.request_id_generator()
-UTC_NOW_EXP_7 = requests.get_utc_now_iso()
+REQUEST_GROUP_ID_EXP_4 = str(uuid.uuid4())
+UTC_NOW_EXP_7 = datetime.datetime.utcnow().isoformat()
 time.sleep(1)
-UTC_NOW_EXP_8 = requests.get_utc_now_iso()
+UTC_NOW_EXP_8 = datetime.datetime.utcnow().isoformat()
 time.sleep(1)
-REQUEST_GROUP_ID_EXP_5 = requests.request_id_generator()
-UTC_NOW_EXP_9 = requests.get_utc_now_iso()
+REQUEST_GROUP_ID_EXP_5 = str(uuid.uuid4())
+UTC_NOW_EXP_9 = datetime.datetime.utcnow().isoformat()
 time.sleep(1)
-REQUEST_GROUP_ID_EXP_6 = requests.request_id_generator()
-UTC_NOW_EXP_10 = requests.get_utc_now_iso()
+REQUEST_GROUP_ID_EXP_6 = str(uuid.uuid4())
+UTC_NOW_EXP_10 = datetime.datetime.utcnow().isoformat()
 time.sleep(1)
-UTC_NOW_EXP_11 = requests.get_utc_now_iso()
+UTC_NOW_EXP_11 = datetime.datetime.utcnow().isoformat()
 
 def create_handler_event():
     """
@@ -257,11 +260,47 @@ def print_rows(label):
               " 2) ", REQUEST_GROUP_ID_EXP_2,
               " 3) ", REQUEST_GROUP_ID_EXP_3, " 4) ", REQUEST_GROUP_ID_EXP_4,
               " 5) ", REQUEST_GROUP_ID_EXP_5, " 6) ", REQUEST_GROUP_ID_EXP_6)
-        rows = requests.get_all_requests()
+        rows = get_all_requests()
         print("**** ", label)
         for row in rows:
             print(row)
         print("****")
+
+def get_all_requests():
+    """
+    Returns all of the requests.
+    """
+    sql = """
+        SELECT
+            request_id,
+            request_group_id,
+            granule_id,
+            object_key,
+            job_type,
+            restore_bucket_dest,
+            job_status,
+            request_time,
+            last_update_time,
+            err_msg
+        FROM
+            request_status
+        ORDER BY last_update_time desc """
+
+    try:
+        rows = database.single_query(sql, ())
+        result = json.loads(json.dumps(rows, default=myconverter))
+    except database.DbError as err:
+        print(str(err))
+
+    return result
+
+def myconverter(obj):       #pylint: disable-msg=inconsistent-return-statements
+    """
+    Returns the current utc timestamp as a string in isoformat
+    ex. '2019-07-17T17:36:38.494918'
+    """
+    if isinstance(obj, datetime.datetime):
+        return obj.__str__()
 
 class LambdaContextMock:   #pylint: disable-msg=too-few-public-methods
     """

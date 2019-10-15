@@ -7,8 +7,7 @@ import logging
 import uuid
 import datetime
 import dateutil.parser
-import utils
-import utils.database
+from utils import database
 from utils.database import DbError
 
 LOGGER = logging.getLogger(__name__)
@@ -105,7 +104,7 @@ def submit_request(data):
     except KeyError as err:
         raise BadRequestError(f"Missing {str(err)} in input data")
     try:
-        utils.database.single_query(sql, params)
+        database.single_query(sql, params)
     except DbError as err:
         LOGGER.exception(f"DbError: {str(err)}")
         raise DatabaseError(str(err))
@@ -133,7 +132,7 @@ def get_job_by_request_id(request_id):
             request_id = %s
         """
     try:
-        rows = utils.database.single_query(sql, (request_id,))
+        rows = database.single_query(sql, (request_id,))
         result = result_to_json(rows)
     except DbError as err:
         LOGGER.exception(f"DbError: {str(err)}")
@@ -164,7 +163,7 @@ def get_jobs_by_granule_id(granule_id):
         ORDER BY last_update_time desc
         """
     try:
-        rows = utils.database.single_query(sql, (granule_id,))
+        rows = database.single_query(sql, (granule_id,))
         result = result_to_json(rows)
     except DbError as err:
         LOGGER.exception(f"DbError: {str(err)}")
@@ -195,7 +194,7 @@ def get_jobs_by_object_key(object_key):
         ORDER BY last_update_time desc
         """
     try:
-        rows = utils.database.single_query(sql, (object_key,))
+        rows = database.single_query(sql, (object_key,))
         result = result_to_json(rows)
     except DbError as err:
         LOGGER.exception(f"DbError: {str(err)}")
@@ -230,7 +229,7 @@ def update_request_status_for_job(request_id, status, err_msg=None):
             request_id = %s
     """
     try:
-        result = utils.database.single_query(sql, (status, date, err_msg, request_id))
+        result = database.single_query(sql, (status, date, err_msg, request_id))
     except DbError as err:
         msg = f"DbError updating status for job {request_id} to {status}. {str(err)}"
         LOGGER.exception(msg)
@@ -252,7 +251,7 @@ def delete_request(request_id):
             request_id = %s
     """
     try:
-        result = utils.database.single_query(sql, (request_id,))
+        result = database.single_query(sql, (request_id,))
     except DbError as err:
         LOGGER.exception(f"DbError: {str(err)}")
         raise DatabaseError(str(err))
@@ -300,7 +299,7 @@ def get_all_requests():
         ORDER BY last_update_time desc """
 
     try:
-        rows = utils.database.single_query(sql, ())
+        rows = database.single_query(sql, ())
         result = result_to_json(rows)
     except DbError as err:
         LOGGER.exception(f"DbError: {str(err)}")
@@ -366,11 +365,11 @@ def get_jobs_by_status(status, max_days_old=None):
         if max_days_old:
             sql2 = """ and last_update_time > CURRENT_DATE at time zone 'utc' - INTERVAL '%s' DAY"""
             sql = sql +  sql2 + orderby
-            rows = utils.database.single_query(sql, (status, max_days_old,))
+            rows = database.single_query(sql, (status, max_days_old,))
             result = result_to_json(rows)
         else:
             sql = sql + orderby
-            rows = utils.database.single_query(sql, (status,))
+            rows = database.single_query(sql, (status,))
             result = result_to_json(rows)
     except DbError as err:
         LOGGER.exception(f"DbError: {str(err)}")
@@ -406,7 +405,7 @@ def get_jobs_by_request_group_id(request_group_id):
     orderby = """ order by last_update_time desc """
     try:
         sql = sql + orderby
-        rows = utils.database.single_query(sql, (request_group_id,))
+        rows = database.single_query(sql, (request_group_id,))
         result = result_to_json(rows)
     except DbError as err:
         LOGGER.exception(f"DbError: {str(err)}")
