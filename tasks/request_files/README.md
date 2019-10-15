@@ -52,18 +52,17 @@ Individual tests (insert desired test file name):
 
 Code Coverage:
 (podr) λ cd C:\devpy\poswotdr\tasks\request_files
-(podr) λ nosetests --with-coverage --cover-erase --cover-package=request_files --cover-package=request_status --cover-package=copy_files_to_archive --cover-package=requests -v
+(podr) λ nosetests --with-coverage --cover-erase --cover-package=request_files --cover-package=request_status --cover-package=copy_files_to_archive -v
 
 Name                       Stmts   Miss  Cover
 ----------------------------------------------
-copy_files_to_archive.py     100      0   100%
-request_files.py             104      0   100%
-request_status.py             67      0   100%
-requests.py                  181      0   100%
+copy_files_to_archive.py     115      0   100%
+request_files.py             117      0   100%
+request_status.py             74      0   100%
 ----------------------------------------------
-TOTAL                        452      0   100%
+TOTAL                        306      0   100%
 ----------------------------------------------------------------------
-Ran 59 tests in 16.982s
+Ran 86 tests in 38.573s
 ```
 <a name="linting"></a>
 ## Linting
@@ -83,7 +82,7 @@ Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 --------------------------------------------------------------------
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 
-(podr) λ pylint requests.py
+(podr) λ pylint requests_db.py
  --------------------------------------------------------------------
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 

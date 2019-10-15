@@ -1,7 +1,7 @@
 """
 Name: test_requests.py
 
-Description:  Unit tests for requests.py.
+Description:  Unit tests for requests_db.py.
 """
 
 import os
