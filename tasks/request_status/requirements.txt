@@ -1,2 +1,1 @@
-cumulus-message-adapter
-cumulus-message-adapter-python
+
