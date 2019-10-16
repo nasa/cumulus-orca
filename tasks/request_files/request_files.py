@@ -11,7 +11,8 @@ from botocore.exceptions import ClientError
 
 from run_cumulus_task import run_cumulus_task
 from cumulus_logger import CumulusLogger
-from utils import requests_db
+
+import requests_db
 
 LOGGER = CumulusLogger()
 

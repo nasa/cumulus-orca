@@ -6,17 +6,16 @@ Description:  Unit tests for request_status.py.
 import os
 import unittest
 from unittest.mock import Mock
-
+import database
+import requests_db
+from requests_db import result_to_json
 import request_status
 from request_helpers import (REQUEST_GROUP_ID_EXP_1, REQUEST_ID1, REQUEST_ID2,
                              REQUEST_ID3, REQUEST_ID4, REQUEST_ID5,
                              REQUEST_ID6, REQUEST_ID7, REQUEST_ID8,
                              REQUEST_ID9, REQUEST_ID10, REQUEST_ID11,
                              create_insert_request, create_select_requests)
-import utils
-import utils.database
-from utils import requests_db
-from utils.requests_db import result_to_json
+
 
 UTC_NOW_EXP_1 = requests_db.get_utc_now_iso()
 
@@ -31,10 +30,10 @@ class TestRequestStatus(unittest.TestCase):
         os.environ["DATABASE_PW"] = "unittestdbpw"
         self.mock_utcnow = requests_db.get_utc_now_iso
         self.mock_request_group_id = requests_db.request_id_generator
-        self.mock_single_query = utils.database.single_query
+        self.mock_single_query = database.single_query
 
     def tearDown(self):
-        utils.database.single_query = self.mock_single_query
+        database.single_query = self.mock_single_query
         requests_db.request_id_generator = self.mock_request_group_id
         requests_db.get_utc_now_iso = self.mock_utcnow
         del os.environ["DATABASE_HOST"]
@@ -61,7 +60,7 @@ class TestRequestStatus(unittest.TestCase):
                                                     granule_id, "object_key",
                                                     "restore", "my_s3_bucket", status,
                                                     utc_now_exp, None, req_err)
-        utils.database.single_query = Mock(side_effect=[qresult, ins_result])
+        database.single_query = Mock(side_effect=[qresult, ins_result])
         try:
             result = request_status.handler(handler_input_event, None)
             self.fail("expected BadRequestError")
@@ -78,7 +77,7 @@ class TestRequestStatus(unittest.TestCase):
             result = request_status.handler(handler_input_event, None)
             expected = result_to_json(ins_result)
             self.assertEqual(expected, result)
-            utils.database.single_query.assert_called()
+            database.single_query.assert_called()
         except request_status.BadRequestError as err:
             self.fail(err)
         except requests_db.DbError as err:
@@ -96,11 +95,11 @@ class TestRequestStatus(unittest.TestCase):
         handler_input_event = {}
         handler_input_event["function"] = "query"
         expected = result_to_json(exp_result)
-        utils.database.single_query = Mock(side_effect=[qresult])
+        database.single_query = Mock(side_effect=[qresult])
         try:
             result = request_status.task(handler_input_event, None)
             self.assertEqual(expected, result)
-            utils.database.single_query.assert_called()
+            database.single_query.assert_called()
         except requests_db.NotFound as err:
             self.fail(str(err))
 
@@ -117,7 +116,7 @@ class TestRequestStatus(unittest.TestCase):
         exp_request_ids = [REQUEST_ID1]
         _, exp_result = create_select_requests(exp_request_ids)
         expected = result_to_json(exp_result)
-        utils.database.single_query = Mock(side_effect=[exp_result])
+        database.single_query = Mock(side_effect=[exp_result])
         try:
             result = request_status.task(handler_input_event, None)
             self.assertEqual(expected, result)
@@ -136,11 +135,11 @@ class TestRequestStatus(unittest.TestCase):
         exp_request_ids = [REQUEST_ID1]
         _, exp_result = create_select_requests(exp_request_ids)
         expected = result_to_json(exp_result)
-        utils.database.single_query = Mock(side_effect=[exp_result])
+        database.single_query = Mock(side_effect=[exp_result])
         try:
             result = request_status.task(handler_input_event, None)
             self.assertEqual(expected, result)
-            utils.database.single_query.assert_called_once()
+            database.single_query.assert_called_once()
         except requests_db.NotFound as err:
             self.assertEqual(f"Unknown request_group_id: {request_group_id}", str(err))
 
@@ -152,13 +151,13 @@ class TestRequestStatus(unittest.TestCase):
         request_group_id = REQUEST_GROUP_ID_EXP_1
         handler_input_event["request_group_id"] = request_group_id
         handler_input_event["function"] = "query"
-        utils.database.single_query = Mock(side_effect=[requests_db.DbError("Db call failed")])
+        database.single_query = Mock(side_effect=[requests_db.DbError("Db call failed")])
         try:
             request_status.task(handler_input_event, None)
             self.fail("expected DbError")
         except requests_db.DatabaseError as err:
             self.assertEqual("Db call failed", str(err))
-            utils.database.single_query.assert_called_once()
+            database.single_query.assert_called_once()
 
     def test_task_no_function(self):
         """
@@ -182,11 +181,11 @@ class TestRequestStatus(unittest.TestCase):
         handler_input_event["request_group_id"] = request_group_id
         handler_input_event["function"] = "query"
         exp_result = []
-        utils.database.single_query = Mock(side_effect=[exp_result])
+        database.single_query = Mock(side_effect=[exp_result])
         try:
             result = request_status.task(handler_input_event, None)
             self.assertEqual(exp_result, result)
-            utils.database.single_query.assert_called_once()
+            database.single_query.assert_called_once()
         except requests_db.NotFound as err:
             self.fail(str(err))
 
@@ -202,7 +201,7 @@ class TestRequestStatus(unittest.TestCase):
         exp_request_ids = [REQUEST_ID1]
         _, exp_result = create_select_requests(exp_request_ids)
         expected = result_to_json(exp_result)
-        utils.database.single_query = Mock(side_effect=[exp_result])
+        database.single_query = Mock(side_effect=[exp_result])
         try:
             result = request_status.task(handler_input_event, None)
             self.assertEqual(expected, result)
@@ -220,7 +219,7 @@ class TestRequestStatus(unittest.TestCase):
         exp_request_ids = [REQUEST_ID4, REQUEST_ID7]
         _, exp_result = create_select_requests(exp_request_ids)
         expected = result_to_json(exp_result)
-        utils.database.single_query = Mock(side_effect=[exp_result])
+        database.single_query = Mock(side_effect=[exp_result])
         try:
             result = request_status.task(handler_input_event, None)
             self.assertEqual(expected, result)
@@ -240,7 +239,7 @@ class TestRequestStatus(unittest.TestCase):
         try:
             qresult, _ = create_select_requests(exp_request_ids)
             empty_result = []
-            utils.database.single_query = Mock(
+            database.single_query = Mock(
                 side_effect=[qresult, empty_result, empty_result,
                              empty_result, empty_result, empty_result,
                              empty_result, empty_result, empty_result,

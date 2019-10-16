@@ -12,7 +12,7 @@
 <a name="environment"></a>
 # Environment
 ```
-   Python3.6
+   Python3.7
    Cmder
 ```
 <a name="setting-up-your-development-environment"></a>

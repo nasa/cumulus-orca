@@ -8,9 +8,9 @@ import os
 import unittest
 from unittest.mock import Mock
 
-from utils import requests_db
-from utils.requests_db import create_data
-from utils.requests_db import result_to_json
+import requests_db
+from requests_db import create_data
+from requests_db import result_to_json
 
 import db_config
 from request_helpers import (

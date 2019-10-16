@@ -9,14 +9,16 @@ import os
 import boto3
 from botocore.exceptions import ClientError
 from cumulus_logger import CumulusLogger
+import requests_db
 import db_config
+
 from request_helpers import LambdaContextMock, create_handler_event
 from request_helpers import (
     REQUEST_ID1, REQUEST_ID2, REQUEST_ID3, REQUEST_ID4,
     REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_2,
     REQUEST_GROUP_ID_EXP_3)
 from request_helpers import print_rows
-from utils import requests_db
+
 import request_files
 
 UTC_NOW_EXP_1 = requests_db.get_utc_now_iso()

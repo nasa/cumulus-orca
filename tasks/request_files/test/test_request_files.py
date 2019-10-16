@@ -11,10 +11,11 @@ import boto3
 from botocore.exceptions import ClientError
 from cumulus_logger import CumulusLogger
 
+import requests_db
+import database
+from database import DbError
 import request_files
-import utils
-import utils.database
-from utils import requests_db
+
 from request_helpers import (REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_2,
                              REQUEST_GROUP_ID_EXP_3, REQUEST_ID1, REQUEST_ID2,
                              REQUEST_ID3, REQUEST_ID4, LambdaContextMock,
@@ -31,7 +32,7 @@ class TestRequestFiles(unittest.TestCase):
         self.mock_boto3_client = boto3.client
         self.mock_info = CumulusLogger.info
         self.mock_error = CumulusLogger.error
-        self.mock_single_query = utils.database.single_query
+        self.mock_single_query = database.single_query
         self.mock_generator = requests_db.request_id_generator
         os.environ["DATABASE_HOST"] = "my.db.host.gov"
         os.environ["DATABASE_PORT"] = "54"
@@ -44,7 +45,7 @@ class TestRequestFiles(unittest.TestCase):
 
     def tearDown(self):
         requests_db.request_id_generator = self.mock_generator
-        utils.database.single_query = self.mock_single_query
+        database.single_query = self.mock_single_query
         CumulusLogger.error = self.mock_error
         CumulusLogger.info = self.mock_info
         boto3.client = self.mock_boto3_client
@@ -122,7 +123,7 @@ class TestRequestFiles(unittest.TestCase):
                                                              REQUEST_ID2,
                                                              REQUEST_ID3,
                                                              REQUEST_ID4])
-        utils.database.single_query = Mock(
+        database.single_query = Mock(
             side_effect=[qresult_1_inprogress, qresult_1_inprogress,
                          qresult_3_inprogress, qresult_4_inprogress])
 
@@ -165,7 +166,7 @@ class TestRequestFiles(unittest.TestCase):
         exp_files = self.get_expected_files(files[0], files[1], files[2], files[3])
         exp_gran['files'] = exp_files
         self.assertEqual(exp_gran, result)
-        utils.database.single_query.assert_called()  #called 4 times
+        database.single_query.assert_called()  #called 4 times
 
     @staticmethod
     def get_expected_files(file1, file2, file3, file4):
@@ -231,8 +232,8 @@ class TestRequestFiles(unittest.TestCase):
         CumulusLogger.error = Mock()
         requests_db.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
                                                              REQUEST_ID1])
-        utils.database.single_query = Mock(
-            side_effect=[utils.database.DbError("mock insert failed error")])
+        database.single_query = Mock(
+            side_effect=[DbError("mock insert failed error")])
         exp_result = {'granuleId': granule_id, 'files': [{'key': file1,
                                                           'success': True,
                                                           'err_msg': ''}]}
@@ -263,7 +264,7 @@ class TestRequestFiles(unittest.TestCase):
 
         exp_gran['files'] = exp_files
         self.assertEqual(exp_gran, result)
-        utils.database.single_query.assert_called()  #called 1 times
+        database.single_query.assert_called()  #called 1 times
 
     def test_task_two_granules(self):
         """
@@ -348,7 +349,7 @@ class TestRequestFiles(unittest.TestCase):
         qresult_1_inprogress, _ = create_insert_request(
             REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, file1, "restore", "some_bucket",
             "inprogress", UTC_NOW_EXP_1, None, None)
-        utils.database.single_query = Mock(side_effect=[qresult_1_inprogress])
+        database.single_query = Mock(side_effect=[qresult_1_inprogress])
         try:
             result = request_files.task(exp_event, self.context)
             os.environ['RESTORE_REQUEST_RETRIES'] = '3'
@@ -362,7 +363,7 @@ class TestRequestFiles(unittest.TestCase):
                 Bucket='some_bucket',
                 Key=file1,
                 RestoreRequest=restore_req_exp)
-            utils.database.single_query.assert_called_once()
+            database.single_query.assert_called_once()
         except request_files.RestoreRequestError as err:
             os.environ['RESTORE_REQUEST_RETRIES'] = '3'
             self.fail(str(err))
@@ -403,7 +404,7 @@ class TestRequestFiles(unittest.TestCase):
         qresult_1_inprogress, _ = create_insert_request(
             REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, file1, "restore", "some_bucket",
             "inprogress", UTC_NOW_EXP_1, None, None)
-        utils.database.single_query = Mock(side_effect=[qresult_1_inprogress])
+        database.single_query = Mock(side_effect=[qresult_1_inprogress])
 
         try:
             result = request_files.task(exp_event, self.context)
@@ -420,7 +421,7 @@ class TestRequestFiles(unittest.TestCase):
                 RestoreRequest=restore_req_exp)
         except request_files.RestoreRequestError as err:
             self.fail(str(err))
-        utils.database.single_query.assert_called_once()
+        database.single_query.assert_called_once()
 
     def test_task_no_glacier_bucket(self):
         """
@@ -558,11 +559,11 @@ class TestRequestFiles(unittest.TestCase):
             REQUEST_ID1, REQUEST_GROUP_ID_EXP_3, gran["granuleId"], keys[1],
             "restore", "some_bucket",
             "error", UTC_NOW_EXP_1, None, "'Code': 'NoSuchBucket'")
-        utils.database.single_query = Mock(side_effect=[qresult_1_inprogress,
-                                                        qresult_1_error,
-                                                        qresult_3_inprogress,
-                                                        qresult_1_error,
-                                                        qresult_3_error])
+        database.single_query = Mock(side_effect=[qresult_1_inprogress,
+                                                  qresult_1_error,
+                                                  qresult_3_inprogress,
+                                                  qresult_1_error,
+                                                  qresult_3_error])
         try:
             request_files.task(exp_event, self.context)
             self.fail("RestoreRequestError expected")
@@ -576,7 +577,7 @@ class TestRequestFiles(unittest.TestCase):
             Bucket='some_bucket',
             Key=keys[0],
             RestoreRequest={'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}})
-        utils.database.single_query.assert_called()  # 5 times
+        database.single_query.assert_called()  # 5 times
 
     @staticmethod
     def get_exp_files_3_errs(keys):
@@ -664,7 +665,7 @@ class TestRequestFiles(unittest.TestCase):
         qresult3, _ = create_insert_request(
             REQUEST_ID3, REQUEST_GROUP_ID_EXP_1, granule_id, keys[1], "restore", "some_bucket",
             "inprogress", UTC_NOW_EXP_1, None, None)
-        utils.database.single_query = Mock(side_effect=[qresult1, qresult2, qresult2, qresult3])
+        database.single_query = Mock(side_effect=[qresult1, qresult2, qresult2, qresult3])
 
         result = request_files.task(exp_event, self.context)
         self.assertEqual(exp_gran, result)
@@ -674,7 +675,7 @@ class TestRequestFiles(unittest.TestCase):
             Bucket='some_bucket',
             Key=keys[0],
             RestoreRequest={'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}})
-        utils.database.single_query.assert_called()  # 4 times
+        database.single_query.assert_called()  # 4 times
 
 if __name__ == '__main__':
     unittest.main(argv=['start'])

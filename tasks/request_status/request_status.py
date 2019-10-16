@@ -5,7 +5,7 @@ Description:  Queries the request_status table.
 """
 import logging
 
-from utils import requests_db
+import requests_db
 
 # Set Global Variables
 _LOG = logging.getLogger(__name__)

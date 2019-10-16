@@ -11,7 +11,7 @@ import time
 import logging
 import boto3
 from botocore.exceptions import ClientError
-from utils import requests_db
+import requests_db
 
 class CopyRequestError(Exception):
     """

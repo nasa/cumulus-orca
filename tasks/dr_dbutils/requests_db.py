@@ -7,8 +7,8 @@ import logging
 import uuid
 import datetime
 import dateutil.parser
-from utils import database
-from utils.database import DbError
+import database
+from database import DbError
 
 LOGGER = logging.getLogger(__name__)
 
