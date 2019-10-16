@@ -53,7 +53,6 @@ cd "`pwd`/${TASK}"
 rm -rf build_rs
 mkdir build_rs
 cp request_status.py build_rs/
-cp requests_db.py build_rs/
 cd build_rs
 mkdir psycopg2
 cd ..
@@ -71,7 +70,6 @@ echo "pwd3b `pwd`"
 rm -rf build_cp
 mkdir build_cp
 cp copy_files_to_archive.py build_cp/
-cp requests_db.py build_cp/
 cd build_cp
 mkdir psycopg2
 cd ..
@@ -91,7 +89,6 @@ source ../../venv/bin/activate
 pip install -t build_rf -r requirements.txt
 deactivate
 cp request_files.py build_rf/
-cp requests_db.py build_rf/
 cd build_rf
 mkdir psycopg2
 cd ..

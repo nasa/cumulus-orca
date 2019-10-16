@@ -183,5 +183,7 @@ def handler(event, context):            #pylint: disable-msg=unused-argument
         Raises:
             BadRequestError: An error occurred parsing the input.
     """
+    logging.basicConfig(level=logging.INFO,
+                        format='%(levelname)s: %(asctime)s: %(message)s')
     result = task(event, context)
     return result

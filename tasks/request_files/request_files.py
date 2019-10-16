@@ -6,7 +6,6 @@ Description:  Lambda function that makes a restore request from glacier for each
 
 import os
 import time
-import json
 import boto3
 from botocore.exceptions import ClientError
 
@@ -55,6 +54,7 @@ def task(event, context):              #pylint: disable-msg=unused-argument
         Raises:
             RestoreRequestError: Thrown if there are errors with the input request.
     """
+    LOGGER.info("Event: {}", event)
     try:
         exp_days = int(os.environ['RESTORE_EXPIRE_DAYS'])
     except KeyError:
@@ -199,8 +199,6 @@ def restore_object(s3_cli, obj, attempt, retries, retrieval_type='Standard'):
     request_id = data["request_id"]
     request = {'Days': obj["days"],
                'GlacierJobParameters': {'Tier': retrieval_type}}
-    msg = f"request: {request}"
-    LOGGER.info("{}", json.dumps(msg))
     # Submit the request
     try:
         s3_cli.restore_object(Bucket=obj["glacier_bucket"],

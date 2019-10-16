@@ -203,7 +203,7 @@ def copy_object(s3_cli, src_bucket_name, src_object_name,
         response = s3_cli.copy_object(CopySource=copy_source,
                                       Bucket=dest_bucket_name,
                                       Key=dest_object_name)
-        logging.info(f"Copy response: {response}")
+        logging.debug(f"Copy response: {response}")
     except ClientError as ex:
         return str(ex)
     return None
@@ -278,7 +278,7 @@ def handler(event, context):      #pylint: disable-msg=unused-argument
             message, with 'success' = False for the files for which the copy failed.
     """
 
-    logging.basicConfig(level=logging.DEBUG,
+    logging.basicConfig(level=logging.INFO,
                         format='%(levelname)s: %(asctime)s: %(message)s')
     try:
         bucket_map = json.loads(os.environ['BUCKET_MAP'])
@@ -298,7 +298,6 @@ def handler(event, context):      #pylint: disable-msg=unused-argument
         retry_sleep_secs = 0
 
     logging.debug(f'event: {event}')
-    logging.warning(f'event: {event}')
     records = event["Records"]
     result = task(records, bucket_map, retries, retry_sleep_secs)
     for afile in result:
