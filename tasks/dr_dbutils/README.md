@@ -34,7 +34,7 @@ ex:
 The remaining tests have everything mocked.
 
 Run the tests:
-cd ~\poswotdr\tasks\dr_dbutils  
+cd C:\devpy\poswotdr\tasks\dr_dbutils  
 λ activate podr
 All tests:
 (podr) λ nosetests -v
@@ -43,7 +43,7 @@ Individual tests (insert desired test file name):
 (podr) λ nosetests test/test_requests_postgres.py -v
 
 Code Coverage:
-(podr) λ cd ~\poswotdr\tasks\dr_dbutils
+(podr) λ cd C:\devpy\poswotdr\tasks\dr_dbutils
 (podr) λ nosetests --with-coverage --cover-erase --cover-package=requests_db --cover-package=database -v
 
 Name             Stmts   Miss  Cover
@@ -60,7 +60,7 @@ Ran 45 tests in 21.745s
 ```
 Run pylint against the code:
 
-(podr) λ cd ~\poswotdr\tasks\dr_dbutils
+(podr) λ cd C:\devpy\poswotdr\tasks\dr_dbutils
 (podr) λ pylint requests_db.py
 --------------------------------------------------------------------
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
@@ -92,7 +92,7 @@ Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 ```
 https://www.oreilly.com/library/view/head-first-python/9781491919521/ch04.html
 Create the distribution file:
-    (podr) λ cd ~\poswotdr\tasks\dr_dbutils
+    (podr) λ cd C:\devpy\poswotdr\tasks\dr_dbutils
     (podr) λ py -3 setup.py sdist
     (podr) λ cd dist
     (podr) λ pip install dr_dbutils-1.0.tar.gz
