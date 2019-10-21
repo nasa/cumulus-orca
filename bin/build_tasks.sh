@@ -6,7 +6,7 @@ python3 -m venv venv
 source venv/bin/activate
 pip install --upgrade pip    
 deactivate
-echo "pwd1 `pwd`"
+echo "pwd `pwd`"
 
 echo "Pulling awslambda-psycopg2 in preparation for build"
 mkdir -p tasks/package
@@ -48,10 +48,13 @@ zip -r ../extract.zip .
 cd ../../../
 
 TASK='tasks/request_status/'
-echo "Building `pwd`/${TASK}/request_status"
+echo "Building `pwd`/${TASK}"
 cd "`pwd`/${TASK}"
 rm -rf build
 mkdir build
+source ../../venv/bin/activate
+pip install -t build -r requirements.txt
+deactivate
 cp request_status.py build/
 cd build
 mkdir psycopg2
@@ -62,10 +65,13 @@ zip -r ../status.zip .
 cd ../../../
 
 TASK='tasks/copy_files_to_archive/'
-echo "Building `pwd`/${TASK}/copy_files_to_archive"
+echo "Building `pwd`/${TASK}"
 cd "`pwd`/${TASK}"
 rm -rf build
 mkdir build
+source ../../venv/bin/activate
+pip install -t build -r requirements.txt
+deactivate
 cp copy_files_to_archive.py build/
 cd build
 mkdir psycopg2
@@ -76,7 +82,7 @@ zip -r ../copy.zip .
 cd ../../../
 	
 TASK='tasks/request_files/'
-echo "Building `pwd`/${TASK}/request_files"
+echo "Building `pwd`/${TASK}"
 cd "`pwd`/${TASK}"
 rm -rf build
 mkdir build
