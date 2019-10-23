@@ -123,3 +123,13 @@ resource "aws_lambda_function" "request_status" {
     }
   }
 }
+
+resource "aws_s3_bucket_notification" "copy_lambda_trigger" {
+  bucket = "${var.glacier_bucket}"
+
+  lambda_function {
+    lambda_function_arn = "${aws_lambda_function.copy_files_to_archive.arn}"
+    events              = ["s3:ObjectRestore:Completed"]
+    filter_prefix       = "${var.restore_complete_filter_prefix}"
+  }
+}

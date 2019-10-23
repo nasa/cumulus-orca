@@ -2,6 +2,10 @@ variable "prefix" {
   default = "dr"
 }
 
+variable "restore_complete_filter_prefix" {
+  default = ""
+}
+
 variable "glacier_bucket" {
   default = ""
 }
