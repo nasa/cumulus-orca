@@ -75,7 +75,7 @@ resource "aws_lambda_function" "request_files_lambda" {
 }
 
 resource "aws_lambda_function" "copy_files_to_archive" {
-  filename      = "tasks/request_files/copy.zip"
+  filename      = "tasks/copy_files_to_archive/copy.zip"
   function_name = "${var.prefix}_copy_files_to_archive"
   role          = aws_iam_role.restore_object_role.arn
   handler       = "copy_files_to_archive.handler"
@@ -101,7 +101,7 @@ resource "aws_lambda_function" "copy_files_to_archive" {
 }
 
 resource "aws_lambda_function" "request_status" {
-  filename      = "tasks/request_files/status.zip"
+  filename      = "tasks/request_status/status.zip"
   function_name = "${var.prefix}_request_status"
   role          = aws_iam_role.restore_object_role.arn
   handler       = "request_status.handler"

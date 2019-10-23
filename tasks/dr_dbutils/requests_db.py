@@ -317,7 +317,7 @@ def get_all_requests():
     return result
 
 def create_data(obj,   #pylint: disable-msg=too-many-arguments
-                job_type=None, job_status=None, archive_bucket_dest=None,
+                job_type=None, job_status=None,
                 request_time=None,
                 last_update_time=None, err_msg=None):
     """
@@ -335,8 +335,8 @@ def create_data(obj,   #pylint: disable-msg=too-many-arguments
         data["job_type"] = job_type
     if obj["glacier_bucket"]:
         data["restore_bucket_dest"] = obj["glacier_bucket"]
-    if archive_bucket_dest:
-        data["archive_bucket_dest"] = archive_bucket_dest
+    if obj["dest_bucket"]:
+        data["archive_bucket_dest"] = obj["dest_bucket"]
     if job_status:
         data["job_status"] = job_status
     if request_time:
