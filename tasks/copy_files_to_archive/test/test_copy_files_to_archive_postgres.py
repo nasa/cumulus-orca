@@ -3,7 +3,6 @@ Name: test_copy_files_to_archive.py
 
 Description:  Unit tests for copy_files_to_archive.py.
 """
-import json
 import os
 import time
 import unittest
@@ -252,6 +251,13 @@ class TestCopyFilesPostgres(unittest.TestCase):   #pylint: disable-msg=too-many-
         row = requests_db.get_job_by_request_id(REQUEST_ID4)
         self.assertEqual("complete", row[0]['job_status'])
 
+    def test_find_job_in_db(self):
+        """
+        Test reading job from db not found.
+        """
+        key = "nofilefound"
+        job = copy_files_to_archive.find_job_in_db(key)
+        self.assertEqual(None, job)
 
     def test_handler_one_file_fail_3x(self):
         """

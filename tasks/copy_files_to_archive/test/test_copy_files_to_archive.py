@@ -129,6 +129,26 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
             exp_err = f"File copy failed. {exp_result}"
             self.assertEqual(exp_err, str(err))
 
+    def test_handler_db_read_notfound(self):
+        """
+        Test copy lambda with no key found reading db.
+        """
+        boto3.client = Mock()
+        s3_cli = boto3.client('s3')
+        s3_cli.copy_object = Mock(side_effect=[None])
+        exp_request_ids = [REQUEST_ID7]
+        _, exp_result = create_select_requests(exp_request_ids)
+        time.sleep = Mock(side_effect=None)
+        database.single_query = Mock(side_effect=[[], []])
+        try:
+            copy_files_to_archive.handler(self.handler_input_event, None)
+        except copy_files_to_archive.CopyRequestError as err:
+            exp_result = [{'success': False,
+                           'source_bucket': 'my-dr-fake-glacier-bucket',
+                           'source_key': self.exp_file_key1}]
+            exp_err = f"File copy failed. {exp_result}"
+            self.assertEqual(exp_err, str(err))
+
     def test_handler_two_records_success(self):
         """
         Test copy lambda with two files, expecting successful result.

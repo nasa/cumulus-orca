@@ -24,20 +24,12 @@ Run the unit tests with code coverage:
 
 (podr) λ cd C:\devpy\poswotdr\tasks\extract_filepaths_for_granule
 (podr) λ nosetests --with-coverage --cover-erase --cover-package=extract_filepaths_for_granule -v
-Test successful with four keys returned. ... ok
-Test no granuleId in input event. ... ok
-Test successful with four keys returned. ... ok
-Test no key in input event. ... ok
-Test no files in input event. ... ok
-Test no 'granules' key in input event. ... ok
-Test with one valid file in input. ... ok
-Test with two granules, one key each. ... ok
 
 Name                               Stmts   Miss  Cover
 ------------------------------------------------------
-extract_filepaths_for_granule.py      27      0   100%
+extract_filepaths_for_granule.py      51      1    98%
 ----------------------------------------------------------------------
-Ran 8 tests in 0.752s
+Ran 8 tests in 0.781s
 
 ```
 <a name="linting"></a>
@@ -51,8 +43,7 @@ Run pylint against the code:
 --------------------------------------------------------------------
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 
-(podr) λ cd C:\devpy\poswotdr\tasks\extract_filepaths_for_granule\test
-(podr) λ pylint test_extract_file_paths_for_granule.py
+(podr) λ pylint test/test_extract_file_paths_for_granule.py
 
 --------------------------------------------------------------------
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)

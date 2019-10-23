@@ -67,6 +67,10 @@ Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 (podr) λ pylint test/test_request_status.py
 --------------------------------------------------------------------
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
+
+(podr) λ pylint test/request_helpers.py
+--------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 ```
 <a name="deployment"></a>
 ## Deployment

@@ -90,9 +90,9 @@ ex:
 
 Name           Stmts   Miss  Cover
 ----------------------------------
-db_deploy.py     160      0   100%
+db_deploy.py     159      0   100%
 ----------------------------------------------------------------------
-Ran 8 tests in 87.100s
+Ran 8 tests in 0.987s
 
 
 Run the tests:

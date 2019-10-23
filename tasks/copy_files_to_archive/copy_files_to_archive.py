@@ -60,20 +60,25 @@ def task(records, retries, retry_sleep_secs):
             if not afile['success']:
                 key = afile['source_key']
                 try:
-                    job = find_job_in_db(key)
-                    if job:
-                        afile['request_id'] = job['request_id']
-                        afile['target_bucket'] = job['archive_bucket_dest']
-                        err_msg = copy_object(s3, afile['source_bucket'], afile['source_key'],
-                                              afile['target_bucket'])
+                    try:
+                        afile['request_id']
+                    except KeyError:
+                        job = find_job_in_db(key)
+                        if job:
+                            afile['request_id'] = job['request_id']
+                            afile['target_bucket'] = job['archive_bucket_dest']
+                        else:
+                            continue
+                    err_msg = copy_object(s3, afile['source_bucket'], afile['source_key'],
+                                          afile['target_bucket'])
+                    try:
+                        afile = update_status_in_db(afile, attempt, err_msg)
+                    except requests_db.DatabaseError:
                         try:
+                            time.sleep(30)
                             afile = update_status_in_db(afile, attempt, err_msg)
                         except requests_db.DatabaseError:
-                            try:
-                                time.sleep(30)
-                                afile = update_status_in_db(afile, attempt, err_msg)
-                            except requests_db.DatabaseError:
-                                continue
+                            continue
                 except requests_db.DatabaseError:
                     continue
 

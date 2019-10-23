@@ -50,7 +50,7 @@ Code Coverage:
 
 Name                       Stmts   Miss  Cover
 ----------------------------------------------
-copy_files_to_archive.py     117      0   100%
+copy_files_to_archive.py     119      0   100%
 ----------------------------------------------------------------------
 Ran 15 tests in 22.936s
 ```
