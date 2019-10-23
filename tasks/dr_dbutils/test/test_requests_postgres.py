@@ -23,6 +23,7 @@ from request_helpers import (
     UTC_NOW_EXP_9, UTC_NOW_EXP_10, UTC_NOW_EXP_11)
 from request_helpers import print_rows
 
+PROTECTED_BUCKET = "my-protected-bucket"
 
 class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-instance-attributes
     """
@@ -90,79 +91,79 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
             obj["granule_id"] = "granule_1"
             obj["key"] = "objectkey_1"
             obj["glacier_bucket"] = "my_s3_bucket"
-            data = create_data(obj, "restore",
-                               "complete", UTC_NOW_EXP_1, UTC_NOW_EXP_4)
+            data = create_data(obj, "restore", "complete",
+                               PROTECTED_BUCKET, UTC_NOW_EXP_1, UTC_NOW_EXP_4)
             requests_db.submit_request(data)
 
             obj["request_group_id"] = REQUEST_GROUP_ID_EXP_1
             obj["granule_id"] = "granule_2"
             obj["key"] = "objectkey_2"
-            data = create_data(obj, "restore",
-                               "complete", UTC_NOW_EXP_2, UTC_NOW_EXP_5)
+            data = create_data(obj, "restore", "complete",
+                               PROTECTED_BUCKET, UTC_NOW_EXP_2, UTC_NOW_EXP_5)
             requests_db.submit_request(data)
 
             obj["request_group_id"] = REQUEST_GROUP_ID_EXP_1
             obj["granule_id"] = "granule_3"
             obj["key"] = "objectkey_3"
-            data = create_data(obj, "restore",
-                               "complete", UTC_NOW_EXP_3, UTC_NOW_EXP_6)
+            data = create_data(obj, "restore", "complete",
+                               PROTECTED_BUCKET, UTC_NOW_EXP_3, UTC_NOW_EXP_6)
             requests_db.submit_request(data)
 
             obj["request_group_id"] = REQUEST_GROUP_ID_EXP_2
             obj["granule_id"] = "granule_4"
             obj["key"] = "objectkey_4"
-            data = create_data(obj, "restore",
-                               "error", UTC_NOW_EXP_4, None, "oh oh, an error happened")
+            data = create_data(obj, "restore", "error",
+                               PROTECTED_BUCKET, UTC_NOW_EXP_4, None, "oh oh, an error happened")
             requests_db.submit_request(data)
 
             obj["request_group_id"] = REQUEST_GROUP_ID_EXP_3
             obj["granule_id"] = "granule_5"
             obj["key"] = "objectkey_5"
-            data = create_data(obj, "restore",
-                               "inprogress", UTC_NOW_EXP_5, UTC_NOW_EXP_5)
+            data = create_data(obj, "restore", "inprogress",
+                               PROTECTED_BUCKET, UTC_NOW_EXP_5, UTC_NOW_EXP_5)
             requests_db.submit_request(data)
 
             obj["request_group_id"] = REQUEST_GROUP_ID_EXP_3
             obj["granule_id"] = "granule_6"
             obj["key"] = "objectkey_6"
-            data = create_data(obj, "restore",
-                               "inprogress", UTC_NOW_EXP_6, UTC_NOW_EXP_6)
+            data = create_data(obj, "restore", "inprogress",
+                               PROTECTED_BUCKET, UTC_NOW_EXP_6, UTC_NOW_EXP_6)
             requests_db.submit_request(data)
 
             obj["request_group_id"] = REQUEST_GROUP_ID_EXP_4
             obj["granule_id"] = "granule_4"
             obj["key"] = "objectkey_4"
-            data = create_data(obj, "restore",
-                               "inprogress", UTC_NOW_EXP_7, UTC_NOW_EXP_7)
+            data = create_data(obj, "restore", "inprogress",
+                               PROTECTED_BUCKET, UTC_NOW_EXP_7, UTC_NOW_EXP_7)
             requests_db.submit_request(data)
 
             obj["request_group_id"] = REQUEST_GROUP_ID_EXP_5
             obj["granule_id"] = "granule_1"
             obj["key"] = "objectkey_1"
-            data = create_data(obj, "restore",
-                               "inprogress", UTC_NOW_EXP_8, UTC_NOW_EXP_8)
+            data = create_data(obj, "restore", "inprogress",
+                               PROTECTED_BUCKET, UTC_NOW_EXP_8, UTC_NOW_EXP_8)
             requests_db.submit_request(data)
 
             obj["request_group_id"] = REQUEST_GROUP_ID_EXP_5
             obj["granule_id"] = "granule_2"
             obj["key"] = "objectkey_2"
-            data = create_data(obj, "restore",
-                               "inprogress", UTC_NOW_EXP_9, UTC_NOW_EXP_9)
+            data = create_data(obj, "restore", "inprogress",
+                               PROTECTED_BUCKET, UTC_NOW_EXP_9, UTC_NOW_EXP_9)
             requests_db.submit_request(data)
 
             obj["request_group_id"] = REQUEST_GROUP_ID_EXP_5
             obj["granule_id"] = "granule_3"
             obj["key"] = "objectkey_3"
-            data = create_data(obj, "restore",
-                               "inprogress", UTC_NOW_EXP_10, UTC_NOW_EXP_10)
+            data = create_data(obj, "restore", "inprogress",
+                               PROTECTED_BUCKET, UTC_NOW_EXP_10, UTC_NOW_EXP_10)
             requests_db.submit_request(data)
 
             obj["request_group_id"] = REQUEST_GROUP_ID_EXP_6
             obj["granule_id"] = "granule_7"
             obj["key"] = "objectkey_7"
             obj["glacier_bucket"] = None
-            data = create_data(obj, "regenerate",
-                               "inprogress", UTC_NOW_EXP_11, UTC_NOW_EXP_11)
+            data = create_data(obj, "regenerate", "inprogress",
+                               PROTECTED_BUCKET, UTC_NOW_EXP_11, UTC_NOW_EXP_11)
             requests_db.submit_request(data)
 
             results = requests_db.get_all_requests()
@@ -186,6 +187,7 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
         data["object_key"] = "thisisanobjectkey"
         data["job_type"] = "restore"
         data["restore_bucket_dest"] = "my_s3_bucket"
+        data["archive_bucket_dest"] = PROTECTED_BUCKET
         data["job_status"] = "inprogress"
         data["request_time"] = utc_now_exp
         try:
@@ -215,6 +217,7 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
         data["object_key"] = "thisisanobjectkey"
         data["job_type"] = "restore"
         data["restore_bucket_dest"] = "my_s3_bucket"
+        data["archive_bucket_dest"] = PROTECTED_BUCKET
         data["job_status"] = "error"
         data["request_time"] = utc_now_exp
         data["err_msg"] = "restore request error message here"

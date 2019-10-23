@@ -418,7 +418,7 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         qresult, exp_result = create_insert_request(
             REQUEST_ID4, data["request_group_id"],
             data["granule_id"], data["object_key"], data["job_type"],
-            None, data["job_status"], data["request_time"],
+            None, None, data["job_status"], data["request_time"],
             None, data["err_msg"])
         database.single_query = Mock(side_effect=[qresult, exp_result, None, None])
         try:
@@ -453,11 +453,13 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         exp_data["object_key"] = "my_file"
         exp_data["job_type"] = "restore"
         exp_data["restore_bucket_dest"] = "my_bucket"
+        exp_data["archive_bucket_dest"] = "your_bucket"
         exp_data["job_status"] = "inprogress"
         exp_data["request_time"] = utc_now_exp
         exp_data["last_update_time"] = utc_now_exp
 
-        data = requests_db.create_data(obj, "restore", "inprogress",
+        data = requests_db.create_data(obj, exp_data["job_type"], exp_data["job_status"],
+                                       exp_data["archive_bucket_dest"],
                                        utc_now_exp, utc_now_exp)
 
         self.assertEqual(exp_data, data)
@@ -476,12 +478,14 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         data["object_key"] = "thisisanobjectkey"
         data["job_type"] = "restore"
         data["restore_bucket_dest"] = "my_s3_bucket"
+        data["archive_bucket_dest"] = "your_s3_bucket"
         data["job_status"] = "inprogress"
         data["request_time"] = utc_now_exp
         qresult, exp_result = create_insert_request(
             REQUEST_ID1, data["request_group_id"], data["granule_id"],
             data["object_key"], data["job_type"],
             data["restore_bucket_dest"], data["job_status"],
+            data["archive_bucket_dest"],
             data["request_time"], None, None)
         database.single_query = Mock(side_effect=[qresult, exp_result, None, None])
         try:

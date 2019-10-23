@@ -26,21 +26,12 @@ class TestExtractFilePaths(unittest.TestCase):
         Test successful with four keys returned.
         """
         handler_input_event = create_handler_event()
-        result = extract_filepaths_for_granule.handler(handler_input_event, self.context)
-        exp_result = {}
-        exp_grans = []
-        exp_gran = {}
-        exp_files = []
-        exp_gran['granuleId'] = handler_input_event['payload']['granules'][0]['granuleId']
-        exp_files.append(handler_input_event['payload']['granules'][0]['files'][0]['key'])
-        exp_files.append(handler_input_event['payload']['granules'][0]['files'][1]['key'])
-        exp_files.append(handler_input_event['payload']['granules'][0]['files'][2]['key'])
-        exp_files.append(handler_input_event['payload']['granules'][0]['files'][3]['key'])
-        exp_gran['keys'] = exp_files
-        exp_grans.append(exp_gran)
+        exp_msg = "KeyError: \"event['config']['protected-bucket']\" is required"
+        try:
+            extract_filepaths_for_granule.handler(handler_input_event, self.context)
+        except extract_filepaths_for_granule.ExtractFilePathsError as ex:
+            self.assertEqual(exp_msg, str(ex))
 
-        exp_result['granules'] = exp_grans
-        self.assertEqual(exp_result, result['payload'])
 
     def test_task(self):
         """
@@ -51,18 +42,25 @@ class TestExtractFilePaths(unittest.TestCase):
         exp_grans = []
         exp_gran = {}
         exp_files = []
+
         exp_gran['granuleId'] = self.task_input_event['input']['granules'][0]['granuleId']
-        exp_files.append(self.task_input_event['input']['granules'][0]['files'][0]['key'])
-        exp_files.append(self.task_input_event['input']['granules'][0]['files'][1]['key'])
-        exp_files.append(self.task_input_event['input']['granules'][0]['files'][2]['key'])
-        exp_files.append(self.task_input_event['input']['granules'][0]['files'][3]['key'])
+        exp_key1 = {'key': self.task_input_event['input']['granules'][0]['files'][0]['key'],
+                    'dest_bucket': 'sndbx-cumulus-protected'}
+        exp_key2 = {'key': self.task_input_event['input']['granules'][0]['files'][1]['key'],
+                    'dest_bucket': 'sndbx-cumulus-public'}
+        exp_key3 = {'key': self.task_input_event['input']['granules'][0]['files'][2]['key'],
+                    'dest_bucket': None}
+        exp_key4 = {'key': self.task_input_event['input']['granules'][0]['files'][3]['key'],
+                    'dest_bucket': 'sndbx-cumulus-public'}
+        exp_files.append(exp_key1)
+        exp_files.append(exp_key2)
+        exp_files.append(exp_key3)
+        exp_files.append(exp_key4)
         exp_gran['keys'] = exp_files
         exp_grans.append(exp_gran)
 
         exp_result['granules'] = exp_grans
         self.assertEqual(exp_result, result)
-
-
 
     def test_task_no_granules(self):
         """
@@ -111,6 +109,15 @@ class TestExtractFilePaths(unittest.TestCase):
         Test no key in input event.
         """
         self.task_input_event['input'].pop('granules', None)
+        self.task_input_event['config']['protected-bucket'] = "my_protected_bucket"
+        self.task_input_event['config']['internal-bucket'] = "my_internal_bucket"
+        self.task_input_event['config']['private-bucket'] = "my_private_bucket"
+        self.task_input_event['config']['public-bucket'] = "my_public_bucket"
+        self.task_input_event['config']['file-buckets'] = (
+            [{'regex': '.*.h5$', 'sampleFileName': 'L_10-420.h5', 'bucket': 'protected'},
+             {'regex': '.*.iso.xml$', 'sampleFileName': 'L_10-420.iso.xml', 'bucket': 'protected'},
+             {'regex': '.*.h5.mp$', 'sampleFileName': 'L_10-420.h5.mp', 'bucket': 'public'},
+             {'regex': '.*.cmr.json$', 'sampleFileName': 'L_10-420.cmr.json', 'bucket': 'public'}])
         self.task_input_event['input']['granules'] = [{
             "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
             "files": [
@@ -139,7 +146,8 @@ class TestExtractFilePaths(unittest.TestCase):
                     "bucket": "cumulus-test-sandbox-protected-2"
                 }]}]
         exp_result = {'granules': [
-            {'keys': ['MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml'],
+            {'keys': [{'key':'MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml',
+                       'dest_bucket': 'sndbx-cumulus-protected'}],
              'granuleId': 'MOD09GQ.A0219114.N5aUCG.006.0656338553321'}]}
         result = extract_filepaths_for_granule.task(self.task_input_event, self.context)
         self.assertEqual(exp_result, result)
@@ -171,9 +179,11 @@ class TestExtractFilePaths(unittest.TestCase):
              }
              ]
         exp_result = {'granules': [
-            {'keys': ['MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml'],
+            {'keys': [{'key': 'MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml',
+                       'dest_bucket': 'sndbx-cumulus-protected'}],
              'granuleId': 'MOD09GQ.A0219114.N5aUCG.006.0656338553321'},
-            {'keys': ['MOD/MOD09GQ.A0219115.N5aUCG.006.0656338553321.cmr.xml'],
+            {'keys': [{'key': 'MOD/MOD09GQ.A0219115.N5aUCG.006.0656338553321.cmr.xml',
+                       'dest_bucket': 'sndbx-cumulus-protected'}],
              'granuleId': 'MOD09GQ.A0219115.N5aUCG.006.0656338553321'}]}
 
         result = extract_filepaths_for_granule.task(self.task_input_event, self.context)

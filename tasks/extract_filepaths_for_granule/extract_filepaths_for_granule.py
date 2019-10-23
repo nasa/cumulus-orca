@@ -6,6 +6,7 @@ Description:  Extracts the keys (filepaths) for a granule's files from a Cumulus
 
 from run_cumulus_task import run_cumulus_task
 from cumulus_logger import CumulusLogger
+import re
 
 LOGGER = CumulusLogger()
 
@@ -29,7 +30,29 @@ def task(event, context):    #pylint: disable-msg=unused-argument
             ExtractFilePathsError: An error occurred parsing the input.
     """
     result = {}
+    buckets = {}
+    #LOGGER.warning("event: {}", event)
     try:
+        level = "event['config']"
+        buckets["protected"] = event['config']['protected-bucket']
+        buckets["internal"] = event['config']['internal-bucket']
+        buckets["private"] = event['config']['private-bucket']
+        buckets["public"] = event['config']['public-bucket']
+        file_buckets = event['config']['file-buckets']
+        # file_buckets example:
+        # [{'regex': '.*.h5$', 'sampleFileName': 'L0A_HR_RAW_product_0010-of-0420.h5', 'bucket': 'protected'},
+        # {'regex': '.*.iso.xml$', 'sampleFileName': 'L0A_HR_RAW_product_0010-of-0420.iso.xml', 'bucket': 'protected'},
+        # {'regex': '.*.h5.mp$', 'sampleFileName': 'L0A_HR_RAW_product_0001-of-0019.h5.mp', 'bucket': 'public'},
+        # {'regex': '.*.cmr.json$', 'sampleFileName': 'L0A_HR_RAW_product_0001-of-0019.cmr.json', 'bucket': 'public'}]
+        regex_buckets = {}
+        for regx in file_buckets:
+            regex_buckets[regx["regex"]] = buckets[regx["bucket"]]
+
+        # regex_buckets example:
+        # {'.*.h5$': 'podaac-sndbx-cumulus-protected',
+        #  '.*.iso.xml$': 'podaac-sndbx-cumulus-protected',
+        #  '.*.h5.mp$': 'podaac-sndbx-cumulus-public',
+        #  '.*.cmr.json$': 'podaac-sndbx-cumulus-public'}
         level = "event['input']"
         grans = []
         for ev_granule in event['input']['granules']:
@@ -39,7 +62,14 @@ def task(event, context):    #pylint: disable-msg=unused-argument
             gran['granuleId'] = ev_granule['granuleId']
             for afile in ev_granule['files']:
                 level = "event['input']['granules'][]['files']"
-                files.append(afile['key'])
+                dest_bucket = "podaac-sndbx-cumulus-protected"
+                fkey = afile['key']
+                dest_bucket = None
+                for key in regex_buckets:
+                    p = re.compile(key)
+                    if p.match(fkey):
+                        dest_bucket = regex_buckets[key]
+                files.append({"key": fkey, "dest_bucket": dest_bucket})
             gran["keys"] = files
             grans.append(gran)
         result['granules'] = grans

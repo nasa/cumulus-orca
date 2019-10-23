@@ -50,7 +50,7 @@ Code Coverage:
 
 Name                       Stmts   Miss  Cover
 ----------------------------------------------
-copy_files_to_archive.py     114      0   100%
+copy_files_to_archive.py     117      0   100%
 ----------------------------------------------------------------------
 Ran 15 tests in 22.936s
 ```
@@ -119,15 +119,6 @@ FUNCTIONS
         times to retry a copy before failing, and how long to wait between retries.
 
             Environment Vars:
-                BUCKET_MAP (dict): A dict of key:value entries, where the key is a file
-                    extension (including the .) ex. ".hdf", and the value is the destination
-                    bucket for files with that extension. One of the keys can be "other"
-                    to designate a bucket for any extensions that are not explicitly
-                    mapped.
-                    ex.  {".hdf": "my-great-protected-bucket",
-                          ".met": "my-great-protected-bucket",
-                          ".txt": "my-great-public-bucket",
-                          "other": "my-great-protected-bucket"}
                 COPY_RETRIES (number, optional, default = 3): The number of
                     attempts to retry a copy that failed.
                 COPY_RETRY_SLEEP_SECS (number, optional, default = 0): The number of seconds

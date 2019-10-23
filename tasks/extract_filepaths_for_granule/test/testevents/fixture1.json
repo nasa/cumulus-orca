@@ -25,10 +25,58 @@
     },
     "workflow_name": "DrRecoveryWorkflow",
     "collection": {
+      "files": [
+        {
+          "regex": ".*.h5$",
+          "sampleFileName": "L0A_HR_RAW_product_0010-of-0420.h5",
+          "bucket": "protected"
+        },
+        {
+          "regex": ".*.iso.xml$",
+          "sampleFileName": "L0A_HR_RAW_product_0010-of-0420.iso.xml",
+          "bucket": "protected"
+        },
+        {
+          "regex": ".*.h5.mp$",
+          "sampleFileName": "L0A_HR_RAW_product_0001-of-0019.h5.mp",
+          "bucket": "public"
+        },
+        {
+          "regex": ".*.cmr.json$",
+          "sampleFileName": "L0A_HR_RAW_product_0001-of-0019.cmr.json",
+          "bucket": "public"
+        }
+      ],
       "meta": {
         "response-endpoint": "arn:aws:sns:us-west-2:065089468788:providerResponseSNS",
         "granuleRecoveryWorkflow": "DrRecoveryWorkflow",
-        "glacier-bucket": "podaac-sndbx-cumulus-glacier"
+        "glacier-bucket": "sndbx-cumulus-glacier"
+      },
+      "buckets": {
+        "glacier": {
+          "type": "private",
+          "name": "sndbx-cumulus-glacier"
+        },
+        "private": {
+          "type": "private",
+          "name": "sndbx-cumulus-private"
+        },
+        "internal": {
+          "type": "internal",
+          "name": "sndbx-cumulus-internal"
+        },
+        "dashboard": {
+          "type": "public",
+          "name": "sndbx-cumulus-dashboard"
+        },
+        "protected": {
+          "type": "protected",
+          "name": "sndbx-cumulus-protected"
+        },
+        "public": {
+          "type": "public",
+          "name": "sndbx-cumulus-public"
+        }
       }
     },
     "stack": "lab-cumulus",

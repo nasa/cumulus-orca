@@ -5,7 +5,6 @@ Description:  Lambda function that copies files from one s3 bucket
 to another s3 bucket.
 """
 
-import json
 import os
 import time
 import logging
@@ -18,7 +17,7 @@ class CopyRequestError(Exception):
     Exception to be raised if the copy request fails for any of the files.
     """
 
-def task(records, bucket_map, retries, retry_sleep_secs):
+def task(records, retries, retry_sleep_secs):
     """
     Task called by the handler to perform the work.
 
@@ -28,7 +27,6 @@ def task(records, bucket_map, retries, retry_sleep_secs):
 
         Args:
             records (dict): passed through from the handler
-            bucket_map (dict): Mapping of file extensions to bucket names
             retries (number): The number of attempts to retry a failed copy.
             retry_sleep_secs (number): The number of seconds
                 to sleep between retry attempts.
@@ -54,27 +52,65 @@ def task(records, bucket_map, retries, retry_sleep_secs):
         Raises:
             CopyRequestError: Thrown if there are errors with the input records or the copy failed.
     """
-    files = get_files_from_records(records, bucket_map)
+    files = get_files_from_records(records)
     attempt = 1
     s3 = boto3.client('s3')  # pylint: disable-msg=invalid-name
     while attempt <= retries:
         for afile in files:
             if not afile['success']:
-                err_msg = copy_object(s3, afile['source_bucket'], afile['source_key'],
-                                      afile['target_bucket'])
+                key = afile['source_key']
                 try:
-                    update_status_in_db(afile, attempt, err_msg)
+                    job = find_job_in_db(key)
+                    if job:
+                        afile['request_id'] = job['request_id']
+                        afile['target_bucket'] = job['archive_bucket_dest']
+                        err_msg = copy_object(s3, afile['source_bucket'], afile['source_key'],
+                                              afile['target_bucket'])
+                        try:
+                            afile = update_status_in_db(afile, attempt, err_msg)
+                        except requests_db.DatabaseError:
+                            try:
+                                time.sleep(30)
+                                afile = update_status_in_db(afile, attempt, err_msg)
+                            except requests_db.DatabaseError:
+                                continue
                 except requests_db.DatabaseError:
-                    try:
-                        time.sleep(30)
-                        update_status_in_db(afile, attempt, err_msg)
-                    except requests_db.DatabaseError:
-                        continue
+                    continue
+
         attempt = attempt + 1
         if attempt <= retries:
             time.sleep(retry_sleep_secs)
 
     return files
+
+def find_job_in_db(key):
+    """
+    Finds the active job for the file in the database.
+
+        Args:
+            key (string): The object key for the file to find in the db
+
+        Returns:
+            job (dict): The job related to the restore request.
+    """
+    try:
+        request_id = None
+        jobs = requests_db.get_jobs_by_object_key(key)
+        for job in jobs:
+            if job["job_status"] != "complete":
+                request_id = job['request_id']
+                break
+        if not request_id:
+            log_msg = ("Failed to update request status in database. "
+                       f"No incomplete entry found for object_key: {key}")
+            logging.error(log_msg)
+            job = None
+    except requests_db.DatabaseError as err:
+        logging.error(f"Failed to read request from database. "
+                      f"key: {key} "
+                      f"Err: {str(err)}")
+        raise
+    return job
 
 def update_status_in_db(afile, attempt, err_msg):
     """
@@ -82,8 +118,12 @@ def update_status_in_db(afile, attempt, err_msg):
 
         Args:
             afile: An input dict with keys for:
-            'attempt': The attempt number for the copy
-            'err_msg' (string): None, or the error message from the copy command
+                'request_id' (string): The request_id of the database entry to update.
+                'source_key' (string): The filename of the restored file
+                'source_bucket' (string): The location of the restored file
+                'target_bucket' (string): the archive bucket the file was copied to.
+            attempt (number): The attempt number for the copy
+            err_msg (string): None, or the error message from the copy command
 
         Returns:
             afile: The input dict with additional keys for:
@@ -92,43 +132,33 @@ def update_status_in_db(afile, attempt, err_msg):
                 'err_msg' (string): when success is False, this will contain
                     the error message from the copy error
 
-            Example:  [{'source_key': 'file1.xml', 'source_bucket': 'my-dr-fake-glacier-bucket',
+            Example:  [{'request_id': '', 'source_key': 'file1.xml',
+                          'source_bucket': 'my-dr-fake-glacier-bucket',
                           'target_bucket': 'unittest_xml_bucket', 'success': True,
                           'err_msg': ''},
-                      {'source_key': 'file2.txt', 'source_bucket': 'my-dr-fake-glacier-bucket',
+                      {'request_id': '', 'source_key': 'file2.txt',
+                          'source_bucket': 'my-dr-fake-glacier-bucket',
                           'target_bucket': 'unittest_txt_bucket', 'success': True,
                           'err_msg': ''}]
     """
     old_status = ""
     new_status = ""
     try:
-        request_id = None
-        jobs = requests_db.get_jobs_by_object_key(afile['source_key'])
-        for job in jobs:
-            if job["job_status"] != "complete":
-                request_id = job["request_id"]
-                old_status = job["job_status"]
-                break
-        if not request_id:
-            log_msg = ("Failed to update request status in database. "
-                       f"No incomplete entry found for object_key: {afile['source_key']}")
-            logging.error(log_msg)
+        if err_msg:
+            afile['err_msg'] = err_msg
+            new_status = "error"
+            logging.error(f"Attempt {attempt}. Error copying file {afile['source_key']}"
+                          f" from {afile['source_bucket']} to {afile['target_bucket']}."
+                          f" msg: {err_msg}")
+            requests_db.update_request_status_for_job(afile['request_id'], new_status, err_msg)
         else:
-            if err_msg:
-                afile['err_msg'] = err_msg
-                new_status = "error"
-                logging.error(f"Attempt {attempt}. Error copying file {afile['source_key']}"
-                              f" from {afile['source_bucket']} to {afile['target_bucket']}."
-                              f" msg: {err_msg}")
-                requests_db.update_request_status_for_job(request_id, new_status, err_msg)
-            else:
-                afile['success'] = True
-                afile['err_msg'] = ''
-                new_status = "complete"
-                logging.info(f"Attempt {attempt}. Success copying file "
-                             f"{afile['source_key']} from {afile['source_bucket']} "
-                             f"to {afile['target_bucket']}.")
-                requests_db.update_request_status_for_job(request_id, new_status)
+            afile['success'] = True
+            afile['err_msg'] = ''
+            new_status = "complete"
+            logging.info(f"Attempt {attempt}. Success copying file "
+                         f"{afile['source_key']} from {afile['source_bucket']} "
+                         f"to {afile['target_bucket']}.")
+            requests_db.update_request_status_for_job(afile['request_id'], new_status)
     except requests_db.DatabaseError as err:
         logging.error(f"Failed to update request status in database. "
                       f"key: {afile['source_key']} old status: {old_status} "
@@ -136,20 +166,18 @@ def update_status_in_db(afile, attempt, err_msg):
         raise
     return afile
 
-def get_files_from_records(records, bucket_map):
+def get_files_from_records(records):
     """
     Parses the input records and returns the files to be restored.
 
         Args:
             records (dict): passed through from the handler
-            bucket_map (dict): Mapping of file extensions to bucket names
 
         Returns:
             files: A list of dicts with the following keys:
                 'source_key': The object key of the file that was restored
                 'source_bucket': The name of the s3 bucket where the restored
                     file was temporarily sitting
-                'target_bucket': The name of the archive s3 bucket
     """
     files = []
     for record in records:
@@ -162,15 +190,6 @@ def get_files_from_records(records, bucket_map):
             log_str = 'Records["s3"]["object"]["key"]'
             source_key = record["s3"]["object"]["key"]
             afile['source_key'] = source_key
-            _, ext = os.path.splitext(source_key)
-            try:
-                afile['target_bucket'] = bucket_map[ext]
-            except KeyError:
-                try:
-                    afile['target_bucket'] = bucket_map["other"]
-                except KeyError:
-                    raise CopyRequestError(f'BUCKET_MAP: {bucket_map} does not contain '
-                                           f'values for "{ext}" or "other"')
             files.append(afile)
         except KeyError:
             raise CopyRequestError(f'event record: "{record}" does not contain a '
@@ -216,15 +235,6 @@ def handler(event, context):      #pylint: disable-msg=unused-argument
     times to retry a copy before failing, and how long to wait between retries.
 
         Environment Vars:
-            BUCKET_MAP (dict): A dict of key:value entries, where the key is a file
-                extension (including the .) ex. ".hdf", and the value is the destination
-                bucket for files with that extension. One of the keys can be "other"
-                to designate a bucket for any extensions that are not explicitly
-                mapped.
-                ex.  {".hdf": "my-great-protected-bucket",
-                      ".met": "my-great-protected-bucket",
-                      ".txt": "my-great-public-bucket",
-                      "other": "my-great-protected-bucket"}
             COPY_RETRIES (number, optional, default = 3): The number of
                 attempts to retry a copy that failed.
             COPY_RETRY_SLEEP_SECS (number, optional, default = 0): The number of seconds
@@ -281,11 +291,6 @@ def handler(event, context):      #pylint: disable-msg=unused-argument
     logging.basicConfig(level=logging.INFO,
                         format='%(levelname)s: %(asctime)s: %(message)s')
     try:
-        bucket_map = json.loads(os.environ['BUCKET_MAP'])
-    except KeyError:
-        bucket_map = {}
-
-    try:
         str_env_val = os.environ['COPY_RETRIES']
         retries = int(str_env_val)
     except KeyError:
@@ -299,7 +304,7 @@ def handler(event, context):      #pylint: disable-msg=unused-argument
 
     logging.debug(f'event: {event}')
     records = event["Records"]
-    result = task(records, bucket_map, retries, retry_sleep_secs)
+    result = task(records, retries, retry_sleep_secs)
     for afile in result:
         #if any file failed, the function will fail
         if not afile['success']:

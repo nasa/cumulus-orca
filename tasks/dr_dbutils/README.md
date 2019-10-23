@@ -48,12 +48,12 @@ Code Coverage:
 
 Name             Stmts   Miss  Cover
 ------------------------------------
-database.py         87     43    51%
-requests_db.py     172      0   100%
+database.py         87     57    34%
+requests_db.py     176      1    99%
 ------------------------------------
-TOTAL              259     43    83%
+TOTAL              263     58    78%
 ----------------------------------------------------------------------
-Ran 45 tests in 21.745s
+Ran 45 tests in 36.784s
 ```
 <a name="linting"></a>
 ## Linting

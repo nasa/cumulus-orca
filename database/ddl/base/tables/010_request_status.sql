@@ -28,6 +28,7 @@ BEGIN;
         , object_key          text NOT NULL
         , job_type            varchar(12) NULL DEFAULT 'restore' CHECK (job_type IN ('restore', 'regenerate'))
         , restore_bucket_dest text NULL
+        , archive_bucket_dest text NULL
         , job_status          varchar(12) NULL DEFAULT 'inprogress' CHECK (job_status IN ('inprogress', 'complete','error'))
         , request_time        timestamptz NOT NULL
         , last_update_time    timestamptz NOT NULL
@@ -45,6 +46,7 @@ BEGIN;
     COMMENT ON COLUMN request_status.object_key IS 'object key being restored';
     COMMENT ON COLUMN request_status.job_type IS 'type of restore request that was made';
     COMMENT ON COLUMN request_status.restore_bucket_dest IS 'S3 bucket to restore the file to';
+    COMMENT ON COLUMN request_status.archive_bucket_dest IS 'S3 bucket to copy the restored file to';
     COMMENT ON COLUMN request_status.job_status IS 'current status of the request';
     COMMENT ON COLUMN request_status.request_time IS 'Time the request was made';
     COMMENT ON COLUMN request_status.last_update_time IS 'The last time the request was updated';

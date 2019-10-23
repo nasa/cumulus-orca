@@ -89,7 +89,6 @@ resource "aws_lambda_function" "copy_files_to_archive" {
 
   environment {
     variables = {
-      BUCKET_MAP            = var.copy_bucket_map
       COPY_RETRIES          = var.copy_retries
       COPY_RETRY_SLEEP_SECS = var.copy_retry_sleep_secs
       DATABASE_HOST         = aws_db_instance.postgresql.address
