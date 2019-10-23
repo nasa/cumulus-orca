@@ -11,6 +11,7 @@ resource "aws_lambda_function" "db_deploy" {
   handler       = "db_deploy.handler"
   runtime       = "python3.7"
   timeout       = 300
+  description   = "Deploys the Disaster Recovery database"
 
   vpc_config {
     subnet_ids         = var.ngap_subnets
@@ -39,6 +40,7 @@ resource "aws_lambda_function" "extract_filepaths_for_granule_lambda" {
   handler       = "extract_filepaths_for_granule.handler"
   runtime       = "python3.7"
   timeout       = 300
+  description   = "Extracts bucket info and granules file keys from the CMA"
 
   vpc_config {
     subnet_ids         = var.ngap_subnets
@@ -53,6 +55,7 @@ resource "aws_lambda_function" "request_files_lambda" {
   handler       = "request_files.handler"
   runtime       = "python3.7"
   timeout       = 300
+  description   = "Submits a restore request for a file"
 
   vpc_config {
     subnet_ids         = var.ngap_subnets
@@ -81,6 +84,7 @@ resource "aws_lambda_function" "copy_files_to_archive" {
   handler       = "copy_files_to_archive.handler"
   runtime       = "python3.7"
   timeout       = 300
+  description   = "Copies a restored file to the archive"
 
   vpc_config {
     subnet_ids         = var.ngap_subnets
@@ -107,6 +111,7 @@ resource "aws_lambda_function" "request_status" {
   handler       = "request_status.handler"
   runtime       = "python3.7"
   timeout       = 300
+  description   = "Queries the Disaster Recovery database for status"
 
   vpc_config {
     subnet_ids         = var.ngap_subnets
