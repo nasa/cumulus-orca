@@ -13,9 +13,8 @@ import boto3
 from botocore.exceptions import ClientError
 
 import copy_files_to_archive
-import utils
-import utils.database
-import requests
+import database
+import requests_db
 from request_helpers import create_copy_event2, create_copy_handler_event
 from request_helpers import create_select_requests, REQUEST_ID4, REQUEST_ID7
 
@@ -44,12 +43,12 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
 
         self.exp_file_key1 = 'dr-glacier/MOD09GQ.A0219114.N5aUCG.006.0656338553321.txt'
         self.handler_input_event = create_copy_handler_event()
-        self.mock_single_query = utils.database.single_query
+        self.mock_single_query = database.single_query
         self.mock_time_sleep = time.sleep
 
     def tearDown(self):
         time.sleep = self.mock_time_sleep
-        utils.database.single_query = self.mock_single_query
+        database.single_query = self.mock_single_query
         boto3.client = self.mock_boto3_client
         try:
             del os.environ['BUCKET_MAP']
@@ -74,7 +73,7 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
         exp_upd_result = []
         exp_request_ids = [REQUEST_ID7]
         _, exp_result = create_select_requests(exp_request_ids)
-        utils.database.single_query = Mock(side_effect=[exp_result, exp_upd_result])
+        database.single_query = Mock(side_effect=[exp_result, exp_upd_result])
         result = copy_files_to_archive.handler(self.handler_input_event, None)
         os.environ['COPY_RETRIES'] = '2'
         os.environ['COPY_RETRY_SLEEP_SECS'] = '1'
@@ -89,7 +88,7 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
                        "target_bucket": self.exp_target_bucket,
                        "err_msg": ""}]
         self.assertEqual(exp_result, result)
-        utils.database.single_query.assert_called()
+        database.single_query.assert_called()
 
     def test_handler_db_update_err(self):
         """
@@ -102,9 +101,9 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
         _, exp_result = create_select_requests(exp_request_ids)
         time.sleep = Mock(side_effect=None)
         exp_err = 'Database Error. Internal database error, please contact LP DAAC User Services'
-        utils.database.single_query = Mock(
-            side_effect=[exp_result, requests.DatabaseError(exp_err),
-                         requests.DatabaseError(exp_err)])
+        database.single_query = Mock(
+            side_effect=[exp_result, requests_db.DatabaseError(exp_err),
+                         requests_db.DatabaseError(exp_err)])
         result = copy_files_to_archive.handler(self.handler_input_event, None)
         exp_result = [{'success': True, 'source_bucket': 'my-dr-fake-glacier-bucket',
                        'source_key': 'dr-glacier/MOD09GQ.A0219114.N5aUCG.006.0656338553321.txt',
@@ -123,7 +122,7 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
         exp_upd_result = []
         exp_request_ids = [REQUEST_ID7]
         _, exp_result = create_select_requests(exp_request_ids)
-        utils.database.single_query = Mock(side_effect=[exp_result, exp_upd_result,
+        database.single_query = Mock(side_effect=[exp_result, exp_upd_result,
                                                         exp_result, exp_upd_result])
 
         exp_rec_2 = create_copy_event2()
@@ -174,7 +173,7 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
         exp_request_ids = [REQUEST_ID7, REQUEST_ID4]
         _, exp_result = create_select_requests(exp_request_ids)
 
-        utils.database.single_query = Mock(side_effect=[exp_result,
+        database.single_query = Mock(side_effect=[exp_result,
                                                         exp_result,
                                                         exp_upd_result,
                                                         exp_result,
@@ -189,7 +188,7 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
                                               CopySource={'Bucket': self.exp_src_bucket,
                                                           'Key': self.exp_file_key1},
                                               Key=self.exp_file_key1)
-        utils.database.single_query.assert_called()
+        database.single_query.assert_called()
 
     def test_handler_one_file_retry2_success(self):
         """
@@ -206,7 +205,7 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
         exp_request_ids = [REQUEST_ID7, REQUEST_ID4]
         _, exp_result = create_select_requests(exp_request_ids)
         exp_upd_result = []
-        utils.database.single_query = Mock(side_effect=[exp_result,
+        database.single_query = Mock(side_effect=[exp_result,
                                                         exp_upd_result,
                                                         exp_result,
                                                         exp_upd_result])
@@ -223,7 +222,7 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
                                               CopySource={'Bucket': self.exp_src_bucket,
                                                           'Key': self.exp_file_key1},
                                               Key=self.exp_file_key1)
-        utils.database.single_query.assert_called()
+        database.single_query.assert_called()
 
     def test_handler_no_bucket_map(self):
         """
@@ -255,7 +254,7 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
         exp_upd_result = []
         exp_request_ids = [REQUEST_ID7, REQUEST_ID4]
         _, exp_result = create_select_requests(exp_request_ids)
-        utils.database.single_query = Mock(side_effect=[exp_result, exp_upd_result])
+        database.single_query = Mock(side_effect=[exp_result, exp_upd_result])
         result = copy_files_to_archive.handler(self.handler_input_event, None)
         boto3.client.assert_called_with('s3')
         exp_result = [{"success": True, "source_bucket": self.exp_src_bucket,
@@ -267,7 +266,7 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
                                               CopySource={'Bucket': self.exp_src_bucket,
                                                           'Key': exp_file_key},
                                               Key=exp_file_key)
-        utils.database.single_query.assert_called()
+        database.single_query.assert_called()
 
 
     def test_handler_no_other_in_bucket_map(self):

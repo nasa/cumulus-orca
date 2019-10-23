@@ -6,13 +6,13 @@ Description:  Lambda function that makes a restore request from glacier for each
 
 import os
 import time
-import json
 import boto3
 from botocore.exceptions import ClientError
 
 from run_cumulus_task import run_cumulus_task
 from cumulus_logger import CumulusLogger
-import requests
+
+import requests_db
 
 LOGGER = CumulusLogger()
 
@@ -55,6 +55,7 @@ def task(event, context):              #pylint: disable-msg=unused-argument
         Raises:
             RestoreRequestError: Thrown if there are errors with the input request.
     """
+    LOGGER.info("Event: {}", event)
     try:
         exp_days = int(os.environ['RESTORE_EXPIRE_DAYS'])
     except KeyError:
@@ -124,7 +125,7 @@ def process_granules(s3, gran, glacier_bucket, exp_days):        # pylint: disab
         retrieval_type = 'Standard'
 
     attempt = 1
-    request_group_id = requests.request_id_generator()
+    request_group_id = requests_db.request_id_generator()
     granule_id = gran['granuleId']
     while attempt <= retries:
         for afile in gran['files']:
@@ -195,21 +196,19 @@ def restore_object(s3_cli, obj, attempt, retries, retrieval_type='Standard'):
         Returns:
             uuid: request_Id.
     """
-    data = requests.create_data(obj, "restore", "inprogress", None, None)
+    data = requests_db.create_data(obj, "restore", "inprogress", None, None)
     request_id = data["request_id"]
     request = {'Days': obj["days"],
                'GlacierJobParameters': {'Tier': retrieval_type}}
-    msg = f"request: {request}"
-    LOGGER.info("{}", json.dumps(msg))
     # Submit the request
     try:
         s3_cli.restore_object(Bucket=obj["glacier_bucket"],
                               Key=obj["key"],
                               RestoreRequest=request)
         try:
-            requests.submit_request(data)
+            requests_db.submit_request(data)
             LOGGER.info(f"Job {request_id} created.")
-        except requests.DatabaseError as err:
+        except requests_db.DatabaseError as err:
             LOGGER.error("Failed to log request in database. Error {}. Request: {}",
                          str(err), data)
     except ClientError as c_err:
@@ -220,9 +219,9 @@ def restore_object(s3_cli, obj, attempt, retries, retrieval_type='Standard'):
             try:
                 data["err_msg"] = str(c_err)
                 data["job_status"] = "error"
-                requests.submit_request(data)
+                requests_db.submit_request(data)
                 LOGGER.info(f"Job {request_id} created.")
-            except requests.DatabaseError as err:
+            except requests_db.DatabaseError as err:
                 LOGGER.error("Failed to log request in database. Error {}. Request: {}",
                              str(err), data)
 

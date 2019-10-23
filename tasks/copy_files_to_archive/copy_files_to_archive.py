@@ -11,7 +11,7 @@ import time
 import logging
 import boto3
 from botocore.exceptions import ClientError
-import requests
+import requests_db
 
 class CopyRequestError(Exception):
     """
@@ -64,11 +64,11 @@ def task(records, bucket_map, retries, retry_sleep_secs):
                                       afile['target_bucket'])
                 try:
                     update_status_in_db(afile, attempt, err_msg)
-                except requests.DatabaseError:
+                except requests_db.DatabaseError:
                     try:
                         time.sleep(30)
                         update_status_in_db(afile, attempt, err_msg)
-                    except requests.DatabaseError:
+                    except requests_db.DatabaseError:
                         continue
         attempt = attempt + 1
         if attempt <= retries:
@@ -103,7 +103,7 @@ def update_status_in_db(afile, attempt, err_msg):
     new_status = ""
     try:
         request_id = None
-        jobs = requests.get_jobs_by_object_key(afile['source_key'])
+        jobs = requests_db.get_jobs_by_object_key(afile['source_key'])
         for job in jobs:
             if job["job_status"] != "complete":
                 request_id = job["request_id"]
@@ -120,7 +120,7 @@ def update_status_in_db(afile, attempt, err_msg):
                 logging.error(f"Attempt {attempt}. Error copying file {afile['source_key']}"
                               f" from {afile['source_bucket']} to {afile['target_bucket']}."
                               f" msg: {err_msg}")
-                requests.update_request_status_for_job(request_id, new_status, err_msg)
+                requests_db.update_request_status_for_job(request_id, new_status, err_msg)
             else:
                 afile['success'] = True
                 afile['err_msg'] = ''
@@ -128,8 +128,8 @@ def update_status_in_db(afile, attempt, err_msg):
                 logging.info(f"Attempt {attempt}. Success copying file "
                              f"{afile['source_key']} from {afile['source_bucket']} "
                              f"to {afile['target_bucket']}.")
-                requests.update_request_status_for_job(request_id, new_status)
-    except requests.DatabaseError as err:
+                requests_db.update_request_status_for_job(request_id, new_status)
+    except requests_db.DatabaseError as err:
         logging.error(f"Failed to update request status in database. "
                       f"key: {afile['source_key']} old status: {old_status} "
                       f"new status: {new_status}. Err: {str(err)}")
@@ -203,7 +203,7 @@ def copy_object(s3_cli, src_bucket_name, src_object_name,
         response = s3_cli.copy_object(CopySource=copy_source,
                                       Bucket=dest_bucket_name,
                                       Key=dest_object_name)
-        logging.info(f"Copy response: {response}")
+        logging.debug(f"Copy response: {response}")
     except ClientError as ex:
         return str(ex)
     return None
@@ -278,7 +278,7 @@ def handler(event, context):      #pylint: disable-msg=unused-argument
             message, with 'success' = False for the files for which the copy failed.
     """
 
-    logging.basicConfig(level=logging.DEBUG,
+    logging.basicConfig(level=logging.INFO,
                         format='%(levelname)s: %(asctime)s: %(message)s')
     try:
         bucket_map = json.loads(os.environ['BUCKET_MAP'])
@@ -298,7 +298,6 @@ def handler(event, context):      #pylint: disable-msg=unused-argument
         retry_sleep_secs = 0
 
     logging.debug(f'event: {event}')
-    logging.warning(f'event: {event}')
     records = event["Records"]
     result = task(records, bucket_map, retries, retry_sleep_secs)
     for afile in result:
