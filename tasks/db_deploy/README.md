@@ -129,8 +129,13 @@ Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 <a name="deployment-validation"></a>
 ### Deployment Validation
 ```
-1.  Create an empty JSON test event:
-    {}
+1.  When deploying the complete Disaster Recovery Solution, this lambda is 
+    excuted as part of the deployment and should create the disaster_recovery
+    database. Use the request_status lambda to query it.
+    
+    If you are in a sandbox environment, and want to re-create the database,
+    set the DROP_DATABASE environment variable to True. To update the tables in 
+    an existing database set it to False.
 
 2.  Set the following environment variables
     DATABASE_HOST   Amazon RDS | Databases | choose db instance | Connectivity & Security | Endpoint value
@@ -143,7 +148,9 @@ Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
     DROP_DATABASE   True to perform DROP_DATABASE, False to keep existing database
     PLATFORM        AWS 
 
-3.  Execute the test event.
+3.  create an empty JSON test event:
+    {}
+    Execute the test event.
 
 4.  Use the request_status lambda to verify the database.
 ```

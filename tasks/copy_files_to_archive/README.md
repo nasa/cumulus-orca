@@ -1,4 +1,4 @@
-**Lambda function request_files **
+**Lambda function copy_files_to_archive **
 
 - [Setup](#setup)
 - [Development](#development)
@@ -80,17 +80,10 @@ Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 <a name="deployment-validation"></a>
 ### Deployment Validation
 ```
-1.  Upload the files in /tasks/testfiles/ to the test glacier bucket.
-    It may take overnight for the files to be moved to Glacier.
-2.  I haven't figured out how to write an input event that populates the 'config' part, but you
-    can use the test event in /tasks/request_files/test/testevents/RestoreTestFiles.json, and expect
-    an error ending with 'does not contain a config value for glacier-bucket'
-2.  Once the files are in Glacier, use the CumulusDrRecoveryWorkflowStateMachine to restore them.
-    You can use the test event in tasks/extract_filepaths_for_granule/test/testevents/StepFunction.json.
-    Edit the ['payload']['granules']['keys'] values as needed to be the file(s) you wish to restore.
-    Edit the ['cumulus_meta']['execution_name'] to be something unique (like yyyymmdd_hhmm). Then
-    copy and paste the same value to the execution name field above the input field.
-    The restore may take up to 5 hours.
+1.  Paste the contents of test/testevents/copy_exp_event_1.json into
+    a test event and execute it.
+2.  Neither the source_key or the source_bucket should exist, so the copy will fail
+    and the database update will fail.
 
 ```
 <a name="pydoc-copy-files"></a>

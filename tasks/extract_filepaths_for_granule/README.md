@@ -66,25 +66,13 @@ Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 <a name="deployment-validation"></a>
 ### Deployment Validation
 ```
-1.  Use the test event in /tasks/extract_filepaths_for_granule/test/testevents/fixture2.json to test the lambda.
-    This test event was created by taking the input to the lambda from the DrRecoveryWorkflowStateMachine, and
-    a) replacing
-    "cumulus_meta": {
-        "state_machine": "arn:aws:states:us-west-2:065089468788:stateMachine:labCumulusDrRecoveryWorkflowStateMachine-aiTLe4uNdy0X",
-        "message_source": "sfn",
-    with:
-    "cumulus_meta": {
-        "task": "extract_filepaths_for_granule",
-        "message_source": "local",
-
-    b) removing the "workflow_tasks" lines. ex:
-    "workflow_tasks": {
-      "Report": {
-        "version": "1",
-        "name": "lab-cumulus-SfSnsReport",
-        "arn": "arn:aws:lambda:us-west-2:065089468788:function:lab-cumulus-SfSnsReport:SfSnsReport-282da1a3b4f8493441acc178396b846857bc1068"
-      }
-    },
+1.  The easiest way to test is to use the DrRecoveryWorkflowStateMachine.
+    You can use the test event in tasks/extract_filepaths_for_granule/test/testevents/StepFunction.json.
+    Edit the ['payload']['granules']['keys'] values as needed to be the file(s) you wish to restore.
+    Edit the ['cumulus_meta']['execution_name'] to be something unique (like yyyymmdd_hhmm). Then
+    copy and paste the same value to the execution name field above the input field.
+    
+2.  Execute the workflow. Once it passes the extract step, you can look at the output from it.
 ```
 <a name="pydoc"></a>
 ## pydoc extract_filepaths_for_granule

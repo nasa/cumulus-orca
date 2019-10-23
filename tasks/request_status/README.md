@@ -1,4 +1,4 @@
-**Lambda function request_files **
+**Lambda function request_status **
 
 - [Setup](#setup)
 - [Development](#development)
@@ -80,18 +80,24 @@ Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 <a name="deployment-validation"></a>
 ### Deployment Validation
 ```
-1.  Upload the files in /tasks/testfiles/ to the test glacier bucket.
-    It may take overnight for the files to be moved to Glacier.
-2.  I haven't figured out how to write an input event that populates the 'config' part, but you
-    can use the test event in /tasks/request_files/test/testevents/RestoreTestFiles.json, and expect
-    an error ending with 'does not contain a config value for glacier-bucket'
-2.  Once the files are in Glacier, use the CumulusDrRecoveryWorkflowStateMachine to restore them.
-    You can use the test event in tasks/extract_filepaths_for_granule/test/testevents/StepFunction.json.
-    Edit the ['payload']['granules']['keys'] values as needed to be the file(s) you wish to restore.
-    Edit the ['cumulus_meta']['execution_name'] to be something unique (like yyyymmdd_hhmm). Then
-    copy and paste the same value to the execution name field above the input field.
-    The restore may take up to 5 hours.
+1.  Configure a test event:
+    name: QueryAll
+    code: {"function": "query"}
+    Save and execute it. If the database is empty, it will return [], otherwise it 
+    should return all the requests.
 
+2.  These are other valid test events:
+    name: QueryByGranuleId
+    code: {"function": "query", "granule_id": "your granule_id here"}
+
+    name: QueryByRequestId
+    code: {"function": "query", "request_id": "your request_id here"}
+
+    name: QueryByRequestGroupId
+    code: {"function": "query", "request_group_id": "your request_group_id here"}
+
+    name: QueryByObjectKey
+    code: {"function": "query", "object_key": "your object_key here"}
 ```
 <a name="pydoc-request-status"></a>
 ## pydoc request_status
@@ -160,15 +166,16 @@ FUNCTIONS
             Example:
                 [
                     {
-                        "request_id": "B2FE0827DD30B8D1",
-                        "request_group_id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-                        "granule_id": "granxyz",
-                        "object_key": "my_test_filename",
+                        "request_id": "aa965db4-80af-4b05-b15c-4249dcbd3919",
+                        "request_group_id": "79a1e2e9-cd92-48eb-87a3-c3cf932846c5",
+                        "granule_id": "L0A_HR_RAW_product_0003-of-0420",
+                        "object_key": "L0A_HR_RAW_product_0003-of-0420.h5",
                         "job_type": "restore",
-                        "restore_bucket_dest": "my_test_bucket",
+                        "restore_bucket_dest": "sndbx-cumulus-glacier",
+                        "archive_bucket_dest": "sndbx-cumulus-protected",
                         "job_status": "inprogress",
-                        "request_time": "2019-09-30 18:24:38.370252+00:00",
-                        "last_update_time": "2019-09-30 18:24:38.370252+00:00",
+                        "request_time": "2019-10-23 18:24:38.370252+00:00",
+                        "last_update_time": "2019-10-23 18:24:38.370252+00:00",
                         "err_msg": null
                     }
                 ]
