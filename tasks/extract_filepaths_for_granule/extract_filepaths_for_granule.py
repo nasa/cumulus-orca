@@ -42,7 +42,6 @@ def task(event, context):    #pylint: disable-msg=unused-argument
             gran['granuleId'] = ev_granule['granuleId']
             for afile in ev_granule['files']:
                 level = "event['input']['granules'][]['files']"
-                dest_bucket = "podaac-sndbx-cumulus-protected"
                 fkey = afile['key']
                 dest_bucket = None
                 for key in regex_buckets:

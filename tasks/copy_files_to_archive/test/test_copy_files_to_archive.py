@@ -14,10 +14,10 @@ import requests_db
 from botocore.exceptions import ClientError
 
 import copy_files_to_archive
-from request_helpers import (REQUEST_ID4, REQUEST_ID7, create_copy_event2,
+from request_helpers import (REQUEST_ID4, REQUEST_ID7, 
+                             PROTECTED_BUCKET,
+                             create_copy_event2,
                              create_copy_handler_event, create_select_requests)
-
-PROTECTED_BUCKET = "sndbx-cumulus-protected"
 
 class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-attributes
     """

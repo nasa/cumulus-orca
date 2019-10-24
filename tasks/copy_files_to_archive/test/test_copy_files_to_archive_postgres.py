@@ -22,11 +22,9 @@ from request_helpers import (REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_2,
                              REQUEST_ID3, REQUEST_ID4, REQUEST_ID5,
                              REQUEST_ID6, UTC_NOW_EXP_1, UTC_NOW_EXP_4,
                              UTC_NOW_EXP_5, UTC_NOW_EXP_6, UTC_NOW_EXP_7,
-                             UTC_NOW_EXP_8, create_copy_event2,
+                             UTC_NOW_EXP_8, PROTECTED_BUCKET,
+                             PUBLIC_BUCKET, create_copy_event2,
                              create_copy_handler_event, print_rows)
-
-PROTECTED_BUCKET = "sndbx-cumulus-protected"
-PUBLIC_BUCKET = "sndbx-cumulus-public"
 
 class TestCopyFilesPostgres(unittest.TestCase):   #pylint: disable-msg=too-many-instance-attributes
     """

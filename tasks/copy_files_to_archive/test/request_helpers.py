@@ -14,6 +14,7 @@ import database
 
 #import restore_requests
 PROTECTED_BUCKET = "sndbx-cumulus-protected"
+PUBLIC_BUCKET = "sndbx-cumulus-public"
 REQUEST_ID1 = str(uuid.uuid4())
 REQUEST_ID2 = str(uuid.uuid4())
 REQUEST_ID3 = str(uuid.uuid4())
