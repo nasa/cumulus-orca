@@ -31,7 +31,6 @@ def task(event, context):    #pylint: disable-msg=unused-argument
             ExtractFilePathsError: An error occurred parsing the input.
     """
     result = {}
-    #LOGGER.warning("event: {}", event)
     try:
         regex_buckets = get_regex_buckets(event)
         level = "event['input']"
