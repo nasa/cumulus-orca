@@ -55,7 +55,6 @@ def task(event, context):              #pylint: disable-msg=unused-argument
         Raises:
             RestoreRequestError: Thrown if there are errors with the input request.
     """
-    LOGGER.info("Event: {}", event)
     try:
         exp_days = int(os.environ['RESTORE_EXPIRE_DAYS'])
     except KeyError:
@@ -77,11 +76,14 @@ def task(event, context):              #pylint: disable-msg=unused-argument
     for granule in granules:
         gran['granuleId'] = granule['granuleId']
         files = []
-        for file_key in granule['keys']:
+        for keys in granule['keys']:
+            file_key = keys['key']
+            dest_bucket = keys['dest_bucket']
             if object_exists(s3, glacier_bucket, file_key):
                 LOGGER.info("Added {} to the list of files we'll attempt to recover.", file_key)
                 afile = {}
                 afile['key'] = file_key
+                afile['dest_bucket'] = dest_bucket
                 afile['success'] = False
                 afile['err_msg'] = ''
                 files.append(afile)
@@ -136,6 +138,7 @@ def process_granules(s3, gran, glacier_bucket, exp_days):        # pylint: disab
                     obj["granule_id"] = granule_id
                     obj["glacier_bucket"] = glacier_bucket
                     obj["key"] = afile['key']
+                    obj["dest_bucket"] = afile['dest_bucket']
                     obj["days"] = exp_days
                     request_id = restore_object(s3, obj, attempt, retries, retrieval_type)
                     afile['success'] = True
@@ -186,6 +189,8 @@ def restore_object(s3_cli, obj, attempt, retries, retrieval_type='Standard'):
                 granule_id (string): The granule_id to which the object_name being restored belongs
                 glacier_bucket (string): The S3 bucket name
                 key (string): The key of the Glacier object being restored
+                dest_bucket (string): The bucket the restored file will be moved
+                    to after the restore completes
                 days (number): How many days the restored file will be accessible in the S3 bucket
                     before it expires
             attempt (number): The attempt number for retry purposes

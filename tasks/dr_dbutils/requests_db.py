@@ -59,11 +59,12 @@ def submit_request(data):
             request_id, request_group_id, granule_id,
             object_key, job_type,
             restore_bucket_dest,
+            archive_bucket_dest,
             job_status, request_time, last_update_time,
             err_msg
       
         ) VALUES (
-            %s, %s, %s, %s, %s,
+            %s, %s, %s, %s, %s, %s,
             %s, %s, %s, %s, %s
         )
         """
@@ -85,6 +86,9 @@ def submit_request(data):
     if not "restore_bucket_dest" in data:
         data["restore_bucket_dest"] = None
 
+    if not "archive_bucket_dest" in data:
+        data["archive_bucket_dest"] = None
+
     if not "err_msg" in data:
         data["err_msg"] = None
 
@@ -96,6 +100,7 @@ def submit_request(data):
             data["object_key"],
             data["job_type"],
             data["restore_bucket_dest"],
+            data["archive_bucket_dest"],
             data["job_status"],
             rq_date,
             lu_date,
@@ -122,6 +127,7 @@ def get_job_by_request_id(request_id):
             object_key,
             job_type,
             restore_bucket_dest,
+            archive_bucket_dest,
             job_status,
             request_time,
             last_update_time,
@@ -152,6 +158,7 @@ def get_jobs_by_granule_id(granule_id):
             object_key,
             job_type,
             restore_bucket_dest,
+            archive_bucket_dest,
             job_status,
             request_time,
             last_update_time,
@@ -183,6 +190,7 @@ def get_jobs_by_object_key(object_key):
             object_key,
             job_type,
             restore_bucket_dest,
+            archive_bucket_dest,
             job_status,
             request_time,
             last_update_time,
@@ -290,6 +298,7 @@ def get_all_requests():
             object_key,
             job_type,
             restore_bucket_dest,
+            archive_bucket_dest,
             job_status,
             request_time,
             last_update_time,
@@ -308,8 +317,8 @@ def get_all_requests():
     return result
 
 def create_data(obj,   #pylint: disable-msg=too-many-arguments
-                job_type=None,
-                job_status=None, request_time=None,
+                job_type=None, job_status=None,
+                request_time=None,
                 last_update_time=None, err_msg=None):
     """
     Creates a dict containing the input data for submit_request.
@@ -326,6 +335,8 @@ def create_data(obj,   #pylint: disable-msg=too-many-arguments
         data["job_type"] = job_type
     if obj["glacier_bucket"]:
         data["restore_bucket_dest"] = obj["glacier_bucket"]
+    if obj["dest_bucket"]:
+        data["archive_bucket_dest"] = obj["dest_bucket"]
     if job_status:
         data["job_status"] = job_status
     if request_time:
@@ -351,6 +362,7 @@ def get_jobs_by_status(status, max_days_old=None):
             object_key,
             job_type,
             restore_bucket_dest,
+            archive_bucket_dest,
             job_status,
             request_time,
             last_update_time,
@@ -393,6 +405,7 @@ def get_jobs_by_request_group_id(request_group_id):
             object_key,
             job_type,
             restore_bucket_dest,
+            archive_bucket_dest,
             job_status,
             request_time,
             last_update_time,

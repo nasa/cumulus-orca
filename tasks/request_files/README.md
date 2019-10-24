@@ -52,17 +52,13 @@ Individual tests (insert desired test file name):
 
 Code Coverage:
 (podr) λ cd C:\devpy\poswotdr\tasks\request_files
-(podr) λ nosetests --with-coverage --cover-erase --cover-package=request_files --cover-package=request_status --cover-package=copy_files_to_archive -v
+(podr) λ nosetests --with-coverage --cover-erase --cover-package=request_files -v
 
-Name                       Stmts   Miss  Cover
-----------------------------------------------
-copy_files_to_archive.py     115      0   100%
-request_files.py             117      0   100%
-request_status.py             74      0   100%
-----------------------------------------------
-TOTAL                        306      0   100%
+Name               Stmts   Miss  Cover
+--------------------------------------
+request_files.py     118      0   100%
 ----------------------------------------------------------------------
-Ran 86 tests in 38.573s
+Ran 16 tests in 13.720s
 ```
 <a name="linting"></a>
 ## Linting
@@ -73,24 +69,6 @@ Run pylint against the code:
 (podr) λ pylint request_files.py
 --------------------------------------------------------------------
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-
-(podr) λ pylint copy_files_to_archive.py
---------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-
-(podr) λ pylint request_status.py
---------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-
-(podr) λ pylint requests_db.py
- --------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-
-(podr) λ pylint utils/database.py
-************* Module utils.database
-utils\database.py:19:1: W0511: TODO develop tests for database.py later. in those mock psycopg2.cursor, etc (fixme)
-------------------------------------------------------------------
-Your code has been rated at 9.89/10 (previous run: 9.89/10, +0.00)
 
 (podr) λ pylint test/request_helpers.py
 --------------------------------------------------------------------
@@ -103,26 +81,6 @@ Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 (podr) λ pylint test/test_request_files_postgres.py
 --------------------------------------------------------------------
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-
-(podr) λ pylint test/test_copy_files_to_archive.py
---------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-
-(podr) λ pylint test/test_copy_files_to_archive_postgres.py
---------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-
-(podr) λ pylint test/test_request_status.py
---------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-
-(podr) λ pylint test/test_requests.py
---------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-
-(podr) λ pylint test/test_requests_postgres.py
---------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 ```
 <a name="deployment"></a>
 ## Deployment
@@ -132,12 +90,7 @@ Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 <a name="deployment-validation"></a>
 ### Deployment Validation
 ```
-1.  Upload the files in /tasks/testfiles/ to the test glacier bucket.
-    It may take overnight for the files to be moved to Glacier.
-2.  I haven't figured out how to write an input event that populates the 'config' part, but you
-    can use the test event in /tasks/request_files/test/testevents/RestoreTestFiles.json, and expect
-    an error ending with 'does not contain a config value for glacier-bucket'
-2.  Once the files are in Glacier, use the CumulusDrRecoveryWorkflowStateMachine to restore them.
+1.  The easiest way to test is to use the DrRecoveryWorkflowStateMachine.
     You can use the test event in tasks/extract_filepaths_for_granule/test/testevents/StepFunction.json.
     Edit the ['payload']['granules']['keys'] values as needed to be the file(s) you wish to restore.
     Edit the ['cumulus_meta']['execution_name'] to be something unique (like yyyymmdd_hhmm). Then
@@ -215,174 +168,4 @@ FUNCTIONS
                 The same dict that is returned for a successful granule restore, will be included in the
                 message, with 'success' = False for the files for which the restore request failed to
                 submit.
-```
-<a name="pydoc-copy-files"></a>
-## pydoc copy_files_to_archive
-```
-NAME
-    copy_files_to_archive - Name: copy_files_to_archive.py
-
-DESCRIPTION
-    Description:  Lambda function that copies files from one s3 bucket
-    to another s3 bucket.
-
-CLASSES
-    builtins.Exception(builtins.BaseException)
-        CopyRequestError
-
-    class CopyRequestError(builtins.Exception)
-        Exception to be raised if the copy request fails for any of the files.
-
-FUNCTIONS
-    handler(event, context)
-        Lambda handler. Copies a file from it's temporary s3 bucket to the s3 archive.
-
-        If the copy for a file in the request fails, the lambda
-        throws an exception. Environment variables can be set to override how many
-        times to retry a copy before failing, and how long to wait between retries.
-
-            Environment Vars:
-                BUCKET_MAP (dict): A dict of key:value entries, where the key is a file
-                    extension (including the .) ex. ".hdf", and the value is the destination
-                    bucket for files with that extension. One of the keys can be "other"
-                    to designate a bucket for any extensions that are not explicitly
-                    mapped.
-                    ex.  {".hdf": "my-great-protected-bucket",
-                          ".met": "my-great-protected-bucket",
-                          ".txt": "my-great-public-bucket",
-                          "other": "my-great-protected-bucket"}
-                COPY_RETRIES (number, optional, default = 3): The number of
-                    attempts to retry a copy that failed.
-                COPY_RETRY_SLEEP_SECS (number, optional, default = 0): The number of seconds
-                    to sleep between retry attempts.
-                DATABASE_HOST (string): the server where the database resides.
-                DATABASE_PORT (string): the database port. The standard is 5432.
-                DATABASE_NAME (string): the name of the database.
-                DATABASE_USER (string): the name of the application user.
-                DATABASE_PW (string): the password for the application user.
-
-            Args:
-                event (dict): A dict with the following keys:
-
-                    Records (list(dict)): A list of dict with the following keys:
-                        s3 (dict): A dict with the following keys:
-                            bucket (dict):  A dict with the following keys:
-                                name (string): The name of the s3 bucket holding the restored file
-                            object (dict):  A dict with the following keys:
-                                key (string): The key of the restored file
-
-                    Example: event: {"Records": [{"eventVersion": "2.1",
-                                          "eventSource": "aws:s3",
-                                          "awsRegion": "us-west-2",
-                                          "eventTime": "2019-06-17T18:54:06.686Z",
-                                          "eventName": "ObjectRestore:Post",
-                                          "userIdentity": {
-                                          "principalId": "AWS:AROAJWMHUPO:request_files"},
-                                          "requestParameters": {"sourceIPAddress": "1.001.001.001"},
-                                          "responseElements": {"x-amz-request-id": "0364DB32C0",
-                                                               "x-amz-id-2":
-                                             "4TpisFevIyonOLD/z1OGUE/Ee3w/Et+pr7c5F2RbnAnU="},
-                                          "s3": {"s3SchemaVersion": "1.0",
-                                                "configurationId": "dr_restore_complete",
-                                                "bucket": {"name": exp_src_bucket,
-                                                           "ownerIdentity":
-                                                           {"principalId": "A1BCXDGCJ9"},
-                                                   "arn": "arn:aws:s3:::my-dr-fake-glacier-bucket"},
-                                                "object": {"key": exp_file_key1,
-                                                           "size": 645,
-                                                           "sequencer": "005C54A126FB"}}}]}
-
-                context (Object): None
-
-            Returns:
-                dict: The dict returned from the task. All 'success' values will be True. If they were
-                not all True, the CopyRequestError exception would be raised.
-
-            Raises:
-                CopyRequestError: An error occurred calling copy_object for one or more files.
-                The same dict that is returned for a successful copy, will be included in the
-                message, with 'success' = False for the files for which the copy failed.
-```
-<a name="pydoc-request-status"></a>
-## pydoc request_status
-```
-NAME
-    request_status - Name: request_status.py
-
-DESCRIPTION
-    Description:  Queries the request_status table.
-
-CLASSES
-    builtins.Exception(builtins.BaseException)
-        BadRequestError
-
-    class BadRequestError(builtins.Exception)
-        Exception to be raised if there is a problem with the request.
-
-FUNCTIONS
-    handler(event, context)
-        Lambda handler. Retrieves job(s) from the database.
-
-        Environment Vars:
-            DATABASE_HOST (string): the server where the database resides.
-            DATABASE_PORT (string): the database port. The standard is 5432.
-            DATABASE_NAME (string): the name of the database.
-            DATABASE_USER (string): the name of the application user.
-            DATABASE_PW (string): the password for the application user.
-
-        Args:
-            event (dict): A dict with zero or one of the following keys:
-
-                granule_id (string): A granule_id to retrieve
-                request_group_id (string): A request_group_id (uuid) to retrieve
-                request_id (string): A request_id to retrieve
-                object_key (string): An object_key to retrieve
-
-                Examples: 
-                    event: {"function": "query"}
-                    event: {"function": "query",
-                            "granule_id": "L0A_HR_RAW_product_0006-of-0420"
-                           }
-                    event: {"function": "query",
-                            "request_id": "B2FE0827DD30B8D1"
-                           }
-                    event: {"function": "query",
-                            "request_group_id": "e91ef763-65bb-4dd2-8ba0-9851337e277e"
-                           }
-                    event: {"function": "query",
-                            "object_key": "L0A_HR_RAW_product_0006-of-0420.h5"
-                           }
-            context (Object): None
-
-        Returns:
-            (list(dict)): A list of dict with the following keys:
-                'request_id' (string): id uniquely identifying a table entry.
-                'request_group_id' (string): The request_group_id the job belongs to.
-                'granule_id' (string): The id of a granule.
-                'object_key' (string): The name of the file that was requested.
-                'job_type' (string): The type of job. "restore" or "regenerate"
-                'restore_bucket_dest' (string): The bucket where the restored file will be put.
-                'job_status' (string): The current status of the job
-                'request_time' (string): UTC time that the request was initiated.
-                'last_update_time' (string): UTC time of the last update to job_status.
-                'err_msg' (string): Description of the error if the job_status is 'error'.
-
-            Example:
-                [
-                    {
-                        "request_id": "B2FE0827DD30B8D1",
-                        "request_group_id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-                        "granule_id": "granxyz",
-                        "object_key": "my_test_filename",
-                        "job_type": "restore",
-                        "restore_bucket_dest": "my_test_bucket",
-                        "job_status": "inprogress",
-                        "request_time": "2019-09-30 18:24:38.370252+00:00",
-                        "last_update_time": "2019-09-30 18:24:38.370252+00:00",
-                        "err_msg": null
-                    }
-                ]
-
-        Raises:
-            BadRequestError: An error occurred parsing the input.
 ```

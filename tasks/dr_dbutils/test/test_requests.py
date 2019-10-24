@@ -418,7 +418,7 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         qresult, exp_result = create_insert_request(
             REQUEST_ID4, data["request_group_id"],
             data["granule_id"], data["object_key"], data["job_type"],
-            None, data["job_status"], data["request_time"],
+            None, None, data["job_status"], data["request_time"],
             None, data["err_msg"])
         database.single_query = Mock(side_effect=[qresult, exp_result, None, None])
         try:
@@ -444,20 +444,22 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         obj["request_group_id"] = "my_request_group_id"
         obj["granule_id"] = "granule_1"
         obj["glacier_bucket"] = "my_bucket"
+        obj["dest_bucket"] = "your_bucket"
         obj["key"] = "my_file"
         requests_db.request_id_generator = Mock(side_effect=[REQUEST_ID1])
         exp_data = {}
         exp_data["request_id"] = REQUEST_ID1
-        exp_data["request_group_id"] = "my_request_group_id"
-        exp_data["granule_id"] = "granule_1"
-        exp_data["object_key"] = "my_file"
+        exp_data["request_group_id"] = obj["request_group_id"]
+        exp_data["granule_id"] = obj["granule_id"]
+        exp_data["object_key"] = obj["key"]
         exp_data["job_type"] = "restore"
-        exp_data["restore_bucket_dest"] = "my_bucket"
+        exp_data["restore_bucket_dest"] = obj["glacier_bucket"]
+        exp_data["archive_bucket_dest"] = obj["dest_bucket"]
         exp_data["job_status"] = "inprogress"
         exp_data["request_time"] = utc_now_exp
         exp_data["last_update_time"] = utc_now_exp
 
-        data = requests_db.create_data(obj, "restore", "inprogress",
+        data = requests_db.create_data(obj, exp_data["job_type"], exp_data["job_status"],
                                        utc_now_exp, utc_now_exp)
 
         self.assertEqual(exp_data, data)
@@ -476,12 +478,14 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         data["object_key"] = "thisisanobjectkey"
         data["job_type"] = "restore"
         data["restore_bucket_dest"] = "my_s3_bucket"
+        data["archive_bucket_dest"] = "your_s3_bucket"
         data["job_status"] = "inprogress"
         data["request_time"] = utc_now_exp
         qresult, exp_result = create_insert_request(
             REQUEST_ID1, data["request_group_id"], data["granule_id"],
             data["object_key"], data["job_type"],
             data["restore_bucket_dest"], data["job_status"],
+            data["archive_bucket_dest"],
             data["request_time"], None, None)
         database.single_query = Mock(side_effect=[qresult, exp_result, None, None])
         try:

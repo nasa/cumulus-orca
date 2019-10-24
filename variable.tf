@@ -2,6 +2,10 @@ variable "prefix" {
   default = "dr"
 }
 
+variable "restore_complete_filter_prefix" {
+  default = ""
+}
+
 variable "glacier_bucket" {
   default = ""
 }
@@ -68,10 +72,6 @@ variable "copy_retries" {
 
 variable "copy_retry_sleep_secs" {
   default = 0
-}
-
-variable "copy_bucket_map" {
-  default = "{\\\".hdf\\\": \\\"my-great-protected-bucket\\\", \\\".met\\\": \\\"my-great-protected-bucket\\\", \\\".txt\\\": \\\"my-great-public-bucket\\\", \\\"other\\\": \\\"my-great-protected-bucket\\\"}"
 }
 
 variable "database_host" {

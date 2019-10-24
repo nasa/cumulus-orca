@@ -22,7 +22,16 @@ from request_helpers import print_rows
 import request_files
 
 UTC_NOW_EXP_1 = requests_db.get_utc_now_iso()
-
+FILE1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5"
+FILE2 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5.met"
+FILE3 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321_ndvi.jpg"
+FILE4 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml"
+PROTECTED_BUCKET = "sndbx-cumulus-protected"
+PUBLIC_BUCKET = "sndbx-cumulus-public"
+KEY1 = {"key": FILE1, "dest_bucket": PROTECTED_BUCKET}
+KEY2 = {"key": FILE2, "dest_bucket": PROTECTED_BUCKET}
+KEY3 = {"key": FILE3, "dest_bucket": None}
+KEY4 = {"key": FILE4, "dest_bucket": PUBLIC_BUCKET}
 class TestRequestFilesPostgres(unittest.TestCase):
     """
     TestRequestFiles.
@@ -77,10 +86,7 @@ class TestRequestFilesPostgres(unittest.TestCase):
         Test four files for one granule - successful
         """
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
-        files = ["MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf",
-                 "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf.met",
-                 "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321_ndvi.jpg",
-                 "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml"]
+        files = [KEY1, KEY2, KEY3, KEY4]
         input_event = {
             "input": {
                 "granules": [
@@ -122,25 +128,29 @@ class TestRequestFilesPostgres(unittest.TestCase):
         exp_files = []
 
         exp_file = {}
-        exp_file['key'] = files[0]
+        exp_file['key'] = FILE1
+        exp_file['dest_bucket'] = PROTECTED_BUCKET
         exp_file['success'] = True
         exp_file['err_msg'] = ''
         exp_files.append(exp_file)
 
         exp_file = {}
-        exp_file['key'] = files[1]
+        exp_file['key'] = FILE2
+        exp_file['dest_bucket'] = PROTECTED_BUCKET
         exp_file['success'] = True
         exp_file['err_msg'] = ''
         exp_files.append(exp_file)
 
         exp_file = {}
-        exp_file['key'] = files[2]
+        exp_file['key'] = FILE3
+        exp_file['dest_bucket'] = None
         exp_file['success'] = True
         exp_file['err_msg'] = ''
         exp_files.append(exp_file)
 
         exp_file = {}
-        exp_file['key'] = files[3]
+        exp_file['key'] = FILE4
+        exp_file['dest_bucket'] = PUBLIC_BUCKET
         exp_file['success'] = True
         exp_file['err_msg'] = ''
         exp_files.append(exp_file)
@@ -159,10 +169,9 @@ class TestRequestFilesPostgres(unittest.TestCase):
         """
         exp_event = {}
         exp_event["config"] = {"glacier-bucket": "some_bucket"}
-        file1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf"
         exp_event["input"] = {
             "granules": [{"granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
-                          "keys": [file1]}]}
+                          "keys": [KEY1]}]}
 
         os.environ['RESTORE_RETRY_SLEEP_SECS'] = '.5'
         requests_db.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
@@ -179,17 +188,12 @@ class TestRequestFilesPostgres(unittest.TestCase):
         CumulusLogger.info = Mock()
         CumulusLogger.error = Mock()
 
-        exp_gran = {}
-        exp_gran['granuleId'] = 'MOD09GQ.A0219114.N5aUCG.006.0656338553321'
-        exp_files = []
-
-        exp_file = {}
-        exp_file['key'] = file1
-        exp_file['success'] = False
-        exp_files.append(exp_file)
+        #exp_gran = {}
+        #exp_gran['granuleId'] = 'MOD09GQ.A0219114.N5aUCG.006.0656338553321'
 
         exp_gran = {'granuleId': 'MOD09GQ.A0219114.N5aUCG.006.0656338553321', 'files': [
-            {'key': file1,
+            {'key': FILE1,
+             'dest_bucket': PROTECTED_BUCKET,
              'success': False,
              'err_msg': 'An error occurred (NoSuchBucket) when calling the restore_object '
                         'operation: Unknown'}]}
@@ -202,29 +206,23 @@ class TestRequestFilesPostgres(unittest.TestCase):
         del os.environ['RESTORE_RETRY_SLEEP_SECS']
         boto3.client.assert_called_with('s3')
         s3_cli.head_object.assert_called_with(Bucket='some_bucket',
-                                              Key=file1)
+                                              Key=FILE1)
         restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}}
         s3_cli.restore_object.assert_called_with(
             Bucket='some_bucket',
-            Key=file1,
+            Key=FILE1,
             RestoreRequest=restore_req_exp)
 
     def test_task_client_error_3_times(self):
         """
         Test three files, two successful, one errors on all retries and fails.
         """
-        file1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf"
-        file3 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321_ndvi.jpg"
-        file4 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml"
         exp_event = {}
         exp_event["config"] = {"glacier-bucket": "some_bucket"}
         gran = {}
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
         gran["granuleId"] = granule_id
-        keys = []
-        keys.append(file1)
-        keys.append(file3)
-        keys.append(file4)
+        keys = [KEY1, KEY3, KEY4]
         gran["keys"] = keys
         exp_event["input"] = {
             "granules": [gran]}
@@ -255,20 +253,23 @@ class TestRequestFilesPostgres(unittest.TestCase):
         exp_files = []
 
         exp_file = {}
-        exp_file['key'] = file1
+        exp_file['key'] = FILE1
+        exp_file['dest_bucket'] = PROTECTED_BUCKET
         exp_file['success'] = True
         exp_file['err_msg'] = ''
         exp_files.append(exp_file)
 
         exp_file = {}
-        exp_file['key'] = file3
+        exp_file['key'] = FILE3
+        exp_file['dest_bucket'] = None
         exp_file['success'] = False
         exp_file['err_msg'] = 'An error occurred (NoSuchKey) when calling the restore_object ' \
                               'operation: Unknown'
         exp_files.append(exp_file)
 
         exp_file = {}
-        exp_file['key'] = file4
+        exp_file['key'] = FILE4
+        exp_file['dest_bucket'] = PUBLIC_BUCKET
         exp_file['success'] = True
         exp_file['err_msg'] = ''
         exp_files.append(exp_file)
@@ -289,8 +290,10 @@ class TestRequestFilesPostgres(unittest.TestCase):
         """
         Test two files, first successful, second has two errors, then success.
         """
-        file1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf"
-        file2 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf.met"
+        file1 = {"key": FILE1,
+                 "dest_bucket": "sndbx-cumulus-protected"}
+        file2 = {"key": FILE2,
+                 "dest_bucket": "sndbx-cumulus-protected"}
         exp_event = {}
         exp_event["config"] = {"glacier-bucket": "some_bucket"}
         gran = {}
@@ -325,13 +328,15 @@ class TestRequestFilesPostgres(unittest.TestCase):
         exp_files = []
 
         exp_file = {}
-        exp_file['key'] = file1
+        exp_file['key'] = FILE1
+        exp_file['dest_bucket'] = "sndbx-cumulus-protected"
         exp_file['success'] = True
         exp_file['err_msg'] = ''
         exp_files.append(exp_file)
 
         exp_file = {}
-        exp_file['key'] = file2
+        exp_file['key'] = FILE2
+        exp_file['dest_bucket'] = "sndbx-cumulus-protected"
         exp_file['success'] = True
         exp_file['err_msg'] = ''
         exp_files.append(exp_file)

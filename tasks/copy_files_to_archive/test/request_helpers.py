@@ -13,7 +13,8 @@ import psycopg2.extras
 import database
 
 #import restore_requests
-
+PROTECTED_BUCKET = "sndbx-cumulus-protected"
+PUBLIC_BUCKET = "sndbx-cumulus-public"
 REQUEST_ID1 = str(uuid.uuid4())
 REQUEST_ID2 = str(uuid.uuid4())
 REQUEST_ID3 = str(uuid.uuid4())
@@ -224,6 +225,7 @@ def build_row(request_id,             #pylint: disable-msg=too-many-arguments
     row.append(('object_key', object_key))
     row.append(('job_type', job_type))
     row.append(('restore_bucket_dest', restore_bucket_dest))
+    row.append(('archive_bucket_dest', PROTECTED_BUCKET))
     row.append(('job_status', job_status))
     if rq_date:
         dte = datetime.datetime.strptime(rq_date, "%Y-%m-%dT%H:%M:%S.%f")

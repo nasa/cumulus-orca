@@ -3,26 +3,27 @@ Name: test_copy_files_to_archive.py
 
 Description:  Unit tests for copy_files_to_archive.py.
 """
-import json
 import os
 import time
 import unittest
 from unittest.mock import Mock
 
 import boto3
+import requests_db
+from requests_db import create_data
 from botocore.exceptions import ClientError
+
 
 import copy_files_to_archive
 import db_config
-import requests_db
-from requests_db import create_data
 from request_helpers import (REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_2,
                              REQUEST_GROUP_ID_EXP_3, REQUEST_GROUP_ID_EXP_4,
                              REQUEST_GROUP_ID_EXP_5, REQUEST_ID1, REQUEST_ID2,
                              REQUEST_ID3, REQUEST_ID4, REQUEST_ID5,
                              REQUEST_ID6, UTC_NOW_EXP_1, UTC_NOW_EXP_4,
                              UTC_NOW_EXP_5, UTC_NOW_EXP_6, UTC_NOW_EXP_7,
-                             UTC_NOW_EXP_8, create_copy_event2,
+                             UTC_NOW_EXP_8, PROTECTED_BUCKET,
+                             PUBLIC_BUCKET, create_copy_event2,
                              create_copy_handler_event, print_rows)
 
 class TestCopyFilesPostgres(unittest.TestCase):   #pylint: disable-msg=too-many-instance-attributes
@@ -37,13 +38,8 @@ class TestCopyFilesPostgres(unittest.TestCase):   #pylint: disable-msg=too-many-
         db_config.set_env()
 
         self.exp_other_bucket = "unittest_protected_bucket"
-        self.bucket_map = {".hdf": "unittest_hdf_bucket",
-                           ".txt": "unittest_txt_bucket",
-                           "other": self.exp_other_bucket}
-        os.environ['BUCKET_MAP'] = json.dumps(self.bucket_map)
-
         self.exp_src_bucket = 'my-dr-fake-glacier-bucket'
-        self.exp_target_bucket = 'unittest_txt_bucket'
+        self.exp_target_bucket = PROTECTED_BUCKET
 
         self.exp_file_key1 = 'dr-glacier/MOD09GQ.A0219114.N5aUCG.006.0656338553321.txt'
         self.handler_input_event = create_copy_handler_event()
@@ -60,7 +56,6 @@ class TestCopyFilesPostgres(unittest.TestCase):   #pylint: disable-msg=too-many-
         requests_db.get_utc_now_iso = self.mock_utcnow
         boto3.client = self.mock_boto3_client
         try:
-            del os.environ['BUCKET_MAP']
             del os.environ['COPY_RETRY_SLEEP_SECS']
             del os.environ['COPY_RETRIES']
             del os.environ["DATABASE_HOST"]
@@ -94,43 +89,49 @@ class TestCopyFilesPostgres(unittest.TestCase):   #pylint: disable-msg=too-many-
             obj["granule_id"] = "granule_1"
             obj["key"] = "objectkey_1"
             obj["glacier_bucket"] = "my_s3_bucket"
-            data = create_data(obj, "restore",
-                               "complete", UTC_NOW_EXP_1, UTC_NOW_EXP_4)
+            obj["dest_bucket"] = PROTECTED_BUCKET
+            data = create_data(obj, "restore", "complete",
+                               UTC_NOW_EXP_1, UTC_NOW_EXP_4)
             requests_db.submit_request(data)
 
             obj["request_group_id"] = REQUEST_GROUP_ID_EXP_2
             obj["granule_id"] = "granule_4"
             obj["key"] = "objectkey_4"
-            data = create_data(obj, "restore",
-                               "error", UTC_NOW_EXP_4, None, "oh oh, an error happened")
+            obj["dest_bucket"] = PROTECTED_BUCKET
+            data = create_data(obj, "restore", "error",
+                               UTC_NOW_EXP_4, None, "oh oh, an error happened")
             requests_db.submit_request(data)
 
             obj["request_group_id"] = REQUEST_GROUP_ID_EXP_3
             obj["granule_id"] = "granule_5"
             obj["key"] = "dr-glacier/MOD09GQ.A0219114.N5aUCG.006.0656338553321.txt"
-            data = create_data(obj, "restore",
-                               "inprogress", UTC_NOW_EXP_5, UTC_NOW_EXP_5)
+            obj["dest_bucket"] = PROTECTED_BUCKET
+            data = create_data(obj, "restore", "inprogress",
+                               UTC_NOW_EXP_5, UTC_NOW_EXP_5)
             requests_db.submit_request(data)
 
             obj["request_group_id"] = REQUEST_GROUP_ID_EXP_3
             obj["granule_id"] = "granule_6"
             obj["key"] = "dr-glacier/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf"
-            data = create_data(obj, "restore",
-                               "inprogress", UTC_NOW_EXP_6, UTC_NOW_EXP_6)
+            obj["dest_bucket"] = PROTECTED_BUCKET
+            data = create_data(obj, "restore", "inprogress",
+                               UTC_NOW_EXP_6, UTC_NOW_EXP_6)
             requests_db.submit_request(data)
 
             obj["request_group_id"] = REQUEST_GROUP_ID_EXP_4
             obj["granule_id"] = "granule_4"
             obj["key"] = "objectkey_4"
-            data = create_data(obj, "restore",
-                               "inprogress", UTC_NOW_EXP_7, UTC_NOW_EXP_7)
+            obj["dest_bucket"] = PROTECTED_BUCKET
+            data = create_data(obj, "restore", "inprogress",
+                               UTC_NOW_EXP_7, UTC_NOW_EXP_7)
             requests_db.submit_request(data)
 
             obj["request_group_id"] = REQUEST_GROUP_ID_EXP_5
             obj["granule_id"] = "granule_1"
             obj["key"] = "objectkey_1"
-            data = create_data(obj, "restore",
-                               "inprogress", UTC_NOW_EXP_8, UTC_NOW_EXP_8)
+            obj["dest_bucket"] = PROTECTED_BUCKET
+            data = create_data(obj, "restore", "inprogress",
+                               UTC_NOW_EXP_8, UTC_NOW_EXP_8)
             requests_db.submit_request(data)
 
             results = requests_db.get_all_requests()
@@ -159,6 +160,7 @@ class TestCopyFilesPostgres(unittest.TestCase):   #pylint: disable-msg=too-many-
         exp_result = [{"success": True,
                        "source_bucket": self.exp_src_bucket,
                        "source_key": self.exp_file_key1,
+                       "request_id": REQUEST_ID3,
                        "target_bucket": self.exp_target_bucket,
                        "err_msg": ""}]
         self.assertEqual(exp_result, result)
@@ -187,11 +189,13 @@ class TestCopyFilesPostgres(unittest.TestCase):   #pylint: disable-msg=too-many-
         boto3.client.assert_called_with('s3')
         exp_result = [{"success": True, "source_bucket": self.exp_src_bucket,
                        "source_key": self.exp_file_key1,
+                       "request_id": REQUEST_ID3,
                        "target_bucket": self.exp_target_bucket,
                        "err_msg": ""},
                       {"success": True, "source_bucket": self.exp_src_bucket,
                        "source_key": exp_file_key,
-                       "target_bucket": "unittest_hdf_bucket",
+                       "request_id": REQUEST_ID4,
+                       "target_bucket": PROTECTED_BUCKET,
                        "err_msg": ""}]
         self.assertEqual(exp_result, result)
 
@@ -220,15 +224,18 @@ class TestCopyFilesPostgres(unittest.TestCase):   #pylint: disable-msg=too-many-
         self.handler_input_event["Records"].append(exp_rec_2)
         exp_err_msg = ("An error occurred (AccessDenied) when calling "
                        "the copy_object operation: Unknown")
-        exp_error = ("File copy failed. [{'success': False, " \
+        exp_error = ("File copy failed. [{'success': False, "
                      f"'source_bucket': '{self.exp_src_bucket}', "
                      f"'source_key': '{exp_file2_key}', "
+                     f"'request_id': '{REQUEST_ID3}', "
                      f"'target_bucket': '{self.exp_target_bucket}', "
                      f"'err_msg': '{exp_err_msg}'"
                      "}, {'success': True, "
                      f"'source_bucket': '{self.exp_src_bucket}', "
                      f"'source_key': '{exp_file_key}', "
-                     "'target_bucket': 'unittest_hdf_bucket', 'err_msg': ''}]")
+                     f"'request_id': '{REQUEST_ID4}', "
+                     f"'target_bucket': '{self.exp_target_bucket}', 'err_msg': ''"
+                     "}]")
         self.create_test_requests()
         print_rows("begin")
         row = requests_db.get_job_by_request_id(REQUEST_ID3)
@@ -248,6 +255,13 @@ class TestCopyFilesPostgres(unittest.TestCase):   #pylint: disable-msg=too-many-
         row = requests_db.get_job_by_request_id(REQUEST_ID4)
         self.assertEqual("complete", row[0]['job_status'])
 
+    def test_find_job_in_db(self):
+        """
+        Test reading job from db not found.
+        """
+        key = "nofilefound"
+        job = copy_files_to_archive.find_job_in_db(key)
+        self.assertEqual(None, job)
 
     def test_handler_one_file_fail_3x(self):
         """
@@ -268,6 +282,7 @@ class TestCopyFilesPostgres(unittest.TestCase):   #pylint: disable-msg=too-many-
         exp_error = ("File copy failed. [{'success': False, "
                      f"'source_bucket': '{self.exp_src_bucket}', "
                      f"'source_key': '{self.exp_file_key1}', "
+                     f"'request_id': '{REQUEST_ID3}', "
                      f"'target_bucket': '{self.exp_target_bucket}', "
                      f"'err_msg': '{exp_err_msg}'"
                      "}]")
@@ -311,6 +326,7 @@ class TestCopyFilesPostgres(unittest.TestCase):   #pylint: disable-msg=too-many-
         os.environ['COPY_RETRY_SLEEP_SECS'] = '1'
         exp_result = [{"success": True, "source_bucket": self.exp_src_bucket,
                        "source_key": self.exp_file_key1,
+                       "request_id": REQUEST_ID3,
                        "target_bucket": self.exp_target_bucket,
                        "err_msg": ""}]
         self.assertEqual(exp_result, result)

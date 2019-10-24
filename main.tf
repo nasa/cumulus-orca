@@ -11,6 +11,7 @@ resource "aws_lambda_function" "db_deploy" {
   handler       = "db_deploy.handler"
   runtime       = "python3.7"
   timeout       = 300
+  description   = "Deploys the Disaster Recovery database"
 
   vpc_config {
     subnet_ids         = var.ngap_subnets
@@ -39,6 +40,7 @@ resource "aws_lambda_function" "extract_filepaths_for_granule_lambda" {
   handler       = "extract_filepaths_for_granule.handler"
   runtime       = "python3.7"
   timeout       = 300
+  description   = "Extracts bucket info and granules file keys from the CMA"
 
   vpc_config {
     subnet_ids         = var.ngap_subnets
@@ -53,6 +55,7 @@ resource "aws_lambda_function" "request_files_lambda" {
   handler       = "request_files.handler"
   runtime       = "python3.7"
   timeout       = 300
+  description   = "Submits a restore request for a file"
 
   vpc_config {
     subnet_ids         = var.ngap_subnets
@@ -75,12 +78,13 @@ resource "aws_lambda_function" "request_files_lambda" {
 }
 
 resource "aws_lambda_function" "copy_files_to_archive" {
-  filename      = "tasks/request_files/copy.zip"
+  filename      = "tasks/copy_files_to_archive/copy.zip"
   function_name = "${var.prefix}_copy_files_to_archive"
   role          = aws_iam_role.restore_object_role.arn
   handler       = "copy_files_to_archive.handler"
   runtime       = "python3.7"
   timeout       = 300
+  description   = "Copies a restored file to the archive"
 
   vpc_config {
     subnet_ids         = var.ngap_subnets
@@ -89,7 +93,6 @@ resource "aws_lambda_function" "copy_files_to_archive" {
 
   environment {
     variables = {
-      BUCKET_MAP            = var.copy_bucket_map
       COPY_RETRIES          = var.copy_retries
       COPY_RETRY_SLEEP_SECS = var.copy_retry_sleep_secs
       DATABASE_HOST         = aws_db_instance.postgresql.address
@@ -102,12 +105,13 @@ resource "aws_lambda_function" "copy_files_to_archive" {
 }
 
 resource "aws_lambda_function" "request_status" {
-  filename      = "tasks/request_files/status.zip"
+  filename      = "tasks/request_status/status.zip"
   function_name = "${var.prefix}_request_status"
   role          = aws_iam_role.restore_object_role.arn
   handler       = "request_status.handler"
   runtime       = "python3.7"
   timeout       = 300
+  description   = "Queries the Disaster Recovery database for status"
 
   vpc_config {
     subnet_ids         = var.ngap_subnets
@@ -122,5 +126,15 @@ resource "aws_lambda_function" "request_status" {
       DATABASE_PW   = var.database_app_user_pw
       DATABASE_USER = var.database_app_user
     }
+  }
+}
+
+resource "aws_s3_bucket_notification" "copy_lambda_trigger" {
+  bucket = "${var.glacier_bucket}"
+
+  lambda_function {
+    lambda_function_arn = "${aws_lambda_function.copy_files_to_archive.arn}"
+    events              = ["s3:ObjectRestore:Completed"]
+    filter_prefix       = "${var.restore_complete_filter_prefix}"
   }
 }
