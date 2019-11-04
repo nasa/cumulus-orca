@@ -266,7 +266,7 @@ def get_cursor(con):
 
 def execute_sql(cur, sql_stmt, activity):
     """
-    Executes the sql in a file.
+    Executes the sqlstmt.
 
         Args:
             cur (object): a cursor to the database

@@ -498,7 +498,7 @@ class TestRequestFiles(unittest.TestCase):
             self.assertEqual(exp_err, str(err))
         del os.environ['RESTORE_RETRY_SLEEP_SECS']
         del os.environ['RESTORE_RETRIEVAL_TYPE']
-        boto3.client.assert_called_with('s3')
+        boto3.client.assert_called_with('ssm')
         s3_cli.head_object.assert_called_with(Bucket='some_bucket',
                                               Key=FILE1)
         restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}}

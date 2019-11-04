@@ -13,6 +13,7 @@
 <a name="setup"></a>
 # Setup
     See the README in the tasks folder for general development setup instructions
+    See the README in the tasks/dr_dbutils folder to install dr_dbutils
 
 <a name="development"></a>
 # Development
@@ -56,9 +57,9 @@ Code Coverage:
 
 Name               Stmts   Miss  Cover
 --------------------------------------
-request_files.py     118      0   100%
+request_files.py     117      0   100%
 ----------------------------------------------------------------------
-Ran 16 tests in 13.720s
+Ran 16 tests in 13.150s
 ```
 <a name="linting"></a>
 ## Linting

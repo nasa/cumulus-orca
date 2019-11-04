@@ -1,11 +1,11 @@
 from setuptools import setup
 
 setup(
-    name='dr_dbutils',
+    name='pg_utils',
     version='1.0',
-    description="Disaster Recovery Database functions",
+    description="postgres utilities",
     author="lpdaac",
     author_email="lpdaac@usgs.gov",
     url='https://lpdaac.usgs.gov/',
-    py_modules=['requests_db']
+    py_modules=['database', 'db_config']
 )

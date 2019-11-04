@@ -47,6 +47,8 @@ class TestRequestFilesPostgres(unittest.TestCase):
         self.context = LambdaContextMock()
 
     def tearDown(self):
+        boto3.client = Mock()
+        self.mock_ss3_get_parameter(1)
         try:
             requests_db.delete_all_requests()
         except requests_db.NotFound:
@@ -65,6 +67,27 @@ class TestRequestFilesPostgres(unittest.TestCase):
         del os.environ["DATABASE_PW"]
         del os.environ["DATABASE_PORT"]
 
+    @staticmethod
+    def mock_ss3_get_parameter(n_times):
+        """
+        mocks the reads from the parameter store for the dbconnect values
+        """
+        params = []
+        db_host = os.environ["DATABASE_HOST"]
+        db_port = int(os.environ["DATABASE_PORT"])
+        db_name = os.environ["DATABASE_NAME"]
+        db_user = os.environ["DATABASE_USER"]
+        db_pw = os.environ["DATABASE_PW"]
+        loop = 0
+        while loop < n_times:
+            params.append(db_host)
+            params.append(db_port)
+            params.append(db_name)
+            params.append(db_user)
+            params.append(db_pw)
+            loop = loop + 1
+        ssm_cli = boto3.client('ssm')
+        ssm_cli.get_parameter = Mock(side_effect=params)
 
     def test_handler(self):
         """
@@ -117,7 +140,7 @@ class TestRequestFilesPostgres(unittest.TestCase):
                                                   ])
         s3_cli.head_object = Mock()
         CumulusLogger.info = Mock()
-
+        self.mock_ss3_get_parameter(5)
         try:
             result = request_files.task(input_event, self.context)
         except requests_db.DatabaseError as err:
@@ -204,7 +227,7 @@ class TestRequestFilesPostgres(unittest.TestCase):
         except request_files.RestoreRequestError as err:
             self.assertEqual(exp_err, str(err))
         del os.environ['RESTORE_RETRY_SLEEP_SECS']
-        boto3.client.assert_called_with('s3')
+        boto3.client.assert_called_with('ssm')
         s3_cli.head_object.assert_called_with(Bucket='some_bucket',
                                               Key=FILE1)
         restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}}

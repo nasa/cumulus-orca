@@ -27,7 +27,7 @@ Run the unit tests with code coverage:
 
 Name                               Stmts   Miss  Cover
 ------------------------------------------------------
-extract_filepaths_for_granule.py      51      1    98%
+extract_filepaths_for_granule.py      50      1    98%
 ----------------------------------------------------------------------
 Ran 8 tests in 0.781s
 

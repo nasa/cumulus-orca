@@ -11,6 +11,7 @@
 <a name="setup"></a>
 # Setup
     See the README in the tasks folder for general development setup instructions
+    See the README in the tasks/pg_utils folder to install pg_utils
 
 <a name="development"></a>
 # Development
@@ -44,16 +45,13 @@ Individual tests (insert desired test file name):
 
 Code Coverage:
 (podr) λ cd C:\devpy\poswotdr\tasks\dr_dbutils
-(podr) λ nosetests --with-coverage --cover-erase --cover-package=requests_db --cover-package=database -v
+(podr) λ nosetests --with-coverage --cover-erase --cover-package=requests_db  
 
 Name             Stmts   Miss  Cover
 ------------------------------------
-database.py         87     43    51%
-requests_db.py     176      0   100%
-------------------------------------
-TOTAL              263     43    84%
+requests_db.py     170      0   100%
 ----------------------------------------------------------------------
-Ran 45 tests in 17.652s
+Ran 44 tests in 15.330s
 ```
 <a name="linting"></a>
 ## Linting
@@ -62,16 +60,6 @@ Run pylint against the code:
 
 (podr) λ cd C:\devpy\poswotdr\tasks\dr_dbutils
 (podr) λ pylint requests_db.py
---------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-
-(podr) λ pylint database.py
-************* Module database
-database.py:20:1: W0511: TODO develop tests for database.py later. in those mock psycopg2.cursor, etc (fixme)
--------------------------------------------------------------------
-Your code has been rated at 9.89/10 (previous run: 10.00/10, -0.11)
-
-(podr) λ pylint test/db_config.py
 --------------------------------------------------------------------
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 

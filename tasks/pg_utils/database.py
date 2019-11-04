@@ -5,11 +5,13 @@ queries, simply using the "query()" fuction will likely suffice.
 """
 
 import logging
-
+import json
 import os
 
 from contextlib import contextmanager
-
+import datetime
+import uuid
+import boto3
 from psycopg2 import DataError, ProgrammingError
 from psycopg2 import connect as psycopg2_connect
 from psycopg2 import sql
@@ -29,25 +31,57 @@ class ResourceExists(Exception):
     Exception to be raised if there is an existing database resource.
     """
 
+def get_utc_now_iso():
+    """
+    Returns the current utc timestamp as a string in isoformat
+    ex. '2019-07-17T17:36:38.494918'
+    """
+    return datetime.datetime.utcnow().isoformat()
+
+
+def uuid_generator():
+    """
+    Returns a unique UUID
+    ex. '0000a0a0-a000-00a0-00a0-0000a0000000'
+    """
+    my_uuid = uuid.uuid4()
+    return str(my_uuid)
+
+def result_to_json(result_rows):
+    """
+    Converts a database result to Json format
+    """
+    json_result = json.loads(json.dumps(result_rows, default=myconverter))
+    return json_result
+
+
+def myconverter(obj):       #pylint: disable-msg=inconsistent-return-statements
+    """
+    Returns the current utc timestamp as a string in isoformat
+    ex. '2019-07-17T17:36:38.494918'
+    """
+    if isinstance(obj, datetime.datetime):
+        return obj.__str__()
+
 @contextmanager
-def get_connection():
+def get_connection(dbconnect_info):
     """
     Retrieves a connection from the connection pool and yields it.
     """
     # create and yield a connection
     connection = None
     try:
-        db_port = os.environ["DATABASE_PORT"]
+        db_port = dbconnect_info["db_port"]
     except ValueError:
         db_port = 5432
 
     try:
         connection = psycopg2_connect(
-            host=os.environ["DATABASE_HOST"],
-            database=os.environ["DATABASE_NAME"],
-            user=os.environ["DATABASE_USER"],
-            password=os.environ["DATABASE_PW"],
-            port=db_port
+            host=dbconnect_info["db_host"],
+            port=db_port,
+            database=dbconnect_info["db_name"],
+            user=dbconnect_info["db_user"],
+            password=dbconnect_info["db_pw"]
         )
         yield connection
 
@@ -60,12 +94,12 @@ def get_connection():
 
 
 @contextmanager
-def get_cursor():
+def get_cursor(dbconnect_info):
     """
     Retrieves the cursor from the connection and yields it. Automatically
     commits the transaction if no exception occurred.
     """
-    with get_connection() as conn:
+    with get_connection(dbconnect_info) as conn:
         cursor = conn.cursor(cursor_factory=RealDictCursor)
         try:
             yield cursor
@@ -80,7 +114,7 @@ def get_cursor():
 
 
 
-def single_query(sql_stmt, params=None):
+def single_query(sql_stmt, params=None, param_store_key=None):
     """
     This is a convenience function for running single statement transactions
     against the database. It will automatically commit the transaction and
@@ -89,11 +123,41 @@ def single_query(sql_stmt, params=None):
     For multi-query transactions, see multi_query().
     """
     rows = []
-    with get_cursor() as cursor:
+    if param_store_key is not None:
+        dbconnect_info = read_parameter_store(param_store_key)
+    else:
+        dbconnect_info = read_env_vars()
+
+    with get_cursor(dbconnect_info) as cursor:
         rows = _query(sql_stmt, params, cursor)
 
     return rows
 
+def read_parameter_store(ps_key):
+    """
+    This function will retrieve the database connection parameters from
+    the parameter store.
+    """
+    dbconnect_info = {}
+    ssm = boto3.client('ssm')
+    dbconnect_info["db_host"] = ssm.get_parameter(Name=f'/{ps_key}/database_host')
+    dbconnect_info["db_port"] = ssm.get_parameter(Name=f'/{ps_key}/database_port')
+    dbconnect_info["db_name"] = ssm.get_parameter(Name=f'/{ps_key}/database_name')
+    dbconnect_info["db_user"] = ssm.get_parameter(Name=f'/{ps_key}/database_user')
+    dbconnect_info["db_pw"] = ssm.get_parameter(Name=f'/{ps_key}/database_pw', WithDecryption=True)
+    return dbconnect_info
+
+def read_env_vars():
+    """
+    This function will retrieve the database connection parameters from environment vars.
+    """
+    dbconnect_info = {}
+    dbconnect_info["db_host"] = os.environ["DATABASE_HOST"]
+    dbconnect_info["db_port"] = int(os.environ["DATABASE_PORT"])
+    dbconnect_info["db_name"] = os.environ["DATABASE_NAME"]
+    dbconnect_info["db_user"] = os.environ["DATABASE_USER"]
+    dbconnect_info["db_pw"] = os.environ["DATABASE_PW"]
+    return dbconnect_info
 
 def multi_query(sql_stmt, params, cursor):
     """
@@ -132,24 +196,24 @@ def _query(sql_stmt, params, cursor):
 
     return rows
 
-def return_connection():
+def return_connection(dbconnect_info):
     """
     Retrieves a connection from the connection pool.
     """
     # create a connection
     connection = None
     try:
-        db_port = os.environ["DATABASE_PORT"]
+        db_port = dbconnect_info["db_port"]
     except ValueError:
         db_port = 5432
 
     try:
         connection = psycopg2_connect(
-            host=os.environ["DATABASE_HOST"],
+            host=dbconnect_info["db_host"],
             port=db_port,
-            database=os.environ["DATABASE_NAME"],
-            user=os.environ["DATABASE_USER"],
-            password=os.environ["DATABASE_PW"]
+            database=dbconnect_info["db_name"],
+            user=dbconnect_info["db_user"],
+            password=dbconnect_info["db_pw"]
         )
         return connection
 

@@ -63,14 +63,10 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
                            REQUEST_ID6, REQUEST_ID7, REQUEST_ID8, REQUEST_ID9, REQUEST_ID10,
                            REQUEST_ID11]
         try:
-            qresult, _ = create_select_requests(exp_request_ids)
+            create_select_requests(exp_request_ids)
             empty_result = []
             database.single_query = Mock(
-                side_effect=[qresult, empty_result, empty_result,
-                             empty_result, empty_result, empty_result,
-                             empty_result, empty_result, empty_result,
-                             empty_result, empty_result, empty_result,
-                             empty_result])
+                side_effect=[empty_result])
             result = requests_db.delete_all_requests()
             database.single_query.assert_called()
             self.assertEqual(empty_result, result)
@@ -91,26 +87,6 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
             self.assertEqual(exp_err, str(err))
         database.single_query.assert_called_once()
 
-    def test_delete_all_requests_dberror2(self):
-        """
-        Tests db error deleting one of the individual requests from the request_status table
-        """
-        exp_err = 'Database Error. Internal database error, please contact LP DAAC User Services'
-        exp_request_ids = [REQUEST_ID1, REQUEST_ID2, REQUEST_ID3, REQUEST_ID4, REQUEST_ID5,
-                           REQUEST_ID6, REQUEST_ID7, REQUEST_ID8, REQUEST_ID9, REQUEST_ID10,
-                           REQUEST_ID11]
-        try:
-            qresult, _ = create_select_requests(exp_request_ids)
-            empty_result = []
-            database.single_query = Mock(
-                side_effect=[qresult, empty_result,
-                             DbError(exp_err),
-                             empty_result])
-            requests_db.delete_all_requests()
-            self.fail("expected DatabaseError")
-        except requests_db.DatabaseError as err:
-            self.assertEqual(exp_err, str(err))
-        database.single_query.assert_called()
 
     def test_delete_request(self):
         """
@@ -166,6 +142,19 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         result = requests_db.get_all_requests()
         database.single_query.assert_called_once()
         self.assertEqual(expected, result)
+
+
+        err_msg = 'Database Error. could not connect to server'
+        database.single_query = Mock(side_effect=[DbError(
+            err_msg)])
+        try:
+            requests_db.get_all_requests()
+            self.fail("expected DatabaseError")
+        except requests_db.DatabaseError as err:
+            database.single_query.assert_called_once()
+            self.assertEqual(err_msg, str(err))
+
+
 
 
     def test_get_jobs_by_status_exceptions(self):
