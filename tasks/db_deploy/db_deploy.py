@@ -257,7 +257,6 @@ def get_db_connnection():
         dbconnect_info["db_user"] = os.environ["DATABASE_USER"]
         dbconnect_info["db_pw"] = os.environ["DATABASE_PW"]
 
-        print("dbconnect_info: ", dbconnect_info)
         con = database.return_connection(dbconnect_info)
         log_status(f"Connect to database completed")
     except DbError as err:

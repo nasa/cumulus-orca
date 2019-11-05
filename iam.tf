@@ -101,10 +101,7 @@ data "aws_iam_policy_document" "restore_object_role_policy_document" {
       "ssm:GetParameters",
       "ssm:GetParameter"
     ]
-    resources = [
-      "arn:aws:ssm:::parameter/drdb-host*",
-      "arn:aws:ssm:::parameter/drdb-*"
-    ]
+    resources = ["*"]
   }
   statement {
     actions   = [
