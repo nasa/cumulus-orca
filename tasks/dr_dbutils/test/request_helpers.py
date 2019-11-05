@@ -63,17 +63,11 @@ def mock_ssm_get_parameter(n_times):
     mocks the reads from the parameter store for the dbconnect values
     """
     params = []
-    db_host = os.environ["DATABASE_HOST"]
-    #db_port = int(os.environ["DATABASE_PORT"])
-    #db_name = os.environ["DATABASE_NAME"]
-    #db_user = os.environ["DATABASE_USER"]
-    db_pw = os.environ["DATABASE_PW"]
+    db_host = {"Parameter": {"Value": os.environ['DATABASE_HOST']}}
+    db_pw = {"Parameter": {"Value": os.environ['DATABASE_PW']}}
     loop = 0
     while loop < n_times:
         params.append(db_host)
-        #params.append(db_port)
-        #params.append(db_name)
-        #params.append(db_user)
         params.append(db_pw)
         loop = loop + 1
     ssm_cli = boto3.client('ssm')

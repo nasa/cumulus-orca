@@ -16,7 +16,7 @@ from request_helpers import LambdaContextMock, create_handler_event
 from request_helpers import (
     REQUEST_ID1, REQUEST_ID2, REQUEST_ID3, REQUEST_ID4,
     REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_2,
-    REQUEST_GROUP_ID_EXP_3)
+    REQUEST_GROUP_ID_EXP_3, mock_ssm_get_parameter)
 from request_helpers import print_rows
 
 import request_files
@@ -44,11 +44,12 @@ class TestRequestFilesPostgres(unittest.TestCase):
         db_config.set_env()
         os.environ['RESTORE_EXPIRE_DAYS'] = '5'
         os.environ['RESTORE_REQUEST_RETRIES'] = '3'
+        os.environ['RESTORE_RETRIEVAL_TYPE'] = 'Standard'
         self.context = LambdaContextMock()
 
     def tearDown(self):
         boto3.client = Mock()
-        self.mock_ssm_get_parameter(1)
+        mock_ssm_get_parameter(1)
         try:
             requests_db.delete_all_requests()
         except requests_db.NotFound:
@@ -66,22 +67,8 @@ class TestRequestFilesPostgres(unittest.TestCase):
         del os.environ["DATABASE_USER"]
         del os.environ["DATABASE_PW"]
         del os.environ["DATABASE_PORT"]
+        del os.environ["RESTORE_RETRIEVAL_TYPE"]
 
-    @staticmethod
-    def mock_ssm_get_parameter(n_times):
-        """
-        mocks the reads from the parameter store for the dbconnect values
-        """
-        params = []
-        db_host = os.environ["DATABASE_HOST"]
-        db_pw = os.environ["DATABASE_PW"]
-        loop = 0
-        while loop < n_times:
-            params.append(db_host)
-            params.append(db_pw)
-            loop = loop + 1
-        ssm_cli = boto3.client('ssm')
-        ssm_cli.get_parameter = Mock(side_effect=params)
 
     def test_handler(self):
         """
@@ -134,7 +121,7 @@ class TestRequestFilesPostgres(unittest.TestCase):
                                                   ])
         s3_cli.head_object = Mock()
         CumulusLogger.info = Mock()
-        self.mock_ssm_get_parameter(5)
+        mock_ssm_get_parameter(5)
         try:
             result = request_files.task(input_event, self.context)
         except requests_db.DatabaseError as err:
@@ -204,7 +191,7 @@ class TestRequestFilesPostgres(unittest.TestCase):
                          ClientError({'Error': {'Code': 'NoSuchBucket'}}, 'restore_object')])
         CumulusLogger.info = Mock()
         CumulusLogger.error = Mock()
-
+        mock_ssm_get_parameter(1)
         #exp_gran = {}
         #exp_gran['granuleId'] = 'MOD09GQ.A0219114.N5aUCG.006.0656338553321'
 
@@ -265,6 +252,7 @@ class TestRequestFilesPostgres(unittest.TestCase):
                                                   ])
         CumulusLogger.info = Mock()
         CumulusLogger.error = Mock()
+        mock_ssm_get_parameter(3)
         exp_gran = {}
         exp_gran['granuleId'] = granule_id
         exp_files = []
@@ -340,6 +328,7 @@ class TestRequestFilesPostgres(unittest.TestCase):
                                                   ])
         CumulusLogger.info = Mock()
         CumulusLogger.error = Mock()
+        mock_ssm_get_parameter(2)
         exp_gran = {}
         exp_gran['granuleId'] = granule_id
         exp_files = []

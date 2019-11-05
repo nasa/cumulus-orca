@@ -37,8 +37,10 @@ class TestDatabase(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         self.mock_boto3 = boto3.client
         boto3.client = Mock()
         s3_cli = boto3.client('ssm')
-        s3_cli.get_parameter = Mock(side_effect=[os.environ["DATABASE_HOST"],
-                                                 os.environ["DATABASE_PW"]])
+        db_host = {"Parameter": {"Value": os.environ['DATABASE_HOST']}}
+        db_pw = {"Parameter": {"Value": os.environ['DATABASE_PW']}}
+        s3_cli.get_parameter = Mock(side_effect=[db_host,
+                                                 db_pw])
         db_params = {}
         db_params["db_host"] = {"ssm": "drdb-host"}
         db_params["db_port"] = {"env": "DATABASE_PORT"}

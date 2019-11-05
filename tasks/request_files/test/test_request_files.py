@@ -19,7 +19,8 @@ import request_files
 from request_helpers import (REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_2,
                              REQUEST_GROUP_ID_EXP_3, REQUEST_ID1, REQUEST_ID2,
                              REQUEST_ID3, REQUEST_ID4, LambdaContextMock,
-                             create_handler_event, create_insert_request)
+                             create_handler_event, create_insert_request,
+                             mock_ssm_get_parameter)
 
 
 UTC_NOW_EXP_1 = requests_db.get_utc_now_iso()
@@ -133,6 +134,7 @@ class TestRequestFiles(unittest.TestCase):
         database.single_query = Mock(
             side_effect=[qresult_1_inprogress, qresult_1_inprogress,
                          qresult_3_inprogress, qresult_4_inprogress])
+        mock_ssm_get_parameter(4)
 
         try:
             result = request_files.task(input_event, self.context)
@@ -243,6 +245,7 @@ class TestRequestFiles(unittest.TestCase):
                                                              REQUEST_ID1])
         database.single_query = Mock(
             side_effect=[DbError("mock insert failed error")])
+        mock_ssm_get_parameter(1)
         exp_result = {'granuleId': granule_id, 'files': [{'key': FILE1,
                                                           'dest_bucket': PROTECTED_BUCKET,
                                                           'success': True,
@@ -359,6 +362,7 @@ class TestRequestFiles(unittest.TestCase):
             REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, FILE1, "restore", "some_bucket",
             "inprogress", UTC_NOW_EXP_1, None, None)
         database.single_query = Mock(side_effect=[qresult_1_inprogress])
+        mock_ssm_get_parameter(1)
         try:
             result = request_files.task(exp_event, self.context)
             os.environ['RESTORE_REQUEST_RETRIES'] = '3'
@@ -414,6 +418,7 @@ class TestRequestFiles(unittest.TestCase):
             REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, FILE1, "restore", "some_bucket",
             "inprogress", UTC_NOW_EXP_1, None, None)
         database.single_query = Mock(side_effect=[qresult_1_inprogress])
+        mock_ssm_get_parameter(1)
 
         try:
             result = request_files.task(exp_event, self.context)
@@ -473,6 +478,7 @@ class TestRequestFiles(unittest.TestCase):
                          ClientError({'Error': {'Code': 'NoSuchBucket'}}, 'restore_object')])
         CumulusLogger.info = Mock()
         CumulusLogger.error = Mock()
+        mock_ssm_get_parameter(1)
         os.environ['RESTORE_RETRIEVAL_TYPE'] = 'Standard'
         exp_gran = {}
         exp_gran['granuleId'] = 'MOD09GQ.A0219114.N5aUCG.006.0656338553321'
@@ -571,6 +577,7 @@ class TestRequestFiles(unittest.TestCase):
                                                   qresult_3_inprogress,
                                                   qresult_1_error,
                                                   qresult_3_error])
+        mock_ssm_get_parameter(5)
         try:
             request_files.task(exp_event, self.context)
             self.fail("RestoreRequestError expected")
@@ -677,6 +684,7 @@ class TestRequestFiles(unittest.TestCase):
             REQUEST_ID3, REQUEST_GROUP_ID_EXP_1, granule_id, keys[1], "restore", "some_bucket",
             "inprogress", UTC_NOW_EXP_1, None, None)
         database.single_query = Mock(side_effect=[qresult1, qresult2, qresult2, qresult3])
+        mock_ssm_get_parameter(4)
 
         result = request_files.task(exp_event, self.context)
         self.assertEqual(exp_gran, result)
