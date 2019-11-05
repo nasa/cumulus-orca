@@ -5,20 +5,27 @@ Description:  Unit tests for db_deploy.py.
 """
 import os
 import unittest
+from unittest.mock import Mock
+import json
+import boto3
 import db_config
 import db_deploy
 from db_deploy import DatabaseError
-
 
 class TestDbDeploy(unittest.TestCase):
     """
     TestDbDeploy.
     """
     def setUp(self):
-        db_config.set_env()
+        private_config = f"{os.path.realpath(__file__)}".replace(os.path.basename(__file__),
+                                                                 'private_config.json')
+        db_config.set_env(private_config)
         os.environ["PLATFORM"] = "ONPREM"
         os.environ["DDL_DIR"] = "C:\\devpy\\poswotdr\\database\\ddl\\base\\"
-
+        private_configs = None
+        with open(private_config) as private_file:
+            private_configs = json.load(private_file)
+        os.environ["MASTER_USER_PW"] = private_configs["MASTER_USER_PW"]
 
     def tearDown(self):
         del os.environ["DATABASE_HOST"]
@@ -29,12 +36,31 @@ class TestDbDeploy(unittest.TestCase):
         del os.environ["MASTER_USER_PW"]
         del os.environ["PLATFORM"]
 
+    @staticmethod
+    def mock_ssm_get_parameter(n_times):
+        """
+        mocks the reads from the parameter store for the dbconnect values
+        """
+        params = []
+        db_host = {"Parameter": {"Value": os.environ['DATABASE_HOST']}}
+        db_pw = {"Parameter": {"Value": os.environ['DATABASE_PW']}}
+        admin_pw = {"Parameter": {"Value": os.environ['MASTER_USER_PW']}}
+        loop = 0
+        while loop < n_times:
+            params.append(db_pw)
+            params.append(admin_pw)
+            params.append(db_host)
+            loop = loop + 1
+        ssm_cli = boto3.client('ssm')
+        ssm_cli.get_parameter = Mock(side_effect=params)
 
     def test_handler_drop(self):
         """
         Test db_deploy handler creating database from scratch.
         """
         handler_input_event = {}
+        boto3.client = Mock()
+        self.mock_ssm_get_parameter(1)
         expected = "database ddl execution complete"
         os.environ["DROP_DATABASE"] = "True"
         try:
@@ -48,6 +74,8 @@ class TestDbDeploy(unittest.TestCase):
         Test db_deploy task when database exists
         """
         handler_input_event = {}
+        boto3.client = Mock()
+        self.mock_ssm_get_parameter(1)
         expected = "database ddl execution complete"
         os.environ["DROP_DATABASE"] = "False"
         del os.environ["DROP_DATABASE"]
@@ -62,6 +90,8 @@ class TestDbDeploy(unittest.TestCase):
         Test db_deploy task local with platform=AWS
         """
         handler_input_event = {}
+        boto3.client = Mock()
+        self.mock_ssm_get_parameter(1)
         expected = "Database Error. permission denied for database disaster_recovery\n"
         os.environ["PLATFORM"] = "AWS"
         try:
@@ -78,7 +108,8 @@ class TestDbDeploy(unittest.TestCase):
         cur = db_deploy.get_cursor(con)
         sql_file = "my_nonexistent.sql"
         activity = "test file not exists"
-        exp_err = "Database Error. [Errno 2] No such file or directory"
+
+        exp_err = "[Errno 2] No such file or directory"
         try:
             db_deploy.execute_sql_from_file(cur, sql_file, activity)
             self.fail("expected DbError")

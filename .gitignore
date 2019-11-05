@@ -8,7 +8,7 @@ tasks/dr_dbutils/test/private_config.json
 tasks/pg_utils/.coverage
 tasks/pg_utils/__pycache__
 tasks/pg_utils/test/__pycache__/
-tasks/pg_utils/pg_utils.egg-infm
+tasks/pg_utils/pg_utils.egg-info
 tasks/extract_filepaths_for_granule/.coverage
 tasks/extract_filepaths_for_granule/.idea
 tasks/extract_filepaths_for_granule/__pycache__
@@ -36,6 +36,7 @@ tasks/db_deploy/__pycache__
 tasks/db_deploy/.coverage
 tasks/db_deploy/.idea
 tasks/db_deploy/test/__pycache__
+tasks/db_deploy/test/private_config.json
 tasks/db_deploy/build
 tasks/.idea/
 tasks/copy_files_to_archive/.vscode/.ropeproject/config.py
