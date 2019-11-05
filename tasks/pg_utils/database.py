@@ -192,9 +192,11 @@ def get_db_connect_info(env_or_ssm, param_name, decrypt=False):
     if env_or_ssm == "ssm":
         ssm = boto3.client('ssm')
         if decrypt:
-            param_value = ssm.get_parameter(Name=param_name, WithDecryption=True)
+            parameter = ssm.get_parameter(Name=param_name, WithDecryption=True)
         else:
-            param_value = ssm.get_parameter(Name=param_name)
+            parameter = ssm.get_parameter(Name=param_name)
+        print("parameter: ", parameter)
+        param_value = parameter['Parameter']['Value']
     else:
         param_value = os.environ[param_name]
 
