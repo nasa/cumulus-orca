@@ -129,7 +129,16 @@ resource "aws_lambda_function" "request_status" {
   }
 }
 
+resource "aws_lambda_permission" "allow_s3_trigger" {
+  statement_id  = "AllowExecutionFromS3"
+  action        = "lambda:InvokeFunction"
+  function_name = "${aws_lambda_function.copy_files_to_archive.function_name}"
+  principal     = "s3.amazonaws.com"
+  source_arn    = "arn:aws:s3:::${var.glacier_bucket}"
+}
+
 resource "aws_s3_bucket_notification" "copy_lambda_trigger" {
+  depends_on = [aws_lambda_permission.allow_s3_trigger]
   bucket = "${var.glacier_bucket}"
 
   lambda_function {

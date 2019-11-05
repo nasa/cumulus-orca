@@ -195,7 +195,6 @@ def get_db_connect_info(env_or_ssm, param_name, decrypt=False):
             parameter = ssm.get_parameter(Name=param_name, WithDecryption=True)
         else:
             parameter = ssm.get_parameter(Name=param_name)
-        print("parameter: ", parameter)
         param_value = parameter['Parameter']['Value']
     else:
         param_value = os.environ[param_name]
