@@ -5,6 +5,7 @@ tasks/dr_dbutils/test/__pycache__/
 tasks/dr_dbutils/.idea
 tasks/dr_dbutils/dr_dbutils.egg-info
 tasks/dr_dbutils/test/private_config.json
+tasks/dr_dbutils/dist/tasks/
 tasks/pg_utils/.coverage
 tasks/pg_utils/__pycache__
 tasks/pg_utils/test/__pycache__/
