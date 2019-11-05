@@ -96,6 +96,24 @@ data "aws_iam_policy_document" "restore_object_role_policy_document" {
       "arn:aws:s3:::${var.glacier_bucket}/*"
     ]
   }
+  statement {
+    actions   = [
+      "ssm:GetParameters",
+      "ssm:GetParameter"
+    ]
+    resources = [
+      "arn:aws:ssm:::parameter/drdb-host*",
+      "arn:aws:ssm:::parameter/drdb-*"
+    ]
+  }
+  statement {
+    actions   = [
+      "kms:Decrypt"
+    ]
+    resources = [
+      "arn:aws:kms:::key/CMK"
+    ]
+  }
 }
 
 resource "aws_iam_role_policy" "restore_object_role_policy" {
