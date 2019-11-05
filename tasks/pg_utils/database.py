@@ -114,7 +114,7 @@ def get_cursor(dbconnect_info):
 
 
 
-def single_query(sql_stmt, params=None, param_store_key=None):
+def single_query(sql_stmt, dbconnect_info, params=None):
     """
     This is a convenience function for running single statement transactions
     against the database. It will automatically commit the transaction and
@@ -123,41 +123,83 @@ def single_query(sql_stmt, params=None, param_store_key=None):
     For multi-query transactions, see multi_query().
     """
     rows = []
-    if param_store_key is not None:
-        dbconnect_info = read_parameter_store(param_store_key)
-    else:
-        dbconnect_info = read_env_vars()
 
     with get_cursor(dbconnect_info) as cursor:
         rows = _query(sql_stmt, params, cursor)
 
     return rows
 
-def read_parameter_store(ps_key):
+
+def read_db_connect_info(param_source):
     """
-    This function will retrieve the database connection parameters from
-    the parameter store.
+    This function will retrieve database connection parameters from
+    the parameter store and/or env vars.
+
+        Args:
+            param_source (dict): A dict containing
+                "db_host": {env_or_ssm, param_name},
+                "db_port": {env_or_ssm, param_name},
+                "db_name": {env_or_ssm, param_name},
+                "db_user": {env_or_ssm, param_name},
+                "db_pw": {env_or_ssm, param_name}
+                where the value of env_or_ssm is: "env" to read env var,
+                                                  "ssm" to read parameter store
+
+
+        Returns:
+            dbconnect_info: A dict containing
+                "db_host": value,
+                "db_port": value,
+                "db_name": value,
+                "db_user": value,
+                "db_pw": value
     """
     dbconnect_info = {}
-    ssm = boto3.client('ssm')
-    dbconnect_info["db_host"] = ssm.get_parameter(Name=f'/{ps_key}/database_host')
-    dbconnect_info["db_port"] = ssm.get_parameter(Name=f'/{ps_key}/database_port')
-    dbconnect_info["db_name"] = ssm.get_parameter(Name=f'/{ps_key}/database_name')
-    dbconnect_info["db_user"] = ssm.get_parameter(Name=f'/{ps_key}/database_user')
-    dbconnect_info["db_pw"] = ssm.get_parameter(Name=f'/{ps_key}/database_pw', WithDecryption=True)
+    host_info = param_source["db_host"]
+    for key in host_info:
+        val = host_info[key]
+        dbconnect_info["db_host"] = get_db_connect_info(key, val, False)
+
+    port_info = param_source["db_port"]
+    for key in port_info:
+        val = port_info[key]
+        dbconnect_info["db_port"] = int(get_db_connect_info(key, val, False))
+
+    name_info = param_source["db_name"]
+    for key in name_info:
+        val = name_info[key]
+        dbconnect_info["db_name"] = get_db_connect_info(key, val, False)
+
+    user_info = param_source["db_user"]
+    for key in user_info:
+        val = user_info[key]
+        dbconnect_info["db_user"] = get_db_connect_info(key, val, False)
+
+    pw_info = param_source["db_pw"]
+    for key in pw_info:
+        val = pw_info[key]
+        dbconnect_info["db_pw"] = get_db_connect_info(key, val, True)
+
     return dbconnect_info
 
-def read_env_vars():
+
+def get_db_connect_info(env_or_ssm, param_name, decrypt=False):
     """
-    This function will retrieve the database connection parameters from environment vars.
+    This function will retrieve a database connection parameter from
+    the parameter store or an env var.
     """
-    dbconnect_info = {}
-    dbconnect_info["db_host"] = os.environ["DATABASE_HOST"]
-    dbconnect_info["db_port"] = int(os.environ["DATABASE_PORT"])
-    dbconnect_info["db_name"] = os.environ["DATABASE_NAME"]
-    dbconnect_info["db_user"] = os.environ["DATABASE_USER"]
-    dbconnect_info["db_pw"] = os.environ["DATABASE_PW"]
-    return dbconnect_info
+    param_value = None
+    if env_or_ssm == "ssm":
+        ssm = boto3.client('ssm')
+        if decrypt:
+            param_value = ssm.get_parameter(Name=param_name, WithDecryption=True)
+        else:
+            param_value = ssm.get_parameter(Name=param_name)
+    else:
+        param_value = os.environ[param_name]
+
+    return param_value
+
 
 def multi_query(sql_stmt, params, cursor):
     """

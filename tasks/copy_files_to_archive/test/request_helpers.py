@@ -10,7 +10,7 @@ import uuid
 import psycopg2
 import psycopg2.extras
 
-import database
+import requests_db
 
 #import restore_requests
 PROTECTED_BUCKET = "sndbx-cumulus-protected"
@@ -262,39 +262,12 @@ def print_rows(label):
               " 2) ", REQUEST_GROUP_ID_EXP_2,
               " 3) ", REQUEST_GROUP_ID_EXP_3, " 4) ", REQUEST_GROUP_ID_EXP_4,
               " 5) ", REQUEST_GROUP_ID_EXP_5, " 6) ", REQUEST_GROUP_ID_EXP_6)
-        rows = get_all_requests()
+        rows = requests_db.get_all_requests()
         print("**** ", label)
         for row in rows:
             print(row)
         print("****")
 
-def get_all_requests():
-    """
-    Returns all of the requests.
-    """
-    sql = """
-        SELECT
-            request_id,
-            request_group_id,
-            granule_id,
-            object_key,
-            job_type,
-            restore_bucket_dest,
-            job_status,
-            request_time,
-            last_update_time,
-            err_msg
-        FROM
-            request_status
-        ORDER BY last_update_time desc """
-
-    try:
-        rows = database.single_query(sql, ())
-        result = json.loads(json.dumps(rows, default=myconverter))
-    except database.DbError as err:
-        print(str(err))
-
-    return result
 
 def myconverter(obj):       #pylint: disable-msg=inconsistent-return-statements
     """

@@ -35,6 +35,17 @@ class TestDatabase(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         self.mock_utcnow = database.get_utc_now_iso
         self.mock_uuid = database.uuid_generator
         self.mock_boto3 = boto3.client
+        boto3.client = Mock()
+        s3_cli = boto3.client('ssm')
+        s3_cli.get_parameter = Mock(side_effect=[os.environ["DATABASE_HOST"],
+                                                 os.environ["DATABASE_PW"]])
+        db_params = {}
+        db_params["db_host"] = {"ssm": "drdb-host"}
+        db_params["db_port"] = {"env": "DATABASE_PORT"}
+        db_params["db_name"] = {"env": "DATABASE_NAME"}
+        db_params["db_user"] = {"env": "DATABASE_USER"}
+        db_params["db_pw"] = {"ssm": "drdb-user-pass"}
+        self.dbconnect_info = database.read_db_connect_info(db_params)
 
     def tearDown(self):
         boto3.client = self.mock_boto3
@@ -110,9 +121,9 @@ class TestDatabase(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         database.single_query = Mock(
             side_effect=[qresult, empty_result])
         sql_stmt = 'Select * from mytable'
-        rows = database.single_query(sql_stmt)
+        rows = database.single_query(sql_stmt, self.dbconnect_info)
         self.assertEqual(qresult, rows)
-        rows = database.single_query(sql_stmt)
+        rows = database.single_query(sql_stmt, self.dbconnect_info)
         self.assertEqual(empty_result, rows)
         database.single_query.assert_called()
 
@@ -123,9 +134,6 @@ class TestDatabase(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         boto3.client = Mock()
         s3_cli = boto3.client('ssm')
         s3_cli.get_parameter = Mock(side_effect=[os.environ["DATABASE_HOST"],
-                                                 os.environ["DATABASE_PORT"],
-                                                 os.environ["DATABASE_NAME"],
-                                                 os.environ["DATABASE_USER"],
                                                  os.environ["DATABASE_PW"]])
         qresult = []
         row = self.build_row('key1', 'value2', 'value3')
@@ -138,10 +146,10 @@ class TestDatabase(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         exp_err = ('Database Error. could not translate host name'
                    ' "my.db.host.gov" to address: Unknown host\n')
         try:
-            database.single_query(sql_stmt, None, 'DrDb')
+            database.single_query(sql_stmt, self.dbconnect_info)
         except DbError as err:
             self.assertEqual(exp_err, str(err))
-        s3_cli.get_parameter.assert_called()
+
 
     @staticmethod
     def build_row(column1, column2, column3):

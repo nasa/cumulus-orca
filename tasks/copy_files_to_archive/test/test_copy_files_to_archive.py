@@ -71,7 +71,7 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
         result = copy_files_to_archive.handler(self.handler_input_event, None)
         os.environ['COPY_RETRIES'] = '2'
         os.environ['COPY_RETRY_SLEEP_SECS'] = '1'
-        boto3.client.assert_called_with('s3')
+        boto3.client.assert_called_with('ssm')
         s3_cli.copy_object.assert_called_with(Bucket=self.exp_target_bucket,
                                               CopySource={'Bucket': self.exp_src_bucket,
                                                           'Key': self.exp_file_key1},
@@ -168,7 +168,7 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
         self.handler_input_event["Records"].append(exp_rec_2)
         result = copy_files_to_archive.handler(self.handler_input_event, None)
 
-        boto3.client.assert_called_with('s3')
+        boto3.client.assert_called_with('ssm')
         exp_result = [{"success": True, "source_bucket": self.exp_src_bucket,
                        "source_key": self.exp_file_key1,
                        "request_id": REQUEST_ID7,
@@ -225,7 +225,7 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
             self.fail("expected CopyRequestError")
         except copy_files_to_archive.CopyRequestError as ex:
             self.assertEqual(exp_error, str(ex))
-        boto3.client.assert_called_with('s3')
+        boto3.client.assert_called_with('ssm')
         s3_cli.copy_object.assert_called_with(Bucket=self.exp_target_bucket,
                                               CopySource={'Bucket': self.exp_src_bucket,
                                                           'Key': self.exp_file_key1},
@@ -254,7 +254,7 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
         result = copy_files_to_archive.handler(self.handler_input_event, None)
         os.environ['COPY_RETRIES'] = '2'
         os.environ['COPY_RETRY_SLEEP_SECS'] = '1'
-        boto3.client.assert_called_with('s3')
+        boto3.client.assert_called_with('ssm')
         exp_result = [{"success": True, "source_bucket": self.exp_src_bucket,
                        "source_key": self.exp_file_key1,
                        "request_id": REQUEST_ID7,

@@ -9,10 +9,7 @@ import uuid
 
 import psycopg2
 import psycopg2.extras
-
 import database
-
-#import restore_requests
 
 REQUEST_ID1 = str(uuid.uuid4())
 REQUEST_ID2 = str(uuid.uuid4())
@@ -54,6 +51,7 @@ REQUEST_GROUP_ID_EXP_6 = str(uuid.uuid4())
 UTC_NOW_EXP_10 = datetime.datetime.utcnow().isoformat()
 time.sleep(1)
 UTC_NOW_EXP_11 = datetime.datetime.utcnow().isoformat()
+
 
 def create_handler_event():
     """

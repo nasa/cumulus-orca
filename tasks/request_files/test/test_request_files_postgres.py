@@ -48,7 +48,7 @@ class TestRequestFilesPostgres(unittest.TestCase):
 
     def tearDown(self):
         boto3.client = Mock()
-        self.mock_ss3_get_parameter(1)
+        self.mock_ssm_get_parameter(1)
         try:
             requests_db.delete_all_requests()
         except requests_db.NotFound:
@@ -68,22 +68,16 @@ class TestRequestFilesPostgres(unittest.TestCase):
         del os.environ["DATABASE_PORT"]
 
     @staticmethod
-    def mock_ss3_get_parameter(n_times):
+    def mock_ssm_get_parameter(n_times):
         """
         mocks the reads from the parameter store for the dbconnect values
         """
         params = []
         db_host = os.environ["DATABASE_HOST"]
-        db_port = int(os.environ["DATABASE_PORT"])
-        db_name = os.environ["DATABASE_NAME"]
-        db_user = os.environ["DATABASE_USER"]
         db_pw = os.environ["DATABASE_PW"]
         loop = 0
         while loop < n_times:
             params.append(db_host)
-            params.append(db_port)
-            params.append(db_name)
-            params.append(db_user)
             params.append(db_pw)
             loop = loop + 1
         ssm_cli = boto3.client('ssm')
@@ -140,7 +134,7 @@ class TestRequestFilesPostgres(unittest.TestCase):
                                                   ])
         s3_cli.head_object = Mock()
         CumulusLogger.info = Mock()
-        self.mock_ss3_get_parameter(5)
+        self.mock_ssm_get_parameter(5)
         try:
             result = request_files.task(input_event, self.context)
         except requests_db.DatabaseError as err:

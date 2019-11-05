@@ -23,7 +23,8 @@ from request_helpers import (REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_2,
                              UTC_NOW_EXP_1, UTC_NOW_EXP_2, UTC_NOW_EXP_3,
                              UTC_NOW_EXP_4, UTC_NOW_EXP_5, UTC_NOW_EXP_6,
                              UTC_NOW_EXP_7, UTC_NOW_EXP_8, UTC_NOW_EXP_9,
-                             UTC_NOW_EXP_10, UTC_NOW_EXP_11, print_rows)
+                             UTC_NOW_EXP_10, UTC_NOW_EXP_11, print_rows,
+                             mock_ssm_get_parameter)
 
 PROTECTED_BUCKET = "my-protected-bucket"
 
@@ -48,12 +49,7 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
 
     def tearDown(self):
         boto3.client = Mock()
-        s3_cli = boto3.client('ssm')
-        s3_cli.get_parameter = Mock(side_effect=[os.environ["DATABASE_HOST"],
-                                                 int(os.environ["DATABASE_PORT"]),
-                                                 os.environ["DATABASE_NAME"],
-                                                 os.environ["DATABASE_USER"],
-                                                 os.environ["DATABASE_PW"]])
+        mock_ssm_get_parameter(1)
         requests_db.request_id_generator = self.mock_request_group_id
         requests_db.get_utc_now_iso = self.mock_utcnow
         try:
@@ -70,34 +66,12 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
         del os.environ["DATABASE_PW"]
         del os.environ["PLATFORM"]
 
-    @staticmethod
-    def mock_ssm_get_parameter(n_times):
-        """
-        mocks the reads from the parameter store for the dbconnect values
-        """
-        params = []
-        db_host = os.environ["DATABASE_HOST"]
-        db_port = int(os.environ["DATABASE_PORT"])
-        db_name = os.environ["DATABASE_NAME"]
-        db_user = os.environ["DATABASE_USER"]
-        db_pw = os.environ["DATABASE_PW"]
-        loop = 0
-        while loop < n_times:
-            params.append(db_host)
-            params.append(db_port)
-            params.append(db_name)
-            params.append(db_user)
-            params.append(db_pw)
-            loop = loop + 1
-        ssm_cli = boto3.client('ssm')
-        ssm_cli.get_parameter = Mock(side_effect=params)
-
     def create_test_requests(self):   #pylint: disable-msg=too-many-statements
         """
         creates jobs in the db
         """
         boto3.client = Mock()
-        self.mock_ssm_get_parameter(12)
+        mock_ssm_get_parameter(12)
         requests_db.get_utc_now_iso = Mock(side_effect=[UTC_NOW_EXP_1, UTC_NOW_EXP_4,
                                                         UTC_NOW_EXP_2, UTC_NOW_EXP_5,
                                                         UTC_NOW_EXP_3, UTC_NOW_EXP_6,
@@ -224,7 +198,7 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
         """
         self.create_test_requests()
         boto3.client = Mock()
-        self.mock_ssm_get_parameter(2)
+        mock_ssm_get_parameter(2)
         utc_now_exp = "2019-07-31 18:05:19.161362+00:00"
         requests_db.get_utc_now_iso = Mock(return_value=utc_now_exp)
         requests_db.request_id_generator = Mock(side_effect=[REQUEST_ID12])
@@ -256,7 +230,7 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
         """
         self.create_test_requests()
         boto3.client = Mock()
-        self.mock_ssm_get_parameter(2)
+        mock_ssm_get_parameter(2)
 
         utc_now_exp = "2019-07-31 18:05:19.161362+00:00"
         requests_db.get_utc_now_iso = Mock(return_value=utc_now_exp)
@@ -292,7 +266,7 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
         """
         self.create_test_requests()
         boto3.client = Mock()
-        self.mock_ssm_get_parameter(2)
+        mock_ssm_get_parameter(2)
 
         print_rows("begin")
         utc_now_exp = requests_db.get_utc_now_iso()
@@ -316,7 +290,7 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
         """
         self.create_test_requests()
         boto3.client = Mock()
-        self.mock_ssm_get_parameter(3)
+        mock_ssm_get_parameter(3)
 
         request_id = REQUEST_ID8
         row = requests_db.get_job_by_request_id(request_id)
@@ -343,7 +317,7 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
         """
         self.create_test_requests()
         boto3.client = Mock()
-        self.mock_ssm_get_parameter(1)
+        mock_ssm_get_parameter(1)
         utc_now_exp = "2019-07-31 21:07:15.234362+00:00"
         requests_db.get_utc_now_iso = Mock(return_value=utc_now_exp)
         job_status = "complete"
@@ -359,7 +333,7 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
         """
         self.create_test_requests()
         boto3.client = Mock()
-        self.mock_ssm_get_parameter(2)
+        mock_ssm_get_parameter(2)
         utc_now_exp = "2019-07-31 19:21:38.263364+00:00"
         requests_db.get_utc_now_iso = Mock(return_value=utc_now_exp)
         granule_id = "granule_5"
@@ -380,7 +354,7 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
         """
         qresult = self.create_test_requests()
         boto3.client = Mock()
-        self.mock_ssm_get_parameter(1)
+        mock_ssm_get_parameter(1)
         expected = result_to_json(qresult)
         result = requests_db.get_all_requests()
         self.assertEqual(expected, result)
@@ -392,7 +366,7 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
         #os.environ['DEVELOP_TESTS'] = "True"
         self.create_test_requests()
         boto3.client = Mock()
-        self.mock_ssm_get_parameter(2)
+        mock_ssm_get_parameter(2)
 
         print_rows("begin")
         object_key = "objectkey_4"
@@ -413,7 +387,7 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
         """
         self.create_test_requests()
         boto3.client = Mock()
-        self.mock_ssm_get_parameter(2)
+        mock_ssm_get_parameter(2)
         status = "noexist"
         result = requests_db.get_jobs_by_status(status)
         self.assertEqual([], result)
@@ -433,7 +407,7 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
         """
         self.create_test_requests()
         boto3.client = Mock()
-        self.mock_ssm_get_parameter(2)
+        mock_ssm_get_parameter(2)
         status = "noexist"
         result = requests_db.get_jobs_by_status(status)
         self.assertEqual([], result)
@@ -454,7 +428,7 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
         try:
             self.create_test_requests()
             boto3.client = Mock()
-            self.mock_ssm_get_parameter(1)
+            mock_ssm_get_parameter(1)
             result = requests_db.delete_request(REQUEST_ID1)
             self.assertEqual([], result)
         except requests_db.DatabaseError as err:
@@ -468,7 +442,7 @@ class TestRequestsPostgres(unittest.TestCase): #pylint: disable-msg=too-many-ins
         try:
             self.create_test_requests()
             boto3.client = Mock()
-            self.mock_ssm_get_parameter(1)
+            mock_ssm_get_parameter(1)
             result = requests_db.delete_all_requests()
             self.assertEqual([], result)
         except requests_db.DatabaseError as err:

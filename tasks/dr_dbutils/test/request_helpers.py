@@ -6,6 +6,8 @@ import json
 import os
 import time
 import uuid
+from unittest.mock import Mock
+import boto3
 
 import psycopg2
 import psycopg2.extras
@@ -55,6 +57,27 @@ REQUEST_GROUP_ID_EXP_6 = str(uuid.uuid4())
 UTC_NOW_EXP_10 = datetime.datetime.utcnow().isoformat()
 time.sleep(1)
 UTC_NOW_EXP_11 = datetime.datetime.utcnow().isoformat()
+
+def mock_ssm_get_parameter(n_times):
+    """
+    mocks the reads from the parameter store for the dbconnect values
+    """
+    params = []
+    db_host = os.environ["DATABASE_HOST"]
+    #db_port = int(os.environ["DATABASE_PORT"])
+    #db_name = os.environ["DATABASE_NAME"]
+    #db_user = os.environ["DATABASE_USER"]
+    db_pw = os.environ["DATABASE_PW"]
+    loop = 0
+    while loop < n_times:
+        params.append(db_host)
+        #params.append(db_port)
+        #params.append(db_name)
+        #params.append(db_user)
+        params.append(db_pw)
+        loop = loop + 1
+    ssm_cli = boto3.client('ssm')
+    ssm_cli.get_parameter = Mock(side_effect=params)
 
 def create_handler_event():
     """

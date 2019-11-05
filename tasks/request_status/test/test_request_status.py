@@ -6,6 +6,7 @@ Description:  Unit tests for request_status.py.
 import os
 import unittest
 from unittest.mock import Mock
+import boto3
 import database
 import requests_db
 from requests_db import result_to_json
@@ -28,7 +29,8 @@ class TestRequestStatus(unittest.TestCase):
         os.environ["DATABASE_NAME"] = "sndbx"
         os.environ["DATABASE_USER"] = "unittestdbuser"
         os.environ["DATABASE_PW"] = "unittestdbpw"
-        #self.mock_boto3_client = boto3.client
+        os.environ["DATABASE_PORT"] = "5432"
+        self.mock_boto3_client = boto3.client
         self.mock_utcnow = requests_db.get_utc_now_iso
         self.mock_request_group_id = requests_db.request_id_generator
         self.mock_single_query = database.single_query
@@ -37,11 +39,34 @@ class TestRequestStatus(unittest.TestCase):
         database.single_query = self.mock_single_query
         requests_db.request_id_generator = self.mock_request_group_id
         requests_db.get_utc_now_iso = self.mock_utcnow
-        #boto3.client = self.mock_boto3_client
+        boto3.client = self.mock_boto3_client
         del os.environ["DATABASE_HOST"]
         del os.environ["DATABASE_NAME"]
         del os.environ["DATABASE_USER"]
         del os.environ["DATABASE_PW"]
+
+    @staticmethod
+    def mock_ssm_get_parameter(n_times):
+        """
+        mocks the reads from the parameter store for the dbconnect values
+        """
+        boto3.client = Mock()
+        params = []
+        db_host = os.environ["DATABASE_HOST"]
+        #db_port = int(os.environ["DATABASE_PORT"])
+        #db_name = os.environ["DATABASE_NAME"]
+        #db_user = os.environ["DATABASE_USER"]
+        db_pw = os.environ["DATABASE_PW"]
+        loop = 0
+        while loop < n_times:
+            params.append(db_host)
+            #params.append(db_port)
+            #params.append(db_name)
+            #params.append(db_user)
+            params.append(db_pw)
+            loop = loop + 1
+        ssm_cli = boto3.client('ssm')
+        ssm_cli.get_parameter = Mock(side_effect=params)
 
     def test_handler_add(self):
         """
@@ -62,6 +87,7 @@ class TestRequestStatus(unittest.TestCase):
                                                     "restore", "my_s3_bucket", status,
                                                     utc_now_exp, None, req_err)
         database.single_query = Mock(side_effect=[qresult, ins_result])
+        self.mock_ssm_get_parameter(2)
         try:
             result = request_status.handler(handler_input_event, None)
             self.fail("expected BadRequestError")
@@ -97,6 +123,7 @@ class TestRequestStatus(unittest.TestCase):
         handler_input_event["function"] = "query"
         expected = result_to_json(exp_result)
         database.single_query = Mock(side_effect=[qresult])
+        self.mock_ssm_get_parameter(1)
         try:
             result = request_status.task(handler_input_event, None)
             self.assertEqual(expected, result)
@@ -118,6 +145,7 @@ class TestRequestStatus(unittest.TestCase):
         _, exp_result = create_select_requests(exp_request_ids)
         expected = result_to_json(exp_result)
         database.single_query = Mock(side_effect=[exp_result])
+        self.mock_ssm_get_parameter(1)
         try:
             result = request_status.task(handler_input_event, None)
             self.assertEqual(expected, result)
@@ -137,6 +165,7 @@ class TestRequestStatus(unittest.TestCase):
         _, exp_result = create_select_requests(exp_request_ids)
         expected = result_to_json(exp_result)
         database.single_query = Mock(side_effect=[exp_result])
+        self.mock_ssm_get_parameter(1)
         try:
             result = request_status.task(handler_input_event, None)
             self.assertEqual(expected, result)
@@ -153,6 +182,7 @@ class TestRequestStatus(unittest.TestCase):
         handler_input_event["request_group_id"] = request_group_id
         handler_input_event["function"] = "query"
         database.single_query = Mock(side_effect=[requests_db.DbError("Db call failed")])
+        self.mock_ssm_get_parameter(1)
         try:
             request_status.task(handler_input_event, None)
             self.fail("expected DbError")
@@ -183,8 +213,7 @@ class TestRequestStatus(unittest.TestCase):
         handler_input_event["function"] = "query"
         exp_result = []
         database.single_query = Mock(side_effect=[exp_result])
-        #boto3.client = Mock()
-        #self.mock_ss3_get_parameter(1)
+        self.mock_ssm_get_parameter(1)
         try:
             result = request_status.task(handler_input_event, None)
             self.assertEqual(exp_result, result)
@@ -205,6 +234,7 @@ class TestRequestStatus(unittest.TestCase):
         _, exp_result = create_select_requests(exp_request_ids)
         expected = result_to_json(exp_result)
         database.single_query = Mock(side_effect=[exp_result])
+        self.mock_ssm_get_parameter(1)
         try:
             result = request_status.task(handler_input_event, None)
             self.assertEqual(expected, result)
@@ -223,6 +253,7 @@ class TestRequestStatus(unittest.TestCase):
         _, exp_result = create_select_requests(exp_request_ids)
         expected = result_to_json(exp_result)
         database.single_query = Mock(side_effect=[exp_result])
+        self.mock_ssm_get_parameter(1)
         try:
             result = request_status.task(handler_input_event, None)
             self.assertEqual(expected, result)
@@ -239,6 +270,7 @@ class TestRequestStatus(unittest.TestCase):
         exp_request_ids = [REQUEST_ID1, REQUEST_ID2, REQUEST_ID3, REQUEST_ID4, REQUEST_ID5,
                            REQUEST_ID6, REQUEST_ID7, REQUEST_ID8, REQUEST_ID9, REQUEST_ID10,
                            REQUEST_ID11]
+        self.mock_ssm_get_parameter(2)
         try:
             create_select_requests(exp_request_ids)
             empty_result = []
