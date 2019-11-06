@@ -27,7 +27,7 @@ Run the unit tests with code coverage:
 
 Name                               Stmts   Miss  Cover
 ------------------------------------------------------
-extract_filepaths_for_granule.py      51      1    98%
+extract_filepaths_for_granule.py      50      1    98%
 ----------------------------------------------------------------------
 Ran 8 tests in 0.781s
 
@@ -39,12 +39,14 @@ Run pylint against the code:
 
 (podr) λ cd C:\devpy\poswotdr\tasks\extract_filepaths_for_granule
 (podr) λ pylint extract_filepaths_for_granule.py
-
 --------------------------------------------------------------------
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 
 (podr) λ pylint test/test_extract_file_paths_for_granule.py
+--------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 
+pylint test/helpers.py
 --------------------------------------------------------------------
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 ```

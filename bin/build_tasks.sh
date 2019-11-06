@@ -21,6 +21,9 @@ echo "Building `pwd`/${TASK}"
 cd "`pwd`/${TASK}"
 rm -rf build
 mkdir build
+source ../../venv/bin/activate
+pip install -t build -r requirements.txt
+deactivate
 cp db_deploy.py build/
 cd build
 mkdir psycopg2
@@ -29,8 +32,6 @@ cd ..
 cp ../package/awslambda-psycopg2/psycopg2-3.7/* build/psycopg2/
 cp -r ../../database/ddl/base/* build/ddl/
 cd build
-mkdir utils
-cp ../utils/*.py utils/
 zip -r ../dbdeploy.zip .
 cd ../../../
 

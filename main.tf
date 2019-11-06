@@ -20,12 +20,9 @@ resource "aws_lambda_function" "db_deploy" {
 
   environment {
     variables = {
-      DATABASE_HOST  = aws_db_instance.postgresql.address
       DATABASE_PORT  = var.database_port
       DATABASE_NAME  = var.database_name
       DATABASE_USER  = var.database_app_user
-      DATABASE_PW    = var.database_app_user_pw
-      MASTER_USER_PW = var.postgres_user_pw
       DDL_DIR        = var.ddl_dir
       DROP_DATABASE  = var.drop_database
       PLATFORM       = var.platform
@@ -64,10 +61,8 @@ resource "aws_lambda_function" "request_files_lambda" {
 
   environment {
     variables = {
-      DATABASE_HOST            = aws_db_instance.postgresql.address
       DATABASE_PORT            = var.database_port
       DATABASE_NAME            = var.database_name
-      DATABASE_PW              = var.database_app_user_pw
       DATABASE_USER            = var.database_app_user
       RESTORE_EXPIRE_DAYS      = var.restore_expire_days
       RESTORE_REQUEST_RETRIES  = var.restore_request_retries
@@ -95,10 +90,8 @@ resource "aws_lambda_function" "copy_files_to_archive" {
     variables = {
       COPY_RETRIES          = var.copy_retries
       COPY_RETRY_SLEEP_SECS = var.copy_retry_sleep_secs
-      DATABASE_HOST         = aws_db_instance.postgresql.address
       DATABASE_PORT         = var.database_port
       DATABASE_NAME         = var.database_name
-      DATABASE_PW           = var.database_app_user_pw
       DATABASE_USER         = var.database_app_user
     }
   }
@@ -120,16 +113,23 @@ resource "aws_lambda_function" "request_status" {
 
   environment {
     variables = {
-      DATABASE_HOST = aws_db_instance.postgresql.address
       DATABASE_PORT = var.database_port
       DATABASE_NAME = var.database_name
-      DATABASE_PW   = var.database_app_user_pw
       DATABASE_USER = var.database_app_user
     }
   }
 }
 
+resource "aws_lambda_permission" "allow_s3_trigger" {
+  statement_id  = "AllowExecutionFromS3"
+  action        = "lambda:InvokeFunction"
+  function_name = "${aws_lambda_function.copy_files_to_archive.function_name}"
+  principal     = "s3.amazonaws.com"
+  source_arn    = "arn:aws:s3:::${var.glacier_bucket}"
+}
+
 resource "aws_s3_bucket_notification" "copy_lambda_trigger" {
+  depends_on = [aws_lambda_permission.allow_s3_trigger]
   bucket = "${var.glacier_bucket}"
 
   lambda_function {

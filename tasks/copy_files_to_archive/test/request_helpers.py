@@ -6,11 +6,13 @@ import json
 import os
 import time
 import uuid
+from unittest.mock import Mock
+import boto3
 
 import psycopg2
 import psycopg2.extras
 
-import database
+import requests_db
 
 #import restore_requests
 PROTECTED_BUCKET = "sndbx-cumulus-protected"
@@ -55,6 +57,22 @@ REQUEST_GROUP_ID_EXP_6 = str(uuid.uuid4())
 UTC_NOW_EXP_10 = datetime.datetime.utcnow().isoformat()
 time.sleep(1)
 UTC_NOW_EXP_11 = datetime.datetime.utcnow().isoformat()
+
+
+def mock_ssm_get_parameter(n_times):
+    """
+    mocks the reads from the parameter store for the dbconnect values
+    """
+    params = []
+    db_host = {"Parameter": {"Value": os.environ['DATABASE_HOST']}}
+    db_pw = {"Parameter": {"Value": os.environ['DATABASE_PW']}}
+    loop = 0
+    while loop < n_times:
+        params.append(db_host)
+        params.append(db_pw)
+        loop = loop + 1
+    ssm_cli = boto3.client('ssm')
+    ssm_cli.get_parameter = Mock(side_effect=params)
 
 def create_handler_event():
     """
@@ -262,39 +280,12 @@ def print_rows(label):
               " 2) ", REQUEST_GROUP_ID_EXP_2,
               " 3) ", REQUEST_GROUP_ID_EXP_3, " 4) ", REQUEST_GROUP_ID_EXP_4,
               " 5) ", REQUEST_GROUP_ID_EXP_5, " 6) ", REQUEST_GROUP_ID_EXP_6)
-        rows = get_all_requests()
+        rows = requests_db.get_all_requests()
         print("**** ", label)
         for row in rows:
             print(row)
         print("****")
 
-def get_all_requests():
-    """
-    Returns all of the requests.
-    """
-    sql = """
-        SELECT
-            request_id,
-            request_group_id,
-            granule_id,
-            object_key,
-            job_type,
-            restore_bucket_dest,
-            job_status,
-            request_time,
-            last_update_time,
-            err_msg
-        FROM
-            request_status
-        ORDER BY last_update_time desc """
-
-    try:
-        rows = database.single_query(sql, ())
-        result = json.loads(json.dumps(rows, default=myconverter))
-    except database.DbError as err:
-        print(str(err))
-
-    return result
 
 def myconverter(obj):       #pylint: disable-msg=inconsistent-return-statements
     """

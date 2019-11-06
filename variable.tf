@@ -109,3 +109,11 @@ variable "drop_database" {
 variable "platform" {
   default = "AWS"
 }
+
+variable "default_tags" {
+    type = "map"
+    default = {
+        team: "DR",
+        application: "disaster-recovery"
+  }
+}

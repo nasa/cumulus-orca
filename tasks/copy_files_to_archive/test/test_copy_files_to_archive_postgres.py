@@ -9,22 +9,23 @@ import unittest
 from unittest.mock import Mock
 
 import boto3
+import db_config
 import requests_db
 from requests_db import create_data
 from botocore.exceptions import ClientError
 
-
 import copy_files_to_archive
-import db_config
-from request_helpers import (REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_2,
+from request_helpers import (PROTECTED_BUCKET,
+                             REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_2,
                              REQUEST_GROUP_ID_EXP_3, REQUEST_GROUP_ID_EXP_4,
                              REQUEST_GROUP_ID_EXP_5, REQUEST_ID1, REQUEST_ID2,
                              REQUEST_ID3, REQUEST_ID4, REQUEST_ID5,
                              REQUEST_ID6, UTC_NOW_EXP_1, UTC_NOW_EXP_4,
                              UTC_NOW_EXP_5, UTC_NOW_EXP_6, UTC_NOW_EXP_7,
-                             UTC_NOW_EXP_8, PROTECTED_BUCKET,
-                             PUBLIC_BUCKET, create_copy_event2,
-                             create_copy_handler_event, print_rows)
+                             UTC_NOW_EXP_8, create_copy_event2,
+                             create_copy_handler_event, print_rows,
+                             mock_ssm_get_parameter)
+
 
 class TestCopyFilesPostgres(unittest.TestCase):   #pylint: disable-msg=too-many-instance-attributes
     """
@@ -47,6 +48,8 @@ class TestCopyFilesPostgres(unittest.TestCase):   #pylint: disable-msg=too-many-
 
 
     def tearDown(self):
+        boto3.client = Mock()
+        mock_ssm_get_parameter(1)
         try:
             requests_db.delete_all_requests()
         except requests_db.NotFound:
@@ -65,10 +68,13 @@ class TestCopyFilesPostgres(unittest.TestCase):   #pylint: disable-msg=too-many-
         except KeyError:
             pass
 
+
     def create_test_requests(self):
         """
         creates jobs in the db
         """
+        boto3.client = Mock()
+        mock_ssm_get_parameter(7)
         requests_db.get_utc_now_iso = Mock(side_effect=[UTC_NOW_EXP_1, UTC_NOW_EXP_4,
                                                         UTC_NOW_EXP_4, UTC_NOW_EXP_4,
                                                         UTC_NOW_EXP_5, UTC_NOW_EXP_5,
@@ -150,13 +156,14 @@ class TestCopyFilesPostgres(unittest.TestCase):   #pylint: disable-msg=too-many-
         s3_cli = boto3.client('s3')
         s3_cli.copy_object = Mock(side_effect=[None])
         self.create_test_requests()
+        mock_ssm_get_parameter(6)
         print_rows("begin")
         row = requests_db.get_job_by_request_id(REQUEST_ID3)
         self.assertEqual("inprogress", row[0]['job_status'])
         result = copy_files_to_archive.handler(self.handler_input_event, None)
         os.environ['COPY_RETRIES'] = '2'
         os.environ['COPY_RETRY_SLEEP_SECS'] = '1'
-        boto3.client.assert_called_with('s3')
+        boto3.client.assert_called_with('ssm')
         exp_result = [{"success": True,
                        "source_bucket": self.exp_src_bucket,
                        "source_key": self.exp_file_key1,
@@ -179,6 +186,7 @@ class TestCopyFilesPostgres(unittest.TestCase):   #pylint: disable-msg=too-many-
         exp_rec_2 = create_copy_event2()
         self.handler_input_event["Records"].append(exp_rec_2)
         self.create_test_requests()
+        mock_ssm_get_parameter(10)
         print_rows("begin")
         row = requests_db.get_job_by_request_id(REQUEST_ID3)
         self.assertEqual("inprogress", row[0]['job_status'])
@@ -186,7 +194,7 @@ class TestCopyFilesPostgres(unittest.TestCase):   #pylint: disable-msg=too-many-
         self.assertEqual("inprogress", row[0]['job_status'])
         result = copy_files_to_archive.handler(self.handler_input_event, None)
 
-        boto3.client.assert_called_with('s3')
+        boto3.client.assert_called_with('ssm')
         exp_result = [{"success": True, "source_bucket": self.exp_src_bucket,
                        "source_key": self.exp_file_key1,
                        "request_id": REQUEST_ID3,
@@ -211,15 +219,7 @@ class TestCopyFilesPostgres(unittest.TestCase):   #pylint: disable-msg=too-many-
         """
         exp_file_key = 'dr-glacier/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf'
         exp_file2_key = 'dr-glacier/MOD09GQ.A0219114.N5aUCG.006.0656338553321.txt'
-        boto3.client = Mock()
-        s3_cli = boto3.client('s3')
-        s3_cli.copy_object = Mock(side_effect=[ClientError({'Error': {'Code': 'AccessDenied'}},
-                                                           'copy_object'),
-                                               ClientError({'Error': {'Code': 'AccessDenied'}},
-                                                           'copy_object'),
-                                               ClientError({'Error': {'Code': 'AccessDenied'}},
-                                                           'copy_object'),
-                                               None])
+
         exp_rec_2 = create_copy_event2()
         self.handler_input_event["Records"].append(exp_rec_2)
         exp_err_msg = ("An error occurred (AccessDenied) when calling "
@@ -237,6 +237,16 @@ class TestCopyFilesPostgres(unittest.TestCase):   #pylint: disable-msg=too-many-
                      f"'target_bucket': '{self.exp_target_bucket}', 'err_msg': ''"
                      "}]")
         self.create_test_requests()
+        boto3.client = Mock()
+        mock_ssm_get_parameter(13)
+        s3_cli = boto3.client('s3')
+        s3_cli.copy_object = Mock(side_effect=[ClientError({'Error': {'Code': 'AccessDenied'}},
+                                                           'copy_object'),
+                                               ClientError({'Error': {'Code': 'AccessDenied'}},
+                                                           'copy_object'),
+                                               ClientError({'Error': {'Code': 'AccessDenied'}},
+                                                           'copy_object'),
+                                               None])
         print_rows("begin")
         row = requests_db.get_job_by_request_id(REQUEST_ID3)
         self.assertEqual("inprogress", row[0]['job_status'])
@@ -260,6 +270,8 @@ class TestCopyFilesPostgres(unittest.TestCase):   #pylint: disable-msg=too-many-
         Test reading job from db not found.
         """
         key = "nofilefound"
+        boto3.client = Mock()
+        mock_ssm_get_parameter(1)
         job = copy_files_to_archive.find_job_in_db(key)
         self.assertEqual(None, job)
 
@@ -267,16 +279,6 @@ class TestCopyFilesPostgres(unittest.TestCase):   #pylint: disable-msg=too-many-
         """
         Test copy lambda with one failed copy after 3 retries.
         """
-        boto3.client = Mock()
-        s3_cli = boto3.client('s3')
-        s3_cli.copy_object = Mock(side_effect=[ClientError({'Error': {'Code': 'AccessDenied'}},
-                                                           'copy_object'),
-                                               ClientError({'Error': {'Code': 'AccessDenied'}},
-                                                           'copy_object'),
-                                               ClientError({'Error': {'Code': 'AccessDenied'}},
-                                                           'copy_object')])
-        s3_cli.head_object = Mock()
-
         exp_err_msg = ("An error occurred (AccessDenied) when calling "
                        "the copy_object operation: Unknown")
         exp_error = ("File copy failed. [{'success': False, "
@@ -289,7 +291,18 @@ class TestCopyFilesPostgres(unittest.TestCase):   #pylint: disable-msg=too-many-
         self.create_test_requests()
         utc_now_exp = requests_db.get_utc_now_iso()
         requests_db.get_utc_now_iso = Mock(return_value=utc_now_exp)
+        boto3.client = Mock()
+        mock_ssm_get_parameter(7)
         print_rows("begin")
+
+        s3_cli = boto3.client('s3')
+        s3_cli.copy_object = Mock(side_effect=[ClientError({'Error': {'Code': 'AccessDenied'}},
+                                                           'copy_object'),
+                                               ClientError({'Error': {'Code': 'AccessDenied'}},
+                                                           'copy_object'),
+                                               ClientError({'Error': {'Code': 'AccessDenied'}},
+                                                           'copy_object')])
+        s3_cli.head_object = Mock()
         row = requests_db.get_job_by_request_id(REQUEST_ID3)
         self.assertEqual("inprogress", row[0]['job_status'])
         self.assertEqual(None, row[0]['err_msg'])
@@ -318,6 +331,7 @@ class TestCopyFilesPostgres(unittest.TestCase):   #pylint: disable-msg=too-many-
                                                            'copy_object'),
                                                None])
         self.create_test_requests()
+        mock_ssm_get_parameter(6)
         print_rows("begin")
         row = requests_db.get_job_by_request_id(REQUEST_ID3)
         self.assertEqual("inprogress", row[0]['job_status'])

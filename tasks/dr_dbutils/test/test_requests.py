@@ -8,6 +8,7 @@ import os
 import unittest
 from unittest.mock import Mock
 import uuid
+import boto3
 
 import database
 from database import DbError
@@ -16,7 +17,7 @@ from request_helpers import (REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_2,
                              REQUEST_ID3, REQUEST_ID4, REQUEST_ID5,
                              REQUEST_ID6, REQUEST_ID7, REQUEST_ID8,
                              REQUEST_ID9, REQUEST_ID10, REQUEST_ID11,
-                             UTC_NOW_EXP_1, UTC_NOW_EXP_4,
+                             UTC_NOW_EXP_1, UTC_NOW_EXP_4, mock_ssm_get_parameter,
                              create_insert_request, create_select_requests)
 import requests_db
 from requests_db import result_to_json
@@ -41,9 +42,11 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         self.mock_request_group_id = requests_db.request_id_generator
         self.mock_single_query = database.single_query
         self.mock_uuid = uuid.uuid4
+        self.mock_boto3_client = boto3.client
 
 
     def tearDown(self):
+        boto3.client = Mock()
         uuid.uuid4 = self.mock_uuid
         database.single_query = self.mock_single_query
         requests_db.request_id_generator = self.mock_request_group_id
@@ -54,7 +57,6 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         del os.environ["DATABASE_USER"]
         del os.environ["DATABASE_PW"]
 
-
     def test_delete_all_requests(self):
         """
         Tests deleting all requests from the request_status table
@@ -63,14 +65,11 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
                            REQUEST_ID6, REQUEST_ID7, REQUEST_ID8, REQUEST_ID9, REQUEST_ID10,
                            REQUEST_ID11]
         try:
-            qresult, _ = create_select_requests(exp_request_ids)
+            create_select_requests(exp_request_ids)
             empty_result = []
+            mock_ssm_get_parameter(1)
             database.single_query = Mock(
-                side_effect=[qresult, empty_result, empty_result,
-                             empty_result, empty_result, empty_result,
-                             empty_result, empty_result, empty_result,
-                             empty_result, empty_result, empty_result,
-                             empty_result])
+                side_effect=[empty_result])
             result = requests_db.delete_all_requests()
             database.single_query.assert_called()
             self.assertEqual(empty_result, result)
@@ -83,6 +82,7 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         """
         exp_err = 'Database Error. Internal database error, please contact LP DAAC User Services'
         try:
+            mock_ssm_get_parameter(1)
             database.single_query = Mock(
                 side_effect=[DbError(exp_err)])
             requests_db.delete_all_requests()
@@ -91,26 +91,6 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
             self.assertEqual(exp_err, str(err))
         database.single_query.assert_called_once()
 
-    def test_delete_all_requests_dberror2(self):
-        """
-        Tests db error deleting one of the individual requests from the request_status table
-        """
-        exp_err = 'Database Error. Internal database error, please contact LP DAAC User Services'
-        exp_request_ids = [REQUEST_ID1, REQUEST_ID2, REQUEST_ID3, REQUEST_ID4, REQUEST_ID5,
-                           REQUEST_ID6, REQUEST_ID7, REQUEST_ID8, REQUEST_ID9, REQUEST_ID10,
-                           REQUEST_ID11]
-        try:
-            qresult, _ = create_select_requests(exp_request_ids)
-            empty_result = []
-            database.single_query = Mock(
-                side_effect=[qresult, empty_result,
-                             DbError(exp_err),
-                             empty_result])
-            requests_db.delete_all_requests()
-            self.fail("expected DatabaseError")
-        except requests_db.DatabaseError as err:
-            self.assertEqual(exp_err, str(err))
-        database.single_query.assert_called()
 
     def test_delete_request(self):
         """
@@ -118,6 +98,7 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         """
         try:
             exp_result = []
+            mock_ssm_get_parameter(1)
             database.single_query = Mock(side_effect=[exp_result])
             result = requests_db.delete_request(REQUEST_ID1)
             self.assertEqual(exp_result, result)
@@ -130,6 +111,7 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         Tests no request_id given for deleting a job by request_id
         """
         try:
+            mock_ssm_get_parameter(1)
             database.single_query = Mock(side_effect=
                                          [requests_db.BadRequestError(
                                              "No request_id provided")])
@@ -145,6 +127,7 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         """
         exp_err = 'Database Error. Internal database error, please contact LP DAAC User Services'
         try:
+            mock_ssm_get_parameter(1)
             database.single_query = Mock(side_effect=[DbError(exp_err)])
             requests_db.delete_request('x')
             self.fail("expected DatabaseError")
@@ -161,17 +144,29 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
                            REQUEST_ID6, REQUEST_ID7, REQUEST_ID8, REQUEST_ID9, REQUEST_ID10,
                            REQUEST_ID11]
         qresult, exp_result = create_select_requests(exp_request_ids)
+        mock_ssm_get_parameter(1)
         database.single_query = Mock(side_effect=[qresult])
         expected = result_to_json(exp_result)
         result = requests_db.get_all_requests()
         database.single_query.assert_called_once()
         self.assertEqual(expected, result)
 
+        mock_ssm_get_parameter(1)
+        err_msg = 'Database Error. could not connect to server'
+        database.single_query = Mock(side_effect=[DbError(
+            err_msg)])
+        try:
+            requests_db.get_all_requests()
+            self.fail("expected DatabaseError")
+        except requests_db.DatabaseError as err:
+            database.single_query.assert_called_once()
+            self.assertEqual(err_msg, str(err))
 
     def test_get_jobs_by_status_exceptions(self):
         """
         Tests getting a DatabaseError reading a job by status
         """
+        mock_ssm_get_parameter(2)
         database.single_query = Mock(side_effect=[requests_db.BadRequestError(
             'A status must be provided')])
         status = None
@@ -198,6 +193,7 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         """
         Tests getting a DatabaseError reading a job by request_id
         """
+        mock_ssm_get_parameter(1)
         exp_msg = 'Database Error. could not connect to server'
         database.single_query = Mock(side_effect=[DbError(exp_msg)])
         os.environ["DATABASE_HOST"] = "unknown.cr.usgs.gov"
@@ -215,6 +211,7 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         """
         request_id = "ABCDEFG"
         exp_result = []
+        mock_ssm_get_parameter(1)
         database.single_query = Mock(side_effect=[exp_result])
         result = requests_db.get_job_by_request_id(request_id)
         self.assertEqual(exp_result, result)
@@ -225,6 +222,7 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         """
         Tests reading a job by request_group_id
         """
+        mock_ssm_get_parameter(2)
         exp_request_ids = [REQUEST_ID5, REQUEST_ID6]
         _, exp_result = create_select_requests(exp_request_ids)
         database.single_query = Mock(side_effect=[exp_result])
@@ -251,6 +249,7 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         """
         Tests db error reading by granule_id
         """
+        mock_ssm_get_parameter(1)
         database.single_query = Mock(side_effect=[DbError("DbError reading requests")])
         try:
             requests_db.get_jobs_by_granule_id("gran_1")
@@ -263,6 +262,7 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         """
         Tests db error reading by object_key
         """
+        mock_ssm_get_parameter(1)
         database.single_query = Mock(side_effect=[DbError("DbError reading requests")])
         try:
             requests_db.get_jobs_by_object_key("file_1.h5")
@@ -276,6 +276,7 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         """
         Tests reading by object_key
         """
+        mock_ssm_get_parameter(1)
         exp_request_ids = [REQUEST_ID1, REQUEST_ID2, REQUEST_ID3]
         _, exp_result_1 = create_select_requests(exp_request_ids)
         object_key = " "
@@ -293,6 +294,7 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         _, exp_result_2 = create_select_requests(exp_request_ids)
         status = "noexist"
         exp_result_1 = []
+        mock_ssm_get_parameter(2)
         database.single_query = Mock(side_effect=[exp_result_1, exp_result_2])
         result = requests_db.get_jobs_by_status(status)
         self.assertEqual(exp_result_1, result)
@@ -312,6 +314,7 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         exp_request_ids = [REQUEST_ID1, REQUEST_ID2, REQUEST_ID3]
         _, exp_result = create_select_requests(exp_request_ids)
         status = "noexist"
+        mock_ssm_get_parameter(2)
         database.single_query = Mock(side_effect=[[], exp_result])
         result = requests_db.get_jobs_by_status(status)
         self.assertEqual([], result)
@@ -347,6 +350,7 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         data["job_type"] = "restore"
         data["restore_bucket_dest"] = "my_s3_bucket"
         data["job_status"] = "inprogress"
+        mock_ssm_get_parameter(1)
         exp_err = 'Database Error. FATAL:  database "noexist" does not exist\n'
         database.single_query = Mock(side_effect=[requests_db.DbError(
             exp_err)])
@@ -389,6 +393,7 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
                     '2019-07-31 18:05:19.161362+00, 2019-07-31 18:05:19.161362+00, null).')
         exp_err = ('new row for relation "request_status" violates check constraint '
                    '"request_status_job_status_check"')
+        mock_ssm_get_parameter(1)
         database.single_query = Mock(side_effect=[requests_db.DatabaseError(
             mock_err)])
         try:
@@ -421,6 +426,7 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
             None, None, data["job_status"], data["request_time"],
             None, data["err_msg"])
         database.single_query = Mock(side_effect=[qresult, exp_result, None, None])
+        mock_ssm_get_parameter(4)
         try:
             requests_db.submit_request(data)
             database.single_query.assert_called_once()
@@ -488,6 +494,7 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
             data["archive_bucket_dest"],
             data["request_time"], None, None)
         database.single_query = Mock(side_effect=[qresult, exp_result, None, None])
+        mock_ssm_get_parameter(4)
         try:
             requests_db.submit_request(data)
             database.single_query.assert_called_once()
@@ -535,6 +542,7 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         job_status = "inprogress"
         exp_result = []
         database.single_query = Mock(side_effect=[exp_result])
+        mock_ssm_get_parameter(1)
         try:
             result = requests_db.update_request_status_for_job(request_id, job_status)
             self.assertEqual([], result)
@@ -566,8 +574,7 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
 
         exp_err = 'Database Error. Internal database error, please contact LP DAAC User Services'
         database.single_query = Mock(side_effect=[DbError(exp_err)])
-        #exp_result = []
-        #database.single_query = Mock(side_effect=[exp_result])
+        mock_ssm_get_parameter(1)
         try:
             requests_db.update_request_status_for_job(request_id, job_status)
             self.fail("expected DatabaseError")
@@ -586,6 +593,7 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         job_status = "complete"
         exp_result = []
         database.single_query = Mock(side_effect=[exp_result])
+        mock_ssm_get_parameter(1)
         try:
             result = requests_db.update_request_status_for_job(request_id, job_status)
             self.assertEqual([], result)
@@ -607,6 +615,7 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
 
         empty_result = []
         database.single_query = Mock(side_effect=[empty_result, exp_result])
+        mock_ssm_get_parameter(2)
         try:
             result = requests_db.update_request_status_for_job(REQUEST_ID4, job_status, err_msg)
             self.assertEqual([], result)
@@ -627,6 +636,7 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         exp_msg = ('Database Error. new row for relation "request_status" violates '
                    'check constraint "request_status_job_status_check"')
         database.single_query = Mock(side_effect=[requests_db.DatabaseError(exp_msg)])
+        mock_ssm_get_parameter(1)
         try:
             requests_db.update_request_status_for_job(REQUEST_ID6, job_status)
             self.fail("expected DatabaseError")
@@ -644,6 +654,7 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         job_status = "invalid"
         exp_msg = "No object_key provided"
         database.single_query = Mock(side_effect=[requests_db.BadRequestError(exp_msg)])
+        mock_ssm_get_parameter(1)
         try:
             requests_db.update_request_status_for_job(REQUEST_ID1, job_status)
             self.fail("expected requests_db.BadRequestError")
@@ -676,6 +687,7 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         job_status = "invalid"
         exp_result = []
         database.single_query = Mock(side_effect=[exp_result])
+        mock_ssm_get_parameter(1)
         try:
             result = requests_db.update_request_status_for_job(request_id, job_status)
             self.assertEqual([], result)

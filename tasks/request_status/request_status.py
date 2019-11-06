@@ -4,7 +4,6 @@ Name: request_status.py
 Description:  Queries the request_status table.
 """
 import logging
-
 import requests_db
 
 # Set Global Variables
@@ -32,7 +31,7 @@ def task(event, context):    #pylint: disable-msg=unused-argument
             ExtractFilePathsError: An error occurred parsing the input.
     """
     result = {}
-    _LOG.info(f"event: '{event}' ")
+    _LOG.debug(f"event: '{event}' ")
     try:
         function = event['function']
     except KeyError:

@@ -16,7 +16,7 @@ from request_helpers import LambdaContextMock, create_handler_event
 from request_helpers import (
     REQUEST_ID1, REQUEST_ID2, REQUEST_ID3, REQUEST_ID4,
     REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_2,
-    REQUEST_GROUP_ID_EXP_3)
+    REQUEST_GROUP_ID_EXP_3, mock_ssm_get_parameter)
 from request_helpers import print_rows
 
 import request_files
@@ -44,9 +44,12 @@ class TestRequestFilesPostgres(unittest.TestCase):
         db_config.set_env()
         os.environ['RESTORE_EXPIRE_DAYS'] = '5'
         os.environ['RESTORE_REQUEST_RETRIES'] = '3'
+        os.environ['RESTORE_RETRIEVAL_TYPE'] = 'Standard'
         self.context = LambdaContextMock()
 
     def tearDown(self):
+        boto3.client = Mock()
+        mock_ssm_get_parameter(1)
         try:
             requests_db.delete_all_requests()
         except requests_db.NotFound:
@@ -64,6 +67,7 @@ class TestRequestFilesPostgres(unittest.TestCase):
         del os.environ["DATABASE_USER"]
         del os.environ["DATABASE_PW"]
         del os.environ["DATABASE_PORT"]
+        del os.environ["RESTORE_RETRIEVAL_TYPE"]
 
 
     def test_handler(self):
@@ -117,7 +121,7 @@ class TestRequestFilesPostgres(unittest.TestCase):
                                                   ])
         s3_cli.head_object = Mock()
         CumulusLogger.info = Mock()
-
+        mock_ssm_get_parameter(5)
         try:
             result = request_files.task(input_event, self.context)
         except requests_db.DatabaseError as err:
@@ -187,7 +191,7 @@ class TestRequestFilesPostgres(unittest.TestCase):
                          ClientError({'Error': {'Code': 'NoSuchBucket'}}, 'restore_object')])
         CumulusLogger.info = Mock()
         CumulusLogger.error = Mock()
-
+        mock_ssm_get_parameter(1)
         #exp_gran = {}
         #exp_gran['granuleId'] = 'MOD09GQ.A0219114.N5aUCG.006.0656338553321'
 
@@ -204,7 +208,7 @@ class TestRequestFilesPostgres(unittest.TestCase):
         except request_files.RestoreRequestError as err:
             self.assertEqual(exp_err, str(err))
         del os.environ['RESTORE_RETRY_SLEEP_SECS']
-        boto3.client.assert_called_with('s3')
+        boto3.client.assert_called_with('ssm')
         s3_cli.head_object.assert_called_with(Bucket='some_bucket',
                                               Key=FILE1)
         restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}}
@@ -248,6 +252,7 @@ class TestRequestFilesPostgres(unittest.TestCase):
                                                   ])
         CumulusLogger.info = Mock()
         CumulusLogger.error = Mock()
+        mock_ssm_get_parameter(3)
         exp_gran = {}
         exp_gran['granuleId'] = granule_id
         exp_files = []
@@ -323,6 +328,7 @@ class TestRequestFilesPostgres(unittest.TestCase):
                                                   ])
         CumulusLogger.info = Mock()
         CumulusLogger.error = Mock()
+        mock_ssm_get_parameter(2)
         exp_gran = {}
         exp_gran['granuleId'] = granule_id
         exp_files = []

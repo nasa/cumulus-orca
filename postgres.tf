@@ -45,3 +45,24 @@ resource "null_resource" "bootstrap" {
 
   depends_on = [aws_db_instance.postgresql]
 }
+
+resource "aws_ssm_parameter" "drdb-admin-pass" {
+  name  = "drdb-admin-pass"
+  type  = "SecureString"
+  value = "${var.postgres_user_pw}"
+  tags = var.default_tags
+}
+
+resource "aws_ssm_parameter" "drdb-user-pass" {
+  name  = "drdb-user-pass"
+  type  = "SecureString"
+  value = "${var.database_app_user_pw}"
+  tags = var.default_tags
+}
+
+resource "aws_ssm_parameter" "drdb-host" {
+  name  = "drdb-host"
+  type  = "String"
+  value = "${aws_db_instance.postgresql.address}"
+  tags = var.default_tags
+}

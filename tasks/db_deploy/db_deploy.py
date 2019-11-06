@@ -7,9 +7,9 @@ import os
 from os import walk
 import logging
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT, ISOLATION_LEVEL_READ_COMMITTED
-import utils
-import utils.database
-from utils.database import DbError, ResourceExists
+import database
+from database import DbError, ResourceExists
+import boto3
 
 
 # Set Global Variables
@@ -38,10 +38,25 @@ def task(event, context):    #pylint: disable-msg=unused-argument
     status = log_status("start")
     db_name = os.environ["DATABASE_NAME"]
     db_user = os.environ["DATABASE_USER"]
-    db_pw = os.environ["DATABASE_PW"]
-    master_user_pw = os.environ["MASTER_USER_PW"]
+
+    ssm = boto3.client('ssm')
+    param_name = 'drdb-user-pass'
+    parameter = ssm.get_parameter(Name=param_name, WithDecryption=True)
+    db_pw = parameter['Parameter']['Value']
+
+    param_name = 'drdb-admin-pass'
+    parameter = ssm.get_parameter(Name=param_name, WithDecryption=True)
+    master_user_pw = parameter['Parameter']['Value']
+    os.environ["MASTER_USER_PW"] = master_user_pw
+
+    param_name = 'drdb-host'
+    parameter = ssm.get_parameter(Name=param_name, WithDecryption=False)
+    db_host = parameter['Parameter']['Value']
+    os.environ["DATABASE_HOST"] = db_host
+
     os.environ["DATABASE_NAME"] = "postgres"
     os.environ["DATABASE_USER"] = "postgres"
+
     os.environ["DATABASE_PW"] = master_user_pw
     #connect as postgres to create the new database
     con = get_db_connnection()
@@ -235,7 +250,14 @@ def get_db_connnection():
     """
     try:
         log_status(f"Connect to database started")
-        con = utils.database.return_connection()
+        dbconnect_info = {}
+        dbconnect_info["db_host"] = os.environ["DATABASE_HOST"]
+        dbconnect_info["db_port"] = os.environ["DATABASE_PORT"]
+        dbconnect_info["db_name"] = os.environ["DATABASE_NAME"]
+        dbconnect_info["db_user"] = os.environ["DATABASE_USER"]
+        dbconnect_info["db_pw"] = os.environ["DATABASE_PW"]
+
+        con = database.return_connection(dbconnect_info)
         log_status(f"Connect to database completed")
     except DbError as err:
         _LOG.exception(f"DbError: {str(err)}")
@@ -257,7 +279,7 @@ def get_cursor(con):
             DatabaseError: An error occurred.
     """
     try:
-        cursor = utils.database.return_cursor(con)
+        cursor = database.return_cursor(con)
     except DbError as err:
         _LOG.exception(f"DbError: {str(err)}")
         log_status("Get cursor DbError")
@@ -266,7 +288,7 @@ def get_cursor(con):
 
 def execute_sql(cur, sql_stmt, activity):
     """
-    Executes the sql in a file.
+    Executes the sqlstmt.
 
         Args:
             cur (object): a cursor to the database
@@ -281,7 +303,7 @@ def execute_sql(cur, sql_stmt, activity):
     """
     try:
         status = log_status(f"{activity} started")
-        utils.database.query_no_params(cur, sql_stmt)
+        database.query_no_params(cur, sql_stmt)
         status = log_status(f"{activity} completed")
     except DbError as err:
         _LOG.exception(f"DbError: {str(err)}")
@@ -308,8 +330,12 @@ def execute_sql_from_file(cur, sql_file, activity):
     try:
         status = log_status(f"{activity} started")
         sql_path = f"{ddl_dir}{sql_file}"
-        utils.database.query_from_file(cur, sql_path)
+        database.query_from_file(cur, sql_path)
         status = log_status(f"{activity} completed")
+    except FileNotFoundError as fnf:
+        _LOG.exception(f"DbError: {str(fnf)}")
+        log_status(f"{activity} DbError")
+        raise DatabaseError(str(fnf))
     except DbError as err:
         _LOG.exception(f"DbError: {str(err)}")
         log_status(f"{activity} DbError")
