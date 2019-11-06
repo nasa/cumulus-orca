@@ -4,7 +4,6 @@ Name: request_status.py
 Description:  Queries the request_status table.
 """
 import logging
-#import boto3
 import requests_db
 
 # Set Global Variables
