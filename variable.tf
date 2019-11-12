@@ -34,10 +34,6 @@ variable "ngap_subnets" {
   default = []
 }
 
-variable "ngap_subnet_group" {
-  default = []
-}
-
 variable "ngap_sgs" {
   default = []
 }

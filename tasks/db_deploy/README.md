@@ -139,12 +139,9 @@ Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
     an existing database set it to False.
 
 2.  Set the following environment variables
-    DATABASE_HOST   Amazon RDS | Databases | choose db instance | Connectivity & Security | Endpoint value
     DATABASE_PORT   %DB_PORT%
     DATABASE_NAME   %DB_NAME%
-    DATABASE_PW     %DB_PW_HERE%
     DATABASE_USER   %APP_USER_NAME%
-    MASTER_USER_PW  %MASTER_USER_PW_HERE%
     DDL_DIR         ddl/
     DROP_DATABASE   True to perform DROP_DATABASE, False to keep existing database
     PLATFORM        AWS 
@@ -173,18 +170,21 @@ CLASSES
 
 FUNCTIONS
     handler(event, context)
+    
         This task will create the database, roles, users, schema, and tables.
 
             Environment Vars:
-                DATABASE_HOST (string): the server where the database will reside.
-                DATABASE_PORT (string): the database port number
+                DATABASE_PORT (string): the database port. The standard is 5432.
                 DATABASE_NAME (string): the name of the database being created.
                 DATABASE_USER (string): the name of the application user.
-                DATABASE_PW (string): the password for the application user.
-                MASTER_USER_PW (string): the password for the master user.
                 DROP_DATABASE (bool, optional, default is False): When true, will
                     execute a DROP DATABASE command.
                 PLATFORM (string): 'onprem' or 'AWS'
+
+            Parameter Store:
+                drdb-user-pass (string): the password for the application user (DATABASE_USER).
+                drdb-host (string): the database host
+                drdb-admin-pass: the password for the admin user
 
             Args:
                 event (dict): empty

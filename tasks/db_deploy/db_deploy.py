@@ -7,9 +7,10 @@ import os
 from os import walk
 import logging
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT, ISOLATION_LEVEL_READ_COMMITTED
+import boto3
 import database
 from database import DbError, ResourceExists
-import boto3
+
 
 
 # Set Global Variables
@@ -348,15 +349,17 @@ def handler(event, context):            #pylint: disable-msg=unused-argument
     This task will create the database, roles, users, schema, and tables.
 
         Environment Vars:
-            DATABASE_HOST (string): the server where the database will reside.
             DATABASE_PORT (string): the database port. The standard is 5432.
             DATABASE_NAME (string): the name of the database being created.
             DATABASE_USER (string): the name of the application user.
-            DATABASE_PW (string): the password for the application user.
-            MASTER_USER_PW (string): the password for the master user.
             DROP_DATABASE (bool, optional, default is False): When true, will
                 execute a DROP DATABASE command.
             PLATFORM (string): 'onprem' or 'AWS'
+
+        Parameter Store:
+            drdb-user-pass (string): the password for the application user (DATABASE_USER).
+            drdb-host (string): the database host
+            drdb-admin-pass: the password for the admin user
 
         Args:
             event (dict): empty

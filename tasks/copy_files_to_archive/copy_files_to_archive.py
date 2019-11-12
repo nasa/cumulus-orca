@@ -244,11 +244,13 @@ def handler(event, context):      #pylint: disable-msg=unused-argument
                 attempts to retry a copy that failed.
             COPY_RETRY_SLEEP_SECS (number, optional, default = 0): The number of seconds
                 to sleep between retry attempts.
-            DATABASE_HOST (string): the server where the database resides.
             DATABASE_PORT (string): the database port. The standard is 5432.
             DATABASE_NAME (string): the name of the database.
             DATABASE_USER (string): the name of the application user.
-            DATABASE_PW (string): the password for the application user.
+
+        Parameter Store:
+                drdb-user-pass (string): the password for the application user (DATABASE_USER).
+                drdb-host (string): the database host
 
         Args:
             event (dict): A dict with the following keys:

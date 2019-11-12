@@ -1,17 +1,114 @@
+## Clone and build Disaster Recovery
+
+Clone the `dr-podaac-swot` repo from <https://git.earthdata.nasa.gov/scm/pocumulus/dr-podaac-swot.git>
+
+```
+git clone https://git.earthdata.nasa.gov/scm/pocumulus/dr-podaac-swot.git disaster-recovery
+```
 ## Build lambdas
 Before you can deploy this infrastructure, the lambda function source-code must be built.
 
-`./bin/build_tasks.sh` will crawl the `tasks` directory and build a `task.zip` (currently by just `zipping` all python files) in each of it's sub-directories. That `task.zip` is then referenced in the `app.tf` lamdba definitions.
+`./bin/build_tasks.sh` will crawl the `tasks` directory and build a `.zip` file (currently by just `zipping` all python files and dependencies) in each of it's sub-directories. That `.zip` is then referenced in the `main.tf` lamdba definitions.
 
-## Setting up the Terraform deployment
+```
+cd disaster-recovery
+./bin/build_tasks.sh
+```
 
-### Variables
+# Disaster Recovery Deployment
+
+The Disaster Recovery deployment is done with [Terraform root module](https://www.terraform.io/docs/configuration/modules.html),
+`main.tf`.
+
+The following instructions will walk you through installing Terraform,
+configuring Terraform, and deploying the root module.
+
+## Install Terraform
+
+If you are using a Mac and [Homebrew](https://brew.sh), installing Terraform is
+as simple as:
+
+```shell
+brew update
+brew install terraform
+```
+
+For other cases,
+Visit the [Terraform documentation](https://learn.hashicorp.com/terraform/getting-started/install.html) for installation instructions.
+
+Verify that the version of Terraform installed is at least v0.12.0.
+
+```shell
+$ terraform --version
+Terraform v0.12.2
+```
+
+## Configure the Terraform backend
+
+The state of the Terraform deployment is stored in S3. In the following
+examples, it will be assumed that state is being stored in a bucket called
+`dr-tf-state`. You can also use an existing bucket, if desired.
+
+Create the state bucket:
+
+```shell
+aws s3api create-bucket --bucket dr-tf-state --create-bucket-configuration LocationConstraint=us-west-2
+```
+**Note:** The `--create-bucket-configuration` line is only necessary if you are creating your bucket outside of `us-east-1`.
+
+In order to help prevent loss of state information, it is recommended that
+versioning be enabled on the state bucket:
+
+```shell
+$ aws s3api put-bucket-versioning \
+    --bucket dr-tf-state \
+    --versioning-configuration Status=Enabled
+```
+
+Terraform uses a lock stored in DynamoDB in order to prevent multiple
+simultaneous updates. In the following examples, that table will be called
+`dr-tf-locks`.
+
+Create the locks table:
+
+⚠️ **Note:** The `--billing-mode` option was recently added to the AWS CLI. You
+may need to upgrade your version of the AWS CLI if you get an error about
+provisioned throughput when creating the table.
+
+```shell
+$ aws dynamodb create-table \
+    --table-name dr-tf-locks \
+    --attribute-definitions AttributeName=LockID,AttributeType=S \
+    --key-schema AttributeName=LockID,KeyType=HASH \
+    --billing-mode PAY_PER_REQUEST
+```
+
+## Configure and deploy the `main` root module
+
+These steps should be executed in the `disaster-recovery` directory.
+
+Create a `terraform.tf` file, substituting the appropriate values for `bucket`
+and `dynamodb_table`. This tells Terraform where to store its
+remote state.
+
+**terraform.tf**
+
+```
+terraform {
+  backend "s3" {
+    region         = "us-west-2"
+    bucket         = "dr-tf-state"
+    key            = "terraform.tfstate"
+    dynamodb_table = "dr-tf-locks"
+  }
+}
+```
+## Variables
 First, run a `mv terraform.tfvars.example terraform.tfvars` to get a template `terraform.tfvars` in your working directory. This is where you will place input variables to Terraform.
 
 **Necessary:**
 * ngap_subnets - NGAP Subnets (array)
 * ngap_sgs - NGAP Security Groups (array)
-* ngap_subnet_group - 
 * glacier_bucket - Bucket with Glacier policy
 * public_bucket - Bucket with public permissions (Cumulus public bucket)
 * private_bucket - Bucket with private permissions (Cumulus private bucket)
@@ -19,73 +116,94 @@ First, run a `mv terraform.tfvars.example terraform.tfvars` to get a template `t
 * protected_bucket - Analogous to the Cumulus protected bucket
 * permissions_boundary_arn - Permission Boundary Arn (Policy) for NGAP compliance
 * postgres_user_pw - password for the postgres user
-* database_host - the AWS endpoint for the database
 * database_name - the name of the database to be created for the application
 * database_app_user - the application user 
 * database_app_user_pw - the password for the application user
 
 **Optional:**
-* prefix - Prefix that will be pre-pended to resource names created by terraform. Defaults to `dr`.
-* profile - AWS CLI Profile (configured via `aws configure`) to use. Defaults to `default`.
-* region - Your AWS region. Defaults to `us-west-2`
-* restore_expire_days - How many days to restore a file for. Defaults to 5.
-* restore_request_retries - How many times to retry a restore request to Glacier. Defaults to 3.
-* restore_retry_sleep_secs - How many seconds to wait between retry calls to `restore_object`. Defaults to 3.
-* copy_retries - How many times to retry a copy request from the restore location to the archive location. Defaults to 3.
-* copy_retry_sleep_secs - How many seconds to wait between retry calls to `copy_object`. Defaults to 0.
-* ddl_dir - the location of the ddl dir that contains the sql to create the application database. Defaults to 'ddl/'
-* drop_database - Whether or not to drop the database if it exists (True), or keep it (False). Defaults to False.
-* database_port - the port for the postgres database. Defaults to '5432'.
-* platform - indicates if running locally (onprem) or in AWS (AWS). Defaults to 'AWS'.
+* prefix - Prefix that will be pre-pended to resource names created by terraform. 
+  Defaults to `dr`.
+* profile - AWS CLI Profile (configured via `aws configure`) to use. 
+  Defaults to `default`.
+* region - Your AWS region. 
+  Defaults to `us-west-2`.
+* restore_expire_days - How many days to restore a file for. 
+  Defaults to 5.
+* restore_request_retries - How many times to retry a restore request to Glacier. 
+  Defaults to 3.
+* restore_retry_sleep_secs - How many seconds to wait between retry calls to `restore_object`. 
+  Defaults to 3.
+* restore_retrieval_type -  the Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'. 
+  Defaults to `Standard`. Understand the costs associated with the tiers before modifying.
+* copy_retries - How many times to retry a copy request from the restore location to the archive location. 
+  Defaults to 3.
+* copy_retry_sleep_secs - How many seconds to wait between retry calls to `copy_object`. 
+  Defaults to 0.
+* ddl_dir - the location of the ddl dir that contains the sql to create the application database. 
+  Defaults to 'ddl/'.
+* drop_database - Whether or not to drop the database if it exists (True), or keep it (False). 
+  Defaults to False.
+* database_port - the port for the postgres database. 
+  Defaults to '5432'.
+* platform - indicates if running locally (onprem) or in AWS (AWS). 
+  Defaults to 'AWS'.
 
 ## Deploying with Terraform
-Visit the [Terraform documentation](https://learn.hashicorp.com/terraform/getting-started/install.html) for installation instructions.
+Run `terraform init`.
+Run `terraform plan` #optional, but allows you to preview the deploy.
+Run `terraform apply`.
 
-```
-terraform init
-terraform plan #optional, but allows you to preview the deploy
-terraform apply
-```
+This will deploy Disaster Recovery.
 
 ## Delete Terraform stack
+If you want to remove it:
 ```
 terraform destroy
 ```
 
-## External Terraform State
-By default, Terraform stores your deployment state locally. This may not be desirable as if another developer/user will be unable to make changes to your deployment without first receiving your state file.
+## Integrating with Cumulus
+Integrate Disaster Recovery with Cumulus to be able to recover a granule from the Cumulus Dashboard.
 
-The following will be an example of how to keep your terraform state in an S3 bucket with access protection/file locking with dynamodb:
+### Define the Disaster Recovery workflow
+Copy the workflow from `workflows.yml.dr` into your Cumulus workflow.
 
-Create a bucket where your tfstate file will be stored (and enable versioning)
+Set the values of these environment variables to the ARN for the 
+{prefix}-extract-filepaths-for-granule and {prefix}-request-files lambdas,
+respectively:
 ```
-$ aws s3api create-bucket \
-    --bucket "${state-bucket}"
-    --create-bucket-configuration LocationConstraint=us-west-2
-$ aws s3api put-bucket-versioning \
-    --bucket "${state-bucket}" \
-    --versioning-configuration Status=Enabled
-```
-**Note:** The `--create-bucket-configuration` line is only necessary if you are creating your bucket outside of `us-east-1`.
+DR_EXTRACT_LAMBDA_ARN=arn:aws:lambda:us-west-2:012345678912:function:dr_extract_filepaths_for_granule
 
-Create the dynamodb table that will be used for locking
+DR_REQUEST_LAMBDA_ARN=arn:aws:lambda:us-west-2:012345678912:function:dr_request_files
 ```
-$ aws dynamodb create-table \
-    --table-name "${state-table-name}" \
-    --attribute-definitions AttributeName=LockID,AttributeType=S \
-    --key-schema AttributeName=LockID,KeyType=HASH \
-    --billing-mode PAY_PER_REQUEST
+### Collection configuration
+To configure a collection to enable Disaster Recovery, add the line
+`"granuleRecoveryWorkflow": DrRecoveryWorkflow"` to the collection configuration:
 ```
-**Note:** If the above `create-table` command yells about some missing parameter, try updating your awscli tool.
+{
+  "queriedAt": "2019-11-07T22:49:46.842Z",
+  "name": "L0A_HR_RAW",
+  "version": "1",
+  "sampleFileName": "L0A_HR_RAW_product_0001-of-0420.h5",
+  "dataType": "L0A_HR_RAW",
+  "granuleIdExtraction": "^(.*)((\\.cmr\\.json)|(\\.iso\\.xml)|(\\.tar\\.gz)|(\\.h5)|(\\.h5\\.mp))$",
+  "reportToEms": true,
+  "createdAt": 1561749178492,
+  "granuleId": "^.*$",
+  "provider_path": "L0A_HR_RAW/",
+  "meta": {
+    "response-endpoint": "arn:aws:sns:us-west-2:012345678912:providerResponseSNS",
+    "glacier-bucket": "podaac-sndbx-cumulus-glacier",
+    "granuleRecoveryWorkflow": DrRecoveryWorkflow"
+  },
+  "files": [
+    {
+```
+### Enable `Recover Granule` button
 
-Add the following in a file as `terraform.tf` (in the same directory as your other `.tf` files)
+To enable the `Recover Granule` button on the Cumulus Dashboard (available at github.com/nasa/cumulus-dashboard), 
+set the environment variable `ENABLE_RECOVERY=true`.
+
+Here is an example command to run the Cumulus Dashboard locally:
 ```
-terraform {
-  backend "s3" {
-    region         = "us-west-2"
-    bucket         = "podaac-dr-tf-state"
-    key            = "terraform.tfstate"
-    dynamodb_table = "podaac-dr-tf-locks"
-  }
-}
+  APIROOT=https://uttm5y1jcj.execute-api.us-west-2.amazonaws.com:8000/dev ENABLE_RECOVERY=true npm run serve
 ```

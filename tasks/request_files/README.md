@@ -138,11 +138,13 @@ FUNCTIONS
                     to sleep between retry attempts.
                 RESTORE_RETRIEVAL_TYPE (string, optional, default = 'Standard'): the Tier
                     for the restore request. Valid valuesare 'Standard'|'Bulk'|'Expedited'.
-                DATABASE_HOST (string): the server where the database resides.
                 DATABASE_PORT (string): the database port. The standard is 5432.
                 DATABASE_NAME (string): the name of the database.
                 DATABASE_USER (string): the name of the application user.
-                DATABASE_PW (string): the password for the application user.
+
+            Parameter Store:
+                drdb-user-pass (string): the password for the application user (DATABASE_USER).
+                drdb-host (string): the database host
 
             Args:
                 event (dict): A dict with the following keys:
@@ -153,9 +155,9 @@ FUNCTIONS
                         granuleId (string): The id of the granule being restored.
                         keys (list(string)): list of keys (glacier keys) for the granule
 
-                    Example: event: {"glacierBucket": "some_bucket",
-                                     "granules": [{"granuleId": "granxyz",
-                                                   "keys": ["path1", "path2"]}]
+                    Example: event: {'glacierBucket': 'some_bucket',
+                                     'granules': [{'granuleId': 'granxyz',
+                                                   'keys': ['path1', 'path2']}]
                                }
 
                 context (Object): None

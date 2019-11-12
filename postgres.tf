@@ -5,8 +5,8 @@ resource "aws_db_subnet_group" "postgres_subnet_group" {
 
 # https://blog.faraday.io/how-to-create-an-rds-instance-with-terraform/ 
 resource "aws_db_instance" "postgresql" {
-  # Get rid of this for production, just for testing
-  apply_immediately = true
+  # set apply_immediately true just for testing
+  apply_immediately = false
   allocated_storage          = 20
   # max_allocated_storage      = 21
   engine                     = "postgres"
