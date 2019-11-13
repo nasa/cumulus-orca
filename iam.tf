@@ -98,7 +98,8 @@ data "aws_iam_policy_document" "restore_object_role_policy_document" {
   }
   statement {
     actions   = [
-      "ssm:GetParameter"
+      "ssm:GetParameter",
+      "ssm:GetParameters"
     ]
     resources = ["*"]
   }
