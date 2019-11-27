@@ -1,4 +1,4 @@
-## Clone and build Disaster Recovery
+﻿## Clone and build Disaster Recovery
 
 Clone the `dr-podaac-swot` repo from <https://git.earthdata.nasa.gov/scm/pocumulus/dr-podaac-swot.git>
 
@@ -116,8 +116,8 @@ First, run a `mv terraform.tfvars.example terraform.tfvars` to get a template `t
 * protected_bucket - Analogous to the Cumulus protected bucket
 * permissions_boundary_arn - Permission Boundary Arn (Policy) for NGAP compliance
 * postgres_user_pw - password for the postgres user
-* database_name - the name of the database to be created for the application
-* database_app_user - the application user 
+* database_name - disaster_recovery
+* database_app_user - druser 
 * database_app_user_pw - the password for the application user
 
 **Optional:**
