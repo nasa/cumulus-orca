@@ -1,4 +1,4 @@
-﻿## Clone and build Disaster Recovery
+## Clone and build Disaster Recovery
 
 Clone the `dr-podaac-swot` repo from <https://git.earthdata.nasa.gov/scm/pocumulus/dr-podaac-swot.git>
 
