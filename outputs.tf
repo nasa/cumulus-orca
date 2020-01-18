@@ -68,6 +68,16 @@ output "this_db_subnet_group_arn" {
   value       = aws_db_subnet_group.postgres_subnet_group.arn
 }
 
+output "extract_filepaths_lambda_arn" {
+  description = "ARN identifying extract_filepaths lambda"
+  value       = aws_lambda_function.extract_filepaths_for_granule_lambda.arn
+}
+
+output "request_files_lambda_arn" {
+  description = "ARN identifying request_files lambda"
+  value       = aws_lambda_function.request_files_lambda.arn
+}
+
 # Can re-enable if we want. Don't have this information if we're using the default.
 # output "this_db_parameter_group_id" {
 #   description = "The db parameter group id"

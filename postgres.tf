@@ -24,7 +24,7 @@ resource "aws_db_instance" "postgresql" {
   maintenance_window         = "Mon:00:00-Mon:03:00"
   #auto_minor_version_upgrade = "${var.auto_minor_version_upgrade}"
   port                       = var.database_port
-  vpc_security_group_ids     = var.ngap_sgs
+  vpc_security_group_ids     = [aws_security_group.vpc-postgres-ingress-all-egress.id]
   db_subnet_group_name       = aws_db_subnet_group.postgres_subnet_group.id
   # parameter_group_name       = "default.postgres11"
   storage_encrypted          = false

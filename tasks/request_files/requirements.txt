@@ -1,4 +1,3 @@
-cumulus-message-adapter
-cumulus-message-adapter-python
+cumulus-message-adapter-python>=1.1.1
 ../dr_dbutils/dist/dr_dbutils-1.0.tar.gz
 ../pg_utils/dist/pg_utils-1.0.tar.gz

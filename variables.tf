@@ -2,6 +2,10 @@ variable "prefix" {
   default = "dr"
 }
 
+variable "vpc_id" {
+  default = ""
+}
+
 variable "restore_complete_filter_prefix" {
   default = ""
 }
@@ -107,9 +111,9 @@ variable "platform" {
 }
 
 variable "default_tags" {
-    type = "map"
-    default = {
-        team: "DR",
-        application: "disaster-recovery"
+  type = "map"
+  default = {
+    team: "DR",
+    application: "disaster-recovery"
   }
 }

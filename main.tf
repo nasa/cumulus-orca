@@ -1,11 +1,38 @@
+locals {
+  default_tags = {
+    Deployment = var.prefix
+  }
+}
+
 provider "aws" {
   version = "~> 2.13"
   region  = var.region
   profile = var.profile
 }
 
+resource "aws_security_group" "vpc-postgres-ingress-all-egress" {
+  name   = "${var.prefix}-vpc-ingress-all-egress"
+  vpc_id = var.vpc_id
+
+  ingress {
+    from_port = 5432
+    to_port   = 5432
+    protocol  = "TCP"
+    self      = true
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = local.default_tags
+}
+
 resource "aws_lambda_function" "db_deploy" {
-  filename      = "tasks/db_deploy/dbdeploy.zip"
+  filename      = "${path.module}/tasks/db_deploy/dbdeploy.zip"
   function_name = "${var.prefix}_db_deploy"
   role          = aws_iam_role.restore_object_role.arn
   handler       = "db_deploy.handler"
@@ -15,7 +42,7 @@ resource "aws_lambda_function" "db_deploy" {
 
   vpc_config {
     subnet_ids         = var.ngap_subnets
-    security_group_ids = var.ngap_sgs
+    security_group_ids = [aws_security_group.vpc-postgres-ingress-all-egress.id]
   }
 
   environment {
@@ -31,7 +58,7 @@ resource "aws_lambda_function" "db_deploy" {
 }
 
 resource "aws_lambda_function" "extract_filepaths_for_granule_lambda" {
-  filename      = "tasks/extract_filepaths_for_granule/extract.zip"
+  filename      = "${path.module}/tasks/extract_filepaths_for_granule/extract.zip"
   function_name = "${var.prefix}_extract_filepaths_for_granule"
   role          = aws_iam_role.restore_object_role.arn
   handler       = "extract_filepaths_for_granule.handler"
@@ -41,12 +68,12 @@ resource "aws_lambda_function" "extract_filepaths_for_granule_lambda" {
 
   vpc_config {
     subnet_ids         = var.ngap_subnets
-    security_group_ids = var.ngap_sgs
+    security_group_ids = [aws_security_group.vpc-postgres-ingress-all-egress.id]
   }
 }
 
 resource "aws_lambda_function" "request_files_lambda" {
-  filename      = "tasks/request_files/request.zip"
+  filename      = "${path.module}/tasks/request_files/request.zip"
   function_name = "${var.prefix}_request_files"
   role          = aws_iam_role.restore_object_role.arn
   handler       = "request_files.handler"
@@ -56,7 +83,7 @@ resource "aws_lambda_function" "request_files_lambda" {
 
   vpc_config {
     subnet_ids         = var.ngap_subnets
-    security_group_ids = var.ngap_sgs
+    security_group_ids = [aws_security_group.vpc-postgres-ingress-all-egress.id]
   }
 
   environment {
@@ -73,7 +100,7 @@ resource "aws_lambda_function" "request_files_lambda" {
 }
 
 resource "aws_lambda_function" "copy_files_to_archive" {
-  filename      = "tasks/copy_files_to_archive/copy.zip"
+  filename      = "${path.module}/tasks/copy_files_to_archive/copy.zip"
   function_name = "${var.prefix}_copy_files_to_archive"
   role          = aws_iam_role.restore_object_role.arn
   handler       = "copy_files_to_archive.handler"
@@ -83,7 +110,7 @@ resource "aws_lambda_function" "copy_files_to_archive" {
 
   vpc_config {
     subnet_ids         = var.ngap_subnets
-    security_group_ids = var.ngap_sgs
+    security_group_ids = [aws_security_group.vpc-postgres-ingress-all-egress.id]
   }
 
   environment {
@@ -98,7 +125,7 @@ resource "aws_lambda_function" "copy_files_to_archive" {
 }
 
 resource "aws_lambda_function" "request_status" {
-  filename      = "tasks/request_status/status.zip"
+  filename      = "${path.module}/tasks/request_status/status.zip"
   function_name = "${var.prefix}_request_status"
   role          = aws_iam_role.restore_object_role.arn
   handler       = "request_status.handler"
@@ -108,7 +135,7 @@ resource "aws_lambda_function" "request_status" {
 
   vpc_config {
     subnet_ids         = var.ngap_subnets
-    security_group_ids = var.ngap_sgs
+    security_group_ids = [aws_security_group.vpc-postgres-ingress-all-egress.id]
   }
 
   environment {
