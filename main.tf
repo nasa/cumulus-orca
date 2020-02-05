@@ -4,12 +4,6 @@ locals {
   }
 }
 
-provider "aws" {
-  version = "~> 2.13"
-  region  = var.region
-  profile = var.profile
-}
-
 resource "aws_security_group" "vpc-postgres-ingress-all-egress" {
   name   = "${var.prefix}-vpc-ingress-all-egress"
   vpc_id = var.vpc_id

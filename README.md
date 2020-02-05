@@ -177,6 +177,16 @@ DR_EXTRACT_LAMBDA_ARN=arn:aws:lambda:us-west-2:012345678912:function:dr_extract_
 DR_REQUEST_LAMBDA_ARN=arn:aws:lambda:us-west-2:012345678912:function:dr_request_files
 ```
 
+Add an `aws` provider to `main.tf`:
+
+```
+provider "aws" {
+  version = "~> 2.13"
+  region  = var.region
+  profile = var.profile
+}
+```
+
 ### Integrating Disaster Recovery With Cumulus >= v1.15
 
 #### Adding a DR module to the Cumulus deployment
@@ -184,8 +194,6 @@ DR_REQUEST_LAMBDA_ARN=arn:aws:lambda:us-west-2:012345678912:function:dr_request_
 We will be adding a `disaster-recovery` module to `cumulus-tf/main.tf`. First, since there isn't a distributed version of the `disaster-recovery` module at the time of writing this documentation, you'll have to clone this repository locally:
 
 `https://github.com/podaac/cumulus-disaster-recovery.git`
-
-Once you have the source files locally, navigate to `main.tf` and delete the `provider "aws"` section - this can cause problems when DR is referenced as a module instead of a stand-alone deployment.
 
 Once that is done, navigate to `cumulus-tf/main.tf` within your Cumulus deployment directory and add the following module:
 ```

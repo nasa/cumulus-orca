@@ -40,7 +40,7 @@ resource "null_resource" "bootstrap" {
   }
 
   provisioner "local-exec" {
-    command = "aws lambda invoke --function-name ${aws_lambda_function.db_deploy.arn} --region ${var.region} 'invoke-response.out'"
+    command = "aws lambda invoke --function-name ${aws_lambda_function.db_deploy.arn} --profile ${var.profile} --region ${var.region} 'invoke-response.out'"
   }
 
   depends_on = [aws_db_instance.postgresql]
