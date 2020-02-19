@@ -77,7 +77,7 @@
           "type": "public",
           "name": "podaac-sndbx-cumulus-public"
         }
-      },
+      }
     },
     "stack": "lab-cumulus",
     "provider": {},
@@ -115,10 +115,9 @@
         "version": "006",
         "files": [
           {
-            "name": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf",
             "bucket": "cumulus-test-sandbox-protected",
-            "filename": "s3://cumulus-test-sandbox-protected/MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf",
-            "key": "L0A_LR_RAW_product_0010-of-0092.h5",
+            "fileName": "s3://cumulus-test-sandbox-protected/MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf",
+            "key": "MOD09GQ___006/2017/MOD/L0A_LR_RAW_product_0010-of-0092.h5",
             "path": "jk2-IngestGranuleSuccess-1558420117156-test-data/files",
             "url_path": "{cmrMetadata.Granule.Collection.ShortName}___{cmrMetadata.Granule.Collection.VersionId}/{extractYear(cmrMetadata.Granule.Temporal.RangeDateTime.BeginningDateTime)}/{substring(file.name, 0, 3)}",
             "type": "data",

@@ -191,9 +191,9 @@ provider "aws" {
 
 #### Adding a DR module to the Cumulus deployment
 
-We will be adding a `disaster-recovery` module to `cumulus-tf/main.tf`. First, since there isn't a distributed version of the `disaster-recovery` module at the time of writing this documentation, you'll have to clone this repository locally:
+We will be adding a `disaster-recovery` module to `cumulus-tf/main.tf`. First, since there isn't a distributed version of the `disaster-recovery` module at the time of writing this documentation, you'll have to clone this repository locally: `https://github.com/podaac/cumulus-disaster-recovery.git`.
 
-`https://github.com/podaac/cumulus-disaster-recovery.git`
+In the `disaster-recovery` repo, build the lambda tasks with `./bin/build_tasks.sh`.
 
 Once that is done, navigate to `cumulus-tf/main.tf` within your Cumulus deployment directory and add the following module:
 ```

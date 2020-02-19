@@ -174,7 +174,7 @@
             "size": 2154070040
           },
           {
-            "source": "s3://podaac-ngap-dev-cumulus-test-input/L0A_HR_RAW_product_0003-of-0420.cmr.json/L0A_HR_RAW_product_0003-of-0420.cmr.json",
+            "source": "s3://podaac-ngap-dev-cumulus-test-input/L0A_HR_RAW_product_0003-of-0420.cmr.json",
             "fileName": "L0A_HR_RAW_product_0003-of-0420.cmr.json",
             "bucket": "podaac-sndbx-cumulus-public",
             "key": "L0A_HR_RAW_product_0003-of-0420.cmr.json",

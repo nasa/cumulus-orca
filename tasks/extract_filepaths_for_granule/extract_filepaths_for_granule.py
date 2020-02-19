@@ -42,11 +42,12 @@ def task(event, context):    #pylint: disable-msg=unused-argument
             gran['granuleId'] = ev_granule['granuleId']
             for afile in ev_granule['files']:
                 level = "event['input']['granules'][]['files']"
+                file_name = afile['fileName']
                 fkey = afile['key']
                 dest_bucket = None
                 for key in regex_buckets:
                     pat = re.compile(key)
-                    if pat.match(fkey):
+                    if pat.match(file_name):
                         dest_bucket = regex_buckets[key]
                 files.append({"key": fkey, "dest_bucket": dest_bucket})
             gran["keys"] = files

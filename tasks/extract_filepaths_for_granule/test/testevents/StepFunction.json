@@ -172,7 +172,7 @@
           {
             "bucket": "podaac-ngap-dev-cumulus-test-input",
             "checksumType": "md5",
-            "key": "L0A_HR_RAW_product_0003-of-0420.h5",
+            "key": "L0A_HR_RAW/L0A_HR_RAW_product_0003-of-0420.h5",
             "size": 2154070040,
             "fileName": "L0A_HR_RAW_product_0010L0A_HR_RAW_product_0003of-0420.h5",
             "source": "s3://podaac-ngap-dev-cumulus-test-input/L0A_HR_RAW/L0A_HR_RAW_product_0003-of-0420.h5",
@@ -183,7 +183,7 @@
             "key": "L0A_HR_RAW_product_0003-of-0420.cmr.json",
             "size": 1357,
             "fileName": "L0A_HR_RAW_product_0003-of-0420.cmr.json",
-            "source": "s3://podaac-ngap-dev-cumulus-test-input/L0A_HR_RAW_product_0003-of-0420.cmr.json/L0A_HR_RAW_product_0003-of-0420.cmr.json"
+            "source": "s3://podaac-ngap-dev-cumulus-test-input/L0A_HR_RAW_product_0003-of-0420.cmr.json"
           }
         ],
         "cmrLink": "https://cmr.uat.earthdata.nasa.gov/search/granules.json?concept_id=G1224390942-PO_NGP_UAT",
