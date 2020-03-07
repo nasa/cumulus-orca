@@ -55,3 +55,4 @@ terraform\.tfvars
 terraform\.tfstate*
 terraform.tf
 venv/
+.idea

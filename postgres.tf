@@ -3,6 +3,11 @@ resource "aws_db_subnet_group" "postgres_subnet_group" {
   subnet_ids = var.ngap_subnets
 }
 
+# Ignore aws profile in case this was deployed with CI or
+# in a machine without aws profile defined
+locals {
+  used_profile = contains([var.profile], "default") ? "" : "--profile ${var.profile}"
+}
 # https://blog.faraday.io/how-to-create-an-rds-instance-with-terraform/ 
 resource "aws_db_instance" "postgresql" {
   # set apply_immediately true just for testing
@@ -38,7 +43,7 @@ resource "null_resource" "bootstrap" {
   }
 
   provisioner "local-exec" {
-    command = "aws lambda invoke --function-name ${aws_lambda_function.db_deploy.arn} --profile ${var.profile} --region ${var.region} 'invoke-response.out'"
+    command = "aws lambda invoke --function-name ${aws_lambda_function.db_deploy.arn} ${local.used_profile} --region ${var.region} 'invoke-response.out'"
   }
 
   depends_on = [aws_db_instance.postgresql]
