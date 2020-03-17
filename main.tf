@@ -4,6 +4,13 @@ locals {
   }
 }
 
+terraform {
+  required_providers {
+    aws  = ">= 2.31.0"
+    null = "~> 2.1"
+  }
+}
+
 resource "aws_security_group" "vpc-postgres-ingress-all-egress" {
   name   = "${var.prefix}-vpc-ingress-all-egress"
   vpc_id = var.vpc_id
