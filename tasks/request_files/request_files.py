@@ -74,7 +74,8 @@ def task(event, context):              #pylint: disable-msg=unused-argument
     s3 = boto3.client('s3')  # pylint: disable-msg=invalid-name
 
     for granule in granules:
-        gran['granuleId'] = granule['granuleId']
+        # gran['granuleId'] = granule['granuleId']
+        gran = granule.copy()
         files = []
         for keys in granule['keys']:
             file_key = keys['key']
@@ -87,11 +88,12 @@ def task(event, context):              #pylint: disable-msg=unused-argument
                 afile['success'] = False
                 afile['err_msg'] = ''
                 files.append(afile)
-        gran['files'] = files
+        gran['recover_files'] = files
 
     gran = process_granules(s3, gran, glacier_bucket, exp_days)
 
-    return gran
+    # Cumulus expects response (payload.granules) to be a list of granule objects.
+    return { 'granules': [ gran ] }
 
 def process_granules(s3, gran, glacier_bucket, exp_days):        # pylint: disable-msg=invalid-name
     """Call restore_object for the files in the granule_list
@@ -130,7 +132,7 @@ def process_granules(s3, gran, glacier_bucket, exp_days):        # pylint: disab
     request_group_id = requests_db.request_id_generator()
     granule_id = gran['granuleId']
     while attempt <= retries:
-        for afile in gran['files']:
+        for afile in gran['recover_files']:
             if not afile['success']:
                 try:
                     obj = {}
@@ -152,7 +154,7 @@ def process_granules(s3, gran, glacier_bucket, exp_days):        # pylint: disab
         if attempt <= retries:
             time.sleep(retry_sleep_secs)
 
-    for afile in gran['files']:
+    for afile in gran['recover_files']:
         # if any file failed, the whole granule will fail
         if not afile['success']:
             LOGGER.error("One or more files failed to be requested from {}. {}",

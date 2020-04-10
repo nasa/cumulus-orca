@@ -1,10 +1,15 @@
 #!/bin/sh
 
 set -e
+
+if [ -z ${DR_VERSION+x} ]; then
+  DR_VERSION=$1
+fi
+
 rm -rf venv
 python3 -m venv venv
 source venv/bin/activate
-pip install --upgrade pip    
+pip install --upgrade pip
 deactivate
 echo "pwd `pwd`"
 
@@ -22,7 +27,7 @@ cd "`pwd`/${TASK}"
 rm -rf build
 mkdir build
 source ../../venv/bin/activate
-pip install -t build -r requirements.txt
+pip install -t build -r requirements.txt --trusted-host pypi.org
 deactivate
 cp db_deploy.py build/
 cd build
@@ -32,7 +37,7 @@ cd ..
 cp ../package/awslambda-psycopg2/psycopg2-3.7/* build/psycopg2/
 cp -r ../../database/ddl/base/* build/ddl/
 cd build
-zip -r ../dbdeploy.zip .
+zip -r "../dbdeploy-${DR_VERSION}.zip" .
 cd ../../../
 
 TASK='tasks/extract_filepaths_for_granule/'
@@ -41,11 +46,11 @@ cd "`pwd`/${TASK}"
 rm -rf build
 mkdir build
 source ../../venv/bin/activate
-pip install -t build -r requirements.txt
+pip install -t build -r requirements.txt --trusted-host pypi.org
 deactivate
 cp *.py build/
 cd build
-zip -r ../extract.zip .
+zip -r "../extract-${DR_VERSION}.zip" .
 cd ../../../
 
 TASK='tasks/request_status/'
@@ -54,7 +59,7 @@ cd "`pwd`/${TASK}"
 rm -rf build
 mkdir build
 source ../../venv/bin/activate
-pip install -t build -r requirements.txt
+pip install -t build -r requirements.txt --trusted-host pypi.org
 deactivate
 cp request_status.py build/
 cd build
@@ -62,7 +67,7 @@ mkdir psycopg2
 cd ..
 cp ../package/awslambda-psycopg2/psycopg2-3.7/* build/psycopg2/
 cd build
-zip -r ../status.zip .
+zip -r "../status-${DR_VERSION}.zip" .
 cd ../../../
 
 TASK='tasks/copy_files_to_archive/'
@@ -71,7 +76,7 @@ cd "`pwd`/${TASK}"
 rm -rf build
 mkdir build
 source ../../venv/bin/activate
-pip install -t build -r requirements.txt
+pip install -t build -r requirements.txt --trusted-host pypi.org
 deactivate
 cp copy_files_to_archive.py build/
 cd build
@@ -79,7 +84,7 @@ mkdir psycopg2
 cd ..
 cp ../package/awslambda-psycopg2/psycopg2-3.7/* build/psycopg2/
 cd build
-zip -r ../copy.zip .
+zip -r "../copy-${DR_VERSION}.zip" .
 cd ../../../
 	
 TASK='tasks/request_files/'
@@ -88,7 +93,7 @@ cd "`pwd`/${TASK}"
 rm -rf build
 mkdir build
 source ../../venv/bin/activate
-pip install -t build -r requirements.txt
+pip install -t build -r requirements.txt --trusted-host pypi.org
 deactivate
 cp request_files.py build/
 cd build
@@ -96,5 +101,5 @@ mkdir psycopg2
 cd ..
 cp ../package/awslambda-psycopg2/psycopg2-3.7/* build/psycopg2/
 cd build
-zip -r ../request.zip .
+zip -r "../request-${DR_VERSION}.zip" .
 cd ../../../

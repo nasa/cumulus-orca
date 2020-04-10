@@ -33,7 +33,7 @@ resource "aws_security_group" "vpc-postgres-ingress-all-egress" {
 }
 
 resource "aws_lambda_function" "db_deploy" {
-  filename      = "${path.module}/tasks/db_deploy/dbdeploy.zip"
+  filename      = "${path.module}/tasks/db_deploy/dbdeploy-${var.dr_version}.zip"
   function_name = "${var.prefix}_db_deploy"
   role          = aws_iam_role.restore_object_role.arn
   handler       = "db_deploy.handler"
@@ -59,7 +59,7 @@ resource "aws_lambda_function" "db_deploy" {
 }
 
 resource "aws_lambda_function" "extract_filepaths_for_granule_lambda" {
-  filename      = "${path.module}/tasks/extract_filepaths_for_granule/extract.zip"
+  filename      = "${path.module}/tasks/extract_filepaths_for_granule/extract-${var.dr_version}.zip"
   function_name = "${var.prefix}_extract_filepaths_for_granule"
   role          = aws_iam_role.restore_object_role.arn
   handler       = "extract_filepaths_for_granule.handler"
@@ -74,7 +74,7 @@ resource "aws_lambda_function" "extract_filepaths_for_granule_lambda" {
 }
 
 resource "aws_lambda_function" "request_files_lambda" {
-  filename      = "${path.module}/tasks/request_files/request.zip"
+  filename      = "${path.module}/tasks/request_files/request-${var.dr_version}.zip"
   function_name = "${var.prefix}_request_files"
   role          = aws_iam_role.restore_object_role.arn
   handler       = "request_files.handler"
@@ -101,7 +101,7 @@ resource "aws_lambda_function" "request_files_lambda" {
 }
 
 resource "aws_lambda_function" "copy_files_to_archive" {
-  filename      = "${path.module}/tasks/copy_files_to_archive/copy.zip"
+  filename      = "${path.module}/tasks/copy_files_to_archive/copy-${var.dr_version}.zip"
   function_name = "${var.prefix}_copy_files_to_archive"
   role          = aws_iam_role.restore_object_role.arn
   handler       = "copy_files_to_archive.handler"
@@ -126,7 +126,7 @@ resource "aws_lambda_function" "copy_files_to_archive" {
 }
 
 resource "aws_lambda_function" "request_status" {
-  filename      = "${path.module}/tasks/request_status/status.zip"
+  filename      = "${path.module}/tasks/request_status/status-${var.dr_version}.zip"
   function_name = "${var.prefix}_request_status"
   role          = aws_iam_role.restore_object_role.arn
   handler       = "request_status.handler"

@@ -36,7 +36,7 @@ def task(event, context):    #pylint: disable-msg=unused-argument
         level = "event['input']"
         grans = []
         for ev_granule in event['input']['granules']:
-            gran = {}
+            gran = ev_granule.copy()
             files = []
             level = "event['input']['granules'][]"
             gran['granuleId'] = ev_granule['granuleId']
@@ -49,8 +49,8 @@ def task(event, context):    #pylint: disable-msg=unused-argument
                     pat = re.compile(key)
                     if pat.match(file_name):
                         dest_bucket = regex_buckets[key]
-                files.append({"key": fkey, "dest_bucket": dest_bucket})
-            gran["keys"] = files
+                files.append({'key': fkey, 'dest_bucket': dest_bucket})
+            gran['keys'] = files
             grans.append(gran)
         result['granules'] = grans
     except KeyError as err:

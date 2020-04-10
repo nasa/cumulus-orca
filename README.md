@@ -8,11 +8,13 @@ git clone https://git.earthdata.nasa.gov/scm/pocumulus/dr-podaac-swot.git disast
 ## Build lambdas
 Before you can deploy this infrastructure, the lambda function source-code must be built.
 
-`./bin/build_tasks.sh` will crawl the `tasks` directory and build a `.zip` file (currently by just `zipping` all python files and dependencies) in each of it's sub-directories. That `.zip` is then referenced in the `main.tf` lamdba definitions.
+`./bin/build_tasks.sh "<version_number>"` will crawl the `tasks` directory and build a `.zip` file (currently by just `zipping` all python files and dependencies) in each of it's sub-directories. That `.zip` is then referenced in the `main.tf` lamdba definitions.
+
+`<version_number>` just has to be consistent with the `dr_version` variable passed into the `disaster_recovery` module. This value has to be updated for changes to lambdas to be deployed.
 
 ```
 cd disaster-recovery
-./bin/build_tasks.sh
+./bin/build_tasks.sh "0.1.1"
 ```
 
 # Disaster Recovery Deployment
@@ -193,7 +195,7 @@ provider "aws" {
 
 We will be adding a `disaster-recovery` module to `cumulus-tf/main.tf`. First, since there isn't a distributed version of the `disaster-recovery` module at the time of writing this documentation, you'll have to clone this repository locally: `https://github.com/podaac/cumulus-disaster-recovery.git`.
 
-In the `disaster-recovery` repo, build the lambda tasks with `./bin/build_tasks.sh`.
+In the `disaster-recovery` repo, build the lambda tasks with `./bin/build_tasks.sh "<version_number>"`.
 
 Once that is done, navigate to `cumulus-tf/main.tf` within your Cumulus deployment directory and add the following module:
 ```
@@ -203,6 +205,7 @@ module "disaster-recovery" {
   prefix = var.prefix
   vpc_id = var.vpc_id
 
+  dr_version               = "0.1.0"
   ngap_subnets             = var.ngap_db_subnets
   public_bucket            = var.buckets["public"]["name"]
   glacier_bucket           = var.buckets["glacier"]["name"]

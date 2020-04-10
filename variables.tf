@@ -6,6 +6,11 @@ variable "vpc_id" {
   default = ""
 }
 
+variable "dr_version" {
+  default     = "0.1.1"
+  description = "Version of DR lambda code to deploy."
+}
+
 variable "restore_complete_filter_prefix" {
   default = ""
 }
