@@ -4,78 +4,104 @@
 - [Development](#development)
   * [Unit Testing and Coverage](#unit-testing-and-coverage)
   * [Linting](#linting)
-- [Integration Testing](#integration-testing)
 - [Deployment](#deployment)
+  * [Deployment Validation](#deployment-validation)
 - [pydoc request_files](#pydoc-request-files)
+- [pydoc copy_files_to_archive](#pydoc-copy-files)
+- [pydoc request_status](#pydoc-request-status)
 
+<a name="setup"></a>
 # Setup
     See the README in the tasks folder for general development setup instructions
+    See the README in the tasks/dr_dbutils folder to install dr_dbutils
 
+<a name="development"></a>
 # Development
 
+<a name="unit-testing-and-coverage"></a>
 ## Unit Testing and Coverage
 ```
-Run the unit tests with code coverage:
+Test files in the test folder that end with _postgres.py run
+against a Postgres database in a Docker container, and allow you to 
+develop against an actual database. You can create the database
+using task/db_deploy. 
+These postgres tests allow you to test things that the mocked tests won't catch -
+such as a restore request that fails the first time and succeeds the second time. The mocked 
+tests didn't catch that it was actually inserting two rows ('error' and 'inprogress'), instead
+of inserting one 'error' row, then updating it to 'inprogress'.
+Note that these _postgres test files could use some more assert tests.
+For now they can be used as a development aid. To run them you'll need to define
+these 5 environment variables in a file named private_config.json, but do NOT check it into GIT. 
+ex:
+(podr2) λ cat private_config.json 
+{"DATABASE_HOST": "db.host.gov_goes_here",
+"DATABASE_PORT": "dbport_goes_here", 
+"DATABASE_NAME": "dbname_goes_here", 
+"DATABASE_USER": "dbusername_goes_here", 
+"DATABASE_PW": "db_pw_goes_here"}
 
+The remaining tests have everything mocked.
+
+Run the tests:
+C:\devpy\poswotdr\tasks\request_files  
 λ activate podr
+All tests:
+(podr) λ nosetests -v
 
+Individual tests (insert desired test file name):
+(podr) λ nosetests test/test_requests_postgres.py -v
+
+Code Coverage:
 (podr) λ cd C:\devpy\poswotdr\tasks\request_files
 (podr) λ nosetests --with-coverage --cover-erase --cover-package=request_files -v
-test_handler_client_error_2_times (test_request_files.TestRequestFiles) ... ok
-test_handler_client_error_3_times (test_request_files.TestRequestFiles) ... ok
-test_handler_client_error_one_file (test_request_files.TestRequestFiles) ... ok
-test_handler_no_bucket (test_request_files.TestRequestFiles) ... ok
-test_handler_no_expire_days_env_var (test_request_files.TestRequestFiles) ... ok
-test_handler_no_retries_env_var (test_request_files.TestRequestFiles) ... ok
-test_handler_one_granule_4_files_success (test_request_files.TestRequestFiles) ... ok
-test_handler_two_granules (test_request_files.TestRequestFiles) ... ok
 
 Name               Stmts   Miss  Cover
 --------------------------------------
-request_files.py      65      0   100%
+request_files.py     117      0   100%
 ----------------------------------------------------------------------
-Ran 8 tests in 1.641s
-
+Ran 16 tests in 13.150s
 ```
+<a name="linting"></a>
 ## Linting
 ```
 Run pylint against the code:
 
 (podr) λ cd C:\devpy\poswotdr\tasks\request_files
 (podr) λ pylint request_files.py
+--------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 
+(podr) λ pylint test/request_helpers.py
+--------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
+
+(podr) λ pylint test/test_request_files.py
+--------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
+
+(podr) λ pylint test/test_request_files_postgres.py
 --------------------------------------------------------------------
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 ```
-## Integration Testing
-```
-Create an S3 bucket, for example, my-dr-fake-glacier-bucket
-Create a folder in the bucket, for example, dr-glacier
-Upload some small dummy test files to the folder.
-Make a restore request:
-
-input:
-{
-  "glacierBucket": "my-dr-fake-glacier-bucket",
-  "granules": [
-    {
-      "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
-      "filepaths": [
-        "dr-glacier/MOD09GQ.A0219115.N5aUCG.006.0656338553321.hdf.txt"
-      ]
-    }
-  ]
-}
-
-check status of restore request
-(podr) λ aws s3api head-object --bucket my-dr-fake-glacier-bucket --key dr-glacier/MOD09GQ.A0219115.N5aUCG.006.0656338553321.hdf.txt
-
-```
+<a name="deployment"></a>
 ## Deployment
 ```
-    cd tasks\request_files
-    zip request_files.zip *.py
+    see /bin/build_tasks.sh to build the zip file. Upload the zip file to AWS.
 ```
+<a name="deployment-validation"></a>
+### Deployment Validation
+```
+1.  The easiest way to test is to use the DrRecoveryWorkflowStateMachine.
+    You can use the test event in tasks/extract_filepaths_for_granule/test/testevents/StepFunction.json.
+    Edit the ['payload']['granules']['keys'] values as needed to be the file(s) you wish to restore.
+    Edit the ['cumulus_meta']['execution_name'] to be something unique (like yyyymmdd_hhmm). Then
+    copy and paste the same value to the execution name field above the input field.
+    The restore may take up to 5 hours.
+
+Use the AWS CLI to check status of restore request:
+ex> (podr) λ aws s3api head-object --bucket podaac-sndbx-cumulus-glacier --key L0A_RAD_RAW_product_0001-of-0020.iso.xml
+```
+<a name="pydoc-request-files"></a>
 ## pydoc request_files
 ```
 NAME
@@ -104,12 +130,21 @@ FUNCTIONS
         many times to retry a restore_request, and how long to wait between retries.
 
             Environment Vars:
-                restore_expire_days (number, optional, default = 5): The number of days
+                RESTORE_EXPIRE_DAYS (number, optional, default = 5): The number of days
                     the restored file will be accessible in the S3 bucket before it expires.
-                restore_request_retries (number, optional, default = 3): The number of
+                RESTORE_REQUEST_RETRIES (number, optional, default = 3): The number of
                     attempts to retry a restore_request that failed to submit.
-                restore_retry_sleep_secs (number, optional, default = 0): The number of seconds
+                RESTORE_RETRY_SLEEP_SECS (number, optional, default = 0): The number of seconds
                     to sleep between retry attempts.
+                RESTORE_RETRIEVAL_TYPE (string, optional, default = 'Standard'): the Tier
+                    for the restore request. Valid valuesare 'Standard'|'Bulk'|'Expedited'.
+                DATABASE_PORT (string): the database port. The standard is 5432.
+                DATABASE_NAME (string): the name of the database.
+                DATABASE_USER (string): the name of the application user.
+
+            Parameter Store:
+                drdb-user-pass (string): the password for the application user (DATABASE_USER).
+                drdb-host (string): the database host
 
             Args:
                 event (dict): A dict with the following keys:
@@ -118,11 +153,11 @@ FUNCTIONS
                         will be restored.
                     granules (list(dict)): A list of dict with the following keys:
                         granuleId (string): The id of the granule being restored.
-                        filepaths (list(string)): list of filepaths (glacier keys) for the granule
+                        keys (list(string)): list of keys (glacier keys) for the granule
 
                     Example: event: {'glacierBucket': 'some_bucket',
-                                'granules': [{'granuleId': 'granxyz',
-                                            'filepaths': ['path1', 'path2']}]
+                                     'granules': [{'granuleId': 'granxyz',
+                                                   'keys': ['path1', 'path2']}]
                                }
 
                 context (Object): None

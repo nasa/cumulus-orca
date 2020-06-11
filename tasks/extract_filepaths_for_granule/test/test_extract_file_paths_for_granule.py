@@ -1,202 +1,195 @@
+"""
+Name: test_extract_filepaths_for_granule.py
+
+Description:  Unit tests for extract_file_paths_for_granule.py.
+"""
 import unittest
-import json
+from unittest.mock import Mock
+from cumulus_logger import CumulusLogger
+from helpers import LambdaContextMock, create_handler_event, create_task_event
 import extract_filepaths_for_granule
 
 class TestExtractFilePaths(unittest.TestCase):
-
+    """
+    TestExtractFilePaths.
+    """
     def setUp(self):
-        self.exp_event = {
-  "glacierBucket": "some_bucket",
-  "granules":
-    [{
-      "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
-      "dataType": "MOD09GQ_test-jk2-IngestGranuleSuccess-1558420117156",
-      "version": "006",
-      "files": [
-        {
-          "name": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf",
-          "filepath": "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf",
-          "bucket": "cumulus-test-sandbox-protected",
-          "filename": "s3://cumulus-test-sandbox-protected/MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf",
-          "path": "jk2-IngestGranuleSuccess-1558420117156-test-data/files",
-          "url_path": "{cmrMetadata.Granule.Collection.ShortName}___{cmrMetadata.Granule.Collection.VersionId}/{extractYear(cmrMetadata.Granule.Temporal.RangeDateTime.BeginningDateTime)}/{substring(file.name, 0, 3)}",
-          "type": "data",
-          "duplicate_found": True,
-          "size": 1098034
-        },
-        {
-          "name": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf.met",
-          "filepath": "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf.met",
-          "bucket": "cumulus-test-sandbox-private",
-          "filename": "s3://cumulus-test-sandbox-private/MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.hdf.met",
-          "path": "jk2-IngestGranuleSuccess-1558420117156-test-data/files",
-          "url_path": "{cmrMetadata.Granule.Collection.ShortName}___{cmrMetadata.Granule.Collection.VersionId}/{substring(file.name, 0, 3)}",
-          "type": "metadata",
-          "duplicate_found": True,
-          "size": 21708
-        },
-        {
-          "name": "MOD09GQ.A0219114.N5aUCG.006.0656338553321_ndvi.jpg",
-          "filepath": "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321_ndvi.jpg",
-          "bucket": "cumulus-test-sandbox-public",
-          "filename": "s3://cumulus-test-sandbox-public/MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321_ndvi.jpg",
-          "path": "jk2-IngestGranuleSuccess-1558420117156-test-data/files",
-          "url_path": "{cmrMetadata.Granule.Collection.ShortName}___{cmrMetadata.Granule.Collection.VersionId}/{substring(file.name, 0, 3)}",
-          "type": "browse",
-          "duplicate_found": True,
-          "size": 9728
-        },
-        {
-          "name": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
-          "filepath": "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
-          "bucket": "cumulus-test-sandbox-protected-2",
-          "filename": "s3://cumulus-test-sandbox-protected-2/MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
-          "url_path": "{cmrMetadata.Granule.Collection.ShortName}___{cmrMetadata.Granule.Collection.VersionId}/{substring(file.name, 0, 3)}",
-          "type": "metadata"
-        }
-      ]
-    }
-  ]
-}
-        self.exp_context = None
+        self.context = LambdaContextMock()
+        self.mock_error = CumulusLogger.error
+        self.task_input_event = create_task_event()
+
+    def tearDown(self):
+        CumulusLogger.error = self.mock_error
 
     def test_handler(self):
-        result = extract_filepaths_for_granule.handler(self.exp_event, self.exp_context)
+        """
+        Test successful with four keys returned.
+        """
+        handler_input_event = create_handler_event()
+        exp_msg = "KeyError: \"event['config']['protected-bucket']\" is required"
+        try:
+            extract_filepaths_for_granule.handler(handler_input_event, self.context)
+        except extract_filepaths_for_granule.ExtractFilePathsError as ex:
+            self.assertEqual(exp_msg, str(ex))
 
+
+    def test_task(self):
+        """
+        Test successful with four keys returned.
+        """
+        result = extract_filepaths_for_granule.task(self.task_input_event, self.context)
         exp_result = {}
-
-        exp_result['glacierBucket'] = 'some_bucket'
         exp_grans = []
         exp_gran = {}
         exp_files = []
-        exp_gran['granuleId'] = self.exp_event['granules'][0]['granuleId']
-        exp_files.append(self.exp_event['granules'][0]['files'][0]['filepath'])
-        exp_files.append(self.exp_event['granules'][0]['files'][1]['filepath'])
-        exp_files.append(self.exp_event['granules'][0]['files'][2]['filepath'])
-        exp_files.append(self.exp_event['granules'][0]['files'][3]['filepath'])
-        exp_gran['filepaths'] = exp_files
+
+        exp_gran['granuleId'] = self.task_input_event['input']['granules'][0]['granuleId']
+        exp_key1 = {'key': self.task_input_event['input']['granules'][0]['files'][0]['key'],
+                    'dest_bucket': 'sndbx-cumulus-protected'}
+        exp_key2 = {'key': self.task_input_event['input']['granules'][0]['files'][1]['key'],
+                    'dest_bucket': 'sndbx-cumulus-public'}
+        exp_key3 = {'key': self.task_input_event['input']['granules'][0]['files'][2]['key'],
+                    'dest_bucket': None}
+        exp_key4 = {'key': self.task_input_event['input']['granules'][0]['files'][3]['key'],
+                    'dest_bucket': 'sndbx-cumulus-public'}
+        exp_files.append(exp_key1)
+        exp_files.append(exp_key2)
+        exp_files.append(exp_key3)
+        exp_files.append(exp_key4)
+        exp_gran['keys'] = exp_files
         exp_grans.append(exp_gran)
 
         exp_result['granules'] = exp_grans
-        expected_result = json.dumps(exp_result)
-        print("expected_result: ", expected_result)
-        self.assertEqual(expected_result, result)
+        self.assertEqual(exp_result, result)
 
-    def test_handler_no_glacier_bucket(self):
-        self.exp_event.pop('glacierBucket',None)
-        expErr = "KeyError: 'event.glacierBucket' is required"
+    def test_task_no_granules(self):
+        """
+        Test no 'granules' key in input event.
+        """
+        self.task_input_event['input'].pop('granules', None)
+        exp_err = "KeyError: \"event['input']['granules']\" is required"
+        CumulusLogger.error = Mock()
         try:
-            extract_filepaths_for_granule.handler(self.exp_event, self.exp_context)
+            extract_filepaths_for_granule.task(self.task_input_event, self.context)
             self.fail("ExtractFilePathsError expected")
         except extract_filepaths_for_granule.ExtractFilePathsError as ex:
-            self.assertEqual(expErr,str(ex))
+            self.assertEqual(exp_err, str(ex))
 
-    def test_handler_no_granules(self):
-        self.exp_event.pop('granules', None)
-        expErr = "KeyError: 'event.granules' is required"
+    def test_task_no_granule(self):
+        """
+        Test no granuleId in input event.
+        """
+        self.task_input_event['input']['granules'][0] = {"files": []}
+
+        exp_err = "KeyError: \"event['input']['granules'][]['granuleId']\" is required"
+        CumulusLogger.error = Mock()
         try:
-            extract_filepaths_for_granule.handler(self.exp_event, self.exp_context)
+            extract_filepaths_for_granule.task(self.task_input_event, self.context)
             self.fail("ExtractFilePathsError expected")
         except extract_filepaths_for_granule.ExtractFilePathsError as ex:
-            self.assertEqual(expErr,str(ex))
+            self.assertEqual(exp_err, str(ex))
 
-    def test_handler_no_granule(self):
-        self.exp_event['granules'][0] =  {
- #              "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
-                "files": []
-            }
+    def test_task_no_files(self):
+        """
+        Test no files in input event.
+        """
+        self.task_input_event['input']['granules'][0].pop('files', None)
+        self.task_input_event['granules'] = [{
+            "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321"}]
 
-        expErr = "KeyError: 'event.granules[{granuleId' is required"
+        exp_err = "KeyError: \"event['input']['granules'][]['files']\" is required"
         try:
-            extract_filepaths_for_granule.handler(self.exp_event, self.exp_context)
+            extract_filepaths_for_granule.task(self.task_input_event, self.context)
             self.fail("ExtractFilePathsError expected")
         except extract_filepaths_for_granule.ExtractFilePathsError as ex:
-            self.assertEqual(expErr,str(ex))
+            self.assertEqual(exp_err, str(ex))
 
-    def test_handler_no_files(self):
-        self.exp_event.pop('granules', None)
-        self.exp_event['granules']  = [{
-                "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
-                #"files": [
-            }
-        ]
-
-        expErr = "KeyError: 'event.granules[{files' is required"
+    def test_task_no_filepath(self):
+        """
+        Test no key in input event.
+        """
+        self.task_input_event['input'].pop('granules', None)
+        self.task_input_event['config']['protected-bucket'] = "my_protected_bucket"
+        self.task_input_event['config']['internal-bucket'] = "my_internal_bucket"
+        self.task_input_event['config']['private-bucket'] = "my_private_bucket"
+        self.task_input_event['config']['public-bucket'] = "my_public_bucket"
+        self.task_input_event['config']['file-buckets'] = (
+            [{'regex': '.*.h5$', 'sampleFileName': 'L_10-420.h5', 'bucket': 'protected'},
+             {'regex': '.*.iso.xml$', 'sampleFileName': 'L_10-420.iso.xml', 'bucket': 'protected'},
+             {'regex': '.*.h5.mp$', 'sampleFileName': 'L_10-420.h5.mp', 'bucket': 'public'},
+             {'regex': '.*.cmr.json$', 'sampleFileName': 'L_10-420.cmr.json', 'bucket': 'public'}])
+        self.task_input_event['input']['granules'] = [{
+            "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
+            "files": [
+                {
+                    "fileName": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
+                    "bucket": "cumulus-test-sandbox-protected-2"
+                }]}]
+        exp_err = "KeyError: \"event['input']['granules'][]['files']['key']\" is required"
         try:
-            extract_filepaths_for_granule.handler(self.exp_event, self.exp_context)
+            extract_filepaths_for_granule.task(self.task_input_event, self.context)
             self.fail("ExtractFilePathsError expected")
         except extract_filepaths_for_granule.ExtractFilePathsError as ex:
-            self.assertEqual(expErr, str(ex))
+            self.assertEqual(exp_err, str(ex))
 
-    def test_handler_no_filepath(self):
-        self.exp_event.pop('granules', None)
-        self.exp_event['granules'] = [{
-                "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
-                "files": [
-                    {
-                        "name": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
-                        #"filepath": "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
-                        "bucket": "cumulus-test-sandbox-protected-2"
-                    }
-                ]
-            }
-         ]
-        expErr = "KeyError: 'event.granules[{files[{filepath' is required"
-        try:
-            extract_filepaths_for_granule.handler(self.exp_event, self.exp_context)
-            self.fail("ExtractFilePathsError expected")
-        except extract_filepaths_for_granule.ExtractFilePathsError as ex:
-            self.assertEqual(expErr, str(ex))
+    def test_task_one_file(self):
+        """
+        Test with one valid file in input.
+        """
+        self.task_input_event['input']['granules'] = [{
+            "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
+            "files": [
+                {
+                    "key":
+                        "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
+                    "bucket": "cumulus-test-sandbox-protected-2",
+                    "fileName": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml"
+                }]}]
+        exp_result = {'granules': [
+            {'keys': [{'key':'MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml',
+                       'dest_bucket': 'sndbx-cumulus-protected'}],
+             'granuleId': 'MOD09GQ.A0219114.N5aUCG.006.0656338553321'}]}
+        result = extract_filepaths_for_granule.task(self.task_input_event, self.context)
+        self.assertEqual(exp_result, result)
 
-    def test_handler_one_file(self):
-        self.exp_event['granules'] = [ {
-                "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
-                "files": [
-                    {
-                        "name": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
-                        "filepath": "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
-                        "bucket": "cumulus-test-sandbox-protected-2"
-                    }
-                ]
-            }
-         ]
-        expResult = '{"glacierBucket": "some_bucket", "granules": [{"granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321", "filepaths": ["MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml"]}]}'
-        result = extract_filepaths_for_granule.handler(self.exp_event, self.exp_context)
-        self.assertEqual(expResult, result)
+    def test_task_two_granules(self):
+        """
+        Test with two granules, one key each.
+        """
 
-    def test_handler_two_granules(self):
-        self.exp_event['granules'] = [ {
-                "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
-                "files": [
-                    {
-                        "name": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
-                        "filepath": "MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
-                        "bucket": "cumulus-test-sandbox-protected-2"
-                    }
-                ]
-            },
-            {
-                "granuleId": "MOD09GQ.A0219115.N5aUCG.006.0656338553321",
-                "files": [
-                    {
-                        "name": "MOD09GQ.A0219115.N5aUCG.006.0656338553321.cmr.xml",
-                        "filepath": "MOD/MOD09GQ.A0219115.N5aUCG.006.0656338553321.cmr.xml",
-                        "bucket": "cumulus-test-sandbox-protected-2"
-                    }
-                ]
-            }
-         ]
-        expResult = '{"glacierBucket": "some_bucket", ' \
-                    '"granules": [{"granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321", ' \
-                    '"filepaths": ["MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml"]}, ' \
-                    '{"granuleId": "MOD09GQ.A0219115.N5aUCG.006.0656338553321", ' \
-                    '"filepaths": ["MOD/MOD09GQ.A0219115.N5aUCG.006.0656338553321.cmr.xml"]}]}'
-        result = extract_filepaths_for_granule.handler(self.exp_event, self.exp_context)
-        self.assertEqual(expResult, result)
+        self.task_input_event['input']['granules'] = \
+            [{"granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
+              "files": [
+                  {
+                      "fileName": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
+                      "key": "MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
+                      "bucket": "cumulus-test-sandbox-protected-2"
+                  }
+              ]
+              },
+             {
+                 "granuleId": "MOD09GQ.A0219115.N5aUCG.006.0656338553321",
+                 "files": [
+                     {
+                         "fileName": "MOD09GQ.A0219115.N5aUCG.006.0656338553321.cmr.xml",
+                         "key": "MOD/MOD09GQ.A0219115.N5aUCG.006.0656338553321.cmr.xml",
+                         "bucket": "cumulus-test-sandbox-protected-2"
+                     }
+                 ]
+             }
+             ]
+        exp_result = {'granules': [
+            {'keys': [{'key': 'MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml',
+                       'dest_bucket': 'sndbx-cumulus-protected'}],
+             'granuleId': 'MOD09GQ.A0219114.N5aUCG.006.0656338553321'},
+            {'keys': [{'key': 'MOD/MOD09GQ.A0219115.N5aUCG.006.0656338553321.cmr.xml',
+                       'dest_bucket': 'sndbx-cumulus-protected'}],
+             'granuleId': 'MOD09GQ.A0219115.N5aUCG.006.0656338553321'}]}
 
-    def tearDown(self):
+        result = extract_filepaths_for_granule.task(self.task_input_event, self.context)
+        self.assertEqual(exp_result, result)
 
-        pass
+
 
 if __name__ == '__main__':
     unittest.main(argv=['start'])

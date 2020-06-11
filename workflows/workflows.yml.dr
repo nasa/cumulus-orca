@@ -1,0 +1,77 @@
+
+DrRecoveryWorkflow:
+  Comment: 'Recover files from a granule'
+  StartAt: Report
+  States:
+    Report:
+      Type: Task
+      Resource: ${ReportGranulesLambdaFunction.Arn}
+      CumulusConfig:
+        cumulus_message:
+          input: '{$}'
+          outputs:
+            - source: '{$}'
+              destination: '{$.payload}'
+            - source: '{$.granules}'
+              destination: '{$.meta.input_granules}'
+      Retry:
+        - &LambdaServiceExceptionRetry
+          ErrorEquals:
+          - Lambda.ServiceException
+          - Lambda.AWSLambdaException
+          - Lambda.SdkClientException
+          IntervalSeconds: 2
+          MaxAttempts: 6
+          BackoffRate: 2
+      Catch:
+        - ErrorEquals:
+          - States.ALL
+          ResultPath: '$.exception'
+          Next: StopStatus
+      Next: ExtractFilepaths
+    ExtractFilepaths:
+      CumulusConfig:
+        glacier-bucket: '{$.meta.collection.meta.glacier-bucket}'
+      Type: Task
+      Resource: '{{DR_EXTRACT_LAMBDA_ARN}}'
+      Retry:
+        - <<: *LambdaServiceExceptionRetry
+      Catch:
+        - ErrorEquals:
+          - States.ALL
+          ResultPath: '$.exception'
+          Next: StopStatus
+      Next: RequestFiles
+    RequestFiles:
+      CumulusConfig:
+        glacier-bucket: '{$.meta.collection.meta.glacier-bucket}'
+      Type: Task
+      Resource: '{{DR_REQUEST_LAMBDA_ARN}}'
+      Catch:
+        - ErrorEquals:
+          - States.ALL
+          ResultPath: '$.exception'
+          Next: StopStatus
+      Next: StopStatus
+    StopStatus:
+      Type: Task
+      Resource: ${ReportGranulesLambdaFunction.Arn}
+      CumulusConfig:
+        sfnEnd: true
+        stack: '{$.meta.stack}'
+        bucket: '{$.meta.buckets.internal.name}'
+        stateMachine: '{$.cumulus_meta.state_machine}'
+        executionName: '{$.cumulus_meta.execution_name}'
+        cumulus_message:
+          input: '{$}'
+      Retry:
+        - <<: *LambdaServiceExceptionRetry
+      Catch:
+        - ErrorEquals:
+          - States.ALL
+          Next: WorkflowFailed
+      End: true
+    WorkflowFailed:
+      Type: Fail
+      Cause: 'Workflow Failed'
+

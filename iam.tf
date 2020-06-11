@@ -9,7 +9,7 @@ data "aws_iam_policy_document" "assume_lambda_role" {
 }
 
 resource "aws_iam_role" "restore_object_role" {
-  name                 = "restore_object_role"
+  name                 = "${var.prefix}_restore_object_role"
   assume_role_policy   = data.aws_iam_policy_document.assume_lambda_role.json
   permissions_boundary = var.permissions_boundary_arn
 }
@@ -24,6 +24,25 @@ data "aws_iam_policy_document" "restore_object_role_policy_document" {
       "ec2:CreateNetworkInterface",
       "ec2:DescribeNetworkInterfaces",
       "ec2:DeleteNetworkInterface"
+    ]
+    resources = ["*"]
+  }
+  statement {
+    actions = [
+      "states:SendTaskFailure",
+      "states:SendTaskSuccess",
+      "states:GetActivityTask",
+      "states:GetExecutionHistory",
+      "states:DescribeActivity",
+      "states:DescribeExecution",
+      "states:ListStateMachines"
+    ]
+    resources = ["arn:aws:states:*:*:*"]
+  }
+  statement {
+    actions = [
+      "sns:publish",
+      "sns:List*"
     ]
     resources = ["*"]
   }
@@ -77,10 +96,25 @@ data "aws_iam_policy_document" "restore_object_role_policy_document" {
       "arn:aws:s3:::${var.glacier_bucket}/*"
     ]
   }
+  statement {
+    actions   = [
+      "ssm:GetParameter",
+      "ssm:GetParameters"
+    ]
+    resources = ["*"]
+  }
+  statement {
+    actions   = [
+      "kms:Decrypt"
+    ]
+    resources = [
+      "arn:aws:kms:::key/CMK"
+    ]
+  }
 }
 
 resource "aws_iam_role_policy" "restore_object_role_policy" {
-  name   = "restore_object_role_policy"
+  name   = "${var.prefix}_restore_object_role_policy"
   role   = aws_iam_role.restore_object_role.id
   policy = data.aws_iam_policy_document.restore_object_role_policy_document.json
 }
