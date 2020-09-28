@@ -3,9 +3,7 @@ variable "prefix" {
 }
 
 
-variable "vpc_id" {
-  default = ""
-}
+variable "vpc_id" {}
 
 //
 variable "dr_version" {
@@ -17,33 +15,10 @@ variable "restore_complete_filter_prefix" {
   default = ""
 }
 
-variable "private_bucket" {
-  default = ""
-}
+variable "permissions_boundary_arn" {}
 
-variable "protected_bucket" {
-  default = ""
-}
+variable "subnet_ids" {}
 
-variable "internal_bucket" {
-  default = ""
-}
-
-variable "public_bucket" {
-  default = ""
-}
-
-variable "permissions_boundary_arn" {
-  default = ""
-}
-
-variable "subnet_ids" {
-  default = []
-}
-
-variable "ngap_sgs" {
-  default = []
-}
 
 variable "profile" {
   default = "default"
@@ -81,7 +56,7 @@ variable "database_port" {
   default = "5432"
 }
 
-variable "database_user_pw" {}
+variable "postgres_user_pw" {}
 
 variable "database_name" {
   default = "disaster_recovery"
@@ -109,19 +84,16 @@ variable "lambda_timeout" {
   default = 300
 }
 
-
-
-variable "default_tags" {
-  type = object({ team=string, application=string })
-  default = {
-    team: "DR",
-    application: "disaster-recovery"
-  }
-}
+variable "workflow_config" {}
 
 variable "buckets" {
   type    = map(object({ name = string, type = string }))
 }
 
-
-variable "workflow_config" {}
+variable "default_tags" {
+  type = object({team: string, application: string})
+  default = {
+    team: "DR",
+    application: "disaster-recovery"
+  }
+}

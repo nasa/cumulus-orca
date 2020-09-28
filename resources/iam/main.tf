@@ -62,11 +62,11 @@ data "aws_iam_policy_document" "restore_object_role_policy_document" {
       "s3:PutBucket"
     ]
     resources = [
-      "arn:aws:s3:::${var.glacier_bucket}",
-      "arn:aws:s3:::${var.public_bucket}",
-      "arn:aws:s3:::${var.private_bucket}",
-      "arn:aws:s3:::${var.internal_bucket}",
-      "arn:aws:s3:::${var.protected_bucket}"
+      "arn:aws:s3:::${var.buckets["glacier"]["name"]}",
+      "arn:aws:s3:::${var.buckets["public"]["name"]}",
+      "arn:aws:s3:::${var.buckets["private"]["name"]}",
+      "arn:aws:s3:::${var.buckets["internal"]["name"]}",
+      "arn:aws:s3:::${var.buckets["protected"]["name"]}"
     ]
   }
   statement {
@@ -79,11 +79,11 @@ data "aws_iam_policy_document" "restore_object_role_policy_document" {
       "s3:DeleteObjectVersion"
     ]
     resources = [
-      "arn:aws:s3:::${var.glacier_bucket}/*",
-      "arn:aws:s3:::${var.public_bucket}/*",
-      "arn:aws:s3:::${var.private_bucket}/*",
-      "arn:aws:s3:::${var.internal_bucket}/*",
-      "arn:aws:s3:::${var.protected_bucket}/*"
+      "arn:aws:s3:::${var.buckets["glacier"]["name"]}/*",
+      "arn:aws:s3:::${var.buckets["public"]["name"]}/*",
+      "arn:aws:s3:::${var.buckets["private"]["name"]}/*",
+      "arn:aws:s3:::${var.buckets["internal"]["name"]}/*",
+      "arn:aws:s3:::${var.buckets["protected"]["name"]}/*"
     ]
   }
   statement {
@@ -92,8 +92,8 @@ data "aws_iam_policy_document" "restore_object_role_policy_document" {
       "s3:GetObject"
     ]
     resources = [
-      "arn:aws:s3:::${var.glacier_bucket}",
-      "arn:aws:s3:::${var.glacier_bucket}/*"
+      "arn:aws:s3:::${var.buckets["glacier"]["name"]}",
+      "arn:aws:s3:::${var.buckets["glacier"]["name"]}/*"
     ]
   }
   statement {

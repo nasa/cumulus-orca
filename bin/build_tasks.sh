@@ -1,5 +1,5 @@
 #!/bin/sh
-
+#TODO This needs to be better organized
 set -e
 
 if [ -z ${DR_VERSION+x} ]; then
@@ -37,8 +37,10 @@ cd ..
 cp ../package/awslambda-psycopg2/psycopg2-3.7/* build/psycopg2/
 cp -r ../../database/ddl/base/* build/ddl/
 cd build
-zip -r "../dbdeploy-${DR_VERSION}.zip" .
-cd ../../../
+zip -r "../db_deploy.zip" .
+cd ..
+rm -rf build
+cd ../../
 
 TASK='tasks/extract_filepaths_for_granule/'
 echo "Building `pwd`/${TASK}"
@@ -50,7 +52,7 @@ pip install -t build -r requirements.txt --trusted-host pypi.org
 deactivate
 cp *.py build/
 cd build
-zip -r "../extract-${DR_VERSION}.zip" .
+zip -r "../extract_filepaths_for_granule.zip" .
 cd ../../../
 
 TASK='tasks/request_status/'
@@ -67,8 +69,10 @@ mkdir psycopg2
 cd ..
 cp ../package/awslambda-psycopg2/psycopg2-3.7/* build/psycopg2/
 cd build
-zip -r "../status-${DR_VERSION}.zip" .
-cd ../../../
+zip -r "../request_status.zip" .
+cd ..
+rm -rf build
+cd ../../
 
 TASK='tasks/copy_files_to_archive/'
 echo "Building `pwd`/${TASK}"
@@ -84,8 +88,10 @@ mkdir psycopg2
 cd ..
 cp ../package/awslambda-psycopg2/psycopg2-3.7/* build/psycopg2/
 cd build
-zip -r "../copy-${DR_VERSION}.zip" .
-cd ../../../
+zip -r "../copy_files_to_archive.zip" .
+cd ..
+rm -rf build
+cd ../../
 	
 TASK='tasks/request_files/'
 echo "Building `pwd`/${TASK}"
@@ -101,5 +107,23 @@ mkdir psycopg2
 cd ..
 cp ../package/awslambda-psycopg2/psycopg2-3.7/* build/psycopg2/
 cd build
-zip -r "../request-${DR_VERSION}.zip" .
-cd ../../../
+zip -r "../request_files.zip" .
+cd ..
+rm -rf build
+cd ../../
+
+
+TASK='tasks/copy_to_glacier_lambda/'
+echo "Building `pwd`/${TASK}"
+cd "`pwd`/${TASK}"
+rm -rf build
+mkdir build
+source ../../venv/bin/activate
+pip install -t build -r requirements.txt --trusted-host pypi.org
+deactivate
+cp *.py build/
+cd build
+zip -r "../copy_to_glacier_lambda.zip" .
+cd ..
+rm -rf build
+cd ../../

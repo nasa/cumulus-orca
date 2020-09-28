@@ -1,6 +1,5 @@
 """
 Name: request_files.py
-
 Description:  Lambda function that makes a restore request from glacier for each input file.
 """
 
@@ -24,11 +23,9 @@ class RestoreRequestError(Exception):
 def task(event, context):              #pylint: disable-msg=unused-argument
     """
     Task called by the handler to perform the work.
-
     This task will call the restore_request for each file. Restored files will be kept
     for {exp_days} days before they expire. A restore request will be tried up to {retries} times
     if it fails, waiting {retry_sleep_secs} between each attempt.
-
         Args:
             event (dict): passed through from the handler
             exp_days (number): The number of days the restored file will be accessible
@@ -36,10 +33,8 @@ def task(event, context):              #pylint: disable-msg=unused-argument
             retries (number): The number of attempts to retry a restore_request that
                 failed to submit.
             retry_sleep_secs (number): The number of seconds to sleep between retry attempts.
-
         Returns:
             dict: A dict with the following keys:
-
                 'granuleId' (string): The id of the granule being restored.
                 'files' (list(dict)): A list of dicts with the following keys:
                     'key': The glacier key of the file to restore
@@ -47,11 +42,9 @@ def task(event, context):              #pylint: disable-msg=unused-argument
                         successfully, otherwise False.
                     'err_msg' (string): when success is False, this will contain
                         the error message from the restore error
-
                 Example:  {'granuleId': 'granxyz',
                       'files': [{'key': 'path1', 'success': True},
                                 {'key': 'path2', 'success': False, 'err_msg': 'because'}]}
-
         Raises:
             RestoreRequestError: Thrown if there are errors with the input request.
     """
@@ -97,13 +90,11 @@ def task(event, context):              #pylint: disable-msg=unused-argument
 
 def process_granules(s3, gran, glacier_bucket, exp_days):        # pylint: disable-msg=invalid-name
     """Call restore_object for the files in the granule_list
-
         Args:
             gran (list):
             s3 (object): An instance of boto3 s3 client
             glacier_bucket (string): The S3 glacier bucket name
             file_key (string): The key of the Glacier object
-
         Returns:
             gran: updated granules list, indicating if the restore request for each file
                   was successful, including an error message for any that were not.
@@ -164,12 +155,10 @@ def process_granules(s3, gran, glacier_bucket, exp_days):        # pylint: disab
 
 def object_exists(s3_cli, glacier_bucket, file_key):
     """Check to see if an object exists in S3 Glacier.
-
         Args:
             s3_cli (object): An instance of boto3 s3 client
             glacier_bucket (string): The S3 glacier bucket name
             file_key (string): The key of the Glacier object
-
         Returns:
             boolean: True if the object exists, otherwise False.
         """
@@ -178,11 +167,11 @@ def object_exists(s3_cli, glacier_bucket, file_key):
         s3_cli.head_object(Bucket=glacier_bucket, Key=file_key)
         return True
     except ClientError as err:              #pylint: disable-msg=unused-variable
-        return False
+        LOGGER.error(err)
+        raise
 
 def restore_object(s3_cli, obj, attempt, retries, retrieval_type='Standard'):
     """Restore an archived S3 Glacier object in an Amazon S3 bucket.
-
         Args:
             s3_cli (object): An instance of boto3 s3 client
             obj (dict): A dictionary containing:
@@ -199,7 +188,6 @@ def restore_object(s3_cli, obj, attempt, retries, retrieval_type='Standard'):
             retries (number): The number of retries that will be attempted
             retrieval_type (string, optional, default=Standard): Glacier Tier.
                 Valid values are 'Standard'|'Bulk'|'Expedited'.
-
         Returns:
             uuid: request_Id.
     """
@@ -237,7 +225,6 @@ def restore_object(s3_cli, obj, attempt, retries, retrieval_type='Standard'):
 
 def handler(event, context):      #pylint: disable-msg=unused-argument
     """Lambda handler. Initiates a restore_object request from glacier for each file of a granule.
-
     Note that this function is set up to accept a list of granules, (because Cumulus sends a list),
     but at this time, only 1 granule will be accepted.
     This is due to the error handling. If the restore request for any file for a
@@ -245,7 +232,6 @@ def handler(event, context):      #pylint: disable-msg=unused-argument
     accepted, and a failure occured, at present, it would fail all of them.
     Environment variables can be set to override how many days to keep the restored files, how
     many times to retry a restore_request, and how long to wait between retries.
-
         Environment Vars:
             RESTORE_EXPIRE_DAYS (number, optional, default = 5): The number of days
                 the restored file will be accessible in the S3 bucket before it expires.
@@ -258,31 +244,24 @@ def handler(event, context):      #pylint: disable-msg=unused-argument
             DATABASE_PORT (string): the database port. The standard is 5432.
             DATABASE_NAME (string): the name of the database.
             DATABASE_USER (string): the name of the application user.
-
         Parameter Store:
             drdb-user-pass (string): the password for the application user (DATABASE_USER).
             drdb-host (string): the database host
-
         Args:
             event (dict): A dict with the following keys:
-
                 glacierBucket (string) :  The name of the glacier bucket from which the files
                     will be restored.
                 granules (list(dict)): A list of dict with the following keys:
                     granuleId (string): The id of the granule being restored.
                     keys (list(string)): list of keys (glacier keys) for the granule
-
                 Example: event: {'glacierBucket': 'some_bucket',
                             'granules': [{'granuleId': 'granxyz',
                                         'keys': ['path1', 'path2']}]
                            }
-
             context (Object): None
-
         Returns:
             dict: The dict returned from the task. All 'success' values will be True. If they were
             not all True, the RestoreRequestError exception would be raised.
-
         Raises:
             RestoreRequestError: An error occurred calling restore_object for one or more files.
             The same dict that is returned for a successful granule restore, will be included in the
