@@ -46,7 +46,9 @@ Please describe the tests (unit, integration, ad-hoc, or otherwise) that you ran
 - [ ] I have added tests that prove my fix is effective or that my feature works
 - [ ] New and existing unit tests pass locally with my changes
 - [ ] Any dependent changes have been merged and published in downstream modules
-
+- [] My code has passed security scanning
+    - [] Snyk
+    - [] git-secrets
 ## What is the current behavior?
 
 (What actually happens)
