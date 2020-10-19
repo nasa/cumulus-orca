@@ -1,4 +1,6 @@
-**Summary:** Summary of changes
+## Summary of Changes
+
+Please write a sentence or two summarizing the proposed change.
 
 Addresses [ORCA-XX: Develop amazing new feature](https://bugs.earthdata.nasa.gov/browse/ORCA-XXX)
 
