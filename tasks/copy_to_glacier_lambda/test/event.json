@@ -1,7 +1,15 @@
 {
-   "input":[
-      "s3://ghrcsbxw-internal/file-staging/ghrcsbxw/goesrpltavirisng__1/goesrplt_avng_20170328t210208.tar.gz"
-   ],
+   "input": {
+      "granules": [
+          {
+              "files": [
+                  {
+                      "filename": "s3://ghrcsbxw-internal/file-staging/ghrcsbxw/goesrpltavirisng__1/goesrplt_avng_20170328t210208.tar.gz"
+                  }
+              ]
+          }
+      ]
+  },
    "config":{
       "files_config":[
          {

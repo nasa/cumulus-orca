@@ -6,14 +6,14 @@ import os
 file_types_to_exclude = [".example"] #ex: [".tar", ".gz"]
 
 
-def exclude_file_types(granule_url):
+def exclude_file_types(file_url):
     """
     Tests whether or not file is included in file types to exclude from copy to glacier
-    :param granule_url: s3 url of granule
+    :param file_url: s3 url of granule
     :return: boolean describe if file should be excluded from copy
     """
     for file_type in file_types_to_exclude:
-        if re.search(f"^.*{file_type}$", granule_url) is not None:
+        if re.search(f"^.*{file_type}$", file_url) is not None:
             return True
     return False
 
@@ -41,13 +41,13 @@ def copy(source_bucket, source_key, destination_bucket, destination_key):
     )
 
 
-def get_source_bucket_and_key(granule_url):
+def get_source_bucket_and_key(file_url):
     """
     Parses source bucket and key from s3 url
-    :param granule_url: s3 url path to granule
+    :param file_url: s3 url path to granule
     :return: re.Match object with argument [1] equal to source bucket and [2] equal to source key
     """
-    return re.search("s3://([^/]*)/(.*)", granule_url)
+    return re.search("s3://([^/]*)/(.*)", file_url)
 
 
 def get_bucket(filename, files):
@@ -63,6 +63,30 @@ def get_bucket(filename, files):
     return 'public'
 
 
+def get_granule_from_event(event):
+    """
+    Given an event, grab the first granule object in the granules list.
+    :param event: Event object passed into the lambda
+    :return: Granule object from event
+    """
+    granules = event.get('granules', [])
+    if len(granules) == 1:
+        return granules[0]
+    else:
+        print(f"event.input.granules must have only 1 granule.")
+        return {}
+
+
+def get_file_urls(granule):
+    """
+    Given a list of files for a granule, return a list of S3 urls, one url per file.
+    :param granules: List of granule objects with a 'filename' attribute
+    :return: List of s3 urls for each file in the granule
+    """
+    files = granule.get('files', [])
+    return [ file.get('filename') for file in files ]
+
+
 def task(event, context):
     """
 
@@ -71,7 +95,9 @@ def task(event, context):
     :return:
     """
     print(event)
-    event_input = event.get('input', [])
+    event_input = event.get('input', {})
+    granule = get_granule_from_event(event_input)
+    file_urls = get_file_urls(granule)
     config = event.get('config')
     collection = config.get('collection')
     config['fileStagingDir'] = config.get('fileStagingDir',
@@ -79,8 +105,8 @@ def task(event, context):
     glacier_bucket = config.get('buckets').get('glacier').get('name')
     url_path = collection.get('url_path')
     granule_data = {}
-    for granule_url in event_input:
-        filename = os.path.basename(granule_url)
+    for file_url in file_urls:
+        filename = os.path.basename(file_url)
         if filename not in granule_data.keys():
             granule_data[filename] = {'granuleId': filename, 'files': []}
         granule_data[filename]['files'].append(
@@ -88,13 +114,13 @@ def task(event, context):
                 "path": config['fileStagingDir'],
                 "url_path": config.get('url_path', config['fileStagingDir']),
                 "bucket": get_bucket(filename, collection.get('files', [])),
-                "filename": granule_url,
-                "name": granule_url
+                "filename": file_url,
+                "name": file_url
             }
         )
-        if exclude_file_types(granule_url):
+        if exclude_file_types(file_url):
             continue
-        source = get_source_bucket_and_key(granule_url)
+        source = get_source_bucket_and_key(file_url)
         copy(source[1], source[2], glacier_bucket, f"{url_path}/{filename}")
 
     final_output = list(granule_data.values())
@@ -108,9 +134,17 @@ def handler(event, context):
 
 if __name__ == '__main__':
     event = {
-        "input": [
-            "s3://ghrcsbxw-internal/file-staging/ghrcsbxw/goesrpltavirisng__1/goesrplt_avng_20170328t210208.tar.gz"
-        ],
+        "input": {
+            "granules": [
+                {
+                    "files": [
+                        {
+                            "filename": "s3://ghrcsbxw-internal/file-staging/ghrcsbxw/goesrpltavirisng__1/goesrplt_avng_20170328t210208.tar.gz"
+                        }
+                    ]
+                }
+            ]
+        },
         "config": {
             "files_config": [
                 {
