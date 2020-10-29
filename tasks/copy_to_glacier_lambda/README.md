@@ -1,24 +1,27 @@
 ## Description
 
-The `copy_to_glacier_lambda` is meant to be a lambda function that takes a Cumulus message, extracts a list of files, and copies those files from their current storage location into a staging/glacier location.
-
-
-## Test
-
-This example uses nose, a package for testing Python projects.
-```
-# Assuming you've followed the instructions in build and installed requirements-dev.txt
-nosetests test
-...
-```
+The `copy_to_glacier_lambda` is meant to be deployed as a lambda function that takes a Cumulus message, extracts a list of files, and copies those files from their current storage location into a staging/glacier location.
 
 
 ## Build
+
+The following steps assume you are using a current version of Python 3 (`pip` comes with current versions).
 
 ```
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt # requirements-dev.txt if you're testing/developing
+```
+
+
+## Test
+
+This example uses `nose`, a package for testing Python projects.
+
+```
+# nose is installed as part of requirements-dev.txt
+nosetests test
+...
 ```
 
 
@@ -113,8 +116,6 @@ Example of expected input to the `handler` task itself:
 }
 ```
 
-cumulus message -> (CMA <- configuration) -> input to task
-
 The following is an example of [Cumulus workflow configuration](https://nasa.github.io/cumulus/docs/workflows/input_output#cma-configuration) for the `copy_to_glacier.handler` task:
 
 ```json
@@ -125,7 +126,6 @@ The following is an example of [Cumulus workflow configuration](https://nasa.git
       "FullMessage": true
     },
     "task_config": {
-      "backup_file_types": "{$.meta.collection.meta.backupFileTypes}",
       "collection": "{$.meta.collection}",
       "files_config": "{$.meta.collection.files}",
       "buckets": "{$.meta.buckets}",
@@ -144,7 +144,7 @@ The following is an example of [Cumulus workflow configuration](https://nasa.git
 
 ## Output
 
-The copy lambda will, as the name suggests, copy a file from its current source some destination. The destination location is defined as 
+The copy lambda will, as the name suggests, copy a file from its current some source destination. The destination location is defined as 
 `${glacier_bucket}/${url_path}/filename`, where `${glacier_bucket}` is pulled from your Cumulus `meta.bucket` config, `${url_path}` is pulled from the Cumulus `meta.collection` config, and `filename` is the base name of the file (with the file extension).
 
 The output of this lambda is a dictionary with a `granules` and `input` attribute:
