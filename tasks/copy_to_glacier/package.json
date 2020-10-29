@@ -1,5 +1,5 @@
 {
-  "name": "copy_to_glacier_lambda",
+  "name": "copy_to_glacier",
   "version": "1.0.0",
   "description": "Lambda to copy granule to glacier bucket for ORCA.",
   "main": "handler.py",

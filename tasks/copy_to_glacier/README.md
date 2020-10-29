@@ -1,27 +1,55 @@
 ## Description
 
-The `copy_to_glacier_lambda` is meant to be deployed as a lambda function that takes a Cumulus message, extracts a list of files, and copies those files from their current storage location into a staging/glacier location.
+The `copy_to_glacier` is meant to be deployed as a lambda function that takes a Cumulus message, extracts a list of files, and copies those files from their current storage location into a staging/glacier location.
 
 
 ## Build
 
-The following steps assume you are using a current version of Python 3 (`pip` comes with current versions).
+The following steps assume you are using a version of Python compliant with 3.7 (`pip` comes with current versions).
 
 ```
 python -m venv venv
 source venv/bin/activate
+pip install --update pip # Update pip
 pip install -r requirements.txt # requirements-dev.txt if you're testing/developing
 ```
 
+An explicit example of building the lambda package can be found in `/bin/build_tasks.sh`.
 
-## Test
+## Deployment
 
-This example uses `nose`, a package for testing Python projects.
+Upload the zip file to AWS (either through the cli or console). Alternatively, `resources/lambdas/main.tf` shows an example of deploying this lambda through Terraform.
 
 ```
-# nose is installed as part of requirements-dev.txt
-nosetests test
+resource "aws_lambda_function" "copy_to_glacier" {
+  function_name    = "${var.prefix}_copy_to_glacier"
+  filename         = "${path.module}/../../tasks/copy_to_glacier/copy_to_glacier.zip"
+  source_code_hash = filemd5("${path.module}/../../tasks/copy_to_glacier/copy_to_glacier.zip")
+  handler          = "handler.handler"
+  role             = module.restore_object_arn.restore_object_role_arn
+  runtime          = "python3.7"
+  memory_size      = 2240
+  timeout          = 600 # 10 minutes
+
+  tags = local.default_tags
+  environment {
+    variables = {
+      system_bucket               = var.buckets["internal"]["name"]
+      stackName                   = var.prefix
+      CUMULUS_MESSAGE_ADAPTER_DIR = "/opt/"
+    }
+  }
+```
+
+## Testing & Linting
+
+This example uses `pytest`, a package for testing Python projects.
+
+```
+# pytest and coverage are installed as part of requirements-dev.txt
+coverage --source copy_to_glacier -m pytest # Run the tests
 ...
+coverage report -m # Report the coverage stats
 ```
 
 
@@ -33,7 +61,7 @@ Example of expected [payload](https://nasa.github.io/cumulus/docs/workflows/inpu
 
 ```json
 [
-  "s3://ghrcsbxw-internal/file-staging/ghrcsbxw/goesrpltavirisng__1/goesrplt_avng_20170328t210208.tar.gz"
+  "s3://testdaac-internal/file-staging/testdaac/goesrpltavirisng__1/goesrplt_avng_20170328t210208.tar.gz"
 ]
 ```
 
@@ -42,7 +70,7 @@ Example of expected input to the `handler` task itself:
 ```json
 {
   "input": [
-      "s3://ghrcsbxw-internal/file-staging/ghrcsbxw/goesrpltavirisng__1/goesrplt_avng_20170328t210208.tar.gz"
+      "s3://testdaac-internal/file-staging/testdaac/goesrpltavirisng__1/goesrplt_avng_20170328t210208.tar.gz"
   ],
   "config": {
       "files_config": [
@@ -60,23 +88,23 @@ Example of expected input to the `handler` task itself:
       "buckets": {
           "protected": {
               "type": "protected",
-              "name": "ghrcsbxw-protected"
+              "name": "testdaac-protected"
           },
           "internal": {
               "type": "internal",
-              "name": "ghrcsbxw-internal"
+              "name": "testdaac-internal"
           },
           "private": {
               "type": "private",
-              "name": "ghrcsbxw-private"
+              "name": "testdaac-private"
           },
           "public": {
               "type": "public",
-              "name": "ghrcsbxw-public"
+              "name": "testdaac-public"
           },
           "glacier": {
               "type": "private",
-              "name": "ghrcsbxw-glacier"
+              "name": "testdaac-glacier"
           }
       },
       "collection": {
@@ -115,6 +143,8 @@ Example of expected input to the `handler` task itself:
   }
 }
 ```
+
+**Note:** According to the Cumulus documentation above, the output of the previous task (or a portion of it) is moved into the `input` key shown above. This means that the output of the task (in your workflow) leading up to this lambda function _must_ output the list of S3 file urls.
 
 The following is an example of [Cumulus workflow configuration](https://nasa.github.io/cumulus/docs/workflows/input_output#cma-configuration) for the `copy_to_glacier.handler` task:
 
@@ -159,8 +189,8 @@ The output of this lambda is a dictionary with a `granules` and `input` attribut
 					"path": "goesrpltavirisng__1",
 					"url_path": "goesrpltavirisng__1",
 					"bucket": "protected",
-					"filename": "s3://ghrcsbxw-internal/file-staging/ghrcsbxw/goesrpltavirisng__1/goesrplt_avng_20170328t210208.tar.gz",
-					"name": "s3://ghrcsbxw-internal/file-staging/ghrcsbxw/goesrpltavirisng__1/goesrplt_avng_20170328t210208.tar.gz"
+					"filename": "s3://testdaaac-internal/file-staging/testdaac/goesrpltavirisng__1/goesrplt_avng_20170328t210208.tar.gz",
+					"name": "s3://testdaac-internal/file-staging/testdaac/goesrpltavirisng__1/goesrplt_avng_20170328t210208.tar.gz"
 				}
 			]
 		}
