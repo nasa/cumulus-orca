@@ -113,7 +113,7 @@ rm -rf build
 cd ../../
 
 
-TASK='tasks/copy_to_glacier_lambda/'
+TASK='tasks/copy_to_glacier/'
 echo "Building `pwd`/${TASK}"
 cd "`pwd`/${TASK}"
 rm -rf build
@@ -123,7 +123,7 @@ pip install -t build -r requirements.txt --trusted-host pypi.org
 deactivate
 cp *.py build/
 cd build
-zip -r "../copy_to_glacier_lambda.zip" .
+zip -r "../copy_to_glacier.zip" .
 cd ..
 rm -rf build
 cd ../../

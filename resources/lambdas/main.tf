@@ -169,8 +169,8 @@ resource "aws_s3_bucket_notification" "copy_lambda_trigger" {
 
 resource "aws_lambda_function" "copy_to_glacier" {
   function_name    = "${var.prefix}_copy_to_glacier"
-  filename         = "${path.module}/../../tasks/copy_to_glacier_lambda/copy_to_glacier_lambda.zip"
-  source_code_hash = filemd5("${path.module}/../../tasks/copy_to_glacier_lambda/copy_to_glacier_lambda.zip")
+  filename         = "${path.module}/../../tasks/copy_to_glacier/copy_to_glacier.zip"
+  source_code_hash = filemd5("${path.module}/../../tasks/copy_to_glacier/copy_to_glacier.zip")
   handler          = "handler.handler"
   role             = module.restore_object_arn.restore_object_role_arn
   runtime          = "python3.7"
