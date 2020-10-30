@@ -1,6 +1,6 @@
 ## Description
 
-The `copy_to_glacier` is meant to be deployed as a lambda function that takes a Cumulus message, extracts a list of files, and copies those files from their current storage location into a staging/glacier location.
+The `copy_to_glacier` module is meant to be deployed as a lambda function that takes a Cumulus message, extracts a list of files, and copies those files from their current storage location into a staging/glacier location.
 
 
 ## Build
@@ -10,7 +10,7 @@ The following steps assume you are using a version of Python compliant with 3.7 
 ```
 python -m venv venv
 source venv/bin/activate
-pip install --update pip # Update pip
+pip install --upgrade pip       # Upgrade pip
 pip install -r requirements.txt # requirements-dev.txt if you're testing/developing
 ```
 
@@ -52,6 +52,7 @@ coverage --source copy_to_glacier -m pytest # Run the tests
 coverage report -m # Report the coverage stats
 ```
 
+Manual integration testing is being worked on. TBD.
 
 ## Input
 
