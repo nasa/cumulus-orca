@@ -46,14 +46,15 @@ Run the tests:
 C:\devpy\poswotdr\tasks\request_files  
 λ activate podr
 All tests:
-(podr) λ nosetests -v
+(podr) λ pytest
 
 Individual tests (insert desired test file name):
-(podr) λ nosetests test/test_requests_postgres.py -v
+(podr) λ pytest test/test_requests_postgres.py
 
 Code Coverage:
 (podr) λ cd C:\devpy\poswotdr\tasks\request_files
-(podr) λ nosetests --with-coverage --cover-erase --cover-package=request_files -v
+(podr) λ coverage run --source request_files -m pytest
+(podr) λ coverage report
 
 Name               Stmts   Miss  Cover
 --------------------------------------

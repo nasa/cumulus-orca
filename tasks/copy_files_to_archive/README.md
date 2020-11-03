@@ -40,14 +40,11 @@ Run the tests:
 C:\devpy\poswotdr\tasks\copy_files_to_archive  
 λ activate podr
 All tests:
-(podr) λ nosetests -v
-
-Individual tests (insert desired test file name):
-(podr) λ nosetests test/test_copy_files_to_archive.py -v
+(podr) λ coverage run --source copy_files_to_archive -m pytest
 
 Code Coverage:
 (podr) λ cd C:\devpy\poswotdr\tasks\copy_files_to_archive
-(podr) λ nosetests --with-coverage --cover-erase --cover-package=copy_files_to_archive -v
+(podr) λ coverage report
 
 Name                       Stmts   Miss  Cover
 ----------------------------------------------

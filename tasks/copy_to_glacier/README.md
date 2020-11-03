@@ -47,7 +47,7 @@ This example uses `pytest`, a package for testing Python projects.
 
 ```
 # pytest and coverage are installed as part of requirements-dev.txt
-coverage --source copy_to_glacier -m pytest # Run the tests
+coverage run --source copy_to_glacier -m pytest # Run the tests
 ...
 coverage report -m # Report the coverage stats
 ```
