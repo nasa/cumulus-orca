@@ -195,7 +195,6 @@ Navigate to `cumulus-tf/main.tf` within your Cumulus deployment directory and ad
 module "orca" {
   source = "https://github.com/ghrcdaac/operational-recovery-cloud-archive/releases/download/1.0.2/orca-1.0.2.zip"
 
-  dr_version = "1.0.2"
   prefix = var.prefix
   subnet_ids = module.ngap.ngap_subnets_ids
   database_port = "5432"

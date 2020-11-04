@@ -13,7 +13,6 @@ terraform {
 
 module "orca" {
   source = "./modules/orca"
-  dr_version = var.dr_version
   database_app_user_pw = var.database_app_user_pw
   default_tags = var.default_tags
   prefix = var.prefix
