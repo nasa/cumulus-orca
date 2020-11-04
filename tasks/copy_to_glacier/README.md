@@ -18,7 +18,7 @@ An explicit example of building the lambda package can be found in `/bin/build_t
 
 ## Deployment
 
-Upload the zip file to AWS (either through the cli or console). Alternatively, `resources/lambdas/main.tf` shows an example of deploying this lambda through Terraform.
+Upload the zip file to AWS (either through the cli or console). Alternatively, `modules/lambdas/main.tf` shows an example of deploying this lambda through Terraform.
 
 ```
 resource "aws_lambda_function" "copy_to_glacier" {

@@ -8,7 +8,7 @@ git clone https://github.com/ghrcdaac/operational-recovery-cloud-archive
 ## Build lambdas
 Before you can deploy this infrastructure, you must download the release zip or the build the lambda function source-code locally.
 
-`./bin/build_tasks.sh` will crawl the `tasks` directory and build a `.zip` file (currently by just `zipping` all python files and dependencies) in each of it's sub-directories. That `.zip` is then referenced in the `resources/lambdas/main.tf` lamdba definitions.
+`./bin/build_tasks.sh` will crawl the `tasks` directory and build a `.zip` file (currently by just `zipping` all python files and dependencies) in each of it's sub-directories. That `.zip` is then referenced in the `modules/lambdas/main.tf` lamdba definitions.
 
 ```
 ./bin/build_tasks.sh
