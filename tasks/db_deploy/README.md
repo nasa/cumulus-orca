@@ -95,6 +95,7 @@ Name           Stmts   Miss  Cover
 db_deploy.py     159      0   100%
 ----------------------------------------------------------------------
 Ran 8 tests in 0.987s
+[![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/db_deploy/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/db_deploy/requirements.txt)
 
 ```
 <a name="linting"></a>

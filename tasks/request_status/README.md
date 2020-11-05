@@ -1,3 +1,5 @@
+[![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/request_status/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/request_status/requirements.txt)
+
 **Lambda function request_status **
 
 - [Setup](#setup)
