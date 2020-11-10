@@ -56,3 +56,4 @@ terraform\.tfstate*
 terraform.tf
 venv/
 .idea
+build/

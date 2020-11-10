@@ -17,15 +17,13 @@ module "restore_object_arn" {
   buckets = var.buckets
   prefix = var.prefix
   permissions_boundary_arn = var.permissions_boundary_arn
-  
-  
 }
 
 // You don't need to specify orca version if you used source_code_hash
 resource "aws_lambda_function" "db_deploy" {
-  filename      = "${path.module}/../../tasks/db_deploy/db_deploy.zip"
+  filename      = "${path.module}/../../tasks/db_deploy.zip"
   function_name = "${var.prefix}_db_deploy"
-  source_code_hash = filemd5("${path.module}/../../tasks/db_deploy/db_deploy.zip")
+  source_code_hash = filemd5("${path.module}/../../tasks/db_deploy.zip")
   role          = module.restore_object_arn.restore_object_role_arn
   handler       = "db_deploy.handler"
   runtime       = "python3.7"
@@ -51,8 +49,8 @@ resource "aws_lambda_function" "db_deploy" {
 
 
 resource "aws_lambda_function" "extract_filepaths_for_granule_lambda" {
-  filename         = "${path.module}/../../tasks/extract_filepaths_for_granule/extract_filepaths_for_granule.zip"
-  source_code_hash = filemd5("${path.module}/../../tasks/extract_filepaths_for_granule/extract_filepaths_for_granule.zip")
+  filename         = "${path.module}/../../tasks/extract_filepaths_for_granule.zip"
+  source_code_hash = filemd5("${path.module}/../../tasks/extract_filepaths_for_granule.zip")
   function_name    = "${var.prefix}_extract_filepaths_for_granule"
   role             = module.restore_object_arn.restore_object_role_arn
   handler          = "extract_filepaths_for_granule.handler"
@@ -68,9 +66,9 @@ resource "aws_lambda_function" "extract_filepaths_for_granule_lambda" {
 
 
 resource "aws_lambda_function" "request_files_lambda" {
-  filename         = "${path.module}/../../tasks/request_files/request_files.zip"
+  filename         = "${path.module}/../../tasks/request_files.zip"
   function_name    = "${var.prefix}_request_files"
-  source_code_hash = filemd5("${path.module}/../../tasks/request_files/request_files.zip")
+  source_code_hash = filemd5("${path.module}/../../tasks/request_files.zip")
   role             = module.restore_object_arn.restore_object_role_arn
   handler          = "request_files.handler"
   runtime          = "python3.7"
@@ -97,8 +95,8 @@ resource "aws_lambda_function" "request_files_lambda" {
 
 
 resource "aws_lambda_function" "copy_files_to_archive" {
-  filename      = "${path.module}/../../tasks/copy_files_to_archive/copy_files_to_archive.zip"
-  source_code_hash = filemd5("${path.module}/../../tasks/copy_files_to_archive/copy_files_to_archive.zip")
+  filename      = "${path.module}/../../tasks/copy_files_to_archive.zip"
+  source_code_hash = filemd5("${path.module}/../../tasks/copy_files_to_archive.zip")
   function_name = "${var.prefix}_copy_files_to_archive"
   role          = module.restore_object_arn.restore_object_role_arn
   handler       = "copy_files_to_archive.handler"
@@ -123,8 +121,8 @@ resource "aws_lambda_function" "copy_files_to_archive" {
 }
 
 resource "aws_lambda_function" "request_status" {
-  filename      = "${path.module}/../../tasks/request_status/request_status.zip"
-  source_code_hash = filemd5("${path.module}/../../tasks/request_status/request_status.zip")
+  filename      = "${path.module}/../../tasks/request_status.zip"
+  source_code_hash = filemd5("${path.module}/../../tasks/request_status.zip")
   function_name = "${var.prefix}_request_status"
   role          = module.restore_object_arn.restore_object_role_arn
   handler       = "request_status.handler"
@@ -169,8 +167,8 @@ resource "aws_s3_bucket_notification" "copy_lambda_trigger" {
 
 resource "aws_lambda_function" "copy_to_glacier" {
   function_name    = "${var.prefix}_copy_to_glacier"
-  filename         = "${path.module}/../../tasks/copy_to_glacier/copy_to_glacier.zip"
-  source_code_hash = filemd5("${path.module}/../../tasks/copy_to_glacier/copy_to_glacier.zip")
+  filename         = "${path.module}/../../tasks/copy_to_glacier.zip"
+  source_code_hash = filemd5("${path.module}/../../tasks/copy_to_glacier.zip")
   handler          = "handler.handler"
   role             = module.restore_object_arn.restore_object_role_arn
   runtime          = "python3.7"
