@@ -3,9 +3,9 @@
 set -ex
 
 GIT_SHA=$(git rev-parse HEAD)
-if [[ $BAMBOO_REPORT_BUILD_STATUS == true ]]; then
+if [[ $bamboo_REPORT_BUILD_STATUS == true ]]; then
   curl -H\
-  "Authorization: token $BAMBOO_SECRET_GITHUB_TOKEN"\
+  "Authorization: token $bamboo_SECRET_GITHUB_TOKEN"\
    -d "{\"state\":\"$1\", \"target_url\": \"$2\", \"description\": \"$3\", \"context\": \"earthdata-bamboo\"}"\
    -H "Content-Type: application/json"\
    -X POST\
