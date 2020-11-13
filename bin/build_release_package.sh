@@ -2,8 +2,8 @@
 #TODO This needs to be better organized
 set -ex
 
-if [[ ! $bamboo_PUBLISH_FLAG == true ]]; then
-  >&2 echo "******Skipping publish to npm step as PUBLISH_FLAG is not set"
+if [[ ! $bamboo_RELEASE_FLAG == true ]]; then
+  >&2 echo "******Skipping build_release_package step as bamboo_PUBLISH_FLAG is not set"
   exit 0
 fi
 
@@ -23,7 +23,11 @@ cp terraform.tfvars.example build
 
 for package in $(find . -name *.zip);
 do
-  cp $package build/tasks/
+  filename=$(basename $package)
+  base="${filename%.*}"
+  destination="build/tasks/$base/"
+  mkdir $destination
+  cp -p $package $destination
 done 
 
 # create distribution package
