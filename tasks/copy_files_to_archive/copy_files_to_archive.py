@@ -8,7 +8,7 @@ to another s3 bucket.
 import os
 import time
 import logging
-from typing import Any, Union
+from typing import Any, List, Dict, Optional
 
 import boto3
 from botocore.client import BaseClient
@@ -22,7 +22,7 @@ class CopyRequestError(Exception):
     """
 
 
-def task(records: dict[str, Any], retries: int, retry_sleep_secs: float) -> list[dict[str, Any]]:
+def task(records: List[Dict[str, Any]], retries: int, retry_sleep_secs: float) -> List[Dict[str, Any]]:
     """
     Task called by the handler to perform the work.
 
@@ -101,11 +101,10 @@ def task(records: dict[str, Any], retries: int, retry_sleep_secs: float) -> list
                 return files
             time.sleep(retry_sleep_secs)
 
-    # todo: Since var was passed in, technically this could just return.
     return files
 
 
-def find_job_in_db(key: str) -> dict[str, Any]:
+def find_job_in_db(key: str) -> Optional[Dict[str, Any]]:
     """
     Finds the active job for the file in the database.
 
@@ -113,7 +112,8 @@ def find_job_in_db(key: str) -> dict[str, Any]:
             key: The object key for the file to find in the db.
 
         Returns:
-            job: The job related to the restore request. Contains the following keys:
+            None if no in-progress job found for the given {key}.
+            Otherwise, the job related to the restore request. Contains the following keys:
                 'request_id' (string): The request_id of the database entry.
                 'archive_bucket_dest' (string): The name of the archive s3 bucket.
 
@@ -121,26 +121,24 @@ def find_job_in_db(key: str) -> dict[str, Any]:
             requests_db.DatabaseError: Thrown if the request cannot be read from database.
     """
     try:
-        request_id = None
         jobs = requests_db.get_jobs_by_object_key(key)
-        for job in jobs:
-            if job["job_status"] != "complete":
-                request_id = job['request_id']
-                break
-        if not request_id:
-            log_msg = ("Failed to update request status in database. "
-                       f"No incomplete entry found for object_key: {key}")
-            logging.error(log_msg)
-            job = None
     except requests_db.DatabaseError as err:
         logging.error(f"Failed to read request from database. "
                       f"key: {key} "
                       f"Err: {str(err)}")
         raise
-    return job
+
+    for job in jobs:
+        if job["job_status"] != "complete":
+            return job
+
+    log_msg = ("Failed to update request status in database. "
+               f"No incomplete entry found for object_key: {key}")
+    logging.error(log_msg)
+    return None
 
 
-def update_status_in_db(afile: dict[str, Any], attempt: int, err_msg: str) -> dict[str, Any]:
+def update_status_in_db(afile: Dict[str, Any], attempt: int, err_msg: str) -> Dict[str, Any]:
     """
     Updates the status for the job in the database.
 
@@ -199,7 +197,7 @@ def update_status_in_db(afile: dict[str, Any], attempt: int, err_msg: str) -> di
     return afile
 
 
-def get_files_from_records(records: dict[str, Any]) -> list[dict[str, str]]:
+def get_files_from_records(records: List[Dict[str, Any]]) -> List[Dict[str, str]]:
     """
     Parses the input records and returns the files to be restored.
 
@@ -219,8 +217,8 @@ def get_files_from_records(records: dict[str, Any]) -> list[dict[str, str]]:
     files = []
     for record in records:
         afile = {'success': False}
+        log_str = 'Records["s3"]["bucket"]["name"]'
         try:
-            log_str = 'Records["s3"]["bucket"]["name"]'
             source_bucket = record["s3"]["bucket"]["name"]
             afile['source_bucket'] = source_bucket
             log_str = 'Records["s3"]["object"]["key"]'  # Use the same var to make except handling easier.
@@ -234,7 +232,7 @@ def get_files_from_records(records: dict[str, Any]) -> list[dict[str, str]]:
 
 
 def copy_object(s3_cli: BaseClient, src_bucket_name: str, src_object_name: str,
-                dest_bucket_name: str, dest_object_name: str = None) -> Union[str, None]:
+                dest_bucket_name: str, dest_object_name: str = None) -> Optional[str]:
     """Copy an Amazon S3 bucket object
 
         Args:
@@ -266,7 +264,7 @@ def copy_object(s3_cli: BaseClient, src_bucket_name: str, src_object_name: str,
     return None
 
 
-def handler(event: dict[str, Any], context: object) -> list[dict[str, Any]]:  # pylint: disable-msg=unused-argument
+def handler(event: Dict[str, Any], context: object) -> List[Dict[str, Any]]:  # pylint: disable-msg=unused-argument
     """Lambda handler. Copies a file from its temporary s3 bucket to the s3 archive.
 
     If the copy for a file in the request fails, the lambda
