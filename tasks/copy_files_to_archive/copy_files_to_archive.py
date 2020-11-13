@@ -15,6 +15,13 @@ from botocore.client import BaseClient
 from botocore.exceptions import ClientError
 import requests_db
 
+FILE_SUCCESS_KEY = 'success'
+FILE_SOURCE_KEY_KEY = 'source_key'
+FILE_ERROR_MESSAGE_KEY = 'err_msg'
+FILE_REQUEST_ID_KEY = 'request_id'
+FILE_SOURCE_BUCKET_KEY = 'source_bucket'
+FILE_TARGET_BUCKET_KEY = 'target_bucket'
+
 
 class CopyRequestError(Exception):
     """
@@ -63,41 +70,39 @@ def task(records: List[Dict[str, Any]], retries: int, retry_sleep_secs: float) -
     attempt = 1
     s3 = boto3.client('s3')  # pylint: disable-msg=invalid-name
     while attempt <= retries:
-        for afile in files:
+        for a_file in files:
             # All files from get_files_from_records start with 'success' == False.
-            if not afile['success']:
-                key = afile['source_key']
+            if not a_file[FILE_SUCCESS_KEY]:
+                key = a_file[FILE_SOURCE_KEY_KEY]
                 try:
                     try:
-                        afile['request_id']
+                        a_file[FILE_REQUEST_ID_KEY]
                     except KeyError:  # Lazily get/set the request_id
                         job = find_job_in_db(key)
                         if job:
-                            afile['request_id'] = job['request_id']
-                            afile['target_bucket'] = job['archive_bucket_dest']
+                            a_file[FILE_REQUEST_ID_KEY] = job['request_id']
+                            a_file[FILE_TARGET_BUCKET_KEY] = job['archive_bucket_dest']
                         else:
                             continue
-                    err_msg = copy_object(s3, afile['source_bucket'], afile['source_key'],
-                                          afile['target_bucket'])
+                    err_msg = copy_object(s3, a_file[FILE_SOURCE_BUCKET_KEY], a_file[FILE_SOURCE_KEY_KEY],
+                                          a_file[FILE_TARGET_BUCKET_KEY])
                 except requests_db.DatabaseError:
                     continue
 
                 try:
                     # todo: Bit disingenuous to have nested retries...
-                    # todo: This assignment is redundant
-                    afile = update_status_in_db(afile, attempt, err_msg)
+                    update_status_in_db(a_file, attempt, err_msg)
                 except requests_db.DatabaseError:
                     try:
                         time.sleep(
                             30)  # todo: Some room for optimization here. Why are there two sleeps?
-                        # todo: This assignment is redundant
-                        afile = update_status_in_db(afile, attempt, err_msg)
+                        update_status_in_db(a_file, attempt, err_msg)
                     except requests_db.DatabaseError:
                         continue
 
         attempt = attempt + 1
         if attempt <= retries:
-            if all(afile['success'] for afile in files):  # Check for early completion
+            if all(a_file[FILE_SUCCESS_KEY] for a_file in files):  # Check for early completion
                 return files
             time.sleep(retry_sleep_secs)
 
@@ -138,12 +143,12 @@ def find_job_in_db(key: str) -> Optional[Dict[str, Any]]:
     return None
 
 
-def update_status_in_db(afile: Dict[str, Any], attempt: int, err_msg: str) -> Dict[str, Any]:
+def update_status_in_db(a_file: Dict[str, Any], attempt: int, err_msg: str) -> None:
     """
     Updates the status for the job in the database.
 
         Args:
-            afile: An input dict with keys for:
+            a_file: An input dict with keys for:
                 'request_id' (string): The request_id of the database entry to update.
                 'source_key' (string): The filename of the restored file.
                 'source_bucket' (string): The location of the restored file.
@@ -152,7 +157,7 @@ def update_status_in_db(afile: Dict[str, Any], attempt: int, err_msg: str) -> Di
             err_msg: None, or the error message from the copy command.
 
         Returns:
-            afile: The input dict with additional keys for:
+            None: {a_file} will be modified with additional keys for:
                 'success' (boolean): True if the copy was successful,
                     otherwise False.
                 'err_msg' (string): When 'success' is False, this will contain
@@ -168,33 +173,32 @@ def update_status_in_db(afile: Dict[str, Any], attempt: int, err_msg: str) -> Di
                           'err_msg': ''}]
 
         Raises:
-            err: Thrown if the update operation fails due to a requests_db.DatabaseError.
+            requests_db.DatabaseError: Thrown if the update operation fails.
     """
     old_status = ""  # todo: Unused
     new_status = ""
     try:
         if err_msg:
-            afile['err_msg'] = err_msg
+            a_file[FILE_ERROR_MESSAGE_KEY] = err_msg
             new_status = "error"
-            logging.error(f"Attempt {attempt}. Error copying file {afile['source_key']}"
-                          f" from {afile['source_bucket']} to {afile['target_bucket']}."
+            logging.error(f"Attempt {attempt}. Error copying file {a_file[FILE_SOURCE_KEY_KEY]}"
+                          f" from {a_file[FILE_SOURCE_BUCKET_KEY]} to {a_file[FILE_TARGET_BUCKET_KEY]}."
                           f" msg: {err_msg}")
-            requests_db.update_request_status_for_job(afile['request_id'], new_status, err_msg)
+            requests_db.update_request_status_for_job(a_file[FILE_REQUEST_ID_KEY], new_status, err_msg)
         else:
-            afile['success'] = True
-            afile['err_msg'] = ''
+            a_file[FILE_SUCCESS_KEY] = True
+            a_file[FILE_ERROR_MESSAGE_KEY] = ''
             new_status = "complete"
             logging.info(f"Attempt {attempt}. Success copying file "
-                         f"{afile['source_key']} from {afile['source_bucket']} "
-                         f"to {afile['target_bucket']}.")
-            requests_db.update_request_status_for_job(afile['request_id'], new_status)
+                         f"{a_file[FILE_SOURCE_KEY_KEY]} from {a_file[FILE_SOURCE_BUCKET_KEY]} "
+                         f"to {a_file[FILE_TARGET_BUCKET_KEY]}.")
+            requests_db.update_request_status_for_job(a_file[FILE_REQUEST_ID_KEY], new_status)
     except requests_db.DatabaseError as err:
         logging.error(f"Failed to update request status in database. "
-                      f"key: {afile['source_key']} old status: {old_status} "
+                      f"key: {a_file[FILE_SOURCE_KEY_KEY]} old status: {old_status} "
                       f"new status: {new_status}. Err: {str(err)}")
-        raise  # todo: If "as err" will it raise as err or DatabaseError?
-    # todo: Since var was passed in, technically this could just return.
-    return afile
+        raise
+    return
 
 
 def get_files_from_records(records: List[Dict[str, Any]]) -> List[Dict[str, str]]:
@@ -216,15 +220,15 @@ def get_files_from_records(records: List[Dict[str, Any]]) -> List[Dict[str, str]
     """
     files = []
     for record in records:
-        afile = {'success': False}
+        a_file = {FILE_SUCCESS_KEY: False}
         log_str = 'Records["s3"]["bucket"]["name"]'
         try:
             source_bucket = record["s3"]["bucket"]["name"]
-            afile['source_bucket'] = source_bucket
+            a_file[FILE_SOURCE_BUCKET_KEY] = source_bucket
             log_str = 'Records["s3"]["object"]["key"]'  # Use the same var to make except handling easier.
             source_key = record["s3"]["object"]["key"]
-            afile['source_key'] = source_key
-            files.append(afile)
+            a_file[FILE_SOURCE_KEY_KEY] = source_key
+            files.append(a_file)
         except KeyError:
             raise CopyRequestError(f'event record: "{record}" does not contain a '
                                    f'value for {log_str}')
@@ -363,9 +367,9 @@ def handler(event: Dict[str, Any], context: object) -> List[Dict[str, Any]]:  # 
     logging.debug(f'event: {event}')
     records = event["Records"]
     result = task(records, retries, retry_sleep_secs)
-    for afile in result:
+    for a_file in result:
         # if any file failed, the function will fail
-        if not afile['success']:
+        if not a_file[FILE_SUCCESS_KEY]:
             logging.error(
                 f'File copy failed. {result}')
             raise CopyRequestError(f'File copy failed. {result}')
