@@ -102,6 +102,7 @@ terraform {
   }
 }
 ```
+
 ## Variables
 First, run a `mv terraform.tfvars.example terraform.tfvars` to get a template `terraform.tfvars` in your working directory. This is where you will place input variables to Terraform.
 

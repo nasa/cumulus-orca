@@ -11,6 +11,10 @@ terraform {
   }
 }
 
+provider "aws" {
+  region = var.region
+}
+
 module "orca" {
   source = "./modules/orca"
   database_app_user_pw = var.database_app_user_pw
