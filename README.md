@@ -325,3 +325,7 @@ Here is an example command to run the Cumulus Dashboard locally:
 ```
   APIROOT=https://uttm5y1jcj.execute-api.us-west-2.amazonaws.com:8000/dev ENABLE_RECOVERY=true npm run serve
 ```
+
+## Release Documentation:
+
+Information about how to create an ORCA release can be found [here](docs/release.md).

@@ -7,7 +7,7 @@ cd dist
 # Create Release
 export RELEASE_URL=$(curl -H\
   "Authorization: token $bamboo_GITHUB_TOKEN"\
-   -d "{\"tag_name\": \"v$bamboo_ORCA_bamboo_ORCA_VERSION\", \"target_commitsh\": \"v$bamboo_ORCA_VERSION\", \"name\": \"v$bamboo_ORCA_VERSION\", \"body\": \"Release v$bamboo_ORCA_VERSION\" }"\
+   -d "{\"tag_name\": \"v$bamboo_ORCA_VERSION\", \"target_commitsh\": \"v$bamboo_ORCA_VERSION\", \"name\": \"v$bamboo_ORCA_VERSION\", \"body\": \"Release v$bamboo_ORCA_VERSION\" }"\
    -H "Content-Type: application/json"\
    -X POST\
    https://api.github.com/repos/nasa/cumulus/releases |grep \"url\" |grep releases |sed -e 's/.*\(https.*\)\"\,/\1/'| sed -e 's/api/uploads/')
