@@ -10,6 +10,7 @@ fi
 # Create the lambda zips
 ./bin/build_tasks.sh
 
+# Clean up working directory and create a new build directory
 rm -rf build
 mkdir build
 mkdir build/tasks
@@ -21,6 +22,7 @@ cp README.md build
 cp LICENSE.txt build
 cp terraform.tfvars.example build
 
+# Crawl through the zip files
 for package in $(find . -name *.zip);
 do
   filename=$(basename $package)
@@ -30,9 +32,10 @@ do
   cp -p $package $destination
 done 
 
-# create distribution package
+# create distribution package directory
 mkdir dist
 
+# Enter the build directory so the files that are zipped exist at the root level
 cd build
 zip -r "../dist/cumulus-orca-terraform.zip" .
 cd ..

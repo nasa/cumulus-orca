@@ -4,8 +4,10 @@ set -e
 base=$(pwd)
 failed=0
 
+# Crawl the task directories
 for taskdir in tasks/*/
 do
+  # Build and run tests for each task directory
   cd $taskdir
   rm -rf venv
   python3 -m venv venv
@@ -21,4 +23,4 @@ do
   cd base
 done
 
-return failed
+exit failed
