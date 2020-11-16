@@ -6,7 +6,7 @@ cd dist
 
 # Create Release
 export RELEASE_URL=$(curl -H\
-  "Authorization: token $bamboo_GITHUB_TOKEN"\
+  "Authorization: token $bamboo_SECRET_GITHUB_TOKEN"\
    -d "{\"tag_name\": \"v$bamboo_ORCA_VERSION\", \"target_commitsh\": \"v$bamboo_ORCA_VERSION\", \"name\": \"v$bamboo_ORCA_VERSION\", \"body\": \"Release v$bamboo_ORCA_VERSION\" }"\
    -H "Content-Type: application/json"\
    -X POST\
@@ -14,4 +14,4 @@ export RELEASE_URL=$(curl -H\
 
 # Release Package
 echo $RELEASE_URL
-curl -X POST -H "Authorization: token $bamboo_GITHUB_TOKEN" --data-binary "@cumulus-orca-terraform.zip" -H "Content-type: application/octet-stream" $RELEASE_URL/assets?name=cumulus-orca-terraform.zip
+curl -X POST -H "Authorization: token $bamboo_SECRET_GITHUB_TOKEN" --data-binary "@cumulus-orca-terraform.zip" -H "Content-type: application/octet-stream" $RELEASE_URL/assets?name=cumulus-orca-terraform.zip

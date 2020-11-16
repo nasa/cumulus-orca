@@ -10,7 +10,7 @@ We use semantic versioning. Read more about semantic versioning [here](https://s
 
 ### 1. Create a release branch
 
-From develop, create a new minor release version from master following the `release-MAJOR.MINOR.x`. For example, `release/1.14.x`. Push this branch to github if you created it locally.
+From develop, create a new minor release version from master following the `release-MAJOR.MINOR.x`. For example, `release-1.14.x`. Push this branch to github if you created it locally.
 
 If creating a patch release, you can check out the existing base branch. Then create the release branch (e.g. release-1.14.0) from the minor version base branch.
 
