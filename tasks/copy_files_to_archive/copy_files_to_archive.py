@@ -15,12 +15,18 @@ from botocore.client import BaseClient
 from botocore.exceptions import ClientError
 import requests_db
 
+# These will determine what the output looks like.
 FILE_SUCCESS_KEY = 'success'
 FILE_SOURCE_KEY_KEY = 'source_key'
 FILE_ERROR_MESSAGE_KEY = 'err_msg'
 FILE_REQUEST_ID_KEY = 'request_id'
 FILE_SOURCE_BUCKET_KEY = 'source_bucket'
 FILE_TARGET_BUCKET_KEY = 'target_bucket'
+
+# These are tied to the database schema.
+JOB_REQUEST_ID_KEY = 'request_id'
+JOB_ARCHIVE_BUCKET_DEST_KEY = 'archive_bucket_dest'
+JOB_JOB_STATUS_KEY = 'job_status'
 
 
 class CopyRequestError(Exception):
@@ -61,15 +67,14 @@ def task(records: List[Dict[str, Any]], retries: int, retry_sleep_secs: float) -
                           'err_msg': ''},
                       {'source_key': 'file2.txt', 'source_bucket': 'my-dr-fake-glacier-bucket',
                           'target_bucket': 'unittest_txt_bucket', 'success': True,
-                          'err_msg': ''}]
-        # TODO: Do we not want to expose request_id? It's not even in the Example above.
+                          'err_msg': '', 'request_id': '4192bff0-e1e0-43ce-a4db-912808c32493'}]
         Raises:
             CopyRequestError: Thrown if there are errors with the input records or the copy failed.
     """
     files = get_files_from_records(records)
     attempt = 1
     s3 = boto3.client('s3')  # pylint: disable-msg=invalid-name
-    while attempt <= retries:
+    while attempt <= retries + 1:
         for a_file in files:
             # All files from get_files_from_records start with 'success' == False.
             if not a_file[FILE_SUCCESS_KEY]:
@@ -80,8 +85,8 @@ def task(records: List[Dict[str, Any]], retries: int, retry_sleep_secs: float) -
                     except KeyError:  # Lazily get/set the request_id
                         job = find_job_in_db(key)
                         if job:
-                            a_file[FILE_REQUEST_ID_KEY] = job['request_id']
-                            a_file[FILE_TARGET_BUCKET_KEY] = job['archive_bucket_dest']
+                            a_file[FILE_REQUEST_ID_KEY] = job[JOB_REQUEST_ID_KEY]
+                            a_file[FILE_TARGET_BUCKET_KEY] = job[JOB_ARCHIVE_BUCKET_DEST_KEY]
                         else:
                             continue
                     err_msg = copy_object(s3, a_file[FILE_SOURCE_BUCKET_KEY], a_file[FILE_SOURCE_KEY_KEY],
@@ -90,18 +95,12 @@ def task(records: List[Dict[str, Any]], retries: int, retry_sleep_secs: float) -
                     continue
 
                 try:
-                    # todo: Bit disingenuous to have nested retries...
                     update_status_in_db(a_file, attempt, err_msg)
                 except requests_db.DatabaseError:
-                    try:
-                        time.sleep(
-                            30)  # todo: Some room for optimization here. Why are there two sleeps?
-                        update_status_in_db(a_file, attempt, err_msg)
-                    except requests_db.DatabaseError:
-                        continue
+                    continue  # Move on to the next file. We'll come back to retry on next attempt.
 
         attempt = attempt + 1
-        if attempt <= retries:
+        if attempt <= retries + 1:
             if all(a_file[FILE_SUCCESS_KEY] for a_file in files):  # Check for early completion
                 return files
             time.sleep(retry_sleep_secs)
@@ -134,7 +133,7 @@ def find_job_in_db(key: str) -> Optional[Dict[str, Any]]:
         raise
 
     for job in jobs:
-        if job["job_status"] != "complete":
+        if job[JOB_JOB_STATUS_KEY] != "complete":
             return job
 
     log_msg = ("Failed to update request status in database. "
@@ -175,7 +174,6 @@ def update_status_in_db(a_file: Dict[str, Any], attempt: int, err_msg: str) -> N
         Raises:
             requests_db.DatabaseError: Thrown if the update operation fails.
     """
-    old_status = ""  # todo: Unused
     new_status = ""
     try:
         if err_msg:
@@ -195,7 +193,7 @@ def update_status_in_db(a_file: Dict[str, Any], attempt: int, err_msg: str) -> N
             requests_db.update_request_status_for_job(a_file[FILE_REQUEST_ID_KEY], new_status)
     except requests_db.DatabaseError as err:
         logging.error(f"Failed to update request status in database. "
-                      f"key: {a_file[FILE_SOURCE_KEY_KEY]} old status: {old_status} "
+                      f"key: {a_file[FILE_SOURCE_KEY_KEY]} "
                       f"new status: {new_status}. Err: {str(err)}")
         raise
     return
@@ -341,8 +339,7 @@ def handler(event: Dict[str, Any], context: object) -> List[Dict[str, Any]]:  # 
                           'err_msg': ''},
                       {'source_key': 'file2.txt', 'source_bucket': 'my-dr-fake-glacier-bucket',
                           'target_bucket': 'unittest_txt_bucket', 'success': True,
-                          'err_msg': ''}]
-            # TODO: Do we not want to expose request_id? It's not even in the Example above.
+                          'err_msg': '', 'request_id': '4192bff0-e1e0-43ce-a4db-912808c32493'}]
 
         Raises:
             CopyRequestError: An error occurred calling copy_object for one or more files.
@@ -356,13 +353,13 @@ def handler(event: Dict[str, Any], context: object) -> List[Dict[str, Any]]:  # 
         str_env_val = os.environ['COPY_RETRIES']
         retries = int(str_env_val)
     except KeyError:
-        retries = 3
+        retries = 2
 
     try:
         str_env_val = os.environ['COPY_RETRY_SLEEP_SECS']
         retry_sleep_secs = float(str_env_val)
     except KeyError:
-        retry_sleep_secs = 0
+        retry_sleep_secs = 30
 
     logging.debug(f'event: {event}')
     records = event["Records"]

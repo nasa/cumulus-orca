@@ -27,10 +27,11 @@ from request_helpers import (PROTECTED_BUCKET,
                              mock_ssm_get_parameter)
 
 
-class TestCopyFilesPostgres(unittest.TestCase):   #pylint: disable-msg=too-many-instance-attributes
+class TestCopyFilesPostgres(unittest.TestCase):  # pylint: disable-msg=too-many-instance-attributes
     """
     TestCopyFiles.
     """
+
     def setUp(self):
 
         self.mock_boto3_client = boto3.client
@@ -45,7 +46,6 @@ class TestCopyFilesPostgres(unittest.TestCase):   #pylint: disable-msg=too-many-
         self.exp_file_key1 = 'dr-glacier/MOD09GQ.A0219114.N5aUCG.006.0656338553321.txt'
         self.handler_input_event = create_copy_handler_event()
         self.mock_utcnow = requests_db.get_utc_now_iso
-
 
     def tearDown(self):
         boto3.client = Mock()
@@ -67,7 +67,6 @@ class TestCopyFilesPostgres(unittest.TestCase):   #pylint: disable-msg=too-many-
             del os.environ["DATABASE_PW"]
         except KeyError:
             pass
-
 
     def create_test_requests(self):
         """
@@ -144,7 +143,6 @@ class TestCopyFilesPostgres(unittest.TestCase):   #pylint: disable-msg=too-many-
             return results
         except requests_db.DatabaseError as err:
             self.fail(f"submit_request. {str(err)}")
-
 
     def test_handler_one_file_success(self):
         """
@@ -316,7 +314,7 @@ class TestCopyFilesPostgres(unittest.TestCase):   #pylint: disable-msg=too-many-
         row = requests_db.get_job_by_request_id(REQUEST_ID3)
         self.assertEqual("error", row[0]['job_status'])
         self.assertEqual(exp_err_msg, row[0]['err_msg'])
-        #self.assertEqual(UTC_NOW_EXP_7, row[0]["last_update_time"])
+        # self.assertEqual(UTC_NOW_EXP_7, row[0]["last_update_time"])
 
     def test_handler_one_file_retry2_success(self):
         """

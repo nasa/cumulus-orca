@@ -19,13 +19,15 @@ from request_helpers import (REQUEST_ID4, REQUEST_ID7,
                              create_copy_event2, mock_ssm_get_parameter,
                              create_copy_handler_event, create_select_requests)
 
-class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-attributes
+
+class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance-attributes
     """
     TestCopyFiles.
     """
+
     def setUp(self):
         self.mock_boto3_client = boto3.client
-        os.environ['COPY_RETRIES'] = '2'
+        os.environ['COPY_RETRIES'] = '1'
         os.environ['COPY_RETRY_SLEEP_SECS'] = '1'
         os.environ["DATABASE_HOST"] = "my.db.host.gov"
         os.environ["DATABASE_PORT"] = "5400"
@@ -198,6 +200,10 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
         """
         Test copy lambda with one failed copy after 3 retries.
         """
+        del os.environ['COPY_RETRY_SLEEP_SECS']
+        os.environ['COPY_RETRY_SLEEP_SECS'] = '3'
+        del os.environ['COPY_RETRIES']
+        os.environ['COPY_RETRIES'] = '2'
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.copy_object = Mock(side_effect=[ClientError({'Error': {'Code': 'AccessDenied'}},
@@ -226,9 +232,12 @@ class TestCopyFiles(unittest.TestCase):  #pylint: disable-msg=too-many-instance-
                                                   exp_upd_result])
         mock_ssm_get_parameter(5)
         try:
+            seconds = time.time()
             copy_files_to_archive.handler(self.handler_input_event, None)
             self.fail("expected CopyRequestError")
         except copy_files_to_archive.CopyRequestError as ex:
+            self.assertGreaterEqual(time.time() - seconds, 6,
+                                    "Should take more than 6 seconds due to sleeps between the 3 attempts.")
             self.assertEqual(exp_error, str(ex))
         boto3.client.assert_called_with('ssm')
         s3_cli.copy_object.assert_called_with(Bucket=self.exp_target_bucket,
