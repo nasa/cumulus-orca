@@ -35,7 +35,7 @@ class TestCopyFilesPostgres(unittest.TestCase):  # pylint: disable-msg=too-many-
     def setUp(self):
 
         self.mock_boto3_client = boto3.client
-        os.environ['COPY_RETRIES'] = '2'
+        os.environ['COPY_RETRIES'] = '1'
         os.environ['COPY_RETRY_SLEEP_SECS'] = '1'
         db_config.set_env()
 
