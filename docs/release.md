@@ -10,26 +10,20 @@ We use semantic versioning. Read more about semantic versioning [here](https://s
 
 ### 1. Create a release branch
 
-From develop, create a new minor release version from master following the `release-MAJOR.MINOR.x`. For example, `release-1.14.x`. Push this branch to github if you created it locally.
-
-If creating a patch release, you can check out the existing base branch. Then create the release branch (e.g. release-1.14.0) from the minor version base branch.
+From develop, create a new release branch from develop following the `release-MAJOR.MINOR.x`. For example, `release-1.14.1`. Push this branch to github if you created it locally.
 
 ### 2. Update CHANGELOG.md
 
 Update the CHANGELOG.md. Put a header under the 'Unreleased' section with the new version number and the date.
 
-### 3. Create a pull request against the new version branch
+### 3. Create a git tag for the release
 
-Create a PR, verify that Bamboo builds succeed, and then merge into the version branch.
-
-### 4. Create a git tag for the release
-
-Check out the minor version base branch now that your changes are merged and do a git pull. Ensure you are on the latest commit.
+Make sure you're on the latest commit of the release branch.
 
 Create and push a new git tag:
 ```
-  git tag -a v1.x.x -m "Release 1.x.x"
-  git push origin v1.x.x
+  git tag -a vx.y.z -m "Release x.y.z"
+  git push origin vx.y.z
 ```
 
 ### 5. Running the deployment
@@ -55,16 +49,18 @@ Bamboo will build and run unit tests against that tagged release.
 
 #### Create a new ORCA release on github
 
-The CI release scripts will automatically create a release based on the release version tag, as well as uploading release artifacts to the Github release for the Terraform modules provided by Cumulus. The Terraform release artifacts include:
+The release is automated in Bamboo, but the step must be manually started. If you set the `RELEASE_FLAG` to `true` and the build steps passed, you will be able to run the manual "Release" step in Bamboo.
+
+The CI release scripts will create a release based on the release version tag, as well as uploading release artifacts to the Github release for the Terraform modules provided by Cumulus. The Terraform release artifacts include:
 * A multi-module Terraform .zip artifact containing filtered copies of the tf-modules, packages, and tasks directories for use as Terraform module sources.
 
 Just make sure to verify the appropriate .zip files are present on Github after the release process is complete.
 
-#### Merge the base branch back into master
+#### Merge the base branch back into develop and master
 
-Finally, you need to reproduce the version update changes back to master.
+Finally, you need to merge the version update changes back into develop and master.
 
-If this is the latest version, you can simply create a PR to merge the minor version base branch back to master. Note: Do not squash this merge. Doing so will make the "compare" view from step 4 show an incorrect diff, because the tag is linked to a specific commit on the base branch.
+If this is the latest version, you can simply create a PR to merge the release branch into develop and master. Note: Do not squash this merge. Doing so will make the "compare" view from step 4 show an incorrect diff, because the tag is linked to a specific commit on the base branch.
 
 ### Troubleshooting
 
@@ -72,6 +68,6 @@ If this is the latest version, you can simply create a PR to merge the minor ver
 
 To delete a published tag to re-tag, follow these steps:
 ```
-  git tag -d v1.x.x
-  git push -d origin v1.x.x
+  git tag -d vx.y.z
+  git push -d origin vx.y.z
 ```
