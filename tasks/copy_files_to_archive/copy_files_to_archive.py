@@ -43,33 +43,33 @@ def task(records: List[Dict[str, Any]], retries: int, retry_sleep_secs: float) -
     up to {retries} times if it fails, waiting {retry_sleep_secs}
     between each attempt.
 
-        Args:
-            records: Passed through from the handler.
-            retries: The number of attempts to retry a failed copy.
-            retry_sleep_secs: The number of seconds
-                to sleep between retry attempts.
+    Args:
+        records: Passed through from the handler.
+        retries: The number of attempts to retry a failed copy.
+        retry_sleep_secs: The number of seconds
+            to sleep between retry attempts.
 
-        Returns:
-           A list of dicts with the following keys:
-                'source_key' (string): The object key of the file that was restored.
-                'source_bucket' (string): The name of the s3 bucket where the restored
-                    file was temporarily sitting.
-                'target_bucket' (string): The name of the archive s3 bucket.
-                'success' (boolean): True, if the copy was successful,
-                    otherwise False.
-                'err_msg' (string): when success is False, this will contain
-                    the error message from the copy error.
-                'request_id' (string): The request_id of the database entry.
-                    Only guaranteed to be present if 'success' == True.
+    Returns:
+       A list of dicts with the following keys:
+            'source_key' (string): The object key of the file that was restored.
+            'source_bucket' (string): The name of the s3 bucket where the restored
+                file was temporarily sitting.
+            'target_bucket' (string): The name of the archive s3 bucket.
+            'success' (boolean): True, if the copy was successful,
+                otherwise False.
+            'err_msg' (string): when success is False, this will contain
+                the error message from the copy error.
+            'request_id' (string): The request_id of the database entry.
+                Only guaranteed to be present if 'success' == True.
 
-            Example:  [{'source_key': 'file1.xml', 'source_bucket': 'my-dr-fake-glacier-bucket',
-                          'target_bucket': 'unittest_xml_bucket', 'success': True,
-                          'err_msg': ''},
-                      {'source_key': 'file2.txt', 'source_bucket': 'my-dr-fake-glacier-bucket',
-                          'target_bucket': 'unittest_txt_bucket', 'success': True,
-                          'err_msg': '', 'request_id': '4192bff0-e1e0-43ce-a4db-912808c32493'}]
-        Raises:
-            CopyRequestError: Thrown if there are errors with the input records or the copy failed.
+        Example:  [{'source_key': 'file1.xml', 'source_bucket': 'my-dr-fake-glacier-bucket',
+                      'target_bucket': 'unittest_xml_bucket', 'success': True,
+                      'err_msg': ''},
+                  {'source_key': 'file2.txt', 'source_bucket': 'my-dr-fake-glacier-bucket',
+                      'target_bucket': 'unittest_txt_bucket', 'success': True,
+                      'err_msg': '', 'request_id': '4192bff0-e1e0-43ce-a4db-912808c32493'}]
+    Raises:
+        CopyRequestError: Thrown if there are errors with the input records or the copy failed.
     """
     files = get_files_from_records(records)
     attempt = 1
@@ -112,17 +112,17 @@ def find_job_in_db(key: str) -> Optional[Dict[str, Any]]:
     """
     Finds the active job for the file in the database.
 
-        Args:
-            key: The object key for the file to find in the db.
+    Args:
+        key: The object key for the file to find in the db.
 
-        Returns:
-            None if no in-progress job found for the given {key}.
-            Otherwise, the job related to the restore request. Contains the following keys:
-                'request_id' (string): The request_id of the database entry.
-                'archive_bucket_dest' (string): The name of the archive s3 bucket.
+    Returns:
+        None if no in-progress job found for the given {key}.
+        Otherwise, the job related to the restore request. Contains the following keys:
+            'request_id' (string): The request_id of the database entry.
+            'archive_bucket_dest' (string): The name of the archive s3 bucket.
 
-        Raises:
-            requests_db.DatabaseError: Thrown if the request cannot be read from database.
+    Raises:
+        requests_db.DatabaseError: Thrown if the request cannot be read from database.
     """
     try:
         jobs = requests_db.get_jobs_by_object_key(key)
@@ -146,33 +146,33 @@ def update_status_in_db(a_file: Dict[str, Any], attempt: int, err_msg: str) -> N
     """
     Updates the status for the job in the database.
 
-        Args:
-            a_file: An input dict with keys for:
-                'request_id' (string): The request_id of the database entry to update.
-                'source_key' (string): The filename of the restored file.
-                'source_bucket' (string): The location of the restored file.
-                'target_bucket' (string): the archive bucket the file was copied to.
-            attempt: The attempt number for the copy (1 based).
-            err_msg: None, or the error message from the copy command.
+    Args:
+        a_file: An input dict with keys for:
+            'request_id' (string): The request_id of the database entry to update.
+            'source_key' (string): The filename of the restored file.
+            'source_bucket' (string): The location of the restored file.
+            'target_bucket' (string): the archive bucket the file was copied to.
+        attempt: The attempt number for the copy (1 based).
+        err_msg: None, or the error message from the copy command.
 
-        Returns:
-            None: {a_file} will be modified with additional keys for:
-                'success' (boolean): True if the copy was successful,
-                    otherwise False.
-                'err_msg' (string): When 'success' is False, this will contain
-                    the error message from the copy error
+    Returns:
+        None: {a_file} will be modified with additional keys for:
+            'success' (boolean): True if the copy was successful,
+                otherwise False.
+            'err_msg' (string): When 'success' is False, this will contain
+                the error message from the copy error
 
-            Example:  [{'request_id': '', 'source_key': 'file1.xml',
-                          'source_bucket': 'my-dr-fake-glacier-bucket',
-                          'target_bucket': 'unittest_xml_bucket', 'success': True,
-                          'err_msg': ''},
-                      {'request_id': '', 'source_key': 'file2.txt',
-                          'source_bucket': 'my-dr-fake-glacier-bucket',
-                          'target_bucket': 'unittest_txt_bucket', 'success': True,
-                          'err_msg': ''}]
+        Example:  [{'request_id': '', 'source_key': 'file1.xml',
+                      'source_bucket': 'my-dr-fake-glacier-bucket',
+                      'target_bucket': 'unittest_xml_bucket', 'success': True,
+                      'err_msg': ''},
+                  {'request_id': '', 'source_key': 'file2.txt',
+                      'source_bucket': 'my-dr-fake-glacier-bucket',
+                      'target_bucket': 'unittest_txt_bucket', 'success': True,
+                      'err_msg': ''}]
 
-        Raises:
-            requests_db.DatabaseError: Thrown if the update operation fails.
+    Raises:
+        requests_db.DatabaseError: Thrown if the update operation fails.
     """
     new_status = ""
     try:
@@ -203,18 +203,18 @@ def get_files_from_records(records: List[Dict[str, Any]]) -> List[Dict[str, str]
     """
     Parses the input records and returns the files to be restored.
 
-        Args:
-            records: passed through from the handler.
+    Args:
+        records: passed through from the handler.
 
-        Returns:
-            files: A list of dicts with the following keys:
-                'source_key': The object key of the file that was restored.
-                'source_bucket': The name of the s3 bucket where the restored
-                    file was temporarily sitting.
+    Returns:
+        files: A list of dicts with the following keys:
+            'source_key': The object key of the file that was restored.
+            'source_bucket': The name of the s3 bucket where the restored
+                file was temporarily sitting.
 
-        Raises:
-            KeyError: Thrown if the event record does not contain a value for the given bucket or object.
-                Bucket will be checked/raised first, then object.
+    Raises:
+        KeyError: Thrown if the event record does not contain a value for the given bucket or object.
+            Bucket will be checked/raised first, then object.
     """
     files = []
     for record in records:
@@ -237,17 +237,17 @@ def copy_object(s3_cli: BaseClient, src_bucket_name: str, src_object_name: str,
                 dest_bucket_name: str, dest_object_name: str = None) -> Optional[str]:
     """Copy an Amazon S3 bucket object
 
-        Args:
-            s3_cli: An instance of boto3 s3 client.
-            src_bucket_name: The source S3 bucket name.
-            src_object_name: The key of the s3 object being copied.
-            dest_bucket_name: The target S3 bucket name.
-            dest_object_name: Optional; The key of the destination object.
-                If an object with the same name exists in the given bucket, the object is overwritten.
-                Defaults to {src_object_name}.
+    Args:
+        s3_cli: An instance of boto3 s3 client.
+        src_bucket_name: The source S3 bucket name.
+        src_object_name: The key of the s3 object being copied.
+        dest_bucket_name: The target S3 bucket name.
+        dest_object_name: Optional; The key of the destination object.
+            If an object with the same name exists in the given bucket, the object is overwritten.
+            Defaults to {src_object_name}.
 
-        Returns:
-            None if object was copied, otherwise contains error message.
+    Returns:
+        None if object was copied, otherwise contains error message.
     """
 
     if dest_object_name is None:
@@ -286,65 +286,65 @@ def handler(event: Dict[str, Any], context: object) -> List[Dict[str, Any]]:  # 
                 drdb-user-pass (string): the password for the application user (DATABASE_USER).
                 drdb-host (string): the database host
 
-        Args:
-            event: A dict with the following keys:
+    Args:
+        event: A dict with the following keys:
 
-                Records (list(dict)): A list of dict with the following keys:
-                    s3 (dict): A dict with the following keys:
-                        bucket (dict):  A dict with the following keys:
-                            name (string): The name of the s3 bucket holding the restored file
-                        object (dict):  A dict with the following keys:
-                            key (string): The key of the restored file
+            Records (list(dict)): A list of dict with the following keys:
+                s3 (dict): A dict with the following keys:
+                    bucket (dict):  A dict with the following keys:
+                        name (string): The name of the s3 bucket holding the restored file
+                    object (dict):  A dict with the following keys:
+                        key (string): The key of the restored file
 
-                Example: event: {"Records": [{"eventVersion": "2.1",
-                                      "eventSource": "aws:s3",
-                                      "awsRegion": "us-west-2",
-                                      "eventTime": "2019-06-17T18:54:06.686Z",
-                                      "eventName": "ObjectRestore:Post",
-                                      "userIdentity": {
-                                      "principalId": "AWS:AROAJWMHUPO:request_files"},
-                                      "requestParameters": {"sourceIPAddress": "1.001.001.001"},
-                                      "responseElements": {"x-amz-request-id": "0364DB32C0",
-                                                           "x-amz-id-2":
-                                         "4TpisFevIyonOLD/z1OGUE/Ee3w/Et+pr7c5F2RbnAnU="},
-                                      "s3": {"s3SchemaVersion": "1.0",
-                                            "configurationId": "dr_restore_complete",
-                                            "bucket": {"name": exp_src_bucket,
-                                                       "ownerIdentity":
-                                                       {"principalId": "A1BCXDGCJ9"},
-                                               "arn": "arn:aws:s3:::my-dr-fake-glacier-bucket"},
-                                            "object": {"key": exp_file_key1,
-                                                       "size": 645,
-                                                       "sequencer": "005C54A126FB"}}}]}
+            Example: event: {"Records": [{"eventVersion": "2.1",
+                                  "eventSource": "aws:s3",
+                                  "awsRegion": "us-west-2",
+                                  "eventTime": "2019-06-17T18:54:06.686Z",
+                                  "eventName": "ObjectRestore:Post",
+                                  "userIdentity": {
+                                  "principalId": "AWS:AROAJWMHUPO:request_files"},
+                                  "requestParameters": {"sourceIPAddress": "1.001.001.001"},
+                                  "responseElements": {"x-amz-request-id": "0364DB32C0",
+                                                       "x-amz-id-2":
+                                     "4TpisFevIyonOLD/z1OGUE/Ee3w/Et+pr7c5F2RbnAnU="},
+                                  "s3": {"s3SchemaVersion": "1.0",
+                                        "configurationId": "dr_restore_complete",
+                                        "bucket": {"name": exp_src_bucket,
+                                                   "ownerIdentity":
+                                                   {"principalId": "A1BCXDGCJ9"},
+                                           "arn": "arn:aws:s3:::my-dr-fake-glacier-bucket"},
+                                        "object": {"key": exp_file_key1,
+                                                   "size": 645,
+                                                   "sequencer": "005C54A126FB"}}}]}
 
-            context: An object required by AWS Lambda. Unused.
+        context: An object required by AWS Lambda. Unused.
 
-        Returns:
-            The list of dicts returned from the task. All 'success' values will be True. If they were
-            not all True, the CopyRequestError exception would be raised.
-            Dicts have the following keys:
-                'source_key' (string): The object key of the file that was restored.
-                'source_bucket' (string): The name of the s3 bucket where the restored
-                    file was temporarily sitting.
-                'target_bucket' (string): The name of the archive s3 bucket
-                'success' (boolean): True, if the copy was successful,
-                    otherwise False.
-                'err_msg' (string): when success is False, this will contain
-                    the error message from the copy error.
-                'request_id' (string): The request_id of the database entry.
-                    Only guaranteed to be present if 'success' == True.
+    Returns:
+        The list of dicts returned from the task. All 'success' values will be True. If they were
+        not all True, the CopyRequestError exception would be raised.
+        Dicts have the following keys:
+            'source_key' (string): The object key of the file that was restored.
+            'source_bucket' (string): The name of the s3 bucket where the restored
+                file was temporarily sitting.
+            'target_bucket' (string): The name of the archive s3 bucket
+            'success' (boolean): True, if the copy was successful,
+                otherwise False.
+            'err_msg' (string): when success is False, this will contain
+                the error message from the copy error.
+            'request_id' (string): The request_id of the database entry.
+                Only guaranteed to be present if 'success' == True.
 
-            Example:  [{'source_key': 'file1.xml', 'source_bucket': 'my-dr-fake-glacier-bucket',
-                          'target_bucket': 'unittest_xml_bucket', 'success': True,
-                          'err_msg': ''},
-                      {'source_key': 'file2.txt', 'source_bucket': 'my-dr-fake-glacier-bucket',
-                          'target_bucket': 'unittest_txt_bucket', 'success': True,
-                          'err_msg': '', 'request_id': '4192bff0-e1e0-43ce-a4db-912808c32493'}]
+        Example:  [{'source_key': 'file1.xml', 'source_bucket': 'my-dr-fake-glacier-bucket',
+                      'target_bucket': 'unittest_xml_bucket', 'success': True,
+                      'err_msg': ''},
+                  {'source_key': 'file2.txt', 'source_bucket': 'my-dr-fake-glacier-bucket',
+                      'target_bucket': 'unittest_txt_bucket', 'success': True,
+                      'err_msg': '', 'request_id': '4192bff0-e1e0-43ce-a4db-912808c32493'}]
 
-        Raises:
-            CopyRequestError: An error occurred calling copy_object for one or more files.
-            The same dict that is returned for a successful copy will be included in the
-            message, with 'success' = False for the files for which the copy failed.
+    Raises:
+        CopyRequestError: An error occurred calling copy_object for one or more files.
+        The same dict that is returned for a successful copy will be included in the
+        message, with 'success' = False for the files for which the copy failed.
     """
 
     logging.basicConfig(level=logging.INFO,
