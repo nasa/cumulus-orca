@@ -6,7 +6,7 @@ Description:  Unit tests for copy_files_to_archive.py.
 import os
 import time
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, call
 
 import boto3
 import database
@@ -61,8 +61,8 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
         """
         Test copy lambda with one file, expecting successful result.
         """
-        del os.environ['COPY_RETRY_SLEEP_SECS']
-        del os.environ['COPY_RETRIES']
+        os.environ['COPY_RETRIES'] = '2'
+        os.environ['COPY_RETRY_SLEEP_SECS'] = '1'
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.copy_object = Mock(side_effect=[None])
@@ -71,9 +71,8 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
         _, exp_result = create_select_requests(exp_request_ids)
         database.single_query = Mock(side_effect=[exp_result, exp_upd_result])
         mock_ssm_get_parameter(2)
+        time.sleep = Mock(side_effect=None)
         result = copy_files_to_archive.handler(self.handler_input_event, None)
-        os.environ['COPY_RETRIES'] = '2'
-        os.environ['COPY_RETRY_SLEEP_SECS'] = '1'
         boto3.client.assert_called_with('ssm')
         s3_cli.copy_object.assert_called_with(Bucket=self.exp_target_bucket,
                                               CopySource={'Bucket': self.exp_src_bucket,
@@ -86,6 +85,7 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
                        "target_bucket": self.exp_target_bucket,
                        "err_msg": ""}]
         self.assertEqual(exp_result, result)
+        self.assertEqual(time.sleep.call_count, 0, "There should be no sleeps on happy path.")
         database.single_query.assert_called()
 
     def test_handler_db_update_err(self):
@@ -200,10 +200,10 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
         """
         Test copy lambda with one failed copy after 3 retries.
         """
-        del os.environ['COPY_RETRY_SLEEP_SECS']
-        os.environ['COPY_RETRY_SLEEP_SECS'] = '3'
-        del os.environ['COPY_RETRIES']
-        os.environ['COPY_RETRIES'] = '2'
+        retry_sleep_seconds = 18
+        os.environ['COPY_RETRY_SLEEP_SECS'] = str(retry_sleep_seconds)
+        copy_retries = 2
+        os.environ['COPY_RETRIES'] = str(copy_retries)
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.copy_object = Mock(side_effect=[ClientError({'Error': {'Code': 'AccessDenied'}},
@@ -230,29 +230,32 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
                                                   exp_upd_result,
                                                   exp_result,
                                                   exp_upd_result])
+
+        time.sleep = Mock(side_effect=None)
+
         mock_ssm_get_parameter(5)
         try:
-            seconds = time.time()
             copy_files_to_archive.handler(self.handler_input_event, None)
             self.fail("expected CopyRequestError")
         except copy_files_to_archive.CopyRequestError as ex:
-            self.assertGreaterEqual(time.time() - seconds, 6,
-                                    "Should take more than 6 seconds due to sleeps between the 3 attempts.")
             self.assertEqual(exp_error, str(ex))
         boto3.client.assert_called_with('ssm')
         s3_cli.copy_object.assert_called_with(Bucket=self.exp_target_bucket,
                                               CopySource={'Bucket': self.exp_src_bucket,
                                                           'Key': self.exp_file_key1},
                                               Key=self.exp_file_key1)
+        self.assertEqual(time.sleep.call_count, copy_retries, 'Should sleep once between each attempt.')
+        time.sleep.assert_has_calls([call(retry_sleep_seconds)] * copy_retries)
         database.single_query.assert_called()
 
-    def test_handler_one_file_retry2_success(self):
+    def test_handler_one_file_retry_success(self):
         """
-        Test copy lambda with two failed copy attempts, third attempt successful.
+        Test copy lambda with one failed copy attempts, second attempt successful.
         """
-        del os.environ['COPY_RETRY_SLEEP_SECS']
-        del os.environ['COPY_RETRIES']
-        time.sleep(1)
+        retry_sleep_seconds = 13
+        os.environ['COPY_RETRY_SLEEP_SECS'] = str(retry_sleep_seconds)
+        copy_retries = 2
+        os.environ['COPY_RETRIES'] = str(copy_retries)
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.copy_object = Mock(side_effect=[ClientError({'Error': {'Code': 'AccessDenied'}},
@@ -265,10 +268,11 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
                                                   exp_upd_result,
                                                   exp_result,
                                                   exp_upd_result])
+
+        time.sleep = Mock(side_effect=None)
+
         mock_ssm_get_parameter(4)
         result = copy_files_to_archive.handler(self.handler_input_event, None)
-        os.environ['COPY_RETRIES'] = '2'
-        os.environ['COPY_RETRY_SLEEP_SECS'] = '1'
         boto3.client.assert_called_with('ssm')
         exp_result = [{"success": True, "source_bucket": self.exp_src_bucket,
                        "source_key": self.exp_file_key1,
@@ -280,6 +284,8 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
                                               CopySource={'Bucket': self.exp_src_bucket,
                                                           'Key': self.exp_file_key1},
                                               Key=self.exp_file_key1)
+        self.assertEqual(time.sleep.call_count, 1, 'Should sleep once between each attempt.')
+        time.sleep.assert_has_calls([call(retry_sleep_seconds)])
         database.single_query.assert_called()
 
     def test_handler_no_object_key_in_event(self):
