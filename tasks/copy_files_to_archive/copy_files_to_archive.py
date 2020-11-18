@@ -79,10 +79,9 @@ def task(records: List[Dict[str, Any]], retries: int, retry_sleep_secs: float) -
             # All files from get_files_from_records start with 'success' == False.
             if not a_file[FILE_SUCCESS_KEY]:
                 key = a_file[FILE_SOURCE_KEY_KEY]
+
                 try:
-                    try:
-                        a_file[FILE_REQUEST_ID_KEY]
-                    except KeyError:  # Lazily get/set the request_id
+                    if FILE_REQUEST_ID_KEY not in a_file:  # Lazily get/set the request_id
                         job = find_job_in_db(key)
                         if job:
                             a_file[FILE_REQUEST_ID_KEY] = job[JOB_REQUEST_ID_KEY]
@@ -91,13 +90,9 @@ def task(records: List[Dict[str, Any]], retries: int, retry_sleep_secs: float) -
                             continue
                     err_msg = copy_object(s3, a_file[FILE_SOURCE_BUCKET_KEY], a_file[FILE_SOURCE_KEY_KEY],
                                           a_file[FILE_TARGET_BUCKET_KEY])
-                except requests_db.DatabaseError:
-                    continue
-
-                try:
                     update_status_in_db(a_file, attempt, err_msg)
                 except requests_db.DatabaseError:
-                    continue  # Move on to the next file. We'll come back to retry on next attempt.
+                    continue  # Move on to the next file. We'll come back to retry on next attempt
 
         attempt = attempt + 1
         if attempt <= retries + 1:
