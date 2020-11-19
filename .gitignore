@@ -56,3 +56,8 @@ terraform\.tfstate*
 terraform.tf
 venv/
 .idea
+build/
+dist/
+__pycache__/
+.coverage
+.vscode/

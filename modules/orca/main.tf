@@ -11,7 +11,6 @@ module "orca_workflows" {
 
 module "orca_lambdas" {
   source = "../lambdas"
-  dr_version = var.dr_version
   tags = var.default_tags
   prefix = var.prefix
   subnet_ids = var.subnet_ids

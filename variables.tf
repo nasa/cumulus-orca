@@ -8,11 +8,6 @@ variable "vpc_id" {
 }
 
 //
-variable "dr_version" {
-  default     = "0.1.1"
-  description = "Version of DR lambda code to deploy."
-}
-
 variable "restore_complete_filter_prefix" {
   default = ""
 }
@@ -123,5 +118,7 @@ variable "buckets" {
   type    = map(object({ name = string, type = string }))
 }
 
-
-variable "workflow_config" {}
+variable "workflow_config" {
+  # https://github.com/nasa/cumulus/blob/master/tf-modules/workflow/variables.tf#L23
+  # Used in modules/workflows/main.tf
+}

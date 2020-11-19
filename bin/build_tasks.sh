@@ -2,10 +2,6 @@
 #TODO This needs to be better organized
 set -e
 
-if [ -z ${DR_VERSION+x} ]; then
-  DR_VERSION=$1
-fi
-
 rm -rf venv
 python3 -m venv venv
 source venv/bin/activate

@@ -1,3 +1,5 @@
+[![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/extract_filepaths_for_granule/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/extract_filepaths_for_granule/requirements.txt)
+
 **Lambda function extract_filepaths_for_granule **
 
 - [Setup](#setup)
@@ -23,7 +25,8 @@ Run the unit tests with code coverage:
 λ activate podr
 
 (podr) λ cd C:\devpy\poswotdr\tasks\extract_filepaths_for_granule
-(podr) λ nosetests --with-coverage --cover-erase --cover-package=extract_filepaths_for_granule -v
+(podr) λ coverage run --source extract_filepaths_for_granule -m pytest
+(podr) λ coverage report
 
 Name                               Stmts   Miss  Cover
 ------------------------------------------------------

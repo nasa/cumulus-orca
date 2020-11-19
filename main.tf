@@ -11,9 +11,12 @@ terraform {
   }
 }
 
+provider "aws" {
+  region = var.region
+}
+
 module "orca" {
-  source = "./resources/orca"
-  dr_version = var.dr_version
+  source = "./modules/orca"
   database_app_user_pw = var.database_app_user_pw
   default_tags = var.default_tags
   prefix = var.prefix

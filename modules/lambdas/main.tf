@@ -17,8 +17,6 @@ module "restore_object_arn" {
   buckets = var.buckets
   prefix = var.prefix
   permissions_boundary_arn = var.permissions_boundary_arn
-  
-  
 }
 
 // You don't need to specify orca version if you used source_code_hash
