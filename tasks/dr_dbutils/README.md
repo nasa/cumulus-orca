@@ -38,14 +38,15 @@ Run the tests:
 cd C:\devpy\poswotdr\tasks\dr_dbutils  
 λ activate podr
 All tests:
-(podr) λ nosetests -v
+(podr) λ pytest
 
 Individual tests (insert desired test file name):
-(podr) λ nosetests test/test_requests_postgres.py -v
+(podr) λ pytest test/test_requests_postgres.py
 
 Code Coverage:
 (podr) λ cd C:\devpy\poswotdr\tasks\dr_dbutils
-(podr) λ nosetests --with-coverage --cover-erase --cover-package=requests_db  
+(podr) λ coverage run --source dr_dbutils -m pytest
+(podr) λ coverage report
 
 Name             Stmts   Miss  Cover
 ------------------------------------

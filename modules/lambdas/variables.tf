@@ -3,11 +3,6 @@ variable "prefix" {
   default = "orca"
 }
 
-variable "dr_version" {
-  default     = "0.1.1"
-  description = "Version of DR lambda code to deploy."
-}
-
 
 variable "subnet_ids" {}
 

@@ -8,7 +8,7 @@ git clone https://github.com/ghrcdaac/operational-recovery-cloud-archive
 ## Build lambdas
 Before you can deploy this infrastructure, you must download the release zip or the build the lambda function source-code locally.
 
-`./bin/build_tasks.sh` will crawl the `tasks` directory and build a `.zip` file (currently by just `zipping` all python files and dependencies) in each of it's sub-directories. That `.zip` is then referenced in the `resources/lambdas/main.tf` lamdba definitions.
+`./bin/build_tasks.sh` will crawl the `tasks` directory and build a `.zip` file (currently by just `zipping` all python files and dependencies) in each of it's sub-directories. That `.zip` is then referenced in the `modules/lambdas/main.tf` lamdba definitions.
 
 ```
 ./bin/build_tasks.sh
@@ -102,6 +102,7 @@ terraform {
   }
 }
 ```
+
 ## Variables
 First, run a `mv terraform.tfvars.example terraform.tfvars` to get a template `terraform.tfvars` in your working directory. This is where you will place input variables to Terraform.
 
@@ -195,7 +196,6 @@ Navigate to `cumulus-tf/main.tf` within your Cumulus deployment directory and ad
 module "orca" {
   source = "https://github.com/ghrcdaac/operational-recovery-cloud-archive/releases/download/1.0.2/orca-1.0.2.zip"
 
-  dr_version = "1.0.2"
   prefix = var.prefix
   subnet_ids = module.ngap.ngap_subnets_ids
   database_port = "5432"
@@ -325,3 +325,7 @@ Here is an example command to run the Cumulus Dashboard locally:
 ```
   APIROOT=https://uttm5y1jcj.execute-api.us-west-2.amazonaws.com:8000/dev ENABLE_RECOVERY=true npm run serve
 ```
+
+## Release Documentation:
+
+Information about how to create an ORCA release can be found [here](docs/release.md).

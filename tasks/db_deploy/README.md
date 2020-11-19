@@ -1,3 +1,5 @@
+[![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/db_deploy/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/db_deploy/requirements.txt)
+
 **Lambda function db_deploy **
 
 - [Setup](#setup)
@@ -87,18 +89,14 @@ ex:
 λ activate podr
 
 (podr) λ cd C:\devpy\poswotdr\tasks\db_deploy
-(podr) λ nosetests --with-coverage --cover-erase --cover-package=db_deploy -v
+(podr) λ coverage run --source db_deploy -m pytest
+(podr) λ coverage report
 
 Name           Stmts   Miss  Cover
 ----------------------------------
 db_deploy.py     159      0   100%
 ----------------------------------------------------------------------
 Ran 8 tests in 0.987s
-
-
-Run the tests:
-C:\devpy\poswotdr\tasks\db_deploy  
-(podr2) λ nosetests test/test_db_deploy.py -v
 
 ```
 <a name="linting"></a>
