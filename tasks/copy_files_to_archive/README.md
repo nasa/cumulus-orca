@@ -112,9 +112,9 @@ FUNCTIONS
         times to retry a copy before failing, and how long to wait between retries.
 
             Environment Vars:
-                COPY_RETRIES (number, optional, default = 3): The number of
+                COPY_RETRIES (number, optional, default = 2): The number of
                     attempts to retry a copy that failed.
-                COPY_RETRY_SLEEP_SECS (number, optional, default = 0): The number of seconds
+                COPY_RETRY_SLEEP_SECS (number, optional, default = 30): The number of seconds
                     to sleep between retry attempts.
                 DATABASE_PORT (string): the database port. The standard is 5432.
                 DATABASE_NAME (string): the name of the database.
@@ -158,8 +158,20 @@ FUNCTIONS
                 context (Object): None
 
             Returns:
-                dict: The dict returned from the task. All 'success' values will be True. If they were
-                not all True, the CopyRequestError exception would be raised.
+                A list of dicts with the following keys:
+                    'source_key' (string): The object key of the file that was restored.
+                    'source_bucket' (string): The name of the s3 bucket where the restored
+                        file was temporarily sitting.
+                    'target_bucket' (string): The name of the archive s3 bucket.
+                    'success' (boolean): True, if the copy was successful,
+                        otherwise False.
+                    'err_msg' (string): when success is False, this will contain
+                        the error message from the copy error.
+                    'request_id' (string): The request_id of the database entry.
+                        Only guaranteed to be present if 'success' == True.
+
+                All 'success' values will be True.
+                If they were not all True, the CopyRequestError exception would be raised.
 
             Raises:
                 CopyRequestError: An error occurred calling copy_object for one or more files.
