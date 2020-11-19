@@ -46,8 +46,10 @@ Please describe the tests (unit, integration, ad-hoc, or otherwise) that you ran
 - [ ] I have added tests that prove my fix is effective or that my feature works
     - [ ] Unit tests
     - [ ] Integration tests
-    - [ ] Manual tests (outline below)
+    - [ ] Manual tests (outlined above)
 - [ ] New and existing unit tests pass locally with my changes
+    - [ ] Automated tests passing (if not fork)
+    - [ ] Manual testing/integration testing passes (if forked)
 - [ ] Any dependent changes have been merged and published in downstream modules
 - [ ] My code has passed security scanning
     - [ ] Snyk
