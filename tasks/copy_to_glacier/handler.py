@@ -11,7 +11,7 @@ file_types_to_exclude = [".example"]  # ex: [".tar", ".gz"]
 
 def should_exclude_files_type(granule_url: str) -> bool:
     """
-    Tests whether or not file is included in file types to exclude from copy to glacier
+    Tests whether or not file is included in {file_types_to_exclude} from copy to glacier.
     Args:
         granule_url: s3 url of granule.
     Returns:
@@ -24,13 +24,14 @@ def should_exclude_files_type(granule_url: str) -> bool:
     return False
 
 
-def copy(source_bucket: str, source_key: str, destination_bucket: str, destination_key: str) -> None:
+def copy_granule_between_buckets(source_bucket: str, source_key: str, destination_bucket: str,
+                                 destination_key: str) -> None:
     """
-    Copies granule from source bucket to destination
+    Copies granule from source bucket to destination.
     Args:
-        source_bucket: Bucket granule is currently located  todo: ?
-        destination_bucket: Bucket granule is to be copied to  todo: ?
+        source_bucket: The name of the bucket in which the granule is currently located.
         source_key: source Granule path excluding s3://[bucket]/
+        destination_bucket: The name of the bucket the granule is to be copied to.
         destination_key: Destination granule path excluding s3://[bucket]/
     """
     s3 = boto3.client('s3')
@@ -50,7 +51,7 @@ def copy(source_bucket: str, source_key: str, destination_bucket: str, destinati
 
 def get_source_bucket_and_key(granule_url) -> Optional[Match[AnyStr]]:
     """
-    Parses source bucket and key from s3 url
+    Parses source bucket and key from s3 url.
     Args:
         granule_url: s3 url path to granule.
     Returns:
@@ -59,9 +60,10 @@ def get_source_bucket_and_key(granule_url) -> Optional[Match[AnyStr]]:
     return re.search("s3://([^/]*)/(.*)", granule_url)
 
 
-def get_bucket(filename: str, files: List[Dict[str, Any]]) -> Any:  # todo: Find correct type
+def get_bucket(filename: str, files: List[Dict[str, Any]]) -> str:
     """
-    Extract the bucket from the files todo: ?
+    Retrieves the first file {files} where the file's ['regex'] matches '*.'
+    And returns that file's ['bucket'] todo: ? Why this regex? Why only the first file?
     Args:
         filename: Granule file name.
         files: List of collection files.
@@ -73,7 +75,7 @@ def get_bucket(filename: str, files: List[Dict[str, Any]]) -> Any:  # todo: Find
     """
     for file in files:
         if re.match(file.get('regex', '*.'), filename):
-            return file['bucket']
+            return file['bucket']  # todo: This type of "take first" implies that user input should be better filtered.
     return 'public'
 
 
@@ -89,13 +91,17 @@ def task(event: Dict[str, Any], context: object) -> Dict[str, Any]:
             config (dict): A dict with the following keys:
                 collection (dict): A dict with the following keys:
                     name (str): todo
-                    version (str): todo
-                    files (list): todo
+                    version (str): Used when constructing the default fileStagingDir.
+                    files (list[Dict]): A list of dicts representing files to copy from each granule.
+                        Each dict contains the following keys:
+                            regex (str): todo
                     url_path (todo): todo.
                         Will default to the fileStagingDir.
-                fileStagingDir (todo): todo.
-                    Will default to name__version where name and version come from collection.
+                fileStagingDir (todo): todo. Presently unused.
+                    Will default to name__version where 'name' and 'version' come from 'config[collection]'.
                 buckets (dict): A dict with the following keys:
+                    glacier (dict): A dict with the following keys:
+                        name (str): The name of the bucket to copy to.
 
 
         context: An object required by AWS Lambda. Unused.
@@ -123,14 +129,18 @@ def task(event: Dict[str, Any], context: object) -> Dict[str, Any]:
                 "path": config['fileStagingDir'],
                 "url_path": config.get('url_path', config['fileStagingDir']),
                 "bucket": get_bucket(filename, collection.get('files', [])),
+                # todo: Why is this get_bucket being called multiple times? 'files' will not change.
                 "filename": granule_url,
                 "name": granule_url
             }
         )
         if should_exclude_files_type(granule_url):
-            continue
-        source = get_source_bucket_and_key(granule_url)
-        copy(source[1], source[2], glacier_bucket, f"{url_path}/{filename}")  # todo: url_path may not be present.
+            continue  # todo: This should be logged in output so users know that their file wasn't copied and why.
+        source = get_source_bucket_and_key(granule_url)  # todo: Handle 'None' return value.
+        copy_granule_between_buckets(source_bucket=source[1],
+                                     source_key=source[2],
+                                     destination_bucket=glacier_bucket,
+                                     destination_key=f"{url_path}/{filename}")  # todo: url_path may not be present.
 
     final_output = list(granule_data.values())
     return {"granules": final_output, "input": granule_urls}
@@ -143,7 +153,6 @@ def handler(event, context):
     return run_cumulus_task(task, event, context)
 
 
-# todo: Is this needed?
 if __name__ == '__main__':
     dummy_event = {
         "input": [
