@@ -87,21 +87,31 @@ def task(event: Dict[str, Any], context: object) -> Dict[str, Any]:
 
     Args:
         event: Event passed into the step from the aws workflow. A dict with the following keys:
-            input (list): A list of urls for granules to copy.
+            input (list): A list of urls for granules to copy. Defaults to an empty list.
             config (dict): A dict with the following keys:
-                collection (dict): A dict with the following keys:
-                    name (str): todo
-                    version (str): Used when constructing the default fileStagingDir.
-                    files (list[Dict]): A list of dicts representing files to copy from each granule.
+                collection (dict): todo: What is the context of this value?
+                    A dict with the following keys:
+                    name (str): todo: What is the context of this value?
+                        Used when generating the default value for {config}[fileStagingDir]
+                    version (str): todo: What is the context of this value?
+                        Used when constructing the default fileStagingDir.
+                    files (list[Dict]): A list of dicts representing files.
+                        The first file where the file's ['regex'] matches '*.'
+                        Is used to identify the bucket referenced in return's['granules'][filename]['files']['bucket']
+                        todo: The above doesn't seem intentional.
                         Each dict contains the following keys:
                             regex (str): todo
-                    url_path (todo): todo.
-                        Will default to the fileStagingDir.
-                fileStagingDir (todo): todo. Presently unused.
+                    url_path (str): Used when calling {copy_granule_between_buckets} as a part of the destination_key.
+
+                fileStagingDir (todo): todo. Presently unused except in output.
                     Will default to name__version where 'name' and 'version' come from 'config[collection]'.
                 buckets (dict): A dict with the following keys:
                     glacier (dict): A dict with the following keys:
                         name (str): The name of the bucket to copy to.
+                url_path (str): todo: What is the context of this value?
+                    todo: Why do we have two url_paths, one which is used and one which is passed through?
+                    Is placed as the value of the return's['granules'][filename]['files']['url_path']
+                    Will default to the fileStagingDir.
 
 
         context: An object required by AWS Lambda. Unused.
@@ -118,7 +128,7 @@ def task(event: Dict[str, Any], context: object) -> Dict[str, Any]:
     config['fileStagingDir'] = config.get('fileStagingDir',
                                           f"{collection['name']}__{collection['version']}")
     glacier_bucket = config.get('buckets').get('glacier').get('name')
-    url_path = collection.get('url_path')
+    url_path = collection.get('url_path')  # todo: This is not a safe variable name since url_path has multiple contexts
     granule_data = {}
     for granule_url in granule_urls:
         filename = os.path.basename(granule_url)
