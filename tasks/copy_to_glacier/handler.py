@@ -58,7 +58,7 @@ def copy_granule_between_buckets(source_bucket: str, source_key: str, destinatio
 
 
 # todo: Once aws upgrades to Python 3.8, have this return Optional[Match[AnyStr]]
-def get_source_bucket_and_key(granule_url) -> Optional[Match[str]]:
+def get_source_bucket_and_key(granule_url) -> Optional[Match]:
     """
     Parses source bucket and key from s3 url.
     Args:
