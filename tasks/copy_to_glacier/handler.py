@@ -9,6 +9,7 @@ import os
 CONFIG_FILE_STAGING_DIRECTORY_KEY = 'fileStagingDir'
 CONFIG_BUCKETS_KEY = 'buckets'
 CONFIG_COLLECTION_KEY = 'collection'
+CONFIG_URL_PATH_KEY = 'url_path'
 
 COLLECTION_NAME_KEY = 'name'
 COLLECTION_VERSION_KEY = 'version'
@@ -32,19 +33,19 @@ def should_exclude_files_type(granule_url: str) -> bool:
     return False
 
 
-def copy_granule_between_buckets(source_bucket: str, source_key: str, destination_bucket: str,
+def copy_granule_between_buckets(source_bucket_name: str, source_key: str, destination_bucket: str,
                                  destination_key: str) -> None:
     """
     Copies granule from source bucket to destination.
     Args:
-        source_bucket: The name of the bucket in which the granule is currently located.
+        source_bucket_name: The name of the bucket in which the granule is currently located.
         source_key: source Granule path excluding s3://[bucket]/
         destination_bucket: The name of the bucket the granule is to be copied to.
         destination_key: Destination granule path excluding s3://[bucket]/
     """
     s3 = boto3.client('s3')
     copy_source = {
-        'Bucket': source_bucket,
+        'Bucket': source_bucket_name,
         'Key': source_key
     }
     s3.copy(
@@ -52,7 +53,7 @@ def copy_granule_between_buckets(source_bucket: str, source_key: str, destinatio
         ExtraArgs={
             'StorageClass': 'GLACIER',
             'MetadataDirective': 'COPY',
-            'ContentType': s3.head_object(Bucket=source_bucket, Key=source_key)["ContentType"]
+            'ContentType': s3.head_object(Bucket=source_bucket_name, Key=source_key)['ContentType']
         }
     )
 
@@ -64,12 +65,12 @@ def get_source_bucket_and_key(granule_url) -> Optional[Match]:
     Args:
         granule_url: s3 url path to granule.
     Returns:  TODO: Strip 0th element from return value.
-        re.Match object with argument [1] equal to source bucket and [2] equal to source key.
+        re.Match object with argument [1] equal to source bucket name and [2] equal to source key.
     """
     return re.search("s3://([^/]*)/(.*)", granule_url)
 
 
-def get_bucket(filename: str, collection_files: List[Dict[str, Any]]) -> str:
+def get_bucket_name_for_filename(filename: str, collection_files: List[Dict[str, Any]]) -> str:
     """
     Retrieves the first file pattern in {collection_files} where the file's ['regex'] matches the {filename}
     And returns that file's ['bucket']
@@ -80,7 +81,7 @@ def get_bucket(filename: str, collection_files: List[Dict[str, Any]]) -> str:
                 regex (str): The regex that all files in the bucket must match with their name.
                 bucket (str): The name of the bucket containing the files.
     Returns:
-        Bucket name.
+        Bucket name, or 'public' if not found.
     """
     for file in collection_files:
         if re.match(file.get('regex', '*.'), filename):
@@ -102,11 +103,15 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     Returns:
         A dict with the following keys:
             granules (List[Dict[str, Union[str, bytes, list]]]): A list of dicts where each dict has the following keys:
-                path (str): config['fileStagingDir']
-                url_path (str): config['url_path'] if present, otherwise config['fileStagingDir']
-                bucket (str): The name of the config['buckets'] that matches the filename.
-                filename (str): The granule_url from event['input']
-                name (str): The granule_url from event['input']
+                granuleId (str): The filename from the granule url.
+                files (List): A list of dicts with the following keys:
+                    path (str): config['fileStagingDir']
+                    url_path (str): config['url_path'] if present, otherwise config['fileStagingDir']
+                    bucket (str): The name of the config['buckets'] that matches the filename.
+                    filename (str): The granule_url from event['input']
+                    # todo: It is confusing that granuleId holds the filename while filename holds the url.
+                    name (str): The granule_url from event['input']
+                    # todo: This inclusion implies to me we are matching an un-linked schema.
             input (list): event['input']
     """
     print(event)
@@ -126,8 +131,8 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
         granule_data[filename]['files'].append(
             {
                 'path': config[CONFIG_FILE_STAGING_DIRECTORY_KEY],
-                'url_path': config.get('url_path', config[CONFIG_FILE_STAGING_DIRECTORY_KEY]),
-                'bucket': get_bucket(filename, collection.get('files', [])),
+                'url_path': config.get(CONFIG_URL_PATH_KEY, config[CONFIG_FILE_STAGING_DIRECTORY_KEY]),
+                'bucket': get_bucket_name_for_filename(filename, collection.get('files', [])),
                 'filename': granule_url,
                 'name': granule_url
             }
@@ -135,13 +140,13 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
         if should_exclude_files_type(granule_url):
             continue  # todo: This should be logged in output so users know that their file wasn't copied and why.
         source = get_source_bucket_and_key(granule_url)  # todo: Handle 'None' return value.
-        copy_granule_between_buckets(source_bucket=source[1],
+        copy_granule_between_buckets(source_bucket_name=source[1],
                                      source_key=source[2],
                                      destination_bucket=glacier_bucket,
                                      destination_key=f"{collection_url_path}/{filename}")
 
     final_output = list(granule_data.values())
-    return {"granules": final_output, "input": granule_urls}
+    return {'granules': final_output, 'input': granule_urls}
 
 
 # handler that is provided to aws lambda
@@ -157,9 +162,9 @@ def handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any:
                     See https://nasa.github.io/cumulus/docs/data-cookbooks/sips-workflow
                     A dict with the following keys:
                     name (str): The name of the collection.
-                        Used when generating the default value for {config}[fileStagingDir]
+                        Used when generating the default value for {event}[config][fileStagingDir].
                     version (str): The version of the collection.
-                        Used when constructing the default fileStagingDir.
+                       Used when generating the default value for {event}[config][fileStagingDir].
                     files (list[Dict]): A list of dicts representing file types within the collection.
                         The first file where the file's ['regex'] matches the filename from the input
                         Is used to identify the bucket referenced in return's['granules'][filename]['files']['bucket']
@@ -168,7 +173,7 @@ def handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any:
                             bucket (str): The name of the bucket containing the files.
                     url_path (str): Used when calling {copy_granule_between_buckets} as a part of the destination_key.
 
-                fileStagingDir (str): Unused except in output if url_path is missing.
+                fileStagingDir (str): Is placed as the value of the return's['granules'][filename]['files']['path']
                     Will default to name__version where 'name' and 'version' come from 'config[collection]'.
                 buckets (dict): A dict with the following keys:
                     glacier (dict): A dict with the following keys:
@@ -184,81 +189,80 @@ def handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any:
     """
     return run_cumulus_task(task, event, context)
 
-
-if __name__ == '__main__':
-    dummy_event = {
-        "input": [
-            "s3://ghrcsbxw-internal/file-staging/ghrcsbxw/goesrpltavirisng__1/goesrplt_avng_20170328t210208.tar.gz"
-        ],
-        "config": {
-            "files_config": [
-                {
-                    "regex": "^(.*).*\\.cmr.xml$",
-                    "sampleFileName": "goesrplt_avng_20170323t184858.tar.gz.cmr.xml",
-                    "bucket": "public"
-                },
-                {
-                    "regex": "^(.*).*(\\.gz|\\.hdr|clip)$",
-                    "sampleFileName": "goesrplt_avng_20170323t184858.tar.gz",
-                    "bucket": "protected"
-                }
-            ],
-            "buckets": {
-                "protected": {
-                    "type": "protected",
-                    "name": "ghrcsbxw-protected"
-                },
-                "internal": {
-                    "type": "internal",
-                    "name": "ghrcsbxw-internal"
-                },
-                "private": {
-                    "type": "private",
-                    "name": "ghrcsbxw-private"
-                },
-                "public": {
-                    "type": "public",
-                    "name": "ghrcsbxw-public"
-                },
-                "glacier": {
-                    "type": "private",
-                    "name": "ghrcsbxw-glacier"
-                }
-            },
-            "collection": {
-                "name": "goesrpltavirisng",
-                "version": "1",
-                "dataType": "goesrpltavirisng",
-                "process": "metadataextractor",
-                "provider_path": "/goesrpltavirisng/fieldCampaigns/goesrplt/AVIRIS-NG/data/",
-                "url_path": "goesrpltavirisng__1",
-                "duplicateHandling": "replace",
-                "granuleId": "^goesrplt_avng_.*(\\.gz|\\.hdr|clip)$",
-                "granuleIdExtraction": "^((goesrplt_avng_).*)",
-                "sampleFileName": "goesrplt_avng_20170323t184858.tar.gz",
-                "files": [
-                    {
-                        "bucket": "public",
-                        "regex": "^goesrplt_avng_(.*).*\\.cmr.xml$",
-                        "sampleFileName": "goesrplt_avng_20170323t184858.tar.gz.cmr.xml"
-                    },
-                    {
-                        "bucket": "protected",
-                        "regex": "^goesrplt_avng_(.*).*(\\.gz|\\.hdr|clip)$",
-                        "sampleFileName": "goesrplt_avng_20170323t184858.tar.gz"
-                    }
-                ],
-                "meta": {
-                    "metadata_extractor": [
-                        {
-                            "regex": "^(.*).*(\\.gz|\\.hdr|clip)$",
-                            "module": "ascii"
-                        }
-                    ],
-                    "granuleRecoveryWorkflow": "DrRecoveryWorkflow"
-                }}
-        }
-    }
-
-    dummy_context = []
-    task(dummy_event, dummy_context)
+# if __name__ == '__main__':
+#    dummy_event = {
+#        "input": [
+#            "s3://ghrcsbxw-internal/file-staging/ghrcsbxw/goesrpltavirisng__1/goesrplt_avng_20170328t210208.tar.gz"
+#        ],
+#        "config": {
+#            "files_config": [
+#                {
+#                    "regex": "^(.*).*\\.cmr.xml$",
+#                    "sampleFileName": "goesrplt_avng_20170323t184858.tar.gz.cmr.xml",
+#                    "bucket": "public"
+#                },
+#                {
+#                    "regex": "^(.*).*(\\.gz|\\.hdr|clip)$",
+#                    "sampleFileName": "goesrplt_avng_20170323t184858.tar.gz",
+#                    "bucket": "protected"
+#                }
+#            ],
+#            "buckets": {
+#                "protected": {
+#                    "type": "protected",
+#                    "name": "ghrcsbxw-protected"
+#                },
+#                "internal": {
+#                    "type": "internal",
+#                    "name": "ghrcsbxw-internal"
+#                },
+#                "private": {
+#                    "type": "private",
+#                    "name": "ghrcsbxw-private"
+#                },
+#                "public": {
+#                    "type": "public",
+#                    "name": "ghrcsbxw-public"
+#                },
+#                "glacier": {
+#                    "type": "private",
+#                    "name": "ghrcsbxw-glacier"
+#                }
+#            },
+#            "collection": {
+#                "name": "goesrpltavirisng",
+#                "version": "1",
+#                "dataType": "goesrpltavirisng",
+#                "process": "metadataextractor",
+#                "provider_path": "/goesrpltavirisng/fieldCampaigns/goesrplt/AVIRIS-NG/data/",
+#                "url_path": "goesrpltavirisng__1",
+#                "duplicateHandling": "replace",
+#                "granuleId": "^goesrplt_avng_.*(\\.gz|\\.hdr|clip)$",
+#                "granuleIdExtraction": "^((goesrplt_avng_).*)",
+#                "sampleFileName": "goesrplt_avng_20170323t184858.tar.gz",
+#                "files": [
+#                    {
+#                        "bucket": "public",
+#                        "regex": "^goesrplt_avng_(.*).*\\.cmr.xml$",
+#                        "sampleFileName": "goesrplt_avng_20170323t184858.tar.gz.cmr.xml"
+#                    },
+#                    {
+#                        "bucket": "protected",
+#                        "regex": "^goesrplt_avng_(.*).*(\\.gz|\\.hdr|clip)$",
+#                        "sampleFileName": "goesrplt_avng_20170323t184858.tar.gz"
+#                    }
+#                ],
+#                "meta": {
+#                    "metadata_extractor": [
+#                        {
+#                            "regex": "^(.*).*(\\.gz|\\.hdr|clip)$",
+#                            "module": "ascii"
+#                        }
+#                    ],
+#                    "granuleRecoveryWorkflow": "DrRecoveryWorkflow"
+#                }}
+#        }
+#    }
+#
+#    dummy_context = []
+#    task(dummy_event, dummy_context)
