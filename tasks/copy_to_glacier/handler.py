@@ -1,10 +1,10 @@
-from re import Match
-from typing import Dict, Any, List, Optional, AnyStr, Union
-
-from run_cumulus_task import run_cumulus_task
-import boto3
-import re
 import os
+import re
+from re import Match
+from typing import Dict, Any, List, Optional, Union
+
+import boto3
+from run_cumulus_task import run_cumulus_task
 
 CONFIG_FILE_STAGING_DIRECTORY_KEY = 'fileStagingDir'
 CONFIG_BUCKETS_KEY = 'buckets'

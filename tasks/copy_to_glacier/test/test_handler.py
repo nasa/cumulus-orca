@@ -140,7 +140,7 @@ class TestCopyToGlacierHandler(TestCase):
             }
         )])
 
-    def test_task_happy_path(self):
+    def test_task_bucket_not_present(self):
         """
         Bucket not present in collection, should default to 'public' in output.
         Copy still uses passed in bucket name.
