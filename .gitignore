@@ -48,6 +48,8 @@ tasks/copy_files_to_archive/.idea
 tasks/copy_files_to_archive/__pycache__
 tasks/copy_files_to_archive/test/__pycache__
 tasks/copy_files_to_archive/build
+tasks/copy_files_to_archive/htmlcov/
+tasks/copy_to_glacier/htmlcov/
 tasks/package/
 terraform\.tfvars
 \.terraform/
