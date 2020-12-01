@@ -19,7 +19,7 @@ class TestCopyToGlacierHandler(TestCase):
         """
         Testing exclude file types to be excluded
         """
-        excluded_flag = exclude_file_types(self.excluded_file)
+        excluded_flag = should_exclude_files_type(self.excluded_file)
         self.assertEqual(excluded_flag, True)
 
     def test_2_excluded_file_types_not_excluded(self):
@@ -27,7 +27,7 @@ class TestCopyToGlacierHandler(TestCase):
         Testing exclude file types not to be excluded
         """
 
-        not_excluded_flag = exclude_file_types(self.not_excluded_file)
+        not_excluded_flag = should_exclude_files_type(self.not_excluded_file)
         self.assertEqual(not_excluded_flag, False)
 
     def test_3_get_source_bucket_and_key(self):
