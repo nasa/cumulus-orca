@@ -164,7 +164,7 @@ def handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any:
                     name (str): The name of the collection.
                         Used when generating the default value for {event}[config][fileStagingDir].
                     version (str): The version of the collection.
-                       Used when generating the default value for {event}[config][fileStagingDir].
+                        Used when generating the default value for {event}[config][fileStagingDir].
                     files (list[Dict]): A list of dicts representing file types within the collection.
                         The first file where the file's ['regex'] matches the filename from the input
                         Is used to identify the bucket referenced in return's['granules'][filename]['files']['bucket']
