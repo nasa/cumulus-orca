@@ -15,7 +15,7 @@ resource "aws_db_instance" "postgresql" {
   allocated_storage          = 20
   # max_allocated_storage      = 21
   engine                     = "postgres"
-  engine_version             = "11.4"
+  engine_version             = "11"
   identifier                 = "${var.prefix}-postgres-sndbx"
   instance_class             = "db.t2.micro"
   name                       = "postgres"
@@ -25,7 +25,7 @@ resource "aws_db_instance" "postgresql" {
   backup_retention_period    = 7
   backup_window              = "03:00-06:00"
   maintenance_window         = "Mon:00:00-Mon:03:00"
-  #auto_minor_version_upgrade = "${var.auto_minor_version_upgrade}"
+  # auto_minor_version_upgrade = "${var.auto_minor_version_upgrade}"
   port                       = var.database_port
   vpc_security_group_ids     = [var.vpc_postgres_ingress_all_egress_id]
   db_subnet_group_name       = aws_db_subnet_group.postgres_subnet_group.id
