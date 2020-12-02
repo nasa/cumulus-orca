@@ -104,7 +104,7 @@ class TestDbDeploy(unittest.TestCase):
         """
         tests an error reading sql from a file.
         """
-        con = db_deploy.get_db_connnection()
+        con = db_deploy.get_db_connection()
         cur = db_deploy.get_cursor(con)
         sql_file = "my_nonexistent.sql"
         activity = "test file not exists"
@@ -120,7 +120,7 @@ class TestDbDeploy(unittest.TestCase):
         """
         tests an error querying non-existant table.
         """
-        con = db_deploy.get_db_connnection()
+        con = db_deploy.get_db_connection()
         cur = db_deploy.get_cursor(con)
         activity = "test table no exist"
         sql_stmt = """SELECT * from table_no_exist;"""
@@ -152,7 +152,7 @@ class TestDbDeploy(unittest.TestCase):
         exp_err = 'Database Error. FATAL:  database "dbnoexist" does not exist\n'
         os.environ["DATABASE_NAME"] = "dbnoexist"
         try:
-            db_deploy.get_db_connnection()
+            db_deploy.get_db_connection()
             self.fail("expected DbError")
         except DatabaseError as err:
             self.assertEqual(exp_err, str(err))
@@ -163,7 +163,7 @@ class TestDbDeploy(unittest.TestCase):
         """
         exp_dir = "really*bad$path%name"
         exp_files = []
-        file_list = db_deploy.get_files_in_dir(exp_dir)
+        file_list = db_deploy.get_file_names_in_dir(exp_dir)
         self.assertEqual(exp_files, file_list)
 
 
