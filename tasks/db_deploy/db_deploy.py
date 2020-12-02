@@ -10,12 +10,24 @@ from typing import Dict, Tuple, List
 
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT, ISOLATION_LEVEL_READ_COMMITTED, connection, cursor
 import boto3
+# noinspection PyPackageRequirements
 import database
+# noinspection PyPackageRequirements
 from database import DbError, ResourceExists
 
 # Set Global Variables
 _LOG = logging.getLogger(__name__)
 SEP = os.path.sep
+
+OS_ENVIRON_DATABASE_PORT_KEY = 'DATABASE_PORT'
+OS_ENVIRON_DATABASE_HOST_KEY = 'DATABASE_HOST'
+OS_ENVIRON_DATABASE_NAME_KEY = 'DATABASE_NAME'
+OS_ENVIRON_DATABASE_USER_KEY = 'DATABASE_USER'
+OS_ENVIRON_DATABASE_PW_KEY = 'DATABASE_PW'
+OS_ENVIRON_MASTER_USER_PW_KEY = 'MASTER_USER_PW'
+OS_ENVIRON_PLATFORM_KEY = 'PLATFORM'
+OS_ENVIRON_DDL_DIR_KEY = 'DDL_DIR'
+OS_ENVIRON_DROP_DATABASE_KEY = 'DROP_DATABASE'
 
 
 class DatabaseError(Exception):
@@ -24,7 +36,7 @@ class DatabaseError(Exception):
     """
 
 
-def task():
+def task() -> str:
     """
     Task called by the handler to perform the work.
 
@@ -39,39 +51,37 @@ def task():
     log_status("start")
 
     ssm = boto3.client('ssm')
-    param_name = 'drdb-user-pass'
-    parameter = ssm.get_parameter(Name=param_name, WithDecryption=True)
+    parameter = ssm.get_parameter(Name='drdb-user-pass', WithDecryption=True)
     db_pw = parameter['Parameter']['Value']
 
-    param_name = 'drdb-admin-pass'
-    parameter = ssm.get_parameter(Name=param_name, WithDecryption=True)
+    parameter = ssm.get_parameter(Name='drdb-admin-pass', WithDecryption=True)
     master_user_pw = parameter['Parameter']['Value']
-    os.environ["MASTER_USER_PW"] = master_user_pw
+    os.environ[OS_ENVIRON_MASTER_USER_PW_KEY] = master_user_pw
 
-    param_name = 'drdb-host'
-    parameter = ssm.get_parameter(Name=param_name, WithDecryption=False)
+    parameter = ssm.get_parameter(Name='drdb-host', WithDecryption=False)
     db_host = parameter['Parameter']['Value']
-    os.environ["DATABASE_HOST"] = db_host
+    os.environ[OS_ENVIRON_DATABASE_HOST_KEY] = db_host
 
-    db_name = os.environ["DATABASE_NAME"]
-    db_user = os.environ["DATABASE_USER"]
-    os.environ["DATABASE_NAME"] = "postgres"
-    os.environ["DATABASE_USER"] = "postgres"
+    # todo: What is the reason behind this temporary swap?
+    db_name = os.environ[OS_ENVIRON_DATABASE_NAME_KEY]
+    db_user = os.environ[OS_ENVIRON_DATABASE_USER_KEY]
+    os.environ[OS_ENVIRON_DATABASE_NAME_KEY] = "postgres"
+    os.environ[OS_ENVIRON_DATABASE_USER_KEY] = "postgres"
 
-    os.environ["DATABASE_PW"] = master_user_pw
+    os.environ[OS_ENVIRON_DATABASE_PW_KEY] = master_user_pw
     # connect as postgres to create the new database
     con = get_db_connection()
 
     log_status("Connected to postgres")
     db_existed, status = create_database(con)
     if not db_existed:
-        os.environ["DATABASE_PW"] = db_pw
+        os.environ[OS_ENVIRON_DATABASE_PW_KEY] = db_pw
         create_roles_and_users(con, db_user)
     con.close()
 
     # Connect to the database we just created.
-    os.environ["DATABASE_NAME"] = db_name
-    os.environ["DATABASE_PW"] = master_user_pw
+    os.environ[OS_ENVIRON_DATABASE_NAME_KEY] = db_name
+    os.environ[OS_ENVIRON_DATABASE_PW_KEY] = master_user_pw
     con = get_db_connection()
     log_status(f"connected to {db_name}")
     status = create_schema(con)
@@ -86,24 +96,22 @@ def create_database(con: connection) -> Tuple[bool, str]:
     """
     Creates the database, dropping it first if requested.
 
-        Args:
-            con: a connection to the postgres database
+    Args:
+        con: a connection to the postgres database
 
-        Returns:
-            bool: True if the database already existed
-                when the create was run.
-            string: description of status of create database.
+    Returns:
+        bool: True if the database already existed
+            when the create was run.
+        string: description of status of create database.
 
-        Raises:
-            DatabaseError: An error occurred.
+    Raises:
+        DatabaseError: An error occurred.
     """
     con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
     cur = get_cursor(con)
-    try:
-        drop = os.environ["DROP_DATABASE"]
-    except KeyError:
-        drop = "False"
-    if drop == "True":  # todo: Fix dangerous string compare
+
+    drop = os.environ.get(OS_ENVIRON_DROP_DATABASE_KEY, 'False')
+    if drop == 'True':
         sql_file = f"database{SEP}database_drop.sql"
         execute_sql_from_file(cur, sql_file, "drop database")
     try:
@@ -121,19 +129,19 @@ def create_database(con: connection) -> Tuple[bool, str]:
     return db_existed, status
 
 
-def create_roles_and_users(con: connection, db_user):
+def create_roles_and_users(con: connection, db_user: str) -> str:
     """
     Creates the roles and users.
 
-        Args:
-            con (object): a connection to the postgres database
-            db_user (string): the application user
+    Args:
+        con (object): a connection to the postgres database
+        db_user (string): the application user
 
-        Returns:
-            string: description of status of create roles and users.
+    Returns:
+        string: description of status of create roles and users.
 
-        Raises:
-            DatabaseError: An error occurred.
+    Raises:
+        DatabaseError: An error occurred.
     """
     con.set_isolation_level(ISOLATION_LEVEL_READ_COMMITTED)
     cur = get_cursor(con)
@@ -145,7 +153,7 @@ def create_roles_and_users(con: connection, db_user):
     execute_sql_from_file(cur, sql_file, "create dbo user")
     sql_file = f"users{SEP}appuser.sql"
     execute_sql_from_file(cur, sql_file, "create application user")
-    db_pw = os.environ["DATABASE_PW"]
+    db_pw = os.environ[OS_ENVIRON_DATABASE_PW_KEY]
     sql_stmt = f"ALTER USER {db_user} WITH PASSWORD '{db_pw}';"
     execute_sql(cur, sql_stmt, "set pw for application user")
     sql_stmt = f"ALTER USER dbo WITH PASSWORD '{db_pw}';"
@@ -157,18 +165,18 @@ def create_roles_and_users(con: connection, db_user):
 
 def create_schema(con: connection) -> str:
     """
-    Creates the database schema.
+    Pulls in 'schema\app.sql' and applies it to the database over the given {con}.
 
-        Args:
-            con (object): a connection to the new database just created
+    Args:
+        con: A connection to the database.
 
-        Returns:
-            string: description of status of create schema.
+    Returns:
+        Description of status of create schema.
 
-        Raises:
-            DatabaseError: An error occurred.
+    Raises:
+        DatabaseError: An error occurred.
     """
-    platform = os.environ["PLATFORM"]
+    platform = os.environ[OS_ENVIRON_PLATFORM_KEY]
     _LOG.info(f"platform: {platform}")
     cur = get_cursor(con)
     if platform == "AWS":
@@ -182,14 +190,14 @@ def create_schema(con: connection) -> str:
     return status
 
 
-def create_tables():
+def create_tables() -> None:
     """
     Creates the database tables.
 
-        Raises:
-            DatabaseError: An error occurred.
+    Raises:
+        DatabaseError: An error occurred.
     """
-    ddl_dir = os.environ["DDL_DIR"]
+    ddl_dir = os.environ[OS_ENVIRON_DDL_DIR_KEY]
     table_dir = f"{ddl_dir}{SEP}tables"
     sql_file_names = get_file_names_in_dir(table_dir)
     for file in sql_file_names:
@@ -211,7 +219,7 @@ def get_file_names_in_dir(directory: str) -> List[str]:
     Returns a list of all the filenames in the given directory.
 
     Args:
-        directory: The name of the directory containing the files. todo: Path or name?
+        directory: The name of the directory containing the files. todo: Given usage, this is a path. Please confirm.
 
     Returns:
         List of the file names in the given directory.
@@ -238,19 +246,21 @@ def log_status(status) -> None:
 
 def get_db_connection() -> connection:
     """
-    Gets a database connection.
+    Gets a database connection to the database pointed to by environment variables.
 
     Returns:
-        A connection to a database.  todo: which database?
+        A connection to a database.
 
     Raises:
         DatabaseError: An error occurred.
     """
     try:
         log_status(f"Connect to database started")
-        db_connect_info = {"db_host": os.environ["DATABASE_HOST"], "db_port": os.environ["DATABASE_PORT"],
-                          "db_name": os.environ["DATABASE_NAME"], "db_user": os.environ["DATABASE_USER"],
-                          "db_pw": os.environ["DATABASE_PW"]}
+        db_connect_info = {"db_host": os.environ[OS_ENVIRON_DATABASE_HOST_KEY],
+                           "db_port": os.environ[OS_ENVIRON_DATABASE_PORT_KEY],
+                           "db_name": os.environ[OS_ENVIRON_DATABASE_NAME_KEY],
+                           "db_user": os.environ[OS_ENVIRON_DATABASE_USER_KEY],
+                           "db_pw": os.environ[OS_ENVIRON_DATABASE_PW_KEY]}
 
         con = database.return_connection(db_connect_info)
         log_status(f"Connect to database completed")
@@ -279,6 +289,7 @@ def get_cursor(con: connection) -> cursor:
     except DbError as err:
         _LOG.exception(f"DbError: {str(err)}")
         log_status("Get cursor DbError")
+        # todo: Seems the point here is to mask DbErrors. Why do we not want them raised?
         raise DatabaseError(str(err))
     return cur
 
@@ -287,16 +298,16 @@ def execute_sql(cur: cursor, sql_stmt: str, description: str) -> str:
     """
     Executes the given SQL statement using the given cursor.
 
-        Args:
-            cur: A cursor to the database.
-            sql_stmt: The sql statement to execute.
-            description: A brief description of what the sql does. Used for logging.
+    Args:
+        cur: A cursor to the database.
+        sql_stmt: The sql statement to execute.
+        description: A brief description of what the sql does. Used for logging.
 
-        Returns:
-            Description of status of the sql_stmt.
+    Returns:
+        Description of status of the sql_stmt.
 
-        Raises:
-            DatabaseError: An error occurred.
+    Raises:
+        DatabaseError: An error occurred.
     """
     try:
         log_status(f"{description} started")
@@ -310,23 +321,23 @@ def execute_sql(cur: cursor, sql_stmt: str, description: str) -> str:
     return status  # todo: Remove unused return
 
 
-def execute_sql_from_file(cur: cursor, sql_file_name: str, description: str):
+def execute_sql_from_file(cur: cursor, sql_file_name: str, description: str) -> str:
     """
     Executes the sql in a file.
 
-        Args:
-            cur: a cursor to the database
-            sql_file_name: Name of the file containing a sql statement to execute.
-                Must be in the folder pointed to by os.environ["DDL_DIR"].
-            description: A brief description of what the sql does. Used for logging.
+    Args:
+        cur: a cursor to the database
+        sql_file_name: Name of the file containing a sql statement to execute.
+            Must be in the folder pointed to by os.environ["DDL_DIR"].
+        description: A brief description of what the sql does. Used for logging.
 
-        Returns:
-            Description of status of the sql_stmt.
+    Returns:
+        Description of status of the sql_stmt.
 
-        Raises:
-            DatabaseError: An error occurred.
+    Raises:
+        DatabaseError: An error occurred.
     """
-    ddl_dir = os.environ["DDL_DIR"]
+    ddl_dir = os.environ[OS_ENVIRON_DDL_DIR_KEY]
     try:
         log_status(f"{description} started")
         sql_path = f"{ddl_dir}{sql_file_name}"
@@ -348,28 +359,32 @@ def handler(event: Dict, context: object) -> str:  # pylint: disable-msg=unused-
     """
     This task will create the database, roles, users, schema, and tables.
 
-        Environment Vars:
-            DATABASE_PORT (string): the database port. The standard is 5432.
-            DATABASE_NAME (string): the name of the database being created.
-            DATABASE_USER (string): the name of the application user.
-            DROP_DATABASE (bool, optional, default is False): When true, will
-                execute a DROP DATABASE command.
-            PLATFORM (string): 'onprem' or 'AWS'
+    Environment Vars:
+        DATABASE_PORT (str): The database port. The standard is 5432.
+        DATABASE_HOST (str): The drdb-host will be stored here during/after run.
+        DATABASE_NAME (str): The name of the database being created.
+        DATABASE_USER (str): The name of the application user.
+        DATABASE_PW (str): The drdb-admin-pass or the drdb-user-pass will be stored here during/after run.
+        MASTER_USER_PW (str): The drdb-admin-pass will be stored here during/after run.
+        PLATFORM (string): 'onprem' or 'AWS'
+        DDL_DIR (str): todo
+        DROP_DATABASE (str, optional, default is False): When 'True', will
+            execute a DROP DATABASE command.
 
-        Parameter Store:
-            drdb-user-pass (string): the password for the application user (DATABASE_USER).
-            drdb-host (string): the database host
-            drdb-admin-pass: the password for the admin user
+    Parameter Store:
+        drdb-user-pass (string): the password for the application user (DATABASE_USER).
+        drdb-host (string): the database host
+        drdb-admin-pass: the password for the admin user
 
-        Args:
-            event: An object required by AWS Lambda. Unused.
-            context: An object required by AWS Lambda. Unused.
+    Args:
+        event: An object required by AWS Lambda. Unused.
+        context: An object required by AWS Lambda. Unused.
 
-        Returns:
-            Status description.
+    Returns:
+        Status description.
 
-        Raises:
-            DatabaseError: An error occurred.  todo: Why not use the DbError that is already defined? todo: Add detail.
+    Raises:
+        DatabaseError: An error occurred.  todo: Why not use the DbError that is already defined? todo: Add detail.
     """
     result = task()
     return result

@@ -12,17 +12,18 @@ import db_config
 import db_deploy
 from db_deploy import DatabaseError
 
+
 class TestDbDeploy(unittest.TestCase):
     """
     TestDbDeploy.
     """
+
     def setUp(self):
         private_config = f"{os.path.realpath(__file__)}".replace(os.path.basename(__file__),
                                                                  'private_config.json')
         db_config.set_env(private_config)
         os.environ["PLATFORM"] = "ONPREM"
         os.environ["DDL_DIR"] = "C:\\devpy\\poswotdr\\database\\ddl\\base\\"
-        private_configs = None
         with open(private_config) as private_file:
             private_configs = json.load(private_file)
         os.environ["MASTER_USER_PW"] = private_configs["MASTER_USER_PW"]
@@ -73,14 +74,13 @@ class TestDbDeploy(unittest.TestCase):
         """
         Test db_deploy task when database exists
         """
-        handler_input_event = {}
         boto3.client = Mock()
         self.mock_ssm_get_parameter(1)
         expected = "database ddl execution complete"
         os.environ["DROP_DATABASE"] = "False"
         del os.environ["DROP_DATABASE"]
         try:
-            result = db_deploy.task(handler_input_event, None)
+            result = db_deploy.task()
             self.assertEqual(expected, result)
         except DatabaseError as err:
             self.fail(str(err))
@@ -89,13 +89,12 @@ class TestDbDeploy(unittest.TestCase):
         """
         Test db_deploy task local with platform=AWS
         """
-        handler_input_event = {}
         boto3.client = Mock()
         self.mock_ssm_get_parameter(1)
         expected = "Database Error. permission denied for database disaster_recovery\n"
         os.environ["PLATFORM"] = "AWS"
         try:
-            db_deploy.task(handler_input_event, None)
+            db_deploy.task()
             self.fail("expected DatabaseError")
         except DatabaseError as err:
             self.assertEqual(expected, str(err))
@@ -145,7 +144,7 @@ class TestDbDeploy(unittest.TestCase):
         except DatabaseError as err:
             self.assertEqual(exp_err, str(err))
 
-    def test_get_db_connnection_exception(self):
+    def test_get_db_connection_exception(self):
         """
         tests an error connecting to database.
         """
