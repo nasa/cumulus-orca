@@ -11,6 +11,7 @@ import os
 from contextlib import contextmanager
 import datetime
 import uuid
+# noinspection PyPackageRequirements
 import boto3
 from psycopg2 import DataError, ProgrammingError
 from psycopg2 import connect as psycopg2_connect
@@ -19,33 +20,44 @@ from psycopg2.extras import RealDictCursor
 
 LOGGER = logging.getLogger(__name__)
 
-#TODO develop tests for database.py later. in those mock psycopg2.cursor, etc
+
+# TODO develop tests for database.py later. in those mock psycopg2.cursor, etc
 
 class DbError(Exception):
     """
     Exception to be raised if there is a database error.
     """
 
+
 class ResourceExists(Exception):
     """
     Exception to be raised if there is an existing database resource.
     """
 
-def get_utc_now_iso():
+
+def get_utc_now_iso() -> str:
     """
-    Returns the current utc timestamp as a string in isoformat
-    ex. '2019-07-17T17:36:38.494918'
+    Takes the current utc timestamp and returns it an isoformat string.
+
+    Returns:
+        An isoformat string.
+        ex. '2019-07-17T17:36:38.494918'
+
     """
     return datetime.datetime.utcnow().isoformat()
 
 
-def uuid_generator():
+def uuid_generator() -> str:
     """
-    Returns a unique UUID
-    ex. '0000a0a0-a000-00a0-00a0-0000a0000000'
+    Generates a unique UUID.
+
+    Returns:
+        A string representing a UUID.
+        ex. '0000a0a0-a000-00a0-00a0-0000a0000000'
     """
     my_uuid = uuid.uuid4()
     return str(my_uuid)
+
 
 def result_to_json(result_rows):
     """
@@ -55,13 +67,14 @@ def result_to_json(result_rows):
     return json_result
 
 
-def myconverter(obj):       #pylint: disable-msg=inconsistent-return-statements
+def myconverter(obj):  # pylint: disable-msg=inconsistent-return-statements
     """
     Returns the current utc timestamp as a string in isoformat
     ex. '2019-07-17T17:36:38.494918'
     """
     if isinstance(obj, datetime.datetime):
         return obj.__str__()
+
 
 @contextmanager
 def get_connection(dbconnect_info):
@@ -111,7 +124,6 @@ def get_cursor(dbconnect_info):
 
         finally:
             cursor.close()
-
 
 
 def single_query(sql_stmt, dbconnect_info, params=None):
@@ -239,6 +251,7 @@ def _query(sql_stmt, params, cursor):
 
     return rows
 
+
 def return_connection(dbconnect_info):
     """
     Retrieves a connection from the connection pool.
@@ -287,6 +300,7 @@ def query_no_params(cursor, sql_stmt):
     except (ProgrammingError, DataError) as ex:
         LOGGER.exception(f"Database Error - {ex}")
         raise DbError(f"Database Error. {str(ex)}")
+
 
 def query_from_file(cursor, sql_file):
     """
