@@ -14,7 +14,7 @@ tasks/extract_filepaths_for_granule/.coverage
 tasks/extract_filepaths_for_granule/.idea
 tasks/extract_filepaths_for_granule/__pycache__
 tasks/extract_filepaths_for_granule/test/__pycache__/
-tasks/extract_filepaths_for_granule/build/
+tasks/extract_filepaths_for_granule/build
 tasks/request_files/private_config.json
 tasks/request_files/.coverage
 tasks/request_files/.idea
@@ -48,6 +48,8 @@ tasks/copy_files_to_archive/.idea
 tasks/copy_files_to_archive/__pycache__
 tasks/copy_files_to_archive/test/__pycache__
 tasks/copy_files_to_archive/build
+tasks/copy_files_to_archive/htmlcov/
+tasks/copy_to_glacier/htmlcov/
 tasks/package/
 terraform\.tfvars
 \.terraform/
@@ -56,3 +58,8 @@ terraform\.tfstate*
 terraform.tf
 venv/
 .idea
+build/
+dist/
+__pycache__/
+.coverage
+.vscode/

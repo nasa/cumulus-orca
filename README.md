@@ -1,25 +1,22 @@
-## Clone and build Disaster Recovery
+## Clone and build Operational Recovery Cloud Archive (ORCA)
 
-Clone the `dr-podaac-swot` repo from <https://git.earthdata.nasa.gov/scm/pocumulus/dr-podaac-swot.git>
+Clone the `dr-podaac-swot` repo from https://github.com/ghrcdaac/operational-recovery-cloud-archive
 
 ```
-git clone https://git.earthdata.nasa.gov/scm/pocumulus/dr-podaac-swot.git disaster-recovery
+git clone https://github.com/ghrcdaac/operational-recovery-cloud-archive
 ```
 ## Build lambdas
-Before you can deploy this infrastructure, the lambda function source-code must be built.
+Before you can deploy this infrastructure, you must download the release zip or the build the lambda function source-code locally.
 
-`./bin/build_tasks.sh "<version_number>"` will crawl the `tasks` directory and build a `.zip` file (currently by just `zipping` all python files and dependencies) in each of it's sub-directories. That `.zip` is then referenced in the `main.tf` lamdba definitions.
-
-`<version_number>` just has to be consistent with the `dr_version` variable passed into the `disaster_recovery` module. This value has to be updated for changes to lambdas to be deployed.
+`./bin/build_tasks.sh` will crawl the `tasks` directory and build a `.zip` file (currently by just `zipping` all python files and dependencies) in each of it's sub-directories. That `.zip` is then referenced in the `modules/lambdas/main.tf` lamdba definitions.
 
 ```
-cd disaster-recovery
-./bin/build_tasks.sh "0.1.1"
+./bin/build_tasks.sh
 ```
 
-# Disaster Recovery Deployment
+# ORCA Deployment
 
-The Disaster Recovery deployment is done with [Terraform root module](https://www.terraform.io/docs/configuration/modules.html),
+The ORCA deployment is done with [Terraform root module](https://www.terraform.io/docs/configuration/modules.html),
 `main.tf`.
 
 The following instructions will walk you through installing Terraform,
@@ -87,7 +84,7 @@ $ aws dynamodb create-table \
 
 ## Configure and deploy the `main` root module
 
-These steps should be executed in the `disaster-recovery` directory.
+These steps should be executed in the root directory of the repo.
 
 Create a `terraform.tf` file, substituting the appropriate values for `bucket`
 and `dynamodb_table`. This tells Terraform where to store its
@@ -105,6 +102,7 @@ terraform {
   }
 }
 ```
+
 ## Variables
 First, run a `mv terraform.tfvars.example terraform.tfvars` to get a template `terraform.tfvars` in your working directory. This is where you will place input variables to Terraform.
 
@@ -155,7 +153,7 @@ Run `terraform init`.
 Run `terraform plan` #optional, but allows you to preview the deploy.
 Run `terraform apply`.
 
-This will deploy Disaster Recovery.
+This will deploy ORCA.
 
 ## Delete Terraform stack
 If you want to remove it:
@@ -164,9 +162,9 @@ terraform destroy
 ```
 
 ## Integrating with Cumulus
-Integrate Disaster Recovery with Cumulus to be able to recover a granule from the Cumulus Dashboard.
+Integrate ORCA with Cumulus to be able to recover a granule from the Cumulus Dashboard.
 
-### Define the Disaster Recovery workflow (Cumulus < v1.15)
+### Define the ORCA workflow (Cumulus < v1.15)
 
 Copy the workflow from `workflows/workflows.yml.dr` into your Cumulus workflow.
 
@@ -189,77 +187,116 @@ provider "aws" {
 }
 ```
 
-### Integrating Disaster Recovery With Cumulus >= v1.15
+### Integrating ORCA With Cumulus >= v1.15
 
-#### Adding a DR module to the Cumulus deployment
+#### Adding a ORCA module to the Cumulus deployment
 
-We will be adding a `disaster-recovery` module to `cumulus-tf/main.tf`. First, since there isn't a distributed version of the `disaster-recovery` module at the time of writing this documentation, you'll have to clone this repository locally: `https://github.com/podaac/cumulus-disaster-recovery.git`.
-
-In the `disaster-recovery` repo, build the lambda tasks with `./bin/build_tasks.sh "<version_number>"`.
-
-Once that is done, navigate to `cumulus-tf/main.tf` within your Cumulus deployment directory and add the following module:
+Navigate to `cumulus-tf/main.tf` within your Cumulus deployment directory and add the following module:
 ```
-module "disaster-recovery" {
-  source = "<location of dr module locally>"
+module "orca" {
+  source = "https://github.com/ghrcdaac/operational-recovery-cloud-archive/releases/download/1.0.2/orca-1.0.2.zip"
 
   prefix = var.prefix
-  vpc_id = var.vpc_id
-
-  dr_version               = "0.1.0"
-  ngap_subnets             = var.ngap_db_subnets
-  public_bucket            = var.buckets["public"]["name"]
-  glacier_bucket           = var.buckets["glacier"]["name"]
-  private_bucket           = var.buckets["private"]["name"]
-  internal_bucket          = var.buckets["internal"]["name"]
-  protected_bucket         = var.buckets["protected"]["name"]
+  subnet_ids = module.ngap.ngap_subnets_ids
+  database_port = "5432"
+  database_user_pw = var.database_user_pw
+  database_name = var.database_name
+  database_app_user = var.database_app_user
+  database_app_user_pw = var.database_app_user_pw
+  ddl_dir = "ddl/"
+  drop_database = "False"
+  platform = "AWS"
+  lambda_timeout = 300
+  restore_complete_filter_prefix = ""
+  vpc_id = module.ngap.ngap_vpc.id
+  copy_retry_sleep_secs = 2
   permissions_boundary_arn = var.permissions_boundary_arn
-  postgres_user_pw         = var.postgres_user_pw
-  database_name            = var.dr_database_name
-  database_app_user        = var.dr_database_app_user
-  database_app_user_pw     = var.dr_database_app_user_pw
+  buckets = var.buckets
+  workflow_config = module.cumulus.workflow_config
+  region = var.region
 }
 ```
 
 *Note*: This above snippet assumes that you've configured your Cumulus deployment. More information on that process can be found in their [documentation](https://nasa.github.io/cumulus/docs/deployment/deployment-readme#configure-and-deploy-the-cumulus-tf-root-module)
 
-#### Add necessary variables (unique to DR) to the Cumulus TF configuration
+#### Add necessary variables (unique to ORCA) to the Cumulus TF configuration
 
 To support this module, you'll have to add the following values to your `cumulus-tf/variables.tf` file:
 ```
-# Variables specific to DR
-variable "ngap_db_subnets" {
-  type = list(string)
-}
-
-variable "postgres_user_pw" {
+# Variables specific to ORCA
+variable "database_user_pw" {
   type = string
 }
 
-variable "dr_database_name" {
+variable "database_name" {
   type = string
 }
 
-variable "dr_database_app_user" {
+variable "database_app_user" {
   type = string
 }
 
-variable "dr_database_app_user_pw" {
+variable "database_app_user_pw" {
   type = string
 }
 ```
 
-The values corresponding to these variables must be set in your `cumulus-tf/terraform.tfvars` file.
+The values corresponding to these variables must be set in your `cumulus-tf/terraform.tfvars` file, but note that many of these variables are actually hardcoded at the time of updating this README
 
-#### Adding a recovery workflow
-
-Copy the workflow from `workflows/dr_recovery_workflow.tf` into your `cumulus-tf/` directory. In the workflow file you may need to change the `disaster-recovery` portion of the following two strings to the name of your disaster-recovery module (defined in `cumulus-tf/main.tf`):
-
-1. `module.disaster-recovery.extract_filepaths_lambda_arn`
-2. `module.disaster-recovery.request_files_lambda_arn`
+#### Adding the Copy To Glacier Step to the Ingest Workflow
+Navigate to `cumulus-tf/ingest_granule_workflow.tf` then add the following step after the PostToCMR step being sure to change the PostToCMR's "Next" paramter equal to "CopyToGlacier"
+```
+"CopyToGlacier":{
+         "Parameters":{
+            "cma":{
+               "event.$":"$",
+               "task_config":{
+                  "bucket":"{$.meta.buckets.internal.name}",
+                  "buckets":"{$.meta.buckets}",
+                  "distribution_endpoint":"{$.meta.distribution_endpoint}",
+                  "files_config":"{$.meta.collection.files}",
+                  "fileStagingDir":"{$.meta.collection.url_path}",
+                  "granuleIdExtraction":"{$.meta.collection.granuleIdExtraction}",
+                  "collection":"{$.meta.collection}",
+                  "cumulus_message":{
+                     "input":"{[$.payload.granules[*].files[*].filename]}",
+                     "outputs":[
+                        {
+                           "source":"{$}",
+                           "destination":"{$.payload}"
+                        }
+                     ]
+                  }
+               }
+            }
+         },
+         "Type":"Task",
+         "Resource":"${module.orca.copy_to_glacier_lambda_arn}",
+         "Catch":[
+            {
+               "ErrorEquals":[
+                  "States.ALL"
+               ],
+               "ResultPath":"$.exception",
+               "Next":"WorkflowFailed"
+            }
+         ],
+         "Retry":[
+            {
+               "ErrorEquals":[
+                  "States.ALL"
+               ],
+               "IntervalSeconds":2,
+               "MaxAttempts":3
+            }
+         ],
+         "Next":"WorkflowSucceeded"
+      },
+```
 
 ### Collection configuration
-To configure a collection to enable Disaster Recovery, add the line
-`"granuleRecoveryWorkflow": DrRecoveryWorkflow"` to the collection configuration:
+To configure a collection to enable ORCA, add the line
+`"granuleRecoveryWorkflow": "DrRecoveryWorkflow"` to the collection configuration:
 ```
 {
   "queriedAt": "2019-11-07T22:49:46.842Z",
@@ -274,8 +311,7 @@ To configure a collection to enable Disaster Recovery, add the line
   "provider_path": "L0A_HR_RAW/",
   "meta": {
     "response-endpoint": "arn:aws:sns:us-west-2:012345678912:providerResponseSNS",
-    "glacier-bucket": "podaac-sndbx-cumulus-glacier",
-    "granuleRecoveryWorkflow": DrRecoveryWorkflow"
+    "granuleRecoveryWorkflow": "DrRecoveryWorkflow"
   },
   "files": [
     {
@@ -289,3 +325,7 @@ Here is an example command to run the Cumulus Dashboard locally:
 ```
   APIROOT=https://uttm5y1jcj.execute-api.us-west-2.amazonaws.com:8000/dev ENABLE_RECOVERY=true npm run serve
 ```
+
+## Release Documentation:
+
+Information about how to create an ORCA release can be found [here](docs/release.md).

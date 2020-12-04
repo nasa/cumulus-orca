@@ -1,3 +1,5 @@
+[![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/request_status/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/request_status/requirements.txt)
+
 **Lambda function request_status **
 
 - [Setup](#setup)
@@ -40,14 +42,15 @@ Run the tests:
 C:\devpy\poswotdr\tasks\request_status  
 λ activate podr
 All tests:
-(podr) λ nosetests -v
+(podr) λ pytest
 
 Individual tests (insert desired test file name):
-(podr) λ nosetests test/test_requests_postgres.py -v
+(podr) λ pytest test/test_requests_postgres.py
 
 Code Coverage:
 (podr) λ cd C:\devpy\poswotdr\tasks\request_status
-(podr) λ nosetests --with-coverage --cover-erase --cover-package=request_status -v
+(podr) λ coverage run --source request_status -m pytest
+(podr) λ coverage report
 
 Name                Stmts   Miss  Cover
 ---------------------------------------

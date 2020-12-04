@@ -22,14 +22,15 @@ Run the tests:
 cd C:\devpy\poswotdr\tasks\pg_utils\test
 λ activate podr
 All tests:
-(podr) λ nosetests -v
+(podr) λ pytest
 
 Individual tests (insert desired test file name):
-(podr) λ nosetests test/test_database.py -v
+(podr) λ pytest test/test_database.py
 
 Code Coverage:
 (podr) λ cd C:\devpy\poswotdr\tasks\pg_utils
-(podr) λ nosetests --with-coverage --cover-erase --cover-package=database -v
+(podr) λ coverage run --source pg_utils -m pytest
+(podr) λ coverage report
 
 Name          Stmts   Miss  Cover
 ---------------------------------

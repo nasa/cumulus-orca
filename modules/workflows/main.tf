@@ -1,11 +1,11 @@
 module "dr_recovery_workflow" {
-  source = "https://github.com/nasa/cumulus/releases/download/v1.16.0/terraform-aws-cumulus-workflow.zip"
+  source = "https://github.com/nasa/cumulus/releases/download/v1.21.0/terraform-aws-cumulus-workflow.zip"
 
   prefix          = var.prefix
-  name            = "DrRecoveryWorkflow"
-  workflow_config = module.cumulus.workflow_config
+  name            = var.name
+  workflow_config = var.workflow_config
   system_bucket   = var.system_bucket
-  tags            = local.default_tags
+  tags            = var.tags
 
   state_machine_definition = <<JSON
 {
@@ -31,7 +31,7 @@ module "dr_recovery_workflow" {
         }
       },
       "Type": "Task",
-      "Resource": "${module.disaster-recovery.extract_filepaths_lambda_arn}",
+      "Resource": "${var.extract_filepaths_lambda_arn}",
       "Retry": [
         {
           "ErrorEquals": [
@@ -68,7 +68,7 @@ module "dr_recovery_workflow" {
         }
       },
       "Type": "Task",
-      "Resource": "${module.disaster-recovery.request_files_lambda_arn}",
+      "Resource": "${var.request_files_lambda_arn}",
       "Retry": [
         {
           "ErrorEquals": [

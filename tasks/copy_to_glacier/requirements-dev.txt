@@ -1,0 +1,4 @@
+cumulus-process==0.8.0
+boto3==1.16.9
+pytest==6.1.2
+coverage==5.3

@@ -5,6 +5,7 @@ Description:  Extracts the keys (filepaths) for a granule's files from a Cumulus
 """
 
 import re
+import os
 
 from cumulus_logger import CumulusLogger
 from run_cumulus_task import run_cumulus_task
@@ -42,7 +43,8 @@ def task(event, context):    #pylint: disable-msg=unused-argument
             gran['granuleId'] = ev_granule['granuleId']
             for afile in ev_granule['files']:
                 level = "event['input']['granules'][]['files']"
-                file_name = afile['fileName']
+                file_name = os.path.basename(afile['fileName']) if \
+                    re.search('^s3://', afile['fileName']) else afile['fileName']
                 fkey = afile['key']
                 dest_bucket = None
                 for key in regex_buckets:

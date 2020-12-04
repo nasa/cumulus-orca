@@ -2,20 +2,13 @@ variable "prefix" {
   default = "dr"
 }
 
+
 variable "vpc_id" {
   default = ""
 }
 
-variable "dr_version" {
-  default     = "0.1.1"
-  description = "Version of DR lambda code to deploy."
-}
-
+//
 variable "restore_complete_filter_prefix" {
-  default = ""
-}
-
-variable "glacier_bucket" {
   default = ""
 }
 
@@ -39,7 +32,7 @@ variable "permissions_boundary_arn" {
   default = ""
 }
 
-variable "ngap_subnets" {
+variable "subnet_ids" {
   default = []
 }
 
@@ -79,17 +72,11 @@ variable "copy_retry_sleep_secs" {
   default = 0
 }
 
-variable "database_host" {
-  default = ""
-}
-
 variable "database_port" {
   default = "5432"
 }
 
-variable "postgres_user_pw" {
-  default = ""
-}
+variable "database_user_pw" {}
 
 variable "database_name" {
   default = "disaster_recovery"
@@ -99,26 +86,39 @@ variable "database_app_user" {
   default = "druser"
 }
 
-variable "database_app_user_pw" {
-  default = ""
-}
+variable "database_app_user_pw" {}
+
 
 variable "ddl_dir" {
   default = "ddl/"
 }
-
 variable "drop_database" {
+  //TODO Maybe this needs to be a boolean false?
   default = "False"
 }
 
 variable "platform" {
   default = "AWS"
 }
+variable "lambda_timeout" {
+  default = 300
+}
+
+
 
 variable "default_tags" {
-  type = "map"
+  type = object({ team=string, application=string })
   default = {
     team: "DR",
     application: "disaster-recovery"
   }
+}
+
+variable "buckets" {
+  type    = map(object({ name = string, type = string }))
+}
+
+variable "workflow_config" {
+  # https://github.com/nasa/cumulus/blob/master/tf-modules/workflow/variables.tf#L23
+  # Used in modules/workflows/main.tf
 }

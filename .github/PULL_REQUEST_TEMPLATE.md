@@ -37,18 +37,24 @@ Please describe the tests (unit, integration, ad-hoc, or otherwise) that you ran
 - [ ] I have performed a self-review of my own code
 - [ ] I have commented my code, particularly in hard-to-understand areas
 - [ ] I have made corresponding changes to the necessary documentation (remove those that do not apply)
-    - [] CHANGELOG.md
-    - [] Testing documentation
-    - [] Development documentation
-    - [] User documentation
-    - [] (Additional here)
+    - [ ] CHANGELOG.md
+    - [ ] Testing documentation
+    - [ ] Development documentation
+    - [ ] User documentation
+    - [ ] (Additional here)
 - [ ] My changes generate no new warnings
 - [ ] I have added tests that prove my fix is effective or that my feature works
+    - [ ] Unit tests
+    - [ ] Integration tests
+    - [ ] Manual tests (outlined above)
 - [ ] New and existing unit tests pass locally with my changes
+    - [ ] Automated tests passing (if not fork)
+    - [ ] Manual testing/integration testing passes (if forked)
 - [ ] Any dependent changes have been merged and published in downstream modules
-- [] My code has passed security scanning
-    - [] Snyk
-    - [] git-secrets
+- [ ] My code has passed security scanning
+    - [ ] Snyk
+    - [ ] git-secrets
+
 ## What is the current behavior?
 
 (What actually happens)
