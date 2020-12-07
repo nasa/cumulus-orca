@@ -3,6 +3,22 @@
 The `copy_to_glacier` module is meant to be deployed as a lambda function that takes a Cumulus message, extracts a list of files, and copies those files from their current storage location into a staging/glacier location.
 
 
+## Excluding certain file extensions from the copy
+
+You are able to specify a list of file types (extensions) that you'd like to exclude from the backup/copy_to_glacier functionality. This is done on a per-collection basis, configured in the `meta` variable of a Cumulus collection configuration:
+
+```json
+{
+  ...
+  "meta": {
+    "exclue_file_type": [".cmr", ".xml", ".cmr.xml"]
+  }
+}
+```
+
+Note that this must be done for _each_ collection configured. If this list is empty or not included in the meta configuration, the `copy_to_glacier` function will include files with all extensions in the backup.
+
+
 ## Build
 
 The following steps assume you are using a version of Python compliant with 3.7 (`pip` comes with current versions).
@@ -139,7 +155,7 @@ Example of expected input to the `handler` task itself:
                   }
               ],
               "granuleRecoveryWorkflow": "DrRecoveryWorkflow",
-              "backupFileTypes": {}
+              "exclude_file_types": [".cmr", ".cmr.xml"]
           }}
   }
 }

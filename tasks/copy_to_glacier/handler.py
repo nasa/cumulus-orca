@@ -14,19 +14,19 @@ CONFIG_URL_PATH_KEY = 'url_path'
 COLLECTION_NAME_KEY = 'name'
 COLLECTION_VERSION_KEY = 'version'
 COLLECTION_URL_PATH_KEY = 'url_path'
+COLLECTION_META_KEY = 'meta'
+EXCLUDE_FILE_TYPES_KEY = 'exclude_file_types'
 
-file_types_to_exclude = [".example"]  # ex: [".tar", ".gz"]
-
-
-def should_exclude_files_type(granule_url: str) -> bool:
+def should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -> bool:
     """
-    Tests whether or not file is included in {file_types_to_exclude} from copy to glacier.
+    Tests whether or not file is included in {exclude_file_types} from copy to glacier.
     Args:
         granule_url: s3 url of granule.
+        exclude_file_types: List of extensions to exclude in the backup
     Returns:
         True if file should be excluded from copy, False otherwise.
     """
-    for file_type in file_types_to_exclude:
+    for file_type in exclude_file_types:
         # Returns the first instance in the string that matches .ext or None if no match was found.
         if re.search(f"^.*{file_type}$", granule_url) is not None:
             return True
@@ -118,6 +118,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     granule_urls = event.get('input', [])
     config = event.get('config')
     collection = config.get(CONFIG_COLLECTION_KEY)
+    exclude_file_types = collection.get(COLLECTION_META_KEY, {}).get(EXCLUDE_FILE_TYPES_KEY, [])
     config[CONFIG_FILE_STAGING_DIRECTORY_KEY] = \
         config.get(CONFIG_FILE_STAGING_DIRECTORY_KEY,
                    f"{collection[COLLECTION_NAME_KEY]}__{collection[COLLECTION_VERSION_KEY]}")
@@ -137,7 +138,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
                 'name': granule_url
             }
         )
-        if should_exclude_files_type(granule_url):
+        if should_exclude_files_type(granule_url, exclude_file_types):
             continue  # todo: This should be logged in output so users know that their file wasn't copied and why.
         source = get_source_bucket_and_key(granule_url)  # todo: Handle 'None' return value.
         copy_granule_between_buckets(source_bucket_name=source[1],
@@ -259,7 +260,8 @@ def handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any:
 #                            "module": "ascii"
 #                        }
 #                    ],
-#                    "granuleRecoveryWorkflow": "DrRecoveryWorkflow"
+#                    "granuleRecoveryWorkflow": "DrRecoveryWorkflow",
+#                    "exclude_file_types": [".cmr", ".xml", ".cmr.xml"]
 #                }}
 #        }
 #    }
