@@ -20,11 +20,8 @@ _LOG = logging.getLogger(__name__)
 SEP = os.path.sep
 
 OS_ENVIRON_DATABASE_PORT_KEY = 'DATABASE_PORT'
-OS_ENVIRON_DATABASE_HOST_KEY = 'DATABASE_HOST'
 OS_ENVIRON_DATABASE_NAME_KEY = 'DATABASE_NAME'
 OS_ENVIRON_DATABASE_USER_KEY = 'DATABASE_USER'
-OS_ENVIRON_DATABASE_PW_KEY = 'DATABASE_PW'
-OS_ENVIRON_MASTER_USER_PW_KEY = 'MASTER_USER_PW'
 OS_ENVIRON_PLATFORM_KEY = 'PLATFORM'
 OS_ENVIRON_DDL_DIR_KEY = 'DDL_DIR'
 OS_ENVIRON_DROP_DATABASE_KEY = 'DROP_DATABASE'
@@ -48,56 +45,76 @@ def task() -> str:
     Raises:
         DatabaseError: An error occurred.
     """
-    log_status("start")
 
     ssm = boto3.client('ssm')
     parameter = ssm.get_parameter(Name='drdb-user-pass', WithDecryption=True)
-    db_pw = parameter['Parameter']['Value']
+    db_user_pw = parameter['Parameter']['Value']
 
     parameter = ssm.get_parameter(Name='drdb-admin-pass', WithDecryption=True)
     master_user_pw = parameter['Parameter']['Value']
-    os.environ[OS_ENVIRON_MASTER_USER_PW_KEY] = master_user_pw
 
     parameter = ssm.get_parameter(Name='drdb-host', WithDecryption=False)
     db_host = parameter['Parameter']['Value']
-    os.environ[OS_ENVIRON_DATABASE_HOST_KEY] = db_host
 
-    # todo: What is the reason behind this temporary swap?
-    db_name = os.environ[OS_ENVIRON_DATABASE_NAME_KEY]
-    db_user = os.environ[OS_ENVIRON_DATABASE_USER_KEY]
-    os.environ[OS_ENVIRON_DATABASE_NAME_KEY] = "postgres"
-    os.environ[OS_ENVIRON_DATABASE_USER_KEY] = "postgres"
+    drop_database = os.environ.get(OS_ENVIRON_DROP_DATABASE_KEY, 'False')
+    drop_database = (drop_database == 'True')
 
-    os.environ[OS_ENVIRON_DATABASE_PW_KEY] = master_user_pw
+    return inner_task(db_host,
+                      os.environ[OS_ENVIRON_DATABASE_NAME_KEY],
+                      os.environ[OS_ENVIRON_DATABASE_PORT_KEY],
+                      os.environ[OS_ENVIRON_DATABASE_USER_KEY],
+                      db_user_pw, master_user_pw, drop_database)
+
+
+def inner_task(db_host: str, db_name: str, db_port: str, db_user: str, db_user_pass: str, db_admin_pass: str,
+               drop_database: bool) -> str:  # todo: Once large tests are adjusted/dropped, consider code reorg.
+    """
+    Task called by the handler to perform the work.
+
+    Args:
+        db_host: The database host.
+        db_name: The name of the database.
+        db_port: The database port.
+        db_user: The name of the application user.
+        db_user_pass: The password for the application user to connect to the database with.
+        db_admin_pass: An admin level password to connect to the database with.
+        drop_database: When true, will execute a DROP DATABASE command.
+
+    Returns:
+        string: description of status.
+
+    Raises:
+        DatabaseError: An error occurred.
+    """
+    log_status("start")
+
     # connect as postgres to create the new database
-    con = get_db_connection()
+    con = get_db_connection(db_host, 'postgres', db_port, 'postgres', db_admin_pass)
 
     log_status("Connected to postgres")
-    db_existed, status = create_database(con)
+    db_existed, status = create_database(con, drop_database)
     if not db_existed:
-        os.environ[OS_ENVIRON_DATABASE_PW_KEY] = db_pw
-        create_roles_and_users(con, db_user)
+        create_roles_and_users(con, db_user, db_user_pass)
     con.close()
 
     # Connect to the database we just created.
-    os.environ[OS_ENVIRON_DATABASE_NAME_KEY] = db_name
-    os.environ[OS_ENVIRON_DATABASE_PW_KEY] = master_user_pw
-    con = get_db_connection()
+    con = get_db_connection(db_host, db_name, db_port, 'postgres', db_admin_pass)
     log_status(f"connected to {db_name}")
     status = create_schema(con)
     con.close()
-    create_tables()
+    create_tables(db_host, db_name, db_port, 'postgres', db_admin_pass)
 
     log_status("database ddl execution complete")
     return status
 
 
-def create_database(con: connection) -> Tuple[bool, str]:
+def create_database(con: connection, drop_database: bool) -> Tuple[bool, str]:
     """
     Creates the database, dropping it first if requested.
 
     Args:
-        con: a connection to the postgres database
+        con: A connection to the postgres database.
+        drop_database: When true, will execute a DROP DATABASE command.
 
     Returns:
         bool: True if the database already existed
@@ -110,8 +127,7 @@ def create_database(con: connection) -> Tuple[bool, str]:
     con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
     cur = get_cursor(con)
 
-    drop = os.environ.get(OS_ENVIRON_DROP_DATABASE_KEY, 'False')
-    if drop == 'True':
+    if drop_database:
         sql_file = f"database{SEP}database_drop.sql"
         execute_sql_from_file(cur, sql_file, "drop database")
     try:
@@ -129,13 +145,14 @@ def create_database(con: connection) -> Tuple[bool, str]:
     return db_existed, status
 
 
-def create_roles_and_users(con: connection, db_user: str) -> str:
+def create_roles_and_users(con: connection, db_user: str, db_password: str) -> str:
     """
     Creates the roles and users.
 
     Args:
         con (object): a connection to the postgres database
-        db_user (string): the application user
+        db_user: The username to connect to the database with.
+        db_password: The password to connect to the database with.
 
     Returns:
         string: description of status of create roles and users.
@@ -153,10 +170,9 @@ def create_roles_and_users(con: connection, db_user: str) -> str:
     execute_sql_from_file(cur, sql_file, "create dbo user")
     sql_file = f"users{SEP}appuser.sql"
     execute_sql_from_file(cur, sql_file, "create application user")
-    db_pw = os.environ[OS_ENVIRON_DATABASE_PW_KEY]
-    sql_stmt = f"ALTER USER {db_user} WITH PASSWORD '{db_pw}';"
+    sql_stmt = f"ALTER USER {db_user} WITH PASSWORD '{db_password}';"
     execute_sql(cur, sql_stmt, "set pw for application user")
-    sql_stmt = f"ALTER USER dbo WITH PASSWORD '{db_pw}';"
+    sql_stmt = f"ALTER USER dbo WITH PASSWORD '{db_password}';"
     status = execute_sql(cur, sql_stmt, "set pw for dbo user")
     con.commit()
     cur.close()
@@ -190,20 +206,27 @@ def create_schema(con: connection) -> str:
     return status
 
 
-def create_tables() -> None:
+def create_tables(db_host: str, db_name: str, db_port: str, db_user: str, db_password: str) -> None:
     """
     Creates the database tables.
+
+    Args:
+        db_host: The database host.
+        db_name: The name of the database.
+        db_port: The database port.
+        db_user: The username to connect to the database with.
+        db_password: The password to connect to the database with.
 
     Raises:
         DatabaseError: An error occurred.
     """
-    ddl_dir = os.environ[OS_ENVIRON_DDL_DIR_KEY]
+    ddl_dir = os.environ[OS_ENVIRON_DDL_DIR_KEY]  # todo: Move close to other os.environ
     table_dir = f"{ddl_dir}{SEP}tables"
     sql_file_names = get_file_names_in_dir(table_dir)
     for file in sql_file_names:
         sql_file = f"tables{SEP}{file}"
         try:
-            con = get_db_connection()
+            con = get_db_connection(db_host, db_name, db_port, db_user, db_password)
             cur = get_cursor(con)
             sql_stmt = """SET SESSION AUTHORIZATION dbo;"""
             execute_sql(cur, sql_stmt, "auth dbo")
@@ -225,12 +248,19 @@ def get_file_names_in_dir(directory: str) -> List[str]:
         List of the file names in the given directory.
     """
     dir_files = []
-    for (_, _, filenames) in walk(directory):
+    for (_, _, filenames) in walk_wrapper(directory):
         for name in filenames:
-            if name != "init.sql":
+            if name != 'init.sql':
                 dir_files.append(name)
     dir_files.sort()
     return dir_files
+
+
+def walk_wrapper(directory: str) -> List[Tuple[str, List, str]]:
+    """
+    A wrapper for os.walk for testing purposes.
+    """
+    return walk(directory)
 
 
 def log_status(status) -> None:
@@ -244,9 +274,16 @@ def log_status(status) -> None:
     # print(status)
 
 
-def get_db_connection() -> connection:
+def get_db_connection(db_host: str, db_name: str, db_port: str, db_user: str, db_password: str) -> connection:
     """
     Gets a database connection to the database pointed to by environment variables.
+
+    Args:
+        db_host: The database host.
+        db_name: The name of the database.
+        db_port: The database port.
+        db_user: The username to connect to the database with.
+        db_password: The password to connect to the database with.
 
     Returns:
         A connection to a database.
@@ -255,12 +292,12 @@ def get_db_connection() -> connection:
         DatabaseError: An error occurred.
     """
     try:
-        log_status(f"Connect to database started")
-        db_connect_info = {"db_host": os.environ[OS_ENVIRON_DATABASE_HOST_KEY],
-                           "db_port": os.environ[OS_ENVIRON_DATABASE_PORT_KEY],
-                           "db_name": os.environ[OS_ENVIRON_DATABASE_NAME_KEY],
-                           "db_user": os.environ[OS_ENVIRON_DATABASE_USER_KEY],
-                           "db_pw": os.environ[OS_ENVIRON_DATABASE_PW_KEY]}
+        log_status(f"Connect to database {db_name} as user {db_user} started")
+        db_connect_info = {"db_host": db_host,
+                           "db_port": db_port,
+                           "db_name": db_name,
+                           "db_user": db_user,
+                           "db_pw": db_password}
 
         con = database.return_connection(db_connect_info)
         log_status(f"Connect to database completed")
@@ -355,26 +392,24 @@ def execute_sql_from_file(cur: cursor, sql_file_name: str, description: str) -> 
     return status  # todo: Remove unused return
 
 
+# noinspection PyUnusedLocal
 def handler(event: Dict, context: object) -> str:  # pylint: disable-msg=unused-argument
     """
     This task will create the database, roles, users, schema, and tables.
 
     Environment Vars:
-        DATABASE_PORT (str): The database port. The standard is 5432.
-        DATABASE_HOST (str): The drdb-host will be stored here during/after run.
+        DATABASE_PORT (str): The database port. The standard is 5432 (default within pg_utils).
         DATABASE_NAME (str): The name of the database being created.
         DATABASE_USER (str): The name of the application user.
-        DATABASE_PW (str): The drdb-admin-pass or the drdb-user-pass will be stored here during/after run.
-        MASTER_USER_PW (str): The drdb-admin-pass will be stored here during/after run.
         PLATFORM (string): 'onprem' or 'AWS'
         DDL_DIR (str): todo
         DROP_DATABASE (str, optional, default is False): When 'True', will
             execute a DROP DATABASE command.
 
     Parameter Store:
-        drdb-user-pass (string): the password for the application user (DATABASE_USER).
-        drdb-host (string): the database host
-        drdb-admin-pass: the password for the admin user
+        drdb-user-pass (string): The password for the application user (DATABASE_USER).
+        drdb-host (string): The database host.
+        drdb-admin-pass: The password for the admin user
 
     Args:
         event: An object required by AWS Lambda. Unused.
