@@ -183,19 +183,16 @@ def read_db_connect_info(param_source):
     return dbconnect_info
 
 
-def get_db_connect_info(env_or_ssm, param_name, decrypt=False):
+def get_db_connect_info(env_or_secretsmanager, param_name):
     """
     This function will retrieve a database connection parameter from
     the parameter store or an env var.
     """
     param_value = None
-    if env_or_ssm == "ssm":
-        ssm = boto3.client('ssm')
-        if decrypt:
-            parameter = ssm.get_parameter(Name=param_name, WithDecryption=True)
-        else:
-            parameter = ssm.get_parameter(Name=param_name)
-        param_value = parameter['Parameter']['Value']
+    if env_or_secretsmanager == 'secretsmanager':
+        secretsmanager = boto3.client('secretsmanager')
+        parameter = secretsmanager.get_secret_value(SecretId='param_name')
+        param_value = parameter['SecretString']
     else:
         param_value = os.environ[param_name]
 
