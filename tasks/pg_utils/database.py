@@ -4,23 +4,22 @@ cursor and connection objects can be imported and used directly, but for most
 queries, simply using the "query()" function will likely suffice.
 """
 
-import logging
-import json
-import os
-
-from contextlib import contextmanager
 import datetime
+import json
+import logging
+import os
 import uuid
+from contextlib import contextmanager
 # noinspection PyPackageRequirements
-from typing import Optional, Any, Union, List, Dict
+from typing import Optional, Union, List, Dict
 
 # noinspection PyPackageRequirements
 import boto3
 from psycopg2 import DataError, ProgrammingError
 from psycopg2 import connect as psycopg2_connect
 from psycopg2 import sql
-from psycopg2.extras import RealDictCursor
 from psycopg2.extensions import connection, cursor
+from psycopg2.extras import RealDictCursor
 
 LOGGER = logging.getLogger(__name__)
 
@@ -128,7 +127,7 @@ def get_connection(dbconnect_info: Dict[str, Union[str, int]]) -> connection:
 
 
 @contextmanager
-def get_cursor(dbconnect_info: dict[str, Union[str, int]]) -> cursor:
+def get_cursor(dbconnect_info: Dict[str, Union[str, int]]) -> cursor:
     """
     Retrieves the cursor from the connection and yields it. Automatically
     commits the transaction if no exception occurred.
@@ -142,9 +141,9 @@ def get_cursor(dbconnect_info: dict[str, Union[str, int]]) -> cursor:
             db_pw (str): The password to connect to the database with.
     """
     with get_connection(dbconnect_info) as conn:
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        conn_cursor = conn.cursor(cursor_factory=RealDictCursor)
         try:
-            yield cursor
+            yield conn_cursor
             conn.commit()
 
         except:
@@ -152,10 +151,10 @@ def get_cursor(dbconnect_info: dict[str, Union[str, int]]) -> cursor:
             raise
 
         finally:
-            cursor.close()
+            conn_cursor.close()
 
 
-def single_query(sql_stmt, dbconnect_info: dict[str, Union[str, int]], params=None):
+def single_query(sql_stmt, dbconnect_info: Dict[str, Union[str, int]], params=None) -> List:
     """
     This is a convenience function for running single statement transactions
     against the database. It will automatically commit the transaction and
@@ -163,6 +162,7 @@ def single_query(sql_stmt, dbconnect_info: dict[str, Union[str, int]], params=No
 
     For multi-query transactions, see multi_query().
 
+    todo: other args
     Args:
         dbconnect_info: A dictionary with the following keys:
             db_port (str): The database port. Default is 5432.
@@ -171,10 +171,8 @@ def single_query(sql_stmt, dbconnect_info: dict[str, Union[str, int]], params=No
             db_user (str): The username to connect to the database with.
             db_pw (str): The password to connect to the database with.
     """
-    rows = []
-
-    with get_cursor(dbconnect_info) as cursor:
-        rows = _query(sql_stmt, params, cursor)
+    with get_cursor(dbconnect_info) as db_cursor:
+        rows = _query(sql_stmt, params, db_cursor)
 
     return rows
 
