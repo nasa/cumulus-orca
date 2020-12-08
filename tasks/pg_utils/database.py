@@ -230,7 +230,7 @@ def read_db_connect_info(param_source):  # todo: wha?
     return dbconnect_info
 
 
-def get_db_connect_info(env_or_ssm: str, param_name, decrypt: bool = False):
+def get_db_connect_info(env_or_ssm: str, param_name, decrypt: bool = False) -> str:
     f"""
     This function will retrieve a database connection parameter from
     the parameter store or an env var.
