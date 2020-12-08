@@ -74,7 +74,7 @@ def result_to_json(result_rows):  # todo: return type
     return json_result
 
 
-# todo: Figure out how the README.md is generated.
+
 def myconverter(obj: any) -> Optional[str]:  # pylint: disable-msg=inconsistent-return-statements
     """
     # todo: The description below is inaccurate. Investigate and fix description or code.
