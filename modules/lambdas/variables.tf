@@ -22,6 +22,7 @@ variable "database_app_user" {}
 
 variable "ddl_dir" {
   default = "ddl/"
+  description = "Must have trailing /"
 }
 
 variable "drop_database" {
