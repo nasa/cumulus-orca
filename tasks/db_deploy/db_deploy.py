@@ -191,7 +191,7 @@ def create_tables():
             DatabaseError: An error occurred.
     """
     ddl_dir = os.environ["DDL_DIR"]
-    table_dir = f"{ddl_dir}{SEP}tables"
+    table_dir = f"{ddl_dir}tables"
     sql_files = get_files_in_dir(table_dir)
     for file in sql_files:
         sql_file = f"tables{SEP}{file}"
@@ -218,12 +218,17 @@ def get_files_in_dir(directory):
             list(string): list of the files in the given directory.
     """
     dir_files = []
-    for (_, _, filenames) in walk(directory):
+    for (_, _, filenames) in walk_wrapper(directory):
         for name in filenames:
             if name != "init.sql":
                 dir_files.append(name)
     dir_files.sort()
     return dir_files
+
+
+def walk_wrapper(directory):
+    return walk(directory)
+
 
 def log_status(status):
     """
