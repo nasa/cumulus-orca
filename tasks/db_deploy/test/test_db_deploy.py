@@ -229,6 +229,7 @@ class TestDbDeploy(unittest.TestCase):
                                    "db_user": 'postgres',
                                    "db_pw": db_admin_pass}:
                 return another_postgres_con
+
         database.return_connection = return_connection_function
         postgres_con_cursor = Mock()
         another_postgres_con_cursor = Mock()
@@ -239,6 +240,7 @@ class TestDbDeploy(unittest.TestCase):
                 return postgres_con_cursor
             if conn is another_postgres_con:
                 return another_postgres_con_cursor
+
         database.return_cursor = return_cursor_return_function
 
         walk_return_value = [(None, None, [script_filename_1, script_filename_2, 'init.sql'])]
@@ -246,7 +248,7 @@ class TestDbDeploy(unittest.TestCase):
         database.query_from_file = Mock()
         database.query_no_params = Mock()
 
-        result = db_deploy.task(None, None)
+        result = db_deploy.task()
 
         db_deploy.walk_wrapper.assert_called_once_with(f"{ddl_dir}{db_deploy.SEP}tables")
         database.query_from_file.assert_has_calls([
@@ -257,14 +259,16 @@ class TestDbDeploy(unittest.TestCase):
             call(postgres_con_cursor, f"{ddl_dir}{db_deploy.SEP}roles{db_deploy.SEP}appdbo_role.sql"),
             call(postgres_con_cursor, f"{ddl_dir}{db_deploy.SEP}users{db_deploy.SEP}dbo.sql"),
             call(postgres_con_cursor, f"{ddl_dir}{db_deploy.SEP}users{db_deploy.SEP}appuser.sql"),
-            call(another_postgres_con_cursor, f"{ddl_dir}{db_deploy.SEP}schema{db_deploy.SEP}app.sql"),
+            call(another_postgres_con_cursor, f"{ddl_dir}{db_deploy.SEP}schema{db_deploy.SEP}app.sql")
+        ], any_order=False)
+        database.query_from_file.assert_has_calls([
             call(another_postgres_con_cursor, f"{ddl_dir}{db_deploy.SEP}tables{db_deploy.SEP}{script_filename_1}"),
             call(another_postgres_con_cursor, f"{ddl_dir}{db_deploy.SEP}tables{db_deploy.SEP}{script_filename_2}")
-        ], any_order=False)
+        ], any_order=True)
         database.query_no_params.assert_has_calls([
-                call(postgres_con_cursor, f"ALTER USER {db_user} WITH PASSWORD '{db_user_pass}';"),
-                call(postgres_con_cursor, f"ALTER USER dbo WITH PASSWORD '{db_user_pass}';"),
-                call(another_postgres_con_cursor, """SET SESSION AUTHORIZATION dbo;""")
+            call(postgres_con_cursor, f"ALTER USER {db_user} WITH PASSWORD '{db_user_pass}';"),
+            call(postgres_con_cursor, f"ALTER USER dbo WITH PASSWORD '{db_user_pass}';"),
+            call(another_postgres_con_cursor, """SET SESSION AUTHORIZATION dbo;""")
         ], any_order=False)
 
 
