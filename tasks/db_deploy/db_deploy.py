@@ -225,16 +225,20 @@ def create_tables(db_host: str, db_name: str, db_port: str, db_user: str, db_pas
     sql_file_names = get_file_names_in_dir(table_dir)
     for file in sql_file_names:
         sql_file = f"tables{SEP}{file}"
+        # todo: Does this need to be repeated?
+        con = get_db_connection(db_host, db_name, db_port, db_user, db_password)
+        cur = get_cursor(con)  # todo: Does this need to be repeated?
+        sql_stmt = """SET SESSION AUTHORIZATION dbo;"""  # todo: Does this need to be repeated?
+        execute_sql(cur, sql_stmt, "auth dbo")
         try:
-            con = get_db_connection(db_host, db_name, db_port, db_user, db_password)
-            cur = get_cursor(con)
-            sql_stmt = """SET SESSION AUTHORIZATION dbo;"""
-            execute_sql(cur, sql_stmt, "auth dbo")
             execute_sql_from_file(cur, sql_file, f"create table in {sql_file}")
-            con.close()
         except ResourceExists as dd_err:
             _LOG.warning(f"ResourceExists: {str(dd_err)}")
             log_status(f"table in {sql_file} already exists")
+        finally:
+            # todo: Does this need to be repeated?
+            con.close()
+
 
 
 def get_file_names_in_dir(directory: str) -> List[str]:
@@ -250,7 +254,7 @@ def get_file_names_in_dir(directory: str) -> List[str]:
     dir_files = []
     for (_, _, filenames) in walk_wrapper(directory):
         for name in filenames:
-            if name != 'init.sql':
+            if name != 'init.sql':  # todo: Is this the correct level to filter this?
                 dir_files.append(name)
     dir_files.sort()
     return dir_files
@@ -375,9 +379,9 @@ def execute_sql_from_file(cur: cursor, sql_file_name: str, description: str) -> 
         DatabaseError: An error occurred.
     """
     ddl_dir = os.environ[OS_ENVIRON_DDL_DIR_KEY]
+    log_status(f"{description} started")
+    sql_path = f"{ddl_dir}{sql_file_name}"
     try:
-        log_status(f"{description} started")
-        sql_path = f"{ddl_dir}{sql_file_name}"
         database.query_from_file(cur, sql_path)
         status = f"{description} completed"
         log_status(status)

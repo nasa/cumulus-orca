@@ -10,8 +10,9 @@ from typing import Dict
 from unittest import mock
 from unittest.mock import Mock, call, patch, MagicMock
 
+from database import ResourceExists, DbError
 from psycopg2._psycopg import connection
-from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT, ISOLATION_LEVEL_READ_COMMITTED
 
 import db_deploy
 
@@ -280,11 +281,15 @@ class TestDbDeploy(unittest.TestCase):
             call(another_postgres_con_cursor,
                  f"{ddl_dir}{db_deploy.SEP}tables{db_deploy.SEP}{script_filename_2}")
         ], any_order=True)
+        self.assertEqual(10, mock_query_from_file.call_count)
         mock_query_no_params.assert_has_calls([
             call(postgres_con_cursor, f"ALTER USER {db_user} WITH PASSWORD '{db_user_pass}';"),
             call(postgres_con_cursor, f"ALTER USER dbo WITH PASSWORD '{db_user_pass}';"),
+            call(another_postgres_con_cursor, """SET SESSION AUTHORIZATION dbo;"""),
+            call(another_postgres_con_cursor, """SET SESSION AUTHORIZATION dbo;"""),
             call(another_postgres_con_cursor, """SET SESSION AUTHORIZATION dbo;""")
         ], any_order=False)
+        self.assertEqual(5, mock_query_no_params.call_count)
 
     @patch('boto3.client')
     @patch('db_deploy.inner_task')
@@ -480,19 +485,353 @@ class TestDbDeploy(unittest.TestCase):
     def test_create_database_minimal_path(self,
                                           mock_get_cursor: MagicMock,
                                           mock_execute_sql_from_file: MagicMock):
-
         mock_con = Mock()
         mock_cursor = Mock()
         mock_get_cursor.return_value = mock_cursor
+
         db_existed_result, _ = db_deploy.create_database(mock_con, False)
 
+        mock_get_cursor.assert_called_once_with(mock_con)
         mock_con.set_isolation_level.assert_called_once_with(ISOLATION_LEVEL_AUTOCOMMIT)
         mock_execute_sql_from_file.assert_has_calls([
             call(mock_cursor, f"database{db_deploy.SEP}database_create.sql", mock.ANY),
             call(mock_cursor, f"database{db_deploy.SEP}database_comment.sql", mock.ANY)
         ])
+        self.assertEqual(2, mock_execute_sql_from_file.call_count)
         mock_cursor.close.assert_called_once()
         self.assertFalse(db_existed_result)
+
+    @patch('db_deploy.execute_sql_from_file')
+    @patch('db_deploy.get_cursor')
+    def test_create_database_drop_database(self,
+                                           mock_get_cursor: MagicMock,
+                                           mock_execute_sql_from_file: MagicMock):
+        """
+        Same as minimal path, but with the extra drop_database=True
+        """
+        mock_con = Mock()
+        mock_cursor = Mock()
+        mock_get_cursor.return_value = mock_cursor
+
+        db_existed_result, _ = db_deploy.create_database(mock_con, True)
+
+        mock_get_cursor.assert_called_once_with(mock_con)
+        mock_con.set_isolation_level.assert_called_once_with(ISOLATION_LEVEL_AUTOCOMMIT)
+        mock_execute_sql_from_file.assert_has_calls([
+            call(mock_cursor, f"database{db_deploy.SEP}database_drop.sql", mock.ANY),
+            call(mock_cursor, f"database{db_deploy.SEP}database_create.sql", mock.ANY),
+            call(mock_cursor, f"database{db_deploy.SEP}database_comment.sql", mock.ANY)
+        ])
+        self.assertEqual(3, mock_execute_sql_from_file.call_count)
+        mock_cursor.close.assert_called_once()
+        self.assertFalse(db_existed_result)
+
+    @patch('db_deploy.execute_sql_from_file')
+    @patch('db_deploy.get_cursor')
+    def test_create_database_database_exists(self,
+                                             mock_get_cursor: MagicMock,
+                                             mock_execute_sql_from_file: MagicMock):
+        """
+        Same as minimal path, but sql command raises ResourceExists
+        """
+        mock_con = Mock()
+        mock_cursor = Mock()
+        mock_get_cursor.return_value = mock_cursor
+        mock_execute_sql_from_file.side_effect = ResourceExists(Exception())
+
+        db_existed_result, _ = db_deploy.create_database(mock_con, False)
+
+        mock_get_cursor.assert_called_once_with(mock_con)
+        mock_con.set_isolation_level.assert_called_once_with(ISOLATION_LEVEL_AUTOCOMMIT)
+        mock_execute_sql_from_file.assert_called_once_with(
+            mock_cursor, f"database{db_deploy.SEP}database_create.sql", mock.ANY
+        )
+        mock_cursor.close.assert_called_once()
+        self.assertTrue(db_existed_result)
+
+    @patch('db_deploy.execute_sql')
+    @patch('db_deploy.execute_sql_from_file')
+    @patch('db_deploy.get_cursor')
+    def test_create_roles_and_users_minimal_path(self,
+                                                 mock_get_cursor: MagicMock,
+                                                 mock_execute_sql_from_file: MagicMock,
+                                                 mock_execute_sql: MagicMock):
+        db_user = uuid.uuid4().__str__()
+        db_password = uuid.uuid4().__str__()
+
+        mock_con = Mock()
+        mock_cursor = Mock()
+        mock_get_cursor.return_value = mock_cursor
+
+        result = db_deploy.create_roles_and_users(mock_con, db_user, db_password)
+
+        mock_get_cursor.assert_called_once_with(mock_con)
+        mock_con.set_isolation_level.assert_called_once_with(ISOLATION_LEVEL_READ_COMMITTED)
+        mock_execute_sql_from_file.assert_has_calls([
+            call(mock_cursor, f"roles{db_deploy.SEP}app_role.sql", mock.ANY),
+            call(mock_cursor, f"roles{db_deploy.SEP}appdbo_role.sql", mock.ANY),
+            call(mock_cursor, f"users{db_deploy.SEP}dbo.sql", mock.ANY),
+            call(mock_cursor, f"users{db_deploy.SEP}appuser.sql", mock.ANY)
+        ])
+        self.assertEqual(4, mock_execute_sql_from_file.call_count)
+        mock_execute_sql.assert_has_calls([
+            call(mock_cursor, f"ALTER USER {db_user} WITH PASSWORD '{db_password}';", mock.ANY),
+            call(mock_cursor, f"ALTER USER dbo WITH PASSWORD '{db_password}';", mock.ANY),
+        ])
+        self.assertEqual(2, mock_execute_sql.call_count)
+        mock_con.commit.assert_called_once()
+        mock_cursor.close.assert_called_once()
+
+    @patch('db_deploy.execute_sql')
+    @patch('db_deploy.execute_sql_from_file')
+    @patch('db_deploy.get_cursor')
+    def test_create_schema_minimal_path(self,
+                                        mock_get_cursor: MagicMock,
+                                        mock_execute_sql_from_file: MagicMock,
+                                        mock_execute_sql: MagicMock):
+        mock_con = Mock()
+        mock_cursor = Mock()
+        mock_get_cursor.return_value = mock_cursor
+        os.environ[db_deploy.OS_ENVIRON_PLATFORM_KEY] = 'NOT AWS'
+
+        result = db_deploy.create_schema(mock_con)
+
+        mock_get_cursor.assert_called_once_with(mock_con)
+        mock_execute_sql.assert_not_called()
+        mock_execute_sql_from_file.assert_called_once_with(
+            mock_cursor, f"schema{db_deploy.SEP}app.sql", mock.ANY)
+        mock_con.commit.assert_called_once()
+        mock_cursor.close.assert_called_once()
+
+    @patch('db_deploy.execute_sql')
+    @patch('db_deploy.execute_sql_from_file')
+    @patch('db_deploy.get_cursor')
+    def test_create_schema_aws_auth(self,
+                                    mock_get_cursor: MagicMock,
+                                    mock_execute_sql_from_file: MagicMock,
+                                    mock_execute_sql: MagicMock):
+        """
+        Same as minimal path, but AWS requires extra session auth.
+        """
+        mock_con = Mock()
+        mock_cursor = Mock()
+        mock_get_cursor.return_value = mock_cursor
+        os.environ[db_deploy.OS_ENVIRON_PLATFORM_KEY] = 'AWS'
+
+        result = db_deploy.create_schema(mock_con)
+
+        mock_get_cursor.assert_called_once_with(mock_con)
+        mock_execute_sql.assert_called_once_with(mock_cursor, """SET SESSION AUTHORIZATION dbo;""", mock.ANY)
+        mock_execute_sql_from_file.assert_called_once_with(
+            mock_cursor, f"schema{db_deploy.SEP}app.sql", mock.ANY)
+        mock_con.commit.assert_called_once()
+        mock_cursor.close.assert_called_once()
+
+    @patch('db_deploy.execute_sql')
+    @patch('db_deploy.execute_sql_from_file')
+    @patch('db_deploy.get_cursor')
+    @patch('db_deploy.get_db_connection')
+    @patch('db_deploy.get_file_names_in_dir')
+    def test_create_tables_failed_script_does_not_halt(self,
+                                                       mock_get_file_names_in_dir: MagicMock,
+                                                       mock_get_db_connection: MagicMock,
+                                                       mock_get_cursor: MagicMock,
+                                                       mock_execute_sql_from_file: MagicMock,
+                                                       mock_execute_sql: MagicMock):
+        """
+        If one script fails, keep going.
+        """
+        db_host = uuid.uuid4().__str__()
+        db_name = uuid.uuid4().__str__()
+        db_port = uuid.uuid4().__str__()
+        db_user = uuid.uuid4().__str__()
+        db_password = uuid.uuid4().__str__()
+        ddl_dir = uuid.uuid4().__str__()
+        filename1 = uuid.uuid4().__str__()
+        filename2 = uuid.uuid4().__str__()
+        os.environ[db_deploy.OS_ENVIRON_DDL_DIR_KEY] = ddl_dir + db_deploy.SEP
+
+        mock_get_file_names_in_dir.return_value = [filename1, filename2]
+        mock_con = Mock()
+        mock_get_db_connection.return_value = mock_con
+        mock_cursor = Mock()
+        mock_get_cursor.return_value = mock_cursor
+        os.environ[db_deploy.OS_ENVIRON_PLATFORM_KEY] = 'AWS'
+        mock_execute_sql_from_file.side_effect = [ResourceExists(Exception()), None]  # ResourceExists should NOT halt.
+
+        db_deploy.create_tables(db_host, db_name, db_port, db_user, db_password)
+
+        mock_get_cursor.assert_called_with(mock_con)
+        mock_execute_sql.assert_called_with(mock_cursor, """SET SESSION AUTHORIZATION dbo;""", mock.ANY)
+        mock_execute_sql_from_file.assert_has_calls([
+            call(mock_cursor, f"tables{db_deploy.SEP}{filename1}", mock.ANY),
+            call(mock_cursor, f"tables{db_deploy.SEP}{filename2}", mock.ANY)
+        ])
+        self.assertEqual(2, mock_execute_sql_from_file.call_count)
+
+        mock_con.close.assert_called()
+
+    @patch('db_deploy.walk_wrapper')
+    def test_get_file_names_in_dir_filters_out_init(self,
+                                                    mock_walk_wrapper: MagicMock):
+        """
+        Should not return init.sql.
+        """
+        directory = uuid.uuid4().__str__()
+        filename_1 = uuid.uuid4().__str__()
+        filename_2 = uuid.uuid4().__str__()
+
+        mock_walk_wrapper.return_value = [(None, None, [filename_1, 'init.sql', filename_2])]
+
+        result = db_deploy.get_file_names_in_dir(directory)
+
+        self.assertEqual({filename_1, filename_2}, set(result))
+        mock_walk_wrapper.assert_called_once_with(directory)
+
+    @patch('database.return_connection')
+    def test_get_db_connection_minimal_path(self,
+                                            mock_return_connection: MagicMock):
+        db_host = uuid.uuid4().__str__()
+        db_name = uuid.uuid4().__str__()
+        db_port = uuid.uuid4().__str__()
+        db_user = uuid.uuid4().__str__()
+        db_password = uuid.uuid4().__str__()
+
+        mock_con = Mock()
+        mock_return_connection.return_value = mock_con
+
+        result = db_deploy.get_db_connection(db_host, db_name, db_port, db_user, db_password)
+
+        self.assertIs(mock_con, result)
+        mock_return_connection.assert_called_once_with(
+            {"db_host": db_host,
+             "db_port": db_port,
+             "db_name": db_name,
+             "db_user": db_user,
+             "db_pw": db_password}
+        )
+
+    @patch('database.return_connection')
+    def test_get_db_connection_DbError_raises_DatabaseError(self,
+                                                            mock_return_connection: MagicMock):
+        db_host = uuid.uuid4().__str__()
+        db_name = uuid.uuid4().__str__()
+        db_port = uuid.uuid4().__str__()
+        db_user = uuid.uuid4().__str__()
+        db_password = uuid.uuid4().__str__()
+
+        mock_con = Mock()
+        mock_return_connection.side_effect = DbError()
+
+        try:
+            result = db_deploy.get_db_connection(db_host, db_name, db_port, db_user, db_password)
+        except db_deploy.DatabaseError:
+            mock_return_connection.assert_called_once_with(
+                {"db_host": db_host,
+                 "db_port": db_port,
+                 "db_name": db_name,
+                 "db_user": db_user,
+                 "db_pw": db_password}
+            )
+            return
+        self.fail('Error not raised.')
+
+    @patch('database.return_cursor')
+    def test_get_cursor_minimal_path(self,
+                                     mock_return_cursor: MagicMock):
+        mock_con = Mock()
+        mock_cursor = Mock()
+        mock_return_cursor.return_value = mock_cursor
+
+        result = db_deploy.get_cursor(mock_con)
+
+        self.assertIs(mock_cursor, result)
+        mock_return_cursor.assert_called_once_with(mock_con)
+
+    @patch('database.return_cursor')
+    def test_get_cursor_DbError_raises_DatabaseError(self,
+                                                     mock_return_cursor: MagicMock):
+        mock_con = Mock()
+        mock_return_cursor.side_effect = DbError()
+
+        try:
+            result = db_deploy.get_cursor(mock_con)
+        except db_deploy.DatabaseError:
+            mock_return_cursor.assert_called_once_with(mock_con)
+            return
+        self.fail('Error not raised.')
+
+    @patch('database.query_no_params')
+    def test_execute_sql_minimal_path(self,
+                                      mock_query_no_params: MagicMock):
+        sql_stmt = uuid.uuid4().__str__()
+        mock_cursor = Mock()
+
+        result = db_deploy.execute_sql(mock_cursor, sql_stmt, uuid.uuid4().__str__())
+
+        mock_query_no_params.assert_called_once_with(mock_cursor, sql_stmt)
+
+    @patch('database.query_no_params')
+    def test_execute_sql_DbError_raises_DatabaseError(self,
+                                                      mock_query_no_params: MagicMock):
+        sql_stmt = uuid.uuid4().__str__()
+        mock_cursor = Mock()
+        mock_query_no_params.side_effect = DbError()
+
+        try:
+            result = db_deploy.execute_sql(mock_cursor, sql_stmt, uuid.uuid4().__str__())
+        except db_deploy.DatabaseError:
+            return
+        self.fail('Error not raised.')
+
+    @patch('database.query_from_file')
+    def test_execute_sql_from_file_minimal_path(self,
+                                                mock_query_from_file: MagicMock):
+        sql_file_name = uuid.uuid4().__str__()
+        ddl_dir = uuid.uuid4().__str__()
+        os.environ[db_deploy.OS_ENVIRON_DDL_DIR_KEY] = ddl_dir + db_deploy.SEP
+        mock_cursor = Mock()
+
+        result = db_deploy.execute_sql_from_file(mock_cursor, sql_file_name, uuid.uuid4().__str__())
+
+        mock_query_from_file.assert_called_once_with(mock_cursor, f"{ddl_dir}{db_deploy.SEP}{sql_file_name}")
+
+    @patch('database.query_from_file')
+    def test_execute_sql_from_file_FileNotFound_raises_DatabaseError(self,
+                                                                     mock_query_from_file: MagicMock):
+        sql_file_name = uuid.uuid4().__str__()
+        ddl_dir = uuid.uuid4().__str__()
+        os.environ[db_deploy.OS_ENVIRON_DDL_DIR_KEY] = ddl_dir + db_deploy.SEP
+        mock_cursor = Mock()
+        mock_query_from_file.side_effect = FileNotFoundError()
+
+        try:
+            result = db_deploy.execute_sql_from_file(mock_cursor, sql_file_name, uuid.uuid4().__str__())
+        except db_deploy.DatabaseError:
+            return
+        self.fail('Error not raised.')
+
+    @patch('database.query_from_file')
+    def test_execute_sql_from_file_DbError_raises_DatabaseError(self,
+                                                                mock_query_from_file: MagicMock):
+        sql_file_name = uuid.uuid4().__str__()
+        ddl_dir = uuid.uuid4().__str__()
+        os.environ[db_deploy.OS_ENVIRON_DDL_DIR_KEY] = ddl_dir + db_deploy.SEP
+        mock_cursor = Mock()
+        mock_query_from_file.side_effect = DbError(Exception())
+
+        try:
+            result = db_deploy.execute_sql_from_file(mock_cursor, sql_file_name, uuid.uuid4().__str__())
+        except db_deploy.DatabaseError:
+            return
+        self.fail('Error not raised.')
+
+    @patch('db_deploy.task')
+    def test_handler_calls_task(self,
+                                mock_task: MagicMock):
+        db_deploy.handler(None, None)
+
+        mock_task.assert_called_once()
 
 
 if __name__ == '__main__':
