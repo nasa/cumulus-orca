@@ -33,14 +33,13 @@ class DatabaseError(Exception):
     """
 
 
-def task() -> str:
+def task() -> None:
     """
     Task called by the handler to perform the work.
 
-        Environment Vars: TODO. Ideally move them into handler so this can be pure params
-
-    Returns:
-        string: description of status.
+        Environment Vars:
+            Same as Handler.
+            TODO. Ideally move them into handler so this can be pure params
 
     Raises:
         DatabaseError: An error occurred.
@@ -59,15 +58,15 @@ def task() -> str:
     drop_database = os.environ.get(OS_ENVIRON_DROP_DATABASE_KEY, 'False')
     drop_database = (drop_database == 'True')
 
-    return inner_task(db_host,
-                      os.environ[OS_ENVIRON_DATABASE_NAME_KEY],
-                      os.environ[OS_ENVIRON_DATABASE_PORT_KEY],
-                      os.environ[OS_ENVIRON_DATABASE_USER_KEY],
-                      db_user_pw, master_user_pw, drop_database)
+    inner_task(db_host,
+               os.environ[OS_ENVIRON_DATABASE_NAME_KEY],
+               os.environ[OS_ENVIRON_DATABASE_PORT_KEY],
+               os.environ[OS_ENVIRON_DATABASE_USER_KEY],
+               db_user_pw, master_user_pw, drop_database)
 
 
 def inner_task(db_host: str, db_name: str, db_port: str, db_user: str, db_user_pass: str, db_admin_pass: str,
-               drop_database: bool) -> str:  # todo: Once large tests are adjusted/dropped, consider code reorg.
+               drop_database: bool) -> None:  # todo: Once large tests are adjusted/dropped, consider code reorg.
     """
     Task called by the handler to perform the work.
 
@@ -92,7 +91,7 @@ def inner_task(db_host: str, db_name: str, db_port: str, db_user: str, db_user_p
     con = get_db_connection(db_host, 'postgres', db_port, 'postgres', db_admin_pass)
 
     _LOG.info("Connected to postgres")
-    db_existed, status = create_database(con, drop_database)
+    db_existed = create_database(con, drop_database)
     if not db_existed:
         create_roles_and_users(con, db_user, db_user_pass)
     con.close()
@@ -100,15 +99,14 @@ def inner_task(db_host: str, db_name: str, db_port: str, db_user: str, db_user_p
     # Connect to the database we just created.
     con = get_db_connection(db_host, db_name, db_port, 'postgres', db_admin_pass)
     _LOG.info(f"connected to {db_name}")
-    status = create_schema(con)
+    create_schema(con)
     con.close()
     create_tables(db_host, db_name, db_port, 'postgres', db_admin_pass)
 
     _LOG.info("database ddl execution complete")
-    return status
 
 
-def create_database(con: connection, drop_database: bool) -> Tuple[bool, str]:
+def create_database(con: connection, drop_database: bool) -> bool:
     """
     Creates the database, dropping it first if requested.
 
@@ -117,9 +115,8 @@ def create_database(con: connection, drop_database: bool) -> Tuple[bool, str]:
         drop_database: When true, will execute a DROP DATABASE command.
 
     Returns:
-        bool: True if the database already existed
+        True if the database already existed
             when the create was run.
-        string: description of status of create database.
 
     Raises:
         DatabaseError: An error occurred.
@@ -135,19 +132,18 @@ def create_database(con: connection, drop_database: bool) -> Tuple[bool, str]:
         sql_file = f"database{SEP}database_create.sql"
         execute_sql_from_file(cur, sql_file, "database create")
         sql_file = f"database{SEP}database_comment.sql"
-        status = execute_sql_from_file(cur, sql_file, "database comment")
+        execute_sql_from_file(cur, sql_file, "database comment")
         db_existed = False
         _LOG.warning('Database did not exist.')
     except ResourceExists as err:
         db_existed = True
-        status = f"Database already exists: {str(err)}"
-        _LOG.warning(status)
+        _LOG.warning(f"Database already exists: {str(err)}")
     finally:
         cur.close()
-    return db_existed, status
+    return db_existed
 
 
-def create_roles_and_users(con: connection, db_user: str, db_password: str) -> str:
+def create_roles_and_users(con: connection, db_user: str, db_password: str) -> None:
     """
     Creates the roles and users.
 
@@ -155,9 +151,6 @@ def create_roles_and_users(con: connection, db_user: str, db_password: str) -> s
         con (object): a connection to the postgres database
         db_user: The username to connect to the database with.
         db_password: The password to connect to the database with.
-
-    Returns:
-        string: description of status of create roles and users.
 
     Raises:
         DatabaseError: An error occurred.
@@ -175,21 +168,17 @@ def create_roles_and_users(con: connection, db_user: str, db_password: str) -> s
     sql_stmt = f"ALTER USER {db_user} WITH PASSWORD '{db_password}';"
     execute_sql(cur, sql_stmt, "set pw for application user")
     sql_stmt = f"ALTER USER dbo WITH PASSWORD '{db_password}';"
-    status = execute_sql(cur, sql_stmt, "set pw for dbo user")
+    execute_sql(cur, sql_stmt, "set pw for dbo user")
     con.commit()
     cur.close()
-    return status
 
 
-def create_schema(con: connection) -> str:
+def create_schema(con: connection) -> None:
     """
     Pulls in 'schema\app.sql' and applies it to the database over the given {con}.
 
     Args:
         con: A connection to the database.
-
-    Returns:
-        Description of status of create schema.
 
     Raises:
         DatabaseError: An error occurred.
@@ -202,10 +191,9 @@ def create_schema(con: connection) -> str:
         execute_sql(cur, sql_stmt, "auth dbo")
 
     sql_file = f"schema{SEP}app.sql"
-    status = execute_sql_from_file(cur, sql_file, "create schema")
+    execute_sql_from_file(cur, sql_file, "create schema")
     cur.close()
     con.commit()
-    return status
 
 
 def create_tables(db_host: str, db_name: str, db_port: str, db_user: str, db_password: str) -> None:
@@ -225,9 +213,9 @@ def create_tables(db_host: str, db_name: str, db_port: str, db_user: str, db_pas
     ddl_dir = os.environ[OS_ENVIRON_DDL_DIR_KEY]  # todo: Move close to other os.environ
     table_dir = f"{ddl_dir}tables"
     sql_file_names = get_file_names_in_dir(table_dir)
+    con = get_db_connection(db_host, db_name, db_port, db_user, db_password)
+    cur = get_cursor(con)
     try:
-        con = get_db_connection(db_host, db_name, db_port, db_user, db_password)
-        cur = get_cursor(con)
         sql_stmt = """SET SESSION AUTHORIZATION dbo;"""
         execute_sql(cur, sql_stmt, "auth dbo")
         for file in sql_file_names:
@@ -322,7 +310,7 @@ def get_cursor(con: connection) -> cursor:
     return cur
 
 
-def execute_sql(cur: cursor, sql_stmt: str, description: str) -> str:
+def execute_sql(cur: cursor, sql_stmt: str, description: str) -> None:
     """
     Executes the given SQL statement using the given cursor.
 
@@ -331,24 +319,19 @@ def execute_sql(cur: cursor, sql_stmt: str, description: str) -> str:
         sql_stmt: The sql statement to execute.
         description: A brief description of what the sql does. Used for logging.
 
-    Returns:
-        Description of status of the sql_stmt.
-
     Raises:
         DatabaseError: An error occurred.
     """
     try:
         _LOG.info(f"{description} started")
         database.query_no_params(cur, sql_stmt)
-        status = f"{description} completed"
-        _LOG.info(status)
+        _LOG.info(f"{description} completed")
     except DbError as err:
         _LOG.critical(f"DbError during '{description}': {str(err)}")
         raise DatabaseError(str(err))
-    return status  # todo: Remove unused return
 
 
-def execute_sql_from_file(cur: cursor, sql_file_name: str, description: str) -> str:
+def execute_sql_from_file(cur: cursor, sql_file_name: str, description: str) -> None:
     """
     Executes the sql in a file.
 
@@ -358,9 +341,6 @@ def execute_sql_from_file(cur: cursor, sql_file_name: str, description: str) -> 
             Must be in the folder pointed to by os.environ["DDL_DIR"].
         description: A brief description of what the sql does. Used for logging.
 
-    Returns:
-        Description of status of the sql_stmt.
-
     Raises:
         DatabaseError: An error occurred.
     """
@@ -369,19 +349,17 @@ def execute_sql_from_file(cur: cursor, sql_file_name: str, description: str) -> 
     sql_path = f"{ddl_dir}{sql_file_name}"
     try:
         database.query_from_file(cur, sql_path)
-        status = f"{description} completed"
-        _LOG.info(status)
+        _LOG.info(f"{description} completed")
     except FileNotFoundError as fnf:
         _LOG.critical(f"FileNotFound during '{description}': {str(fnf)}")
         raise DatabaseError(str(fnf))
     except DbError as err:
         _LOG.critical(f"DbError during '{description}': {str(err)}")
         raise DatabaseError(str(err))
-    return status  # todo: Remove unused return
 
 
 # noinspection PyUnusedLocal
-def handler(event: Dict, context: object) -> str:  # pylint: disable-msg=unused-argument
+def handler(event: Dict, context: object) -> None:  # pylint: disable-msg=unused-argument
     """
     This task will create the database, roles, users, schema, and tables.
 
@@ -403,10 +381,7 @@ def handler(event: Dict, context: object) -> str:  # pylint: disable-msg=unused-
         event: An object required by AWS Lambda. Unused.
         context: An object required by AWS Lambda. Unused.
 
-    Returns:
-        Status description.
-
     Raises:
         DatabaseError: An error occurred.  todo: Why not use the DbError that is already defined? todo: Add detail.
     """
-    return task()
+    task()

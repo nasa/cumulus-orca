@@ -261,7 +261,7 @@ class TestDbDeploy(unittest.TestCase):
 
         mock_walk_wrapper.return_value = walk_return_value
 
-        result = db_deploy.task()
+        db_deploy.task()
 
         mock_walk_wrapper.assert_called_once_with(f"{ddl_dir}{db_deploy.SEP}tables")
         mock_query_from_file.assert_has_calls([
@@ -388,7 +388,7 @@ class TestDbDeploy(unittest.TestCase):
             if inner_connection == creation_connection and inner_drop_database == drop_database:
                 nonlocal db_created
                 db_created = True
-                return True, ''
+                return True
             else:
                 nonlocal mock_create_database_unmocked_call
                 mock_create_database_unmocked_call = (inner_connection, inner_drop_database)
@@ -462,7 +462,7 @@ class TestDbDeploy(unittest.TestCase):
             if inner_connection == creation_connection and inner_drop_database == drop_database:
                 nonlocal db_created
                 db_created = True
-                return False, ''
+                return False
             else:
                 nonlocal mock_create_database_unmocked_call
                 mock_create_database_unmocked_call = (inner_connection, inner_drop_database)
@@ -489,7 +489,7 @@ class TestDbDeploy(unittest.TestCase):
         mock_cursor = Mock()
         mock_get_cursor.return_value = mock_cursor
 
-        db_existed_result, _ = db_deploy.create_database(mock_con, False)
+        db_existed_result = db_deploy.create_database(mock_con, False)
 
         mock_get_cursor.assert_called_once_with(mock_con)
         mock_con.set_isolation_level.assert_called_once_with(ISOLATION_LEVEL_AUTOCOMMIT)
@@ -513,7 +513,7 @@ class TestDbDeploy(unittest.TestCase):
         mock_cursor = Mock()
         mock_get_cursor.return_value = mock_cursor
 
-        db_existed_result, _ = db_deploy.create_database(mock_con, True)
+        db_existed_result = db_deploy.create_database(mock_con, True)
 
         mock_get_cursor.assert_called_once_with(mock_con)
         mock_con.set_isolation_level.assert_called_once_with(ISOLATION_LEVEL_AUTOCOMMIT)
@@ -539,7 +539,7 @@ class TestDbDeploy(unittest.TestCase):
         mock_get_cursor.return_value = mock_cursor
         mock_execute_sql_from_file.side_effect = ResourceExists(Exception())
 
-        db_existed_result, _ = db_deploy.create_database(mock_con, False)
+        db_existed_result = db_deploy.create_database(mock_con, False)
 
         mock_get_cursor.assert_called_once_with(mock_con)
         mock_con.set_isolation_level.assert_called_once_with(ISOLATION_LEVEL_AUTOCOMMIT)
@@ -563,7 +563,7 @@ class TestDbDeploy(unittest.TestCase):
         mock_cursor = Mock()
         mock_get_cursor.return_value = mock_cursor
 
-        result = db_deploy.create_roles_and_users(mock_con, db_user, db_password)
+        db_deploy.create_roles_and_users(mock_con, db_user, db_password)
 
         mock_get_cursor.assert_called_once_with(mock_con)
         mock_con.set_isolation_level.assert_called_once_with(ISOLATION_LEVEL_READ_COMMITTED)
@@ -594,7 +594,7 @@ class TestDbDeploy(unittest.TestCase):
         mock_get_cursor.return_value = mock_cursor
         os.environ[db_deploy.OS_ENVIRON_PLATFORM_KEY] = 'NOT AWS'
 
-        result = db_deploy.create_schema(mock_con)
+        db_deploy.create_schema(mock_con)
 
         mock_get_cursor.assert_called_once_with(mock_con)
         mock_execute_sql.assert_not_called()
@@ -618,7 +618,7 @@ class TestDbDeploy(unittest.TestCase):
         mock_get_cursor.return_value = mock_cursor
         os.environ[db_deploy.OS_ENVIRON_PLATFORM_KEY] = 'AWS'
 
-        result = db_deploy.create_schema(mock_con)
+        db_deploy.create_schema(mock_con)
 
         mock_get_cursor.assert_called_once_with(mock_con)
         mock_execute_sql.assert_called_once_with(mock_cursor, """SET SESSION AUTHORIZATION dbo;""", mock.ANY)
@@ -721,11 +721,10 @@ class TestDbDeploy(unittest.TestCase):
         db_user = uuid.uuid4().__str__()
         db_password = uuid.uuid4().__str__()
 
-        mock_con = Mock()
         mock_return_connection.side_effect = DbError()
 
         try:
-            result = db_deploy.get_db_connection(db_host, db_name, db_port, db_user, db_password)
+            db_deploy.get_db_connection(db_host, db_name, db_port, db_user, db_password)
         except db_deploy.DatabaseError:
             mock_return_connection.assert_called_once_with(
                 {"db_host": db_host,
@@ -756,7 +755,7 @@ class TestDbDeploy(unittest.TestCase):
         mock_return_cursor.side_effect = DbError()
 
         try:
-            result = db_deploy.get_cursor(mock_con)
+            db_deploy.get_cursor(mock_con)
         except db_deploy.DatabaseError:
             mock_return_cursor.assert_called_once_with(mock_con)
             return
@@ -768,7 +767,7 @@ class TestDbDeploy(unittest.TestCase):
         sql_stmt = uuid.uuid4().__str__()
         mock_cursor = Mock()
 
-        result = db_deploy.execute_sql(mock_cursor, sql_stmt, uuid.uuid4().__str__())
+        db_deploy.execute_sql(mock_cursor, sql_stmt, uuid.uuid4().__str__())
 
         mock_query_no_params.assert_called_once_with(mock_cursor, sql_stmt)
 
@@ -780,7 +779,7 @@ class TestDbDeploy(unittest.TestCase):
         mock_query_no_params.side_effect = DbError()
 
         try:
-            result = db_deploy.execute_sql(mock_cursor, sql_stmt, uuid.uuid4().__str__())
+            db_deploy.execute_sql(mock_cursor, sql_stmt, uuid.uuid4().__str__())
         except db_deploy.DatabaseError:
             return
         self.fail('Error not raised.')
@@ -793,7 +792,7 @@ class TestDbDeploy(unittest.TestCase):
         os.environ[db_deploy.OS_ENVIRON_DDL_DIR_KEY] = ddl_dir + db_deploy.SEP
         mock_cursor = Mock()
 
-        result = db_deploy.execute_sql_from_file(mock_cursor, sql_file_name, uuid.uuid4().__str__())
+        db_deploy.execute_sql_from_file(mock_cursor, sql_file_name, uuid.uuid4().__str__())
 
         mock_query_from_file.assert_called_once_with(mock_cursor, f"{ddl_dir}{db_deploy.SEP}{sql_file_name}")
 
@@ -807,7 +806,7 @@ class TestDbDeploy(unittest.TestCase):
         mock_query_from_file.side_effect = FileNotFoundError()
 
         try:
-            result = db_deploy.execute_sql_from_file(mock_cursor, sql_file_name, uuid.uuid4().__str__())
+            db_deploy.execute_sql_from_file(mock_cursor, sql_file_name, uuid.uuid4().__str__())
         except db_deploy.DatabaseError:
             return
         self.fail('Error not raised.')
@@ -822,7 +821,7 @@ class TestDbDeploy(unittest.TestCase):
         mock_query_from_file.side_effect = DbError(Exception())
 
         try:
-            result = db_deploy.execute_sql_from_file(mock_cursor, sql_file_name, uuid.uuid4().__str__())
+            db_deploy.execute_sql_from_file(mock_cursor, sql_file_name, uuid.uuid4().__str__())
         except db_deploy.DatabaseError:
             return
         self.fail('Error not raised.')
