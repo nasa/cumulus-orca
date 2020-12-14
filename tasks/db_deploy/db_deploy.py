@@ -225,20 +225,20 @@ def create_tables(db_host: str, db_name: str, db_port: str, db_user: str, db_pas
     ddl_dir = os.environ[OS_ENVIRON_DDL_DIR_KEY]  # todo: Move close to other os.environ
     table_dir = f"{ddl_dir}tables"
     sql_file_names = get_file_names_in_dir(table_dir)
-    for file in sql_file_names:
-        sql_file = f"tables{SEP}{file}"
-        # todo: Does this need to be repeated?
+    try:
         con = get_db_connection(db_host, db_name, db_port, db_user, db_password)
-        cur = get_cursor(con)  # todo: Does this need to be repeated?
-        sql_stmt = """SET SESSION AUTHORIZATION dbo;"""  # todo: Does this need to be repeated?
+        cur = get_cursor(con)
+        sql_stmt = """SET SESSION AUTHORIZATION dbo;"""
         execute_sql(cur, sql_stmt, "auth dbo")
-        try:
-            execute_sql_from_file(cur, sql_file, f"create table in {sql_file}")
-        except ResourceExists as dd_err:
-            _LOG.warning(f"ResourceExists error. Table in {sql_file} already exists: {str(dd_err)}")
-        finally:
-            # todo: Does this need to be repeated?
-            con.close()
+        for file in sql_file_names:
+            sql_file = f"tables{SEP}{file}"
+            try:
+                execute_sql_from_file(cur, sql_file, f"create table in {sql_file}")
+            except ResourceExists as dd_err:
+                _LOG.warning(f"ResourceExists error. Table in {sql_file} already exists: {str(dd_err)}")
+    finally:
+        cur.close()
+        con.close()
 
 
 def get_file_names_in_dir(directory: str) -> List[str]:

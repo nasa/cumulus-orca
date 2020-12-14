@@ -287,10 +287,9 @@ class TestDbDeploy(unittest.TestCase):
             call(postgres_con_cursor, f"ALTER USER {db_user} WITH PASSWORD '{db_user_pass}';"),
             call(postgres_con_cursor, f"ALTER USER dbo WITH PASSWORD '{db_user_pass}';"),
             call(another_postgres_con_cursor, """SET SESSION AUTHORIZATION dbo;"""),
-            call(another_postgres_con_cursor, """SET SESSION AUTHORIZATION dbo;"""),
             call(another_postgres_con_cursor, """SET SESSION AUTHORIZATION dbo;""")
         ], any_order=False)
-        self.assertEqual(5, mock_query_no_params.call_count)
+        self.assertEqual(4, mock_query_no_params.call_count)
 
     @patch('boto3.client')
     @patch('db_deploy.inner_task')
@@ -662,15 +661,16 @@ class TestDbDeploy(unittest.TestCase):
 
         db_deploy.create_tables(db_host, db_name, db_port, db_user, db_password)
 
-        mock_get_cursor.assert_called_with(mock_con)
-        mock_execute_sql.assert_called_with(mock_cursor, """SET SESSION AUTHORIZATION dbo;""", mock.ANY)
+        mock_get_cursor.assert_called_once_with(mock_con)
+        mock_execute_sql.assert_called_once_with(mock_cursor, """SET SESSION AUTHORIZATION dbo;""", mock.ANY)
         mock_execute_sql_from_file.assert_has_calls([
             call(mock_cursor, f"tables{db_deploy.SEP}{filename1}", mock.ANY),
             call(mock_cursor, f"tables{db_deploy.SEP}{filename2}", mock.ANY)
         ])
         self.assertEqual(2, mock_execute_sql_from_file.call_count)
 
-        mock_con.close.assert_called()
+        mock_cursor.close.assert_called_once()
+        mock_con.close.assert_called_once()
 
     @patch('db_deploy.walk_wrapper')
     def test_get_file_names_in_dir_filters_out_init(self,
