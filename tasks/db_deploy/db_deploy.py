@@ -86,12 +86,12 @@ def inner_task(db_host: str, db_name: str, db_port: str, db_user: str, db_user_p
     Raises:
         DatabaseError: An error occurred.
     """
-    log_status("start")
+    _LOG.info("start")
 
     # connect as postgres to create the new database
     con = get_db_connection(db_host, 'postgres', db_port, 'postgres', db_admin_pass)
 
-    log_status("Connected to postgres")
+    _LOG.info("Connected to postgres")
     db_existed, status = create_database(con, drop_database)
     if not db_existed:
         create_roles_and_users(con, db_user, db_user_pass)
@@ -99,12 +99,12 @@ def inner_task(db_host: str, db_name: str, db_port: str, db_user: str, db_user_p
 
     # Connect to the database we just created.
     con = get_db_connection(db_host, db_name, db_port, 'postgres', db_admin_pass)
-    log_status(f"connected to {db_name}")
+    _LOG.info(f"connected to {db_name}")
     status = create_schema(con)
     con.close()
     create_tables(db_host, db_name, db_port, 'postgres', db_admin_pass)
 
-    log_status("database ddl execution complete")
+    _LOG.info("database ddl execution complete")
     return status
 
 
@@ -128,6 +128,7 @@ def create_database(con: connection, drop_database: bool) -> Tuple[bool, str]:
     cur = get_cursor(con)
 
     if drop_database:
+        _LOG.warning('Dropping database.')
         sql_file = f"database{SEP}database_drop.sql"
         execute_sql_from_file(cur, sql_file, "drop database")
     try:
@@ -136,12 +137,13 @@ def create_database(con: connection, drop_database: bool) -> Tuple[bool, str]:
         sql_file = f"database{SEP}database_comment.sql"
         status = execute_sql_from_file(cur, sql_file, "database comment")
         db_existed = False
+        _LOG.warning('Database did not exist.')
     except ResourceExists as err:
-        _LOG.warning(f"ResourceExists: {str(err)}")
         db_existed = True
-        status = "database already exists"
-        log_status(status)
-    cur.close()
+        status = f"Database already exists: {str(err)}"
+        _LOG.warning(status)
+    finally:
+        cur.close()
     return db_existed, status
 
 
@@ -233,12 +235,10 @@ def create_tables(db_host: str, db_name: str, db_port: str, db_user: str, db_pas
         try:
             execute_sql_from_file(cur, sql_file, f"create table in {sql_file}")
         except ResourceExists as dd_err:
-            _LOG.warning(f"ResourceExists: {str(dd_err)}")
-            log_status(f"table in {sql_file} already exists")
+            _LOG.warning(f"ResourceExists error. Table in {sql_file} already exists: {str(dd_err)}")
         finally:
             # todo: Does this need to be repeated?
             con.close()
-
 
 
 def get_file_names_in_dir(directory: str) -> List[str]:
@@ -262,20 +262,9 @@ def get_file_names_in_dir(directory: str) -> List[str]:
 
 def walk_wrapper(directory: str) -> Iterator[Tuple[str, List[str], List[str]]]:
     """
-    A wrapper for os.walk for testing purposes.
+    A wrapper for os.walk for testing purposes, as os.walk cannot be easily mocked.
     """
     return walk(directory)
-
-
-def log_status(status) -> None:
-    """
-    Writes an info level event to _LOG.
-
-    Args:
-        status (string): The status to be logged.
-    """
-    _LOG.info(status)
-    # print(status)
 
 
 def get_db_connection(db_host: str, db_name: str, db_port: str, db_user: str, db_password: str) -> connection:
@@ -296,7 +285,7 @@ def get_db_connection(db_host: str, db_name: str, db_port: str, db_user: str, db
         DatabaseError: An error occurred.
     """
     try:
-        log_status(f"Connect to database {db_name} as user {db_user} started")
+        _LOG.info(f"Connect to database started")
         db_connect_info = {"db_host": db_host,
                            "db_port": db_port,
                            "db_name": db_name,
@@ -304,10 +293,9 @@ def get_db_connection(db_host: str, db_name: str, db_port: str, db_user: str, db
                            "db_pw": db_password}
 
         con = database.return_connection(db_connect_info)
-        log_status(f"Connect to database completed")
+        _LOG.info(f"Connect to database completed")
     except DbError as err:
-        _LOG.exception(f"DbError: {str(err)}")
-        log_status("Connect to database DbError")
+        _LOG.critical(f"DbError while connecting to database: {str(err)}")
         raise DatabaseError(str(err))
     return con
 
@@ -328,8 +316,7 @@ def get_cursor(con: connection) -> cursor:
     try:
         cur = database.return_cursor(con)
     except DbError as err:
-        _LOG.exception(f"DbError: {str(err)}")
-        log_status("Get cursor DbError")
+        _LOG.critical(f"DbError while getting cursor: {str(err)}")
         # todo: Seems the point here is to mask DbErrors. Why do we not want them raised?
         raise DatabaseError(str(err))
     return cur
@@ -351,13 +338,12 @@ def execute_sql(cur: cursor, sql_stmt: str, description: str) -> str:
         DatabaseError: An error occurred.
     """
     try:
-        log_status(f"{description} started")
+        _LOG.info(f"{description} started")
         database.query_no_params(cur, sql_stmt)
         status = f"{description} completed"
-        log_status(status)
+        _LOG.info(status)
     except DbError as err:
-        _LOG.exception(f"DbError: {str(err)}")
-        log_status(f"{description} DbError")
+        _LOG.critical(f"DbError during '{description}': {str(err)}")
         raise DatabaseError(str(err))
     return status  # todo: Remove unused return
 
@@ -379,19 +365,17 @@ def execute_sql_from_file(cur: cursor, sql_file_name: str, description: str) -> 
         DatabaseError: An error occurred.
     """
     ddl_dir = os.environ[OS_ENVIRON_DDL_DIR_KEY]
-    log_status(f"{description} started")
+    _LOG.info(f"{description} started")
     sql_path = f"{ddl_dir}{sql_file_name}"
     try:
         database.query_from_file(cur, sql_path)
         status = f"{description} completed"
-        log_status(status)
+        _LOG.info(status)
     except FileNotFoundError as fnf:
-        _LOG.exception(f"DbError: {str(fnf)}")
-        log_status(f"{description} DbError")
+        _LOG.critical(f"FileNotFound during '{description}': {str(fnf)}")
         raise DatabaseError(str(fnf))
     except DbError as err:
-        _LOG.exception(f"DbError: {str(err)}")
-        log_status(f"{description} DbError")
+        _LOG.critical(f"DbError during '{description}': {str(err)}")
         raise DatabaseError(str(err))
     return status  # todo: Remove unused return
 
@@ -425,5 +409,4 @@ def handler(event: Dict, context: object) -> str:  # pylint: disable-msg=unused-
     Raises:
         DatabaseError: An error occurred.  todo: Why not use the DbError that is already defined? todo: Add detail.
     """
-    result = task()
-    return result
+    return task()
