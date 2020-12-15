@@ -36,49 +36,49 @@ def task(event, context):    #pylint: disable-msg=unused-argument
         Raises:
             DatabaseError: An error occurred.
     """
-    status = log_status("start")
-    db_name = os.environ["DATABASE_NAME"]
-    db_user = os.environ["DATABASE_USER"]
+    status = log_status('start')
+    db_name = os.environ['DATABASE_NAME']
+    db_user = os.environ['DATABASE_USER']
 
-    ssm = boto3.client('ssm')
+    secretsmanager = boto3.client('secretsmanager')
     param_name = 'drdb-user-pass'
-    parameter = ssm.get_parameter(Name=param_name, WithDecryption=True)
-    db_pw = parameter['Parameter']['Value']
+    parameter = secretsmanager.get_secret_value(SecretId=param_name)
+    db_pw = parameter['SecretString']
 
     param_name = 'drdb-admin-pass'
-    parameter = ssm.get_parameter(Name=param_name, WithDecryption=True)
-    master_user_pw = parameter['Parameter']['Value']
-    os.environ["MASTER_USER_PW"] = master_user_pw
+    parameter = secretsmanager.get_secret_value(SecretId=param_name)
+    master_user_pw = parameter['SecretString']
+    os.environ['MASTER_USER_PW'] = master_user_pw
 
     param_name = 'drdb-host'
-    parameter = ssm.get_parameter(Name=param_name, WithDecryption=False)
-    db_host = parameter['Parameter']['Value']
-    os.environ["DATABASE_HOST"] = db_host
+    parameter = secretsmanager.get_secret_value(SecretId=param_name)
+    db_host = parameter['SecretString']
+    os.environ['DATABASE_HOST'] = db_host
 
-    os.environ["DATABASE_NAME"] = "postgres"
-    os.environ["DATABASE_USER"] = "postgres"
+    os.environ['DATABASE_NAME'] = 'postgres'
+    os.environ['DATABASE_USER'] = 'postgres'
 
-    os.environ["DATABASE_PW"] = master_user_pw
+    os.environ['DATABASE_PW'] = master_user_pw
     #connect as postgres to create the new database
     con = get_db_connnection()
 
-    status = log_status("connected to postgres")
+    status = log_status('connected to postgres')
     db_existed, status = create_database(con)
     if not db_existed:
-        os.environ["DATABASE_PW"] = db_pw
+        os.environ['DATABASE_PW'] = db_pw
         status = create_roles_and_users(con, db_user)
     con.close()
 
     #connect to the database we just created as postgres
-    os.environ["DATABASE_NAME"] = db_name
-    os.environ["DATABASE_PW"] = master_user_pw
+    os.environ['DATABASE_NAME'] = db_name
+    os.environ['DATABASE_PW'] = master_user_pw
     con = get_db_connnection()
     status = log_status(f"connected to {db_name}")
     status = create_schema(con)
     con.close()
     status = create_tables()
 
-    status = log_status("database ddl execution complete")
+    status = log_status('database ddl execution complete')
     return status
 
 def create_database(con):
@@ -101,20 +101,20 @@ def create_database(con):
     try:
         drop = os.environ["DROP_DATABASE"]
     except KeyError:
-        drop = "False"
-    if drop == "True":
+        drop = 'False'
+    if drop == 'True':
         sql_file = f"database{SEP}database_drop.sql"
-        status = execute_sql_from_file(cur, sql_file, "drop database")
+        status = execute_sql_from_file(cur, sql_file, 'drop database')
     try:
         sql_file = f"database{SEP}database_create.sql"
-        status = execute_sql_from_file(cur, sql_file, "database create")
+        status = execute_sql_from_file(cur, sql_file, 'database create')
         sql_file = f"database{SEP}database_comment.sql"
-        status = execute_sql_from_file(cur, sql_file, "database comment")
+        status = execute_sql_from_file(cur, sql_file, 'database comment')
         db_existed = False
     except ResourceExists as err:
         _LOG.warning(f"ResourceExists: {str(err)}")
         db_existed = True
-        status = log_status("database already exists")
+        status = log_status('database already exists')
     cur.close()
     return db_existed, status
 
@@ -135,18 +135,18 @@ def create_roles_and_users(con, db_user):
     con.set_isolation_level(ISOLATION_LEVEL_READ_COMMITTED)
     cur = get_cursor(con)
     sql_file = f"roles{SEP}app_role.sql"
-    status = execute_sql_from_file(cur, sql_file, "create application role")
+    status = execute_sql_from_file(cur, sql_file, 'create application role')
     sql_file = f"roles{SEP}appdbo_role.sql"
-    status = execute_sql_from_file(cur, sql_file, "create appdbo role")
+    status = execute_sql_from_file(cur, sql_file, 'create appdbo role')
     sql_file = f"users{SEP}dbo.sql"
-    status = execute_sql_from_file(cur, sql_file, "create dbo user")
+    status = execute_sql_from_file(cur, sql_file, 'create dbo user')
     sql_file = f"users{SEP}appuser.sql"
-    status = execute_sql_from_file(cur, sql_file, "create application user")
-    db_pw = os.environ["DATABASE_PW"]
+    status = execute_sql_from_file(cur, sql_file, 'create application user')
+    db_pw = os.environ['DATABASE_PW']
     sql_stmt = f"ALTER USER {db_user} WITH PASSWORD '{db_pw}';"
-    status = execute_sql(cur, sql_stmt, "set pw for application user")
+    status = execute_sql(cur, sql_stmt, 'set pw for application user')
     sql_stmt = f"ALTER USER dbo WITH PASSWORD '{db_pw}';"
-    status = execute_sql(cur, sql_stmt, "set pw for dbo user")
+    status = execute_sql(cur, sql_stmt, 'set pw for dbo user')
     con.commit()
     cur.close()
     return status
@@ -164,15 +164,15 @@ def create_schema(con):
         Raises:
             DatabaseError: An error occurred.
     """
-    platform = os.environ["PLATFORM"]
+    platform = os.environ['PLATFORM']
     _LOG.info(f"platform: {platform}")
     cur = get_cursor(con)
-    if platform == "AWS":
+    if platform == 'AWS':
         sql_stmt = """SET SESSION AUTHORIZATION dbo;"""
-        status = execute_sql(cur, sql_stmt, "auth dbo")
+        status = execute_sql(cur, sql_stmt, 'auth dbo')
 
     sql_file = f"schema{SEP}app.sql"
-    status = execute_sql_from_file(cur, sql_file, "create schema")
+    status = execute_sql_from_file(cur, sql_file, 'create schema')
     cur.close()
     con.commit()
     return status
@@ -190,7 +190,7 @@ def create_tables():
         Raises:
             DatabaseError: An error occurred.
     """
-    ddl_dir = os.environ["DDL_DIR"]
+    ddl_dir = os.environ['DDL_DIR']
     table_dir = f"{ddl_dir}{SEP}tables"
     sql_files = get_files_in_dir(table_dir)
     for file in sql_files:
@@ -199,7 +199,7 @@ def create_tables():
             con = get_db_connnection()
             cur = get_cursor(con)
             sql_stmt = """SET SESSION AUTHORIZATION dbo;"""
-            status = execute_sql(cur, sql_stmt, "auth dbo")
+            status = execute_sql(cur, sql_stmt, 'auth dbo')
             status = execute_sql_from_file(cur, sql_file, f"create table in {sql_file}")
             con.close()
         except ResourceExists as dd_err:
@@ -220,7 +220,7 @@ def get_files_in_dir(directory):
     dir_files = []
     for (_, _, filenames) in walk(directory):
         for name in filenames:
-            if name != "init.sql":
+            if name != 'init.sql':
                 dir_files.append(name)
     dir_files.sort()
     return dir_files
@@ -252,17 +252,17 @@ def get_db_connnection():
     try:
         log_status(f"Connect to database started")
         dbconnect_info = {}
-        dbconnect_info["db_host"] = os.environ["DATABASE_HOST"]
-        dbconnect_info["db_port"] = os.environ["DATABASE_PORT"]
-        dbconnect_info["db_name"] = os.environ["DATABASE_NAME"]
-        dbconnect_info["db_user"] = os.environ["DATABASE_USER"]
-        dbconnect_info["db_pw"] = os.environ["DATABASE_PW"]
+        dbconnect_info['db_host'] = os.environ['DATABASE_HOST']
+        dbconnect_info['db_port'] = os.environ['DATABASE_PORT']
+        dbconnect_info['db_name'] = os.environ['DATABASE_NAME']
+        dbconnect_info['db_user'] = os.environ['DATABASE_USER']
+        dbconnect_info['db_pw'] = os.environ['DATABASE_PW']
 
         con = database.return_connection(dbconnect_info)
-        log_status(f"Connect to database completed")
+        log_status(f'Connect to database completed')
     except DbError as err:
         _LOG.exception(f"DbError: {str(err)}")
-        log_status("Connect to database DbError")
+        log_status('Connect to database DbError')
         raise DatabaseError(str(err))
     return con
 
@@ -283,7 +283,7 @@ def get_cursor(con):
         cursor = database.return_cursor(con)
     except DbError as err:
         _LOG.exception(f"DbError: {str(err)}")
-        log_status("Get cursor DbError")
+        log_status('Get cursor DbError')
         raise DatabaseError(str(err))
     return cursor
 
@@ -327,7 +327,7 @@ def execute_sql_from_file(cur, sql_file, activity):
         Raises:
             DatabaseError: An error occurred.
     """
-    ddl_dir = os.environ["DDL_DIR"]
+    ddl_dir = os.environ['DDL_DIR']
     try:
         status = log_status(f"{activity} started")
         sql_path = f"{ddl_dir}{sql_file}"

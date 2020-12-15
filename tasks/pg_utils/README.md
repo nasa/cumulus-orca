@@ -63,7 +63,7 @@ Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 https://www.oreilly.com/library/view/head-first-python/9781491919521/ch04.html
 Create the distribution file:
     (podr) λ cd C:\devpy\poswotdr\tasks\pg_utils
-    (podr) λ py -3 setup.py sdist
+    (podr) λ python setup.py sdist
     (podr) λ cd dist
     (podr) λ pip install pg_utils-1.0.tar.gz
  

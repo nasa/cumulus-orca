@@ -24,7 +24,7 @@ from request_helpers import (PROTECTED_BUCKET,
                              UTC_NOW_EXP_5, UTC_NOW_EXP_6, UTC_NOW_EXP_7,
                              UTC_NOW_EXP_8, create_copy_event2,
                              create_copy_handler_event, print_rows,
-                             mock_ssm_get_parameter)
+                             mock_secretsmanager_get_parameter)
 
 
 class TestCopyFilesPostgres(unittest.TestCase):  # pylint: disable-msg=too-many-instance-attributes
@@ -49,7 +49,7 @@ class TestCopyFilesPostgres(unittest.TestCase):  # pylint: disable-msg=too-many-
 
     def tearDown(self):
         boto3.client = Mock()
-        mock_ssm_get_parameter(1)
+        mock_secretsmanager_get_parameter(1)
         try:
             requests_db.delete_all_requests()
         except requests_db.NotFound:
@@ -73,7 +73,7 @@ class TestCopyFilesPostgres(unittest.TestCase):  # pylint: disable-msg=too-many-
         creates jobs in the db
         """
         boto3.client = Mock()
-        mock_ssm_get_parameter(7)
+        mock_secretsmanager_get_parameter(7)
         requests_db.get_utc_now_iso = Mock(side_effect=[UTC_NOW_EXP_1, UTC_NOW_EXP_4,
                                                         UTC_NOW_EXP_4, UTC_NOW_EXP_4,
                                                         UTC_NOW_EXP_5, UTC_NOW_EXP_5,
@@ -154,14 +154,14 @@ class TestCopyFilesPostgres(unittest.TestCase):  # pylint: disable-msg=too-many-
         s3_cli = boto3.client('s3')
         s3_cli.copy_object = Mock(side_effect=[None])
         self.create_test_requests()
-        mock_ssm_get_parameter(6)
+        mock_secretsmanager_get_parameter(6)
         print_rows("begin")
         row = requests_db.get_job_by_request_id(REQUEST_ID3)
         self.assertEqual("inprogress", row[0]['job_status'])
         result = copy_files_to_archive.handler(self.handler_input_event, None)
         os.environ['COPY_RETRIES'] = '2'
         os.environ['COPY_RETRY_SLEEP_SECS'] = '1'
-        boto3.client.assert_called_with('ssm')
+        boto3.client.assert_called_with('secretsmanager')
         exp_result = [{"success": True,
                        "source_bucket": self.exp_src_bucket,
                        "source_key": self.exp_file_key1,
@@ -184,7 +184,7 @@ class TestCopyFilesPostgres(unittest.TestCase):  # pylint: disable-msg=too-many-
         exp_rec_2 = create_copy_event2()
         self.handler_input_event["Records"].append(exp_rec_2)
         self.create_test_requests()
-        mock_ssm_get_parameter(10)
+        mock_secretsmanager_get_parameter(10)
         print_rows("begin")
         row = requests_db.get_job_by_request_id(REQUEST_ID3)
         self.assertEqual("inprogress", row[0]['job_status'])
@@ -192,7 +192,7 @@ class TestCopyFilesPostgres(unittest.TestCase):  # pylint: disable-msg=too-many-
         self.assertEqual("inprogress", row[0]['job_status'])
         result = copy_files_to_archive.handler(self.handler_input_event, None)
 
-        boto3.client.assert_called_with('ssm')
+        boto3.client.assert_called_with('secretsmanager')
         exp_result = [{"success": True, "source_bucket": self.exp_src_bucket,
                        "source_key": self.exp_file_key1,
                        "request_id": REQUEST_ID3,
@@ -236,7 +236,7 @@ class TestCopyFilesPostgres(unittest.TestCase):  # pylint: disable-msg=too-many-
                      "}]")
         self.create_test_requests()
         boto3.client = Mock()
-        mock_ssm_get_parameter(13)
+        mock_secretsmanager_get_parameter(13)
         s3_cli = boto3.client('s3')
         s3_cli.copy_object = Mock(side_effect=[ClientError({'Error': {'Code': 'AccessDenied'}},
                                                            'copy_object'),
@@ -269,7 +269,7 @@ class TestCopyFilesPostgres(unittest.TestCase):  # pylint: disable-msg=too-many-
         """
         key = "nofilefound"
         boto3.client = Mock()
-        mock_ssm_get_parameter(1)
+        mock_secretsmanager_get_parameter(1)
         job = copy_files_to_archive.find_job_in_db(key)
         self.assertEqual(None, job)
 
@@ -290,7 +290,7 @@ class TestCopyFilesPostgres(unittest.TestCase):  # pylint: disable-msg=too-many-
         utc_now_exp = requests_db.get_utc_now_iso()
         requests_db.get_utc_now_iso = Mock(return_value=utc_now_exp)
         boto3.client = Mock()
-        mock_ssm_get_parameter(7)
+        mock_secretsmanager_get_parameter(7)
         print_rows("begin")
 
         s3_cli = boto3.client('s3')
@@ -329,7 +329,7 @@ class TestCopyFilesPostgres(unittest.TestCase):  # pylint: disable-msg=too-many-
                                                            'copy_object'),
                                                None])
         self.create_test_requests()
-        mock_ssm_get_parameter(6)
+        mock_secretsmanager_get_parameter(6)
         print_rows("begin")
         row = requests_db.get_job_by_request_id(REQUEST_ID3)
         self.assertEqual("inprogress", row[0]['job_status'])

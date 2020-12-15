@@ -51,11 +51,11 @@ def get_dbconnect_info():
     """
     dbconnect_info = {}
     db_params = {}
-    db_params["db_host"] = {"ssm": "drdb-host"}
+    db_params["db_host"] = {"secretsmanager": "drdb-host"}
     db_params["db_port"] = {"env": "DATABASE_PORT"}
     db_params["db_name"] = {"env": "DATABASE_NAME"}
     db_params["db_user"] = {"env": "DATABASE_USER"}
-    db_params["db_pw"] = {"ssm": "drdb-user-pass"}
+    db_params["db_pw"] = {"secretsmanager": "drdb-user-pass"}
     dbconnect_info = database.read_db_connect_info(db_params)
     return dbconnect_info
 
