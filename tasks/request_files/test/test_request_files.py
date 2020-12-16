@@ -266,12 +266,13 @@ class TestRequestFiles(unittest.TestCase):
             Key=FILE1,
             RestoreRequest=restore_req_exp)
 
-        exp_gran = {
-            'granuleId': granule_id,
-            'keys': [{'key': FILE1, 'dest_bucket': PROTECTED_BUCKET}],
-            'recover_files': [{'key': FILE1, 'dest_bucket': PROTECTED_BUCKET, 'success': True, 'err_msg': ''}]
-        }
-        exp_granules = {'granules': [exp_gran]}
+        exp_granules = {'granules': [
+            {
+                'granuleId': granule_id,
+                'keys': [{'key': FILE1, 'dest_bucket': PROTECTED_BUCKET}],
+                'recover_files': [{'key': FILE1, 'dest_bucket': PROTECTED_BUCKET, 'success': True, 'err_msg': ''}]
+            }
+        ]}
 
         self.assertEqual(exp_granules, result)
         database.single_query.assert_called()  # called 1 times
@@ -331,12 +332,12 @@ class TestRequestFiles(unittest.TestCase):
         Test environment var RESTORE_REQUEST_RETRIES not set - use default.
         """
         del os.environ['RESTORE_REQUEST_RETRIES']
-        exp_event = {}
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
-        exp_event["input"] = {
-            "granules": [{"granuleId": granule_id,
-                          "keys": [KEY1]}]}
-        exp_event["config"] = {"glacier-bucket": "some_bucket"}
+        # todo: Reduce string copy/paste for test values here and elsewhere.
+        event = {
+            "input": {
+                "granules":
+                    [{"granuleId": granule_id, "keys": [KEY1]}]}, "config": {"glacier-bucket": "some_bucket"}}
 
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
@@ -360,7 +361,7 @@ class TestRequestFiles(unittest.TestCase):
         database.single_query = Mock(side_effect=[qresult_1_inprogress])
         mock_ssm_get_parameter(1)
         try:
-            result = request_files.task(exp_event, self.context)
+            result = request_files.task(event, self.context)
             os.environ['RESTORE_REQUEST_RETRIES'] = '3'
             self.assertEqual(exp_granules, result)
 
