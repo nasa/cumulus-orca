@@ -175,6 +175,25 @@ class TestDbDeploy(unittest.TestCase):
         file_list = db_deploy.get_files_in_dir(exp_dir)
         self.assertEqual(exp_files, file_list)
 
+    def test_get_secretsmanager_keys(self):
+        try:
+            test_prefix = 'test-prefix'
+            os.environ['PREFIX'] = test_prefix
+            param = {
+                'host': 'host',
+                'user-pass': 'user-pass',
+                'admin-pass': 'admin-pass'
+            }
+            expected_response = {
+                'host': test_prefix + '-' + 'host',
+                'user-pass': test_prefix + '-' + 'user-pass',
+                'admin-pass': test_prefix + '-' + 'admin-pass'
+            }
+            response = db_deploy.get_secretsmanager_keys(param)
+            self.assertEqual(response, expected_response)
+        finally:
+            del os.environ['PREFIX']
+
 
 if __name__ == '__main__':
     unittest.main()

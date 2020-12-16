@@ -17,6 +17,7 @@ resource "aws_db_instance" "postgresql" {
   engine                     = "postgres"
   engine_version             = "11"
   identifier                 = "${var.prefix}-postgres-sndbx"
+  # Can't do micro and storage_encrypted
   instance_class             = "db.t2.micro"
   name                       = "postgres"
   password                   = var.postgres_user_pw
@@ -30,7 +31,7 @@ resource "aws_db_instance" "postgresql" {
   vpc_security_group_ids     = [var.vpc_postgres_ingress_all_egress_id]
   db_subnet_group_name       = aws_db_subnet_group.postgres_subnet_group.id
   # parameter_group_name       = "default.postgres11"
-  storage_encrypted          = true
+  storage_encrypted          = false
   deletion_protection        = false
   skip_final_snapshot        = true
   final_snapshot_identifier  = "daacx"
@@ -50,7 +51,7 @@ resource "null_resource" "bootstrap" {
 }
 
 resource "aws_secretsmanager_secret" "drdb-admin-pass" {
-  name_prefix = "${var.prefix}-drdb-admin-pass"
+  name = "${var.prefix}-drdb-admin-pass"
   description = "Admin password to be used for the PostgreSQL DB"
   tags        = var.default_tags
 }
@@ -58,19 +59,10 @@ resource "aws_secretsmanager_secret" "drdb-admin-pass" {
 resource "aws_secretsmanager_secret_version" "drdb-admin-pass" {
   secret_id     = aws_secretsmanager_secret.drdb-admin-pass.id
   secret_string = var.postgres_user_pw
-  tags          = var.default_tags
 }
 
-# resource "aws_ssm_parameter" "drdb-admin-pass" {
-#   name  = "${var.prefix}-drdb-admin-pass"
-#   type  = "SecureString"
-#   value = var.postgres_user_pw
-#   tags = var.default_tags
-#   overwrite = true
-# }
-
 resource "aws_secretsmanager_secret" "drdb-user-pass" {
-  name_prefix = "${var.prefix}-drdb-user-pass"
+  name = "${var.prefix}-drdb-user-pass"
   description = "User password to be used for the PostgreSQL DB"
   tags        = var.default_tags
 }
@@ -78,19 +70,10 @@ resource "aws_secretsmanager_secret" "drdb-user-pass" {
 resource "aws_secretsmanager_secret_version" "drdb-user-pass" {
   secret_id     = aws_secretsmanager_secret.drdb-user-pass.id
   secret_string = var.database_app_user_pw
-  tags          = var.default_tags
 }
 
-# resource "aws_ssm_parameter" "drdb-user-pass" {
-#   name  = "${var.prefix}-drdb-user-pass"
-#   type  = "SecureString"
-#   value = var.database_app_user_pw
-#   tags = var.default_tags
-#   overwrite = true
-# }
-
 resource "aws_secretsmanager_secret" "drdb-host" {
-  name_prefix = "${var.prefix}-drdb-host"
+  name = "${var.prefix}-drdb-host"
   description = "PostgreSQL Host Address"
   tags        = var.default_tags
 }
@@ -98,13 +81,4 @@ resource "aws_secretsmanager_secret" "drdb-host" {
 resource "aws_secretsmanager_secret_version" "drdb-host" {
   secret_id     = aws_secretsmanager_secret.drdb-host.id
   secret_string = aws_db_instance.postgresql.address
-  tags          = var.default_tags
 }
-
-# resource "aws_ssm_parameter" "drdb-host" {
-#   name  = "${var.prefix}-drdb-host"
-#   type  = "String"
-#   value = aws_db_instance.postgresql.address
-#   tags = var.default_tags
-#   overwrite = true
-# }

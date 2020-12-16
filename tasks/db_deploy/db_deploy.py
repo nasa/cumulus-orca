@@ -39,19 +39,21 @@ def task(event, context):    #pylint: disable-msg=unused-argument
     status = log_status('start')
     db_name = os.environ['DATABASE_NAME']
     db_user = os.environ['DATABASE_USER']
+    sm_keys = get_secretsmanager_keys({
+        'host': 'drdb-host',
+        'user-pass': 'drdb-user-pass',
+        'admin-pass': 'drdb-admin-pass'
+    })
 
     secretsmanager = boto3.client('secretsmanager')
-    param_name = 'drdb-user-pass'
-    parameter = secretsmanager.get_secret_value(SecretId=param_name)
+    parameter = secretsmanager.get_secret_value(SecretId=sm_keys['user-pass'])
     db_pw = parameter['SecretString']
 
-    param_name = 'drdb-admin-pass'
-    parameter = secretsmanager.get_secret_value(SecretId=param_name)
+    parameter = secretsmanager.get_secret_value(SecretId=sm_keys['admin-pass'])
     master_user_pw = parameter['SecretString']
     os.environ['MASTER_USER_PW'] = master_user_pw
 
-    param_name = 'drdb-host'
-    parameter = secretsmanager.get_secret_value(SecretId=param_name)
+    parameter = secretsmanager.get_secret_value(SecretId=sm_keys['host'])
     db_host = parameter['SecretString']
     os.environ['DATABASE_HOST'] = db_host
 
@@ -80,6 +82,23 @@ def task(event, context):    #pylint: disable-msg=unused-argument
 
     status = log_status('database ddl execution complete')
     return status
+
+def get_secretsmanager_keys(params):
+    """
+    Returns dictionary with values prefixed by os.environ['PREFIX']. If PREFIX
+    isn't an environment variable, do nothing.
+
+        Args:
+            params (dict): Dictionary of key, string pairs.
+
+        Returns:
+            dict: Dictionary with passed in keys and prefixed string values.
+    """
+    if 'PREFIX' in os.environ:
+        prefix = os.environ['PREFIX']
+        for key in params.keys():
+            params[key] = prefix + '-' + params[key]
+    return params
 
 def create_database(con):
     """

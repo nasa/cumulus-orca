@@ -694,3 +694,22 @@ class TestRequests(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
             database.single_query.assert_called_once()
         except requests_db.DatabaseError as err:
             self.fail(f"update_request_status. {str(err)}")
+
+    def test_get_secretsmanager_keys(self):
+        try:
+            test_prefix = 'test-prefix'
+            os.environ['PREFIX'] = test_prefix
+            param = {
+                'host': 'host',
+                'user-pass': 'user-pass',
+                'admin-pass': 'admin-pass'
+            }
+            expected_response = {
+                'host': test_prefix + '-' + 'host',
+                'user-pass': test_prefix + '-' + 'user-pass',
+                'admin-pass': test_prefix + '-' + 'admin-pass'
+            }
+            response = db_deploy.get_secretsmanager_keys(param)
+            self.assertEqual(response, expected_response)
+        finally:
+            del os.environ['PREFIX']
