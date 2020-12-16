@@ -1,0 +1,19 @@
+---
+id: architecture-software-system
+title: Software System Architecture
+description: High level overview of ORCA software system architecture.
+---
+
+The ORCA software system is currently made up of two primary functions. The
+first function is to archive a secondary copy of the data. This is done by
+capitalizing on Cumulus Workflows. An end user would only need to add the proper
+ORCA components to their ingest workflow in order to use the feature. The second
+function is recovery of data from the secondary copy. Adding this functionality
+is more involved but requires the user to add the proper components and
+configuration to Cumulus to utilize. The diagram below gives a software system
+view of ORCA and the various containers and protocols used within the system.
+The following pages go into further details on each container.
+
+![ORCA Software System Context](../static/img/ORCA-Architecture-ORCA-System.svg)
+
+

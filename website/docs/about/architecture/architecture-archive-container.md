@@ -1,0 +1,19 @@
+---
+id: architecture-archive-container
+title: Archive Container Architecture
+description: High level overview of ORCA archive data container architecture.
+---
+
+The archive data container contains all the components that make up the archive
+data functionality. The diagram below shows how the various components interact.
+A majority of the work for this functionality is done by the **copy_to_glacier**
+lambda function. This component was designed such that it could be added to any
+ingest workflow in order to create a secondary archive copy of the data for
+disaster recovery. Other than the lambda, the additional archiving measures are
+handled through AWS S3 bucket policy. This was done to preserve as much metadata
+as possible about the files and to simplify interactions with the AWS glacier
+archive.
+
+![ORCA Archive Data Container Context](../static/img/ORCA-Architecture-Archive-Container-Component.svg)
+
+
