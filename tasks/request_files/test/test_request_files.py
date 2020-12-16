@@ -7,12 +7,16 @@ import os
 import unittest
 from unittest.mock import Mock
 
+# noinspection PyPackageRequirements
 import boto3
+# noinspection PyPackageRequirements
 from botocore.exceptions import ClientError
 from cumulus_logger import CumulusLogger
 
 import requests_db
+# noinspection PyPackageRequirements
 import database
+# noinspection PyPackageRequirements
 from database import DbError
 import request_files
 
@@ -21,7 +25,6 @@ from request_helpers import (REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_2,
                              REQUEST_ID3, REQUEST_ID4, LambdaContextMock,
                              create_handler_event, create_insert_request,
                              mock_ssm_get_parameter)
-
 
 UTC_NOW_EXP_1 = requests_db.get_utc_now_iso()
 FILE1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5"
@@ -35,10 +38,12 @@ KEY2 = {"key": FILE2, "dest_bucket": PROTECTED_BUCKET}
 KEY3 = {"key": FILE3, "dest_bucket": None}
 KEY4 = {"key": FILE4, "dest_bucket": PUBLIC_BUCKET}
 
+
 class TestRequestFiles(unittest.TestCase):
     """
     TestRequestFiles.
     """
+
     def setUp(self):
         self.mock_boto3_client = boto3.client
         self.mock_info = CumulusLogger.info
@@ -68,21 +73,20 @@ class TestRequestFiles(unittest.TestCase):
         del os.environ["DATABASE_PW"]
         del os.environ["DATABASE_PORT"]
 
-
     def test_handler(self):
         """
         Tests the handler
+        # todo: Does it?
         """
         input_event = create_handler_event()
-        task_input = {}
-        task_input["input"] = input_event["payload"]
-        task_input["config"] = {}
+        task_input = {"input": input_event["payload"], "config": {}}
         exp_err = f'request: {task_input} does not contain a config value for glacier-bucket'
         CumulusLogger.error = Mock()
         try:
             request_files.handler(input_event, self.context)
         except request_files.RestoreRequestError as roe:
             self.assertEqual(exp_err, str(roe))
+            # todo: Add failure when error not raised
 
     def test_task_one_granule_4_files_success(self):
         """
@@ -169,49 +173,51 @@ class TestRequestFiles(unittest.TestCase):
             Key=FILE4,
             RestoreRequest=restore_req_exp)
 
-        exp_gran = {}
-        exp_gran['granuleId'] = granule_id
+        exp_gran = {
+            'granuleId': granule_id,
+            'keys': self.get_expected_keys(),
+            'recover_files': self.get_expected_files()
+        }
+        exp_granules = {'granules': [exp_gran]}
 
-        exp_files = self.get_expected_files()
-        exp_gran['files'] = exp_files
-        self.assertEqual(exp_gran, result)
-        database.single_query.assert_called()  #called 4 times
+        self.assertEqual(exp_granules, result)
+        database.single_query.assert_called()  # called 4 times
 
     @staticmethod
     def get_expected_files():
         """
         builds a list of expected files
         """
-        exp_files = []
+        return [
+            {'key': FILE1, 'dest_bucket': PROTECTED_BUCKET, 'success': True, 'err_msg': ''},
+            {'key': FILE2, 'dest_bucket': PROTECTED_BUCKET, 'success': True, 'err_msg': ''},
+            {'key': FILE3, 'dest_bucket': None, 'success': True, 'err_msg': ''},
+            {'key': FILE4, 'dest_bucket': PUBLIC_BUCKET, 'success': True, 'err_msg': ''}
+        ]
 
-        exp_file = {}
-        exp_file['key'] = FILE1
-        exp_file['dest_bucket'] = PROTECTED_BUCKET
-        exp_file['success'] = True
-        exp_file['err_msg'] = ''
-        exp_files.append(exp_file)
-
-        exp_file = {}
-        exp_file['key'] = FILE2
-        exp_file['dest_bucket'] = PROTECTED_BUCKET
-        exp_file['success'] = True
-        exp_file['err_msg'] = ''
-        exp_files.append(exp_file)
-
-        exp_file = {}
-        exp_file['key'] = FILE3
-        exp_file['dest_bucket'] = None
-        exp_file['success'] = True
-        exp_file['err_msg'] = ''
-        exp_files.append(exp_file)
-
-        exp_file = {}
-        exp_file['key'] = FILE4
-        exp_file['dest_bucket'] = PUBLIC_BUCKET
-        exp_file['success'] = True
-        exp_file['err_msg'] = ''
-        exp_files.append(exp_file)
-        return exp_files
+    @staticmethod
+    def get_expected_keys():
+        """
+        Builds a list of expected keys
+        """
+        return [
+            {
+                'dest_bucket': PROTECTED_BUCKET,
+                'key': FILE1
+            },
+            {
+                'dest_bucket': PROTECTED_BUCKET,
+                'key': FILE2
+            },
+            {
+                'dest_bucket': None,
+                'key': FILE3
+            },
+            {
+                'dest_bucket': PUBLIC_BUCKET,
+                'key': FILE4
+            },
+        ]
 
     def test_task_one_granule_1_file_db_error(self):
         """
@@ -246,13 +252,8 @@ class TestRequestFiles(unittest.TestCase):
         database.single_query = Mock(
             side_effect=[DbError("mock insert failed error")])
         mock_ssm_get_parameter(1)
-        exp_result = {'granuleId': granule_id, 'files': [{'key': FILE1,
-                                                          'dest_bucket': PROTECTED_BUCKET,
-                                                          'success': True,
-                                                          'err_msg': ''}]}
         try:
             result = request_files.task(input_event, self.context)
-            self.assertEqual(exp_result, result)
         except requests_db.DatabaseError as err:
             self.fail(f"failed insert does not throw exception. {str(err)}")
 
@@ -265,33 +266,26 @@ class TestRequestFiles(unittest.TestCase):
             Key=FILE1,
             RestoreRequest=restore_req_exp)
 
-        exp_gran = {}
-        exp_gran['granuleId'] = granule_id
-        exp_files = []
+        exp_gran = {
+            'granuleId': granule_id,
+            'keys': [{'key': FILE1, 'dest_bucket': PROTECTED_BUCKET}],
+            'recover_files': [{'key': FILE1, 'dest_bucket': PROTECTED_BUCKET, 'success': True, 'err_msg': ''}]
+        }
+        exp_granules = {'granules': [exp_gran]}
 
-        exp_file = {}
-        exp_file['key'] = FILE1
-        exp_file['dest_bucket'] = PROTECTED_BUCKET
-        exp_file['success'] = True
-        exp_file['err_msg'] = ''
-        exp_files.append(exp_file)
-
-        exp_gran['files'] = exp_files
-        self.assertEqual(exp_gran, result)
-        database.single_query.assert_called()  #called 1 times
+        self.assertEqual(exp_granules, result)
+        database.single_query.assert_called()  # called 1 times
 
     def test_task_two_granules(self):
         """
         Test two granules with one file each - successful.
         """
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
-        exp_event = {}
-        exp_event["input"] = {
+        exp_event = {"input": {
             "granules": [{"granuleId": granule_id,
                           "keys": [KEY1]},
                          {"granuleId": granule_id,
-                          "keys": [KEY2]}]}
-        exp_event["config"] = {"glacier-bucket": "my-bucket"}
+                          "keys": [KEY2]}]}, "config": {"glacier-bucket": "my-bucket"}}
 
         exp_err = "request_files can only accept 1 granule in the list. This input contains 2"
         try:
@@ -299,18 +293,22 @@ class TestRequestFiles(unittest.TestCase):
             self.fail("RestoreRequestError expected")
         except request_files.RestoreRequestError as roe:
             self.assertEqual(exp_err, str(roe))
+        # todo: fail when not raised
 
     def test_task_file_not_in_glacier(self):
         """
         Test a file that is not in glacier.
+        # todo: What is expected? Right now the exception just bubbles up, possibly due to bug in object_exists
         """
         file1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.xyz"
-        exp_event = {}
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
-        exp_event["input"] = {
-            "granules": [{"granuleId": granule_id,
-                          "keys": [{"key": file1, "dest_bucket": None}]}]}
-        exp_event["config"] = {"glacier-bucket": "my-bucket"}
+        event = {
+            'input': {
+                "granules":
+                    [{"granuleId": granule_id, "keys": [{"key": file1, "dest_bucket": None}]}]
+            },
+            "config": {"glacier-bucket": "my-bucket"}}
+        # todo: As best I can tell, this is the wrongest place to check this. This test SHOULD NEVER use this.
         os.environ['RESTORE_RETRIEVAL_TYPE'] = 'BadTypeUseDefault'
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
@@ -319,14 +317,14 @@ class TestRequestFiles(unittest.TestCase):
         CumulusLogger.info = Mock()
         requests_db.request_id_generator = Mock(return_value=REQUEST_GROUP_ID_EXP_1)
         try:
-            result = request_files.task(exp_event, self.context)
+            result = request_files.task(event, self.context)
 
             self.assertEqual({'files': [], 'granuleId': granule_id}, result)
             boto3.client.assert_called_with('s3')
             s3_cli.head_object.assert_called_with(Bucket='my-bucket', Key=file1)
         except requests_db.DatabaseError as err:
-            self.fail(str(err))
-        del os.environ['RESTORE_RETRIEVAL_TYPE']
+            self.fail(str(err))  # todo: Why? If you let it throw, it ends up the same way.
+        del os.environ['RESTORE_RETRIEVAL_TYPE']  # todo: Forget a finally?
 
     def test_task_no_retries_env_var(self):
         """
@@ -346,18 +344,16 @@ class TestRequestFiles(unittest.TestCase):
         s3_cli.restore_object = Mock(side_effect=[None])
         CumulusLogger.info = Mock()
         requests_db.request_id_generator = Mock(return_value=REQUEST_ID1)
-        exp_gran = {}
-        exp_gran['granuleId'] = granule_id
-        exp_files = []
 
-        exp_file = {}
-        exp_file['key'] = FILE1
-        exp_file['dest_bucket'] = PROTECTED_BUCKET
-        exp_file['success'] = True
-        exp_file['err_msg'] = ''
-        exp_files.append(exp_file)
-
-        exp_gran['files'] = exp_files
+        exp_granules = {
+            'granules': [
+                {
+                    'granuleId': granule_id,
+                    'keys': [{'key': FILE1, 'dest_bucket': PROTECTED_BUCKET}],
+                    'recover_files': [{'key': FILE1, 'dest_bucket': PROTECTED_BUCKET, 'success': True, 'err_msg': ''}]
+                }
+            ]
+        }
         qresult_1_inprogress, _ = create_insert_request(
             REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, FILE1, "restore", "some_bucket",
             "inprogress", UTC_NOW_EXP_1, None, None)
@@ -366,7 +362,7 @@ class TestRequestFiles(unittest.TestCase):
         try:
             result = request_files.task(exp_event, self.context)
             os.environ['RESTORE_REQUEST_RETRIES'] = '3'
-            self.assertEqual(exp_gran, result)
+            self.assertEqual(exp_granules, result)
 
             boto3.client.assert_called_with('ssm')
             s3_cli.head_object.assert_called_with(Bucket='some_bucket',
@@ -381,17 +377,16 @@ class TestRequestFiles(unittest.TestCase):
             os.environ['RESTORE_REQUEST_RETRIES'] = '3'
             self.fail(str(err))
 
-
     def test_task_no_expire_days_env_var(self):
         """
         Test environment var RESTORE_EXPIRE_DAYS not set - use default.
         """
         del os.environ['RESTORE_EXPIRE_DAYS']
         os.environ['RESTORE_RETRIEVAL_TYPE'] = 'Expedited'
-        exp_event = {}
+        event = {}
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
-        exp_event["config"] = {"glacier-bucket": "some_bucket"}
-        exp_event["input"] = {
+        event["config"] = {"glacier-bucket": "some_bucket"}
+        event["input"] = {
             "granules": [{"granuleId": granule_id,
                           "keys": [KEY1]}]}
 
@@ -401,18 +396,15 @@ class TestRequestFiles(unittest.TestCase):
         s3_cli.restore_object = Mock(side_effect=[None])
         CumulusLogger.info = Mock()
         requests_db.request_id_generator = Mock(return_value=REQUEST_ID1)
-        exp_gran = {}
-        exp_gran['granuleId'] = granule_id
-        exp_files = []
-
-        exp_file = {}
-        exp_file['key'] = FILE1
-        exp_file['dest_bucket'] = PROTECTED_BUCKET
-        exp_file['success'] = True
-        exp_file['err_msg'] = ''
-        exp_files.append(exp_file)
-
-        exp_gran['files'] = exp_files
+        exp_granules = {
+            'granules': [
+                {
+                    'granuleId': granule_id,
+                    'keys': [{'key': FILE1, 'dest_bucket': PROTECTED_BUCKET}],
+                    'recover_files': [{'key': FILE1, 'dest_bucket': PROTECTED_BUCKET, 'success': True, 'err_msg': ''}]
+                }
+            ]
+        }
 
         qresult_1_inprogress, _ = create_insert_request(
             REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, FILE1, "restore", "some_bucket",
@@ -421,8 +413,8 @@ class TestRequestFiles(unittest.TestCase):
         mock_ssm_get_parameter(1)
 
         try:
-            result = request_files.task(exp_event, self.context)
-            self.assertEqual(exp_gran, result)
+            result = request_files.task(event, self.context)
+            self.assertEqual(exp_granules, result)
             os.environ['RESTORE_EXPIRE_DAYS'] = '3'
             del os.environ['RESTORE_RETRIEVAL_TYPE']
             boto3.client.assert_called_with('ssm')
@@ -441,10 +433,9 @@ class TestRequestFiles(unittest.TestCase):
         """
         Test for missing glacier-bucket in config.
         """
-        exp_event = {}
-        exp_event["input"] = {
+        exp_event = {"input": {
             "granules": [{"granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
-                          "keys": [KEY1]}]}
+                          "keys": [KEY1]}]}}
 
         exp_err = f"request: {exp_event} does not contain a config value for glacier-bucket"
         CumulusLogger.error = Mock()
@@ -458,11 +449,9 @@ class TestRequestFiles(unittest.TestCase):
         """
         Test retries for restore error for one file.
         """
-        exp_event = {}
-        exp_event["config"] = {"glacier-bucket": "some_bucket"}
-        exp_event["input"] = {
+        exp_event = {"config": {"glacier-bucket": "some_bucket"}, "input": {
             "granules": [{"granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
-                          "keys": [KEY1]}]}
+                          "keys": [KEY1]}]}}
 
         os.environ['RESTORE_RETRY_SLEEP_SECS'] = '.5'
         requests_db.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
@@ -480,22 +469,22 @@ class TestRequestFiles(unittest.TestCase):
         CumulusLogger.error = Mock()
         mock_ssm_get_parameter(1)
         os.environ['RESTORE_RETRIEVAL_TYPE'] = 'Standard'
-        exp_gran = {}
-        exp_gran['granuleId'] = 'MOD09GQ.A0219114.N5aUCG.006.0656338553321'
-        exp_files = []
 
-        exp_file = {}
-        exp_file['key'] = FILE1
-        exp_file['dest_bucket'] = PROTECTED_BUCKET
-        exp_file['success'] = False
-        exp_files.append(exp_file)
-
-        exp_gran = {'granuleId': 'MOD09GQ.A0219114.N5aUCG.006.0656338553321', 'files': [
-            {'key': FILE1,
-             'dest_bucket': PROTECTED_BUCKET,
-             'success': False,
-             'err_msg': 'An error occurred (NoSuchBucket) when calling the restore_object '
-                        'operation: Unknown'}]}
+        exp_gran = {
+            'granuleId': 'MOD09GQ.A0219114.N5aUCG.006.0656338553321',
+            'keys': [
+                {
+                    'key': FILE1,
+                    'dest_bucket': PROTECTED_BUCKET
+                }
+            ],
+            'recover_files': [
+                {
+                    'key': FILE1, 'dest_bucket': PROTECTED_BUCKET, 'success': False,
+                    'err_msg': 'An error occurred (NoSuchBucket) when calling the restore_object '
+                               'operation: Unknown'}
+            ]
+        }
         exp_err = f"One or more files failed to be requested. {exp_gran}"
         try:
             request_files.task(exp_event, self.context)
@@ -519,12 +508,9 @@ class TestRequestFiles(unittest.TestCase):
         """
         keys = [KEY1, KEY3, KEY4]
 
-        exp_event = {}
-        exp_event["config"] = {"glacier-bucket": "some_bucket"}
-        gran = {}
-        gran["granuleId"] = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
+        exp_event = {"config": {"glacier-bucket": "some_bucket"}}
+        gran = {"granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321", "keys": keys}
 
-        gran["keys"] = keys
         exp_event["input"] = {
             "granules": [gran]}
 
@@ -549,12 +535,12 @@ class TestRequestFiles(unittest.TestCase):
                                                   ])
         CumulusLogger.info = Mock()
         CumulusLogger.error = Mock()
-        exp_gran = {}
-        exp_gran['granuleId'] = gran["granuleId"]
 
-        exp_files = self.get_exp_files_3_errs()
-
-        exp_gran['files'] = exp_files
+        exp_gran = {
+            'granuleId': gran["granuleId"],
+            'keys': self.get_exp_keys_3_errs(),
+            'recover_files': self.get_exp_files_3_errs()
+        }
         exp_err = f"One or more files failed to be requested. {exp_gran}"
         qresult_1_inprogress, _ = create_insert_request(
             REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, gran["granuleId"], FILE1,
@@ -598,37 +584,30 @@ class TestRequestFiles(unittest.TestCase):
         """
         builds list of expected files for test case
         """
-        exp_files = []
+        return [
+            {'key': FILE1, 'dest_bucket': PROTECTED_BUCKET, 'success': True, 'err_msg': ''},
+            {'key': FILE3, 'dest_bucket': None, 'success': False,
+             'err_msg': 'An error occurred (NoSuchKey) when calling the restore_object '
+                        'operation: Unknown'},
+            {'key': FILE4, 'dest_bucket': PUBLIC_BUCKET, 'success': True, 'err_msg': ''}
+        ]
 
-        exp_file = {}
-        exp_file['key'] = FILE1
-        exp_file['dest_bucket'] = PROTECTED_BUCKET
-        exp_file['success'] = True
-        exp_file['err_msg'] = ''
-        exp_files.append(exp_file)
-
-        exp_file = {}
-        exp_file['key'] = FILE3
-        exp_file['dest_bucket'] = None
-        exp_file['success'] = False
-        exp_file['err_msg'] = 'An error occurred (NoSuchKey) when calling the restore_object ' \
-                              'operation: Unknown'
-        exp_files.append(exp_file)
-
-        exp_file = {}
-        exp_file['key'] = FILE4
-        exp_file['dest_bucket'] = PUBLIC_BUCKET
-        exp_file['success'] = True
-        exp_file['err_msg'] = ''
-        exp_files.append(exp_file)
-        return exp_files
+    @staticmethod
+    def get_exp_keys_3_errs():
+        """
+        builds list of expected files for test case
+        """
+        return [
+            {'key': FILE1, 'dest_bucket': PROTECTED_BUCKET},
+            {'key': FILE3, 'dest_bucket': None},
+            {'key': FILE4, 'dest_bucket': PUBLIC_BUCKET}
+        ]
 
     def test_task_client_error_2_times(self):
         """
         Test two files, first successful, second has two errors, then success.
         """
-        exp_event = {}
-        exp_event["config"] = {"glacier-bucket": "some_bucket"}
+        exp_event = {"config": {"glacier-bucket": "some_bucket"}}
         gran = {}
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
         gran["granuleId"] = granule_id
@@ -654,25 +633,21 @@ class TestRequestFiles(unittest.TestCase):
                                                   ])
         CumulusLogger.info = Mock()
         CumulusLogger.error = Mock()
-        exp_gran = {}
-        exp_gran['granuleId'] = granule_id
-        exp_files = []
 
-        exp_file = {}
-        exp_file['key'] = FILE1
-        exp_file['dest_bucket'] = PROTECTED_BUCKET
-        exp_file['success'] = True
-        exp_file['err_msg'] = ''
-        exp_files.append(exp_file)
-
-        exp_file = {}
-        exp_file['key'] = FILE2
-        exp_file['dest_bucket'] = PROTECTED_BUCKET
-        exp_file['success'] = True
-        exp_file['err_msg'] = ''
-        exp_files.append(exp_file)
-
-        exp_gran['files'] = exp_files
+        exp_granules = {
+            'granules': [
+                {
+                    'granuleId': granule_id,
+                    'keys': [
+                        {'key': FILE1, 'dest_bucket': PROTECTED_BUCKET},
+                        {'key': FILE2, 'dest_bucket': PROTECTED_BUCKET}
+                    ],
+                    'recover_files': [
+                        {'key': FILE1, 'dest_bucket': PROTECTED_BUCKET, 'success': True, 'err_msg': ''},
+                        {'key': FILE2, 'dest_bucket': PROTECTED_BUCKET, 'success': True, 'err_msg': ''}
+                    ]
+                }
+            ]}
 
         qresult1, _ = create_insert_request(
             REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, keys[0], "restore", "some_bucket",
@@ -687,7 +662,7 @@ class TestRequestFiles(unittest.TestCase):
         mock_ssm_get_parameter(4)
 
         result = request_files.task(exp_event, self.context)
-        self.assertEqual(exp_gran, result)
+        self.assertEqual(exp_granules, result)
 
         boto3.client.assert_called_with('ssm')
         s3_cli.restore_object.assert_any_call(
@@ -695,6 +670,7 @@ class TestRequestFiles(unittest.TestCase):
             Key=FILE1,
             RestoreRequest={'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}})
         database.single_query.assert_called()  # 4 times
+
 
 if __name__ == '__main__':
     unittest.main(argv=['start'])
