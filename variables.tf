@@ -91,6 +91,7 @@ variable "database_app_user_pw" {}
 
 variable "ddl_dir" {
   default = "ddl/"
+  description = "Must have trailing /"
 }
 variable "drop_database" {
   //TODO Maybe this needs to be a boolean false?

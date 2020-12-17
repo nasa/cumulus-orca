@@ -5,10 +5,15 @@ Description:  Unit tests for db_deploy.py.
 """
 import os
 import unittest
-from unittest.mock import Mock
+import uuid
+from typing import Dict
+from unittest.mock import Mock, call
 import json
 import boto3
+import database
 import db_config
+from psycopg2._psycopg import connection
+
 import db_deploy
 from db_deploy import DatabaseError
 
@@ -174,6 +179,100 @@ class TestDbDeploy(unittest.TestCase):
         exp_files = []
         file_list = db_deploy.get_files_in_dir(exp_dir)
         self.assertEqual(exp_files, file_list)
+
+    def test_regression_test(self):
+        """
+        A deliberately brittle test as a stopgap against accidental parameter/function call changes.
+        """
+        db_user_pass = uuid.uuid4().__str__()
+        db_admin_pass = uuid.uuid4().__str__()
+        db_host = uuid.uuid4().__str__()
+        db_name = uuid.uuid4().__str__()
+        db_user = uuid.uuid4().__str__()
+        db_port = uuid.uuid4().__str__()
+        ddl_dir = uuid.uuid4().__str__()
+        script_filename_1 = uuid.uuid4().__str__()
+        script_filename_2 = uuid.uuid4().__str__()
+        drop_database = 'True'
+
+        ssm_vars = {
+            'drdb-user-pass': (db_user_pass, True),
+            'drdb-admin-pass': (db_admin_pass, True),
+            'drdb-host': (db_host, False)
+        }
+
+        boto3.client = Mock()
+        ssm = boto3.client('ssm')
+
+        # noinspection PyPep8Naming
+        def ssm_return_function(Name, WithDecryption):
+            item = ssm_vars[Name]
+            if item[1] != WithDecryption:
+                raise KeyError
+            return {'Parameter': {'Value': item[0]}}
+
+        ssm.get_parameter = ssm_return_function
+
+        os.environ['DATABASE_NAME'] = db_name
+        os.environ['DATABASE_USER'] = db_user
+        os.environ['DATABASE_PORT'] = db_port
+        os.environ['DROP_DATABASE'] = drop_database
+        os.environ['DDL_DIR'] = ddl_dir + db_deploy.SEP
+        os.environ['PLATFORM'] = 'AWS'
+
+        postgres_con = Mock()
+        another_postgres_con = Mock()
+
+        def return_connection_function(connection_info: Dict):
+            if connection_info == {"db_host": db_host,
+                                   "db_port": db_port,
+                                   "db_name": 'postgres',
+                                   "db_user": 'postgres',
+                                   "db_pw": db_admin_pass}:
+                return postgres_con
+            if connection_info == {"db_host": db_host,
+                                   "db_port": db_port,
+                                   "db_name": db_name,
+                                   "db_user": 'postgres',
+                                   "db_pw": db_admin_pass}:
+                return another_postgres_con
+        database.return_connection = return_connection_function
+        postgres_con_cursor = Mock()
+        another_postgres_con_cursor = Mock()
+
+        # noinspection PyPep8Naming
+        def return_cursor_return_function(conn: connection):
+            if conn is postgres_con:
+                return postgres_con_cursor
+            if conn is another_postgres_con:
+                return another_postgres_con_cursor
+        database.return_cursor = return_cursor_return_function
+
+        walk_return_value = [(None, None, [script_filename_1, script_filename_2, 'init.sql'])]
+        db_deploy.walk_wrapper = Mock(return_value=walk_return_value)
+        database.query_from_file = Mock()
+        database.query_no_params = Mock()
+
+        result = db_deploy.task(None, None)
+
+        db_deploy.walk_wrapper.assert_called_once_with(f"{ddl_dir}{db_deploy.SEP}tables")
+        database.query_from_file.assert_has_calls([
+            call(postgres_con_cursor, f"{ddl_dir}{db_deploy.SEP}database{db_deploy.SEP}database_drop.sql"),
+            call(postgres_con_cursor, f"{ddl_dir}{db_deploy.SEP}database{db_deploy.SEP}database_create.sql"),
+            call(postgres_con_cursor, f"{ddl_dir}{db_deploy.SEP}database{db_deploy.SEP}database_comment.sql"),
+            call(postgres_con_cursor, f"{ddl_dir}{db_deploy.SEP}roles{db_deploy.SEP}app_role.sql"),
+            call(postgres_con_cursor, f"{ddl_dir}{db_deploy.SEP}roles{db_deploy.SEP}appdbo_role.sql"),
+            call(postgres_con_cursor, f"{ddl_dir}{db_deploy.SEP}users{db_deploy.SEP}dbo.sql"),
+            call(postgres_con_cursor, f"{ddl_dir}{db_deploy.SEP}users{db_deploy.SEP}appuser.sql"),
+            call(another_postgres_con_cursor, f"{ddl_dir}{db_deploy.SEP}schema{db_deploy.SEP}app.sql"),
+            call(another_postgres_con_cursor, f"{ddl_dir}{db_deploy.SEP}tables{db_deploy.SEP}{script_filename_1}"),
+            call(another_postgres_con_cursor, f"{ddl_dir}{db_deploy.SEP}tables{db_deploy.SEP}{script_filename_2}")
+        ], any_order=False)
+        database.query_no_params.assert_has_calls([
+                call(postgres_con_cursor, f"ALTER USER {db_user} WITH PASSWORD '{db_user_pass}';"),
+                call(postgres_con_cursor, f"ALTER USER dbo WITH PASSWORD '{db_user_pass}';"),
+                call(another_postgres_con_cursor, """SET SESSION AUTHORIZATION dbo;""")
+        ], any_order=False)
 
     def test_get_secretsmanager_keys(self):
         try:
