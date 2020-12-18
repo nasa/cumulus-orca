@@ -209,22 +209,22 @@ FUNCTIONS
                     to sleep between retry attempts.
                 RESTORE_RETRIEVAL_TYPE (str, optional, default = 'Standard'): the Tier
                     for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
-                DATABASE_PORT (str): the database port. The default is 5432.
-                DATABASE_NAME (str): the name of the database.
-                DATABASE_USER (str): the name of the application user.
+                DATABASE_PORT (str): the database port. The default is 5432.  # todo: Unused unless hidden in import.
+                DATABASE_NAME (str): the name of the database.  # todo: Unused unless hidden in import.
+                DATABASE_USER (str): the name of the application user.  # todo: Unused unless hidden in import.
             Parameter Store:
                 drdb-user-pass (str): the password for the application user (DATABASE_USER).
                 drdb-host (str): the database host
             Args:
-                'event' (dict): A dict with the following keys:
+                event (dict): A dict with the following keys:
                     'config' (dict): A dict with the following keys:
                         'glacier_bucket' (str): The name of the glacier bucket from which the files
                         will be restored.
                     'input' (dict): A dict with the following keys:
                         'granules' (list(dict)): A list of dicts with the following keys:
                             'granuleId' (str): The id of the granule being restored.
-                            'keys' (list(dict)): A list of dicts with the following keys:
-                                'key' (str): Glacier key for the granule.
+                            'keys' (list(dict)): A list of dicts with the following keys:  # TODO: rename.
+                                'key' (str): Name of the file within the granule.
                                 'dest_bucket' (str): The bucket the restored file will be moved
                                     to after the restore completes.
                     Example: {
@@ -260,7 +260,7 @@ FUNCTIONS
         Returns:
             True if the object exists, otherwise False.
     
-    process_granule(s3: botocore.client.BaseClient, granule: Dict, glacier_bucket: str, exp_days: int) -> Dict
+    process_granule(s3: botocore.client.BaseClient, granule: Dict, glacier_bucket: str, exp_days: int)
     
     restore_object(s3_cli: botocore.client.BaseClient, obj: Dict[str, Any], attempt: int, retries: int, retrieval_type: str = 'Standard') -> str
     
@@ -292,7 +292,7 @@ FUNCTIONS
                     'granules' (List): A list of dicts, each with the following keys:
                         'granuleId' (string): The id of the granule being restored.
                         'recover_files' (list(dict)): A list of dicts with the following keys:
-                            'key': The glacier key of the file to restore.
+                            'key' (str): Name of the file within the granule.
                             'dest_bucket' (str): The bucket the restored file will be moved
                                 to after the restore completes.
                             'success' (boolean): True, indicating the restore request was submitted successfully,
@@ -314,7 +314,28 @@ FUNCTIONS
 
 DATA
     Any = typing.Any
+    CONFIG_GLACIER_BUCKET_KEY = 'glacier-bucket'
     Dict = typing.Dict
+    EVENT_CONFIG_KEY = 'config'
+    EVENT_INPUT_KEY = 'input'
+    FILE_DEST_BUCKET_KEY = 'dest_bucket'
+    FILE_ERROR_MESSAGE_KEY = 'err_msg'
+    FILE_KEY_KEY = 'key'
+    FILE_SUCCESS_KEY = 'success'
+    GRANULE_GRANULE_ID_KEY = 'granuleId'
+    GRANULE_KEYS_KEY = 'keys'
+    GRANULE_RECOVER_FILES_KEY = 'recover_files'
+    INPUT_GRANULES_KEY = 'granules'
     LOGGER = <cumulus_logger.CumulusLogger object>
-    List = typing.List
+    OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY = 'RESTORE_EXPIRE_DAYS'
+    OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY = 'RESTORE_REQUEST_RETRIES'
+    OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY = 'RESTORE_RETRIEVAL_TYPE'
+    OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY = 'RESTORE_RETRY_SLEEP_SECS'
+    REQUESTS_DB_DEST_BUCKET_KEY = 'dest_bucket'
+    REQUESTS_DB_ERROR_MESSAGE_KEY = 'err_msg'
+    REQUESTS_DB_GLACIER_BUCKET_KEY = 'glacier_bucket'
+    REQUESTS_DB_GRANULE_ID_KEY = 'granule_id'
+    REQUESTS_DB_JOB_STATUS_KEY = 'job_status'
+    REQUESTS_DB_REQUEST_GROUP_ID_KEY = 'request_group_id'
+    REQUESTS_DB_REQUEST_ID_KEY = 'request_id'
 ```
