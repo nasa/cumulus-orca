@@ -155,7 +155,7 @@ Example of expected input to the `handler` task itself:
                   }
               ],
               "granuleRecoveryWorkflow": "DrRecoveryWorkflow",
-              "exclude_file_types": [".cmr", ".cmr.xml"]
+              "excludeFileTypes": [".cmr", ".cmr.xml"]
           }}
   }
 }

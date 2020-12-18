@@ -15,11 +15,11 @@ COLLECTION_NAME_KEY = 'name'
 COLLECTION_VERSION_KEY = 'version'
 COLLECTION_URL_PATH_KEY = 'url_path'
 COLLECTION_META_KEY = 'meta'
-EXCLUDE_FILE_TYPES_KEY = 'exclude_file_types'
+EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
 
 def should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -> bool:
     """
-    Tests whether or not file is included in {exclude_file_types} from copy to glacier.
+    Tests whether or not file is included in {excludeFileTypes} from copy to glacier.
     Args:
         granule_url: s3 url of granule.
         exclude_file_types: List of extensions to exclude in the backup
@@ -139,12 +139,14 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
             }
         )
         if should_exclude_files_type(granule_url, exclude_file_types):
-            continue  # todo: This should be logged in output so users know that their file wasn't copied and why.
+            print(f"Excluding {granule_url} from glacier backup because of collection configured {EXCLUDE_FILE_TYPES_KEY}.")
+            continue
         source = get_source_bucket_and_key(granule_url)  # todo: Handle 'None' return value.
         copy_granule_between_buckets(source_bucket_name=source[1],
                                      source_key=source[2],
                                      destination_bucket=glacier_bucket,
                                      destination_key=f"{collection_url_path}/{filename}")
+        print(f"Copied {granule_url} into glacier storage bucket {glacier_bucket}.")
 
     final_output = list(granule_data.values())
     return {'granules': final_output, 'input': granule_urls}
@@ -261,7 +263,7 @@ def handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any:
 #                        }
 #                    ],
 #                    "granuleRecoveryWorkflow": "DrRecoveryWorkflow",
-#                    "exclude_file_types": [".cmr", ".xml", ".cmr.xml"]
+#                    "excludeFileTypes": [".cmr", ".xml", ".cmr.xml"]
 #                }}
 #        }
 #    }
