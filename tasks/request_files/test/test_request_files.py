@@ -54,7 +54,7 @@ class TestRequestFiles(unittest.TestCase):
         os.environ["DATABASE_USER"] = "unittestdbuser"
         os.environ["DATABASE_PW"] = "unittestdbpw"
         os.environ['RESTORE_EXPIRE_DAYS'] = '5'
-        os.environ['RESTORE_REQUEST_RETRIES'] = '3'
+        os.environ['RESTORE_REQUEST_RETRIES'] = '2'
         self.context = LambdaContextMock()
 
     def tearDown(self):
@@ -314,7 +314,7 @@ class TestRequestFiles(unittest.TestCase):
                                       mock_request_id_generator: MagicMock):
         """
         Test a file that is not in glacier.
-        # todo: What is expected? Right now the exception just bubbles up, possibly due to bug in object_exists
+        # todo: Expand test descriptions.
         """
         file1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.xyz"
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
@@ -324,8 +324,6 @@ class TestRequestFiles(unittest.TestCase):
                     [{"granuleId": granule_id, "keys": [{"key": file1, "dest_bucket": None}]}]
             },
             "config": {"glacier-bucket": "my-bucket"}}
-        # todo: As best I can tell, this is the wrongest place to check this. This test SHOULD NEVER use this.
-        os.environ['RESTORE_RETRIEVAL_TYPE'] = 'BadTypeUseDefault'
         mock_s3_cli = boto3.client('s3')
         # todo: Verify the below with a real-world db. If not the same, fix request_files.object_exists
         mock_s3_cli.head_object.side_effect = [ClientError({'Error': {'Code': 'NotFound'}}, 'head_object')]
@@ -352,7 +350,6 @@ class TestRequestFiles(unittest.TestCase):
             mock_s3_cli.head_object.assert_called_with(Bucket='my-bucket', Key=file1)
         except requests_db.DatabaseError as err:
             self.fail(str(err))  # todo: Why? If you let it throw, it ends up the same way.
-        del os.environ['RESTORE_RETRIEVAL_TYPE']  # todo: Forget a finally?
 
     # todo: single_query is not called in code. Replace with higher-level checks.
     @patch('database.single_query')
@@ -391,7 +388,7 @@ class TestRequestFiles(unittest.TestCase):
         mock_ssm_get_parameter(1)
         try:
             result = request_files.task(event, self.context)
-            os.environ['RESTORE_REQUEST_RETRIES'] = '3'
+            os.environ['RESTORE_REQUEST_RETRIES'] = '2'  # todo: This test claims 'no_retries'
             self.assertEqual(exp_granules, result)
 
             mock_boto3_client.assert_called_with('ssm')

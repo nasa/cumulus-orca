@@ -5,7 +5,7 @@ Description:  Lambda function that makes a restore request from glacier for each
 
 import os
 import time
-from typing import Dict, Any, List
+from typing import Dict, Any
 
 # noinspection PyPackageRequirements
 import boto3
@@ -146,14 +146,14 @@ def task(event: Dict, context: object) -> Dict[str, Any]:  # pylint: disable-msg
 
     # todo: Looks like this line is why multiple granules are not supported.
     # todo: Using the default value {} for copied_granule will cause this function to raise errors every time.
-    copied_granule = process_granule(s3, copied_granule, glacier_bucket, exp_days)
+    process_granule(s3, copied_granule, glacier_bucket, exp_days)
 
     # Cumulus expects response (payload.granules) to be a list of granule objects.
     return {INPUT_GRANULES_KEY: [copied_granule]}
 
 
 def process_granule(s3: BaseClient, granule: Dict, glacier_bucket: str,
-                    exp_days: int) -> Dict:  # pylint: disable-msg=invalid-name
+                    exp_days: int):  # pylint: disable-msg=invalid-name
     f"""Call restore_object for the files in the granule_list
         Args:
             s3: An instance of boto3 s3 client
@@ -181,7 +181,7 @@ def process_granule(s3: BaseClient, granule: Dict, glacier_bucket: str,
     try:
         retries = int(os.environ[OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY])
     except KeyError:
-        retries = 3
+        retries = 2
 
     try:
         retry_sleep_secs = float(os.environ[OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY])
@@ -201,7 +201,7 @@ def process_granule(s3: BaseClient, granule: Dict, glacier_bucket: str,
     attempt = 1
     request_group_id = requests_db.request_id_generator()
     granule_id = granule[GRANULE_GRANULE_ID_KEY]
-    while attempt <= retries:  # todo: Same timing bug here.
+    while attempt <= retries + 1:
         for a_file in granule[GRANULE_RECOVER_FILES_KEY]:
             if not a_file[FILE_SUCCESS_KEY]:
                 try:
@@ -223,7 +223,10 @@ def process_granule(s3: BaseClient, granule: Dict, glacier_bucket: str,
                     a_file[FILE_ERROR_MESSAGE_KEY] = str(err)
 
         attempt = attempt + 1
-        if attempt <= retries:  # todo: Fix sleep structure. As is, extra sleeps will happen.
+        if attempt <= retries + 1:
+            # Check for early completion.
+            if all(a_file[FILE_SUCCESS_KEY] for a_file in granule[GRANULE_RECOVER_FILES_KEY]):
+                break
             time.sleep(retry_sleep_secs)
 
     for a_file in granule[GRANULE_RECOVER_FILES_KEY]:
@@ -231,7 +234,6 @@ def process_granule(s3: BaseClient, granule: Dict, glacier_bucket: str,
         if not a_file[FILE_SUCCESS_KEY]:
             LOGGER.error(f"One or more files failed to be requested from {glacier_bucket}. {granule}")
             raise RestoreRequestError(f'One or more files failed to be requested. {granule}')
-    return granule  # todo: Since granule is modified, return is unneeded.
 
 
 def object_exists(s3_cli: BaseClient, glacier_bucket: str, file_key: str) -> bool:
@@ -245,7 +247,7 @@ def object_exists(s3_cli: BaseClient, glacier_bucket: str, file_key: str) -> boo
         """
     try:
         # head_object will fail with a thrown 404 if the object doesn't exist
-        # todo: The above case is not covered, so this will ALWAYS return True.
+        # todo: The above case was not covered, and should be considered untested.
         s3_cli.head_object(Bucket=glacier_bucket, Key=file_key)
         return True
     except ClientError as err:
@@ -298,18 +300,17 @@ def restore_object(s3_cli: BaseClient, obj: Dict[str, Any], attempt: int, retrie
         # NoSuchBucket, NoSuchKey, or InvalidObjectState error == the object's
         # storage class was not GLACIER
         LOGGER.error(f"{c_err}. bucket: {obj[REQUESTS_DB_GLACIER_BUCKET_KEY]} file: {obj['key']}")
-        if attempt == retries:  # todo: Fix timing bug
-            # todo: This 'except' gives me pause.
-            #  If on last attempt, try one more BEYOND last attempt and add extra logging?
-            #  But raise the error from the previous failure if the extra run fails?
+        if attempt == retries + 1:
+            #  If on last attempt, post the error message to DB.
             try:
+                # todo: Is it safe to reuse data?
                 data[REQUESTS_DB_ERROR_MESSAGE_KEY] = str(c_err)
                 data[REQUESTS_DB_JOB_STATUS_KEY] = "error"
                 requests_db.submit_request(data)
+                # todo: Since we reuse data, if submit_request passes, does that mean we have succeeded?
                 LOGGER.info(f"Job {request_id} created.")
             except requests_db.DatabaseError as err:
-                LOGGER.error(f"Failed to log request in database. Error {str(err)}. Request: {data}")
-
+                LOGGER.error(f"Failed to log error message in database. Error {str(err)}. Request: {data}")
         raise c_err
     return request_id
 
@@ -339,7 +340,7 @@ def handler(event: Dict[str, Any], context):  # pylint: disable-msg=unused-argum
             drdb-user-pass (str): the password for the application user (DATABASE_USER).
             drdb-host (str): the database host
         Args:
-            'event' (dict): A dict with the following keys:
+            event (dict): A dict with the following keys:
                 'config' (dict): A dict with the following keys:
                     'glacier_bucket' (str): The name of the glacier bucket from which the files
                     will be restored.

@@ -46,7 +46,7 @@ class TestRequestFilesPostgres(unittest.TestCase):
         self.mock_generator = requests_db.request_id_generator
         db_config.set_env()
         os.environ['RESTORE_EXPIRE_DAYS'] = '5'
-        os.environ['RESTORE_REQUEST_RETRIES'] = '3'
+        os.environ['RESTORE_REQUEST_RETRIES'] = '2'
         os.environ['RESTORE_RETRIEVAL_TYPE'] = 'Standard'
         self.context = LambdaContextMock()
 
