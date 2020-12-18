@@ -39,6 +39,7 @@ tasks/db_deploy/.idea
 tasks/db_deploy/test/__pycache__
 tasks/db_deploy/test/private_config.json
 tasks/db_deploy/build
+tasks/db_deploy/htmlcov/
 tasks/.idea/
 tasks/copy_files_to_archive/.vscode/.ropeproject/config.py
 tasks/copy_files_to_archive/.vscode/.ropeproject/objectdb
