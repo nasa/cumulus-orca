@@ -5,21 +5,19 @@ Description:  Unit tests for request_files.py.
 """
 import os
 import unittest
-from unittest.mock import Mock
+from unittest.mock import patch, MagicMock
 
 # noinspection PyPackageRequirements
 import boto3
 # noinspection PyPackageRequirements
-from botocore.exceptions import ClientError
-from cumulus_logger import CumulusLogger
-
+import database
 import requests_db
 # noinspection PyPackageRequirements
-import database
+from botocore.exceptions import ClientError
 # noinspection PyPackageRequirements
 from database import DbError
-import request_files
 
+import request_files
 from request_helpers import (REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_2,
                              REQUEST_GROUP_ID_EXP_3, REQUEST_ID1, REQUEST_ID2,
                              REQUEST_ID3, REQUEST_ID4, LambdaContextMock,
@@ -45,11 +43,10 @@ class TestRequestFiles(unittest.TestCase):
     """
 
     def setUp(self):
+        # todo: Give less deceptive names to storage. Remove storage where not needed.
         self.mock_boto3_client = boto3.client
-        self.mock_info = CumulusLogger.info
-        self.mock_error = CumulusLogger.error
         self.mock_single_query = database.single_query
-        self.mock_generator = requests_db.request_id_generator
+        # todo: These values should be used in unit tests.
         os.environ["DATABASE_HOST"] = "my.db.host.gov"
         os.environ["DATABASE_PORT"] = "54"
         os.environ["DATABASE_NAME"] = "sndbx"
@@ -60,10 +57,7 @@ class TestRequestFiles(unittest.TestCase):
         self.context = LambdaContextMock()
 
     def tearDown(self):
-        requests_db.request_id_generator = self.mock_generator
         database.single_query = self.mock_single_query
-        CumulusLogger.error = self.mock_error
-        CumulusLogger.info = self.mock_info
         boto3.client = self.mock_boto3_client
         del os.environ['RESTORE_EXPIRE_DAYS']
         del os.environ['RESTORE_REQUEST_RETRIES']
@@ -73,22 +67,31 @@ class TestRequestFiles(unittest.TestCase):
         del os.environ["DATABASE_PW"]
         del os.environ["DATABASE_PORT"]
 
-    def test_handler(self):
+    @patch('cumulus_logger.CumulusLogger.error')
+    def test_handler(self,
+                     mock_logger_error: MagicMock):
         """
         Tests the handler
-        # todo: Does it?
+        # todo: Does it? How does it?
         """
         input_event = create_handler_event()
         task_input = {"input": input_event["payload"], "config": {}}
         exp_err = f'request: {task_input} does not contain a config value for glacier-bucket'
-        CumulusLogger.error = Mock()
         try:
             request_files.handler(input_event, self.context)
+            self.fail('Expected error not raised.')
         except request_files.RestoreRequestError as roe:
             self.assertEqual(exp_err, str(roe))
-            # todo: Add failure when error not raised
 
-    def test_task_one_granule_4_files_success(self):
+    @patch('requests_db.request_id_generator')
+    @patch('database.single_query')
+    @patch('boto3.client')
+    @patch('cumulus_logger.CumulusLogger.info')
+    def test_task_one_granule_4_files_success(self,
+                                              mock_logger_info: MagicMock,
+                                              mock_boto3_client: MagicMock,
+                                              mock_database_single_query: MagicMock,
+                                              mock_request_id_generator: MagicMock):
         """
         Test four files for one granule - successful
         """
@@ -108,17 +111,18 @@ class TestRequestFiles(unittest.TestCase):
             }
         }
 
-        boto3.client = Mock()
-        s3_cli = boto3.client('s3')
-        s3_cli.restore_object = Mock(side_effect=[None,
+        mock_s3_cli = mock_boto3_client('s3')
+        mock_s3_cli.restore_object.side_effect = [None,
                                                   None,
                                                   None,
                                                   None
-                                                  ])
-        s3_cli.head_object = Mock()
-        CumulusLogger.info = Mock()
+                                                  ]
         qresult_1_inprogress, _ = create_insert_request(
             REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, files[0],
+            "restore", "some_bucket", "inprogress",
+            UTC_NOW_EXP_1, None, None)
+        qresult_2_inprogress, _ = create_insert_request(
+            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, files[1],
             "restore", "some_bucket", "inprogress",
             UTC_NOW_EXP_1, None, None)
         qresult_3_inprogress, _ = create_insert_request(
@@ -130,14 +134,13 @@ class TestRequestFiles(unittest.TestCase):
             "restore", "some_bucket", "inprogress",
             UTC_NOW_EXP_1, None, None)
 
-        requests_db.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
-                                                             REQUEST_ID1,
-                                                             REQUEST_ID2,
-                                                             REQUEST_ID3,
-                                                             REQUEST_ID4])
-        database.single_query = Mock(
-            side_effect=[qresult_1_inprogress, qresult_1_inprogress,
-                         qresult_3_inprogress, qresult_4_inprogress])
+        mock_request_id_generator.side_effect = [REQUEST_GROUP_ID_EXP_1,
+                                                 REQUEST_ID1,
+                                                 REQUEST_ID2,
+                                                 REQUEST_ID3,
+                                                 REQUEST_ID4]
+        mock_database_single_query.side_effect = [qresult_1_inprogress, qresult_2_inprogress,
+                                                  qresult_3_inprogress, qresult_4_inprogress]
         mock_ssm_get_parameter(4)
 
         try:
@@ -145,30 +148,30 @@ class TestRequestFiles(unittest.TestCase):
         except requests_db.DatabaseError as err:
             self.fail(str(err))
 
-        boto3.client.assert_called_with('ssm')
-        s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
-                                           Key=FILE1)
-        s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
-                                           Key=FILE2)
-        s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
-                                           Key=FILE3)
-        s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
-                                           Key=FILE4)
+        mock_boto3_client.assert_called_with('ssm')
+        mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
+                                                Key=FILE1)
+        mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
+                                                Key=FILE2)
+        mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
+                                                Key=FILE3)
+        mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
+                                                Key=FILE4)
         restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}}
 
-        s3_cli.restore_object.assert_any_call(
+        mock_s3_cli.restore_object.assert_any_call(
             Bucket='my-dr-fake-glacier-bucket',
             Key=FILE1,
             RestoreRequest=restore_req_exp)
-        s3_cli.restore_object.assert_any_call(
+        mock_s3_cli.restore_object.assert_any_call(
             Bucket='my-dr-fake-glacier-bucket',
             Key=FILE2,
             RestoreRequest=restore_req_exp)
-        s3_cli.restore_object.assert_any_call(
+        mock_s3_cli.restore_object.assert_any_call(
             Bucket='my-dr-fake-glacier-bucket',
             Key=FILE3,
             RestoreRequest=restore_req_exp)
-        s3_cli.restore_object.assert_called_with(
+        mock_s3_cli.restore_object.assert_called_with(
             Bucket='my-dr-fake-glacier-bucket',
             Key=FILE4,
             RestoreRequest=restore_req_exp)
@@ -181,7 +184,7 @@ class TestRequestFiles(unittest.TestCase):
         exp_granules = {'granules': [exp_gran]}
 
         self.assertEqual(exp_granules, result)
-        database.single_query.assert_called()  # called 4 times
+        mock_database_single_query.assert_called()  # called 4 times # todo: No..?
 
     @staticmethod
     def get_expected_files():
@@ -219,7 +222,17 @@ class TestRequestFiles(unittest.TestCase):
             },
         ]
 
-    def test_task_one_granule_1_file_db_error(self):
+    @patch('database.single_query')
+    @patch('requests_db.request_id_generator')
+    @patch('boto3.client')
+    @patch('cumulus_logger.CumulusLogger.error')
+    @patch('cumulus_logger.CumulusLogger.info')
+    def test_task_one_granule_1_file_db_error(self,
+                                              mock_logger_info: MagicMock,
+                                              mock_logger_error: MagicMock,
+                                              mock_boto3_client: MagicMock,
+                                              mock_request_id_generator: MagicMock,
+                                              mock_database_single_query: MagicMock):
         """
         Test one file for one granule - db error inserting status
         """
@@ -240,28 +253,22 @@ class TestRequestFiles(unittest.TestCase):
             }
         }
 
-        boto3.client = Mock()
-        s3_cli = boto3.client('s3')
-        s3_cli.restore_object = Mock(side_effect=[None
-                                                  ])
-        s3_cli.head_object = Mock()
-        CumulusLogger.info = Mock()
-        CumulusLogger.error = Mock()
-        requests_db.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
-                                                             REQUEST_ID1])
-        database.single_query = Mock(
-            side_effect=[DbError("mock insert failed error")])
+        mock_s3_cli = mock_boto3_client('s3')
+        mock_s3_cli.restore_object.side_effect = [None]
+        mock_request_id_generator.side_effect = [REQUEST_GROUP_ID_EXP_1,
+                                                 REQUEST_ID1]
+        mock_database_single_query.side_effect = [DbError("mock insert failed error")]
         mock_ssm_get_parameter(1)
         try:
             result = request_files.task(input_event, self.context)
         except requests_db.DatabaseError as err:
             self.fail(f"failed insert does not throw exception. {str(err)}")
 
-        boto3.client.assert_called_with('ssm')
-        s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
-                                           Key=FILE1)
+        mock_boto3_client.assert_called_with('ssm')  # todo: This feels like it should have more checks...
+        mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
+                                                Key=FILE1)
         restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}}
-        s3_cli.restore_object.assert_any_call(
+        mock_s3_cli.restore_object.assert_any_call(
             Bucket='my-dr-fake-glacier-bucket',
             Key=FILE1,
             RestoreRequest=restore_req_exp)
@@ -275,7 +282,7 @@ class TestRequestFiles(unittest.TestCase):
         ]}
 
         self.assertEqual(exp_granules, result)
-        database.single_query.assert_called()  # called 1 times
+        mock_database_single_query.assert_called()  # called 1 times
 
     def test_task_two_granules(self):
         """
@@ -294,9 +301,14 @@ class TestRequestFiles(unittest.TestCase):
             self.fail("RestoreRequestError expected")
         except request_files.RestoreRequestError as roe:
             self.assertEqual(exp_err, str(roe))
-        # todo: fail when not raised
 
-    def test_task_file_not_in_glacier(self):
+    @patch('requests_db.request_id_generator')
+    @patch('boto3.client')
+    @patch('cumulus_logger.CumulusLogger.info')
+    def test_task_file_not_in_glacier(self,
+                                      mock_logger_info: MagicMock,
+                                      mock_boto3_client: MagicMock,
+                                      mock_request_id_generator: MagicMock):
         """
         Test a file that is not in glacier.
         # todo: What is expected? Right now the exception just bubbles up, possibly due to bug in object_exists
@@ -311,23 +323,24 @@ class TestRequestFiles(unittest.TestCase):
             "config": {"glacier-bucket": "my-bucket"}}
         # todo: As best I can tell, this is the wrongest place to check this. This test SHOULD NEVER use this.
         os.environ['RESTORE_RETRIEVAL_TYPE'] = 'BadTypeUseDefault'
-        boto3.client = Mock()
-        s3_cli = boto3.client('s3')
-        s3_cli.head_object = Mock(
-            side_effect=[ClientError({'Error': {'Code': 'NotFound'}}, 'head_object')])
-        CumulusLogger.info = Mock()
-        requests_db.request_id_generator = Mock(return_value=REQUEST_GROUP_ID_EXP_1)
+        mock_s3_cli = boto3.client('s3')
+        mock_s3_cli.head_object.side_effect = [ClientError({'Error': {'Code': 'NotFound'}}, 'head_object')]
+        mock_request_id_generator.return_value = REQUEST_GROUP_ID_EXP_1
         try:
             result = request_files.task(event, self.context)
 
             self.assertEqual({'files': [], 'granuleId': granule_id}, result)
-            boto3.client.assert_called_with('s3')
-            s3_cli.head_object.assert_called_with(Bucket='my-bucket', Key=file1)
+            mock_boto3_client.assert_called_with('s3')
+            mock_s3_cli.head_object.assert_called_with(Bucket='my-bucket', Key=file1)
         except requests_db.DatabaseError as err:
             self.fail(str(err))  # todo: Why? If you let it throw, it ends up the same way.
         del os.environ['RESTORE_RETRIEVAL_TYPE']  # todo: Forget a finally?
 
-    def test_task_no_retries_env_var(self):
+    @patch('database.single_query')
+    @patch('boto3.client')
+    def test_task_no_retries_env_var(self,
+                                     mock_boto3_client: MagicMock,
+                                     mock_database_single_query: MagicMock):
         """
         Test environment var RESTORE_REQUEST_RETRIES not set - use default.
         """
@@ -339,12 +352,9 @@ class TestRequestFiles(unittest.TestCase):
                 "granules":
                     [{"granuleId": granule_id, "keys": [KEY1]}]}, "config": {"glacier-bucket": "some_bucket"}}
 
-        boto3.client = Mock()
-        s3_cli = boto3.client('s3')
-        s3_cli.head_object = Mock()
-        s3_cli.restore_object = Mock(side_effect=[None])
-        CumulusLogger.info = Mock()
-        requests_db.request_id_generator = Mock(return_value=REQUEST_ID1)
+        mock_s3_cli = mock_boto3_client('s3')
+        mock_s3_cli.restore_object.side_effect = [None]
+        requests_db.request_id_generator.return_value = REQUEST_ID1
 
         exp_granules = {
             'granules': [
@@ -358,45 +368,51 @@ class TestRequestFiles(unittest.TestCase):
         qresult_1_inprogress, _ = create_insert_request(
             REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, FILE1, "restore", "some_bucket",
             "inprogress", UTC_NOW_EXP_1, None, None)
-        database.single_query = Mock(side_effect=[qresult_1_inprogress])
+        mock_database_single_query.side_effect = [qresult_1_inprogress]
         mock_ssm_get_parameter(1)
         try:
             result = request_files.task(event, self.context)
             os.environ['RESTORE_REQUEST_RETRIES'] = '3'
             self.assertEqual(exp_granules, result)
 
-            boto3.client.assert_called_with('ssm')
-            s3_cli.head_object.assert_called_with(Bucket='some_bucket',
-                                                  Key=FILE1)
+            mock_boto3_client.assert_called_with('ssm')
+            mock_s3_cli.head_object.assert_called_with(Bucket='some_bucket',
+                                                       Key=FILE1)
             restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}}
-            s3_cli.restore_object.assert_called_with(
+            mock_s3_cli.restore_object.assert_called_with(
                 Bucket='some_bucket',
                 Key=FILE1,
                 RestoreRequest=restore_req_exp)
-            database.single_query.assert_called_once()
+            mock_database_single_query.assert_called_once()
         except request_files.RestoreRequestError as err:
-            os.environ['RESTORE_REQUEST_RETRIES'] = '3'
-            self.fail(str(err))
+            self.fail(str(err))  # todo: Why? If you let it throw, it ends up the same way.
 
-    def test_task_no_expire_days_env_var(self):
+    @patch('requests_db.request_id_generator')
+    @patch('database.single_query')
+    @patch('boto3.client')
+    @patch('cumulus_logger.CumulusLogger.info')
+    def test_task_no_expire_days_env_var(self,
+                                         mock_logger_info: MagicMock,
+                                         mock_boto3_client: MagicMock,
+                                         mock_database_single_query: MagicMock,
+                                         mock_request_id_generator: MagicMock):
         """
         Test environment var RESTORE_EXPIRE_DAYS not set - use default.
         """
         del os.environ['RESTORE_EXPIRE_DAYS']
         os.environ['RESTORE_RETRIEVAL_TYPE'] = 'Expedited'
-        event = {}
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
-        event["config"] = {"glacier-bucket": "some_bucket"}
-        event["input"] = {
-            "granules": [{"granuleId": granule_id,
-                          "keys": [KEY1]}]}
+        event = {
+            "config": {"glacier-bucket": "some_bucket"},
+            "input": {
+                "granules": [{"granuleId": granule_id, "keys": [KEY1]}]
+            }
+        }
 
-        boto3.client = Mock()
-        s3_cli = boto3.client('s3')
-        s3_cli.head_object = Mock()
-        s3_cli.restore_object = Mock(side_effect=[None])
-        CumulusLogger.info = Mock()
-        requests_db.request_id_generator = Mock(return_value=REQUEST_ID1)
+        mock_s3_cli = mock_boto3_client('s3')
+        # mock_s3_cli.head_object = Mock()  # todo: Look into why this line was in many test without asserts.
+        mock_s3_cli.restore_object.side_effect = [None]
+        mock_request_id_generator.return_value = REQUEST_ID1
         exp_granules = {
             'granules': [
                 {
@@ -410,7 +426,7 @@ class TestRequestFiles(unittest.TestCase):
         qresult_1_inprogress, _ = create_insert_request(
             REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, FILE1, "restore", "some_bucket",
             "inprogress", UTC_NOW_EXP_1, None, None)
-        database.single_query = Mock(side_effect=[qresult_1_inprogress])
+        mock_database_single_query.side_effect = [qresult_1_inprogress]
         mock_ssm_get_parameter(1)
 
         try:
@@ -418,19 +434,21 @@ class TestRequestFiles(unittest.TestCase):
             self.assertEqual(exp_granules, result)
             os.environ['RESTORE_EXPIRE_DAYS'] = '3'
             del os.environ['RESTORE_RETRIEVAL_TYPE']
-            boto3.client.assert_called_with('ssm')
-            s3_cli.head_object.assert_called_with(Bucket='some_bucket',
-                                                  Key=FILE1)
+            mock_boto3_client.assert_called_with('ssm')
+            mock_s3_cli.head_object.assert_called_with(Bucket='some_bucket',
+                                                       Key=FILE1)
             restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Expedited'}}
-            s3_cli.restore_object.assert_called_with(
+            mock_s3_cli.restore_object.assert_called_with(
                 Bucket='some_bucket',
                 Key=FILE1,
                 RestoreRequest=restore_req_exp)
         except request_files.RestoreRequestError as err:
-            self.fail(str(err))
-        database.single_query.assert_called_once()
+            self.fail(str(err))  # todo: Why? If you let it throw, it ends up the same way.
+        mock_database_single_query.assert_called_once()
 
-    def test_task_no_glacier_bucket(self):
+    @patch('cumulus_logger.CumulusLogger.error')
+    def test_task_no_glacier_bucket(self,
+                                    mock_logger_error: MagicMock):
         """
         Test for missing glacier-bucket in config.
         """
@@ -439,14 +457,21 @@ class TestRequestFiles(unittest.TestCase):
                           "keys": [KEY1]}]}}
 
         exp_err = f"request: {exp_event} does not contain a config value for glacier-bucket"
-        CumulusLogger.error = Mock()
         try:
             request_files.task(exp_event, self.context)
             self.fail("RestoreRequestError expected")
         except request_files.RestoreRequestError as err:
             self.assertEqual(exp_err, str(err))
 
-    def test_task_client_error_one_file(self):
+    @patch('requests_db.request_id_generator')
+    @patch('boto3.client')
+    @patch('cumulus_logger.CumulusLogger.error')
+    @patch('cumulus_logger.CumulusLogger.info')
+    def test_task_client_error_one_file(self,
+                                        mock_logger_info: MagicMock,
+                                        mock_logger_error: MagicMock,
+                                        mock_boto3_client: MagicMock,
+                                        mock_request_id_generator: MagicMock):
         """
         Test retries for restore error for one file.
         """
@@ -454,22 +479,17 @@ class TestRequestFiles(unittest.TestCase):
             "granules": [{"granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
                           "keys": [KEY1]}]}}
 
-        os.environ['RESTORE_RETRY_SLEEP_SECS'] = '.5'
-        requests_db.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
-                                                             REQUEST_ID1,
-                                                             REQUEST_ID2,
-                                                             REQUEST_ID3])
-        boto3.client = Mock()
-        s3_cli = boto3.client('s3')
-        s3_cli.head_object = Mock()
-        s3_cli.restore_object = Mock(
-            side_effect=[ClientError({'Error': {'Code': 'NoSuchBucket'}}, 'restore_object'),
-                         ClientError({'Error': {'Code': 'NoSuchBucket'}}, 'restore_object'),
-                         ClientError({'Error': {'Code': 'NoSuchBucket'}}, 'restore_object')])
-        CumulusLogger.info = Mock()
-        CumulusLogger.error = Mock()
+        os.environ['RESTORE_RETRY_SLEEP_SECS'] = '.5'  # todo: This is not reset between tests
+        mock_request_id_generator.side_effect = [REQUEST_GROUP_ID_EXP_1,
+                                                 REQUEST_ID1,
+                                                 REQUEST_ID2,
+                                                 REQUEST_ID3]
+        mock_s3_cli = mock_boto3_client('s3')
+        mock_s3_cli.restore_object.side_effect = [ClientError({'Error': {'Code': 'NoSuchBucket'}}, 'restore_object'),
+                                                  ClientError({'Error': {'Code': 'NoSuchBucket'}}, 'restore_object'),
+                                                  ClientError({'Error': {'Code': 'NoSuchBucket'}}, 'restore_object')]
         mock_ssm_get_parameter(1)
-        os.environ['RESTORE_RETRIEVAL_TYPE'] = 'Standard'
+        os.environ['RESTORE_RETRIEVAL_TYPE'] = 'Standard'  # todo: This is not reset between tests
 
         exp_gran = {
             'granuleId': 'MOD09GQ.A0219114.N5aUCG.006.0656338553321',
@@ -494,16 +514,26 @@ class TestRequestFiles(unittest.TestCase):
             self.assertEqual(exp_err, str(err))
         del os.environ['RESTORE_RETRY_SLEEP_SECS']
         del os.environ['RESTORE_RETRIEVAL_TYPE']
-        boto3.client.assert_called_with('ssm')
-        s3_cli.head_object.assert_called_with(Bucket='some_bucket',
-                                              Key=FILE1)
+        mock_boto3_client.assert_called_with('ssm')
+        mock_s3_cli.head_object.assert_called_with(Bucket='some_bucket',
+                                                   Key=FILE1)
         restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}}
-        s3_cli.restore_object.assert_any_call(
+        mock_s3_cli.restore_object.assert_any_call(
             Bucket='some_bucket',
             Key=FILE1,
             RestoreRequest=restore_req_exp)
 
-    def test_task_client_error_3_times(self):
+    @patch('database.single_query')
+    @patch('requests_db.request_id_generator')
+    @patch('boto3.client')
+    @patch('cumulus_logger.CumulusLogger.error')
+    @patch('cumulus_logger.CumulusLogger.info')
+    def test_task_client_error_3_times(self,
+                                       mock_logger_info: MagicMock,
+                                       mock_logger_error: MagicMock,
+                                       mock_boto3_client: MagicMock,
+                                       mock_request_id_generator: MagicMock,
+                                       mock_single_query: MagicMock):
         """
         Test three files, two successful, one errors on all retries and fails.
         """
@@ -515,17 +545,15 @@ class TestRequestFiles(unittest.TestCase):
         exp_event["input"] = {
             "granules": [gran]}
 
-        requests_db.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
-                                                             REQUEST_ID1,
-                                                             REQUEST_GROUP_ID_EXP_3,
-                                                             REQUEST_ID2,
-                                                             REQUEST_ID3,
-                                                             REQUEST_ID4
-                                                             ])
-        boto3.client = Mock()
-        s3_cli = boto3.client('s3')
-        s3_cli.head_object = Mock()
-        s3_cli.restore_object = Mock(side_effect=[None,
+        mock_request_id_generator.side_effect = [REQUEST_GROUP_ID_EXP_1,
+                                                 REQUEST_ID1,
+                                                 REQUEST_GROUP_ID_EXP_3,
+                                                 REQUEST_ID2,
+                                                 REQUEST_ID3,
+                                                 REQUEST_ID4
+                                                 ]
+        mock_s3_cli = mock_boto3_client('s3')
+        mock_s3_cli.restore_object.side_effect = [None,
                                                   ClientError({'Error': {'Code': 'NoSuchBucket'}},
                                                               'restore_object'),
                                                   None,
@@ -533,9 +561,7 @@ class TestRequestFiles(unittest.TestCase):
                                                               'restore_object'),
                                                   ClientError({'Error': {'Code': 'NoSuchKey'}},
                                                               'restore_object')
-                                                  ])
-        CumulusLogger.info = Mock()
-        CumulusLogger.error = Mock()
+                                                  ]
 
         exp_gran = {
             'granuleId': gran["granuleId"],
@@ -559,11 +585,11 @@ class TestRequestFiles(unittest.TestCase):
             REQUEST_ID1, REQUEST_GROUP_ID_EXP_3, gran["granuleId"], FILE2,
             "restore", "some_bucket",
             "error", UTC_NOW_EXP_1, None, "'Code': 'NoSuchBucket'")
-        database.single_query = Mock(side_effect=[qresult_1_inprogress,
-                                                  qresult_1_error,
-                                                  qresult_3_inprogress,
-                                                  qresult_1_error,
-                                                  qresult_3_error])
+        mock_single_query.side_effect = [qresult_1_inprogress,
+                                         qresult_1_error,
+                                         qresult_3_inprogress,
+                                         qresult_1_error,
+                                         qresult_3_error]
         mock_ssm_get_parameter(5)
         try:
             request_files.task(exp_event, self.context)
@@ -571,14 +597,14 @@ class TestRequestFiles(unittest.TestCase):
         except request_files.RestoreRequestError as err:
             self.assertEqual(exp_err, str(err))
 
-        boto3.client.assert_called_with('ssm')
-        s3_cli.head_object.assert_any_call(Bucket='some_bucket',
-                                           Key=FILE1)
-        s3_cli.restore_object.assert_any_call(
+        mock_boto3_client.assert_called_with('ssm')
+        mock_s3_cli.head_object.assert_any_call(Bucket='some_bucket',
+                                                Key=FILE1)
+        mock_s3_cli.restore_object.assert_any_call(
             Bucket='some_bucket',
             Key=FILE1,
             RestoreRequest={'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}})
-        database.single_query.assert_called()  # 5 times
+        mock_single_query.assert_called()  # 5 times # todo: No..?
 
     @staticmethod
     def get_exp_files_3_errs():
@@ -604,7 +630,17 @@ class TestRequestFiles(unittest.TestCase):
             {'key': FILE4, 'dest_bucket': PUBLIC_BUCKET}
         ]
 
-    def test_task_client_error_2_times(self):
+    @patch('database.single_query')
+    @patch('requests_db.request_id_generator')
+    @patch('boto3.client')
+    @patch('cumulus_logger.CumulusLogger.error')
+    @patch('cumulus_logger.CumulusLogger.info')
+    def test_task_client_error_2_times(self,
+                                       mock_logger_info: MagicMock,
+                                       mock_logger_error: MagicMock,
+                                       mock_boto3_client: MagicMock,
+                                       mock_request_id_generator: MagicMock,
+                                       mock_database_single_query: MagicMock):
         """
         Test two files, first successful, second has two errors, then success.
         """
@@ -616,24 +652,20 @@ class TestRequestFiles(unittest.TestCase):
         gran["keys"] = keys
         exp_event["input"] = {
             "granules": [gran]}
-        requests_db.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
-                                                             REQUEST_ID1,
-                                                             REQUEST_GROUP_ID_EXP_2,
-                                                             REQUEST_ID2,
-                                                             REQUEST_ID3])
-        boto3.client = Mock()
-        s3_cli = boto3.client('s3')
-        s3_cli.head_object = Mock()
+        mock_request_id_generator.side_effect = [REQUEST_GROUP_ID_EXP_1,
+                                                 REQUEST_ID1,
+                                                 REQUEST_GROUP_ID_EXP_2,
+                                                 REQUEST_ID2,
+                                                 REQUEST_ID3]
+        mock_s3_cli = mock_boto3_client('s3')
 
-        s3_cli.restore_object = Mock(side_effect=[None,
+        mock_s3_cli.restore_object.side_effect = [None,
                                                   ClientError({'Error': {'Code': 'NoSuchBucket'}},
                                                               'restore_object'),
                                                   ClientError({'Error': {'Code': 'NoSuchBucket'}},
                                                               'restore_object'),
                                                   None
-                                                  ])
-        CumulusLogger.info = Mock()
-        CumulusLogger.error = Mock()
+                                                  ]
 
         exp_granules = {
             'granules': [
@@ -659,18 +691,18 @@ class TestRequestFiles(unittest.TestCase):
         qresult3, _ = create_insert_request(
             REQUEST_ID3, REQUEST_GROUP_ID_EXP_1, granule_id, keys[1], "restore", "some_bucket",
             "inprogress", UTC_NOW_EXP_1, None, None)
-        database.single_query = Mock(side_effect=[qresult1, qresult2, qresult2, qresult3])
+        mock_database_single_query.side_effect = [qresult1, qresult2, qresult2, qresult3]
         mock_ssm_get_parameter(4)
 
         result = request_files.task(exp_event, self.context)
         self.assertEqual(exp_granules, result)
 
-        boto3.client.assert_called_with('ssm')
-        s3_cli.restore_object.assert_any_call(
+        mock_boto3_client.assert_called_with('ssm')
+        mock_s3_cli.restore_object.assert_any_call(
             Bucket='some_bucket',
             Key=FILE1,
             RestoreRequest={'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}})
-        database.single_query.assert_called()  # 4 times
+        mock_database_single_query.assert_called()  # 4 times # todo: No..?
 
 
 if __name__ == '__main__':
