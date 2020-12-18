@@ -49,7 +49,6 @@ FILE_KEY_KEY = 'key'
 FILE_SUCCESS_KEY = 'success'
 FILE_ERROR_MESSAGE_KEY = 'err_msg'
 
-
 LOGGER = CumulusLogger()
 
 
@@ -251,7 +250,11 @@ def object_exists(s3_cli: BaseClient, glacier_bucket: str, file_key: str) -> boo
         return True
     except ClientError as err:
         LOGGER.error(err)
+        code = err.response['Error']['Code']
+        if code == 'NoSuchKey' or code == 'NotFound':  # Unit tests say 'NotFound', some online docs say 'NoSuchKey'
+            return False
         raise
+        # todo: Online docs suggest we could catch 'S3.Client.exceptions.NoSuchKey instead of deconstructing ClientError
 
 
 def restore_object(s3_cli: BaseClient, obj: Dict[str, Any], attempt: int, retries: int, retrieval_type: str = 'Standard'

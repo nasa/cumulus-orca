@@ -327,12 +327,27 @@ class TestRequestFiles(unittest.TestCase):
         # todo: As best I can tell, this is the wrongest place to check this. This test SHOULD NEVER use this.
         os.environ['RESTORE_RETRIEVAL_TYPE'] = 'BadTypeUseDefault'
         mock_s3_cli = boto3.client('s3')
+        # todo: Verify the below with a real-world db. If not the same, fix request_files.object_exists
         mock_s3_cli.head_object.side_effect = [ClientError({'Error': {'Code': 'NotFound'}}, 'head_object')]
         mock_request_id_generator.return_value = REQUEST_GROUP_ID_EXP_1
         try:
             result = request_files.task(event, self.context)
 
-            self.assertEqual({'files': [], 'granuleId': granule_id}, result)
+            expected_granules = {
+                'granules': [
+                    {
+                        'granuleId': granule_id,
+                        'keys': [
+                            {
+                                'dest_bucket': None,
+                                'key': file1
+                            }
+                        ],
+                        'recover_files': []
+                    }
+                ]
+            }
+            self.assertEqual(expected_granules, result)
             mock_boto3_client.assert_called_with('s3')
             mock_s3_cli.head_object.assert_called_with(Bucket='my-bucket', Key=file1)
         except requests_db.DatabaseError as err:
