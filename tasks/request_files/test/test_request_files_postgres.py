@@ -4,7 +4,7 @@ Name: test_request_files.py
 Description:  Unit tests for request_files.py.
 """
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch, MagicMock
 import os
 import boto3
 from botocore.exceptions import ClientError
@@ -151,7 +151,15 @@ class TestRequestFilesPostgres(unittest.TestCase):
         for row in end_rows:
             self.assertEqual("inprogress", row['job_status'])
 
-    def test_task_client_error_one_file(self):
+    @patch('requests_db.request_id_generator')
+    @patch('boto3.client')
+    @patch('cumulus_logger.CumulusLogger.error')
+    @patch('cumulus_logger.CumulusLogger.info')
+    def test_task_client_error_one_file(self,
+                                        mock_logger_info: MagicMock,
+                                        mock_logger_error: MagicMock,
+                                        mock_boto3_client: MagicMock,
+                                        mock_request_id_generator: MagicMock):
         """
         Test retries for restore error for one file.
         """
@@ -159,32 +167,31 @@ class TestRequestFilesPostgres(unittest.TestCase):
             "granules": [{"granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
                           "keys": [KEY1]}]}}
 
-        os.environ['RESTORE_RETRY_SLEEP_SECS'] = '.5'
-        requests_db.request_id_generator = Mock(side_effect=[REQUEST_GROUP_ID_EXP_1,
-                                                             REQUEST_ID1,
-                                                             REQUEST_ID2,
-                                                             REQUEST_ID3])
-        boto3.client = Mock()
-        s3_cli = boto3.client('s3')
-        s3_cli.head_object = Mock()
-        s3_cli.restore_object = Mock(
-            side_effect=[ClientError({'Error': {'Code': 'NoSuchBucket'}}, 'restore_object'),
-                         ClientError({'Error': {'Code': 'NoSuchBucket'}}, 'restore_object'),
-                         ClientError({'Error': {'Code': 'NoSuchBucket'}}, 'restore_object')])
-        CumulusLogger.info = Mock()
-        CumulusLogger.error = Mock()
+        os.environ['RESTORE_RETRY_SLEEP_SECS'] = '.5'  # todo: This is not reset between tests
+        mock_request_id_generator.side_effect = [REQUEST_GROUP_ID_EXP_1,
+                                                 REQUEST_ID1,
+                                                 REQUEST_ID2,
+                                                 REQUEST_ID3]
+        mock_s3_cli = mock_boto3_client('s3')
+        mock_s3_cli.restore_object.side_effect = [ClientError({'Error': {'Code': 'NoSuchBucket'}}, 'restore_object'),
+                                                  ClientError({'Error': {'Code': 'NoSuchBucket'}}, 'restore_object'),
+                                                  ClientError({'Error': {'Code': 'NoSuchBucket'}}, 'restore_object')]
         mock_ssm_get_parameter(1)
 
         exp_gran = {
             'granuleId': 'MOD09GQ.A0219114.N5aUCG.006.0656338553321',
             'keys': [
-                {'key': FILE1, 'dest_bucket': PROTECTED_BUCKET}
+                {
+                    'key': FILE1,
+                    'dest_bucket': PROTECTED_BUCKET
+                }
             ],
             'recover_files': [
                 {
                     'key': FILE1, 'dest_bucket': PROTECTED_BUCKET, 'success': False,
                     'err_msg': 'An error occurred (NoSuchBucket) when calling the restore_object operation: Unknown'
-                }]
+                }
+            ]
         }
         exp_err = f"One or more files failed to be requested. {exp_gran}"
         try:
@@ -193,11 +200,11 @@ class TestRequestFilesPostgres(unittest.TestCase):
         except request_files.RestoreRequestError as err:
             self.assertEqual(exp_err, str(err))
         del os.environ['RESTORE_RETRY_SLEEP_SECS']
-        boto3.client.assert_called_with('ssm')
-        s3_cli.head_object.assert_called_with(Bucket='some_bucket',
-                                              Key=FILE1)
+        mock_boto3_client.assert_called_with('ssm')
+        mock_s3_cli.head_object.assert_called_with(Bucket='some_bucket',
+                                                   Key=FILE1)
         restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}}
-        s3_cli.restore_object.assert_called_with(
+        mock_s3_cli.restore_object.assert_called_with(
             Bucket='some_bucket',
             Key=FILE1,
             RestoreRequest=restore_req_exp)

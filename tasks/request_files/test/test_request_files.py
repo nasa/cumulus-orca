@@ -502,8 +502,8 @@ class TestRequestFiles(unittest.TestCase):
             'recover_files': [
                 {
                     'key': FILE1, 'dest_bucket': PROTECTED_BUCKET, 'success': False,
-                    'err_msg': 'An error occurred (NoSuchBucket) when calling the restore_object '
-                               'operation: Unknown'}
+                    'err_msg': 'An error occurred (NoSuchBucket) when calling the restore_object operation: Unknown'
+                }
             ]
         }
         exp_err = f"One or more files failed to be requested. {exp_gran}"
