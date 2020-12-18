@@ -72,19 +72,6 @@ class TestRequestFilesPostgres(unittest.TestCase):
         del os.environ["DATABASE_PORT"]
         del os.environ["RESTORE_RETRIEVAL_TYPE"]
 
-    def test_handler(self):
-        """
-        Tests the handler
-        """
-        input_event = create_handler_event()
-        task_input = {"input": input_event["payload"], "config": {}}
-        exp_err = f'request: {task_input} does not contain a config value for glacier-bucket'
-        CumulusLogger.error = Mock()
-        try:
-            request_files.handler(input_event, self.context)
-        except request_files.RestoreRequestError as roe:
-            self.assertEqual(exp_err, str(roe))
-
     def test_task_one_granule_4_files_success(self):
         """
         Test four files for one granule - successful
