@@ -45,6 +45,7 @@ class TestRequestFiles(unittest.TestCase):
     def setUp(self):
         # todo: Give less deceptive names to storage. Remove storage where not needed.
         self.mock_boto3_client = boto3.client
+        # todo: single_query is not called in code. Replace with higher-level checks.
         self.mock_single_query = database.single_query
         # todo: These values should be used in unit tests.
         os.environ["DATABASE_HOST"] = "my.db.host.gov"
@@ -84,6 +85,7 @@ class TestRequestFiles(unittest.TestCase):
             self.assertEqual(exp_err, str(roe))
 
     @patch('requests_db.request_id_generator')
+    # todo: single_query is not called in code. Replace with higher-level checks.
     @patch('database.single_query')
     @patch('boto3.client')
     @patch('cumulus_logger.CumulusLogger.info')
@@ -222,6 +224,7 @@ class TestRequestFiles(unittest.TestCase):
             },
         ]
 
+    # todo: single_query is not called in code. Replace with higher-level checks.
     @patch('database.single_query')
     @patch('requests_db.request_id_generator')
     @patch('boto3.client')
@@ -336,6 +339,7 @@ class TestRequestFiles(unittest.TestCase):
             self.fail(str(err))  # todo: Why? If you let it throw, it ends up the same way.
         del os.environ['RESTORE_RETRIEVAL_TYPE']  # todo: Forget a finally?
 
+    # todo: single_query is not called in code. Replace with higher-level checks.
     @patch('database.single_query')
     @patch('boto3.client')
     def test_task_no_retries_env_var(self,
@@ -388,6 +392,7 @@ class TestRequestFiles(unittest.TestCase):
             self.fail(str(err))  # todo: Why? If you let it throw, it ends up the same way.
 
     @patch('requests_db.request_id_generator')
+    # todo: single_query is not called in code. Replace with higher-level checks.
     @patch('database.single_query')
     @patch('boto3.client')
     @patch('cumulus_logger.CumulusLogger.info')
@@ -523,6 +528,7 @@ class TestRequestFiles(unittest.TestCase):
             Key=FILE1,
             RestoreRequest=restore_req_exp)
 
+    # todo: single_query is not called in code. Replace with higher-level checks.
     @patch('database.single_query')
     @patch('requests_db.request_id_generator')
     @patch('boto3.client')
@@ -630,6 +636,7 @@ class TestRequestFiles(unittest.TestCase):
             {'key': FILE4, 'dest_bucket': PUBLIC_BUCKET}
         ]
 
+    # todo: single_query is not called in code. Replace with higher-level checks.
     @patch('database.single_query')
     @patch('requests_db.request_id_generator')
     @patch('boto3.client')
