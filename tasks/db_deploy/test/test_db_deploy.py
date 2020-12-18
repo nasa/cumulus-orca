@@ -209,23 +209,20 @@ class TestDbDeploy(unittest.TestCase):
         script_filename_2 = uuid.uuid4().__str__()
         drop_database = 'True'
 
-        ssm_vars = {
-            'drdb-user-pass': (db_user_pass, True),
-            'drdb-admin-pass': (db_admin_pass, True),
-            'drdb-host': (db_host, False)
+        secretsmanager_vars = {
+            'drdb-user-pass': db_user_pass,
+            'drdb-admin-pass': db_admin_pass,
+            'drdb-host': db_host
         }
 
-        mock_ssm = mock_boto3_client('ssm')
+        mock_secretsmanager = mock_boto3_client('secretsmanager')
 
         # noinspection PyPep8Naming
 
-        def ssm_return_function(Name, WithDecryption):
-            item = ssm_vars[Name]
-            if item[1] != WithDecryption:
-                raise KeyError
-            return {'Parameter': {'Value': item[0]}}
+        def secretsmanager_return_function(SecretId):
+            return {'SecretString': secretsmanager_vars[SecretId]}
 
-        mock_ssm.get_parameter = ssm_return_function
+        mock_secretsmanager.get_secret_value.side_effect = secretsmanager_return_function
 
         os.environ['DATABASE_NAME'] = db_name
         os.environ['DATABASE_USER'] = db_user
@@ -238,17 +235,17 @@ class TestDbDeploy(unittest.TestCase):
         another_postgres_con = Mock()
 
         def return_connection_function(connection_info: Dict):
-            if connection_info == {"db_host": db_host,
-                                   "db_port": db_port,
-                                   "db_name": 'postgres',
-                                   "db_user": 'postgres',
-                                   "db_pw": db_admin_pass}:
+            if connection_info == {'db_host': db_host,
+                                   'db_port': db_port,
+                                   'db_name': 'postgres',
+                                   'db_user': 'postgres',
+                                   'db_pw': db_admin_pass}:
                 return postgres_con
-            if connection_info == {"db_host": db_host,
-                                   "db_port": db_port,
-                                   "db_name": db_name,
-                                   "db_user": 'postgres',
-                                   "db_pw": db_admin_pass}:
+            if connection_info == {'db_host': db_host,
+                                   'db_port': db_port,
+                                   'db_name': db_name,
+                                   'db_user': 'postgres',
+                                   'db_pw': db_admin_pass}:
                 return another_postgres_con
 
         mock_return_connection.side_effect = return_connection_function
@@ -314,22 +311,19 @@ class TestDbDeploy(unittest.TestCase):
         db_port = randint(0, 99999).__str__()
         drop_database = 'True'
 
-        ssm_vars = {
-            'drdb-user-pass': (db_user_pass, True),
-            'drdb-admin-pass': (db_admin_pass, True),
-            'drdb-host': (db_host, False)
+        secretsmanager_vars = {
+            'drdb-user-pass': db_user_pass,
+            'drdb-admin-pass': db_admin_pass,
+            'drdb-host': db_host
         }
 
-        ssm_mock = boto3_client_mock('ssm')
+        secretsmanager_mock = boto3_client_mock('secretsmanager')
 
         # noinspection PyPep8Naming
-        def ssm_return_function(Name, WithDecryption):
-            item = ssm_vars[Name]
-            if item[1] != WithDecryption:
-                raise KeyError
-            return {'Parameter': {'Value': item[0]}}
+        def secretsmanager_return_function(SecretId):
+            return {'SecretString': secretsmanager_vars[SecretId]}
 
-        ssm_mock.get_parameter.side_effect = ssm_return_function
+        secretsmanager_mock.get_secret_value.side_effect = secretsmanager_return_function
 
         os.environ[db_deploy.OS_ENVIRON_DATABASE_NAME_KEY] = db_name
         os.environ[db_deploy.OS_ENVIRON_DATABASE_USER_KEY] = db_user

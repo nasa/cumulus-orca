@@ -44,7 +44,6 @@ def task() -> None:
     Raises:
         DatabaseError: An error occurred.
     """
-    status = log_status('start')
     db_name = os.environ['DATABASE_NAME']
     db_user = os.environ['DATABASE_USER']
     sm_keys = get_secretsmanager_keys({
