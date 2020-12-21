@@ -49,13 +49,13 @@ def task() -> None:
     prefix = os.environ['PREFIX']
 
     secretsmanager = boto3.client('secretsmanager')
-    parameter = secretsmanager.get_secret_value(SecretId=f"{prefix}-drdb-host")
+    parameter = secretsmanager.get_secret_value(SecretId=f"{prefix}-drdb-user-pass")
     db_user_pw = parameter['SecretString']
 
-    parameter = secretsmanager.get_secret_value(SecretId=f"{prefix}-drdb-user-pass")
+    parameter = secretsmanager.get_secret_value(SecretId=f"{prefix}-drdb-admin-pass")
     master_user_pw = parameter['SecretString']
 
-    parameter = secretsmanager.get_secret_value(SecretId=f"{prefix}-drdb-admin-pass")
+    parameter = secretsmanager.get_secret_value(SecretId=f"{prefix}-drdb-host")
     db_host = parameter['SecretString']
 
     drop_database = os.environ.get(OS_ENVIRON_DROP_DATABASE_KEY, 'False')
