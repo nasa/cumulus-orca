@@ -48,38 +48,18 @@ def request_id_generator():
 
 def get_dbconnect_info():
     """
-    Gets the dbconnection info
+    Gets the dbconnection info. PREFIX environment variable expected to be set.
     """
     dbconnect_info = {}
     db_params = {}
-    sm_keys = get_secretsmanager_keys({
-        'host': 'drdb-host',
-        'pw': 'drdb-user-pass'
-    })
-    db_params["db_host"] = {"secretsmanager": sm_keys['host']}
-    db_params["db_port"] = {"env": "DATABASE_PORT"}
-    db_params["db_name"] = {"env": "DATABASE_NAME"}
-    db_params["db_user"] = {"env": "DATABASE_USER"}
-    db_params["db_pw"] = {"secretsmanager": sm_keys['pw']}
+    prefix = os.environ['PREFIX']
+    db_params['db_host'] = {"secretsmanager": f"{prefix}-drdb-host"}
+    db_params['db_port'] = {'env': 'DATABASE_PORT'}
+    db_params['db_name'] = {'env': 'DATABASE_NAME'}
+    db_params['db_user'] = {'env': 'DATABASE_USER'}
+    db_params['db_pw'] = {'secretsmanager': f"{prefix}-drdb-user-pass"}
     dbconnect_info = database.read_db_connect_info(db_params)
     return dbconnect_info
-
-def get_secretsmanager_keys(params):
-    """
-    Returns dictionary with values prefixed by os.environ['PREFIX']. If PREFIX
-    isn't an environment variable, do nothing.
-
-        Args:
-            params (dict): Dictionary of key, string pairs.
-
-        Returns:
-            dict: Dictionary with passed in keys and prefixed string values.
-    """
-    if 'PREFIX' in os.environ:
-        prefix = os.environ['PREFIX']
-        for key in params.keys():
-            params[key] = prefix + '-' + params[key]
-    return params
 
 def submit_request(data):
     """

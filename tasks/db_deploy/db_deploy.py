@@ -46,20 +46,16 @@ def task() -> None:
     """
     db_name = os.environ['DATABASE_NAME']
     db_user = os.environ['DATABASE_USER']
-    sm_keys = get_secretsmanager_keys({
-        'host': 'drdb-host',
-        'user-pass': 'drdb-user-pass',
-        'admin-pass': 'drdb-admin-pass'
-    })
+    prefix = os.environ['PREFIX']
 
     secretsmanager = boto3.client('secretsmanager')
-    parameter = secretsmanager.get_secret_value(SecretId=sm_keys['user-pass'])
+    parameter = secretsmanager.get_secret_value(SecretId=f"{prefix}-drdb-host")
     db_user_pw = parameter['SecretString']
 
-    parameter = secretsmanager.get_secret_value(SecretId=sm_keys['admin-pass'])
+    parameter = secretsmanager.get_secret_value(SecretId=f"{prefix}-drdb-user-pass")
     master_user_pw = parameter['SecretString']
 
-    parameter = secretsmanager.get_secret_value(SecretId=sm_keys['host'])
+    parameter = secretsmanager.get_secret_value(SecretId=f"{prefix}-drdb-admin-pass")
     db_host = parameter['SecretString']
 
     drop_database = os.environ.get(OS_ENVIRON_DROP_DATABASE_KEY, 'False')
@@ -110,24 +106,6 @@ def inner_task(db_host: str, db_name: str, db_port: str, db_user: str, db_user_p
     con.close()
     create_tables(db_host, db_name, db_port, 'postgres', db_admin_pass)
     _LOG.info("database ddl execution complete")
-
-
-def get_secretsmanager_keys(params):
-    """
-    Returns dictionary with values prefixed by os.environ['PREFIX']. If PREFIX
-    isn't an environment variable, do nothing.
-
-        Args:
-            params (dict): Dictionary of key, string pairs.
-
-        Returns:
-            dict: Dictionary with passed in keys and prefixed string values.
-    """
-    if 'PREFIX' in os.environ:
-        prefix = os.environ['PREFIX']
-        for key in params.keys():
-            params[key] = prefix + '-' + params[key]
-    return params
 
 
 def create_database(con: connection, drop_database: bool) -> bool:

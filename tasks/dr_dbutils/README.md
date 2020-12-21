@@ -56,6 +56,8 @@ Once you've made these changes, update your `private_config.json` file with:
 
 ### Note that you have to use the druser account, otherwise the schema path won't quite match and you may receive errors like "table doesn't exist"
 
+### Note that environment variable `PREFIX` is expected to be set for `get_dbconnect_info()`. This value is generally set in the lambdas that call this library.
+
 Run the tests:
 cd C:\devpy\poswotdr\tasks\dr_dbutils  
 λ activate podr
