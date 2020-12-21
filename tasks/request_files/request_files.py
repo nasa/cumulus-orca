@@ -303,11 +303,9 @@ def restore_object(s3_cli: BaseClient, obj: Dict[str, Any], attempt: int, retrie
         if attempt == retries + 1:
             #  If on last attempt, post the error message to DB.
             try:
-                # todo: Is it safe to reuse data?
                 data[REQUESTS_DB_ERROR_MESSAGE_KEY] = str(c_err)
                 data[REQUESTS_DB_JOB_STATUS_KEY] = "error"
                 requests_db.submit_request(data)
-                # todo: Since we reuse data, if submit_request passes, does that mean we have succeeded?
                 LOGGER.info(f"Job {request_id} created.")
             except requests_db.DatabaseError as err:
                 LOGGER.error(f"Failed to log error message in database. Error {str(err)}. Request: {data}")
@@ -337,8 +335,8 @@ def handler(event: Dict[str, Any], context):  # pylint: disable-msg=unused-argum
             DATABASE_NAME (str): the name of the database.  # todo: Unused unless hidden in import.
             DATABASE_USER (str): the name of the application user.  # todo: Unused unless hidden in import.
         Parameter Store:
-            drdb-user-pass (str): the password for the application user (DATABASE_USER).
-            drdb-host (str): the database host
+            drdb-user-pass (str): the password for the application user (DATABASE_USER).  # todo: Unused unless hidden in import.
+            drdb-host (str): the database host  # todo: Unused unless hidden in import.
         Args:
             event (dict): A dict with the following keys:
                 'config' (dict): A dict with the following keys:
