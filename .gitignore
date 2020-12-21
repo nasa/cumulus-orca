@@ -64,3 +64,4 @@ dist/
 __pycache__/
 .coverage
 .vscode/
+tasks/request_files/test/private_config.json
