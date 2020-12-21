@@ -67,7 +67,8 @@
                   "module":"ascii"
                }
             ],
-            "granuleRecoveryWorkflow":"DrRecoveryWorkflow"
+            "granuleRecoveryWorkflow":"DrRecoveryWorkflow",
+            "exclude_file_type": [".xml", ".cmr", ".cmr.xml"]
          }
       }
    }

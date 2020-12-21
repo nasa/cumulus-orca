@@ -23,7 +23,7 @@ class TestCopyToGlacierHandler(TestCase):
         """
         Testing exclude file types to be excluded
         """
-        excluded_flag = should_exclude_files_type(self.excluded_file)
+        excluded_flag = should_exclude_files_type(self.excluded_file, ['.example'])
         self.assertEqual(excluded_flag, True)
 
     def test_2_excluded_file_types_not_excluded(self):
@@ -31,7 +31,7 @@ class TestCopyToGlacierHandler(TestCase):
         Testing exclude file types not to be excluded
         """
 
-        not_excluded_flag = should_exclude_files_type(self.not_excluded_file)
+        not_excluded_flag = should_exclude_files_type(self.not_excluded_file, ['.example'])
         self.assertEqual(not_excluded_flag, False)
 
     def test_3_get_source_bucket_and_key(self):
@@ -223,7 +223,6 @@ class TestCopyToGlacierHandler(TestCase):
         It should also not halt execution, as other files can still be copied.
         """
         bad_file_type = '.garbage'
-        file_types_to_exclude.append(bad_file_type)
         collection_name = uuid.uuid4().__str__()
         collection_version = uuid.uuid4().__str__()
         destination_bucket_name = uuid.uuid4().__str__()
@@ -259,7 +258,10 @@ class TestCopyToGlacierHandler(TestCase):
                             'bucket': source_bucket_name
                         }
                     ],
-                    COLLECTION_URL_PATH_KEY: collection_url_path
+                    COLLECTION_URL_PATH_KEY: collection_url_path,
+                    COLLECTION_META_KEY: {
+                        EXCLUDE_FILE_TYPES_KEY: [bad_file_type]
+                    }
                 },
                 CONFIG_BUCKETS_KEY: {
                     'bad_bucket': {
