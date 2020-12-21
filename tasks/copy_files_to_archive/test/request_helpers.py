@@ -59,20 +59,20 @@ time.sleep(1)
 UTC_NOW_EXP_11 = datetime.datetime.utcnow().isoformat()
 
 
-def mock_ssm_get_parameter(n_times):
+def mock_secretsmanager_get_parameter(n_times):
     """
     mocks the reads from the parameter store for the dbconnect values
     """
     params = []
-    db_host = {"Parameter": {"Value": os.environ['DATABASE_HOST']}}
-    db_pw = {"Parameter": {"Value": os.environ['DATABASE_PW']}}
+    db_host = {'SecretString': os.environ['DATABASE_HOST']}
+    db_pw = {'SecretString': os.environ['DATABASE_PW']}
     loop = 0
     while loop < n_times:
         params.append(db_host)
         params.append(db_pw)
         loop = loop + 1
-    ssm_cli = boto3.client('ssm')
-    ssm_cli.get_parameter = Mock(side_effect=params)
+    secretsmanager_cli = boto3.client('secretsmanager')
+    secretsmanager_cli.get_secret_value = Mock(side_effect=params)
 
 def create_handler_event():
     """

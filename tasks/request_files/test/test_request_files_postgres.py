@@ -16,7 +16,7 @@ from request_helpers import LambdaContextMock, create_handler_event
 from request_helpers import (
     REQUEST_ID1, REQUEST_ID2, REQUEST_ID3, REQUEST_ID4,
     REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_2,
-    REQUEST_GROUP_ID_EXP_3, mock_ssm_get_parameter)
+    REQUEST_GROUP_ID_EXP_3, mock_secretsmanager_get_parameter)
 from request_helpers import print_rows
 
 import request_files
@@ -52,7 +52,7 @@ class TestRequestFilesPostgres(unittest.TestCase):
 
     def tearDown(self):
         boto3.client = Mock()
-        mock_ssm_get_parameter(1)
+        mock_secretsmanager_get_parameter(1)
         try:
             requests_db.delete_all_requests()
         except requests_db.NotFound:
@@ -108,7 +108,7 @@ class TestRequestFilesPostgres(unittest.TestCase):
                                                   ])
         s3_cli.head_object = Mock()
         CumulusLogger.info = Mock()
-        mock_ssm_get_parameter(5)
+        mock_secretsmanager_get_parameter(5)
         try:
             result = request_files.task(input_event, self.context)
         except requests_db.DatabaseError as err:

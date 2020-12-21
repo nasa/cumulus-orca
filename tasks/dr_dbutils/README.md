@@ -34,6 +34,30 @@ ex:
 
 The remaining tests have everything mocked.
 
+## Create docker container with DB for testing
+
+`docker run -it --rm --name some-postgres -v /Users/<user>/cumulus-orca/database/ddl/base:/docker-entrypoint-initdb.d/ -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres`
+
+*In another terminal:*
+
+`docker run -it --rm --network host -e POSTGRES_PASSWORD=<new_password> postgres psql -h localhost -U postgres`
+
+```
+psql=# ALTER USER druser WITH PASSWORD 'new_password';
+```
+
+Once you've made these changes, update your `private_config.json` file with:
+
+```json
+{
+    "DATABASE_USER": "druser",
+    "DATABASE_PW": "<the value you added"
+}
+
+### Note that you have to use the druser account, otherwise the schema path won't quite match and you may receive errors like "table doesn't exist"
+
+### Note that environment variable `PREFIX` is expected to be set for `get_dbconnect_info()`. This value is generally set in the lambdas that call this library.
+
 Run the tests:
 cd C:\devpy\poswotdr\tasks\dr_dbutils  
 λ activate podr

@@ -44,16 +44,19 @@ def task() -> None:
     Raises:
         DatabaseError: An error occurred.
     """
+    db_name = os.environ['DATABASE_NAME']
+    db_user = os.environ['DATABASE_USER']
+    prefix = os.environ['PREFIX']
 
-    ssm = boto3.client('ssm')
-    parameter = ssm.get_parameter(Name='drdb-user-pass', WithDecryption=True)
-    db_user_pw = parameter['Parameter']['Value']
+    secretsmanager = boto3.client('secretsmanager')
+    parameter = secretsmanager.get_secret_value(SecretId=f"{prefix}-drdb-user-pass")
+    db_user_pw = parameter['SecretString']
 
-    parameter = ssm.get_parameter(Name='drdb-admin-pass', WithDecryption=True)
-    master_user_pw = parameter['Parameter']['Value']
+    parameter = secretsmanager.get_secret_value(SecretId=f"{prefix}-drdb-admin-pass")
+    master_user_pw = parameter['SecretString']
 
-    parameter = ssm.get_parameter(Name='drdb-host', WithDecryption=False)
-    db_host = parameter['Parameter']['Value']
+    parameter = secretsmanager.get_secret_value(SecretId=f"{prefix}-drdb-host")
+    db_host = parameter['SecretString']
 
     drop_database = os.environ.get(OS_ENVIRON_DROP_DATABASE_KEY, 'False')
     drop_database = (drop_database == 'True')
@@ -102,7 +105,6 @@ def inner_task(db_host: str, db_name: str, db_port: str, db_user: str, db_user_p
     create_schema(con)
     con.close()
     create_tables(db_host, db_name, db_port, 'postgres', db_admin_pass)
-
     _LOG.info("database ddl execution complete")
 
 
@@ -186,7 +188,7 @@ def create_schema(con: connection) -> None:
     platform = os.environ[OS_ENVIRON_PLATFORM_KEY]
     _LOG.info(f"platform: {platform}")
     cur = get_cursor(con)
-    if platform == "AWS":
+    if platform == 'AWS':
         sql_stmt = """SET SESSION AUTHORIZATION dbo;"""
         execute_sql(cur, sql_stmt, "auth dbo")
 

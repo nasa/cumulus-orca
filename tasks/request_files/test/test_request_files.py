@@ -22,7 +22,7 @@ from request_helpers import (REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_2,
                              REQUEST_GROUP_ID_EXP_3, REQUEST_ID1, REQUEST_ID2,
                              REQUEST_ID3, REQUEST_ID4, LambdaContextMock,
                              create_handler_event, create_insert_request,
-                             mock_ssm_get_parameter)
+                             mock_secretsmanager_get_parameter)
 
 UTC_NOW_EXP_1 = requests_db.get_utc_now_iso()
 FILE1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5"
@@ -143,14 +143,14 @@ class TestRequestFiles(unittest.TestCase):
                                                  REQUEST_ID4]
         mock_database_single_query.side_effect = [qresult_1_inprogress, qresult_2_inprogress,
                                                   qresult_3_inprogress, qresult_4_inprogress]
-        mock_ssm_get_parameter(4)
+        mock_secretsmanager_get_parameter(4)
 
         try:
             result = request_files.task(input_event, self.context)
         except requests_db.DatabaseError as err:
             self.fail(str(err))
 
-        mock_boto3_client.assert_called_with('ssm')
+        boto3.client.assert_called_with('secretsmanager')
         mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
                                                 Key=FILE1)
         mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
@@ -261,13 +261,13 @@ class TestRequestFiles(unittest.TestCase):
         mock_request_id_generator.side_effect = [REQUEST_GROUP_ID_EXP_1,
                                                  REQUEST_ID1]
         mock_database_single_query.side_effect = [DbError("mock insert failed error")]
-        mock_ssm_get_parameter(1)
+        mock_secretsmanager_get_parameter(1)
         try:
             result = request_files.task(input_event, self.context)
         except requests_db.DatabaseError as err:
             self.fail(f"failed insert does not throw exception. {str(err)}")
 
-        mock_boto3_client.assert_called_with('ssm')  # todo: This feels like it should have more checks...
+        boto3.client.assert_called_with('secretsmanager')
         mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
                                                 Key=FILE1)
         restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}}
@@ -385,13 +385,13 @@ class TestRequestFiles(unittest.TestCase):
             REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, FILE1, "restore", "some_bucket",
             "inprogress", UTC_NOW_EXP_1, None, None)
         mock_database_single_query.side_effect = [qresult_1_inprogress]
-        mock_ssm_get_parameter(1)
+        mock_secretsmanager_get_parameter(1)
         try:
             result = request_files.task(event, self.context)
             os.environ['RESTORE_REQUEST_RETRIES'] = '2'  # todo: This test claims 'no_retries'
             self.assertEqual(exp_granules, result)
 
-            mock_boto3_client.assert_called_with('ssm')
+            boto3.client.assert_called_with('secretsmanager')
             mock_s3_cli.head_object.assert_called_with(Bucket='some_bucket',
                                                        Key=FILE1)
             restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}}
@@ -444,14 +444,14 @@ class TestRequestFiles(unittest.TestCase):
             REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, FILE1, "restore", "some_bucket",
             "inprogress", UTC_NOW_EXP_1, None, None)
         mock_database_single_query.side_effect = [qresult_1_inprogress]
-        mock_ssm_get_parameter(1)
+        mock_secretsmanager_get_parameter(1)
 
         try:
             result = request_files.task(event, self.context)
             self.assertEqual(exp_granules, result)
             os.environ['RESTORE_EXPIRE_DAYS'] = '3'
             del os.environ['RESTORE_RETRIEVAL_TYPE']
-            mock_boto3_client.assert_called_with('ssm')
+            boto3.client.assert_called_with('secretsmanager')
             mock_s3_cli.head_object.assert_called_with(Bucket='some_bucket',
                                                        Key=FILE1)
             restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Expedited'}}
@@ -505,7 +505,7 @@ class TestRequestFiles(unittest.TestCase):
         mock_s3_cli.restore_object.side_effect = [ClientError({'Error': {'Code': 'NoSuchBucket'}}, 'restore_object'),
                                                   ClientError({'Error': {'Code': 'NoSuchBucket'}}, 'restore_object'),
                                                   ClientError({'Error': {'Code': 'NoSuchBucket'}}, 'restore_object')]
-        mock_ssm_get_parameter(1)
+        mock_secretsmanager_get_parameter(1)
         os.environ['RESTORE_RETRIEVAL_TYPE'] = 'Standard'  # todo: This is not reset between tests
 
         exp_gran = {
@@ -531,7 +531,7 @@ class TestRequestFiles(unittest.TestCase):
             self.assertEqual(exp_err, str(err))
         del os.environ['RESTORE_RETRY_SLEEP_SECS']
         del os.environ['RESTORE_RETRIEVAL_TYPE']
-        mock_boto3_client.assert_called_with('ssm')
+        boto3.client.assert_called_with('secretsmanager')
         mock_s3_cli.head_object.assert_called_with(Bucket='some_bucket',
                                                    Key=FILE1)
         restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}}
@@ -608,14 +608,14 @@ class TestRequestFiles(unittest.TestCase):
                                          qresult_3_inprogress,
                                          qresult_1_error,
                                          qresult_3_error]
-        mock_ssm_get_parameter(5)
+        mock_secretsmanager_get_parameter(5)
         try:
             request_files.task(exp_event, self.context)
             self.fail("RestoreRequestError expected")
         except request_files.RestoreRequestError as err:
             self.assertEqual(exp_err, str(err))
 
-        mock_boto3_client.assert_called_with('ssm')
+        boto3.client.assert_called_with('secretsmanager')
         mock_s3_cli.head_object.assert_any_call(Bucket='some_bucket',
                                                 Key=FILE1)
         mock_s3_cli.restore_object.assert_any_call(
@@ -711,12 +711,12 @@ class TestRequestFiles(unittest.TestCase):
             REQUEST_ID3, REQUEST_GROUP_ID_EXP_1, granule_id, keys[1], "restore", "some_bucket",
             "inprogress", UTC_NOW_EXP_1, None, None)
         mock_database_single_query.side_effect = [qresult1, qresult2, qresult2, qresult3]
-        mock_ssm_get_parameter(4)
+        mock_secretsmanager_get_parameter(4)
 
         result = request_files.task(exp_event, self.context)
         self.assertEqual(exp_granules, result)
 
-        mock_boto3_client.assert_called_with('ssm')
+        boto3.client.assert_called_with('secretsmanager')
         mock_s3_cli.restore_object.assert_any_call(
             Bucket='some_bucket',
             Key=FILE1,

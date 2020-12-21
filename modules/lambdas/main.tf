@@ -37,6 +37,7 @@ resource "aws_lambda_function" "db_deploy" {
 
   environment {
     variables = {
+      PREFIX        = var.prefix
       DATABASE_PORT = var.database_port
       DATABASE_NAME = var.database_name
       DATABASE_USER = var.database_app_user
@@ -82,6 +83,7 @@ resource "aws_lambda_function" "request_files_lambda" {
 
   environment {
     variables = {
+      PREFIX                   = var.prefix
       DATABASE_PORT            = var.database_port
       DATABASE_NAME            = var.database_name
       DATABASE_USER            = var.database_app_user
@@ -111,6 +113,7 @@ resource "aws_lambda_function" "copy_files_to_archive" {
 
   environment {
     variables = {
+      PREFIX                = var.prefix
       COPY_RETRIES          = var.copy_retries
       COPY_RETRY_SLEEP_SECS = var.copy_retry_sleep_secs
       DATABASE_PORT         = var.database_port
@@ -137,6 +140,7 @@ resource "aws_lambda_function" "request_status" {
 
   environment {
     variables = {
+      PREFIX        = var.prefix
       DATABASE_PORT = var.database_port
       DATABASE_NAME = var.database_name
       DATABASE_USER = var.database_app_user

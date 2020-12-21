@@ -13,7 +13,7 @@ from botocore.exceptions import ClientError
 import copy_files_to_archive
 from request_helpers import (REQUEST_ID4, REQUEST_ID7,
                              PROTECTED_BUCKET,
-                             create_copy_event2, mock_ssm_get_parameter,
+                             create_copy_event2, mock_secretsmanager_get_parameter,
                              create_copy_handler_event, create_select_requests)
 
 
@@ -74,9 +74,9 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
         exp_request_ids = [REQUEST_ID7]
         _, exp_result = create_select_requests(exp_request_ids)
         mock_database_single_query.side_effect = [exp_result, exp_upd_result]
-        mock_ssm_get_parameter(2)
+        mock_secretsmanager_get_parameter(2)
         result = copy_files_to_archive.handler(self.handler_input_event, None)
-        mock_boto3_client.assert_called_with('ssm')
+        mock_boto3_client.assert_called_with('secretsmanager')
         mock_s3_cli.copy_object.assert_called_with(Bucket=self.exp_target_bucket,
                                                    CopySource={'Bucket': exp_src_bucket,
                                                                'Key': self.exp_file_key1},
@@ -108,7 +108,7 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
         exp_err = 'Database Error. Internal database error, please contact LP DAAC User Services'
         mock_database_single_query.side_effect = [exp_result, requests_db.DatabaseError(exp_err),
                                                   requests_db.DatabaseError(exp_err)]
-        mock_ssm_get_parameter(3)
+        mock_secretsmanager_get_parameter(3)
         result = copy_files_to_archive.handler(self.handler_input_event, None)
         exp_result = [{'success': True, 'source_bucket': 'my-dr-fake-glacier-bucket',
                        'source_key': self.exp_file_key1,
@@ -136,7 +136,7 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
         exp_err = 'Database Error. Internal database error, please contact LP DAAC User Services'
         mock_database_single_query.side_effect = [requests_db.DatabaseError(exp_err),
                                                   requests_db.DatabaseError(exp_err)]
-        mock_ssm_get_parameter(2)
+        mock_secretsmanager_get_parameter(2)
         try:
             copy_files_to_archive.handler(self.handler_input_event, None)
         except copy_files_to_archive.CopyRequestError as err:
@@ -164,7 +164,7 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
         exp_request_ids = [REQUEST_ID7]
         _, exp_result = create_select_requests(exp_request_ids)
         mock_database_single_query.side_effect = [[], []]
-        mock_ssm_get_parameter(2)
+        mock_secretsmanager_get_parameter(2)
         try:
             copy_files_to_archive.handler(self.handler_input_event, None)
         except copy_files_to_archive.CopyRequestError as err:
@@ -190,12 +190,12 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
         _, exp_result = create_select_requests(exp_request_ids)
         mock_database_single_query.side_effect = [exp_result, exp_upd_result,
                                                   exp_result, exp_upd_result]
-        mock_ssm_get_parameter(4)
+        mock_secretsmanager_get_parameter(4)
         exp_rec_2 = create_copy_event2()
         self.handler_input_event["Records"].append(exp_rec_2)
         result = copy_files_to_archive.handler(self.handler_input_event, None)
 
-        mock_boto3_client.assert_called_with('ssm')
+        mock_boto3_client.assert_called_with('secretsmanager')
         exp_result = [{"success": True, "source_bucket": self.exp_src_bucket,
                        "source_key": self.exp_file_key1,
                        "request_id": REQUEST_ID7,
@@ -258,13 +258,13 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
                                                   exp_result,
                                                   exp_upd_result]
 
-        mock_ssm_get_parameter(5)
+        mock_secretsmanager_get_parameter(5)
         try:
             copy_files_to_archive.handler(self.handler_input_event, None)
             self.fail("expected CopyRequestError")
         except copy_files_to_archive.CopyRequestError as ex:
             self.assertEqual(exp_error, str(ex))
-        mock_boto3_client.assert_called_with('ssm')
+        mock_boto3_client.assert_called_with('secretsmanager')
         mock_s3_cli.copy_object.assert_called_with(Bucket=self.exp_target_bucket,
                                                    CopySource={'Bucket': self.exp_src_bucket,
                                                                'Key': self.exp_file_key1},
@@ -298,10 +298,10 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
                                                   exp_result,
                                                   exp_upd_result]
 
-        mock_ssm_get_parameter(4)
+        mock_secretsmanager_get_parameter(4)
         result = copy_files_to_archive.handler(self.handler_input_event, None)
-        # todo: The file under test does not call boto3.client('ssm'). Remove this and other references in test code.
-        mock_boto3_client.assert_called_with('ssm')
+        # todo: The file under test does not call boto3.client('secretsmanager'). Remove this and other references in test code.
+        mock_boto3_client.assert_called_with('secretsmanager')
         exp_result = [{"success": True, "source_bucket": self.exp_src_bucket,
                        "source_key": self.exp_file_key1,
                        "request_id": REQUEST_ID7,

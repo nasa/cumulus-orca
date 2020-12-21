@@ -63,7 +63,7 @@ Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 https://www.oreilly.com/library/view/head-first-python/9781491919521/ch04.html
 Create the distribution file:
     (podr) λ cd C:\devpy\poswotdr\tasks\pg_utils
-    (podr) λ py -3 setup.py sdist
+    (podr) λ python setup.py sdist
     (podr) λ cd dist
     (podr) λ pip install pg_utils-1.0.tar.gz
  
@@ -248,7 +248,7 @@ FUNCTIONS
                 db_user (str): The username to connect to the database with.
                 db_pw (str): The password to connect to the database with.
     
-    get_db_connect_info(env_or_ssm: str, param_name, decrypt: bool = False) -> str
+    get_db_connect_info(env_or_secretsmanager: str, param_name, decrypt: bool = False) -> str
     
     get_utc_now_iso() -> str
         Takes the current utc timestamp and returns it an isoformat string.
@@ -295,13 +295,13 @@ FUNCTIONS
         
             Args:
                 param_source (dict): A dict containing
-                    "db_host": {env_or_ssm, param_name},
-                    "db_port": {env_or_ssm, param_name},
-                    "db_name": {env_or_ssm, param_name},
-                    "db_user": {env_or_ssm, param_name},
-                    "db_pw": {env_or_ssm, param_name}
-                    where the value of env_or_ssm is: "env" to read env var,
-                                                      "ssm" to read parameter store
+                    "db_host": {env_or_secretsmanager, param_name},
+                    "db_port": {env_or_secretsmanager, param_name},
+                    "db_name": {env_or_secretsmanager, param_name},
+                    "db_user": {env_or_secretsmanager, param_name},
+                    "db_pw": {env_or_secretsmanager, param_name}
+                    where the value of env_or_secretsmanager is: "env" to read env var,
+                                                      "secretsmanager" to read parameter store
         
         
             Returns:

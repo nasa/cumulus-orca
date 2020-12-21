@@ -103,18 +103,18 @@ def get_connection(dbconnect_info: Dict[str, Union[str, int]]) -> connection:
     """
     # create and yield a connection
     try:
-        db_port = dbconnect_info["db_port"]
+        db_port = dbconnect_info['db_port']
     except ValueError:
         db_port = 5432
 
     new_connection = None
     try:
         new_connection = psycopg2_connect(
-            host=dbconnect_info["db_host"],
+            host=dbconnect_info['db_host'],
             port=db_port,
-            database=dbconnect_info["db_name"],
-            user=dbconnect_info["db_user"],
-            password=dbconnect_info["db_pw"]
+            database=dbconnect_info['db_name'],
+            user=dbconnect_info['db_user'],
+            password=dbconnect_info['db_pw']
         )
         yield new_connection
 
@@ -184,13 +184,13 @@ def read_db_connect_info(param_source):  # todo: wha?
 
         Args:
             param_source (dict): A dict containing
-                "db_host": {env_or_ssm, param_name},
-                "db_port": {env_or_ssm, param_name},
-                "db_name": {env_or_ssm, param_name},
-                "db_user": {env_or_ssm, param_name},
-                "db_pw": {env_or_ssm, param_name}
-                where the value of env_or_ssm is: "env" to read env var,
-                                                  "ssm" to read parameter store
+                "db_host": {env_or_secretsmanager, param_name},
+                "db_port": {env_or_secretsmanager, param_name},
+                "db_name": {env_or_secretsmanager, param_name},
+                "db_user": {env_or_secretsmanager, param_name},
+                "db_pw": {env_or_secretsmanager, param_name}
+                where the value of env_or_secretsmanager is: "env" to read env var,
+                                                  "secretsmanager" to read parameter store
 
 
         Returns:
@@ -205,48 +205,45 @@ def read_db_connect_info(param_source):  # todo: wha?
     host_info = param_source["db_host"]
     for key in host_info:  # todo: why is there a loop for setting a single variable?
         val = host_info[key]
-        dbconnect_info["db_host"] = get_db_connect_info(key, val, False)
+        dbconnect_info["db_host"] = get_db_connect_info(key, val)
 
     port_info = param_source["db_port"]
     for key in port_info:
         val = port_info[key]
-        dbconnect_info["db_port"] = int(get_db_connect_info(key, val, False))
+        dbconnect_info["db_port"] = int(get_db_connect_info(key, val))
 
     name_info = param_source["db_name"]
     for key in name_info:
         val = name_info[key]
-        dbconnect_info["db_name"] = get_db_connect_info(key, val, False)
+        dbconnect_info["db_name"] = get_db_connect_info(key, val)
 
     user_info = param_source["db_user"]
     for key in user_info:
         val = user_info[key]
-        dbconnect_info["db_user"] = get_db_connect_info(key, val, False)
+        dbconnect_info["db_user"] = get_db_connect_info(key, val)
 
     pw_info = param_source["db_pw"]
     for key in pw_info:
         val = pw_info[key]
-        dbconnect_info["db_pw"] = get_db_connect_info(key, val, True)
+        dbconnect_info["db_pw"] = get_db_connect_info(key, val)
 
     return dbconnect_info
 
 
-def get_db_connect_info(env_or_ssm: str, param_name, decrypt: bool = False) -> str:
+def get_db_connect_info(env_or_secretsmanager: str, param_name: str) -> str:
     f"""
     This function will retrieve a database connection parameter from
     the parameter store or an env var.
     
     Args:
-        env_or_ssm: "env" to read env var, "ssm" to read parameter store.
+        env_or_secretsmanager: "env" to read env var, "secretsmanager" to read parameter store.
         param_name: The name of the parameter to retrieve from env for parameter store.
-        decrypt: When true and {env_or_ssm} is "ssm", will tell get_parameter to decrypt.
     """
-    if env_or_ssm == "ssm":
-        ssm = boto3.client('ssm')
-        if decrypt:
-            parameter = ssm.get_parameter(Name=param_name, WithDecryption=True)
-        else:
-            parameter = ssm.get_parameter(Name=param_name)
-        param_value = parameter['Parameter']['Value']
+    param_value = None
+    if env_or_secretsmanager == 'secretsmanager':
+        secretsmanager = boto3.client('secretsmanager')
+        parameter = secretsmanager.get_secret_value(SecretId=param_name)
+        param_value = parameter['SecretString']
     else:
         param_value = os.environ[param_name]
 
@@ -291,24 +288,23 @@ def _query(sql_stmt, params, db_cursor: cursor) -> List:
     return rows
 
 
-# todo: What is the difference between this and get_connection?
 def return_connection(dbconnect_info) -> connection:
     """
     Retrieves a connection from the connection pool.
     """
     # create a connection
     try:
-        db_port = dbconnect_info["db_port"]
+        db_port = dbconnect_info['db_port']
     except ValueError:
         db_port = 5432
 
     try:
         return psycopg2_connect(
-            host=dbconnect_info["db_host"],
+            host=dbconnect_info['db_host'],
             port=db_port,
-            database=dbconnect_info["db_name"],
-            user=dbconnect_info["db_user"],
-            password=dbconnect_info["db_pw"]
+            database=dbconnect_info['db_name'],
+            user=dbconnect_info['db_user'],
+            password=dbconnect_info['db_pw']
         )
 
     except Exception as ex:

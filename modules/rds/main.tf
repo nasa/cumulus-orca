@@ -17,6 +17,7 @@ resource "aws_db_instance" "postgresql" {
   engine                     = "postgres"
   engine_version             = "11"
   identifier                 = "${var.prefix}-postgres-sndbx"
+  # Can't do micro and storage_encrypted
   instance_class             = "db.t2.micro"
   name                       = "postgres"
   password                   = var.postgres_user_pw
@@ -49,26 +50,35 @@ resource "null_resource" "bootstrap" {
   depends_on = [aws_db_instance.postgresql]
 }
 
-resource "aws_ssm_parameter" "drdb-admin-pass" {
-  name  = "drdb-admin-pass"
-  type  = "SecureString"
-  value = var.postgres_user_pw
-  tags = var.default_tags
-  overwrite = true
+resource "aws_secretsmanager_secret" "drdb-admin-pass" {
+  name = "${var.prefix}-drdb-admin-pass"
+  description = "Admin password to be used for the PostgreSQL DB"
+  tags        = var.default_tags
 }
 
-resource "aws_ssm_parameter" "drdb-user-pass" {
-  name  = "drdb-user-pass"
-  type  = "SecureString"
-  value = var.database_app_user_pw
-  tags = var.default_tags
-  overwrite = true
+resource "aws_secretsmanager_secret_version" "drdb-admin-pass" {
+  secret_id     = aws_secretsmanager_secret.drdb-admin-pass.id
+  secret_string = var.postgres_user_pw
 }
 
-resource "aws_ssm_parameter" "drdb-host" {
-  name  = "drdb-host"
-  type  = "String"
-  value = aws_db_instance.postgresql.address
-  tags = var.default_tags
-  overwrite = true
+resource "aws_secretsmanager_secret" "drdb-user-pass" {
+  name = "${var.prefix}-drdb-user-pass"
+  description = "User password to be used for the PostgreSQL DB"
+  tags        = var.default_tags
+}
+
+resource "aws_secretsmanager_secret_version" "drdb-user-pass" {
+  secret_id     = aws_secretsmanager_secret.drdb-user-pass.id
+  secret_string = var.database_app_user_pw
+}
+
+resource "aws_secretsmanager_secret" "drdb-host" {
+  name = "${var.prefix}-drdb-host"
+  description = "PostgreSQL Host Address"
+  tags        = var.default_tags
+}
+
+resource "aws_secretsmanager_secret_version" "drdb-host" {
+  secret_id     = aws_secretsmanager_secret.drdb-host.id
+  secret_string = aws_db_instance.postgresql.address
 }
