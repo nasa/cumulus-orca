@@ -44,8 +44,6 @@ class TestRequestFiles(unittest.TestCase):
     """
 
     def setUp(self):
-        # todo: Give less deceptive names to storage. Remove storage where not needed.
-        self.mock_boto3_client = boto3.client
         # todo: single_query is not called in code. Replace with higher-level checks.
         self.mock_single_query = database.single_query
         # todo: These values should be used in unit tests.
@@ -61,7 +59,6 @@ class TestRequestFiles(unittest.TestCase):
 
     def tearDown(self):
         database.single_query = self.mock_single_query
-        boto3.client = self.mock_boto3_client
         del os.environ['PREFIX']
         del os.environ['RESTORE_EXPIRE_DAYS']
         del os.environ['RESTORE_REQUEST_RETRIES']
@@ -327,7 +324,7 @@ class TestRequestFiles(unittest.TestCase):
                     [{"granuleId": granule_id, "keys": [{"key": file1, "dest_bucket": None}]}]
             },
             "config": {"glacier-bucket": "my-bucket"}}
-        mock_s3_cli = boto3.client('s3')
+        mock_s3_cli = mock_boto3_client('s3')
         # todo: Verify the below with a real-world db. If not the same, fix request_files.object_exists
         mock_s3_cli.head_object.side_effect = [ClientError({'Error': {'Code': 'NotFound'}}, 'head_object')]
         mock_request_id_generator.return_value = REQUEST_GROUP_ID_EXP_1
