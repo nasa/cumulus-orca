@@ -150,7 +150,7 @@ class TestRequestFiles(unittest.TestCase):
         except requests_db.DatabaseError as err:
             self.fail(str(err))
 
-        boto3.client.assert_called_with('secretsmanager')
+        mock_boto3_client.assert_called_with('secretsmanager')
         mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
                                                 Key=FILE1)
         mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
@@ -267,7 +267,7 @@ class TestRequestFiles(unittest.TestCase):
         except requests_db.DatabaseError as err:
             self.fail(f"failed insert does not throw exception. {str(err)}")
 
-        boto3.client.assert_called_with('secretsmanager')
+        mock_boto3_client.assert_called_with('secretsmanager')
         mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
                                                 Key=FILE1)
         restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}}
@@ -391,7 +391,7 @@ class TestRequestFiles(unittest.TestCase):
             os.environ['RESTORE_REQUEST_RETRIES'] = '2'  # todo: This test claims 'no_retries'
             self.assertEqual(exp_granules, result)
 
-            boto3.client.assert_called_with('secretsmanager')
+            mock_boto3_client.assert_called_with('secretsmanager')
             mock_s3_cli.head_object.assert_called_with(Bucket='some_bucket',
                                                        Key=FILE1)
             restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}}
@@ -451,7 +451,7 @@ class TestRequestFiles(unittest.TestCase):
             self.assertEqual(exp_granules, result)
             os.environ['RESTORE_EXPIRE_DAYS'] = '3'
             del os.environ['RESTORE_RETRIEVAL_TYPE']
-            boto3.client.assert_called_with('secretsmanager')
+            mock_boto3_client.assert_called_with('secretsmanager')
             mock_s3_cli.head_object.assert_called_with(Bucket='some_bucket',
                                                        Key=FILE1)
             restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Expedited'}}
@@ -531,7 +531,7 @@ class TestRequestFiles(unittest.TestCase):
             self.assertEqual(exp_err, str(err))
         del os.environ['RESTORE_RETRY_SLEEP_SECS']
         del os.environ['RESTORE_RETRIEVAL_TYPE']
-        boto3.client.assert_called_with('secretsmanager')
+        mock_boto3_client.assert_called_with('secretsmanager')
         mock_s3_cli.head_object.assert_called_with(Bucket='some_bucket',
                                                    Key=FILE1)
         restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}}
@@ -615,7 +615,7 @@ class TestRequestFiles(unittest.TestCase):
         except request_files.RestoreRequestError as err:
             self.assertEqual(exp_err, str(err))
 
-        boto3.client.assert_called_with('secretsmanager')
+        mock_boto3_client.assert_called_with('secretsmanager')
         mock_s3_cli.head_object.assert_any_call(Bucket='some_bucket',
                                                 Key=FILE1)
         mock_s3_cli.restore_object.assert_any_call(
@@ -716,7 +716,7 @@ class TestRequestFiles(unittest.TestCase):
         result = request_files.task(exp_event, self.context)
         self.assertEqual(exp_granules, result)
 
-        boto3.client.assert_called_with('secretsmanager')
+        mock_boto3_client.assert_called_with('secretsmanager')
         mock_s3_cli.restore_object.assert_any_call(
             Bucket='some_bucket',
             Key=FILE1,

@@ -76,12 +76,12 @@ def task(event: Dict, context: object) -> Dict[str, Any]:  # pylint: disable-msg
                 to sleep between retry attempts.
             RESTORE_RETRIEVAL_TYPE (str, optional, default = 'Standard'): the Tier
                 for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
-            DATABASE_PORT (str): the database port. The default is 5432.
-            DATABASE_NAME (str): the name of the database.
-            DATABASE_USER (str): the name of the application user.
+            DATABASE_PORT (str): the database port. The default is 5432.  # todo: Unused unless hidden in import.
+            DATABASE_NAME (str): the name of the database.  # todo: Unused unless hidden in import.
+            DATABASE_USER (str): the name of the application user.  # todo: Unused unless hidden in import.
         Parameter Store:
-            drdb-user-pass (str): the password for the application user (DATABASE_USER).
-            drdb-host (str): the database host
+            drdb-user-pass (str): the password for the application user (DATABASE_USER).  # todo: Unused unless hidden in import.
+            drdb-host (str): the database host  # todo: Unused unless hidden in import.
         Returns:
             A dict with the following keys:
                 'granules' (List): A list of dicts, each with the following keys:
@@ -108,10 +108,34 @@ def task(event: Dict, context: object) -> Dict[str, Any]:  # pylint: disable-msg
             RestoreRequestError: Thrown if there are errors with the input request.
     """
     try:
+        max_retries = int(os.environ[OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY])
+    except KeyError:
+        max_retries = 2
+
+    try:
+        retry_sleep_secs = float(os.environ[OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY])
+    except KeyError:
+        retry_sleep_secs = 0
+
+    try:
+        retrieval_type = os.environ[OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY]
+        if retrieval_type not in ('Standard', 'Bulk', 'Expedited'):
+            msg = (f"Invalid RESTORE_RETRIEVAL_TYPE: '{retrieval_type}'"
+                   " defaulting to 'Standard'")
+            LOGGER.info(msg)
+            retrieval_type = 'Standard'
+    except KeyError:
+        retrieval_type = 'Standard'
+
+    try:
         exp_days = int(os.environ[OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY])
     except KeyError:
         exp_days = 5
 
+    return inner_task(event, max_retries, retry_sleep_secs, retrieval_type, exp_days)
+
+
+def inner_task(event: Dict, max_retries: int, retry_sleep_secs: float, retrieval_type: str, restore_expire_days: int):
     try:
         glacier_bucket = event[EVENT_CONFIG_KEY][CONFIG_GLACIER_BUCKET_KEY]
     except KeyError:
@@ -146,14 +170,15 @@ def task(event: Dict, context: object) -> Dict[str, Any]:  # pylint: disable-msg
 
     # todo: Looks like this line is why multiple granules are not supported.
     # todo: Using the default value {} for copied_granule will cause this function to raise errors every time.
-    process_granule(s3, copied_granule, glacier_bucket, exp_days)
+    process_granule(
+        s3, copied_granule, glacier_bucket, restore_expire_days, max_retries, retry_sleep_secs, retrieval_type)
 
     # Cumulus expects response (payload.granules) to be a list of granule objects.
     return {INPUT_GRANULES_KEY: [copied_granule]}
 
 
-def process_granule(s3: BaseClient, granule: Dict, glacier_bucket: str,
-                    exp_days: int):  # pylint: disable-msg=invalid-name
+def process_granule(s3: BaseClient, granule: Dict, glacier_bucket: str, restore_expire_days: int,
+                    max_retries: int, retry_sleep_secs: int, retrieval_type: str):  # pylint: disable-msg=invalid-name
     f"""Call restore_object for the files in the granule_list
         Args:
             s3: An instance of boto3 s3 client
@@ -172,36 +197,16 @@ def process_granule(s3: BaseClient, granule: Dict, glacier_bucket: str,
 
 
             glacier_bucket: The S3 glacier bucket name
-            exp_days:
+            restore_expire_days:
                 The number of days the restored file will be accessible in the S3 bucket before it expires.
         Returns:
             Updated {granule}, indicating if the restore request for each file
                 was successful, including an err_msg for any that were not.
     """
-    try:
-        retries = int(os.environ[OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY])
-    except KeyError:
-        retries = 2
-
-    try:
-        retry_sleep_secs = float(os.environ[OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY])
-    except KeyError:
-        retry_sleep_secs = 0
-
-    try:
-        retrieval_type = os.environ[OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY]
-        if retrieval_type not in ('Standard', 'Bulk', 'Expedited'):
-            msg = (f"Invalid RESTORE_RETRIEVAL_TYPE: '{retrieval_type}'"
-                   " defaulting to 'Standard'")
-            LOGGER.info(msg)
-            retrieval_type = 'Standard'
-    except KeyError:
-        retrieval_type = 'Standard'
-
     attempt = 1
     request_group_id = requests_db.request_id_generator()
     granule_id = granule[GRANULE_GRANULE_ID_KEY]
-    while attempt <= retries + 1:
+    while attempt <= max_retries + 1:
         for a_file in granule[GRANULE_RECOVER_FILES_KEY]:
             if not a_file[FILE_SUCCESS_KEY]:
                 try:
@@ -211,9 +216,9 @@ def process_granule(s3: BaseClient, granule: Dict, glacier_bucket: str,
                         REQUESTS_DB_GLACIER_BUCKET_KEY: glacier_bucket,
                         'key': a_file[FILE_KEY_KEY],  # This property isn't from anything besides this code.
                         REQUESTS_DB_DEST_BUCKET_KEY: a_file[FILE_DEST_BUCKET_KEY],
-                        'days': exp_days  # This property isn't from anything besides this code.
+                        'days': restore_expire_days  # This property isn't from anything besides this code.
                     }
-                    request_id = restore_object(s3, obj, attempt, retries, retrieval_type)
+                    request_id = restore_object(s3, obj, attempt, max_retries, retrieval_type)
                     a_file[FILE_SUCCESS_KEY] = True
                     a_file[FILE_ERROR_MESSAGE_KEY] = ''
                     LOGGER.info(
@@ -223,7 +228,7 @@ def process_granule(s3: BaseClient, granule: Dict, glacier_bucket: str,
                     a_file[FILE_ERROR_MESSAGE_KEY] = str(err)
 
         attempt = attempt + 1
-        if attempt <= retries + 1:
+        if attempt <= max_retries + 1:
             # Check for early completion.
             if all(a_file[FILE_SUCCESS_KEY] for a_file in granule[GRANULE_RECOVER_FILES_KEY]):
                 break
