@@ -269,7 +269,8 @@ def object_exists(s3_cli: BaseClient, glacier_bucket: str, file_key: str) -> boo
         # todo: Online docs suggest we could catch 'S3.Client.exceptions.NoSuchKey instead of deconstructing ClientError
 
 
-def restore_object(s3_cli: BaseClient, obj: Dict[str, Any], attempt: int, retries: int, retrieval_type: str = 'Standard'
+def restore_object(s3_cli: BaseClient, obj: Dict[str, Any], attempt: int, max_retries: int,
+                   retrieval_type: str = 'Standard'
                    ) -> str:
     f"""Restore an archived S3 Glacier object in an Amazon S3 bucket.
         Args:
@@ -285,7 +286,7 @@ def restore_object(s3_cli: BaseClient, obj: Dict[str, Any], attempt: int, retrie
                 days (int): How many days the restored file will be accessible in the S3 bucket
                     before it expires.
             attempt: The attempt number for retry purposes.
-            retries: The number of retries that will be attempted.
+            max_retries: The number of retries that will be attempted.
             retrieval_type: Glacier Tier. Valid values are 'Standard'|'Bulk'|'Expedited'. Defaults to 'Standard'.
         Returns:
             request_Id.  todo: ?
@@ -301,16 +302,11 @@ def restore_object(s3_cli: BaseClient, obj: Dict[str, Any], attempt: int, retrie
         s3_cli.restore_object(Bucket=obj[REQUESTS_DB_GLACIER_BUCKET_KEY],
                               Key=obj['key'],
                               RestoreRequest=request)
-        try:
-            requests_db.submit_request(data)
-            LOGGER.info(f"Job {request_id} created.")
-        except requests_db.DatabaseError as err:
-            LOGGER.error(f"Failed to log request in database. Error {str(err)}. Request: {data}")
     except ClientError as c_err:
         # NoSuchBucket, NoSuchKey, or InvalidObjectState error == the object's
         # storage class was not GLACIER
         LOGGER.error(f"{c_err}. bucket: {obj[REQUESTS_DB_GLACIER_BUCKET_KEY]} file: {obj['key']}")
-        if attempt == retries + 1:
+        if attempt == max_retries + 1:
             #  If on last attempt, post the error message to DB.
             try:
                 data[REQUESTS_DB_ERROR_MESSAGE_KEY] = str(c_err)
@@ -320,6 +316,12 @@ def restore_object(s3_cli: BaseClient, obj: Dict[str, Any], attempt: int, retrie
             except requests_db.DatabaseError as err:
                 LOGGER.error(f"Failed to log error message in database. Error {str(err)}. Request: {data}")
         raise c_err
+    try:
+        requests_db.submit_request(data)
+        LOGGER.info(f"Job {request_id} created.")
+    except requests_db.DatabaseError as err:
+        LOGGER.error(f"Failed to log request in database. Error {str(err)}. Request: {data}")
+
     return request_id
 
 
