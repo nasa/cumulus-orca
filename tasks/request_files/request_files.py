@@ -156,7 +156,6 @@ def inner_task(event: Dict, max_retries: int, retry_sleep_secs: float, retrieval
 
     copied_granule = {}
     for granule in granules:
-        # copied_granule['granuleId'] = granule['granuleId']
         copied_granule = granule.copy()  # todo: This feels pointless. It's just a shallow copy.
         files = []
         for keys in granule[GRANULE_KEYS_KEY]:
@@ -214,21 +213,18 @@ def process_granule(s3: BaseClient, granule: Dict, glacier_bucket: str, restore_
     while attempt <= max_retries + 1:
         for a_file in granule[GRANULE_RECOVER_FILES_KEY]:
             if not a_file[FILE_SUCCESS_KEY]:
+                obj = {
+                    REQUESTS_DB_REQUEST_GROUP_ID_KEY: request_group_id,
+                    REQUESTS_DB_GRANULE_ID_KEY: granule_id,
+                    REQUESTS_DB_GLACIER_BUCKET_KEY: glacier_bucket,
+                    'key': a_file[FILE_KEY_KEY],  # This property isn't from anything besides this code.
+                    REQUESTS_DB_DEST_BUCKET_KEY: a_file[FILE_DEST_BUCKET_KEY],
+                    'days': restore_expire_days  # This property isn't from anything besides this code.
+                }
                 try:
-                    obj = {
-                        REQUESTS_DB_REQUEST_GROUP_ID_KEY: request_group_id,
-                        REQUESTS_DB_GRANULE_ID_KEY: granule_id,
-                        REQUESTS_DB_GLACIER_BUCKET_KEY: glacier_bucket,
-                        'key': a_file[FILE_KEY_KEY],  # This property isn't from anything besides this code.
-                        REQUESTS_DB_DEST_BUCKET_KEY: a_file[FILE_DEST_BUCKET_KEY],
-                        'days': restore_expire_days  # This property isn't from anything besides this code.
-                    }
-                    request_id = restore_object(s3, obj, attempt, max_retries, retrieval_type)
+                    restore_object(s3, obj, attempt, max_retries, retrieval_type)
                     a_file[FILE_SUCCESS_KEY] = True
                     a_file[FILE_ERROR_MESSAGE_KEY] = ''
-                    LOGGER.info(
-                        f"restore {a_file[FILE_KEY_KEY]} from {glacier_bucket} "
-                        f"attempt {attempt} successful. Job: {request_id}")
                 except ClientError as err:
                     a_file[FILE_ERROR_MESSAGE_KEY] = str(err)
 
@@ -271,7 +267,7 @@ def object_exists(s3_cli: BaseClient, glacier_bucket: str, file_key: str) -> boo
 
 def restore_object(s3_cli: BaseClient, obj: Dict[str, Any], attempt: int, max_retries: int,
                    retrieval_type: str = 'Standard'
-                   ) -> str:
+                   ) -> None:
     f"""Restore an archived S3 Glacier object in an Amazon S3 bucket.
         Args:
             s3_cli: An instance of boto3 s3 client.
@@ -288,10 +284,8 @@ def restore_object(s3_cli: BaseClient, obj: Dict[str, Any], attempt: int, max_re
             attempt: The attempt number for retry purposes.
             max_retries: The number of retries that will be attempted.
             retrieval_type: Glacier Tier. Valid values are 'Standard'|'Bulk'|'Expedited'. Defaults to 'Standard'.
-        Returns:
-            request_Id.  todo: ?
         Raises:
-            ClientError: Raises ClientErrors from inner calls.
+            ClientError: Raises ClientErrors from restore_object.
     """
     data = requests_db.create_data(obj, 'restore', 'inprogress', None, None)
     request_id = data[REQUESTS_DB_REQUEST_ID_KEY]
@@ -316,13 +310,14 @@ def restore_object(s3_cli: BaseClient, obj: Dict[str, Any], attempt: int, max_re
             except requests_db.DatabaseError as err:
                 LOGGER.error(f"Failed to log error message in database. Error {str(err)}. Request: {data}")
         raise c_err
+
     try:
         requests_db.submit_request(data)
-        LOGGER.info(f"Job {request_id} created.")
+        LOGGER.info(
+            f"Restore {obj['key']} from {obj[REQUESTS_DB_GLACIER_BUCKET_KEY]} "
+            f"attempt {attempt} successful. Job: {request_id}")
     except requests_db.DatabaseError as err:
         LOGGER.error(f"Failed to log request in database. Error {str(err)}. Request: {data}")
-
-    return request_id
 
 
 def handler(event: Dict[str, Any], context):  # pylint: disable-msg=unused-argument
