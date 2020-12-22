@@ -6,7 +6,8 @@ Description:  Unit tests for request_files.py.
 import os
 import unittest
 import uuid
-from unittest.mock import patch, MagicMock, call
+from random import random, randint, uniform
+from unittest.mock import patch, MagicMock, call, Mock
 
 # noinspection PyPackageRequirements
 import boto3
@@ -46,27 +47,135 @@ class TestRequestFiles(unittest.TestCase):
     def setUp(self):
         # todo: single_query is not called in code. Replace with higher-level checks.
         self.mock_single_query = database.single_query
-        # todo: These values should be used in unit tests.
+        # todo: These values should NOT be hard-coded as present for every test.
         os.environ["DATABASE_HOST"] = "my.db.host.gov"
         os.environ["DATABASE_PORT"] = "54"
         os.environ["DATABASE_NAME"] = "sndbx"
         os.environ["DATABASE_USER"] = "unittestdbuser"
         os.environ["DATABASE_PW"] = "unittestdbpw"
-        os.environ['RESTORE_EXPIRE_DAYS'] = '5'
-        os.environ['RESTORE_REQUEST_RETRIES'] = '2'
+        os.environ[request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY] = '5'
+        os.environ[request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY] = '2'
         os.environ['PREFIX'] = uuid.uuid4().__str__()
         self.context = LambdaContextMock()
 
     def tearDown(self):
         database.single_query = self.mock_single_query
-        del os.environ['PREFIX']
-        del os.environ['RESTORE_EXPIRE_DAYS']
-        del os.environ['RESTORE_REQUEST_RETRIES']
+        os.environ.pop('PREFIX', None)
+        os.environ.pop(request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY, None)
+        os.environ.pop(request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY, None)
+        os.environ.pop(request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY, None)
+        os.environ.pop(request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY, None)
         del os.environ["DATABASE_HOST"]
         del os.environ["DATABASE_NAME"]
         del os.environ["DATABASE_USER"]
         del os.environ["DATABASE_PW"]
         del os.environ["DATABASE_PORT"]
+
+    @patch('request_files.inner_task')
+    def test_task_happy_path(self,
+                             mock_inner_task: MagicMock):
+        """
+        All variables present and valid.
+        """
+        mock_event = Mock()
+        max_retries = randint(0, 99999)
+        retry_sleep_secs = uniform(0, 99999)
+        retrieval_type = 'Bulk'
+        exp_days = randint(0, 99999)
+
+        os.environ[request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY] = max_retries.__str__()
+        os.environ[request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY] = retry_sleep_secs.__str__()
+        os.environ[request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY] = retrieval_type
+        os.environ[request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY] = exp_days.__str__()
+
+        request_files.task(mock_event, None)
+
+        mock_inner_task.assert_called_once_with(mock_event, max_retries, retry_sleep_secs, retrieval_type, exp_days)
+
+    @patch('request_files.inner_task')
+    def test_task_default_for_missing_max_retries(self,
+                                                  mock_inner_task: MagicMock):
+        mock_event = Mock()
+        retry_sleep_secs = uniform(0, 99999)
+        retrieval_type = 'Bulk'
+        exp_days = randint(0, 99999)
+
+        os.environ[request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY] = retry_sleep_secs.__str__()
+        os.environ[request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY] = retrieval_type
+        os.environ[request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY] = exp_days.__str__()
+
+        request_files.task(mock_event, None)
+
+        mock_inner_task.assert_called_once_with(mock_event, 2, retry_sleep_secs, retrieval_type, exp_days)
+
+    @patch('request_files.inner_task')
+    def test_task_default_for_missing_sleep_secs(self,
+                                                 mock_inner_task: MagicMock):
+        mock_event = Mock()
+        max_retries = randint(0, 99999)
+        retrieval_type = 'Bulk'
+        exp_days = randint(0, 99999)
+
+        os.environ[request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY] = max_retries.__str__()
+        os.environ[request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY] = retrieval_type
+        os.environ[request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY] = exp_days.__str__()
+
+        request_files.task(mock_event, None)
+
+        mock_inner_task.assert_called_once_with(mock_event, max_retries, 0, retrieval_type, exp_days)
+
+    @patch('request_files.inner_task')
+    def test_task_default_for_missing_retrieval_type(self,
+                                                     mock_inner_task: MagicMock):
+        mock_event = Mock()
+        max_retries = randint(0, 99999)
+        retry_sleep_secs = uniform(0, 99999)
+        exp_days = randint(0, 99999)
+
+        os.environ[request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY] = max_retries.__str__()
+        os.environ[request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY] = retry_sleep_secs.__str__()
+        os.environ[request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY] = exp_days.__str__()
+
+        request_files.task(mock_event, None)
+
+        mock_inner_task.assert_called_once_with(mock_event, max_retries, retry_sleep_secs, 'Standard', exp_days)
+
+    @patch('request_files.inner_task')
+    def test_task_default_for_bad_retrieval_type(self,
+                                                 mock_inner_task: MagicMock):
+        mock_event = Mock()
+        max_retries = randint(0, 99999)
+        retry_sleep_secs = uniform(0, 99999)
+        retrieval_type = 'Nope'
+        exp_days = randint(0, 99999)
+
+        os.environ[request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY] = max_retries.__str__()
+        os.environ[request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY] = retry_sleep_secs.__str__()
+        os.environ[request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY] = retrieval_type
+        os.environ[request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY] = exp_days.__str__()
+
+        request_files.task(mock_event, None)
+
+        mock_inner_task.assert_called_once_with(mock_event, max_retries, retry_sleep_secs, 'Standard', exp_days)
+
+    @patch('request_files.inner_task')
+    def test_task_default_for_missing_exp_days(self,
+                                               mock_inner_task: MagicMock):
+        """
+        All variables present and valid.
+        """
+        mock_event = Mock()
+        max_retries = randint(0, 99999)
+        retry_sleep_secs = uniform(0, 99999)
+        retrieval_type = 'Bulk'
+
+        os.environ[request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY] = max_retries.__str__()
+        os.environ[request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY] = retry_sleep_secs.__str__()
+        os.environ[request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY] = retrieval_type
+
+        request_files.task(mock_event, None)
+
+        mock_inner_task.assert_called_once_with(mock_event, max_retries, retry_sleep_secs, retrieval_type, 5)
 
     @patch('cumulus_logger.CumulusLogger.error')
     def test_handler(self,
