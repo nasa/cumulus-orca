@@ -76,12 +76,17 @@ def task(event: Dict, context: object) -> Dict[str, Any]:  # pylint: disable-msg
                 to sleep between retry attempts.
             RESTORE_RETRIEVAL_TYPE (str, optional, default = 'Standard'): the Tier
                 for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
-            DATABASE_PORT (str): the database port. The default is 5432.  # todo: Unused unless hidden in import.
-            DATABASE_NAME (str): the name of the database.  # todo: Unused unless hidden in import.
-            DATABASE_USER (str): the name of the application user.  # todo: Unused unless hidden in import.
+            DATABASE_PORT (str): the database port. The default is 5432
+                Hidden requirement for requests_db.get_dbconnect_info.
+            DATABASE_NAME (str): the name of the database.
+                Hidden requirement for requests_db.get_dbconnect_info.
+            DATABASE_USER (str): the name of the application user.
+                Hidden requirement for requests_db.get_dbconnect_info.
         Parameter Store:
-            drdb-user-pass (str): the password for the application user (DATABASE_USER).  # todo: Unused unless hidden in import.
-            drdb-host (str): the database host  # todo: Unused unless hidden in import.
+            drdb-user-pass (str): the password for the application user (DATABASE_USER).
+                Hidden requirement for requests_db.get_dbconnect_info.
+            drdb-host (str): the database host.
+                Hidden requirement for requests_db.get_dbconnect_info.
         Returns:
             A dict with the following keys:
                 'granules' (List): A list of dicts, each with the following keys:
@@ -336,12 +341,17 @@ def handler(event: Dict[str, Any], context):  # pylint: disable-msg=unused-argum
                 to sleep between retry attempts.
             RESTORE_RETRIEVAL_TYPE (str, optional, default = 'Standard'): the Tier
                 for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
-            DATABASE_PORT (str): the database port. The default is 5432.  # todo: Unused unless hidden in import.
-            DATABASE_NAME (str): the name of the database.  # todo: Unused unless hidden in import.
-            DATABASE_USER (str): the name of the application user.  # todo: Unused unless hidden in import.
+            DATABASE_PORT (str): the database port. The default is 5432
+                Hidden requirement for requests_db.get_dbconnect_info.
+            DATABASE_NAME (str): the name of the database.
+                Hidden requirement for requests_db.get_dbconnect_info.
+            DATABASE_USER (str): the name of the application user.
+                Hidden requirement for requests_db.get_dbconnect_info.
         Parameter Store:
-            drdb-user-pass (str): the password for the application user (DATABASE_USER).  # todo: Unused unless hidden in import.
-            drdb-host (str): the database host  # todo: Unused unless hidden in import.
+            drdb-user-pass (str): the password for the application user (DATABASE_USER).
+                Hidden requirement for requests_db.get_dbconnect_info.
+            drdb-host (str): the database host.
+                Hidden requirement for requests_db.get_dbconnect_info.
         Args:
             event (dict): A dict with the following keys:
                 'config' (dict): A dict with the following keys:
