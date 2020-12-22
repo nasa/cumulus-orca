@@ -5,7 +5,8 @@ Description:  Unit tests for request_files.py.
 """
 import os
 import unittest
-from unittest.mock import patch, MagicMock
+import uuid
+from unittest.mock import patch, MagicMock, call
 
 # noinspection PyPackageRequirements
 import boto3
@@ -55,11 +56,13 @@ class TestRequestFiles(unittest.TestCase):
         os.environ["DATABASE_PW"] = "unittestdbpw"
         os.environ['RESTORE_EXPIRE_DAYS'] = '5'
         os.environ['RESTORE_REQUEST_RETRIES'] = '2'
+        os.environ['PREFIX'] = uuid.uuid4().__str__()
         self.context = LambdaContextMock()
 
     def tearDown(self):
         database.single_query = self.mock_single_query
         boto3.client = self.mock_boto3_client
+        del os.environ['PREFIX']
         del os.environ['RESTORE_EXPIRE_DAYS']
         del os.environ['RESTORE_REQUEST_RETRIES']
         del os.environ["DATABASE_HOST"]
@@ -150,7 +153,7 @@ class TestRequestFiles(unittest.TestCase):
         except requests_db.DatabaseError as err:
             self.fail(str(err))
 
-        mock_boto3_client.assert_called_with('secretsmanager')
+        mock_boto3_client.assert_has_calls([call('secretsmanager')])
         mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
                                                 Key=FILE1)
         mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
@@ -716,7 +719,7 @@ class TestRequestFiles(unittest.TestCase):
         result = request_files.task(exp_event, self.context)
         self.assertEqual(exp_granules, result)
 
-        mock_boto3_client.assert_called_with('secretsmanager')
+        mock_boto3_client.assert_has_calls([call('secretsmanager')])
         mock_s3_cli.restore_object.assert_any_call(
             Bucket='some_bucket',
             Key=FILE1,
