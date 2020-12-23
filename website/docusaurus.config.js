@@ -75,11 +75,11 @@ module.exports = {
             },
             {
               label: 'ORCA Cookbooks',
-              to: 'docs/doc2/',
+              to: 'docs/cookbook/',
             },
             {
               label: 'Operator Guide',
-              to: 'docs/doc2/',
+              to: 'docs/operator/',
             },
           ],
         },
