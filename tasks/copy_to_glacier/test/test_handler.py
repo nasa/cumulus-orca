@@ -466,6 +466,9 @@ class TestCopyToGlacierHandler(TestCase):
             }
         )])
 
+    def test_get_granule_urls_from_granules_list(self):
+        pass
+
 # todo: switch this to large test
 #    def test_5_task(self):
 #        """

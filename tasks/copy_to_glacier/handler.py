@@ -89,6 +89,22 @@ def get_bucket_name_for_filename(filename: str, collection_files: List[Dict[str,
     return 'public'
 
 
+def get_granule_urls_from_granules_list(granules_list: List) -> List[str]:
+    """
+    Pulls a list of filenames (S3 filepaths) from a list of granules.
+
+    Args:
+        granules_list: List of granule objects
+
+    Returns:
+        List of S3 filepaths.
+    """
+    files = []
+    for granule in granules_list:
+        files.extend([ file['filename'] for file in granule['files'] ])
+    return files
+
+
 # noinspection PyUnusedLocal
 def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str, Any]:
     """
@@ -115,7 +131,10 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
             input (list): event['input']
     """
     print(event)
-    granule_urls = event.get('input', [])
+    event_input = event.get('input')
+    # If there is no granules object, fail the workflow.
+    granules_list = event_input.get('granules')
+    granule_urls = get_granule_urls_from_granules_list(granules_list)
     config = event.get('config')
     collection = config.get(CONFIG_COLLECTION_KEY)
     exclude_file_types = collection.get(COLLECTION_META_KEY, {}).get(EXCLUDE_FILE_TYPES_KEY, [])
@@ -149,7 +168,9 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
         print(f"Copied {granule_url} into glacier storage bucket {glacier_bucket}.")
 
     final_output = list(granule_data.values())
-    return {'granules': final_output, 'input': granule_urls}
+    return {'granules': granules_list, 'copied_to_glacier': granule_urls}
+    # Return the payload mergin in granules object and list of files backed-up to glacier.
+    # return event_input.update({'granules': granules_list, 'copied_to_glacier': granule_urls})
 
 
 # handler that is provided to aws lambda
@@ -191,82 +212,3 @@ def handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any:
         The result of the cumulus task.
     """
     return run_cumulus_task(task, event, context)
-
-# if __name__ == '__main__':
-#    dummy_event = {
-#        "input": [
-#            "s3://ghrcsbxw-internal/file-staging/ghrcsbxw/goesrpltavirisng__1/goesrplt_avng_20170328t210208.tar.gz"
-#        ],
-#        "config": {
-#            "files_config": [
-#                {
-#                    "regex": "^(.*).*\\.cmr.xml$",
-#                    "sampleFileName": "goesrplt_avng_20170323t184858.tar.gz.cmr.xml",
-#                    "bucket": "public"
-#                },
-#                {
-#                    "regex": "^(.*).*(\\.gz|\\.hdr|clip)$",
-#                    "sampleFileName": "goesrplt_avng_20170323t184858.tar.gz",
-#                    "bucket": "protected"
-#                }
-#            ],
-#            "buckets": {
-#                "protected": {
-#                    "type": "protected",
-#                    "name": "ghrcsbxw-protected"
-#                },
-#                "internal": {
-#                    "type": "internal",
-#                    "name": "ghrcsbxw-internal"
-#                },
-#                "private": {
-#                    "type": "private",
-#                    "name": "ghrcsbxw-private"
-#                },
-#                "public": {
-#                    "type": "public",
-#                    "name": "ghrcsbxw-public"
-#                },
-#                "glacier": {
-#                    "type": "private",
-#                    "name": "ghrcsbxw-glacier"
-#                }
-#            },
-#            "collection": {
-#                "name": "goesrpltavirisng",
-#                "version": "1",
-#                "dataType": "goesrpltavirisng",
-#                "process": "metadataextractor",
-#                "provider_path": "/goesrpltavirisng/fieldCampaigns/goesrplt/AVIRIS-NG/data/",
-#                "url_path": "goesrpltavirisng__1",
-#                "duplicateHandling": "replace",
-#                "granuleId": "^goesrplt_avng_.*(\\.gz|\\.hdr|clip)$",
-#                "granuleIdExtraction": "^((goesrplt_avng_).*)",
-#                "sampleFileName": "goesrplt_avng_20170323t184858.tar.gz",
-#                "files": [
-#                    {
-#                        "bucket": "public",
-#                        "regex": "^goesrplt_avng_(.*).*\\.cmr.xml$",
-#                        "sampleFileName": "goesrplt_avng_20170323t184858.tar.gz.cmr.xml"
-#                    },
-#                    {
-#                        "bucket": "protected",
-#                        "regex": "^goesrplt_avng_(.*).*(\\.gz|\\.hdr|clip)$",
-#                        "sampleFileName": "goesrplt_avng_20170323t184858.tar.gz"
-#                    }
-#                ],
-#                "meta": {
-#                    "metadata_extractor": [
-#                        {
-#                            "regex": "^(.*).*(\\.gz|\\.hdr|clip)$",
-#                            "module": "ascii"
-#                        }
-#                    ],
-#                    "granuleRecoveryWorkflow": "DrRecoveryWorkflow",
-#                    "excludeFileTypes": [".cmr", ".xml", ".cmr.xml"]
-#                }}
-#        }
-#    }
-#
-#    dummy_context = []
-#    task(dummy_event, dummy_context)
