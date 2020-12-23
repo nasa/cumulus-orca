@@ -259,20 +259,24 @@ class TestRequestFiles(unittest.TestCase):
     @patch('requests_db.request_id_generator')
     @patch('time.sleep')
     @patch('request_files.restore_object')
-    def test_process_granule_one_error_sleeps_once(self,
-                                                   mock_restore_object: MagicMock,
-                                                   mock_sleep: MagicMock,
-                                                   mock_request_id_generator: MagicMock):
+    def test_process_granule_minimal_path(self,
+                                          mock_restore_object: MagicMock,
+                                          mock_sleep: MagicMock,
+                                          mock_request_id_generator: MagicMock):
         mock_s3 = Mock()
+        max_retries = 99999
         glacier_bucket = uuid.uuid4().__str__()
         retry_sleep_secs = randint(0, 99999)
         retrieval_type = uuid.uuid4().__str__()
         restore_expire_days = randint(0, 99999)
         granule_id = uuid.uuid4().__str__()
+        request_group_id = uuid.uuid4().__str__()
         file_name_0 = uuid.uuid4().__str__()
         dest_bucket_0 = uuid.uuid4().__str__()
-        file_name_1 = uuid.uuid4().__str__()
+        file_name_1 = uuid.uuid4().__str__()  # todo: use
         dest_bucket_1 = uuid.uuid4().__str__()
+
+        mock_request_id_generator.return_value = request_group_id
 
         granule = {
             request_files.GRANULE_GRANULE_ID_KEY: granule_id,
@@ -282,21 +286,32 @@ class TestRequestFiles(unittest.TestCase):
                     request_files.FILE_DEST_BUCKET_KEY: dest_bucket_0,
                     request_files.FILE_SUCCESS_KEY: False,
                     request_files.FILE_ERROR_MESSAGE_KEY: ''
-                },
-                {
-                    request_files.FILE_KEY_KEY: file_name_1,
-                    request_files.FILE_DEST_BUCKET_KEY: dest_bucket_1,
-                    request_files.FILE_SUCCESS_KEY: False,
-                    request_files.FILE_ERROR_MESSAGE_KEY: ''
                 }
             ]
         }
 
-        request_files.process_granule(mock_s3, granule, glacier_bucket, restore_expire_days, 99999,
+        request_files.process_granule(mock_s3, granule, glacier_bucket, restore_expire_days, max_retries,
                                       retry_sleep_secs, retrieval_type)
 
+        # self.assertEqual(expected_granule, granule)  todo: assert granule
+        mock_restore_object.assert_called_once_with(
+                mock_s3,
+                {
+                    request_files.REQUESTS_DB_REQUEST_GROUP_ID_KEY: request_group_id,
+                    request_files.REQUESTS_DB_GRANULE_ID_KEY: granule_id,
+                    request_files.REQUESTS_DB_GLACIER_BUCKET_KEY: glacier_bucket,
+                    'key': file_name_0,  # This property isn't from anything besides this code.
+                    request_files.REQUESTS_DB_DEST_BUCKET_KEY: dest_bucket_0,
+                    'days': restore_expire_days  # This property isn't from anything besides this code.
+                },
+                1,
+                max_retries,
+                retrieval_type
+
+        )
+        self.assertEqual(1, mock_restore_object.call_count)  # todo: add a call
         mock_request_id_generator.assert_called_once_with()
-        mock_sleep.assert_called_with(retry_sleep_secs)
+        mock_sleep.assert_not_called()
 
     @patch('cumulus_logger.CumulusLogger.error')
     def test_handler(self,
