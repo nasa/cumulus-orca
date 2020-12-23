@@ -8,16 +8,21 @@ description: Provides high level information on contributing to the ORCA project
 ORCA has several ways to engage with the project and several different
 engagement levels. The various levels are explained below.
 
+**Contributor:**  Developers, engineers, and users who are not a
+part of the core team that actively provides fixes, enhancements,
+and features through code pull requests to the cumulus-orca
+respository.
+
 **Core Developer:**  Part of the core ORCA team that develops code and 
 documentation for the ORCA components. If you would like to be a part of
-this team, please contact Darla Werner.
+this team, please contact [Darla Werner](mailto:dwerner@contractor.usgs.gov?subject=Join%20ORCA%20Core%20Development%20Team).
 
 **DAAC Integrator:**  Developers, engineers, and operators that implement
 ORCA into their DAAC workflows and Cumulus instances.
 
 **Advisor:**  Stakeholders that would like to be invited to demos and
 provide input on where the system is headed. This includes active engagement
-in the ORCA Working Group.
+in the [ORCA Working Group](https://wiki.earthdata.nasa.gov/display/CUMULUS/ORCA+Working+Group).
 
 ## Requesting Fixes, Enhancements, and Features
 Feature requests and bug documentation should be done by filling out a Jira
@@ -54,6 +59,8 @@ Here is an example of creating a feature branch.
 git clone https://github.com/nasa/cumulus-orca.git
 
 cd cumulus-orca
+
+git checkout develop
 
 git checkout -b feature/ORCA-1234 develop
 
