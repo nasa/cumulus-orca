@@ -5,7 +5,7 @@ Description:  Lambda function that makes a restore request from glacier for each
 
 import os
 import time
-from typing import Dict, Any
+from typing import Dict, Any, Union, List
 
 # noinspection PyPackageRequirements
 import boto3
@@ -156,7 +156,6 @@ def inner_task(event: Dict, max_retries: int, retry_sleep_secs: float, retrieval
 
     copied_granule = {}
     for granule in granules:
-        copied_granule = granule.copy()  # todo: This feels pointless. It's just a shallow copy.
         files = []
         for keys in granule[GRANULE_KEYS_KEY]:
             file_key = keys[FILE_KEY_KEY]
@@ -170,6 +169,7 @@ def inner_task(event: Dict, max_retries: int, retry_sleep_secs: float, retrieval
                     FILE_ERROR_MESSAGE_KEY: ''
                 }
                 files.append(a_file)
+        copied_granule = granule.copy()
         copied_granule[GRANULE_RECOVER_FILES_KEY] = files
 
     # todo: Looks like this line is why multiple granules are not supported.
@@ -181,31 +181,27 @@ def inner_task(event: Dict, max_retries: int, retry_sleep_secs: float, retrieval
     return {INPUT_GRANULES_KEY: [copied_granule]}
 
 
-def process_granule(s3: BaseClient, granule: Dict, glacier_bucket: str, restore_expire_days: int,
+def process_granule(s3: BaseClient, granule: Dict[str, Union[str, List[Dict]]], glacier_bucket: str, restore_expire_days: int,
                     max_retries: int, retry_sleep_secs: int, retrieval_type: str):  # pylint: disable-msg=invalid-name
-    f"""Call restore_object for the files in the granule_list
+    f"""Call restore_object for the files in the granule_list. Modifies {granule} for output.
         Args:
             s3: An instance of boto3 s3 client
             granule: A dict with the following keys:
                 'granuleId' (str): The id of the granule being restored.
-                'keys' (list(dict)): A list of dicts with the following keys:
+                'recover_files' (list(dict)): A list of dicts with the following keys:
                     'key' (str): Name of the file within the granule.
                     'dest_bucket' (str): The bucket the restored file will be moved
                         to after the restore completes
-                    'files': A list of dicts with the following keys:
-                        'key' (str): The glacier key of the file to restore.
-                        'dest_bucket' (str): The bucket the restored file will be moved
-                            to after the restore completes.
-                        'success' (bool): Should enter this method set to False.
-                        'err_msg' (str): Should enter this method as an empty string.
+                    'success' (bool): Should enter this method set to False. Modified to 'True' if no error occurs.
+                    'err_msg' (str): Will be modified if error occurs.
 
 
             glacier_bucket: The S3 glacier bucket name
             restore_expire_days:
                 The number of days the restored file will be accessible in the S3 bucket before it expires.
-        Returns:
-            Updated {granule}, indicating if the restore request for each file
-                was successful, including an err_msg for any that were not.
+            max_retries: todo
+            retry_sleep_secs: todo
+            retrieval_type: todo
     """
     attempt = 1
     request_group_id = requests_db.request_id_generator()

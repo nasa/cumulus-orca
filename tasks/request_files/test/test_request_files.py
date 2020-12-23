@@ -177,6 +177,127 @@ class TestRequestFiles(unittest.TestCase):
 
         mock_inner_task.assert_called_once_with(mock_event, max_retries, retry_sleep_secs, retrieval_type, 5)
 
+    def test_inner_task_missing_glacier_bucket_raises(self):
+        try:
+            request_files.inner_task({request_files.EVENT_CONFIG_KEY: dict()},
+                                     randint(0, 99999), randint(0, 99999), uuid.uuid4().__str__(), randint(0, 99999))
+            self.fail('Error not raised.')
+        except request_files.RestoreRequestError:
+            pass
+
+    @patch('request_files.process_granule')
+    @patch('request_files.object_exists')
+    @patch('boto3.client')
+    def test_inner_task_missing_files_do_not_halt(self,
+                                                  mock_boto3_client: MagicMock,
+                                                  mock_object_exists: MagicMock,
+                                                  mock_process_granule: MagicMock):
+        """
+        A return of 'false' from object_exists should ignore the file and continue.
+        """
+        glacier_bucket = uuid.uuid4().__str__()
+        file_key0 = uuid.uuid4().__str__()
+        file_key1 = uuid.uuid4().__str__()
+        missing_file_key = uuid.uuid4().__str__()
+        file_dest_bucket0 = uuid.uuid4().__str__()
+        file_dest_bucket1 = uuid.uuid4().__str__()
+        missing_file_dest_bucket = uuid.uuid4().__str__()
+        file0 = {
+            request_files.FILE_KEY_KEY: file_key0,
+            request_files.FILE_DEST_BUCKET_KEY: file_dest_bucket0
+        }
+        expected_file0_output = file0.copy()
+        expected_file0_output[request_files.FILE_SUCCESS_KEY] = False
+        expected_file0_output[request_files.FILE_ERROR_MESSAGE_KEY] = ''
+        file1 = {
+            request_files.FILE_KEY_KEY: file_key1,
+            request_files.FILE_DEST_BUCKET_KEY: file_dest_bucket1
+        }
+        expected_file1_output = file1.copy()
+        expected_file1_output[request_files.FILE_SUCCESS_KEY] = False
+        expected_file1_output[request_files.FILE_ERROR_MESSAGE_KEY] = ''
+        granule = {
+            request_files.GRANULE_KEYS_KEY: [
+                file0,
+                {
+                    request_files.FILE_KEY_KEY: missing_file_key,
+                    request_files.FILE_DEST_BUCKET_KEY: missing_file_dest_bucket
+                },
+                file1
+            ]
+        }
+        expected_input_granule = granule.copy()
+        expected_input_granule[request_files.GRANULE_RECOVER_FILES_KEY] = [expected_file0_output, expected_file1_output]
+        event = {
+            request_files.EVENT_CONFIG_KEY: {
+                request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
+            },
+            request_files.EVENT_INPUT_KEY: {
+                request_files.INPUT_GRANULES_KEY: [
+                    granule
+                ]
+            }
+        }
+        max_retries = randint(0, 99999)
+        retry_sleep_secs = randint(0, 99999)
+        retrieval_type = uuid.uuid4().__str__()
+        restore_expire_days = randint(0, 99999)
+        mock_s3_cli = mock_boto3_client('s3')
+
+        def object_exists_return_func(input_s3_cli, input_glacier_bucket, input_file_key):
+            return input_file_key in [file_key0, file_key1]
+
+        mock_object_exists.side_effect = object_exists_return_func
+
+        result = request_files.inner_task(event, max_retries, retry_sleep_secs, retrieval_type, restore_expire_days)
+        mock_process_granule.assert_has_calls([
+            call(mock_s3_cli, expected_input_granule, glacier_bucket, restore_expire_days, max_retries,
+                 retry_sleep_secs, retrieval_type)])
+        self.assertEqual(1, mock_process_granule.call_count)  # I'm hoping that we can remove the 'one granule' limit.
+        self.assertEqual({request_files.INPUT_GRANULES_KEY: [expected_input_granule]}, result)
+
+    @patch('requests_db.request_id_generator')
+    @patch('time.sleep')
+    @patch('request_files.restore_object')
+    def test_process_granule_one_error_sleeps_once(self,
+                                                   mock_restore_object: MagicMock,
+                                                   mock_sleep: MagicMock,
+                                                   mock_request_id_generator: MagicMock):
+        mock_s3 = Mock()
+        glacier_bucket = uuid.uuid4().__str__()
+        retry_sleep_secs = randint(0, 99999)
+        retrieval_type = uuid.uuid4().__str__()
+        restore_expire_days = randint(0, 99999)
+        granule_id = uuid.uuid4().__str__()
+        file_name_0 = uuid.uuid4().__str__()
+        dest_bucket_0 = uuid.uuid4().__str__()
+        file_name_1 = uuid.uuid4().__str__()
+        dest_bucket_1 = uuid.uuid4().__str__()
+
+        granule = {
+            request_files.GRANULE_GRANULE_ID_KEY: granule_id,
+            request_files.GRANULE_RECOVER_FILES_KEY: [
+                {
+                    request_files.FILE_KEY_KEY: file_name_0,
+                    request_files.FILE_DEST_BUCKET_KEY: dest_bucket_0,
+                    request_files.FILE_SUCCESS_KEY: False,
+                    request_files.FILE_ERROR_MESSAGE_KEY: ''
+                },
+                {
+                    request_files.FILE_KEY_KEY: file_name_1,
+                    request_files.FILE_DEST_BUCKET_KEY: dest_bucket_1,
+                    request_files.FILE_SUCCESS_KEY: False,
+                    request_files.FILE_ERROR_MESSAGE_KEY: ''
+                }
+            ]
+        }
+
+        request_files.process_granule(mock_s3, granule, glacier_bucket, restore_expire_days, 99999,
+                                      retry_sleep_secs, retrieval_type)
+
+        mock_request_id_generator.assert_called_once_with()
+        mock_sleep.assert_called_with(retry_sleep_secs)
+
     @patch('cumulus_logger.CumulusLogger.error')
     def test_handler(self,
                      mock_logger_error: MagicMock):
