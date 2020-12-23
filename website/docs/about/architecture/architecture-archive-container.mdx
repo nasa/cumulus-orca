@@ -4,6 +4,9 @@ title: Archive Container Architecture
 description: High level overview of ORCA archive data container architecture.
 ---
 
+import MyImage from '@site/docs/components/pan-zoom-image.mdx';
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
 The archive data container contains all the components that make up the archive
 data functionality. The diagram below shows how the various components interact.
 A majority of the work for this functionality is done by the **copy_to_glacier**
@@ -14,6 +17,12 @@ handled through AWS S3 bucket policy. This was done to preserve as much metadata
 as possible about the files and to simplify interactions with the AWS glacier
 archive.
 
-![ORCA Archive Data Container Context](../static/img/ORCA-Architecture-Archive-Container-Component.svg)
 
+<MyImage
+    imageSource={useBaseUrl('static/img/ORCA-Architecture-Archive-Container-Component.svg')}
+    imageAlt="ORCA Archive Data Container Context"
+    zoomInPic={useBaseUrl('static/img/zoom-in.svg')}
+    zoomOutPic={useBaseUrl('static/img/zoom-out.svg')}
+    resetPic={useBaseUrl('static/img/zoom-pan-reset.svg')}
+/>
 
