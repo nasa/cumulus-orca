@@ -21,4 +21,4 @@ Operator documents are an addition ORCA developer documentation and
 Cookbooks. These documents provide instructions for common ORCA
 activities.
 
-The operator documents can be found here (TBD).
+The operator documents can be found [here](../../operator/operator-intro.md).
