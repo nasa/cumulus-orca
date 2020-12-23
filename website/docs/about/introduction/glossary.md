@@ -33,17 +33,6 @@ An Amazon S3 cloud storage resource.
 For more information, see the [AWS Bucket Documentation](https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html).
 
 ## C
-
-### CloudFormation
-An AWS service that allows you to define and manage cloud resources as a
-preconfigured block.
-
-For more information, see the [AWS CloudFormation User Guide](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html).
-### CloudFormation Template
-A template that defines an AWS Cloud Formation.
-
-For more information, see the [AWS intro page](https://aws.amazon.com/cloudformation/aws-cloudformation-templates/).
-
 ### Cloudwatch
 AWS service that allows logging and metrics collections on various cloud
 resources you have in AWS.
@@ -60,6 +49,9 @@ For more information, see [NASA's CMR page](https://cmr.earthdata.nasa.gov/).
 ### Collection (Cumulus)
 Cumulus Collections are logical sets of data objects of the same data type
 and version.
+
+### Cumulus
+A Cloud-based data ingest, archive, distribution, and management system.
 
 ### Cumulus Message Adapter (CMA)
 A library designed to help task developers integrate step function tasks into
@@ -136,6 +128,9 @@ For more information, see [npmjs.com](https://www.npmjs.com/).
 ### Operator
 Refers to those tasked with monitoring, configuring or otherwise utilizing
 umulus in an operational deployment.
+
+### ORCA
+Operational Recovery Cloud Archive
 ## P
 ### PDR
 "Polling Delivery Mechanism" used in "DAAC Ingest" workflows.
