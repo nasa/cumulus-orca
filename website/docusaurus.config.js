@@ -47,7 +47,7 @@ module.exports = {
           position: 'right',
         },
         {
-          to: 'docs/operator/',
+          to: 'docs/operator/operator-intro',
           activeBasePath: 'docs/operator/',
           label: 'Operator Guide',
           position: 'right',
@@ -79,7 +79,7 @@ module.exports = {
             },
             {
               label: 'Operator Guide',
-              to: 'docs/doc2/',
+              to: 'docs/operator/operator-intro',
             },
           ],
         },
@@ -93,6 +93,10 @@ module.exports = {
             {
               label: 'Cumulus Project',
               href: 'https://github.com/nasa/cumulus',
+            },
+            {
+              label: 'Cumulus Developer Documentation',
+              href: 'https://nasa.github.io/cumulus/docs/cumulus-docs-readme'
             },
           ],
         },
