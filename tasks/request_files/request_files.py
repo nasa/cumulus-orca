@@ -181,8 +181,9 @@ def inner_task(event: Dict, max_retries: int, retry_sleep_secs: float, retrieval
     return {INPUT_GRANULES_KEY: [copied_granule]}
 
 
-def process_granule(s3: BaseClient, granule: Dict[str, Union[str, List[Dict]]], glacier_bucket: str, restore_expire_days: int,
-                    max_retries: int, retry_sleep_secs: int, retrieval_type: str):  # pylint: disable-msg=invalid-name
+def process_granule(s3: BaseClient, granule: Dict[str, Union[str, List[Dict]]], glacier_bucket: str,
+                    restore_expire_days: int,
+                    max_retries: int, retry_sleep_secs: float, retrieval_type: str):  # pylint: disable-msg=invalid-name
     f"""Call restore_object for the files in the granule_list. Modifies {granule} for output.
         Args:
             s3: An instance of boto3 s3 client
@@ -300,7 +301,7 @@ def restore_object(s3_cli: BaseClient, obj: Dict[str, Any], attempt: int, max_re
             #  If on last attempt, post the error message to DB.
             try:
                 data[REQUESTS_DB_ERROR_MESSAGE_KEY] = str(c_err)
-                data[REQUESTS_DB_JOB_STATUS_KEY] = "error"
+                data[REQUESTS_DB_JOB_STATUS_KEY] = 'error'
                 requests_db.submit_request(data)
                 LOGGER.info(f"Job {request_id} created.")
             except requests_db.DatabaseError as err:
