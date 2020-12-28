@@ -17,6 +17,11 @@ from botocore.exceptions import ClientError
 from cumulus_logger import CumulusLogger
 from run_cumulus_task import run_cumulus_task
 
+DEFAULT_RESTORE_EXPIRE_DAYS = 5
+DEFAULT_MAX_REQUEST_RETRIES = 2
+DEFAULT_RESTORE_RETRY_SLEEP_SECS = 0
+DEFAULT_RESTORE_RETRIEVAL_TYPE = 'Standard'
+
 OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY = 'RESTORE_EXPIRE_DAYS'
 OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY = 'RESTORE_REQUEST_RETRIES'
 OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY = 'RESTORE_RETRY_SLEEP_SECS'
@@ -115,12 +120,12 @@ def task(event: Dict, context: object) -> Dict[str, Any]:  # pylint: disable-msg
     try:
         max_retries = int(os.environ[OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY])
     except KeyError:
-        max_retries = 2
+        max_retries = DEFAULT_MAX_REQUEST_RETRIES
 
     try:
         retry_sleep_secs = float(os.environ[OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY])
     except KeyError:
-        retry_sleep_secs = 0
+        retry_sleep_secs = DEFAULT_RESTORE_RETRY_SLEEP_SECS
 
     try:
         retrieval_type = os.environ[OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY]
@@ -128,14 +133,14 @@ def task(event: Dict, context: object) -> Dict[str, Any]:  # pylint: disable-msg
             msg = (f"Invalid RESTORE_RETRIEVAL_TYPE: '{retrieval_type}'"
                    " defaulting to 'Standard'")
             LOGGER.info(msg)
-            retrieval_type = 'Standard'
+            retrieval_type = DEFAULT_RESTORE_RETRIEVAL_TYPE
     except KeyError:
-        retrieval_type = 'Standard'
+        retrieval_type = DEFAULT_RESTORE_RETRIEVAL_TYPE
 
     try:
         exp_days = int(os.environ[OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY])
     except KeyError:
-        exp_days = 5
+        exp_days = DEFAULT_RESTORE_EXPIRE_DAYS
 
     return inner_task(event, max_retries, retry_sleep_secs, retrieval_type, exp_days)
 

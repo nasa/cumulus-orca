@@ -106,7 +106,8 @@ class TestRequestFiles(unittest.TestCase):
 
         request_files.task(mock_event, None)
 
-        mock_inner_task.assert_called_once_with(mock_event, 2, retry_sleep_secs, retrieval_type, exp_days)
+        mock_inner_task.assert_called_once_with(
+            mock_event, request_files.DEFAULT_MAX_REQUEST_RETRIES, retry_sleep_secs, retrieval_type, exp_days)
 
     @patch('request_files.inner_task')
     def test_task_default_for_missing_sleep_secs(self,
@@ -122,7 +123,8 @@ class TestRequestFiles(unittest.TestCase):
 
         request_files.task(mock_event, None)
 
-        mock_inner_task.assert_called_once_with(mock_event, max_retries, 0, retrieval_type, exp_days)
+        mock_inner_task.assert_called_once_with(
+            mock_event, max_retries, request_files.DEFAULT_RESTORE_RETRY_SLEEP_SECS, retrieval_type, exp_days)
 
     @patch('request_files.inner_task')
     def test_task_default_for_missing_retrieval_type(self,
@@ -138,7 +140,8 @@ class TestRequestFiles(unittest.TestCase):
 
         request_files.task(mock_event, None)
 
-        mock_inner_task.assert_called_once_with(mock_event, max_retries, retry_sleep_secs, 'Standard', exp_days)
+        mock_inner_task.assert_called_once_with(
+            mock_event, max_retries, retry_sleep_secs, request_files.DEFAULT_RESTORE_RETRIEVAL_TYPE, exp_days)
 
     @patch('request_files.inner_task')
     def test_task_default_for_bad_retrieval_type(self,
@@ -156,7 +159,8 @@ class TestRequestFiles(unittest.TestCase):
 
         request_files.task(mock_event, None)
 
-        mock_inner_task.assert_called_once_with(mock_event, max_retries, retry_sleep_secs, 'Standard', exp_days)
+        mock_inner_task.assert_called_once_with(
+            mock_event, max_retries, retry_sleep_secs, request_files.DEFAULT_RESTORE_RETRIEVAL_TYPE, exp_days)
 
     @patch('request_files.inner_task')
     def test_task_default_for_missing_exp_days(self,
@@ -175,7 +179,8 @@ class TestRequestFiles(unittest.TestCase):
 
         request_files.task(mock_event, None)
 
-        mock_inner_task.assert_called_once_with(mock_event, max_retries, retry_sleep_secs, retrieval_type, 5)
+        mock_inner_task.assert_called_once_with(
+            mock_event, max_retries, retry_sleep_secs, retrieval_type, request_files.DEFAULT_RESTORE_EXPIRE_DAYS)
 
     def test_inner_task_missing_glacier_bucket_raises(self):
         try:
@@ -216,6 +221,7 @@ class TestRequestFiles(unittest.TestCase):
         expected_file1_output = file_1.copy()
         expected_file1_output[request_files.FILE_SUCCESS_KEY] = False
         expected_file1_output[request_files.FILE_ERROR_MESSAGE_KEY] = ''
+        expected_input_granule_files = [expected_file0_output, expected_file1_output]
         granule = {
             request_files.GRANULE_KEYS_KEY: [
                 file_0,
@@ -227,7 +233,7 @@ class TestRequestFiles(unittest.TestCase):
             ]
         }
         expected_input_granule = granule.copy()
-        expected_input_granule[request_files.GRANULE_RECOVER_FILES_KEY] = [expected_file0_output, expected_file1_output]
+        expected_input_granule[request_files.GRANULE_RECOVER_FILES_KEY] = expected_input_granule_files
         event = {
             request_files.EVENT_CONFIG_KEY: {
                 request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
