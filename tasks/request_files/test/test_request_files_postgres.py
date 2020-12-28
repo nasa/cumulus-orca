@@ -4,6 +4,7 @@ Name: test_request_files.py
 Description:  Unit tests for request_files.py.
 """
 import unittest
+import uuid
 from unittest.mock import Mock, patch, MagicMock
 import os
 import boto3
@@ -48,10 +49,11 @@ class TestRequestFilesPostgres(unittest.TestCase):
         os.environ['RESTORE_EXPIRE_DAYS'] = '5'
         os.environ['RESTORE_REQUEST_RETRIES'] = '2'
         os.environ['RESTORE_RETRIEVAL_TYPE'] = 'Standard'
+        os.environ['PREFIX'] = uuid.uuid4().__str__()
         self.context = LambdaContextMock()
 
     def tearDown(self):
-        boto3.client = Mock()
+        boto3.client = Mock()  # todo: Why?
         mock_secretsmanager_get_parameter(1)
         try:
             requests_db.delete_all_requests()
@@ -63,8 +65,10 @@ class TestRequestFilesPostgres(unittest.TestCase):
         CumulusLogger.error = self.mock_error
         CumulusLogger.info = self.mock_info
         boto3.client = self.mock_boto3_client
+        os.environ.pop('PREFIX', None)
         del os.environ['RESTORE_EXPIRE_DAYS']
         del os.environ['RESTORE_REQUEST_RETRIES']
+        # todo: Move relevant vars to db_config.del_env
         del os.environ["DATABASE_HOST"]
         del os.environ["DATABASE_NAME"]
         del os.environ["DATABASE_USER"]

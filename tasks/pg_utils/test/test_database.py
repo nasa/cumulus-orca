@@ -148,7 +148,7 @@ class TestDatabase(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
             'db_pw': 'secret'
         }
         sql_stmt = 'Select * from mytable'
-        exp_err = ('Database Error. could not translate host name "my.db.host.gov" to address: nodename nor servname provided, or not known\n')
+        exp_err = ('Database Error. could not translate host name "my.db.host.gov" to address: Unknown host\n')
         try:
             database.single_query(sql_stmt, dbconnect_info)
         except DbError as err:

@@ -17,18 +17,27 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT, ISOLATION_LEVEL_READ
 
 import db_deploy
 
+
 def get_ddl_dir():
-    path = os.path.realpath(__file__) # Path to test file
+    path = os.path.realpath(__file__)  # Path to test file
     # Essentially do a ../../.. operation to get us to the root path
     for i in range(0, 4):
         path, tail = os.path.split(path)
     # Append /database/ddl/base/ to the root path
     return os.path.join(path, 'database', 'ddl', 'base/')
 
+
 class TestDbDeploy(unittest.TestCase):
     """
     TestDbDeploy.
     """
+
+    def setUp(self):
+        os.environ['PREFIX'] = uuid.uuid4().__str__()
+
+    def tearDown(self):
+        os.environ.pop('PREFIX', None)
+
     # <editor-fold desc="Large Tests">
     #   def setUp(self):
     #       private_config = f"{os.path.realpath(__file__)}".replace(os.path.basename(__file__),
@@ -208,11 +217,13 @@ class TestDbDeploy(unittest.TestCase):
         script_filename_1 = uuid.uuid4().__str__()
         script_filename_2 = uuid.uuid4().__str__()
         drop_database = 'True'
+        prefix = uuid.uuid4().__str__()
+        os.environ['PREFIX'] = prefix
 
         secretsmanager_vars = {
-            'drdb-user-pass': db_user_pass,
-            'drdb-admin-pass': db_admin_pass,
-            'drdb-host': db_host
+            prefix + '-drdb-user-pass': db_user_pass,
+            prefix + '-drdb-admin-pass': db_admin_pass,
+            prefix + '-drdb-host': db_host
         }
 
         mock_secretsmanager = mock_boto3_client('secretsmanager')
@@ -310,11 +321,13 @@ class TestDbDeploy(unittest.TestCase):
         db_user = uuid.uuid4().__str__()
         db_port = randint(0, 99999).__str__()
         drop_database = 'True'
+        prefix = uuid.uuid4().__str__()
+        os.environ['PREFIX'] = prefix
 
         secretsmanager_vars = {
-            'drdb-user-pass': db_user_pass,
-            'drdb-admin-pass': db_admin_pass,
-            'drdb-host': db_host
+            prefix + '-drdb-user-pass': db_user_pass,
+            prefix + '-drdb-admin-pass': db_admin_pass,
+            prefix + '-drdb-host': db_host
         }
 
         secretsmanager_mock = boto3_client_mock('secretsmanager')
@@ -826,32 +839,6 @@ class TestDbDeploy(unittest.TestCase):
         except db_deploy.DatabaseError:
             return
         self.fail('Error not raised.')
-
-    @patch('db_deploy.task')
-    def test_handler_calls_task(self,
-                                mock_task: MagicMock):
-        db_deploy.handler(None, None)
-
-        mock_task.assert_called_once()
-
-    def test_get_secretsmanager_keys(self):
-        try:
-            test_prefix = 'test-prefix'
-            os.environ['PREFIX'] = test_prefix
-            param = {
-                'host': 'host',
-                'user-pass': 'user-pass',
-                'admin-pass': 'admin-pass'
-            }
-            expected_response = {
-                'host': test_prefix + '-' + 'host',
-                'user-pass': test_prefix + '-' + 'user-pass',
-                'admin-pass': test_prefix + '-' + 'admin-pass'
-            }
-            response = db_deploy.get_secretsmanager_keys(param)
-            self.assertEqual(response, expected_response)
-        finally:
-            del os.environ['PREFIX']
 
 
 if __name__ == '__main__':
