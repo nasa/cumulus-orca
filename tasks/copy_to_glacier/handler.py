@@ -84,7 +84,6 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     """
     print(event)
     event_input = event.get('input')
-    # If there is no granules object, fail the workflow.
     granules_list = event_input.get('granules')
     config = event.get('config')
     collection = config.get(CONFIG_COLLECTION_KEY)

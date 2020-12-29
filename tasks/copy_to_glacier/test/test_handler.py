@@ -155,8 +155,12 @@ class TestCopyToGlacierHandler(TestCase):
         s3_cli.head_object.assert_has_calls(head_object_calls)
         s3_cli.copy.assert_has_calls(copy_calls)
 
+        self.assertEqual(s3_cli.head_object.call_count, 4)
+        self.assertEqual(s3_cli.copy.call_count, 4)
+
         expected_copied_file_urls = [ file['filename'] for file in self.event_granules['granules'][0]['files'] ]
         self.assertEqual(expected_copied_file_urls, result['copied_to_glacier'])
+        self.assertEqual(self.event_granules['granules'], result['granules'])
 
     def test_task_empty_granules_list(self):
         """
