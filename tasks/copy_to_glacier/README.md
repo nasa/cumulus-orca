@@ -275,23 +275,5 @@ FUNCTIONS
                         bucket (str)
                 copied_to_glacier (list): List of S3 paths - one for each file copied
 
-DATA
-    Any = typing.Any
-    COLLECTION_META_KEY = 'meta'
-    COLLECTION_NAME_KEY = 'name'
-    COLLECTION_URL_PATH_KEY = 'url_path'
-    COLLECTION_VERSION_KEY = 'version'
-    CONFIG_BUCKETS_KEY = 'buckets'
-    CONFIG_COLLECTION_KEY = 'collection'
-    CONFIG_FILE_STAGING_DIRECTORY_KEY = 'fileStagingDir'
-    CONFIG_URL_PATH_KEY = 'url_path'
-    Dict = typing.Dict
-    EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
-    List = typing.List
-    Optional = typing.Optional
-    Union = typing.Union
-
-FILE
-    /Users/jmcampbell/cumulus-orca/tasks/copy_to_glacier/handler.py
 ```
 
