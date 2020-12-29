@@ -3,7 +3,7 @@
 The `copy_to_glacier` module is meant to be deployed as a lambda function that takes a Cumulus message, extracts a list of files, and copies those files from their current storage location into a staging/glacier location.
 
 
-## Excluding certain file extensions from the copy
+## Exclude files by extension.
 
 You are able to specify a list of file types (extensions) that you'd like to exclude from the backup/copy_to_glacier functionality. This is done on a per-collection basis, configured in the `meta` variable of a Cumulus collection configuration:
 
@@ -137,10 +137,13 @@ The `copy_to_glacier` lambda function expects that the input payload has a `gran
 }
 ```
 
+**Note:** We suggest that the `copy_to_glacier` task be placed any time after the `MoveGranulesStep`. It will propagate the input `granules` object as output, so it can be used as the last task in the workflow.
+
+
 ## Output
 
 The copy lambda will, as the name suggests, copy a file from its current some source destination. The destination location is defined as 
-`${glacier_bucket}/${url_path}/filename`, where `${glacier_bucket}` is pulled from your Cumulus `meta.bucket` config, `${url_path}` is pulled from the Cumulus `meta.collection` config, and `filename` is the base name of the file (with the file extension).
+`${glacier_bucket}/${filepath}`, where `${glacier_bucket}` is pulled from your Cumulus `meta.bucket` config and `${filepath}` is pulled from the Cumulus granule object input.
 
 The output of this lambda is a dictionary with a `granules` and `copied_to_glacier` attributes:
 

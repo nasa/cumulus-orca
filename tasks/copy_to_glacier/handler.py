@@ -57,54 +57,6 @@ def copy_granule_between_buckets(source_bucket_name: str, source_key: str, desti
         }
     )
 
-
-# todo: Once aws upgrades to Python 3.8, have this return Optional[Match[AnyStr]]
-def get_source_bucket_and_key(granule_url) -> Optional[Match]:
-    """
-    Parses source bucket and key from s3 url.
-    Args:
-        granule_url: s3 url path to granule.
-    Returns:  TODO: Strip 0th element from return value.
-        re.Match object with argument [1] equal to source bucket name and [2] equal to source key.
-    """
-    return re.search("s3://([^/]*)/(.*)", granule_url)
-
-
-def get_bucket_name_for_filename(filename: str, collection_files: List[Dict[str, Any]]) -> str:
-    """
-    Retrieves the first file pattern in {collection_files} where the file's ['regex'] matches the {filename}
-    And returns that file's ['bucket']
-    Args:
-        filename: Granule file name.
-        collection_files: List of collection files.
-            Each file is a dict with the following keys:
-                regex (str): The regex that all files in the bucket must match with their name.
-                bucket (str): The name of the bucket containing the files.
-    Returns:
-        Bucket name, or 'public' if not found.
-    """
-    for file in collection_files:
-        if re.match(file.get('regex', '*.'), filename):
-            return file['bucket']
-    return 'public'
-
-
-def get_granule_urls_from_granules_list(granules_list: List) -> List[str]:
-    """
-    Pulls a list of filenames (S3 filepaths) from a list of granules.
-
-    Args:
-        granules_list: List of granule objects
-
-    Returns:
-        List of S3 filepaths.
-    """
-    files = []
-    for granule in granules_list:
-        files.extend([ file['filename'] for file in granule['files'] ])
-    return files
-
-
 # noinspection PyUnusedLocal
 def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str, Any]:
     """
@@ -134,44 +86,34 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     event_input = event.get('input')
     # If there is no granules object, fail the workflow.
     granules_list = event_input.get('granules')
-    granule_urls = get_granule_urls_from_granules_list(granules_list)
     config = event.get('config')
     collection = config.get(CONFIG_COLLECTION_KEY)
     exclude_file_types = collection.get(COLLECTION_META_KEY, {}).get(EXCLUDE_FILE_TYPES_KEY, [])
-    config[CONFIG_FILE_STAGING_DIRECTORY_KEY] = \
-        config.get(CONFIG_FILE_STAGING_DIRECTORY_KEY,
-                   f"{collection[COLLECTION_NAME_KEY]}__{collection[COLLECTION_VERSION_KEY]}")
     glacier_bucket = config.get(CONFIG_BUCKETS_KEY).get('glacier').get('name')
-    collection_url_path = collection.get(COLLECTION_URL_PATH_KEY)
     granule_data = {}
-    for granule_url in granule_urls:
-        filename = os.path.basename(granule_url)
-        if filename not in granule_data.keys():
-            granule_data[filename] = {'granuleId': filename, 'files': []}
-        granule_data[filename]['files'].append(
-            {
-                'path': config[CONFIG_FILE_STAGING_DIRECTORY_KEY],
-                'url_path': config.get(CONFIG_URL_PATH_KEY, config[CONFIG_FILE_STAGING_DIRECTORY_KEY]),
-                'bucket': get_bucket_name_for_filename(filename, collection.get('files', [])),
-                'filename': granule_url,
-                'name': granule_url
-            }
-        )
-        if should_exclude_files_type(granule_url, exclude_file_types):
-            print(f"Excluding {granule_url} from glacier backup because of collection configured {EXCLUDE_FILE_TYPES_KEY}.")
-            continue
-        source = get_source_bucket_and_key(granule_url)  # todo: Handle 'None' return value.
-        copy_granule_between_buckets(source_bucket_name=source[1],
-                                     source_key=source[2],
-                                     destination_bucket=glacier_bucket,
-                                     destination_key=f"{collection_url_path}/{filename}")
-        print(f"Copied {granule_url} into glacier storage bucket {glacier_bucket}.")
+    copied_file_urls = []
 
-    final_output = list(granule_data.values())
-    return {'granules': granules_list, 'copied_to_glacier': granule_urls}
-    # Return the payload mergin in granules object and list of files backed-up to glacier.
-    # return event_input.update({'granules': granules_list, 'copied_to_glacier': granule_urls})
+    # Iterate through the input granules (>= 0 granules expected)
+    for granule in granules_list:
+        granuleId = granule['granuleId']
+        if granuleId not in granule_data.keys():
+            granule_data[granuleId] = {'granuleId': granuleId, 'files': []}
 
+        # Iterate through the files in a granule object
+        for file in granule['files']:
+            source_name = file['name']
+            source_filepath = file['filepath']
+            if should_exclude_files_type(source_name, exclude_file_types):
+                print(f"Excluding {source_name} from glacier backup because of collection configured {EXCLUDE_FILE_TYPES_KEY}.")
+                continue
+            copy_granule_between_buckets(source_bucket_name=file['bucket'],
+                                         source_key=source_filepath,
+                                         destination_bucket=glacier_bucket,
+                                         destination_key=source_filepath)
+            copied_file_urls.append(file['filename'])
+            print(f"Copied {source_filepath} into glacier storage bucket {glacier_bucket}.")
+
+    return {'granules': granules_list, 'copied_to_glacier': copied_file_urls}
 
 # handler that is provided to aws lambda
 def handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any:
