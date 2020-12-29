@@ -64,8 +64,6 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
 
     Args:
         event: Passed through from {handler}
-
-
         context: An object required by AWS Lambda. Unused.
 
     Returns:
@@ -73,14 +71,11 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
             granules (List[Dict[str, Union[str, bytes, list]]]): A list of dicts where each dict has the following keys:
                 granuleId (str): The filename from the granule url.
                 files (List): A list of dicts with the following keys:
-                    path (str): config['fileStagingDir']
-                    url_path (str): config['url_path'] if present, otherwise config['fileStagingDir']
-                    bucket (str): The name of the config['buckets'] that matches the filename.
-                    filename (str): The granule_url from event['input']
-                    # todo: It is confusing that granuleId holds the filename while filename holds the url.
-                    name (str): The granule_url from event['input']
-                    # todo: This inclusion implies to me we are matching an un-linked schema.
-            input (list): event['input']
+                    name (str)
+                    filename (str)
+                    filepath (str)
+                    bucket (str)
+            copied_to_glacier (list): List of S3 paths - one for each file copied
     """
     print(event)
     event_input = event['input']
@@ -122,7 +117,8 @@ def handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any:
 
     Args:
         event: Event passed into the step from the aws workflow. A dict with the following keys:
-            input (list): A list of urls for granules to copy. Defaults to an empty list.
+            input (dict): Dictionary with the followig keys:
+                granules (List): List of granule objects (dictionaries)
             config (dict): A dict with the following keys:
                 collection (dict): The collection from AWS.
                     See https://nasa.github.io/cumulus/docs/data-cookbooks/sips-workflow
@@ -138,14 +134,9 @@ def handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any:
                             regex (str): The regex that all files in the bucket must match with their name.
                             bucket (str): The name of the bucket containing the files.
                     url_path (str): Used when calling {copy_granule_between_buckets} as a part of the destination_key.
-
-                fileStagingDir (str): Is placed as the value of the return's['granules'][filename]['files']['path']
-                    Will default to name__version where 'name' and 'version' come from 'config[collection]'.
                 buckets (dict): A dict with the following keys:
                     glacier (dict): A dict with the following keys:
                         name (str): The name of the bucket to copy to.
-                url_path (str): Is placed as the value of the return's['granules'][filename]['files']['url_path']
-                    Will default to the fileStagingDir.
 
 
         context: An object required by AWS Lambda. Unused.
