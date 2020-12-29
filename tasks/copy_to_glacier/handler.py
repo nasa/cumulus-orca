@@ -83,9 +83,10 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
             input (list): event['input']
     """
     print(event)
-    event_input = event.get('input')
-    granules_list = event_input.get('granules')
-    config = event.get('config')
+    event_input = event['input']
+    granules_list = event_input['granules']
+    config = event['config']
+
     collection = config.get(CONFIG_COLLECTION_KEY)
     exclude_file_types = collection.get(COLLECTION_META_KEY, {}).get(EXCLUDE_FILE_TYPES_KEY, [])
     glacier_bucket = config.get(CONFIG_BUCKETS_KEY).get('glacier').get('name')

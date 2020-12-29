@@ -1,5 +1,6 @@
 import json
 import uuid
+import copy
 from os import path
 from unittest import TestCase
 from unittest.mock import Mock, call
@@ -109,7 +110,7 @@ class TestCopyToGlacierHandler(TestCase):
         s3_cli.head_object = Mock(return_value={'ContentType': content_type})
 
         event = {
-            'input': self.event_granules,
+            'input': copy.deepcopy(self.event_granules),
             'config': {
                 CONFIG_COLLECTION_KEY: {
                     COLLECTION_NAME_KEY: collection_name,
@@ -135,7 +136,6 @@ class TestCopyToGlacierHandler(TestCase):
         self.assertEqual(1, len(granules))
         granule = granules[0]
         self.assertEqual(4, len(granule['files']))
-        file = granule['files'][0]
 
         head_object_calls = []
         copy_calls = []
