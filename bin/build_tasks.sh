@@ -5,7 +5,7 @@ set -e
 rm -rf venv
 python3 -m venv venv
 source venv/bin/activate
-pip install --upgrade pip
+pip install --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org
 deactivate
 echo "pwd `pwd`"
 
@@ -23,7 +23,7 @@ cd "`pwd`/${TASK}"
 rm -rf build
 mkdir build
 source ../../venv/bin/activate
-pip install -t build -r requirements.txt --trusted-host pypi.org
+pip install -t build -r requirements.txt --trusted-host pypi.org --trusted-host pypi.org --trusted-host files.pythonhosted.org
 deactivate
 cp db_deploy.py build/
 cd build
@@ -44,7 +44,7 @@ cd "`pwd`/${TASK}"
 rm -rf build
 mkdir build
 source ../../venv/bin/activate
-pip install -t build -r requirements.txt --trusted-host pypi.org
+pip install -t build -r requirements.txt --trusted-host pypi.org --trusted-host pypi.org --trusted-host files.pythonhosted.org
 deactivate
 cp *.py build/
 cd build
@@ -57,7 +57,7 @@ cd "`pwd`/${TASK}"
 rm -rf build
 mkdir build
 source ../../venv/bin/activate
-pip install -t build -r requirements.txt --trusted-host pypi.org
+pip install -t build -r requirements.txt --trusted-host pypi.org --trusted-host pypi.org --trusted-host files.pythonhosted.org
 deactivate
 cp request_status.py build/
 cd build
@@ -76,7 +76,7 @@ cd "`pwd`/${TASK}"
 rm -rf build
 mkdir build
 source ../../venv/bin/activate
-pip install -t build -r requirements.txt --trusted-host pypi.org
+pip install -t build -r requirements.txt --trusted-host pypi.org --trusted-host pypi.org --trusted-host files.pythonhosted.org
 deactivate
 cp copy_files_to_archive.py build/
 cd build
@@ -95,7 +95,7 @@ cd "`pwd`/${TASK}"
 rm -rf build
 mkdir build
 source ../../venv/bin/activate
-pip install -t build -r requirements.txt --trusted-host pypi.org
+pip install -t build -r requirements.txt --trusted-host pypi.org --trusted-host pypi.org --trusted-host files.pythonhosted.org
 deactivate
 cp request_files.py build/
 cd build
@@ -115,7 +115,7 @@ cd "`pwd`/${TASK}"
 rm -rf build
 mkdir build
 source ../../venv/bin/activate
-pip install -t build -r requirements.txt --trusted-host pypi.org
+pip install -t build -r requirements.txt --trusted-host pypi.org --trusted-host pypi.org --trusted-host files.pythonhosted.org
 deactivate
 cp *.py build/
 cd build
