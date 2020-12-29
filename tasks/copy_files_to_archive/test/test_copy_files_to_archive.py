@@ -76,7 +76,7 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
         mock_database_single_query.side_effect = [exp_result, exp_upd_result]
         mock_secretsmanager_get_parameter(2)
         result = copy_files_to_archive.handler(self.handler_input_event, None)
-        mock_boto3_client.assert_called_with('secretsmanager')
+        mock_boto3_client.assert_has_calls([call('secretsmanager')])
         mock_s3_cli.copy_object.assert_called_with(Bucket=self.exp_target_bucket,
                                                    CopySource={'Bucket': exp_src_bucket,
                                                                'Key': self.exp_file_key1},
@@ -195,7 +195,7 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
         self.handler_input_event["Records"].append(exp_rec_2)
         result = copy_files_to_archive.handler(self.handler_input_event, None)
 
-        mock_boto3_client.assert_called_with('secretsmanager')
+        mock_boto3_client.assert_has_calls([call('secretsmanager')])
         exp_result = [{"success": True, "source_bucket": self.exp_src_bucket,
                        "source_key": self.exp_file_key1,
                        "request_id": REQUEST_ID7,
@@ -264,7 +264,7 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
             self.fail("expected CopyRequestError")
         except copy_files_to_archive.CopyRequestError as ex:
             self.assertEqual(exp_error, str(ex))
-        mock_boto3_client.assert_called_with('secretsmanager')
+        mock_boto3_client.assert_has_calls([call('secretsmanager')])
         mock_s3_cli.copy_object.assert_called_with(Bucket=self.exp_target_bucket,
                                                    CopySource={'Bucket': self.exp_src_bucket,
                                                                'Key': self.exp_file_key1},
@@ -301,7 +301,7 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
         mock_secretsmanager_get_parameter(4)
         result = copy_files_to_archive.handler(self.handler_input_event, None)
         # todo: The file under test does not call boto3.client('secretsmanager'). Remove this and other references in test code.
-        mock_boto3_client.assert_called_with('secretsmanager')
+        mock_boto3_client.assert_has_calls([call('secretsmanager')])
         exp_result = [{"success": True, "source_bucket": self.exp_src_bucket,
                        "source_key": self.exp_file_key1,
                        "request_id": REQUEST_ID7,

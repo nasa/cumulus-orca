@@ -44,8 +44,6 @@ def task() -> None:
     Raises:
         DatabaseError: An error occurred.
     """
-    db_name = os.environ['DATABASE_NAME']
-    db_user = os.environ['DATABASE_USER']
     prefix = os.environ['PREFIX']
 
     secretsmanager = boto3.client('secretsmanager')

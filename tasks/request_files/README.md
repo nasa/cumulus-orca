@@ -231,12 +231,17 @@ FUNCTIONS
                     to sleep between retry attempts.
                 RESTORE_RETRIEVAL_TYPE (str, optional, default = 'Standard'): the Tier
                     for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
-                DATABASE_PORT (str): the database port. The default is 5432.  # todo: Unused unless hidden in import.
-                DATABASE_NAME (str): the name of the database.  # todo: Unused unless hidden in import.
-                DATABASE_USER (str): the name of the application user.  # todo: Unused unless hidden in import.
+                DATABASE_PORT (str): the database port. The default is 5432
+                    Hidden requirement for requests_db.get_dbconnect_info.
+                DATABASE_NAME (str): the name of the database.
+                    Hidden requirement for requests_db.get_dbconnect_info.
+                DATABASE_USER (str): the name of the application user.
+                    Hidden requirement for requests_db.get_dbconnect_info.
             Parameter Store:
                 drdb-user-pass (str): the password for the application user (DATABASE_USER).
-                drdb-host (str): the database host
+                    Hidden requirement for requests_db.get_dbconnect_info.
+                drdb-host (str): the database host.
+                    Hidden requirement for requests_db.get_dbconnect_info.
             Args:
                 event (dict): A dict with the following keys:
                     'config' (dict): A dict with the following keys:
@@ -273,6 +278,8 @@ FUNCTIONS
                 message, with 'success' = False for the files for which the restore request failed to
                 submit.
     
+    inner_task(event: Dict, max_retries: int, retry_sleep_secs: float, retrieval_type: str, restore_expire_days: int)
+    
     object_exists(s3_cli: botocore.client.BaseClient, glacier_bucket: str, file_key: str) -> bool
         Check to see if an object exists in S3 Glacier.
         Args:
@@ -282,9 +289,9 @@ FUNCTIONS
         Returns:
             True if the object exists, otherwise False.
     
-    process_granule(s3: botocore.client.BaseClient, granule: Dict, glacier_bucket: str, exp_days: int)
+    process_granule(s3: botocore.client.BaseClient, granule: Dict[str, Union[str, List[Dict]]], glacier_bucket: str, restore_expire_days: int, max_retries: int, retry_sleep_secs: float, retrieval_type: str)
     
-    restore_object(s3_cli: botocore.client.BaseClient, obj: Dict[str, Any], attempt: int, retries: int, retrieval_type: str = 'Standard') -> str
+    restore_object(s3_cli: botocore.client.BaseClient, obj: Dict[str, Any], attempt: int, max_retries: int, retrieval_type: str = 'Standard') -> None
     
     task(event: Dict, context: object) -> Dict[str, Any]
         Task called by the handler to perform the work.
@@ -303,12 +310,17 @@ FUNCTIONS
                     to sleep between retry attempts.
                 RESTORE_RETRIEVAL_TYPE (str, optional, default = 'Standard'): the Tier
                     for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
-                DATABASE_PORT (str): the database port. The default is 5432.
+                DATABASE_PORT (str): the database port. The default is 5432
+                    Hidden requirement for requests_db.get_dbconnect_info.
                 DATABASE_NAME (str): the name of the database.
+                    Hidden requirement for requests_db.get_dbconnect_info.
                 DATABASE_USER (str): the name of the application user.
+                    Hidden requirement for requests_db.get_dbconnect_info.
             Parameter Store:
                 drdb-user-pass (str): the password for the application user (DATABASE_USER).
-                drdb-host (str): the database host
+                    Hidden requirement for requests_db.get_dbconnect_info.
+                drdb-host (str): the database host.
+                    Hidden requirement for requests_db.get_dbconnect_info.
             Returns:
                 A dict with the following keys:
                     'granules' (List): A list of dicts, each with the following keys:
@@ -349,6 +361,7 @@ DATA
     GRANULE_RECOVER_FILES_KEY = 'recover_files'
     INPUT_GRANULES_KEY = 'granules'
     LOGGER = <cumulus_logger.CumulusLogger object>
+    List = typing.List
     OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY = 'RESTORE_EXPIRE_DAYS'
     OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY = 'RESTORE_REQUEST_RETRIES'
     OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY = 'RESTORE_RETRIEVAL_TYPE'
@@ -360,4 +373,5 @@ DATA
     REQUESTS_DB_JOB_STATUS_KEY = 'job_status'
     REQUESTS_DB_REQUEST_GROUP_ID_KEY = 'request_group_id'
     REQUESTS_DB_REQUEST_ID_KEY = 'request_id'
+    Union = typing.Union
 ```
