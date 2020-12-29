@@ -32,12 +32,6 @@ class TestDbDeploy(unittest.TestCase):
     TestDbDeploy.
     """
 
-    def setUp(self):
-        os.environ['PREFIX'] = uuid.uuid4().__str__()
-
-    def tearDown(self):
-        os.environ.pop('PREFIX', None)
-
     # <editor-fold desc="Large Tests">
     #   def setUp(self):
     #       private_config = f"{os.path.realpath(__file__)}".replace(os.path.basename(__file__),
