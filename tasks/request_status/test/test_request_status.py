@@ -5,6 +5,7 @@ Description:  Unit tests for request_status.py.
 """
 import os
 import unittest
+import uuid
 from unittest.mock import Mock
 import boto3
 import database
@@ -30,6 +31,7 @@ class TestRequestStatus(unittest.TestCase):
         os.environ["DATABASE_USER"] = "unittestdbuser"
         os.environ["DATABASE_PW"] = "unittestdbpw"
         os.environ["DATABASE_PORT"] = "5432"
+        os.environ['PREFIX'] = uuid.uuid4().__str__()
         self.mock_boto3_client = boto3.client
         self.mock_utcnow = requests_db.get_utc_now_iso
         self.mock_request_group_id = requests_db.request_id_generator
@@ -40,6 +42,7 @@ class TestRequestStatus(unittest.TestCase):
         requests_db.request_id_generator = self.mock_request_group_id
         requests_db.get_utc_now_iso = self.mock_utcnow
         boto3.client = self.mock_boto3_client
+        os.environ.pop('PREFIX', None)
         del os.environ["DATABASE_HOST"]
         del os.environ["DATABASE_NAME"]
         del os.environ["DATABASE_USER"]
