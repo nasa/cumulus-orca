@@ -200,3 +200,98 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_glaci
   ]
 }
 ```
+
+## pydoc request_files
+
+```
+NAME
+    handler
+
+FUNCTIONS
+    copy_granule_between_buckets(source_bucket_name: str, source_key: str, destination_bucket: str, destination_key: str) -> None
+        Copies granule from source bucket to destination.
+        Args:
+            source_bucket_name: The name of the bucket in which the granule is currently located.
+            source_key: source Granule path excluding s3://[bucket]/
+            destination_bucket: The name of the bucket the granule is to be copied to.
+            destination_key: Destination granule path excluding s3://[bucket]/
+    
+    handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any
+        Lambda handler. Runs a cumulus task that
+        copies the files in {event}['input'] from the collection specified in {config} to the {config}'s 'glacier' bucket.
+        
+        Args:
+            event: Event passed into the step from the aws workflow. A dict with the following keys:
+                input (dict): Dictionary with the followig keys:
+                    granules (List): List of granule objects (dictionaries)
+                config (dict): A dict with the following keys:
+                    collection (dict): The collection from AWS.
+                        See https://nasa.github.io/cumulus/docs/data-cookbooks/sips-workflow
+                        A dict with the following keys:
+                        name (str): The name of the collection.
+                            Used when generating the default value for {event}[config][fileStagingDir].
+                        version (str): The version of the collection.
+                            Used when generating the default value for {event}[config][fileStagingDir].
+                        files (list[Dict]): A list of dicts representing file types within the collection.
+                            The first file where the file's ['regex'] matches the filename from the input
+                            Is used to identify the bucket referenced in return's['granules'][filename]['files']['bucket']
+                            Each dict contains the following keys:
+                                regex (str): The regex that all files in the bucket must match with their name.
+                                bucket (str): The name of the bucket containing the files.
+                        url_path (str): Used when calling {copy_granule_between_buckets} as a part of the destination_key.
+                    buckets (dict): A dict with the following keys:
+                        glacier (dict): A dict with the following keys:
+                            name (str): The name of the bucket to copy to.
+        
+        
+            context: An object required by AWS Lambda. Unused.
+        
+        Returns:
+            The result of the cumulus task.
+    
+    should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -> bool
+        Tests whether or not file is included in {excludeFileTypes} from copy to glacier.
+        Args:
+            granule_url: s3 url of granule.
+            exclude_file_types: List of extensions to exclude in the backup
+        Returns:
+            True if file should be excluded from copy, False otherwise.
+    
+    task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str, Any]
+        Copies the files in {event}['input'] from the collection specified in {config} to the {config}'s 'glacier' bucket.
+        
+        Args:
+            event: Passed through from {handler}
+            context: An object required by AWS Lambda. Unused.
+        
+        Returns:
+            A dict with the following keys:
+                granules (List[Dict[str, Union[str, bytes, list]]]): A list of dicts where each dict has the following keys:
+                    granuleId (str): The filename from the granule url.
+                    files (List): A list of dicts with the following keys:
+                        name (str)
+                        filename (str)
+                        filepath (str)
+                        bucket (str)
+                copied_to_glacier (list): List of S3 paths - one for each file copied
+
+DATA
+    Any = typing.Any
+    COLLECTION_META_KEY = 'meta'
+    COLLECTION_NAME_KEY = 'name'
+    COLLECTION_URL_PATH_KEY = 'url_path'
+    COLLECTION_VERSION_KEY = 'version'
+    CONFIG_BUCKETS_KEY = 'buckets'
+    CONFIG_COLLECTION_KEY = 'collection'
+    CONFIG_FILE_STAGING_DIRECTORY_KEY = 'fileStagingDir'
+    CONFIG_URL_PATH_KEY = 'url_path'
+    Dict = typing.Dict
+    EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
+    List = typing.List
+    Optional = typing.Optional
+    Union = typing.Union
+
+FILE
+    /Users/jmcampbell/cumulus-orca/tasks/copy_to_glacier/handler.py
+```
+
