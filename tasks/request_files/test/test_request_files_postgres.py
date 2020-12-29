@@ -68,12 +68,7 @@ class TestRequestFilesPostgres(unittest.TestCase):
         os.environ.pop('PREFIX', None)
         del os.environ['RESTORE_EXPIRE_DAYS']
         del os.environ['RESTORE_REQUEST_RETRIES']
-        # todo: Move relevant vars to db_config.del_env
-        del os.environ["DATABASE_HOST"]
-        del os.environ["DATABASE_NAME"]
-        del os.environ["DATABASE_USER"]
-        del os.environ["DATABASE_PW"]
-        del os.environ["DATABASE_PORT"]
+        db_config.del_env()
         del os.environ["RESTORE_RETRIEVAL_TYPE"]
 
     def test_task_one_granule_4_files_success(self):
