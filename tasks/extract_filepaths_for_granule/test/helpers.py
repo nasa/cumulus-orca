@@ -5,6 +5,7 @@ Description:  helper functions for testing.
 """
 import json
 
+
 def create_handler_event():
     """
     create a handler event for testing.
@@ -16,6 +17,7 @@ def create_handler_event():
         with open('testevents/fixture1.json') as fil:
             event = json.load(fil)
     return event
+
 
 def create_task_event():
     """
@@ -29,10 +31,12 @@ def create_task_event():
             event = json.load(fil)
     return event
 
-class LambdaContextMock:      #pylint: disable-msg=too-few-public-methods
+
+class LambdaContextMock:  # pylint: disable-msg=too-few-public-methods
     """
     create a lambda context for testing.
     """
+
     def __init__(self):
         self.function_name = "extract_filepaths_for_granule"
         self.function_version = 1
