@@ -89,6 +89,11 @@ A Cumulus execution refers to a single execution of a (Cumulus) Workflow.
 ## G
 ### GIBS
 [Global Imagery Browse Services](https://earthdata.nasa.gov/about/science-system-description/eosdis-components/global-imagery-browse-services-gibs)
+
+### Glacier Storage
+[Amazon S3 Glacier](https://aws.amazon.com/glacier/) is a secure,
+durable, and extremely low-cost [cloud storage service](https://docs.aws.amazon.com/amazonglacier/latest/dev/introduction.html) 
+for data archiving and long-term backup.
 ### Granule
 A granule is the smallest aggregation of data that can be independently
 managed (described, inventoried, and retrieved). Granules are always
@@ -146,6 +151,9 @@ Data source that generates and/or distributes data for Cumulus workflows to
 act upon.
 
 For more information, see the [Cumulus documentation](https://nasa.github.io/cumulus/docs/data-cookbooks/setup#providers).
+
+### Python
+See [Python.org](https://www.python.org/).
 ## Q
 
 ## R
