@@ -5,7 +5,7 @@ module.exports = {
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
-  favicon: 'img/favicon.ico',
+  favicon: 'static/img/favicon.ico',
   organizationName: 'nasa', // Usually your GitHub org/user name.
   projectName: 'cumulus-orca', // Usually your repo name.
   themeConfig: {
@@ -13,21 +13,9 @@ module.exports = {
       title: 'Operational Recovery Cloud Archive (ORCA)',
       logo: {
         alt: 'ORCA site logo',
-        src: 'img/cumulus-orca-logo.svg',
+        src: 'static/img/cumulus-orca-logo.svg',
       },
       items: [
-        {
-          to: 'docs/',
-          activeBasePath: 'docs',
-          label: 'Versions',
-          position: 'left',
-          items: [
-            {
-              to: 'docs/',
-              label: 'v1.0',
-            },
-          ],
-        },
         {
           to: 'docs/about/introduction/orca-intro',
           activeBasePath: 'docs/about/',
@@ -67,19 +55,23 @@ module.exports = {
           items: [
             {
               label: 'About ORCA',
-              to: 'docs/about/',
+              to: 'docs/about/orca-intro',
             },
             {
-              label: 'Developer Guide',
-              to: 'docs/',
+              label: 'ORCA Developer Guide',
+              to: 'docs/developer/developer-intro',
             },
             {
               label: 'ORCA Cookbooks',
               to: 'docs/cookbook/',
             },
             {
-              label: 'Operator Guide',
+              label: 'ORCA Operator Guide',
               to: 'docs/operator/',
+            },
+            {
+              label: 'Cumulus Documentation',
+              to: 'https://nasa.github.io/cumulus/docs/cumulus-docs-readme',
             },
           ],
         },
@@ -88,11 +80,19 @@ module.exports = {
           items: [
             {
               label: 'ORCA Working Group',
-              href: 'https://github.com/nasa',
+              href: 'https://wiki.earthdata.nasa.gov/display/CUMULUS/ORCA+Working+Group',
             },
             {
               label: 'Cumulus Project',
               href: 'https://github.com/nasa/cumulus',
+            },
+            {
+              label: 'Cumulus Integrator Working Group',
+              href: 'https://wiki.earthdata.nasa.gov/display/CUMULUS/Cumulus+Integrators+Working+Group',
+            },
+            {
+              label: 'Cumulus Operator Working Group',
+              href: 'https://wiki.earthdata.nasa.gov/display/CUMULUS/Cumulus+Operator+Working+Group',
             },
           ],
         },
@@ -116,7 +116,7 @@ module.exports = {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
           editUrl:
-            'https://github.com/nasa/cumulus-orca/edit/master/website/',
+            'https://github.com/nasa/cumulus-orca/edit/develop/website/',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
