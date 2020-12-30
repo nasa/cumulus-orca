@@ -21,9 +21,13 @@ module.exports = {
                        ],
     "Contributing": ['developer/contributing/doc-style-guide',
                     ],
+    "Deployment": ['developer/deployment',
+                        ],
   },
   cookbook: {
   },
   ops_guide: {
+      "Getting Started": ['operator/operator-intro',
+    ],
   },
 };

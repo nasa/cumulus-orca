@@ -29,13 +29,13 @@ module.exports = {
           position: 'right',
         },
         {
-          to: 'docs/cookbook/',
+          to: 'docs/cookbook/cookbook-intro',
           activeBasePath: 'docs/cookbook/',
           label: 'ORCA Cookbooks',
           position: 'right',
         },
         {
-          to: 'docs/operator/',
+          to: 'docs/operator/operator-intro',
           activeBasePath: 'docs/operator/',
           label: 'Operator Guide',
           position: 'right',
@@ -63,11 +63,11 @@ module.exports = {
             },
             {
               label: 'ORCA Cookbooks',
-              to: 'docs/cookbook/',
+              to: 'docs/cookbook/cookbook-intro',
             },
             {
               label: 'ORCA Operator Guide',
-              to: 'docs/operator/',
+              to: 'docs/operator/operator-intro',
             },
             {
               label: 'Cumulus Documentation',
@@ -93,6 +93,10 @@ module.exports = {
             {
               label: 'Cumulus Operator Working Group',
               href: 'https://wiki.earthdata.nasa.gov/display/CUMULUS/Cumulus+Operator+Working+Group',
+            },
+            {
+              label: 'Cumulus Documentation',
+              href: 'https://nasa.github.io/cumulus/docs/cumulus-docs-readme'
             },
           ],
         },

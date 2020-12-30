@@ -14,8 +14,7 @@ ORCA Working Group.
 
 ## How do I implement or use ORCA?
 
-Information on implementing ORCA is located here or in the
-[ORCA GitHub repository](https://github.com/nasa/cumulus-orca).
+Information on implementing ORCA is located [here](../../developer/deployment.md).
 
 Information on ORCA use for Operators and Data Managers is located here.
 
