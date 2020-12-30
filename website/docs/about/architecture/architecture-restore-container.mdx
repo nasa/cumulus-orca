@@ -4,6 +4,9 @@ title: Recover Container Architecture
 description: High level overview of ORCA recover container architecture.
 ---
 
+import MyImage from '@site/docs/components/pan-zoom-image.mdx';
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
 The ORCA recover data container contains all the components used in the recovery
 of data from the secondary archive. The diagram below shows the various
 interactions of these components. Recovery processes are kicked off manually
@@ -17,6 +20,13 @@ data is copied back to the Cumulus S3 primary data bucket as the final restore
 step. Determining the status of the recovery job is done manually by either
 using the provided request_status lambda or querying the database directly.
 
-![ORCA Recover Data Container Context](../static/img/ORCA-Architecture-Recovery-Container-Component.svg)
+
+<MyImage
+    imageSource={useBaseUrl('static/img/ORCA-Architecture-Recovery-Container-Component.svg')}
+    imageAlt="ORCA Recover Data Container Context"
+    zoomInPic={useBaseUrl('static/img/zoom-in.svg')}
+    zoomOutPic={useBaseUrl('static/img/zoom-out.svg')}
+    resetPic={useBaseUrl('static/img/zoom-pan-reset.svg')}
+/>
 
 

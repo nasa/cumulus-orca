@@ -9,33 +9,34 @@ import styles from './styles.module.css';
 const features = [
   {
     title: 'Easy to Use',
-    imageUrl: 'img/undraw_docusaurus_mountain.svg',
+    imageUrl: 'img/easy-to-use.png',
     description: (
       <>
-        ORCA was designed to be easy to use and integrate into your current
-        Cumulus deployment strategies. Whenever possible ORCA utilizes native
-        Cumulus components and architectures.
+        ORCA is designed to be easy to use for data recovery operations.
+        Whenever possible, ORCA utilizes native Cumulus components and
+        architecture for direct integration into your current Cumulus deployment
+        strategies.
       </>
     ),
   },
   {
     title: 'Extensible',
-    imageUrl: 'img/undraw_docusaurus_tree.svg',
+    imageUrl: 'img/extensible.png',
     description: (
       <>
-        ORCA does not try to be a one size fits all solution. The team has
-        provided multiple avenues to extend ORCA functionality to meet your
-        DAAC's recovery and archive needs.
+        ORCA is not a one-size-fits-all solution and was designed to be flexible
+        and adaptable. Each DAAC can customize ORCA by extending functionalities
+        to meet unique recovery and archive needs.
       </>
     ),
   },
   {
     title: 'Powered by AWS',
-    imageUrl: 'img/undraw_docusaurus_react.svg',
+    imageUrl: 'img/aws-ngap.png',
     description: (
       <>
         ORCA utilizes NASA NGAP approved AWS services and components to meet
-        your teams security needs.
+        your team's security needs.
       </>
     ),
   },
