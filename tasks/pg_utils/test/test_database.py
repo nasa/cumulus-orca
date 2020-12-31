@@ -7,7 +7,7 @@ Description:  Unit tests for requests_db.py.
 import datetime
 import os
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch, MagicMock
 import uuid
 
 import boto3
@@ -18,7 +18,8 @@ from database import DbError
 
 UUID1 = str(uuid.uuid4())
 
-class TestDatabase(unittest.TestCase):  #pylint: disable-msg=too-many-public-methods
+
+class TestDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-public-methods
     """
     TestDatabase.
     """
@@ -42,11 +43,11 @@ class TestDatabase(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         secretsmanager_cli.get_secret_value = Mock(side_effect=[db_host,
                                                                 db_pw])
         db_params = {
-            'db_host': { 'secretsmanager': 'drdb-host' },
-            'db_port': { 'env': 'DATABASE_PORT' },
-            'db_name': { 'env': 'DATABASE_NAME' },
-            'db_user': { 'env': 'DATABASE_USER' },
-            'db_pw': { 'secretsmanager': 'drdb-user-pass' }
+            'db_host': {'secretsmanager': 'drdb-host'},
+            'db_port': {'env': 'DATABASE_PORT'},
+            'db_name': {'env': 'DATABASE_NAME'},
+            'db_user': {'env': 'DATABASE_USER'},
+            'db_pw': {'secretsmanager': 'drdb-user-pass'}
         }
         self.dbconnect_info = database.read_db_connect_info(db_params)
 
@@ -92,10 +93,10 @@ class TestDatabase(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         con = database.get_connection(db_connect_info)
         self.assertIsNotNone(con)
 
-
-    # TODO: This test has a happy and sad path, and passes for both.
-    # Split into 2 tests
-    def test_return_connection(self):
+    # todo: More tests.
+    @patch('psycopg2.connect')
+    def test_return_connection(self,
+                               mock_connect: MagicMock):
         """
         Tests getting a database connection
         """
@@ -106,13 +107,16 @@ class TestDatabase(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
             'db_user': os.environ['DATABASE_USER'],
             'db_pw': os.environ['DATABASE_PW']
         }
-        exp_err = ('Database Error. could not translate host name '
-                   '"my.db.host.gov" to address: Unknown host\n')
-        try:
-            con = database.return_connection(db_connect_info)
-            self.assertIsNotNone(con)
-        except DbError as err:
-            self.assertEqual(exp_err, str(err))
+        expected = Mock()
+        mock_connect.return_value = expected
+
+        con = database.return_connection(db_connect_info)
+        self.assertEqual(expected, con)
+        mock_connect.assert_called_once_with(host=db_connect_info['db_host'],
+                                             port=db_connect_info['db_port'],
+                                             database=db_connect_info['db_name'],
+                                             user=db_connect_info['db_user'],
+                                             password=db_connect_info['db_pw'])
 
     # TODO: This doesn't test anything.
     def test_single_query(self):
@@ -153,7 +157,6 @@ class TestDatabase(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
             database.single_query(sql_stmt, dbconnect_info)
         except DbError as err:
             self.assertEqual(exp_err, str(err))
-
 
     @staticmethod
     def build_row(column1, column2, column3):
