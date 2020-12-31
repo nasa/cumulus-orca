@@ -333,9 +333,14 @@ Information about how to create an ORCA release can be found [here](docs/release
 
 ## ORCA Static Documentation
 
+Nake sure you are using the following node.js versions to view the documentation.
+- npm 6.14.10
+- node 12.15.0
+
 ORCA documentation can be read locally by performing the following:
 ```
 cd website
+npm install
 npm run start
 ```
 
