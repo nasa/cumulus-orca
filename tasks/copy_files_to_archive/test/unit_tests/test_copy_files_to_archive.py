@@ -32,20 +32,12 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
         os.environ['COPY_RETRIES'] = '1'
         os.environ['DEVELOP_TESTS'] = 'False'
         os.environ['COPY_RETRY_SLEEP_SECS'] = '0'  # Makes tests run quickly if the unexpectedly hit sleep.
-<<<<<<< HEAD:tasks/copy_files_to_archive/test/unit_tests/test_copy_files_to_archive.py
-        os.environ['DATABASE_HOST'] = 'my.db.host.gov'
-        os.environ['DATABASE_PORT'] = '5400'
-        os.environ['DATABASE_NAME'] = 'sndbx'
-        os.environ['DATABASE_USER'] = 'unittestdbuser'
-        os.environ['DATABASE_PW'] = 'unittestdbpw'
-=======
         os.environ["DATABASE_HOST"] = "my.db.host.gov"
         os.environ["DATABASE_PORT"] = "5400"
         os.environ["DATABASE_NAME"] = "sndbx"
         os.environ["DATABASE_USER"] = "unittestdbuser"
         os.environ["DATABASE_PW"] = "unittestdbpw"
         os.environ['PREFIX'] = uuid.uuid4().__str__()
->>>>>>> develop:tasks/copy_files_to_archive/test/test_copy_files_to_archive.py
         self.exp_src_bucket = 'my-dr-fake-glacier-bucket'
         self.exp_target_bucket = PROTECTED_BUCKET
 
