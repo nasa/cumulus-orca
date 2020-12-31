@@ -329,3 +329,14 @@ Here is an example command to run the Cumulus Dashboard locally:
 ## Release Documentation:
 
 Information about how to create an ORCA release can be found [here](docs/release.md).
+
+
+## ORCA Static Documentation
+
+ORCA documentation can be read locally by performing the following:
+```
+cd website
+npm run start
+```
+
+Once the server is running, documentation should be available on `http://localhost:3000`.
