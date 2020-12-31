@@ -15,8 +15,8 @@ from typing import Optional, Union, List, Dict
 
 # noinspection PyPackageRequirements
 import boto3
+import psycopg2
 from psycopg2 import DataError, ProgrammingError
-from psycopg2 import connect as psycopg2_connect
 from psycopg2 import sql
 from psycopg2.extensions import connection, cursor
 from psycopg2.extras import RealDictCursor
@@ -109,7 +109,7 @@ def get_connection(dbconnect_info: Dict[str, Union[str, int]]) -> connection:
 
     new_connection = None
     try:
-        new_connection = psycopg2_connect(
+        new_connection = psycopg2.connect(
             host=dbconnect_info['db_host'],
             port=db_port,
             database=dbconnect_info['db_name'],
@@ -299,7 +299,7 @@ def return_connection(dbconnect_info) -> connection:
         db_port = 5432
 
     try:
-        return psycopg2_connect(
+        return psycopg2.connect(
             host=dbconnect_info['db_host'],
             port=db_port,
             database=dbconnect_info['db_name'],
