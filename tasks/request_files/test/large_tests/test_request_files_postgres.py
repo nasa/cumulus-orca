@@ -13,26 +13,26 @@ from cumulus_logger import CumulusLogger
 import requests_db
 import db_config
 
-from request_helpers import LambdaContextMock, create_handler_event
-from request_helpers import (
+from test.request_helpers import LambdaContextMock, create_handler_event
+from test.request_helpers import (
     REQUEST_ID1, REQUEST_ID2, REQUEST_ID3, REQUEST_ID4,
     REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_2,
     REQUEST_GROUP_ID_EXP_3, mock_secretsmanager_get_parameter)
-from request_helpers import print_rows
+from test.request_helpers import print_rows
 
 import request_files
 
 UTC_NOW_EXP_1 = requests_db.get_utc_now_iso()
-FILE1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5"
-FILE2 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5.met"
-FILE3 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321_ndvi.jpg"
-FILE4 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml"
-PROTECTED_BUCKET = "sndbx-cumulus-protected"
-PUBLIC_BUCKET = "sndbx-cumulus-public"
-KEY1 = {"key": FILE1, "dest_bucket": PROTECTED_BUCKET}
-KEY2 = {"key": FILE2, "dest_bucket": PROTECTED_BUCKET}
-KEY3 = {"key": FILE3, "dest_bucket": None}
-KEY4 = {"key": FILE4, "dest_bucket": PUBLIC_BUCKET}
+FILE1 = 'MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5'
+FILE2 = 'MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5.met'
+FILE3 = 'MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321_ndvi.jpg'
+FILE4 = 'MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml'
+PROTECTED_BUCKET = 'sndbx-cumulus-protected'
+PUBLIC_BUCKET = 'sndbx-cumulus-public'
+KEY1 = {'key': FILE1, 'dest_bucket': PROTECTED_BUCKET}
+KEY2 = {'key': FILE2, 'dest_bucket': PROTECTED_BUCKET}
+KEY3 = {'key': FILE3, 'dest_bucket': None}
+KEY4 = {'key': FILE4, 'dest_bucket': PUBLIC_BUCKET}
 
 
 class TestRequestFilesPostgres(unittest.TestCase):

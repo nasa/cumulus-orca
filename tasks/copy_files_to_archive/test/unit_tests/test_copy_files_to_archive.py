@@ -12,10 +12,10 @@ import requests_db
 from botocore.exceptions import ClientError
 
 import copy_files_to_archive
-from request_helpers import (REQUEST_ID4, REQUEST_ID7,
-                             PROTECTED_BUCKET,
-                             create_copy_event2, mock_secretsmanager_get_parameter,
-                             create_copy_handler_event, create_select_requests)
+from test.request_helpers import (REQUEST_ID4, REQUEST_ID7,
+                                  PROTECTED_BUCKET,
+                                  create_copy_event2, mock_secretsmanager_get_parameter,
+                                  create_copy_handler_event, create_select_requests)
 
 
 class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance-attributes
@@ -30,7 +30,7 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
         TODO: Move these values into their respective tests and make sure they are 'assert'ed.
         """
         os.environ['COPY_RETRIES'] = '1'
-        os.environ['DEVELOP_TESTS'] = "False"
+        os.environ['DEVELOP_TESTS'] = 'False'
         os.environ['COPY_RETRY_SLEEP_SECS'] = '0'  # Makes tests run quickly if the unexpectedly hit sleep.
         os.environ["DATABASE_HOST"] = "my.db.host.gov"
         os.environ["DATABASE_PORT"] = "5400"
@@ -50,10 +50,10 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
             del os.environ['DEVELOP_TESTS']
             del os.environ['COPY_RETRIES']
             del os.environ['COPY_RETRY_SLEEP_SECS']
-            del os.environ["DATABASE_HOST"]
-            del os.environ["DATABASE_NAME"]
-            del os.environ["DATABASE_USER"]
-            del os.environ["DATABASE_PW"]
+            del os.environ['DATABASE_HOST']
+            del os.environ['DATABASE_NAME']
+            del os.environ['DATABASE_USER']
+            del os.environ['DATABASE_PW']
         except KeyError:
             pass
 

@@ -20,7 +20,7 @@ from botocore.exceptions import ClientError
 from database import DbError
 
 import request_files
-from request_helpers import (REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_2,
+from test.request_helpers import (REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_2,
                              REQUEST_GROUP_ID_EXP_3, REQUEST_ID1, REQUEST_ID2,
                              REQUEST_ID3, REQUEST_ID4, LambdaContextMock,
                              create_handler_event, create_insert_request,
