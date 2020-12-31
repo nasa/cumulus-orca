@@ -69,10 +69,6 @@ module.exports = {
               label: 'ORCA Operator Guide',
               to: 'docs/operator/operator-intro',
             },
-            {
-              label: 'Cumulus Documentation',
-              to: 'https://nasa.github.io/cumulus/docs/cumulus-docs-readme',
-            },
           ],
         },
         {

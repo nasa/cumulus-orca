@@ -16,5 +16,5 @@ ORCA Working Group.
 
 Information on implementing ORCA is located [here](../../developer/deployment.md).
 
-Information on ORCA use for Operators and Data Managers is located here.
+Information on ORCA use for Operators and Data Managers is located [here](../../operator/operator-intro.md).
 

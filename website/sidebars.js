@@ -25,9 +25,11 @@ module.exports = {
                         ],
   },
   cookbook: {
+    "Getting Started": ['cookbook/cookbook-intro',
+                       ],
   },
   ops_guide: {
-      "Getting Started": ['operator/operator-intro',
-    ],
+    "Getting Started": ['operator/operator-intro',
+                       ],
   },
 };
