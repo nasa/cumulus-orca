@@ -16,7 +16,7 @@ from requests_db import create_data
 from botocore.exceptions import ClientError
 
 import copy_files_to_archive
-from request_helpers import (PROTECTED_BUCKET,
+from test.request_helpers import (PROTECTED_BUCKET,
                              REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_2,
                              REQUEST_GROUP_ID_EXP_3, REQUEST_GROUP_ID_EXP_4,
                              REQUEST_GROUP_ID_EXP_5, REQUEST_ID1, REQUEST_ID2,
@@ -64,10 +64,10 @@ class TestCopyFilesPostgres(unittest.TestCase):  # pylint: disable-msg=too-many-
             os.environ.pop('PREFIX')
             del os.environ['COPY_RETRY_SLEEP_SECS']
             del os.environ['COPY_RETRIES']
-            del os.environ["DATABASE_HOST"]
-            del os.environ["DATABASE_NAME"]
-            del os.environ["DATABASE_USER"]
-            del os.environ["DATABASE_PW"]
+            del os.environ['DATABASE_HOST']
+            del os.environ['DATABASE_NAME']
+            del os.environ['DATABASE_USER']
+            del os.environ['DATABASE_PW']
         except KeyError:
             pass
 

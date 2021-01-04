@@ -12,7 +12,7 @@ import database
 import requests_db
 from requests_db import result_to_json
 import request_status
-from request_helpers import (REQUEST_GROUP_ID_EXP_1, REQUEST_ID1, REQUEST_ID2,
+from test.request_helpers import (REQUEST_GROUP_ID_EXP_1, REQUEST_ID1, REQUEST_ID2,
                              REQUEST_ID3, REQUEST_ID4, REQUEST_ID5,
                              REQUEST_ID6, REQUEST_ID7, REQUEST_ID8,
                              REQUEST_ID9, REQUEST_ID10, REQUEST_ID11,
