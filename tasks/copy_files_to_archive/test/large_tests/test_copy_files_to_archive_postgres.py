@@ -6,6 +6,7 @@ Description:  Unit tests for copy_files_to_archive.py.
 import os
 import time
 import unittest
+import uuid
 from unittest.mock import Mock
 
 import boto3
@@ -37,6 +38,7 @@ class TestCopyFilesPostgres(unittest.TestCase):  # pylint: disable-msg=too-many-
         self.mock_boto3_client = boto3.client
         os.environ['COPY_RETRIES'] = '1'
         os.environ['COPY_RETRY_SLEEP_SECS'] = '1'
+        os.environ['PREFIX'] = uuid.uuid4().__str__()
         db_config.set_env()
 
         self.exp_other_bucket = "unittest_protected_bucket"
@@ -59,6 +61,7 @@ class TestCopyFilesPostgres(unittest.TestCase):  # pylint: disable-msg=too-many-
         requests_db.get_utc_now_iso = self.mock_utcnow
         boto3.client = self.mock_boto3_client
         try:
+            os.environ.pop('PREFIX')
             del os.environ['COPY_RETRY_SLEEP_SECS']
             del os.environ['COPY_RETRIES']
             del os.environ['DATABASE_HOST']
