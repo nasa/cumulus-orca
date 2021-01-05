@@ -14,7 +14,8 @@ do
   source venv/bin/activate
   pip install -r requirements-dev.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
   # Currenty just running unit tests until we fix/support large tests
-  coverage run --source $(basename $taskdir) -m pytest test/unit_tests/
+  # coverage run --source $(basename $taskdir) -m pytest test/unit_tests/
+  coverage run -m pytest test/unit_tests/
   result=$?
   if [[ $result -eq 1 ]]; then
     failed=1
