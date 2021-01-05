@@ -76,7 +76,7 @@ Database:  postgres
 ## Unit Testing and Coverage
 ```
 To run the tests you'll need to define these 5 environment variables in a file
-named `private_config.json` in the db_deploy/test folder. Do NOT check it into GIT. 
+named `private_config.json` in the `test/large_tests/` folder. Do NOT check it into GIT. 
 ex:
 (podr2) λ cat private_config.json 
 {"DATABASE_HOST": "%DOCKER_HOST%",
