@@ -21,7 +21,7 @@ do
   fi
   coverage report
   deactivate
-  cd base
+  cd $base
 done
 
 exit failed
