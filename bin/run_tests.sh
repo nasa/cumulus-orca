@@ -1,6 +1,6 @@
 #!/bin/sh
 #TODO This needs to be better organized
-set -e
+set -ex
 base=$(pwd)
 failed=0
 
