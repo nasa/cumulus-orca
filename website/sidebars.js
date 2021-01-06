@@ -23,6 +23,13 @@ module.exports = {
                     ],
     "Deployment": ['developer/deployment',
                         ],
+    "Lambdas": ['developer/lambda-details'
+    ],
+    "Testing": [
+        'developer/testing/unit-tests',
+        'developer/testing/postgres-tests',
+        'developer/testing/linting'
+    ]
   },
   cookbook: {
     "Getting Started": ['cookbook/cookbook-intro',

@@ -3,9 +3,6 @@
 **Lambda function request_status **
 
 - [Setup](#setup)
-- [Development](#development)
-  * [Unit Testing and Coverage](#unit-testing-and-coverage)
-  * [Linting](#linting)
 - [Deployment](#deployment)
   * [Deployment Validation](#deployment-validation)
 - [pydoc request_status](#pydoc-request-status)
@@ -15,68 +12,6 @@
     See the README in the tasks folder for general development setup instructions
     See the README in the tasks/dr_dbutils folder to install dr_dbutils
 
-<a name="development"></a>
-# Development
-
-<a name="unit-testing-and-coverage"></a>
-## Unit Testing and Coverage
-```
-Test files in the test folder that end with _postgres.py run
-against a Postgres database in a Docker container, and allow you to 
-develop against an actual database. You can create the database
-using task/db_deploy. 
-Note that these _postgres test files could use some more assert tests.
-For now they can be used as a development aid. To run them you'll need to define
-these 5 environment variables in a file named private_config.json, but do NOT check it into GIT. 
-ex:
-(podr2) λ cat private_config.json 
-{"DATABASE_HOST": "db.host.gov_goes_here",
-"DATABASE_PORT": "dbport_goes_here", 
-"DATABASE_NAME": "dbname_goes_here", 
-"DATABASE_USER": "dbusername_goes_here", 
-"DATABASE_PW": "db_pw_goes_here"}
-
-The remaining tests have everything mocked.
-
-Run the tests:
-C:\devpy\poswotdr\tasks\request_status  
-λ activate podr
-All tests:
-(podr) λ pytest
-
-Individual tests (insert desired test file name):
-(podr) λ pytest test/test_requests_postgres.py
-
-Code Coverage:
-(podr) λ cd C:\devpy\poswotdr\tasks\request_status
-(podr) λ coverage run --source request_status -m pytest
-(podr) λ coverage report
-
-Name                Stmts   Miss  Cover
----------------------------------------
-request_status.py      75      0   100%
-----------------------------------------------------------------------
-Ran 10 tests in 10.656s
-```
-<a name="linting"></a>
-## Linting
-```
-Run pylint against the code:
-
-(podr) λ cd C:\devpy\poswotdr\tasks\request_status
-(podr) λ pylint request_status.py
---------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-
-(podr) λ pylint test/test_request_status.py
---------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-
-(podr) λ pylint test/request_helpers.py
---------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-```
-<a name="deployment"></a>
 ## Deployment
 ```
     see /bin/build_tasks.sh to build the zip file. Upload the zip file to AWS.

@@ -57,19 +57,6 @@ resource "aws_lambda_function" "copy_to_glacier" {
   }
 ```
 
-## Testing & Linting
-
-This example uses `pytest`, a package for testing Python projects.
-
-```
-# pytest and coverage are installed as part of requirements-dev.txt
-coverage run --source copy_to_glacier -m pytest # Run the tests
-...
-coverage report -m # Report the coverage stats
-```
-
-Manual integration testing is being worked on. TBD.
-
 ## Input
 
 The `handler` function expects input as a Cumulus Message. The actual format of that input may change over time, so we use the `cumulus-process` package (check `requirements.txt`), which Cumulus develops and updates, to parse the input.

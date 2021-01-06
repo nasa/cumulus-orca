@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ### Added
 * *ORCA-58* ORCA user facing documentation
   * Docusaurus documentation website framework initialized and created
-  * Intial content migrated off of wiki and into markdown pages for end users to view ORCA documentation with no wiki access.
+  * Initial content migrated off of wiki and into markdown pages for end users to view ORCA documentation with no wiki access.
   * Updates to README with starting the documentation server.
 
 

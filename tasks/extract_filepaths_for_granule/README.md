@@ -3,9 +3,6 @@
 **Lambda function extract_filepaths_for_granule **
 
 - [Setup](#setup)
-- [Development](#development)
-  * [Unit Testing and Coverage](#unit-testing-and-coverage)
-  * [Linting](#linting)
 - [Deployment](#deployment)
   * [Deployment Validation](#deployment-validation)
 - [pydoc extract_filepaths_for_granule](#pydoc)
@@ -17,43 +14,6 @@
 <a name="development"></a>
 # Development
 
-<a name="unit-testing-and-coverage"></a>
-## Unit Testing and Coverage
-```
-Run the unit tests with code coverage:
-
-λ activate podr
-
-(podr) λ cd C:\devpy\poswotdr\tasks\extract_filepaths_for_granule
-(podr) λ coverage run --source extract_filepaths_for_granule -m pytest
-(podr) λ coverage report
-
-Name                               Stmts   Miss  Cover
-------------------------------------------------------
-extract_filepaths_for_granule.py      50      1    98%
-----------------------------------------------------------------------
-Ran 8 tests in 0.781s
-
-```
-<a name="linting"></a>
-## Linting
-```
-Run pylint against the code:
-
-(podr) λ cd C:\devpy\poswotdr\tasks\extract_filepaths_for_granule
-(podr) λ pylint extract_filepaths_for_granule.py
---------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-
-(podr) λ pylint test/test_extract_file_paths_for_granule.py
---------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-
-pylint test/helpers.py
---------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-```
-<a name="deployment"></a>
 ## Deployment
 ```
     cd tasks\extract_filepaths_for_granule
