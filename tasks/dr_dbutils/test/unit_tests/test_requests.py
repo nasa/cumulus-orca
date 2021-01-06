@@ -12,7 +12,7 @@ import boto3
 
 import database
 from database import DbError
-from request_helpers import (REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_2,
+from test.request_helpers import (REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_2,
                              REQUEST_GROUP_ID_EXP_3, REQUEST_ID1, REQUEST_ID2,
                              REQUEST_ID3, REQUEST_ID4, REQUEST_ID5,
                              REQUEST_ID6, REQUEST_ID7, REQUEST_ID8,
