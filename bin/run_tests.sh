@@ -1,6 +1,6 @@
 #!/bin/sh
 #TODO This needs to be better organized
-set -ex
+set -e
 base=$(pwd)
 failed=0
 
@@ -9,9 +9,11 @@ for taskdir in tasks/*/
 do
   # Build and run tests for each task directory
   cd $taskdir
+  echo "Running tests in $taskdir"
   rm -rf venv
   python3 -m venv venv
   source venv/bin/activate
+  pip install --upgrade pip
   pip install -r requirements-dev.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
   # Currenty just running unit tests until we fix/support large tests
   # coverage run --source $(basename $taskdir) -m pytest test/unit_tests/
