@@ -5,19 +5,9 @@ description: Instructions on running PyLint.
 ---
 
 ### Running PyLint
-```
-Run pylint against the code:
-
-(podr) λ cd C:\devpy\poswotdr\tasks\copy_files_to_archive
-(podr) λ pylint copy_files_to_archive.py
---------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-
-(podr) λ pylint test/test_copy_files_to_archive.py
---------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-
-(podr) λ pylint test/test_copy_files_to_archive_postgres.py
---------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-```
+1. Navigate to the task's base folder.
+1. Activate the virtual environment.
+1. Run pylint and fix any discovered issues if you can.
+   ```commandline
+   pylint [file name]
+   ```

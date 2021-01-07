@@ -5,8 +5,7 @@ description: Instructions on running unit tests.
 ---
 
 ### Running Unit Tests and Coverage Checks
-Run the tests:
-1. Navigate to the task's base folder in command prompt.
+1. Navigate to the task's base folder.
 1. Activate the virtual environment.
 1. Run
     ```commandline

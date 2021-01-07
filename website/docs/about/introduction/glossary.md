@@ -199,7 +199,9 @@ used to create Workflows.
 ## U
 
 ## V
-
+###Virtual Environment (VEenv)
+A contained environment for building/running Python code.
+See [Setting Up a Dev Environment](../../developer/testing/setup-dev-env) for more information.
 ## W
 ### Workflows
 [Workflows](https://nasa.github.io/cumulus/docs/workflows/workflows-readme)
