@@ -1,7 +1,7 @@
 module.exports = {
   title: 'Operational Recovery Cloud Archive (ORCA)',
   tagline: 'Providing a second line of defense for your Cumulus data.',
-  url: 'https://nasa.github.io/docs/cumulus-orca',
+  url: 'https://nasa.github.io/cumulus-orca/',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
