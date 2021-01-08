@@ -1,5 +1,5 @@
 #!/bin/sh
-#TODO This needs to be better organized
+#TODO This could be better organized
 set -e
 base=$(pwd)
 failed=0
@@ -17,7 +17,7 @@ do
   pip install -r requirements-dev.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
   # Currenty just running unit tests until we fix/support large tests
   # coverage run --source $(basename $taskdir) -m pytest test/unit_tests/
-  coverage run -m pytest test/unit_tests/
+  coverage run --source test/unit_tests/ -m pytest test/unit_tests/
   result=$?
   if [[ $result -eq 1 ]]; then
     failed=1
@@ -27,4 +27,4 @@ do
   cd $base
 done
 
-exit failed
+exit $failed

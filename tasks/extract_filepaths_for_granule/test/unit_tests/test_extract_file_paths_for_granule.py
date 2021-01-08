@@ -6,7 +6,7 @@ Description:  Unit tests for extract_file_paths_for_granule.py.
 import unittest
 from unittest.mock import Mock
 from cumulus_logger import CumulusLogger
-from helpers import LambdaContextMock, create_handler_event, create_task_event
+from test.helpers import LambdaContextMock, create_handler_event, create_task_event
 import extract_filepaths_for_granule
 
 
