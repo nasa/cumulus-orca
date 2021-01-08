@@ -2,14 +2,9 @@
 
 **Lambda function extract_filepaths_for_granule **
 
-- [Setup](#setup)
 - [Deployment](#deployment)
   * [Deployment Validation](#deployment-validation)
 - [pydoc extract_filepaths_for_granule](#pydoc)
-
-<a name="setup"></a>
-# Setup
-    See the README in the tasks folder for general development setup instructions
 
 <a name="development"></a>
 # Development

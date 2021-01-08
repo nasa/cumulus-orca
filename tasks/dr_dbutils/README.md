@@ -1,14 +1,9 @@
+[![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/dr_dbutils/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/dr_dbutils/requirements.txt)
+
 **Lambda function request_files **
 
-- [Setup](#setup)
 - [Deployment](#deployment)
 - [pydoc requests_db](#pydoc-requests-db)
-
-
-<a name="setup"></a>
-# Setup
-    See the README in the tasks folder for general development setup instructions
-    See the README in the tasks/pg_utils folder to install pg_utils
 
 <a name="development"></a>
 # Development

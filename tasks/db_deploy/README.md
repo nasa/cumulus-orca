@@ -2,16 +2,9 @@
 
 **Lambda function db_deploy **
 
-- [Setup](#setup)
 - [Deployment](#deployment)
   * [Deployment Validation](#deployment-validation)
 - [pydoc db_deploy](#pydoc)
-
-<a name="setup"></a>
-# Setup
-    See the README in the tasks folder for general development setup instructions
-    See the README in the tasks/dr_dbutils folder to install dr_dbutils
-
 # Development
 
 <a name="deployment"></a>

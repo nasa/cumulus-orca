@@ -2,17 +2,11 @@
 
 **Lambda function request_files **
 
-- [Setup](#setup)
 - [Deployment](#deployment)
   * [Deployment Validation](#deployment-validation)
 - [pydoc request_files](#pydoc-request-files)
 - [pydoc copy_files_to_archive](#pydoc-copy-files)
 - [pydoc request_status](#pydoc-request-status)
-
-<a name="setup"></a>
-# Setup
-    See the README in the tasks folder for general development setup instructions
-    See the README in the tasks/dr_dbutils folder to install dr_dbutils
 
 <a name="development"></a>
 # Development

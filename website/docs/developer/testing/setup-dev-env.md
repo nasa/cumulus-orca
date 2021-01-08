@@ -6,9 +6,9 @@ description: Instructions on creating an environment for working with lambdas.
 
 ### Initial Setup
 1. git clone https://github.com/nasa/cumulus-orca
-1. Install [Python](https://www.python.org/downloads/) and restart if needed.
+1. Install [Python 3.8.X](https://www.python.org/downloads/) and restart if needed.
    Make sure Python is added to your PATH.
-1. Install the AWS client.
+1. Install the AWS client. View the [official documentation](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html) if needed.
     ```commandline
     pip3 install awscli
     ```
@@ -17,7 +17,7 @@ description: Instructions on creating an environment for working with lambdas.
 Lambdas should be built and tested within individual Virtual Environments.
 1. Navigate to the task's folder within 'culumus-orca\tasks\[task name]'.
 1. Create a new Virtual Environment and enter it.
-   1. Windows:  
+   1. Windows Command Line:  
       Create:
             ```
             python -m venv venv
@@ -30,18 +30,18 @@ Lambdas should be built and tested within individual Virtual Environments.
             ```
             venv\Scripts\deactivate.bat
             ```
-   1. Linux:  
+   1. Linux/[Cmder](https://cmder.net/):  
       Create:
             ```
-            todo
+            python -m venv venv
             ```  
       Activate:
             ```
-            todo
+            source venv\Scripts\activate
             ```  
       Deactivate:
             ```
-            todo
+            deactivate
             ```
 1. With the VEnv activated, install requirements.
    ```commandline

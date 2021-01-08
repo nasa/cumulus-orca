@@ -2,15 +2,9 @@
 
 **Lambda function copy_files_to_archive **
 
-- [Setup](#setup)
 - [Deployment](#deployment)
   * [Deployment Validation](#deployment-validation)
 - [pydoc copy_files_to_archive](#pydoc-copy-files)
-
-<a name="setup"></a>
-# Setup
-    See the README in the tasks folder for general development setup instructions
-    See the README in the tasks/dr_dbutils folder to install dr_dbutils
 
 <a name="deployment"></a>
 ## Deployment

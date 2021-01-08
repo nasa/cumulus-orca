@@ -1,3 +1,4 @@
+[![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/copy_to_glacier/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/copy_to_glacier/requirements.txt)
 ## Description
 
 The `copy_to_glacier` module is meant to be deployed as a lambda function that takes a Cumulus message, extracts a list of files, and copies those files from their current storage location into a staging/glacier location.
@@ -11,7 +12,7 @@ You are able to specify a list of file types (extensions) that you'd like to exc
 {
   ...
   "meta": {
-    "exclue_file_type": [".cmr", ".xml", ".cmr.xml"]
+    "exclude_file_type": [".cmr", ".xml", ".cmr.xml"]
   }
 }
 ```
