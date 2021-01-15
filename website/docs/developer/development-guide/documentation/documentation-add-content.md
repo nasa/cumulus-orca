@@ -6,7 +6,7 @@ desc: Provides instruction on adding a page to ORCA documentaion.
 
 ## Add a New Documentation Page
 
-Adding a new page should be as simple as writing some documentation in markdown,
+Creating a new page should be as simple as writing some documentation in markdown,
 placing it under the correct directory in the docs/ folder and adding some
 configuration values wrapped by `---` at the top of the file. There are many
 files that already have this header which can be used as reference. For information
