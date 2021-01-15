@@ -3,17 +3,19 @@ id: contrib-documentation-env
 title: Development Environment
 desc: Provides basic information on setting up an ORCA documentation development environment.
 ---
+Editing and updating the website only requires a text editor and git but, in
+order to verify links and the overall website build, a local development environment
+should be created. This pages discusses the setup, running, building, and testing
+of the Docusarus website for the ORCA GitHub pages.
+
+## Creating the Development Environment
 
 Setting up the development environment consists of three primary tasks,
 - Cloning the cumulus-orca GitHub repository
 - Installing the proper Node.js and npm versions
 - Installing the proper node packages for the cumulus-orca documentation.
 
-The installation section below goes into further details.
-
-## Installing the Necessary Components
-
-The steps below will walk a developer through setting up an environment ...
+The installation steps below goes into further details.
 
 1. Install the latest [Node Version Manager (nvm)](https://github.com/nvm-sh/nvm) application to manage Node.js and npm versions.
    ```sh
@@ -58,9 +60,11 @@ found in the [Docusaurus documentation](https://v2.docusaurus.io/docs/installati
 ## From the repository base move to the website directory.
 cd website
 
-## Start the server
-npm run start
+## Start the server on port 8080 with verbose output for debuging
+npm run start --verbose -- --port 8080
 ```
+
+A new webpage should display in your default browser at [http://localhost:8080](http://localhost:8080).
 
 
 ## Building the ORCA Website Locally
@@ -78,10 +82,5 @@ npm run build
 ```
 
 The resulting site can be found in the `build` directory.
-
-
-## Publishing the ORCA Website
-
-TBD - Information on automated builds and publishing is currently being formulated.
 
 

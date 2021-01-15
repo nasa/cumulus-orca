@@ -20,24 +20,22 @@ module.exports = {
     "Getting Started": [
         'developer/developer-intro',
     ],
-    "Contributing": [
+    "ORCA Development Guide": [
         {
-            "Code": [
+            "Developing Code": [
             ],
-            "Documentation": [
+            "Developing Documentation": [
                 'developer/contributing/documentation/contrib-documentation-intro',
                 'developer/contributing/documentation/contrib-documentation-env',
                 'developer/contributing/documentation/contrib-documentation-add',
                 'developer/contributing/documentation/contrib-documentation-templates',
-                'developer/contributing/doc-style-guide',
-                'developer/contributing/documentation/contrib-documentation-diagrams',
                 'developer/contributing/documentation/contrib-documentation-tasks',
-                'developer/contributing/documentation/contrib-documentation-pr',
+                'developer/contributing/documentation/documentation-style-guide',
                 'developer/contributing/documentation/contrib-documentation-deploy',
             ],
         },
     ],
-    "Deployment": [
+    "ORCA Deployment Guide": [
         'developer/deployment',
     ],
   },
