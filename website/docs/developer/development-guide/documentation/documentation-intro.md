@@ -72,7 +72,7 @@ on the sidebar menu layout.
 #### `docs/developer`
 
 The `docs/developer` subdirectory contains all documentation related to the
-[**Developer Guide**](../../../developer/developer-intro.md)
+[**Developer Guide**](../../../developer/quickstart/developer-intro.md)
 documentation and navigation. This directory contains information related to
 integrating ORCA into Cumulus, developing for ORCA, development standards and
 procedures, and other developer specific information needed to interact and

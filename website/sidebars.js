@@ -2,7 +2,7 @@ module.exports = {
   about_orca: {
     "Introduction": ['about/introduction/orca-intro',
                      'about/introduction/intro-navigating',
-                     'about/introduction/intro-development-guide',
+                     'about/introduction/intro-contributing',
                      'about/introduction/intro-glossary'
                     ],
     "Architecture": ['about/architecture/architecture-intro',
@@ -18,11 +18,12 @@ module.exports = {
   },
   dev_guide: {
     "Getting Started": [
-        'developer/developer-intro',
+        'developer/quickstart/developer-intro',
     ],
-    "ORCA Development Guide": [
+    "Development Guide": [
         {
             "Developing Code": [
+                'developer/development-guide/code/contrib-code-intro',
             ],
             "Developing Documentation": [
                 'developer/development-guide/documentation/contrib-documentation-intro',
@@ -35,8 +36,8 @@ module.exports = {
             ],
         },
     ],
-    "ORCA Deployment Guide": [
-        'developer/deployment',
+    "Deployment Guide": [
+        'developer/deployment-guide/deployment',
     ],
   },
   cookbook: {

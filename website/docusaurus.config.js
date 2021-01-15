@@ -23,7 +23,7 @@ module.exports = {
           position: 'right',
         },
         {
-          to: 'docs/developer/developer-intro',
+          to: 'docs/developer/quickstart/developer-intro',
           activeBasePath: 'docs/developer/',
           label: 'Developer Guide',
           position: 'right',
@@ -55,11 +55,11 @@ module.exports = {
           items: [
             {
               label: 'About ORCA',
-              to: 'docs/about/orca-intro',
+              to: 'docs/about/introduction/orca-intro',
             },
             {
               label: 'ORCA Developer Guide',
-              to: 'docs/developer/developer-intro',
+              to: 'docs/developer/quickstart/developer-intro',
             },
             {
               label: 'ORCA Cookbooks',
