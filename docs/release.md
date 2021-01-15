@@ -61,6 +61,8 @@ Finally, you need to merge the version update changes back into develop and mast
 
 If this is the latest version, you can simply create a PR to merge the release branch into develop and master. Note: Do not squash this merge. Doing so will make the "compare" view from step 4 show an incorrect diff, because the tag is linked to a specific commit on the base branch.
 
+*Note:* Do not delete the branch, we'll keep release branches.
+
 ### Troubleshooting
 
 #### Delete and regenerate the tag
