@@ -7,7 +7,7 @@ Description:  Unit tests for requests_db.py.
 import datetime
 import os
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch, MagicMock
 import uuid
 
 import boto3
@@ -18,35 +18,37 @@ from database import DbError
 
 UUID1 = str(uuid.uuid4())
 
-class TestDatabase(unittest.TestCase):  #pylint: disable-msg=too-many-public-methods
+
+class TestDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-public-methods
     """
     TestDatabase.
     """
 
     def setUp(self):
 
-        os.environ["DATABASE_HOST"] = "my.db.host.gov"
-        os.environ["DATABASE_PORT"] = "50"
-        os.environ["DATABASE_NAME"] = "sndbx"
-        os.environ["DATABASE_USER"] = "unittestdbuser"
-        os.environ["DATABASE_PW"] = "unittestdbpw"
+        os.environ['DATABASE_HOST'] = 'localhost'
+        os.environ['DATABASE_PORT'] = '5432'
+        os.environ['DATABASE_NAME'] = 'postgres'
+        os.environ['DATABASE_USER'] = 'postgres'
+        os.environ['DATABASE_PW'] = 'postgres'
 
         self.mock_single_query = database.single_query
         self.mock_utcnow = database.get_utc_now_iso
         self.mock_uuid = database.uuid_generator
         self.mock_boto3 = boto3.client
         boto3.client = Mock()
-        s3_cli = boto3.client('ssm')
-        db_host = {"Parameter": {"Value": os.environ['DATABASE_HOST']}}
-        db_pw = {"Parameter": {"Value": os.environ['DATABASE_PW']}}
-        s3_cli.get_parameter = Mock(side_effect=[db_host,
-                                                 db_pw])
-        db_params = {}
-        db_params["db_host"] = {"ssm": "drdb-host"}
-        db_params["db_port"] = {"env": "DATABASE_PORT"}
-        db_params["db_name"] = {"env": "DATABASE_NAME"}
-        db_params["db_user"] = {"env": "DATABASE_USER"}
-        db_params["db_pw"] = {"ssm": "drdb-user-pass"}
+        secretsmanager_cli = boto3.client('secretsmanager')
+        db_host = {'SecretString': os.environ['DATABASE_HOST']}
+        db_pw = {'SecretString': os.environ['DATABASE_PW']}
+        secretsmanager_cli.get_secret_value = Mock(side_effect=[db_host,
+                                                                db_pw])
+        db_params = {
+            'db_host': {'secretsmanager': 'drdb-host'},
+            'db_port': {'env': 'DATABASE_PORT'},
+            'db_name': {'env': 'DATABASE_NAME'},
+            'db_user': {'env': 'DATABASE_USER'},
+            'db_pw': {'secretsmanager': 'drdb-user-pass'}
+        }
         self.dbconnect_info = database.read_db_connect_info(db_params)
 
     def tearDown(self):
@@ -54,21 +56,22 @@ class TestDatabase(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         database.single_query = self.mock_single_query
         database.get_utc_now_iso = self.mock_utcnow
         database.uuid_generator = self.mock_uuid
-        del os.environ["DATABASE_HOST"]
-        del os.environ["DATABASE_PORT"]
-        del os.environ["DATABASE_NAME"]
-        del os.environ["DATABASE_USER"]
-        del os.environ["DATABASE_PW"]
+        del os.environ['DATABASE_HOST']
+        del os.environ['DATABASE_PORT']
+        del os.environ['DATABASE_NAME']
+        del os.environ['DATABASE_USER']
+        del os.environ['DATABASE_PW']
 
     def test_get_utc_now_iso(self):
         """
         Tests the get_utc_now_iso function
         """
-        utc_now_exp = "2019-07-17T17:36:38.494918"
+        utc_now_exp = '2019-07-17T17:36:38.494918'
         utc_now_exp = datetime.datetime.utcnow().isoformat()
         database.get_utc_now_iso = Mock(return_value=utc_now_exp)
         self.assertEqual(utc_now_exp, database.get_utc_now_iso())
 
+    # TODO: This doesn't test anything.
     def test_uuid_generator(self):
         """
         Tests the uuid_generator function
@@ -80,34 +83,42 @@ class TestDatabase(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         """
         Tests getting a database connection
         """
-        db_connect_info = {}
-        db_connect_info["db_host"] = os.environ["DATABASE_HOST"]
-        db_connect_info["db_port"] = os.environ["DATABASE_PORT"]
-        db_connect_info["db_name"] = os.environ["DATABASE_NAME"]
-        db_connect_info["db_user"] = os.environ["DATABASE_USER"]
-        db_connect_info["db_pw"] = os.environ["DATABASE_PW"]
+        db_connect_info = {
+            'db_host': os.environ['DATABASE_HOST'],
+            'db_port': os.environ['DATABASE_PORT'],
+            'db_name': os.environ['DATABASE_NAME'],
+            'db_user': os.environ['DATABASE_USER'],
+            'db_pw': os.environ['DATABASE_PW']
+        }
         con = database.get_connection(db_connect_info)
         self.assertIsNotNone(con)
 
-
-    def test_return_connection(self):
+    # todo: More tests.
+    @patch('psycopg2.connect')
+    def test_return_connection(self,
+                               mock_connect: MagicMock):
         """
         Tests getting a database connection
         """
-        db_connect_info = {}
-        db_connect_info["db_host"] = os.environ["DATABASE_HOST"]
-        db_connect_info["db_port"] = os.environ["DATABASE_PORT"]
-        db_connect_info["db_name"] = os.environ["DATABASE_NAME"]
-        db_connect_info["db_user"] = os.environ["DATABASE_USER"]
-        db_connect_info["db_pw"] = os.environ["DATABASE_PW"]
-        exp_err = ('Database Error. could not translate host name '
-                   '"my.db.host.gov" to address: Unknown host\n')
-        try:
-            con = database.return_connection(db_connect_info)
-            self.assertIsNotNone(con)
-        except DbError as err:
-            self.assertEqual(exp_err, str(err))
+        db_connect_info = {
+            'db_host': os.environ['DATABASE_HOST'],
+            'db_port': os.environ['DATABASE_PORT'],
+            'db_name': os.environ['DATABASE_NAME'],
+            'db_user': os.environ['DATABASE_USER'],
+            'db_pw': os.environ['DATABASE_PW']
+        }
+        expected = Mock()
+        mock_connect.return_value = expected
 
+        con = database.return_connection(db_connect_info)
+        self.assertEqual(expected, con)
+        mock_connect.assert_called_once_with(host=db_connect_info['db_host'],
+                                             port=db_connect_info['db_port'],
+                                             database=db_connect_info['db_name'],
+                                             user=db_connect_info['db_user'],
+                                             password=db_connect_info['db_pw'])
+
+    # TODO: This doesn't test anything.
     def test_single_query(self):
         """
         Tests the single_query function
@@ -129,29 +140,23 @@ class TestDatabase(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         self.assertEqual(empty_result, rows)
         database.single_query.assert_called()
 
-    def test_single_query_ssm(self):
+    def test_single_query_secretsmanager(self):
         """
         Tests the single_query function
         """
-        boto3.client = Mock()
-        s3_cli = boto3.client('ssm')
-        s3_cli.get_parameter = Mock(side_effect=[os.environ["DATABASE_HOST"],
-                                                 os.environ["DATABASE_PW"]])
-        qresult = []
-        row = self.build_row('key1', 'value2', 'value3')
-        qresult.append(psycopg2.extras.RealDictRow(row))
-
-        row = self.build_row('key2', 'value4', 'value5')
-        qresult.append(psycopg2.extras.RealDictRow(row))
-
+        dbconnect_info = {
+            'db_host': 'my.db.host.gov',
+            'db_port': 5432,
+            'db_name': 'postgres',
+            'db_user': 'postgres',
+            'db_pw': 'secret'
+        }
         sql_stmt = 'Select * from mytable'
-        exp_err = ('Database Error. could not translate host name'
-                   ' "my.db.host.gov" to address: Unknown host\n')
+        exp_err = ('Database Error. could not translate host name "my.db.host.gov" to address: Unknown host\n')
         try:
-            database.single_query(sql_stmt, self.dbconnect_info)
+            database.single_query(sql_stmt, dbconnect_info)
         except DbError as err:
             self.assertEqual(exp_err, str(err))
-
 
     @staticmethod
     def build_row(column1, column2, column3):

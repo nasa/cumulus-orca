@@ -23,9 +23,10 @@ Test files in the test folder that end with _postgres.py run
 against a Postgres database in a Docker container, and allow you to 
 develop against an actual database. You can create the database
 using task/db_deploy. To run them you'll need to define
-these 5 environment variables in a file named private_config.json, but do NOT check it into GIT. 
+these 5 environment variables in a file named private_config.json in the `test/large_tests/`
+folder, but do NOT check it into GIT. 
 ex:
-(podr2) λ cat private_config.json 
+(podr2) λ cat tests/large_tests/private_config.json 
 {"DATABASE_HOST": "db.host.gov_goes_here",
 "DATABASE_PORT": "dbport_goes_here", 
 "DATABASE_NAME": "dbname_goes_here", 
@@ -33,6 +34,30 @@ ex:
 "DATABASE_PW": "db_pw_goes_here"}
 
 The remaining tests have everything mocked.
+
+## Create docker container with DB for testing
+
+`docker run -it --rm --name some-postgres -v /Users/<user>/cumulus-orca/database/ddl/base:/docker-entrypoint-initdb.d/ -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres`
+
+*In another terminal:*
+
+`docker run -it --rm --network host -e POSTGRES_PASSWORD=<new_password> postgres psql -h localhost -U postgres`
+
+```
+psql=# ALTER USER druser WITH PASSWORD 'new_password';
+```
+
+Once you've made these changes, update your `private_config.json` file with:
+
+```json
+{
+    "DATABASE_USER": "druser",
+    "DATABASE_PW": "<the value you added"
+}
+
+### Note that you have to use the druser account, otherwise the schema path won't quite match and you may receive errors like "table doesn't exist"
+
+### Note that environment variable `PREFIX` is expected to be set for `get_dbconnect_info()`. This value is generally set in the lambdas that call this library.
 
 Run the tests:
 cd C:\devpy\poswotdr\tasks\dr_dbutils  
