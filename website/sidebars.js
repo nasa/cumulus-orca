@@ -2,7 +2,7 @@ module.exports = {
   about_orca: {
     "Introduction": ['about/introduction/orca-intro',
                      'about/introduction/intro-navigating',
-                     'about/introduction/intro-contributing',
+                     'about/introduction/intro-development-guide',
                      'about/introduction/intro-glossary'
                     ],
     "Architecture": ['about/architecture/architecture-intro',
@@ -25,13 +25,13 @@ module.exports = {
             "Developing Code": [
             ],
             "Developing Documentation": [
-                'developer/contributing/documentation/contrib-documentation-intro',
-                'developer/contributing/documentation/contrib-documentation-env',
-                'developer/contributing/documentation/contrib-documentation-add',
-                'developer/contributing/documentation/contrib-documentation-templates',
-                'developer/contributing/documentation/contrib-documentation-tasks',
-                'developer/contributing/documentation/documentation-style-guide',
-                'developer/contributing/documentation/contrib-documentation-deploy',
+                'developer/development-guide/documentation/contrib-documentation-intro',
+                'developer/development-guide/documentation/contrib-documentation-env',
+                'developer/development-guide/documentation/contrib-documentation-add',
+                'developer/development-guide/documentation/contrib-documentation-templates',
+                'developer/development-guide/documentation/contrib-documentation-tasks',
+                'developer/development-guide/documentation/documentation-style-guide',
+                'developer/development-guide/documentation/contrib-documentation-deploy',
             ],
         },
     ],
