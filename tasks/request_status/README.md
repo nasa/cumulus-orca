@@ -27,7 +27,8 @@ develop against an actual database. You can create the database
 using task/db_deploy. 
 Note that these _postgres test files could use some more assert tests.
 For now they can be used as a development aid. To run them you'll need to define
-these 5 environment variables in a file named private_config.json, but do NOT check it into GIT. 
+these 5 environment variables in a file named private_config.json in the `test/large_tests/` folder,
+but do NOT check it into GIT. 
 ex:
 (podr2) λ cat private_config.json 
 {"DATABASE_HOST": "db.host.gov_goes_here",

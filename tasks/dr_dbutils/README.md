@@ -23,7 +23,8 @@ Test files in the test folder that end with _postgres.py run
 against a Postgres database in a Docker container, and allow you to 
 develop against an actual database. You can create the database
 using task/db_deploy. To run them you'll need to define
-these 5 environment variables in a file named private_config.json, but do NOT check it into GIT. 
+these 5 environment variables in a file named private_config.json in the `test/large_tests/`
+folder, but do NOT check it into GIT. 
 ex:
 (podr2) λ cat tests/large_tests/private_config.json 
 {"DATABASE_HOST": "db.host.gov_goes_here",
