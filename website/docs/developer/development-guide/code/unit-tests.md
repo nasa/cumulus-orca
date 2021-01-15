@@ -4,7 +4,7 @@ title: Running Unit Tests
 description: Instructions on running unit tests.
 ---
 
-### Running Unit Tests and Coverage Checks
+## Running Unit Tests and Coverage Checks
 1. Navigate to the task's base folder.
 1. Activate the virtual environment.
 1. Run

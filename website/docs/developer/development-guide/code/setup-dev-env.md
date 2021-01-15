@@ -4,7 +4,7 @@ title: Setting Up a Dev Environment
 description: Instructions on creating an environment for working with lambdas.
 ---
 
-### Initial Setup
+## Initial Setup
 1. git clone https://github.com/nasa/cumulus-orca
 1. Install [Python 3.8.X](https://www.python.org/downloads/) and restart if needed.
    Make sure Python is added to your PATH.
@@ -13,7 +13,7 @@ description: Instructions on creating an environment for working with lambdas.
     pip3 install awscli
     ```
 
-### Per-Lambda Setup
+## Per-Lambda Setup
 Lambdas should be built and tested within individual Virtual Environments.
 1. Navigate to the task's folder within 'culumus-orca\tasks\[task name]'.
 1. Create a new Virtual Environment and enter it.
