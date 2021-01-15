@@ -1,6 +1,5 @@
 import os
 import re
-from re import Match
 from typing import Dict, Any, List, Optional, Union
 
 import boto3

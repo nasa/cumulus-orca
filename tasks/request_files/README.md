@@ -8,9 +8,6 @@
 - [pydoc copy_files_to_archive](#pydoc-copy-files)
 - [pydoc request_status](#pydoc-request-status)
 
-<a name="development"></a>
-# Development
-
 ## Deployment
 ```
     see /bin/build_tasks.sh to build the zip file. Upload the zip file to AWS.

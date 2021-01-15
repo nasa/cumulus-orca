@@ -13,7 +13,7 @@ import db_config
 import requests_db
 from requests_db import create_data, result_to_json
 
-from request_helpers import (REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_2,
+from test.request_helpers import (REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_2,
                              REQUEST_GROUP_ID_EXP_3, REQUEST_GROUP_ID_EXP_4,
                              REQUEST_GROUP_ID_EXP_5, REQUEST_GROUP_ID_EXP_6,
                              REQUEST_ID1, REQUEST_ID2, REQUEST_ID3,
