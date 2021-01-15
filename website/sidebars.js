@@ -17,12 +17,28 @@ module.exports = {
                  ],
   },
   dev_guide: {
-    "Getting Started": ['developer/developer-intro',
-                       ],
-    "Contributing": ['developer/contributing/doc-style-guide',
-                    ],
-    "Deployment": ['developer/deployment',
-                        ],
+    "Getting Started": [
+        'developer/quickstart/developer-intro',
+    ],
+    "Development Guide": [
+        {
+            "Developing Code": [
+                'developer/development-guide/code/contrib-code-intro',
+            ],
+            "Developing Documentation": [
+                'developer/development-guide/documentation/contrib-documentation-intro',
+                'developer/development-guide/documentation/contrib-documentation-env',
+                'developer/development-guide/documentation/contrib-documentation-add',
+                'developer/development-guide/documentation/contrib-documentation-templates',
+                'developer/development-guide/documentation/contrib-documentation-tasks',
+                'developer/development-guide/documentation/documentation-style-guide',
+                'developer/development-guide/documentation/contrib-documentation-deploy',
+            ],
+        },
+    ],
+    "Deployment Guide": [
+        'developer/deployment-guide/deployment',
+    ],
   },
   cookbook: {
     "Getting Started": ['cookbook/cookbook-intro',
