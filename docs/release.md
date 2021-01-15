@@ -34,9 +34,8 @@ If you created a new release plan in step one, you will need to create a new bam
 
 #### Creating a Bamboo Deployment Plan
 
-* In the ORCA project (https://ci.earthdata.nasa.gov/browse/ORCA-OI), click `Actions -> Configure Plan` at the top right.
-* Scroll to the bottom of the branch list in the bottom left and select `Create Plan Branch`.
-* Add the values in that list. Choose a display name that makes it very clear this is a deployment branch plan. Release (branch name) seems to work well. Make sure you enter the correct branch name.
+* In the ORCA project (https://ci.earthdata.nasa.gov/browse/ORCA-OI), click the `Create Plan Branch` button to the right of the branch selection drop-down on the top-left of your screen.
+* Add the values in that list. Choose a display name that makes it very clear this is a deployment branch plan. Release (branch name) seems to work well. Make sure you enter the correct branch name (release-x.y.z).
 * Important Deselect Enable Branch - if you do not do this, it will immediately fire off a build.
 * Do Immediately On the Branch Details page, enable Change trigger. Set the Trigger type to manual, this will prevent commits to the branch from triggering the build plan. You should have been redirected to the Branch Details tab after creating the plan. If not, navigate to the branch from the list where you clicked Create Plan Branch in the previous step.
 * Go to the Variables tab. Ensure that you are on your branch plan and not the master plan: You should not see a large list of configured variables, but instead a dropdown allowing you to select variables to override, and the tab title will be Branch Variables. Set a DEPLOYMENT variable appropriate for the release (defaults to last committer). This should be cumulus-from-npm-tf except in special cases such as incompatible backport branches. Then set:
