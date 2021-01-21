@@ -5,6 +5,8 @@ description: Instructions on creating an environment for working with lambdas.
 ---
 
 ## Initial Setup
+1. Familiarize yourself with [contributing to these documents](../documentation/documentation-intro.md) prior to modifying/testing code.
+   Updating documentation is a shared responsibility.
 1. git clone https://github.com/nasa/cumulus-orca
 1. Install [Python 3.8.X](https://www.python.org/downloads/) and restart if needed.
    Make sure Python is added to your PATH.
@@ -12,6 +14,7 @@ description: Instructions on creating an environment for working with lambdas.
     ```commandline
     pip3 install awscli
     ```
+1. [Install and Configure git-secrets](https://wiki.earthdata.nasa.gov/display/ESKB/Install+and+Configure+git-secrets)
 
 ## Per-Lambda Setup
 Lambdas should be built and tested within individual Virtual Environments.
