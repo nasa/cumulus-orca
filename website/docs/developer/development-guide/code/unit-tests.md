@@ -65,7 +65,8 @@ Familiarize yourself with [Mock and Patch](https://docs.python.org/3/library/uni
   You can assign Mocks to Mock properties without your Mocks persisting between tests.
   These Mocks will persist for the duration of the test, then will be removed.
   ```python
-  class_mock.func = Mock() # This is fine
+  func_mock = Mock()
+  class_mock.func = func_mock # This is fine
   ```
   
   :::
