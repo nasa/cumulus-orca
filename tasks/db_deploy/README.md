@@ -1,6 +1,8 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/db_deploy/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/db_deploy/requirements.txt)
 
-**Lambda function db_deploy **
+Visit [Docusaurus Pages](../../website/docs/developer/development-guide/code/code-intro.md) for information on environment setup and testing.
+
+**Lambda function db_deploy**
 
 - [Deployment](#deployment)
   * [Deployment Validation](#deployment-validation)

@@ -1,6 +1,8 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/pg_utils/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/pg_utils/requirements.txt)
 
-** Shared code to access a postgres database **
+Visit [Docusaurus Pages](../../website/docs/developer/development-guide/code/code-intro.md) for information on environment setup and testing.
+
+**Shared code to access a postgres database**
 
 - [Deployment](#deployment)
 - [pydoc database](#pydoc-database)

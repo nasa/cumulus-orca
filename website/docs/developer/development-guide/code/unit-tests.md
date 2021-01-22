@@ -59,7 +59,9 @@ Familiarize yourself with [Mock and Patch](https://docs.python.org/3/library/uni
                 second_func_mock: MagicMock,
                 first_func_mock: MagicMock):
   ```
-  Note that decorators reverse in order when passed to parameters.
+  :::note
+  Decorators reverse in order when passed to parameters.
+  :::
   :::tip
 
   You can assign Mocks to Mock properties without your Mocks persisting between tests.

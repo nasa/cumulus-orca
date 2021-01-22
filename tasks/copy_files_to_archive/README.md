@@ -2,6 +2,8 @@
 
 **Lambda function copy_files_to_archive **
 
+Visit [Docusaurus Pages](../../website/docs/developer/development-guide/code/code-intro.md) for information on environment setup and testing.
+
 - [Deployment](#deployment)
   * [Deployment Validation](#deployment-validation)
 - [pydoc copy_files_to_archive](#pydoc-copy-files)

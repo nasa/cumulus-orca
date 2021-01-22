@@ -1,6 +1,8 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/dr_dbutils/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/dr_dbutils/requirements.txt)
 
-**Lambda function request_files **
+Visit [Docusaurus Pages](../../website/docs/developer/development-guide/code/code-intro.md) for information on environment setup and testing.
+
+**Lambda function request_files**
 
 - [Deployment](#deployment)
 - [pydoc requests_db](#pydoc-requests-db)
