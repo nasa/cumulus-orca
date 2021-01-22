@@ -1,107 +1,15 @@
-**Lambda function request_files **
+[![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/dr_dbutils/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/dr_dbutils/requirements.txt)
 
-- [Setup](#setup)
-- [Development](#development)
-  * [Unit Testing and Coverage](#unit-testing-and-coverage)
-  * [Linting](#linting)
+Visit the [Developer Guide](../../website/docs/developer/development-guide/code/code-intro.md) for information on environment setup and testing.
+
+**Lambda function request_files**
+
 - [Deployment](#deployment)
 - [pydoc requests_db](#pydoc-requests-db)
-
-
-<a name="setup"></a>
-# Setup
-    See the README in the tasks folder for general development setup instructions
-    See the README in the tasks/pg_utils folder to install pg_utils
 
 <a name="development"></a>
 # Development
 
-<a name="unit-testing-and-coverage"></a>
-## Unit Testing and Coverage
-```
-Test files in the test folder that end with _postgres.py run
-against a Postgres database in a Docker container, and allow you to 
-develop against an actual database. You can create the database
-using task/db_deploy. To run them you'll need to define
-these 5 environment variables in a file named private_config.json in the `test/large_tests/`
-folder, but do NOT check it into GIT. 
-ex:
-(podr2) λ cat tests/large_tests/private_config.json 
-{"DATABASE_HOST": "db.host.gov_goes_here",
-"DATABASE_PORT": "dbport_goes_here", 
-"DATABASE_NAME": "dbname_goes_here", 
-"DATABASE_USER": "dbusername_goes_here", 
-"DATABASE_PW": "db_pw_goes_here"}
-
-The remaining tests have everything mocked.
-
-## Create docker container with DB for testing
-
-`docker run -it --rm --name some-postgres -v /Users/<user>/cumulus-orca/database/ddl/base:/docker-entrypoint-initdb.d/ -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres`
-
-*In another terminal:*
-
-`docker run -it --rm --network host -e POSTGRES_PASSWORD=<new_password> postgres psql -h localhost -U postgres`
-
-```
-psql=# ALTER USER druser WITH PASSWORD 'new_password';
-```
-
-Once you've made these changes, update your `private_config.json` file with:
-
-```json
-{
-    "DATABASE_USER": "druser",
-    "DATABASE_PW": "<the value you added"
-}
-
-### Note that you have to use the druser account, otherwise the schema path won't quite match and you may receive errors like "table doesn't exist"
-
-### Note that environment variable `PREFIX` is expected to be set for `get_dbconnect_info()`. This value is generally set in the lambdas that call this library.
-
-Run the tests:
-cd C:\devpy\poswotdr\tasks\dr_dbutils  
-λ activate podr
-All tests:
-(podr) λ pytest
-
-Individual tests (insert desired test file name):
-(podr) λ pytest test/test_requests_postgres.py
-
-Code Coverage:
-(podr) λ cd C:\devpy\poswotdr\tasks\dr_dbutils
-(podr) λ coverage run --source dr_dbutils -m pytest
-(podr) λ coverage report
-
-Name             Stmts   Miss  Cover
-------------------------------------
-requests_db.py     190      0   100%
-----------------------------------------------------------------------
-Ran 44 tests in 17.089s
-```
-<a name="linting"></a>
-## Linting
-```
-Run pylint against the code:
-
-(podr) λ cd C:\devpy\poswotdr\tasks\dr_dbutils
-(podr) λ pylint requests_db.py
---------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-
-(podr) λ pylint test/request_helpers.py
- --------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-
-(podr) λ pylint test/test_requests.py
- --------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-
-(podr) λ pylint test/test_requests_postgres.py
---------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-```
-<a name="deployment"></a>
 ## Deployment
 ```
 https://www.oreilly.com/library/view/head-first-python/9781491919521/ch04.html

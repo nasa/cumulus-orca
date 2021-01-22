@@ -1,115 +1,15 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/request_files/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/request_files/requirements.txt)
 
-**Lambda function request_files **
+Visit the [Developer Guide](../../website/docs/developer/development-guide/code/code-intro.md) for information on environment setup and testing.
 
-- [Setup](#setup)
-- [Development](#development)
-  * [Unit Testing and Coverage](#unit-testing-and-coverage)
-  * [Linting](#linting)
+**Lambda function request_files**
+
 - [Deployment](#deployment)
   * [Deployment Validation](#deployment-validation)
 - [pydoc request_files](#pydoc-request-files)
 - [pydoc copy_files_to_archive](#pydoc-copy-files)
 - [pydoc request_status](#pydoc-request-status)
 
-<a name="setup"></a>
-# Setup
-    See the README in the tasks folder for general development setup instructions
-    See the README in the tasks/dr_dbutils folder to install dr_dbutils
-
-<a name="development"></a>
-# Development
-
-<a name="unit-testing-and-coverage"></a>
-## Unit Testing and Coverage
-```
-Test files in the test folder that end with _postgres.py run
-against a Postgres database in a Docker container, and allow you to 
-develop against an actual database. You can create the database
-using task/db_deploy. 
-These postgres tests allow you to test things that the mocked tests won't catch -
-such as a restore request that fails the first time and succeeds the second time. The mocked 
-tests didn't catch that it was actually inserting two rows ('error' and 'inprogress'), instead
-of inserting one 'error' row, then updating it to 'inprogress'.
-Note that these _postgres test files could use some more assert tests.
-For now they can be used as a development aid. To run them you'll need to define
-these 5 environment variables in a file named private_config.json in the `test/large_tests/` folder,
-but do NOT check it into GIT. 
-ex:
-(podr2) λ cat private_config.json 
-{"DATABASE_HOST": "db.host.gov_goes_here",
-"DATABASE_PORT": "dbport_goes_here", 
-"DATABASE_NAME": "dbname_goes_here", 
-"DATABASE_USER": "dbusername_goes_here", 
-"DATABASE_PW": "db_pw_goes_here"}
-
-The remaining tests have everything mocked.
-
-### Create docker container with DB for testing
-
-`docker run -it --rm --name some-postgres -v /Users/<user>/cumulus-orca/database/ddl/base:/docker-entrypoint-initdb.d/ -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres`
-
-*In another terminal:*
-
-`docker run -it --rm --network host -e POSTGRES_PASSWORD=<new_password> postgres psql -h localhost -U postgres`
-
-```
-psql=# ALTER USER druser WITH PASSWORD 'new_password';
-```
-
-Once you've made these changes, update your `private_config.json` file with:
-
-```json
-{
-    "DATABASE_USER": "druser",
-    "DATABASE_PW": "<the value you added"
-}
-
-#### Note that you have to use the druser account, otherwise the schema path won't quite match and you may receive errors like "table doesn't exist"
-
-Run the tests:
-C:\devpy\poswotdr\tasks\request_files  
-λ activate podr
-All tests:
-(podr) λ pytest
-
-Individual tests (insert desired test file name):
-(podr) λ pytest test/test_requests_postgres.py
-
-Code Coverage:
-(podr) λ cd C:\devpy\poswotdr\tasks\request_files
-(podr) λ coverage run --source request_files -m pytest
-(podr) λ coverage report
-
-Name               Stmts   Miss  Cover
---------------------------------------
-request_files.py     117      0   100%
-----------------------------------------------------------------------
-Ran 16 tests in 13.150s
-```
-<a name="linting"></a>
-## Linting
-```
-Run pylint against the code:
-
-(podr) λ cd C:\devpy\poswotdr\tasks\request_files
-(podr) λ pylint request_files.py
---------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-
-(podr) λ pylint test/request_helpers.py
---------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-
-(podr) λ pylint test/test_request_files.py
---------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-
-(podr) λ pylint test/test_request_files_postgres.py
---------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-```
-<a name="deployment"></a>
 ## Deployment
 ```
     see /bin/build_tasks.sh to build the zip file. Upload the zip file to AWS.

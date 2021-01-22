@@ -1,3 +1,7 @@
+[![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/copy_to_glacier/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/copy_to_glacier/requirements.txt)
+
+Visit the [Developer Guide](../../website/docs/developer/development-guide/code/code-intro.md) for information on environment setup and testing.
+
 ## Description
 
 The `copy_to_glacier` module is meant to be deployed as a lambda function that takes a Cumulus message, extracts a list of files, and copies those files from their current storage location into a staging/glacier location.
@@ -11,7 +15,7 @@ You are able to specify a list of file types (extensions) that you'd like to exc
 {
   ...
   "meta": {
-    "exclue_file_type": [".cmr", ".xml", ".cmr.xml"]
+    "exclude_file_type": [".cmr", ".xml", ".cmr.xml"]
   }
 }
 ```
@@ -56,19 +60,6 @@ resource "aws_lambda_function" "copy_to_glacier" {
     }
   }
 ```
-
-## Testing & Linting
-
-This example uses `pytest`, a package for testing Python projects.
-
-```
-# pytest and coverage are installed as part of requirements-dev.txt
-coverage run --source copy_to_glacier -m pytest # Run the tests
-...
-coverage report -m # Report the coverage stats
-```
-
-Manual integration testing is being worked on. TBD.
 
 ## Input
 

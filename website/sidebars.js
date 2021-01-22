@@ -20,10 +20,15 @@ module.exports = {
     "Getting Started": [
         'developer/quickstart/developer-intro',
     ],
+
     "Development Guide": [
         {
             "Developing Code": [
                 'developer/development-guide/code/contrib-code-intro',
+                'developer/development-guide/code/setup-dev-env',
+                'developer/development-guide/code/linting',
+                'developer/development-guide/code/unit-tests',
+                'developer/development-guide/code/postgres-tests',
             ],
             "Developing Documentation": [
                 'developer/development-guide/documentation/contrib-documentation-intro',

@@ -1,63 +1,15 @@
-** Shared code to access a postgres database **
+[![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/pg_utils/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/pg_utils/requirements.txt)
 
-- [Setup](#setup)
-- [Development](#development)
-  * [Unit Testing and Coverage](#unit-testing-and-coverage)
-  * [Linting](#linting)
+Visit the [Developer Guide](../../website/docs/developer/development-guide/code/code-intro.md) for information on environment setup and testing.
+
+**Shared code to access a postgres database**
+
 - [Deployment](#deployment)
 - [pydoc database](#pydoc-database)
-
-
-<a name="setup"></a>
-# Setup
-    See the README in the tasks folder for general development setup instructions
 
 <a name="development"></a>
 # Development
 
-<a name="unit-testing-and-coverage"></a>
-## Unit Testing and Coverage
-```
-Run the tests:
-cd C:\devpy\poswotdr\tasks\pg_utils\test
-λ activate podr
-All tests:
-(podr) λ pytest
-
-Individual tests (insert desired test file name):
-(podr) λ pytest test/test_database.py
-
-Code Coverage:
-(podr) λ cd C:\devpy\poswotdr\tasks\pg_utils
-(podr) λ coverage run --source pg_utils -m pytest
-(podr) λ coverage report
-
-Name          Stmts   Miss  Cover
----------------------------------
-database.py     136     56    59%
-----------------------------------------------------------------------
-Ran 6 tests in 0.753s
-```
-<a name="linting"></a>
-## Linting
-```
-Run pylint against the code:
-
-(podr) λ pylint database.py
-************* Module database
-database.py:20:1: W0511: TODO develop tests for database.py later. in those mock psycopg2.cursor, etc (fixme)
--------------------------------------------------------------------
-Your code has been rated at 9.92/10 (previous run: 9.92/10, +0.00)
-
-(podr) λ pylint test/test_database.py
---------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-
-(podr) λ pylint db_config.py
---------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-```
-<a name="deployment"></a>
 ## Deployment
 ```
 https://www.oreilly.com/library/view/head-first-python/9781491919521/ch04.html

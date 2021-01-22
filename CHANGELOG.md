@@ -21,7 +21,7 @@ the copy_to_glacier lambda). See how to configure this for your collections [her
 ### Added
 * *ORCA-58* ORCA user facing documentation
   * Docusaurus documentation website framework initialized and created
-  * Intial content migrated off of wiki and into markdown pages for end users to view ORCA documentation with no wiki access.
+  * Initial content migrated off of wiki and into markdown pages for end users to view ORCA documentation with no wiki access.
   * Updates to README with starting the documentation server.
 * *ORCA-61* Support dynamic configuration of files to exclude from glacier archive
   * Configured in a collection.meta configuration
