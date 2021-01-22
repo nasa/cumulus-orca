@@ -2,7 +2,7 @@
 
 **Lambda function copy_files_to_archive **
 
-Visit [Docusaurus Pages](../../website/docs/developer/development-guide/code/code-intro.md) for information on environment setup and testing.
+Visit the [Developer Guide](../../website/docs/developer/development-guide/code/code-intro.md) for information on environment setup and testing.
 
 - [Deployment](#deployment)
   * [Deployment Validation](#deployment-validation)

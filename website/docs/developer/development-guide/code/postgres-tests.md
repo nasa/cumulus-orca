@@ -5,7 +5,7 @@ description: Instructions on running 'postgres' tests.
 ---
 :::tip
 
-Run through the steps in [Setting Up a Dev Environment](setup-dev-env) prior to modifying/testing code.
+Run through the steps in [Setting Up a Dev Environment](setup-dev-env.md) prior to modifying/testing code.
 
 :::
 ## Preparing to Run Postgres Tests
