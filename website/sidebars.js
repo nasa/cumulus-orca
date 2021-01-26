@@ -43,6 +43,8 @@ module.exports = {
     ],
     "Deployment Guide": [
         'developer/deployment-guide/deployment',
+        'developer/deployment-guide/deployment-environment',
+        'developer/deployment-guide/deployment-s3-bucket',
     ],
   },
   cookbook: {
