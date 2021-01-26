@@ -104,7 +104,7 @@ def get_connection(dbconnect_info: Dict[str, Union[str, int]]) -> connection:
     # create and yield a connection
     try:
         db_port = dbconnect_info['db_port']
-    except ValueError:
+    except ValueError:  # todo: Shouldn't this be KeyError?
         db_port = 5432
 
     new_connection = None
@@ -295,7 +295,7 @@ def return_connection(dbconnect_info) -> connection:
     # create a connection
     try:
         db_port = dbconnect_info['db_port']
-    except ValueError:
+    except ValueError:  # todo: Repeated code, plus ValueError vs KeyError.
         db_port = 5432
 
     try:

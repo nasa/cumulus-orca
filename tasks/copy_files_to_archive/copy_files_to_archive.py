@@ -257,6 +257,7 @@ def copy_object(s3_cli: BaseClient, src_bucket_name: str, src_object_name: str,
                                       Key=dest_object_name)
         logging.debug(f"Copy response: {response}")
     except ClientError as ex:
+        logging.error(ex)
         return str(ex)
     return None
 
