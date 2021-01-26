@@ -43,6 +43,7 @@ module.exports = {
     ],
     "Deployment Guide": [
         'developer/deployment-guide/deployment',
+        'developer/deployment-guide/testing_deployment'
     ],
   },
   cookbook: {
