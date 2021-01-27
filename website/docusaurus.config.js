@@ -5,7 +5,7 @@ module.exports = {
   baseUrl: '/cumulus-orca/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
-  favicon: 'static/img/favicon.ico',
+  favicon: 'img/favicon.ico',
   organizationName: 'nasa', // Usually your GitHub org/user name.
   projectName: 'cumulus-orca', // Usually your repo name.
   themeConfig: {
@@ -13,7 +13,7 @@ module.exports = {
       title: 'Operational Recovery Cloud Archive (ORCA)',
       logo: {
         alt: 'ORCA site logo',
-        src: 'static/img/cumulus-orca-logo.svg',
+        src: 'img/cumulus-orca-logo.svg',
       },
       items: [
         {
