@@ -45,6 +45,7 @@ module.exports = {
         'developer/deployment-guide/deployment',
         'developer/deployment-guide/deployment-environment',
         'developer/deployment-guide/deployment-s3-bucket',
+        'developer/deployment-guide/testing_deployment'
     ],
   },
   cookbook: {
