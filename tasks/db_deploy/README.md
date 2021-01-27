@@ -1,6 +1,6 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/db_deploy/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/db_deploy/requirements.txt)
 
-Visit the [Developer Guide](../../website/docs/developer/development-guide/code/code-intro.md) for information on environment setup and testing.
+Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/development-guide/code/contrib-code-intro) for information on environment setup and testing.
 
 **Lambda function db_deploy**
 
@@ -17,12 +17,12 @@ Visit the [Developer Guide](../../website/docs/developer/development-guide/code/
 <a name="deployment-validation"></a>
 ### Deployment Validation
 ```
-1.  When deploying the complete Disaster Recovery Solution, this lambda is 
+1.  When deploying the complete Disaster Recovery Solution, this lambda is
     excuted as part of the deployment and should create the disaster_recovery
     database. Use the request_status lambda to query it.
-    
+
     If you are in a sandbox environment, and want to re-create the database,
-    set the DROP_DATABASE environment variable to True. To update the tables in 
+    set the DROP_DATABASE environment variable to True. To update the tables in
     an existing database set it to False.
 
 2.  Set the following environment variables
@@ -31,7 +31,7 @@ Visit the [Developer Guide](../../website/docs/developer/development-guide/code/
     DATABASE_USER   %APP_USER_NAME%
     DDL_DIR         ddl/
     DROP_DATABASE   True to perform DROP_DATABASE, False to keep existing database
-    PLATFORM        AWS 
+    PLATFORM        AWS
 
 3.  create an empty JSON test event:
     {}
@@ -57,7 +57,7 @@ CLASSES
 
 FUNCTIONS
     handler(event, context)
-    
+
         This task will create the database, roles, users, schema, and tables.
 
             Environment Vars:

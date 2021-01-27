@@ -1,6 +1,6 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/copy_to_glacier/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/copy_to_glacier/requirements.txt)
 
-Visit the [Developer Guide](../../website/docs/developer/development-guide/code/code-intro.md) for information on environment setup and testing.
+Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/development-guide/code/contrib-code-intro) for information on environment setup and testing.
 
 ## Description
 
@@ -206,11 +206,11 @@ FUNCTIONS
             source_key: source Granule path excluding s3://[bucket]/
             destination_bucket: The name of the bucket the granule is to be copied to.
             destination_key: Destination granule path excluding s3://[bucket]/
-    
+
     handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any
         Lambda handler. Runs a cumulus task that
         copies the files in {event}['input'] from the collection specified in {config} to the {config}'s 'glacier' bucket.
-        
+
         Args:
             event: Event passed into the step from the aws workflow. A dict with the following keys:
                 input (dict): Dictionary with the followig keys:
@@ -233,13 +233,13 @@ FUNCTIONS
                     buckets (dict): A dict with the following keys:
                         glacier (dict): A dict with the following keys:
                             name (str): The name of the bucket to copy to.
-        
-        
+
+
             context: An object required by AWS Lambda. Unused.
-        
+
         Returns:
             The result of the cumulus task.
-    
+
     should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -> bool
         Tests whether or not file is included in {excludeFileTypes} from copy to glacier.
         Args:
@@ -247,14 +247,14 @@ FUNCTIONS
             exclude_file_types: List of extensions to exclude in the backup
         Returns:
             True if file should be excluded from copy, False otherwise.
-    
+
     task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str, Any]
         Copies the files in {event}['input'] from the collection specified in {config} to the {config}'s 'glacier' bucket.
-        
+
         Args:
             event: Passed through from {handler}
             context: An object required by AWS Lambda. Unused.
-        
+
         Returns:
             A dict with the following keys:
                 granules (List[Dict[str, Union[str, bytes, list]]]): A list of dicts where each dict has the following keys:
