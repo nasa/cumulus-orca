@@ -11,7 +11,7 @@ All code should reach minimum 80% coverage through [Unit Tests](unit-tests.md).
 We use the [Google Style Guide](https://google.github.io/styleguide/pyguide.html) for style elements such as documentation, titling, and structure.
 
 ## Stop on Failure
-Failures within ORCA should halt the Cumulus workflow they are a part of.
+Failures within ORCA break through to the Cumulus workflow they are a part of.
 To this end, raising an error is preferred over catching the error and returning a null value or error message.
 
 ```python
@@ -28,6 +28,7 @@ if not success:
     raise DescriptiveErrorType(f'Error message to be raised info Cumulus workflow.'
 ```
 :::note
-Retrying a failing operation is perfectly acceptable so long as the number of retries is strictly limited.
+In the event that an error is likely transient, and failing would cause a large amount of redundant work for other objects, retrying a failing operation in code is acceptable with a strictly limited number of retries.
 You will likely want to log each individual error for analytics and debugging.
 :::
+The Cumulus Workflow can be configured with retries or stop-on-failure.
