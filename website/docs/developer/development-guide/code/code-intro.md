@@ -6,8 +6,6 @@ desc: Provides basic information on ORCA code including layout, standards and ot
 
 Content for this page is being created.
 
-[Style Guide](https://google.github.io/styleguide/pyguide.html)
-
 :::tip
 
 Run through the steps in [Setting Up a Dev Environment](setup-dev-env.md) prior to modifying/testing code.
