@@ -1,6 +1,6 @@
 ---
 id: deployment-environment
-title: Deployment Environment
+title: Creating a Deployment Environment
 description: Provides developer with information on setting up deployment environment.
 ---
 
@@ -20,7 +20,7 @@ The following tools should be installed to perform an ORCA deployment.
 - [AWS CLI](https://aws.amazon.com/cli/)
 - [AWS CLI Session Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html)
 - [Terraform Version Manager](https://github.com/tfutils/tfenv)
-- [Terraform](https://www.terraform.io/intro/index.html) v0.13.6 and up.
+- [Terraform](https://www.terraform.io/intro/index.html) v0.13.6 and up. Please see the [installing terraform instructions](#installing-terraform).
 
 
 ## Deployment Environment Setup
