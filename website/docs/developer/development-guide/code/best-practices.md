@@ -31,4 +31,4 @@ if not success:
 In the event that an error is likely transient, and failing would cause a large amount of redundant work for other objects, retrying a failing operation in code is acceptable with a strictly limited number of retries.
 You will likely want to log each individual error for analytics and debugging.
 :::
-The Cumulus Workflow can be configured with retries or stop-on-failure.
+The Cumulus Workflow [can be configured](https://aws.amazon.com/getting-started/hands-on/handle-serverless-application-errors-step-functions-lambda/) with retries or stop-on-failure.
