@@ -1,6 +1,5 @@
-import os
 import re
-from typing import Dict, Any, List, Optional, Union
+from typing import Dict, Any, List, Union
 
 import boto3
 from run_cumulus_task import run_cumulus_task
@@ -15,6 +14,7 @@ COLLECTION_VERSION_KEY = 'version'
 COLLECTION_URL_PATH_KEY = 'url_path'
 COLLECTION_META_KEY = 'meta'
 EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
+
 
 def should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -> bool:
     """
@@ -48,13 +48,16 @@ def copy_granule_between_buckets(source_bucket_name: str, source_key: str, desti
         'Key': source_key
     }
     s3.copy(
-        copy_source, destination_bucket, destination_key,
+        copy_source,
+        destination_bucket, destination_key,
         ExtraArgs={
             'StorageClass': 'GLACIER',
             'MetadataDirective': 'COPY',
-            'ContentType': s3.head_object(Bucket=source_bucket_name, Key=source_key)['ContentType']
+            'ContentType': s3.head_object(Bucket=source_bucket_name, Key=source_key)['ContentType'],
+            'ACL': 'bucket-owner-full-control'  # Sets the x-amz-acl URI Request Parameter. Needed for cross-OU copies.
         }
     )
+
 
 # noinspection PyUnusedLocal
 def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str, Any]:
@@ -89,6 +92,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
 
     # Iterate through the input granules (>= 0 granules expected)
     for granule in granules_list:
+        # noinspection PyPep8Naming
         granuleId = granule['granuleId']
         if granuleId not in granule_data.keys():
             granule_data[granuleId] = {'granuleId': granuleId, 'files': []}
@@ -98,7 +102,9 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
             source_name = file['name']
             source_filepath = file['filepath']
             if should_exclude_files_type(source_name, exclude_file_types):
-                print(f"Excluding {source_name} from glacier backup because of collection configured {EXCLUDE_FILE_TYPES_KEY}.")
+                print(
+                    f"Excluding {source_name} from glacier backup "
+                    f"because of collection configured {EXCLUDE_FILE_TYPES_KEY}.")
                 continue
             copy_granule_between_buckets(source_bucket_name=file['bucket'],
                                          source_key=source_filepath,
@@ -108,6 +114,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
             print(f"Copied {source_filepath} into glacier storage bucket {glacier_bucket}.")
 
     return {'granules': granules_list, 'copied_to_glacier': copied_file_urls}
+
 
 # handler that is provided to aws lambda
 def handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any:
