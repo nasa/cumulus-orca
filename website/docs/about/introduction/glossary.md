@@ -206,7 +206,7 @@ For more information, see the [Cumulus Rules documentation](https://nasa.github.
 Amazon's Simple Storage Service provides data object storage in the cloud.
 Used in Cumulus to store configuration, data and more.
 
-For more information, see [AWS's s3 page](https://aws.amazon.com/s3/).
+For more information, see [AWS's S3 page](https://aws.amazon.com/s3/).
 
 ### SIPS
 Science Investigator-led Processing Systems. In the context of DAAC ingest,
