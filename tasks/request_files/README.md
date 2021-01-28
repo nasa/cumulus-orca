@@ -1,6 +1,6 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/request_files/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/request_files/requirements.txt)
 
-Visit the [Developer Guide](../../website/docs/developer/development-guide/code/code-intro.md) for information on environment setup and testing.
+Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/development-guide/code/contrib-code-intro) for information on environment setup and testing.
 
 **Lambda function request_files**
 
@@ -42,75 +42,75 @@ DESCRIPTION
 CLASSES
     builtins.Exception(builtins.BaseException)
         RestoreRequestError
-    
+
     class RestoreRequestError(builtins.Exception)
      |  Exception to be raised if the restore request fails submission for any of the files.
-     |  
+     |
      |  Method resolution order:
      |      RestoreRequestError
      |      builtins.Exception
      |      builtins.BaseException
      |      builtins.object
-     |  
+     |
      |  Data descriptors defined here:
-     |  
+     |
      |  __weakref__
      |      list of weak references to the object (if defined)
-     |  
+     |
      |  ----------------------------------------------------------------------
      |  Methods inherited from builtins.Exception:
-     |  
+     |
      |  __init__(self, /, *args, **kwargs)
      |      Initialize self.  See help(type(self)) for accurate signature.
-     |  
+     |
      |  ----------------------------------------------------------------------
      |  Static methods inherited from builtins.Exception:
-     |  
+     |
      |  __new__(*args, **kwargs) from builtins.type
      |      Create and return a new object.  See help(type) for accurate signature.
-     |  
+     |
      |  ----------------------------------------------------------------------
      |  Methods inherited from builtins.BaseException:
-     |  
+     |
      |  __delattr__(self, name, /)
      |      Implement delattr(self, name).
-     |  
+     |
      |  __getattribute__(self, name, /)
      |      Return getattr(self, name).
-     |  
+     |
      |  __reduce__(...)
      |      Helper for pickle.
-     |  
+     |
      |  __repr__(self, /)
      |      Return repr(self).
-     |  
+     |
      |  __setattr__(self, name, value, /)
      |      Implement setattr(self, name, value).
-     |  
+     |
      |  __setstate__(...)
-     |  
+     |
      |  __str__(self, /)
      |      Return str(self).
-     |  
+     |
      |  with_traceback(...)
      |      Exception.with_traceback(tb) --
      |      set self.__traceback__ to tb and return self.
-     |  
+     |
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from builtins.BaseException:
-     |  
+     |
      |  __cause__
      |      exception cause
-     |  
+     |
      |  __context__
      |      exception context
-     |  
+     |
      |  __dict__
-     |  
+     |
      |  __suppress_context__
-     |  
+     |
      |  __traceback__
-     |  
+     |
      |  args
 
 FUNCTIONS
@@ -178,9 +178,9 @@ FUNCTIONS
                 The same dict that is returned for a successful granule restore, will be included in the
                 message, with 'success' = False for the files for which the restore request failed to
                 submit.
-    
+
     inner_task(event: Dict, max_retries: int, retry_sleep_secs: float, retrieval_type: str, restore_expire_days: int)
-    
+
     object_exists(s3_cli: botocore.client.BaseClient, glacier_bucket: str, file_key: str) -> bool
         Check to see if an object exists in S3 Glacier.
         Args:
@@ -189,11 +189,11 @@ FUNCTIONS
             file_key: The key of the Glacier object
         Returns:
             True if the object exists, otherwise False.
-    
+
     process_granule(s3: botocore.client.BaseClient, granule: Dict[str, Union[str, List[Dict]]], glacier_bucket: str, restore_expire_days: int, max_retries: int, retry_sleep_secs: float, retrieval_type: str)
-    
+
     restore_object(s3_cli: botocore.client.BaseClient, obj: Dict[str, Any], attempt: int, max_retries: int, retrieval_type: str = 'Standard') -> None
-    
+
     task(event: Dict, context: object) -> Dict[str, Any]
         Task called by the handler to perform the work.
         This task will call the restore_request for each file. Restored files will be kept

@@ -33,11 +33,11 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 The grey fox jumped over the red fern chasing the pink pig.
 
 <MyImage¬
-    imageSource={useBaseUrl('static/img/my-image.svg')}¬
+    imageSource={useBaseUrl('img/my-image.svg')}¬
     imageAlt="A fox chasing a pig."¬
-    zoomInPic={useBaseUrl('static/img/zoom-in.svg')}¬
-    zoomOutPic={useBaseUrl('static/img/zoom-out.svg')}¬
-    resetPic={useBaseUrl('static/img/zoom-pan-reset.svg')}¬
+    zoomInPic={useBaseUrl('img/zoom-in.svg')}¬
+    zoomOutPic={useBaseUrl('img/zoom-out.svg')}¬
+    resetPic={useBaseUrl('img/zoom-pan-reset.svg')}¬
 />
 ```
 
@@ -50,14 +50,23 @@ import MyImage from '@site/docs/templates/pan-zoom-image.mdx';¬
 import useBaseUrl from '@docusaurus/useBaseUrl';
 ```
 
-:::tip
+:::tip `useBaseUrl`
 
-The `useBaseURL` library allows us to reference the `static/img` path and image
+The `useBaseURL` library allows us to reference the `img` path and image
 file without having to create a relative location path from the current document.
 
 :::
 
-:::tip
+:::important Image Location and Path
+
+Note that the `img` directory is in `website/static/img` but because of the way
+Docusaurus builds, anything within the static directory will be copied to the
+root of the build directory for deployment. See information about this in the
+[Docusaurus documentation](https://v2.docusaurus.io/docs/deployment/#deploying-to-github-pages).
+
+:::
+
+:::tip Using `@site`
 
 The `MyImage` import provides a name to reference the `pan-zoom-image.mdx` template.
 This name can be any alpha numeric value and is often camel cased.
@@ -76,11 +85,11 @@ populate specific variables.
 
 ```mdx
 <MyImage¬
-    imageSource={useBaseUrl('static/img/my-image.svg')}¬
+    imageSource={useBaseUrl('img/my-image.svg')}¬
     imageAlt="A fox chasing a pig."¬
-    zoomInPic={useBaseUrl('static/img/zoom-in.svg')}¬
-    zoomOutPic={useBaseUrl('static/img/zoom-out.svg')}¬
-    resetPic={useBaseUrl('static/img/zoom-pan-reset.svg')}¬
+    zoomInPic={useBaseUrl('img/zoom-in.svg')}¬
+    zoomOutPic={useBaseUrl('img/zoom-out.svg')}¬
+    resetPic={useBaseUrl('img/zoom-pan-reset.svg')}¬
 />
 ```
 

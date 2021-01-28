@@ -1,6 +1,6 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/extract_filepaths_for_granule/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/extract_filepaths_for_granule/requirements.txt)
 
-Visit the [Developer Guide](../../website/docs/developer/development-guide/code/code-intro.md) for information on environment setup and testing.
+Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/development-guide/code/contrib-code-intro) for information on environment setup and testing.
 
 **Lambda function extract_filepaths_for_granule**
 
@@ -33,7 +33,7 @@ Visit the [Developer Guide](../../website/docs/developer/development-guide/code/
     Edit the ['payload']['granules']['keys'] values as needed to be the file(s) you wish to restore.
     Edit the ['cumulus_meta']['execution_name'] to be something unique (like yyyymmdd_hhmm). Then
     copy and paste the same value to the execution name field above the input field.
-    
+
 2.  Execute the workflow. Once it passes the extract step, you can look at the output from it.
 ```
 <a name="pydoc"></a>
@@ -51,7 +51,7 @@ CLASSES
 
     class ExtractFilePathsError(builtins.Exception)
      |  Exception to be raised if any errors occur
-     
+
 FUNCTIONS
     handler(event, context)
         Lambda handler. Extracts the key's for a granule from an input dict.

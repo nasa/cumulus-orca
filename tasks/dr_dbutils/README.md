@@ -1,6 +1,6 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/dr_dbutils/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/dr_dbutils/requirements.txt)
 
-Visit the [Developer Guide](../../website/docs/developer/development-guide/code/code-intro.md) for information on environment setup and testing.
+Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/development-guide/code/contrib-code-intro) for information on environment setup and testing.
 
 **Lambda function request_files**
 
@@ -18,7 +18,7 @@ Create the distribution file:
     (podr) λ py -3 setup.py sdist
     (podr) λ cd dist
     (podr) λ pip install dr_dbutils-1.0.tar.gz
- 
+
 ```
 <a name="pydoc-requests-db"></a>
 ## pydoc requests_db
@@ -99,5 +99,5 @@ FUNCTIONS
 
     update_request_status_for_job(request_id, status, err_msg=None)
         Updates the status of a job.
-              
+
 ```
