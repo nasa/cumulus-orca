@@ -91,8 +91,7 @@ class TestDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-public-me
             'db_user': db_user,
             'db_pw': db_user_pass
         }
-        mock_connection = Mock()
-        mock_connect.return_value = mock_connection
+        mock_connection = mock_connect.return_value
         result = database.return_connection(dbconnect_info)
 
         mock_connect.assert_called_once_with(
