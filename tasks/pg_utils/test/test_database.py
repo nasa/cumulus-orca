@@ -128,24 +128,6 @@ class TestDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-public-me
                                              user=db_connect_info['db_user'],
                                              password=db_connect_info['db_pw'])
 
-    def test_single_query_secretsmanager(self):
-        """
-        Tests the single_query function
-        """
-        dbconnect_info = {
-            'db_host': 'my.db.host.gov',
-            'db_port': 5432,
-            'db_name': 'postgres',
-            'db_user': 'postgres',
-            'db_pw': 'secret'
-        }
-        sql_stmt = 'Select * from mytable'
-        exp_err = ('Database Error. could not translate host name "my.db.host.gov" to address: Unknown host\n')
-        try:
-            database.single_query(sql_stmt, dbconnect_info)
-        except DbError as err:
-            self.assertEqual(exp_err, str(err))
-
     @staticmethod
     def build_row(column1, column2, column3):
         """
