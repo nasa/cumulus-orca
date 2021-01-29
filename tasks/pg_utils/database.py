@@ -9,7 +9,6 @@ import json
 import logging
 import os
 import uuid
-from contextlib import contextmanager, _GeneratorContextManager
 # noinspection PyPackageRequirements
 from typing import Optional, Union, List, Dict
 
@@ -85,98 +84,6 @@ def myconverter(obj: any) -> Optional[str]:  # pylint: disable-msg=inconsistent-
     """
     if isinstance(obj, datetime.datetime):
         return obj.__str__()
-
-
-# todo: Unused externally and dangerous. Kill.
-@contextmanager
-def get_connection(dbconnect_info: Dict[str, Union[str, int]]) -> _GeneratorContextManager[connection]:
-    """
-    Retrieves a connection from the connection pool and yields it.
-
-    Args:
-        dbconnect_info: A dictionary with the following keys:
-            db_port (str): The database port. Default is 5432.
-            db_host (str): The database host.
-            db_name (str): The database name.
-            db_user (str): The username to connect to the database with.
-            db_pw (str): The password to connect to the database with.
-    """
-    # create and yield a connection
-    try:
-        db_port = dbconnect_info['db_port']
-    except ValueError:  # todo: Shouldn't this be KeyError?
-        db_port = 5432
-
-    new_connection = None
-    try:
-        new_connection = psycopg2.connect(
-            host=dbconnect_info['db_host'],
-            port=db_port,
-            database=dbconnect_info['db_name'],
-            user=dbconnect_info['db_user'],
-            password=dbconnect_info['db_pw']
-        )
-        yield new_connection  # todo: Why is this a yield?
-
-    except Exception as ex:
-        raise DbError(f"Database Error. {str(ex)}")
-
-    finally:
-        if new_connection:
-            new_connection.close()
-
-
-@contextmanager
-def get_cursor(dbconnect_info: Dict[str, Union[str, int]]) -> cursor:
-    """
-    Retrieves the cursor from the connection and yields it. Automatically
-    commits the transaction if no exception occurred.
-
-    Args:
-        dbconnect_info: A dictionary with the following keys:
-            db_port (str): The database port. Default is 5432.
-            db_host (str): The database host.
-            db_name (str): The database name.
-            db_user (str): The username to connect to the database with.
-            db_pw (str): The password to connect to the database with.
-    """
-    with get_connection(dbconnect_info) as conn:
-        # todo: get_connection returns a _GeneratorContextManager, not a connection. This code has likely never worked.
-        conn_cursor = conn.cursor(cursor_factory=RealDictCursor)
-        try:
-            yield conn_cursor  # todo: Why is this a yield?
-            conn.commit()
-
-        except:
-            conn.rollback()
-            raise
-
-        finally:
-            conn_cursor.close()
-
-
-def single_query(sql_stmt, dbconnect_info: Dict[str, Union[str, int]], params=None) -> List:
-    """
-    This is a convenience function for running single statement transactions
-    against the database. It will automatically commit the transaction and
-    return a list of the rows.
-
-    For multi-query transactions, see multi_query().
-
-    todo: other args
-    Args:
-        dbconnect_info: A dictionary with the following keys:
-            db_port (str): The database port. Default is 5432.
-            db_host (str): The database host.
-            db_name (str): The database name.
-            db_user (str): The username to connect to the database with.
-            db_pw (str): The password to connect to the database with.
-    """
-    with get_cursor(dbconnect_info) as db_cursor:
-        # todo: Again, yield. Not return. Likely never worked.
-        rows = _query(sql_stmt, params, db_cursor)
-
-    return rows
 
 
 def read_db_connect_info(param_source):  # todo: wha?
@@ -257,9 +164,9 @@ def multi_query(sql_stmt, params, db_cursor: cursor) -> List:
     This function will use the provided cursor to run the query instead of
     retrieving one itself. This is intended to be used when the caller wants
     to make a query that doesn't automatically commit and close the cursor.
-    Like single_query(), this will return the rows as a list.
+    Like single_query(), this will return the rows as a list. todo: Create a functional single_query when needed.
 
-    This function should be used within a context made by get_cursor().  # todo: Recommend a different function.
+    This function should be used within a context made by return_cursor().
     """
 
     return _query(sql_stmt, params, db_cursor)
@@ -297,7 +204,7 @@ def return_connection(dbconnect_info: Dict[str, Union[str, int]]) -> connection:
     # create a connection
     try:
         db_port = dbconnect_info['db_port']
-    except ValueError:  # todo: Repeated code, plus ValueError vs KeyError.
+    except KeyError:
         db_port = 5432
 
     try:

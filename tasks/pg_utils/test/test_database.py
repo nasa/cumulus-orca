@@ -25,14 +25,13 @@ class TestDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-public-me
     """
 
     def setUp(self):
-
+        # todo: Rework all tests, including wiping this global env and mock setup.
         os.environ['DATABASE_HOST'] = 'localhost'
         os.environ['DATABASE_PORT'] = '5432'
         os.environ['DATABASE_NAME'] = 'postgres'
         os.environ['DATABASE_USER'] = 'postgres'
         os.environ['DATABASE_PW'] = 'postgres'
 
-        self.mock_single_query = database.single_query
         self.mock_utcnow = database.get_utc_now_iso
         self.mock_uuid = database.uuid_generator
         self.mock_boto3 = boto3.client
@@ -53,7 +52,6 @@ class TestDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-public-me
 
     def tearDown(self):
         boto3.client = self.mock_boto3
-        database.single_query = self.mock_single_query
         database.get_utc_now_iso = self.mock_utcnow
         database.uuid_generator = self.mock_uuid
         del os.environ['DATABASE_HOST']
@@ -79,32 +77,32 @@ class TestDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-public-me
         database.uuid_generator = Mock(return_value=UUID1)
         self.assertEqual(UUID1, database.uuid_generator())
 
-    # todo: Rework all tests.
-    def test_get_connection(self):
-        """
-        Tests getting a database connection
-        """
-        db_connect_info = {
-            'db_host': os.environ['DATABASE_HOST'],
-            'db_port': os.environ['DATABASE_PORT'],
-            'db_name': os.environ['DATABASE_NAME'],
-            'db_user': os.environ['DATABASE_USER'],
-            'db_pw': os.environ['DATABASE_PW']
-        }
-        con = database.get_connection(db_connect_info)
-        cursor = con.cursor(cursor_factory=psycopg2.RealDictCursor)
-        self.assertIsNotNone(con)
+    @patch('psycopg2.connect')
+    def test_return_connection_missing_port_defaults_to_5432(self,
+                                                             mock_connect: MagicMock):
+        db_host = uuid.uuid4().__str__()
+        db_name = uuid.uuid4().__str__()
+        db_user = uuid.uuid4().__str__()
+        db_user_pass = uuid.uuid4().__str__()
 
-    def test_get_connection_missing_port_defaults_to_5432(self):
         dbconnect_info = {
-            'db_host': 'host',
-            'db_name': 'name',
-            'db_user': 'user',
-            'db_pw': 'pw'
+            'db_host': db_host,
+            'db_name': db_name,
+            'db_user': db_user,
+            'db_pw': db_user_pass
         }
-        con = database.get_connection(dbconnect_info)
-        result = dbconnect_info[0]
-        self.assertEqual(5432, con['port'])
+        mock_connection = Mock()
+        mock_connect.return_value = mock_connection
+        result = database.return_connection(dbconnect_info)
+
+        mock_connect.assert_called_once_with(
+            host=db_host,
+            port=5432,
+            database=db_name,
+            user=db_user,
+            password=db_user_pass
+        )
+        self.assertEqual(mock_connection, result)
 
     # todo: More tests.
     @patch('psycopg2.connect')
@@ -130,28 +128,6 @@ class TestDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-public-me
                                              database=db_connect_info['db_name'],
                                              user=db_connect_info['db_user'],
                                              password=db_connect_info['db_pw'])
-
-    # TODO: This doesn't test anything.
-    def test_single_query(self):
-        """
-        Tests the single_query function
-        """
-        qresult = []
-        row = self.build_row('key1', 'value2', 'value3')
-        qresult.append(psycopg2.extras.RealDictRow(row))
-
-        row = self.build_row('key2', 'value4', 'value5')
-        qresult.append(psycopg2.extras.RealDictRow(row))
-
-        empty_result = []
-        database.single_query = Mock(
-            side_effect=[qresult, empty_result])
-        sql_stmt = 'Select * from mytable'
-        rows = database.single_query(sql_stmt, self.dbconnect_info)
-        self.assertEqual(qresult, rows)
-        rows = database.single_query(sql_stmt, self.dbconnect_info)
-        self.assertEqual(empty_result, rows)
-        database.single_query.assert_called()
 
     def test_single_query_secretsmanager(self):
         """
