@@ -79,6 +79,7 @@ class TestDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-public-me
         database.uuid_generator = Mock(return_value=UUID1)
         self.assertEqual(UUID1, database.uuid_generator())
 
+    # todo: Rework all tests.
     def test_get_connection(self):
         """
         Tests getting a database connection
@@ -91,7 +92,19 @@ class TestDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-public-me
             'db_pw': os.environ['DATABASE_PW']
         }
         con = database.get_connection(db_connect_info)
+        cursor = con.cursor(cursor_factory=psycopg2.RealDictCursor)
         self.assertIsNotNone(con)
+
+    def test_get_connection_missing_port_defaults_to_5432(self):
+        dbconnect_info = {
+            'db_host': 'host',
+            'db_name': 'name',
+            'db_user': 'user',
+            'db_pw': 'pw'
+        }
+        con = database.get_connection(dbconnect_info)
+        result = dbconnect_info[0]
+        self.assertEqual(5432, con['port'])
 
     # todo: More tests.
     @patch('psycopg2.connect')

@@ -9,7 +9,7 @@ import json
 import logging
 import os
 import uuid
-from contextlib import contextmanager
+from contextlib import contextmanager, _GeneratorContextManager
 # noinspection PyPackageRequirements
 from typing import Optional, Union, List, Dict
 
@@ -74,7 +74,6 @@ def result_to_json(result_rows):  # todo: return type
     return json_result
 
 
-
 def myconverter(obj: any) -> Optional[str]:  # pylint: disable-msg=inconsistent-return-statements
     """
     # todo: The description below is inaccurate. Investigate and fix description or code.
@@ -88,8 +87,9 @@ def myconverter(obj: any) -> Optional[str]:  # pylint: disable-msg=inconsistent-
         return obj.__str__()
 
 
+# todo: Unused externally and dangerous. Kill.
 @contextmanager
-def get_connection(dbconnect_info: Dict[str, Union[str, int]]) -> connection:
+def get_connection(dbconnect_info: Dict[str, Union[str, int]]) -> _GeneratorContextManager[connection]:
     """
     Retrieves a connection from the connection pool and yields it.
 
@@ -116,7 +116,7 @@ def get_connection(dbconnect_info: Dict[str, Union[str, int]]) -> connection:
             user=dbconnect_info['db_user'],
             password=dbconnect_info['db_pw']
         )
-        yield new_connection
+        yield new_connection  # todo: Why is this a yield?
 
     except Exception as ex:
         raise DbError(f"Database Error. {str(ex)}")
@@ -141,9 +141,10 @@ def get_cursor(dbconnect_info: Dict[str, Union[str, int]]) -> cursor:
             db_pw (str): The password to connect to the database with.
     """
     with get_connection(dbconnect_info) as conn:
+        # todo: get_connection returns a _GeneratorContextManager, not a connection. This code has likely never worked.
         conn_cursor = conn.cursor(cursor_factory=RealDictCursor)
         try:
-            yield conn_cursor
+            yield conn_cursor  # todo: Why is this a yield?
             conn.commit()
 
         except:
@@ -172,6 +173,7 @@ def single_query(sql_stmt, dbconnect_info: Dict[str, Union[str, int]], params=No
             db_pw (str): The password to connect to the database with.
     """
     with get_cursor(dbconnect_info) as db_cursor:
+        # todo: Again, yield. Not return. Likely never worked.
         rows = _query(sql_stmt, params, db_cursor)
 
     return rows
@@ -257,7 +259,7 @@ def multi_query(sql_stmt, params, db_cursor: cursor) -> List:
     to make a query that doesn't automatically commit and close the cursor.
     Like single_query(), this will return the rows as a list.
 
-    This function should be used within a context made by get_cursor().
+    This function should be used within a context made by get_cursor().  # todo: Recommend a different function.
     """
 
     return _query(sql_stmt, params, db_cursor)
@@ -288,7 +290,7 @@ def _query(sql_stmt, params, db_cursor: cursor) -> List:
     return rows
 
 
-def return_connection(dbconnect_info) -> connection:
+def return_connection(dbconnect_info: Dict[str, Union[str, int]]) -> connection:
     """
     Retrieves a connection from the connection pool.
     """
@@ -332,6 +334,7 @@ def return_cursor(conn: connection) -> cursor:
         raise DbError(f"Database Error. {str(ex)}")
 
 
+# adorn: Used in db_deploy
 def query_no_params(db_cursor: cursor, sql_stmt) -> str:
     """
     This function will use the provided cursor to run the sql_stmt.
@@ -354,6 +357,7 @@ def query_no_params(db_cursor: cursor, sql_stmt) -> str:
         raise DbError(f"Database Error. {str(ex)}")
 
 
+# adorn: Used in db_deploy
 def query_from_file(db_cursor: cursor, sql_file):  # todo: filename or path?
     """
     This function will execute the sql in a file.
