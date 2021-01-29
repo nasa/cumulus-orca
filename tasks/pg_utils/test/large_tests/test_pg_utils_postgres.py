@@ -31,7 +31,6 @@ class TestDatabase(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
         os.environ['DATABASE_USER'] = 'postgres'
         os.environ['DATABASE_PW'] = 'postgres'
 
-        self.mock_single_query = database.single_query
         self.mock_utcnow = database.get_utc_now_iso
         self.mock_uuid = database.uuid_generator
         self.mock_boto3 = boto3.client
@@ -52,7 +51,6 @@ class TestDatabase(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
 
     def tearDown(self):
         boto3.client = self.mock_boto3
-        database.single_query = self.mock_single_query
         del os.environ['DATABASE_HOST']
         del os.environ['DATABASE_PORT']
         del os.environ['DATABASE_NAME']
@@ -79,22 +77,3 @@ class TestDatabase(unittest.TestCase):  #pylint: disable-msg=too-many-public-met
             self.assertIsNotNone(con)
         except DbError as err:
             self.assertEqual(exp_err, str(err))
-
-    def test_single_query_secretsmanager(self):
-        """
-        Tests the single_query function
-        """
-        dbconnect_info = {
-            'db_host': 'my.db.host.gov',
-            'db_port': 5432,
-            'db_name': 'postgres',
-            'db_user': 'postgres',
-            'db_pw': 'secret'
-        }
-        sql_stmt = 'Select * from mytable'
-        exp_err = ('Database Error. could not translate host name "my.db.host.gov" to address: Unknown host\n')
-        try:
-            database.single_query(sql_stmt, dbconnect_info)
-        except DbError as err:
-            self.assertEqual(exp_err, str(err))
-
