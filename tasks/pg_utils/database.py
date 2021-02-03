@@ -5,13 +5,12 @@ queries, simply using the "query()" function will likely suffice.
 """
 
 import datetime
-import json
 import logging
 import os
 import uuid
 from contextlib import contextmanager
 # noinspection PyPackageRequirements
-from typing import Optional, Union, List, Dict
+from typing import Union, List, Dict
 
 # noinspection PyPackageRequirements
 import boto3
@@ -32,7 +31,7 @@ class DbError(Exception):
     """
 
 
-class ResourceExists(Exception):
+class ResourceExists(DbError):
     """
     Exception to be raised if there is an existing database resource.
     """
@@ -61,33 +60,6 @@ def uuid_generator() -> str:
     return str(my_uuid)
 
 
-def result_to_json(result_rows):  # todo: return type
-    """
-    Converts a database result to Json format
-
-    Args:
-        result_rows: The object to convert to json.
-
-    Returns: todo
-    """
-    json_result = json.loads(json.dumps(result_rows, default=myconverter))  # todo: wha?
-    return json_result
-
-
-
-def myconverter(obj: any) -> Optional[str]:  # pylint: disable-msg=inconsistent-return-statements
-    """
-    # todo: The description below is inaccurate. Investigate and fix description or code.
-    Returns the current utc timestamp as a string in isoformat
-    ex. '2019-07-17T17:36:38.494918'
-
-    Args:
-        obj: todo
-    """
-    if isinstance(obj, datetime.datetime):
-        return obj.__str__()
-
-
 @contextmanager
 def get_connection(dbconnect_info: Dict[str, Union[str, int]]) -> connection:
     """
@@ -102,20 +74,8 @@ def get_connection(dbconnect_info: Dict[str, Union[str, int]]) -> connection:
             db_pw (str): The password to connect to the database with.
     """
     # create and yield a connection
+    new_connection = return_connection(dbconnect_info)
     try:
-        db_port = dbconnect_info['db_port']
-    except ValueError:  # todo: Shouldn't this be KeyError?
-        db_port = 5432
-
-    new_connection = None
-    try:
-        new_connection = psycopg2.connect(
-            host=dbconnect_info['db_host'],
-            port=db_port,
-            database=dbconnect_info['db_name'],
-            user=dbconnect_info['db_user'],
-            password=dbconnect_info['db_pw']
-        )
         yield new_connection
 
     except Exception as ex:
@@ -154,30 +114,7 @@ def get_cursor(dbconnect_info: Dict[str, Union[str, int]]) -> cursor:
             conn_cursor.close()
 
 
-def single_query(sql_stmt, dbconnect_info: Dict[str, Union[str, int]], params=None) -> List:
-    """
-    This is a convenience function for running single statement transactions
-    against the database. It will automatically commit the transaction and
-    return a list of the rows.
-
-    For multi-query transactions, see multi_query().
-
-    todo: other args
-    Args:
-        dbconnect_info: A dictionary with the following keys:
-            db_port (str): The database port. Default is 5432.
-            db_host (str): The database host.
-            db_name (str): The database name.
-            db_user (str): The username to connect to the database with.
-            db_pw (str): The password to connect to the database with.
-    """
-    with get_cursor(dbconnect_info) as db_cursor:
-        rows = _query(sql_stmt, params, db_cursor)
-
-    return rows
-
-
-def read_db_connect_info(param_source):  # todo: wha?
+def read_db_connect_info(param_source: Dict) -> Dict[str, Union[str, int]]:
     """
     This function will retrieve database connection parameters from
     the parameter store and/or env vars.
@@ -239,7 +176,6 @@ def get_db_connect_info(env_or_secretsmanager: str, param_name: str) -> str:
         env_or_secretsmanager: "env" to read env var, "secretsmanager" to read parameter store.
         param_name: The name of the parameter to retrieve from env for parameter store.
     """
-    param_value = None
     if env_or_secretsmanager == 'secretsmanager':
         secretsmanager = boto3.client('secretsmanager')
         parameter = secretsmanager.get_secret_value(SecretId=param_name)
@@ -250,44 +186,6 @@ def get_db_connect_info(env_or_secretsmanager: str, param_name: str) -> str:
     return param_value
 
 
-def multi_query(sql_stmt, params, db_cursor: cursor) -> List:
-    """
-    This function will use the provided cursor to run the query instead of
-    retrieving one itself. This is intended to be used when the caller wants
-    to make a query that doesn't automatically commit and close the cursor.
-    Like single_query(), this will return the rows as a list.
-
-    This function should be used within a context made by get_cursor().
-    """
-
-    return _query(sql_stmt, params, db_cursor)
-
-
-def _query(sql_stmt, params, db_cursor: cursor) -> List:
-    """
-    Wrapper for running queries that will automatically handle errors in a
-    consistent manner.
-
-    Returns the result of the query returned by fetchall()
-    """
-
-    try:
-        db_cursor.execute(sql.SQL(sql_stmt), params)
-
-    except (ProgrammingError, DataError) as err:
-        LOGGER.exception(f"database error - {err}")
-        raise DbError("Internal database error, please contact LP DAAC User Services")
-
-    try:
-        rows = db_cursor.fetchall()
-
-    except ProgrammingError as err:
-        # no results, return an empty list
-        rows = []
-
-    return rows
-
-
 def return_connection(dbconnect_info) -> connection:
     """
     Retrieves a connection from the connection pool.
@@ -295,7 +193,7 @@ def return_connection(dbconnect_info) -> connection:
     # create a connection
     try:
         db_port = dbconnect_info['db_port']
-    except ValueError:  # todo: Repeated code, plus ValueError vs KeyError.
+    except KeyError:
         db_port = 5432
 
     try:
@@ -332,9 +230,76 @@ def return_cursor(conn: connection) -> cursor:
         raise DbError(f"Database Error. {str(ex)}")
 
 
-def query_no_params(db_cursor: cursor, sql_stmt) -> str:
+# todo: Rework query function naming to clearly define which give results and which do not.
+# todo: Look at reducing duplicated code.
+def single_query(sql_stmt: str, dbconnect_info: Dict[str, Union[str, int]], params=None) -> List:
     """
-    This function will use the provided cursor to run the sql_stmt.
+    This is a convenience function for running single statement transactions
+    against the database. It will automatically commit the transaction and
+    return a list of the rows.
+
+    For multi-query transactions, see multi_query().
+
+    todo: other args
+    Args:
+        dbconnect_info: A dictionary with the following keys:
+            db_port (str): The database port. Default is 5432.
+            db_host (str): The database host.
+            db_name (str): The database name.
+            db_user (str): The username to connect to the database with.
+            db_pw (str): The password to connect to the database with.
+    """
+    with get_cursor(dbconnect_info) as db_cursor:
+        rows = _query_with_params_and_results(sql_stmt, params, db_cursor)
+
+    return rows
+
+
+def multi_query(sql_stmt: str, params, db_cursor: cursor) -> List:
+    """
+    This function will use the provided cursor to run the query instead of
+    retrieving one itself. This is intended to be used when the caller wants
+    to make a query that doesn't automatically commit and close the cursor.
+    Like single_query(), this will return the rows as a list.
+
+    This function should be used within a context made by get_cursor().
+    """
+
+    return _query_with_params_and_results(sql_stmt, params, db_cursor)
+
+
+def _query_with_params_and_results(sql_stmt: str, params, db_cursor: cursor) -> List:
+    f"""
+    Wrapper for running queries that will automatically handle errors in a
+    consistent manner.  todo: A lot of duplication with {_query_no_params_or_results}
+
+    Returns the result of the query returned by fetchall()
+    """
+
+    try:
+        db_cursor.execute(sql.SQL(sql_stmt), params)
+
+    except (ProgrammingError, DataError) as err:
+        msg = str(err).replace("\n", "")
+        if msg.endswith("already exists"):
+            raise ResourceExists(err)
+
+        LOGGER.exception(f"Database error: {err}")
+        raise DbError(f"Database Error: {str(err)}")
+
+    try:
+        rows = db_cursor.fetchall()
+
+    except ProgrammingError as err:
+        # no results, return an empty list
+        rows = []
+
+    return rows
+
+
+def query_no_params(db_cursor: cursor, sql_stmt) -> str:
+    f"""
+    This function will use the provided cursor to run the {sql_stmt}.
 
     Args:
         db_cursor: The cursor to the target database.
@@ -344,27 +309,50 @@ def query_no_params(db_cursor: cursor, sql_stmt) -> str:
         A string indicating that the statement has been executed.
 
     Raises:
+        ResourceExists: Error message from DB claims that the resource already exists.
+        DbError: Something went wrong while executing the statement.
+    """
+    _query_no_params_or_results(db_cursor, sql_stmt)
+    return f"done executing {sql_stmt}"
+
+
+def query_from_file(db_cursor: cursor, sql_file) -> str:  # todo: filename or path?
+    """
+    This function will execute the sql in the given file.
+
+    Args:
+        db_cursor: The cursor to the target database.
+        sql_file: The path to the file containing the SQL statement to execute against the database.
+
+    Raises:
+        ResourceExists: Error message from DB claims that the resource already exists.
+        DbError: Something went wrong while executing the statement.
+
+    Returns:
+        A string indicating that the statement has been executed.
+    """
+    _query_no_params_or_results(db_cursor, open(sql_file, "r").read())
+    return f"sql from {sql_file} executed"
+
+
+def _query_no_params_or_results(db_cursor: cursor, sql_stmt: str) -> None:
+    f"""
+    This function will use the provided cursor to run the {sql_stmt}.
+
+    Args:
+        db_cursor: The cursor to the target database.
+        sql_stmt: The SQL statement to execute against the database.
+
+    Raises:
+        ResourceExists: Error message from DB claims that the resource already exists.
         DbError: Something went wrong while executing the statement.
     """
     try:
-        db_cursor.execute(sql.SQL(sql_stmt))
-        return f"done executing {sql_stmt}"
-    except (ProgrammingError, DataError) as ex:
-        LOGGER.exception(f"Database Error - {ex}")
-        raise DbError(f"Database Error. {str(ex)}")
-
-
-def query_from_file(db_cursor: cursor, sql_file):  # todo: filename or path?
-    """
-    This function will execute the sql in a file.
-    """
-    try:
-        db_cursor.execute(open(sql_file, "r").read())
-        return f"sql from {sql_file} executed"
+        db_cursor.execute(sql_stmt)
     except (ProgrammingError, DataError) as ex:
         msg = str(ex).replace("\n", "")
         if msg.endswith("already exists"):
             raise ResourceExists(ex)
 
-        LOGGER.exception(f"Database Error. {str(ex)}")
-        raise DbError(f"Database Error. {str(ex)}")
+        LOGGER.exception(f"Database Error: {str(ex)}")
+        raise DbError(f"Database Error: {str(ex)}")

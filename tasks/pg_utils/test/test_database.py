@@ -25,7 +25,7 @@ class TestDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-public-me
     """
 
     def setUp(self):
-
+        # todo: Rework all tests, including wiping this global env and mock setup.
         os.environ['DATABASE_HOST'] = 'localhost'
         os.environ['DATABASE_PORT'] = '5432'
         os.environ['DATABASE_NAME'] = 'postgres'
@@ -79,19 +79,32 @@ class TestDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-public-me
         database.uuid_generator = Mock(return_value=UUID1)
         self.assertEqual(UUID1, database.uuid_generator())
 
-    def test_get_connection(self):
-        """
-        Tests getting a database connection
-        """
-        db_connect_info = {
-            'db_host': os.environ['DATABASE_HOST'],
-            'db_port': os.environ['DATABASE_PORT'],
-            'db_name': os.environ['DATABASE_NAME'],
-            'db_user': os.environ['DATABASE_USER'],
-            'db_pw': os.environ['DATABASE_PW']
+    @patch('psycopg2.connect')
+    def test_return_connection_missing_port_defaults_to_5432(self,
+                                                             mock_connect: MagicMock):
+        db_host = uuid.uuid4().__str__()
+        db_name = uuid.uuid4().__str__()
+        db_user = uuid.uuid4().__str__()
+        db_user_pass = uuid.uuid4().__str__()
+
+        dbconnect_info = {
+            'db_host': db_host,
+            'db_name': db_name,
+            'db_user': db_user,
+            'db_pw': db_user_pass
         }
-        con = database.get_connection(db_connect_info)
-        self.assertIsNotNone(con)
+
+        mock_connection = mock_connect.return_value
+        result = database.return_connection(dbconnect_info)
+
+        mock_connect.assert_called_once_with(
+            host=db_host,
+            port=5432,
+            database=db_name,
+            user=db_user,
+            password=db_user_pass
+        )
+        self.assertEqual(mock_connection, result)
 
     # todo: More tests.
     @patch('psycopg2.connect')

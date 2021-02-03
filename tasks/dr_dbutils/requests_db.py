@@ -7,6 +7,8 @@ import json
 import logging
 import uuid
 import datetime
+from typing import Optional
+
 import dateutil.parser
 import database
 from database import DbError
@@ -25,10 +27,12 @@ class NotFound(Exception):
     Exception to be raised when a request doesn't exist.
     """
 
+
 class DatabaseError(Exception):
     """
     Exception to be raised when there's a database error.
     """
+
 
 def get_utc_now_iso():
     """
@@ -46,6 +50,7 @@ def request_id_generator():
     restore_request_group_id = uuid.uuid4()
     return str(restore_request_group_id)
 
+
 def get_dbconnect_info():
     """
     Gets the dbconnection info. PREFIX environment variable expected to be set.
@@ -60,6 +65,7 @@ def get_dbconnect_info():
     db_params['db_pw'] = {'secretsmanager': f"{prefix}-drdb-user-pass"}
     dbconnect_info = database.read_db_connect_info(db_params)
     return dbconnect_info
+
 
 def submit_request(data):
     """
@@ -86,7 +92,7 @@ def submit_request(data):
     # date might be provided, if not use current utc date
     date = get_utc_now_iso()
 
-    #data["request_id"] = request_id
+    # data["request_id"] = request_id
 
     if "request_time" in data:
         rq_date = dateutil.parser.parse(data["request_time"])
@@ -131,6 +137,7 @@ def submit_request(data):
         raise DatabaseError(str(err))
     return data["request_id"]
 
+
 def get_job_by_request_id(request_id):
     """
     Reads a row from request_status by request_id.
@@ -162,6 +169,7 @@ def get_job_by_request_id(request_id):
         raise DatabaseError(str(err))
 
     return result
+
 
 def get_jobs_by_granule_id(granule_id):
     """
@@ -195,6 +203,7 @@ def get_jobs_by_granule_id(granule_id):
         raise DatabaseError(str(err))
 
     return result
+
 
 def get_jobs_by_object_key(object_key):
     """
@@ -286,6 +295,7 @@ def delete_request(request_id):
         raise DatabaseError(str(err))
     return result
 
+
 def delete_all_requests():
     """
     Deletes everything from the request_status table.
@@ -305,6 +315,7 @@ def delete_all_requests():
         raise DatabaseError(str(err))
 
     return result
+
 
 def get_all_requests():
     """
@@ -337,7 +348,8 @@ def get_all_requests():
 
     return result
 
-def create_data(obj,   #pylint: disable-msg=too-many-arguments
+
+def create_data(obj,  # pylint: disable-msg=too-many-arguments
                 job_type=None, job_status=None,
                 request_time=None,
                 last_update_time=None, err_msg=None):
@@ -367,6 +379,7 @@ def create_data(obj,   #pylint: disable-msg=too-many-arguments
     if err_msg:
         data["err_msg"] = err_msg
     return data
+
 
 def get_jobs_by_status(status, max_days_old=None):
     """
@@ -398,7 +411,7 @@ def get_jobs_by_status(status, max_days_old=None):
         dbconnect_info = get_dbconnect_info()
         if max_days_old:
             sql2 = """ and last_update_time > CURRENT_DATE at time zone 'utc' - INTERVAL '%s' DAY"""
-            sql = sql +  sql2 + orderby
+            sql = sql + sql2 + orderby
             rows = database.single_query(sql, dbconnect_info, (status, max_days_old,))
             result = result_to_json(rows)
         else:
@@ -450,18 +463,27 @@ def get_jobs_by_request_group_id(request_group_id):
     return result
 
 
-def result_to_json(result_rows):
+def result_to_json(result_rows):  # todo: return type
     """
     Converts a database result to Json format
+
+    Args:
+        result_rows: The object to convert to json.
+
+    Returns: todo
     """
-    json_result = json.loads(json.dumps(result_rows, default=myconverter))
+    json_result = json.loads(json.dumps(result_rows, default=myconverter))  # todo: Why is this the default?
     return json_result
 
 
-def myconverter(obj):       #pylint: disable-msg=inconsistent-return-statements
+def myconverter(obj: any) -> Optional[str]:  # pylint: disable-msg=inconsistent-return-statements
     """
-    Returns the current utc timestamp as a string in isoformat
+    # todo: The description below is inaccurate. Investigate and fix description or code.
+    Returns the current utc timestamp as a string in iso-format
     ex. '2019-07-17T17:36:38.494918'
+
+    Args:
+        obj: todo
     """
     if isinstance(obj, datetime.datetime):
         return obj.__str__()
