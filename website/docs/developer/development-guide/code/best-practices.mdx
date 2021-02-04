@@ -4,6 +4,8 @@ title: Best Practices
 description: Best practices for coding in ORCA.
 ---
 
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
 ## Unit Testing
 All code should reach minimum 80% coverage through [Unit Tests](unit-tests.md).
 
@@ -58,6 +60,12 @@ for more information.
   "Next": "NextState"
 }
 ```
+If the retries are exceeded and the error is caught, then the workflow will show that it jumped to the 'WorkflowFailed' state.
+<img alt="Workflow Failed" src={useBaseUrl('img/Workflow Failed.png')} />
+
+If the 'WorkflowFailed' state was not triggered, then the workflow will have simply continued.
+<img alt="Workflow Succeeded" src={useBaseUrl('img/Workflow Succeeded.png')} />
+
 :::note
 In the event that an error may be transient, and failing would cause a large amount of redundant work for other objects, retrying a failing operation in code is acceptable with a strictly limited number of retries.
 You will likely want to log each individual error for analytics and debugging.
