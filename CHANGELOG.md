@@ -10,6 +10,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+## [v2.0.1] 2021-2-5
+
+### Changed
+* *ORCA-125* BucketOwnerFullControl ACL is now set on PUT requests to buckets.
+  Prevents errors during cross-OU copying.
+
 ## [v2.0.0] 2021-1-15
 
 ### Migration Notes
