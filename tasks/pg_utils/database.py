@@ -48,6 +48,7 @@ def get_utc_now_iso() -> str:
     return datetime.datetime.utcnow().isoformat()
 
 
+# todo: Rename to generate_uuid.
 def uuid_generator() -> str:
     """
     Generates a unique UUID.
@@ -233,21 +234,22 @@ def return_cursor(conn: connection) -> cursor:
 # todo: Rework query function naming to clearly define which give results and which do not.
 # todo: Look at reducing duplicated code.
 def single_query(sql_stmt: str, dbconnect_info: Dict[str, Union[str, int]], params=None) -> List:
-    """
+    f"""
     This is a convenience function for running single statement transactions
     against the database. It will automatically commit the transaction and
     return a list of the rows.
 
-    For multi-query transactions, see multi_query().
-
-    todo: other args
+    For multi-query transactions, see {multi_query}().
+    
     Args:
+        sql_stmt: The SQL statement to execute against the database.
         dbconnect_info: A dictionary with the following keys:
             db_port (str): The database port. Default is 5432.
             db_host (str): The database host.
             db_name (str): The database name.
             db_user (str): The username to connect to the database with.
             db_pw (str): The password to connect to the database with.
+        params: The parameters for the {sql_stmt}.
     """
     with get_cursor(dbconnect_info) as db_cursor:
         rows = _query_with_params_and_results(sql_stmt, params, db_cursor)
@@ -263,15 +265,21 @@ def multi_query(sql_stmt: str, params, db_cursor: cursor) -> List:
     Like single_query(), this will return the rows as a list.
 
     This function should be used within a context made by get_cursor().
+
+    Args:
+        sql_stmt: The SQL statement to execute against the database.
+        params: The parameters for the {sql_stmt}.
+        db_cursor: The cursor to the database to run the command against.
     """
 
     return _query_with_params_and_results(sql_stmt, params, db_cursor)
 
 
+# todo: A lot of duplication with {_query_no_params_or_results}
 def _query_with_params_and_results(sql_stmt: str, params, db_cursor: cursor) -> List:
     f"""
     Wrapper for running queries that will automatically handle errors in a
-    consistent manner.  todo: A lot of duplication with {_query_no_params_or_results}
+    consistent manner.
 
     Returns the result of the query returned by fetchall()
     """

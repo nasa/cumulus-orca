@@ -32,9 +32,6 @@ class TestDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-public-me
         os.environ['DATABASE_USER'] = 'postgres'
         os.environ['DATABASE_PW'] = 'postgres'
 
-        self.mock_single_query = database.single_query
-        self.mock_utcnow = database.get_utc_now_iso
-        self.mock_uuid = database.uuid_generator
         self.mock_boto3 = boto3.client
         boto3.client = Mock()
         secretsmanager_cli = boto3.client('secretsmanager')
@@ -53,31 +50,34 @@ class TestDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-public-me
 
     def tearDown(self):
         boto3.client = self.mock_boto3
-        database.single_query = self.mock_single_query
-        database.get_utc_now_iso = self.mock_utcnow
-        database.uuid_generator = self.mock_uuid
-        del os.environ['DATABASE_HOST']
-        del os.environ['DATABASE_PORT']
-        del os.environ['DATABASE_NAME']
-        del os.environ['DATABASE_USER']
-        del os.environ['DATABASE_PW']
+        os.environ.pop('DATABASE_HOST')
+        os.environ.pop('DATABASE_PORT')
+        os.environ.pop('DATABASE_NAME')
+        os.environ.pop('DATABASE_USER')
+        os.environ.pop('DATABASE_PW')
 
-    def test_get_utc_now_iso(self):
+    def test_get_utc_now_iso_happy_path(self):
         """
         Tests the get_utc_now_iso function
         """
-        utc_now_exp = '2019-07-17T17:36:38.494918'
-        utc_now_exp = datetime.datetime.utcnow().isoformat()
-        database.get_utc_now_iso = Mock(return_value=utc_now_exp)
-        self.assertEqual(utc_now_exp, database.get_utc_now_iso())
+        now = datetime.datetime.utcnow()
+        result = database.get_utc_now_iso()
+        result_datetime = datetime.datetime.fromisoformat(result)
+        diff = result_datetime - now
+        self.assertGreaterEqual(diff.total_seconds(), 0)
+        self.assertLessEqual(diff.total_seconds(), 5,
+                             'Either the test took longer than 5 seconds to run, or conversion failed.')
 
-    # TODO: This doesn't test anything.
-    def test_uuid_generator(self):
+    @patch('uuid.uuid4')
+    def test_uuid_generator_happy_path(self,
+                                       mock_uuid4: MagicMock):
         """
         Tests the uuid_generator function
         """
-        database.uuid_generator = Mock(return_value=UUID1)
-        self.assertEqual(UUID1, database.uuid_generator())
+        expected_uuid_str = '0000a0a0-a000-00a0-00a0-1400a0000000'
+        mock_uuid4.return_value = uuid.UUID(expected_uuid_str)
+        result = database.uuid_generator()
+        self.assertEqual(expected_uuid_str, result)
 
     @patch('psycopg2.connect')
     def test_return_connection_missing_port_defaults_to_5432(self,
@@ -165,7 +165,7 @@ class TestDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-public-me
             'db_pw': 'secret'
         }
         sql_stmt = 'Select * from mytable'
-        exp_err = ('Database Error. could not translate host name "my.db.host.gov" to address: Unknown host\n')
+        exp_err = 'Database Error. could not translate host name "my.db.host.gov" to address: Unknown host\n'
         try:
             database.single_query(sql_stmt, dbconnect_info)
         except DbError as err:
@@ -174,10 +174,7 @@ class TestDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-public-me
     @staticmethod
     def build_row(column1, column2, column3):
         """
-        builds a row mimicing what would be returned from a call to the db
+        builds a row mimicking what would be returned from a call to the db
         """
-        row = []
-        row.append(('column1', column1))
-        row.append(('column2', column2))
-        row.append(('column3', column3))
+        row = [('column1', column1), ('column2', column2), ('column3', column3)]
         return row

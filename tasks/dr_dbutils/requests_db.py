@@ -406,16 +406,16 @@ def get_jobs_by_status(status, max_days_old=None):
         WHERE
             job_status = %s
         """
-    orderby = """ order by last_update_time desc """
+    order_by = """ order by last_update_time desc """
     try:
         dbconnect_info = get_dbconnect_info()
         if max_days_old:
             sql2 = """ and last_update_time > CURRENT_DATE at time zone 'utc' - INTERVAL '%s' DAY"""
-            sql = sql + sql2 + orderby
+            sql = sql + sql2 + order_by
             rows = database.single_query(sql, dbconnect_info, (status, max_days_old,))
             result = result_to_json(rows)
         else:
-            sql = sql + orderby
+            sql = sql + order_by
             rows = database.single_query(sql, dbconnect_info, (status,))
             result = result_to_json(rows)
     except DbError as err:
@@ -463,7 +463,7 @@ def get_jobs_by_request_group_id(request_group_id):
     return result
 
 
-def result_to_json(result_rows):  # todo: return type
+def result_to_json(result_rows: list) -> list:
     """
     Converts a database result to Json format
 
@@ -472,18 +472,21 @@ def result_to_json(result_rows):  # todo: return type
 
     Returns: todo
     """
-    json_result = json.loads(json.dumps(result_rows, default=myconverter))  # todo: Why is this the default?
+    json_result = json.loads(json.dumps(result_rows, default=datetime_to_string_converter))
     return json_result
 
 
-def myconverter(obj: any) -> Optional[str]:  # pylint: disable-msg=inconsistent-return-statements
-    """
+# todo: Why is this the default?
+def datetime_to_string_converter(obj: any) -> Optional[str]:  # pylint: disable-msg=inconsistent-return-statements
+    f"""
     # todo: The description below is inaccurate. Investigate and fix description or code.
-    Returns the current utc timestamp as a string in iso-format
-    ex. '2019-07-17T17:36:38.494918'
+    If {obj} is a {datetime.datetime}, returns the {datetime.datetime.__str__}.
 
     Args:
-        obj: todo
+        obj: The object to convert.
+        
+    Returns: The datetime as a string.
+        ex. '2019-07-17 17:36:38.494918'
     """
     if isinstance(obj, datetime.datetime):
         return obj.__str__()
