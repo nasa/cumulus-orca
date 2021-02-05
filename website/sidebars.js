@@ -26,6 +26,7 @@ module.exports = {
             "Developing Code": [
                 'developer/development-guide/code/contrib-code-intro',
                 'developer/development-guide/code/setup-dev-env',
+                'developer/development-guide/code/best-practices',
                 'developer/development-guide/code/linting',
                 'developer/development-guide/code/unit-tests',
                 'developer/development-guide/code/postgres-tests',
