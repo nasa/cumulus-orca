@@ -56,6 +56,15 @@ A `BackOffRate` of 2 means that the `IntervalSeconds` will be doubled on each fa
       "BackoffRate": 2
     }
   ],
+  "Catch": [
+    {
+      "ErrorEquals": [
+        "States.ALL"
+      ],
+      "ResultPath": "$.exception",
+      "Next": "WorkflowFailed"
+    }
+  ],
   "Next": "WorkflowSucceeded"
 },
 ```
