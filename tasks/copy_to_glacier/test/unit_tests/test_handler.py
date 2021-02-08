@@ -1,7 +1,6 @@
-import json
-import uuid
 import copy
-from os import path
+import os
+import uuid
 from unittest import TestCase
 from unittest.mock import Mock, call
 
@@ -100,8 +99,8 @@ class TestCopyToGlacierHandler(TestCase):
         source_bucket_name = uuid.uuid4().__str__()
         collection_url_path = uuid.uuid4().__str__()
         content_type = uuid.uuid4().__str__()
-        source_bucket_names = [ file['bucket'] for file in self.event_granules['granules'][0]['files'] ]
-        source_keys = [ file['filepath'] for file in self.event_granules['granules'][0]['files'] ]
+        source_bucket_names = [file['bucket'] for file in self.event_granules['granules'][0]['files']]
+        source_keys = [file['filepath'] for file in self.event_granules['granules'][0]['files']]
 
         # todo: use 'side_effect' to verify args. It is safer, as current method does not deep-copy args
         boto3.client = Mock()
@@ -148,7 +147,8 @@ class TestCopyToGlacierHandler(TestCase):
                 ExtraArgs={
                     'StorageClass': 'GLACIER',
                     'MetadataDirective': 'COPY',
-                    'ContentType': content_type
+                    'ContentType': content_type,
+                    'ACL': 'bucket-owner-full-control'
                 }
             ))
 
@@ -158,7 +158,7 @@ class TestCopyToGlacierHandler(TestCase):
         self.assertEqual(s3_cli.head_object.call_count, 4)
         self.assertEqual(s3_cli.copy.call_count, 4)
 
-        expected_copied_file_urls = [ file['filename'] for file in self.event_granules['granules'][0]['files'] ]
+        expected_copied_file_urls = [file['filename'] for file in self.event_granules['granules'][0]['files']]
         self.assertEqual(expected_copied_file_urls, result['copied_to_glacier'])
         self.assertEqual(self.event_granules['granules'], result['granules'])
 
