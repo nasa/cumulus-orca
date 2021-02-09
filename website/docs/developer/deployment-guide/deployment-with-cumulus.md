@@ -229,7 +229,7 @@ section of the document.
 :::important
 
 The cumulus bucket variable will have to be modified to include the
-disaster recovery bucket. An example can be seen below.
+disaster recovery bucket **glacier**. An example can be seen below.
 
 ```terraform
 buckets = {
@@ -526,56 +526,54 @@ module "orca" {
 ### Add the Copy To Glacier Step to an Ingest Workflow
 
 Navigate to `cumulus-tf/ingest_granule_workflow.tf` then add the following step
-after the PostToCMR step being sure to change the PostToCMR's "Next" parameter
-equal to "CopyToGlacier"
+anywhere after the MoveGranuleStep step being sure to change the MoveGranuleStep's
+`"Next"` parameter equal to "CopyToGlacier".
+
+:::important
+
+Adjust the `"Next"` step in the example below to point to the proper step in
+the ingest workflow.
+
+:::
 
 ```
 "CopyToGlacier":{
-         "Parameters":{
-            "cma":{
-               "event.$":"$",
-               "task_config":{
-                  "bucket":"{$.meta.buckets.internal.name}",
-                  "buckets":"{$.meta.buckets}",
-                  "distribution_endpoint":"{$.meta.distribution_endpoint}",
-                  "files_config":"{$.meta.collection.files}",
-                  "fileStagingDir":"{$.meta.collection.url_path}",
-                  "granuleIdExtraction":"{$.meta.collection.granuleIdExtraction}",
-                  "collection":"{$.meta.collection}",
-                  "cumulus_message":{
-                     "input":"{[$.payload.granules[*].files[*].filename]}",
-                     "outputs":[
-                        {
-                           "source":"{$}",
-                           "destination":"{$.payload}"
-                        }
-                     ]
-                  }
-               }
+   "Parameters":{
+      "cma":{
+         "event.$":"$",
+         "task_config":{
+            "buckets":"{$.meta.buckets}",
+            "provider": "{$.meta.provider}",
+            "collection":"{$.meta.collection}",
+            "granules": "{$.meta.processed_granules}",
+            "files_config": "{$.meta.collection.files}"
             }
-         },
-         "Type":"Task",
-         "Resource":"${module.orca.copy_to_glacier_lambda_arn}",
-         "Catch":[
-            {
-               "ErrorEquals":[
-                  "States.ALL"
-               ],
-               "ResultPath":"$.exception",
-               "Next":"WorkflowFailed"
-            }
+         }
+      }
+   },
+   "Type":"Task",
+   "Resource":"${module.orca.copy_to_glacier_lambda_arn}",
+   "Catch":[
+      {
+         "ErrorEquals":[
+            "States.ALL"
          ],
-         "Retry":[
-            {
-               "ErrorEquals":[
-                  "States.ALL"
-               ],
-               "IntervalSeconds":2,
-               "MaxAttempts":3
-            }
-         ],
-         "Next":"WorkflowSucceeded"
-      },
+         "ResultPath":"$.exception",
+         "Next":"WorkflowFailed"
+      }
+   ],
+   "Retry": [
+      {
+        "ErrorEquals": [
+           "States.ALL"
+        ],
+        "IntervalSeconds": 2,
+        "MaxAttempts": 3,
+        "BackoffRate": 2
+      }
+   ],
+   "Next":"WorkflowSucceeded"
+},
 ```
 
 
