@@ -45,7 +45,6 @@ for instructions to deploy ORCA with Cumulus.
 
 
 ## Configuring ORCA
-Once ORCA is deployed, configure the collection in the Cumulus 
-Dashboard for utilizing ORCA. See ORCA Configuration for 
-instructions.
+Once ORCA is deployed, configure the collection in the Cumulus Dashboard for utilizing ORCA. See [ORCA Configuration](deployment-with-cumulus.md#collection-configuration) 
+for instructions.
 
