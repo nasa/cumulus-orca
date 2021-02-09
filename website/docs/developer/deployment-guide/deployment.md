@@ -3,15 +3,6 @@ id: deployment
 title: Deployment Information
 description: Provides developer information for ORCA code deployment.
 ---
-
-## Introduction to ORCA
-The Operational Recovery Cloud Archive (ORCA) provides 
-a baseline solution for creating, and managing 
-operational backups in the cloud. In addition, best
-practices and recovery code that manages common 
-baseline recovery scenarios is also maintained.
-
-
 ## Deploying ORCA
 The following sections provide information on how to
 deploy ORCA with or along-side Cumulus.
