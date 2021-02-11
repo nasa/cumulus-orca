@@ -9,12 +9,14 @@ import requests_db
 # Set Global Variables
 _LOG = logging.getLogger(__name__)
 
+
 class BadRequestError(Exception):
     """
     Exception to be raised if there is a problem with the request.
     """
 
-def task(event, context):    #pylint: disable-msg=unused-argument
+
+def task(event, context):  # pylint: disable-msg=unused-argument
     """
     Task called by the handler to perform the work.
 
@@ -47,6 +49,7 @@ def task(event, context):    #pylint: disable-msg=unused-argument
         result = requests_db.delete_all_requests()
 
     return result
+
 
 def query_requests(event):
     """
@@ -84,6 +87,7 @@ def query_requests(event):
                     result = requests_db.get_all_requests()
     return result
 
+
 def add_request(event):
     """
     Adds a request to the database
@@ -101,21 +105,22 @@ def add_request(event):
     except KeyError:
         status = "error"
 
-    data = {}
-    data["request_id"] = requests_db.request_id_generator()
-    data["request_group_id"] = request_group_id
-    data["granule_id"] = granule_id
-    data["object_key"] = "my_test_filename"
-    data["job_type"] = "restore"
-    data["restore_bucket_dest"] = "my_test_bucket"
-    data["job_status"] = status
+    data = {
+        "request_id": requests_db.request_id_generator(),
+        "request_group_id": request_group_id,
+        "granule_id": granule_id, "object_key": "my_test_filename",
+        "job_type": "restore",
+        "restore_bucket_dest": "my_test_bucket",
+        "job_status": status
+    }
     if status == "error":
         data["err_msg"] = "error message goes here"
     request_id = requests_db.submit_request(data)
     result = requests_db.get_job_by_request_id(request_id)
     return result
 
-def handler(event, context):            #pylint: disable-msg=unused-argument
+
+def handler(event, context):  # pylint: disable-msg=unused-argument
     """Lambda handler. Retrieves job(s) from the database.
 
         Environment Vars:
@@ -128,12 +133,14 @@ def handler(event, context):            #pylint: disable-msg=unused-argument
             drdb-host (string): the database host
 
         Args:
-            event (dict): A dict with zero or one of the following keys:
+            event (dict): A dict with the following keys:
+                function (string): 'query', 'add', or 'clear'.
 
-                granule_id (string): A granule_id to retrieve
-                request_group_id (string): A request_group_id (uuid) to retrieve
-                request_id (string): A request_id to retrieve
-                object_key (string): An object_key to retrieve
+                Only one of the following is used during a 'query' request, and none are used during a 'clear' request.
+                granule_id (string, optional): A granule_id to retrieve
+                request_group_id (string, optional): A request_group_id (uuid) to retrieve
+                request_id (string, optional): A request_id to retrieve
+                object_key (string, optional): An object_key to retrieve
 
                 Examples:
                     event: {'function': 'query'}
