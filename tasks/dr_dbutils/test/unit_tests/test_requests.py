@@ -678,16 +678,16 @@ class TestRequests(unittest.TestCase):  # pylint: disable-msg=too-many-public-me
         result = result_to_json([{key: now}, now, num])
 
         self.assertEqual(3, len(result))
-        self.assertEqual({key: now.__str__()}, result[0])
-        self.assertEqual(now.__str__(), result[1])
+        self.assertEqual({key: now.isoformat()}, result[0])
+        self.assertEqual(now.isoformat(), result[1])
         self.assertEqual(num, result[2])
         print(result)
 
     def test_datetime_converter_happy_path(self):
-        iso_string = '2019-07-17 17:36:38.494918'
+        iso_string = '2019-07-17T17:36:38.494918'
         result = requests_db.datetime_to_string_converter(datetime.fromisoformat(iso_string))
         self.assertEqual(iso_string, result)
 
     def test_datetime_converter_not_datetime_returns_none(self):
-        result = requests_db.datetime_to_string_converter('2019-07-17 17:36:38.494918')
+        result = requests_db.datetime_to_string_converter('2019-07-17T17:36:38.494918')
         self.assertIsNone(result)

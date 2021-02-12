@@ -1,5 +1,6 @@
 """
 This module contains helper functions for the unit tests.
+# todo: Kill this file. It recreates wholesale logic from production code. Some of it buggy.
 """
 import datetime
 import json
@@ -331,7 +332,7 @@ def myconverter(obj):       #pylint: disable-msg=inconsistent-return-statements
     ex. '2019-07-17T17:36:38.494918'
     """
     if isinstance(obj, datetime.datetime):
-        return obj.__str__()
+        return obj.isoformat()
 
 class LambdaContextMock:   #pylint: disable-msg=too-few-public-methods
     """

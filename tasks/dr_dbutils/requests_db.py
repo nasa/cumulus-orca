@@ -486,7 +486,7 @@ def datetime_to_string_converter(obj: any) -> Optional[str]:  # pylint: disable-
         obj: The object to convert.
         
     Returns: The datetime as a string.
-        ex. '2019-07-17 17:36:38.494918'
+        ex. '2019-07-17T17:36:38.494918'
     """
     if isinstance(obj, datetime.datetime):
-        return obj.__str__()
+        return obj.isoformat()
