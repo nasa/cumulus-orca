@@ -1,19 +1,42 @@
 from typing import Dict, Any
-
 from cumulus_logger import CumulusLogger
+
+ASYNC_OPERATION_ID_KEY = 'asyncOperationId'
 
 LOGGER = CumulusLogger()
 
 
-def task():
+def task(async_operation_id: str) -> Dict[str, Any]:
+    """
+
+    Args:
+        async_operation_id: The unique asyncOperationId of the recovery job.
+    Returns:
+        todo
+    """
+    if async_operation_id is None:
+        raise ValueError(f"{ASYNC_OPERATION_ID_KEY} cannot be None.")
     pass
+
+
+def get_status_entry_for_job(async_operation_id: str):
+    """
+    Gets the orca_recoveryjob status entry for the associated async_operation_id,
+    along with sums representing how many files are in a given status.
+
+    Args:
+        async_operation_id: The unique asyncOperationId of the recovery job to retrieve status for.
+
+    Returns: todo: A single entry.
+    """
+    # todo: Get the orca_recoveryjob entry and sums of status codes on associated orca_recoverfile entries.
+    raise NotImplementedError
 
 
 def handler(event: Dict[str, Any], context: object) -> Dict[str, Any]:
     """
+    Entry point for the request_status_for_job Lambda.
     Args:
-        Entry point for the request_status_for_job Lambda.
-
         event: A dict with the following keys:
             asyncOperationId: The unique asyncOperationId of the recovery job.
         context: An object required by AWS Lambda. Unused.
@@ -34,4 +57,4 @@ def handler(event: Dict[str, Any], context: object) -> Dict[str, Any]:
     """
     LOGGER.setMetadata(event, context)
 
-    return task()
+    return task(event[ASYNC_OPERATION_ID_KEY])
