@@ -1,0 +1,57 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/request_status_for_job/schemas/output.json",
+	"title": "request_status Lambda Input",
+	"description": "The output from the request_status Lambda when retrieving status for a particular recovery job.",
+	"type": "object",
+	"properties": {
+		"asyncOperationId": {
+			"description": "The unique asyncOperationId of the recovery job.",
+			"type": "string"
+		},
+		"job_status_totals": {
+			"description": "Sums of how many granules are in each particular restoration status.",
+			"type": "object",
+			"properties": {
+				"pending": {
+					"description": "The number of granules that still need to be copied.",
+					"type": "number",
+					"minimum": 0
+				},
+				"success": {
+					"description": "The number of granules that have been successfully copied.",
+					"type": "number",
+					"minimum": 0
+				},
+				"failed": {
+					"description": "The number of granules that did not copy and will not copy due to an error.",
+					"type": "number",
+					"minimum": 0
+				}
+			},
+			"required": [ "pending", "success", "failed" ]
+		},
+		"granules": {
+			"description": "An array representing each granule being copied as part of the job.",
+			"type": "array",
+			"items": {
+				"description": "A granule being copied as part of the job.",
+				"type": "object",
+				"properties": {
+					"granule_id": {
+						"description": "The unique ID of the granule.",
+						"type": "string"
+					},
+					"status": {
+						"description": "The status of the restoration of the file. May be 'pending', 'success', or 'failed'.",
+						"type": "string",
+						"pattern": "/^(pending|success|failed)$/"
+					}
+				},
+				"required": [ "granule_id", "status" ]
+			},
+			"uniqueItems": true
+		}
+	},
+	"required": [ "asyncOperationId", "job_status_totals", "granules" ]
+}
