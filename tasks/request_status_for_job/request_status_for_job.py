@@ -19,7 +19,7 @@ def task(async_operation_id: str) -> Dict[str, Any]:
     pass
 
 
-def get_status_entry_for_job(async_operation_id: str):
+def get_status_entry_for_job(async_operation_id: str) -> Dict[str, Any]:
     """
     Gets the orca_recoveryjob status entry for the associated async_operation_id,
     along with sums representing how many files are in a given status.

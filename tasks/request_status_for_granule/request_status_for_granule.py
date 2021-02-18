@@ -21,7 +21,7 @@ def task(granule_id: str, async_operation_id: str = None) -> Dict[str, Any]:
     pass
 
 
-def get_status_entry_for_granule(granule_id: str, async_operation_id: str = None):
+def get_status_entry_for_granule(granule_id: str, async_operation_id: str = None) -> Dict[str, Any]:
     """
     Gets the orca_recoverfile status entry for the associated granule_id.
     If async_operation_id is non-None, then it will be used to filter results.
