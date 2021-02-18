@@ -27,10 +27,33 @@ def get_status_entry_for_job(async_operation_id: str) -> Dict[str, Any]:
     Args:
         async_operation_id: The unique asyncOperationId of the recovery job to retrieve status for.
 
-    Returns: todo: A single entry.
+    Returns: todo
     """
     # todo: Get the orca_recoveryjob entry and sums of status codes on associated orca_recoverfile entries.
     raise NotImplementedError
+    # todo: Move this code into a new requests_db.py when able.
+    sql = """
+            SELECT
+                orca_recoveryjob.job_id
+            FROM
+                orca_recoveryjob
+            WHERE
+                job_id = %s
+            LIMIT 1
+            """
+    try:
+        dbconnect_info = get_dbconnect_info()
+        rows = database.single_query(sql, dbconnect_info, (async_operation_id,))
+        result = database.result_to_json(rows)
+        return result
+    except database.DbError as err:
+        LOGGER.exception(f"DbError: {str(err)}")
+        raise DatabaseError(str(err))
+
+    # todo: The below transformations should NOT HAPPEN HERE.
+    # todo: transform job_id into asyncOperationId
+    # todo: Aggregate status sums
+    # todo: Get granules from orca_recoverfile in this or another function.
 
 
 def handler(event: Dict[str, Any], context: object) -> Dict[str, Any]:
@@ -41,16 +64,14 @@ def handler(event: Dict[str, Any], context: object) -> Dict[str, Any]:
             asyncOperationId: The unique asyncOperationId of the recovery job.
         context: An object required by AWS Lambda. Unused.
 
+    todo: env variables.
+
     Returns: A Dict with the following keys:
         asyncOperationId (str): The unique ID of the asyncOperation.
         job_status_totals (Dict[str, int]): Sums of how many granules are in each particular restoration status.
             pending (int): The number of granules that still need to be copied.
             success (int): The number of granules that have been successfully copied.
             failed (int): The number of granules that did not copy and will not copy due to an error.
-        granule_files (Array[Dict]): Description and status of the individual files within the given granule.
-            file_name (str): The name and extension of the file.
-            status (str): The status of the restoration of the file. May be 'pending', 'success', or 'failed'.
-            error_message (str): If the restoration of the file errored, the error will be stored here.
         granules (Array[Dict]): An array of Dicts representing each granule being copied as part of the job.
             granule_id (str): The unique ID of the granule.
             status (str): The status of the restoration of the file. May be 'pending', 'success', or 'failed'.

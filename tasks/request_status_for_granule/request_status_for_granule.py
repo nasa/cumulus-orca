@@ -1,5 +1,8 @@
-from typing import Dict, Any
+from typing import Dict, Any, List
+
+import database
 from cumulus_logger import CumulusLogger
+from requests_db import get_dbconnect_info, DatabaseError
 
 GRANULE_ID_KEY = 'granule_id'
 ASYNC_OPERATION_ID_KEY = 'asyncOperationId'
@@ -21,7 +24,7 @@ def task(granule_id: str, async_operation_id: str = None) -> Dict[str, Any]:
     pass
 
 
-def get_status_entry_for_granule(granule_id: str, async_operation_id: str = None) -> Dict[str, Any]:
+def get_status_entries_for_granule(granule_id: str, async_operation_id: str = None) -> List[Dict[str, Any]]:
     """
     Gets the orca_recoverfile status entry for the associated granule_id.
     If async_operation_id is non-None, then it will be used to filter results.
@@ -32,9 +35,43 @@ def get_status_entry_for_granule(granule_id: str, async_operation_id: str = None
         async_operation_id: An optional additional filter to get a specific job's entry.
     Returns: todo
     """
-    # todo: Get the orca_recoverfile for the granule_id.
-    # todo: Either add the async_operation_id, or only get the entry with the most recent request_time
     raise NotImplementedError
+    # todo: Move this code into a new requests_db.py when able.
+    # todo: Do we join in restore_destination/request_time/completion_time, or just get the whole orca_recoveryjob?
+    # todo: The above may affect what we get from orca_recoverfile, as some properties may be redundant.
+    sql = """
+            SELECT
+                orca_recoverfile.granule_id,
+                orca_recoverfile.job_id,
+                orca_recoverfile.filename,
+                orca_recoverfile.status_id,
+                orca_recoverfile.error_message,
+                orca_recoverfile.request_time,
+                orca_status.value
+            FROM
+                orca_recoverfile
+            INNER JOIN orca_status ON orca_recoverfile.status_id=orca_status.id
+            WHERE
+                granule_id = %s"""
+    if async_operation_id is not None:
+        sql += " AND job_id = %s"
+    sql += """
+            ORDER BY last_update desc
+            """
+    try:
+        dbconnect_info = get_dbconnect_info()
+        if async_operation_id is not None:
+            rows = database.single_query(sql, dbconnect_info, (granule_id, async_operation_id,))
+        else:
+            rows = database.single_query(sql, dbconnect_info, (granule_id,))
+        result = database.result_to_json(rows)
+        return result
+    except database.DbError as err:
+        LOGGER.exception(f"DbError: {str(err)}")
+        raise DatabaseError(str(err))
+
+    # todo: The below transformations should NOT HAPPEN HERE.
+    # todo: transform job_id into asyncOperationId
 
 
 def handler(event: Dict[str, Any], context: object) -> Dict[str, Any]:
@@ -46,6 +83,8 @@ def handler(event: Dict[str, Any], context: object) -> Dict[str, Any]:
             asyncOperationId (Optional): The unique ID of the asyncOperation.
                 May apply to a request that covers multiple granules.
         context: An object required by AWS Lambda. Unused.
+
+    todo: env variables.
 
     Returns: The most recent/only matching granule record, representing as a Dict with the following keys:
         granule_id (str): The unique ID of the granule to retrieve status for.
