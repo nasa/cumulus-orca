@@ -1,5 +1,9 @@
 ## ORCA Static Documentation
 
+ORCA documentation can be found at nasa.github.io/cumulus-orca. The
+documentation is available for developers, data managers, and users.
+Additional documentation is being added continually.
+
 Make sure you are using the following node.js versions to view the documentation.
 - npm 6.14.10
 - node 12.15.0
@@ -259,7 +263,9 @@ variable "database_app_user_pw" {
 The values corresponding to these variables must be set in your `cumulus-tf/terraform.tfvars` file, but note that many of these variables are actually hardcoded at the time of updating this README
 
 #### Adding the Copy To Glacier Step to the Ingest Workflow
-Navigate to `cumulus-tf/ingest_granule_workflow.tf` then add the following step after the PostToCMR step being sure to change the PostToCMR's "Next" parameter equal to "CopyToGlacier"
+Navigate to `cumulus-tf/ingest_granule_workflow.tf` then add the following
+step to anywhere after the MoveGranule step being sure to change the 
+PostToCMR's "Next" parameter equal to "CopyToGlacier".
 ```
 "CopyToGlacier":{
          "Parameters":{

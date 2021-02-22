@@ -740,7 +740,7 @@ as seen below. Optionally, you can exclude files by adding values to an
   "provider_path": "L0A_HR_RAW/",
   "meta": {
     "granuleRecoveryWorkflow": "DrRecoveryWorkflow",
-    "exclue_file_type": [".cmr", ".xml", ".met"]
+    "excludeFileTypes": [".cmr", ".xml", ".met"]
   },
   ...
 }
