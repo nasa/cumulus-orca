@@ -5,8 +5,8 @@ import database
 from cumulus_logger import CumulusLogger
 from requests_db import DatabaseError
 
-GRANULE_ID_KEY = 'granule_id'
-ASYNC_OPERATION_ID_KEY = 'asyncOperationId'
+INPUT_GRANULE_ID_KEY = 'granule_id'
+INPUT_JOB_ID_KEY = 'asyncOperationId'
 
 DATABASE_SCHEMA_NAME = 'orca'
 
@@ -19,6 +19,7 @@ RECOVERFILE_JOB_ID_KEY = 'job_id'
 RECOVERFILE_GRANULE_ID_KEY = 'granule_id'
 RECOVERFILE_FILENAME_KEY = 'filename'
 RECOVERFILE_KEY_PATH_KEY = 'key_path'
+RECOVERFILE_STATUS_ID_KEY = 'status_id'
 RECOVERFILE_ERROR_MESSAGE_KEY = 'error_message'
 RECOVERFILE_REQUEST_TIME_KEY = 'request_time'
 RECOVERFILE_LAST_UPDATE_KEY = 'last_update'
@@ -32,6 +33,16 @@ RECOVERYJOB_REQUEST_TIME_KEY = 'request_time'
 RECOVERYJOB_COMPLETION_TIME_KEY = 'completion_time'
 RECOVERYJOB_RESTORE_DESTINATION_KEY = 'restore_destination'
 RECOVERYJOB_ARCHIVE_DESTINATION_KEY = 'archive_destination'
+
+OUTPUT_GRANULE_ID_KEY = 'granule_id'
+OUTPUT_JOB_ID_KEY = 'asyncOperationId'
+OUTPUT_FILES_KEY = 'files'
+OUTPUT_FILENAME_KEY = 'file_name'
+OUTPUT_STATUS_KEY = 'status'
+OUTPUT_ERROR_MESSAGE_KEY = 'error_message'
+OUTPUT_RESTORE_DESTINATION_KEY = 'restore_destination'
+OUTPUT_REQUEST_TIME_KEY = 'request_time'
+OUTPUT_COMPLETION_TIME_KEY = 'completion_time'
 
 LOGGER = CumulusLogger()
 
@@ -56,16 +67,16 @@ def task(granule_id: str, db_connect_info: Dict, async_operation_id: str = None)
 
     """
     if granule_id is None or len(granule_id) == 0:
-        raise ValueError("granule_id  must be set to a non-empty value.")
+        raise ValueError("granule_id must be set to a non-empty value.")
 
     job_entry = get_job_entry_for_granule(granule_id, db_connect_info, async_operation_id)
-    if job_entry['completion_time'] is None:
-        del job_entry['completion_time']
+    if job_entry[OUTPUT_COMPLETION_TIME_KEY] is None:
+        del job_entry[OUTPUT_COMPLETION_TIME_KEY]
 
-    file_entries = get_file_entries_for_granule_in_job(granule_id, job_entry['asyncOperationId'], db_connect_info)
+    file_entries = get_file_entries_for_granule_in_job(granule_id, job_entry[OUTPUT_JOB_ID_KEY], db_connect_info)
     for file_entry in file_entries:
-        if file_entry['error_message'] is None:
-            del file_entry['error_message']
+        if file_entry[OUTPUT_ERROR_MESSAGE_KEY] is None:
+            del file_entry[OUTPUT_ERROR_MESSAGE_KEY]
 
     job_entry['files'] = file_entries
     return job_entry
@@ -93,28 +104,27 @@ def get_job_entry_for_granule(
     """
     sql = f"""
             SELECT
-                {RECOVERYJOB_TABLE_NAME}.granule_id,
-                {RECOVERYJOB_TABLE_NAME}.job_id AS asyncOperationId,
-                {RECOVERYJOB_TABLE_NAME}.restore_destination,
-                {RECOVERYJOB_TABLE_NAME}.request_time,
-                {RECOVERYJOB_TABLE_NAME}.completion_time
+                {RECOVERYJOB_TABLE_NAME}.{RECOVERYJOB_GRANULE_ID_KEY} as {OUTPUT_GRANULE_ID_KEY},
+                {RECOVERYJOB_TABLE_NAME}.{RECOVERYJOB_JOB_ID_KEY},
+                {RECOVERYJOB_TABLE_NAME}.{RECOVERYJOB_RESTORE_DESTINATION_KEY} as {OUTPUT_RESTORE_DESTINATION_KEY},
+                {RECOVERYJOB_TABLE_NAME}.{RECOVERYJOB_REQUEST_TIME_KEY} as {OUTPUT_REQUEST_TIME_KEY},
+                {RECOVERYJOB_TABLE_NAME}.{RECOVERYJOB_COMPLETION_TIME_KEY} as {OUTPUT_COMPLETION_TIME_KEY}
             FROM
-                {DATABASE_SCHEMA_NAME}.orca_recoveryjob"""
+                {DATABASE_SCHEMA_NAME}.{RECOVERYJOB_TABLE_NAME}"""
 
     try:
         if async_operation_id is None:
-            sql += """
+            sql += f"""
                 WHERE
-                    granule_id = %s
+                    {RECOVERYJOB_GRANULE_ID_KEY} = %s
                 ORDER BY
-                     request_time DESC
+                     {RECOVERYJOB_REQUEST_TIME_KEY} DESC
                 LIMIT 1"""
-            print(sql)
             rows = database.single_query(sql, db_connect_info, (granule_id,))
         else:
-            sql += """
+            sql += f"""
                 WHERE
-                    job_id = %s
+                    {RECOVERYJOB_JOB_ID_KEY} = %s
                 LIMIT 1"""
             rows = database.single_query(sql, db_connect_info, (async_operation_id,))
     except database.DbError as err:
@@ -122,8 +132,9 @@ def get_job_entry_for_granule(
         raise DatabaseError(str(err))
 
     orca_recoveryjob = rows[0]
-    orca_recoveryjob['asyncOperationId'] = orca_recoveryjob['asyncoperationid']
-    del orca_recoveryjob['asyncoperationid']
+    # Can't do capitalization in a sql query, so do the 'AS' now.
+    orca_recoveryjob['asyncOperationId'] = orca_recoveryjob[RECOVERYJOB_JOB_ID_KEY]
+    del orca_recoveryjob[RECOVERYJOB_JOB_ID_KEY]
     return database.result_to_json(orca_recoveryjob)
 
 
@@ -140,15 +151,15 @@ def get_file_entries_for_granule_in_job(granule_id: str, async_operation_id: str
     """
     sql = f"""
             SELECT
-                orca_recoverfile.filename AS file_name,
-                orca_status.value AS status,
-                orca_recoverfile.error_message
+                {RECOVERFILE_TABLE_NAME}.{RECOVERFILE_FILENAME_KEY} AS {OUTPUT_FILENAME_KEY},
+                {STATUS_TABLE_NAME}.{STATUS_VALUE_KEY} AS {OUTPUT_STATUS_KEY},
+                {RECOVERFILE_TABLE_NAME}.{RECOVERFILE_ERROR_MESSAGE_KEY} as {OUTPUT_ERROR_MESSAGE_KEY}
             FROM
-                {DATABASE_SCHEMA_NAME}.orca_recoverfile
-            INNER JOIN {DATABASE_SCHEMA_NAME}.orca_status ON orca_recoverfile.status_id=orca_status.id
+                {DATABASE_SCHEMA_NAME}.{RECOVERFILE_TABLE_NAME}
+            INNER JOIN {DATABASE_SCHEMA_NAME}.{STATUS_TABLE_NAME} ON {RECOVERFILE_TABLE_NAME}.{RECOVERFILE_STATUS_ID_KEY}={STATUS_TABLE_NAME}.{STATUS_ID_KEY}
             WHERE
-                granule_id = %s AND job_id = %s
-            ORDER BY last_update desc
+                {RECOVERFILE_GRANULE_ID_KEY} = %s AND {RECOVERFILE_JOB_ID_KEY} = %s
+            ORDER BY {RECOVERFILE_LAST_UPDATE_KEY} desc
             """
     try:
         rows = database.single_query(sql, db_connect_info, (granule_id, async_operation_id,))
@@ -193,10 +204,10 @@ def handler(event: Dict[str, Any], context: object) -> Dict[str, Any]:
     """
     LOGGER.setMetadata(event, context)
 
-    granule_id = event.get(GRANULE_ID_KEY, None)
+    granule_id = event.get(INPUT_GRANULE_ID_KEY, None)
     if granule_id is None or len(granule_id) == 0:
         return create_http_error_dict("BadRequest", HTTPStatus.BAD_REQUEST, context.aws_request_id,
-                                      f"{GRANULE_ID_KEY} must be set to a non-empty value.")
+                                      f"{INPUT_GRANULE_ID_KEY} must be set to a non-empty value.")
 
     #    db_connect_info = {
     #        'db_host': 'localhost',
@@ -206,4 +217,4 @@ def handler(event: Dict[str, Any], context: object) -> Dict[str, Any]:
     #        'db_pw': 'postgres'
     #    }
     db_connect_info = database.get_db_connect_info()
-    return task(granule_id, db_connect_info, event.get(ASYNC_OPERATION_ID_KEY, None))
+    return task(granule_id, db_connect_info, event.get(INPUT_JOB_ID_KEY, None))

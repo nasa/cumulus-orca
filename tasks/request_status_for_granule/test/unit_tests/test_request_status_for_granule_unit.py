@@ -27,8 +27,8 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
         async_operation_id = uuid.uuid4().__str__()
 
         event = {
-            request_status_for_granule.GRANULE_ID_KEY: granule_id,
-            request_status_for_granule.ASYNC_OPERATION_ID_KEY: async_operation_id
+            request_status_for_granule.INPUT_GRANULE_ID_KEY: granule_id,
+            request_status_for_granule.INPUT_JOB_ID_KEY: async_operation_id
         }
         context = Mock()
         result = request_status_for_granule.handler(event, context)
@@ -48,7 +48,7 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
         granule_id = uuid.uuid4().__str__()
 
         event = {
-            request_status_for_granule.GRANULE_ID_KEY: granule_id
+            request_status_for_granule.INPUT_GRANULE_ID_KEY: granule_id
         }
         context = Mock()
         result = request_status_for_granule.handler(event, context)
@@ -64,7 +64,7 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
         async_operation_id = uuid.uuid4().__str__()
 
         event = {
-            request_status_for_granule.ASYNC_OPERATION_ID_KEY: async_operation_id
+            request_status_for_granule.INPUT_JOB_ID_KEY: async_operation_id
         }
         context = Mock()
 
