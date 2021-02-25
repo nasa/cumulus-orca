@@ -13,8 +13,8 @@
 			"description": "The unique ID of the asyncOperation.",
 			"type": "string"
 		},
-		"granule_files": {
-			"description": "Description and status of the individual files within the given granule.",
+		"files": {
+			"description": "Description and status of the files within the given granule.",
 			"type": "array",
 			"items": {
 				"type": "object",

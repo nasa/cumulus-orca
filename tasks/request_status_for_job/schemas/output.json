@@ -43,7 +43,7 @@
 						"type": "string"
 					},
 					"status": {
-						"description": "The status of the restoration of the file. May be 'pending', 'success', or 'failed'.",
+						"description": "The status of the restoration of the granule. May be 'pending', 'success', or 'failed'.",
 						"type": "string",
 						"pattern": "/^(pending|success|failed)$/"
 					}

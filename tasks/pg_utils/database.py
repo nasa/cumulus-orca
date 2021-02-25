@@ -11,7 +11,7 @@ import os
 import uuid
 from contextlib import contextmanager
 # noinspection PyPackageRequirements
-from typing import Optional, Union, List, Dict
+from typing import Optional, Union, List, Dict, Tuple
 
 # noinspection PyPackageRequirements
 import boto3
@@ -154,7 +154,7 @@ def get_cursor(dbconnect_info: Dict[str, Union[str, int]]) -> cursor:
             conn_cursor.close()
 
 
-def single_query(sql_stmt, dbconnect_info: Dict[str, Union[str, int]], params=None) -> List:
+def single_query(sql_stmt, dbconnect_info: Dict[str, Union[str, int]], params=None) -> List[Tuple]:
     """
     This is a convenience function for running single statement transactions
     against the database. It will automatically commit the transaction and
@@ -250,7 +250,7 @@ def get_db_connect_info(env_or_secretsmanager: str, param_name: str) -> str:
     return param_value
 
 
-def multi_query(sql_stmt, params, db_cursor: cursor) -> List:
+def multi_query(sql_stmt, params, db_cursor: cursor) -> List[Tuple]:
     """
     This function will use the provided cursor to run the query instead of
     retrieving one itself. This is intended to be used when the caller wants
@@ -263,7 +263,7 @@ def multi_query(sql_stmt, params, db_cursor: cursor) -> List:
     return _query(sql_stmt, params, db_cursor)
 
 
-def _query(sql_stmt, params, db_cursor: cursor) -> List:
+def _query(sql_stmt, params, db_cursor: cursor) -> List[Tuple]:
     """
     Wrapper for running queries that will automatically handle errors in a
     consistent manner.
