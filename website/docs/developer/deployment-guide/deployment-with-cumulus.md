@@ -724,7 +724,7 @@ run `terraform destroy`.
 To configure a collection to enable ORCA, add the line
 `"granuleRecoveryWorkflow": "DrRecoveryWorkflow"` to the collection configuration
 as seen below. Optionally, you can exclude files by adding values to an
-`"excludeFfileType"` variable. For more information, see the documentation on the
+`"excludeFileTypes"` variable. For more information, see the documentation on the
 [`copy_to_glacier` task](https://github.com/nasa/cumulus-orca/tree/master/tasks/copy_to_glacier).
 
 ```json

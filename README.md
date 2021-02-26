@@ -1,7 +1,7 @@
 ## ORCA Static Documentation
 
-ORCA documentation can be found at nasa.github.io/cumulus-orca. The
-documentation is available for developers, data managers, and users.
+ORCA documentation can be found at [nasa.github.io/cumulus-orca](https://nasa.github.io/cumulus-orca). 
+The documentation is available for developers, data managers, and users.
 Additional documentation is being added continually.
 
 Make sure you are using the following node.js versions to view the documentation.
