@@ -155,7 +155,8 @@ Refers to a [terraform module](https://www.terraform.io/docs/configuration/modul
 ### NGAP
 NASA General Application Platform. NGAP provides a cloud-based
 Platform-as-a-Service (PaaS) and Infrastructure-as-a-Service (IaaS) for
-ESDIS applications.
+ESDIS applications. NGAP provides ORCA with the Authority to Operate (ATO)
+in the AWS commercial cloud.
 ### Node
 See [node.js](https://nodejs.org/en/about).
 
