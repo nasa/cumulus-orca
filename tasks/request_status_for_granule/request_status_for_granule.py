@@ -2,37 +2,12 @@ from http import HTTPStatus
 from typing import Dict, Any, List
 
 import database
+import requests_db
 from cumulus_logger import CumulusLogger
 from requests_db import DatabaseError
 
 INPUT_GRANULE_ID_KEY = 'granule_id'
 INPUT_JOB_ID_KEY = 'asyncOperationId'
-
-DATABASE_SCHEMA_NAME = 'orca'
-
-STATUS_TABLE_NAME = 'orca_status'
-STATUS_ID_KEY = 'id'
-STATUS_VALUE_KEY = 'value'
-
-RECOVERFILE_TABLE_NAME = 'orca_recoverfile'
-RECOVERFILE_JOB_ID_KEY = 'job_id'
-RECOVERFILE_GRANULE_ID_KEY = 'granule_id'
-RECOVERFILE_FILENAME_KEY = 'filename'
-RECOVERFILE_KEY_PATH_KEY = 'key_path'
-RECOVERFILE_STATUS_ID_KEY = 'status_id'
-RECOVERFILE_ERROR_MESSAGE_KEY = 'error_message'
-RECOVERFILE_REQUEST_TIME_KEY = 'request_time'
-RECOVERFILE_LAST_UPDATE_KEY = 'last_update'
-RECOVERFILE_COMPLETION_TIME_KEY = 'completion_time'
-
-RECOVERYJOB_TABLE_NAME = 'orca_recoveryjob'
-RECOVERYJOB_JOB_ID_KEY = 'job_id'
-RECOVERYJOB_GRANULE_ID_KEY = 'granule_id'
-RECOVERYJOB_STATUS_ID_KEY = 'status_id'
-RECOVERYJOB_REQUEST_TIME_KEY = 'request_time'
-RECOVERYJOB_COMPLETION_TIME_KEY = 'completion_time'
-RECOVERYJOB_RESTORE_DESTINATION_KEY = 'restore_destination'
-RECOVERYJOB_ARCHIVE_DESTINATION_KEY = 'archive_destination'
 
 OUTPUT_GRANULE_ID_KEY = 'granule_id'
 OUTPUT_JOB_ID_KEY = 'asyncOperationId'
@@ -47,13 +22,14 @@ OUTPUT_COMPLETION_TIME_KEY = 'completion_time'
 LOGGER = CumulusLogger()
 
 
-def task(granule_id: str, db_connect_info: Dict, async_operation_id: str = None) -> Dict[str, Any]:
+def task(granule_id: str, db_connect_info: Dict, job_id: str = None) -> Dict[str, Any]:
+    # noinspection SpellCheckingInspection
     """
 
     Args:
         granule_id: The unique ID of the granule to retrieve status for.
         db_connect_info: The {database}.py defined db_connect_info.
-        async_operation_id: An optional additional filter to get a specific job's entry.
+        job_id: An optional additional filter to get a specific job's entry.
     Returns: A Dict with the following keys:
         'granule_id' (str): The unique ID of the granule to retrieve status for.
         'asyncOperationId' (str): The unique ID of the asyncOperation.
@@ -62,14 +38,18 @@ def task(granule_id: str, db_connect_info: Dict, async_operation_id: str = None)
             'status' (str): The status of the restoration of the file. May be 'pending', 'success', or 'failed'.
             'error_message' (str, Optional): If the restoration of the file errored, the error will be stored here.
         'restore_destination' (str): The name of the glacier bucket the granule is being copied to.
-        'request_time' (DateTime): The time, in UTC and isoformat, when the request to restore the granule was initiated.
-        'completion_time' (DateTime, Optional): The time, in UTC and isoformat, when all granule_files were no longer 'pending'.
+        'request_time' (DateTime): The time, in UTC isoformat, when the request to restore the granule was initiated.
+        'completion_time' (DateTime, Optional):
+            The time, in UTC isoformat, when all granule_files were no longer 'pending'.
 
     """
     if granule_id is None or len(granule_id) == 0:
         raise ValueError("granule_id must be set to a non-empty value.")
 
-    job_entry = get_job_entry_for_granule(granule_id, db_connect_info, async_operation_id)
+    if job_id is None or len(job_id) == 0:
+        job_id = get_most_recent_job_id_for_granule(granule_id, db_connect_info)
+
+    job_entry = get_job_entry_for_granule(granule_id, job_id, db_connect_info)
     if job_entry[OUTPUT_COMPLETION_TIME_KEY] is None:
         del job_entry[OUTPUT_COMPLETION_TIME_KEY]
 
@@ -82,10 +62,32 @@ def task(granule_id: str, db_connect_info: Dict, async_operation_id: str = None)
     return job_entry
 
 
+def get_most_recent_job_id_for_granule(granule_id: str, db_connect_info: Dict[str, any]) -> str:
+    sql = f"""
+            SELECT
+                orca_recoveryjob.job_id
+            FROM
+                orca_recoveryjob
+            WHERE
+                granule_id = %s
+            ORDER BY
+                 request_time DESC
+            LIMIT 1"""
+    try:
+        rows = database.single_query(sql, db_connect_info, (granule_id,))
+    except database.DbError as err:
+        LOGGER.error(f"DbError: {str(err)}")
+        raise DatabaseError(str(err))
+
+    orca_recoveryjob = rows[0]
+    return database.result_to_json(orca_recoveryjob)['job_id']
+
+
 def get_job_entry_for_granule(
         granule_id: str,
-        db_connect_info: Dict,
-        async_operation_id: str = None) -> Dict[str, Any]:
+        job_id: str,
+        db_connect_info: Dict) -> Dict[str, Any]:
+    # noinspection SpellCheckingInspection
     """
     Gets the orca_recoverfile status entries for the associated granule_id.
     If async_operation_id is non-None, then it will be used to filter results.
@@ -93,48 +95,37 @@ def get_job_entry_for_granule(
 
     Args:
         granule_id: The unique ID of the granule to retrieve status for.
+        job_id: An optional additional filter to get a specific job's entry.
         db_connect_info: The {database}.py defined db_connect_info.
-        async_operation_id: An optional additional filter to get a specific job's entry.
     Returns: A Dict with the following keys:
         'granule_id' (str): The unique ID of the granule to retrieve status for.
-        'asyncoperationid' (str): The unique ID of the asyncOperation.
+        'job_id' (str): The unique ID of the asyncOperation.
         'restore_destination' (str): The name of the glacier bucket the granule is being copied to.
-        'request_time' (DateTime): The time, in UTC and isoformat, when the request to restore the granule was initiated.
-        'completion_time' (DateTime, Optional): The time, in UTC and isoformat, when all granule_files were no longer 'pending'.
-    """
+        'request_time' (DateTime): The time, in UTC isoformat, when the request to restore the granule was initiated.
+        'completion_time' (DateTime, Optional):
+            The time, in UTC isoformat, when all granule_files were no longer 'pending'.
+        """
     sql = f"""
             SELECT
-                {RECOVERYJOB_TABLE_NAME}.{RECOVERYJOB_GRANULE_ID_KEY} as {OUTPUT_GRANULE_ID_KEY},
-                {RECOVERYJOB_TABLE_NAME}.{RECOVERYJOB_JOB_ID_KEY},
-                {RECOVERYJOB_TABLE_NAME}.{RECOVERYJOB_RESTORE_DESTINATION_KEY} as {OUTPUT_RESTORE_DESTINATION_KEY},
-                {RECOVERYJOB_TABLE_NAME}.{RECOVERYJOB_REQUEST_TIME_KEY} as {OUTPUT_REQUEST_TIME_KEY},
-                {RECOVERYJOB_TABLE_NAME}.{RECOVERYJOB_COMPLETION_TIME_KEY} as {OUTPUT_COMPLETION_TIME_KEY}
+                orca_recoveryjob.granule_id as {OUTPUT_GRANULE_ID_KEY},
+                orca_recoveryjob.job_id,
+                orca_recoveryjob.restore_destination as {OUTPUT_RESTORE_DESTINATION_KEY},
+                orca_recoveryjob.request_time as {OUTPUT_REQUEST_TIME_KEY},
+                orca_recoveryjob.completion_time as {OUTPUT_COMPLETION_TIME_KEY}
             FROM
-                {DATABASE_SCHEMA_NAME}.{RECOVERYJOB_TABLE_NAME}"""
-
+                orca_recoveryjob
+            WHERE
+                granule_id = %s AND job_id = %s"""
     try:
-        if async_operation_id is None:
-            sql += f"""
-                WHERE
-                    {RECOVERYJOB_GRANULE_ID_KEY} = %s
-                ORDER BY
-                     {RECOVERYJOB_REQUEST_TIME_KEY} DESC
-                LIMIT 1"""
-            rows = database.single_query(sql, db_connect_info, (granule_id,))
-        else:
-            sql += f"""
-                WHERE
-                    {RECOVERYJOB_JOB_ID_KEY} = %s
-                LIMIT 1"""
-            rows = database.single_query(sql, db_connect_info, (async_operation_id,))
+        rows = database.single_query(sql, db_connect_info, (granule_id, job_id,))
     except database.DbError as err:
         LOGGER.error(f"DbError: {str(err)}")
         raise DatabaseError(str(err))
 
     orca_recoveryjob = rows[0]
     # Can't do capitalization in a sql query, so do the 'AS' now.
-    orca_recoveryjob['asyncOperationId'] = orca_recoveryjob[RECOVERYJOB_JOB_ID_KEY]
-    del orca_recoveryjob[RECOVERYJOB_JOB_ID_KEY]
+    orca_recoveryjob['asyncOperationId'] = orca_recoveryjob['job_id']
+    del orca_recoveryjob['job_id']
     return database.result_to_json(orca_recoveryjob)
 
 
@@ -151,15 +142,15 @@ def get_file_entries_for_granule_in_job(granule_id: str, async_operation_id: str
     """
     sql = f"""
             SELECT
-                {RECOVERFILE_TABLE_NAME}.{RECOVERFILE_FILENAME_KEY} AS {OUTPUT_FILENAME_KEY},
-                {STATUS_TABLE_NAME}.{STATUS_VALUE_KEY} AS {OUTPUT_STATUS_KEY},
-                {RECOVERFILE_TABLE_NAME}.{RECOVERFILE_ERROR_MESSAGE_KEY} as {OUTPUT_ERROR_MESSAGE_KEY}
+                orca_recoverfile.filename AS {OUTPUT_FILENAME_KEY},
+                orca_status.value AS {OUTPUT_STATUS_KEY},
+                orca_recoverfile.error_message as {OUTPUT_ERROR_MESSAGE_KEY}
             FROM
-                {DATABASE_SCHEMA_NAME}.{RECOVERFILE_TABLE_NAME}
-            INNER JOIN {DATABASE_SCHEMA_NAME}.{STATUS_TABLE_NAME} ON {RECOVERFILE_TABLE_NAME}.{RECOVERFILE_STATUS_ID_KEY}={STATUS_TABLE_NAME}.{STATUS_ID_KEY}
+                orca_recoverfile
+            JOIN orca_status ON orca_recoverfile.status_id=orca_status.id
             WHERE
-                {RECOVERFILE_GRANULE_ID_KEY} = %s AND {RECOVERFILE_JOB_ID_KEY} = %s
-            ORDER BY {RECOVERFILE_LAST_UPDATE_KEY} desc
+                granule_id = %s AND job_id = %s
+            ORDER BY last_update desc
             """
     try:
         rows = database.single_query(sql, db_connect_info, (granule_id, async_operation_id,))
@@ -181,7 +172,8 @@ def create_http_error_dict(error_type: str, http_status_code: int, request_id: s
     }
 
 
-def handler(event: Dict[str, Any], context: object) -> Dict[str, Any]:
+def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
+    # noinspection SpellCheckingInspection
     """
     Entry point for the request_status_for_granule Lambda.
     Args:
@@ -199,8 +191,9 @@ def handler(event: Dict[str, Any], context: object) -> Dict[str, Any]:
             'status' (str): The status of the restoration of the file. May be 'pending', 'success', or 'failed'.
             'error_message' (str, Optional): If the restoration of the file errored, the error will be stored here.
         'restore_destination' (str): The name of the glacier bucket the granule is being copied to.
-        'request_time' (DateTime): The time, in UTC and isoformat, when the request to restore the granule was initiated.
-        'completion_time' (DateTime, Optional): The time, in UTC and isoformat, when all granule_files were no longer 'pending'.
+        'request_time' (DateTime): The time, in UTC isoformat, when the request to restore the granule was initiated.
+        'completion_time' (DateTime, Optional):
+            The time, in UTC isoformat, when all granule_files were no longer 'pending'.
     """
     LOGGER.setMetadata(event, context)
 
@@ -209,12 +202,15 @@ def handler(event: Dict[str, Any], context: object) -> Dict[str, Any]:
         return create_http_error_dict("BadRequest", HTTPStatus.BAD_REQUEST, context.aws_request_id,
                                       f"{INPUT_GRANULE_ID_KEY} must be set to a non-empty value.")
 
-    #    db_connect_info = {
-    #        'db_host': 'localhost',
-    #        'db_port': '5432',
-    #        'db_name': 'postgres',
-    #        'db_user': 'postgres',
-    #        'db_pw': 'postgres'
-    #    }
-    db_connect_info = database.get_db_connect_info()
+    db_connect_info = requests_db.get_dbconnect_info()
     return task(granule_id, db_connect_info, event.get(INPUT_JOB_ID_KEY, None))
+
+
+#temp_db_connect_info = {
+#    'db_host': 'localhost',
+#    'db_port': '5432',
+#    'db_name': 'disaster_recovery',
+#    'db_user': 'postgres',
+#    'db_pw': 'postgres'
+#}
+#print(task('granule_id_0', temp_db_connect_info))

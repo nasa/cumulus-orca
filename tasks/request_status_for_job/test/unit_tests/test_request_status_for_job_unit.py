@@ -26,7 +26,7 @@ class TestRequestStatusForJobUnit(unittest.TestCase):  # pylint: disable-msg=too
         async_operation_id = uuid.uuid4().__str__()
 
         event = {
-            request_status_for_job.ASYNC_OPERATION_ID_KEY: async_operation_id
+            request_status_for_job.INPUT_JOB_ID_KEY: async_operation_id
         }
         context = Mock()
         result = request_status_for_job.handler(event, context)

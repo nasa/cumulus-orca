@@ -230,6 +230,8 @@ def read_db_connect_info(param_source):  # todo: wha?
     return dbconnect_info
 
 
+# todo: Duplicate name with other dist. get_db_connect_variable?
+# todo: Also, has nothing directly to do with connect_info. get_env_or_secretsmanager_variable?
 def get_db_connect_info(env_or_secretsmanager: str, param_name: str) -> str:
     f"""
     This function will retrieve a database connection parameter from
