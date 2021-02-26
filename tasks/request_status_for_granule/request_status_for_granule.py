@@ -25,7 +25,7 @@ LOGGER = CumulusLogger()
 def task(granule_id: str, db_connect_info: Dict, job_id: str = None) -> Dict[str, Any]:
     # noinspection SpellCheckingInspection
     """
-
+    todo: May need to convert datetimes to utc.
     Args:
         granule_id: The unique ID of the granule to retrieve status for.
         db_connect_info: The {database}.py defined db_connect_info.
@@ -53,12 +53,12 @@ def task(granule_id: str, db_connect_info: Dict, job_id: str = None) -> Dict[str
     if job_entry[OUTPUT_COMPLETION_TIME_KEY] is None:
         del job_entry[OUTPUT_COMPLETION_TIME_KEY]
 
-    file_entries = get_file_entries_for_granule_in_job(granule_id, job_entry[OUTPUT_JOB_ID_KEY], db_connect_info)
+    file_entries = get_file_entries_for_granule_in_job(granule_id, job_id, db_connect_info)
     for file_entry in file_entries:
         if file_entry[OUTPUT_ERROR_MESSAGE_KEY] is None:
             del file_entry[OUTPUT_ERROR_MESSAGE_KEY]
 
-    job_entry['files'] = file_entries
+    job_entry[OUTPUT_FILES_KEY] = file_entries
     return job_entry
 
 
@@ -174,7 +174,7 @@ def create_http_error_dict(error_type: str, http_status_code: int, request_id: s
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     # noinspection SpellCheckingInspection
-    """
+    f"""
     Entry point for the request_status_for_granule Lambda.
     Args:
         event: A dict with the following keys:
@@ -194,6 +194,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         'request_time' (DateTime): The time, in UTC isoformat, when the request to restore the granule was initiated.
         'completion_time' (DateTime, Optional):
             The time, in UTC isoformat, when all granule_files were no longer 'pending'.
+            
+        Or, if an error occurs, see {create_http_error_dict}
+            400 if granule_id is missing.
     """
     LOGGER.setMetadata(event, context)
 

@@ -134,6 +134,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         granules (Array[Dict]): An array of Dicts representing each granule being copied as part of the job.
             granule_id (str): The unique ID of the granule.
             status (str): The status of the restoration of the file. May be 'pending', 'success', or 'failed'.
+
+        Or, if an error occurs, see {create_http_error_dict}
+            400 if asyncOperationId is missing.
     """
     LOGGER.setMetadata(event, context)
 
