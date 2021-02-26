@@ -86,7 +86,12 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
 
     collection = config.get(CONFIG_COLLECTION_KEY)
     exclude_file_types = collection.get(COLLECTION_META_KEY, {}).get(EXCLUDE_FILE_TYPES_KEY, [])
-    glacier_bucket = config.get(CONFIG_BUCKETS_KEY).get('glacier').get('name')
+    #TODO: Should look at bucket type orca and check for default
+    #      Should also be flexible enough to handle input precedence order of
+    #      - task input
+    #      - collection configuration
+    #      - default value in buckets
+    default_bucket = config.get(CONFIG_BUCKETS_KEY).get('orca_default').get('name')
     granule_data = {}
     copied_file_urls = []
 
@@ -108,10 +113,10 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
                 continue
             copy_granule_between_buckets(source_bucket_name=file['bucket'],
                                          source_key=source_filepath,
-                                         destination_bucket=glacier_bucket,
+                                         destination_bucket=default_bucket,
                                          destination_key=source_filepath)
             copied_file_urls.append(file['filename'])
-            print(f"Copied {source_filepath} into glacier storage bucket {glacier_bucket}.")
+            print(f"Copied {source_filepath} into glacier storage bucket {default_bucket}.")
 
     return {'granules': granules_list, 'copied_to_glacier': copied_file_urls}
 

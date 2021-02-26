@@ -229,13 +229,15 @@ section of the document.
 :::important
 
 The cumulus bucket variable will have to be modified to include the
-disaster recovery bucket **glacier**. An example can be seen below.
+disaster recovery buckets with a *type* of **orca**. In addition, designate
+the primary ORCA bucket as the default with a key name of **orca_default**.
+An example can be seen below.
 
 ```terraform
 buckets = {
-  glacier = {
-    name = "orca-glacier"
-    type = "glacier"
+  orca_default = {
+    name = "orca-archive-primary"
+    type = "orca"
   },
   internal = {
     name = "orca-internal"
