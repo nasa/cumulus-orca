@@ -5,7 +5,11 @@ Description:  Unit tests for request_status_for_granule.py.
 """
 import unittest
 import uuid
+from http import HTTPStatus
 from unittest.mock import patch, MagicMock, Mock
+
+import database
+import requests_db
 
 import request_status_for_job
 
@@ -25,19 +29,159 @@ class TestRequestStatusForJobUnit(unittest.TestCase):  # pylint: disable-msg=too
             mock_get_dbconnect_info: MagicMock,
             mock_task: MagicMock
     ):
-        async_operation_id = uuid.uuid4().__str__()
+        job_id = uuid.uuid4().__str__()
 
         event = {
-            request_status_for_job.INPUT_JOB_ID_KEY: async_operation_id
+            request_status_for_job.INPUT_JOB_ID_KEY: job_id
         }
         context = Mock()
         result = request_status_for_job.handler(event, context)
 
         mock_setMetadata.assert_called_once_with(event, context)
-        mock_task.assert_called_once_with(async_operation_id, mock_get_dbconnect_info.return_value)
+        mock_task.assert_called_once_with(job_id, mock_get_dbconnect_info.return_value)
         self.assertEqual(mock_task.return_value, result)
 
-    def test_task_async_operation_id_cannot_be_none(self):
+    # noinspection PyPep8Naming
+    @patch('requests_db.get_dbconnect_info')
+    @patch('cumulus_logger.CumulusLogger.setMetadata')
+    def test_handler_missing_job_id_returns_error_code(
+            self,
+            mock_setMetadata: MagicMock,
+            mock_get_dbconnect_info: MagicMock
+    ):
+        event = {
+        }
+        context = Mock()
+        result = request_status_for_job.handler(event, context)
+        self.assertEqual(HTTPStatus.BAD_REQUEST, result['httpStatus'])
+
+    # noinspection PyPep8Naming
+    @patch('request_status_for_job.task')
+    @patch('requests_db.get_dbconnect_info')
+    @patch('cumulus_logger.CumulusLogger.setMetadata')
+    def test_handler_database_error_returns_error_code(
+            self,
+            mock_setMetadata: MagicMock,
+            mock_get_dbconnect_info: MagicMock,
+            mock_task: MagicMock
+    ):
+        job_id = uuid.uuid4().__str__()
+
+        event = {
+            request_status_for_job.INPUT_JOB_ID_KEY: job_id
+        }
+        context = Mock()
+        mock_task.side_effect = requests_db.DatabaseError()
+        result = request_status_for_job.handler(event, context)
+        self.assertEqual(HTTPStatus.INTERNAL_SERVER_ERROR, result['httpStatus'])
+
+    @patch('request_status_for_job.get_granule_status_entries_for_job')
+    @patch('request_status_for_job.get_status_totals_for_job')
+    def test_task_happy_path(
+            self,
+            mock_get_status_totals_for_job: MagicMock,
+            mock_get_granule_status_entries_for_job: MagicMock
+    ):
+        job_id = uuid.uuid4().__str__()
+        db_connect_info = Mock()
+
+        result = request_status_for_job.task(job_id, db_connect_info)
+
+        mock_get_granule_status_entries_for_job.assert_called_once_with(job_id, db_connect_info)
+        mock_get_status_totals_for_job.assert_called_once_with(job_id, db_connect_info)
+
+        self.assertEqual({
+            request_status_for_job.OUTPUT_JOB_ID_KEY: job_id,
+            request_status_for_job.OUTPUT_JOB_STATUS_TOTALS_KEY: mock_get_status_totals_for_job.return_value,
+            request_status_for_job.OUTPUT_GRANULES_KEY: mock_get_granule_status_entries_for_job.return_value
+        }, result)
+
+    @patch('database.result_to_json')
+    @patch('database.single_query')
+    def test_get_granule_status_entries_for_job_happy_path(
+            self,
+            mock_single_query: MagicMock,
+            mock_result_to_json: MagicMock
+    ):
+        job_id = uuid.uuid4().__str__()
+
+        db_connect_info = Mock()
+
+        result = request_status_for_job.get_granule_status_entries_for_job(job_id, db_connect_info)
+
+        mock_single_query.assert_called_once_with(f"""
+            SELECT
+                granule_id as {request_status_for_job.OUTPUT_GRANULE_ID_KEY},
+                orca_status.value AS {request_status_for_job.OUTPUT_STATUS_KEY}
+            FROM
+                orca_recoveryjob
+            JOIN orca_status ON orca_recoveryjob.status_id=orca_status.id
+            WHERE
+                job_id = %s
+            """,
+                                                  db_connect_info, (job_id,))
+        mock_result_to_json.assert_called_once_with(mock_single_query.return_value)
+
+        self.assertEqual(mock_result_to_json.return_value, result)
+
+    @patch('database.single_query')
+    def test_get_granule_status_entries_for_job_error_wrapped_in_database_error(
+            self,
+            mock_single_query: MagicMock
+    ):
+        job_id = uuid.uuid4().__str__()
+        db_connect_info = Mock()
+
+        mock_single_query.side_effect = database.DbError()
+
+        with self.assertRaises(request_status_for_job.DatabaseError):
+            request_status_for_job.get_granule_status_entries_for_job(job_id, db_connect_info)
+
+    @patch('database.result_to_json')
+    @patch('database.single_query')
+    def test_get_status_totals_for_job_happy_path(
+            self,
+            mock_single_query: MagicMock,
+            mock_result_to_json: MagicMock
+    ):
+        job_id = uuid.uuid4().__str__()
+
+        mock_result_to_json.return_value = [{'value': 'status0', 'coalesce': 5}, {'value': 'status1', 'coalesce': 10}]
+        db_connect_info = Mock()
+
+        result = request_status_for_job.get_status_totals_for_job(job_id, db_connect_info)
+
+        mock_single_query.assert_called_once_with(f"""
+            with granule_status_count AS (
+                SELECT status_id
+                    , count(*) as total
+                FROM orca_recoveryjob
+                WHERE job_id = %s
+                GROUP BY 1
+            )
+            SELECT value
+                , coalesce(total, 0)
+            FROM orca_status os
+            LEFT JOIN granule_status_count gsc ON (gsc.status_id = os.id)""",
+                                                  db_connect_info, (job_id,))
+        mock_result_to_json.assert_called_once_with(mock_single_query.return_value)
+
+        self.assertEqual({'status0': 5, 'status1': 10}, result)
+
+    @patch('database.single_query')
+    def test_get_status_totals_for_job_error_wrapped_in_database_error(
+            self,
+            mock_single_query: MagicMock
+    ):
+        job_id = uuid.uuid4().__str__()
+        db_connect_info = Mock()
+
+        mock_single_query.side_effect = database.DbError()
+
+        with self.assertRaises(request_status_for_job.DatabaseError):
+            request_status_for_job.get_status_totals_for_job(job_id, db_connect_info)
+
+    def test_task_job_id_cannot_be_none(self):
         """
         Raises error if async_operation_id is None.
         """

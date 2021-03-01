@@ -63,7 +63,7 @@ def task(granule_id: str, db_connect_info: Dict, job_id: str = None) -> Dict[str
 
 
 def get_most_recent_job_id_for_granule(granule_id: str, db_connect_info: Dict[str, any]) -> str:
-    sql = f"""
+    sql = """
             SELECT
                 orca_recoveryjob.job_id
             FROM
@@ -123,13 +123,15 @@ def get_job_entry_for_granule(
         raise DatabaseError(str(err))
 
     orca_recoveryjob = rows[0]
+    result = database.result_to_json(orca_recoveryjob)
+
     # Can't do capitalization in a sql query, so do the 'AS' now.
-    orca_recoveryjob['asyncOperationId'] = orca_recoveryjob['job_id']
-    del orca_recoveryjob['job_id']
-    return database.result_to_json(orca_recoveryjob)
+    result['asyncOperationId'] = result['job_id']
+    del result['job_id']
+    return result
 
 
-def get_file_entries_for_granule_in_job(granule_id: str, async_operation_id: str, db_connect_info: Dict) -> List[Dict]:
+def get_file_entries_for_granule_in_job(granule_id: str, job_id: str, db_connect_info: Dict) -> List[Dict]:
     """
     Gets the individual status entries for the files for the given job+granule.
 
@@ -150,10 +152,9 @@ def get_file_entries_for_granule_in_job(granule_id: str, async_operation_id: str
             JOIN orca_status ON orca_recoverfile.status_id=orca_status.id
             WHERE
                 granule_id = %s AND job_id = %s
-            ORDER BY last_update desc
-            """
+            ORDER BY last_update desc"""
     try:
-        rows = database.single_query(sql, db_connect_info, (granule_id, async_operation_id,))
+        rows = database.single_query(sql, db_connect_info, (granule_id, job_id,))
     except database.DbError as err:
         LOGGER.error(f"DbError: {str(err)}")
         raise DatabaseError(str(err))
@@ -196,7 +197,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             The time, in UTC isoformat, when all granule_files were no longer 'pending'.
             
         Or, if an error occurs, see {create_http_error_dict}
-            400 if granule_id is missing.
+            400 if granule_id is missing. 500 if an error occurs when querying the database.
     """
     LOGGER.setMetadata(event, context)
 
@@ -206,14 +207,17 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                                       f"{INPUT_GRANULE_ID_KEY} must be set to a non-empty value.")
 
     db_connect_info = requests_db.get_dbconnect_info()
-    return task(granule_id, db_connect_info, event.get(INPUT_JOB_ID_KEY, None))
+    try:
+        return task(granule_id, db_connect_info, event.get(INPUT_JOB_ID_KEY, None))
+    except DatabaseError as db_error:
+        return create_http_error_dict(
+            "InternalServerError", HTTPStatus.INTERNAL_SERVER_ERROR, context.aws_request_id, db_error.__str__())
 
-
-#temp_db_connect_info = {
+# temp_db_connect_info = {
 #    'db_host': 'localhost',
 #    'db_port': '5432',
 #    'db_name': 'disaster_recovery',
 #    'db_user': 'postgres',
 #    'db_pw': 'postgres'
-#}
-#print(task('granule_id_0', temp_db_connect_info))
+# }
+# print(task('granule_id_0', temp_db_connect_info, 'job_id_0'))
