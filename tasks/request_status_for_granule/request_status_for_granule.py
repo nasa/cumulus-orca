@@ -25,7 +25,7 @@ LOGGER = CumulusLogger()
 def task(granule_id: str, db_connect_info: Dict, job_id: str = None) -> Dict[str, Any]:
     # noinspection SpellCheckingInspection
     """
-    todo: May need to convert datetimes to utc.
+    todo: Remember to fix datetime bugs in dists.
     Args:
         granule_id: The unique ID of the granule to retrieve status for.
         db_connect_info: The {database}.py defined db_connect_info.
@@ -175,7 +175,7 @@ def create_http_error_dict(error_type: str, http_status_code: int, request_id: s
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     # noinspection SpellCheckingInspection
-    f"""
+    """
     Entry point for the request_status_for_granule Lambda.
     Args:
         event: A dict with the following keys:
@@ -196,7 +196,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         'completion_time' (DateTime, Optional):
             The time, in UTC isoformat, when all granule_files were no longer 'pending'.
             
-        Or, if an error occurs, see {create_http_error_dict}
+        Or, if an error occurs, see create_http_error_dict
             400 if granule_id is missing. 500 if an error occurs when querying the database.
     """
     LOGGER.setMetadata(event, context)

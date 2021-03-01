@@ -18,21 +18,21 @@ LOGGER = CumulusLogger()
 
 
 def task(job_id: str, db_connect_info: Dict) -> Dict[str, Any]:
-    f"""
+    """
 
     Args:
         job_id: The unique asyncOperationId of the recovery job.
-        db_connect_info: The {database}.py defined db_connect_info.
+        db_connect_info: The database.py defined db_connect_info.
     Returns:
         A dictionary with the following keys:
-            'asyncOperationId' (str): The {job_id}.
+            'asyncOperationId' (str): The job_id.
             'job_status_totals' (Dict): A dictionary with the following keys:
                 'pending' (int)
                 'success' (int)
                 'failed' (int)
             'granules' (List): A list of dicts with the following keys:
-                granule_id (str)
-                status (str): pending|success|failed
+                'granule_id' (str)
+                'status' (str): pending|success|failed
     """
     if job_id is None or len(job_id) == 0:
         raise ValueError(f"async_operation_id must be set to a non-empty value.")
@@ -46,14 +46,17 @@ def task(job_id: str, db_connect_info: Dict) -> Dict[str, Any]:
 
 
 def get_granule_status_entries_for_job(job_id: str, db_connect_info: Dict) -> List[Dict[str, Any]]:
-    f"""
-    Gets the orca_recoveryjob status entry for the associated {job_id}.
+    """
+    Gets the orca_recoveryjob status entry for the associated job_id.
 
     Args:
         job_id: The unique asyncOperationId of the recovery job to retrieve status for.
         db_connect_info: The {database} defined db_connect_info.
 
-    Returns: todo
+    Returns: A list of dicts with the following keys:
+        'granule_id' (str)
+        'status' (str): pending|success|failed
+
     """
     sql = f"""
             SELECT
@@ -77,12 +80,12 @@ def get_granule_status_entries_for_job(job_id: str, db_connect_info: Dict) -> Li
 
 def get_status_totals_for_job(job_id: str, db_connect_info: Dict) -> Dict[str, int]:
     # noinspection SpellCheckingInspection
-    f"""
-    Gets the number of orca_recoveryjobs for the given {job_id} for each possible status value.
+    """
+    Gets the number of orca_recoveryjobs for the given job_id for each possible status value.
 
     Args:
         job_id: The unique id of the recovery job to retrieve status for.
-        db_connect_info: The {database} defined db_connect_info.
+        db_connect_info: The database defined db_connect_info.
 
     Returns: A dictionary with the following keys:
         'pending' (int)
@@ -124,7 +127,7 @@ def create_http_error_dict(error_type: str, http_status_code: int, request_id: s
 
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
-    f"""
+    """
     Entry point for the request_status_for_job Lambda.
     Args:
         event: A dict with the following keys:
@@ -141,7 +144,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             granule_id (str): The unique ID of the granule.
             status (str): The status of the restoration of the file. May be 'pending', 'success', or 'failed'.
 
-        Or, if an error occurs, see {create_http_error_dict}
+        Or, if an error occurs, see create_http_error_dict
             400 if asyncOperationId is missing. 500 if an error occurs when querying the database.
     """
     LOGGER.setMetadata(event, context)
