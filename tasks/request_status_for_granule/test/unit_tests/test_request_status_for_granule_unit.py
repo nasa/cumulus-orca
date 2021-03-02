@@ -11,7 +11,6 @@ from unittest.mock import MagicMock, patch, Mock
 
 import database
 import requests_db
-from psycopg2.extras import RealDictRow
 
 import request_status_for_granule
 
@@ -67,12 +66,14 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
         self.assertEqual(mock_task.return_value, result)
 
     # noinspection PyPep8Naming
+    @patch('cumulus_logger.CumulusLogger.error')
     @patch('requests_db.get_dbconnect_info')
     @patch('cumulus_logger.CumulusLogger.setMetadata')
     def test_handler_missing_granule_id_returns_error_code(
             self,
             mock_setMetadata: MagicMock,
-            mock_get_dbconnect_info: MagicMock
+            mock_get_dbconnect_info: MagicMock,
+            mock_cumulus_logger_error
     ):
         async_operation_id = uuid.uuid4().__str__()
 
@@ -86,6 +87,7 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
         self.assertEqual(HTTPStatus.BAD_REQUEST, result['httpStatus'])
 
     # noinspection PyPep8Naming
+    @patch('cumulus_logger.CumulusLogger.error')
     @patch('request_status_for_granule.task')
     @patch('requests_db.get_dbconnect_info')
     @patch('cumulus_logger.CumulusLogger.setMetadata')
@@ -93,7 +95,8 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
             self,
             mock_setMetadata: MagicMock,
             mock_get_dbconnect_info: MagicMock,
-            mock_task: MagicMock
+            mock_task: MagicMock,
+            mock_cumulus_logger_error: MagicMock
     ):
         async_operation_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
@@ -252,20 +255,15 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
 
         mock_single_query.return_value = [row]
 
-        mock_result_to_json.return_value = {
-            request_status_for_granule.OUTPUT_GRANULE_ID_KEY: granule_id,
-            'job_id': job_id
-        }
-
         result = request_status_for_granule.get_job_entry_for_granule(granule_id, job_id, db_connect_info)
 
         mock_single_query.assert_called_once_with(f"""
             SELECT
-                orca_recoveryjob.granule_id as {request_status_for_granule.OUTPUT_GRANULE_ID_KEY},
-                orca_recoveryjob.job_id,
-                orca_recoveryjob.restore_destination as {request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY},
-                orca_recoveryjob.request_time as {request_status_for_granule.OUTPUT_REQUEST_TIME_KEY},
-                orca_recoveryjob.completion_time as {request_status_for_granule.OUTPUT_COMPLETION_TIME_KEY}
+                granule_id as \"{request_status_for_granule.OUTPUT_GRANULE_ID_KEY}\",
+                job_id as \"{request_status_for_granule.OUTPUT_JOB_ID_KEY}\",
+                restore_destination as \"{request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY}\",
+                request_time as \"{request_status_for_granule.OUTPUT_REQUEST_TIME_KEY}\",
+                completion_time as \"{request_status_for_granule.OUTPUT_COMPLETION_TIME_KEY}\"
             FROM
                 orca_recoveryjob
             WHERE
@@ -273,10 +271,7 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
                                                   db_connect_info, (granule_id, job_id,))
         mock_result_to_json.assert_called_once_with(row)
 
-        self.assertEqual({
-            request_status_for_granule.OUTPUT_GRANULE_ID_KEY: granule_id,
-            request_status_for_granule.OUTPUT_JOB_ID_KEY: job_id
-        }, result)
+        self.assertEqual(mock_result_to_json.return_value, result)
 
     @patch('database.single_query')
     def test_get_job_entry_for_granule_error_wrapped_in_database_error(
@@ -309,15 +304,15 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
 
         mock_single_query.assert_called_once_with(f"""
             SELECT
-                orca_recoverfile.filename AS {request_status_for_granule.OUTPUT_FILENAME_KEY},
-                orca_status.value AS {request_status_for_granule.OUTPUT_STATUS_KEY},
-                orca_recoverfile.error_message as {request_status_for_granule.OUTPUT_ERROR_MESSAGE_KEY}
+                orca_recoverfile.filename AS \"{request_status_for_granule.OUTPUT_FILENAME_KEY}\",
+                orca_status.value AS \"{request_status_for_granule.OUTPUT_STATUS_KEY}\",
+                orca_recoverfile.error_message as \"{request_status_for_granule.OUTPUT_ERROR_MESSAGE_KEY}\"
             FROM
                 orca_recoverfile
             JOIN orca_status ON orca_recoverfile.status_id=orca_status.id
             WHERE
                 granule_id = %s AND job_id = %s
-            ORDER BY last_update desc""",
+            ORDER BY filename desc""",
                                                   db_connect_info, (granule_id, job_id,))
         mock_result_to_json.assert_called_once_with(mock_single_query.return_value)
 

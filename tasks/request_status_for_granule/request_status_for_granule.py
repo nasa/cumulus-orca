@@ -35,12 +35,12 @@ def task(granule_id: str, db_connect_info: Dict, job_id: str = None) -> Dict[str
         'asyncOperationId' (str): The unique ID of the asyncOperation.
         'files' (List): Description and status of the files within the given granule. List of Dicts with keys:
             'file_name' (str): The name and extension of the file.
-            'status' (str): The status of the restoration of the file. May be 'pending', 'success', or 'failed'.
+            'status' (str): The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.
             'error_message' (str, Optional): If the restoration of the file errored, the error will be stored here.
         'restore_destination' (str): The name of the glacier bucket the granule is being copied to.
         'request_time' (DateTime): The time, in UTC isoformat, when the request to restore the granule was initiated.
         'completion_time' (DateTime, Optional):
-            The time, in UTC isoformat, when all granule_files were no longer 'pending'.
+            The time, in UTC isoformat, when all granule_files were no longer 'pending'/'staged'.
 
     """
     if granule_id is None or len(granule_id) == 0:
@@ -103,15 +103,15 @@ def get_job_entry_for_granule(
         'restore_destination' (str): The name of the glacier bucket the granule is being copied to.
         'request_time' (DateTime): The time, in UTC isoformat, when the request to restore the granule was initiated.
         'completion_time' (DateTime, Optional):
-            The time, in UTC isoformat, when all granule_files were no longer 'pending'.
+            The time, in UTC isoformat, when all granule_files were no longer 'pending'/'staged'.
         """
     sql = f"""
             SELECT
-                orca_recoveryjob.granule_id as {OUTPUT_GRANULE_ID_KEY},
-                orca_recoveryjob.job_id,
-                orca_recoveryjob.restore_destination as {OUTPUT_RESTORE_DESTINATION_KEY},
-                orca_recoveryjob.request_time as {OUTPUT_REQUEST_TIME_KEY},
-                orca_recoveryjob.completion_time as {OUTPUT_COMPLETION_TIME_KEY}
+                granule_id as \"{OUTPUT_GRANULE_ID_KEY}\",
+                job_id as \"{OUTPUT_JOB_ID_KEY}\",
+                restore_destination as \"{OUTPUT_RESTORE_DESTINATION_KEY}\",
+                request_time as \"{OUTPUT_REQUEST_TIME_KEY}\",
+                completion_time as \"{OUTPUT_COMPLETION_TIME_KEY}\"
             FROM
                 orca_recoveryjob
             WHERE
@@ -124,10 +124,6 @@ def get_job_entry_for_granule(
 
     orca_recoveryjob = rows[0]
     result = database.result_to_json(orca_recoveryjob)
-
-    # Can't do capitalization in a sql query, so do the 'AS' now.
-    result['asyncOperationId'] = result['job_id']
-    del result['job_id']
     return result
 
 
@@ -139,20 +135,20 @@ def get_file_entries_for_granule_in_job(granule_id: str, job_id: str, db_connect
 
     Returns: A Dict with the following keys:
         'file_name' (str): The name and extension of the file.
-        'status' (str): The status of the restoration of the file. May be 'pending', 'success', or 'failed'.
+        'status' (str): The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.
         'error_message' (str): If the restoration of the file errored, the error will be stored here. Otherwise, None.
     """
     sql = f"""
             SELECT
-                orca_recoverfile.filename AS {OUTPUT_FILENAME_KEY},
-                orca_status.value AS {OUTPUT_STATUS_KEY},
-                orca_recoverfile.error_message as {OUTPUT_ERROR_MESSAGE_KEY}
+                orca_recoverfile.filename AS \"{OUTPUT_FILENAME_KEY}\",
+                orca_status.value AS \"{OUTPUT_STATUS_KEY}\",
+                orca_recoverfile.error_message as \"{OUTPUT_ERROR_MESSAGE_KEY}\"
             FROM
                 orca_recoverfile
             JOIN orca_status ON orca_recoverfile.status_id=orca_status.id
             WHERE
                 granule_id = %s AND job_id = %s
-            ORDER BY last_update desc"""
+            ORDER BY filename desc"""
     try:
         rows = database.single_query(sql, db_connect_info, (granule_id, job_id,))
     except database.DbError as err:
@@ -189,12 +185,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         'asyncOperationId' (str): The unique ID of the asyncOperation.
         'files' (List): Description and status of the files within the given granule. List of Dicts with keys:
             'file_name' (str): The name and extension of the file.
-            'status' (str): The status of the restoration of the file. May be 'pending', 'success', or 'failed'.
+            'status' (str): The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.
             'error_message' (str, Optional): If the restoration of the file errored, the error will be stored here.
         'restore_destination' (str): The name of the glacier bucket the granule is being copied to.
         'request_time' (DateTime): The time, in UTC isoformat, when the request to restore the granule was initiated.
         'completion_time' (DateTime, Optional):
-            The time, in UTC isoformat, when all granule_files were no longer 'pending'.
+            The time, in UTC isoformat, when all granule_files were no longer 'pending'/'staged'.
             
         Or, if an error occurs, see create_http_error_dict
             400 if granule_id is missing. 500 if an error occurs when querying the database.
@@ -212,12 +208,3 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     except DatabaseError as db_error:
         return create_http_error_dict(
             "InternalServerError", HTTPStatus.INTERNAL_SERVER_ERROR, context.aws_request_id, db_error.__str__())
-
-# temp_db_connect_info = {
-#    'db_host': 'localhost',
-#    'db_port': '5432',
-#    'db_name': 'disaster_recovery',
-#    'db_user': 'postgres',
-#    'db_pw': 'postgres'
-# }
-# print(task('granule_id_0', temp_db_connect_info, 'job_id_0'))

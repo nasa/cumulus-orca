@@ -111,8 +111,8 @@ class TestRequestStatusForJobUnit(unittest.TestCase):  # pylint: disable-msg=too
 
         mock_single_query.assert_called_once_with(f"""
             SELECT
-                granule_id as {request_status_for_job.OUTPUT_GRANULE_ID_KEY},
-                orca_status.value AS {request_status_for_job.OUTPUT_STATUS_KEY}
+                granule_id as \"{request_status_for_job.OUTPUT_GRANULE_ID_KEY}\",
+                orca_status.value AS \"{request_status_for_job.OUTPUT_STATUS_KEY}\"
             FROM
                 orca_recoveryjob
             JOIN orca_status ON orca_recoveryjob.status_id=orca_status.id
@@ -137,17 +137,15 @@ class TestRequestStatusForJobUnit(unittest.TestCase):  # pylint: disable-msg=too
         with self.assertRaises(request_status_for_job.DatabaseError):
             request_status_for_job.get_granule_status_entries_for_job(job_id, db_connect_info)
 
-    @patch('database.result_to_json')
     @patch('database.single_query')
     def test_get_status_totals_for_job_happy_path(
             self,
-            mock_single_query: MagicMock,
-            mock_result_to_json: MagicMock
+            mock_single_query: MagicMock
     ):
         job_id = uuid.uuid4().__str__()
-
-        mock_result_to_json.return_value = [{'value': 'status0', 'coalesce': 5}, {'value': 'status1', 'coalesce': 10}]
         db_connect_info = Mock()
+
+        mock_single_query.return_value = [{'value': 'status0', 'total': 5}, {'value': 'status1', 'total': 10}]
 
         result = request_status_for_job.get_status_totals_for_job(job_id, db_connect_info)
 
@@ -157,14 +155,13 @@ class TestRequestStatusForJobUnit(unittest.TestCase):  # pylint: disable-msg=too
                     , count(*) as total
                 FROM orca_recoveryjob
                 WHERE job_id = %s
-                GROUP BY 1
+                GROUP BY status_id
             )
             SELECT value
-                , coalesce(total, 0)
+                , coalesce(total, 0) as total
             FROM orca_status os
             LEFT JOIN granule_status_count gsc ON (gsc.status_id = os.id)""",
                                                   db_connect_info, (job_id,))
-        mock_result_to_json.assert_called_once_with(mock_single_query.return_value)
 
         self.assertEqual({'status0': 5, 'status1': 10}, result)
 

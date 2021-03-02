@@ -28,14 +28,15 @@ def task(job_id: str, db_connect_info: Dict) -> Dict[str, Any]:
             'asyncOperationId' (str): The job_id.
             'job_status_totals' (Dict): A dictionary with the following keys:
                 'pending' (int)
+                'staged' (int)
                 'success' (int)
                 'failed' (int)
             'granules' (List): A list of dicts with the following keys:
                 'granule_id' (str)
-                'status' (str): pending|success|failed
+                'status' (str): pending|staged|success|failed
     """
     if job_id is None or len(job_id) == 0:
-        raise ValueError(f"async_operation_id must be set to a non-empty value.")
+        raise ValueError(f"job_id must be set to a non-empty value.")
     status_entries = get_granule_status_entries_for_job(job_id, db_connect_info)
     status_totals = get_status_totals_for_job(job_id, db_connect_info)
     return {
@@ -55,13 +56,13 @@ def get_granule_status_entries_for_job(job_id: str, db_connect_info: Dict) -> Li
 
     Returns: A list of dicts with the following keys:
         'granule_id' (str)
-        'status' (str): pending|success|failed
+        'status' (str): pending|staged|success|failed
 
     """
     sql = f"""
             SELECT
-                granule_id as {OUTPUT_GRANULE_ID_KEY},
-                orca_status.value AS {OUTPUT_STATUS_KEY}
+                granule_id as \"{OUTPUT_GRANULE_ID_KEY}\",
+                orca_status.value AS \"{OUTPUT_STATUS_KEY}\"
             FROM
                 orca_recoveryjob
             JOIN orca_status ON orca_recoveryjob.status_id=orca_status.id
@@ -89,6 +90,7 @@ def get_status_totals_for_job(job_id: str, db_connect_info: Dict) -> Dict[str, i
 
     Returns: A dictionary with the following keys:
         'pending' (int)
+        'staged' (int)
         'success' (int)
         'failed' (int)
     """
@@ -99,10 +101,10 @@ def get_status_totals_for_job(job_id: str, db_connect_info: Dict) -> Dict[str, i
                     , count(*) as total
                 FROM orca_recoveryjob
                 WHERE job_id = %s
-                GROUP BY 1
+                GROUP BY status_id
             )
             SELECT value
-                , coalesce(total, 0)
+                , coalesce(total, 0) as total
             FROM orca_status os
             LEFT JOIN granule_status_count gsc ON (gsc.status_id = os.id)"""
 
@@ -111,8 +113,8 @@ def get_status_totals_for_job(job_id: str, db_connect_info: Dict) -> Dict[str, i
     except database.DbError as err:
         LOGGER.error(f"DbError: {str(err)}")
         raise DatabaseError(str(err))
-    result = database.result_to_json(rows)
-    totals = {result[i]['value']: result[i]['coalesce'] for i in range(0, len(result), 1)}
+    # todo: retest
+    totals = {rows[i]['value']: rows[i]['total'] for i in range(0, len(rows), 1)}
     return totals
 
 
@@ -138,11 +140,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         asyncOperationId (str): The unique ID of the asyncOperation.
         job_status_totals (Dict[str, int]): Sums of how many granules are in each particular restoration status.
             pending (int): The number of granules that still need to be copied.
+            staged (int): Currently unimplemented.
             success (int): The number of granules that have been successfully copied.
             failed (int): The number of granules that did not copy and will not copy due to an error.
         granules (Array[Dict]): An array of Dicts representing each granule being copied as part of the job.
             granule_id (str): The unique ID of the granule.
-            status (str): The status of the restoration of the file. May be 'pending', 'success', or 'failed'.
+            status (str): The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.
 
         Or, if an error occurs, see create_http_error_dict
             400 if asyncOperationId is missing. 500 if an error occurs when querying the database.
@@ -159,12 +162,3 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     except DatabaseError as db_error:
         return create_http_error_dict(
             "InternalServerError", HTTPStatus.INTERNAL_SERVER_ERROR, context.aws_request_id, db_error.__str__())
-
-# temp_db_connect_info = {
-#    'db_host': 'localhost',
-#    'db_port': '5432',
-#    'db_name': 'disaster_recovery',
-#    'db_user': 'postgres',
-#    'db_pw': 'postgres'
-# }
-# print(task('job_id_0', temp_db_connect_info))
