@@ -215,12 +215,14 @@ additional variable definitions may be needed.
 ```terraform
 ## ORCA Configuration
 database_app_user_pw = "my-orca-application-user-password"
+orca_default_bucket  = "orca-archive-primary"
 postgres_user_pw     = "my-super-secret-database-owner-password"
 ```
 
 Below describes the type of value expected for each variable.
 
 * `database_app_user_pw` - the password for the application user
+* `orca_default_bucket` - default S3 glacier bucket to use for ORCA data
 * `postgres_user_pw` - password for the postgres user
 
 Additional variable definitions can be found in the [ORCA variables](#orca-variables)
@@ -229,9 +231,7 @@ section of the document.
 :::important
 
 The cumulus bucket variable will have to be modified to include the
-disaster recovery buckets with a *type* of **orca**. In addition, designate
-the primary ORCA bucket as the default with a key name of **orca_default**.
-An example can be seen below.
+disaster recovery buckets with a *type* of **orca**. An example can be seen below.
 
 ```terraform
 buckets = {
@@ -443,6 +443,11 @@ variable "lambda_timeout" {
   description = "Lambda max time before a timeout error is thrown."
 }
 
+variable "orca_default_bucket" {
+  type        = string
+  description = "Name of the default ORCA archive S3 Glacier bucket."
+}
+
 variable "restore_complete_filter_prefix" {
   default = ""
   type = string
@@ -519,6 +524,7 @@ module "orca" {
   restore_complete_filter_prefix = var.restore_complete_filter_prefix
   copy_retry_sleep_secs          = var.copy_retry_sleep_secs
   default_tags                   = var.default_tags
+  orca_default_bucket            = var.orca_default_bucket
 }
 ```
 
@@ -600,6 +606,7 @@ Modify as needed.
 * `database_name` - orca
 * `database_app_user` - orca_user
 * `database_app_user_pw` - the password for the application user
+* `orca_default_bucket` - default S3 glacier bucket ORCA uses
 
 **Optional:**
 * `prefix` - Prefix that will be pre-pended to resource names created by terraform.
