@@ -1,4 +1,5 @@
 import re
+import os
 from typing import Dict, Any, List, Union
 
 import boto3
@@ -79,6 +80,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
                     bucket (str)
             copied_to_glacier (list): List of S3 paths - one for each file copied
     """
+    #TODO: Possibly remove print statement and change to a logging statement.
     print(event)
     event_input = event['input']
     granules_list = event_input['granules']
@@ -86,12 +88,20 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
 
     collection = config.get(CONFIG_COLLECTION_KEY)
     exclude_file_types = collection.get(COLLECTION_META_KEY, {}).get(EXCLUDE_FILE_TYPES_KEY, [])
+
     #TODO: Should look at bucket type orca and check for default
     #      Should also be flexible enough to handle input precedence order of
     #      - task input
     #      - collection configuration
     #      - default value in buckets
-    default_bucket = config.get(CONFIG_BUCKETS_KEY).get('orca_default').get('name')
+    try:
+        default_bucket = os.environ['ORCA_DEFAULT_BUCKET']
+        if default_bucket is None or len(default_bucket) == 0:
+            raise KeyError('ORCA_DEFAULT_BUCKET environment variable is not set.')
+    except KeyError:
+        print('ORCA_DEFAULT_BUCKET environment variable is not set.')
+        raise
+
     granule_data = {}
     copied_file_urls = []
 
@@ -124,7 +134,13 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
 # handler that is provided to aws lambda
 def handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any:
     """Lambda handler. Runs a cumulus task that
-    copies the files in {event}['input'] from the collection specified in {config} to the {config}'s 'glacier' bucket.
+    Copies the files in {event}['input'] from the collection specified in
+    {config} to the default ORCA bucket. Environment variables must be set to
+    provide a default ORCA bucket to store the files in.
+        Environment Vars:
+            ORCA_DEFAULT_BUCKET (str, required): Name of the default S3 Glacier
+                                                 ORCA bucket files should be
+                                                 archived to.
 
     Args:
         event: Event passed into the step from the aws workflow. A dict with the following keys:
