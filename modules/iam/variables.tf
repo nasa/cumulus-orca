@@ -39,3 +39,15 @@ variable "tags" {
   description = "Tags to be applied to resources that support tags."
   default     = {}
 }
+
+
+## Variables unique to ORCA
+## REQUIRED
+
+
+## OPTIONAL
+variable "orca_recovery_buckets" {
+  type        = list(string)
+  description = "List of bucket names that ORCA has permissions to restore data to."
+  default     = []
+}

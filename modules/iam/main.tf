@@ -18,8 +18,9 @@ provider "aws" {
 
 ## Local Variables
 locals {
-  all_bucket_arns   = [for k, v in var.buckets : "arn:aws:s3:::${v.name}"]
-  all_bucket_paths  = [for k, v in var.buckets : "arn:aws:s3:::${v.name}/*"]
+  all_bucket_names  = length(var.orca_recovery_buckets) > 0 ? var.orca_recovery_buckets : [for k, v in var.buckets : v.name]
+  all_bucket_arns   = [for name in local.all_bucket_names : "arn:aws:s3:::${name}"]
+  all_bucket_paths  = [for name in local.all_bucket_names : "arn:aws:s3:::${name}/*"]
   orca_bucket_arns  = [for k, v in var.buckets : "arn:aws:s3:::${v.name}" if v.type == "orca"]
   orca_bucket_paths = [for k, v in var.buckets : "arn:aws:s3:::${v.name}/*" if v.type == "orca"]
   tags              = merge(var.tags, { Deployment = var.prefix })
