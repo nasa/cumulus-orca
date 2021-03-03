@@ -2,7 +2,7 @@ import copy
 import os
 import uuid
 from unittest import TestCase
-from unittest.mock import Mock, call
+from unittest.mock import Mock, call, patch
 
 from handler import *
 
@@ -89,13 +89,14 @@ class TestCopyToGlacierHandler(TestCase):
         not_excluded_flag = should_exclude_files_type(self.not_excluded_file, ['.example'])
         self.assertEqual(not_excluded_flag, False)
 
+    @patch.dict(os.environ, {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__()}, clear=True)
     def test_task_happy_path(self):
         """
         Basic path with buckets present.
         """
         collection_name = uuid.uuid4().__str__()
         collection_version = uuid.uuid4().__str__()
-        destination_bucket_name = uuid.uuid4().__str__()
+        destination_bucket_name = os.environ['ORCA_DEFAULT_BUCKET']
         source_bucket_name = uuid.uuid4().__str__()
         collection_url_path = uuid.uuid4().__str__()
         content_type = uuid.uuid4().__str__()
@@ -118,9 +119,6 @@ class TestCopyToGlacierHandler(TestCase):
                 CONFIG_BUCKETS_KEY: {
                     'bad_bucket': {
                         'name': 'not_glacier'
-                    },
-                    'glacier': {
-                        'name': destination_bucket_name
                     }
                 }
             }
@@ -162,6 +160,7 @@ class TestCopyToGlacierHandler(TestCase):
         self.assertEqual(expected_copied_file_urls, result['copied_to_glacier'])
         self.assertEqual(self.event_granules['granules'], result['granules'])
 
+    @patch.dict(os.environ, {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__()}, clear=True)
     def test_task_empty_granules_list(self):
         """
         Basic path with buckets present.
@@ -169,7 +168,7 @@ class TestCopyToGlacierHandler(TestCase):
         # todo: use 'side_effect' to verify args. It is safer, as current method does not deep-copy args
         collection_name = uuid.uuid4().__str__()
         collection_version = uuid.uuid4().__str__()
-        destination_bucket_name = uuid.uuid4().__str__()
+        destination_bucket_name = os.environ['ORCA_DEFAULT_BUCKET']
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.copy = Mock()
@@ -187,9 +186,6 @@ class TestCopyToGlacierHandler(TestCase):
                 CONFIG_BUCKETS_KEY: {
                     'bad_bucket': {
                         'name': 'not_glacier'
-                    },
-                    'glacier': {
-                        'name': destination_bucket_name
                     }
                 }
             }
@@ -204,6 +200,49 @@ class TestCopyToGlacierHandler(TestCase):
 
         s3_cli.head_object.assert_not_called()
         s3_cli.copy.assert_not_called()
+
+    @patch.dict(os.environ, {"ORCA_DEFAULT_BUCKET": ""}, clear=True)
+    def test_task_invalid_environment_variable(self):
+        """
+        Checks to make sure an unset or empty environment variable throws an error
+        """
+        collection_name = uuid.uuid4().__str__()
+        collection_version = uuid.uuid4().__str__()
+        destination_bucket_name = os.environ['ORCA_DEFAULT_BUCKET']
+        source_bucket_name = uuid.uuid4().__str__()
+        collection_url_path = uuid.uuid4().__str__()
+        content_type = uuid.uuid4().__str__()
+        source_bucket_names = [file['bucket'] for file in self.event_granules['granules'][0]['files']]
+        source_keys = [file['filepath'] for file in self.event_granules['granules'][0]['files']]
+
+        # todo: use 'side_effect' to verify args. It is safer, as current method does not deep-copy args
+        boto3.client = Mock()
+        s3_cli = boto3.client('s3')
+        s3_cli.copy = Mock(return_value=None)
+        s3_cli.head_object = Mock(return_value={'ContentType': content_type})
+
+        event = {
+            'input': copy.deepcopy(self.event_granules),
+            'config': {
+                CONFIG_COLLECTION_KEY: {
+                    COLLECTION_NAME_KEY: collection_name,
+                    COLLECTION_VERSION_KEY: collection_version,
+                },
+                CONFIG_BUCKETS_KEY: {
+                    'bad_bucket': {
+                        'name': 'not_glacier'
+                    }
+                }
+            }
+
+        }
+
+        with self.assertRaises(KeyError) as context:
+            task(event, None)
+            self.assertTrue('ORCA_DEFAULT_BUCKET environment variable is not set.' in context.exception)
+
+
+  ##TODO: Write tests to validate file name regex exclusion
 
 # todo: switch this to large test
 #    def test_5_task(self):

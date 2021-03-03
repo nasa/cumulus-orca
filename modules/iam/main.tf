@@ -18,11 +18,12 @@ provider "aws" {
 
 ## Local Variables
 locals {
-  all_bucket_arns        = [for k, v in var.buckets : "arn:aws:s3:::${v.name}"]
-  all_bucket_paths       = [for k, v in var.buckets : "arn:aws:s3:::${v.name}/*"]
-  orca_bucket_arns       = [for k, v in var.buckets : "arn:aws:s3:::${v.name}" if v.type == "orca"]
-  orca_bucket_paths      = [for k, v in var.buckets : "arn:aws:s3:::${v.name}/*" if v.type == "orca"]
-  tags                   = merge(var.tags, { Deployment = var.prefix })
+  all_bucket_names  = length(var.orca_recovery_buckets) > 0 ? var.orca_recovery_buckets : [for k, v in var.buckets : v.name]
+  all_bucket_arns   = [for name in local.all_bucket_names : "arn:aws:s3:::${name}"]
+  all_bucket_paths  = [for name in local.all_bucket_names : "arn:aws:s3:::${name}/*"]
+  orca_bucket_arns  = [for k, v in var.buckets : "arn:aws:s3:::${v.name}" if v.type == "orca"]
+  orca_bucket_paths = [for k, v in var.buckets : "arn:aws:s3:::${v.name}/*" if v.type == "orca"]
+  tags              = merge(var.tags, { Deployment = var.prefix })
 }
 
 
@@ -99,7 +100,7 @@ data "aws_iam_policy_document" "restore_object_role_policy_document" {
     resources = local.all_bucket_paths
   }
   statement {
-    actions   = [
+    actions = [
       "s3:RestoreObject",
       "s3:GetObject"
     ]
@@ -112,7 +113,7 @@ data "aws_iam_policy_document" "restore_object_role_policy_document" {
     resources = ["*"]
   }
   statement {
-    actions   = [
+    actions = [
       "kms:Decrypt"
     ]
     resources = [
@@ -127,7 +128,7 @@ resource "aws_iam_role" "restore_object_role" {
   name                 = "${var.prefix}_restore_object_role"
   assume_role_policy   = data.aws_iam_policy_document.assume_lambda_role.json
   permissions_boundary = var.permissions_boundary_arn
-  tags = local.tags
+  tags                 = local.tags
 }
 
 
@@ -135,5 +136,4 @@ resource "aws_iam_role_policy" "restore_object_role_policy" {
   name   = "${var.prefix}_restore_object_role_policy"
   role   = aws_iam_role.restore_object_role.id
   policy = data.aws_iam_policy_document.restore_object_role_policy_document.json
-  tags = local.tags
 }
