@@ -279,7 +279,6 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
             SELECT
                 granule_id as "{request_status_for_granule.OUTPUT_GRANULE_ID_KEY}",
                 job_id as "{request_status_for_granule.OUTPUT_JOB_ID_KEY}",
-                restore_destination as "{request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY}",
                 request_time as "{request_status_for_granule.OUTPUT_REQUEST_TIME_KEY}",
                 completion_time as "{request_status_for_granule.OUTPUT_COMPLETION_TIME_KEY}"
             FROM
@@ -329,6 +328,7 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
         mock_single_query.assert_called_once_with(f"""
             SELECT
                 orca_recoverfile.filename AS "{request_status_for_granule.OUTPUT_FILENAME_KEY}",
+                orca_recoverfile.restore_destination AS "{request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY}",
                 orca_status.value AS "{request_status_for_granule.OUTPUT_STATUS_KEY}",
                 orca_recoverfile.error_message as "{request_status_for_granule.OUTPUT_ERROR_MESSAGE_KEY}"
             FROM

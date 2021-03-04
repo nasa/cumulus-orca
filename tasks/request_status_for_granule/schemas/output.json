@@ -23,6 +23,10 @@
 						"description": "The name and extension of the file.",
 						"type": "string"
 					},
+					"restore_destination": {
+						"description": "The name of the glacier bucket the granule is being copied to.",
+						"type": "string"
+					},
 					"status": {
 						"description": "The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.",
 						"type": "string",
@@ -33,13 +37,9 @@
 						"type": "string"
 					}
 				},
-				"required": [ "file_name", "status" ]
+				"required": [ "file_name", "restore_destination", "status" ]
 			},
 			"uniqueItems": true
-		},
-		"restore_destination": {
-			"description": "The name of the glacier bucket the granule is being copied to.",
-			"type": "string"
 		},
 		"request_time": {
 			"description": "The time, in UTC and isoformat, when the request to restore the granule was initiated.",
@@ -52,5 +52,5 @@
 			"pattern": "/^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?$"
 		}
 	},
-	"required": [ "granule_id", "asyncOperationId", "granule_files", "restore_destination", "request_time" ]
+	"required": [ "granule_id", "asyncOperationId", "granule_files", "request_time" ]
 }

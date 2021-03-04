@@ -13,9 +13,9 @@ OUTPUT_GRANULE_ID_KEY = 'granule_id'
 OUTPUT_JOB_ID_KEY = 'asyncOperationId'
 OUTPUT_FILES_KEY = 'files'
 OUTPUT_FILENAME_KEY = 'file_name'
+OUTPUT_RESTORE_DESTINATION_KEY = 'restore_destination'
 OUTPUT_STATUS_KEY = 'status'
 OUTPUT_ERROR_MESSAGE_KEY = 'error_message'
-OUTPUT_RESTORE_DESTINATION_KEY = 'restore_destination'
 OUTPUT_REQUEST_TIME_KEY = 'request_time'
 OUTPUT_COMPLETION_TIME_KEY = 'completion_time'
 
@@ -34,9 +34,9 @@ def task(granule_id: str, db_connect_info: Dict, job_id: str = None) -> Dict[str
         'asyncOperationId' (str): The unique ID of the asyncOperation.
         'files' (List): Description and status of the files within the given granule. List of Dicts with keys:
             'file_name' (str): The name and extension of the file.
+            'restore_destination' (str): The name of the glacier bucket the file is being copied to.
             'status' (str): The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.
             'error_message' (str, Optional): If the restoration of the file errored, the error will be stored here.
-        'restore_destination' (str): The name of the glacier bucket the granule is being copied to.
         'request_time' (DateTime): The time, in UTC isoformat, when the request to restore the granule was initiated.
         'completion_time' (DateTime, Optional):
             The time, in UTC isoformat, when all granule_files were no longer 'pending'/'staged'.
@@ -99,7 +99,6 @@ def get_job_entry_for_granule(
     Returns: A Dict with the following keys:
         'granule_id' (str): The unique ID of the granule to retrieve status for.
         'job_id' (str): The unique ID of the asyncOperation.
-        'restore_destination' (str): The name of the glacier bucket the granule is being copied to.
         'request_time' (DateTime): The time, in UTC isoformat, when the request to restore the granule was initiated.
         'completion_time' (DateTime, Optional):
             The time, in UTC isoformat, when all granule_files were no longer 'pending'/'staged'.
@@ -108,7 +107,6 @@ def get_job_entry_for_granule(
             SELECT
                 granule_id as "{OUTPUT_GRANULE_ID_KEY}",
                 job_id as "{OUTPUT_JOB_ID_KEY}",
-                restore_destination as \"{OUTPUT_RESTORE_DESTINATION_KEY}",
                 request_time as "{OUTPUT_REQUEST_TIME_KEY}",
                 completion_time as "{OUTPUT_COMPLETION_TIME_KEY}"
             FROM
@@ -134,12 +132,14 @@ def get_file_entries_for_granule_in_job(granule_id: str, job_id: str, db_connect
 
     Returns: A Dict with the following keys:
         'file_name' (str): The name and extension of the file.
+        'restore_destination' (str): The name of the glacier bucket the file is being copied to.
         'status' (str): The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.
         'error_message' (str): If the restoration of the file errored, the error will be stored here. Otherwise, None.
     """
     sql = f"""
             SELECT
                 orca_recoverfile.filename AS "{OUTPUT_FILENAME_KEY}",
+                orca_recoverfile.restore_destination AS "{OUTPUT_RESTORE_DESTINATION_KEY}",
                 orca_status.value AS "{OUTPUT_STATUS_KEY}",
                 orca_recoverfile.error_message as "{OUTPUT_ERROR_MESSAGE_KEY}"
             FROM
@@ -206,9 +206,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         'asyncOperationId' (str): The unique ID of the asyncOperation.
         'files' (List): Description and status of the files within the given granule. List of Dicts with keys:
             'file_name' (str): The name and extension of the file.
+            'restore_destination' (str): The name of the glacier bucket the file is being copied to.
             'status' (str): The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.
             'error_message' (str, Optional): If the restoration of the file errored, the error will be stored here.
-        'restore_destination' (str): The name of the glacier bucket the granule is being copied to.
         'request_time' (DateTime): The time, in UTC isoformat, when the request to restore the granule was initiated.
         'completion_time' (DateTime, Optional):
             The time, in UTC isoformat, when all granule_files were no longer 'pending'/'staged'.
