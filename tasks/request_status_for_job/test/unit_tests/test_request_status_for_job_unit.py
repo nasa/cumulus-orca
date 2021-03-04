@@ -29,6 +29,9 @@ class TestRequestStatusForJobUnit(unittest.TestCase):  # pylint: disable-msg=too
             mock_get_dbconnect_info: MagicMock,
             mock_task: MagicMock
     ):
+        """
+        Basic path with all information present.
+        """
         job_id = uuid.uuid4().__str__()
 
         event = {
@@ -49,6 +52,9 @@ class TestRequestStatusForJobUnit(unittest.TestCase):  # pylint: disable-msg=too
             mock_setMetadata: MagicMock,
             mock_get_dbconnect_info: MagicMock
     ):
+        """
+        If job_id is not present, should return an error dictionary.
+        """
         event = {
         }
         context = Mock()
@@ -65,6 +71,9 @@ class TestRequestStatusForJobUnit(unittest.TestCase):  # pylint: disable-msg=too
             mock_get_dbconnect_info: MagicMock,
             mock_task: MagicMock
     ):
+        """
+        If database error is raised, it should be caught and returned in a dictionary.
+        """
         job_id = uuid.uuid4().__str__()
 
         event = {
@@ -82,6 +91,9 @@ class TestRequestStatusForJobUnit(unittest.TestCase):  # pylint: disable-msg=too
             mock_get_status_totals_for_job: MagicMock,
             mock_get_granule_status_entries_for_job: MagicMock
     ):
+        """
+        Basic path with all information present.
+        """
         job_id = uuid.uuid4().__str__()
         db_connect_info = Mock()
 
@@ -103,6 +115,9 @@ class TestRequestStatusForJobUnit(unittest.TestCase):  # pylint: disable-msg=too
             mock_single_query: MagicMock,
             mock_result_to_json: MagicMock
     ):
+        """
+        Basic path with all information present.
+        """
         job_id = uuid.uuid4().__str__()
 
         db_connect_info = Mock()
@@ -129,6 +144,9 @@ class TestRequestStatusForJobUnit(unittest.TestCase):  # pylint: disable-msg=too
             self,
             mock_single_query: MagicMock
     ):
+        """
+        If error is raised when contacting DB, error should be raised as a DatabaseError.
+        """
         job_id = uuid.uuid4().__str__()
         db_connect_info = Mock()
 
@@ -142,6 +160,9 @@ class TestRequestStatusForJobUnit(unittest.TestCase):  # pylint: disable-msg=too
             self,
             mock_single_query: MagicMock
     ):
+        """
+        Basic path with all information present.
+        """
         job_id = uuid.uuid4().__str__()
         db_connect_info = Mock()
 
@@ -170,6 +191,9 @@ class TestRequestStatusForJobUnit(unittest.TestCase):  # pylint: disable-msg=too
             self,
             mock_single_query: MagicMock
     ):
+        """
+        If error is raised when contacting DB, error should be raised as a DatabaseError.
+        """
         job_id = uuid.uuid4().__str__()
         db_connect_info = Mock()
 

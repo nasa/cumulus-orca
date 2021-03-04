@@ -30,6 +30,9 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
             mock_task: MagicMock,
             mock_get_dbconnect_info: MagicMock
     ):
+        """
+        Basic path with all information present.
+        """
         granule_id = uuid.uuid4().__str__()
         async_operation_id = uuid.uuid4().__str__()
 
@@ -75,6 +78,9 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
             mock_get_dbconnect_info: MagicMock,
             mock_cumulus_logger_error
     ):
+        """
+        If granule_id is missing, error dictionary should be returned.
+        """
         async_operation_id = uuid.uuid4().__str__()
 
         event = {
@@ -98,6 +104,9 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
             mock_task: MagicMock,
             mock_cumulus_logger_error: MagicMock
     ):
+        """
+        If database error is raised, it should be caught and returned in a dictionary.
+        """
         async_operation_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
 
@@ -200,6 +209,9 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
             mock_single_query: MagicMock,
             mock_result_to_json: MagicMock
     ):
+        """
+        Basic path with all information present.
+        """
         granule_id = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
 
@@ -231,6 +243,9 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
             self,
             mock_single_query: MagicMock
     ):
+        """
+        If error is raised when contacting DB, error should be raised as a DatabaseError.
+        """
         granule_id = uuid.uuid4().__str__()
         db_connect_info = Mock()
 
@@ -246,6 +261,9 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
             mock_single_query: MagicMock,
             mock_result_to_json: MagicMock
     ):
+        """
+        Basic path with all information present.
+        """
         granule_id = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
 
@@ -278,6 +296,9 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
             self,
             mock_single_query: MagicMock
     ):
+        """
+        If error is raised when contacting DB, error should be raised as a DatabaseError.
+        """
         granule_id = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
         db_connect_info = Mock()
@@ -294,6 +315,9 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
             mock_single_query: MagicMock,
             mock_result_to_json: MagicMock
     ):
+        """
+        Basic path with all information present.
+        """
         granule_id = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
 
@@ -323,6 +347,9 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
             self,
             mock_single_query: MagicMock
     ):
+        """
+        If error is raised when contacting DB, error should be raised as a DatabaseError
+        """
         granule_id = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
         db_connect_info = Mock()
