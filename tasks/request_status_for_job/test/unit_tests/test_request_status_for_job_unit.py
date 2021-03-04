@@ -126,8 +126,8 @@ class TestRequestStatusForJobUnit(unittest.TestCase):  # pylint: disable-msg=too
 
         mock_single_query.assert_called_once_with(f"""
             SELECT
-                granule_id as \"{request_status_for_job.OUTPUT_GRANULE_ID_KEY}\",
-                orca_status.value AS \"{request_status_for_job.OUTPUT_STATUS_KEY}\"
+                granule_id as "{request_status_for_job.OUTPUT_GRANULE_ID_KEY}",
+                orca_status.value AS "{request_status_for_job.OUTPUT_STATUS_KEY}"
             FROM
                 orca_recoveryjob
             JOIN orca_status ON orca_recoveryjob.status_id=orca_status.id
@@ -166,7 +166,7 @@ class TestRequestStatusForJobUnit(unittest.TestCase):  # pylint: disable-msg=too
         job_id = uuid.uuid4().__str__()
         db_connect_info = Mock()
 
-        mock_single_query.return_value = [{'value': 'status0', 'total': 5}, {'value': 'status1', 'total': 10}]
+        mock_single_query.return_value = [{'value': 'success', 'total': 5}, {'value': 'future_status', 'total': 10}]
 
         result = request_status_for_job.get_status_totals_for_job(job_id, db_connect_info)
 
@@ -184,7 +184,7 @@ class TestRequestStatusForJobUnit(unittest.TestCase):  # pylint: disable-msg=too
             LEFT JOIN granule_status_count gsc ON (gsc.status_id = os.id)""",
                                                   db_connect_info, (job_id,))
 
-        self.assertEqual({'status0': 5, 'status1': 10}, result)
+        self.assertEqual({'success': 5, 'future_status': 10}, result)
 
     @patch('database.single_query')
     def test_get_status_totals_for_job_error_wrapped_in_database_error(

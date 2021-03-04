@@ -114,7 +114,6 @@ FUNCTIONS
                 400 if granule_id is missing. 500 if an error occurs when querying the database.
     
     task(granule_id: str, db_connect_info: Dict, job_id: str = None) -> Dict[str, Any]
-        todo: Remember to fix datetime bugs in dists.
         Args:
             granule_id: The unique ID of the granule to retrieve status for.
             db_connect_info: The {database}.py defined db_connect_info.

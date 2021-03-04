@@ -25,7 +25,6 @@ LOGGER = CumulusLogger()
 def task(granule_id: str, db_connect_info: Dict, job_id: str = None) -> Dict[str, Any]:
     # noinspection SpellCheckingInspection
     """
-    todo: Remember to fix datetime bugs in dists.
     Args:
         granule_id: The unique ID of the granule to retrieve status for.
         db_connect_info: The {database}.py defined db_connect_info.
@@ -65,7 +64,7 @@ def task(granule_id: str, db_connect_info: Dict, job_id: str = None) -> Dict[str
 def get_most_recent_job_id_for_granule(granule_id: str, db_connect_info: Dict[str, any]) -> str:
     sql = """
             SELECT
-                orca_recoveryjob.job_id
+                job_id
             FROM
                 orca_recoveryjob
             WHERE
@@ -107,11 +106,11 @@ def get_job_entry_for_granule(
         """
     sql = f"""
             SELECT
-                granule_id as \"{OUTPUT_GRANULE_ID_KEY}\",
-                job_id as \"{OUTPUT_JOB_ID_KEY}\",
-                restore_destination as \"{OUTPUT_RESTORE_DESTINATION_KEY}\",
-                request_time as \"{OUTPUT_REQUEST_TIME_KEY}\",
-                completion_time as \"{OUTPUT_COMPLETION_TIME_KEY}\"
+                granule_id as "{OUTPUT_GRANULE_ID_KEY}",
+                job_id as "{OUTPUT_JOB_ID_KEY}",
+                restore_destination as \"{OUTPUT_RESTORE_DESTINATION_KEY}",
+                request_time as "{OUTPUT_REQUEST_TIME_KEY}",
+                completion_time as "{OUTPUT_COMPLETION_TIME_KEY}"
             FROM
                 orca_recoveryjob
             WHERE
@@ -140,9 +139,9 @@ def get_file_entries_for_granule_in_job(granule_id: str, job_id: str, db_connect
     """
     sql = f"""
             SELECT
-                orca_recoverfile.filename AS \"{OUTPUT_FILENAME_KEY}\",
-                orca_status.value AS \"{OUTPUT_STATUS_KEY}\",
-                orca_recoverfile.error_message as \"{OUTPUT_ERROR_MESSAGE_KEY}\"
+                orca_recoverfile.filename AS "{OUTPUT_FILENAME_KEY}",
+                orca_status.value AS "{OUTPUT_STATUS_KEY}",
+                orca_recoverfile.error_message as "{OUTPUT_ERROR_MESSAGE_KEY}"
             FROM
                 orca_recoverfile
             JOIN orca_status ON orca_recoverfile.status_id=orca_status.id
@@ -160,6 +159,20 @@ def get_file_entries_for_granule_in_job(granule_id: str, job_id: str, db_connect
 
 
 def create_http_error_dict(error_type: str, http_status_code: int, request_id: str, message: str) -> Dict[str, Any]:
+    """
+    Creates a standardized dictionary for error reporting.
+    Args:
+        error_type: The string representation of http_status_code.
+        http_status_code: The integer representation of the http error.
+        request_id: The incoming request's id.
+        message: The message to display to the user and to record for debugging.
+    Returns:
+        A dict with the following keys:
+            'errorType' (str)
+            'httpStatus' (int)
+            'requestId' (str)
+            'message' (str)
+    """
     LOGGER.error(message)
     return {
         'errorType': error_type,
@@ -179,6 +192,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             asyncOperationId (Optional): The unique ID of the asyncOperation.
                 May apply to a request that covers multiple granules.
         context: An object required by AWS Lambda. Unused.
+
+    Environment Vars: See requests_db.py's get_dbconnect_info for further details.
+        'DATABASE_PORT' (int): Defaults to 5432
+        'DATABASE_NAME' (str)
+        'DATABASE_USER' (str)
+        'PREFIX' (str)
+        '{prefix}-drdb-host' (str, secretsmanager)
+        '{prefix}-drdb-user-pass' (str, secretsmanager)
 
     Returns: A Dict with the following keys:
         'granule_id' (str): The unique ID of the granule to retrieve status for.

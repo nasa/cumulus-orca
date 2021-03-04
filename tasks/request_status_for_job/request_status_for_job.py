@@ -61,8 +61,8 @@ def get_granule_status_entries_for_job(job_id: str, db_connect_info: Dict) -> Li
     """
     sql = f"""
             SELECT
-                granule_id as \"{OUTPUT_GRANULE_ID_KEY}\",
-                orca_status.value AS \"{OUTPUT_STATUS_KEY}\"
+                granule_id as "{OUTPUT_GRANULE_ID_KEY}",
+                orca_status.value AS "{OUTPUT_STATUS_KEY}"
             FROM
                 orca_recoveryjob
             JOIN orca_status ON orca_recoveryjob.status_id=orca_status.id
@@ -113,12 +113,25 @@ def get_status_totals_for_job(job_id: str, db_connect_info: Dict) -> Dict[str, i
     except database.DbError as err:
         LOGGER.error(f"DbError: {str(err)}")
         raise DatabaseError(str(err))
-    # todo: retest
-    totals = {rows[i]['value']: rows[i]['total'] for i in range(0, len(rows), 1)}
+    totals = {row['value']: row['total'] for row in rows}
     return totals
 
 
 def create_http_error_dict(error_type: str, http_status_code: int, request_id: str, message: str) -> Dict[str, Any]:
+    """
+    Creates a standardized dictionary for error reporting.
+    Args:
+        error_type: The string representation of http_status_code.
+        http_status_code: The integer representation of the http error.
+        request_id: The incoming request's id.
+        message: The message to display to the user and to record for debugging.
+    Returns:
+        A dict with the following keys:
+            'errorType' (str)
+            'httpStatus' (int)
+            'requestId' (str)
+            'message' (str)
+    """
     LOGGER.error(message)
     return {
         'errorType': error_type,
@@ -135,6 +148,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         event: A dict with the following keys:
             asyncOperationId: The unique asyncOperationId of the recovery job.
         context: An object required by AWS Lambda. Unused.
+
+    Environment Vars: See requests_db.py's get_dbconnect_info for further details.
+        'DATABASE_PORT' (int): Defaults to 5432
+        'DATABASE_NAME' (str)
+        'DATABASE_USER' (str)
+        'PREFIX' (str)
+        '{prefix}-drdb-host' (str, secretsmanager)
+        '{prefix}-drdb-user-pass' (str, secretsmanager)
 
     Returns: A Dict with the following keys:
         asyncOperationId (str): The unique ID of the asyncOperation.

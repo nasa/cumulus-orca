@@ -18,6 +18,11 @@
 					"type": "number",
 					"minimum": 0
 				},
+				"staged": {
+					"description": "Presently unimplemented.",
+					"type": "number",
+					"minimum": 0
+				},
 				"success": {
 					"description": "The number of granules that have been successfully copied.",
 					"type": "number",
@@ -29,7 +34,7 @@
 					"minimum": 0
 				}
 			},
-			"required": [ "pending", "success", "failed" ]
+			"required": [ "pending", "staged", "success", "failed" ]
 		},
 		"granules": {
 			"description": "An array representing each granule being copied as part of the job.",

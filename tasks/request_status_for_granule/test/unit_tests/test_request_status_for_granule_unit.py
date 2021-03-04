@@ -225,7 +225,7 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
 
         mock_single_query.assert_called_once_with(f"""
             SELECT
-                orca_recoveryjob.job_id
+                job_id
             FROM
                 orca_recoveryjob
             WHERE
@@ -277,11 +277,11 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
 
         mock_single_query.assert_called_once_with(f"""
             SELECT
-                granule_id as \"{request_status_for_granule.OUTPUT_GRANULE_ID_KEY}\",
-                job_id as \"{request_status_for_granule.OUTPUT_JOB_ID_KEY}\",
-                restore_destination as \"{request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY}\",
-                request_time as \"{request_status_for_granule.OUTPUT_REQUEST_TIME_KEY}\",
-                completion_time as \"{request_status_for_granule.OUTPUT_COMPLETION_TIME_KEY}\"
+                granule_id as "{request_status_for_granule.OUTPUT_GRANULE_ID_KEY}",
+                job_id as "{request_status_for_granule.OUTPUT_JOB_ID_KEY}",
+                restore_destination as "{request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY}",
+                request_time as "{request_status_for_granule.OUTPUT_REQUEST_TIME_KEY}",
+                completion_time as "{request_status_for_granule.OUTPUT_COMPLETION_TIME_KEY}"
             FROM
                 orca_recoveryjob
             WHERE
@@ -328,9 +328,9 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
 
         mock_single_query.assert_called_once_with(f"""
             SELECT
-                orca_recoverfile.filename AS \"{request_status_for_granule.OUTPUT_FILENAME_KEY}\",
-                orca_status.value AS \"{request_status_for_granule.OUTPUT_STATUS_KEY}\",
-                orca_recoverfile.error_message as \"{request_status_for_granule.OUTPUT_ERROR_MESSAGE_KEY}\"
+                orca_recoverfile.filename AS "{request_status_for_granule.OUTPUT_FILENAME_KEY}",
+                orca_status.value AS "{request_status_for_granule.OUTPUT_STATUS_KEY}",
+                orca_recoverfile.error_message as "{request_status_for_granule.OUTPUT_ERROR_MESSAGE_KEY}"
             FROM
                 orca_recoverfile
             JOIN orca_status ON orca_recoverfile.status_id=orca_status.id
