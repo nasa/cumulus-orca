@@ -4,10 +4,12 @@ Name: test_request_status_for_granule_unit.py
 Description:  Unit tests for request_status_for_granule.py.
 """
 import copy
+import json
 import unittest
 import uuid
 from http import HTTPStatus
 from unittest.mock import MagicMock, patch, Mock
+import fastjsonschema
 
 import database
 import requests_db
@@ -358,3 +360,47 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
 
         with self.assertRaises(request_status_for_granule.DatabaseError):
             request_status_for_granule.get_file_entries_for_granule_in_job(granule_id, job_id, db_connect_info)
+
+# Multi-Function Tests:
+    @patch('database.single_query')
+    def test_task_output_json_schema(
+            self,
+            mock_single_query: MagicMock
+    ):
+        granule_id = uuid.uuid4().__str__()
+        job_id = uuid.uuid4().__str__()
+
+        db_connect_info = Mock()
+
+        mock_single_query.side_effect = [
+            # job
+            [{
+                request_status_for_granule.OUTPUT_GRANULE_ID_KEY: granule_id,
+                request_status_for_granule.OUTPUT_JOB_ID_KEY: job_id,
+                request_status_for_granule.OUTPUT_REQUEST_TIME_KEY: '2019-07-17T17:36:38.494918',
+                request_status_for_granule.OUTPUT_COMPLETION_TIME_KEY: None
+            }],
+            # files
+            [
+                {
+                    request_status_for_granule.OUTPUT_FILENAME_KEY: uuid.uuid4().__str__() + '.ext',
+                    request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY: uuid.uuid4().__str__(),
+                    request_status_for_granule.OUTPUT_STATUS_KEY: 'failed',
+                    request_status_for_granule.OUTPUT_ERROR_MESSAGE_KEY: 'some error message'
+                },
+                {
+                    request_status_for_granule.OUTPUT_FILENAME_KEY: uuid.uuid4().__str__() + '.ext',
+                    request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY: uuid.uuid4().__str__(),
+                    request_status_for_granule.OUTPUT_STATUS_KEY: 'staged',
+                    request_status_for_granule.OUTPUT_ERROR_MESSAGE_KEY: None
+                }
+            ]
+        ]
+
+        result = request_status_for_granule.task(granule_id, db_connect_info, job_id)
+
+        raw_schema = open('..\\..\\schemas\\output.json', 'r').read()
+        schema = json.loads(raw_schema)
+        validate = fastjsonschema.compile(schema)
+        validate(result)
+

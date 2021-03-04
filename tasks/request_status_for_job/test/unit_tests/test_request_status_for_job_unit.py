@@ -1,14 +1,16 @@
 """
 Name: test_request_status_for_job_unit.py
 
-Description:  Unit tests for request_status_for_granule.py.
+Description:  Unit tests for request_status_for_job.py.
 """
+import json
 import unittest
 import uuid
 from http import HTTPStatus
 from unittest.mock import patch, MagicMock, Mock
 
 import database
+import fastjsonschema as fastjsonschema
 import requests_db
 
 import request_status_for_job
@@ -211,3 +213,53 @@ class TestRequestStatusForJobUnit(unittest.TestCase):  # pylint: disable-msg=too
         except ValueError:
             return
         self.fail('Error not raised.')
+
+# Multi-Function Tests:
+    @patch('database.single_query')
+    def test_task_output_json_schema(
+            self,
+            mock_single_query: MagicMock
+    ):
+        job_id = uuid.uuid4().__str__()
+
+        db_connect_info = Mock()
+
+        mock_single_query.side_effect = [
+            # granules
+            [
+                {
+                    request_status_for_job.OUTPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(),
+                    request_status_for_job.OUTPUT_STATUS_KEY: 'success'
+                },
+                {
+                    request_status_for_job.OUTPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(),
+                    request_status_for_job.OUTPUT_STATUS_KEY: 'pending'
+                }
+            ],
+            # status totals
+            [
+                {
+                    'value': 'pending',
+                    'total': 5
+                },
+                {
+                    'value': 'success',
+                    'total': 2
+                },
+                {
+                    'value': 'staged',
+                    'total': 0
+                },
+                {
+                    'value': 'failed',
+                    'total': 1000
+                }
+            ]
+        ]
+
+        result = request_status_for_job.task(job_id, db_connect_info)
+
+        raw_schema = open('..\\..\\schemas\\output.json', 'r').read()
+        schema = json.loads(raw_schema)
+        validate = fastjsonschema.compile(schema)
+        validate(result)

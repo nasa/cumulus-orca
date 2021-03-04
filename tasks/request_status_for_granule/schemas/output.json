@@ -30,7 +30,7 @@
 					"status": {
 						"description": "The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.",
 						"type": "string",
-						"pattern": "/^(pending|success|failed|staged)$/"
+						"pattern": "^(pending|success|failed|staged)$"
 					},
 					"error_message": {
 						"description": "If the restoration of the file errored, the error will be stored here.",
@@ -44,13 +44,13 @@
 		"request_time": {
 			"description": "The time, in UTC and isoformat, when the request to restore the granule was initiated.",
 			"type": "string",
-			"pattern": "/^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?$"
+			"pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?$"
 		},
 		"completion_time": {
 			"description": "The time, in UTC and isoformat, when all granule_files were no longer 'pending'.",
 			"type": "string",
-			"pattern": "/^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?$"
+			"pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?$"
 		}
 	},
-	"required": [ "granule_id", "asyncOperationId", "granule_files", "request_time" ]
+	"required": [ "granule_id", "asyncOperationId", "files", "request_time" ]
 }

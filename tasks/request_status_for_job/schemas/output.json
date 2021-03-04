@@ -50,7 +50,7 @@
 					"status": {
 						"description": "The status of the restoration of the granule. May be 'pending', 'staged', 'success', or 'failed'.",
 						"type": "string",
-						"pattern": "/^(pending|success|failed|staged)$/"
+						"pattern": "^(pending|success|failed|staged)$"
 					}
 				},
 				"required": [ "granule_id", "status" ]
