@@ -9,9 +9,9 @@ from configuration files, Terraform files (`*.tf`), or modules from a new
 version of ORCA can be deployed and will update the appropriate portions of 
 the stack as needed.
 
-**IMPORTANT:**  For instances where ORCA has been deployed with Cumulus, 
-visit the [Supported PI Versions wiki page](https://wiki.earthdata.nasa.gov/display/CUMULUS/Supported+PI+Versions) 
-to ensure version compatibility.
+:::important Ensure Cumulus Compatability ::: 
+See the linked [style guide](https://wiki.earthdata.nasa.gov/display/CUMULUS/Supported+PI+Versions) 
+for syntax.
 
 ## ORCA Versioning
 
@@ -19,15 +19,18 @@ ORCA uses a global versioning approach, meaning version numbers are
 consistent across all Terraform modules and semantic versioning to track 
 major, minor, and patch version (e.g., 1.0.0).
 
-**IMPORTANT:** By convention, ORCA minor version releases introduce breaking 
-changes (e.g., 1.13.x -> 1.14.0), so it is critical that the release notes 
-are viewed for migration steps. Carefully read each BREAKING CHANGES and 
-MIGRATION STEPS sections within the `CHANGELOG.md` file, following all steps, 
-starting with the oldest release after your currently installed release, and 
-progressing through them chronologically.
+::: important ORCA major version releases (e.g., 2.x.x
+-> 3.x.x) introduce known breaking changes. However, any 
+version change has the possibility to introduce breaking
+changes for your particular use case. It is critical
+that the release notes are viewed for migration steps and changes. :::
 
-To view the released module artifacts for each ORCA core version, see the 
-[ORCA Releases page](https://github.com/nasa/cumulus-orca/releases).
+Carefully read each BREAKING CHANGES and MIGRATION STEPS 
+sections within the `CHANGELOG.md` file, following all steps, starting with the oldest release after your 
+currently installed release, and progressing through them chronologically.
+
+To view the released module artifacts for each ORCA core 
+version, see the [ORCA Releases page](https://github.com/nasa/cumulus-orca/releases).
 
 ## Migrating to a New Version
 
@@ -75,23 +78,13 @@ replacing `vx.x.x` with the desired version of ORCA.
 
 3.	Run `terraform init` to get the latest copies of your updated modules.
 
-## Update Data Persistence Resources
-
-**Reminder:** Remember to [initialize Terraform](https://nasa.github.io/cumulus/docs/deployment/deployment-readme#initialize-terraform) 
-if necessary. From the directory of your `data-persistence` deployment module 
-(e.g., `data-persistence-tf`):
-
-`$ AWS_REGION=<region> \ # e.g. us-east-1`
-    `AWS_PROFILE=<profile> \`
-    `terraform apply`
-
 ## Update ORCA Resources
 
-**Reminder:** Remember to [initialize Terraform](https://nasa.github.io/cumulus/docs/deployment/deployment-readme#initialize-terraform)
-if necessary. From the directory of your `cumulus` deployment module (e.g., 
-`cumulus-tf`):
+::: reminder Remember to [initialize Terraform](https://nasa.github.io/cumulus/docs/deployment/deployment-readme#initialize-terraform)
+if necessary. :::
+From the directory of your `cumulus` deployment module (e.g., `cumulus-tf`):
 
-`$ AWS_REGION=<region> \ # e.g. us-east-1`
+`$ AWS_REGION=<region> \ # e.g. us-west-2`
     `AWS_PROFILE=<profile> \`
     `terraform apply`
 
