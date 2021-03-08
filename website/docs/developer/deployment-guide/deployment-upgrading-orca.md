@@ -9,9 +9,9 @@ from configuration files, Terraform files (`*.tf`), or modules from a new
 version of ORCA can be deployed and will update the appropriate portions of 
 the stack as needed.
 
-:::important Ensure Cumulus Compatability ::: 
-See the linked [style guide](https://wiki.earthdata.nasa.gov/display/CUMULUS/Supported+PI+Versions) 
-for syntax.
+:::important Ensure Cumulus Compatability
+Check for compatability with the [Cumulus version](https://wiki.earthdata.nasa.gov/display/CUMULUS/Supported+PI+Versions).
+:::
 
 ## ORCA Versioning
 
@@ -19,11 +19,12 @@ ORCA uses a global versioning approach, meaning version numbers are
 consistent across all Terraform modules and semantic versioning to track 
 major, minor, and patch version (e.g., 1.0.0).
 
-::: important ORCA major version releases (e.g., 2.x.x
--> 3.x.x) introduce known breaking changes. However, any 
-version change has the possibility to introduce breaking
-changes for your particular use case. It is critical
-that the release notes are viewed for migration steps and changes. :::
+::: important 
+ORCA major version releases (e.g., 2.x.x -> 3.x.x) introduce known breaking 
+changes. However, any version change has the possibility to introduce breaking
+changes for your particular use case. It is critical that the release notes 
+are viewed for migration steps and changes.
+:::
 
 Carefully read each BREAKING CHANGES and MIGRATION STEPS 
 sections within the `CHANGELOG.md` file, following all steps, starting with the oldest release after your 
@@ -80,8 +81,11 @@ replacing `vx.x.x` with the desired version of ORCA.
 
 ## Update ORCA Resources
 
-::: reminder Remember to [initialize Terraform](https://nasa.github.io/cumulus/docs/deployment/deployment-readme#initialize-terraform)
-if necessary. :::
+::: reminder 
+Remember to [initialize Terraform](https://nasa.github.io/cumulus/docs/deployment/deployment-readme#initialize-terraform)
+if necessary.
+:::
+
 From the directory of your `cumulus` deployment module (e.g., `cumulus-tf`):
 
 `$ AWS_REGION=<region> \ # e.g. us-west-2`
