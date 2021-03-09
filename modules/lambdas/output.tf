@@ -42,6 +42,18 @@ output "request_status_arn" {
 }
 
 
+output "request_status_for_granule_arn" {
+  description = "AWS ARN for the request_status_for_granule lambda."
+  value       = aws_lambda_function.request_status_for_granule.arn
+}
+
+
+output "request_status_for_job_arn" {
+  description = "AWS ARN for the request_status_for_job lambda."
+  value       = aws_lambda_function.request_status_for_job.arn
+}
+
+
 # Utility Lambdas
 # ------------------------------------------------------------------------------
 output "db_deploy_arn" {
