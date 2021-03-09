@@ -4,7 +4,7 @@ import uuid
 from unittest import TestCase
 from unittest.mock import Mock, call, patch
 
-from handler import *
+from copy_to_glacier import *
 
 
 class TestCopyToGlacierHandler(TestCase):
