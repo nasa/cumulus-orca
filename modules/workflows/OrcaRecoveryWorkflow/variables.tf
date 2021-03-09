@@ -48,12 +48,6 @@ variable "tags" {
 
 ## Variables unique to ORCA
 ## REQUIRED
-variable "cumulus_version" {
-  type        = string
-  description = "Cumulus workflow version to use with ORCA. In the form vX.Y.Z"
-}
-
-
 variable "orca_default_bucket" {
   type        = string
   description = "Default ORCA S3 Glacier bucket to use if no overrides exist."

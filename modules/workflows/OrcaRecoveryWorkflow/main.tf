@@ -18,14 +18,13 @@ provider "aws" {
 
 ## Local Variables
 locals {
-  tags            = merge(var.tags, { Deployment = var.prefix })
-  workflow_source = "https://github.com/nasa/cumulus/releases/download/${var.cumulus_version}/terraform-aws-cumulus-workflow.zip"
+  tags = merge(var.tags, { Deployment = var.prefix })
 }
 
 
 ## Referenced Modules - Workflows
 module "orca_recovery_workflow" {
-  source = local.workflow_source
+  source = "https://github.com/nasa/cumulus/releases/download/v6.0.0/terraform-aws-cumulus-workflow.zip"
   ## --------------------------
   ## Cumulus Variables
   ## --------------------------

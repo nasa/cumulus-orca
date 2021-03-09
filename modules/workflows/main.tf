@@ -43,7 +43,6 @@ module "orca_recovery_workflow" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  cumulus_version     = var.cumulus_version
   orca_default_bucket = var.orca_default_bucket
 
   # Task ARNS needed for workflow template
