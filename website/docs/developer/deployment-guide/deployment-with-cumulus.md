@@ -523,6 +523,75 @@ module "orca" {
 
 ## Define the ORCA Wokflows
 
+The ORCA Ingest Workflows follows each step listed below. Adding the Move
+Granule Step and Add the Copy To Glacier Step are detailed in their respective
+sections.
+
+**ORCA Ingest Workflow**
+  SyncGranule
+  FilesToGranuleStep
+  MoveGranuleStep
+  CopyToGlacier
+
+### Add the Move Granule Step to an Ingest Workflow
+
+Navigate to `cumulus-tf/ingest_granule_workflow.tf` then add the following 
+step anywhere after the FilesToGranuleStep step being sure to change the 
+FilesToGranuleStep's `"Next"` parameter equal to "MoveGranuleStep".
+
+:::important
+
+Adjust the `"Next"` step in the example below to point to the proper step in
+the ingest workflow.
+
+:::
+
+...
+"MoveGranuleStep": {
+      "Parameters": {
+        "cma": {
+          "event.$": "$",
+          "task_config": {
+            "bucket": "{$.meta.buckets.internal.name}",
+            "buckets": "{$.meta.buckets}",
+            "distribution_endpoint": "{$.meta.distribution_endpoint}",
+            "collection": "{$.meta.collection}",
+            "duplicateHandling": "{$.meta.collection.duplicateHandling}",
+            "cumulus_message": {
+              "outputs": [
+                { "source": "{$}", "destination": "{$.payload}" },
+                { "source": "{$.granules}", "destination": "{$.meta.processed_granules}" }
+              ]
+            }
+          }
+        }
+      },
+      "Type": "Task",
+      "Resource": "${move_granules_task_arn}",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "ResultPath": "$.exception",
+          "Next": "WorkflowFailed"
+        }
+      ],
+...
+
+
 ### Add the Copy To Glacier Step to an Ingest Workflow
 
 Navigate to `cumulus-tf/ingest_granule_workflow.tf` then add the following step
@@ -552,7 +621,7 @@ the ingest workflow.
       }
    },
    "Type":"Task",
-   "Resource":"${module.orca.copy_to_glacier_lambda_arn}",
+   "Resource":"module.orca.copy_to_glacier_lambda_arn",
    "Catch":[
       {
          "ErrorEquals":[
@@ -581,6 +650,13 @@ the ingest workflow.
 
 Copy the workflow from `workflows/workflows.yml.dr` into your Cumulus workflow.
 Modify as needed.
+
+### Workflow Failures
+
+Failures within ORCA break through to the Cumulus workflow they are a part
+of. More information on addressing workflow failures can be found on the
+ORCA [Best Practices](developer/../../development-guide/code/best-practices.mdx) 
+page.
 
 
 ## ORCA Variables
@@ -648,7 +724,7 @@ run `terraform destroy`.
 To configure a collection to enable ORCA, add the line
 `"granuleRecoveryWorkflow": "DrRecoveryWorkflow"` to the collection configuration
 as seen below. Optionally, you can exclude files by adding values to an
-`"exclue_file_type"` variable. For more information, see the documentation on the
+`"excludeFileTypes"` variable. For more information, see the documentation on the
 [`copy_to_glacier` task](https://github.com/nasa/cumulus-orca/tree/master/tasks/copy_to_glacier).
 
 ```json
@@ -664,7 +740,7 @@ as seen below. Optionally, you can exclude files by adding values to an
   "provider_path": "L0A_HR_RAW/",
   "meta": {
     "granuleRecoveryWorkflow": "DrRecoveryWorkflow",
-    "exclue_file_type": [".cmr", ".xml", ".met"]
+    "excludeFileTypes": [".cmr", ".xml", ".met"]
   },
   ...
 }
