@@ -45,7 +45,7 @@ resource "aws_lambda_function" "copy_to_glacier" {
   function_name    = "${var.prefix}_copy_to_glacier"
   filename         = "${path.module}/../../tasks/copy_to_glacier/copy_to_glacier.zip"
   source_code_hash = filemd5("${path.module}/../../tasks/copy_to_glacier/copy_to_glacier.zip")
-  handler          = "handler.handler"
+  handler          = "copy_to_glacier.handler"
   role             = module.restore_object_arn.restore_object_role_arn
   runtime          = "python3.7"
   memory_size      = 2240
@@ -196,7 +196,7 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_glaci
 
 ```
 NAME
-    handler
+    copy_to_glacier
 
 FUNCTIONS
     copy_granule_between_buckets(source_bucket_name: str, source_key: str, destination_bucket: str, destination_key: str) -> None

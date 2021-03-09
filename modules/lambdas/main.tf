@@ -82,7 +82,7 @@ resource "aws_lambda_function" "copy_to_glacier" {
   ## OPTIONAL
   description      = "ORCA archiving lambda used to copy data to an ORCA S3 glacier bucket."
   filename         = "${path.module}/../../tasks/copy_to_glacier/copy_to_glacier.zip"
-  handler          = "handler.handler"
+  handler          = "copy_to_glacier.handler"
   memory_size      = var.orca_ingest_lambda_memory_size
   runtime          = "python3.7"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/copy_to_glacier/copy_to_glacier.zip")
