@@ -46,11 +46,20 @@ Fully defined json schemas written in the schema of https://json-schema.org/ can
 <a name="pydoc"></a>
 ## pydoc request_status_for_job
 ```
-NAME
-    request_status_for_job
-
 FUNCTIONS
     create_http_error_dict(error_type: str, http_status_code: int, request_id: str, message: str) -> Dict[str, Any]
+        Creates a standardized dictionary for error reporting.
+        Args:
+            error_type: The string representation of http_status_code.
+            http_status_code: The integer representation of the http error.
+            request_id: The incoming request's id.
+            message: The message to display to the user and to record for debugging.
+        Returns:
+            A dict with the following keys:
+                'errorType' (str)
+                'httpStatus' (int)
+                'requestId' (str)
+                'message' (str)
     
     get_granule_status_entries_for_job(job_id: str, db_connect_info: Dict) -> List[Dict[str, Any]]
         Gets the orca_recoveryjob status entry for the associated job_id.
@@ -61,7 +70,7 @@ FUNCTIONS
         
         Returns: A list of dicts with the following keys:
             'granule_id' (str)
-            'status' (str): pending|success|failed
+            'status' (str): pending|staged|success|failed
     
     get_status_totals_for_job(job_id: str, db_connect_info: Dict) -> Dict[str, int]
         Gets the number of orca_recoveryjobs for the given job_id for each possible status value.
@@ -72,6 +81,7 @@ FUNCTIONS
         
         Returns: A dictionary with the following keys:
             'pending' (int)
+            'staged' (int)
             'success' (int)
             'failed' (int)
     
@@ -82,15 +92,24 @@ FUNCTIONS
                 asyncOperationId: The unique asyncOperationId of the recovery job.
             context: An object required by AWS Lambda. Unused.
         
+        Environment Vars: See requests_db.py's get_dbconnect_info for further details.
+            'DATABASE_PORT' (int): Defaults to 5432
+            'DATABASE_NAME' (str)
+            'DATABASE_USER' (str)
+            'PREFIX' (str)
+            '{prefix}-drdb-host' (str, secretsmanager)
+            '{prefix}-drdb-user-pass' (str, secretsmanager)
+        
         Returns: A Dict with the following keys:
             asyncOperationId (str): The unique ID of the asyncOperation.
             job_status_totals (Dict[str, int]): Sums of how many granules are in each particular restoration status.
                 pending (int): The number of granules that still need to be copied.
+                staged (int): Currently unimplemented.
                 success (int): The number of granules that have been successfully copied.
                 failed (int): The number of granules that did not copy and will not copy due to an error.
             granules (Array[Dict]): An array of Dicts representing each granule being copied as part of the job.
                 granule_id (str): The unique ID of the granule.
-                status (str): The status of the restoration of the file. May be 'pending', 'success', or 'failed'.
+                status (str): The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.
         
             Or, if an error occurs, see create_http_error_dict
                 400 if asyncOperationId is missing. 500 if an error occurs when querying the database.
@@ -104,11 +123,12 @@ FUNCTIONS
                 'asyncOperationId' (str): The job_id.
                 'job_status_totals' (Dict): A dictionary with the following keys:
                     'pending' (int)
+                    'staged' (int)
                     'success' (int)
                     'failed' (int)
                 'granules' (List): A list of dicts with the following keys:
                     'granule_id' (str)
-                    'status' (str): pending|success|failed
+                    'status' (str): pending|staged|success|failed
 
 DATA
     Any = typing.Any

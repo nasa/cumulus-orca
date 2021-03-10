@@ -367,6 +367,9 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
             self,
             mock_single_query: MagicMock
     ):
+        """
+        Checks a realistic output against the output.json.
+        """
         granule_id = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
 

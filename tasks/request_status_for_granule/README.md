@@ -54,11 +54,20 @@ Input with no asyncOperationId. Only the most recent operation for the granule w
 <a name="pydoc"></a>
 ## pydoc request_status_for_granule
 ```
-NAME
-    request_status_for_granule
-
 FUNCTIONS
     create_http_error_dict(error_type: str, http_status_code: int, request_id: str, message: str) -> Dict[str, Any]
+        Creates a standardized dictionary for error reporting.
+        Args:
+            error_type: The string representation of http_status_code.
+            http_status_code: The integer representation of the http error.
+            request_id: The incoming request's id.
+            message: The message to display to the user and to record for debugging.
+        Returns:
+            A dict with the following keys:
+                'errorType' (str)
+                'httpStatus' (int)
+                'requestId' (str)
+                'message' (str)
     
     get_file_entries_for_granule_in_job(granule_id: str, job_id: str, db_connect_info: Dict) -> List[Dict]
         Gets the individual status entries for the files for the given job+granule.
@@ -67,7 +76,8 @@ FUNCTIONS
         
         Returns: A Dict with the following keys:
             'file_name' (str): The name and extension of the file.
-            'status' (str): The status of the restoration of the file. May be 'pending', 'success', or 'failed'.
+            'restore_destination' (str): The name of the glacier bucket the file is being copied to.
+            'status' (str): The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.
             'error_message' (str): If the restoration of the file errored, the error will be stored here. Otherwise, None.
     
     get_job_entry_for_granule(granule_id: str, job_id: str, db_connect_info: Dict) -> Dict[str, Any]
@@ -82,10 +92,9 @@ FUNCTIONS
         Returns: A Dict with the following keys:
             'granule_id' (str): The unique ID of the granule to retrieve status for.
             'job_id' (str): The unique ID of the asyncOperation.
-            'restore_destination' (str): The name of the glacier bucket the granule is being copied to.
             'request_time' (DateTime): The time, in UTC isoformat, when the request to restore the granule was initiated.
             'completion_time' (DateTime, Optional):
-                The time, in UTC isoformat, when all granule_files were no longer 'pending'.
+                The time, in UTC isoformat, when all granule_files were no longer 'pending'/'staged'.
     
     get_most_recent_job_id_for_granule(granule_id: str, db_connect_info: Dict[str, <built-in function any>]) -> str
     
@@ -98,17 +107,25 @@ FUNCTIONS
                     May apply to a request that covers multiple granules.
             context: An object required by AWS Lambda. Unused.
         
+        Environment Vars: See requests_db.py's get_dbconnect_info for further details.
+            'DATABASE_PORT' (int): Defaults to 5432
+            'DATABASE_NAME' (str)
+            'DATABASE_USER' (str)
+            'PREFIX' (str)
+            '{prefix}-drdb-host' (str, secretsmanager)
+            '{prefix}-drdb-user-pass' (str, secretsmanager)
+        
         Returns: A Dict with the following keys:
             'granule_id' (str): The unique ID of the granule to retrieve status for.
             'asyncOperationId' (str): The unique ID of the asyncOperation.
             'files' (List): Description and status of the files within the given granule. List of Dicts with keys:
                 'file_name' (str): The name and extension of the file.
-                'status' (str): The status of the restoration of the file. May be 'pending', 'success', or 'failed'.
+                'restore_destination' (str): The name of the glacier bucket the file is being copied to.
+                'status' (str): The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.
                 'error_message' (str, Optional): If the restoration of the file errored, the error will be stored here.
-            'restore_destination' (str): The name of the glacier bucket the granule is being copied to.
             'request_time' (DateTime): The time, in UTC isoformat, when the request to restore the granule was initiated.
             'completion_time' (DateTime, Optional):
-                The time, in UTC isoformat, when all granule_files were no longer 'pending'.
+                The time, in UTC isoformat, when all granule_files were no longer 'pending'/'staged'.
                 
             Or, if an error occurs, see create_http_error_dict
                 400 if granule_id is missing. 500 if an error occurs when querying the database.
@@ -123,12 +140,12 @@ FUNCTIONS
             'asyncOperationId' (str): The unique ID of the asyncOperation.
             'files' (List): Description and status of the files within the given granule. List of Dicts with keys:
                 'file_name' (str): The name and extension of the file.
-                'status' (str): The status of the restoration of the file. May be 'pending', 'success', or 'failed'.
+                'restore_destination' (str): The name of the glacier bucket the file is being copied to.
+                'status' (str): The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.
                 'error_message' (str, Optional): If the restoration of the file errored, the error will be stored here.
-            'restore_destination' (str): The name of the glacier bucket the granule is being copied to.
             'request_time' (DateTime): The time, in UTC isoformat, when the request to restore the granule was initiated.
             'completion_time' (DateTime, Optional):
-                The time, in UTC isoformat, when all granule_files were no longer 'pending'.
+                The time, in UTC isoformat, when all granule_files were no longer 'pending'/'staged'.
 
 DATA
     Any = typing.Any

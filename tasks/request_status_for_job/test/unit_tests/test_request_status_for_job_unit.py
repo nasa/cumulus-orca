@@ -220,6 +220,9 @@ class TestRequestStatusForJobUnit(unittest.TestCase):  # pylint: disable-msg=too
             self,
             mock_single_query: MagicMock
     ):
+        """
+        Checks a realistic output against the output.json.
+        """
         job_id = uuid.uuid4().__str__()
 
         db_connect_info = Mock()
