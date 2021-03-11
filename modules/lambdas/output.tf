@@ -48,3 +48,9 @@ output "db_deploy_arn" {
   description = "AWS ARN for the db_deploy lambda."
   value       = aws_lambda_function.db_deploy.arn
 }
+
+
+output "db_deploy_source_code_hash" {
+  description = "Base 64 SHA-256 hash of the db_deploy lambda function. Used to trigger bootstrap in rds."
+  value       = aws_lambda_function.db_deploy.source_code_hash
+}
