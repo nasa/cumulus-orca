@@ -114,12 +114,7 @@ class TestCopyToGlacierHandler(TestCase):
             'config': {
                 CONFIG_COLLECTION_KEY: {
                     COLLECTION_NAME_KEY: collection_name,
-                    COLLECTION_VERSION_KEY: collection_version,
-                },
-                CONFIG_BUCKETS_KEY: {
-                    'bad_bucket': {
-                        'name': 'not_glacier'
-                    }
+                    COLLECTION_VERSION_KEY: collection_version
                 }
             }
 
@@ -181,12 +176,7 @@ class TestCopyToGlacierHandler(TestCase):
             'config': {
                 CONFIG_COLLECTION_KEY: {
                     COLLECTION_NAME_KEY: collection_name,
-                    COLLECTION_VERSION_KEY: collection_version,
-                },
-                CONFIG_BUCKETS_KEY: {
-                    'bad_bucket': {
-                        'name': 'not_glacier'
-                    }
+                    COLLECTION_VERSION_KEY: collection_version
                 }
             }
 
@@ -226,12 +216,7 @@ class TestCopyToGlacierHandler(TestCase):
             'config': {
                 CONFIG_COLLECTION_KEY: {
                     COLLECTION_NAME_KEY: collection_name,
-                    COLLECTION_VERSION_KEY: collection_version,
-                },
-                CONFIG_BUCKETS_KEY: {
-                    'bad_bucket': {
-                        'name': 'not_glacier'
-                    }
+                    COLLECTION_VERSION_KEY: collection_version
                 }
             }
 
