@@ -82,7 +82,7 @@ resource "aws_lambda_function" "copy_to_glacier" {
   ## OPTIONAL
   description      = "ORCA archiving lambda used to copy data to an ORCA S3 glacier bucket."
   filename         = "${path.module}/../../tasks/copy_to_glacier/copy_to_glacier.zip"
-  handler          = "handler.handler"
+  handler          = "copy_to_glacier.handler"
   memory_size      = var.orca_ingest_lambda_memory_size
   runtime          = "python3.7"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/copy_to_glacier/copy_to_glacier.zip")
@@ -275,6 +275,71 @@ resource "aws_lambda_function" "request_status" {
   }
 }
 
+
+# request_status_for_granule - Provides recovery status information on a specific granule
+# ==============================================================================
+resource "aws_lambda_function" "request_status_for_granule" {
+  ## REQUIRED
+  function_name = "${var.prefix}_request_status_for_granule"
+  role          = module.restore_object_arn.restore_object_role_arn
+
+  ## OPTIONAL
+  description      = "Provides ORCA recover status information on a specific granule and job."
+  filename         = "${path.module}/../../tasks/request_status_for_granule/request_status_for_granule.zip"
+  handler          = "request_status_for_granule.handler"
+  memory_size      = var.orca_recovery_lambda_memory_size
+  runtime          = "python3.7"
+  source_code_hash = filebase64sha256("${path.module}/../../tasks/request_status_for_granule/request_status_for_granule.zip")
+  tags             = local.tags
+  timeout          = var.orca_recovery_lambda_timeout
+
+  vpc_config {
+    subnet_ids         = var.lambda_subnet_ids
+    security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
+  }
+
+  environment {
+    variables = {
+      PREFIX        = var.prefix
+      DATABASE_PORT = var.database_port
+      DATABASE_NAME = var.database_name
+      DATABASE_USER = var.database_app_user
+    }
+  }
+}
+
+
+# request_status_for_job - Provides recovery status information for a job.
+# ==============================================================================
+resource "aws_lambda_function" "request_status_for_job" {
+  ## REQUIRED
+  function_name = "${var.prefix}_request_status_for_job"
+  role          = module.restore_object_arn.restore_object_role_arn
+
+  ## OPTIONAL
+  description      = "Provides ORCA recover status information on a specific job."
+  filename         = "${path.module}/../../tasks/request_status_for_job/request_status_for_job.zip"
+  handler          = "request_status_for_job.handler"
+  memory_size      = var.orca_recovery_lambda_memory_size
+  runtime          = "python3.7"
+  source_code_hash = filebase64sha256("${path.module}/../../tasks/request_status_for_job/request_status_for_job.zip")
+  tags             = local.tags
+  timeout          = var.orca_recovery_lambda_timeout
+
+  vpc_config {
+    subnet_ids         = var.lambda_subnet_ids
+    security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
+  }
+
+  environment {
+    variables = {
+      PREFIX        = var.prefix
+      DATABASE_PORT = var.database_port
+      DATABASE_NAME = var.database_name
+      DATABASE_USER = var.database_app_user
+    }
+  }
+}
 
 
 ## =============================================================================
