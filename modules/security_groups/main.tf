@@ -35,6 +35,7 @@ resource "aws_security_group" "vpc_postgres_ingress_all_egress" {
   vpc_id                 = var.vpc_id
 }
 
+
 # rds_security_group_allow_postgres - PostgreSQL ingress port rules
 # ------------------------------------------------------------------------------
 resource "aws_security_group_rule" "rds_security_group_allow_postgres" {
