@@ -131,7 +131,7 @@ resource "aws_lambda_function" "request_status" {
   handler       = "request_status.handler"
   runtime       = "python3.7"
   timeout       = var.lambda_timeout
-  description   = "Queries the Disaster Recovery database for status"
+  description   = "Queries and posts to the Disaster Recovery database for status"
 
   vpc_config {
     subnet_ids         = var.subnet_ids

@@ -2,13 +2,14 @@
 Name: request_files.py
 Description:  Lambda function that makes a restore request from glacier for each input file.
 """
-
+import datetime
 import os
 import time
 from typing import Dict, Any, Union, List
 
 # noinspection PyPackageRequirements
 import boto3
+import database
 import requests_db
 # noinspection PyPackageRequirements
 from botocore.client import BaseClient
@@ -39,6 +40,7 @@ REQUESTS_DB_JOB_STATUS_KEY = 'job_status'
 
 EVENT_CONFIG_KEY = 'config'
 EVENT_INPUT_KEY = 'input'
+EVENT_JOB_ID_KEY = 'job_id'
 
 INPUT_GRANULES_KEY = 'granules'
 
@@ -141,11 +143,11 @@ def task(event: Dict, context: object) -> Dict[str, Any]:  # pylint: disable-msg
         exp_days = int(os.environ[OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY])
     except KeyError:
         exp_days = DEFAULT_RESTORE_EXPIRE_DAYS
-
     return inner_task(event, max_retries, retry_sleep_secs, retrieval_type, exp_days)
 
 
-def inner_task(event: Dict, max_retries: int, retry_sleep_secs: float, retrieval_type: str, restore_expire_days: int):
+def inner_task(event: Dict, max_retries: int, retry_sleep_secs: float,
+               retrieval_type: str, restore_expire_days: int):
     try:
         glacier_bucket = event[EVENT_CONFIG_KEY][CONFIG_GLACIER_BUCKET_KEY]
     except KeyError:
@@ -159,6 +161,7 @@ def inner_task(event: Dict, max_retries: int, retry_sleep_secs: float, retrieval
                                   f'This input contains {len(granules)}')
     s3 = boto3.client('s3')  # pylint: disable-msg=invalid-name
 
+    # todo: Singular output variable from loop!?
     copied_granule = {}
     for granule in granules:
         files = []
@@ -180,16 +183,21 @@ def inner_task(event: Dict, max_retries: int, retry_sleep_secs: float, retrieval
     # todo: Looks like this line is why multiple granules are not supported.
     # todo: Using the default value {} for copied_granule will cause this function to raise errors every time.
     process_granule(
-        s3, copied_granule, glacier_bucket, restore_expire_days, max_retries, retry_sleep_secs, retrieval_type)
+        s3, copied_granule, glacier_bucket, restore_expire_days, max_retries, retry_sleep_secs, retrieval_type,
+        event[EVENT_JOB_ID_KEY])
 
     # Cumulus expects response (payload.granules) to be a list of granule objects.
     return {INPUT_GRANULES_KEY: [copied_granule]}
 
 
-def process_granule(s3: BaseClient, granule: Dict[str, Union[str, List[Dict]]], glacier_bucket: str,
+def process_granule(s3: BaseClient,
+                    granule: Dict[str, Union[str, List[Dict]]],
+                    glacier_bucket: str,
                     restore_expire_days: int,
-                    max_retries: int, retry_sleep_secs: float, retrieval_type: str):  # pylint: disable-msg=invalid-name
-    f"""Call restore_object for the files in the granule_list. Modifies {granule} for output.
+                    max_retries: int, retry_sleep_secs: float,
+                    retrieval_type: str,
+                    job_id: str):  # pylint: disable-msg=invalid-name
+    """Call restore_object for the files in the granule_list. Modifies granule for output.
         Args:
             s3: An instance of boto3 s3 client
             granule: A dict with the following keys:
@@ -202,16 +210,19 @@ def process_granule(s3: BaseClient, granule: Dict[str, Union[str, List[Dict]]], 
                     'err_msg' (str): Will be modified if error occurs.
 
 
-            glacier_bucket: The S3 glacier bucket name
+            glacier_bucket: The S3 glacier bucket name. todo: For what?
             restore_expire_days:
                 The number of days the restored file will be accessible in the S3 bucket before it expires.
             max_retries: todo
             retry_sleep_secs: todo
             retrieval_type: todo
+            job_id: The unique identifier used for tracking requests.
     """
+    request_time = database.get_utc_now_iso()  # todo: More granule request time?
     attempt = 1
     request_group_id = requests_db.request_id_generator()
     granule_id = granule[GRANULE_GRANULE_ID_KEY]
+
     while attempt <= max_retries + 1:
         for a_file in granule[GRANULE_RECOVER_FILES_KEY]:
             if not a_file[FILE_SUCCESS_KEY]:
@@ -237,11 +248,21 @@ def process_granule(s3: BaseClient, granule: Dict[str, Union[str, List[Dict]]], 
                 break
             time.sleep(retry_sleep_secs)
 
+    # todo: async?
+    post_status_for_job_to_queue(job_id, granule_id, 0, request_time, None, glacier_bucket, False)
+
+    any_error = False
     for a_file in granule[GRANULE_RECOVER_FILES_KEY]:
         # if any file failed, the whole granule will fail
         if not a_file[FILE_SUCCESS_KEY]:
-            LOGGER.error(f"One or more files failed to be requested from {glacier_bucket}. {granule}")
-            raise RestoreRequestError(f'One or more files failed to be requested. {granule}')
+            any_error = True
+        post_status_for_file_to_queue(
+            job_id, granule_id, a_file[FILE_KEY_KEY], key_path, a_file[FILE_DEST_BUCKET_KEY],
+            0 if a_file[FILE_SUCCESS_KEY] else 1, a_file.get(FILE_ERROR_MESSAGE_KEY, None),
+            request_time, request_time, None, False)
+    if any_error:
+        LOGGER.error(f"One or more files failed to be requested from {glacier_bucket}. {granule}")
+        raise RestoreRequestError(f'One or more files failed to be requested. {granule}')
 
 
 def object_exists(s3_cli: BaseClient, glacier_bucket: str, file_key: str) -> bool:
@@ -289,15 +310,18 @@ def restore_object(s3_cli: BaseClient, obj: Dict[str, Any], attempt: int, max_re
         Raises:
             ClientError: Raises ClientErrors from restore_object.
     """
+    # todo: Remove this?
     data = requests_db.create_data(obj, 'restore', 'inprogress', None, None)
     request_id = data[REQUESTS_DB_REQUEST_ID_KEY]
     request = {'Days': obj['days'],
                'GlacierJobParameters': {'Tier': retrieval_type}}
     # Submit the request
     try:
+        # todo: What is this actually doing?
         s3_cli.restore_object(Bucket=obj[REQUESTS_DB_GLACIER_BUCKET_KEY],
                               Key=obj['key'],
                               RestoreRequest=request)
+
     except ClientError as c_err:
         # NoSuchBucket, NoSuchKey, or InvalidObjectState error == the object's
         # storage class was not GLACIER
@@ -363,6 +387,8 @@ def handler(event: Dict[str, Any], context):  # pylint: disable-msg=unused-argum
                             'key' (str): Name of the file within the granule.
                             'dest_bucket' (str): The bucket the restored file will be moved
                                 to after the restore completes.
+                'job_id' (str): The unique identifier used for tracking requests.
+                # todo: Why aren't we generating this here?
                 Example: {
                     'config': {'glacierBucket': 'some_bucket'}
                     'input': {
