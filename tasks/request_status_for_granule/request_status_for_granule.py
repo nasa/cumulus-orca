@@ -62,6 +62,15 @@ def task(granule_id: str, db_connect_info: Dict, job_id: str = None) -> Dict[str
 
 
 def get_most_recent_job_id_for_granule(granule_id: str, db_connect_info: Dict[str, any]) -> str:
+    """
+    Gets the job_id for the most recent job that restores the given granule.
+
+    Args:
+        granule_id: The unique ID of the granule.
+        db_connect_info: The {database}.py defined db_connect_info.
+
+    Returns: The job_id for the given granule's restore job.
+    """
     sql = """
             SELECT
                 job_id

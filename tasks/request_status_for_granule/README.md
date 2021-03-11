@@ -97,6 +97,13 @@ FUNCTIONS
                 The time, in UTC isoformat, when all granule_files were no longer 'pending'/'staged'.
     
     get_most_recent_job_id_for_granule(granule_id: str, db_connect_info: Dict[str, <built-in function any>]) -> str
+        Gets the job_id for the most recent job that restores the given granule.
+    
+        Args:
+            granule_id: The unique ID of the granule.
+            db_connect_info: The {database}.py defined db_connect_info.
+        
+        Returns: The job_id for the given granule's restore job.
     
     handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]
         Entry point for the request_status_for_granule Lambda.
