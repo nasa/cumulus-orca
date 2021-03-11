@@ -6,7 +6,6 @@ import boto3
 from run_cumulus_task import run_cumulus_task
 
 CONFIG_FILE_STAGING_DIRECTORY_KEY = 'fileStagingDir'
-CONFIG_BUCKETS_KEY = 'buckets'
 CONFIG_COLLECTION_KEY = 'collection'
 CONFIG_URL_PATH_KEY = 'url_path'
 
@@ -63,7 +62,11 @@ def copy_granule_between_buckets(source_bucket_name: str, source_key: str, desti
 # noinspection PyUnusedLocal
 def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str, Any]:
     """
-    Copies the files in {event}['input'] from the collection specified in {config} to the {config}'s 'glacier' bucket.
+    Copies the files in {event}['input'] from the collection specified in {config}
+    to the ORCA glacier bucket defined in ORCA_DEFAULT_BUCKET.
+
+        Environment Variables:
+            ORCA_DEFAULT_BUCKET (string, required): Name of the default ORCA S3 Glacier bucket.
 
     Args:
         event: Passed through from {handler}
@@ -95,10 +98,11 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     #      - collection configuration
     #      - default value in buckets
     try:
-        default_bucket = os.environ['ORCA_DEFAULT_BUCKET']
+        default_bucket = os.environ.get('ORCA_DEFAULT_BUCKET', None)
         if default_bucket is None or len(default_bucket) == 0:
             raise KeyError('ORCA_DEFAULT_BUCKET environment variable is not set.')
     except KeyError:
+        #TODO: Change this to a logging statement
         print('ORCA_DEFAULT_BUCKET environment variable is not set.')
         raise
 
