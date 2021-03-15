@@ -4,7 +4,6 @@
 variable "aws_profile" {
   type        = string
   description = "AWS profile used to deploy the terraform application."
-  default     = null
 }
 
 

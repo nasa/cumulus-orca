@@ -2,9 +2,8 @@
 ## Should exist in https://github.com/nasa/cumulus-template-deploy/blob/master/cumulus-tf/variables.tf
 ## REQUIRED
 variable "aws_profile" {
-  type    = string
+  type        = string
   description = "AWS profile used to deploy the terraform application."
-  default = null
 }
 
 
@@ -20,25 +19,22 @@ variable "vpc_id" {
 }
 
 
-## OPTIONAL
+## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
 variable "region" {
   type        = string
   description = "AWS region to deploy configuration to."
-  default     = "us-west-2"
 }
 
 
 variable "tags" {
   type        = map(string)
   description = "Tags to be applied to resources that support tags."
-  default     = {}
 }
 
 
 ## Variables unique to ORCA
-## OPTIONAL
+## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
 variable "database_port" {
   type        = number
   description = "Database port that PostgreSQL traffic will be allowed on."
-  default     = 5432
 }
