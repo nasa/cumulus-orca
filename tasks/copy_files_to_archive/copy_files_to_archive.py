@@ -4,16 +4,26 @@ Name: copy_files_to_archive.py
 Description:  Lambda function that copies files from one s3 bucket
 to another s3 bucket.
 """
-
+import json
 import os
 import time
 import logging
+from enum import Enum
 from typing import Any, List, Dict, Optional
 
 import boto3
+import database
 from botocore.client import BaseClient
 from botocore.exceptions import ClientError
 import requests_db
+from cumulus_logger import CumulusLogger
+
+
+class RequestMethod(Enum):
+    POST = 'post'
+    PUT = 'put'
+
+OS_ENVIRON_DB_QUEUE_URL_KEY = 'DB_QUEUE_URL'
 
 # These will determine what the output looks like.
 FILE_SUCCESS_KEY = 'success'
@@ -27,6 +37,8 @@ FILE_TARGET_BUCKET_KEY = 'target_bucket'
 JOB_REQUEST_ID_KEY = 'request_id'
 JOB_ARCHIVE_BUCKET_DEST_KEY = 'archive_bucket_dest'
 JOB_JOB_STATUS_KEY = 'job_status'
+
+LOGGER = CumulusLogger()
 
 
 class CopyRequestError(Exception):
@@ -71,6 +83,7 @@ def task(records: List[Dict[str, Any]], retries: int, retry_sleep_secs: float) -
     Raises:
         CopyRequestError: Thrown if there are errors with the input records or the copy failed.
     """
+    db_queue_url = str(os.environ[OS_ENVIRON_DB_QUEUE_URL_KEY])
     files = get_files_from_records(records)
     attempt = 1
     s3 = boto3.client('s3')  # pylint: disable-msg=invalid-name
@@ -90,7 +103,8 @@ def task(records: List[Dict[str, Any]], retries: int, retry_sleep_secs: float) -
                             continue
                     err_msg = copy_object(s3, a_file[FILE_SOURCE_BUCKET_KEY], a_file[FILE_SOURCE_KEY_KEY],
                                           a_file[FILE_TARGET_BUCKET_KEY])
-                    update_status_in_db(a_file, attempt, err_msg)
+                    # todo: Since status only updates here, we can't call errors 'complete'. Maybe only update status outside loop?
+                    update_status_in_db(a_file, attempt, err_msg, db_queue_url)
                 except requests_db.DatabaseError:
                     continue  # Move on to the next file. We'll come back to retry on next attempt
 
@@ -103,6 +117,7 @@ def task(records: List[Dict[str, Any]], retries: int, retry_sleep_secs: float) -
     return files
 
 
+# todo: Misnomer. Just the status entry.
 def find_job_in_db(key: str) -> Optional[Dict[str, Any]]:
     """
     Finds the active job for the file in the database.
@@ -137,13 +152,13 @@ def find_job_in_db(key: str) -> Optional[Dict[str, Any]]:
     return None
 
 
-def update_status_in_db(a_file: Dict[str, Any], attempt: int, err_msg: str) -> None:
+def update_status_in_db(a_file: Dict[str, Any], attempt: int, err_msg: str, db_queue_url: str) -> None:
     """
     Updates the status for the job in the database.
 
     Args:
         a_file: An input dict with keys for:
-            'request_id' (string): The request_id of the database entry to update.
+            'request_id' (string): The request_id of the database entry to update.  # todo: Obsolete, I guess? Hard to gauge without system access.
             'source_key' (string): The filename of the restored file.
             'source_bucket' (string): The location of the restored file.
             'target_bucket' (string): the archive bucket the file was copied to.
@@ -173,25 +188,99 @@ def update_status_in_db(a_file: Dict[str, Any], attempt: int, err_msg: str) -> N
     try:
         if err_msg:
             a_file[FILE_ERROR_MESSAGE_KEY] = err_msg
-            new_status = "error"
+            new_status = "failed"
             logging.error(f"Attempt {attempt}. Error copying file {a_file[FILE_SOURCE_KEY_KEY]}"
                           f" from {a_file[FILE_SOURCE_BUCKET_KEY]} to {a_file[FILE_TARGET_BUCKET_KEY]}."
                           f" msg: {err_msg}")
-            requests_db.update_request_status_for_job(a_file[FILE_REQUEST_ID_KEY], new_status, err_msg)
+            post_status_for_file_to_queue(job_id, granule_id, filename, None, None, 2, err_msg,
+                                          None, None, database.get_utc_now_iso(), RequestMethod.PUT, db_queue_url,
+                                          3,
+                                          10)  # todo: Theoretically we could edit existing row with a few new values.
         else:
             a_file[FILE_SUCCESS_KEY] = True
             a_file[FILE_ERROR_MESSAGE_KEY] = ''
-            new_status = "complete"
+            new_status = "success"
             logging.info(f"Attempt {attempt}. Success copying file "
                          f"{a_file[FILE_SOURCE_KEY_KEY]} from {a_file[FILE_SOURCE_BUCKET_KEY]} "
                          f"to {a_file[FILE_TARGET_BUCKET_KEY]}.")
-            requests_db.update_request_status_for_job(a_file[FILE_REQUEST_ID_KEY], new_status)
+            post_status_for_file_to_queue(job_id, granule_id, filename, None, None, 1, None,
+                                          None, None, None, RequestMethod.PUT, db_queue_url,
+                                          3, 10)
     except requests_db.DatabaseError as err:
         logging.error(f"Failed to update request status in database. "
                       f"key: {a_file[FILE_SOURCE_KEY_KEY]} "
                       f"new status: {new_status}. Err: {str(err)}")
         raise
     return
+
+
+# todo: Move to shared lib
+def post_status_for_file_to_queue(job_id: str, granule_id: str, filename: str, key_path: str,
+                                  restore_destination: str,
+                                  status_id: int, error_message: str,
+                                  request_time: str, last_update: str, completion_time: str,
+                                  request_method: RequestMethod,
+                                  db_queue_url: str,
+                                  max_retries: int, retry_sleep_secs: float):
+    new_data = {'job_id': job_id,
+                'granule_id': granule_id,
+                'filename': filename}
+    if key_path is not None:
+        new_data['key_path'] = status_id
+    if restore_destination is not None:
+        new_data['restore_destination'] = status_id
+    if status_id is not None:
+        new_data['status_id'] = status_id
+    if error_message is not None:
+        new_data['error_message'] = status_id
+    if request_time is not None:
+        new_data['request_time'] = status_id
+    if last_update is not None:
+        new_data['last_update'] = status_id
+    if completion_time is not None:
+        new_data['completion_time'] = status_id
+
+    post_entry_to_queue('orca_recoverfile',
+                        new_data,
+                        request_method,
+                        db_queue_url, max_retries, retry_sleep_secs)
+
+
+sqs = boto3.client('sqs')
+
+
+def post_entry_to_queue(table_name: str, new_data: Dict[str, Any], request_method: RequestMethod, db_queue_url: str,
+                        max_retries: int, retry_sleep_secs: float):
+    attempt = 0
+    while attempt <= max_retries + 1:
+        try:
+            sqs.send_message(
+                QueueUrl=db_queue_url
+            )
+            sqs.send_message(
+                QueueUrl=db_queue_url,
+                DelaySeconds=0,
+                MessageAttributes={
+                    'RequestMethod': {
+                        'DataType': 'String',
+                        'StringValue': request_method.value
+                    },
+                    'TableName': {
+                        'DataType': 'String',
+                        'StringValue': table_name
+                    }
+                },
+                MessageBody=(
+                    json.dumps(new_data, indent=4)
+                )
+            )
+        except Exception as e:
+            # todo: Figure out what type of error occurs when queue is unreachable.
+            if attempt == max_retries + 1:
+                LOGGER.error(e)
+                return
+            time.sleep(retry_sleep_secs)
+            continue
 
 
 def get_files_from_records(records: List[Dict[str, Any]]) -> List[Dict[str, str]]:
@@ -342,6 +431,7 @@ def handler(event: Dict[str, Any], context: object) -> List[Dict[str, Any]]:  # 
         The same dict that is returned for a successful copy will be included in the
         message, with 'success' = False for the files for which the copy failed.
     """
+    LOGGER.setMetadata(event, context)
 
     logging.basicConfig(level=logging.INFO,
                         format='%(levelname)s: %(asctime)s: %(message)s')
