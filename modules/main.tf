@@ -1,40 +1,73 @@
-locals {
-  default_tags = {
-    Deployment = var.prefix
-  }
-}
-
+## Terraform Requirements
 terraform {
   required_providers {
-    aws  = ">= 2.31.0"
-    null = "~> 2.1"
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 3.5.0"
+    }
   }
 }
 
+
+## AWS Provider Settings
 provider "aws" {
-  region = var.region
+  region  = var.region
+  profile = var.aws_profile
 }
 
-module "orca" {
-  source = "./modules/orca"
-  database_app_user_pw = var.database_app_user_pw
-  default_tags = var.default_tags
-  prefix = var.prefix
-  subnet_ids = var.subnet_ids
-  database_port = var.database_port
-  postgres_user_pw = var.database_app_user_pw
-  database_name = var.database_name
-  database_app_user = var.database_app_user
-  ddl_dir = var.ddl_dir
-  drop_database = var.drop_database
-  platform = var.platform
-  lambda_timeout = var.lambda_timeout
-  restore_complete_filter_prefix = var.restore_complete_filter_prefix
-  vpc_id = var.vpc_id
-  copy_retry_sleep_secs = var.copy_retry_sleep_secs
-  permissions_boundary_arn = var.permissions_boundary_arn
-  buckets = var.buckets
-  workflow_config = var.workflow_config
-  region = var.region
 
+## Local Variables
+locals {
+  tags = merge(var.tags, { Deployment = var.prefix }, { team = "ORCA", application = "ORCA" })
+}
+
+
+## Main ORCA module - This is what is called by end users.
+## =============================================================================
+module "orca" {
+  source = "./orca"
+  ## --------------------------
+  ## Cumulus Variables
+  ## --------------------------
+  ## REQUIRED
+  aws_profile              = var.aws_profile
+  buckets                  = var.buckets
+  lambda_subnet_ids        = var.lambda_subnet_ids
+  permissions_boundary_arn = var.permissions_boundary_arn
+  prefix                   = var.prefix
+  system_bucket            = var.system_bucket
+  vpc_id                   = var.vpc_id
+  workflow_config          = var.workflow_config
+
+  ## OPTIONAL
+  region = var.region
+  tags   = local.tags
+
+  ## --------------------------
+  ## ORCA Variables
+  ## --------------------------
+  ## REQUIRED
+  database_app_user_pw = var.database_app_user_pw
+  orca_default_bucket  = var.orca_default_bucket
+  postgres_user_pw     = var.database_app_user_pw
+
+  ## OPTIONAL
+  database_port                        = var.database_port
+  orca_ingest_lambda_memory_size       = var.orca_ingest_lambda_memory_size
+  orca_ingest_lambda_timeout           = var.orca_ingest_lambda_timeout
+  orca_recovery_buckets                = var.orca_recovery_buckets
+  orca_recovery_complete_filter_prefix = var.orca_recovery_complete_filter_prefix
+  orca_recovery_expiration_days        = var.orca_recovery_expiration_days
+  orca_recovery_lambda_memory_size     = var.orca_recovery_lambda_memory_size
+  orca_recovery_lambda_timeout         = var.orca_recovery_lambda_timeout
+  orca_recovery_retry_limit            = var.orca_recovery_retry_limit
+  orca_recovery_retry_interval         = var.orca_recovery_retry_interval
+
+  ## OPTIONAL (DO NOT CHANGE DEFAULT VALUES!)
+  database_app_user            = var.database_app_user
+  database_name                = var.database_name
+  ddl_dir                      = var.ddl_dir
+  drop_database                = var.drop_database
+  orca_recovery_retrieval_type = var.orca_recovery_retrieval_type
+  platform                     = var.platform
 }
