@@ -80,16 +80,16 @@ module "orca" {
   postgres_user_pw     = var.database_app_user_pw
 
   ## OPTIONAL
-  database_port                        = var.database_port
-  orca_ingest_lambda_memory_size       = var.orca_ingest_lambda_memory_size
-  orca_ingest_lambda_timeout           = var.orca_ingest_lambda_timeout
-  orca_recovery_buckets                = var.orca_recovery_buckets
-  orca_recovery_complete_filter_prefix = var.orca_recovery_complete_filter_prefix
-  orca_recovery_expiration_days        = var.orca_recovery_expiration_days
-  orca_recovery_lambda_memory_size     = var.orca_recovery_lambda_memory_size
-  orca_recovery_lambda_timeout         = var.orca_recovery_lambda_timeout
-  orca_recovery_retry_limit            = var.orca_recovery_retry_limit
-  orca_recovery_retry_interval         = var.orca_recovery_retry_interval
+  # database_port                        = 5432
+  # orca_ingest_lambda_memory_size       = 2240
+  # orca_ingest_lambda_timeout           = 600
+  # orca_recovery_buckets                = []
+  # orca_recovery_complete_filter_prefix = ""
+  # orca_recovery_expiration_days        = 5
+  # orca_recovery_lambda_memory_size     = 128
+  # orca_recovery_lambda_timeout         = 300
+  # orca_recovery_retry_limit            = 3
+  # orca_recovery_retry_interval         = 1
 }
 ```
 
@@ -165,77 +165,6 @@ variable "postgres_user_pw" {
   description = "postgres database user password."
 }
 
-
-## OPTIONAL
-variable "database_port" {
-  type        = number
-  description = "Database port that PostgreSQL traffic will be allowed on."
-  default     = 5432
-}
-
-
-variable "orca_ingest_lambda_memory_size" {
-  type        = number
-  description = "Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime."
-  default     = 2240
-}
-
-
-variable "orca_ingest_lambda_timeout" {
-  type        = number
-  description = "Timeout in number of seconds for ORCA copy_to_glacier lambda."
-  default     = 600
-}
-
-
-variable "orca_recovery_buckets" {
-  type        = list(string)
-  description = "List of bucket names that ORCA has permissions to restore data to."
-  default     = []
-}
-
-
-variable "orca_recovery_complete_filter_prefix" {
-  type        = string
-  description = "Specifies object key name prefix by the Glacier Bucket trigger."
-  default     = ""
-}
-
-
-variable "orca_recovery_expiration_days" {
-  type        = number
-  description = "Number of days a recovered file will remain available for copy."
-  default     = 5
-}
-
-
-variable "orca_recovery_lambda_memory_size" {
-  type        = number
-  description = "Amount of memory in MB the ORCA recovery lambda can use at runtime."
-  default     = 128
-}
-
-
-variable "orca_recovery_lambda_timeout" {
-  type        = number
-  description = "Timeout in number of seconds for ORCA recovery lambdas."
-  default     = 300
-}
-
-
-variable "orca_recovery_retry_limit" {
-  type        = number
-  description = "Maximum number of retries of a recovery failure before giving up."
-  default     = 3
-}
-
-
-variable "orca_recovery_retry_interval" {
-  type        = number
-  description = "Number of seconds to wait between recovery failure retries."
-  default     = 1
-}
-
 ```
 
 
@@ -269,40 +198,6 @@ orca_default_bucket = "orca-archive-primary"
 
 ## PostgreSQL database (root) user password
 postgres_user_pw = "my-super-secret-database-owner-password"
-
-
-## OPTIONAL VARIABLES - ORCA default settings shown.
-## -----------------------------------------------------------------------------
-
-## Database port that PostgreSQL traffic will be allowed on.
-# database_port = 5432
-
-## Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime.
-# orca_ingest_lambda_memory_size = 2240
-
-## Timeout in number of seconds for ORCA copy_to_glacier lambda.
-# orca_ingest_lambda_timeout = 600
-
-## List of bucket names that ORCA has permissions to restore data to.
-# orca_recovery_buckets = []
-
-## Specifies object key name prefix by the Glacier Bucket trigger.
-# orca_recovery_complete_filter_prefix = ""
-
-## Number of days a recovered file will remain available for copy.
-# orca_recovery_expiration_days = 5
-
-## Amount of memory in MB the ORCA recovery lambda can use at runtime.
-# orca_recovery_lambda_memory_size = 128
-
-## Timeout in number of seconds for ORCA recovery lambdas.
-# orca_recovery_lambda_timeout = 300
-
-## Maximum number of retries of a recovery failure before giving up.
-# orca_recovery_retry_limit = 3
-
-## Number of seconds to wait between recovery failure retries.
-# orca_recovery_retry_interval = 1
 
 ```
 
@@ -477,18 +372,18 @@ file. The variables can be set with proper values for your environment in the
 `cumulus-tf/terraform.tfvars` file. The default setting for each of the optional
 variables is shown in the table below.
 
-| Variable                               | Definition                                                                                              | Default Value |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------- | ------------- |
-| `database_port`                        | Database port that PostgreSQL traffic will be allowed on.                                               | 5432 |
-| `orca_ingest_lambda_memory_size`       | Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime.                              | 2240 |
-| `orca_ingest_lambda_timeout`           | Timeout in number of seconds for ORCA copy_to_glacier lambda.                                           | 600 |
-| `orca_recovery_buckets`                | List of bucket names that ORCA has permissions to restore data to. Default is all in the `buckets` map. | [] |
-| `orca_recovery_complete_filter_prefix` | Specifies object key name prefix by the Glacier Bucket trigger.                                         | "" |
-| `orca_recovery_expiration_days`        | Number of days a recovered file will remain available for copy.                                         | 5 |
-| `orca_recovery_lambda_memory_size`     | Amount of memory in MB the ORCA recovery lambda can use at runtime.                                     | 128 |
-| `orca_recovery_lambda_timeout`         | Timeout in number of seconds for ORCA recovery lambdas.                                                 | 300 |
-| `orca_recovery_retry_limit`            | Maximum number of retries of a recovery failure before giving up.                                       | 3 |
-| `orca_recovery_retry_interval`         | Number of seconds to wait between recovery failure retries.                                             | 1 |
+| Variable                               | Type          | Definition                                                                                              | Default Value |
+| -------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------- | ------------- |
+| `database_port`                        | number        | Database port that PostgreSQL traffic will be allowed on.                                               | 5432 |
+| `orca_ingest_lambda_memory_size`       | number        | Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime.                              | 2240 |
+| `orca_ingest_lambda_timeout`           | number        | Timeout in number of seconds for ORCA copy_to_glacier lambda.                                           | 600 |
+| `orca_recovery_buckets`                | List (string) | List of bucket names that ORCA has permissions to restore data to. Default is all in the `buckets` map. | [] |
+| `orca_recovery_complete_filter_prefix` | string        | Specifies object key name prefix by the Glacier Bucket trigger.                                         | "" |
+| `orca_recovery_expiration_days`        | number        | Number of days a recovered file will remain available for copy.                                         | 5 |
+| `orca_recovery_lambda_memory_size`     | number        | Amount of memory in MB the ORCA recovery lambda can use at runtime.                                     | 128 |
+| `orca_recovery_lambda_timeout`         | number        | Timeout in number of seconds for ORCA recovery lambdas.                                                 | 300 |
+| `orca_recovery_retry_limit`            | number        | Maximum number of retries of a recovery failure before giving up.                                       | 3 |
+| `orca_recovery_retry_interval`         | number        | Number of seconds to wait between recovery failure retries.                                             | 1 |
 
 
 ## Deploy ORCA with Terraform
