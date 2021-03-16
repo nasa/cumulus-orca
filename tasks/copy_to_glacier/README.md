@@ -15,7 +15,7 @@ You are able to specify a list of file types (extensions) that you'd like to exc
 {
   ...
   "meta": {
-    "exclude_file_type": [".cmr", ".xml", ".cmr.xml"]
+    "excludeFileTypes": [".cmr", ".xml", ".cmr.xml"]
   }
 }
 ```
