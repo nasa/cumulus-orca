@@ -386,6 +386,35 @@ variables is shown in the table below.
 | `orca_recovery_retry_interval`         | number        | Number of seconds to wait between recovery failure retries.                                             | 1 |
 
 
+## ORCA Module Outputs
+
+The orca module provides the outputs seen below in the table. Outputs are
+accessed using terraform dot syntax in the format of `module.orca.variable_name`.
+
+| Output Variable                               | Description                               |
+| --------------------------------------------- | ----------------------------------------- |
+| `orca_lambda_copy_to_glacier_arn`               | AWS ARN of the ORCA copy_to_glacier lambda. |
+| `orca_lambda_extract_filepaths_for_granule_arn` | AWS ARN of the ORCA extract_filepaths_for_granule lambda. |
+| `orca_lambda_request_files_arn`                 | AWS ARN of the ORCA request_files lambda. |
+| `orca_lambda_copy_files_to_archive_arn`         | AWS ARN of the ORCA copy_files_to_archive lambda. |
+| `orca_lambda_request_status_arn`                | AWS ARN of the ORCA request_status lambda. |
+| `orca_lambda_request_status_for_granule_arn`    | AWS ARN of the ORCA request_status_for_granule lambda. |
+| `orca_lambda_request_status_for_job_arn`        | AWS ARN of the ORCA request_status_for_job lambda. |
+| `orca_rds_address`                              | The address of the RDS instance |
+| `orca_rds_arn`                                  | The ARN of the RDS instance |
+| `orca_rds_availability_zone`                    | The availability zone of the RDS instance |
+| `orca_rds_endpoint`                             | The connection endpoint in address:port format |
+| `orca_rds_hosted_zone_id`                       | The canonical hosted zone ID of the DB instance (to be used in a Route 53 Alias record) |
+| `orca_rds_id`                                   | The RDS instance ID |
+| `orca_rds_resource_id`                          | The RDS Resource ID of this instance |
+| `orca_rds_status`                               | The RDS instance status |
+| `orca_rds_name`                                 | The database name |
+| `orca_rds_username`                             | The master username for the database |
+| `orca_rds_port`                                 | The database port |
+| `orca_subnet_group_id`                          | The ORCA database subnet group name |
+| `orca_subnet_group_arn`                         | The ARN of the ORCA database subnet group |
+
+
 ## Deploy ORCA with Terraform
 
 In the proper module directory, initialize and apply changes using the commands
