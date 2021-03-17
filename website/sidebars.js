@@ -56,7 +56,8 @@ module.exports = {
                        ],
   },
   ops_guide: {
-    "Getting Started": ['operator/operator-intro',
+    "Getting Started": [
+      'operator/operator-intro'
                        ],
   },
 };
