@@ -1,0 +1,18 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/request_status_for_granule/schemas/input.json",
+	"title": "request_status Lambda Input (Granule Specific)",
+	"description": "The input for the request_status Lambda when retrieving status for a particular granule.",
+	"type": "object",
+	"properties": {
+		"granule_id": {
+			"description": "The unique ID of the granule to retrieve status for.",
+			"type": "string"
+		},
+		"asyncOperationId": {
+			"description": "The unique ID of the asyncOperation. May apply to a request that covers multiple granules.",
+			"type": "string"
+		}
+	},
+	"required": [ "granule_id" ]
+}
