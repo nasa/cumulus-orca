@@ -46,7 +46,7 @@ function check_rc () {
   let RC=$?
 
   if [ $RC -ne 0 ]; then
-      echo "ERROR: '$COMMAND' failed with a return code of [$RC]!"
+      >&2 echo "ERROR: '$COMMAND' failed with a return code of [$RC]!"
       exit 1
   fi
 }
@@ -104,7 +104,7 @@ check_rc "mkdir dist"
 echo "INFO: Creating distribution ..."
 cd build
 ##TODO: Possibly send normal output to /dev/null and only capture error output
-zip -r "../dist/cumulus-orca-terraform.zip" .
+zip -qr "../dist/cumulus-orca-terraform.zip" .
 let ZIP_RC=$?
 cd -
 
