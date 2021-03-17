@@ -2,15 +2,15 @@
 Name: request_files.py
 Description:  Lambda function that makes a restore request from glacier for each input file.
 """
-import datetime
 import json
 import os
 import time
 from enum import Enum
-from typing import Dict, Any, Union, List
+from typing import Dict, Any, Union, List, Optional
 
 # noinspection PyPackageRequirements
 import boto3
+# noinspection PyPackageRequirements
 import database
 import requests_db
 # noinspection PyPackageRequirements
@@ -65,6 +65,11 @@ FILE_KEY_KEY = 'key'
 FILE_SUCCESS_KEY = 'success'
 FILE_ERROR_MESSAGE_KEY = 'err_msg'
 
+ORCA_STATUS_PENDING = 0
+ORCA_STATUS_STAGED = 1
+ORCA_STATUS_SUCCESS = 2
+ORCA_STATUS_FAILED = 3
+
 LOGGER = CumulusLogger()
 
 
@@ -92,17 +97,6 @@ def task(event: Dict, context: object) -> Dict[str, Any]:  # pylint: disable-msg
                 to sleep between retry attempts.
             RESTORE_RETRIEVAL_TYPE (str, optional, default = 'Standard'): the Tier
                 for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
-            DATABASE_PORT (str): the database port. The default is 5432
-                Hidden requirement for requests_db.get_dbconnect_info.
-            DATABASE_NAME (str): the name of the database.
-                Hidden requirement for requests_db.get_dbconnect_info.
-            DATABASE_USER (str): the name of the application user.
-                Hidden requirement for requests_db.get_dbconnect_info.
-        Parameter Store:
-            drdb-user-pass (str): the password for the application user (DATABASE_USER).
-                Hidden requirement for requests_db.get_dbconnect_info.
-            drdb-host (str): the database host.
-                Hidden requirement for requests_db.get_dbconnect_info.
         Returns:
             A dict with the following keys:
                 'granules' (List): A list of dicts, each with the following keys:
@@ -231,10 +225,24 @@ def process_granule(s3: BaseClient,
             db_queue_url: todo
             job_id: The unique identifier used for tracking requests.
     """
-    request_time = database.get_utc_now_iso()  # todo: More granule request time?
+    request_time = database.get_utc_now_iso()
     attempt = 1
     request_group_id = requests_db.request_id_generator()
     granule_id = granule[GRANULE_GRANULE_ID_KEY]
+
+    # todo: Better async.
+    post_status_for_job_to_queue(job_id, granule_id, ORCA_STATUS_PENDING, request_time, None, glacier_bucket,
+                                 RequestMethod.POST,
+                                 db_queue_url,
+                                 max_retries, retry_sleep_secs)
+
+    for a_file in granule[GRANULE_RECOVER_FILES_KEY]:
+        post_status_for_file_to_queue(
+            job_id, granule_id, os.path.basename(a_file[FILE_KEY_KEY]), a_file[FILE_KEY_KEY],
+            a_file[FILE_DEST_BUCKET_KEY],
+            ORCA_STATUS_PENDING, None,
+            request_time, request_time, database.get_utc_now_iso(), RequestMethod.POST, db_queue_url,
+            max_retries, retry_sleep_secs)
 
     while attempt <= max_retries + 1:
         for a_file in granule[GRANULE_RECOVER_FILES_KEY]:
@@ -251,6 +259,14 @@ def process_granule(s3: BaseClient,
                     restore_object(s3, obj, attempt, max_retries, retrieval_type)
                     a_file[FILE_SUCCESS_KEY] = True
                     a_file[FILE_ERROR_MESSAGE_KEY] = ''
+
+                    post_status_for_file_to_queue(
+                        job_id, granule_id, os.path.basename(a_file[FILE_KEY_KEY]), None,
+                        None,
+                        ORCA_STATUS_STAGED, None,
+                        None, database.get_utc_now_iso(), None, RequestMethod.PUT, db_queue_url,
+                        max_retries, retry_sleep_secs)
+
                 except ClientError as err:
                     a_file[FILE_ERROR_MESSAGE_KEY] = str(err)
 
@@ -261,8 +277,9 @@ def process_granule(s3: BaseClient,
                 break
             time.sleep(retry_sleep_secs)
 
-    # todo: async?
-    post_status_for_job_to_queue(job_id, granule_id, 0, request_time, None, glacier_bucket, RequestMethod.POST,
+    # Update existing status to 'in-progress'
+    post_status_for_job_to_queue(job_id, granule_id, ORCA_STATUS_STAGED, None, None, None,
+                                 RequestMethod.PUT,
                                  db_queue_url,
                                  max_retries, retry_sleep_secs)
 
@@ -271,13 +288,15 @@ def process_granule(s3: BaseClient,
         # if any file failed, the whole granule will fail
         if not a_file[FILE_SUCCESS_KEY]:
             any_error = True
-        post_status_for_file_to_queue(
-            job_id, granule_id, os.path.basename(a_file[FILE_KEY_KEY]), a_file[FILE_KEY_KEY],
-            a_file[FILE_DEST_BUCKET_KEY],
-            0 if a_file[FILE_SUCCESS_KEY] else 1, a_file.get(FILE_ERROR_MESSAGE_KEY, None),
-            request_time, request_time, None, RequestMethod.POST, db_queue_url, max_retries, retry_sleep_secs)
+            post_status_for_file_to_queue(
+                job_id, granule_id, os.path.basename(a_file[FILE_KEY_KEY]), None,
+                None,
+                ORCA_STATUS_FAILED, a_file.get(FILE_ERROR_MESSAGE_KEY, None),
+                None, database.get_utc_now_iso(), None, RequestMethod.PUT, db_queue_url,
+                max_retries, retry_sleep_secs)
+
     if any_error:
-        LOGGER.error(f"One or more files failed to be requested from {glacier_bucket}. {granule}")
+        LOGGER.error(f"One or more files failed to be requested from {glacier_bucket}.{granule}")
         raise RestoreRequestError(f'One or more files failed to be requested. {granule}')
 
 
@@ -304,9 +323,10 @@ def object_exists(s3_cli: BaseClient, glacier_bucket: str, file_key: str) -> boo
         # todo: Online docs suggest we could catch 'S3.Client.exceptions.NoSuchKey instead of deconstructing ClientError
 
 
-def restore_object(s3_cli: BaseClient, obj: Dict[str, Any], attempt: int, max_retries: int,
+def restore_object(s3_cli: BaseClient, obj: Dict[str, Any], attempt: int,
                    retrieval_type: str = 'Standard'
                    ) -> None:
+    # noinspection SpellCheckingInspection
     f"""Restore an archived S3 Glacier object in an Amazon S3 bucket.
         Args:
             s3_cli: An instance of boto3 s3 client.
@@ -320,15 +340,12 @@ def restore_object(s3_cli: BaseClient, obj: Dict[str, Any], attempt: int, max_re
                     to after the restore completes.
                 days (int): How many days the restored file will be accessible in the S3 bucket
                     before it expires.
-            attempt: The attempt number for retry purposes.
-            max_retries: The number of retries that will be attempted.
+            attempt: The attempt number for logging purposes.
             retrieval_type: Glacier Tier. Valid values are 'Standard'|'Bulk'|'Expedited'. Defaults to 'Standard'.
         Raises:
             ClientError: Raises ClientErrors from restore_object.
     """
-    # todo: Remove this?
-    data = requests_db.create_data(obj, 'restore', 'inprogress', None, None)
-    request_id = data[REQUESTS_DB_REQUEST_ID_KEY]
+    request_id = obj[REQUESTS_DB_REQUEST_GROUP_ID_KEY]
     request = {'Days': obj['days'],
                'GlacierJobParameters': {'Tier': retrieval_type}}
     # Submit the request
@@ -341,29 +358,17 @@ def restore_object(s3_cli: BaseClient, obj: Dict[str, Any], attempt: int, max_re
         # NoSuchBucket, NoSuchKey, or InvalidObjectState error == the object's
         # storage class was not GLACIER
         LOGGER.error(f"{c_err}. bucket: {obj[REQUESTS_DB_GLACIER_BUCKET_KEY]} file: {obj['key']}")
-        if attempt == max_retries + 1:
-            #  If on last attempt, post the error message to DB.
-            try:
-                data[REQUESTS_DB_ERROR_MESSAGE_KEY] = str(c_err)
-                data[REQUESTS_DB_JOB_STATUS_KEY] = 'error'
-                requests_db.submit_request(data)
-                LOGGER.info(f"Job {request_id} created.")
-            except requests_db.DatabaseError as err:
-                LOGGER.error(f"Failed to log error message in database. Error {str(err)}. Request: {data}")
         raise c_err
 
-    try:
-        requests_db.submit_request(data)
-        LOGGER.info(
-            f"Restore {obj['key']} from {obj[REQUESTS_DB_GLACIER_BUCKET_KEY]} "
-            f"attempt {attempt} successful. Job: {request_id}")
-    except requests_db.DatabaseError as err:
-        LOGGER.error(f"Failed to log request in database. Error {str(err)}. Request: {data}")
+    LOGGER.info(
+        f"Restore {obj['key']} from {obj[REQUESTS_DB_GLACIER_BUCKET_KEY]} "
+        f"attempt {attempt} successful. Job: {request_id}")
 
 
 # todo: Move to shared lib
-def post_status_for_job_to_queue(job_id: int, granule_id: str, status_id: int,
-                                 request_time: str, completion_time: str, archive_destination: str,
+def post_status_for_job_to_queue(job_id: str, granule_id: str, status_id: Optional[int],
+                                 request_time: Optional[str], completion_time: Optional[str],
+                                 archive_destination: Optional[str],
                                  request_method: RequestMethod, db_queue_url: str,
                                  max_retries: int, retry_sleep_secs: float):
     new_data = {'job_id': job_id, 'granule_id': granule_id}
@@ -382,10 +387,11 @@ def post_status_for_job_to_queue(job_id: int, granule_id: str, status_id: int,
 
 
 # todo: Move to shared lib
-def post_status_for_file_to_queue(job_id: str, granule_id: str, filename: str, key_path: str,
-                                  restore_destination: str,
-                                  status_id: int, error_message: str,
-                                  request_time: str, last_update: str, completion_time: str,
+def post_status_for_file_to_queue(job_id: str, granule_id: str, filename: str, key_path: Optional[str],
+                                  restore_destination: Optional[str],
+                                  status_id: Optional[int], error_message: Optional[str],
+                                  request_time: Optional[str], last_update: str,
+                                  completion_time: Optional[str],
                                   request_method: RequestMethod,
                                   db_queue_url: str,
                                   max_retries: int, retry_sleep_secs: float):
@@ -442,10 +448,10 @@ def post_entry_to_queue(table_name: str, new_data: Dict[str, Any], request_metho
                 )
             )
         except Exception as e:
-            # todo: Figure out what type of error occurs when queue is unreachable.
             if attempt == max_retries + 1:
-                LOGGER.error(e)
-                return
+                LOGGER.error(f"Error while logging row {json.dumps(new_data, indent=4)} "
+                             f"to table {table_name}: {e}")
+                raise e
             time.sleep(retry_sleep_secs)
             continue
 
@@ -468,17 +474,6 @@ def handler(event: Dict[str, Any], context):  # pylint: disable-msg=unused-argum
                 to sleep between retry attempts.
             RESTORE_RETRIEVAL_TYPE (str, optional, default = 'Standard'): the Tier
                 for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
-            DATABASE_PORT (str): the database port. The default is 5432
-                Hidden requirement for requests_db.get_dbconnect_info.
-            DATABASE_NAME (str): the name of the database.
-                Hidden requirement for requests_db.get_dbconnect_info.
-            DATABASE_USER (str): the name of the application user.
-                Hidden requirement for requests_db.get_dbconnect_info.
-        Parameter Store:
-            drdb-user-pass (str): the password for the application user (DATABASE_USER).
-                Hidden requirement for requests_db.get_dbconnect_info.
-            drdb-host (str): the database host.
-                Hidden requirement for requests_db.get_dbconnect_info.
         Args:
             event: A dict with the following keys:
                 'config' (dict): A dict with the following keys:
@@ -492,7 +487,6 @@ def handler(event: Dict[str, Any], context):  # pylint: disable-msg=unused-argum
                             'dest_bucket' (str): The bucket the restored file will be moved
                                 to after the restore completes.
                 'job_id' (str): The unique identifier used for tracking requests.
-                # todo: Why aren't we generating this here?
                 Example: {
                     'config': {'glacierBucket': 'some_bucket'}
                     'input': {

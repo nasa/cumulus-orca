@@ -23,6 +23,7 @@ class RequestMethod(Enum):
     POST = 'post'
     PUT = 'put'
 
+
 OS_ENVIRON_DB_QUEUE_URL_KEY = 'DB_QUEUE_URL'
 
 # These will determine what the output looks like.
@@ -38,6 +39,11 @@ JOB_REQUEST_ID_KEY = 'request_id'
 JOB_ARCHIVE_BUCKET_DEST_KEY = 'archive_bucket_dest'
 JOB_JOB_STATUS_KEY = 'job_status'
 
+ORCA_STATUS_PENDING = 0
+ORCA_STATUS_STAGED = 1
+ORCA_STATUS_SUCCESS = 2
+ORCA_STATUS_FAILED = 3
+
 LOGGER = CumulusLogger()
 
 
@@ -47,7 +53,9 @@ class CopyRequestError(Exception):
     """
 
 
-def task(records: List[Dict[str, Any]], retries: int, retry_sleep_secs: float) -> List[Dict[str, Any]]:
+# todo: Add params to docs and usage. Might need to be moved into records.
+def task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: float, job_id: str, granule_id: str) \
+        -> List[Dict[str, Any]]:
     """
     Task called by the handler to perform the work.
 
@@ -57,7 +65,7 @@ def task(records: List[Dict[str, Any]], retries: int, retry_sleep_secs: float) -
 
     Args:
         records: Passed through from the handler.
-        retries: The number of attempts to retry a failed copy.
+        max_retries: The number of attempts to retry a failed copy.
         retry_sleep_secs: The number of seconds
             to sleep between retry attempts.
 
@@ -87,7 +95,7 @@ def task(records: List[Dict[str, Any]], retries: int, retry_sleep_secs: float) -
     files = get_files_from_records(records)
     attempt = 1
     s3 = boto3.client('s3')  # pylint: disable-msg=invalid-name
-    while attempt <= retries + 1:
+    while attempt <= max_retries + 1:
         for a_file in files:
             # All files from get_files_from_records start with 'success' == False.
             if not a_file[FILE_SUCCESS_KEY]:
@@ -95,7 +103,7 @@ def task(records: List[Dict[str, Any]], retries: int, retry_sleep_secs: float) -
 
                 try:
                     if FILE_REQUEST_ID_KEY not in a_file:  # Lazily get/set the request_id
-                        job = find_job_in_db(key)
+                        job = find_job_in_db(key)  # todo: Do we still need this? Why was it needed?
                         if job:
                             a_file[FILE_REQUEST_ID_KEY] = job[JOB_REQUEST_ID_KEY]
                             a_file[FILE_TARGET_BUCKET_KEY] = job[JOB_ARCHIVE_BUCKET_DEST_KEY]
@@ -103,122 +111,41 @@ def task(records: List[Dict[str, Any]], retries: int, retry_sleep_secs: float) -
                             continue
                     err_msg = copy_object(s3, a_file[FILE_SOURCE_BUCKET_KEY], a_file[FILE_SOURCE_KEY_KEY],
                                           a_file[FILE_TARGET_BUCKET_KEY])
-                    # todo: Since status only updates here, we can't call errors 'complete'. Maybe only update status outside loop?
-                    update_status_in_db(a_file, attempt, err_msg, db_queue_url)
+                    a_file[FILE_ERROR_MESSAGE_KEY] = err_msg
                 except requests_db.DatabaseError:
                     continue  # Move on to the next file. We'll come back to retry on next attempt
 
         attempt = attempt + 1
-        if attempt <= retries + 1:
+        if attempt <= max_retries + 1:
             if all(a_file[FILE_SUCCESS_KEY] for a_file in files):  # Check for early completion
-                return files
+                break
             time.sleep(retry_sleep_secs)
+
+    any_error = False
+    for a_file in files:
+        if not a_file[FILE_SUCCESS_KEY]:
+            any_error = True
+            post_status_for_file_to_queue(
+                job_id, granule_id, a_file[FILE_SOURCE_KEY_KEY], None,
+                None,
+                ORCA_STATUS_FAILED, a_file.get(FILE_ERROR_MESSAGE_KEY, None),
+                None, database.get_utc_now_iso(), None, RequestMethod.PUT, db_queue_url,
+                max_retries, retry_sleep_secs)
+
+    if any_error:
+        logging.error(
+            f'File copy failed. {files}')
+        raise CopyRequestError(f'File copy failed. {files}')
 
     return files
 
 
-# todo: Misnomer. Just the status entry.
-def find_job_in_db(key: str) -> Optional[Dict[str, Any]]:
-    """
-    Finds the active job for the file in the database.
-
-    Args:
-        key: The object key for the file to find in the db.
-
-    Returns:
-        None if no in-progress job found for the given {key}.
-        Otherwise, the job related to the restore request. Contains the following keys:
-            'request_id' (string): The request_id of the database entry.
-            'archive_bucket_dest' (string): The name of the archive s3 bucket.
-
-    Raises:
-        requests_db.DatabaseError: Thrown if the request cannot be read from database.
-    """
-    try:
-        jobs = requests_db.get_jobs_by_object_key(key)
-    except requests_db.DatabaseError as err:
-        logging.error(f"Failed to read request from database. "
-                      f"key: {key} "
-                      f"Err: {str(err)}")
-        raise
-
-    for job in jobs:
-        if job[JOB_JOB_STATUS_KEY] != "complete":
-            return job
-
-    log_msg = ("Failed to update request status in database. "
-               f"No incomplete entry found for object_key: {key}")
-    logging.error(log_msg)
-    return None
-
-
-def update_status_in_db(a_file: Dict[str, Any], attempt: int, err_msg: str, db_queue_url: str) -> None:
-    """
-    Updates the status for the job in the database.
-
-    Args:
-        a_file: An input dict with keys for:
-            'request_id' (string): The request_id of the database entry to update.  # todo: Obsolete, I guess? Hard to gauge without system access.
-            'source_key' (string): The filename of the restored file.
-            'source_bucket' (string): The location of the restored file.
-            'target_bucket' (string): the archive bucket the file was copied to.
-        attempt: The attempt number for the copy (1 based).
-        err_msg: None, or the error message from the copy command.
-
-    Returns:
-        None: {a_file} will be modified with additional keys for:
-            'success' (boolean): True if the copy was successful,
-                otherwise False.
-            'err_msg' (string): When 'success' is False, this will contain
-                the error message from the copy error
-
-        Example:  [{'request_id': '', 'source_key': 'file1.xml',
-                      'source_bucket': 'my-dr-fake-glacier-bucket',
-                      'target_bucket': 'unittest_xml_bucket', 'success': True,
-                      'err_msg': ''},
-                  {'request_id': '', 'source_key': 'file2.txt',
-                      'source_bucket': 'my-dr-fake-glacier-bucket',
-                      'target_bucket': 'unittest_txt_bucket', 'success': True,
-                      'err_msg': ''}]
-
-    Raises:
-        requests_db.DatabaseError: Thrown if the update operation fails.
-    """
-    new_status = ""
-    try:
-        if err_msg:
-            a_file[FILE_ERROR_MESSAGE_KEY] = err_msg
-            new_status = "failed"
-            logging.error(f"Attempt {attempt}. Error copying file {a_file[FILE_SOURCE_KEY_KEY]}"
-                          f" from {a_file[FILE_SOURCE_BUCKET_KEY]} to {a_file[FILE_TARGET_BUCKET_KEY]}."
-                          f" msg: {err_msg}")
-            post_status_for_file_to_queue(job_id, granule_id, filename, None, None, 2, err_msg,
-                                          None, None, database.get_utc_now_iso(), RequestMethod.PUT, db_queue_url,
-                                          3,
-                                          10)  # todo: Theoretically we could edit existing row with a few new values.
-        else:
-            a_file[FILE_SUCCESS_KEY] = True
-            a_file[FILE_ERROR_MESSAGE_KEY] = ''
-            new_status = "success"
-            logging.info(f"Attempt {attempt}. Success copying file "
-                         f"{a_file[FILE_SOURCE_KEY_KEY]} from {a_file[FILE_SOURCE_BUCKET_KEY]} "
-                         f"to {a_file[FILE_TARGET_BUCKET_KEY]}.")
-            post_status_for_file_to_queue(job_id, granule_id, filename, None, None, 1, None,
-                                          None, None, None, RequestMethod.PUT, db_queue_url,
-                                          3, 10)
-    except requests_db.DatabaseError as err:
-        logging.error(f"Failed to update request status in database. "
-                      f"key: {a_file[FILE_SOURCE_KEY_KEY]} "
-                      f"new status: {new_status}. Err: {str(err)}")
-        raise
-    return
-
-
 # todo: Move to shared lib
-def post_status_for_file_to_queue(job_id: str, granule_id: str, filename: str, key_path: str,
-                                  restore_destination: str,
-                                  status_id: int, error_message: str,
-                                  request_time: str, last_update: str, completion_time: str,
+def post_status_for_file_to_queue(job_id: str, granule_id: str, filename: str, key_path: Optional[str],
+                                  restore_destination: Optional[str],
+                                  status_id: Optional[int], error_message: Optional[str],
+                                  request_time: Optional[str], last_update: str,
+                                  completion_time: Optional[str],
                                   request_method: RequestMethod,
                                   db_queue_url: str,
                                   max_retries: int, retry_sleep_secs: float):
@@ -275,10 +202,10 @@ def post_entry_to_queue(table_name: str, new_data: Dict[str, Any], request_metho
                 )
             )
         except Exception as e:
-            # todo: Figure out what type of error occurs when queue is unreachable.
             if attempt == max_retries + 1:
-                LOGGER.error(e)
-                return
+                LOGGER.error(f"Error while logging row {json.dumps(new_data, indent=4)} "
+                             f"to table {table_name}: {e}")
+                raise e
             time.sleep(retry_sleep_secs)
             continue
 
@@ -449,11 +376,4 @@ def handler(event: Dict[str, Any], context: object) -> List[Dict[str, Any]]:  # 
 
     logging.debug(f'event: {event}')
     records = event["Records"]
-    result = task(records, retries, retry_sleep_secs)
-    for a_file in result:
-        # if any file failed, the function will fail
-        if not a_file[FILE_SUCCESS_KEY]:
-            logging.error(
-                f'File copy failed. {result}')
-            raise CopyRequestError(f'File copy failed. {result}')
-    return result
+    return task(records, retries, retry_sleep_secs)
