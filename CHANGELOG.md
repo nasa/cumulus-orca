@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+* *ORCA-92* Added two lambdas (request_status_for_file and request_status_for_job) for use with the Cumulus dashboard. request_status_for_file will retrieve status for an individual file, with the optional parameter of which job you want the file's recovery status for. request_status_for_job will retrieve a summary of the job along with status totals. See the task's 'schemas' folder and the README.md files for more information and examples.
 
 ### Changed
 

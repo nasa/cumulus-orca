@@ -1,0 +1,56 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/request_status_for_granule/schemas/output.json",
+	"title": "request_status Lambda Input (Granule Specific)",
+	"description": "The output from the request_status Lambda when retrieving status for a particular granule. If multiple jobs match the information given, only the most recent will be returned.",
+	"type": "object",
+	"properties": {
+		"granule_id": {
+			"description": "The unique ID of the granule to retrieve status for.",
+			"type": "string"
+		},
+		"asyncOperationId": {
+			"description": "The unique ID of the asyncOperation.",
+			"type": "string"
+		},
+		"files": {
+			"description": "Description and status of the files within the given granule.",
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"file_name": {
+						"description": "The name and extension of the file.",
+						"type": "string"
+					},
+					"restore_destination": {
+						"description": "The name of the glacier bucket the granule is being copied to.",
+						"type": "string"
+					},
+					"status": {
+						"description": "The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.",
+						"type": "string",
+						"pattern": "^(pending|success|failed|staged)$"
+					},
+					"error_message": {
+						"description": "If the restoration of the file errored, the error will be stored here.",
+						"type": "string"
+					}
+				},
+				"required": [ "file_name", "restore_destination", "status" ]
+			},
+			"uniqueItems": true
+		},
+		"request_time": {
+			"description": "The time, in UTC and isoformat, when the request to restore the granule was initiated.",
+			"type": "string",
+			"pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?$"
+		},
+		"completion_time": {
+			"description": "The time, in UTC and isoformat, when all granule_files were no longer 'pending'.",
+			"type": "string",
+			"pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?$"
+		}
+	},
+	"required": [ "granule_id", "asyncOperationId", "files", "request_time" ]
+}
