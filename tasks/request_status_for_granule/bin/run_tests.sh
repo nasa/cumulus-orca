@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ## =============================================================================
 ## NAME: run_tests.sh
 ##
@@ -60,8 +60,8 @@ python3 -m venv venv
 source venv/bin/activate
 
 ## Install the requirements
-pip install --upgrade pip
-pip install -r requirements-dev.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
+pip install -q --upgrade pip
+pip install -q -r requirements-dev.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
 let return_code=$?
 
 check_rc $return_code "ERROR: pip install encountered an error."
@@ -71,7 +71,7 @@ check_rc $return_code "ERROR: pip install encountered an error."
 echo "INFO: Running unit and coverage tests ..."
 
 # Currently just running unit tests until we fix/support large tests
-coverage run --source test/unit_tests/ -m pytest test/unit_tests/
+coverage run --source request_status_for_granule -m pytest
 let return_code=$?
 check_rc $return_code "ERROR: Unit tests encountered failures."
 

@@ -16,29 +16,29 @@ import requests_db
 import request_status_for_job
 
 
-class TestRequestStatusForJobUnit(unittest.TestCase):  # pylint: disable-msg=too-many-instance-attributes
+class TestRequestStatusForJobUnit(
+    unittest.TestCase
+):  # pylint: disable-msg=too-many-instance-attributes
     """
     TestRequestStatusForJob.
     """
 
     # noinspection PyPep8Naming
-    @patch('request_status_for_job.task')
-    @patch('requests_db.get_dbconnect_info')
-    @patch('cumulus_logger.CumulusLogger.setMetadata')
+    @patch("request_status_for_job.task")
+    @patch("requests_db.get_dbconnect_info")
+    @patch("cumulus_logger.CumulusLogger.setMetadata")
     def test_handler_happy_path(
-            self,
-            mock_setMetadata: MagicMock,
-            mock_get_dbconnect_info: MagicMock,
-            mock_task: MagicMock
+        self,
+        mock_setMetadata: MagicMock,
+        mock_get_dbconnect_info: MagicMock,
+        mock_task: MagicMock,
     ):
         """
         Basic path with all information present.
         """
         job_id = uuid.uuid4().__str__()
 
-        event = {
-            request_status_for_job.INPUT_JOB_ID_KEY: job_id
-        }
+        event = {request_status_for_job.INPUT_JOB_ID_KEY: job_id}
         context = Mock()
         result = request_status_for_job.handler(event, context)
 
@@ -47,51 +47,46 @@ class TestRequestStatusForJobUnit(unittest.TestCase):  # pylint: disable-msg=too
         self.assertEqual(mock_task.return_value, result)
 
     # noinspection PyPep8Naming
-    @patch('requests_db.get_dbconnect_info')
-    @patch('cumulus_logger.CumulusLogger.setMetadata')
+    @patch("requests_db.get_dbconnect_info")
+    @patch("cumulus_logger.CumulusLogger.setMetadata")
     def test_handler_missing_job_id_returns_error_code(
-            self,
-            mock_setMetadata: MagicMock,
-            mock_get_dbconnect_info: MagicMock
+        self, mock_setMetadata: MagicMock, mock_get_dbconnect_info: MagicMock
     ):
         """
         If job_id is not present, should return an error dictionary.
         """
-        event = {
-        }
+        event = {}
         context = Mock()
         result = request_status_for_job.handler(event, context)
-        self.assertEqual(HTTPStatus.BAD_REQUEST, result['httpStatus'])
+        self.assertEqual(HTTPStatus.BAD_REQUEST, result["httpStatus"])
 
     # noinspection PyPep8Naming
-    @patch('request_status_for_job.task')
-    @patch('requests_db.get_dbconnect_info')
-    @patch('cumulus_logger.CumulusLogger.setMetadata')
+    @patch("request_status_for_job.task")
+    @patch("requests_db.get_dbconnect_info")
+    @patch("cumulus_logger.CumulusLogger.setMetadata")
     def test_handler_database_error_returns_error_code(
-            self,
-            mock_setMetadata: MagicMock,
-            mock_get_dbconnect_info: MagicMock,
-            mock_task: MagicMock
+        self,
+        mock_setMetadata: MagicMock,
+        mock_get_dbconnect_info: MagicMock,
+        mock_task: MagicMock,
     ):
         """
         If database error is raised, it should be caught and returned in a dictionary.
         """
         job_id = uuid.uuid4().__str__()
 
-        event = {
-            request_status_for_job.INPUT_JOB_ID_KEY: job_id
-        }
+        event = {request_status_for_job.INPUT_JOB_ID_KEY: job_id}
         context = Mock()
         mock_task.side_effect = requests_db.DatabaseError()
         result = request_status_for_job.handler(event, context)
-        self.assertEqual(HTTPStatus.INTERNAL_SERVER_ERROR, result['httpStatus'])
+        self.assertEqual(HTTPStatus.INTERNAL_SERVER_ERROR, result["httpStatus"])
 
-    @patch('request_status_for_job.get_granule_status_entries_for_job')
-    @patch('request_status_for_job.get_status_totals_for_job')
+    @patch("request_status_for_job.get_granule_status_entries_for_job")
+    @patch("request_status_for_job.get_status_totals_for_job")
     def test_task_happy_path(
-            self,
-            mock_get_status_totals_for_job: MagicMock,
-            mock_get_granule_status_entries_for_job: MagicMock
+        self,
+        mock_get_status_totals_for_job: MagicMock,
+        mock_get_granule_status_entries_for_job: MagicMock,
     ):
         """
         Basic path with all information present.
@@ -101,21 +96,24 @@ class TestRequestStatusForJobUnit(unittest.TestCase):  # pylint: disable-msg=too
 
         result = request_status_for_job.task(job_id, db_connect_info)
 
-        mock_get_granule_status_entries_for_job.assert_called_once_with(job_id, db_connect_info)
+        mock_get_granule_status_entries_for_job.assert_called_once_with(
+            job_id, db_connect_info
+        )
         mock_get_status_totals_for_job.assert_called_once_with(job_id, db_connect_info)
 
-        self.assertEqual({
-            request_status_for_job.OUTPUT_JOB_ID_KEY: job_id,
-            request_status_for_job.OUTPUT_JOB_STATUS_TOTALS_KEY: mock_get_status_totals_for_job.return_value,
-            request_status_for_job.OUTPUT_GRANULES_KEY: mock_get_granule_status_entries_for_job.return_value
-        }, result)
+        self.assertEqual(
+            {
+                request_status_for_job.OUTPUT_JOB_ID_KEY: job_id,
+                request_status_for_job.OUTPUT_JOB_STATUS_TOTALS_KEY: mock_get_status_totals_for_job.return_value,
+                request_status_for_job.OUTPUT_GRANULES_KEY: mock_get_granule_status_entries_for_job.return_value,
+            },
+            result,
+        )
 
-    @patch('database.result_to_json')
-    @patch('database.single_query')
+    @patch("database.result_to_json")
+    @patch("database.single_query")
     def test_get_granule_status_entries_for_job_happy_path(
-            self,
-            mock_single_query: MagicMock,
-            mock_result_to_json: MagicMock
+        self, mock_single_query: MagicMock, mock_result_to_json: MagicMock
     ):
         """
         Basic path with all information present.
@@ -124,9 +122,12 @@ class TestRequestStatusForJobUnit(unittest.TestCase):  # pylint: disable-msg=too
 
         db_connect_info = Mock()
 
-        result = request_status_for_job.get_granule_status_entries_for_job(job_id, db_connect_info)
+        result = request_status_for_job.get_granule_status_entries_for_job(
+            job_id, db_connect_info
+        )
 
-        mock_single_query.assert_called_once_with(f"""
+        mock_single_query.assert_called_once_with(
+            f"""
             SELECT
                 granule_id as "{request_status_for_job.OUTPUT_GRANULE_ID_KEY}",
                 orca_status.value AS "{request_status_for_job.OUTPUT_STATUS_KEY}"
@@ -136,15 +137,16 @@ class TestRequestStatusForJobUnit(unittest.TestCase):  # pylint: disable-msg=too
             WHERE
                 job_id = %s
             """,
-                                                  db_connect_info, (job_id,))
+            db_connect_info,
+            (job_id,),
+        )
         mock_result_to_json.assert_called_once_with(mock_single_query.return_value)
 
         self.assertEqual(mock_result_to_json.return_value, result)
 
-    @patch('database.single_query')
+    @patch("database.single_query")
     def test_get_granule_status_entries_for_job_error_wrapped_in_database_error(
-            self,
-            mock_single_query: MagicMock
+        self, mock_single_query: MagicMock
     ):
         """
         If error is raised when contacting DB, error should be raised as a DatabaseError.
@@ -155,24 +157,29 @@ class TestRequestStatusForJobUnit(unittest.TestCase):  # pylint: disable-msg=too
         mock_single_query.side_effect = database.DbError()
 
         with self.assertRaises(request_status_for_job.DatabaseError):
-            request_status_for_job.get_granule_status_entries_for_job(job_id, db_connect_info)
+            request_status_for_job.get_granule_status_entries_for_job(
+                job_id, db_connect_info
+            )
 
-    @patch('database.single_query')
-    def test_get_status_totals_for_job_happy_path(
-            self,
-            mock_single_query: MagicMock
-    ):
+    @patch("database.single_query")
+    def test_get_status_totals_for_job_happy_path(self, mock_single_query: MagicMock):
         """
         Basic path with all information present.
         """
         job_id = uuid.uuid4().__str__()
         db_connect_info = Mock()
 
-        mock_single_query.return_value = [{'value': 'success', 'total': 5}, {'value': 'future_status', 'total': 10}]
+        mock_single_query.return_value = [
+            {"value": "success", "total": 5},
+            {"value": "future_status", "total": 10},
+        ]
 
-        result = request_status_for_job.get_status_totals_for_job(job_id, db_connect_info)
+        result = request_status_for_job.get_status_totals_for_job(
+            job_id, db_connect_info
+        )
 
-        mock_single_query.assert_called_once_with(f"""
+        mock_single_query.assert_called_once_with(
+            f"""
             with granule_status_count AS (
                 SELECT status_id
                     , count(*) as total
@@ -184,14 +191,15 @@ class TestRequestStatusForJobUnit(unittest.TestCase):  # pylint: disable-msg=too
                 , coalesce(total, 0) as total
             FROM orca_status os
             LEFT JOIN granule_status_count gsc ON (gsc.status_id = os.id)""",
-                                                  db_connect_info, (job_id,))
+            db_connect_info,
+            (job_id,),
+        )
 
-        self.assertEqual({'success': 5, 'future_status': 10}, result)
+        self.assertEqual({"success": 5, "future_status": 10}, result)
 
-    @patch('database.single_query')
+    @patch("database.single_query")
     def test_get_status_totals_for_job_error_wrapped_in_database_error(
-            self,
-            mock_single_query: MagicMock
+        self, mock_single_query: MagicMock
     ):
         """
         If error is raised when contacting DB, error should be raised as a DatabaseError.
@@ -212,14 +220,11 @@ class TestRequestStatusForJobUnit(unittest.TestCase):  # pylint: disable-msg=too
             request_status_for_job.task(None, Mock())
         except ValueError:
             return
-        self.fail('Error not raised.')
+        self.fail("Error not raised.")
 
-# Multi-Function Tests:
-    @patch('database.single_query')
-    def test_task_output_json_schema(
-            self,
-            mock_single_query: MagicMock
-    ):
+    # Multi-Function Tests:
+    @patch("database.single_query")
+    def test_task_output_json_schema(self, mock_single_query: MagicMock):
         """
         Checks a realistic output against the output.json.
         """
@@ -232,37 +237,26 @@ class TestRequestStatusForJobUnit(unittest.TestCase):  # pylint: disable-msg=too
             [
                 {
                     request_status_for_job.OUTPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(),
-                    request_status_for_job.OUTPUT_STATUS_KEY: 'success'
+                    request_status_for_job.OUTPUT_STATUS_KEY: "success",
                 },
                 {
                     request_status_for_job.OUTPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(),
-                    request_status_for_job.OUTPUT_STATUS_KEY: 'pending'
-                }
+                    request_status_for_job.OUTPUT_STATUS_KEY: "pending",
+                },
             ],
             # status totals
             [
-                {
-                    'value': 'pending',
-                    'total': 5
-                },
-                {
-                    'value': 'success',
-                    'total': 2
-                },
-                {
-                    'value': 'staged',
-                    'total': 0
-                },
-                {
-                    'value': 'failed',
-                    'total': 1000
-                }
-            ]
+                {"value": "pending", "total": 5},
+                {"value": "success", "total": 2},
+                {"value": "staged", "total": 0},
+                {"value": "failed", "total": 1000},
+            ],
         ]
 
         result = request_status_for_job.task(job_id, db_connect_info)
 
-        raw_schema = open('..\\..\\schemas\\output.json', 'r').read()
-        schema = json.loads(raw_schema)
+        with open("schemas/output.json", "r") as raw_schema:
+            schema = json.loads(raw_schema.read())
+
         validate = fastjsonschema.compile(schema)
         validate(result)
