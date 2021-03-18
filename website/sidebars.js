@@ -57,11 +57,13 @@ module.exports = {
   },
   ops_guide: {
     "Getting Started": [
-      'operator/operator-intro'
+      'operator/operator-intro',
+    ],
     "Operations": [
-      'operator/data-recovery',]
+      'operator/data-recovery',
+    ],
     "Configuration": [
-      'operator/collection-configuration'
-                       ],
+      'operator/collection-configuration',
+    ],
   },
 };
