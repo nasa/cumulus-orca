@@ -294,38 +294,17 @@ def handler(event: Dict[str, Any], context: object) -> List[Dict[str, Any]]:  # 
     Args:
         # todo: Rework this to pull from queue and not use guesswork.
         event: A dict with the following keys:
-
-            Records (list(dict)): A list of dict with the following keys:
-                s3 (dict): A dict with the following keys:
-                    bucket (dict):  A dict with the following keys:
-                        name (string): The name of the s3 bucket holding the restored file
-                    object (dict):  A dict with the following keys:
-                        key (string): The key of the restored file
-
-            Example: event: {"Records": [{"eventVersion": "2.1",
-                                  "eventSource": "aws:s3",
-                                  "awsRegion": "us-west-2",
-                                  "eventTime": "2019-06-17T18:54:06.686Z",
-                                  "eventName": "ObjectRestore:Post",
-                                  "userIdentity": {
-                                  "principalId": "AWS:AROAJWMHUPO:request_files"},
-                                  "requestParameters": {"sourceIPAddress": "1.001.001.001"},
-                                  "responseElements": {"x-amz-request-id": "0364DB32C0",
-                                                       "x-amz-id-2":
-                                     "4TpisFevIyonOLD/z1OGUE/Ee3w/Et+pr7c5F2RbnAnU="},
-                                  "s3": {"s3SchemaVersion": "1.0",
-                                        "configurationId": "dr_restore_complete",
-                                        "bucket": {"name": exp_src_bucket,
-                                                   "ownerIdentity":
-                                                   {"principalId": "A1BCXDGCJ9"},
-                                           "arn": "arn:aws:s3:::my-dr-fake-glacier-bucket"},
-                                        "object": {"key": exp_file_key1,
-                                                   "size": 645,
-                                                   "sequencer": "005C54A126FB"}}}]}
+            'Records' (List): A list of dicts with the following keys: # todo: Add keys based on what is needed.
+                'messageId' (str)
+                'receiptHandle' (str)
+                'body' (str): # todo: Could use a json Dict here for key/value storage.
+                'attributes' (Dict)
+                'messageAttributes' (Dict)
 
         context: An object required by AWS Lambda. Unused.
 
     Returns:
+        # todo: Rework this section once code has determined reasonable output.
         The list of dicts returned from the task. All 'success' values will be True. If they were
         not all True, the CopyRequestError exception would be raised.
         Dicts have the following keys:

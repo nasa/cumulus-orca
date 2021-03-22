@@ -126,7 +126,8 @@ def post_entry_to_queue(table_name: str, new_data: Dict[str, Any], request_metho
 
 def handler(event: Dict[str, List], context):
     """
-    Lambda handler. Receives a list of queue entries from an SQS queue, and posts them to a database.
+    Lambda handler.
+    Receives input from copy operation, adds details from status DB, and stores in queue for copy_files_to_archive.
 
     Args:
         event: todo: use relevant properties from https://bugs.earthdata.nasa.gov/browse/ORCA-149
