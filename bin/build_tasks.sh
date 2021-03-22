@@ -123,3 +123,11 @@ zip -r "../copy_to_glacier.zip" .
 cd ..
 rm -rf build
 cd ../../
+
+TASK='tasks/request_status_for_job/'
+echo "Building `pwd`/${TASK}"
+(cd "`pwd`/${TASK}/bin" && ./build.sh)
+
+TASK='tasks/request_status_for_granule/'
+echo "Building `pwd`/${TASK}"
+(cd "`pwd`/${TASK}/bin" && ./build.sh)
