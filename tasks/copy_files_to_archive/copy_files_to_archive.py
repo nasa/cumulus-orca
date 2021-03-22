@@ -30,7 +30,6 @@ OS_ENVIRON_DB_QUEUE_URL_KEY = 'DB_QUEUE_URL'
 FILE_SUCCESS_KEY = 'success'
 FILE_SOURCE_KEY_KEY = 'source_key'
 FILE_ERROR_MESSAGE_KEY = 'err_msg'
-FILE_REQUEST_ID_KEY = 'request_id'
 FILE_SOURCE_BUCKET_KEY = 'source_bucket'
 FILE_TARGET_BUCKET_KEY = 'target_bucket'
 
@@ -102,13 +101,7 @@ def task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: floa
                 key = a_file[FILE_SOURCE_KEY_KEY]
 
                 try:
-                    if FILE_REQUEST_ID_KEY not in a_file:  # Lazily get/set the request_id
-                        job = find_job_in_db(key)  # todo: Do we still need this? Why was it needed?
-                        if job:
-                            a_file[FILE_REQUEST_ID_KEY] = job[JOB_REQUEST_ID_KEY]
-                            a_file[FILE_TARGET_BUCKET_KEY] = job[JOB_ARCHIVE_BUCKET_DEST_KEY]
-                        else:
-                            continue
+                    # todo: Pass the target bucket in through params. Previously was set at this point from status DB guesswork.
                     err_msg = copy_object(s3, a_file[FILE_SOURCE_BUCKET_KEY], a_file[FILE_SOURCE_KEY_KEY],
                                           a_file[FILE_TARGET_BUCKET_KEY])
                     a_file[FILE_ERROR_MESSAGE_KEY] = err_msg
@@ -299,6 +292,7 @@ def handler(event: Dict[str, Any], context: object) -> List[Dict[str, Any]]:  # 
                 drdb-host (string): the database host
 
     Args:
+        # todo: Rework this to pull from queue and not use guesswork.
         event: A dict with the following keys:
 
             Records (list(dict)): A list of dict with the following keys:

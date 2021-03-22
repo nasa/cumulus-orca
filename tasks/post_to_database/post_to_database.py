@@ -31,16 +31,22 @@ def task(records: List[Dict[str, Any]], db_connect_info: Dict):
         post_record_to_database(record, db_connect_info)
 
 
-def post_record_to_database(record: Dict[str, any], db_connect_info: Dict):
+def post_record_to_database(record: Dict[str, Any], db_connect_info: Dict):
     values = json.loads(record['body'])
     table_name = record['messageAttributes']['TableName']
     override_existing = RequestMethod(record['messageAttributes']['RequestMethod'])
     post_values_to_database(values, table_name, override_existing, db_connect_info)
 
 
-def post_values_to_database(values: List, table_name: str, request_method: RequestMethod, db_connect_info: Dict):
-    # todo
-    pass
+def post_values_to_database(values: Dict[str, Any], table_name: str, request_method: RequestMethod, db_connect_info: Dict):
+    if request_method is RequestMethod.PUT:
+        pass
+        # todo: If PUT, get existing entry and update with values.
+        # todo: Will need some special logic to get an entry based on keys for the given table_name.
+    elif request_method is RequestMethod.POST:
+        pass
+        # todo: If POST, create a new entry in DB with values.
+    # todo: If error raised, log.
 
 
 # todo: Make sure to grant sqs:ReceiveMessage, sqs:DeleteMessage, and sqs:GetQueueAttributes

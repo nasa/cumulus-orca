@@ -66,8 +66,8 @@ FILE_SUCCESS_KEY = 'success'
 FILE_ERROR_MESSAGE_KEY = 'err_msg'
 
 ORCA_STATUS_PENDING = 0
-ORCA_STATUS_STAGED = 1
-ORCA_STATUS_SUCCESS = 2
+# ORCA_STATUS_STAGED = 1
+# ORCA_STATUS_SUCCESS = 2
 ORCA_STATUS_FAILED = 3
 
 LOGGER = CumulusLogger()
@@ -236,14 +236,6 @@ def process_granule(s3: BaseClient,
                                  db_queue_url,
                                  max_retries, retry_sleep_secs)
 
-    for a_file in granule[GRANULE_RECOVER_FILES_KEY]:
-        post_status_for_file_to_queue(
-            job_id, granule_id, os.path.basename(a_file[FILE_KEY_KEY]), a_file[FILE_KEY_KEY],
-            a_file[FILE_DEST_BUCKET_KEY],
-            ORCA_STATUS_PENDING, None,
-            request_time, request_time, database.get_utc_now_iso(), RequestMethod.POST, db_queue_url,
-            max_retries, retry_sleep_secs)
-
     while attempt <= max_retries + 1:
         for a_file in granule[GRANULE_RECOVER_FILES_KEY]:
             if not a_file[FILE_SUCCESS_KEY]:
@@ -261,10 +253,10 @@ def process_granule(s3: BaseClient,
                     a_file[FILE_ERROR_MESSAGE_KEY] = ''
 
                     post_status_for_file_to_queue(
-                        job_id, granule_id, os.path.basename(a_file[FILE_KEY_KEY]), None,
-                        None,
-                        ORCA_STATUS_STAGED, None,
-                        None, database.get_utc_now_iso(), None, RequestMethod.PUT, db_queue_url,
+                        job_id, granule_id, os.path.basename(a_file[FILE_KEY_KEY]), a_file[FILE_KEY_KEY],
+                        a_file[FILE_DEST_BUCKET_KEY],
+                        ORCA_STATUS_PENDING, None,
+                        request_time, request_time, database.get_utc_now_iso(), RequestMethod.POST, db_queue_url,
                         max_retries, retry_sleep_secs)
 
                 except ClientError as err:
@@ -276,12 +268,6 @@ def process_granule(s3: BaseClient,
             if all(a_file[FILE_SUCCESS_KEY] for a_file in granule[GRANULE_RECOVER_FILES_KEY]):
                 break
             time.sleep(retry_sleep_secs)
-
-    # Update existing status to 'in-progress'
-    post_status_for_job_to_queue(job_id, granule_id, ORCA_STATUS_STAGED, None, None, None,
-                                 RequestMethod.PUT,
-                                 db_queue_url,
-                                 max_retries, retry_sleep_secs)
 
     any_error = False
     for a_file in granule[GRANULE_RECOVER_FILES_KEY]:
