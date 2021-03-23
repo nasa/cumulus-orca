@@ -18,17 +18,16 @@ variable "region" {
   default     = "us-west-2"
 }
 
-# variable "tags" {
-#   type        = map(string)
-#   description = "Tags to be applied to resources that support tags."
-# }
+variable "tags" {
+  type        = map(string)
+  description = "Tags to be applied to resources that support tags."
+}
 
 ## Variables unique to ORCA
 ## OPTIONAL
 variable "sqs_delay_time" {
   type        = number
   default     = 0
-  description = "The time in seconds that the delivery of all messages in the queue will be delayed"
 }
 
 variable "maximum_message_size" {
