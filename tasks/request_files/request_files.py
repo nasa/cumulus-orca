@@ -253,7 +253,8 @@ def process_granule(s3: BaseClient,
                     a_file[FILE_ERROR_MESSAGE_KEY] = ''
 
                     post_status_for_file_to_queue(
-                        job_id, granule_id, os.path.basename(a_file[FILE_KEY_KEY]), a_file[FILE_KEY_KEY],
+                        job_id, granule_id, os.path.basename(a_file[FILE_KEY_KEY]),
+                        a_file[FILE_KEY_KEY],
                         a_file[FILE_DEST_BUCKET_KEY],
                         ORCA_STATUS_PENDING, None,
                         request_time, request_time, database.get_utc_now_iso(), RequestMethod.POST, db_queue_url,
@@ -469,10 +470,10 @@ def handler(event: Dict[str, Any], context):  # pylint: disable-msg=unused-argum
                     'granules' (list(dict)): A list of dicts with the following keys:
                         'granuleId' (str): The id of the granule being restored.
                         'keys' (list(dict)): A list of dicts with the following keys:  # TODO: rename.
-                            'key' (str): Name of the file within the granule.
+                            'key' (str): Name of the file within the granule.  # TODO: This or example lies.
                             'dest_bucket' (str): The bucket the restored file will be moved
                                 to after the restore completes.
-                'job_id' (str): The unique identifier used for tracking requests.
+                'job_id' (str): The unique identifier used for tracking requests.  # TODO: If not present, generate and return.
                 Example: {
                     'config': {'glacierBucket': 'some_bucket'}
                     'input': {

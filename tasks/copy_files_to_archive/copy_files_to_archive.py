@@ -28,15 +28,15 @@ OS_ENVIRON_DB_QUEUE_URL_KEY = 'DB_QUEUE_URL'
 
 # These will determine what the output looks like.
 FILE_SUCCESS_KEY = 'success'
-FILE_SOURCE_KEY_KEY = 'source_key'
 FILE_ERROR_MESSAGE_KEY = 'err_msg'
-FILE_SOURCE_BUCKET_KEY = 'source_bucket'
-FILE_TARGET_BUCKET_KEY = 'target_bucket'
 
-# These are tied to the database schema.
-JOB_REQUEST_ID_KEY = 'request_id'
-JOB_ARCHIVE_BUCKET_DEST_KEY = 'archive_bucket_dest'
-JOB_JOB_STATUS_KEY = 'job_status'
+# These are tied to the input schema.
+INPUT_JOB_ID_KEY = 'job_id'
+INPUT_GRANULE_ID_KEY = 'granule_id'
+INPUT_FILENAME_KEY = 'filename'
+INPUT_KEY_PATH_KEY = 'key_path'
+INPUT_TARGET_BUCKET_KEY = 'restore_destination'
+INPUT_SOURCE_BUCKET_KEY = 'source_bucket'
 
 ORCA_STATUS_PENDING = 0
 ORCA_STATUS_STAGED = 1
@@ -53,7 +53,7 @@ class CopyRequestError(Exception):
 
 
 # todo: Add params to docs and usage. Might need to be moved into records.
-def task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: float, job_id: str, granule_id: str) \
+def task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: float) \
         -> List[Dict[str, Any]]:
     """
     Task called by the handler to perform the work.
@@ -211,29 +211,13 @@ def get_files_from_records(records: List[Dict[str, Any]]) -> List[Dict[str, str]
         records: passed through from the handler.
 
     Returns:
-        files: A list of dicts with the following keys:
-            'source_key': The object key of the file that was restored.
-            'source_bucket': The name of the s3 bucket where the restored
-                file was temporarily sitting.
-
-    Raises:
-        KeyError: Thrown if the event record does not contain a value for the given bucket or object.
-            Bucket will be checked/raised first, then object.
+        records, parsed into Dicts, with the additional KVP 'success' = False
     """
     files = []
     for record in records:
-        a_file = {FILE_SUCCESS_KEY: False}
-        log_str = 'Records["s3"]["bucket"]["name"]'
-        try:
-            source_bucket = record["s3"]["bucket"]["name"]
-            a_file[FILE_SOURCE_BUCKET_KEY] = source_bucket
-            log_str = 'Records["s3"]["object"]["key"]'  # Use the same var to make except handling easier.
-            source_key = record["s3"]["object"]["key"]
-            a_file[FILE_SOURCE_KEY_KEY] = source_key
-            files.append(a_file)
-        except KeyError:
-            raise CopyRequestError(f'event record: "{record}" does not contain a '
-                                   f'value for {log_str}')
+        a_file = json.loads(record['body'])
+        a_file[FILE_SUCCESS_KEY] = False
+        files.append(a_file)
     return files
 
 
@@ -297,7 +281,16 @@ def handler(event: Dict[str, Any], context: object) -> List[Dict[str, Any]]:  # 
             'Records' (List): A list of dicts with the following keys: # todo: Add keys based on what is needed.
                 'messageId' (str)
                 'receiptHandle' (str)
-                'body' (str): # todo: Could use a json Dict here for key/value storage.
+                'body' (str): A json formatted string representing a dict specifying a file to copy to archive.
+                    'job_id' (str): The unique id of the recovery job.
+                    'granule_id' (str): The unique ID of the granule.
+                    'filename' (str): The name of the file being copied.
+                    'key_path' (str): The path the file should be copied to. todo: Make sure this is correct. Overloaded term.
+                    'restore_destination' (str): The name of the bucket the restored file will be moved to.  # todo: rename in db schema and elsewhere. Use 'target_bucket'.
+                    The below come from moveGranules:
+                    'source_bucket' (str): The bucket the restored file can be copied from.
+
+
                 'attributes' (Dict)
                 'messageAttributes' (Dict)
 
@@ -349,4 +342,5 @@ def handler(event: Dict[str, Any], context: object) -> List[Dict[str, Any]]:  # 
 
     logging.debug(f'event: {event}')
     records = event["Records"]
+
     return task(records, retries, retry_sleep_secs)

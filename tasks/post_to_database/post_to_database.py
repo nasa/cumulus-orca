@@ -59,7 +59,7 @@ def handler(event: Dict[str, List], context):
             'Records' (List): A list of dicts with the following keys:
                 'messageId' (str)
                 'receiptHandle' (str)
-                'body' (str): A json formatted string, representing a dict of values to write as DB entry.
+                'body' (str): A json formatted string representing a dict of values to write as DB entry.
                 'attributes' (Dict)
                 'messageAttributes' (Dict): A dict with the following keys defined in the functions that write to queue.
                     'RequestMethod' (str): 'post' or 'put'.
