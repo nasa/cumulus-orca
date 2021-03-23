@@ -18,3 +18,24 @@ output "orca_lambda_copy_to_glacier_arn" {
   value = module.orca_lambdas.copy_to_glacier_arn
 }
 
+
+
+
+
+output "orca_sqs_get_message_queue_arn" {
+  value = module.orca_sqs.get_message_queue_arn
+}
+
+output "orca_sqs_get_message_queue_id" {
+  value = module.orca_sqs.get_message_queue_id
+}
+
+output "orca_sqs_status_update_queue_arn" {
+  value = module.orca_sqs.status_update_queue_arn
+}
+
+output "orca_sqs_status_update_queue_id" {
+  value = module.orca_sqs.status_update_queue_id
+}
+
+

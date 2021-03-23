@@ -90,7 +90,7 @@ variable "database_app_user_pw" {}
 
 
 variable "ddl_dir" {
-  default = "ddl/"
+  default     = "ddl/"
   description = "Must have trailing /"
 }
 variable "drop_database" {
@@ -108,15 +108,15 @@ variable "lambda_timeout" {
 
 
 variable "default_tags" {
-  type = object({ team=string, application=string })
+  type = object({ team = string, application = string })
   default = {
-    team: "DR",
-    application: "disaster-recovery"
+    team : "DR",
+    application : "disaster-recovery"
   }
 }
 
 variable "buckets" {
-  type    = map(object({ name = string, type = string }))
+  type = map(object({ name = string, type = string }))
 }
 
 variable "workflow_config" {

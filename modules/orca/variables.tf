@@ -82,13 +82,13 @@ variable "lambda_timeout" {
 variable "workflow_config" {}
 
 variable "buckets" {
-  type    = map(object({ name = string, type = string }))
+  type = map(object({ name = string, type = string }))
 }
 
 variable "default_tags" {
-  type = object({team: string, application: string})
+  type = object({ team : string, application : string })
   default = {
-    team: "DR",
-    application: "disaster-recovery"
+    team : "DR",
+    application : "disaster-recovery"
   }
 }

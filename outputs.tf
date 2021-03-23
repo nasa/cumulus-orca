@@ -116,3 +116,24 @@ output "copy_to_glacier_lambda_arn" {
 #   description = "The ARN of the db parameter group"
 #   value       = "${module.db.this_db_parameter_group_arn}"
 # }
+
+
+output "get_message_queue_arn" {
+  description = "The ARN of get message SQS"
+  value       = module.orca.orca_sqs_get_message_queue_arn
+}
+
+output "get_message_queue_id" {
+  description = "The ID of get message SQS"
+  value       = module.orca.orca_sqs_get_message_queue_id
+}
+
+output "status_update_queue_arn" {
+  description = "The ARN of status update SQS"
+  value       = module.orca.orca_sqs_get_message_queue_arn
+}
+
+output "status_update_queue_id" {
+  description = "The ID of status update SQS"
+  value       = module.orca.orca_sqs_get_message_queue_id
+}
