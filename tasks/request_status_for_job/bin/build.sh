@@ -74,11 +74,34 @@ python3 -m venv venv
 source venv/bin/activate
 
 ## Install the requirements
-pip install -q --upgrade pip
+pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org
 pip install -q -t build -r requirements.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
 let return_code=$?
 
 check_rc $return_code "ERROR: pip install encountered an error."
+
+# Install the aws-lambda psycopg2 libraries
+mkdir -p build/psycopg2
+
+##TODO: Adjust build scripts to put shared packages needed under a task/build/packages directory.
+##      and copy the packages from there.
+if [ ! -d "../package" ]; then
+    mkdir -p ../package
+    let return_code=$?
+    check_rc $return_code "ERROR: Unable to create tasks/package directory."
+fi
+
+if [ ! -d "../package/awslambda-psycopg2" ]; then
+    ## TODO: This should be pulling based on a release version instead of latest
+    git clone https://github.com/jkehler/awslambda-psycopg2.git ../package/awslambda-psycopg2
+    let return_code=$?
+    check_rc $return_code "ERROR: Unable to retrieve awslambda-psycopg2 code."
+fi
+
+cp ../package/awslambda-psycopg2/psycopg2-3.7/* build/psycopg2/
+let return_code=$?
+check_rc $return_code "ERROR: Unable to install psycopg2."
+
 
 ## Copy the lambda files to build
 echo "INFO: Creating the Lambda package ..."
