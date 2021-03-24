@@ -45,9 +45,24 @@ module "orca_rds" {
 }
 
 module "orca_sqs" {
-  source       = "../sqs"
-  prefix       = var.prefix
-  profile      = var.profile
-  region       = var.region
-  default_tags = var.default_tags
+  source = "../sqs"
+  ## --------------------------
+  ## Cumulus Variables
+  ## --------------------------
+  ## REQUIRED
+  prefix      = var.prefix
+  aws_profile = var.aws_profile
+  ## OPTIONAL
+  region = var.region
+  tags   = local.default_tags
+
+
+  ## --------------------------
+  ## ORCA SQS Variables
+  ## --------------------------
+  ## OPTIONAL
+  sqs_delay_time                               = var.sqs_delay_time
+  sqs_maximum_message_size                     = var.sqs_maximum_message_size
+  staged_recovery_queue_message_retention_time = var.staged_recovery_queue_message_retention_time
+  status_update_queue_message_retention_time   = var.status_update_queue_message_retention_time
 }

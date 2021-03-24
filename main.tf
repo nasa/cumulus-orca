@@ -36,5 +36,12 @@ module "orca" {
   buckets                        = var.buckets
   workflow_config                = var.workflow_config
   region                         = var.region
-
+  ## --------------------------
+  ## ORCA SQS Variables
+  ## --------------------------
+  ## OPTIONAL
+  sqs_delay_time                               = var.sqs_delay_time
+  sqs_maximum_message_size                     = var.sqs_maximum_message_size
+  staged_recovery_queue_message_retention_time = var.staged_recovery_queue_message_retention_time
+  status_update_queue_message_retention_time   = var.status_update_queue_message_retention_time
 }

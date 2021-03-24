@@ -118,22 +118,22 @@ output "copy_to_glacier_lambda_arn" {
 # }
 
 
-output "get_message_queue_arn" {
-  description = "The ARN of get message SQS"
-  value       = module.orca.orca_sqs_get_message_queue_arn
+output "orca_sqs_staged_recovery_queue_arn" {
+  description = "The ARN of the staged-recovery-queue SQS"
+  value       = module.orca.orca_sqs_staged_recovery_queue_arn
 }
 
-output "get_message_queue_id" {
-  description = "The ID of get message SQS"
-  value       = module.orca.orca_sqs_get_message_queue_id
+output "orca_sqs_staged_recovery_queue_id" {
+  description = "The URL ID of the staged-recovery-queue SQS"
+  value       = module.orca.orca_sqs_staged_recovery_queue_id
 }
 
-output "status_update_queue_arn" {
-  description = "The ARN of status update SQS"
-  value       = module.orca.orca_sqs_get_message_queue_arn
+output "orca_sqs_status_update_queue_arn" {
+  description = "The ARN of the status-update-queue SQS"
+  value       = module.orca.orca_sqs_status_update_queue_arn
 }
 
-output "status_update_queue_id" {
-  description = "The ID of status update SQS"
-  value       = module.orca.orca_sqs_get_message_queue_id
+output "orca_sqs_status_update_queue_id" {
+  description = "The URL ID of the status-update-queue SQS"
+  value       = module.orca.orca_sqs_status_update_queue_id
 }
