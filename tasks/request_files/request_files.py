@@ -79,6 +79,7 @@ class RestoreRequestError(Exception):
     """
 
 
+# noinspection PyUnusedLocal
 def task(event: Dict, context: object) -> Dict[str, Any]:  # pylint: disable-msg=unused-argument
     """
     Task called by the handler to perform the work.
@@ -166,7 +167,7 @@ def inner_task(event: Dict, max_retries: int, retry_sleep_secs: float,
                                   f'This input contains {len(granules)}')
     s3 = boto3.client('s3')  # pylint: disable-msg=invalid-name
 
-    # todo: Singular output variable from loop!?
+    # todo: Singular output variable from loop?
     copied_granule = {}
     for granule in granules:
         files = []
@@ -248,7 +249,7 @@ def process_granule(s3: BaseClient,
                     'days': restore_expire_days  # This property isn't from anything besides this code.
                 }
                 try:
-                    restore_object(s3, obj, attempt, max_retries, retrieval_type)
+                    restore_object(s3, obj, attempt, retrieval_type)
                     a_file[FILE_SUCCESS_KEY] = True
                     a_file[FILE_ERROR_MESSAGE_KEY] = ''
 

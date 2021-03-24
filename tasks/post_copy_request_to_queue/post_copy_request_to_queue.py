@@ -12,10 +12,10 @@ import boto3 as boto3
 import requests_db
 from cumulus_logger import CumulusLogger
 
-#ORCA_STATUS_PENDING = 0
+# ORCA_STATUS_PENDING = 0
 ORCA_STATUS_STAGED = 1
 ORCA_STATUS_SUCCESS = 2
-#ORCA_STATUS_FAILED = 3
+# ORCA_STATUS_FAILED = 3
 
 
 class RequestMethod(Enum):

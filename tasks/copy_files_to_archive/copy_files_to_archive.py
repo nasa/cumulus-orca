@@ -16,7 +16,6 @@ import database
 from botocore.client import BaseClient
 from botocore.exceptions import ClientError
 import requests_db
-from cumulus_logger import CumulusLogger
 
 
 class RequestMethod(Enum):
@@ -34,7 +33,8 @@ FILE_ERROR_MESSAGE_KEY = 'err_msg'
 INPUT_JOB_ID_KEY = 'job_id'
 INPUT_GRANULE_ID_KEY = 'granule_id'
 INPUT_FILENAME_KEY = 'filename'
-INPUT_KEY_PATH_KEY = 'key_path'
+INPUT_SOURCE_KEY_KEY = 'source_key'
+INPUT_TARGET_KEY_KEY = 'target_key'
 INPUT_TARGET_BUCKET_KEY = 'restore_destination'
 INPUT_SOURCE_BUCKET_KEY = 'source_bucket'
 
@@ -42,8 +42,6 @@ ORCA_STATUS_PENDING = 0
 ORCA_STATUS_STAGED = 1
 ORCA_STATUS_SUCCESS = 2
 ORCA_STATUS_FAILED = 3
-
-LOGGER = CumulusLogger()
 
 
 class CopyRequestError(Exception):
@@ -98,12 +96,12 @@ def task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: floa
         for a_file in files:
             # All files from get_files_from_records start with 'success' == False.
             if not a_file[FILE_SUCCESS_KEY]:
-                key = a_file[FILE_SOURCE_KEY_KEY]
-
                 try:
-                    # todo: Pass the target bucket in through params. Previously was set at this point from status DB guesswork.
-                    err_msg = copy_object(s3, a_file[FILE_SOURCE_BUCKET_KEY], a_file[FILE_SOURCE_KEY_KEY],
-                                          a_file[FILE_TARGET_BUCKET_KEY])
+                    err_msg = copy_object(s3,
+                                          a_file[INPUT_SOURCE_BUCKET_KEY],
+                                          a_file[INPUT_SOURCE_KEY_KEY],
+                                          a_file[INPUT_TARGET_BUCKET_KEY],
+                                          a_file[INPUT_TARGET_KEY_KEY])
                     a_file[FILE_ERROR_MESSAGE_KEY] = err_msg
                 except requests_db.DatabaseError:
                     continue  # Move on to the next file. We'll come back to retry on next attempt
@@ -119,7 +117,7 @@ def task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: floa
         if not a_file[FILE_SUCCESS_KEY]:
             any_error = True
             post_status_for_file_to_queue(
-                job_id, granule_id, a_file[FILE_SOURCE_KEY_KEY], None,
+                a_file[INPUT_JOB_ID_KEY], a_file[INPUT_GRANULE_ID_KEY], a_file[INPUT_FILENAME_KEY], None,
                 None,
                 ORCA_STATUS_FAILED, a_file.get(FILE_ERROR_MESSAGE_KEY, None),
                 None, database.get_utc_now_iso(), None, RequestMethod.PUT, db_queue_url,
@@ -196,8 +194,8 @@ def post_entry_to_queue(table_name: str, new_data: Dict[str, Any], request_metho
             )
         except Exception as e:
             if attempt == max_retries + 1:
-                LOGGER.error(f"Error while logging row {json.dumps(new_data, indent=4)} "
-                             f"to table {table_name}: {e}")
+                logging.error(f"Error while logging row {json.dumps(new_data, indent=4)} "
+                              f"to table {table_name}: {e}")
                 raise e
             time.sleep(retry_sleep_secs)
             continue
@@ -285,7 +283,8 @@ def handler(event: Dict[str, Any], context: object) -> List[Dict[str, Any]]:  # 
                     'job_id' (str): The unique id of the recovery job.
                     'granule_id' (str): The unique ID of the granule.
                     'filename' (str): The name of the file being copied.
-                    'key_path' (str): The path the file should be copied to. todo: Make sure this is correct. Overloaded term.
+                    'source_key' (str): The path the file was restored to.
+                    'target_key' (str): The path to copy to. Defaults to value at 'source_key'.
                     'restore_destination' (str): The name of the bucket the restored file will be moved to.  # todo: rename in db schema and elsewhere. Use 'target_bucket'.
                     The below come from moveGranules:
                     'source_bucket' (str): The bucket the restored file can be copied from.
@@ -301,15 +300,15 @@ def handler(event: Dict[str, Any], context: object) -> List[Dict[str, Any]]:  # 
         The list of dicts returned from the task. All 'success' values will be True. If they were
         not all True, the CopyRequestError exception would be raised.
         Dicts have the following keys:
-            'source_key' (string): The object key of the file that was restored.
-            'source_bucket' (string): The name of the s3 bucket where the restored
+            'source_key' (str): The object key of the file that was restored.
+            'source_bucket' (str): The name of the s3 bucket where the restored.
                 file was temporarily sitting.
-            'target_bucket' (string): The name of the archive s3 bucket
+            'target_bucket' (str): The name of the archive s3 bucket.
             'success' (boolean): True, if the copy was successful,
                 otherwise False.
             'err_msg' (string): when success is False, this will contain
                 the error message from the copy error.
-            'request_id' (string): The request_id of the database entry.
+            'request_id' (str): The request_id of the database entry.
                 Only guaranteed to be present if 'success' == True.
 
         Example:  [{'source_key': 'file1.xml', 'source_bucket': 'my-dr-fake-glacier-bucket',
@@ -324,8 +323,6 @@ def handler(event: Dict[str, Any], context: object) -> List[Dict[str, Any]]:  # 
         The same dict that is returned for a successful copy will be included in the
         message, with 'success' = False for the files for which the copy failed.
     """
-    LOGGER.setMetadata(event, context)
-
     logging.basicConfig(level=logging.INFO,
                         format='%(levelname)s: %(asctime)s: %(message)s')
     try:
