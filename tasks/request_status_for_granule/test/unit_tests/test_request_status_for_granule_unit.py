@@ -8,6 +8,7 @@ import json
 import unittest
 import uuid
 from http import HTTPStatus
+from unittest import mock
 from unittest.mock import MagicMock, patch, Mock
 import fastjsonschema
 
@@ -46,7 +47,8 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
         result = request_status_for_granule.handler(event, context)
 
         mock_setMetadata.assert_called_once_with(event, context)
-        mock_task.assert_called_once_with(granule_id, mock_get_dbconnect_info.return_value, async_operation_id)
+        mock_task.assert_called_once_with(granule_id, mock_get_dbconnect_info.return_value,
+                                          context.aws_request_id, async_operation_id)
         self.assertEqual(mock_task.return_value, result)
 
     @patch('request_status_for_granule.task')
@@ -67,7 +69,8 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
         context = Mock()
         result = request_status_for_granule.handler(event, context)
 
-        mock_task.assert_called_once_with(granule_id, mock_get_dbconnect_info.return_value, None)
+        mock_task.assert_called_once_with(granule_id, mock_get_dbconnect_info.return_value,
+                                          context.aws_request_id, None)
         self.assertEqual(mock_task.return_value, result)
 
     # noinspection PyPep8Naming
@@ -127,7 +130,7 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
         Raises error if granule_id is None.
         """
         try:
-            request_status_for_granule.task(None, uuid.uuid4().__str__())
+            request_status_for_granule.task(None, uuid.uuid4().__str__(), Mock())
         except ValueError:
             return
         self.fail('Error not raised.')
@@ -142,6 +145,7 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
         """
         granule_id = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
+        request_id = uuid.uuid4().__str__()
 
         db_connect_info = Mock()
 
@@ -156,7 +160,7 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
         }]
         mock_get_file_entries_for_granule_in_job.return_value = copy.deepcopy(file_entries)
 
-        result = request_status_for_granule.task(granule_id, db_connect_info, job_id)
+        result = request_status_for_granule.task(granule_id, db_connect_info, request_id, job_id)
 
         mock_get_file_entries_for_granule_in_job.assert_called_once_with(granule_id, job_id, db_connect_info)
         mock_get_job_entry_for_granule.assert_called_once_with(granule_id, job_id, db_connect_info)
@@ -177,6 +181,7 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
         """
         granule_id = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
+        request_id = uuid.uuid4().__str__()
 
         db_connect_info = Mock()
 
@@ -193,7 +198,7 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
         }]
         mock_get_file_entries_for_granule_in_job.return_value = copy.deepcopy(file_entries)
 
-        result = request_status_for_granule.task(granule_id, db_connect_info, None)
+        result = request_status_for_granule.task(granule_id, db_connect_info, request_id, None)
 
         mock_get_most_recent_job_id_for_granule.assert_called_once_with(granule_id, db_connect_info)
         mock_get_file_entries_for_granule_in_job.assert_called_once_with(granule_id, job_id, db_connect_info)
@@ -203,6 +208,51 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
         del expected[request_status_for_granule.OUTPUT_COMPLETION_TIME_KEY]
         expected[request_status_for_granule.OUTPUT_FILES_KEY] = [{}, ]
         self.assertEqual(expected, result)
+
+    @patch('request_status_for_granule.create_http_error_dict')
+    @patch('request_status_for_granule.get_most_recent_job_id_for_granule')
+    def test_task_no_job_id_job_not_found_returns_error(self,
+                                                        mock_get_most_recent_job_id_for_granule: MagicMock,
+                                                        mock_create_http_error_dict: MagicMock):
+        """
+        If job_id is not given, and no valid job id is found, return 404.
+        """
+        granule_id = uuid.uuid4().__str__()
+        request_id = uuid.uuid4().__str__()
+
+        db_connect_info = Mock()
+
+        mock_get_most_recent_job_id_for_granule.return_value = None
+
+        result = request_status_for_granule.task(granule_id, db_connect_info, request_id, None)
+
+        mock_get_most_recent_job_id_for_granule.assert_called_once_with(granule_id, db_connect_info)
+
+        mock_create_http_error_dict.assert_called_once_with('NotFound', HTTPStatus.NOT_FOUND, request_id, mock.ANY)
+        self.assertEqual(mock_create_http_error_dict.return_value, result)
+
+    @patch('request_status_for_granule.create_http_error_dict')
+    @patch('request_status_for_granule.get_job_entry_for_granule')
+    def test_task_job_for_granule_and_job_id_not_found_returns_error(self,
+                                                                     mock_get_job_entry_for_granule: MagicMock,
+                                                                     mock_create_http_error_dict: MagicMock):
+        """
+        If the job_id+granule_id does not point to an entry, return 404.
+        """
+        granule_id = uuid.uuid4().__str__()
+        job_id = uuid.uuid4().__str__()
+        request_id = uuid.uuid4().__str__()
+
+        db_connect_info = Mock()
+
+        mock_get_job_entry_for_granule.return_value = None
+
+        result = request_status_for_granule.task(granule_id, db_connect_info, request_id, job_id)
+
+        mock_get_job_entry_for_granule.assert_called_once_with(granule_id, job_id, db_connect_info)
+
+        mock_create_http_error_dict.assert_called_once_with('NotFound', HTTPStatus.NOT_FOUND, request_id, mock.ANY)
+        self.assertEqual(mock_create_http_error_dict.return_value, result)
 
     @patch('database.result_to_json')
     @patch('database.single_query')
@@ -361,7 +411,7 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
         with self.assertRaises(request_status_for_granule.DatabaseError):
             request_status_for_granule.get_file_entries_for_granule_in_job(granule_id, job_id, db_connect_info)
 
-# Multi-Function Tests:
+    # Multi-Function Tests:
     @patch('database.single_query')
     def test_task_output_json_schema(
             self,
@@ -372,6 +422,7 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
         """
         granule_id = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
+        request_id = uuid.uuid4().__str__()
 
         db_connect_info = Mock()
 
@@ -400,10 +451,9 @@ class TestRequestStatusForGranuleUnit(unittest.TestCase):  # pylint: disable-msg
             ]
         ]
 
-        result = request_status_for_granule.task(granule_id, db_connect_info, job_id)
+        result = request_status_for_granule.task(granule_id, db_connect_info, request_id, job_id)
 
         raw_schema = open('..\\..\\schemas\\output.json', 'r').read()
         schema = json.loads(raw_schema)
         validate = fastjsonschema.compile(schema)
         validate(result)
-

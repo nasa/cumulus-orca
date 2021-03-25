@@ -22,12 +22,13 @@ OUTPUT_COMPLETION_TIME_KEY = 'completion_time'
 LOGGER = CumulusLogger()
 
 
-def task(granule_id: str, db_connect_info: Dict, job_id: str = None) -> Dict[str, Any]:
+def task(granule_id: str, db_connect_info: Dict, request_id: str, job_id: str = None) -> Dict[str, Any]:
     # noinspection SpellCheckingInspection
     """
     Args:
         granule_id: The unique ID of the granule to retrieve status for.
         db_connect_info: The {database}.py defined db_connect_info.
+        request_id: An ID provided by AWS Lambda. Used for context tracking.
         job_id: An optional additional filter to get a specific job's entry.
     Returns: A Dict with the following keys:
         'granule_id' (str): The unique ID of the granule to retrieve status for.
@@ -35,20 +36,31 @@ def task(granule_id: str, db_connect_info: Dict, job_id: str = None) -> Dict[str
         'files' (List): Description and status of the files within the given granule. List of Dicts with keys:
             'file_name' (str): The name and extension of the file.
             'restore_destination' (str): The name of the glacier bucket the file is being copied to.
-            'status' (str): The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.
+            'status' (str):
+                The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.
             'error_message' (str, Optional): If the restoration of the file errored, the error will be stored here.
         'request_time' (DateTime): The time, in UTC isoformat, when the request to restore the granule was initiated.
         'completion_time' (DateTime, Optional):
             The time, in UTC isoformat, when all granule_files were no longer 'pending'/'staged'.
 
+        Will also return a dict from create_http_error_dict with error NOT_FOUND if job/granule could not be found.
     """
     if granule_id is None or len(granule_id) == 0:
         raise ValueError("granule_id must be set to a non-empty value.")
 
     if job_id is None or len(job_id) == 0:
         job_id = get_most_recent_job_id_for_granule(granule_id, db_connect_info)
+        if job_id is None:
+            return create_http_error_dict(
+                "NotFound", HTTPStatus.NOT_FOUND, request_id,
+                f"No job for granule id '{granule_id}'.")
 
     job_entry = get_job_entry_for_granule(granule_id, job_id, db_connect_info)
+    if job_entry is None:
+        return create_http_error_dict(
+            "NotFound", HTTPStatus.NOT_FOUND, request_id,
+            f"No job found for granule id '{granule_id}' and job id '{job_id}'.")
+
     if job_entry[OUTPUT_COMPLETION_TIME_KEY] is None:
         del job_entry[OUTPUT_COMPLETION_TIME_KEY]
 
@@ -87,6 +99,8 @@ def get_most_recent_job_id_for_granule(granule_id: str, db_connect_info: Dict[st
         LOGGER.error(f"DbError: {str(err)}")
         raise DatabaseError(str(err))
 
+    if len(rows) == 0:
+        return None
     orca_recoveryjob = rows[0]
     return database.result_to_json(orca_recoveryjob)['job_id']
 
@@ -128,6 +142,8 @@ def get_job_entry_for_granule(
         LOGGER.error(f"DbError: {str(err)}")
         raise DatabaseError(str(err))
 
+    if len(rows) == 0:
+        return None
     orca_recoveryjob = rows[0]
     result = database.result_to_json(orca_recoveryjob)
     return result
@@ -200,7 +216,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             granule_id: The unique ID of the granule to retrieve status for.
             asyncOperationId (Optional): The unique ID of the asyncOperation.
                 May apply to a request that covers multiple granules.
-        context: An object required by AWS Lambda. Unused.
+        context: An object provided by AWS Lambda. Used for context tracking.
 
     Environment Vars: See requests_db.py's get_dbconnect_info for further details.
         'DATABASE_PORT' (int): Defaults to 5432
@@ -223,7 +239,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             The time, in UTC isoformat, when all granule_files were no longer 'pending'/'staged'.
             
         Or, if an error occurs, see create_http_error_dict
-            400 if granule_id is missing. 500 if an error occurs when querying the database.
+            400 if granule_id is missing. 500 if an error occurs when querying the database, 404 if not found.
     """
     LOGGER.setMetadata(event, context)
 
@@ -234,7 +250,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
 
     db_connect_info = requests_db.get_dbconnect_info()
     try:
-        return task(granule_id, db_connect_info, event.get(INPUT_JOB_ID_KEY, None))
+        return task(granule_id, db_connect_info, context.aws_request_id, event.get(INPUT_JOB_ID_KEY, None))
     except DatabaseError as db_error:
         return create_http_error_dict(
             "InternalServerError", HTTPStatus.INTERNAL_SERVER_ERROR, context.aws_request_id, db_error.__str__())
