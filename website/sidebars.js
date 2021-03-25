@@ -56,7 +56,14 @@ module.exports = {
                        ],
   },
   ops_guide: {
-    "Getting Started": ['operator/operator-intro',
-                       ],
+    "Getting Started": [
+      'operator/operator-intro',
+    ],
+    "Operations": [
+      'operator/data-recovery',
+    ],
+    "Configuration": [
+      'operator/collection-configuration',
+    ],
   },
 };

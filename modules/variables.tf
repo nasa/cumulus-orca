@@ -161,6 +161,34 @@ variable "orca_recovery_retry_interval" {
 }
 
 
+variable "sqs_delay_time" {
+  type        = number
+  description = "The time in seconds that the delivery of all messages in the queue will be delayed."
+  default     = 0
+}
+
+
+variable "sqs_maximum_message_size" {
+  type        = number
+  description = "The limit of how many bytes a message can contain before Amazon SQS rejects it."
+  default     = 262144
+}
+
+
+variable "staged_recovery_queue_message_retention_time" {
+  type        = number
+  description = "The number of seconds staged-recovery-queue fifo SQS retains a message in seconds. Maximum value is 14 days."
+  default     = 432000 #5 days
+}
+
+
+variable "status_update_queue_message_retention_time" {
+  type        = number
+  description = "The number of seconds status_update_queue SQS retains a message in seconds. Maximum value is 14 days."
+  default     = 777600 #9 days
+}
+
+
 ## OPTIONAL (DO NOT CHANGE!) - Development use only
 variable "database_app_user" {
   type        = string
