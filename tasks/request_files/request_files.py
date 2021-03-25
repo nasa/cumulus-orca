@@ -12,7 +12,6 @@ from typing import Dict, Any, Union, List, Optional
 import boto3
 # noinspection PyPackageRequirements
 import database
-import requests_db
 # noinspection PyPackageRequirements
 from botocore.client import BaseClient
 # noinspection PyPackageRequirements
@@ -38,11 +37,10 @@ OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY = 'RESTORE_RETRIEVAL_TYPE'
 OS_ENVIRON_DB_QUEUE_URL_KEY = 'DB_QUEUE_URL'
 
 # noinspection SpellCheckingInspection
+# todo: Use parameters instead of dictionaries of values.
 REQUESTS_DB_DEST_BUCKET_KEY = 'dest_bucket'
 REQUESTS_DB_GLACIER_BUCKET_KEY = 'glacier_bucket'
-REQUESTS_DB_REQUEST_GROUP_ID_KEY = 'request_group_id'
 REQUESTS_DB_GRANULE_ID_KEY = 'granule_id'
-REQUESTS_DB_REQUEST_ID_KEY = 'request_id'
 
 REQUESTS_DB_ERROR_MESSAGE_KEY = 'err_msg'
 REQUESTS_DB_JOB_STATUS_KEY = 'job_status'
@@ -228,10 +226,10 @@ def process_granule(s3: BaseClient,
     """
     request_time = database.get_utc_now_iso()
     attempt = 1
-    request_group_id = requests_db.request_id_generator()
     granule_id = granule[GRANULE_GRANULE_ID_KEY]
 
     # todo: Better async.
+    # todo: add to tests
     post_status_for_job_to_queue(job_id, granule_id, ORCA_STATUS_PENDING, request_time, None, glacier_bucket,
                                  RequestMethod.POST,
                                  db_queue_url,
@@ -241,7 +239,6 @@ def process_granule(s3: BaseClient,
         for a_file in granule[GRANULE_RECOVER_FILES_KEY]:
             if not a_file[FILE_SUCCESS_KEY]:
                 obj = {
-                    REQUESTS_DB_REQUEST_GROUP_ID_KEY: request_group_id,
                     REQUESTS_DB_GRANULE_ID_KEY: granule_id,
                     REQUESTS_DB_GLACIER_BUCKET_KEY: glacier_bucket,
                     'key': a_file[FILE_KEY_KEY],  # This property isn't from anything besides this code.
@@ -249,17 +246,24 @@ def process_granule(s3: BaseClient,
                     'days': restore_expire_days  # This property isn't from anything besides this code.
                 }
                 try:
-                    restore_object(s3, obj, attempt, retrieval_type)
+                    restore_object(s3, obj, attempt, job_id, retrieval_type)
                     a_file[FILE_SUCCESS_KEY] = True
                     a_file[FILE_ERROR_MESSAGE_KEY] = ''
 
+                    # todo: add to tests
                     post_status_for_file_to_queue(
                         job_id, granule_id, os.path.basename(a_file[FILE_KEY_KEY]),
                         a_file[FILE_KEY_KEY],
                         a_file[FILE_DEST_BUCKET_KEY],
-                        ORCA_STATUS_PENDING, None,
-                        request_time, request_time, database.get_utc_now_iso(), RequestMethod.POST, db_queue_url,
-                        max_retries, retry_sleep_secs)
+                        ORCA_STATUS_PENDING,
+                        None,
+                        request_time,
+                        database.get_utc_now_iso(),
+                        None,
+                        RequestMethod.POST,
+                        db_queue_url,
+                        max_retries,
+                        retry_sleep_secs)
 
                 except ClientError as err:
                     a_file[FILE_ERROR_MESSAGE_KEY] = str(err)
@@ -276,12 +280,21 @@ def process_granule(s3: BaseClient,
         # if any file failed, the whole granule will fail
         if not a_file[FILE_SUCCESS_KEY]:
             any_error = True
+            # todo: add to tests
+            # If this is reached, that means there is no entry in the db for file's status.
             post_status_for_file_to_queue(
-                job_id, granule_id, os.path.basename(a_file[FILE_KEY_KEY]), None,
+                job_id, granule_id, os.path.basename(a_file[FILE_KEY_KEY]),
+                a_file[FILE_KEY_KEY],
+                a_file[FILE_DEST_BUCKET_KEY],
+                ORCA_STATUS_FAILED,
+                a_file.get(FILE_ERROR_MESSAGE_KEY, None),
+                request_time,
+                database.get_utc_now_iso(),
                 None,
-                ORCA_STATUS_FAILED, a_file.get(FILE_ERROR_MESSAGE_KEY, None),
-                None, database.get_utc_now_iso(), None, RequestMethod.PUT, db_queue_url,
-                max_retries, retry_sleep_secs)
+                RequestMethod.POST,
+                db_queue_url,
+                max_retries,
+                retry_sleep_secs)
 
     if any_error:
         LOGGER.error(f"One or more files failed to be requested from {glacier_bucket}.{granule}")
@@ -311,7 +324,7 @@ def object_exists(s3_cli: BaseClient, glacier_bucket: str, file_key: str) -> boo
         # todo: Online docs suggest we could catch 'S3.Client.exceptions.NoSuchKey instead of deconstructing ClientError
 
 
-def restore_object(s3_cli: BaseClient, obj: Dict[str, Any], attempt: int,
+def restore_object(s3_cli: BaseClient, obj: Dict[str, Any], attempt: int, job_id: str,
                    retrieval_type: str = 'Standard'
                    ) -> None:
     # noinspection SpellCheckingInspection
@@ -333,7 +346,6 @@ def restore_object(s3_cli: BaseClient, obj: Dict[str, Any], attempt: int,
         Raises:
             ClientError: Raises ClientErrors from restore_object.
     """
-    request_id = obj[REQUESTS_DB_REQUEST_GROUP_ID_KEY]
     request = {'Days': obj['days'],
                'GlacierJobParameters': {'Tier': retrieval_type}}
     # Submit the request
@@ -350,7 +362,7 @@ def restore_object(s3_cli: BaseClient, obj: Dict[str, Any], attempt: int,
 
     LOGGER.info(
         f"Restore {obj['key']} from {obj[REQUESTS_DB_GLACIER_BUCKET_KEY]} "
-        f"attempt {attempt} successful. Job: {request_id}")
+        f"attempt {attempt} successful. Job ID: {job_id}")
 
 
 # todo: Move to shared lib
