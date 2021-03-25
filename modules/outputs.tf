@@ -129,3 +129,24 @@ output "orca_lambda_request_status_for_job_arn" {
 }
 
 
+## SQS Module outputs
+## =============================================================================
+output "orca_sqs_staged_recovery_queue_arn" {
+  description = "The ARN of the staged-recovery-queue SQS"
+  value       = module.orca.orca_sqs_staged_recovery_queue_arn
+}
+
+output "orca_sqs_staged_recovery_queue_id" {
+  description = "The URL ID of the staged-recovery-queue SQS"
+  value       = module.orca.orca_sqs_staged_recovery_queue_id
+}
+
+output "orca_sqs_status_update_queue_arn" {
+  description = "The ARN of the status-update-queue SQS"
+  value       = module.orca.orca_sqs_status_update_queue_arn
+}
+
+output "orca_sqs_status_update_queue_id" {
+  description = "The URL ID of the status-update-queue SQS"
+  value       = module.orca.orca_sqs_status_update_queue_id
+}
