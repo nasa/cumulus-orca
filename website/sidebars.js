@@ -48,7 +48,8 @@ module.exports = {
         'developer/deployment-guide/deployment-s3-bucket',
         'developer/deployment-guide/deployment-with-cumulus',
         'developer/deployment-guide/deployment-upgrading-orca',
-        'developer/deployment-guide/testing_deployment'
+        'developer/deployment-guide/testing_deployment',
+        'developer/deployment-guide/orca-logging'
     ],
   },
   cookbook: {
