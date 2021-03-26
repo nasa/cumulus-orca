@@ -68,7 +68,8 @@
           "L0A_LR_RAW_product_0010-of-0092.h5"
         ]
       }
-    ]
+    ],
+    "job_id": "ad6ed089-f020-4374-9174-0fb5a4a1ebc1"
   },
   "exception": "None",
   "workflow_config": {

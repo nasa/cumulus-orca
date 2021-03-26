@@ -5,6 +5,7 @@ Description:  Lambda function that makes a restore request from glacier for each
 import json
 import os
 import time
+import uuid
 from enum import Enum
 from typing import Dict, Any, Union, List, Optional
 
@@ -47,7 +48,7 @@ REQUESTS_DB_JOB_STATUS_KEY = 'job_status'
 
 EVENT_CONFIG_KEY = 'config'
 EVENT_INPUT_KEY = 'input'
-EVENT_JOB_ID_KEY = 'job_id'
+INPUT_JOB_ID_KEY = 'job_id'
 
 INPUT_GRANULES_KEY = 'granules'
 
@@ -85,7 +86,7 @@ def task(event: Dict, context: object) -> Dict[str, Any]:  # pylint: disable-msg
     for {exp_days} days before they expire. A restore request will be tried up to {retries} times
     if it fails, waiting {retry_sleep_secs} between each attempt.
         Args:
-            event: Passed through from the handler.
+            event: Passed through from the handler via run_cumulus_task.
             context: Passed through from the handler. Unused, but required by framework.
         Environment Vars:
             RESTORE_EXPIRE_DAYS (int, optional, default = 5): The number of days
@@ -109,6 +110,7 @@ def task(event: Dict, context: object) -> Dict[str, Any]:  # pylint: disable-msg
                         'err_msg' (string): when success is False, this will contain
                             the error message from the restore error.
                     'keys': Same as recover_files, but without 'success' and 'err_msg'.
+                'job_id' (str): The 'job_id' from event if present, otherwise a newly-generated uuid.
             Example:
                 {'granules': [
                     {
@@ -147,6 +149,10 @@ def task(event: Dict, context: object) -> Dict[str, Any]:  # pylint: disable-msg
         exp_days = int(os.environ[OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY])
     except KeyError:
         exp_days = DEFAULT_RESTORE_EXPIRE_DAYS
+
+    if not event[EVENT_INPUT_KEY].keys().__contains__(INPUT_JOB_ID_KEY):
+        event[EVENT_INPUT_KEY][INPUT_JOB_ID_KEY] = uuid.uuid4().__str__()
+
     return inner_task(event, max_retries, retry_sleep_secs, retrieval_type, exp_days, db_queue_url)
 
 
@@ -188,10 +194,13 @@ def inner_task(event: Dict, max_retries: int, retry_sleep_secs: float,
     # todo: Using the default value {} for copied_granule will cause this function to raise errors every time.
     process_granule(
         s3, copied_granule, glacier_bucket, restore_expire_days, max_retries, retry_sleep_secs, retrieval_type,
-        event[EVENT_JOB_ID_KEY], db_queue_url)
+        event[EVENT_INPUT_KEY][INPUT_JOB_ID_KEY], db_queue_url)
 
     # Cumulus expects response (payload.granules) to be a list of granule objects.
-    return {INPUT_GRANULES_KEY: [copied_granule]}
+    return {
+        INPUT_GRANULES_KEY: [copied_granule],
+        INPUT_JOB_ID_KEY: event[EVENT_INPUT_KEY][INPUT_JOB_ID_KEY]
+    }
 
 
 def process_granule(s3: BaseClient,
@@ -486,7 +495,7 @@ def handler(event: Dict[str, Any], context):  # pylint: disable-msg=unused-argum
                             'key' (str): Name of the file within the granule.  # TODO: This or example lies.
                             'dest_bucket' (str): The bucket the restored file will be moved
                                 to after the restore completes.
-                'job_id' (str): The unique identifier used for tracking requests.  # TODO: If not present, generate and return.
+                    'job_id' (str): The unique identifier used for tracking requests. If not present, will be generated.
                 Example: {
                     'config': {'glacierBucket': 'some_bucket'}
                     'input': {
