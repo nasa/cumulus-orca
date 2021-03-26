@@ -46,6 +46,11 @@ Fully defined json schemas written in the schema of https://json-schema.org/ can
 <a name="pydoc"></a>
 ## pydoc request_status_for_job
 ```
+Help on module request_status_for_job:
+
+NAME
+    request_status_for_job
+
 FUNCTIONS
     create_http_error_dict(error_type: str, http_status_code: int, request_id: str, message: str) -> Dict[str, Any]
         Creates a standardized dictionary for error reporting.
@@ -90,7 +95,7 @@ FUNCTIONS
         Args:
             event: A dict with the following keys:
                 asyncOperationId: The unique asyncOperationId of the recovery job.
-            context: An object required by AWS Lambda. Unused.
+            context: An object provided by AWS Lambda. Used for context tracking.
         
         Environment Vars: See requests_db.py's get_dbconnect_info for further details.
             'DATABASE_PORT' (int): Defaults to 5432
@@ -114,10 +119,11 @@ FUNCTIONS
             Or, if an error occurs, see create_http_error_dict
                 400 if asyncOperationId is missing. 500 if an error occurs when querying the database.
     
-    task(job_id: str, db_connect_info: Dict) -> Dict[str, Any]
+    task(job_id: str, db_connect_info: Dict, request_id: str) -> Dict[str, Any]
         Args:
             job_id: The unique asyncOperationId of the recovery job.
             db_connect_info: The database.py defined db_connect_info.
+            request_id: An ID provided by AWS Lambda. Used for context tracking.
         Returns:
             A dictionary with the following keys:
                 'asyncOperationId' (str): The job_id.
@@ -129,6 +135,8 @@ FUNCTIONS
                 'granules' (List): A list of dicts with the following keys:
                     'granule_id' (str)
                     'status' (str): pending|staged|success|failed
+        
+            Will also return a dict from create_http_error_dict with error NOT_FOUND if job could not be found.
 
 DATA
     Any = typing.Any
