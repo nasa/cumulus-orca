@@ -54,7 +54,7 @@ resource "aws_db_instance" "postgresql" {
   allocated_storage = 20
   engine            = "postgres"
   identifier        = "${var.prefix}-postgres-sndbx"
-  instance_class    = "db.t3.micro"
+  instance_class    = "db.t2.micro"
   password          = var.postgres_user_pw
   username          = "postgres"
 
@@ -76,7 +76,7 @@ resource "aws_db_instance" "postgresql" {
   port                                = var.database_port
   publicly_accessible                 = false
   skip_final_snapshot                 = true
-  storage_encrypted                   = true
+  storage_encrypted                   = false
   vpc_security_group_ids              = [var.vpc_postgres_ingress_all_egress_id]
   tags                                = local.tags
 }

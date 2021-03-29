@@ -11,8 +11,8 @@ terraform {
 
 ## AWS Provider Settings
 provider "aws" {
-  region  = var.region
   profile = var.aws_profile
+  region  = var.region
 }
 
 
@@ -123,8 +123,36 @@ module "orca_rds" {
   db_deploy_source_code_hash         = module.orca_lambdas.db_deploy_source_code_hash
   postgres_user_pw                   = var.postgres_user_pw
   vpc_postgres_ingress_all_egress_id = module.orca_lambdas.vpc_postgres_ingress_all_egress_id
+
   ## OPTIONAL
   database_port = var.database_port
+
   ## OPTIONAL (DO NOT CHANGE DEFAULT VALUES!)
   database_name = var.database_name
+}
+
+
+## orca_sqs - SQS module
+## =============================================================================
+module "orca_sqs" {
+  source = "../sqs"
+  ## --------------------------
+  ## Cumulus Variables
+  ## --------------------------
+  ## REQUIRED
+  aws_profile = var.aws_profile
+  prefix      = var.prefix
+
+  ## OPTIONAL
+  region = var.region
+  tags   = local.tags
+
+  ## --------------------------
+  ## ORCA Variables
+  ## --------------------------
+  ## OPTIONAL
+  sqs_delay_time                               = var.sqs_delay_time
+  sqs_maximum_message_size                     = var.sqs_maximum_message_size
+  staged_recovery_queue_message_retention_time = var.staged_recovery_queue_message_retention_time
+  status_update_queue_message_retention_time   = var.status_update_queue_message_retention_time
 }

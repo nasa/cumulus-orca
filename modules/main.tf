@@ -52,16 +52,20 @@ module "orca" {
   postgres_user_pw     = var.database_app_user_pw
 
   ## OPTIONAL
-  database_port                        = var.database_port
-  orca_ingest_lambda_memory_size       = var.orca_ingest_lambda_memory_size
-  orca_ingest_lambda_timeout           = var.orca_ingest_lambda_timeout
-  orca_recovery_buckets                = var.orca_recovery_buckets
-  orca_recovery_complete_filter_prefix = var.orca_recovery_complete_filter_prefix
-  orca_recovery_expiration_days        = var.orca_recovery_expiration_days
-  orca_recovery_lambda_memory_size     = var.orca_recovery_lambda_memory_size
-  orca_recovery_lambda_timeout         = var.orca_recovery_lambda_timeout
-  orca_recovery_retry_limit            = var.orca_recovery_retry_limit
-  orca_recovery_retry_interval         = var.orca_recovery_retry_interval
+  database_port                                = var.database_port
+  orca_ingest_lambda_memory_size               = var.orca_ingest_lambda_memory_size
+  orca_ingest_lambda_timeout                   = var.orca_ingest_lambda_timeout
+  orca_recovery_buckets                        = var.orca_recovery_buckets
+  orca_recovery_complete_filter_prefix         = var.orca_recovery_complete_filter_prefix
+  orca_recovery_expiration_days                = var.orca_recovery_expiration_days
+  orca_recovery_lambda_memory_size             = var.orca_recovery_lambda_memory_size
+  orca_recovery_lambda_timeout                 = var.orca_recovery_lambda_timeout
+  orca_recovery_retry_limit                    = var.orca_recovery_retry_limit
+  orca_recovery_retry_interval                 = var.orca_recovery_retry_interval
+  sqs_delay_time                               = var.sqs_delay_time
+  sqs_maximum_message_size                     = var.sqs_maximum_message_size
+  staged_recovery_queue_message_retention_time = var.staged_recovery_queue_message_retention_time
+  status_update_queue_message_retention_time   = var.status_update_queue_message_retention_time
 
   ## OPTIONAL (DO NOT CHANGE DEFAULT VALUES!)
   database_app_user            = var.database_app_user

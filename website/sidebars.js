@@ -47,6 +47,7 @@ module.exports = {
         'developer/deployment-guide/deployment-environment',
         'developer/deployment-guide/deployment-s3-bucket',
         'developer/deployment-guide/deployment-with-cumulus',
+        'developer/deployment-guide/deployment-upgrading-orca',
         'developer/deployment-guide/testing_deployment'
     ],
   },
@@ -55,7 +56,14 @@ module.exports = {
                        ],
   },
   ops_guide: {
-    "Getting Started": ['operator/operator-intro',
-                       ],
+    "Getting Started": [
+      'operator/operator-intro',
+    ],
+    "Operations": [
+      'operator/data-recovery',
+    ],
+    "Configuration": [
+      'operator/collection-configuration',
+    ],
   },
 };
