@@ -9,7 +9,7 @@ import os
 import time
 import logging
 from enum import Enum
-from typing import Any, List, Dict, Optional
+from typing import Any, List, Dict, Optional, Union
 
 import boto3
 import database
@@ -51,7 +51,7 @@ class CopyRequestError(Exception):
 
 
 # todo: Add params to docs and usage. Might need to be moved into records.
-def task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: float) \
+def task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: float, db_queue_url: str) \
         -> List[Dict[str, Any]]:
     """
     Task called by the handler to perform the work.
@@ -65,6 +65,7 @@ def task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: floa
         max_retries: The number of attempts to retry a failed copy.
         retry_sleep_secs: The number of seconds
             to sleep between retry attempts.
+        db_queue_url: The URL of the queue that posts status entries.
 
     Returns:
        A list of dicts with the following keys:
@@ -86,7 +87,6 @@ def task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: floa
     Raises:
         CopyRequestError: Thrown if there are errors with the input records or the copy failed.
     """
-    db_queue_url = str(os.environ[OS_ENVIRON_DB_QUEUE_URL_KEY])
     files = get_files_from_records(records)
     attempt = 1
     s3 = boto3.client('s3')  # pylint: disable-msg=invalid-name
@@ -94,15 +94,23 @@ def task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: floa
         for a_file in files:
             # All files from get_files_from_records start with 'success' == False.
             if not a_file[FILE_SUCCESS_KEY]:
-                try:
-                    err_msg = copy_object(s3,
-                                          a_file[INPUT_SOURCE_BUCKET_KEY],
-                                          a_file[INPUT_SOURCE_KEY_KEY],
-                                          a_file[INPUT_TARGET_BUCKET_KEY],
-                                          a_file[INPUT_TARGET_KEY_KEY])
+                err_msg = copy_object(s3,
+                                      a_file[INPUT_SOURCE_BUCKET_KEY],
+                                      a_file[INPUT_SOURCE_KEY_KEY],
+                                      a_file[INPUT_TARGET_BUCKET_KEY],
+                                      a_file[INPUT_TARGET_KEY_KEY])
+                if err_msg is None:
+                    a_file[FILE_SUCCESS_KEY] = True
+                    now = database.get_utc_now_iso()
+                    post_status_for_file_to_queue(
+                        a_file[INPUT_JOB_ID_KEY], a_file[INPUT_GRANULE_ID_KEY], a_file[INPUT_FILENAME_KEY], None,
+                        None,
+                        ORCA_STATUS_SUCCESS, None,
+                        None, now, now, RequestMethod.PUT, db_queue_url,
+                        max_retries, retry_sleep_secs
+                    )
+                else:
                     a_file[FILE_ERROR_MESSAGE_KEY] = err_msg
-                except requests_db.DatabaseError:
-                    continue  # Move on to the next file. We'll come back to retry on next attempt
 
         attempt = attempt + 1
         if attempt <= max_retries + 1:
@@ -114,11 +122,12 @@ def task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: floa
     for a_file in files:
         if not a_file[FILE_SUCCESS_KEY]:
             any_error = True
+            now = database.get_utc_now_iso()
             post_status_for_file_to_queue(
                 a_file[INPUT_JOB_ID_KEY], a_file[INPUT_GRANULE_ID_KEY], a_file[INPUT_FILENAME_KEY], None,
                 None,
                 ORCA_STATUS_FAILED, a_file.get(FILE_ERROR_MESSAGE_KEY, None),
-                None, database.get_utc_now_iso(), None, RequestMethod.PUT, db_queue_url,
+                None, now, now, RequestMethod.PUT, db_queue_url,
                 max_retries, retry_sleep_secs)
 
     if any_error:
@@ -199,7 +208,7 @@ def post_entry_to_queue(table_name: str, new_data: Dict[str, Any], request_metho
             continue
 
 
-def get_files_from_records(records: List[Dict[str, Any]]) -> List[Dict[str, str]]:
+def get_files_from_records(records: List[Dict[str, Any]]) -> List[Dict[str, Union[str, bool]]]:
     """
     Parses the input records and returns the files to be restored.
 
@@ -328,4 +337,4 @@ def handler(event: Dict[str, Any], context: object) -> List[Dict[str, Any]]:  # 
     logging.debug(f'event: {event}')
     records = event["Records"]
 
-    return task(records, retries, retry_sleep_secs)
+    return task(records, retries, retry_sleep_secs, str(os.environ[OS_ENVIRON_DB_QUEUE_URL_KEY]))

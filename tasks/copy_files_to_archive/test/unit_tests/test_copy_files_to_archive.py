@@ -6,6 +6,7 @@ Description:  Unit tests for copy_files_to_archive.py.
 import os
 import unittest
 import uuid
+from random import randint
 from unittest.mock import Mock, call, patch, MagicMock
 
 import requests_db
@@ -43,7 +44,6 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
         self.exp_target_bucket = PROTECTED_BUCKET
 
         self.exp_file_key1 = 'dr-glacier/MOD09GQ.A0219114.N5aUCG.006.0656338553321.txt'
-        self.handler_input_event = create_copy_handler_event()
 
     def tearDown(self):
         try:
@@ -58,6 +58,215 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
             del os.environ['DATABASE_PW']
         except KeyError:
             pass
+
+    @patch.dict(os.environ,
+                {"COPY_RETRIES": '703', "COPY_RETRY_SLEEP_SECS": '108.5', 'DB_QUEUE_URL': 'something.blah'}, clear=True)
+    @patch('copy_files_to_archive.task')
+    def test_handler_happy_path(self,
+                                mock_task: MagicMock):
+        records = Mock()
+        event = {'Records': records}
+
+        result = copy_files_to_archive.handler(event, Mock())
+
+        mock_task.assert_called_with(records, 703, 108.5, 'something.blah')
+        self.assertEqual(mock_task.return_value, result)
+
+    @patch.dict(os.environ, {'DB_QUEUE_URL': 'something.else'}, clear=True)
+    @patch('copy_files_to_archive.task')
+    def test_handler_uses_default_retry_settings(self,
+                                                 mock_task: MagicMock):
+        """
+        If retry settings not in os.environ, uses 2 retries and 30 seconds.
+        """
+        records = Mock()
+        event = {'Records': records}
+
+        result = copy_files_to_archive.handler(event, Mock())
+
+        mock_task.assert_called_with(records, 2, 30, 'something.else')
+        self.assertEqual(mock_task.return_value, result)
+
+    @patch('time.sleep')
+    @patch('database.get_utc_now_iso')
+    @patch('copy_files_to_archive.post_status_for_file_to_queue')
+    @patch('copy_files_to_archive.copy_object')
+    @patch('copy_files_to_archive.get_files_from_records')
+    @patch('boto3.client')
+    def test_task_happy_path(self,
+                             mock_boto3_client: MagicMock,
+                             mock_get_files_from_records: MagicMock,
+                             mock_copy_object: MagicMock,
+                             mock_post_status_for_file_to_queue: MagicMock,
+                             mock_get_utc_now_iso: MagicMock,
+                             mock_sleep: MagicMock):
+        """
+        If all files go through without errors, return without sleeps.
+        """
+        db_queue_url = uuid.uuid4().__str__()
+        max_retries = randint(2, 9999)
+        retry_sleep_secs = randint(0, 9999)
+
+        file0_job_id = uuid.uuid4().__str__()
+        file0_granule_id = uuid.uuid4().__str__()
+        file0_input_filename = uuid.uuid4().__str__()
+        file0_source_bucket = uuid.uuid4().__str__()
+        file0_source_key = uuid.uuid4().__str__()
+        file0_target_bucket = uuid.uuid4().__str__()
+        file0_target_key = uuid.uuid4().__str__()
+
+        file1_job_id = uuid.uuid4().__str__()
+        file1_granule_id = uuid.uuid4().__str__()
+        file1_input_filename = uuid.uuid4().__str__()
+        file1_source_bucket = uuid.uuid4().__str__()
+        file1_source_key = uuid.uuid4().__str__()
+        file1_target_bucket = uuid.uuid4().__str__()
+        file1_target_key = uuid.uuid4().__str__()
+
+        mock_records = Mock()
+
+        file0 = {
+            copy_files_to_archive.INPUT_JOB_ID_KEY: file0_job_id,
+            copy_files_to_archive.INPUT_GRANULE_ID_KEY: file0_granule_id,
+            copy_files_to_archive.INPUT_FILENAME_KEY: file0_input_filename,
+            copy_files_to_archive.FILE_SUCCESS_KEY: False,
+            copy_files_to_archive.INPUT_SOURCE_BUCKET_KEY: file0_source_bucket,
+            copy_files_to_archive.INPUT_SOURCE_KEY_KEY: file0_source_key,
+            copy_files_to_archive.INPUT_TARGET_BUCKET_KEY: file0_target_bucket,
+            copy_files_to_archive.INPUT_TARGET_KEY_KEY: file0_target_key
+        }
+        file1 = {
+            copy_files_to_archive.INPUT_JOB_ID_KEY: file1_job_id,
+            copy_files_to_archive.INPUT_GRANULE_ID_KEY: file1_granule_id,
+            copy_files_to_archive.INPUT_FILENAME_KEY: file1_input_filename,
+            copy_files_to_archive.FILE_SUCCESS_KEY: False,
+            copy_files_to_archive.INPUT_SOURCE_BUCKET_KEY: file1_source_bucket,
+            copy_files_to_archive.INPUT_SOURCE_KEY_KEY: file1_source_key,
+            copy_files_to_archive.INPUT_TARGET_BUCKET_KEY: file1_target_bucket,
+            copy_files_to_archive.INPUT_TARGET_KEY_KEY: file1_target_key
+        }
+        mock_get_files_from_records.return_value = [file0, file1]
+        mock_copy_object.return_value = None
+
+        result = copy_files_to_archive.task(mock_records, max_retries, retry_sleep_secs, db_queue_url)
+
+        mock_get_files_from_records.assert_called_once_with(mock_records)
+        mock_boto3_client.assert_called_once_with('s3')
+        mock_copy_object.assert_has_calls([
+            call(mock_boto3_client.return_value, file0_source_bucket, file0_source_key, file0_target_bucket,
+                 file0_target_key),
+            call(mock_boto3_client.return_value, file1_source_bucket, file1_source_key, file1_target_bucket,
+                 file1_target_key)])
+        self.assertEqual(2, mock_copy_object.call_count)
+        mock_post_status_for_file_to_queue.assert_has_calls([
+            call(file0_job_id, file0_granule_id, file0_input_filename, None, None,
+                 copy_files_to_archive.ORCA_STATUS_SUCCESS, None, None,
+                 mock_get_utc_now_iso.return_value, mock_get_utc_now_iso.return_value,
+                 copy_files_to_archive.RequestMethod.PUT, db_queue_url, max_retries, retry_sleep_secs),
+            call(file1_job_id, file1_granule_id, file1_input_filename, None, None,
+                 copy_files_to_archive.ORCA_STATUS_SUCCESS, None, None,
+                 mock_get_utc_now_iso.return_value, mock_get_utc_now_iso.return_value,
+                 copy_files_to_archive.RequestMethod.PUT, db_queue_url, max_retries, retry_sleep_secs)])
+        self.assertEqual(2, mock_post_status_for_file_to_queue.call_count)
+        mock_sleep.assert_not_called()
+
+        for file in result:
+            self.assertTrue(file[copy_files_to_archive.FILE_SUCCESS_KEY])
+        self.assertEqual([file0, file1], result)
+
+    @patch('time.sleep')
+    @patch('database.get_utc_now_iso')
+    @patch('copy_files_to_archive.post_status_for_file_to_queue')
+    @patch('copy_files_to_archive.copy_object')
+    @patch('copy_files_to_archive.get_files_from_records')
+    @patch('boto3.client')
+    def test_task_retries_failes_files_up_to_retry_limit(self,
+                                                         mock_boto3_client: MagicMock,
+                                                         mock_get_files_from_records: MagicMock,
+                                                         mock_copy_object: MagicMock,
+                                                         mock_post_status_for_file_to_queue: MagicMock,
+                                                         mock_get_utc_now_iso: MagicMock,
+                                                         mock_sleep: MagicMock):
+        """
+        If one file causes errors during copy, retry up to limit then post error status and raise CopyRequestError.
+        """
+        db_queue_url = uuid.uuid4().__str__()
+        max_retries = 2
+        retry_sleep_secs = randint(0, 9999)
+
+        file0_job_id = uuid.uuid4().__str__()
+        file0_granule_id = uuid.uuid4().__str__()
+        file0_input_filename = uuid.uuid4().__str__()
+        file0_source_bucket = uuid.uuid4().__str__()
+        file0_source_key = uuid.uuid4().__str__()
+        file0_target_bucket = uuid.uuid4().__str__()
+        file0_target_key = uuid.uuid4().__str__()
+        error_message = uuid.uuid4().__str__()
+
+        file1_job_id = uuid.uuid4().__str__()
+        file1_granule_id = uuid.uuid4().__str__()
+        file1_input_filename = uuid.uuid4().__str__()
+        file1_source_bucket = uuid.uuid4().__str__()
+        file1_source_key = uuid.uuid4().__str__()
+        file1_target_bucket = uuid.uuid4().__str__()
+        file1_target_key = uuid.uuid4().__str__()
+
+        mock_records = Mock()
+
+        failed_file = {
+            copy_files_to_archive.INPUT_JOB_ID_KEY: file0_job_id,
+            copy_files_to_archive.INPUT_GRANULE_ID_KEY: file0_granule_id,
+            copy_files_to_archive.INPUT_FILENAME_KEY: file0_input_filename,
+            copy_files_to_archive.FILE_SUCCESS_KEY: False,
+            copy_files_to_archive.INPUT_SOURCE_BUCKET_KEY: file0_source_bucket,
+            copy_files_to_archive.INPUT_SOURCE_KEY_KEY: file0_source_key,
+            copy_files_to_archive.INPUT_TARGET_BUCKET_KEY: file0_target_bucket,
+            copy_files_to_archive.INPUT_TARGET_KEY_KEY: file0_target_key
+        }
+        successful_file = {
+            copy_files_to_archive.INPUT_JOB_ID_KEY: file1_job_id,
+            copy_files_to_archive.INPUT_GRANULE_ID_KEY: file1_granule_id,
+            copy_files_to_archive.INPUT_FILENAME_KEY: file1_input_filename,
+            copy_files_to_archive.FILE_SUCCESS_KEY: False,
+            copy_files_to_archive.INPUT_SOURCE_BUCKET_KEY: file1_source_bucket,
+            copy_files_to_archive.INPUT_SOURCE_KEY_KEY: file1_source_key,
+            copy_files_to_archive.INPUT_TARGET_BUCKET_KEY: file1_target_bucket,
+            copy_files_to_archive.INPUT_TARGET_KEY_KEY: file1_target_key
+        }
+        mock_get_files_from_records.return_value = [failed_file, successful_file]
+        mock_copy_object.side_effect = [error_message, None, error_message, error_message]
+
+        try:
+            copy_files_to_archive.task(mock_records, max_retries, retry_sleep_secs, db_queue_url)
+        except copy_files_to_archive.CopyRequestError:
+            mock_get_files_from_records.assert_called_once_with(mock_records)
+            mock_boto3_client.assert_called_once_with('s3')
+            mock_copy_object.assert_has_calls([
+                call(mock_boto3_client.return_value, file0_source_bucket, file0_source_key, file0_target_bucket,
+                     file0_target_key),
+                call(mock_boto3_client.return_value, file1_source_bucket, file1_source_key, file1_target_bucket,
+                     file1_target_key),
+                call(mock_boto3_client.return_value, file0_source_bucket, file0_source_key, file0_target_bucket,
+                     file0_target_key),
+                call(mock_boto3_client.return_value, file0_source_bucket, file0_source_key, file0_target_bucket,
+                     file0_target_key)
+            ])
+            self.assertEqual(4, mock_copy_object.call_count)
+            mock_post_status_for_file_to_queue.assert_has_calls([
+                call(file1_job_id, file1_granule_id, file1_input_filename, None, None,
+                     copy_files_to_archive.ORCA_STATUS_SUCCESS, None, None,
+                     mock_get_utc_now_iso.return_value, mock_get_utc_now_iso.return_value,
+                     copy_files_to_archive.RequestMethod.PUT, db_queue_url, max_retries, retry_sleep_secs),
+                call(file0_job_id, file0_granule_id, file0_input_filename, None, None,
+                     copy_files_to_archive.ORCA_STATUS_FAILED, error_message, None,
+                     mock_get_utc_now_iso.return_value, mock_get_utc_now_iso.return_value,
+                     copy_files_to_archive.RequestMethod.PUT, db_queue_url, max_retries, retry_sleep_secs)
+                ])
+            self.assertEqual(max_retries, mock_post_status_for_file_to_queue.call_count)
+            mock_sleep.assert_has_calls([call(retry_sleep_secs), call(retry_sleep_secs)])
+            self.assertEqual(max_retries, mock_sleep.call_count)
+            return
+        self.fail('Error not raised.')
 
     @patch('database.single_query')
     @patch('boto3.client')
@@ -80,7 +289,24 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
         _, exp_result = create_select_requests(exp_request_ids)
         mock_database_single_query.side_effect = [exp_result, exp_upd_result]
         mock_secretsmanager_get_parameter(2)
+        event = {"Records": [
+            {
+                "body": {
+                    "job_id": "fake-job-id",
+                    "granule_id": "fake-granule-id",
+                    "filename": "fake-filename",
+                    "source_key": "fake-source-key",
+                    "target_key": "fake-target-key",
+                    "restore_destination": "fake-restore-destination",
+                    "source_key": "dr-glacier/MOD09GQ.A0219114.N5aUCG.006.0656338553321.txt",
+                    "restore_destination": "fake-restore-destination",
+                    "source_bucket": "my-dr-fake-glacier-bucket"
+                }
+            }
+        ]}
+
         result = copy_files_to_archive.handler(self.handler_input_event, None)
+
         mock_boto3_client.assert_has_calls([call('secretsmanager')])
         mock_s3_cli.copy_object.assert_called_with(Bucket=self.exp_target_bucket,
                                                    CopySource={'Bucket': exp_src_bucket,

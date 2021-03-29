@@ -14,7 +14,7 @@ import psycopg2.extras
 
 import requests_db
 
-#import restore_requests
+# import restore_requests
 PROTECTED_BUCKET = "sndbx-cumulus-protected"
 PUBLIC_BUCKET = "sndbx-cumulus-public"
 REQUEST_ID1 = str(uuid.uuid4())
@@ -74,6 +74,7 @@ def mock_secretsmanager_get_parameter(n_times):
     secretsmanager_cli = boto3.client('secretsmanager')
     secretsmanager_cli.get_secret_value = Mock(side_effect=params)
 
+
 def create_handler_event():
     """
     create a handler event for testing.
@@ -86,6 +87,7 @@ def create_handler_event():
             event = json.load(fil)
     return event
 
+
 def create_copy_handler_event():
     """
     create a handler event for testing.
@@ -97,6 +99,7 @@ def create_copy_handler_event():
         with open('testevents/copy_exp_event_1.json') as fil:
             event = json.load(fil)
     return event
+
 
 def create_copy_event2():
     """
@@ -115,6 +118,7 @@ def create_select_requests(request_ids):
     """
     creates jobs in the db
     """
+    # todo: Remove this. It's a bit of a mess.
     qresult = []
     exp_result = []
     row = build_row(REQUEST_ID11, REQUEST_GROUP_ID_EXP_6, 'granule_7',
@@ -209,7 +213,7 @@ def create_select_requests(request_ids):
     return qresult, exp_result
 
 
-def create_insert_request(request_id,          #pylint: disable-msg=too-many-arguments
+def create_insert_request(request_id,  # pylint: disable-msg=too-many-arguments
                           request_group_id, granule_id, object_key, job_type,
                           restore_bucket_dest, job_status, request_time,
                           last_update_time, err_msg):
@@ -229,7 +233,7 @@ def create_insert_request(request_id,          #pylint: disable-msg=too-many-arg
     return iresult, qresult
 
 
-def build_row(request_id,             #pylint: disable-msg=too-many-arguments
+def build_row(request_id,  # pylint: disable-msg=too-many-arguments
               request_group_id, granule_id, object_key, job_type,
               restore_bucket_dest, job_status, rq_date,
               lu_date, err_msg):
@@ -262,6 +266,7 @@ def build_row(request_id,             #pylint: disable-msg=too-many-arguments
     row.append(('err_msg', err_msg))
     return row
 
+
 def print_rows(label):
     """
     prints the rows of a list
@@ -287,7 +292,7 @@ def print_rows(label):
         print("****")
 
 
-def myconverter(obj):       #pylint: disable-msg=inconsistent-return-statements
+def myconverter(obj):  # pylint: disable-msg=inconsistent-return-statements
     """
     Returns the current utc timestamp as a string in isoformat
     ex. '2019-07-17T17:36:38.494918'
@@ -295,10 +300,12 @@ def myconverter(obj):       #pylint: disable-msg=inconsistent-return-statements
     if isinstance(obj, datetime.datetime):
         return obj.__str__()
 
-class LambdaContextMock:   #pylint: disable-msg=too-few-public-methods
+
+class LambdaContextMock:  # pylint: disable-msg=too-few-public-methods
     """
     create a lambda context for testing.
     """
+
     def __init__(self):
         self.function_name = "request_files"
         self.function_version = 1
