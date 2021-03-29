@@ -68,16 +68,14 @@ def task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: floa
 
     Returns:
        A list of dicts with the following keys:
-            'source_key' (string): The object key of the file that was restored.
-            'source_bucket' (string): The name of the s3 bucket where the restored
-                file was temporarily sitting.
-            'target_bucket' (string): The name of the archive s3 bucket.
-            'success' (boolean): True, if the copy was successful,
-                otherwise False.
-            'err_msg' (string): when success is False, this will contain
-                the error message from the copy error.
-            'request_id' (string): The request_id of the database entry.
-                Only guaranteed to be present if 'success' == True.
+            'job_id' (str): The unique id of the recovery job.
+            'granule_id' (str): The unique ID of the granule.
+            'filename' (str): The name of the file being copied.
+            'source_key' (str): The path the file was restored to.
+            'target_key' (str): The path to copy to. Defaults to value at 'source_key'.
+            'restore_destination' (str): The name of the bucket the restored file will be moved to.
+            'source_bucket' (str): The bucket the restored file can be copied from.
+            'success' (boolean): 'success' (boolean): True, as an error will raise a CopyRequestError.
 
         Example:  [{'source_key': 'file1.xml', 'source_bucket': 'my-dr-fake-glacier-bucket',
                       'target_bucket': 'unittest_xml_bucket', 'success': True,
@@ -274,7 +272,6 @@ def handler(event: Dict[str, Any], context: object) -> List[Dict[str, Any]]:  # 
                 drdb-host (string): the database host
 
     Args:
-        # todo: Rework this to pull from queue and not use guesswork.
         event: A dict with the following keys:
             'Records' (List): A list of dicts with the following keys: # todo: Add keys based on what is needed.
                 'messageId' (str)
@@ -285,7 +282,7 @@ def handler(event: Dict[str, Any], context: object) -> List[Dict[str, Any]]:  # 
                     'filename' (str): The name of the file being copied.
                     'source_key' (str): The path the file was restored to.
                     'target_key' (str): The path to copy to. Defaults to value at 'source_key'.
-                    'restore_destination' (str): The name of the bucket the restored file will be moved to.  # todo: rename in db schema and elsewhere. Use 'target_bucket'.
+                    'restore_destination' (str): The name of the bucket the restored file will be moved to.
                     The below come from moveGranules:
                     'source_bucket' (str): The bucket the restored file can be copied from.
 
@@ -300,23 +297,14 @@ def handler(event: Dict[str, Any], context: object) -> List[Dict[str, Any]]:  # 
         The list of dicts returned from the task. All 'success' values will be True. If they were
         not all True, the CopyRequestError exception would be raised.
         Dicts have the following keys:
-            'source_key' (str): The object key of the file that was restored.
-            'source_bucket' (str): The name of the s3 bucket where the restored.
-                file was temporarily sitting.
-            'target_bucket' (str): The name of the archive s3 bucket.
-            'success' (boolean): True, if the copy was successful,
-                otherwise False.
-            'err_msg' (string): when success is False, this will contain
-                the error message from the copy error.
-            'request_id' (str): The request_id of the database entry.
-                Only guaranteed to be present if 'success' == True.
-
-        Example:  [{'source_key': 'file1.xml', 'source_bucket': 'my-dr-fake-glacier-bucket',
-                      'target_bucket': 'unittest_xml_bucket', 'success': True,
-                      'err_msg': ''},
-                  {'source_key': 'file2.txt', 'source_bucket': 'my-dr-fake-glacier-bucket',
-                      'target_bucket': 'unittest_txt_bucket', 'success': True,
-                      'err_msg': '', 'request_id': '4192bff0-e1e0-43ce-a4db-912808c32493'}]
+            'job_id' (str): The unique id of the recovery job.
+            'granule_id' (str): The unique ID of the granule.
+            'filename' (str): The name of the file being copied.
+            'source_key' (str): The path the file was restored to.
+            'target_key' (str): The path to copy to. Defaults to value at 'source_key'.
+            'restore_destination' (str): The name of the bucket the restored file will be moved to.
+            'source_bucket' (str): The bucket the restored file can be copied from.
+            'success' (boolean): True, as an error will raise a CopyRequestError.
 
     Raises:
         CopyRequestError: An error occurred calling copy_object for one or more files.

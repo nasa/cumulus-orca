@@ -38,6 +38,7 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
         os.environ["DATABASE_USER"] = "unittestdbuser"
         os.environ["DATABASE_PW"] = "unittestdbpw"
         os.environ['PREFIX'] = uuid.uuid4().__str__()
+        os.environ['DB_QUEUE_URL'] = f"db.queue.url"
         self.exp_src_bucket = 'my-dr-fake-glacier-bucket'
         self.exp_target_bucket = PROTECTED_BUCKET
 
@@ -46,6 +47,7 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
 
     def tearDown(self):
         try:
+            os.environ.pop('DB_QUEUE_URL')
             os.environ.pop('PREFIX')
             del os.environ['DEVELOP_TESTS']
             del os.environ['COPY_RETRIES']
