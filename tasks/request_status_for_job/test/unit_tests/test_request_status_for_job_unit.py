@@ -7,6 +7,7 @@ import json
 import unittest
 import uuid
 from http import HTTPStatus
+from unittest import mock
 from unittest.mock import patch, MagicMock, Mock
 
 import database
@@ -43,7 +44,9 @@ class TestRequestStatusForJobUnit(
         result = request_status_for_job.handler(event, context)
 
         mock_setMetadata.assert_called_once_with(event, context)
-        mock_task.assert_called_once_with(job_id, mock_get_dbconnect_info.return_value)
+        mock_task.assert_called_once_with(
+            job_id, mock_get_dbconnect_info.return_value, context.aws_request_id
+        )
         self.assertEqual(mock_task.return_value, result)
 
     # noinspection PyPep8Naming
@@ -93,8 +96,11 @@ class TestRequestStatusForJobUnit(
         """
         job_id = uuid.uuid4().__str__()
         db_connect_info = Mock()
+        request_id = uuid.uuid4().__str__()
 
-        result = request_status_for_job.task(job_id, db_connect_info)
+        mock_get_granule_status_entries_for_job.return_value = [Mock()]
+
+        result = request_status_for_job.task(job_id, db_connect_info, request_id)
 
         mock_get_granule_status_entries_for_job.assert_called_once_with(
             job_id, db_connect_info
@@ -109,6 +115,31 @@ class TestRequestStatusForJobUnit(
             },
             result,
         )
+
+    @patch("request_status_for_job.create_http_error_dict")
+    @patch("request_status_for_job.get_granule_status_entries_for_job")
+    def test_task_no_granules_found_for_job_returns_error(
+        self,
+        mock_get_granule_status_entries_for_job: MagicMock,
+        mock_create_http_error_dict: MagicMock,
+    ):
+        """
+        If no orca_recoveryjob entries exist for the given job_id, return 404.
+        """
+        job_id = uuid.uuid4().__str__()
+        db_connect_info = Mock()
+        request_id = uuid.uuid4().__str__()
+
+        result = request_status_for_job.task(job_id, db_connect_info, request_id)
+
+        mock_get_granule_status_entries_for_job.assert_called_once_with(
+            job_id, db_connect_info
+        )
+        mock_create_http_error_dict.assert_called_once_with(
+            "NotFound", HTTPStatus.NOT_FOUND, request_id, mock.ANY
+        )
+
+        self.assertEqual(mock_create_http_error_dict.return_value, result)
 
     @patch("database.result_to_json")
     @patch("database.single_query")
@@ -217,7 +248,7 @@ class TestRequestStatusForJobUnit(
         Raises error if async_operation_id is None.
         """
         try:
-            request_status_for_job.task(None, Mock())
+            request_status_for_job.task(None, Mock(), Mock())
         except ValueError:
             return
         self.fail("Error not raised.")
@@ -229,6 +260,7 @@ class TestRequestStatusForJobUnit(
         Checks a realistic output against the output.json.
         """
         job_id = uuid.uuid4().__str__()
+        request_id = uuid.uuid4().__str__()
 
         db_connect_info = Mock()
 
@@ -253,7 +285,7 @@ class TestRequestStatusForJobUnit(
             ],
         ]
 
-        result = request_status_for_job.task(job_id, db_connect_info)
+        result = request_status_for_job.task(job_id, db_connect_info, request_id)
 
         with open("schemas/output.json", "r") as raw_schema:
             schema = json.loads(raw_schema.read())

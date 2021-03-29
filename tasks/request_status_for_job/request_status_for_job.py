@@ -17,12 +17,13 @@ OUTPUT_GRANULE_ID_KEY = 'granule_id'
 LOGGER = CumulusLogger()
 
 
-def task(job_id: str, db_connect_info: Dict) -> Dict[str, Any]:
+def task(job_id: str, db_connect_info: Dict, request_id: str) -> Dict[str, Any]:
     """
 
     Args:
         job_id: The unique asyncOperationId of the recovery job.
         db_connect_info: The database.py defined db_connect_info.
+        request_id: An ID provided by AWS Lambda. Used for context tracking.
     Returns:
         A dictionary with the following keys:
             'asyncOperationId' (str): The job_id.
@@ -34,10 +35,17 @@ def task(job_id: str, db_connect_info: Dict) -> Dict[str, Any]:
             'granules' (List): A list of dicts with the following keys:
                 'granule_id' (str)
                 'status' (str): pending|staged|success|failed
+
+        Will also return a dict from create_http_error_dict with error NOT_FOUND if job could not be found.
     """
     if job_id is None or len(job_id) == 0:
         raise ValueError(f"job_id must be set to a non-empty value.")
     status_entries = get_granule_status_entries_for_job(job_id, db_connect_info)
+    if len(status_entries) == 0:
+        return create_http_error_dict(
+            "NotFound", HTTPStatus.NOT_FOUND, request_id,
+            f"No granules found for job id '{job_id}'.")
+
     status_totals = get_status_totals_for_job(job_id, db_connect_info)
     return {
         OUTPUT_JOB_ID_KEY: job_id,
@@ -147,7 +155,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     Args:
         event: A dict with the following keys:
             asyncOperationId: The unique asyncOperationId of the recovery job.
-        context: An object required by AWS Lambda. Unused.
+        context: An object provided by AWS Lambda. Used for context tracking.
 
     Environment Vars: See requests_db.py's get_dbconnect_info for further details.
         'DATABASE_PORT' (int): Defaults to 5432
@@ -179,7 +187,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                                       f"{INPUT_JOB_ID_KEY} must be set to a non-empty value.")
     db_connect_info = requests_db.get_dbconnect_info()
     try:
-        return task(job_id, db_connect_info)
+        return task(job_id, db_connect_info, context.aws_request_id)
     except DatabaseError as db_error:
         return create_http_error_dict(
             "InternalServerError", HTTPStatus.INTERNAL_SERVER_ERROR, context.aws_request_id, db_error.__str__())
+

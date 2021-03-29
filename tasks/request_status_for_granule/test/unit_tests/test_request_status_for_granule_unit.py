@@ -8,6 +8,7 @@ import json
 import unittest
 import uuid
 from http import HTTPStatus
+from unittest import mock
 from unittest.mock import MagicMock, patch, Mock
 import fastjsonschema
 
@@ -49,7 +50,10 @@ class TestRequestStatusForGranuleUnit(
 
         mock_setMetadata.assert_called_once_with(event, context)
         mock_task.assert_called_once_with(
-            granule_id, mock_get_dbconnect_info.return_value, async_operation_id
+            granule_id,
+            mock_get_dbconnect_info.return_value,
+            context.aws_request_id,
+            async_operation_id,
         )
         self.assertEqual(mock_task.return_value, result)
 
@@ -68,7 +72,10 @@ class TestRequestStatusForGranuleUnit(
         result = request_status_for_granule.handler(event, context)
 
         mock_task.assert_called_once_with(
-            granule_id, mock_get_dbconnect_info.return_value, None
+            granule_id,
+            mock_get_dbconnect_info.return_value,
+            context.aws_request_id,
+            None,
         )
         self.assertEqual(mock_task.return_value, result)
 
@@ -127,7 +134,7 @@ class TestRequestStatusForGranuleUnit(
         Raises error if granule_id is None.
         """
         try:
-            request_status_for_granule.task(None, uuid.uuid4().__str__())
+            request_status_for_granule.task(None, uuid.uuid4().__str__(), Mock())
         except ValueError:
             return
         self.fail("Error not raised.")
@@ -144,6 +151,7 @@ class TestRequestStatusForGranuleUnit(
         """
         granule_id = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
+        request_id = uuid.uuid4().__str__()
 
         db_connect_info = Mock()
 
@@ -162,7 +170,9 @@ class TestRequestStatusForGranuleUnit(
             file_entries
         )
 
-        result = request_status_for_granule.task(granule_id, db_connect_info, job_id)
+        result = request_status_for_granule.task(
+            granule_id, db_connect_info, request_id, job_id
+        )
 
         mock_get_file_entries_for_granule_in_job.assert_called_once_with(
             granule_id, job_id, db_connect_info
@@ -189,6 +199,7 @@ class TestRequestStatusForGranuleUnit(
         """
         granule_id = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
+        request_id = uuid.uuid4().__str__()
 
         db_connect_info = Mock()
 
@@ -205,7 +216,9 @@ class TestRequestStatusForGranuleUnit(
             file_entries
         )
 
-        result = request_status_for_granule.task(granule_id, db_connect_info, None)
+        result = request_status_for_granule.task(
+            granule_id, db_connect_info, request_id, None
+        )
 
         mock_get_most_recent_job_id_for_granule.assert_called_once_with(
             granule_id, db_connect_info
@@ -223,6 +236,67 @@ class TestRequestStatusForGranuleUnit(
             {},
         ]
         self.assertEqual(expected, result)
+
+    @patch("request_status_for_granule.create_http_error_dict")
+    @patch("request_status_for_granule.get_most_recent_job_id_for_granule")
+    def test_task_no_job_id_job_not_found_returns_error(
+        self,
+        mock_get_most_recent_job_id_for_granule: MagicMock,
+        mock_create_http_error_dict: MagicMock,
+    ):
+        """
+        If job_id is not given, and no valid job id is found, return 404.
+        """
+        granule_id = uuid.uuid4().__str__()
+        request_id = uuid.uuid4().__str__()
+
+        db_connect_info = Mock()
+
+        mock_get_most_recent_job_id_for_granule.return_value = None
+
+        result = request_status_for_granule.task(
+            granule_id, db_connect_info, request_id, None
+        )
+
+        mock_get_most_recent_job_id_for_granule.assert_called_once_with(
+            granule_id, db_connect_info
+        )
+
+        mock_create_http_error_dict.assert_called_once_with(
+            "NotFound", HTTPStatus.NOT_FOUND, request_id, mock.ANY
+        )
+        self.assertEqual(mock_create_http_error_dict.return_value, result)
+
+    @patch("request_status_for_granule.create_http_error_dict")
+    @patch("request_status_for_granule.get_job_entry_for_granule")
+    def test_task_job_for_granule_and_job_id_not_found_returns_error(
+        self,
+        mock_get_job_entry_for_granule: MagicMock,
+        mock_create_http_error_dict: MagicMock,
+    ):
+        """
+        If the job_id+granule_id does not point to an entry, return 404.
+        """
+        granule_id = uuid.uuid4().__str__()
+        job_id = uuid.uuid4().__str__()
+        request_id = uuid.uuid4().__str__()
+
+        db_connect_info = Mock()
+
+        mock_get_job_entry_for_granule.return_value = None
+
+        result = request_status_for_granule.task(
+            granule_id, db_connect_info, request_id, job_id
+        )
+
+        mock_get_job_entry_for_granule.assert_called_once_with(
+            granule_id, job_id, db_connect_info
+        )
+
+        mock_create_http_error_dict.assert_called_once_with(
+            "NotFound", HTTPStatus.NOT_FOUND, request_id, mock.ANY
+        )
+        self.assertEqual(mock_create_http_error_dict.return_value, result)
 
     @patch("database.result_to_json")
     @patch("database.single_query")
@@ -407,6 +481,7 @@ class TestRequestStatusForGranuleUnit(
         """
         granule_id = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
+        request_id = uuid.uuid4().__str__()
 
         db_connect_info = Mock()
 
@@ -439,7 +514,9 @@ class TestRequestStatusForGranuleUnit(
             ],
         ]
 
-        result = request_status_for_granule.task(granule_id, db_connect_info, job_id)
+        result = request_status_for_granule.task(
+            granule_id, db_connect_info, request_id, job_id
+        )
 
         with open("schemas/output.json", "r") as raw_schema:
             schema = json.loads(raw_schema.read())
