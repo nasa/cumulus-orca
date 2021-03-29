@@ -31,91 +31,161 @@ variable "prefix" {
 }
 
 
+variable "system_bucket" {
+  type        = string
+  description = "Cumulus system bucket used to store internal files."
+}
+
+
 variable "vpc_id" {
   type        = string
   description = "Virtual Private Cloud AWS ID"
 }
 
 
-## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
+variable "workflow_config" {
+  # https://github.com/nasa/cumulus/blob/master/tf-modules/workflow/variables.tf#L23
+  description = "Configuration object with ARNs for workflow integration (Role ARN for executing workflows and Lambda ARNs to trigger on workflow execution)"
+  type = object({
+    sf_event_sqs_to_db_records_sqs_queue_arn = string
+    sf_semaphore_down_lambda_function_arn    = string
+    state_machine_role_arn                   = string
+    sqs_message_remover_lambda_function_arn  = string
+  })
+}
+
+
+## OPTIONAL
 variable "region" {
   type        = string
   description = "AWS region to deploy configuration to."
+  default     = "us-west-2"
 }
 
 
 variable "tags" {
   type        = map(string)
   description = "Tags to be applied to resources that support tags."
+  default     = {}
 }
 
 
 ## Variables unique to ORCA
 ## REQUIRED
+variable "database_app_user_pw" {
+  type        = string
+  description = "ORCA application database user password."
+}
+
+
 variable "orca_default_bucket" {
   type        = string
   description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
 }
 
 
-## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
+variable "postgres_user_pw" {
+  type        = string
+  description = "postgres database user password."
+}
+
+
+## OPTIONAL
 variable "database_port" {
   type        = number
   description = "Database port that PostgreSQL traffic will be allowed on."
+  default     = 5432
 }
 
 
 variable "orca_ingest_lambda_memory_size" {
   type        = number
   description = "Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime."
+  default     = 2240
 }
 
 
 variable "orca_ingest_lambda_timeout" {
   type        = number
   description = "Timeout in number of seconds for ORCA copy_to_glacier lambda."
+  default     = 600
 }
 
 
 variable "orca_recovery_buckets" {
   type        = list(string)
   description = "List of bucket names that ORCA has permissions to restore data to."
+  default     = []
 }
 
 
 variable "orca_recovery_complete_filter_prefix" {
   type        = string
   description = "Specifies object key name prefix by the Glacier Bucket trigger."
+  default     = ""
 }
 
 
 variable "orca_recovery_expiration_days" {
   type        = number
   description = "Number of days a recovered file will remain available for copy."
+  default     = 5
 }
 
 
 variable "orca_recovery_lambda_memory_size" {
   type        = number
   description = "Amount of memory in MB the ORCA recovery lambda can use at runtime."
+  default     = 128
 }
 
 
 variable "orca_recovery_lambda_timeout" {
   type        = number
   description = "Timeout in number of seconds for ORCA recovery lambdas."
+  default     = 300
 }
 
 
 variable "orca_recovery_retry_limit" {
   type        = number
   description = "Maximum number of retries of a recovery failure before giving up."
+  default     = 3
 }
 
 
 variable "orca_recovery_retry_interval" {
   type        = number
   description = "Number of seconds to wait between recovery failure retries."
+  default     = 1
+}
+
+
+variable "sqs_delay_time" {
+  type        = number
+  description = "The time in seconds that the delivery of all messages in the queue will be delayed."
+  default     = 0
+}
+
+
+variable "sqs_maximum_message_size" {
+  type        = number
+  description = "The limit of how many bytes a message can contain before Amazon SQS rejects it."
+  default     = 262144
+}
+
+
+variable "staged_recovery_queue_message_retention_time" {
+  type        = number
+  description = "The number of seconds staged-recovery-queue fifo SQS retains a message in seconds. Maximum value is 14 days."
+  default     = 432000 #5 days
+}
+
+
+variable "status_update_queue_message_retention_time" {
+  type        = number
+  description = "The number of seconds status_update_queue SQS retains a message in seconds. Maximum value is 14 days."
+  default     = 777600 #9 days
 }
 
 
@@ -123,18 +193,21 @@ variable "orca_recovery_retry_interval" {
 variable "database_app_user" {
   type        = string
   description = "Name of the database application user."
+  default     = "druser"
 }
 
 
 variable "database_name" {
   type        = string
   description = "Name of the ORCA database in PostgreSQL"
+  default     = "disaster_recovery"
 }
 
 
 variable "ddl_dir" {
   type        = string
   description = "Location of database DDL SQL files. Must have trailing /."
+  default     = "ddl/"
 }
 
 
@@ -142,16 +215,19 @@ variable "drop_database" {
   ##TODO: Maybe this needs to be a boolean false?
   type        = string
   description = "Boolean True/False that indicates the ORCA databse should be dropped."
+  default     = "False"
 }
 
 
 variable "orca_recovery_retrieval_type" {
   type        = string
   description = "AWS glacier recovery type to use. One of Bulk, Standard, Express."
+  default     = "Standard"
 }
 
 
 variable "platform" {
   type        = string
   description = "String that determines deployment platform. AWS or local."
+  default     = "AWS"
 }

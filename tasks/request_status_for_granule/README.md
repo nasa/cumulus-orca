@@ -54,6 +54,11 @@ Input with no asyncOperationId. Only the most recent operation for the granule w
 <a name="pydoc"></a>
 ## pydoc request_status_for_granule
 ```
+Help on module request_status_for_granule:
+
+NAME
+    request_status_for_granule
+
 FUNCTIONS
     create_http_error_dict(error_type: str, http_status_code: int, request_id: str, message: str) -> Dict[str, Any]
         Creates a standardized dictionary for error reporting.
@@ -98,7 +103,7 @@ FUNCTIONS
     
     get_most_recent_job_id_for_granule(granule_id: str, db_connect_info: Dict[str, <built-in function any>]) -> str
         Gets the job_id for the most recent job that restores the given granule.
-    
+        
         Args:
             granule_id: The unique ID of the granule.
             db_connect_info: The {database}.py defined db_connect_info.
@@ -112,7 +117,7 @@ FUNCTIONS
                 granule_id: The unique ID of the granule to retrieve status for.
                 asyncOperationId (Optional): The unique ID of the asyncOperation.
                     May apply to a request that covers multiple granules.
-            context: An object required by AWS Lambda. Unused.
+            context: An object provided by AWS Lambda. Used for context tracking.
         
         Environment Vars: See requests_db.py's get_dbconnect_info for further details.
             'DATABASE_PORT' (int): Defaults to 5432
@@ -135,12 +140,13 @@ FUNCTIONS
                 The time, in UTC isoformat, when all granule_files were no longer 'pending'/'staged'.
                 
             Or, if an error occurs, see create_http_error_dict
-                400 if granule_id is missing. 500 if an error occurs when querying the database.
+                400 if granule_id is missing. 500 if an error occurs when querying the database, 404 if not found.
     
-    task(granule_id: str, db_connect_info: Dict, job_id: str = None) -> Dict[str, Any]
+    task(granule_id: str, db_connect_info: Dict, request_id: str, job_id: str = None) -> Dict[str, Any]
         Args:
             granule_id: The unique ID of the granule to retrieve status for.
             db_connect_info: The {database}.py defined db_connect_info.
+            request_id: An ID provided by AWS Lambda. Used for context tracking.
             job_id: An optional additional filter to get a specific job's entry.
         Returns: A Dict with the following keys:
             'granule_id' (str): The unique ID of the granule to retrieve status for.
@@ -148,11 +154,14 @@ FUNCTIONS
             'files' (List): Description and status of the files within the given granule. List of Dicts with keys:
                 'file_name' (str): The name and extension of the file.
                 'restore_destination' (str): The name of the glacier bucket the file is being copied to.
-                'status' (str): The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.
+                'status' (str):
+                    The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.
                 'error_message' (str, Optional): If the restoration of the file errored, the error will be stored here.
             'request_time' (DateTime): The time, in UTC isoformat, when the request to restore the granule was initiated.
             'completion_time' (DateTime, Optional):
                 The time, in UTC isoformat, when all granule_files were no longer 'pending'/'staged'.
+        
+            Will also return a dict from create_http_error_dict with error NOT_FOUND if job/granule could not be found.
 
 DATA
     Any = typing.Any
