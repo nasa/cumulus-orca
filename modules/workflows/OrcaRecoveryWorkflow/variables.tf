@@ -4,6 +4,7 @@
 variable "aws_profile" {
   type        = string
   description = "AWS profile used to deploy the terraform application."
+  default     = null
 }
 
 
@@ -30,16 +31,18 @@ variable "workflow_config" {
 }
 
 
-## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
+## OPTIONAL
 variable "region" {
   type        = string
   description = "AWS region to deploy configuration to."
+  default     = "us-west-2"
 }
 
 
 variable "tags" {
   type        = map(string)
   description = "Tags to be applied to resources that support tags."
+  default     = {}
 }
 
 

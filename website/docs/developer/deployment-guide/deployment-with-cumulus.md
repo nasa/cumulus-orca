@@ -12,98 +12,122 @@ created.
 
 :::
 
-ORCA is meant to be deployed with Cumulus. There are two methods for deploying
-ORCA. The first method involves modifying files in the Cumulus `cumulus-tf`
-deployment to deploy ORCA with Cumulus. The second method involves deploying ORCA
-as a separate module after the Cumulus deployment.
+ORCA is meant to be deployed with Cumulus. To deploy ORCA add and/or modify the
+files in the Cumulus `cumulus-tf` deployment.
 
-The general steps to deploy ORCA are:
+The general steps to deploy and use ORCA are:
 
-1. Configure the ORCA deployment using one of the two methods.
+1. [Configure the ORCA deployment.](#configuring-the-orca-deployment)
 2. [Define the ORCA Ingest and Recovery workflows.](#define-the-orca-wokflows)
 3. [Deploy ORCA using terraform.](#deploy-orca-with-terraform)
 4. [Configure ORCA in the collection configuration of the running Cumulus instance.](#collection-configuration)
 
 
-## Configuring the Cumulus Deployment to use ORCA
+## Configuring the ORCA Deployment
 
 Follow the instructions for [deploying Cumulus](https://nasa.github.io/cumulus/docs/deployment/deployment-readme)
 on the Cumulus website through the configuration of the Cumulus module `cumulus-tf`.
 
-Prior to deploying the `cumulus-tf` module, the following files need to be
-modified to deploy ORCA with Cumulus.
-- main.tf
-- variables.tf
+Prior to deploying the `cumulus-tf` module, the following files need to be added
+and/or modified to deploy ORCA with Cumulus.
+- orca.tf
+- orca_variables.tf
 - terraform.tfvars
 
 
-### Modifying `cumulus-tf/main.tf`
+### Creating `cumulus-tf/orca.tf`
 
-At the end of the `main.tf` file, add the following code and update the source
-variable.
+Create the `orca.tf` file in the `cumulus-tf` directory and copy the code below
+into the new `orca.tf` file. Update the source variable with the preferred
+ORCA version.
 
 :::important Only change the value of source
 
 Only change the value of `source` in the code example below to point to the
-proper ORCA version. The ORCA version is specifed right after *download* in the
-URL path to the release. In the example above the release being used is v2.0.1.
+proper ORCA version. The ORCA version is specified right after *download* in the
+URL path to the release. In the example below the release being used is v3.0.0.
 
 :::
 
 ```terraform
-# ORCA Module
+## ORCA Module
+## =============================================================================
 module "orca" {
-  source                         = "https://github.com/nasa/cumulus-orca/releases/download/v2.0.1/cumulus-orca-terraform.zip//modules/orca"
-  vpc_id                         = module.ngap.ngap_vpc.id
-  subnet_ids                     = module.ngap.ngap_subnets_ids
-  workflow_config                = module.cumulus.workflow_config
-  region                         = var.region
-  prefix                         = var.prefix
-  permissions_boundary_arn       = var.permissions_boundary_arn
-  buckets                        = var.buckets
-  platform                       = var.platform
-  database_name                  = var.database_name
-  database_port                  = var.database_port
-  postgres_user_pw               = var.postgres_user_pw
-  database_app_user              = var.database_app_user
-  database_app_user_pw           = var.database_app_user_pw
-  drop_database                  = var.drop_database
-  ddl_dir                        = var.ddl_dir
-  lambda_timeout                 = var.lambda_timeout
-  restore_complete_filter_prefix = var.restore_complete_filter_prefix
-  copy_retry_sleep_secs          = var.copy_retry_sleep_secs
-  default_tags                   = var.default_tags
+  source = "https://github.com/nasa/cumulus-orca/releases/download/v3.0.0/cumulus-orca-terraform.zip//modules"
+  ## --------------------------
+  ## Cumulus Variables
+  ## --------------------------
+  ## REQUIRED
+  aws_profile              = var.aws_profile
+  buckets                  = var.buckets
+  lambda_subnet_ids        = var.lambda_subnet_ids
+  permissions_boundary_arn = var.permissions_boundary_arn
+  prefix                   = var.prefix
+  system_bucket            = var.system_bucket
+  vpc_id                   = var.vpc_id
+  workflow_config          = module.cumulus.workflow_config
+
+  ## OPTIONAL
+  region = var.region
+  tags   = var.tags
+
+  ## --------------------------
+  ## ORCA Variables
+  ## --------------------------
+  ## REQUIRED
+  database_app_user_pw = var.database_app_user_pw
+  orca_default_bucket  = var.orca_default_bucket
+  postgres_user_pw     = var.database_app_user_pw
+
+  ## OPTIONAL
+  # database_port                        = 5432
+  # orca_ingest_lambda_memory_size       = 2240
+  # orca_ingest_lambda_timeout           = 600
+  # orca_recovery_buckets                = []
+  # orca_recovery_complete_filter_prefix = ""
+  # orca_recovery_expiration_days        = 5
+  # orca_recovery_lambda_memory_size     = 128
+  # orca_recovery_lambda_timeout         = 300
+  # orca_recovery_retry_limit            = 3
+  # orca_recovery_retry_interval         = 1
 }
 ```
 
 #### Required Values Unique to the ORCA Module
 
-The following variables are unique to the ORCA module. More information about
-these variables can be found in the [variables section](#orca-variables).
+The following variables are unique to the ORCA module and required to be set by
+the user. More information about these required variables, as well as the
+optional variables can be found in the [variables section](#orca-variables).
 
-- platform
-- database_name
-- database_port
-- postgres_user_pw
-- database_app_user
 - database_app_user_pw
-- drop_database
-- ddl_dir
-- lambda_timeout
-- restore_complete_filter_prefix
-- copy_retry_sleep_secs
-- default_tags
+- orca_default_bucket
+- postgres_user_pw
+
 
 #### Required Values Retrieved from Cumulus Variables
 
-The following variables are set as part of your Cumulus deployment. ORCA utilizes
-these same variables for the build. More information about these variables can
+The following variables are set as part of your Cumulus deployment and are
+required by the ORCA module. More information about setting these variables can
 be found in the [Cumulus variable definitions](https://github.com/nasa/cumulus/blob/master/tf-modules/cumulus/variables.tf).
+The variables must be set with the proper values in the `terraform.tfvavrs` file.
 
-- region
-- prefix
-- permissions_boundary_arn
+- aws_profile
 - buckets
+- lambda_subnet_ids
+- permissions_boundary_arn
+- prefix
+- system_bucket
+- vpc_id
+
+:::note Optional Cumulus Values
+
+Though optional, it is recommended that you also set the `region` variable. The
+default value for `region` is set to `us-west-2` in the ORCA module.
+
+The `tags` value automatically adds a *Deployment* tag like the Cumulus
+deployment.
+
+:::
 
 #### Required Values Retrieved from Other Modules
 
@@ -112,130 +136,92 @@ done so that the user does not have to lookup and set these variables after a
 deployment. More information about these variables can be found in the
 [Cumulus variable definitions](https://github.com/nasa/cumulus/blob/master/tf-modules/cumulus/variables.tf).
 
-- vpc_id
-- subnet_ids
-- workflow_config
+- workflow_config - Retrieved from the cumulus module in `main.tf`.
 
 
-### Modifying `cumulus-tf/variables.tf`
+### Creating `cumulus-tf/orca_variables.tf`
 
-At the end of the `variables.tf` file, add the following code.
+In the `cumulus-tf` directory create the `orca_variables.tf` file. Copy the
+contents below into the file so that the ORCA unique variables are defined.
+For more information on the variables, see the [variables section](#orca-variables).
 
 ```terraform
-## ORCA Variables Definitions
-
-variable "platform" {
-  default = "AWS"
-  type = string
-  description = "Indicates if running locally (onprem) or in AWS (AWS)."
-}
-
-variable "database_name" {
-  default = "orca"
-  type = string
-  description = "Name of the ORCA database that contains state information."
-}
-
-variable "database_port" {
-  default = "5432"
-  type = string
-  description = "Port the database listens on."
-}
-
-variable "postgres_user_pw" {
-  type = string
-  description = "postgres database user password."
-}
-
-variable "database_app_user" {
-  default = "orca_user"
-  type = string
-  description = "ORCA application database user name."
-}
-
+## Variables unique to ORCA
+## REQUIRED
 variable "database_app_user_pw" {
-  type = string
+  type        = string
   description = "ORCA application database user password."
 }
 
-variable "drop_database" {
-  default = "False"
-  type = string
-  description = "Tells ORCA to drop the database on deployments."
+
+variable "orca_default_bucket" {
+  type        = string
+  description = "Default ORCA S3 Glacier bucket to use."
 }
 
-variable "ddl_dir" {
-  default = "ddl/"
-  type = string
-  description = "The location of the ddl dir that contains the sql to create the application database."
+
+variable "postgres_user_pw" {
+  type        = string
+  description = "postgres database user password."
 }
 
-variable "lambda_timeout" {
-  default = 300
-  type = number
-  description = "Lambda max time before a timeout error is thrown."
-}
-
-variable "restore_complete_filter_prefix" {
-  default = ""
-  type = string
-  description = ""
-}
-
-variable "copy_retry_sleep_secs" {
-  default = 0
-  type = number
-  description = "How many seconds to wait between retry calls to `copy_object`."
-}
-
-variable "default_tags" {
-  type = object({ team = string, application = string })
-  default = {
-    team : "DR",
-    application : "disaster-recovery"
-  }
-}
 ```
 
 
 ### Modifying `cumulus-tf/terraform.tfvars`
 
 At the end of the `terrafor.tfvars` file, add the following code. Update the
-variable values to the values for your particular environment.
+required and optional variable values to the values needed for your particular
+environment.
 
 :::note
 
 The example below shows the minimum variables to set for the module and accepting
-default values for the rest. The ORCA variables section provides additional
-information on variables that can be set for the ORCA application. In some cases
-additional variable definitions may be needed.
+default values for all of the optional items. The [ORCA variables section](#orca-variables)
+provides additional information on variables that can be set for the ORCA application.
 
 :::
 
 ```terraform
-## ORCA Configuration
-database_app_user_pw = "my-orca-application-user-password"
-postgres_user_pw     = "my-super-secret-database-owner-password"
+## =============================================================================
+## ORCA Variables
+## =============================================================================
+
+## REQUIRED TO BE SET
+## -----------------------------------------------------------------------------
+
+## ORCA application database user password.
+database_app_user_pw = "my-super-secret-orca-application-user-password"
+
+## Default ORCA S3 Glacier bucket to use
+orca_default_bucket = "orca-archive-primary"
+
+## PostgreSQL database (root) user password
+postgres_user_pw = "my-super-secret-database-owner-password"
+
 ```
 
 Below describes the type of value expected for each variable.
 
-* `database_app_user_pw` - the password for the application user
-* `postgres_user_pw` - password for the postgres user
+* `database_app_user_pw` (string) - the password for the application user
+* `orca_default_bucket` (string) - default S3 glacier bucket to use for ORCA data
+* `postgres_user_pw` (string) - password for the postgres user
 
 Additional variable definitions can be found in the [ORCA variables](#orca-variables)
 section of the document.
 
 :::important
 
-The cumulus bucket variable will have to be modified to include the
-disaster recovery bucket **glacier**. An example can be seen below.
+The cumulus `buckets` variable will have to be modified to include the
+disaster recovery buckets with a *type* of **orca**. An example can be seen below.
+This addition is required for ORCA to have the proper bucket permissions to
+work with Cumulus.
 
 ```terraform
 buckets = {
-  glacier = {
-    name = "orca-glacier"
-    type = "glacier"
+  orca_default = {
+    name = "orca-archive-primary"
+    type = "orca"
   },
   internal = {
     name = "orca-internal"
@@ -257,268 +243,6 @@ buckets = {
 ```
 
 :::
-
-
-## Configuring ORCA as a Standalone Module with Cumulus
-
-To deploy ORCA as a separate module, create an orca-tf folder in your Cumulus
-deployment and perform the steps laid out below.
-
-
-### Configure Terraform
-
-The state of the Terraform deployment is stored in S3. In the following
-examples, it will be assumed that state is being stored in a bucket called
-`dr-tf-state`. You can also use an existing bucket, if desired.
-
-#### Create the state bucket:
-
-```shell
-aws s3api create-bucket \
-  --bucket dr-tf-state \
-  --create-bucket-configuration LocationConstraint=us-west-2
-```
-:::note
-
-The `--create-bucket-configuration` line is only necessary if you are creating your bucket outside of `us-east-1`.
-
-:::
-
-In order to help prevent loss of state information, it is recommended that
-versioning be enabled on the state bucket:
-
-```shell
-$ aws s3api put-bucket-versioning \
-    --bucket dr-tf-state \
-    --versioning-configuration Status=Enabled
-```
-
-
-#### Create the locks table:
-
-Terraform uses a lock stored in DynamoDB in order to prevent multiple
-simultaneous updates. In the following examples, that table will be called
-`dr-tf-locks`.
-
-:::important
-
-The `--billing-mode` option was recently added to the AWS CLI. You
-may need to upgrade your version of the AWS CLI if you get an error about
-provisioned throughput when creating the table.
-
-:::
-
-```shell
-$ aws dynamodb create-table \
-    --table-name dr-tf-locks \
-    --attribute-definitions AttributeName=LockID,AttributeType=S \
-    --key-schema AttributeName=LockID,KeyType=HASH \
-    --billing-mode PAY_PER_REQUEST
-```
-
-#### Configure and deploy the `main` root module
-
-Create a `terraform.tf` file, substituting the appropriate values for `bucket`
-and `dynamodb_table` in the `orca-tf` directory. This tells Terraform where to
-store its remote state. See the example below for the information to add to the
-file.
-
-```
-terraform {
-  backend "s3" {
-    region         = "us-west-2"
-    bucket         = "dr-tf-state"
-    key            = "terraform.tfstate"
-    dynamodb_table = "dr-tf-locks"
-  }
-}
-```
-
-
-### Create the `terraform.tfvars` file.
-
-Create a `terraform.tfvars` file in the `orca-tf` directory. This is where you
-will place input variables to Terraform. A complete list of variables is in the
-[ORCA variables](#orca-variables) section. In addition, the following Cumulus
-variables must be set.
-
-- buckets
-- ecs_cluster_instance_subnet_ids
-- permissions_boundary_arn
-- prefix
-- region
-- vpc_id
-- workflow_config
-
-
-### Create the `variables.tf` file.
-
-Create a `variables.tf` file in the `orca-tf` directory. Copy the code below and
-add to the file.
-
-```terraform
-## Required Cumulus Variables Definitions
-variable "buckets" {
-  type    = map(object({ name = string, type = string }))
-  default = {}
-}
-
-variable "permissions_boundary_arn" {
-  type    = string
-  default = null
-}
-
-variable "prefix" {
-  type = string
-}
-
-variable "region" {
-  type    = string
-  default = "us-west-2"
-}
-
-variable "ecs_cluster_instance_subnet_ids" {
-  type    = list(string)
-  default = []
-}
-
-variable "vpc_id" {
-  type = string
-}
-
-
-## ORCA Variables Definitions
-
-variable "platform" {
-  default = "AWS"
-  type = string
-  description = "Indicates if running locally (onprem) or in AWS (AWS)."
-}
-
-variable "database_name" {
-  default = "orca"
-  type = string
-  description = "Name of the ORCA database that contains state information."
-}
-
-variable "database_port" {
-  default = "5432"
-  type = string
-  description = "Port the database listens on."
-}
-
-variable "postgres_user_pw" {
-  type = string
-  description = "postgres database user password."
-}
-
-variable "database_app_user" {
-  default = "orca_user"
-  type = string
-  description = "ORCA application database user name."
-}
-
-variable "database_app_user_pw" {
-  type = string
-  description = "ORCA application database user password."
-}
-
-variable "drop_database" {
-  default = "False"
-  type = string
-  description = "Tells ORCA to drop the database on deployments."
-}
-
-variable "ddl_dir" {
-  default = "ddl/"
-  type = string
-  description = "The location of the ddl dir that contains the sql to create the application database."
-}
-
-variable "lambda_timeout" {
-  default = 300
-  type = number
-  description = "Lambda max time before a timeout error is thrown."
-}
-
-variable "restore_complete_filter_prefix" {
-  default = ""
-  type = string
-  description = ""
-}
-
-variable "copy_retry_sleep_secs" {
-  default = 0
-  type = number
-  description = "How many seconds to wait between retry calls to `copy_object`."
-}
-
-variable "default_tags" {
-  type = object({ team = string, application = string })
-  default = {
-    team : "DR",
-    application : "disaster-recovery"
-  }
-}
-```
-
-
-### Modifying `cumulus-tf/terraform.tfvars`
-
-At the end of the `terrafor.tfvars` file, add the following code. Update the
-variable values to the values for your particular environment.
-
-:::note
-
-The example below shows the minimum variables to set for the module and accepting
-default values for the rest. The ORCA variables section provides additional
-
-
-### Create the `main.tf` file.
-
-Create the `main.tf` file in the `orca-tf` director. Copy the code block below
-into the main.tf file for ORCA.
-
-
-:::important Only change the value of source
-
-Only change the value of `source` in the code example below to point to the
-proper ORCA version. The ORCA version is specifed right after *download* in the
-URL path to the release. In the example above the release being used is v2.0.1.
-
-:::
-
-```terraform
-provider "aws" {
-  version = "~> 2.13"
-  region  = var.region
-  profile = var.profile
-}
-
-# ORCA Module
-module "orca" {
-  source                         = "https://github.com/nasa/cumulus-orca/releases/download/v2.0.1/cumulus-orca-terraform.zip//modules/orca"
-  vpc_id                         = var.vpc_id
-  subnet_ids                     = var.ecs_cluster_instance_subnet_ids
-  workflow_config                = var.workflow_config
-  region                         = var.region
-  prefix                         = var.prefix
-  permissions_boundary_arn       = var.permissions_boundary_arn
-  buckets                        = var.buckets
-  platform                       = var.platform
-  database_name                  = var.database_name
-  database_port                  = var.database_port
-  postgres_user_pw               = var.postgres_user_pw
-  database_app_user              = var.database_app_user
-  database_app_user_pw           = var.database_app_user_pw
-  drop_database                  = var.drop_database
-  ddl_dir                        = var.ddl_dir
-  lambda_timeout                 = var.lambda_timeout
-  restore_complete_filter_prefix = var.restore_complete_filter_prefix
-  copy_retry_sleep_secs          = var.copy_retry_sleep_secs
-  default_tags                   = var.default_tags
-}
-```
 
 
 ## Define the ORCA Wokflows
@@ -661,49 +385,110 @@ page.
 
 ## ORCA Variables
 
-**Required:**
-* `ngap_subnets` - NGAP Subnets (array)
-* `vpc_id` - ID of VPC to place resources in - recommended that this be a private VPC (or at least one with restricted access).
-* `glacier_bucket` - Bucket with Glacier policy
-* `public_bucket` - Bucket with public permissions (Cumulus public bucket)
-* `private_bucket` - Bucket with private permissions (Cumulus private bucket)
-* `internal_bucket` - Analogous to the Cumulus internal bucket
-* `protected_bucket` - Analogous to the Cumulus protected bucket
-* `permissions_boundary_arn` - Permission Boundary Arn (Policy) for NGAP compliance
-* `postgres_user_pw` - password for the postgres user
-* `database_name` - orca
-* `database_app_user` - orca_user
-* `database_app_user_pw` - the password for the application user
+The following sections detail the variables used by the ORCA module.
 
-**Optional:**
-* `prefix` - Prefix that will be pre-pended to resource names created by terraform.
-  Defaults to `dr`.
-* `profile` - AWS CLI Profile (configured via `aws configure`) to use.
-  Defaults to `default`.
-* `region` - Your AWS region.
-  Defaults to `us-west-2`.
-* `restore_expire_days` - How many days to restore a file for.
-  Defaults to 5.
-* `restore_request_retries` - How many times to retry a restore request to Glacier.
-  Defaults to 3.
-* `restore_retry_sleep_secs` - How many seconds to wait between retry calls to `restore_object`.
-  Defaults to 3.
-* `restore_retrieval_type` -  the Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
-  Defaults to `Standard`. Understand the costs associated with the tiers before modifying.
-* `copy_retries` - How many times to retry a copy request from the restore location to the archive location.
-  Defaults to 3.
-* `copy_retry_sleep_secs` - How many seconds to wait between retry calls to `copy_object`.
-  Defaults to 0.
-* `ddl_dir` - the location of the ddl dir that contains the sql to create the application database.
-  Defaults to 'ddl/'.
-* `drop_database` - Whether to drop the database if it exists (True), or keep it (False).
-  Defaults to False.
-* `database_port` - the port for the postgres database.
-  Defaults to '5432'.
-* `platform` - indicates if running locally (onprem) or in AWS (AWS).
-  Defaults to 'AWS'.
+### Required Variables
+
+The following variables are required for the ORCA module and must be set to valid
+values.
+
+#### Cumulus Required Variables
+
+The following variables should be present already in the `cumulus-tf/terrafor.tfvars`
+file. The variables must be set with proper values for your environment in the
+`cumulus-tf/terraform.tfvars` file.
+
+| Variable                   | Definition                                                                                                                                   | Example Value      |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| `aws_profile`              | AWS CLI Profile (configured via `aws configure`) to use for deployment.                                                                      | "default" |
+| `buckets`                  | Mapping of all S3 buckets used by Cumulus and ORCA that contains a S3 `name` and `type`. A bucket with a `type` of **orca** is required.     | `buckets = { orca_default = { name = "PREFIX-orca-primary", type = "orca", ...}}` |
+| `lambda_subnet_ids`        | A list of subnets that the Lambda's and the database have access to for working with Cumulus.                                                | ["subnet-12345", "subnet-abc123"] |
+| `permissions_boundary_arn` | AWS ARN value of the permission boundary for the VPC account.                                                                                | "arn:aws:iam::1234567890:policy/NGAPShRoleBoundary" |
+| `prefix`                   | Prefix that will be pre-pended to resource names created by terraform.                                                                       | "daac-sndbx" |
+| `system_bucket`            | Cumulus system bucket used to store internal files and configurations for deployments.                                                       | "PREFIX-internal" |
+| `vpc_id`                   | ID of VPC to place resources in - recommended that this be a private VPC (or at least one with restricted access).                           | "vpc-abc123456789" |
+| `workflow_config`          | Configuration object with ARNs for workflow integration (Role ARN for executing workflows and Lambda ARNs to trigger on workflow execution). | module.cumulus.workflow_config |
 
 
+#### ORCA Required Variables
+
+The following variables should be present in the `cumulus-tf/orca_variables.tf`
+file. The variables must be set with proper values for your environment in the
+`cumulus-tf/terraform.tfvars` file.
+
+| Variable               | Definition                                    | Example Value                 |
+| ---------------------- | --------------------------------------------- | ----------------------------- |
+| `database_app_user_pw` | ORCA application database user password.      | "My_Sup3rS3cr3t_App_Passw0rd" |
+| `orca_default_bucket`  | Default ORCA S3 Glacier bucket to use.        | "PREFIX-orca-primary"         |
+| `postgres_user_pw`     | PostgreSQL *postgres* database user password. | "My_Sup3rS3cr3t_R00tPassw0rd" |
+
+
+### Optional Variables
+
+The following variables are optional for the ORCA module and can be set by the
+end user to better adjust ORCA for their specific environment.
+
+#### Cumulus Optional Variables
+
+The following variables should be present already in the `cumulus-tf/terrafor.tfvars`
+file. The variables can be set with proper values for your environment in the
+`cumulus-tf/terraform.tfvars` file. It is recommended that the `region` variable
+is set to the proper AWS region for deployments.
+
+| Variable               | Definition                                         | Example Value                 |
+| ---------------------- | -------------------------------------------------- | ----------------------------- |
+| `region`               | AWS region to deploy the application to.           | "us-west-2" |
+| `tags`                 | Tags to be applied to resources that support tags. | `{ environment = "development", developer = "me" }` |
+
+
+#### ORCA Optional Variables
+
+The following variables should be present in the `cumulus-tf/orca_variables.tf`
+file. The variables can be set with proper values for your environment in the
+`cumulus-tf/terraform.tfvars` file. The default setting for each of the optional
+variables is shown in the table below.
+
+| Variable                               | Type          | Definition                                                                                              | Default Value |
+| -------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------- | ------------- |
+| `database_port`                        | number        | Database port that PostgreSQL traffic will be allowed on.                                               | 5432 |
+| `orca_ingest_lambda_memory_size`       | number        | Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime.                              | 2240 |
+| `orca_ingest_lambda_timeout`           | number        | Timeout in number of seconds for ORCA copy_to_glacier lambda.                                           | 600 |
+| `orca_recovery_buckets`                | List (string) | List of bucket names that ORCA has permissions to restore data to. Default is all in the `buckets` map. | [] |
+| `orca_recovery_complete_filter_prefix` | string        | Specifies object key name prefix by the Glacier Bucket trigger.                                         | "" |
+| `orca_recovery_expiration_days`        | number        | Number of days a recovered file will remain available for copy.                                         | 5 |
+| `orca_recovery_lambda_memory_size`     | number        | Amount of memory in MB the ORCA recovery lambda can use at runtime.                                     | 128 |
+| `orca_recovery_lambda_timeout`         | number        | Timeout in number of seconds for ORCA recovery lambdas.                                                 | 300 |
+| `orca_recovery_retry_limit`            | number        | Maximum number of retries of a recovery failure before giving up.                                       | 3 |
+| `orca_recovery_retry_interval`         | number        | Number of seconds to wait between recovery failure retries.                                             | 1 |
+
+
+## ORCA Module Outputs
+
+The orca module provides the outputs seen below in the table. Outputs are
+accessed using terraform dot syntax in the format of `module.orca.variable_name`.
+
+| Output Variable                               | Description                               |
+| --------------------------------------------- | ----------------------------------------- |
+| `orca_lambda_copy_to_glacier_arn`               | AWS ARN of the ORCA copy_to_glacier lambda. |
+| `orca_lambda_extract_filepaths_for_granule_arn` | AWS ARN of the ORCA extract_filepaths_for_granule lambda. |
+| `orca_lambda_request_files_arn`                 | AWS ARN of the ORCA request_files lambda. |
+| `orca_lambda_copy_files_to_archive_arn`         | AWS ARN of the ORCA copy_files_to_archive lambda. |
+| `orca_lambda_request_status_arn`                | AWS ARN of the ORCA request_status lambda. |
+| `orca_lambda_request_status_for_granule_arn`    | AWS ARN of the ORCA request_status_for_granule lambda. |
+| `orca_lambda_request_status_for_job_arn`        | AWS ARN of the ORCA request_status_for_job lambda. |
+| `orca_rds_address`                              | The address of the RDS instance |
+| `orca_rds_arn`                                  | The ARN of the RDS instance |
+| `orca_rds_availability_zone`                    | The availability zone of the RDS instance |
+| `orca_rds_endpoint`                             | The connection endpoint in address:port format |
+| `orca_rds_hosted_zone_id`                       | The canonical hosted zone ID of the DB instance (to be used in a Route 53 Alias record) |
+| `orca_rds_id`                                   | The RDS instance ID |
+| `orca_rds_resource_id`                          | The RDS Resource ID of this instance |
+| `orca_rds_status`                               | The RDS instance status |
+| `orca_rds_name`                                 | The database name |
+| `orca_rds_username`                             | The master username for the database |
+| `orca_rds_port`                                 | The database port |
+| `orca_subnet_group_id`                          | The ORCA database subnet group name |
+| `orca_subnet_group_arn`                         | The ARN of the ORCA database subnet group |
 
 
 ## Deploy ORCA with Terraform

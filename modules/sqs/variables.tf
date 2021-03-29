@@ -25,8 +25,8 @@ variable "tags" {
 ## Variables unique to ORCA
 ## OPTIONAL
 variable "sqs_delay_time" {
-  description = "The time in seconds that the delivery of all messages in the queue will be delayed."
   type        = number
+  description = "The time in seconds that the delivery of all messages in the queue will be delayed."
 }
 
 variable "sqs_maximum_message_size" {
