@@ -80,16 +80,20 @@ module "orca" {
   postgres_user_pw     = var.database_app_user_pw
 
   ## OPTIONAL
-  # database_port                        = 5432
-  # orca_ingest_lambda_memory_size       = 2240
-  # orca_ingest_lambda_timeout           = 600
-  # orca_recovery_buckets                = []
-  # orca_recovery_complete_filter_prefix = ""
-  # orca_recovery_expiration_days        = 5
-  # orca_recovery_lambda_memory_size     = 128
-  # orca_recovery_lambda_timeout         = 300
-  # orca_recovery_retry_limit            = 3
-  # orca_recovery_retry_interval         = 1
+  # database_port                                = 5432
+  # orca_ingest_lambda_memory_size               = 2240
+  # orca_ingest_lambda_timeout                   = 600
+  # orca_recovery_buckets                        = []
+  # orca_recovery_complete_filter_prefix         = ""
+  # orca_recovery_expiration_days                = 5
+  # orca_recovery_lambda_memory_size             = 128
+  # orca_recovery_lambda_timeout                 = 300
+  # orca_recovery_retry_limit                    = 3
+  # orca_recovery_retry_interval                 = 1
+  # sqs_delay_time                               = 0
+  # sqs_maximum_message_size                     = 262144
+  # staged_recovery_queue_message_retention_time = 432000
+  # status_update_queue_message_retention_time   = 777600
 }
 ```
 
@@ -448,18 +452,22 @@ file. The variables can be set with proper values for your environment in the
 `cumulus-tf/terraform.tfvars` file. The default setting for each of the optional
 variables is shown in the table below.
 
-| Variable                               | Type          | Definition                                                                                              | Default Value |
-| -------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------- | ------------- |
-| `database_port`                        | number        | Database port that PostgreSQL traffic will be allowed on.                                               | 5432 |
-| `orca_ingest_lambda_memory_size`       | number        | Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime.                              | 2240 |
-| `orca_ingest_lambda_timeout`           | number        | Timeout in number of seconds for ORCA copy_to_glacier lambda.                                           | 600 |
-| `orca_recovery_buckets`                | List (string) | List of bucket names that ORCA has permissions to restore data to. Default is all in the `buckets` map. | [] |
-| `orca_recovery_complete_filter_prefix` | string        | Specifies object key name prefix by the Glacier Bucket trigger.                                         | "" |
-| `orca_recovery_expiration_days`        | number        | Number of days a recovered file will remain available for copy.                                         | 5 |
-| `orca_recovery_lambda_memory_size`     | number        | Amount of memory in MB the ORCA recovery lambda can use at runtime.                                     | 128 |
-| `orca_recovery_lambda_timeout`         | number        | Timeout in number of seconds for ORCA recovery lambdas.                                                 | 300 |
-| `orca_recovery_retry_limit`            | number        | Maximum number of retries of a recovery failure before giving up.                                       | 3 |
-| `orca_recovery_retry_interval`         | number        | Number of seconds to wait between recovery failure retries.                                             | 1 |
+| Variable                                      | Type          | Definition                                                                                              | Default Value |
+| --------------------------------------        | ------------- | ---------------------------------------------------------------------------------------------------     | ------------- |
+| `database_port`                               | number        | Database port that PostgreSQL traffic will be allowed on.                                               | 5432 |
+| `orca_ingest_lambda_memory_size`              | number        | Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime.                              | 2240 |
+| `orca_ingest_lambda_timeout`                  | number        | Timeout in number of seconds for ORCA copy_to_glacier lambda.                                           | 600 |
+| `orca_recovery_buckets`                       | List (string) | List of bucket names that ORCA has permissions to restore data to. Default is all in the `buckets` map. | [] |
+| `orca_recovery_complete_filter_prefix`        | string        | Specifies object key name prefix by the Glacier Bucket trigger.                                         | "" |
+| `orca_recovery_expiration_days`               | number        | Number of days a recovered file will remain available for copy.                                         | 5 |
+| `orca_recovery_lambda_memory_size`            | number        | Amount of memory in MB the ORCA recovery lambda can use at runtime.                                     | 128 |
+| `orca_recovery_lambda_timeout`                | number        | Timeout in number of seconds for ORCA recovery lambdas.                                                 | 300 |
+| `orca_recovery_retry_limit`                   | number        | Maximum number of retries of a recovery failure before giving up.                                       | 3 |
+| `orca_recovery_retry_interval`                | number        | Number of seconds to wait between recovery failure retries.                                             | 1 |
+| `sqs_delay_time              `                | number        | Number of seconds that the delivery of all messages in the queue will be delayed.                       | 0 |
+| `sqs_maximum_message_size`                    | number        | The limit of how many bytes a message can contain before Amazon SQS rejects it.                         | 262144 |
+| `staged_recovery_queue_message_retention_time`| number        | Number of seconds the staged-recovery-queue fifo SQS retains a message.                                 | 432000 |
+| `status_update_queue_message_retention_time`  | number        | Number of seconds the status_update_queue fifo SQS retains a message.                                   | 777600 |
 
 
 ## ORCA Module Outputs
@@ -489,6 +497,10 @@ accessed using terraform dot syntax in the format of `module.orca.variable_name`
 | `orca_rds_port`                                 | The database port |
 | `orca_subnet_group_id`                          | The ORCA database subnet group name |
 | `orca_subnet_group_arn`                         | The ARN of the ORCA database subnet group |
+| `orca_sqs_staged_recovery_queue_arn`            | The ARN of the staged-recovery-queue SQS |
+| `orca_sqs_staged_recovery_queue_id`             | The URL ID of the staged-recovery-queue SQS |
+| `orca_sqs_status_update_queue_arn`              | The ARN of the status-update-queue SQS |
+| `orca_sqs_status_update_queue_id`               | The URL ID of the status-update-queue SQS |
 
 
 ## Deploy ORCA with Terraform
