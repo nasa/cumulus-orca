@@ -259,7 +259,6 @@ def process_granule(s3: BaseClient,
                     a_file[FILE_SUCCESS_KEY] = True
                     a_file[FILE_ERROR_MESSAGE_KEY] = ''
 
-                    # todo: add to tests
                     post_status_for_file_to_queue(
                         job_id, granule_id, os.path.basename(a_file[FILE_KEY_KEY]),
                         a_file[FILE_KEY_KEY],
@@ -289,7 +288,6 @@ def process_granule(s3: BaseClient,
         # if any file failed, the whole granule will fail
         if not a_file[FILE_SUCCESS_KEY]:
             any_error = True
-            # todo: add to tests
             # If this is reached, that means there is no entry in the db for file's status.
             post_status_for_file_to_queue(
                 job_id, granule_id, os.path.basename(a_file[FILE_KEY_KEY]),
@@ -351,6 +349,7 @@ def restore_object(s3_cli: BaseClient, obj: Dict[str, Any], attempt: int, job_id
                 days (int): How many days the restored file will be accessible in the S3 bucket
                     before it expires.
             attempt: The attempt number for logging purposes.
+            job_id: The unique id of the job. Used for logging.
             retrieval_type: Glacier Tier. Valid values are 'Standard'|'Bulk'|'Expedited'. Defaults to 'Standard'.
         Raises:
             ClientError: Raises ClientErrors from restore_object.
@@ -431,6 +430,7 @@ def post_status_for_file_to_queue(job_id: str, granule_id: str, filename: str, k
 sqs = boto3.client('sqs')
 
 
+# todo: Move to shared lib
 def post_entry_to_queue(table_name: str, new_data: Dict[str, Any], request_method: RequestMethod, db_queue_url: str,
                         max_retries: int, retry_sleep_secs: float):
     attempt = 0

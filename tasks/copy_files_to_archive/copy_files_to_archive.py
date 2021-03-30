@@ -5,17 +5,19 @@ Description:  Lambda function that copies files from one s3 bucket
 to another s3 bucket.
 """
 import json
+import logging
 import os
 import time
-import logging
 from enum import Enum
 from typing import Any, List, Dict, Optional, Union
 
 import boto3
+# noinspection PyPackageRequirements
 import database
+# noinspection PyPackageRequirements
 from botocore.client import BaseClient
+# noinspection PyPackageRequirements
 from botocore.exceptions import ClientError
-import requests_db
 
 
 class RequestMethod(Enum):
@@ -50,7 +52,6 @@ class CopyRequestError(Exception):
     """
 
 
-# todo: Add params to docs and usage. Might need to be moved into records.
 def task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: float, db_queue_url: str) \
         -> List[Dict[str, Any]]:
     """
@@ -256,10 +257,11 @@ def copy_object(s3_cli: BaseClient, src_bucket_name: str, src_object_name: str,
         logging.debug(f"Copy response: {response}")
     except ClientError as ex:
         logging.error(ex)
-        return str(ex)
+        return ex.__str__()
     return None
 
 
+# noinspection PyUnusedLocal
 def handler(event: Dict[str, Any], context: object) -> List[Dict[str, Any]]:  # pylint: disable-msg=unused-argument
     """Lambda handler. Copies a file from its temporary s3 bucket to the s3 archive.
 
@@ -282,7 +284,7 @@ def handler(event: Dict[str, Any], context: object) -> List[Dict[str, Any]]:  # 
 
     Args:
         event: A dict with the following keys:
-            'Records' (List): A list of dicts with the following keys: # todo: Add keys based on what is needed.
+            'Records' (List): A list of dicts with the following keys:
                 'messageId' (str)
                 'receiptHandle' (str)
                 'body' (str): A json formatted string representing a dict specifying a file to copy to archive.
@@ -302,7 +304,6 @@ def handler(event: Dict[str, Any], context: object) -> List[Dict[str, Any]]:  # 
         context: An object required by AWS Lambda. Unused.
 
     Returns:
-        # todo: Rework this section once code has determined reasonable output.
         The list of dicts returned from the task. All 'success' values will be True. If they were
         not all True, the CopyRequestError exception would be raised.
         Dicts have the following keys:
