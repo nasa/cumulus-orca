@@ -14,11 +14,14 @@
 ## bamboo_RELEASE_FLAG (boolean) - Determines if the build should occur and be
 ##                                 released to GitHub release.
 ##
+## bamboo_SECRET_GITHUB_EMAIL (string) - GitHub user email performing the commit
+##                                       for the application documentation.
+##
 ## bamboo_SECRET_GITHUB_TOKEN (string) - GitHub Secret Token needed to access
 ##                                       the cumulus-orca repo.
 ##
-## bamboo_GITHUB_USER (string) - GitHub user performing the commit for the
-##                               application documentation.
+## bamboo_SECRET_GITHUB_USER (string) - GitHub user performing the commit for the
+##                                      application documentation.
 ##
 ##
 ## USAGE
@@ -73,10 +76,16 @@ check_rc "cd website"
 # Install Node.js and the proper packages
 check_rc "npm install"
 
-# Run the deployment See: https://docusaurus.io/docs/deployment
+## Run the deployment See: https://docusaurus.io/docs/deployment
+# Set the environment variables
 export DEPLOYMENT_BRANCH=gh-pages-test
-export GIT_USER=$bamboo_GITHUB_USER
+export GIT_USER=$bamboo_SECRET_GITHUB_USER
 export GIT_PASS=$bamboo_SECRET_GITHUB_TOKEN
+
+# We need to set some git config here so deploy doesn't complain when the commit occurs.
+# Note that we are only setting theses for our repo locally.
+git config user.email "$bamboo_SECRET_GITHUB_EMAIL"
+git config user.name "$GIT_USER"
 
 check_rc "npm run deploy"
 
