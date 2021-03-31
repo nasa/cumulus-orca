@@ -34,10 +34,10 @@ def post_record_to_database(record: Dict[str, Any], db_connect_info: Dict):
     values = json.loads(record['body'])
     table_name = record['messageAttributes']['TableName']
     override_existing = RequestMethod(record['messageAttributes']['RequestMethod'])
-    post_values_to_database(values, table_name, override_existing, db_connect_info)
+    post_values_to_database(table_name, values, override_existing, db_connect_info)
 
 
-def post_values_to_database(values: Dict[str, Any], table_name: str, request_method: RequestMethod,
+def post_values_to_database(table_name: str, values: Dict[str, Any], request_method: RequestMethod,
                             db_connect_info: Dict):
     try:
         if request_method == RequestMethod.PUT:
@@ -48,10 +48,22 @@ def post_values_to_database(values: Dict[str, Any], table_name: str, request_met
             else:
                 raise NotImplementedError()
         elif request_method == RequestMethod.POST:
-            pass
-            # todo: If POST, create a new entry in DB with values.
+            insert_row_from_values(table_name, values, db_connect_info)
     except Exception as ex:
         LOGGER.error(ex)
+
+
+def insert_row_from_values(table_name: str, values: Dict[str, Any], db_connect_info: Dict):
+    sql = f"""
+                    INSERT INTO {table_name} ("""
+    sql += ', '.join(values.keys())
+    sql += f""")
+                    VALUES ("""
+    sql += ', '.join(['%s'] * len(values))
+    sql += ')'
+
+    parameters = tuple(values[value_key] for value_key in values)
+    database.single_query(sql, db_connect_info, parameters)
 
 
 def update_orca_recoverfile(values: Dict[str, Any], db_connect_info: Dict):
@@ -68,7 +80,7 @@ def update_row_in_table(table_name: str, table_keys: List[str], values: Dict[str
     for key in values:
         if table_keys.__contains__(key):
             key_values[key] = values[key]
-        elif values[key] is not None:
+        else:
             updated_values[key] = values[key]
     sql = f"""
                     UPDATE {table_name}
@@ -125,3 +137,4 @@ def handler(event: Dict[str, List], context):
 
     task(event['Records'], db_connect_info)
     pass
+
