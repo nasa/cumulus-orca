@@ -5,16 +5,15 @@ Description:  Lambda function that copies files from one s3 bucket
 to another s3 bucket.
 """
 import json
-import os
-import time
-import logging
 from enum import Enum
 from typing import Any, List, Dict, Optional
 
-import boto3
 from botocore.client import BaseClient
 from botocore.exceptions import ClientError
+# noinspection PyUnresolvedReferences
 import requests_db
+# noinspection PyPackageRequirements
+import database
 from cumulus_logger import CumulusLogger
 
 
@@ -38,15 +37,60 @@ def post_record_to_database(record: Dict[str, Any], db_connect_info: Dict):
     post_values_to_database(values, table_name, override_existing, db_connect_info)
 
 
-def post_values_to_database(values: Dict[str, Any], table_name: str, request_method: RequestMethod, db_connect_info: Dict):
-    if request_method is RequestMethod.PUT:
-        pass
-        # todo: If PUT, get existing entry and update with values.
-        # todo: Will need some special logic to get an entry based on keys for the given table_name.
-    elif request_method is RequestMethod.POST:
-        pass
-        # todo: If POST, create a new entry in DB with values.
-    # todo: If error raised, log.
+def post_values_to_database(values: Dict[str, Any], table_name: str, request_method: RequestMethod,
+                            db_connect_info: Dict):
+    try:
+        if request_method == RequestMethod.PUT:
+            if table_name == 'orca_recoverfile':
+                update_orca_recoverfile(values, db_connect_info)
+            elif table_name == 'orca_recoveryjob':
+                update_orca_recoveryjob(values, db_connect_info)
+            else:
+                raise NotImplementedError()
+        elif request_method == RequestMethod.POST:
+            pass
+            # todo: If POST, create a new entry in DB with values.
+    except Exception as ex:
+        LOGGER.error(ex)
+
+
+def update_orca_recoverfile(values: Dict[str, Any], db_connect_info: Dict):
+    update_row_in_table('orca_recoverfile', ['job_id', 'granule_id', 'filename'], values, db_connect_info)
+
+
+def update_orca_recoveryjob(values: Dict[str, Any], db_connect_info: Dict):
+    update_row_in_table('orca_recoveryjob', ['job_id', 'granule_id'], values, db_connect_info)
+
+
+def update_row_in_table(table_name: str, table_keys: List[str], values: Dict[str, Any], db_connect_info: Dict):
+    key_values = {table_key: None for table_key in table_keys}
+    updated_values = {}
+    for key in values:
+        if table_keys.__contains__(key):
+            key_values[key] = values[key]
+        elif values[key] is not None:
+            updated_values[key] = values[key]
+    sql = f"""
+                    UPDATE {table_name}
+                    SET """
+
+    sql += ", ".join([f"{updating_value_key} = %s" for updating_value_key in updated_values])
+
+    sql += f"""
+                    WHERE """
+
+    sql += " AND ".join([f"{table_key} = %s" for table_key in table_keys])
+
+#    sql += f"""
+#                    LIMIT 1"""
+
+    parameters = tuple(updated_values[updated_value_key] for updated_value_key in updated_values)
+    parameters += tuple(key_values[table_key] for table_key in table_keys)
+    try:
+        database.single_query(sql, db_connect_info, parameters)
+    except database.DbError as err:
+        LOGGER.error(f"DbError: {str(err)}")
+        raise requests_db.DatabaseError(str(err))
 
 
 # todo: Make sure to grant sqs:ReceiveMessage, sqs:DeleteMessage, and sqs:GetQueueAttributes

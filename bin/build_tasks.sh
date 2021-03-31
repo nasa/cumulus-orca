@@ -146,4 +146,29 @@ do
 done
 
 
+TASK='tasks/post_copy_request_to_queue/'
+echo "Building ${TASK}"
+cd ${TASK}
+bin/build.sh
+return_code=$?
+cd -
+
+if [ $return_code -ne 0 ]; then
+echo "ERROR: Building of $TASK failed."
+failure=1
+fi
+
+
+TASK='tasks/post_to_database/'
+echo "Building ${TASK}"
+cd ${TASK}
+bin/build.sh
+return_code=$?
+cd -
+
+if [ $return_code -ne 0 ]; then
+echo "ERROR: Building of $TASK failed."
+failure=1
+fi
+
 exit $failure
