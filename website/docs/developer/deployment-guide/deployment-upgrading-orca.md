@@ -19,7 +19,7 @@ ORCA uses a global versioning approach, meaning version numbers are
 consistent across all Terraform modules and semantic versioning to track
 major, minor, and patch version (e.g., 1.0.0).
 
-::: important
+:::important
 ORCA major version releases (e.g., 2.x.x -> 3.x.x) introduce known breaking
 changes. However, any version change has the possibility to introduce breaking
 changes for your particular use case. It is critical that the release notes
@@ -81,7 +81,7 @@ replacing `vx.x.x` with the desired version of ORCA.
 
 ## Update ORCA Resources
 
-::: reminder
+:::note Reminder
 Remember to [initialize Terraform](https://nasa.github.io/cumulus/docs/deployment/deployment-readme#initialize-terraform)
 if necessary.
 :::
