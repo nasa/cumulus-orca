@@ -28,7 +28,7 @@
 ## This must be called from the (root) git repo directory.
 ## =============================================================================
 ## Set this for Debugging only
-#set -ex
+set -ex
 
 ## Make sure we are calling the script the correct way.
 BASEDIR=$(dirname $0)
@@ -41,7 +41,7 @@ fi
 ## Validate that the release flag is set
 if [[ ! $bamboo_RELEASE_FLAG == true ]]; then
   >&2 echo "WARN: Skipping Release ORCA documentation step as bamboo_PUBLISH_FLAG is not set"
-  exit 0
+  #exit 0  # Commented out for testing
 fi
 
 
