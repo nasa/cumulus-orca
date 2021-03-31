@@ -28,7 +28,7 @@
 ## This must be called from the (root) git repo directory.
 ## =============================================================================
 ## Set this for Debugging only
-set -ex
+set -x
 
 ## Make sure we are calling the script the correct way.
 BASEDIR=$(dirname $0)
