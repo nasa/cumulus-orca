@@ -30,6 +30,7 @@ module.exports = {
                 'developer/development-guide/code/linting',
                 'developer/development-guide/code/unit-tests',
                 'developer/development-guide/code/postgres-tests',
+                'developer/deployment-guide/orca-logging',
             ],
             "Developing Documentation": [
                 'developer/development-guide/documentation/contrib-documentation-intro',
@@ -49,12 +50,12 @@ module.exports = {
         'developer/deployment-guide/deployment-with-cumulus',
         'developer/deployment-guide/deployment-upgrading-orca',
         'developer/deployment-guide/testing_deployment',
-        'developer/deployment-guide/orca-logging'
     ],
   },
   cookbook: {
-    "Getting Started": ['cookbook/cookbook-intro',
-                       ],
+    "Getting Started": [
+        'cookbook/cookbook-intro',
+    ],
   },
   ops_guide: {
     "Getting Started": [
