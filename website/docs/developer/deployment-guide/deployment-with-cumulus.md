@@ -274,7 +274,7 @@ the ingest workflow.
 
 :::
 
-...
+```json
 "MoveGranuleStep": {
       "Parameters": {
         "cma": {
@@ -317,7 +317,7 @@ the ingest workflow.
           "Next": "WorkflowFailed"
         }
       ],
-...
+```
 
 
 ### Add the Copy To Glacier Step to an Ingest Workflow
@@ -333,7 +333,8 @@ the ingest workflow.
 
 :::
 
-```
+
+```json
 "CopyToGlacier":{
    "Parameters":{
       "cma":{

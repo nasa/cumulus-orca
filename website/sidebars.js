@@ -1,20 +1,24 @@
 module.exports = {
   about_orca: {
-    "Introduction": ['about/introduction/orca-intro',
-                     'about/introduction/intro-navigating',
-                     'about/introduction/intro-contributing',
-                     'about/introduction/intro-glossary'
-                    ],
-    "Architecture": ['about/architecture/architecture-intro',
-                     'about/architecture/architecture-software-system',
-                     'about/architecture/architecture-archive-container',
-                     'about/architecture/architecture-recover-container',
-                     'about/architecture/architecture-database-container',
-                    ],
-    "Helpful Tips": ['about/tips',
-                    ],
-    "ORCA Team": ['about/team',
-                 ],
+    "Introduction": [
+        'about/introduction/orca-intro',
+        'about/introduction/intro-navigating',
+        'about/introduction/intro-contributing',
+        'about/introduction/intro-glossary',
+    ],
+    "Architecture": [
+        'about/architecture/architecture-intro',
+        'about/architecture/architecture-software-system',
+        'about/architecture/architecture-archive-container',
+        'about/architecture/architecture-recover-container',
+        'about/architecture/architecture-database-container',
+    ],
+    "Helpful Tips": [
+        'about/tips',
+    ],
+    "ORCA Team": [
+        'about/team',
+    ],
   },
   dev_guide: {
     "Getting Started": [
@@ -30,6 +34,7 @@ module.exports = {
                 'developer/development-guide/code/linting',
                 'developer/development-guide/code/unit-tests',
                 'developer/development-guide/code/postgres-tests',
+                'developer/development-guide/code/orca-logging',
             ],
             "Developing Documentation": [
                 'developer/development-guide/documentation/contrib-documentation-intro',
@@ -49,12 +54,12 @@ module.exports = {
         'developer/deployment-guide/deployment-with-cumulus',
         'developer/deployment-guide/deployment-upgrading-orca',
         'developer/deployment-guide/testing_deployment',
-        'developer/deployment-guide/orca-logging'
     ],
   },
   cookbook: {
-    "Getting Started": ['cookbook/cookbook-intro',
-                       ],
+    "Getting Started": [
+        'cookbook/cookbook-intro',
+    ],
   },
   ops_guide: {
     "Getting Started": [

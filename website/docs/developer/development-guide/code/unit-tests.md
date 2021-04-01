@@ -15,7 +15,7 @@ Run through the steps in [Setting Up a Dev Environment](setup-dev-env.md) prior 
     ```commandline
     coverage run --source [name of lambda] -m pytest
     ```
-   <a name="coverage"></a>
+
 1. Output the coverage results to the file system by running
     ```commandline
     coverage html
@@ -26,6 +26,8 @@ Run through the steps in [Setting Up a Dev Environment](setup-dev-env.md) prior 
 For error-free running of postgres tests, see [Postgres Tests](postgres-tests).
 
 :::
+
+
 ## Writing Unit Tests
 Any written code should have a minimum of 80% [coverage](#coverage), with higher coverage ideal.
 This is a requirement for any new code, and will apply retroactively to old code as we have time to create/update tests.
