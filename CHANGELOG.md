@@ -105,13 +105,20 @@ See the documentation for specifics on the various files and changes specified b
   ```
 
 ### Added
-- *ORCA-92* Added two lambdas (request_status_for_file and request_status_for_job) for use with the Cumulus dashboard. request_status_for_file will retrieve status for an individual file, with the optional parameter of which job you want the file's recovery status for. request_status_for_job will retrieve a summary of the job along with status totals. See the task's 'schemas' folder and the README.md files for more information and examples.
-
-- *ORCA-157* Modified terraform module to add two SQS queues required by *copy_files_to_archive* lambda function. 
-The first queue will be used by *copy_files_to_archive* lambda to get necesssary information needed for copying next files.
-The second queue will be used by *copy_files_to_archive* lambda to write database status updates.
-
+- *ORCA-92* Added two lambdas (request_status_for_file and request_status_for_job)
+  for use with the Cumulus dashboard. request_status_for_file will retrieve status
+  for an individual file, with the optional parameter of which job you want the
+  file's recovery status for. request_status_for_job will retrieve a summary of
+  the job along with status totals. See the task's 'schemas' folder and the
+  README.md files for more information and examples.
+- *ORCA-157* Modified terraform module to add two SQS queues required by
+  *copy_files_to_archive* lambda function. The first queue will be used by
+  *copy_files_to_archive* lambda to get necessary information needed for copying
+  next files. The second queue will be used by *copy_files_to_archive* lambda to
+  write database status updates.
 - Deployment and development documentation has been created for ORCA.
+- *ORCA-119* Added new script *bin/create_release_documentation.sh* to deploy the
+  documentation when the **RELEASE_FLAG** is set to `true` in Bamboo pipeline.
 
 ### Changed
 - Glacier buckets meant for the ORCA archive now should be a type of orca instead of glacier. `{ my-orca-bucket = { name = "orca-primary-bucket", type = "orca" } }`.
