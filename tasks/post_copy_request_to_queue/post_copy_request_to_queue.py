@@ -93,14 +93,16 @@ sqs = boto3.client('sqs')
 def post_entry_to_queue(table_name: str, new_data: Dict[str, Any], request_method: RequestMethod, db_queue_url: str,
                         max_retries: int, retry_sleep_secs: float):
     attempt = 0
+    body = json.dumps(new_data, indent=4)
     while attempt <= max_retries + 1:
         try:
             sqs.send_message(
-                QueueUrl=db_queue_url
+                QueueUrl=db_queue_url,
+                MessageDeduplicationId=table_name + request_method.value + body,
+                MessageGroupId='post_copy_request_to_queue'
             )
             sqs.send_message(
                 QueueUrl=db_queue_url,
-                DelaySeconds=0,
                 MessageAttributes={
                     'RequestMethod': {
                         'DataType': 'String',
@@ -111,9 +113,7 @@ def post_entry_to_queue(table_name: str, new_data: Dict[str, Any], request_metho
                         'StringValue': table_name
                     }
                 },
-                MessageBody=(
-                    json.dumps(new_data, indent=4)
-                )
+                MessageBody=body
             )
         except Exception as e:
             if attempt == max_retries + 1:
