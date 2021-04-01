@@ -31,7 +31,7 @@
 ## This must be called from the (root) git repo directory.
 ## =============================================================================
 ## Set this for Debugging only
-set -x
+#set -x
 
 ## Make sure we are calling the script the correct way.
 BASEDIR=$(dirname $0)
@@ -43,8 +43,8 @@ fi
 
 ## Validate that the release flag is set
 if [[ ! $bamboo_RELEASE_FLAG == true ]]; then
-  >&2 echo "WARN: Skipping Release ORCA documentation step as bamboo_PUBLISH_FLAG is not set"
-  #exit 0  # Commented out for testing
+  >&2 echo "WARN: Skipping Release ORCA documentation step, PUBLISH_FLAG is [ $bamboo_RELEASE_FLAG ]"
+  exit 0
 fi
 
 
@@ -61,7 +61,7 @@ function check_rc () {
   let RC=$?
 
   if [ $RC -ne 0 ]; then
-      >&2 echo "ERROR: '$COMMAND' failed with a return code of [$RC]!"
+      >&2 echo "ERROR: '$COMMAND' failed with a return code of [ $RC ]!"
       exit 1
   fi
 }
@@ -78,7 +78,7 @@ check_rc "npm install"
 
 ## Run the deployment See: https://docusaurus.io/docs/deployment
 # Set the environment variables
-export DEPLOYMENT_BRANCH=gh-pages-test
+export DEPLOYMENT_BRANCH=gh-pages
 export GIT_USER=$bamboo_SECRET_GITHUB_USER
 export GIT_PASS=$bamboo_SECRET_GITHUB_TOKEN
 

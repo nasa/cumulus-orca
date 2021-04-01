@@ -114,8 +114,11 @@ if [ $ZIP_RC -ne 0 ]; then
 fi
 
 ## Validate that this build and release should occur
+## Validate that the release flag is set
+## TODO: Pull this code out as a seperate step in Release area and use artifacts
+##       instead of rebuilding the zip each time.
 if [[ ! $bamboo_RELEASE_FLAG == true ]]; then
-  >&2 echo "******Skipping build_release_package step as bamboo_PUBLISH_FLAG is not set"
+  >&2 echo "WARN: Skipping Release ORCA code step, PUBLISH_FLAG is [ $bamboo_RELEASE_FLAG ]"
   exit 0
 fi
 

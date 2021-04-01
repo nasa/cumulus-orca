@@ -34,6 +34,12 @@ if [ "$BASEDIR" != "bin" ]; then
   exit 1
 fi
 
+## Validate that the release flag is set
+if [[ ! $bamboo_RELEASE_FLAG == true ]]; then
+  >&2 echo "WARN: Skipping Release ORCA code step, PUBLISH_FLAG is [ $bamboo_RELEASE_FLAG ]"
+  exit 0
+fi
+
 ## Release the Code
 ## TODO: Make this more robust. Check for errors see if release already created, etc.
 cd dist
