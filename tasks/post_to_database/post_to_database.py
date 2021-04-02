@@ -1,8 +1,7 @@
 """
-Name: copy_files_to_archive.py
+Name: post_to_database.py
 
-Description:  Lambda function that copies files from one s3 bucket
-to another s3 bucket.
+Description:  Pulls entries from a queue and posts them to a DB.
 """
 import json
 from enum import Enum
@@ -168,4 +167,3 @@ def handler(event: Dict[str, List], context) -> None:
     db_connect_info = requests_db.get_dbconnect_info()
 
     task(event['Records'], db_connect_info)
-    pass

@@ -8,12 +8,11 @@ import json
 import logging
 import os
 import time
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, List, Dict, Optional, Union
 
 import boto3
-# noinspection PyPackageRequirements
-import database
 # noinspection PyPackageRequirements
 from botocore.client import BaseClient
 # noinspection PyPackageRequirements
@@ -52,8 +51,7 @@ class CopyRequestError(Exception):
     """
 
 
-def task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: float, db_queue_url: str) \
-        -> List[Dict[str, Any]]:
+def task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: float, db_queue_url: str):
     """
     Task called by the handler to perform the work.
 
@@ -67,31 +65,12 @@ def task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: floa
         retry_sleep_secs: The number of seconds
             to sleep between retry attempts.
         db_queue_url: The URL of the queue that posts status entries.
-
-    Returns:
-       A list of dicts with the following keys:
-            'job_id' (str): The unique id of the recovery job.
-            'granule_id' (str): The unique ID of the granule.
-            'filename' (str): The name of the file being copied.
-            'source_key' (str): The path the file was restored to.
-            'target_key' (str): The path to copy to. Defaults to value at 'source_key'.
-            'restore_destination' (str): The name of the bucket the restored file will be moved to.
-            'source_bucket' (str): The bucket the restored file can be copied from.
-            'success' (boolean): 'success' (boolean): True, as an error will raise a CopyRequestError.
-
-        Example:  [{'source_key': 'file1.xml', 'source_bucket': 'my-dr-fake-glacier-bucket',
-                      'target_bucket': 'unittest_xml_bucket', 'success': True,
-                      'err_msg': ''},
-                  {'source_key': 'file2.txt', 'source_bucket': 'my-dr-fake-glacier-bucket',
-                      'target_bucket': 'unittest_txt_bucket', 'success': True,
-                      'err_msg': '', 'request_id': '4192bff0-e1e0-43ce-a4db-912808c32493'}]
     Raises:
         CopyRequestError: Thrown if there are errors with the input records or the copy failed.
     """
     files = get_files_from_records(records)
-    attempt = 1
     s3 = boto3.client('s3')  # pylint: disable-msg=invalid-name
-    while attempt <= max_retries + 1:
+    for attempt in range(1, max_retries + 1):
         for a_file in files:
             # All files from get_files_from_records start with 'success' == False.
             if not a_file[FILE_SUCCESS_KEY]:
@@ -102,7 +81,7 @@ def task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: floa
                                       a_file[INPUT_TARGET_KEY_KEY])
                 if err_msg is None:
                     a_file[FILE_SUCCESS_KEY] = True
-                    now = database.get_utc_now_iso()
+                    now = datetime.now(timezone.utc).isoformat()
                     post_status_for_file_to_queue(
                         a_file[INPUT_JOB_ID_KEY], a_file[INPUT_GRANULE_ID_KEY], a_file[INPUT_FILENAME_KEY], None,
                         None,
@@ -113,8 +92,7 @@ def task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: floa
                 else:
                     a_file[FILE_ERROR_MESSAGE_KEY] = err_msg
 
-        attempt = attempt + 1
-        if attempt <= max_retries + 1:
+        if attempt < max_retries + 1:
             if all(a_file[FILE_SUCCESS_KEY] for a_file in files):  # Check for early completion
                 break
             time.sleep(retry_sleep_secs)
@@ -123,7 +101,7 @@ def task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: floa
     for a_file in files:
         if not a_file[FILE_SUCCESS_KEY]:
             any_error = True
-            now = database.get_utc_now_iso()
+            now = datetime.now(timezone.utc).isoformat()
             post_status_for_file_to_queue(
                 a_file[INPUT_JOB_ID_KEY], a_file[INPUT_GRANULE_ID_KEY], a_file[INPUT_FILENAME_KEY], None,
                 None,
@@ -135,8 +113,6 @@ def task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: floa
         logging.error(
             f'File copy failed. {files}')
         raise CopyRequestError(f'File copy failed. {files}')
-
-    return files
 
 
 # todo: Move to shared lib
@@ -152,19 +128,19 @@ def post_status_for_file_to_queue(job_id: str, granule_id: str, filename: str, k
                 'granule_id': granule_id,
                 'filename': filename}
     if key_path is not None:
-        new_data['key_path'] = status_id
+        new_data['key_path'] = key_path
     if restore_destination is not None:
-        new_data['restore_destination'] = status_id
+        new_data['restore_destination'] = restore_destination
     if status_id is not None:
         new_data['status_id'] = status_id
     if error_message is not None:
-        new_data['error_message'] = status_id
+        new_data['error_message'] = error_message
     if request_time is not None:
-        new_data['request_time'] = status_id
+        new_data['request_time'] = request_time
     if last_update is not None:
-        new_data['last_update'] = status_id
+        new_data['last_update'] = last_update
     if completion_time is not None:
-        new_data['completion_time'] = status_id
+        new_data['completion_time'] = completion_time
 
     post_entry_to_queue('orca_recoverfile',
                         new_data,
@@ -177,17 +153,13 @@ sqs = boto3.client('sqs')
 
 def post_entry_to_queue(table_name: str, new_data: Dict[str, Any], request_method: RequestMethod, db_queue_url: str,
                         max_retries: int, retry_sleep_secs: float):
-    attempt = 0
     body = json.dumps(new_data, indent=4)
-    while attempt <= max_retries + 1:
+    for attempt in range(1, max_retries + 1):
         try:
             sqs.send_message(
                 QueueUrl=db_queue_url,
                 MessageDeduplicationId=table_name + request_method.value + body,
-                MessageGroupId='copy_files_to_archive'
-            )
-            sqs.send_message(
-                QueueUrl=db_queue_url,
+                MessageGroupId='copy_files_to_archive',
                 MessageAttributes={
                     'RequestMethod': {
                         'DataType': 'String',
@@ -200,10 +172,11 @@ def post_entry_to_queue(table_name: str, new_data: Dict[str, Any], request_metho
                 },
                 MessageBody=body
             )
+            return
         except Exception as e:
             if attempt == max_retries + 1:
                 logging.error(f"Error while logging row {json.dumps(new_data, indent=4)} "
-                             f"to table {table_name}: {e}")
+                              f"to table {table_name}: {e}")
                 raise e
             time.sleep(retry_sleep_secs)
             continue
@@ -303,19 +276,6 @@ def handler(event: Dict[str, Any], context: object) -> List[Dict[str, Any]]:  # 
 
         context: An object required by AWS Lambda. Unused.
 
-    Returns:
-        The list of dicts returned from the task. All 'success' values will be True. If they were
-        not all True, the CopyRequestError exception would be raised.
-        Dicts have the following keys:
-            'job_id' (str): The unique id of the recovery job.
-            'granule_id' (str): The unique ID of the granule.
-            'filename' (str): The name of the file being copied.
-            'source_key' (str): The path the file was restored to.
-            'target_key' (str): The path to copy to. Defaults to value at 'source_key'.
-            'restore_destination' (str): The name of the bucket the restored file will be moved to.
-            'source_bucket' (str): The bucket the restored file can be copied from.
-            'success' (boolean): True, as an error will raise a CopyRequestError.
-
     Raises:
         CopyRequestError: An error occurred calling copy_object for one or more files.
         The same dict that is returned for a successful copy will be included in the
@@ -335,7 +295,12 @@ def handler(event: Dict[str, Any], context: object) -> List[Dict[str, Any]]:  # 
     except KeyError:
         retry_sleep_secs = 30
 
+    try:
+        db_queue_url = str(os.environ[OS_ENVIRON_DB_QUEUE_URL_KEY])
+    except KeyError as key_error:
+        logging.error(f"os.environ[{OS_ENVIRON_DB_QUEUE_URL_KEY}] not found.")
+        raise key_error
     logging.debug(f'event: {event}')
     records = event["Records"]
 
-    return task(records, retries, retry_sleep_secs, str(os.environ[OS_ENVIRON_DB_QUEUE_URL_KEY]))
+    return task(records, retries, retry_sleep_secs, db_queue_url)

@@ -43,11 +43,11 @@ def post_status_for_job_to_queue(job_id: str, granule_id: str, status_id: Option
     if status_id is not None:
         new_data['status_id'] = status_id
     if request_time is not None:
-        new_data['request_time'] = status_id
+        new_data['request_time'] = request_time
     if completion_time is not None:
-        new_data['completion_time'] = status_id
+        new_data['completion_time'] = completion_time
     if archive_destination is not None:
-        new_data['archive_destination'] = status_id
+        new_data['archive_destination'] = archive_destination
 
     post_entry_to_queue('orca_recoveryjob',
                         new_data,
@@ -67,19 +67,19 @@ def post_status_for_file_to_queue(job_id: str, granule_id: str, filename: str, k
                 'granule_id': granule_id,
                 'filename': filename}
     if key_path is not None:
-        new_data['key_path'] = status_id
+        new_data['key_path'] = key_path
     if restore_destination is not None:
-        new_data['restore_destination'] = status_id
+        new_data['restore_destination'] = restore_destination
     if status_id is not None:
         new_data['status_id'] = status_id
     if error_message is not None:
-        new_data['error_message'] = status_id
+        new_data['error_message'] = error_message
     if request_time is not None:
-        new_data['request_time'] = status_id
+        new_data['request_time'] = request_time
     if last_update is not None:
-        new_data['last_update'] = status_id
+        new_data['last_update'] = last_update
     if completion_time is not None:
-        new_data['completion_time'] = status_id
+        new_data['completion_time'] = completion_time
 
     post_entry_to_queue('orca_recoverfile',
                         new_data,
@@ -92,17 +92,13 @@ sqs = boto3.client('sqs')
 
 def post_entry_to_queue(table_name: str, new_data: Dict[str, Any], request_method: RequestMethod, db_queue_url: str,
                         max_retries: int, retry_sleep_secs: float):
-    attempt = 0
     body = json.dumps(new_data, indent=4)
-    while attempt <= max_retries + 1:
+    for attempt in range(1, max_retries + 1):
         try:
             sqs.send_message(
                 QueueUrl=db_queue_url,
                 MessageDeduplicationId=table_name + request_method.value + body,
-                MessageGroupId='post_copy_request_to_queue'
-            )
-            sqs.send_message(
-                QueueUrl=db_queue_url,
+                MessageGroupId='post_copy_request_to_queue',
                 MessageAttributes={
                     'RequestMethod': {
                         'DataType': 'String',
@@ -115,6 +111,7 @@ def post_entry_to_queue(table_name: str, new_data: Dict[str, Any], request_metho
                 },
                 MessageBody=body
             )
+            return
         except Exception as e:
             if attempt == max_retries + 1:
                 LOGGER.error(f"Error while logging row {json.dumps(new_data, indent=4)} "

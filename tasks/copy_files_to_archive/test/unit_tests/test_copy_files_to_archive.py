@@ -7,6 +7,7 @@ import os
 import unittest
 import uuid
 from random import randint
+from unittest import mock
 from unittest.mock import Mock, call, patch, MagicMock
 
 from botocore.exceptions import ClientError
@@ -48,7 +49,6 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
         self.assertEqual(mock_task.return_value, result)
 
     @patch('time.sleep')
-    @patch('database.get_utc_now_iso')
     @patch('copy_files_to_archive.post_status_for_file_to_queue')
     @patch('copy_files_to_archive.copy_object')
     @patch('copy_files_to_archive.get_files_from_records')
@@ -58,7 +58,6 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
                              mock_get_files_from_records: MagicMock,
                              mock_copy_object: MagicMock,
                              mock_post_status_for_file_to_queue: MagicMock,
-                             mock_get_utc_now_iso: MagicMock,
                              mock_sleep: MagicMock):
         """
         If all files go through without errors, return without sleeps.
@@ -108,7 +107,7 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
         mock_get_files_from_records.return_value = [file0, file1]
         mock_copy_object.return_value = None
 
-        result = copy_files_to_archive.task(mock_records, max_retries, retry_sleep_secs, db_queue_url)
+        copy_files_to_archive.task(mock_records, max_retries, retry_sleep_secs, db_queue_url)
 
         mock_get_files_from_records.assert_called_once_with(mock_records)
         mock_boto3_client.assert_called_once_with('s3')
@@ -121,21 +120,16 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
         mock_post_status_for_file_to_queue.assert_has_calls([
             call(file0_job_id, file0_granule_id, file0_input_filename, None, None,
                  copy_files_to_archive.ORCA_STATUS_SUCCESS, None, None,
-                 mock_get_utc_now_iso.return_value, mock_get_utc_now_iso.return_value,
+                 mock.ANY, mock.ANY,
                  copy_files_to_archive.RequestMethod.PUT, db_queue_url, max_retries, retry_sleep_secs),
             call(file1_job_id, file1_granule_id, file1_input_filename, None, None,
                  copy_files_to_archive.ORCA_STATUS_SUCCESS, None, None,
-                 mock_get_utc_now_iso.return_value, mock_get_utc_now_iso.return_value,
+                 mock.ANY, mock.ANY,
                  copy_files_to_archive.RequestMethod.PUT, db_queue_url, max_retries, retry_sleep_secs)])
         self.assertEqual(2, mock_post_status_for_file_to_queue.call_count)
         mock_sleep.assert_not_called()
 
-        for file in result:
-            self.assertTrue(file[copy_files_to_archive.FILE_SUCCESS_KEY])
-        self.assertEqual([file0, file1], result)
-
     @patch('time.sleep')
-    @patch('database.get_utc_now_iso')
     @patch('copy_files_to_archive.post_status_for_file_to_queue')
     @patch('copy_files_to_archive.copy_object')
     @patch('copy_files_to_archive.get_files_from_records')
@@ -145,7 +139,6 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
                                                          mock_get_files_from_records: MagicMock,
                                                          mock_copy_object: MagicMock,
                                                          mock_post_status_for_file_to_queue: MagicMock,
-                                                         mock_get_utc_now_iso: MagicMock,
                                                          mock_sleep: MagicMock):
         """
         If one file causes errors during copy, retry up to limit then post error status and raise CopyRequestError.
@@ -207,19 +200,17 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
                 call(mock_boto3_client.return_value, file1_source_bucket, file1_source_key, file1_target_bucket,
                      file1_target_key),
                 call(mock_boto3_client.return_value, file0_source_bucket, file0_source_key, file0_target_bucket,
-                     file0_target_key),
-                call(mock_boto3_client.return_value, file0_source_bucket, file0_source_key, file0_target_bucket,
                      file0_target_key)
             ])
-            self.assertEqual(4, mock_copy_object.call_count)
+            self.assertEqual(3, mock_copy_object.call_count)
             mock_post_status_for_file_to_queue.assert_has_calls([
                 call(file1_job_id, file1_granule_id, file1_input_filename, None, None,
                      copy_files_to_archive.ORCA_STATUS_SUCCESS, None, None,
-                     mock_get_utc_now_iso.return_value, mock_get_utc_now_iso.return_value,
+                     mock.ANY, mock.ANY,
                      copy_files_to_archive.RequestMethod.PUT, db_queue_url, max_retries, retry_sleep_secs),
                 call(file0_job_id, file0_granule_id, file0_input_filename, None, None,
                      copy_files_to_archive.ORCA_STATUS_FAILED, error_message, None,
-                     mock_get_utc_now_iso.return_value, mock_get_utc_now_iso.return_value,
+                     mock.ANY, mock.ANY,
                      copy_files_to_archive.RequestMethod.PUT, db_queue_url, max_retries, retry_sleep_secs)
             ])
             self.assertEqual(max_retries, mock_post_status_for_file_to_queue.call_count)

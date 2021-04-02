@@ -1,5 +1,4 @@
-../pg_utils/dist/pg_utils-1.0.tar.gz
-boto3==1.16.9
+boto3==1.17.43
 pytest==6.1.2
 coverage==5.3
 psycopg2-binary==2.8.6
