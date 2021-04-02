@@ -23,22 +23,13 @@ On a successful automated release, the updated documentation is committed to the
 The updated documentation should be available on the Cumulus ORCA website at
 https://nasa.github.io/cumulus-orca.
 
-### Merge the base branch into develop and master
-
-Merge the version update changes back into develop and master.
-
-If this is the latest version, you can simply create a PR to merge the release 
-branch into develop and master. Note: Do not squash this merge. Doing so will 
-make the "compare" view from step 4 show an incorrect diff, because the tag is 
-linked to a specific commit on the base branch.
-
 ## Manual Documentation Release on Github
 
 Use the following steps to update Github documentation manually.
 
 :::important Important
 
-* Users need **Node 1215** installed to perform manaul updates to documentation.
+* Users need **Node 12.15.0** installed to perform manaul updates to documentation.
 * The `Deployment_Branch` must = **gh-pages**.
 :::
 
