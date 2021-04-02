@@ -8,6 +8,8 @@ The following sections provide information to ORCA users to create automated or
 manual releases on github. View the entire versioning and releases document 
 [here](https://github.com/nasa/cumulus-orca/blob/master/docs/release.md).
 
+Additional deployment information can be found at the [Docusaurus deployment page](https://docusaurus.io/docs/deployment).
+
 ## Automated Documentation Release on Github
 
 ### Create a new ORCA release on github
@@ -16,15 +18,10 @@ The release is automated in Bamboo, but the step must be manually started. If
 you set the `RELEASE_FLAG` to `true` and the build steps passed, you will be 
 able to run the manual "Release" step in Bamboo.
 
-The CI release scripts will create a release based on the release version tag, 
-as well as uploading release artifacts to the Github release for the Terraform 
-modules provided by Cumulus. The Terraform release artifacts include:
-
- * A multi-module Terraform .zip artifact containing filtered copies of the 
-   tf-modules, packages, and tasks directories for use as Terraform module sources.
-
-Just make sure to verify the appropriate .zip files are present on Github after 
-the release process is complete.
+On a successful automated release, the updated documentation is committed to the
+`gh-pages` branch of the [Cumulus ORCA repo](https://github.com/nasa/cumulus-orca).
+The updated documentation should be available on the Cumulus ORCA website at
+https://nasa.github.io/cumulus-orca.
 
 ### Merge the base branch into develop and master
 
@@ -39,38 +36,49 @@ linked to a specific commit on the base branch.
 
 Use the following steps to update Github documentation manually.
 
-::: Important
+:::important Important
 
 * Users need **Node 1215** installed to perform manaul updates to documentation.
 * The `Deployment_Branch` must = **gh-pages**.
 :::
 
+1. Clone the Cumulus ORCA repo to your machine. Enter the repo directory and change to 
+   the proper branch.
+
 ```
-## MAIN
-## -----------------------------------------------------------------------------
-## Release the Documentation
-# Go to the documentation directory
-check_rc "cd website"
+git clone https://github.com/nasa/cumulus-orca.git
+cd cumulus-orca
+git checkout release-X.Y.Z
+```
 
-# Install Node.js and the proper packages
-check_rc "npm install"
+ 2. Enter the `website` directory
 
-## Run the deployment See: https://docusaurus.io/docs/deployment
-# Set the environment variables
+```
+cd website
+```
+
+ 3. Export the needed environment variables. Make sure to use your GitHub username and 
+    password.
+
+```
 export DEPLOYMENT_BRANCH=gh-pages
 export GIT_USER=$bamboo_SECRET_GITHUB_USER
 export GIT_PASS=$bamboo_SECRET_GITHUB_TOKEN
+```
 
-# We need to set some git config here so deploy doesn't complain when the 
-commit occurs.
+ 4. If your user email and username configuration is not set for git, that must be 
+    done before running the deploy in order to avoid errors when pushing to the GitHub 
+    repository. If the config is set, this step can be skipped.
+
+```
 git config --global user.email "$bamboo_SECRET_GITHUB_EMAIL"
 git config --global user.name "$GIT_USER"
+```
 
-check_rc "npm run deploy"
+ 5. Run the deployment script via npm.
 
-cd ..
-
-exit 0
+```
+npm run deploy
 ```
 
 
