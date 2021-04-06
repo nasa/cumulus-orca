@@ -25,6 +25,8 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
 <a name="pydoc-copy-files"></a>
 ## pydoc copy_files_to_archive
 ```
+Help on module copy_files_to_archive:
+
 NAME
     copy_files_to_archive - Name: copy_files_to_archive.py
 
@@ -35,82 +37,255 @@ DESCRIPTION
 CLASSES
     builtins.Exception(builtins.BaseException)
         CopyRequestError
-
+    enum.Enum(builtins.object)
+        RequestMethod
+    
     class CopyRequestError(builtins.Exception)
-        Exception to be raised if the copy request fails for any of the files.
+     |  Exception to be raised if the copy request fails for any of the files.
+     |  
+     |  Method resolution order:
+     |      CopyRequestError
+     |      builtins.Exception
+     |      builtins.BaseException
+     |      builtins.object
+     |  
+     |  Data descriptors defined here:
+     |  
+     |  __weakref__
+     |      list of weak references to the object (if defined)
+     |  
+     |  ----------------------------------------------------------------------
+     |  Methods inherited from builtins.Exception:
+     |  
+     |  __init__(self, /, *args, **kwargs)
+     |      Initialize self.  See help(type(self)) for accurate signature.
+     |  
+     |  ----------------------------------------------------------------------
+     |  Static methods inherited from builtins.Exception:
+     |  
+     |  __new__(*args, **kwargs) from builtins.type
+     |      Create and return a new object.  See help(type) for accurate signature.
+     |  
+     |  ----------------------------------------------------------------------
+     |  Methods inherited from builtins.BaseException:
+     |  
+     |  __delattr__(self, name, /)
+     |      Implement delattr(self, name).
+     |  
+     |  __getattribute__(self, name, /)
+     |      Return getattr(self, name).
+     |  
+     |  __reduce__(...)
+     |      Helper for pickle.
+     |  
+     |  __repr__(self, /)
+     |      Return repr(self).
+     |  
+     |  __setattr__(self, name, value, /)
+     |      Implement setattr(self, name, value).
+     |  
+     |  __setstate__(...)
+     |  
+     |  __str__(self, /)
+     |      Return str(self).
+     |  
+     |  with_traceback(...)
+     |      Exception.with_traceback(tb) --
+     |      set self.__traceback__ to tb and return self.
+     |  
+     |  ----------------------------------------------------------------------
+     |  Data descriptors inherited from builtins.BaseException:
+     |  
+     |  __cause__
+     |      exception cause
+     |  
+     |  __context__
+     |      exception context
+     |  
+     |  __dict__
+     |  
+     |  __suppress_context__
+     |  
+     |  __traceback__
+     |  
+     |  args
+    
+    class RequestMethod(enum.Enum)
+     |  RequestMethod(value, names=None, *, module=None, qualname=None, type=None, start=1)
+     |  
+     |  An enumeration.
+     |  
+     |  Method resolution order:
+     |      RequestMethod
+     |      enum.Enum
+     |      builtins.object
+     |  
+     |  Data and other attributes defined here:
+     |  
+     |  POST = <RequestMethod.POST: 'post'>
+     |  
+     |  PUT = <RequestMethod.PUT: 'put'>
+     |  
+     |  ----------------------------------------------------------------------
+     |  Data descriptors inherited from enum.Enum:
+     |  
+     |  name
+     |      The name of the Enum member.
+     |  
+     |  value
+     |      The value of the Enum member.
+     |  
+     |  ----------------------------------------------------------------------
+     |  Readonly properties inherited from enum.EnumMeta:
+     |  
+     |  __members__
+     |      Returns a mapping of member name->value.
+     |      
+     |      This mapping lists all enum members, including aliases. Note that this
+     |      is a read-only view of the internal mapping.
 
 FUNCTIONS
-    handler(event, context)
-        Lambda handler. Copies a file from it's temporary s3 bucket to the s3 archive.
-
+    copy_object(s3_cli: botocore.client.BaseClient, src_bucket_name: str, src_object_name: str, dest_bucket_name: str, dest_object_name: str = None) -> Union[str, NoneType]
+        Copy an Amazon S3 bucket object
+        
+        Args:
+            s3_cli: An instance of boto3 s3 client.
+            src_bucket_name: The source S3 bucket name.
+            src_object_name: The key of the s3 object being copied.
+            dest_bucket_name: The target S3 bucket name.
+            dest_object_name: Optional; The key of the destination object.
+                If an object with the same name exists in the given bucket, the object is overwritten.
+                Defaults to {src_object_name}.
+        
+        Returns:
+            None if object was copied, otherwise contains error message.
+    
+    get_files_from_records(records: List[Dict[str, Any]]) -> List[Dict[str, Union[str, bool]]]
+        Parses the input records and returns the files to be restored.
+        
+        Args:
+            records: passed through from the handler.
+        
+        Returns:
+            records, parsed into Dicts, with the additional KVP 'success' = False
+    
+    handler(event: Dict[str, Any], context: object) -> List[Dict[str, Any]]
+        Lambda handler. Copies a file from its temporary s3 bucket to the s3 archive.
+        
         If the copy for a file in the request fails, the lambda
         throws an exception. Environment variables can be set to override how many
         times to retry a copy before failing, and how long to wait between retries.
-
+        
             Environment Vars:
-                COPY_RETRIES (number, optional, default = 2): The number of
+                COPY_RETRIES (number, optional, default = 3): The number of
                     attempts to retry a copy that failed.
-                COPY_RETRY_SLEEP_SECS (number, optional, default = 30): The number of seconds
+                COPY_RETRY_SLEEP_SECS (number, optional, default = 0): The number of seconds
                     to sleep between retry attempts.
                 DATABASE_PORT (string): the database port. The standard is 5432.
                 DATABASE_NAME (string): the name of the database.
                 DATABASE_USER (string): the name of the application user.
-
+        
             Parameter Store:
-                drdb-user-pass (string): the password for the application user (DATABASE_USER).
-                drdb-host (string): the database host
-                
-            Args:
-                event (dict): A dict with the following keys:
+                    drdb-user-pass (string): the password for the application user (DATABASE_USER).
+                    drdb-host (string): the database host
+        
+        Args:
+            event: A dict with the following keys:
+                'Records' (List): A list of dicts with the following keys:
+                    'messageId' (str)
+                    'receiptHandle' (str)
+                    'body' (str): A json formatted string representing a dict specifying a file to copy to archive.
+                        'job_id' (str): The unique id of the recovery job.
+                        'granule_id' (str): The unique ID of the granule.
+                        'filename' (str): The name of the file being copied.
+                        'source_key' (str): The path the file was restored to.
+                        'target_key' (str): The path to copy to. Defaults to value at 'source_key'.
+                        'restore_destination' (str): The name of the bucket the restored file will be moved to.
+                        The below come from moveGranules:
+                        'source_bucket' (str): The bucket the restored file can be copied from.
+        
+        
+                    'attributes' (Dict)
+                    'messageAttributes' (Dict)
+        
+            context: An object required by AWS Lambda. Unused.
+        
+        Returns:
+            The list of dicts returned from the task. All 'success' values will be True. If they were
+            not all True, the CopyRequestError exception would be raised.
+            Dicts have the following keys:
+                'job_id' (str): The unique id of the recovery job.
+                'granule_id' (str): The unique ID of the granule.
+                'filename' (str): The name of the file being copied.
+                'source_key' (str): The path the file was restored to.
+                'target_key' (str): The path to copy to. Defaults to value at 'source_key'.
+                'restore_destination' (str): The name of the bucket the restored file will be moved to.
+                'source_bucket' (str): The bucket the restored file can be copied from.
+                'success' (boolean): True, as an error will raise a CopyRequestError.
+        
+        Raises:
+            CopyRequestError: An error occurred calling copy_object for one or more files.
+            The same dict that is returned for a successful copy will be included in the
+            message, with 'success' = False for the files for which the copy failed.
+    
+    post_entry_to_queue(table_name: str, new_data: Dict[str, Any], request_method: copy_files_to_archive.RequestMethod, db_queue_url: str, max_retries: int, retry_sleep_secs: float)
+    
+    post_status_for_file_to_queue(job_id: str, granule_id: str, filename: str, key_path: Union[str, NoneType], restore_destination: Union[str, NoneType], status_id: Union[int, NoneType], error_message: Union[str, NoneType], request_time: Union[str, NoneType], last_update: str, completion_time: Union[str, NoneType], request_method: copy_files_to_archive.RequestMethod, db_queue_url: str, max_retries: int, retry_sleep_secs: float)
+        # todo: Move to shared lib
+    
+    task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: float, db_queue_url: str) -> List[Dict[str, Any]]
+        Task called by the handler to perform the work.
+        
+        This task will call copy_object for each file. A copy will be tried
+        up to {retries} times if it fails, waiting {retry_sleep_secs}
+        between each attempt.
+        
+        Args:
+            records: Passed through from the handler.
+            max_retries: The number of attempts to retry a failed copy.
+            retry_sleep_secs: The number of seconds
+                to sleep between retry attempts.
+            db_queue_url: The URL of the queue that posts status entries.
+        
+        Returns:
+           A list of dicts with the following keys:
+                'job_id' (str): The unique id of the recovery job.
+                'granule_id' (str): The unique ID of the granule.
+                'filename' (str): The name of the file being copied.
+                'source_key' (str): The path the file was restored to.
+                'target_key' (str): The path to copy to. Defaults to value at 'source_key'.
+                'restore_destination' (str): The name of the bucket the restored file will be moved to.
+                'source_bucket' (str): The bucket the restored file can be copied from.
+                'success' (boolean): 'success' (boolean): True, as an error will raise a CopyRequestError.
+        
+            Example:  [{'source_key': 'file1.xml', 'source_bucket': 'my-dr-fake-glacier-bucket',
+                          'target_bucket': 'unittest_xml_bucket', 'success': True,
+                          'err_msg': ''},
+                      {'source_key': 'file2.txt', 'source_bucket': 'my-dr-fake-glacier-bucket',
+                          'target_bucket': 'unittest_txt_bucket', 'success': True,
+                          'err_msg': '', 'request_id': '4192bff0-e1e0-43ce-a4db-912808c32493'}]
+        Raises:
+            CopyRequestError: Thrown if there are errors with the input records or the copy failed.
 
-                    Records (list(dict)): A list of dict with the following keys:
-                        s3 (dict): A dict with the following keys:
-                            bucket (dict):  A dict with the following keys:
-                                name (string): The name of the s3 bucket holding the restored file
-                            object (dict):  A dict with the following keys:
-                                key (string): The key of the restored file
-
-                    Example: event: {"Records": [{"eventVersion": "2.1",
-                                          "eventSource": "aws:s3",
-                                          "awsRegion": "us-west-2",
-                                          "eventTime": "2019-06-17T18:54:06.686Z",
-                                          "eventName": "ObjectRestore:Post",
-                                          "userIdentity": {
-                                          "principalId": "AWS:AROAJWMHUPO:request_files"},
-                                          "requestParameters": {"sourceIPAddress": "1.001.001.001"},
-                                          "responseElements": {"x-amz-request-id": "0364DB32C0",
-                                                               "x-amz-id-2":
-                                             "4TpisFevIyonOLD/z1OGUE/Ee3w/Et+pr7c5F2RbnAnU="},
-                                          "s3": {"s3SchemaVersion": "1.0",
-                                                "configurationId": "dr_restore_complete",
-                                                "bucket": {"name": exp_src_bucket,
-                                                           "ownerIdentity":
-                                                           {"principalId": "A1BCXDGCJ9"},
-                                                   "arn": "arn:aws:s3:::my-dr-fake-glacier-bucket"},
-                                                "object": {"key": exp_file_key1,
-                                                           "size": 645,
-                                                           "sequencer": "005C54A126FB"}}}]}
-
-                context (Object): None
-
-            Returns:
-                A list of dicts with the following keys:
-                    'source_key' (string): The object key of the file that was restored.
-                    'source_bucket' (string): The name of the s3 bucket where the restored
-                        file was temporarily sitting.
-                    'target_bucket' (string): The name of the archive s3 bucket.
-                    'success' (boolean): True, if the copy was successful,
-                        otherwise False.
-                    'err_msg' (string): when success is False, this will contain
-                        the error message from the copy error.
-                    'request_id' (string): The request_id of the database entry.
-                        Only guaranteed to be present if 'success' == True.
-
-                All 'success' values will be True.
-                If they were not all True, the CopyRequestError exception would be raised.
-
-            Raises:
-                CopyRequestError: An error occurred calling copy_object for one or more files.
-                The same dict that is returned for a successful copy, will be included in the
-                message, with 'success' = False for the files for which the copy failed.
+DATA
+    Any = typing.Any
+    Dict = typing.Dict
+    FILE_ERROR_MESSAGE_KEY = 'err_msg'
+    FILE_SUCCESS_KEY = 'success'
+    INPUT_FILENAME_KEY = 'filename'
+    INPUT_GRANULE_ID_KEY = 'granule_id'
+    INPUT_JOB_ID_KEY = 'job_id'
+    INPUT_SOURCE_BUCKET_KEY = 'source_bucket'
+    INPUT_SOURCE_KEY_KEY = 'source_key'
+    INPUT_TARGET_BUCKET_KEY = 'restore_destination'
+    INPUT_TARGET_KEY_KEY = 'target_key'
+    List = typing.List
+    ORCA_STATUS_FAILED = 3
+    ORCA_STATUS_PENDING = 0
+    ORCA_STATUS_STAGED = 1
+    ORCA_STATUS_SUCCESS = 2
+    OS_ENVIRON_DB_QUEUE_URL_KEY = 'DB_QUEUE_URL'
+    Optional = typing.Optional
+    Union = typing.Union
+    sqs = <botocore.client.SQS object>
 ```
