@@ -14,6 +14,11 @@ class ORCA_STATUS(Enum):
     ORCA_STATUS_SUCCESS = 3
     ORCA_STATUS_FAILED = 4
 
+
+db_queue_url = "TBD"
+region= 'us-west-2'
+sqs = boto3.client('sqs', region_name = region)
+
 def post_status_for_job_to_queue(job_id: str, granule_id: str, status_id: Optional[int],
                                  request_time: Optional[str], completion_time: Optional[str],
                                  archive_destination: Optional[str],
@@ -63,10 +68,6 @@ def post_status_for_file_to_queue(job_id: str, granule_id: str, filename: str, k
                         new_data,
                         request_method,
                         db_queue_url, max_retries, retry_sleep_secs)
-
-db_queue_url = "TBD"
-region= 'us-west-2'
-sqs = boto3.client('sqs', region_name = region)
 
 def post_entry_to_queue(table_name: str, new_data: Dict[str, Any], request_method: RequestMethod, db_queue_url: str,
                         max_retries: int, retry_sleep_secs: float):
