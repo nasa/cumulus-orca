@@ -8,11 +8,10 @@ import time
 import uuid
 from enum import Enum
 from typing import Dict, Any, Union, List, Optional
+from datetime import datetime, timezone
 
 # noinspection PyPackageRequirements
 import boto3
-# noinspection PyPackageRequirements
-import database
 # noinspection PyPackageRequirements
 from botocore.client import BaseClient
 # noinspection PyPackageRequirements
@@ -64,10 +63,10 @@ FILE_KEY_KEY = 'key'
 FILE_SUCCESS_KEY = 'success'
 FILE_ERROR_MESSAGE_KEY = 'err_msg'
 
-ORCA_STATUS_PENDING = 0
-# ORCA_STATUS_STAGED = 1
-# ORCA_STATUS_SUCCESS = 2
-ORCA_STATUS_FAILED = 3
+ORCA_STATUS_PENDING = 1
+# ORCA_STATUS_STAGED = 2
+# ORCA_STATUS_SUCCESS = 3
+ORCA_STATUS_FAILED = 4
 
 LOGGER = CumulusLogger()
 
@@ -233,12 +232,11 @@ def process_granule(s3: BaseClient,
             db_queue_url: todo
             job_id: The unique identifier used for tracking requests.
     """
-    request_time = database.get_utc_now_iso()
+    request_time = datetime.now(timezone.utc).isoformat()
     attempt = 1
     granule_id = granule[GRANULE_GRANULE_ID_KEY]
 
     # todo: Better async.
-    # todo: add to tests
     post_status_for_job_to_queue(job_id, granule_id, ORCA_STATUS_PENDING, request_time, None, glacier_bucket,
                                  RequestMethod.POST,
                                  db_queue_url,
@@ -266,7 +264,7 @@ def process_granule(s3: BaseClient,
                         ORCA_STATUS_PENDING,
                         None,
                         request_time,
-                        database.get_utc_now_iso(),
+                        datetime.now(timezone.utc).isoformat(),
                         None,
                         RequestMethod.POST,
                         db_queue_url,
@@ -274,6 +272,7 @@ def process_granule(s3: BaseClient,
                         retry_sleep_secs)
 
                 except ClientError as err:
+                    LOGGER.warning(err)
                     a_file[FILE_ERROR_MESSAGE_KEY] = str(err)
 
         attempt = attempt + 1
@@ -296,7 +295,7 @@ def process_granule(s3: BaseClient,
                 ORCA_STATUS_FAILED,
                 a_file.get(FILE_ERROR_MESSAGE_KEY, None),
                 request_time,
-                database.get_utc_now_iso(),
+                datetime.now(timezone.utc).isoformat(),
                 None,
                 RequestMethod.POST,
                 db_queue_url,
@@ -365,7 +364,7 @@ def restore_object(s3_cli: BaseClient, obj: Dict[str, Any], attempt: int, job_id
     except ClientError as c_err:
         # NoSuchBucket, NoSuchKey, or InvalidObjectState error == the object's
         # storage class was not GLACIER
-        LOGGER.error(f"{c_err}. bucket: {obj[REQUESTS_DB_GLACIER_BUCKET_KEY]} file: {obj['key']}")
+        LOGGER.error(f"{c_err}. bucket: {obj[REQUESTS_DB_GLACIER_BUCKET_KEY]} file: {obj['key']} Job ID: {job_id}")
         raise c_err
 
     LOGGER.info(
@@ -484,18 +483,7 @@ def handler(event: Dict[str, Any], context):  # pylint: disable-msg=unused-argum
             RESTORE_RETRIEVAL_TYPE (str, optional, default = 'Standard'): the Tier
                 for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
         Args:
-            event: A dict with the following keys:
-                'config' (dict): A dict with the following keys:
-                    'glacier_bucket' (str): The name of the glacier bucket from which the files
-                    will be restored.
-                'input' (dict): A dict with the following keys:
-                    'granules' (list(dict)): A list of dicts with the following keys:
-                        'granuleId' (str): The id of the granule being restored.
-                        'keys' (list(dict)): A list of dicts with the following keys:  # TODO: rename.
-                            'key' (str): Name of the file within the granule.  # TODO: This or example lies.
-                            'dest_bucket' (str): The bucket the restored file will be moved
-                                to after the restore completes.
-                    'job_id' (str): The unique identifier used for tracking requests. If not present, will be generated.
+            event: See schemas/input.json
                 Example: {
                     'config': {'glacierBucket': 'some_bucket'}
                     'input': {
@@ -512,8 +500,7 @@ def handler(event: Dict[str, Any], context):  # pylint: disable-msg=unused-argum
                     }
             context: An object required by AWS Lambda. Unused.
         Returns:
-            dict: The dict returned from the task. All 'success' values will be True. If they were
-            not all True, the RestoreRequestError exception would be raised.
+            dict: See schemas/output.json
         Raises:
             RestoreRequestError: An error occurred calling restore_object for one or more files.
             The same dict that is returned for a successful granule restore, will be included in the

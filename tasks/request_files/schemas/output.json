@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/request_files/schemas/input.json",
+  "title": "request_files Lambda Output",
+  "description": "The output for the request_files Lambda.",
+  "type": "object",
+  "properties": {
+    "granules": {
+      "description": "A list of values representing the granules entered through input and their recovery status.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "granuleId": {
+            "description": "The id of the granule being restored.",
+            "type": "string"
+          },
+          "recover_files": {
+            "description": "A list of values representing each file that was requested for recovery.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "description": "Name of the file within the granule.",
+                  "type": "string"
+                },
+                "dest_bucket": {
+                  "description": "The bucket the restored file will be moved to after the restore completes.",
+                  "type": "string"
+                },
+                "success": {
+                  "description": "Must be true, otherwise an exception will be raised.",
+                  "type": "boolean",
+                  "pattern": "(?:^|\\W)true(?:$|\\W)"
+                }
+              },
+              "required": ["key", "dest_bucket", "success"]
+            }
+          }
+        },
+        "required": ["granuleId", "recover_files"]
+      }
+    },
+    "job_id": {
+      "description": "The 'job_id' from input event if present, otherwise a newly-generated uuid.",
+      "type": "string"
+    }
+  },
+  "required": ["granules", "job_id"]
+}

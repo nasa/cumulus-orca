@@ -3,24 +3,21 @@ Name: test_request_files.py
 
 Description:  Unit tests for request_files.py.
 """
+import os
 import unittest
 import uuid
-from unittest.mock import Mock, patch, MagicMock
-import os
-import boto3
-from botocore.exceptions import ClientError
-from cumulus_logger import CumulusLogger
-import requests_db
-import db_config
+from unittest.mock import Mock
 
-from test.request_helpers import LambdaContextMock, create_handler_event
+import boto3
+import requests_db
+from cumulus_logger import CumulusLogger
+
+import db_config
+import request_files
+from test.request_helpers import LambdaContextMock
 from test.request_helpers import (
     REQUEST_ID1, REQUEST_ID2, REQUEST_ID3, REQUEST_ID4,
-    REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_2,
-    REQUEST_GROUP_ID_EXP_3, mock_secretsmanager_get_parameter)
-from test.request_helpers import print_rows
-
-import request_files
+    REQUEST_GROUP_ID_EXP_1, mock_secretsmanager_get_parameter)
 
 UTC_NOW_EXP_1 = requests_db.get_utc_now_iso()
 FILE1 = 'MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5'

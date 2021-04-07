@@ -6,17 +6,15 @@ Description:  Unit tests for request_files.py.
 import os
 import unittest
 import uuid
+from datetime import datetime, timezone
 from random import randint, uniform
 from unittest import mock
 from unittest.mock import patch, MagicMock, call, Mock
-
-# noinspection PyPackageRequirements
-# noinspection PyPackageRequirements
 import database
+
 # noinspection PyPackageRequirements
 from botocore.exceptions import ClientError
 # noinspection PyPackageRequirements
-from database import DbError
 
 import request_files
 from test.request_helpers import (REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_3, REQUEST_ID1, REQUEST_ID2,
@@ -24,7 +22,7 @@ from test.request_helpers import (REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_3
                                   create_handler_event, create_insert_request,
                                   mock_secretsmanager_get_parameter)
 
-UTC_NOW_EXP_1 = database.get_utc_now_iso()
+UTC_NOW_EXP_1 = datetime.now(timezone.utc).isoformat()
 FILE1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5"
 FILE2 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5.met"
 FILE3 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321_ndvi.jpg"
@@ -393,7 +391,8 @@ class TestRequestFiles(unittest.TestCase):
         self.assertTrue(granule[request_files.GRANULE_RECOVER_FILES_KEY][0][request_files.FILE_SUCCESS_KEY])
         self.assertTrue(granule[request_files.GRANULE_RECOVER_FILES_KEY][1][request_files.FILE_SUCCESS_KEY])
 
-        mock_post_status_for_job_to_queue.assert_called_once_with(job_id, granule_id, 0, mock.ANY, None, glacier_bucket,
+        mock_post_status_for_job_to_queue.assert_called_once_with(job_id, granule_id, request_files.ORCA_STATUS_PENDING,
+                                                                  mock.ANY, None, glacier_bucket,
                                                                   request_files.RequestMethod.POST, db_queue_url,
                                                                   max_retries, retry_sleep_secs)
         mock_restore_object.assert_has_calls([
@@ -426,9 +425,11 @@ class TestRequestFiles(unittest.TestCase):
         ])
         self.assertEqual(2, mock_restore_object.call_count)
         mock_post_status_for_file_to_queue.assert_has_calls([
-            call(job_id, granule_id, file_name_0, file_name_0, dest_bucket_0, 0, None, mock.ANY, mock.ANY, None,
+            call(job_id, granule_id, file_name_0, file_name_0, dest_bucket_0, request_files.ORCA_STATUS_PENDING, None,
+                 mock.ANY, mock.ANY, None,
                  request_files.RequestMethod.POST, db_queue_url, max_retries, retry_sleep_secs),
-            call(job_id, granule_id, file_name_1, file_name_1, dest_bucket_1, 0, None, mock.ANY, mock.ANY, None,
+            call(job_id, granule_id, file_name_1, file_name_1, dest_bucket_1, request_files.ORCA_STATUS_PENDING, None,
+                 mock.ANY, mock.ANY, None,
                  request_files.RequestMethod.POST, db_queue_url, max_retries, retry_sleep_secs)])
         self.assertEqual(2, mock_post_status_for_file_to_queue.call_count)
         mock_sleep.assert_not_called()
@@ -473,7 +474,8 @@ class TestRequestFiles(unittest.TestCase):
 
         self.assertTrue(granule[request_files.GRANULE_RECOVER_FILES_KEY][0][request_files.FILE_SUCCESS_KEY])
 
-        mock_post_status_for_job_to_queue.assert_called_once_with(job_id, granule_id, 0, mock.ANY, None, glacier_bucket,
+        mock_post_status_for_job_to_queue.assert_called_once_with(job_id, granule_id, request_files.ORCA_STATUS_PENDING,
+                                                                  mock.ANY, None, glacier_bucket,
                                                                   request_files.RequestMethod.POST, db_queue_url,
                                                                   max_retries, retry_sleep_secs)
         mock_restore_object.assert_has_calls([
@@ -506,7 +508,8 @@ class TestRequestFiles(unittest.TestCase):
         ])
         self.assertEqual(2, mock_restore_object.call_count)
         mock_post_status_for_file_to_queue.assert_has_calls([
-            call(job_id, granule_id, file_name_0, file_name_0, dest_bucket_0, 0, None, mock.ANY, mock.ANY, None,
+            call(job_id, granule_id, file_name_0, file_name_0, dest_bucket_0, request_files.ORCA_STATUS_PENDING, None,
+                 mock.ANY, mock.ANY, None,
                  request_files.RequestMethod.POST, db_queue_url, max_retries, retry_sleep_secs)])
         self.assertEqual(1, mock_post_status_for_file_to_queue.call_count)
         mock_sleep.assert_called_once_with(retry_sleep_secs)
@@ -555,7 +558,7 @@ class TestRequestFiles(unittest.TestCase):
         except request_files.RestoreRequestError:
             self.assertFalse(granule[request_files.GRANULE_RECOVER_FILES_KEY][0][request_files.FILE_SUCCESS_KEY])
 
-            mock_post_status_for_job_to_queue.assert_called_once_with(job_id, granule_id, 0, mock.ANY, None,
+            mock_post_status_for_job_to_queue.assert_called_once_with(job_id, granule_id, request_files.ORCA_STATUS_PENDING, mock.ANY, None,
                                                                       glacier_bucket,
                                                                       request_files.RequestMethod.POST, db_queue_url,
                                                                       max_retries, retry_sleep_secs)
@@ -603,7 +606,7 @@ class TestRequestFiles(unittest.TestCase):
             ])
             self.assertEqual(max_retries + 1, mock_restore_object.call_count)
             mock_post_status_for_file_to_queue.assert_has_calls([
-                call(job_id, granule_id, file_name_0, file_name_0, dest_bucket_0, 3, mock.ANY, mock.ANY, mock.ANY,
+                call(job_id, granule_id, file_name_0, file_name_0, dest_bucket_0, request_files.ORCA_STATUS_FAILED, mock.ANY, mock.ANY, mock.ANY,
                      None,
                      request_files.RequestMethod.POST, db_queue_url, max_retries, retry_sleep_secs)])
             self.assertEqual(1, mock_post_status_for_file_to_queue.call_count)
@@ -931,7 +934,7 @@ class TestRequestFiles(unittest.TestCase):
 
         mock_s3_cli = mock_boto3_client('s3')
         mock_s3_cli.restore_object.side_effect = [None]
-        mock_post_entry_to_queue.side_effect = [DbError("mock insert failed error")]
+        mock_post_entry_to_queue.side_effect = [Exception("mock insert failed error")]
         mock_secretsmanager_get_parameter(1)
         try:
             result = request_files.task(input_event, self.context)

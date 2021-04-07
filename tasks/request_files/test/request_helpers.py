@@ -247,14 +247,14 @@ def build_row(request_id,  # pylint: disable-msg=too-many-arguments
     row.append(('restore_bucket_dest', restore_bucket_dest))
     row.append(('job_status', job_status))
     if rq_date:
-        dte = datetime.datetime.strptime(rq_date, "%Y-%m-%dT%H:%M:%S.%f")
+        dte = datetime.datetime.strptime(rq_date, "%Y-%m-%dT%H:%M:%S.%f+00:00")
         rq_date = datetime.datetime(dte.year, dte.month, dte.day, dte.hour,
                                     dte.minute, dte.second, dte.microsecond,
                                     tzinfo=psycopg2.tz.FixedOffsetTimezone(
                                         offset=0, name=None))
     row.append(('request_time', rq_date))
     if lu_date:
-        dte = datetime.datetime.strptime(lu_date, "%Y-%m-%dT%H:%M:%S.%f")
+        dte = datetime.datetime.strptime(lu_date, "%Y-%m-%dT%H:%M:%S.%f+00:00")
         lu_date = datetime.datetime(dte.year, dte.month, dte.day, dte.hour,
                                     dte.minute, dte.second, dte.microsecond,
                                     tzinfo=psycopg2.tz.FixedOffsetTimezone(
@@ -264,31 +264,7 @@ def build_row(request_id,  # pylint: disable-msg=too-many-arguments
     return row
 
 
-def print_rows(label):
-    """
-    prints the rows of a list
-    """
-    try:
-        develop_tests = os.environ['DEVELOP_TESTS']
-    except KeyError:
-        develop_tests = False
-
-    if develop_tests:
-        print("****REQUEST_IDS: 1) ", REQUEST_ID1, " 2) ", REQUEST_ID2, " 3) ", REQUEST_ID3,
-              " 4) ", REQUEST_ID4, " 5) ", REQUEST_ID5, " 6) ", REQUEST_ID6,
-              " 7) ", REQUEST_ID7, " 8) ", REQUEST_ID8, " 9) ", REQUEST_ID9,
-              " 10) ", REQUEST_ID10, " 11) ", REQUEST_ID11, " 12) ", REQUEST_ID12)
-        print("****REQUEST_GROUP_EXP_IDs: 1) ", REQUEST_GROUP_ID_EXP_1,
-              " 2) ", REQUEST_GROUP_ID_EXP_2,
-              " 3) ", REQUEST_GROUP_ID_EXP_3, " 4) ", REQUEST_GROUP_ID_EXP_4,
-              " 5) ", REQUEST_GROUP_ID_EXP_5, " 6) ", REQUEST_GROUP_ID_EXP_6)
-        rows = get_all_requests()
-        print("**** ", label)
-        for row in rows:
-            print(row)
-        print("****")
-
-
+# todo: Adjust for new database.
 def get_all_requests():
     """
     Returns all of the requests.
