@@ -9,17 +9,15 @@ class RequestMethod(Enum):
     PUT = 'put'
 
 class ORCA_STATUS(Enum):
-    ORCA_STATUS_PENDING = 1
-    ORCA_STATUS_STAGED = 2
-    ORCA_STATUS_SUCCESS = 3
-    ORCA_STATUS_FAILED = 4
+    """
+    Defines the status of ORCA DB?
+    """
+    PENDING = 1
+    STAGED = 2
+    SUCCESS = 3
+    FAILED = 4
 
-
-db_queue_url = "TBD"
-region= 'us-west-2'
-sqs = boto3.client('sqs', region_name = region)
-
-def post_status_for_job_to_queue(job_id: str, granule_id: str, status_id: Optional[int],
+def post_status_for_job_to_queue(job_id: str, granule_id: str, status_id: ORCA_STATUS,
                                  request_time: Optional[str], completion_time: Optional[str],
                                  archive_destination: Optional[str],
                                  request_method: RequestMethod, db_queue_url: str,
@@ -40,7 +38,7 @@ def post_status_for_job_to_queue(job_id: str, granule_id: str, status_id: Option
 
 def post_status_for_file_to_queue(job_id: str, granule_id: str, filename: str, key_path: Optional[str],
                                   restore_destination: Optional[str],
-                                  status_id: Optional[int], error_message: Optional[str],
+                                  status_id: ORCA_STATUS, error_message: Optional[str],
                                   request_time: Optional[str], last_update: str,
                                   completion_time: Optional[str],
                                   request_method: RequestMethod,
@@ -69,14 +67,14 @@ def post_status_for_file_to_queue(job_id: str, granule_id: str, filename: str, k
                         request_method,
                         db_queue_url, max_retries, retry_sleep_secs)
 
+
+sqs = boto3.client('sqs')
+
 def post_entry_to_queue(table_name: str, new_data: Dict[str, Any], request_method: RequestMethod, db_queue_url: str,
                         max_retries: int, retry_sleep_secs: float):
     body = json.dumps(new_data, indent=4)
     for attempt in range(1, max_retries + 1):
         try:
-            sqs.send_message(
-                QueueUrl=db_queue_url
-            )
             sqs.send_message(
                 QueueUrl=db_queue_url,
                 MessageDeduplicationId=table_name + request_method.value + body,
@@ -95,9 +93,6 @@ def post_entry_to_queue(table_name: str, new_data: Dict[str, Any], request_metho
             )
             return
         except Exception as e:
-            if attempt == max_retries + 1:
-                LOGGER.error(f"Error while logging row {json.dumps(new_data, indent=4)} "
-                             f"to table {table_name}: {e}")
-                raise e
+            raise e
             time.sleep(retry_sleep_secs)
             continue
