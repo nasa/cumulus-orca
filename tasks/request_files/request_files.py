@@ -103,7 +103,7 @@ def task(event: Dict, context: object) -> Dict[str, Any]:  # pylint: disable-msg
                     'recover_files' (list(dict)): A list of dicts with the following keys:
                         'key' (str): Name of the file within the granule.
                         'dest_bucket' (str): The bucket the restored file will be moved
-                            to after the restore completes.
+                            to after the restore completes. If None, refer to how copy_to_glacier handles default.
                         'success' (boolean): True, indicating the restore request was submitted successfully,
                             otherwise False.
                         'err_msg' (string): when success is False, this will contain

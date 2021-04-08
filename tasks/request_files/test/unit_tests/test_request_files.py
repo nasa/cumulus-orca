@@ -3,6 +3,7 @@ Name: test_request_files.py
 
 Description:  Unit tests for request_files.py.
 """
+import json
 import os
 import unittest
 import uuid
@@ -13,6 +14,7 @@ from unittest.mock import patch, MagicMock, call, Mock
 import database
 
 # noinspection PyPackageRequirements
+import fastjsonschema as fastjsonschema
 from botocore.exceptions import ClientError
 # noinspection PyPackageRequirements
 
@@ -558,7 +560,8 @@ class TestRequestFiles(unittest.TestCase):
         except request_files.RestoreRequestError:
             self.assertFalse(granule[request_files.GRANULE_RECOVER_FILES_KEY][0][request_files.FILE_SUCCESS_KEY])
 
-            mock_post_status_for_job_to_queue.assert_called_once_with(job_id, granule_id, request_files.ORCA_STATUS_PENDING, mock.ANY, None,
+            mock_post_status_for_job_to_queue.assert_called_once_with(job_id, granule_id,
+                                                                      request_files.ORCA_STATUS_PENDING, mock.ANY, None,
                                                                       glacier_bucket,
                                                                       request_files.RequestMethod.POST, db_queue_url,
                                                                       max_retries, retry_sleep_secs)
@@ -606,7 +609,8 @@ class TestRequestFiles(unittest.TestCase):
             ])
             self.assertEqual(max_retries + 1, mock_restore_object.call_count)
             mock_post_status_for_file_to_queue.assert_has_calls([
-                call(job_id, granule_id, file_name_0, file_name_0, dest_bucket_0, request_files.ORCA_STATUS_FAILED, mock.ANY, mock.ANY, mock.ANY,
+                call(job_id, granule_id, file_name_0, file_name_0, dest_bucket_0, request_files.ORCA_STATUS_FAILED,
+                     mock.ANY, mock.ANY, mock.ANY,
                      None,
                      request_files.RequestMethod.POST, db_queue_url, max_retries, retry_sleep_secs)])
             self.assertEqual(1, mock_post_status_for_file_to_queue.call_count)
@@ -772,7 +776,6 @@ class TestRequestFiles(unittest.TestCase):
         except request_files.RestoreRequestError as roe:
             self.assertEqual(exp_err, str(roe))
 
-    # todo: single_query is not called in code. Replace with higher-level checks.
     @patch('request_files.post_entry_to_queue')
     @patch('boto3.client')
     @patch('cumulus_logger.CumulusLogger.info')
@@ -945,7 +948,7 @@ class TestRequestFiles(unittest.TestCase):
 
     def test_task_two_granules(self):
         """
-        Test two granules with one file each - successful.
+        Test two granules with one file each - successful.  todo: Invalid description/title.
         """
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
         exp_event = {
@@ -1355,6 +1358,103 @@ class TestRequestFiles(unittest.TestCase):
             RestoreRequest={'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}})
         mock_post_entry_to_queue.assert_called()  # 4 times # todo: No..?
 
+    @patch('request_files.post_entry_to_queue')
+    @patch('boto3.client')
+    @patch('cumulus_logger.CumulusLogger.info')
+    def test_task_output_json_schema(self,
+                                     mock_logger_info: MagicMock,
+                                     mock_boto3_client: MagicMock,
+                                     mock_post_entry_to_queue: MagicMock):
+        """
+        Test four files for one granule - successful. Check against output schema.
+        """
+        granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
+        files = [KEY1, KEY2, KEY3, KEY4]
+        input_event = {
+            "input": {
+                "granules": [
+                    {
+                        "granuleId": granule_id,
+                        "keys": files
+                    }
+                ],
+                'job_id': uuid.uuid4().__str__()
+            },
+            "config": {
+                "glacier-bucket": "my-dr-fake-glacier-bucket"
+            }
+        }
+
+        mock_s3_cli = mock_boto3_client('s3')
+        mock_s3_cli.restore_object.side_effect = [None,
+                                                  None,
+                                                  None,
+                                                  None
+                                                  ]
+        qresult_1_inprogress, _ = create_insert_request(
+            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, files[0],
+            "restore", "some_bucket", "inprogress",
+            UTC_NOW_EXP_1, None, None)
+        qresult_2_inprogress, _ = create_insert_request(
+            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, files[1],
+            "restore", "some_bucket", "inprogress",
+            UTC_NOW_EXP_1, None, None)
+        qresult_3_inprogress, _ = create_insert_request(
+            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, files[2],
+            "restore", "some_bucket", "inprogress",
+            UTC_NOW_EXP_1, None, None)
+        qresult_4_inprogress, _ = create_insert_request(
+            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, files[3],
+            "restore", "some_bucket", "inprogress",
+            UTC_NOW_EXP_1, None, None)
+
+        mock_secretsmanager_get_parameter(4)
+
+        result = request_files.task(input_event, self.context)
+
+        mock_boto3_client.assert_has_calls([call('secretsmanager')])
+        mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
+                                                Key=FILE1)
+        mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
+                                                Key=FILE2)
+        mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
+                                                Key=FILE3)
+        mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
+                                                Key=FILE4)
+        restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}}
+
+        mock_s3_cli.restore_object.assert_any_call(
+            Bucket='my-dr-fake-glacier-bucket',
+            Key=FILE1,
+            RestoreRequest=restore_req_exp)
+        mock_s3_cli.restore_object.assert_any_call(
+            Bucket='my-dr-fake-glacier-bucket',
+            Key=FILE2,
+            RestoreRequest=restore_req_exp)
+        mock_s3_cli.restore_object.assert_any_call(
+            Bucket='my-dr-fake-glacier-bucket',
+            Key=FILE3,
+            RestoreRequest=restore_req_exp)
+        mock_s3_cli.restore_object.assert_called_with(
+            Bucket='my-dr-fake-glacier-bucket',
+            Key=FILE4,
+            RestoreRequest=restore_req_exp)
+
+        exp_gran = {
+            'granuleId': granule_id,
+            'keys': self.get_expected_keys(),
+            'recover_files': self.get_expected_files()
+        }
+        exp_granules = {'granules': [exp_gran], 'job_id': input_event['input']['job_id']}
+
+        self.assertEqual(exp_granules, result)
+        mock_post_entry_to_queue.assert_called()  # called 4 times # todo: No..?
+
+        with open("schemas/output.json", "r") as raw_schema:
+            schema = json.loads(raw_schema.read())
+
+        validate = fastjsonschema.compile(schema)
+        validate(result)
 
 if __name__ == '__main__':
     unittest.main(argv=['start'])
