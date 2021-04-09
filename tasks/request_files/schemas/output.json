@@ -26,8 +26,8 @@
                   "type": "string"
                 },
                 "dest_bucket": {
-                  "description": "The bucket the restored file will be moved to after the restore completes. If Null, refer to how copy_to_glacier handles default.",
-                  "type": ["string", "null"]
+                  "description": "The bucket the restored file will be moved to after the restore completes.",
+                  "type": "string"
                 },
                 "success": {
                   "description": "Must be true, otherwise an exception will be raised.",

@@ -33,7 +33,7 @@ PROTECTED_BUCKET = "sndbx-cumulus-protected"
 PUBLIC_BUCKET = "sndbx-cumulus-public"
 KEY1 = {"key": FILE1, "dest_bucket": PROTECTED_BUCKET}
 KEY2 = {"key": FILE2, "dest_bucket": PROTECTED_BUCKET}
-KEY3 = {"key": FILE3, "dest_bucket": None}
+KEY3 = {"key": FILE3, "dest_bucket": PUBLIC_BUCKET}
 KEY4 = {"key": FILE4, "dest_bucket": PUBLIC_BUCKET}
 
 
@@ -400,26 +400,14 @@ class TestRequestFiles(unittest.TestCase):
         mock_restore_object.assert_has_calls([
             call(
                 mock_s3,
-                {
-                    request_files.REQUESTS_DB_GRANULE_ID_KEY: granule_id,
-                    request_files.REQUESTS_DB_GLACIER_BUCKET_KEY: glacier_bucket,
-                    'key': file_name_0,  # This property isn't from anything besides this code.
-                    request_files.REQUESTS_DB_DEST_BUCKET_KEY: dest_bucket_0,
-                    'days': restore_expire_days  # This property isn't from anything besides this code.
-                },
+                file_name_0, restore_expire_days, glacier_bucket,
                 1,
                 job_id,
                 retrieval_type
             ),
             call(
                 mock_s3,
-                {
-                    request_files.REQUESTS_DB_GRANULE_ID_KEY: granule_id,
-                    request_files.REQUESTS_DB_GLACIER_BUCKET_KEY: glacier_bucket,
-                    'key': file_name_1,  # This property isn't from anything besides this code.
-                    request_files.REQUESTS_DB_DEST_BUCKET_KEY: dest_bucket_1,
-                    'days': restore_expire_days  # This property isn't from anything besides this code.
-                },
+                file_name_1, restore_expire_days, glacier_bucket,
                 1,
                 job_id,
                 retrieval_type
@@ -483,26 +471,14 @@ class TestRequestFiles(unittest.TestCase):
         mock_restore_object.assert_has_calls([
             call(
                 mock_s3,
-                {
-                    request_files.REQUESTS_DB_GRANULE_ID_KEY: granule_id,
-                    request_files.REQUESTS_DB_GLACIER_BUCKET_KEY: glacier_bucket,
-                    'key': file_name_0,  # This property isn't from anything besides this code.
-                    request_files.REQUESTS_DB_DEST_BUCKET_KEY: dest_bucket_0,
-                    'days': restore_expire_days  # This property isn't from anything besides this code.
-                },
+                file_name_0, restore_expire_days, glacier_bucket,
                 1,
                 job_id,
                 retrieval_type
             ),
             call(
                 mock_s3,
-                {
-                    request_files.REQUESTS_DB_GRANULE_ID_KEY: granule_id,
-                    request_files.REQUESTS_DB_GLACIER_BUCKET_KEY: glacier_bucket,
-                    'key': file_name_0,  # This property isn't from anything besides this code.
-                    request_files.REQUESTS_DB_DEST_BUCKET_KEY: dest_bucket_0,
-                    'days': restore_expire_days  # This property isn't from anything besides this code.
-                },
+                file_name_0, restore_expire_days, glacier_bucket,
                 2,
                 job_id,
                 retrieval_type
@@ -569,39 +545,21 @@ class TestRequestFiles(unittest.TestCase):
             mock_restore_object.assert_has_calls([
                 call(
                     mock_s3,
-                    {
-                        request_files.REQUESTS_DB_GRANULE_ID_KEY: granule_id,
-                        request_files.REQUESTS_DB_GLACIER_BUCKET_KEY: glacier_bucket,
-                        'key': file_name_0,  # This property isn't from anything besides this code.
-                        request_files.REQUESTS_DB_DEST_BUCKET_KEY: dest_bucket_0,
-                        'days': restore_expire_days  # This property isn't from anything besides this code.
-                    },
+                    file_name_0, restore_expire_days, glacier_bucket,
                     1,
                     job_id,
                     retrieval_type
                 ),
                 call(
                     mock_s3,
-                    {
-                        request_files.REQUESTS_DB_GRANULE_ID_KEY: granule_id,
-                        request_files.REQUESTS_DB_GLACIER_BUCKET_KEY: glacier_bucket,
-                        'key': file_name_0,  # This property isn't from anything besides this code.
-                        request_files.REQUESTS_DB_DEST_BUCKET_KEY: dest_bucket_0,
-                        'days': restore_expire_days  # This property isn't from anything besides this code.
-                    },
+                    file_name_0, restore_expire_days, glacier_bucket,
                     2,
                     job_id,
                     retrieval_type
                 ),
                 call(
                     mock_s3,
-                    {
-                        request_files.REQUESTS_DB_GRANULE_ID_KEY: granule_id,
-                        request_files.REQUESTS_DB_GLACIER_BUCKET_KEY: glacier_bucket,
-                        'key': file_name_0,  # This property isn't from anything besides this code.
-                        request_files.REQUESTS_DB_DEST_BUCKET_KEY: dest_bucket_0,
-                        'days': restore_expire_days  # This property isn't from anything besides this code.
-                    },
+                    file_name_0, restore_expire_days, glacier_bucket,
                     3,
                     job_id,
                     retrieval_type
@@ -657,13 +615,8 @@ class TestRequestFiles(unittest.TestCase):
         retrieval_type = uuid.uuid4().__str__()
         mock_s3_cli = Mock()
 
-        obj = {
-            request_files.REQUESTS_DB_GLACIER_BUCKET_KEY: glacier_bucket,
-            'key': key,  # This property isn't from anything besides this code.
-            'days': restore_expire_days  # This property isn't from anything besides this code.
-        }
-
-        request_files.restore_object(mock_s3_cli, obj, randint(0, 99999), uuid.uuid4().__str__(), retrieval_type)
+        request_files.restore_object(mock_s3_cli, key, restore_expire_days, glacier_bucket, randint(0, 99999),
+                                     uuid.uuid4().__str__(), retrieval_type)
 
         mock_s3_cli.restore_object.assert_called_once_with(Bucket=glacier_bucket,
                                                            Key=key,
@@ -684,14 +637,9 @@ class TestRequestFiles(unittest.TestCase):
         mock_s3_cli = Mock()
         mock_s3_cli.restore_object.side_effect = expected_error
 
-        obj = {
-            request_files.REQUESTS_DB_GLACIER_BUCKET_KEY: glacier_bucket,
-            'key': key,  # This property isn't from anything besides this code.
-            'days': restore_expire_days  # This property isn't from anything besides this code.
-        }
-
         try:
-            request_files.restore_object(mock_s3_cli, obj, 1, job_id, retrieval_type)
+            request_files.restore_object(mock_s3_cli, key, restore_expire_days, glacier_bucket, 1, job_id,
+                                         retrieval_type)
             self.fail('Error not Raised.')
         except ClientError as error:
             self.assertEqual(expected_error, error)
@@ -715,14 +663,9 @@ class TestRequestFiles(unittest.TestCase):
         mock_s3_cli = Mock()
         mock_s3_cli.restore_object.side_effect = expected_error
 
-        obj = {
-            request_files.REQUESTS_DB_GLACIER_BUCKET_KEY: glacier_bucket,
-            'key': key,  # This property isn't from anything besides this code.
-            'days': restore_expire_days  # This property isn't from anything besides this code.
-        }
-
         try:
-            request_files.restore_object(mock_s3_cli, obj, 2, uuid.uuid4().__str__(), retrieval_type)
+            request_files.restore_object(mock_s3_cli, key, restore_expire_days, glacier_bucket, 2,
+                                         uuid.uuid4().__str__(), retrieval_type)
             self.fail('Error not Raised.')
         except ClientError as error:
             self.assertEqual(expected_error, error)
@@ -744,13 +687,8 @@ class TestRequestFiles(unittest.TestCase):
         retrieval_type = uuid.uuid4().__str__()
         mock_s3_cli = Mock()
 
-        obj = {
-            request_files.REQUESTS_DB_GLACIER_BUCKET_KEY: glacier_bucket,
-            'key': key,  # This property isn't from anything besides this code.
-            'days': restore_expire_days  # This property isn't from anything besides this code.
-        }
-
-        request_files.restore_object(mock_s3_cli, obj, randint(0, 99999), uuid.uuid4().__str__(), retrieval_type)
+        request_files.restore_object(mock_s3_cli, key, restore_expire_days, glacier_bucket, randint(0, 99999),
+                                     uuid.uuid4().__str__(), retrieval_type)
 
         mock_s3_cli.restore_object.assert_called_once_with(Bucket=glacier_bucket,
                                                            Key=key,
@@ -760,21 +698,24 @@ class TestRequestFiles(unittest.TestCase):
                                                                    'Tier': retrieval_type}})
 
     # The below are legacy tests that don't strictly check request_files.py on its own. Remove/adjust as needed.
-    @patch('cumulus_logger.CumulusLogger.error')
-    def test_handler(self,
-                     mock_logger_error: MagicMock):
+    @patch('request_files.task')
+    def test_handler_happy_path(self,
+                                mock_task: MagicMock
+                                ):
         """
-        Tests the handler
-        # todo: Does it? How does it?
+        Tests that between the handler and CMA, input is translated into what task expects.
         """
         input_event = create_handler_event()
-        task_input = {"input": input_event["payload"], "config": {}}  # todo: It isn't.
-        exp_err = f'request: {task_input} does not contain a config value for glacier-bucket'
-        try:
-            request_files.handler(input_event, self.context)
-            self.fail('Expected error not raised.')
-        except request_files.RestoreRequestError as roe:
-            self.assertEqual(exp_err, str(roe))
+        expected_task_input = {"input": input_event["payload"],
+                      "config": {"glacier-bucket": "podaac-sndbx-cumulus-glacier"}}
+        mock_task.return_value = {
+            "granules": [{"granuleId": "some_granule_id", "recover_files": [{"key": "some_key", "dest_bucket": "some_bucket", "success": True}]}],
+            "job_id": "some_job_id"
+        }
+        result = request_files.handler(input_event, self.context)
+        mock_task.assert_called_once_with(expected_task_input, self.context)
+
+        self.assertEqual(mock_task.return_value, result['payload'])
 
     @patch('request_files.post_entry_to_queue')
     @patch('boto3.client')
@@ -876,7 +817,7 @@ class TestRequestFiles(unittest.TestCase):
         return [
             {'key': FILE1, 'dest_bucket': PROTECTED_BUCKET, 'success': True, 'err_msg': ''},
             {'key': FILE2, 'dest_bucket': PROTECTED_BUCKET, 'success': True, 'err_msg': ''},
-            {'key': FILE3, 'dest_bucket': None, 'success': True, 'err_msg': ''},
+            {'key': FILE3, 'dest_bucket': PUBLIC_BUCKET, 'success': True, 'err_msg': ''},
             {'key': FILE4, 'dest_bucket': PUBLIC_BUCKET, 'success': True, 'err_msg': ''}
         ]
 
@@ -895,7 +836,7 @@ class TestRequestFiles(unittest.TestCase):
                 'key': FILE2
             },
             {
-                'dest_bucket': None,
+                'dest_bucket': PUBLIC_BUCKET,
                 'key': FILE3
             },
             {
@@ -979,12 +920,13 @@ class TestRequestFiles(unittest.TestCase):
         Test a file that is not in glacier.
         # todo: Expand test descriptions.
         """
+        dest_bucket = uuid.uuid4().__str__()
         file1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.xyz"
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
         event = {
             'input': {
                 "granules":
-                    [{"granuleId": granule_id, "keys": [{"key": file1, "dest_bucket": None}]}],
+                    [{"granuleId": granule_id, "keys": [{"key": file1, "dest_bucket": dest_bucket}]}],
                 'job_id': uuid.uuid4()
             },
             "config": {"glacier-bucket": "my-bucket"}
@@ -994,13 +936,15 @@ class TestRequestFiles(unittest.TestCase):
         mock_s3_cli.head_object.side_effect = [ClientError({'Error': {'Code': 'NotFound'}}, 'head_object')]
         result = request_files.task(event, self.context)
 
+        # todo: Kill all of this,
+        #  or at least use the actual bucket values for the individual files instead of copy/paste.
         expected_granules = {
             'granules': [
                 {
                     'granuleId': granule_id,
                     'keys': [
                         {
-                            'dest_bucket': None,
+                            'dest_bucket': dest_bucket,
                             'key': file1
                         }
                     ],
@@ -1277,7 +1221,7 @@ class TestRequestFiles(unittest.TestCase):
         """
         return [
             {'key': FILE1, 'dest_bucket': PROTECTED_BUCKET, 'success': True, 'err_msg': ''},
-            {'key': FILE3, 'dest_bucket': None, 'success': False,
+            {'key': FILE3, 'dest_bucket': PUBLIC_BUCKET, 'success': False,
              'err_msg': 'An error occurred (NoSuchKey) when calling the restore_object '
                         'operation: Unknown'},
             {'key': FILE4, 'dest_bucket': PUBLIC_BUCKET, 'success': True, 'err_msg': ''}
@@ -1290,7 +1234,7 @@ class TestRequestFiles(unittest.TestCase):
         """
         return [
             {'key': FILE1, 'dest_bucket': PROTECTED_BUCKET},
-            {'key': FILE3, 'dest_bucket': None},
+            {'key': FILE3, 'dest_bucket': PUBLIC_BUCKET},
             {'key': FILE4, 'dest_bucket': PUBLIC_BUCKET}
         ]
 
@@ -1455,6 +1399,7 @@ class TestRequestFiles(unittest.TestCase):
 
         validate = fastjsonschema.compile(schema)
         validate(result)
+
 
 if __name__ == '__main__':
     unittest.main(argv=['start'])

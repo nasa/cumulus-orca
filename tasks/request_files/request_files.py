@@ -36,22 +36,13 @@ OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY = 'RESTORE_RETRY_SLEEP_SECS'
 OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY = 'RESTORE_RETRIEVAL_TYPE'
 OS_ENVIRON_DB_QUEUE_URL_KEY = 'DB_QUEUE_URL'
 
-# noinspection SpellCheckingInspection
-# todo: Use parameters instead of dictionaries of values.
-REQUESTS_DB_DEST_BUCKET_KEY = 'dest_bucket'
-REQUESTS_DB_GLACIER_BUCKET_KEY = 'glacier_bucket'
-REQUESTS_DB_GRANULE_ID_KEY = 'granule_id'
-
-REQUESTS_DB_ERROR_MESSAGE_KEY = 'err_msg'
-REQUESTS_DB_JOB_STATUS_KEY = 'job_status'
-
 EVENT_CONFIG_KEY = 'config'
 EVENT_INPUT_KEY = 'input'
 INPUT_JOB_ID_KEY = 'job_id'
 
 INPUT_GRANULES_KEY = 'granules'
 
-CONFIG_GLACIER_BUCKET_KEY = 'glacier-bucket'
+CONFIG_GLACIER_BUCKET_KEY = 'glacier-bucket'  # todo: Rename. This ONE property uses '-' instead of '_'
 
 GRANULE_GRANULE_ID_KEY = 'granuleId'
 GRANULE_KEYS_KEY = 'keys'
@@ -85,8 +76,20 @@ def task(event: Dict, context: object) -> Dict[str, Any]:  # pylint: disable-msg
     for {exp_days} days before they expire. A restore request will be tried up to {retries} times
     if it fails, waiting {retry_sleep_secs} between each attempt.
         Args:
-            event: Passed through from the handler via run_cumulus_task.
-            context: Passed through from the handler. Unused, but required by framework.
+            Note that because we are using CumulusMessageAdapter, this does not directly correspond to Lambda input.
+            event: A dict with the following keys:
+                'config' (dict): A dict with the following keys:
+                    'glacier-bucket' (str): The name of the glacier bucket from which the files
+                    will be restored.
+                'input' (dict): A dict with the following keys:
+                    'granules' (list(dict)): A list of dicts with the following keys:
+                        'granuleId' (str): The id of the granule being restored.
+                        'keys' (list(dict)): A list of dicts with the following keys:
+                            'key' (str): Name of the file within the granule.  # TODO: This or example lies.
+                            'dest_bucket' (str): The bucket the restored file will be moved
+                                to after the restore completes.
+                    'job_id' (str): The unique identifier used for tracking requests. If not present, will be generated.
+            context: Passed through from the handler. Unused, but required by CMA.
         Environment Vars:
             RESTORE_EXPIRE_DAYS (int, optional, default = 5): The number of days
                 the restored file will be accessible in the S3 bucket before it expires.
@@ -104,8 +107,8 @@ def task(event: Dict, context: object) -> Dict[str, Any]:  # pylint: disable-msg
                         'key' (str): Name of the file within the granule.
                         'dest_bucket' (str): The bucket the restored file will be moved
                             to after the restore completes. If None, refer to how copy_to_glacier handles default.
-                        'success' (boolean): True, indicating the restore request was submitted successfully,
-                            otherwise False.
+                        'success' (boolean): True, indicating the restore request was submitted successfully.
+                            If any value would be false, RestoreRequestError is raised instead.
                         'err_msg' (string): when success is False, this will contain
                             the error message from the restore error.
                     'keys': Same as recover_files, but without 'success' and 'err_msg'.
@@ -115,8 +118,7 @@ def task(event: Dict, context: object) -> Dict[str, Any]:  # pylint: disable-msg
                     {
                         'granuleId': 'granxyz',
                         'recover_files': [
-                            {'key': 'path1', 'dest_bucket': 'bucket_name', 'success': True},
-                            {'key': 'path2', 'success': False, 'err_msg': 'because'}
+                            {'key': 'path1', 'dest_bucket': 'bucket_name', 'success': True}
                         ]
                     }]}
         Raises:
@@ -219,7 +221,7 @@ def process_granule(s3: BaseClient,
                     'key' (str): Name of the file within the granule.
                     'dest_bucket' (str): The bucket the restored file will be moved
                         to after the restore completes
-                    'success' (bool): Should enter this method set to False. Modified to 'True' if no error occurs.
+                    'success' (bool): Should enter this method set to False. Modified to 'True' by method end.
                     'err_msg' (str): Will be modified if error occurs.
 
 
@@ -231,6 +233,8 @@ def process_granule(s3: BaseClient,
             retrieval_type: todo
             db_queue_url: todo
             job_id: The unique identifier used for tracking requests.
+
+        Raises: RestoreRequestError if any file restore could not be initiated.
     """
     request_time = datetime.now(timezone.utc).isoformat()
     attempt = 1
@@ -245,15 +249,9 @@ def process_granule(s3: BaseClient,
     while attempt <= max_retries + 1:
         for a_file in granule[GRANULE_RECOVER_FILES_KEY]:
             if not a_file[FILE_SUCCESS_KEY]:
-                obj = {
-                    REQUESTS_DB_GRANULE_ID_KEY: granule_id,
-                    REQUESTS_DB_GLACIER_BUCKET_KEY: glacier_bucket,
-                    'key': a_file[FILE_KEY_KEY],  # This property isn't from anything besides this code.
-                    REQUESTS_DB_DEST_BUCKET_KEY: a_file[FILE_DEST_BUCKET_KEY],
-                    'days': restore_expire_days  # This property isn't from anything besides this code.
-                }
                 try:
-                    restore_object(s3, obj, attempt, job_id, retrieval_type)
+                    restore_object(s3, a_file[FILE_KEY_KEY], restore_expire_days, glacier_bucket, attempt, job_id,
+                                   retrieval_type)
                     a_file[FILE_SUCCESS_KEY] = True
                     a_file[FILE_ERROR_MESSAGE_KEY] = ''
 
@@ -330,45 +328,38 @@ def object_exists(s3_cli: BaseClient, glacier_bucket: str, file_key: str) -> boo
         # todo: Online docs suggest we could catch 'S3.Client.exceptions.NoSuchKey instead of deconstructing ClientError
 
 
-def restore_object(s3_cli: BaseClient, obj: Dict[str, Any], attempt: int, job_id: str,
+def restore_object(s3_cli: BaseClient, key: str, days: int, db_glacier_bucket_key: str, attempt: int, job_id: str,
                    retrieval_type: str = 'Standard'
                    ) -> None:
     # noinspection SpellCheckingInspection
-    f"""Restore an archived S3 Glacier object in an Amazon S3 bucket.
+    """Restore an archived S3 Glacier object in an Amazon S3 bucket.
         Args:
             s3_cli: An instance of boto3 s3 client.
-            obj: A dictionary containing:
-                request_group_id (string): A uuid identifying all objects in.
-                    a granule restore request.
-                granule_id (string): The granule_id to which the object_name being restored belongs.
-                glacier_bucket (string): The S3 bucket name.
-                key (string): The key of the Glacier object being restored.
-                dest_bucket (string): The bucket the restored file will be moved.
-                    to after the restore completes.
-                days (int): How many days the restored file will be accessible in the S3 bucket
-                    before it expires.
+            key: The key of the Glacier object being restored.
+            days: How many days the restored file will be accessible in the S3 bucket before it expires.
+            db_glacier_bucket_key: The S3 bucket name.
             attempt: The attempt number for logging purposes.
             job_id: The unique id of the job. Used for logging.
             retrieval_type: Glacier Tier. Valid values are 'Standard'|'Bulk'|'Expedited'. Defaults to 'Standard'.
         Raises:
             ClientError: Raises ClientErrors from restore_object.
     """
-    request = {'Days': obj['days'],
+    request = {'Days': days,
                'GlacierJobParameters': {'Tier': retrieval_type}}
     # Submit the request
     try:
-        s3_cli.restore_object(Bucket=obj[REQUESTS_DB_GLACIER_BUCKET_KEY],
-                              Key=obj['key'],
+        s3_cli.restore_object(Bucket=db_glacier_bucket_key,
+                              Key=key,
                               RestoreRequest=request)
 
     except ClientError as c_err:
         # NoSuchBucket, NoSuchKey, or InvalidObjectState error == the object's
         # storage class was not GLACIER
-        LOGGER.error(f"{c_err}. bucket: {obj[REQUESTS_DB_GLACIER_BUCKET_KEY]} file: {obj['key']} Job ID: {job_id}")
+        LOGGER.error(f"{c_err}. bucket: {db_glacier_bucket_key} file: {key} Job ID: {job_id}")
         raise c_err
 
     LOGGER.info(
-        f"Restore {obj['key']} from {obj[REQUESTS_DB_GLACIER_BUCKET_KEY]} "
+        f"Restore {key} from {db_glacier_bucket_key} "
         f"attempt {attempt} successful. Job ID: {job_id}")
 
 
@@ -482,25 +473,13 @@ def handler(event: Dict[str, Any], context):  # pylint: disable-msg=unused-argum
                 to sleep between retry attempts.
             RESTORE_RETRIEVAL_TYPE (str, optional, default = 'Standard'): the Tier
                 for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
+            CUMULUS_MESSAGE_ADAPTER_DISABLED (str): Must NOT be set to 'true'.
         Args:
-            event: See schemas/input.json
-                Example: {
-                    'config': {'glacierBucket': 'some_bucket'}
-                    'input': {
-                        'granules':
-                        [
-                            {
-                                'granuleId': 'granxyz',
-                                'keys': [
-                                    {'key': 'path1', 'dest_bucket': 'some_bucket'},
-                                    {'key': 'path2', 'dest_bucket': 'some_other_bucket'}
-                                ]
-                            }
-                        ]
-                    }
+            event: See schemas/input.json and combine with knowledge of CumulusMessageAdapter.
             context: An object required by AWS Lambda. Unused.
         Returns:
-            dict: See schemas/output.json
+            A dict with the value at 'payload' matching schemas/output.json
+                Combine with knowledge of CumulusMessageAdapter for other properties.
         Raises:
             RestoreRequestError: An error occurred calling restore_object for one or more files.
             The same dict that is returned for a successful granule restore, will be included in the
