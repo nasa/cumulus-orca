@@ -155,7 +155,7 @@ FUNCTIONS
         but at this time, only 1 granule will be accepted.
         This is due to the error handling. If the restore request for any file for a
         granule fails to submit, the entire granule (workflow) fails. If more than one granule were
-        accepted, and a failure occured, at present, it would fail all of them.
+        accepted, and a failure ocured, at present, it would fail all of them.
         Environment variables can be set to override how many days to keep the restored files, how
         many times to retry a restore_request, and how long to wait between retries.
             Environment Vars:
@@ -167,37 +167,13 @@ FUNCTIONS
                     to sleep between retry attempts.
                 RESTORE_RETRIEVAL_TYPE (str, optional, default = 'Standard'): the Tier
                     for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
+                CUMULUS_MESSAGE_ADAPTER_DISABLED (str): If set to 'true', CumulusMessageAdapter does not modify input.
             Args:
-                event: A dict with the following keys:
-                    'config' (dict): A dict with the following keys:
-                        'glacier_bucket' (str): The name of the glacier bucket from which the files
-                        will be restored.
-                    'input' (dict): A dict with the following keys:
-                        'granules' (list(dict)): A list of dicts with the following keys:
-                            'granuleId' (str): The id of the granule being restored.
-                            'keys' (list(dict)): A list of dicts with the following keys:  # TODO: rename.
-                                'key' (str): Name of the file within the granule.  # TODO: This or example lies.
-                                'dest_bucket' (str): The bucket the restored file will be moved
-                                    to after the restore completes.
-                        'job_id' (str): The unique identifier used for tracking requests. If not present, will be generated.
-                    Example: {
-                        'config': {'glacierBucket': 'some_bucket'}
-                        'input': {
-                            'granules':
-                            [
-                                {
-                                    'granuleId': 'granxyz',
-                                    'keys': [
-                                        {'key': 'path1', 'dest_bucket': 'some_bucket'},
-                                        {'key': 'path2', 'dest_bucket': 'some_other_bucket'}
-                                    ]
-                                }
-                            ]
-                        }
+                event: See schemas/input.json and combine with knowledge of CumulusMessageAdapter.
                 context: An object required by AWS Lambda. Unused.
             Returns:
-                dict: The dict returned from the task. All 'success' values will be True. If they were
-                not all True, the RestoreRequestError exception would be raised.
+                A dict with the value at 'payload' matching schemas/output.json
+                    Combine with knowledge of CumulusMessageAdapter for other properties.
             Raises:
                 RestoreRequestError: An error occurred calling restore_object for one or more files.
                 The same dict that is returned for a successful granule restore, will be included in the
@@ -234,7 +210,7 @@ FUNCTIONS
                     'key' (str): Name of the file within the granule.
                     'dest_bucket' (str): The bucket the restored file will be moved
                         to after the restore completes
-                    'success' (bool): Should enter this method set to False. Modified to 'True' if no error occurs.
+                    'success' (bool): Should enter this method set to False. Modified to 'True' by method end.
                     'err_msg' (str): Will be modified if error occurs.
         
         
@@ -246,8 +222,21 @@ FUNCTIONS
             retrieval_type: todo
             db_queue_url: todo
             job_id: The unique identifier used for tracking requests.
+        
+        Raises: RestoreRequestError if any file restore could not be initiated.
     
-    restore_object(s3_cli: botocore.client.BaseClient, obj: Dict[str, Any], attempt: int, job_id: str, retrieval_type: str = 'Standard') -> None
+    restore_object(s3_cli: botocore.client.BaseClient, key: str, days: int, db_glacier_bucket_key: str, attempt: int, job_id: str, retrieval_type: str = 'Standard') -> None
+        Restore an archived S3 Glacier object in an Amazon S3 bucket.
+        Args:
+            s3_cli: An instance of boto3 s3 client.
+            key: The key of the Glacier object being restored.
+            days: How many days the restored file will be accessible in the S3 bucket before it expires.
+            db_glacier_bucket_key: The S3 bucket name.
+            attempt: The attempt number for logging purposes.
+            job_id: The unique id of the job. Used for logging.
+            retrieval_type: Glacier Tier. Valid values are 'Standard'|'Bulk'|'Expedited'. Defaults to 'Standard'.
+        Raises:
+            ClientError: Raises ClientErrors from restore_object.
     
     task(event: Dict, context: object) -> Dict[str, Any]
         Task called by the handler to perform the work.
@@ -255,8 +244,20 @@ FUNCTIONS
         for {exp_days} days before they expire. A restore request will be tried up to {retries} times
         if it fails, waiting {retry_sleep_secs} between each attempt.
             Args:
-                event: Passed through from the handler via run_cumulus_task.
-                context: Passed through from the handler. Unused, but required by framework.
+                Note that because we are using CumulusMessageAdapter, this does not directly correspond to Lambda input.
+                event: A dict with the following keys:
+                    'config' (dict): A dict with the following keys:
+                        'glacier-bucket' (str): The name of the glacier bucket from which the files
+                        will be restored.
+                    'input' (dict): A dict with the following keys:
+                        'granules' (list(dict)): A list of dicts with the following keys:
+                            'granuleId' (str): The id of the granule being restored.
+                            'keys' (list(dict)): A list of dicts with the following keys:
+                                'key' (str): Name of the file within the granule.  # TODO: This or example lies.
+                                'dest_bucket' (str): The bucket the restored file will be moved
+                                    to after the restore completes.
+                        'job_id' (str): The unique identifier used for tracking requests. If not present, will be generated.
+                context: Passed through from the handler. Unused, but required by CMA.
             Environment Vars:
                 RESTORE_EXPIRE_DAYS (int, optional, default = 5): The number of days
                     the restored file will be accessible in the S3 bucket before it expires.
@@ -273,9 +274,9 @@ FUNCTIONS
                         'recover_files' (list(dict)): A list of dicts with the following keys:
                             'key' (str): Name of the file within the granule.
                             'dest_bucket' (str): The bucket the restored file will be moved
-                                to after the restore completes.
-                            'success' (boolean): True, indicating the restore request was submitted successfully,
-                                otherwise False.
+                                to after the restore completes. If None, refer to how copy_to_glacier handles default.
+                            'success' (boolean): True, indicating the restore request was submitted successfully.
+                                If any value would be false, RestoreRequestError is raised instead.
                             'err_msg' (string): when success is False, this will contain
                                 the error message from the restore error.
                         'keys': Same as recover_files, but without 'success' and 'err_msg'.
@@ -285,8 +286,7 @@ FUNCTIONS
                         {
                             'granuleId': 'granxyz',
                             'recover_files': [
-                                {'key': 'path1', 'dest_bucket': 'bucket_name', 'success': True},
-                                {'key': 'path2', 'success': False, 'err_msg': 'because'}
+                                {'key': 'path1', 'dest_bucket': 'bucket_name', 'success': True}
                             ]
                         }]}
             Raises:
@@ -313,19 +313,14 @@ DATA
     INPUT_JOB_ID_KEY = 'job_id'
     LOGGER = <cumulus_logger.CumulusLogger object>
     List = typing.List
-    ORCA_STATUS_FAILED = 3
-    ORCA_STATUS_PENDING = 0
+    ORCA_STATUS_FAILED = 4
+    ORCA_STATUS_PENDING = 1
     OS_ENVIRON_DB_QUEUE_URL_KEY = 'DB_QUEUE_URL'
     OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY = 'RESTORE_EXPIRE_DAYS'
     OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY = 'RESTORE_REQUEST_RETRIES'
     OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY = 'RESTORE_RETRIEVAL_TYPE'
     OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY = 'RESTORE_RETRY_SLEEP_SECS'
     Optional = typing.Optional
-    REQUESTS_DB_DEST_BUCKET_KEY = 'dest_bucket'
-    REQUESTS_DB_ERROR_MESSAGE_KEY = 'err_msg'
-    REQUESTS_DB_GLACIER_BUCKET_KEY = 'glacier_bucket'
-    REQUESTS_DB_GRANULE_ID_KEY = 'granule_id'
-    REQUESTS_DB_JOB_STATUS_KEY = 'job_status'
     Union = typing.Union
     sqs = <botocore.client.SQS object>
 ```
