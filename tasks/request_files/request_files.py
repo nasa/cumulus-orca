@@ -461,7 +461,7 @@ def handler(event: Dict[str, Any], context):  # pylint: disable-msg=unused-argum
     but at this time, only 1 granule will be accepted.
     This is due to the error handling. If the restore request for any file for a
     granule fails to submit, the entire granule (workflow) fails. If more than one granule were
-    accepted, and a failure occured, at present, it would fail all of them.
+    accepted, and a failure ocured, at present, it would fail all of them.
     Environment variables can be set to override how many days to keep the restored files, how
     many times to retry a restore_request, and how long to wait between retries.
         Environment Vars:
@@ -473,7 +473,7 @@ def handler(event: Dict[str, Any], context):  # pylint: disable-msg=unused-argum
                 to sleep between retry attempts.
             RESTORE_RETRIEVAL_TYPE (str, optional, default = 'Standard'): the Tier
                 for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
-            CUMULUS_MESSAGE_ADAPTER_DISABLED (str): Must NOT be set to 'true'.
+            CUMULUS_MESSAGE_ADAPTER_DISABLED (str): If set to 'true', CumulusMessageAdapter does not modify input.
         Args:
             event: See schemas/input.json and combine with knowledge of CumulusMessageAdapter.
             context: An object required by AWS Lambda. Unused.

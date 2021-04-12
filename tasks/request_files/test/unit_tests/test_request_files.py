@@ -55,6 +55,7 @@ class TestRequestFiles(unittest.TestCase):
         os.environ[request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY] = '5'
         os.environ[request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY] = '2'
         os.environ['PREFIX'] = uuid.uuid4().__str__()
+        os.environ.pop('CUMULUS_MESSAGE_ADAPTER_DISABLED', None)
         self.context = LambdaContextMock()
 
     def tearDown(self):
