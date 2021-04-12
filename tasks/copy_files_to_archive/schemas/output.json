@@ -1,0 +1,6 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_files_to_archive/schemas/output.json",
+  "title": "copy_files_to_archive Lambda Output",
+  "description": "The input for the copy_files_to_archive Lambda."
+}

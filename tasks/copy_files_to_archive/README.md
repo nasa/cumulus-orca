@@ -169,7 +169,7 @@ FUNCTIONS
         Returns:
             records, parsed into Dicts, with the additional KVP 'success' = False
     
-    handler(event: Dict[str, Any], context: object) -> List[Dict[str, Any]]
+    handler(event: Dict[str, Any], context: object) -> None
         Lambda handler. Copies a file from its temporary s3 bucket to the s3 archive.
         
         If the copy for a file in the request fails, the lambda
@@ -190,38 +190,10 @@ FUNCTIONS
                     drdb-host (string): the database host
         
         Args:
-            event: A dict with the following keys:
-                'Records' (List): A list of dicts with the following keys:
-                    'messageId' (str)
-                    'receiptHandle' (str)
-                    'body' (str): A json formatted string representing a dict specifying a file to copy to archive.
-                        'job_id' (str): The unique id of the recovery job.
-                        'granule_id' (str): The unique ID of the granule.
-                        'filename' (str): The name of the file being copied.
-                        'source_key' (str): The path the file was restored to.
-                        'target_key' (str): The path to copy to. Defaults to value at 'source_key'.
-                        'restore_destination' (str): The name of the bucket the restored file will be moved to.
-                        The below come from moveGranules:
-                        'source_bucket' (str): The bucket the restored file can be copied from.
-        
-        
-                    'attributes' (Dict)
-                    'messageAttributes' (Dict)
+            event:
+                A dict from the SQS queue. See schemas/input.json for more information.
         
             context: An object required by AWS Lambda. Unused.
-        
-        Returns:
-            The list of dicts returned from the task. All 'success' values will be True. If they were
-            not all True, the CopyRequestError exception would be raised.
-            Dicts have the following keys:
-                'job_id' (str): The unique id of the recovery job.
-                'granule_id' (str): The unique ID of the granule.
-                'filename' (str): The name of the file being copied.
-                'source_key' (str): The path the file was restored to.
-                'target_key' (str): The path to copy to. Defaults to value at 'source_key'.
-                'restore_destination' (str): The name of the bucket the restored file will be moved to.
-                'source_bucket' (str): The bucket the restored file can be copied from.
-                'success' (boolean): True, as an error will raise a CopyRequestError.
         
         Raises:
             CopyRequestError: An error occurred calling copy_object for one or more files.
@@ -233,7 +205,7 @@ FUNCTIONS
     post_status_for_file_to_queue(job_id: str, granule_id: str, filename: str, key_path: Union[str, NoneType], restore_destination: Union[str, NoneType], status_id: Union[int, NoneType], error_message: Union[str, NoneType], request_time: Union[str, NoneType], last_update: str, completion_time: Union[str, NoneType], request_method: copy_files_to_archive.RequestMethod, db_queue_url: str, max_retries: int, retry_sleep_secs: float)
         # todo: Move to shared lib
     
-    task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: float, db_queue_url: str) -> List[Dict[str, Any]]
+    task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: float, db_queue_url: str) -> None
         Task called by the handler to perform the work.
         
         This task will call copy_object for each file. A copy will be tried
@@ -246,24 +218,6 @@ FUNCTIONS
             retry_sleep_secs: The number of seconds
                 to sleep between retry attempts.
             db_queue_url: The URL of the queue that posts status entries.
-        
-        Returns:
-           A list of dicts with the following keys:
-                'job_id' (str): The unique id of the recovery job.
-                'granule_id' (str): The unique ID of the granule.
-                'filename' (str): The name of the file being copied.
-                'source_key' (str): The path the file was restored to.
-                'target_key' (str): The path to copy to. Defaults to value at 'source_key'.
-                'restore_destination' (str): The name of the bucket the restored file will be moved to.
-                'source_bucket' (str): The bucket the restored file can be copied from.
-                'success' (boolean): 'success' (boolean): True, as an error will raise a CopyRequestError.
-        
-            Example:  [{'source_key': 'file1.xml', 'source_bucket': 'my-dr-fake-glacier-bucket',
-                          'target_bucket': 'unittest_xml_bucket', 'success': True,
-                          'err_msg': ''},
-                      {'source_key': 'file2.txt', 'source_bucket': 'my-dr-fake-glacier-bucket',
-                          'target_bucket': 'unittest_txt_bucket', 'success': True,
-                          'err_msg': '', 'request_id': '4192bff0-e1e0-43ce-a4db-912808c32493'}]
         Raises:
             CopyRequestError: Thrown if there are errors with the input records or the copy failed.
 
@@ -280,10 +234,10 @@ DATA
     INPUT_TARGET_BUCKET_KEY = 'restore_destination'
     INPUT_TARGET_KEY_KEY = 'target_key'
     List = typing.List
-    ORCA_STATUS_FAILED = 3
-    ORCA_STATUS_PENDING = 0
-    ORCA_STATUS_STAGED = 1
-    ORCA_STATUS_SUCCESS = 2
+    ORCA_STATUS_FAILED = 4
+    ORCA_STATUS_PENDING = 1
+    ORCA_STATUS_STAGED = 2
+    ORCA_STATUS_SUCCESS = 3
     OS_ENVIRON_DB_QUEUE_URL_KEY = 'DB_QUEUE_URL'
     Optional = typing.Optional
     Union = typing.Union

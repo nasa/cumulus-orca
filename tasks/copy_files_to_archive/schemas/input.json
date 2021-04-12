@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_files_to_archive/schemas/input.json",
+  "title": "copy_files_to_archive Lambda Input",
+  "description": "The input for the copy_files_to_archive Lambda.",
+  "type": "object",
+  "properties": {
+    "Records": {
+      "description": "A list of dicts representing files to copy and where to copy them.",
+      "type": "array",
+      "items": {
+        "properties": {
+          "body": {
+            "description": "A string passed in by SQS. When converted via the json library, contains 'job_id' (str): The unique id of the recovery job.   'granule_id' (str): The unique ID of the granule.   'filename' (str): The name of the file being copied.   'source_key' (str): The path the file was restored to.   'target_key' (str): The path to copy to. Defaults to value at 'source_key'.   'restore_destination' (str): The name of the bucket the restored file will be moved to.   The below come from moveGranules:   'source_bucket' (str): The bucket the restored file can be copied from."
+          }
+        },
+        "required": ["body"]
+      }
+    }
+  },
+  "required": ["Records"]
+}

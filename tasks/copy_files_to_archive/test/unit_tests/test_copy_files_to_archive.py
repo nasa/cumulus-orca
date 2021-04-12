@@ -28,10 +28,9 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
         records = Mock()
         event = {'Records': records}
 
-        result = copy_files_to_archive.handler(event, Mock())
+        copy_files_to_archive.handler(event, Mock())
 
         mock_task.assert_called_with(records, 703, 108.5, 'something.blah')
-        self.assertEqual(mock_task.return_value, result)
 
     @patch.dict(os.environ, {'DB_QUEUE_URL': 'something.else'}, clear=True)
     @patch('copy_files_to_archive.task')
@@ -43,10 +42,9 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
         records = Mock()
         event = {'Records': records}
 
-        result = copy_files_to_archive.handler(event, Mock())
+        copy_files_to_archive.handler(event, Mock())
 
         mock_task.assert_called_with(records, 2, 30, 'something.else')
-        self.assertEqual(mock_task.return_value, result)
 
     @patch('time.sleep')
     @patch('copy_files_to_archive.post_status_for_file_to_queue')
@@ -270,7 +268,6 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
                                                         Bucket=dest_bucket_name,
                                                         Key=dest_object_name)
         self.assertEqual(expected_result, result)
-
 
 
 if __name__ == '__main__':

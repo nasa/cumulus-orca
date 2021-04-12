@@ -39,10 +39,10 @@ INPUT_TARGET_KEY_KEY = 'target_key'
 INPUT_TARGET_BUCKET_KEY = 'restore_destination'
 INPUT_SOURCE_BUCKET_KEY = 'source_bucket'
 
-ORCA_STATUS_PENDING = 0
-ORCA_STATUS_STAGED = 1
-ORCA_STATUS_SUCCESS = 2
-ORCA_STATUS_FAILED = 3
+ORCA_STATUS_PENDING = 1
+ORCA_STATUS_STAGED = 2
+ORCA_STATUS_SUCCESS = 3
+ORCA_STATUS_FAILED = 4
 
 
 class CopyRequestError(Exception):
@@ -51,7 +51,7 @@ class CopyRequestError(Exception):
     """
 
 
-def task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: float, db_queue_url: str):
+def task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: float, db_queue_url: str) -> None:
     """
     Task called by the handler to perform the work.
 
@@ -235,7 +235,7 @@ def copy_object(s3_cli: BaseClient, src_bucket_name: str, src_object_name: str,
 
 
 # noinspection PyUnusedLocal
-def handler(event: Dict[str, Any], context: object) -> List[Dict[str, Any]]:  # pylint: disable-msg=unused-argument
+def handler(event: Dict[str, Any], context: object) -> None:  # pylint: disable-msg=unused-argument
     """Lambda handler. Copies a file from its temporary s3 bucket to the s3 archive.
 
     If the copy for a file in the request fails, the lambda
@@ -256,23 +256,8 @@ def handler(event: Dict[str, Any], context: object) -> List[Dict[str, Any]]:  # 
                 drdb-host (string): the database host
 
     Args:
-        event: A dict with the following keys:
-            'Records' (List): A list of dicts with the following keys:
-                'messageId' (str)
-                'receiptHandle' (str)
-                'body' (str): A json formatted string representing a dict specifying a file to copy to archive.
-                    'job_id' (str): The unique id of the recovery job.
-                    'granule_id' (str): The unique ID of the granule.
-                    'filename' (str): The name of the file being copied.
-                    'source_key' (str): The path the file was restored to.
-                    'target_key' (str): The path to copy to. Defaults to value at 'source_key'.
-                    'restore_destination' (str): The name of the bucket the restored file will be moved to.
-                    The below come from moveGranules:
-                    'source_bucket' (str): The bucket the restored file can be copied from.
-
-
-                'attributes' (Dict)
-                'messageAttributes' (Dict)
+        event:
+            A dict from the SQS queue. See schemas/input.json for more information.
 
         context: An object required by AWS Lambda. Unused.
 
@@ -303,4 +288,4 @@ def handler(event: Dict[str, Any], context: object) -> List[Dict[str, Any]]:  # 
     logging.debug(f'event: {event}')
     records = event["Records"]
 
-    return task(records, retries, retry_sleep_secs, db_queue_url)
+    task(records, retries, retry_sleep_secs, db_queue_url)
