@@ -106,7 +106,7 @@ def task(event: Dict, context: object) -> Dict[str, Any]:  # pylint: disable-msg
                     'recover_files' (list(dict)): A list of dicts with the following keys:
                         'key' (str): Name of the file within the granule.
                         'dest_bucket' (str): The bucket the restored file will be moved
-                            to after the restore completes. If None, refer to how copy_to_glacier handles default.
+                            to after the restore completes.
                         'success' (boolean): True, indicating the restore request was submitted successfully.
                             If any value would be false, RestoreRequestError is raised instead.
                         'err_msg' (string): when success is False, this will contain
@@ -225,7 +225,7 @@ def process_granule(s3: BaseClient,
                     'err_msg' (str): Will be modified if error occurs.
 
 
-            glacier_bucket: The S3 glacier bucket name. todo: For what?
+            glacier_bucket: The S3 glacier bucket name.
             restore_expire_days:
                 The number of days the restored file will be accessible in the S3 bucket before it expires.
             max_retries: todo
