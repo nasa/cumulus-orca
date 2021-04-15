@@ -19,11 +19,11 @@
 #set -ex
 
 ## Make sure we are calling the script the correct way.
-BASEDIR=$(dirname $0)
-if [ "$BASEDIR" != "." ]; then
-  >&2 echo "ERROR: This script must be called from ."
-  exit 1
-fi
+# BASEDIR=$(dirname $0)
+# if [ "$BASEDIR" != "bin" ]; then
+#   >&2 echo "ERROR: This script must be called from [bin/run_tests.sh]."
+#   exit 1
+# fi
 
 
 ## FUNCTIONS
@@ -61,10 +61,8 @@ source venv/bin/activate
 
 ## Install the requirements
 echo "Installing necessary requirement packages.........."
-pip3 install coverage
-pip3 install pytest
-pip3 install boto3
-pip3 install moto[all]==1.3.16.dev184
+pip install -q --upgrade pip
+pip install -q -r requirements-dev.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
 let return_code=$?
 
 check_rc $return_code "ERROR: pip install encountered an error."
@@ -89,5 +87,5 @@ deactivate
 rm -rf venv
 find . -type d -name "__pycache__" -exec rm -rf {} +
 
-echo 'Env cleaned up'
+echo "INFO: Unit testing complete."
 exit 0

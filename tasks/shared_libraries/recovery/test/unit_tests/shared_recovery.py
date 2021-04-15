@@ -72,6 +72,8 @@ def post_status_for_file_to_queue(
         new_data["error_message"] = error_message
     if request_time is not None:
         new_data["request_time"] = request_time
+    if last_update is not None:
+        new_data["last_update"] = last_update
     if completion_time is not None:
         new_data["completion_time"] = completion_time
 
