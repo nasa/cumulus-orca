@@ -18,12 +18,12 @@
 ## Set this for Debugging only
 #set -ex
 
-## Make sure we are calling the script the correct way.
-# BASEDIR=$(dirname $0)
-# if [ "$BASEDIR" != "bin" ]; then
-#   >&2 echo "ERROR: This script must be called from [bin/run_tests.sh]."
-#   exit 1
-# fi
+# Make sure we are calling the script the correct way.
+BASEDIR=$(dirname $0)
+if [ "$BASEDIR" != "bin" ]; then
+  >&2 echo "ERROR: This script must be called from [bin/run_tests.sh]."
+  exit 1
+fi
 
 
 ## FUNCTIONS
