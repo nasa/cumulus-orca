@@ -21,7 +21,7 @@
 # Make sure we are calling the script the correct way.
 BASEDIR=$(dirname $0)
 if [ "$BASEDIR" != "bin" ]; then
-  >&2 echo "ERROR: This script must be called from [bin/run_tests.sh]."
+  >&2 echo "ERROR: This script must be called from [bin]."
   exit 1
 fi
 

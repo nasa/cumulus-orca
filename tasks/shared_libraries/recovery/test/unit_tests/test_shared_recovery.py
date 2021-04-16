@@ -12,7 +12,8 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
     """
     Unit tests for the shared_recover library used by ORCA Recovery Lambdas.
     """
-
+    queuename = 'unit-test-queue.fifo'
+    
     # Create the mock for unit tests
     mock_sqs = mock_sqs()
 
@@ -32,8 +33,9 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         """
         Test that sending a message to SQS queue using post_entry_to_queue() function returns the same expected message.
         """
+
         test_sqs = boto3.resource("sqs")
-        queue = test_sqs.create_queue(QueueName='unit-test-queue')
+        queue = test_sqs.create_queue(QueueName=self.queuename)
         table_name = "unit_test_table"
         request_method = shared_recovery.RequestMethod.NEW
         db_queue_url = queue.url
@@ -71,7 +73,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         The optional variables are all set to None.
         """
         test_sqs = boto3.resource("sqs")
-        queue = test_sqs.create_queue(QueueName="unit-test-queue.fifo")
+        queue = test_sqs.create_queue(QueueName=self.queuename)
         table_name = 'orca_recoverfile'
         request_method = shared_recovery.RequestMethod.NEW
         job_id= '1234'
@@ -119,7 +121,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         The optional variables are all set to non-null values.
         """
         test_sqs = boto3.resource("sqs")
-        queue = test_sqs.create_queue(QueueName="unit-test-queue.fifo")
+        queue = test_sqs.create_queue(QueueName=self.queuename)
         table_name = 'orca_recoverfile'
         request_method = shared_recovery.RequestMethod.NEW
         job_id= '1234'
@@ -169,7 +171,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
             The optional variables are all set to None.
             """
             test_sqs = boto3.resource("sqs")
-            queue = test_sqs.create_queue(QueueName="unit-test-queue.fifo")
+            queue = test_sqs.create_queue(QueueName=self.queuename)
             table_name = 'orca_recoveryjob'
             request_method = shared_recovery.RequestMethod.NEW
             job_id= '1234'
@@ -215,7 +217,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
             The optional variables are all set to non-nullable values.
             """
             test_sqs = boto3.resource("sqs")
-            queue = test_sqs.create_queue(QueueName="unit-test-queue.fifo")
+            queue = test_sqs.create_queue(QueueName=self.queuename)
             table_name = 'orca_recoveryjob'
             request_method = shared_recovery.RequestMethod.NEW
             job_id= '1234'
