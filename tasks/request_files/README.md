@@ -168,6 +168,8 @@ FUNCTIONS
                 RESTORE_RETRIEVAL_TYPE (str, optional, default = 'Standard'): the Tier
                     for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
                 CUMULUS_MESSAGE_ADAPTER_DISABLED (str): If set to 'true', CumulusMessageAdapter does not modify input.
+                DB_QUEUE_URL
+                    The URL of the SQS queue to post status to.
             Args:
                 event: See schemas/input.json and combine with knowledge of CumulusMessageAdapter.
                 context: An object required by AWS Lambda. Unused.
@@ -181,6 +183,46 @@ FUNCTIONS
                 submit.
     
     inner_task(event: Dict, max_retries: int, retry_sleep_secs: float, retrieval_type: str, restore_expire_days: int, db_queue_url: str)
+        Task called by the handler to perform the work.
+        This task will call the restore_request for each file. Restored files will be kept
+        for {exp_days} days before they expire. A restore request will be tried up to {retries} times
+        if it fails, waiting {retry_sleep_secs} between each attempt.
+            Args:
+                Note that because we are using CumulusMessageAdapter, this may not directly correspond to Lambda input.
+                event: A dict with the following keys:
+                    'config' (dict): A dict with the following keys:
+                        'glacier-bucket' (str): The name of the glacier bucket from which the files
+                        will be restored.
+                    'input' (dict): A dict with the following keys:
+                        'granules' (list(dict)): A list of dicts with the following keys:
+                            'granuleId' (str): The id of the granule being restored.
+                            'keys' (list(dict)): A list of dicts with the following keys:
+                                'key' (str): Name of the file within the granule.  # TODO: This or example lies.
+                                'dest_bucket' (str): The bucket the restored file will be moved
+                                    to after the restore completes.
+                        'job_id' (str): The unique identifier used for tracking requests.
+                max_retries: The maximum number of retries for network operations.
+                retry_sleep_secs: The number of time to sleep between retries.
+                retrieval_type: The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
+                restore_expire_days: The number of days the restored file will be accessible in the S3 bucket before it
+                    expires.
+                db_queue_url: The URL of the SQS queue to post status to.
+            Returns:
+                A dict with the following keys:
+                    'granules' (List): A list of dicts, each with the following keys:
+                        'granuleId' (string): The id of the granule being restored.
+                        'recover_files' (list(dict)): A list of dicts with the following keys:
+                            'key' (str): Name of the file within the granule.
+                            'dest_bucket' (str): The bucket the restored file will be moved
+                                to after the restore completes.
+                            'success' (boolean): True, indicating the restore request was submitted successfully.
+                                If any value would be false, RestoreRequestError is raised instead.
+                            'err_msg' (string): when success is False, this will contain
+                                the error message from the restore error.
+                        'keys': Same as recover_files, but without 'success' and 'err_msg'.
+                    'job_id' (str): The 'job_id' from event if present, otherwise a newly-generated uuid.
+            Raises:
+                RestoreRequestError: Thrown if there are errors with the input request.
     
     object_exists(s3_cli: botocore.client.BaseClient, glacier_bucket: str, file_key: str) -> bool
         Check to see if an object exists in S3 Glacier.
@@ -192,13 +234,13 @@ FUNCTIONS
             True if the object exists, otherwise False.
     
     post_entry_to_queue(table_name: str, new_data: Dict[str, Any], request_method: request_files.RequestMethod, db_queue_url: str, max_retries: int, retry_sleep_secs: float)
-        # todo: Move to shared lib
+        # todo: Move to shared lib after ORCA-170
     
     post_status_for_file_to_queue(job_id: str, granule_id: str, filename: str, key_path: Union[str, NoneType], restore_destination: Union[str, NoneType], status_id: Union[int, NoneType], error_message: Union[str, NoneType], request_time: Union[str, NoneType], last_update: str, completion_time: Union[str, NoneType], request_method: request_files.RequestMethod, db_queue_url: str, max_retries: int, retry_sleep_secs: float)
-        # todo: Move to shared lib
+        # todo: Move to shared lib after ORCA-170
     
     post_status_for_job_to_queue(job_id: str, granule_id: str, status_id: Union[int, NoneType], request_time: Union[str, NoneType], completion_time: Union[str, NoneType], archive_destination: Union[str, NoneType], request_method: request_files.RequestMethod, db_queue_url: str, max_retries: int, retry_sleep_secs: float)
-        # todo: Move to shared lib
+        # todo: Move to shared lib after ORCA-170
     
     process_granule(s3: botocore.client.BaseClient, granule: Dict[str, Union[str, List[Dict]]], glacier_bucket: str, restore_expire_days: int, max_retries: int, retry_sleep_secs: float, retrieval_type: str, job_id: str, db_queue_url: str)
         Call restore_object for the files in the granule_list. Modifies granule for output.
@@ -214,7 +256,7 @@ FUNCTIONS
                     'err_msg' (str): Will be modified if error occurs.
         
         
-            glacier_bucket: The S3 glacier bucket name. todo: For what?
+            glacier_bucket: The S3 glacier bucket name.
             restore_expire_days:
                 The number of days the restored file will be accessible in the S3 bucket before it expires.
             max_retries: todo
@@ -239,12 +281,10 @@ FUNCTIONS
             ClientError: Raises ClientErrors from restore_object.
     
     task(event: Dict, context: object) -> Dict[str, Any]
-        Task called by the handler to perform the work.
-        This task will call the restore_request for each file. Restored files will be kept
-        for {exp_days} days before they expire. A restore request will be tried up to {retries} times
-        if it fails, waiting {retry_sleep_secs} between each attempt.
+        Pulls information from os.environ, utilizing defaults if needed.
+        Then calls inner_task.
             Args:
-                Note that because we are using CumulusMessageAdapter, this does not directly correspond to Lambda input.
+                Note that because we are using CumulusMessageAdapter, this may not directly correspond to Lambda input.
                 event: A dict with the following keys:
                     'config' (dict): A dict with the following keys:
                         'glacier-bucket' (str): The name of the glacier bucket from which the files
@@ -257,7 +297,6 @@ FUNCTIONS
                                 'dest_bucket' (str): The bucket the restored file will be moved
                                     to after the restore completes.
                         'job_id' (str): The unique identifier used for tracking requests. If not present, will be generated.
-                context: Passed through from the handler. Unused, but required by CMA.
             Environment Vars:
                 RESTORE_EXPIRE_DAYS (int, optional, default = 5): The number of days
                     the restored file will be accessible in the S3 bucket before it expires.
@@ -265,23 +304,13 @@ FUNCTIONS
                     attempts to retry a restore_request that failed to submit.
                 RESTORE_RETRY_SLEEP_SECS (int, optional, default = 0): The number of seconds
                     to sleep between retry attempts.
-                RESTORE_RETRIEVAL_TYPE (str, optional, default = 'Standard'): the Tier
+                RESTORE_RETRIEVAL_TYPE (str, optional, default = 'Standard'): The Tier
                     for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
+                DB_QUEUE_URL
+                    The URL of the SQS queue to post status to.
             Returns:
-                A dict with the following keys:
-                    'granules' (List): A list of dicts, each with the following keys:
-                        'granuleId' (string): The id of the granule being restored.
-                        'recover_files' (list(dict)): A list of dicts with the following keys:
-                            'key' (str): Name of the file within the granule.
-                            'dest_bucket' (str): The bucket the restored file will be moved
-                                to after the restore completes. If None, refer to how copy_to_glacier handles default.
-                            'success' (boolean): True, indicating the restore request was submitted successfully.
-                                If any value would be false, RestoreRequestError is raised instead.
-                            'err_msg' (string): when success is False, this will contain
-                                the error message from the restore error.
-                        'keys': Same as recover_files, but without 'success' and 'err_msg'.
-                    'job_id' (str): The 'job_id' from event if present, otherwise a newly-generated uuid.
-                Example:
+                The value from inner_task.
+                Example Input:
                     {'granules': [
                         {
                             'granuleId': 'granxyz',
