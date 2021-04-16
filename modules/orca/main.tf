@@ -24,6 +24,32 @@ locals {
 
 ## Referenced Modules
 
+## orca_sqs - SQS module
+## =============================================================================
+module "orca_sqs" {
+  source = "../sqs"
+  ## --------------------------
+  ## Cumulus Variables
+  ## --------------------------
+  ## REQUIRED
+  aws_profile = var.aws_profile
+  prefix      = var.prefix
+
+  ## OPTIONAL
+  region = var.region
+  tags   = local.tags
+
+  ## --------------------------
+  ## ORCA Variables
+  ## --------------------------
+  ## OPTIONAL
+  sqs_delay_time                               = var.sqs_delay_time
+  sqs_maximum_message_size                     = var.sqs_maximum_message_size
+  staged_recovery_queue_message_retention_time = var.staged_recovery_queue_message_retention_time
+  status_update_queue_message_retention_time   = var.status_update_queue_message_retention_time
+}
+
+
 ## orca_lambdas - lambdas module that calls iam and security_groups module
 ## =============================================================================
 module "orca_lambdas" {
@@ -95,6 +121,7 @@ module "orca_workflows" {
   orca_default_bucket                           = var.orca_default_bucket
   orca_lambda_extract_filepaths_for_granule_arn = module.orca_lambdas.extract_filepaths_for_granule_arn
   orca_lambda_request_files_arn                 = module.orca_lambdas.request_files_arn
+  orca_sqs_status_update_queue_id               = module.sqs.orca_sqs_status_update_queue_id
 }
 
 
@@ -129,30 +156,4 @@ module "orca_rds" {
 
   ## OPTIONAL (DO NOT CHANGE DEFAULT VALUES!)
   database_name = var.database_name
-}
-
-
-## orca_sqs - SQS module
-## =============================================================================
-module "orca_sqs" {
-  source = "../sqs"
-  ## --------------------------
-  ## Cumulus Variables
-  ## --------------------------
-  ## REQUIRED
-  aws_profile = var.aws_profile
-  prefix      = var.prefix
-
-  ## OPTIONAL
-  region = var.region
-  tags   = local.tags
-
-  ## --------------------------
-  ## ORCA Variables
-  ## --------------------------
-  ## OPTIONAL
-  sqs_delay_time                               = var.sqs_delay_time
-  sqs_maximum_message_size                     = var.sqs_maximum_message_size
-  staged_recovery_queue_message_retention_time = var.staged_recovery_queue_message_retention_time
-  status_update_queue_message_retention_time   = var.status_update_queue_message_retention_time
 }

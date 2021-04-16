@@ -162,6 +162,7 @@ resource "aws_lambda_function" "request_files" {
       RESTORE_REQUEST_RETRIES  = var.orca_recovery_retry_limit
       RESTORE_RETRY_SLEEP_SECS = var.orca_recovery_retry_interval
       RESTORE_RETRIEVAL_TYPE   = var.orca_recovery_retrieval_type
+	  DB_QUEUE_URL             = var.orca_sqs_status_update_queue_id
     }
   }
 }

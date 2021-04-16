@@ -99,6 +99,8 @@ def task(event: Dict, context: object) -> Dict[str, Any]:  # pylint: disable-msg
                 to sleep between retry attempts.
             RESTORE_RETRIEVAL_TYPE (str, optional, default = 'Standard'): the Tier
                 for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
+            DB_QUEUE_URL
+                The URL of the SQS queue to post status to.
         Returns:
             A dict with the following keys:
                 'granules' (List): A list of dicts, each with the following keys:
@@ -474,6 +476,8 @@ def handler(event: Dict[str, Any], context):  # pylint: disable-msg=unused-argum
             RESTORE_RETRIEVAL_TYPE (str, optional, default = 'Standard'): the Tier
                 for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
             CUMULUS_MESSAGE_ADAPTER_DISABLED (str): If set to 'true', CumulusMessageAdapter does not modify input.
+            DB_QUEUE_URL
+                The URL of the SQS queue to post status to.
         Args:
             event: See schemas/input.json and combine with knowledge of CumulusMessageAdapter.
             context: An object required by AWS Lambda. Unused.
