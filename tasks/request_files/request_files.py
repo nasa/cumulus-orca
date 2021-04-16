@@ -36,6 +36,7 @@ OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY = 'RESTORE_REQUEST_RETRIES'
 OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY = 'RESTORE_RETRY_SLEEP_SECS'
 OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY = 'RESTORE_RETRIEVAL_TYPE'
 OS_ENVIRON_DB_QUEUE_URL_KEY = 'DB_QUEUE_URL'
+OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY = 'ORCA_DEFAULT_BUCKET'
 
 EVENT_CONFIG_KEY = 'config'
 EVENT_INPUT_KEY = 'input'
@@ -85,7 +86,7 @@ def task(event: Dict, context: object) -> Dict[str, Any]:  # pylint: disable-msg
                     'granules' (list(dict)): A list of dicts with the following keys:
                         'granuleId' (str): The id of the granule being restored.
                         'keys' (list(dict)): A list of dicts with the following keys:
-                            'key' (str): Name of the file within the granule.  # TODO: This or example lies.
+                            'key' (str): Name of the file within the granule.  # TODO: It actually might be a path.
                             'dest_bucket' (str): The bucket the restored file will be moved
                                 to after the restore completes.
                     'job_id' (str): The unique identifier used for tracking requests. If not present, will be generated.
@@ -100,6 +101,8 @@ def task(event: Dict, context: object) -> Dict[str, Any]:  # pylint: disable-msg
                 for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
             DB_QUEUE_URL
                 The URL of the SQS queue to post status to.
+            ORCA_DEFAULT_BUCKET
+                The bucket to use if dest_bucket is not set.
         Returns:
             The value from inner_task.
             Example Input:
@@ -135,6 +138,11 @@ def task(event: Dict, context: object) -> Dict[str, Any]:  # pylint: disable-msg
 
     db_queue_url = str(os.environ[OS_ENVIRON_DB_QUEUE_URL_KEY])
 
+    # Use the default glacier bucket if none is given.
+    event[EVENT_CONFIG_KEY][CONFIG_GLACIER_BUCKET_KEY] = \
+        event[EVENT_CONFIG_KEY].get(CONFIG_GLACIER_BUCKET_KEY,
+                                    str(os.environ[OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY]))
+
     try:
         exp_days = int(os.environ[OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY])
     except KeyError:
@@ -158,12 +166,12 @@ def inner_task(event: Dict, max_retries: int, retry_sleep_secs: float,
             event: A dict with the following keys:
                 'config' (dict): A dict with the following keys:
                     'glacier-bucket' (str): The name of the glacier bucket from which the files
-                    will be restored.
+                    will be restored. Defaults to os.environ['DB_QUEUE_URL']
                 'input' (dict): A dict with the following keys:
                     'granules' (list(dict)): A list of dicts with the following keys:
                         'granuleId' (str): The id of the granule being restored.
                         'keys' (list(dict)): A list of dicts with the following keys:
-                            'key' (str): Name of the file within the granule.  # TODO: This or example lies.
+                            'key' (str): Name of the file within the granule.  # TODO: It actually might be a path.
                             'dest_bucket' (str): The bucket the restored file will be moved
                                 to after the restore completes.
                     'job_id' (str): The unique identifier used for tracking requests.
@@ -198,12 +206,12 @@ def inner_task(event: Dict, max_retries: int, retry_sleep_secs: float,
 
     granules = event[EVENT_INPUT_KEY][INPUT_GRANULES_KEY]
     if len(granules) > 1:
-        # todo: This is either a lie, or the loop below should be removed.
+        # todo: This is either a lie, or the loop below should be removed.  ORCA-202
         raise RestoreRequestError(f'request_files can only accept 1 granule in the list. '
                                   f'This input contains {len(granules)}')
     s3 = boto3.client('s3')  # pylint: disable-msg=invalid-name
 
-    # todo: Singular output variable from loop?
+    # todo: Singular output variable from loop?  ORCA-202
     copied_granule = {}
     for granule in granules:
         files = []
@@ -222,8 +230,8 @@ def inner_task(event: Dict, max_retries: int, retry_sleep_secs: float,
         copied_granule = granule.copy()
         copied_granule[GRANULE_RECOVER_FILES_KEY] = files
 
-    # todo: Looks like this line is why multiple granules are not supported.
-    # todo: Using the default value {} for copied_granule will cause this function to raise errors every time.
+    # todo: Looks like this line is why multiple granules are not supported.  ORCA-202
+    # todo: Using the default value {} for copied_granule will cause this function to raise errors every time.  ORCA-202
     process_granule(
         s3, copied_granule, glacier_bucket, restore_expire_days, max_retries, retry_sleep_secs, retrieval_type,
         event[EVENT_INPUT_KEY][INPUT_JOB_ID_KEY], db_queue_url)
@@ -304,7 +312,7 @@ def process_granule(s3: BaseClient,
                     a_file[FILE_ERROR_MESSAGE_KEY] = str(err)
 
         attempt = attempt + 1
-        if attempt <= max_retries + 1:
+        if attempt <= max_retries + 1:  # Only sleep if not on last attempt. # todo: Use backoff code. ORCA-201
             # Check for early completion.
             if all(a_file[FILE_SUCCESS_KEY] for a_file in granule[GRANULE_RECOVER_FILES_KEY]):
                 break
@@ -481,7 +489,7 @@ def post_entry_to_queue(table_name: str, new_data: Dict[str, Any], request_metho
                 LOGGER.error(f"Error while logging row {json.dumps(new_data, indent=4)} "
                              f"to table {table_name}: {e}")
                 raise e
-            time.sleep(retry_sleep_secs)
+            time.sleep(retry_sleep_secs)  # todo: Use backoff code. ORCA-201
             continue
 
 

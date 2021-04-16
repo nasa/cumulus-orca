@@ -192,12 +192,12 @@ FUNCTIONS
                 event: A dict with the following keys:
                     'config' (dict): A dict with the following keys:
                         'glacier-bucket' (str): The name of the glacier bucket from which the files
-                        will be restored.
+                        will be restored. Defaults to os.environ['DB_QUEUE_URL']
                     'input' (dict): A dict with the following keys:
                         'granules' (list(dict)): A list of dicts with the following keys:
                             'granuleId' (str): The id of the granule being restored.
                             'keys' (list(dict)): A list of dicts with the following keys:
-                                'key' (str): Name of the file within the granule.  # TODO: This or example lies.
+                                'key' (str): Name of the file within the granule.  # TODO: It actually might be a path.
                                 'dest_bucket' (str): The bucket the restored file will be moved
                                     to after the restore completes.
                         'job_id' (str): The unique identifier used for tracking requests.
@@ -293,7 +293,7 @@ FUNCTIONS
                         'granules' (list(dict)): A list of dicts with the following keys:
                             'granuleId' (str): The id of the granule being restored.
                             'keys' (list(dict)): A list of dicts with the following keys:
-                                'key' (str): Name of the file within the granule.  # TODO: This or example lies.
+                                'key' (str): Name of the file within the granule.  # TODO: It actually might be a path.
                                 'dest_bucket' (str): The bucket the restored file will be moved
                                     to after the restore completes.
                         'job_id' (str): The unique identifier used for tracking requests. If not present, will be generated.
@@ -308,6 +308,8 @@ FUNCTIONS
                     for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
                 DB_QUEUE_URL
                     The URL of the SQS queue to post status to.
+                ORCA_DEFAULT_BUCKET
+                    The bucket to use if dest_bucket is not set.
             Returns:
                 The value from inner_task.
                 Example Input:
@@ -345,6 +347,7 @@ DATA
     ORCA_STATUS_FAILED = 4
     ORCA_STATUS_PENDING = 1
     OS_ENVIRON_DB_QUEUE_URL_KEY = 'DB_QUEUE_URL'
+    OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY = 'ORCA_DEFAULT_BUCKET'
     OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY = 'RESTORE_EXPIRE_DAYS'
     OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY = 'RESTORE_REQUEST_RETRIES'
     OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY = 'RESTORE_RETRIEVAL_TYPE'

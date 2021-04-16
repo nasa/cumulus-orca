@@ -26,7 +26,7 @@
               "type": "object",
               "properties": {
                 "key": {
-                  "description": "Name of the file within the granule.  # TODO: This or example lies.",
+                  "description": "Name of the file within the granule.  # TODO: It actually might be a path.",
                   "type": "string"
                 },
                 "dest_bucket": {

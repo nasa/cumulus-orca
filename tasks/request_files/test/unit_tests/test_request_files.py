@@ -11,18 +11,18 @@ from datetime import datetime, timezone
 from random import randint, uniform
 from unittest import mock
 from unittest.mock import patch, MagicMock, call, Mock
-import database
 
+import database
 # noinspection PyPackageRequirements
 import fastjsonschema as fastjsonschema
 from botocore.exceptions import ClientError
-# noinspection PyPackageRequirements
 
 import request_files
-from test.request_helpers import (REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_3, REQUEST_ID1, REQUEST_ID2,
-                                  REQUEST_ID3, LambdaContextMock,
+from test.request_helpers import (REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_3, REQUEST_ID1, LambdaContextMock,
                                   create_handler_event, create_insert_request,
                                   mock_secretsmanager_get_parameter)
+
+# noinspection PyPackageRequirements
 
 UTC_NOW_EXP_1 = datetime.now(timezone.utc).isoformat()
 FILE1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5"
@@ -54,6 +54,7 @@ class TestRequestFiles(unittest.TestCase):
         os.environ["DB_QUEUE_URL"] = "https://db.queue.url"
         os.environ[request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY] = '5'
         os.environ[request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY] = '2'
+        os.environ[request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY] = 'default_glacier_bucket'
         os.environ['PREFIX'] = uuid.uuid4().__str__()
         os.environ.pop('CUMULUS_MESSAGE_ADAPTER_DISABLED', None)
         self.context = LambdaContextMock()
@@ -79,7 +80,9 @@ class TestRequestFiles(unittest.TestCase):
         All variables present and valid.
         """
         job_id = uuid.uuid4().__str__()
-        mock_event = {request_files.EVENT_INPUT_KEY: {request_files.INPUT_JOB_ID_KEY: job_id}}
+        glacier_bucket = uuid.uuid4().__str__()
+        mock_event = {request_files.EVENT_INPUT_KEY: {request_files.INPUT_JOB_ID_KEY: job_id},
+                      request_files.EVENT_CONFIG_KEY: {request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket}}
         max_retries = randint(0, 99999)
         retry_sleep_secs = uniform(0, 99999)
         retrieval_type = 'Bulk'
@@ -95,7 +98,8 @@ class TestRequestFiles(unittest.TestCase):
         request_files.task(mock_event, None)
 
         mock_inner_task.assert_called_once_with(
-            {request_files.EVENT_INPUT_KEY: {request_files.INPUT_JOB_ID_KEY: job_id}}, max_retries,
+            {request_files.EVENT_INPUT_KEY: {request_files.INPUT_JOB_ID_KEY: job_id},
+             request_files.EVENT_CONFIG_KEY: {request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket}}, max_retries,
             retry_sleep_secs, retrieval_type, exp_days,
             db_queue_url)
 
@@ -106,7 +110,9 @@ class TestRequestFiles(unittest.TestCase):
         If max_retries missing, use default.
         """
         job_id = uuid.uuid4().__str__()
-        mock_event = {request_files.EVENT_INPUT_KEY: {request_files.INPUT_JOB_ID_KEY: job_id}}
+        glacier_bucket = uuid.uuid4().__str__()
+        mock_event = {request_files.EVENT_INPUT_KEY: {request_files.INPUT_JOB_ID_KEY: job_id},
+                      request_files.EVENT_CONFIG_KEY: {request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket}}
         retry_sleep_secs = uniform(0, 99999)
         retrieval_type = 'Bulk'
         exp_days = randint(0, 99999)
@@ -120,7 +126,8 @@ class TestRequestFiles(unittest.TestCase):
         request_files.task(mock_event, None)
 
         mock_inner_task.assert_called_once_with(
-            {request_files.EVENT_INPUT_KEY: {request_files.INPUT_JOB_ID_KEY: job_id}},
+            {request_files.EVENT_INPUT_KEY: {request_files.INPUT_JOB_ID_KEY: job_id},
+             request_files.EVENT_CONFIG_KEY: {request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket}},
             request_files.DEFAULT_MAX_REQUEST_RETRIES,
             retry_sleep_secs, retrieval_type, exp_days,
             db_queue_url)
@@ -132,7 +139,9 @@ class TestRequestFiles(unittest.TestCase):
         If sleep_secs missing, use default.
         """
         job_id = uuid.uuid4().__str__()
-        mock_event = {request_files.EVENT_INPUT_KEY: {request_files.INPUT_JOB_ID_KEY: job_id}}
+        glacier_bucket = uuid.uuid4().__str__()
+        mock_event = {request_files.EVENT_INPUT_KEY: {request_files.INPUT_JOB_ID_KEY: job_id},
+                      request_files.EVENT_CONFIG_KEY: {request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket}}
         max_retries = randint(0, 99999)
         retrieval_type = 'Bulk'
         exp_days = randint(0, 99999)
@@ -146,7 +155,8 @@ class TestRequestFiles(unittest.TestCase):
         request_files.task(mock_event, None)
 
         mock_inner_task.assert_called_once_with(
-            {request_files.EVENT_INPUT_KEY: {request_files.INPUT_JOB_ID_KEY: job_id}},
+            {request_files.EVENT_INPUT_KEY: {request_files.INPUT_JOB_ID_KEY: job_id},
+             request_files.EVENT_CONFIG_KEY: {request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket}},
             max_retries,
             request_files.DEFAULT_RESTORE_RETRY_SLEEP_SECS, retrieval_type, exp_days,
             db_queue_url)
@@ -158,7 +168,9 @@ class TestRequestFiles(unittest.TestCase):
         If retrieval_type is missing, use default.
         """
         job_id = uuid.uuid4().__str__()
-        mock_event = {request_files.EVENT_INPUT_KEY: {request_files.INPUT_JOB_ID_KEY: job_id}}
+        glacier_bucket = uuid.uuid4().__str__()
+        mock_event = {request_files.EVENT_INPUT_KEY: {request_files.INPUT_JOB_ID_KEY: job_id},
+                      request_files.EVENT_CONFIG_KEY: {request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket}}
         max_retries = randint(0, 99999)
         retry_sleep_secs = uniform(0, 99999)
         exp_days = randint(0, 99999)
@@ -172,7 +184,8 @@ class TestRequestFiles(unittest.TestCase):
         request_files.task(mock_event, None)
 
         mock_inner_task.assert_called_once_with(
-            {request_files.EVENT_INPUT_KEY: {request_files.INPUT_JOB_ID_KEY: job_id}},
+            {request_files.EVENT_INPUT_KEY: {request_files.INPUT_JOB_ID_KEY: job_id},
+             request_files.EVENT_CONFIG_KEY: {request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket}},
             max_retries, retry_sleep_secs,
             request_files.DEFAULT_RESTORE_RETRIEVAL_TYPE, exp_days,
             db_queue_url)
@@ -184,7 +197,9 @@ class TestRequestFiles(unittest.TestCase):
         If retrieval_type is invalid, use default.
         """
         job_id = uuid.uuid4().__str__()
-        mock_event = {request_files.EVENT_INPUT_KEY: {request_files.INPUT_JOB_ID_KEY: job_id}}
+        glacier_bucket = uuid.uuid4().__str__()
+        mock_event = {request_files.EVENT_INPUT_KEY: {request_files.INPUT_JOB_ID_KEY: job_id},
+                      request_files.EVENT_CONFIG_KEY: {request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket}}
         max_retries = randint(0, 99999)
         retry_sleep_secs = uniform(0, 99999)
         retrieval_type = 'Nope'
@@ -200,7 +215,8 @@ class TestRequestFiles(unittest.TestCase):
         request_files.task(mock_event, None)
 
         mock_inner_task.assert_called_once_with(
-            {request_files.EVENT_INPUT_KEY: {request_files.INPUT_JOB_ID_KEY: job_id}},
+            {request_files.EVENT_INPUT_KEY: {request_files.INPUT_JOB_ID_KEY: job_id},
+             request_files.EVENT_CONFIG_KEY: {request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket}},
             max_retries, retry_sleep_secs,
             request_files.DEFAULT_RESTORE_RETRIEVAL_TYPE, exp_days,
             db_queue_url)
@@ -212,7 +228,9 @@ class TestRequestFiles(unittest.TestCase):
         Uses default missing_exp_days if needed.
         """
         job_id = uuid.uuid4().__str__()
-        mock_event = {request_files.EVENT_INPUT_KEY: {request_files.INPUT_JOB_ID_KEY: job_id}}
+        glacier_bucket = uuid.uuid4().__str__()
+        mock_event = {request_files.EVENT_INPUT_KEY: {request_files.INPUT_JOB_ID_KEY: job_id},
+                      request_files.EVENT_CONFIG_KEY: {request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket}}
         max_retries = randint(0, 99999)
         retry_sleep_secs = uniform(0, 99999)
         retrieval_type = 'Bulk'
@@ -226,18 +244,21 @@ class TestRequestFiles(unittest.TestCase):
         request_files.task(mock_event, None)
 
         mock_inner_task.assert_called_once_with(
-            {request_files.EVENT_INPUT_KEY: {request_files.INPUT_JOB_ID_KEY: job_id}},
+            {request_files.EVENT_INPUT_KEY: {request_files.INPUT_JOB_ID_KEY: job_id},
+             request_files.EVENT_CONFIG_KEY: {request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket}},
             max_retries, retry_sleep_secs, retrieval_type,
             request_files.DEFAULT_RESTORE_EXPIRE_DAYS,
             db_queue_url)
 
     @patch('request_files.inner_task')
-    def test_job_id_missing_generates(self,
-                                      mock_inner_task: MagicMock):
+    def test_task_job_id_missing_generates(self,
+                                           mock_inner_task: MagicMock):
         """
         If job_id missing, generates a new one.
         """
-        mock_event = {request_files.EVENT_INPUT_KEY: {}}
+        glacier_bucket = uuid.uuid4().__str__()
+        mock_event = {request_files.EVENT_INPUT_KEY: {},
+                      request_files.EVENT_CONFIG_KEY: {request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket}}
         max_retries = randint(0, 99999)
         retry_sleep_secs = uniform(0, 99999)
         retrieval_type = 'Bulk'
@@ -255,7 +276,41 @@ class TestRequestFiles(unittest.TestCase):
             request_files.task(mock_event, None)
 
         mock_inner_task.assert_called_once_with(
-            {request_files.EVENT_INPUT_KEY: {request_files.INPUT_JOB_ID_KEY: job_id.__str__()}},
+            {request_files.EVENT_INPUT_KEY: {request_files.INPUT_JOB_ID_KEY: job_id.__str__()},
+             request_files.EVENT_CONFIG_KEY: {request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket}},
+            max_retries,
+            retry_sleep_secs, retrieval_type, exp_days,
+            db_queue_url)
+
+    @patch('request_files.inner_task')
+    def test_task_glacier_bucket_missing_uses_default(self,
+                                                      mock_inner_task: MagicMock):
+        """
+        If glacier_bucket is missing, use default from env.
+        """
+        job_id = uuid.uuid4().__str__()
+        glacier_bucket = uuid.uuid4().__str__()
+        mock_event = {request_files.EVENT_INPUT_KEY: {request_files.INPUT_JOB_ID_KEY: job_id},
+                      request_files.EVENT_CONFIG_KEY: {}}
+        os.environ[request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY] = glacier_bucket
+        max_retries = randint(0, 99999)
+        retry_sleep_secs = uniform(0, 99999)
+        retrieval_type = 'Bulk'
+        exp_days = randint(0, 99999)
+        db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
+
+        os.environ["DB_QUEUE_URL"] = db_queue_url
+        os.environ[request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY] = max_retries.__str__()
+        os.environ[request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY] = retry_sleep_secs.__str__()
+        os.environ[request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY] = retrieval_type
+        os.environ[request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY] = exp_days.__str__()
+
+        with patch.object(uuid, 'uuid4', return_value=job_id):
+            request_files.task(mock_event, None)
+
+        mock_inner_task.assert_called_once_with(
+            {request_files.EVENT_INPUT_KEY: {request_files.INPUT_JOB_ID_KEY: job_id.__str__()},
+             request_files.EVENT_CONFIG_KEY: {request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket}},
             max_retries,
             retry_sleep_secs, retrieval_type, exp_days,
             db_queue_url)
@@ -293,6 +348,7 @@ class TestRequestFiles(unittest.TestCase):
             request_files.FILE_DEST_BUCKET_KEY: file_dest_bucket_0
         }
         expected_file0_output = file_0.copy()
+        # noinspection PyTypeChecker
         expected_file0_output[request_files.FILE_SUCCESS_KEY] = False
         expected_file0_output[request_files.FILE_ERROR_MESSAGE_KEY] = ''
         file_1 = {
@@ -300,6 +356,7 @@ class TestRequestFiles(unittest.TestCase):
             request_files.FILE_DEST_BUCKET_KEY: file_dest_bucket_1
         }
         expected_file1_output = file_1.copy()
+        # noinspection PyTypeChecker
         expected_file1_output[request_files.FILE_SUCCESS_KEY] = False
         expected_file1_output[request_files.FILE_ERROR_MESSAGE_KEY] = ''
         expected_input_granule_files = [expected_file0_output, expected_file1_output]
@@ -708,9 +765,10 @@ class TestRequestFiles(unittest.TestCase):
         """
         input_event = create_handler_event()
         expected_task_input = {"input": input_event["payload"],
-                      "config": {"glacier-bucket": "podaac-sndbx-cumulus-glacier"}}
+                               "config": {"glacier-bucket": "podaac-sndbx-cumulus-glacier"}}
         mock_task.return_value = {
-            "granules": [{"granuleId": "some_granule_id", "recover_files": [{"key": "some_key", "dest_bucket": "some_bucket", "success": True}]}],
+            "granules": [{"granuleId": "some_granule_id",
+                          "recover_files": [{"key": "some_key", "dest_bucket": "some_bucket", "success": True}]}],
             "job_id": "some_job_id"
         }
         result = request_files.handler(input_event, self.context)
@@ -1065,25 +1123,6 @@ class TestRequestFiles(unittest.TestCase):
             Key=FILE1,
             RestoreRequest=restore_req_exp)
         self.assertEqual(2, mock_post_entry_to_queue.call_count)
-
-    @patch('cumulus_logger.CumulusLogger.error')
-    def test_task_no_glacier_bucket(self,
-                                    mock_logger_error: MagicMock):
-        """
-        Test for missing glacier-bucket in config.
-        """
-        exp_event = {"input": {
-            "granules": [{"granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
-                          "keys": [KEY1]}],
-            'job_id': uuid.uuid4().__str__()
-        }}
-
-        exp_err = f"request: {exp_event} does not contain a config value for glacier-bucket"
-        try:
-            request_files.task(exp_event, self.context)
-            self.fail("RestoreRequestError expected")
-        except request_files.RestoreRequestError as err:
-            self.assertEqual(exp_err, str(err))
 
     @patch('request_files.post_entry_to_queue')
     @patch('boto3.client')
