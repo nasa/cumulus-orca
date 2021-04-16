@@ -6,6 +6,7 @@ from enum import Enum
 import json
 import boto3
 from typing import Dict, Any, Optional
+import datetime
 
 class RequestMethod(Enum):
     """
@@ -25,6 +26,7 @@ class OrcaStatus(Enum):
     STAGED = 2
     SUCCESS = 3
     FAILED = 4
+    
 
 def post_status_for_job_to_queue(
     job_id: str,
@@ -33,7 +35,7 @@ def post_status_for_job_to_queue(
     request_time: Optional[str],
     completion_time: Optional[str],
     archive_destination: Optional[str],
-    request_method: RequestMethod,
+    request_method: RequestMethod, 
     db_queue_url: str,
 ):
     """Posts status of jobs to SQS queue.
@@ -55,13 +57,15 @@ def post_status_for_job_to_queue(
         None
     """
 
-    new_data = {"job_id": job_id, "granule_id": granule_id}
-    if request_time is not None:
+    new_data = {"job_id": job_id, "granule_id": granule_id, "status_id": status_id.value}
+    if request_method.value == "post":
+        request_time = datetime.datetime.utcnow().isoformat()
         new_data["request_time"] = request_time
-    if completion_time is not None:
-        new_data["completion_time"] = completion_time
-    if archive_destination is not None:
         new_data["archive_destination"] = archive_destination
+    # check requestMethod.value is NEW, then set request time, set archive_destination
+    # if status_id. .. is success or failed, then calculate completion_time
+    if (status_id == 3 or status_id.value == 4):
+        new_data["completion_time"] = datetime.datetime.utcnow().isoformat()
 
     post_entry_to_queue("orca_recoveryjob", new_data, request_method, db_queue_url)
 
@@ -72,11 +76,11 @@ def post_status_for_file_to_queue(
     filename: str,
     key_path: Optional[str],
     restore_destination: Optional[str],
-    status_id: OrcaStatus,
+    status_id: OrcaStatus, #required
     error_message: Optional[str],
-    request_time: Optional[str],
-    last_update: str,
-    completion_time: Optional[str],
+    request_time: Optional[str],#no need.. calculate internally
+    last_update: str,#no need.. calculate internally
+    completion_time: Optional[str],#no need.. calculate internally
     request_method: RequestMethod,
     db_queue_url: str,
 ):
@@ -102,17 +106,19 @@ def post_status_for_file_to_queue(
     Raises:
         None
     """
-    new_data = {"job_id": job_id, "granule_id": granule_id, "filename": filename, "last_update": last_update}
-    if key_path is not None:
+    last_update = datetime.datetime.utcnow().isoformat()
+    new_data = {"job_id": job_id, "granule_id": granule_id, "filename": filename, 
+                "last_update": last_update, "status_id": status_id.value}
+
+    if request_method.value == "post":
         new_data["key_path"] = key_path
-    if restore_destination is not None:
         new_data["restore_destination"] = restore_destination
-    if error_message is not None:
-        new_data["error_message"] = error_message
-    if request_time is not None:
+        request_time = datetime.datetime.utcnow().isoformat()
         new_data["request_time"] = request_time
-    if completion_time is not None:
-        new_data["completion_time"] = completion_time
+    if (status_id.value == 3 or status_id.value == 4):
+        new_data["completion_time"] = datetime.datetime.utcnow().isoformat()
+        if status_id.value == 4:
+            new_data["error_message"] = error_message
 
     post_entry_to_queue("orca_recoverfile", new_data, request_method, db_queue_url)
 
