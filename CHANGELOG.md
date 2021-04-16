@@ -15,6 +15,8 @@ and includes an additional section for migration notes.
 
 
 ## [Unreleased]
+
+### Changed
 - *ORCA-91* copy_files_to_archive now uses SQS queue for recovery status updates. Will generate a job_id if none is given, and return it in the output.
 
 ### Migration Notes

@@ -20,6 +20,7 @@ from cumulus_logger import CumulusLogger
 from run_cumulus_task import run_cumulus_task
 
 
+# todo: Move to shared lib after ORCA-170
 class RequestMethod(Enum):
     POST = 'post'
     PUT = 'put'
@@ -54,6 +55,7 @@ FILE_KEY_KEY = 'key'
 FILE_SUCCESS_KEY = 'success'
 FILE_ERROR_MESSAGE_KEY = 'err_msg'
 
+# todo: Move to shared lib after ORCA-170
 ORCA_STATUS_PENDING = 1
 # ORCA_STATUS_STAGED = 2
 # ORCA_STATUS_SUCCESS = 3
@@ -71,12 +73,10 @@ class RestoreRequestError(Exception):
 # noinspection PyUnusedLocal
 def task(event: Dict, context: object) -> Dict[str, Any]:  # pylint: disable-msg=unused-argument
     """
-    Task called by the handler to perform the work.
-    This task will call the restore_request for each file. Restored files will be kept
-    for {exp_days} days before they expire. A restore request will be tried up to {retries} times
-    if it fails, waiting {retry_sleep_secs} between each attempt.
+    Pulls information from os.environ, utilizing defaults if needed.
+    Then calls inner_task.
         Args:
-            Note that because we are using CumulusMessageAdapter, this does not directly correspond to Lambda input.
+            Note that because we are using CumulusMessageAdapter, this may not directly correspond to Lambda input.
             event: A dict with the following keys:
                 'config' (dict): A dict with the following keys:
                     'glacier-bucket' (str): The name of the glacier bucket from which the files
@@ -89,7 +89,6 @@ def task(event: Dict, context: object) -> Dict[str, Any]:  # pylint: disable-msg
                             'dest_bucket' (str): The bucket the restored file will be moved
                                 to after the restore completes.
                     'job_id' (str): The unique identifier used for tracking requests. If not present, will be generated.
-            context: Passed through from the handler. Unused, but required by CMA.
         Environment Vars:
             RESTORE_EXPIRE_DAYS (int, optional, default = 5): The number of days
                 the restored file will be accessible in the S3 bucket before it expires.
@@ -97,25 +96,13 @@ def task(event: Dict, context: object) -> Dict[str, Any]:  # pylint: disable-msg
                 attempts to retry a restore_request that failed to submit.
             RESTORE_RETRY_SLEEP_SECS (int, optional, default = 0): The number of seconds
                 to sleep between retry attempts.
-            RESTORE_RETRIEVAL_TYPE (str, optional, default = 'Standard'): the Tier
+            RESTORE_RETRIEVAL_TYPE (str, optional, default = 'Standard'): The Tier
                 for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
             DB_QUEUE_URL
                 The URL of the SQS queue to post status to.
         Returns:
-            A dict with the following keys:
-                'granules' (List): A list of dicts, each with the following keys:
-                    'granuleId' (string): The id of the granule being restored.
-                    'recover_files' (list(dict)): A list of dicts with the following keys:
-                        'key' (str): Name of the file within the granule.
-                        'dest_bucket' (str): The bucket the restored file will be moved
-                            to after the restore completes.
-                        'success' (boolean): True, indicating the restore request was submitted successfully.
-                            If any value would be false, RestoreRequestError is raised instead.
-                        'err_msg' (string): when success is False, this will contain
-                            the error message from the restore error.
-                    'keys': Same as recover_files, but without 'success' and 'err_msg'.
-                'job_id' (str): The 'job_id' from event if present, otherwise a newly-generated uuid.
-            Example:
+            The value from inner_task.
+            Example Input:
                 {'granules': [
                     {
                         'granuleId': 'granxyz',
@@ -161,6 +148,48 @@ def task(event: Dict, context: object) -> Dict[str, Any]:  # pylint: disable-msg
 
 def inner_task(event: Dict, max_retries: int, retry_sleep_secs: float,
                retrieval_type: str, restore_expire_days: int, db_queue_url: str):
+    """
+    Task called by the handler to perform the work.
+    This task will call the restore_request for each file. Restored files will be kept
+    for {exp_days} days before they expire. A restore request will be tried up to {retries} times
+    if it fails, waiting {retry_sleep_secs} between each attempt.
+        Args:
+            Note that because we are using CumulusMessageAdapter, this may not directly correspond to Lambda input.
+            event: A dict with the following keys:
+                'config' (dict): A dict with the following keys:
+                    'glacier-bucket' (str): The name of the glacier bucket from which the files
+                    will be restored.
+                'input' (dict): A dict with the following keys:
+                    'granules' (list(dict)): A list of dicts with the following keys:
+                        'granuleId' (str): The id of the granule being restored.
+                        'keys' (list(dict)): A list of dicts with the following keys:
+                            'key' (str): Name of the file within the granule.  # TODO: This or example lies.
+                            'dest_bucket' (str): The bucket the restored file will be moved
+                                to after the restore completes.
+                    'job_id' (str): The unique identifier used for tracking requests.
+            max_retries: The maximum number of retries for network operations.
+            retry_sleep_secs: The number of time to sleep between retries.
+            retrieval_type: The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
+            restore_expire_days: The number of days the restored file will be accessible in the S3 bucket before it
+                expires.
+            db_queue_url: The URL of the SQS queue to post status to.
+        Returns:
+            A dict with the following keys:
+                'granules' (List): A list of dicts, each with the following keys:
+                    'granuleId' (string): The id of the granule being restored.
+                    'recover_files' (list(dict)): A list of dicts with the following keys:
+                        'key' (str): Name of the file within the granule.
+                        'dest_bucket' (str): The bucket the restored file will be moved
+                            to after the restore completes.
+                        'success' (boolean): True, indicating the restore request was submitted successfully.
+                            If any value would be false, RestoreRequestError is raised instead.
+                        'err_msg' (string): when success is False, this will contain
+                            the error message from the restore error.
+                    'keys': Same as recover_files, but without 'success' and 'err_msg'.
+                'job_id' (str): The 'job_id' from event if present, otherwise a newly-generated uuid.
+        Raises:
+            RestoreRequestError: Thrown if there are errors with the input request.
+    """
     try:
         glacier_bucket = event[EVENT_CONFIG_KEY][CONFIG_GLACIER_BUCKET_KEY]
     except KeyError:
@@ -242,7 +271,6 @@ def process_granule(s3: BaseClient,
     attempt = 1
     granule_id = granule[GRANULE_GRANULE_ID_KEY]
 
-    # todo: Better async.
     post_status_for_job_to_queue(job_id, granule_id, ORCA_STATUS_PENDING, request_time, None, glacier_bucket,
                                  RequestMethod.POST,
                                  db_queue_url,
@@ -365,7 +393,7 @@ def restore_object(s3_cli: BaseClient, key: str, days: int, db_glacier_bucket_ke
         f"attempt {attempt} successful. Job ID: {job_id}")
 
 
-# todo: Move to shared lib
+# todo: Move to shared lib after ORCA-170
 def post_status_for_job_to_queue(job_id: str, granule_id: str, status_id: Optional[int],
                                  request_time: Optional[str], completion_time: Optional[str],
                                  archive_destination: Optional[str],
@@ -386,7 +414,7 @@ def post_status_for_job_to_queue(job_id: str, granule_id: str, status_id: Option
                         request_method, db_queue_url, max_retries, retry_sleep_secs)
 
 
-# todo: Move to shared lib
+# todo: Move to shared lib after ORCA-170
 def post_status_for_file_to_queue(job_id: str, granule_id: str, filename: str, key_path: Optional[str],
                                   restore_destination: Optional[str],
                                   status_id: Optional[int], error_message: Optional[str],
@@ -422,7 +450,7 @@ def post_status_for_file_to_queue(job_id: str, granule_id: str, filename: str, k
 sqs = boto3.client('sqs')
 
 
-# todo: Move to shared lib
+# todo: Move to shared lib after ORCA-170
 def post_entry_to_queue(table_name: str, new_data: Dict[str, Any], request_method: RequestMethod, db_queue_url: str,
                         max_retries: int, retry_sleep_secs: float):
     body = json.dumps(new_data, indent=4)
