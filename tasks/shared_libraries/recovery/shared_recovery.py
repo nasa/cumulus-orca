@@ -86,12 +86,12 @@ def post_status_for_file_to_queue(
         job_id: The unique identifier used for tracking requests.
         granuleId: The id of the granule being restored.
         filename: The name of the file being copied.
-        key_path: 
+        key_path: todo
         restore_destination: The name of the bucket the restored file will be moved to.
         status_id: Defines the status id used in the ORCA Recovery database.
-        error_message: 
+        error_message: message displayed on error.
         request_time: todo
-        last_update:  
+        last_update: todo
         completion_time: todo
         request_method: The method action for the database lambda to take when posting to the SQS queue.
         db_queue_url: The SQS queue URL defined by AWS.
@@ -127,7 +127,7 @@ def post_entry_to_queue(
 
     Args:
         table_name: The name of the DB table.
-        new_data: The id of the granule being restored.
+        new_data: A dictionary representing the column/value pairs to write to the DB table.
         request_method: The method action for the database lambda to take when posting to the SQS queue.
         db_queue_url: The SQS queue URL defined by AWS.
 
