@@ -63,7 +63,7 @@ def post_status_for_file_to_queue(
     request_method: RequestMethod,
     db_queue_url: str,
 ):
-    new_data = {"job_id": job_id, "granule_id": granule_id, "filename": filename}
+    new_data = {"job_id": job_id, "granule_id": granule_id, "filename": filename, "last_update": last_update}
     if key_path is not None:
         new_data["key_path"] = key_path
     if restore_destination is not None:

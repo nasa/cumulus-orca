@@ -39,12 +39,30 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         db_queue_url = queue.url
         #this is the expected message body that should be received
         new_data = {"name": "unit_test"}
+        body = json.dumps(new_data)
+        # based on 'table_name + request_method.value + body', it should be 'unit_test_tablepost{"name": "unit_test"}
+        MessageDeduplicationId = table_name + request_method.value + body
+        MessageGroupId = 'request_files'
+        MessageAttributes={
+                "RequestMethod": {
+                    "DataType": "String",
+                    "StringValue": request_method.value,
+                },
+                "TableName": {"DataType": "String", "StringValue": table_name},
+            }
         shared_recovery.post_entry_to_queue(
             table_name, new_data, request_method, db_queue_url
         )
+
         #grabbing queue contents after the message is sent
-        queue_contents = queue.receive_messages()
+        queue_contents = queue.receive_messages(
+                            MessageAttributeNames= ["All"]
+                            )
         self.assertEqual(queue_contents[0].body, json.dumps(new_data))
+        self.assertEqual(queue_contents[0].attributes['MessageDeduplicationId'], MessageDeduplicationId)
+        self.assertEqual(queue_contents[0].attributes['MessageGroupId'], MessageGroupId)
+        self.assertEqual(queue_contents[0].message_attributes, MessageAttributes)
+        
 # ---------------------------------------------------------------------------------------------------------------------------------
 
     def test_post_status_for_file_to_queue_optional_none(self):
@@ -54,6 +72,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         """
         test_sqs = boto3.resource("sqs")
         queue = test_sqs.create_queue(QueueName="unit-test-queue.fifo")
+        table_name = 'orca_recoverfile'
         request_method = shared_recovery.RequestMethod.NEW
         job_id= '1234'
         granule_id= '6c8d0c8b-4f9a-4d87-ab7c-480b185a0250'
@@ -69,15 +88,29 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         db_queue_url = queue.url
         #this is the expected message body that should be received
         new_data = {"job_id": job_id, "granule_id": granule_id, "filename": filename, "last_update": last_update}
+        body = json.dumps(new_data)
+        MessageDeduplicationId = table_name + request_method.value + body
+        MessageGroupId = 'request_files'
+        MessageAttributes={
+                "RequestMethod": {
+                    "DataType": "String",
+                    "StringValue": request_method.value,
+                },
+                "TableName": {"DataType": "String", "StringValue": table_name},
+            }
 
-        shared_recovery.post_status_for_file_to_queue(
+        response = shared_recovery.post_status_for_file_to_queue(
             job_id,granule_id,filename,key_path,restore_destination,status_id,error_message,
             request_time,last_update,completion_time,request_method,db_queue_url
             )
         #grabbing queue contents after the message is sent
-        queue_contents = queue.receive_messages()
-
+        queue_contents = queue.receive_messages(
+                            MessageAttributeNames= ["All"]
+                            )
         self.assertEqual(queue_contents[0].body, json.dumps(new_data))
+        self.assertEqual(queue_contents[0].attributes['MessageDeduplicationId'], MessageDeduplicationId)
+        self.assertEqual(queue_contents[0].attributes['MessageGroupId'], MessageGroupId)
+        self.assertEqual(queue_contents[0].message_attributes, MessageAttributes)
 # ---------------------------------------------------------------------------------------------------------------------------------
 
     def test_post_status_for_file_to_queue_no_null(self):
@@ -87,6 +120,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         """
         test_sqs = boto3.resource("sqs")
         queue = test_sqs.create_queue(QueueName="unit-test-queue.fifo")
+        table_name = 'orca_recoverfile'
         request_method = shared_recovery.RequestMethod.NEW
         job_id= '1234'
         granule_id= '6c8d0c8b-4f9a-4d87-ab7c-480b185a0250'
@@ -101,16 +135,31 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         completion_time = '2019-07-18T17:36:38.494918'
         db_queue_url = queue.url
         #this is the expected message body that should be received
-        new_data = {"job_id": job_id, "granule_id": granule_id, "filename": filename, "key_path": key_path, 
-                            "restore_destination": restore_destination, "error_message": error_message, "request_time": request_time, "last_update": last_update,
-                            "completion_time": completion_time}
+        new_data = {"job_id": job_id, "granule_id": granule_id, "filename": filename, "last_update": last_update, 
+                    "key_path": key_path, "restore_destination": restore_destination, "error_message": error_message, 
+                    "request_time": request_time, "completion_time": completion_time}
+        body = json.dumps(new_data)
+        MessageDeduplicationId = table_name + request_method.value + body
+        MessageGroupId = 'request_files'
+        MessageAttributes={
+                "RequestMethod": {
+                    "DataType": "String",
+                    "StringValue": request_method.value,
+                },
+                "TableName": {"DataType": "String", "StringValue": table_name},
+            }
 
         shared_recovery.post_status_for_file_to_queue(
             job_id,granule_id,filename,key_path,restore_destination,status_id,error_message,request_time,last_update,completion_time,request_method,db_queue_url)
         #grabbing queue contents after the message is sent
-        queue_contents = queue.receive_messages()
+        queue_contents = queue.receive_messages(
+                            MessageAttributeNames= ["All"]
+                            )
 
         self.assertEqual(queue_contents[0].body, json.dumps(new_data))
+        self.assertEqual(queue_contents[0].attributes['MessageDeduplicationId'], MessageDeduplicationId)
+        self.assertEqual(queue_contents[0].attributes['MessageGroupId'], MessageGroupId)
+        self.assertEqual(queue_contents[0].message_attributes, MessageAttributes)
 
 # ---------------------------------------------------------------------------------------------------------------------------------
 
@@ -121,6 +170,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
             """
             test_sqs = boto3.resource("sqs")
             queue = test_sqs.create_queue(QueueName="unit-test-queue.fifo")
+            table_name = 'orca_recoveryjob'
             request_method = shared_recovery.RequestMethod.NEW
             job_id= '1234'
             granule_id= '6c8d0c8b-4f9a-4d87-ab7c-480b185a0250'
@@ -132,15 +182,30 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
             db_queue_url = queue.url
             #this is the expected message body that should be received
             new_data = {"job_id": job_id, "granule_id": granule_id}
+            body = json.dumps(new_data)
+            MessageDeduplicationId = table_name + request_method.value + body
+            MessageGroupId = 'request_files'
+            MessageAttributes={
+                "RequestMethod": {
+                    "DataType": "String",
+                    "StringValue": request_method.value,
+                },
+                "TableName": {"DataType": "String", "StringValue": table_name},
+            }
 
             shared_recovery.post_status_for_job_to_queue(
                 job_id,granule_id,status_id,
                 request_time,completion_time,archive_destination,request_method,db_queue_url
                 )
             #grabbing queue contents after the message is sent
-            queue_contents = queue.receive_messages()
+            queue_contents = queue.receive_messages(
+                            MessageAttributeNames= ["All"]
+                            )
 
             self.assertEqual(queue_contents[0].body, json.dumps(new_data))
+            self.assertEqual(queue_contents[0].attributes['MessageDeduplicationId'], MessageDeduplicationId)
+            self.assertEqual(queue_contents[0].attributes['MessageGroupId'], MessageGroupId)
+            self.assertEqual(queue_contents[0].message_attributes, MessageAttributes)
 
 # ---------------------------------------------------------------------------------------------------------------------------------
 
@@ -151,6 +216,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
             """
             test_sqs = boto3.resource("sqs")
             queue = test_sqs.create_queue(QueueName="unit-test-queue.fifo")
+            table_name = 'orca_recoveryjob'
             request_method = shared_recovery.RequestMethod.NEW
             job_id= '1234'
             granule_id= '6c8d0c8b-4f9a-4d87-ab7c-480b185a0250'
@@ -163,15 +229,29 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
             #this is the expected message body that should be received
             new_data = {"job_id": job_id, "granule_id": granule_id, "request_time": request_time, 
                         "completion_time": completion_time, "archive_destination": archive_destination }
-
+            body = json.dumps(new_data)
+            MessageDeduplicationId = table_name + request_method.value + body
+            MessageGroupId = 'request_files'
+            MessageAttributes={
+                "RequestMethod": {
+                    "DataType": "String",
+                    "StringValue": request_method.value,
+                },
+                "TableName": {"DataType": "String", "StringValue": table_name},
+            }
             shared_recovery.post_status_for_job_to_queue(
                 job_id,granule_id,status_id,
                 request_time,completion_time,archive_destination,request_method,db_queue_url
                 )
             #grabbing queue contents after the message is sent
-            queue_contents = queue.receive_messages()
+            queue_contents = queue.receive_messages(
+                            MessageAttributeNames= ["All"]
+                            )
 
             self.assertEqual(queue_contents[0].body, json.dumps(new_data))
+            self.assertEqual(queue_contents[0].attributes['MessageDeduplicationId'], MessageDeduplicationId)
+            self.assertEqual(queue_contents[0].attributes['MessageGroupId'], MessageGroupId)
+            self.assertEqual(queue_contents[0].message_attributes, MessageAttributes)
 
 if __name__ == "__main":
     unittest.main()
