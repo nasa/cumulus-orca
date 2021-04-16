@@ -90,7 +90,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         completion_time = None
         db_queue_url = self.queue.url
         #this is the expected message body that should be received
-        new_data = {"job_id": job_id, "granule_id": granule_id, "filename": filename, "last_update": last_update, "status_id": status_id.value}
+        new_data = {"job_id": job_id, "granule_id": granule_id, "filename": filename, "last_update": last_update}
         body = json.dumps(new_data)
         MessageDeduplicationId = table_name + request_method.value + body
         MessageAttributes={
@@ -135,7 +135,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         completion_time = '2019-07-18T17:36:38.494918'
         db_queue_url = self.queue.url
         #this is the expected message body that should be received
-        new_data = {"job_id": job_id, "granule_id": granule_id, "filename": filename, "last_update": last_update, "status_id": status_id.value,
+        new_data = {"job_id": job_id, "granule_id": granule_id, "filename": filename, "last_update": last_update,
                     "key_path": key_path, "restore_destination": restore_destination, "error_message": error_message, 
                     "request_time": request_time, "completion_time": completion_time}
         body = json.dumps(new_data)
