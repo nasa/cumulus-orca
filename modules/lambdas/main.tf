@@ -197,6 +197,7 @@ resource "aws_lambda_function" "copy_files_to_archive" {
       DATABASE_USER         = var.database_app_user
       COPY_RETRIES          = var.orca_recovery_retry_limit
       COPY_RETRY_SLEEP_SECS = var.orca_recovery_retry_interval
+	  DB_QUEUE_URL          = var.orca_sqs_status_update_queue_id
     }
   }
 }

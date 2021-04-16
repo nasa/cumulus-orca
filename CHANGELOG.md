@@ -15,6 +15,8 @@ and includes an additional section for migration notes.
 
 
 ## [Unreleased]
+
+### Changed
 - *ORCA-109* request_files now uses SQS queue for recovery status updates, and receives input from a separate SQS queue.
 
 ### Migration Notes

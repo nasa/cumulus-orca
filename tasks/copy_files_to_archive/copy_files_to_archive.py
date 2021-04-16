@@ -19,6 +19,7 @@ from botocore.client import BaseClient
 from botocore.exceptions import ClientError
 
 
+# todo: Move to shared lib after ORCA-170
 class RequestMethod(Enum):
     POST = 'post'
     PUT = 'put'
@@ -39,6 +40,7 @@ INPUT_TARGET_KEY_KEY = 'target_key'
 INPUT_TARGET_BUCKET_KEY = 'restore_destination'
 INPUT_SOURCE_BUCKET_KEY = 'source_bucket'
 
+# todo: Move to shared lib after ORCA-170
 ORCA_STATUS_PENDING = 1
 ORCA_STATUS_STAGED = 2
 ORCA_STATUS_SUCCESS = 3
@@ -115,7 +117,7 @@ def task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: floa
         raise CopyRequestError(f'File copy failed. {files}')
 
 
-# todo: Move to shared lib
+# todo: Move to shared lib after ORCA-170
 def post_status_for_file_to_queue(job_id: str, granule_id: str, filename: str, key_path: Optional[str],
                                   restore_destination: Optional[str],
                                   status_id: Optional[int], error_message: Optional[str],
@@ -151,6 +153,7 @@ def post_status_for_file_to_queue(job_id: str, granule_id: str, filename: str, k
 sqs = boto3.client('sqs')
 
 
+# todo: Move to shared lib after ORCA-170
 def post_entry_to_queue(table_name: str, new_data: Dict[str, Any], request_method: RequestMethod, db_queue_url: str,
                         max_retries: int, retry_sleep_secs: float):
     body = json.dumps(new_data, indent=4)
