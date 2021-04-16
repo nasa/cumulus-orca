@@ -3,6 +3,7 @@ Name: test_copy_files_to_archive.py
 
 Description:  Unit tests for copy_files_to_archive.py.
 """
+import json
 import os
 import unittest
 import uuid
@@ -221,12 +222,24 @@ class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance
         """
         Function should transform json into file dict, and add 'success' key.
         """
+        file0 = {"job_id": uuid.uuid4().__str__(), "granule_id": uuid.uuid4().__str__(),
+                 "filename": uuid.uuid4().__str__(), "source_key": uuid.uuid4().__str__(),
+                 "target_key": uuid.uuid4().__str__(), "restore_destination": uuid.uuid4().__str__(),
+                 "source_bucket": uuid.uuid4().__str__()}
+        file1 = {"job_id": uuid.uuid4().__str__(), "granule_id": uuid.uuid4().__str__(),
+                 "filename": uuid.uuid4().__str__(), "source_key": uuid.uuid4().__str__(),
+                 "target_key": uuid.uuid4().__str__(), "restore_destination": uuid.uuid4().__str__(),
+                 "source_bucket": uuid.uuid4().__str__()}
+
         result = copy_files_to_archive.get_files_from_records([
-            {'body': '{"key": "value0", "another_key": 5}'}, {'body': '{"key": "value1", "another_key": 15}'}])
+            {'body': json.dumps(file0.copy(), indent=4)}, {'body': json.dumps(file1.copy(), indent=4)}])
+
+        file0[copy_files_to_archive.FILE_SUCCESS_KEY] = False
+        file1[copy_files_to_archive.FILE_SUCCESS_KEY] = False
 
         self.assertEqual([
-            {'key': 'value0', 'another_key': 5, copy_files_to_archive.FILE_SUCCESS_KEY: False},
-            {'key': 'value1', 'another_key': 15, copy_files_to_archive.FILE_SUCCESS_KEY: False}],
+            file0,
+            file1],
             result)
 
     def test_copy_object_happy_path(self):

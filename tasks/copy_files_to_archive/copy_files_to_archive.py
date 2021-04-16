@@ -11,6 +11,7 @@ import time
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, List, Dict, Optional, Union
+import fastjsonschema
 
 import boto3
 # noinspection PyPackageRequirements
@@ -94,7 +95,7 @@ def task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: floa
                 else:
                     a_file[FILE_ERROR_MESSAGE_KEY] = err_msg
 
-        if attempt < max_retries + 1:
+        if attempt < max_retries + 1:  # Only sleep if not on the last attempt.
             if all(a_file[FILE_SUCCESS_KEY] for a_file in files):  # Check for early completion
                 break
             time.sleep(retry_sleep_secs)
@@ -195,9 +196,14 @@ def get_files_from_records(records: List[Dict[str, Any]]) -> List[Dict[str, Unio
     Returns:
         records, parsed into Dicts, with the additional KVP 'success' = False
     """
+    with open("schemas/sub_schemas/body.json", "r") as raw_schema:
+        schema = json.loads(raw_schema.read())
+
+    validate = fastjsonschema.compile(schema)
     files = []
     for record in records:
         a_file = json.loads(record['body'])
+        validate(a_file)
         a_file[FILE_SUCCESS_KEY] = False
         files.append(a_file)
     return files
