@@ -4,7 +4,7 @@ output "orca_sqs_staged_recovery_queue_arn" {
 }
 
 output "orca_sqs_staged_recovery_queue_id" {
-  description = "The URL ID of the staged-recovery-queue SQS"
+  description = "The URL of the staged-recovery-queue SQS"
   value       = aws_sqs_queue.staged_recovery_queue.id
 }
 
@@ -14,7 +14,7 @@ output "orca_sqs_status_update_queue_arn" {
 }
 
 output "orca_sqs_status_update_queue_id" {
-  description = "The URL ID of the status-update-queue SQS"
+  description = "The URL of the status-update-queue SQS"
   value       = aws_sqs_queue.status_update_queue.id
 }
 

@@ -65,10 +65,14 @@
       {
         "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
         "keys": [
-          "L0A_LR_RAW_product_0010-of-0092.h5"
+          {
+            "key": "L0A_LR_RAW_product_0010-of-0092.h5",
+            "dest_bucket": "some_bucket_name"
+          }
         ]
       }
-    ]
+    ],
+    "job_id": "ad6ed089-f020-4374-9174-0fb5a4a1ebc1"
   },
   "exception": "None",
   "workflow_config": {
@@ -77,13 +81,10 @@
         "input": "{{$}}"
       }
     },
-    "RequestFiles": {
+    "request_files": {
       "glacier-bucket": "{{$.meta.collection.meta.glacier-bucket}}"
     },
     "WorkflowFailed": {},
-    "ExtractFilepaths": {
-      "glacier-bucket": "{{$.meta.collection.meta.glacier-bucket}}"
-    },
     "StopStatus": {
       "stateMachine": "{{$.cumulus_meta.state_machine}}",
       "sfnEnd": true,

@@ -18,6 +18,8 @@ and includes an additional section for migration notes.
 
 ### Changed
 - *ORCA-109* request_files now uses SQS queue for recovery status updates, and receives input from a separate SQS queue.
+- *ORCA-91* copy_files_to_archive now uses SQS queue for recovery status updates. Will generate a job_id if none is given, and return it in the output.
+- request_files now uses the same default glacier bucket as copy_to_glacier.
 
 ### Migration Notes
 See the documentation for specifics on the various files and changes specified below.
