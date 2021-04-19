@@ -162,8 +162,8 @@ resource "aws_lambda_function" "request_files" {
       RESTORE_REQUEST_RETRIES  = var.orca_recovery_retry_limit
       RESTORE_RETRY_SLEEP_SECS = var.orca_recovery_retry_interval
       RESTORE_RETRIEVAL_TYPE   = var.orca_recovery_retrieval_type
-	  DB_QUEUE_URL             = var.orca_sqs_status_update_queue_id
-	  ORCA_DEFAULT_BUCKET      = var.orca_default_bucket
+	    DB_QUEUE_URL             = var.orca_sqs_status_update_queue_id
+	    ORCA_DEFAULT_BUCKET      = var.orca_default_bucket
     }
   }
 }
@@ -199,7 +199,7 @@ resource "aws_lambda_function" "copy_files_to_archive" {
       DATABASE_USER         = var.database_app_user
       COPY_RETRIES          = var.orca_recovery_retry_limit
       COPY_RETRY_SLEEP_SECS = var.orca_recovery_retry_interval
-	  DB_QUEUE_URL          = var.orca_sqs_status_update_queue_id
+	    DB_QUEUE_URL          = var.orca_sqs_status_update_queue_id
     }
   }
 }
@@ -211,44 +211,18 @@ resource "aws_lambda_event_source_mapping" "copy_files_to_archive_event_source_m
 
 # Additional resources needed by copy_files_to_archive
 # ------------------------------------------------------------------------------
-# allow_s3_trigger - Permissions to allow S3 bucket trigger to invoke lambda
-resource "aws_lambda_permission" "allow_s3_trigger" {
-  # Create loop so we can handle multiple orca buckets
-  for_each = toset(local.orca_buckets)
-
+# Permissions to allow SQS trigger to invoke lambda
+# todo: Do we need to add a section for posting to the queues as well?
+resource "aws_lambda_permission" "allow_sqs_trigger" {
   ## REQUIRED
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.copy_files_to_archive.function_name
-  principal     = "s3.amazonaws.com"
+  principal     = "sqs.amazonaws.com"
 
   ## OPTIONAL
-  statement_id = "AllowExecutionFromS3"
-  source_arn   = "arn:aws:s3:::${each.value}"
+  statement_id = "AllowExecutionFromSQS"
+  source_arn   = module.sqs.orca_sqs_staged_recovery_queue_arn
 }
-
-
-# copy_lambda_trigger - Bucket notification trigger pointed to lambda
-resource "aws_s3_bucket_notification" "copy_lambda_trigger" {
-  # Create loop so we can handle multiple orca buckets
-  for_each = toset(local.orca_buckets)
-
-  # The permissions must be defined first
-  depends_on = [aws_lambda_permission.allow_s3_trigger]
-
-  ## REQUIRED
-  bucket = each.value
-
-  ## OPTIONAL
-  lambda_function {
-    ## REQUIRED
-    events              = ["s3:ObjectRestore:Completed"]
-    lambda_function_arn = aws_lambda_function.copy_files_to_archive.arn
-
-    ## OPTIONAL
-    filter_prefix = var.orca_recovery_complete_filter_prefix
-  }
-}
-
 
 # request_status - CLI to provide operator status of recovery job
 # ==============================================================================
