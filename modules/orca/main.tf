@@ -22,6 +22,8 @@ locals {
 }
 
 
+## Referenced Modules
+
 ## orca_lambdas - lambdas module that calls iam and security_groups module
 ## =============================================================================
 module "orca_lambdas" {
@@ -130,8 +132,6 @@ module "orca_rds" {
   database_name = var.database_name
 }
 
-
-## Referenced Modules
 
 ## orca_sqs - SQS module
 ## =============================================================================
