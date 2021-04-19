@@ -202,6 +202,10 @@ resource "aws_lambda_function" "copy_files_to_archive" {
   }
 }
 
+resource "aws_lambda_event_source_mapping" "copy_files_to_archive_event_source_mapping" {
+  event_source_arn = var.orca_sqs_staged_recovery_queue_arn
+  function_name    = aws_lambda_function.copy_files_to_archive.handler
+}
 
 # Additional resources needed by copy_files_to_archive
 # ------------------------------------------------------------------------------

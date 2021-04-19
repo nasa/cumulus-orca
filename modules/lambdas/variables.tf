@@ -150,6 +150,10 @@ variable "orca_recovery_retrieval_type" {
   description = "AWS glacier recovery type to use. One of Bulk, Standard, Express."
 }
 
+variable "orca_sqs_staged_recovery_queue_arn" {
+  type        = "string"
+  description = "The ARN of the staged-recovery-queue SQS"
+}
 
 variable "platform" {
   type        = string
