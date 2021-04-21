@@ -18,7 +18,7 @@ from botocore.exceptions import ClientError
 
 import request_files
 from test.request_helpers import (REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_3, REQUEST_ID1, LambdaContextMock,
-                                  create_handler_event, create_insert_request,
+                                  create_handler_event,
                                   mock_secretsmanager_get_parameter)
 
 # noinspection PyPackageRequirements
@@ -795,22 +795,6 @@ class TestRequestFiles(unittest.TestCase):
                                                   None,
                                                   None
                                                   ]
-        qresult_1_inprogress, _ = create_insert_request(
-            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, files[0],
-            "restore", "some_bucket", "inprogress",
-            UTC_NOW_EXP_1, None, None)
-        qresult_2_inprogress, _ = create_insert_request(
-            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, files[1],
-            "restore", "some_bucket", "inprogress",
-            UTC_NOW_EXP_1, None, None)
-        qresult_3_inprogress, _ = create_insert_request(
-            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, files[2],
-            "restore", "some_bucket", "inprogress",
-            UTC_NOW_EXP_1, None, None)
-        qresult_4_inprogress, _ = create_insert_request(
-            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, files[3],
-            "restore", "some_bucket", "inprogress",
-            UTC_NOW_EXP_1, None, None)
 
         mock_secretsmanager_get_parameter(4)
 
@@ -1202,22 +1186,6 @@ class TestRequestFiles(unittest.TestCase):
             'recover_files': self.get_exp_files_3_errs()
         }
         exp_err = f"One or more files failed to be requested. {exp_gran}"
-        qresult_1_inprogress, _ = create_insert_request(
-            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, gran["granuleId"], FILE1,
-            "restore", "some_bucket",
-            "inprogress", UTC_NOW_EXP_1, None, None)
-        qresult_1_error, _ = create_insert_request(
-            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, gran["granuleId"], FILE1,
-            "restore", "some_bucket",
-            "error", UTC_NOW_EXP_1, None, "'Code': 'NoSuchBucket'")
-        qresult_3_inprogress, _ = create_insert_request(
-            REQUEST_ID1, REQUEST_GROUP_ID_EXP_3, gran["granuleId"], FILE2,
-            "restore", "some_bucket",
-            "inprogress", UTC_NOW_EXP_1, None, None)
-        qresult_3_error, _ = create_insert_request(
-            REQUEST_ID1, REQUEST_GROUP_ID_EXP_3, gran["granuleId"], FILE2,
-            "restore", "some_bucket",
-            "error", UTC_NOW_EXP_1, None, "'Code': 'NoSuchBucket'")
         mock_secretsmanager_get_parameter(5)
         try:
             request_files.task(event, self.context)
@@ -1355,22 +1323,6 @@ class TestRequestFiles(unittest.TestCase):
                                                   None,
                                                   None
                                                   ]
-        qresult_1_inprogress, _ = create_insert_request(
-            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, files[0],
-            "restore", "some_bucket", "inprogress",
-            UTC_NOW_EXP_1, None, None)
-        qresult_2_inprogress, _ = create_insert_request(
-            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, files[1],
-            "restore", "some_bucket", "inprogress",
-            UTC_NOW_EXP_1, None, None)
-        qresult_3_inprogress, _ = create_insert_request(
-            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, files[2],
-            "restore", "some_bucket", "inprogress",
-            UTC_NOW_EXP_1, None, None)
-        qresult_4_inprogress, _ = create_insert_request(
-            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, files[3],
-            "restore", "some_bucket", "inprogress",
-            UTC_NOW_EXP_1, None, None)
 
         mock_secretsmanager_get_parameter(4)
 
