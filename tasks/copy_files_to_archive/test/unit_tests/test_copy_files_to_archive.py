@@ -8,7 +8,7 @@ import os
 import unittest
 import uuid
 from random import randint
-from unittest import mock
+from unittest import mock, TestCase
 from unittest.mock import Mock, call, patch, MagicMock
 
 from botocore.exceptions import ClientError
@@ -16,7 +16,7 @@ from botocore.exceptions import ClientError
 import copy_files_to_archive
 
 
-class TestCopyFilesToArchive(unittest.TestCase):
+class TestCopyFilesToArchive(TestCase):
     """
     TestCopyFilesToArchive.
     """
