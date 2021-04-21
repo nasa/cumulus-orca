@@ -18,8 +18,7 @@ from botocore.exceptions import ClientError
 
 import request_files
 from test.request_helpers import (REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_3, REQUEST_ID1, LambdaContextMock,
-                                  create_handler_event,
-                                  mock_secretsmanager_get_parameter)
+                                  create_handler_event)
 
 # noinspection PyPackageRequirements
 
@@ -796,8 +795,6 @@ class TestRequestFiles(unittest.TestCase):
                                                   None
                                                   ]
 
-        mock_secretsmanager_get_parameter(4)
-
         result = request_files.task(input_event, self.context)
 
         mock_boto3_client.assert_has_calls([call('secretsmanager')])
@@ -908,7 +905,6 @@ class TestRequestFiles(unittest.TestCase):
         mock_s3_cli = mock_boto3_client('s3')
         mock_s3_cli.restore_object.side_effect = [None]
         mock_post_entry_to_queue.side_effect = [Exception("mock insert failed error")]
-        mock_secretsmanager_get_parameter(1)
         try:
             result = request_files.task(input_event, self.context)
         except Exception as err:
@@ -1018,10 +1014,6 @@ class TestRequestFiles(unittest.TestCase):
             ],
             request_files.INPUT_JOB_ID_KEY: event['input']['job_id']
         }
-        qresult_1_inprogress, _ = create_insert_request(
-            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, FILE1, "restore", "some_bucket",
-            "inprogress", UTC_NOW_EXP_1, None, None)
-        mock_secretsmanager_get_parameter(1)
         result = request_files.task(event, self.context)
         os.environ['RESTORE_REQUEST_RETRIES'] = '2'  # todo: This test claims 'no_retries'
         self.assertEqual(exp_granules, result)
@@ -1072,8 +1064,6 @@ class TestRequestFiles(unittest.TestCase):
             'job_id': event['input']['job_id']
         }
 
-        mock_secretsmanager_get_parameter(1)
-
         result = request_files.task(event, self.context)
         self.assertEqual(exp_granules, result)
         os.environ['RESTORE_EXPIRE_DAYS'] = '3'  # todo: Why is this set here?
@@ -1113,7 +1103,6 @@ class TestRequestFiles(unittest.TestCase):
         mock_s3_cli.restore_object.side_effect = [ClientError({'Error': {'Code': 'NoSuchBucket'}}, 'restore_object'),
                                                   ClientError({'Error': {'Code': 'NoSuchBucket'}}, 'restore_object'),
                                                   ClientError({'Error': {'Code': 'NoSuchBucket'}}, 'restore_object')]
-        mock_secretsmanager_get_parameter(1)
         os.environ['RESTORE_RETRIEVAL_TYPE'] = 'Standard'  # todo: This is not reset between tests
 
         exp_gran = {
@@ -1186,7 +1175,6 @@ class TestRequestFiles(unittest.TestCase):
             'recover_files': self.get_exp_files_3_errs()
         }
         exp_err = f"One or more files failed to be requested. {exp_gran}"
-        mock_secretsmanager_get_parameter(5)
         try:
             request_files.task(event, self.context)
             self.fail("RestoreRequestError expected")
@@ -1278,8 +1266,6 @@ class TestRequestFiles(unittest.TestCase):
             'job_id': event['input']['job_id']
         }
 
-        mock_secretsmanager_get_parameter(4)
-
         result = request_files.task(event, self.context)
         self.assertEqual(exp_granules, result)
 
@@ -1323,8 +1309,6 @@ class TestRequestFiles(unittest.TestCase):
                                                   None,
                                                   None
                                                   ]
-
-        mock_secretsmanager_get_parameter(4)
 
         result = request_files.task(input_event, self.context)
 
