@@ -16,11 +16,6 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 
-### Changed
-- *ORCA-109* request_files now uses SQS queue for recovery status updates, and receives input from a separate SQS queue.
-- *ORCA-91* copy_files_to_archive now uses SQS queue for recovery status updates. Will generate a job_id if none is given, and return it in the output.
-- request_files now uses the same default glacier bucket as copy_to_glacier.
-
 ### Migration Notes
 See the documentation for specifics on the various files and changes specified below.
 
@@ -157,6 +152,9 @@ See the documentation for specifics on the various files and changes specified b
   | orca_recovery_retry_interval     | *OPTIONAL*: Allows a user to change the recovery workflow and lambdas interval to sleep between retries. |
 - Task and module build scripts have been updated to better display error information and documented to the actual steps being performed.
 - Documentation has been updated to better provide end users with information on ORCA.
+- *ORCA-109* request_files now uses SQS queue for recovery status updates, and receives input from a separate SQS queue.
+- *ORCA-91* copy_files_to_archive now uses SQS queue for recovery status updates. Will generate a job_id if none is given, and return it in the output.
+- request_files now uses the same default glacier bucket as copy_to_glacier.
 
 ### Deprecated
 - The `request_status` lambda will be removed in future release as it has been replaced by the `requests_status_for_job` and `request_status_for_granule` lambdas.

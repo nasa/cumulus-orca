@@ -154,16 +154,12 @@ resource "aws_lambda_function" "request_files" {
 
   environment {
     variables = {
-      PREFIX                   = var.prefix
-      DATABASE_PORT            = var.database_port
-      DATABASE_NAME            = var.database_name
-      DATABASE_USER            = var.database_app_user
       RESTORE_EXPIRE_DAYS      = var.orca_recovery_expiration_days
       RESTORE_REQUEST_RETRIES  = var.orca_recovery_retry_limit
       RESTORE_RETRY_SLEEP_SECS = var.orca_recovery_retry_interval
       RESTORE_RETRIEVAL_TYPE   = var.orca_recovery_retrieval_type
-	    DB_QUEUE_URL             = var.orca_sqs_status_update_queue_id
-	    ORCA_DEFAULT_BUCKET      = var.orca_default_bucket
+      DB_QUEUE_URL             = var.orca_sqs_status_update_queue_id
+      ORCA_DEFAULT_BUCKET      = var.orca_default_bucket
     }
   }
 }
@@ -193,13 +189,9 @@ resource "aws_lambda_function" "copy_files_to_archive" {
 
   environment {
     variables = {
-      PREFIX                = var.prefix
-      DATABASE_PORT         = var.database_port
-      DATABASE_NAME         = var.database_name
-      DATABASE_USER         = var.database_app_user
       COPY_RETRIES          = var.orca_recovery_retry_limit
       COPY_RETRY_SLEEP_SECS = var.orca_recovery_retry_interval
-	    DB_QUEUE_URL          = var.orca_sqs_status_update_queue_id
+      DB_QUEUE_URL          = var.orca_sqs_status_update_queue_id
     }
   }
 }
