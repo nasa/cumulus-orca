@@ -12,7 +12,6 @@ from random import randint, uniform
 from unittest import mock
 from unittest.mock import patch, MagicMock, call, Mock
 
-import database
 # noinspection PyPackageRequirements
 import fastjsonschema as fastjsonschema
 from botocore.exceptions import ClientError
@@ -43,8 +42,6 @@ class TestRequestFiles(unittest.TestCase):
     """
 
     def setUp(self):
-        # todo: single_query is not called in code. Replace with higher-level checks.
-        self.mock_single_query = database.single_query
         # todo: These values should NOT be hard-coded as present for every test.
         os.environ["DATABASE_HOST"] = "my.db.host.gov"
         os.environ["DATABASE_PORT"] = "54"
@@ -60,7 +57,6 @@ class TestRequestFiles(unittest.TestCase):
         self.context = LambdaContextMock()
 
     def tearDown(self):
-        database.single_query = self.mock_single_query
         os.environ.pop('PREFIX', None)
         os.environ.pop(request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY, None)
         os.environ.pop(request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY, None)
@@ -1068,13 +1064,11 @@ class TestRequestFiles(unittest.TestCase):
 
     # todo: single_query is not called in code. Replace with higher-level checks.
     @patch('request_files.post_entry_to_queue')
-    @patch('database.single_query')
     @patch('boto3.client')
     @patch('cumulus_logger.CumulusLogger.info')
     def test_task_no_expire_days_env_var(self,
                                          mock_logger_info: MagicMock,
                                          mock_boto3_client: MagicMock,
-                                         mock_database_single_query: MagicMock,
                                          mock_post_entry_to_queue: MagicMock):
         """
         Test environment var RESTORE_EXPIRE_DAYS not set - use default.
@@ -1104,10 +1098,6 @@ class TestRequestFiles(unittest.TestCase):
             'job_id': event['input']['job_id']
         }
 
-        qresult_1_inprogress, _ = create_insert_request(
-            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, FILE1, "restore", "some_bucket",
-            "inprogress", UTC_NOW_EXP_1, None, None)
-        mock_database_single_query.side_effect = [qresult_1_inprogress]
         mock_secretsmanager_get_parameter(1)
 
         result = request_files.task(event, self.context)
