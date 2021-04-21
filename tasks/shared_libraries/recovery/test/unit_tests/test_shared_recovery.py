@@ -20,6 +20,13 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
     queue = None
     db_queue_url = None
     MessageGroupId = None
+    job_id = None
+    granule_id = None
+    filename = None
+    key_path = None
+    restore_destination = None
+    error_message = None
+    archive_destination = None
 
     def setUp(self):
         """
@@ -29,7 +36,14 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         self.test_sqs = boto3.resource("sqs")
         self.queue = self.test_sqs.create_queue(QueueName="unit-test-queue")
         self.db_queue_url = self.queue.url
-        self.MessageGroupId = "request_files"
+        self.MessageGroupId = 'request_files'
+        self.job_id = '1234'
+        self.granule_id = '6c8d0c8b-4f9a-4d87-ab7c-480b185a0250'
+        self.filename = 'f1.doc'
+        self.key_path = 's3://dev-orca'
+        self.restore_destination = 'restore-bucket'
+        self.error_message = 'Access denied'
+        self.archive_destination = 'archive-bucket'
 
     def tearDown(self):
         """
@@ -48,21 +62,12 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         """
         table_name = 'orca_recoverfile'
         request_method = shared_recovery.RequestMethod.NEW
-        job_id= '1234'
-        granule_id= '6c8d0c8b-4f9a-4d87-ab7c-480b185a0250'
-        filename= 'f1.doc'
         status_id = shared_recovery.OrcaStatus.PENDING
-        key_path= key_path= 's3://dev-orca'
-        restore_destination = 'restore-bucket'
-        error_message = 'Access denied'
-        request_time = datetime.now(timezone.utc).isoformat()
-        last_update = datetime.now(timezone.utc).isoformat()
-        completion_time = datetime.now(timezone.utc).isoformat()
-        db_queue_url = self.queue.url
-        #this is the expected message body that should be received
-        new_data = {"job_id": job_id, "granule_id": granule_id, "filename": filename, 
-                    "last_update": last_update, "status_id": status_id.value,"request_time": request_time, 
-                    "key_path": key_path, "restore_destination": restore_destination}
+        #this is the expected message body that should be received. 
+        #the request_time, last_update are not shown in new_data.
+        new_data = {"job_id": self.job_id, "granule_id": self.granule_id, "filename": self.filename, 
+                    "status_id": status_id.value, 
+                    "key_path": self.key_path, "restore_destination": self.restore_destination}
         body = json.dumps(new_data)
         MessageDeduplicationId = table_name + request_method.value  + body
         MessageAttributes={
@@ -74,24 +79,27 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
             }
 
         shared_recovery.post_status_for_file_to_queue(
-            job_id,granule_id,filename,key_path,restore_destination,status_id,error_message,request_method,db_queue_url)
+            self.job_id,self.granule_id,self.filename,self.key_path,self.restore_destination,status_id,self.error_message,request_method,self.db_queue_url)
         #grabbing queue contents after the message is sent
         queue_contents = self.queue.receive_messages(
                             MessageAttributeNames= ["All"]
                             )
         queue_output_body = json.loads(queue_contents[0].body)
+        new_request_time = datetime.fromisoformat(queue_output_body["request_time"])
+        new_last_update = datetime.fromisoformat(queue_output_body["last_update"])
 
-        self.assertEqual(len(queue_output_body), len(new_data))
         self.assertEqual(queue_output_body["job_id"], new_data["job_id"])
         self.assertEqual(queue_output_body["granule_id"], new_data["granule_id"])
         self.assertEqual(queue_output_body["filename"], new_data["filename"])
         self.assertIn("last_update", queue_output_body)
+        self.assertEqual(new_last_update.tzinfo,datetime.now(timezone.utc).tzinfo)
         self.assertEqual(queue_output_body["status_id"], new_data["status_id"])
-        self.assertIn("request_time", queue_output_body) 
+        self.assertIn("request_time", queue_output_body)
+        self.assertEqual(new_request_time.tzinfo,datetime.now(timezone.utc).tzinfo)
         self.assertEqual(queue_output_body["key_path"], new_data["key_path"])
         self.assertEqual(queue_output_body["restore_destination"], new_data["restore_destination"])
-        self.assertNotIn(completion_time, queue_output_body)
-        self.assertNotIn(error_message, queue_output_body)
+        self.assertNotIn("completion_time", queue_output_body)
+        self.assertNotIn("error_message", queue_output_body)
         self.assertEqual(queue_contents[0].attributes['MessageGroupId'], self.MessageGroupId)
         self.assertEqual(queue_contents[0].message_attributes, MessageAttributes)
 
@@ -106,21 +114,12 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         """
         table_name = 'orca_recoverfile'
         request_method = shared_recovery.RequestMethod.NEW
-        job_id= '1234'
-        granule_id= '6c8d0c8b-4f9a-4d87-ab7c-480b185a0250'
-        filename= 'f1.doc'
         status_id = shared_recovery.OrcaStatus.STAGED
-        key_path= key_path= 's3://dev-orca'
-        restore_destination = 'restore-bucket'
-        error_message = 'Access denied'
-        request_time = datetime.now(timezone.utc).isoformat()
-        last_update = datetime.now(timezone.utc).isoformat()
-        completion_time = datetime.now(timezone.utc).isoformat()
-        db_queue_url = self.queue.url
-        #this is the expected message body that should be received
-        new_data = {"job_id": job_id, "granule_id": granule_id, "filename": filename, "last_update": last_update, 
-                    "status_id": status_id.value,"request_time": request_time, "key_path": key_path, 
-                    "restore_destination": restore_destination}
+        #this is the expected message body that should be received.
+        #the request_time, last_update are not shown in new_data.
+        new_data = {"job_id": self.job_id, "granule_id": self.granule_id, "filename": self.filename, 
+                    "status_id": status_id.value, "key_path": self.key_path, 
+                    "restore_destination": self.restore_destination}
         body = json.dumps(new_data)
         MessageDeduplicationId = table_name + request_method.value  + body
         MessageAttributes={
@@ -132,24 +131,27 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
             }
 
         shared_recovery.post_status_for_file_to_queue(
-            job_id,granule_id,filename,key_path,restore_destination,status_id,error_message,request_method,db_queue_url)
+            self.job_id,self.granule_id,self.filename,self.key_path,self.restore_destination,status_id,self.error_message,request_method,self.db_queue_url)
         #grabbing queue contents after the message is sent
         queue_contents = self.queue.receive_messages(
                             MessageAttributeNames= ["All"]
                             )
         queue_output_body = json.loads(queue_contents[0].body)
+        new_request_time = datetime.fromisoformat(queue_output_body["request_time"])
+        new_last_update = datetime.fromisoformat(queue_output_body["last_update"])
 
-        self.assertEqual(len(queue_output_body), len(new_data))
         self.assertEqual(queue_output_body["job_id"], new_data["job_id"])
         self.assertEqual(queue_output_body["granule_id"], new_data["granule_id"])
         self.assertEqual(queue_output_body["filename"], new_data["filename"])
         self.assertIn("last_update", queue_output_body)
+        self.assertEqual(new_last_update.tzinfo,datetime.now(timezone.utc).tzinfo)
         self.assertEqual(queue_output_body["status_id"], new_data["status_id"])
-        self.assertIn("request_time", queue_output_body) 
+        self.assertIn("request_time", queue_output_body)
+        self.assertEqual(new_request_time.tzinfo,datetime.now(timezone.utc).tzinfo)
         self.assertEqual(queue_output_body["key_path"], new_data["key_path"])
         self.assertEqual(queue_output_body["restore_destination"], new_data["restore_destination"])
-        self.assertNotIn(completion_time, queue_output_body)
-        self.assertNotIn(error_message, queue_output_body)
+        self.assertNotIn("completion_time", queue_output_body)
+        self.assertNotIn("error_message", queue_output_body)
         self.assertEqual(queue_contents[0].attributes['MessageGroupId'], self.MessageGroupId)
         self.assertEqual(queue_contents[0].message_attributes, MessageAttributes)
 # ---------------------------------------------------------------------------------------------------------------------------------
@@ -163,21 +165,12 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         """
         table_name = 'orca_recoverfile'
         request_method = shared_recovery.RequestMethod.NEW
-        job_id= '1234'
-        granule_id= '6c8d0c8b-4f9a-4d87-ab7c-480b185a0250'
-        filename= 'f1.doc'
         status_id = shared_recovery.OrcaStatus.SUCCESS
-        key_path= key_path= 's3://dev-orca'
-        restore_destination = 'restore-bucket'
-        error_message = 'Access denied'
-        request_time = datetime.now(timezone.utc).isoformat()
-        last_update = datetime.now(timezone.utc).isoformat()
-        completion_time = datetime.now(timezone.utc).isoformat()
-        db_queue_url = self.queue.url
-        #this is the expected message body that should be received
-        new_data = {"job_id": job_id, "granule_id": granule_id, "filename": filename, "last_update": last_update, 
-                    "status_id": status_id.value,"request_time": request_time, "key_path": key_path, 
-                    "restore_destination": restore_destination, "completion_time": completion_time}
+        #this is the expected message body that should be received.
+        #the request_time, last_update, completion_time are not shown in new_data.
+        new_data = {"job_id": self.job_id, "granule_id": self.granule_id, "filename": self.filename, 
+                    "status_id": status_id.value,"key_path": self.key_path, 
+                    "restore_destination": self.restore_destination}
         body = json.dumps(new_data)
         MessageDeduplicationId = table_name + request_method.value  + body
         MessageAttributes={
@@ -189,23 +182,29 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
             }
 
         shared_recovery.post_status_for_file_to_queue(
-            job_id,granule_id,filename,key_path,restore_destination,status_id,error_message,request_method,db_queue_url)
+            self.job_id, self.granule_id, self.filename, self.key_path, self.restore_destination,status_id, self.error_message,request_method, self.db_queue_url)
         #grabbing queue contents after the message is sent
         queue_contents = self.queue.receive_messages(
                             MessageAttributeNames= ["All"]
                             )
         queue_output_body = json.loads(queue_contents[0].body)
-        self.assertEqual(len(queue_output_body), len(new_data))
+        new_request_time = datetime.fromisoformat(queue_output_body["request_time"])
+        new_last_update = datetime.fromisoformat(queue_output_body["last_update"])
+        new_completion_time = datetime.fromisoformat(queue_output_body["completion_time"])
+
         self.assertEqual(queue_output_body["job_id"], new_data["job_id"])
         self.assertEqual(queue_output_body["granule_id"], new_data["granule_id"])
         self.assertEqual(queue_output_body["filename"], new_data["filename"])
         self.assertIn("last_update", queue_output_body)
+        self.assertEqual(new_last_update.tzinfo, datetime.now(timezone.utc).tzinfo)
         self.assertEqual(queue_output_body["status_id"], new_data["status_id"])
         self.assertIn("request_time", queue_output_body)
+        self.assertEqual(new_request_time.tzinfo, datetime.now(timezone.utc).tzinfo)
         self.assertEqual(queue_output_body["key_path"], new_data["key_path"])
         self.assertEqual(queue_output_body["restore_destination"], new_data["restore_destination"])
         self.assertIn("completion_time", queue_output_body)
-        self.assertNotIn(error_message, queue_output_body)
+        self.assertEqual(new_completion_time.tzinfo, datetime.now(timezone.utc).tzinfo)
+        self.assertNotIn("error_message", queue_output_body)
         self.assertEqual(queue_contents[0].attributes['MessageGroupId'], self.MessageGroupId)
         self.assertEqual(queue_contents[0].message_attributes, MessageAttributes)
 # ---------------------------------------------------------------------------------------------------------------------------------
@@ -218,22 +217,13 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         """
         table_name = 'orca_recoverfile'
         request_method = shared_recovery.RequestMethod.NEW
-        job_id= '1234'
-        granule_id= '6c8d0c8b-4f9a-4d87-ab7c-480b185a0250'
-        filename= 'f1.doc'
         status_id = shared_recovery.OrcaStatus.FAILED
-        key_path= key_path= 's3://dev-orca'
-        restore_destination = 'restore-bucket'
-        error_message = 'Access denied'
-        request_time = datetime.now(timezone.utc).isoformat()
-        last_update = datetime.now(timezone.utc).isoformat()
-        completion_time = datetime.now(timezone.utc).isoformat()
-        db_queue_url = self.queue.url
-        #this is the expected message body that should be received
-        new_data = {"job_id": job_id, "granule_id": granule_id, "filename": filename, "last_update": last_update, 
-                    "status_id": status_id.value,"request_time": request_time, "key_path": key_path, 
-                    "restore_destination": restore_destination, "completion_time": completion_time,
-                    "error_message": error_message}
+        #this is the expected message body that should be received. 
+        #the request_time, last_update , completion_time are not shown in new_data.        
+        new_data = {"job_id": self.job_id, "granule_id": self.granule_id, "filename": self.filename, 
+                    "status_id": status_id.value, "key_path": self.key_path, 
+                    "restore_destination": self.restore_destination,
+                    "error_message": self.error_message}
         body = json.dumps(new_data)
         MessageDeduplicationId = table_name + request_method.value  + body
         MessageAttributes={
@@ -245,24 +235,29 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
             }
 
         shared_recovery.post_status_for_file_to_queue(
-            job_id,granule_id,filename,key_path,restore_destination,status_id,error_message,request_method,db_queue_url)
+            self.job_id,self.granule_id,self.filename,self.key_path,self.restore_destination,status_id,self.error_message,request_method,self.db_queue_url)
         #grabbing queue contents after the message is sent
         queue_contents = self.queue.receive_messages(
                             MessageAttributeNames= ["All"]
                             )
         queue_output_body = json.loads(queue_contents[0].body)
+        new_request_time = datetime.fromisoformat(queue_output_body["request_time"])
+        new_last_update = datetime.fromisoformat(queue_output_body["last_update"])
+        new_completion_time = datetime.fromisoformat(queue_output_body["completion_time"])
 
-        self.assertEqual(len(queue_output_body), len(new_data))
         self.assertEqual(queue_output_body["job_id"], new_data["job_id"])
         self.assertEqual(queue_output_body["granule_id"], new_data["granule_id"])
         self.assertEqual(queue_output_body["filename"], new_data["filename"])
         self.assertIn("last_update", queue_output_body)
+        self.assertEqual(new_last_update.tzinfo, datetime.now(timezone.utc).tzinfo)
         self.assertEqual(queue_output_body["status_id"], new_data["status_id"])
         self.assertIn("request_time", queue_output_body)
+        self.assertEqual(new_request_time.tzinfo, datetime.now(timezone.utc).tzinfo)
         self.assertEqual(queue_output_body["key_path"], new_data["key_path"])
         self.assertEqual(queue_output_body["restore_destination"], new_data["restore_destination"])
         self.assertIn("completion_time", queue_output_body)
-        self.assertEqual(error_message, queue_output_body["error_message"])
+        self.assertEqual(new_completion_time.tzinfo, datetime.now(timezone.utc).tzinfo)
+        self.assertEqual(self.error_message, queue_output_body["error_message"])
         self.assertEqual(queue_contents[0].attributes['MessageGroupId'], self.MessageGroupId)
         self.assertEqual(queue_contents[0].message_attributes, MessageAttributes)
 # ---------------------------------------------------------------------------------------------------------------------------------
@@ -276,17 +271,12 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
             """
             table_name = 'orca_recoveryjob'
             request_method = shared_recovery.RequestMethod.NEW
-            job_id= '1234'
-            granule_id= '6c8d0c8b-4f9a-4d87-ab7c-480b185a0250'
             status_id = shared_recovery.OrcaStatus.PENDING
             request_method = shared_recovery.RequestMethod.NEW
-            archive_destination = 'archive-bucket'
-            request_time = datetime.now(timezone.utc).isoformat()
-            completion_time = datetime.now(timezone.utc).isoformat()
-            db_queue_url = self.queue.url
-            #this is the expected message body that should be received
-            new_data = {"job_id": job_id, "granule_id": granule_id, "status_id": status_id.value, 
-                        "request_time": request_time, "archive_destination": archive_destination}
+            #this is the expected message body that should be received.
+            #the request_time is not shown in new_data.
+            new_data = {"job_id": self.job_id, "granule_id": self.granule_id, "status_id": status_id.value, 
+                        "archive_destination": self.archive_destination}
             body = json.dumps(new_data)
             MessageDeduplicationId = table_name + request_method.value + body
             MessageAttributes={
@@ -297,18 +287,19 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                 "TableName": {"DataType": "String", "StringValue": table_name},
             }
 
-            shared_recovery.post_status_for_job_to_queue(job_id,granule_id,status_id,archive_destination,request_method,db_queue_url)
+            shared_recovery.post_status_for_job_to_queue(self.job_id,self.granule_id,status_id,self.archive_destination,request_method,self.db_queue_url)
             #grabbing queue contents after the message is sent
             queue_contents = self.queue.receive_messages(
                             MessageAttributeNames= ["All"]
                             )
             queue_output_body = json.loads(queue_contents[0].body)
-
-            self.assertEqual(len(queue_output_body), len(new_data))
+            new_request_time = datetime.fromisoformat(queue_output_body["request_time"])
+            
             self.assertEqual(queue_output_body["job_id"], new_data["job_id"])
             self.assertEqual(queue_output_body["granule_id"], new_data["granule_id"])
             self.assertEqual(queue_output_body["status_id"], new_data["status_id"])
             self.assertIn("request_time", queue_output_body)
+            self.assertEqual(new_request_time.tzinfo, datetime.now(timezone.utc).tzinfo)
             self.assertEqual(queue_output_body["archive_destination"], new_data["archive_destination"])
             self.assertNotIn("completion_time", queue_output_body)
             self.assertEqual(queue_contents[0].attributes['MessageGroupId'], self.MessageGroupId)
@@ -324,17 +315,12 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
             """
             table_name = 'orca_recoveryjob'
             request_method = shared_recovery.RequestMethod.NEW
-            job_id= '1234'
-            granule_id= '6c8d0c8b-4f9a-4d87-ab7c-480b185a0250'
             status_id = shared_recovery.OrcaStatus.STAGED
             request_method = shared_recovery.RequestMethod.NEW
-            archive_destination = 'archive-bucket'
-            request_time = datetime.now(timezone.utc).isoformat()
-            completion_time = datetime.now(timezone.utc).isoformat()
-            db_queue_url = self.queue.url
-            #this is the expected message body that should be received
-            new_data = {"job_id": job_id, "granule_id": granule_id, "status_id": status_id.value, 
-                        "request_time": request_time, "archive_destination": archive_destination}
+            #this is the expected message body that should be received.
+            #the request_time is not shown in new_data.
+            new_data = {"job_id": self.job_id, "granule_id": self.granule_id, "status_id": status_id.value, 
+                         "archive_destination": self.archive_destination}
             body = json.dumps(new_data)
             MessageDeduplicationId = table_name + request_method.value + body
             MessageAttributes={
@@ -346,20 +332,21 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
             }
 
             shared_recovery.post_status_for_job_to_queue(
-                job_id,granule_id,status_id,
-               archive_destination,request_method,db_queue_url
+                self.job_id,self.granule_id,status_id,
+               self.archive_destination,request_method,self.db_queue_url
                 )
             #grabbing queue contents after the message is sent
             queue_contents = self.queue.receive_messages(
                             MessageAttributeNames= ["All"]
                             )
             queue_output_body = json.loads(queue_contents[0].body)
+            new_request_time = datetime.fromisoformat(queue_output_body["request_time"])
 
-            self.assertEqual(len(queue_output_body), len(new_data))
             self.assertEqual(queue_output_body["job_id"], new_data["job_id"])
             self.assertEqual(queue_output_body["granule_id"], new_data["granule_id"])
             self.assertEqual(queue_output_body["status_id"], new_data["status_id"])
             self.assertIn("request_time", queue_output_body)
+            self.assertEqual(new_request_time.tzinfo, datetime.now(timezone.utc).tzinfo)
             self.assertEqual(queue_output_body["archive_destination"], new_data["archive_destination"])
             self.assertNotIn("completion_time", queue_output_body)
             self.assertEqual(queue_contents[0].attributes['MessageGroupId'], self.MessageGroupId)
@@ -374,17 +361,12 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
             """
             table_name = 'orca_recoveryjob'
             request_method = shared_recovery.RequestMethod.NEW
-            job_id= '1234'
-            granule_id= '6c8d0c8b-4f9a-4d87-ab7c-480b185a0250'
             status_id = shared_recovery.OrcaStatus.SUCCESS
             request_method = shared_recovery.RequestMethod.NEW
-            archive_destination = 'archive-bucket'
-            request_time = datetime.now(timezone.utc).isoformat()
-            completion_time = datetime.now(timezone.utc).isoformat()
-            db_queue_url = self.queue.url
-            #this is the expected message body that should be received
-            new_data = {"job_id": job_id, "granule_id": granule_id, "status_id": status_id.value, "request_time": request_time,
-                        "archive_destination": archive_destination, "completion_time": completion_time}
+            #this is the expected message body that should be received. 
+            #the request_time, completion_time are not shown in new_data.
+            new_data = {"job_id": self.job_id, "granule_id": self.granule_id, "status_id": status_id.value,
+                        "archive_destination": self.archive_destination}
             body = json.dumps(new_data)
             MessageDeduplicationId = table_name + request_method.value + body
             MessageAttributes={
@@ -396,22 +378,25 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
             }
 
             shared_recovery.post_status_for_job_to_queue(
-                job_id,granule_id,status_id,
-               archive_destination,request_method,db_queue_url
+                self.job_id,self.granule_id,status_id,
+               self.archive_destination,request_method,self.db_queue_url
                 )
             #grabbing queue contents after the message is sent
             queue_contents = self.queue.receive_messages(
                             MessageAttributeNames= ["All"]
                             )
             queue_output_body = json.loads(queue_contents[0].body)
+            new_request_time = datetime.fromisoformat(queue_output_body["request_time"])
+            new_completion_time = datetime.fromisoformat(queue_output_body["completion_time"])
 
-            self.assertEqual(len(queue_output_body), len(new_data))
             self.assertEqual(queue_output_body["job_id"], new_data["job_id"])
             self.assertEqual(queue_output_body["granule_id"], new_data["granule_id"])
             self.assertEqual(queue_output_body["status_id"], new_data["status_id"])
             self.assertIn("request_time", queue_output_body)
+            self.assertEqual(new_request_time.tzinfo, datetime.now(timezone.utc).tzinfo)
             self.assertEqual(queue_output_body["archive_destination"], new_data["archive_destination"])
             self.assertIn("completion_time", queue_output_body)
+            self.assertEqual(new_completion_time.tzinfo, datetime.now(timezone.utc).tzinfo)
             self.assertEqual(queue_contents[0].attributes['MessageGroupId'], self.MessageGroupId)
             self.assertEqual(queue_contents[0].message_attributes, MessageAttributes)
 # ---------------------------------------------------------------------------------------------------------------------------------
@@ -424,17 +409,12 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
             """
             table_name = 'orca_recoveryjob'
             request_method = shared_recovery.RequestMethod.NEW
-            job_id= '1234'
-            granule_id= '6c8d0c8b-4f9a-4d87-ab7c-480b185a0250'
             status_id = shared_recovery.OrcaStatus.FAILED
             request_method = shared_recovery.RequestMethod.NEW
-            archive_destination = 'archive-bucket'
-            request_time = datetime.now(timezone.utc).isoformat()
-            completion_time = datetime.now(timezone.utc).isoformat()
-            db_queue_url = self.queue.url
-            #this is the expected message body that should be received
-            new_data = {"job_id": job_id, "granule_id": granule_id, "status_id": status_id.value, "request_time": request_time,
-                        "archive_destination": archive_destination, "completion_time": completion_time}
+            #this is the expected message body that should be received. 
+            #the request_time, completion_time are not shown in new_data.
+            new_data = {"job_id": self.job_id, "granule_id": self.granule_id, "status_id": status_id.value,
+                        "archive_destination": self.archive_destination}
             body = json.dumps(new_data)
             MessageDeduplicationId = table_name + request_method.value + body
             MessageAttributes={
@@ -446,22 +426,25 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
             }
 
             shared_recovery.post_status_for_job_to_queue(
-                job_id,granule_id,status_id,
-               archive_destination,request_method,db_queue_url
+                self.job_id,self.granule_id,status_id,
+               self.archive_destination,request_method,self.db_queue_url
                 )
             #grabbing queue contents after the message is sent
             queue_contents = self.queue.receive_messages(
                             MessageAttributeNames= ["All"]
                             )
             queue_output_body = json.loads(queue_contents[0].body)
+            new_request_time = datetime.fromisoformat(queue_output_body["request_time"])
+            new_completion_time = datetime.fromisoformat(queue_output_body["completion_time"])
 
-            self.assertEqual(len(queue_output_body), len(new_data))
             self.assertEqual(queue_output_body["job_id"], new_data["job_id"])
             self.assertEqual(queue_output_body["granule_id"], new_data["granule_id"])
             self.assertEqual(queue_output_body["status_id"], new_data["status_id"])
             self.assertIn("request_time", queue_output_body)
+            self.assertEqual(new_request_time.tzinfo, datetime.now(timezone.utc).tzinfo)
             self.assertEqual(queue_output_body["archive_destination"], new_data["archive_destination"])
             self.assertIn("completion_time", queue_output_body)
+            self.assertEqual(new_completion_time.tzinfo, datetime.now(timezone.utc).tzinfo)
             self.assertEqual(queue_contents[0].attributes['MessageGroupId'], self.MessageGroupId)
             self.assertEqual(queue_contents[0].message_attributes, MessageAttributes)
 

@@ -32,7 +32,7 @@ def post_status_for_job_to_queue(
     job_id: str,
     granule_id: str,
     status_id: OrcaStatus,
-    archive_destination: str,
+    archive_destination: Optional[str],
     request_method: RequestMethod, 
     db_queue_url: str,
 ):
@@ -57,10 +57,9 @@ def post_status_for_job_to_queue(
     new_data = {"job_id": job_id, "granule_id": granule_id, "status_id": status_id.value}
     if request_method == RequestMethod.NEW:
         new_data["request_time"] = datetime.now(timezone.utc).isoformat()
-        if archive_destination is not None:
-            new_data["archive_destination"] = archive_destination
-        else:
-            raise Exception("archive_destination is required.")
+        if len(archive_destination) == 0 or  archive_destination is None:
+            raise Exception("archive_destination is required for new records.")
+        new_data["archive_destination"] = archive_destination            
     if status_id == OrcaStatus.SUCCESS or status_id == OrcaStatus.FAILED:
         new_data["completion_time"] = datetime.now(timezone.utc).isoformat()
 
@@ -71,10 +70,10 @@ def post_status_for_file_to_queue(
     job_id: str,
     granule_id: str,
     filename: str,
-    key_path: str,
-    restore_destination: str,
+    key_path: Optional[str],
+    restore_destination: Optional[str],
     status_id: OrcaStatus,
-    error_message: str,
+    error_message: Optional[str],
     request_method: RequestMethod,
     db_queue_url: str,
 ):
@@ -107,22 +106,19 @@ def post_status_for_file_to_queue(
 
     if request_method == RequestMethod.NEW:
         new_data["request_time"] = datetime.now(timezone.utc).isoformat()
-        if key_path is not None:
-            new_data["key_path"] = key_path
-        else:
+        if len(key_path) == 0 or key_path is None:
             raise Exception("key_path is required.")
-        if restore_destination is not None:
-            new_data["restore_destination"] = restore_destination
-        else:
+        if len(restore_destination) == 0 or restore_destination is None:
             raise Exception("restore_destination is required.")
+        new_data["key_path"] = key_path
+        new_data["restore_destination"] = restore_destination
+            
     if status_id == OrcaStatus.SUCCESS or status_id == OrcaStatus.FAILED:
         new_data["completion_time"] = datetime.now(timezone.utc).isoformat()
         if status_id == OrcaStatus.FAILED:
-            if error_message is not None:
-                new_data["error_message"] = error_message
-            else:
+            if len(error_message) == 0 or error_message is None:
                 raise Exception("error message is required.")
-            
+            new_data["error_message"] = error_message
 
     post_entry_to_queue("orca_recoverfile", new_data, request_method, db_queue_url)
 
@@ -134,7 +130,7 @@ def post_entry_to_queue(
     db_queue_url: str,
 ):
     """
-    Posts the request files to SQS queue.
+    Posts messages to an SQS queue.
     
     Args:
         table_name: The name of the DB table.
