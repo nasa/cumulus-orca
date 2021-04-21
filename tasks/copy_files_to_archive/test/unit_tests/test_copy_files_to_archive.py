@@ -16,9 +16,9 @@ from botocore.exceptions import ClientError
 import copy_files_to_archive
 
 
-class TestCopyFiles(unittest.TestCase):  # pylint: disable-msg=too-many-instance-attributes
+class TestCopyFilesToArchive(unittest.TestCase):
     """
-    TestCopyFiles.
+    TestCopyFilesToArchive.
     """
 
     @patch.dict(os.environ,
