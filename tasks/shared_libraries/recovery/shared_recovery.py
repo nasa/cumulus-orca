@@ -59,7 +59,9 @@ def post_status_for_job_to_queue(
         new_data["request_time"] = datetime.now(timezone.utc).isoformat()
         if len(archive_destination) == 0 or  archive_destination is None:
             raise Exception("archive_destination is required for new records.")
-        new_data["archive_destination"] = archive_destination            
+        new_data["archive_destination"] = archive_destination
+    elif request_method== RequestMethod.UPDATE:
+        new_data = new_data
     if status_id == OrcaStatus.SUCCESS or status_id == OrcaStatus.FAILED:
         new_data["completion_time"] = datetime.now(timezone.utc).isoformat()
 
@@ -112,7 +114,10 @@ def post_status_for_file_to_queue(
             raise Exception("restore_destination is required.")
         new_data["key_path"] = key_path
         new_data["restore_destination"] = restore_destination
-            
+
+    elif request_method == RequestMethod.UPDATE:
+        new_data= new_data
+        
     if status_id == OrcaStatus.SUCCESS or status_id == OrcaStatus.FAILED:
         new_data["completion_time"] = datetime.now(timezone.utc).isoformat()
         if status_id == OrcaStatus.FAILED:

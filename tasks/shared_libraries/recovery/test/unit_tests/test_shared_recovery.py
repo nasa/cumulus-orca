@@ -52,7 +52,8 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         self.mock_sqs.stop()
         
 # ---------------------------------------------------------------------------------------------------------------------------------
-
+                                # unit tests for request method as NEW 
+# ---------------------------------------------------------------------------------------------------------------------------------
     def test_post_status_for_file_to_queue_new_pending(self):
         """
         Test that sending a message to SQS queue using post_status_for_file_to_queue() function returns the same expected message.
@@ -263,161 +264,367 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
 # ---------------------------------------------------------------------------------------------------------------------------------
 
     def test_post_status_for_job_to_queue_new_pending(self):
-            """
-            Test that sending a message to SQS queue using post_status_for_job_to_queue() function returns the same expected message.
-            This is for testing the case when request_method is NEW, ORCA status is PENDING.
-            The new_data in this case should return request_time, archive_destination in addition to other values.
-            Completion_time should not exist in the response received from SQS body.
-            """
-            table_name = 'orca_recoveryjob'
-            request_method = shared_recovery.RequestMethod.NEW
-            status_id = shared_recovery.OrcaStatus.PENDING
-            request_method = shared_recovery.RequestMethod.NEW
-            #this is the expected message body that should be received.
-            #the request_time is not shown in new_data.
-            new_data = {"job_id": self.job_id, "granule_id": self.granule_id, "status_id": status_id.value, 
-                        "archive_destination": self.archive_destination}
-            body = json.dumps(new_data)
-            MessageDeduplicationId = table_name + request_method.value + body
-            MessageAttributes={
-                "RequestMethod": {
-                    "DataType": "String",
-                    "StringValue": request_method.value,
-                },
-                "TableName": {"DataType": "String", "StringValue": table_name},
-            }
+        """
+        Test that sending a message to SQS queue using post_status_for_job_to_queue() function returns the same expected message.
+        This is for testing the case when request_method is NEW, ORCA status is PENDING.
+        The new_data in this case should return request_time, archive_destination in addition to other values.
+        Completion_time should not exist in the response received from SQS body.
+        """
+        table_name = 'orca_recoveryjob'
+        request_method = shared_recovery.RequestMethod.NEW
+        status_id = shared_recovery.OrcaStatus.PENDING
+        #this is the expected message body that should be received.
+        #the request_time is not shown in new_data.
+        new_data = {"job_id": self.job_id, "granule_id": self.granule_id, "status_id": status_id.value, 
+                    "archive_destination": self.archive_destination}
+        body = json.dumps(new_data)
+        MessageDeduplicationId = table_name + request_method.value + body
+        MessageAttributes={
+            "RequestMethod": {
+                "DataType": "String",
+                "StringValue": request_method.value,
+            },
+            "TableName": {"DataType": "String", "StringValue": table_name},
+        }
 
-            shared_recovery.post_status_for_job_to_queue(self.job_id,self.granule_id,status_id,self.archive_destination,request_method,self.db_queue_url)
-            #grabbing queue contents after the message is sent
-            queue_contents = self.queue.receive_messages(
-                            MessageAttributeNames= ["All"]
-                            )
-            queue_output_body = json.loads(queue_contents[0].body)
-            new_request_time = datetime.fromisoformat(queue_output_body["request_time"])
-            
-            self.assertEqual(queue_output_body["job_id"], new_data["job_id"])
-            self.assertEqual(queue_output_body["granule_id"], new_data["granule_id"])
-            self.assertEqual(queue_output_body["status_id"], new_data["status_id"])
-            self.assertIn("request_time", queue_output_body)
-            self.assertEqual(new_request_time.tzinfo, datetime.now(timezone.utc).tzinfo)
-            self.assertEqual(queue_output_body["archive_destination"], new_data["archive_destination"])
-            self.assertNotIn("completion_time", queue_output_body)
-            self.assertEqual(queue_contents[0].attributes['MessageGroupId'], self.MessageGroupId)
-            self.assertEqual(queue_contents[0].message_attributes, MessageAttributes)
+        shared_recovery.post_status_for_job_to_queue(self.job_id,self.granule_id,status_id,self.archive_destination,request_method,self.db_queue_url)
+        #grabbing queue contents after the message is sent
+        queue_contents = self.queue.receive_messages(
+                        MessageAttributeNames= ["All"]
+                        )
+        queue_output_body = json.loads(queue_contents[0].body)
+        new_request_time = datetime.fromisoformat(queue_output_body["request_time"])
+        
+        self.assertEqual(queue_output_body["job_id"], new_data["job_id"])
+        self.assertEqual(queue_output_body["granule_id"], new_data["granule_id"])
+        self.assertEqual(queue_output_body["status_id"], new_data["status_id"])
+        self.assertIn("request_time", queue_output_body)
+        self.assertEqual(new_request_time.tzinfo, datetime.now(timezone.utc).tzinfo)
+        self.assertEqual(queue_output_body["archive_destination"], new_data["archive_destination"])
+        self.assertNotIn("completion_time", queue_output_body)
+        self.assertEqual(queue_contents[0].attributes['MessageGroupId'], self.MessageGroupId)
+        self.assertEqual(queue_contents[0].message_attributes, MessageAttributes)
 # ---------------------------------------------------------------------------------------------------------------------------------
 
     def test_post_status_for_job_to_queue_new_staged(self):
-            """
-            Test that sending a message to SQS queue using post_status_for_job_to_queue() function returns the same expected message.
-            This is for testing the case when request_method is NEW, ORCA status is STAGED.
-            The new_data in this case should return request_time, archive_destination in addition to other values.
-            Completion_time should not exist in the response received from SQS body.
-            """
-            table_name = 'orca_recoveryjob'
-            request_method = shared_recovery.RequestMethod.NEW
-            status_id = shared_recovery.OrcaStatus.STAGED
-            request_method = shared_recovery.RequestMethod.NEW
-            #this is the expected message body that should be received.
-            #the request_time is not shown in new_data.
-            new_data = {"job_id": self.job_id, "granule_id": self.granule_id, "status_id": status_id.value, 
-                         "archive_destination": self.archive_destination}
-            body = json.dumps(new_data)
-            MessageDeduplicationId = table_name + request_method.value + body
-            MessageAttributes={
-                "RequestMethod": {
-                    "DataType": "String",
-                    "StringValue": request_method.value,
-                },
-                "TableName": {"DataType": "String", "StringValue": table_name},
-            }
+        """
+        Test that sending a message to SQS queue using post_status_for_job_to_queue() function returns the same expected message.
+        This is for testing the case when request_method is NEW, ORCA status is STAGED.
+        The new_data in this case should return request_time, archive_destination in addition to other values.
+        Completion_time should not exist in the response received from SQS body.
+        """
+        table_name = 'orca_recoveryjob'
+        request_method = shared_recovery.RequestMethod.NEW
+        status_id = shared_recovery.OrcaStatus.STAGED
+        #this is the expected message body that should be received.
+        #the request_time is not shown in new_data.
+        new_data = {"job_id": self.job_id, "granule_id": self.granule_id, "status_id": status_id.value, 
+                        "archive_destination": self.archive_destination}
+        body = json.dumps(new_data)
+        MessageDeduplicationId = table_name + request_method.value + body
+        MessageAttributes={
+            "RequestMethod": {
+                "DataType": "String",
+                "StringValue": request_method.value,
+            },
+            "TableName": {"DataType": "String", "StringValue": table_name},
+        }
 
-            shared_recovery.post_status_for_job_to_queue(
-                self.job_id,self.granule_id,status_id,
-               self.archive_destination,request_method,self.db_queue_url
-                )
-            #grabbing queue contents after the message is sent
-            queue_contents = self.queue.receive_messages(
-                            MessageAttributeNames= ["All"]
-                            )
-            queue_output_body = json.loads(queue_contents[0].body)
-            new_request_time = datetime.fromisoformat(queue_output_body["request_time"])
+        shared_recovery.post_status_for_job_to_queue(
+            self.job_id,self.granule_id,status_id,
+            self.archive_destination,request_method,self.db_queue_url
+            )
+        #grabbing queue contents after the message is sent
+        queue_contents = self.queue.receive_messages(
+                        MessageAttributeNames= ["All"]
+                        )
+        queue_output_body = json.loads(queue_contents[0].body)
+        new_request_time = datetime.fromisoformat(queue_output_body["request_time"])
 
-            self.assertEqual(queue_output_body["job_id"], new_data["job_id"])
-            self.assertEqual(queue_output_body["granule_id"], new_data["granule_id"])
-            self.assertEqual(queue_output_body["status_id"], new_data["status_id"])
-            self.assertIn("request_time", queue_output_body)
-            self.assertEqual(new_request_time.tzinfo, datetime.now(timezone.utc).tzinfo)
-            self.assertEqual(queue_output_body["archive_destination"], new_data["archive_destination"])
-            self.assertNotIn("completion_time", queue_output_body)
-            self.assertEqual(queue_contents[0].attributes['MessageGroupId'], self.MessageGroupId)
-            self.assertEqual(queue_contents[0].message_attributes, MessageAttributes)
+        self.assertEqual(queue_output_body["job_id"], new_data["job_id"])
+        self.assertEqual(queue_output_body["granule_id"], new_data["granule_id"])
+        self.assertEqual(queue_output_body["status_id"], new_data["status_id"])
+        self.assertIn("request_time", queue_output_body)
+        self.assertEqual(new_request_time.tzinfo, datetime.now(timezone.utc).tzinfo)
+        self.assertEqual(queue_output_body["archive_destination"], new_data["archive_destination"])
+        self.assertNotIn("completion_time", queue_output_body)
+        self.assertEqual(queue_contents[0].attributes['MessageGroupId'], self.MessageGroupId)
+        self.assertEqual(queue_contents[0].message_attributes, MessageAttributes)
 # ---------------------------------------------------------------------------------------------------------------------------------
 
     def test_post_status_for_job_to_queue_new_success(self):
-            """
-            Test that sending a message to SQS queue using post_status_for_job_to_queue() function returns the same expected message.
-            This is for testing the case when request_method is NEW, ORCA status is SUCCESS.
-            The new_data in this case should return request_time, archive_destination, completion_time in addition to other values.
-            """
-            table_name = 'orca_recoveryjob'
-            request_method = shared_recovery.RequestMethod.NEW
-            status_id = shared_recovery.OrcaStatus.SUCCESS
-            request_method = shared_recovery.RequestMethod.NEW
-            #this is the expected message body that should be received. 
-            #the request_time, completion_time are not shown in new_data.
-            new_data = {"job_id": self.job_id, "granule_id": self.granule_id, "status_id": status_id.value,
-                        "archive_destination": self.archive_destination}
-            body = json.dumps(new_data)
-            MessageDeduplicationId = table_name + request_method.value + body
-            MessageAttributes={
-                "RequestMethod": {
-                    "DataType": "String",
-                    "StringValue": request_method.value,
-                },
-                "TableName": {"DataType": "String", "StringValue": table_name},
-            }
+        """
+        Test that sending a message to SQS queue using post_status_for_job_to_queue() function returns the same expected message.
+        This is for testing the case when request_method is NEW, ORCA status is SUCCESS.
+        The new_data in this case should return request_time, archive_destination, completion_time in addition to other values.
+        """
+        table_name = 'orca_recoveryjob'
+        request_method = shared_recovery.RequestMethod.NEW
+        status_id = shared_recovery.OrcaStatus.SUCCESS
+        #this is the expected message body that should be received. 
+        #the request_time, completion_time are not shown in new_data.
+        new_data = {"job_id": self.job_id, "granule_id": self.granule_id, "status_id": status_id.value,
+                    "archive_destination": self.archive_destination}
+        body = json.dumps(new_data)
+        MessageDeduplicationId = table_name + request_method.value + body
+        MessageAttributes={
+            "RequestMethod": {
+                "DataType": "String",
+                "StringValue": request_method.value,
+            },
+            "TableName": {"DataType": "String", "StringValue": table_name},
+        }
 
-            shared_recovery.post_status_for_job_to_queue(
-                self.job_id,self.granule_id,status_id,
-               self.archive_destination,request_method,self.db_queue_url
-                )
-            #grabbing queue contents after the message is sent
-            queue_contents = self.queue.receive_messages(
-                            MessageAttributeNames= ["All"]
-                            )
-            queue_output_body = json.loads(queue_contents[0].body)
-            new_request_time = datetime.fromisoformat(queue_output_body["request_time"])
-            new_completion_time = datetime.fromisoformat(queue_output_body["completion_time"])
+        shared_recovery.post_status_for_job_to_queue(
+            self.job_id,self.granule_id,status_id,
+            self.archive_destination,request_method,self.db_queue_url
+            )
+        #grabbing queue contents after the message is sent
+        queue_contents = self.queue.receive_messages(
+                        MessageAttributeNames= ["All"]
+                        )
+        queue_output_body = json.loads(queue_contents[0].body)
+        new_request_time = datetime.fromisoformat(queue_output_body["request_time"])
+        new_completion_time = datetime.fromisoformat(queue_output_body["completion_time"])
 
-            self.assertEqual(queue_output_body["job_id"], new_data["job_id"])
-            self.assertEqual(queue_output_body["granule_id"], new_data["granule_id"])
-            self.assertEqual(queue_output_body["status_id"], new_data["status_id"])
-            self.assertIn("request_time", queue_output_body)
-            self.assertEqual(new_request_time.tzinfo, datetime.now(timezone.utc).tzinfo)
-            self.assertEqual(queue_output_body["archive_destination"], new_data["archive_destination"])
-            self.assertIn("completion_time", queue_output_body)
-            self.assertEqual(new_completion_time.tzinfo, datetime.now(timezone.utc).tzinfo)
-            self.assertEqual(queue_contents[0].attributes['MessageGroupId'], self.MessageGroupId)
-            self.assertEqual(queue_contents[0].message_attributes, MessageAttributes)
+        self.assertEqual(queue_output_body["job_id"], new_data["job_id"])
+        self.assertEqual(queue_output_body["granule_id"], new_data["granule_id"])
+        self.assertEqual(queue_output_body["status_id"], new_data["status_id"])
+        self.assertIn("request_time", queue_output_body)
+        self.assertEqual(new_request_time.tzinfo, datetime.now(timezone.utc).tzinfo)
+        self.assertEqual(queue_output_body["archive_destination"], new_data["archive_destination"])
+        self.assertIn("completion_time", queue_output_body)
+        self.assertEqual(new_completion_time.tzinfo, datetime.now(timezone.utc).tzinfo)
+        self.assertEqual(queue_contents[0].attributes['MessageGroupId'], self.MessageGroupId)
+        self.assertEqual(queue_contents[0].message_attributes, MessageAttributes)
 # ---------------------------------------------------------------------------------------------------------------------------------
 
     def test_post_status_for_job_to_queue_new_failed(self):
-            """
-            Test that sending a message to SQS queue using post_status_for_job_to_queue() function returns the same expected message.
-            This is for testing the case when request_method is NEW, ORCA status is FAILED.
-            The new_data in this case should return request_time, archive_destination, completion_time in addition to other values.
-            """
-            table_name = 'orca_recoveryjob'
-            request_method = shared_recovery.RequestMethod.NEW
-            status_id = shared_recovery.OrcaStatus.FAILED
-            request_method = shared_recovery.RequestMethod.NEW
-            #this is the expected message body that should be received. 
-            #the request_time, completion_time are not shown in new_data.
-            new_data = {"job_id": self.job_id, "granule_id": self.granule_id, "status_id": status_id.value,
-                        "archive_destination": self.archive_destination}
-            body = json.dumps(new_data)
-            MessageDeduplicationId = table_name + request_method.value + body
-            MessageAttributes={
+        """
+        Test that sending a message to SQS queue using post_status_for_job_to_queue() function returns the same expected message.
+        This is for testing the case when request_method is NEW, ORCA status is FAILED.
+        The new_data in this case should return request_time, archive_destination, completion_time in addition to other values.
+        """
+        table_name = 'orca_recoveryjob'
+        request_method = shared_recovery.RequestMethod.NEW
+        status_id = shared_recovery.OrcaStatus.FAILED
+        #this is the expected message body that should be received. 
+        #the request_time, completion_time are not shown in new_data.
+        new_data = {"job_id": self.job_id, "granule_id": self.granule_id, "status_id": status_id.value,
+                    "archive_destination": self.archive_destination}
+        body = json.dumps(new_data)
+        MessageDeduplicationId = table_name + request_method.value + body
+        MessageAttributes={
+            "RequestMethod": {
+                "DataType": "String",
+                "StringValue": request_method.value,
+            },
+            "TableName": {"DataType": "String", "StringValue": table_name},
+        }
+
+        shared_recovery.post_status_for_job_to_queue(
+            self.job_id,self.granule_id,status_id,
+            self.archive_destination,request_method,self.db_queue_url
+            )
+        #grabbing queue contents after the message is sent
+        queue_contents = self.queue.receive_messages(
+                        MessageAttributeNames= ["All"]
+                        )
+        queue_output_body = json.loads(queue_contents[0].body)
+        new_request_time = datetime.fromisoformat(queue_output_body["request_time"])
+        new_completion_time = datetime.fromisoformat(queue_output_body["completion_time"])
+
+        self.assertEqual(queue_output_body["job_id"], new_data["job_id"])
+        self.assertEqual(queue_output_body["granule_id"], new_data["granule_id"])
+        self.assertEqual(queue_output_body["status_id"], new_data["status_id"])
+        self.assertIn("request_time", queue_output_body)
+        self.assertEqual(new_request_time.tzinfo, datetime.now(timezone.utc).tzinfo)
+        self.assertEqual(queue_output_body["archive_destination"], new_data["archive_destination"])
+        self.assertIn("completion_time", queue_output_body)
+        self.assertEqual(new_completion_time.tzinfo, datetime.now(timezone.utc).tzinfo)
+        self.assertEqual(queue_contents[0].attributes['MessageGroupId'], self.MessageGroupId)
+        self.assertEqual(queue_contents[0].message_attributes, MessageAttributes)
+
+# ---------------------------------------------------------------------------------------------------------------------------------
+                                # unit tests for request method as UPDATE 
+# ---------------------------------------------------------------------------------------------------------------------------------
+    def test_post_status_for_job_to_queue_update_pending(self):
+        """
+        Test that sending a message to SQS queue using post_status_for_job_to_queue() function returns the same expected message.
+        This is for testing the case when request_method is UPDATE, ORCA status is PENDING.
+        """
+        table_name = 'orca_recoveryjob'
+        request_method = shared_recovery.RequestMethod.UPDATE
+        status_id = shared_recovery.OrcaStatus.PENDING
+        #this is the expected message body that should be received. 
+        new_data = {"job_id": self.job_id, "granule_id": self.granule_id, "status_id": status_id.value}
+        body = json.dumps(new_data)
+        MessageDeduplicationId = table_name + request_method.value + body
+        MessageAttributes={
+            "RequestMethod": {
+                "DataType": "String",
+                "StringValue": request_method.value,
+            },
+            "TableName": {"DataType": "String", "StringValue": table_name},
+        }
+
+        shared_recovery.post_status_for_job_to_queue(
+            self.job_id,self.granule_id,status_id,self.archive_destination,request_method,self.db_queue_url)            
+        #grabbing queue contents after the message is sent
+        queue_contents = self.queue.receive_messages(
+                        MessageAttributeNames= ["All"]
+                        )
+        queue_output_body = json.loads(queue_contents[0].body)
+
+        self.assertEqual(queue_output_body["job_id"], new_data["job_id"])
+        self.assertEqual(queue_output_body["granule_id"], new_data["granule_id"])
+        self.assertEqual(queue_output_body["status_id"], new_data["status_id"])
+        self.assertNotIn("key_path", queue_output_body)
+        self.assertNotIn("archive_destination", queue_output_body)
+        self.assertNotIn("request_time", queue_output_body)
+        self.assertNotIn("completion_time", queue_output_body)
+        self.assertEqual(queue_contents[0].attributes['MessageGroupId'], self.MessageGroupId)
+        self.assertEqual(queue_contents[0].message_attributes, MessageAttributes)
+# ---------------------------------------------------------------------------------------------------------------------------------
+    def test_post_status_for_job_to_queue_update_staged(self):
+        """
+        Test that sending a message to SQS queue using post_status_for_job_to_queue() function returns the same expected message.
+        This is for testing the case when request_method is UPDATE, ORCA status is STAGED.
+        """
+        table_name = 'orca_recoveryjob'
+        request_method = shared_recovery.RequestMethod.UPDATE
+        status_id = shared_recovery.OrcaStatus.STAGED
+        #this is the expected message body that should be received. 
+        new_data = {"job_id": self.job_id, "granule_id": self.granule_id, "status_id": status_id.value}
+        body = json.dumps(new_data)
+        MessageDeduplicationId = table_name + request_method.value + body
+        MessageAttributes={
+            "RequestMethod": {
+                "DataType": "String",
+                "StringValue": request_method.value,
+            },
+            "TableName": {"DataType": "String", "StringValue": table_name},
+        }
+
+        shared_recovery.post_status_for_job_to_queue(
+            self.job_id,self.granule_id,status_id,self.archive_destination,request_method,self.db_queue_url)            
+        #grabbing queue contents after the message is sent
+        queue_contents = self.queue.receive_messages(
+                        MessageAttributeNames= ["All"]
+                        )
+        queue_output_body = json.loads(queue_contents[0].body)
+
+        self.assertEqual(queue_output_body["job_id"], new_data["job_id"])
+        self.assertEqual(queue_output_body["granule_id"], new_data["granule_id"])
+        self.assertEqual(queue_output_body["status_id"], new_data["status_id"])
+        self.assertNotIn("key_path", queue_output_body)
+        self.assertNotIn("archive_destination", queue_output_body)
+        self.assertNotIn("request_time", queue_output_body)
+        self.assertNotIn("completion_time", queue_output_body)
+        self.assertEqual(queue_contents[0].attributes['MessageGroupId'], self.MessageGroupId)
+        self.assertEqual(queue_contents[0].message_attributes, MessageAttributes)
+
+
+# ---------------------------------------------------------------------------------------------------------------------------------
+    def test_post_status_for_job_to_queue_update_success(self):
+        """
+        Test that sending a message to SQS queue using post_status_for_job_to_queue() function returns the same expected message.
+        This is for testing the case when request_method is UPDATE, ORCA status is SUCCESS.
+        The queue output will include completion_time in addition to other parameters.
+        """
+        table_name = 'orca_recoveryjob'
+        request_method = shared_recovery.RequestMethod.UPDATE
+        status_id = shared_recovery.OrcaStatus.SUCCESS
+        #this is the expected message body that should be received. 
+        new_data = {"job_id": self.job_id, "granule_id": self.granule_id, "status_id": status_id.value}
+        body = json.dumps(new_data)
+        MessageDeduplicationId = table_name + request_method.value + body
+        MessageAttributes={
+            "RequestMethod": {
+                "DataType": "String",
+                "StringValue": request_method.value,
+            },
+            "TableName": {"DataType": "String", "StringValue": table_name},
+        }
+
+        shared_recovery.post_status_for_job_to_queue(
+            self.job_id,self.granule_id,status_id,self.archive_destination,request_method,self.db_queue_url)            
+        #grabbing queue contents after the message is sent
+        queue_contents = self.queue.receive_messages(
+                        MessageAttributeNames= ["All"]
+                        )
+        queue_output_body = json.loads(queue_contents[0].body)
+        new_completion_time = datetime.fromisoformat(queue_output_body["completion_time"])
+
+        self.assertEqual(queue_output_body["job_id"], new_data["job_id"])
+        self.assertEqual(queue_output_body["granule_id"], new_data["granule_id"])
+        self.assertEqual(queue_output_body["status_id"], new_data["status_id"])
+        self.assertNotIn("key_path", queue_output_body)
+        self.assertNotIn("archive_destination", queue_output_body)
+        self.assertNotIn("request_time", queue_output_body)
+        self.assertIn("completion_time", queue_output_body)
+        self.assertEqual(new_completion_time.tzinfo, datetime.now(timezone.utc).tzinfo)
+        self.assertEqual(queue_contents[0].attributes['MessageGroupId'], self.MessageGroupId)
+        self.assertEqual(queue_contents[0].message_attributes, MessageAttributes)
+# ---------------------------------------------------------------------------------------------------------------------------------
+    def test_post_status_for_job_to_queue_update_failed(self):
+        """
+        Test that sending a message to SQS queue using post_status_for_job_to_queue() function returns the same expected message.
+        This is for testing the case when request_method is UPDATE, ORCA status is FAILED.
+        The queue output will include completion_time in addition to other parameters.
+        """
+        table_name = 'orca_recoveryjob'
+        request_method = shared_recovery.RequestMethod.UPDATE
+        status_id = shared_recovery.OrcaStatus.FAILED
+        #this is the expected message body that should be received. 
+        new_data = {"job_id": self.job_id, "granule_id": self.granule_id, "status_id": status_id.value}
+        body = json.dumps(new_data)
+        MessageDeduplicationId = table_name + request_method.value + body
+        MessageAttributes={
+            "RequestMethod": {
+                "DataType": "String",
+                "StringValue": request_method.value,
+            },
+            "TableName": {"DataType": "String", "StringValue": table_name},
+        }
+
+        shared_recovery.post_status_for_job_to_queue(
+            self.job_id,self.granule_id,status_id,self.archive_destination,request_method,self.db_queue_url)            
+        #grabbing queue contents after the message is sent
+        queue_contents = self.queue.receive_messages(
+                        MessageAttributeNames= ["All"]
+                        )
+        queue_output_body = json.loads(queue_contents[0].body)
+        new_completion_time = datetime.fromisoformat(queue_output_body["completion_time"])
+        
+        self.assertEqual(queue_output_body["job_id"], new_data["job_id"])
+        self.assertEqual(queue_output_body["granule_id"], new_data["granule_id"])
+        self.assertEqual(queue_output_body["status_id"], new_data["status_id"])
+        self.assertNotIn("key_path", queue_output_body)
+        self.assertNotIn("archive_destination", queue_output_body)
+        self.assertNotIn("request_time", queue_output_body)
+        self.assertIn("completion_time", queue_output_body)
+        self.assertNotIn("error_message", queue_output_body)
+        self.assertEqual(new_completion_time.tzinfo, datetime.now(timezone.utc).tzinfo)
+        self.assertEqual(queue_contents[0].attributes['MessageGroupId'], self.MessageGroupId)
+        self.assertEqual(queue_contents[0].message_attributes, MessageAttributes)
+
+# ---------------------------------------------------------------------------------------------------------------------------------
+    def test_post_status_for_file_to_queue_update_pending(self):
+        """
+        Test that sending a message to SQS queue using post_status_for_file_to_queue() function returns the same expected message.
+        This is for testing the case when request_method is UPDATE, ORCA status is PENDING.
+        """
+        table_name = 'orca_recoverfile'
+        request_method = shared_recovery.RequestMethod.UPDATE
+        status_id = shared_recovery.OrcaStatus.PENDING
+        #this is the expected message body that should be received. 
+        #the request_time, last_update are not shown in new_data.
+        new_data = {"job_id": self.job_id, "granule_id": self.granule_id, "filename": self.filename, 
+                    "status_id": status_id.value}
+        body = json.dumps(new_data)
+        MessageDeduplicationId = table_name + request_method.value  + body
+        MessageAttributes={
                 "RequestMethod": {
                     "DataType": "String",
                     "StringValue": request_method.value,
@@ -425,28 +632,174 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                 "TableName": {"DataType": "String", "StringValue": table_name},
             }
 
-            shared_recovery.post_status_for_job_to_queue(
-                self.job_id,self.granule_id,status_id,
-               self.archive_destination,request_method,self.db_queue_url
-                )
-            #grabbing queue contents after the message is sent
-            queue_contents = self.queue.receive_messages(
+        shared_recovery.post_status_for_file_to_queue(
+            self.job_id,self.granule_id,self.filename,self.key_path,self.restore_destination,status_id,self.error_message,request_method,self.db_queue_url)
+        #grabbing queue contents after the message is sent
+        queue_contents = self.queue.receive_messages(
                             MessageAttributeNames= ["All"]
                             )
-            queue_output_body = json.loads(queue_contents[0].body)
-            new_request_time = datetime.fromisoformat(queue_output_body["request_time"])
-            new_completion_time = datetime.fromisoformat(queue_output_body["completion_time"])
+        queue_output_body = json.loads(queue_contents[0].body)
+        new_last_update = datetime.fromisoformat(queue_output_body["last_update"])
 
-            self.assertEqual(queue_output_body["job_id"], new_data["job_id"])
-            self.assertEqual(queue_output_body["granule_id"], new_data["granule_id"])
-            self.assertEqual(queue_output_body["status_id"], new_data["status_id"])
-            self.assertIn("request_time", queue_output_body)
-            self.assertEqual(new_request_time.tzinfo, datetime.now(timezone.utc).tzinfo)
-            self.assertEqual(queue_output_body["archive_destination"], new_data["archive_destination"])
-            self.assertIn("completion_time", queue_output_body)
-            self.assertEqual(new_completion_time.tzinfo, datetime.now(timezone.utc).tzinfo)
-            self.assertEqual(queue_contents[0].attributes['MessageGroupId'], self.MessageGroupId)
-            self.assertEqual(queue_contents[0].message_attributes, MessageAttributes)
+        self.assertEqual(queue_output_body["job_id"], new_data["job_id"])
+        self.assertEqual(queue_output_body["granule_id"], new_data["granule_id"])
+        self.assertEqual(queue_output_body["filename"], new_data["filename"])
+        self.assertIn("last_update", queue_output_body)
+        self.assertEqual(new_last_update.tzinfo,datetime.now(timezone.utc).tzinfo)
+        self.assertEqual(queue_output_body["status_id"], new_data["status_id"])
+        self.assertNotIn("key_path", queue_output_body)
+        self.assertNotIn("archive_destination", queue_output_body)
+        self.assertNotIn("request_time", queue_output_body)
+        self.assertNotIn("completion_time", queue_output_body)
+        self.assertNotIn("error_message", queue_output_body)
+        self.assertEqual(queue_contents[0].attributes['MessageGroupId'], self.MessageGroupId)
+        self.assertEqual(queue_contents[0].message_attributes, MessageAttributes)
+
+
+# ---------------------------------------------------------------------------------------------------------------------------------
+    def test_post_status_for_file_to_queue_update_staged(self):
+        """
+        Test that sending a message to SQS queue using post_status_for_file_to_queue() function returns the same expected message.
+        This is for testing the case when request_method is UPDATE, ORCA status is STAGED.
+        """
+        table_name = 'orca_recoverfile'
+        request_method = shared_recovery.RequestMethod.UPDATE
+        status_id = shared_recovery.OrcaStatus.STAGED
+        #this is the expected message body that should be received. 
+        #the request_time, last_update are not shown in new_data.
+        new_data = {"job_id": self.job_id, "granule_id": self.granule_id, "filename": self.filename, 
+                    "status_id": status_id.value}
+        body = json.dumps(new_data)
+        MessageDeduplicationId = table_name + request_method.value  + body
+        MessageAttributes={
+                "RequestMethod": {
+                    "DataType": "String",
+                    "StringValue": request_method.value,
+                },
+                "TableName": {"DataType": "String", "StringValue": table_name},
+            }
+
+        shared_recovery.post_status_for_file_to_queue(
+            self.job_id,self.granule_id,self.filename,self.key_path,self.restore_destination,status_id,self.error_message,request_method,self.db_queue_url)
+        #grabbing queue contents after the message is sent
+        queue_contents = self.queue.receive_messages(
+                            MessageAttributeNames= ["All"]
+                            )
+        queue_output_body = json.loads(queue_contents[0].body)
+        new_last_update = datetime.fromisoformat(queue_output_body["last_update"])
+
+        self.assertEqual(queue_output_body["job_id"], new_data["job_id"])
+        self.assertEqual(queue_output_body["granule_id"], new_data["granule_id"])
+        self.assertEqual(queue_output_body["filename"], new_data["filename"])
+        self.assertIn("last_update", queue_output_body)
+        self.assertEqual(new_last_update.tzinfo,datetime.now(timezone.utc).tzinfo)
+        self.assertEqual(queue_output_body["status_id"], new_data["status_id"])
+        self.assertNotIn("key_path", queue_output_body)
+        self.assertNotIn("archive_destination", queue_output_body)
+        self.assertNotIn("request_time", queue_output_body)
+        self.assertNotIn("completion_time", queue_output_body)
+        self.assertNotIn("error_message", queue_output_body)
+        self.assertEqual(queue_contents[0].attributes['MessageGroupId'], self.MessageGroupId)
+        self.assertEqual(queue_contents[0].message_attributes, MessageAttributes)
+
+
+# ---------------------------------------------------------------------------------------------------------------------------------
+    def test_post_status_for_file_to_queue_update_success(self):
+        """
+        Test that sending a message to SQS queue using post_status_for_file_to_queue() function returns the same expected message.
+        This is for testing the case when request_method is UPDATE, ORCA status is SUCCESS.
+        The queue output will include completion_time in addition to other parameters.
+        """
+        table_name = 'orca_recoverfile'
+        request_method = shared_recovery.RequestMethod.UPDATE
+        status_id = shared_recovery.OrcaStatus.SUCCESS
+        #this is the expected message body that should be received. 
+        #the request_time, last_update are not shown in new_data.
+        new_data = {"job_id": self.job_id, "granule_id": self.granule_id, "filename": self.filename, 
+                    "status_id": status_id.value}
+        body = json.dumps(new_data)
+        MessageDeduplicationId = table_name + request_method.value  + body
+        MessageAttributes={
+                "RequestMethod": {
+                    "DataType": "String",
+                    "StringValue": request_method.value,
+                },
+                "TableName": {"DataType": "String", "StringValue": table_name},
+            }
+
+        shared_recovery.post_status_for_file_to_queue(
+            self.job_id,self.granule_id,self.filename,self.key_path,self.restore_destination,status_id,self.error_message,request_method,self.db_queue_url)
+        #grabbing queue contents after the message is sent
+        queue_contents = self.queue.receive_messages(
+                            MessageAttributeNames= ["All"]
+                            )
+        queue_output_body = json.loads(queue_contents[0].body)
+        new_last_update = datetime.fromisoformat(queue_output_body["last_update"])
+        new_completion_time = datetime.fromisoformat(queue_output_body["completion_time"])
+
+        self.assertEqual(queue_output_body["job_id"], new_data["job_id"])
+        self.assertEqual(queue_output_body["granule_id"], new_data["granule_id"])
+        self.assertEqual(queue_output_body["filename"], new_data["filename"])
+        self.assertIn("last_update", queue_output_body)
+        self.assertEqual(new_last_update.tzinfo,datetime.now(timezone.utc).tzinfo)
+        self.assertEqual(queue_output_body["status_id"], new_data["status_id"])
+        self.assertNotIn("key_path", queue_output_body)
+        self.assertNotIn("archive_destination", queue_output_body)
+        self.assertNotIn("request_time", queue_output_body)
+        self.assertIn("completion_time", queue_output_body)
+        self.assertEqual(new_completion_time.tzinfo, datetime.now(timezone.utc).tzinfo)
+        self.assertNotIn("error_message", queue_output_body)
+        self.assertEqual(queue_contents[0].attributes['MessageGroupId'], self.MessageGroupId)
+        self.assertEqual(queue_contents[0].message_attributes, MessageAttributes)
+
+# ---------------------------------------------------------------------------------------------------------------------------------
+    def test_post_status_for_file_to_queue_update_failed(self):
+        """
+        Test that sending a message to SQS queue using post_status_for_file_to_queue() function returns the same expected message.
+        This is for testing the case when request_method is NEW, ORCA status is PENDING.
+        The queue output will include completion_time, error_message in addition to other parameters.
+        """
+        table_name = 'orca_recoverfile'
+        request_method = shared_recovery.RequestMethod.UPDATE
+        status_id = shared_recovery.OrcaStatus.FAILED
+        #this is the expected message body that should be received. 
+        #the request_time, last_update are not shown in new_data.
+        new_data = {"job_id": self.job_id, "granule_id": self.granule_id, "filename": self.filename, 
+                    "status_id": status_id.value}
+        body = json.dumps(new_data)
+        MessageDeduplicationId = table_name + request_method.value  + body
+        MessageAttributes={
+                "RequestMethod": {
+                    "DataType": "String",
+                    "StringValue": request_method.value,
+                },
+                "TableName": {"DataType": "String", "StringValue": table_name},
+            }
+
+        shared_recovery.post_status_for_file_to_queue(
+            self.job_id,self.granule_id,self.filename,self.key_path,self.restore_destination,status_id,self.error_message,request_method,self.db_queue_url)
+        #grabbing queue contents after the message is sent
+        queue_contents = self.queue.receive_messages(
+                            MessageAttributeNames= ["All"]
+                            )
+        queue_output_body = json.loads(queue_contents[0].body)
+        new_last_update = datetime.fromisoformat(queue_output_body["last_update"])
+        new_completion_time = datetime.fromisoformat(queue_output_body["completion_time"])
+        
+        self.assertEqual(queue_output_body["job_id"], new_data["job_id"])
+        self.assertEqual(queue_output_body["granule_id"], new_data["granule_id"])
+        self.assertEqual(queue_output_body["filename"], new_data["filename"])
+        self.assertIn("last_update", queue_output_body)
+        self.assertEqual(new_last_update.tzinfo,datetime.now(timezone.utc).tzinfo)
+        self.assertEqual(queue_output_body["status_id"], new_data["status_id"])
+        self.assertNotIn("key_path", queue_output_body)
+        self.assertNotIn("archive_destination", queue_output_body)
+        self.assertNotIn("request_time", queue_output_body)
+        self.assertIn("completion_time", queue_output_body)
+        self.assertEqual(new_completion_time.tzinfo, datetime.now(timezone.utc).tzinfo)
+        self.assertEqual(queue_output_body["error_message"], self.error_message)
+        self.assertEqual(queue_contents[0].attributes['MessageGroupId'], self.MessageGroupId)
+        self.assertEqual(queue_contents[0].message_attributes, MessageAttributes)
 
 if __name__ == "__main":
     unittest.main()
