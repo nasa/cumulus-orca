@@ -797,7 +797,7 @@ class TestRequestFiles(unittest.TestCase):
 
         result = request_files.task(input_event, self.context)
 
-        mock_boto3_client.assert_has_calls([call('secretsmanager')])
+        mock_boto3_client.assert_has_calls([call('s3')])
         mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
                                                 Key=FILE1)
         mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
@@ -1312,7 +1312,7 @@ class TestRequestFiles(unittest.TestCase):
 
         result = request_files.task(input_event, self.context)
 
-        mock_boto3_client.assert_has_calls([call('secretsmanager')])
+        mock_boto3_client.assert_has_calls([call('s3')])
         mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
                                                 Key=FILE1)
         mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
