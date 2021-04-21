@@ -43,12 +43,7 @@ class TestRequestFiles(unittest.TestCase):
 
     def setUp(self):
         # todo: These values should NOT be hard-coded as present for every test.
-        os.environ["DATABASE_HOST"] = "my.db.host.gov"
-        os.environ["DATABASE_PORT"] = "54"
-        os.environ["DATABASE_NAME"] = "sndbx"
-        os.environ["DATABASE_USER"] = "unittestdbuser"
-        os.environ["DATABASE_PW"] = "unittestdbpw"
-        os.environ["DB_QUEUE_URL"] = "https://db.queue.url"
+        os.environ[request_files.OS_ENVIRON_DB_QUEUE_URL_KEY] = "https://db.queue.url"
         os.environ[request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY] = '5'
         os.environ[request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY] = '2'
         os.environ[request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY] = 'default_glacier_bucket'
@@ -63,11 +58,6 @@ class TestRequestFiles(unittest.TestCase):
         os.environ.pop(request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY, None)
         os.environ.pop(request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY, None)
         os.environ.pop(request_files.OS_ENVIRON_DB_QUEUE_URL_KEY, None)
-        del os.environ["DATABASE_HOST"]
-        del os.environ["DATABASE_NAME"]
-        del os.environ["DATABASE_USER"]
-        del os.environ["DATABASE_PW"]
-        del os.environ["DATABASE_PORT"]
 
     @patch('request_files.inner_task')
     def test_task_happy_path(self,
