@@ -7,7 +7,6 @@ import json
 import os
 import unittest
 import uuid
-from datetime import datetime, timezone
 from random import randint, uniform
 from unittest import mock
 from unittest.mock import patch, MagicMock, call, Mock
@@ -17,12 +16,11 @@ import fastjsonschema as fastjsonschema
 from botocore.exceptions import ClientError
 
 import request_files
-from test.request_helpers import (REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_3, REQUEST_ID1, LambdaContextMock,
+from test.request_helpers import (LambdaContextMock,
                                   create_handler_event)
 
 # noinspection PyPackageRequirements
 
-UTC_NOW_EXP_1 = datetime.now(timezone.utc).isoformat()
 FILE1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5"
 FILE2 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5.met"
 FILE3 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321_ndvi.jpg"
@@ -374,6 +372,7 @@ class TestRequestFiles(unittest.TestCase):
         restore_expire_days = randint(0, 99999)
         mock_s3_cli = mock_boto3_client('s3')
 
+        # noinspection PyUnusedLocal
         def object_exists_return_func(input_s3_cli, input_glacier_bucket, input_file_key):
             return input_file_key in [file_key_0, file_key_1]
 
@@ -693,6 +692,7 @@ class TestRequestFiles(unittest.TestCase):
                                                                    'GlacierJobParameters': {
                                                                        'Tier': retrieval_type}})
 
+    # noinspection PyUnusedLocal
     @patch('cumulus_logger.CumulusLogger.error')
     @patch('cumulus_logger.CumulusLogger.info')
     def test_restore_object_client_error_last_attempt_logs_and_raises(self,
@@ -719,6 +719,7 @@ class TestRequestFiles(unittest.TestCase):
                                                                    'GlacierJobParameters': {
                                                                        'Tier': retrieval_type}})
 
+    # noinspection PyUnusedLocal
     @patch('cumulus_logger.CumulusLogger.error')
     @patch('cumulus_logger.CumulusLogger.info')
     def test_restore_object_log_to_db_fails_does_not_halt(self,

@@ -204,7 +204,6 @@ resource "aws_lambda_event_source_mapping" "copy_files_to_archive_event_source_m
 # Additional resources needed by copy_files_to_archive
 # ------------------------------------------------------------------------------
 # Permissions to allow SQS trigger to invoke lambda
-# todo: Do we need to add a section for posting to the queues as well?
 resource "aws_lambda_permission" "allow_sqs_trigger" {
   ## REQUIRED
   action        = "lambda:InvokeFunction"
@@ -215,6 +214,29 @@ resource "aws_lambda_permission" "allow_sqs_trigger" {
   statement_id = "AllowExecutionFromSQS"
   source_arn   = module.sqs.orca_sqs_staged_recovery_queue_arn
 }
+
+# todo: Use the below as a base for s3 triggering of new lambda
+## copy_lambda_trigger - Bucket notification trigger pointed to lambda
+#resource "aws_s3_bucket_notification" "copy_lambda_trigger" {
+#  # Create loop so we can handle multiple orca buckets
+#  for_each = toset(local.orca_buckets)
+#
+#  # The permissions must be defined first
+#  depends_on = [aws_lambda_permission.allow_s3_trigger]
+#
+#  ## REQUIRED
+#  bucket = each.value
+#
+#  ## OPTIONAL
+#  lambda_function {
+#    ## REQUIRED
+#    events              = ["s3:ObjectRestore:Completed"]
+#    lambda_function_arn = aws_lambda_function.copy_files_to_archive.arn
+#
+#    ## OPTIONAL
+#    filter_prefix = var.orca_recovery_complete_filter_prefix
+#  }
+#}
 
 # request_status - CLI to provide operator status of recovery job
 # ==============================================================================

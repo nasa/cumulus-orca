@@ -25,7 +25,7 @@ locals {
 ## ====================================================================================================
 data "aws_iam_policy_document" "staged_recovery_queue_policy" {
   statement {
-    actions   = ["sqs:*"]
+    actions   = ["sqs:*"] # todo: Lock down access to specific actions and resources.
     resources = ["arn:aws:sqs:*"]
     effect    = "Allow"
   }
@@ -35,7 +35,7 @@ data "aws_iam_policy_document" "staged_recovery_queue_policy" {
 ## ====================================================================================================
 data "aws_iam_policy_document" "status_update_queue_policy" {
   statement {
-    actions   = ["sqs:*"]
+    actions   = ["sqs:*"] # todo: Lock down access to specific actions and resources.
     resources = ["arn:aws:sqs:*"]
     effect    = "Allow"
   }
