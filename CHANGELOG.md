@@ -105,6 +105,12 @@ See the documentation for specifics on the various files and changes specified b
   ```
 
 ### Added
+- *ORCA-163* Added shared library *shared_recovery.py* under *tasks/shared_libraries/recovery/* for posting to status SQS queue.
+  This include *post_status_for_job_to_queue()* function that posts status of jobs to SQS queue,
+  *post_status_for_job_to_queue()* function that posts status of files to SQS queue,
+  and *post_entry_to_queue()* function that is used by the above two functions for sending the message to the queue.
+  Added unit tests *test_shared_recovery.py* under *tasks/shared_libraries/recovery/test/unit_tests/* to test shared library.
+  Added new script *run_tests.sh* under *tasks/shared_libraries/recovery/bin* to run the unit tests.
 - *ORCA-92* Added two lambdas (request_status_for_file and request_status_for_job)
   for use with the Cumulus dashboard. request_status_for_file will retrieve status
   for an individual file, with the optional parameter of which job you want the
