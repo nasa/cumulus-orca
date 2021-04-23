@@ -238,39 +238,6 @@ resource "aws_lambda_permission" "allow_sqs_trigger" {
 #  }
 #}
 
-# request_status - CLI to provide operator status of recovery job
-# ==============================================================================
-resource "aws_lambda_function" "request_status" {
-  ## REQUIRED
-  function_name = "${var.prefix}_request_status"
-  role          = module.restore_object_arn.restore_object_role_arn
-
-  ## OPTIONAL
-  description      = "Queries the Disaster Recovery database for status"
-  filename         = "${path.module}/../../tasks/request_status/request_status.zip"
-  handler          = "request_status.handler"
-  memory_size      = var.orca_recovery_lambda_memory_size
-  runtime          = "python3.7"
-  source_code_hash = filebase64sha256("${path.module}/../../tasks/request_status/request_status.zip")
-  tags             = local.tags
-  timeout          = var.orca_recovery_lambda_timeout
-
-  vpc_config {
-    subnet_ids         = var.lambda_subnet_ids
-    security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
-  }
-
-  environment {
-    variables = {
-      PREFIX        = var.prefix
-      DATABASE_PORT = var.database_port
-      DATABASE_NAME = var.database_name
-      DATABASE_USER = var.database_app_user
-    }
-  }
-}
-
-
 # request_status_for_granule - Provides recovery status information on a specific granule
 # ==============================================================================
 resource "aws_lambda_function" "request_status_for_granule" {
