@@ -167,7 +167,7 @@ See the documentation for specifics on the various files and changes specified b
 
 ### Removed
 - The `request_status` lambda under */tasks* is removed since it is replaced by the `requests_status_for_job` 
-  and `request_status_for_granule` lambdas. The terraform modules, shell scripts and variables related to the lambda is also removed.
+  and `request_status_for_granule` lambdas. The terraform modules, shell scripts and variables related to the lambda are also removed.
 
 ### Fixed
 - Updated IAM policies to better include all buckets by type instead of looking at the bucket variable key name.
