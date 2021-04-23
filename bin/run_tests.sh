@@ -5,7 +5,7 @@ base=$(pwd)
 failed=0
 
 # Crawl the task directories
-for taskdir in `ls -d tasks/* | grep -v request_status_for`
+for taskdir in `ls -d tasks/* | egrep -v 'request_status_for|shared_libraries' `
 do
   # Build and run tests for each task directory
   cd $taskdir
@@ -28,6 +28,21 @@ do
   cd $base
 done
 
+for shared_library in $(ls -d tasks/shared_libraries/* | grep recovery)
+do
+  echo
+  echo "Running tests in $shared_library"
+  echo
+
+  cd $shared_library
+  bin/run_tests.sh
+  return_code=$?
+  cd -
+
+  if [ $return_code -ne 0 ]; then
+    failed=1
+  fi
+done
 
 ## Call each tasks testing suite
 ## TODO: Add more logging output and possibly make asynchronus
