@@ -163,7 +163,7 @@ See the documentation for specifics on the various files and changes specified b
 - request_files now uses the same default glacier bucket as copy_to_glacier.
 
 ### Deprecated
-- The `request_status` lambda will be removed in future release as it has been replaced by the `requests_status_for_job` and `request_status_for_granule` lambdas.
+- None
 
 ### Removed
 - The `request_status` lambda under */tasks* is removed since it is replaced by the `requests_status_for_job` 
