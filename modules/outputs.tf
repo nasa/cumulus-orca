@@ -110,13 +110,6 @@ output "orca_lambda_copy_files_to_archive_arn" {
   value       = module.orca.orca_lambda_copy_files_to_archive_arn
 }
 
-
-output "orca_lambda_request_status_arn" {
-  description = "AWS ARN of the ORCA request_status lambda."
-  value       = module.orca.orca_lambda_request_status_arn
-}
-
-
 output "orca_lambda_request_status_for_granule_arn" {
   description = "AWS ARN of the ORCA request_status_for_granule lambda."
   value       = module.orca.orca_lambda_request_status_for_granule_arn

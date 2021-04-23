@@ -35,13 +35,6 @@ output "copy_files_to_archive_arn" {
   value       = aws_lambda_function.copy_files_to_archive.arn
 }
 
-
-output "request_status_arn" {
-  description = "AWS ARN for the request_status lambda."
-  value       = aws_lambda_function.request_status.arn
-}
-
-
 output "request_status_for_granule_arn" {
   description = "AWS ARN for the request_status_for_granule lambda."
   value       = aws_lambda_function.request_status_for_granule.arn
