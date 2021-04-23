@@ -28,7 +28,8 @@ do
   cd $base
 done
 
-for shared_library in $(ls -d tasks/shared_libraries/* | grep recovery)
+# runs the test for shared library
+for shared_library in $(ls -d tasks/shared_libraries/*)
 do
   echo
   echo "Running tests in $shared_library"
