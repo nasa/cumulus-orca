@@ -69,10 +69,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
 
                 # Send values to the function
                 shared_recovery.post_entry_to_queue(
-                    table_name,
-                    new_data,
-                    request_method,
-                    self.db_queue_url
+                    table_name, new_data, request_method, self.db_queue_url
                 )
 
                 # grabbing queue contents after the message is sent
@@ -83,8 +80,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
 
                 # Testing Message attribute information
                 self.assertEqual(
-                    queue_contents[0].attributes["MessageGroupId"],
-                    self.MessageGroupId
+                    queue_contents[0].attributes["MessageGroupId"], self.MessageGroupId
                 )
                 self.assertEqual(
                     queue_contents[0].message_attributes, MessageAttributes
@@ -124,7 +120,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                         status_id,
                         archive_destination,
                         request_method,
-                        self.db_queue_url
+                        self.db_queue_url,
                     )
 
                     # grabbing queue contents after the message is sent
@@ -157,7 +153,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                         self.assertEqual(new_request_time.tzinfo, timezone.utc)
                         self.assertEqual(
                             queue_output_body["archive_destination"],
-                            archive_destination
+                            archive_destination,
                         )
                     else:
                         self.assertNotIn("request_time", queue_output_body)
@@ -166,7 +162,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                     # Testing fields based on status_id
                     completion_status = [
                         shared_recovery.OrcaStatus.SUCCESS,
-                        shared_recovery.OrcaStatus.FAILED
+                        shared_recovery.OrcaStatus.FAILED,
                     ]
 
                     if status_id in completion_status:
@@ -215,7 +211,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                         status_id,
                         error_message,
                         request_method,
-                        self.db_queue_url
+                        self.db_queue_url,
                     )
 
                     # grabbing queue contents after the message is sent
@@ -247,13 +243,10 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                             queue_output_body["request_time"]
                         )
                         self.assertEqual(new_request_time.tzinfo, timezone.utc)
-                        self.assertEqual(
-                            queue_output_body["key_path"],
-                            key_path
-                        )
+                        self.assertEqual(queue_output_body["key_path"], key_path)
                         self.assertEqual(
                             queue_output_body["restore_destination"],
-                            restore_destination
+                            restore_destination,
                         )
                     else:
                         self.assertNotIn("request_time", queue_output_body)
@@ -263,7 +256,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                     # Testing fields based on status_id
                     completion_status = [
                         shared_recovery.OrcaStatus.SUCCESS,
-                        shared_recovery.OrcaStatus.FAILED
+                        shared_recovery.OrcaStatus.FAILED,
                     ]
 
                     if status_id in completion_status:
@@ -276,8 +269,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                         self.assertNotIn("completion_time", queue_output_body)
                     if status_id == shared_recovery.OrcaStatus.FAILED:
                         self.assertEqual(
-                            queue_output_body["error_message"],
-                            error_message
+                            queue_output_body["error_message"], error_message
                         )
                     else:
                         self.assertNotIn("error_message", queue_output_body)
@@ -291,7 +283,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         table_name = "orca_recoveryjob"
         request_method = shared_recovery.RequestMethod.NEW
 
-        for archive_destination in [None, ""]:    
+        for archive_destination in [None, ""]:
             for status_id in self.statuses:
                 # Setting the message attribute values to what we expect.
                 MessageAttributes = {
@@ -302,10 +294,20 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                     "TableName": {"DataType": "String", "StringValue": table_name},
                 }
                 # Run subtests
-                with self.subTest(status_id=status_id, archive_destination=archive_destination):
-                    # will pass if it raises an exception which is expected in this case 
-                    self.assertRaises(Exception, shared_recovery.post_status_for_job_to_queue, self.job_id, self.granule_id, status_id, 
-                                                                                            archive_destination, request_method,self.db_queue_url)
+                with self.subTest(
+                    status_id=status_id, archive_destination=archive_destination
+                ):
+                    # will pass if it raises an exception which is expected in this case
+                    self.assertRaises(
+                        Exception,
+                        shared_recovery.post_status_for_job_to_queue,
+                        self.job_id,
+                        self.granule_id,
+                        status_id,
+                        archive_destination,
+                        request_method,
+                        self.db_queue_url,
+                    )
 
     def test_post_status_for_file_to_queue_raise_errors_restore_destination(self):
         """
@@ -318,7 +320,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         error_message = "error"
         key_path = "path/"
 
-        for restore_destination in [None, ""]: 
+        for restore_destination in [None, ""]:
             for status_id in self.statuses:
                 # Setting the message attribute values to what we expect.
                 MessageAttributes = {
@@ -329,12 +331,24 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                     "TableName": {"DataType": "String", "StringValue": table_name},
                 }
                 # Run subtests
-                with self.subTest(restore_destination=restore_destination, status_id=status_id):
-                    # will pass if it raises an exception which is expected in this case 
-                    self.assertRaises(Exception, shared_recovery.post_status_for_file_to_queue, self.job_id, self.granule_id, filename, key_path,restore_destination,
-                                                                                                status_id, error_message, request_method,self.db_queue_url)
-    
-    
+                with self.subTest(
+                    restore_destination=restore_destination, status_id=status_id
+                ):
+                    # will pass if it raises an exception which is expected in this case
+                    self.assertRaises(
+                        Exception,
+                        shared_recovery.post_status_for_file_to_queue,
+                        self.job_id,
+                        self.granule_id,
+                        filename,
+                        key_path,
+                        restore_destination,
+                        status_id,
+                        error_message,
+                        request_method,
+                        self.db_queue_url,
+                    )
+
     def test_post_status_for_file_to_queue_raise_errors_key_path(self):
         """
         Tests that the function post_status_for_file_to_queue will raise an exception if the key_path is either None or empty.
@@ -346,7 +360,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         error_message = "error"
         restore_destination = "s3://restore-bucket"
 
-        for key_path in [None, ""]: 
+        for key_path in [None, ""]:
             for status_id in self.statuses:
                 # Setting the message attribute values to what we expect.
                 MessageAttributes = {
@@ -358,10 +372,21 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                 }
                 # Run subtests
                 with self.subTest(key_path=key_path, status_id=status_id):
-                    # will pass if it raises an exception which is expected in this case 
-                    self.assertRaises(Exception, shared_recovery.post_status_for_file_to_queue, self.job_id, self.granule_id, filename, key_path,restore_destination,
-                                                                                                status_id, error_message, request_method,self.db_queue_url)
-                                                                                            
+                    # will pass if it raises an exception which is expected in this case
+                    self.assertRaises(
+                        Exception,
+                        shared_recovery.post_status_for_file_to_queue,
+                        self.job_id,
+                        self.granule_id,
+                        filename,
+                        key_path,
+                        restore_destination,
+                        status_id,
+                        error_message,
+                        request_method,
+                        self.db_queue_url,
+                    )
+
     def test_post_status_for_file_to_queue_raise_errors_error_message(self):
         """
         Tests that the function post_status_for_file_to_queue will raise an exception if the error_message is either empty or None in case of status_id as FAILED.
@@ -373,11 +398,11 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         error_message = "error"
         restore_destination = "s3://restore-bucket"
         key_path = "path/"
-        #setting status_id as FAILED since error_message only shows up for failed status.
+        # setting status_id as FAILED since error_message only shows up for failed status.
         status_id = shared_recovery.OrcaStatus.FAILED
 
-        for error_message in [None, ""]: 
-        # Setting the message attribute values to what we expect.
+        for error_message in [None, ""]:
+            # Setting the message attribute values to what we expect.
             MessageAttributes = {
                 "RequestMethod": {
                     "DataType": "String",
@@ -385,6 +410,17 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                 },
                 "TableName": {"DataType": "String", "StringValue": table_name},
             }
-            # will pass if it raises an exception which is expected in this case 
-            self.assertRaises(Exception, shared_recovery.post_status_for_file_to_queue, self.job_id, self.granule_id, filename, key_path,restore_destination,
-                                                                                            status_id, error_message, request_method,self.db_queue_url)
+            # will pass if it raises an exception which is expected in this case
+            self.assertRaises(
+                Exception,
+                shared_recovery.post_status_for_file_to_queue,
+                self.job_id,
+                self.granule_id,
+                filename,
+                key_path,
+                restore_destination,
+                status_id,
+                error_message,
+                request_method,
+                self.db_queue_url,
+            )

@@ -8,13 +8,16 @@ import boto3
 from typing import Dict, Any, Optional
 from datetime import datetime, timezone
 
+
 class RequestMethod(Enum):
     """
     An enumeration.
     Provides potential actions for the database lambda to take when posting to the SQS queue.
     """
+
     NEW = "post"
     UPDATE = "put"
+
 
 class OrcaStatus(Enum):
     """
@@ -22,18 +25,19 @@ class OrcaStatus(Enum):
     Defines the status value used in the ORCA Recovery database for use by the recovery functions.
 
     """
+
     PENDING = 1
     STAGED = 2
     SUCCESS = 3
     FAILED = 4
-    
+
 
 def post_status_for_job_to_queue(
     job_id: str,
     granule_id: str,
     status_id: OrcaStatus,
     archive_destination: Optional[str],
-    request_method: RequestMethod, 
+    request_method: RequestMethod,
     db_queue_url: str,
 ):
     """
@@ -54,10 +58,14 @@ def post_status_for_job_to_queue(
         None
     """
 
-    new_data = {"job_id": job_id, "granule_id": granule_id, "status_id": status_id.value}
+    new_data = {
+        "job_id": job_id,
+        "granule_id": granule_id,
+        "status_id": status_id.value,
+    }
     if request_method == RequestMethod.NEW:
         new_data["request_time"] = datetime.now(timezone.utc).isoformat()
-        if len(archive_destination) == 0 or  archive_destination is None:
+        if len(archive_destination) == 0 or archive_destination is None:
             raise Exception("archive_destination is required for new records.")
         new_data["archive_destination"] = archive_destination
     if status_id == OrcaStatus.SUCCESS or status_id == OrcaStatus.FAILED:
@@ -101,8 +109,13 @@ def post_status_for_file_to_queue(
         None
     """
     last_update = datetime.now(timezone.utc).isoformat()
-    new_data = {"job_id": job_id, "granule_id": granule_id, "filename": filename, 
-                "last_update": last_update, "status_id": status_id.value}
+    new_data = {
+        "job_id": job_id,
+        "granule_id": granule_id,
+        "filename": filename,
+        "last_update": last_update,
+        "status_id": status_id.value,
+    }
 
     if request_method == RequestMethod.NEW:
         new_data["request_time"] = datetime.now(timezone.utc).isoformat()
@@ -112,7 +125,7 @@ def post_status_for_file_to_queue(
             raise Exception("restore_destination is required.")
         new_data["key_path"] = key_path
         new_data["restore_destination"] = restore_destination
-        
+
     if status_id == OrcaStatus.SUCCESS or status_id == OrcaStatus.FAILED:
         new_data["completion_time"] = datetime.now(timezone.utc).isoformat()
         if status_id == OrcaStatus.FAILED:
@@ -131,7 +144,7 @@ def post_entry_to_queue(
 ):
     """
     Posts messages to an SQS queue.
-    
+
     Args:
         table_name: The name of the DB table.
         new_data: A dictionary representing the column/value pairs to write to the DB table.
@@ -160,5 +173,5 @@ def post_entry_to_queue(
             },
             "TableName": {"DataType": "String", "StringValue": table_name},
         },
-        MessageBody=body
+        MessageBody=body,
     )
