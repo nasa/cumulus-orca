@@ -4,7 +4,6 @@ Description:  Posts to two queues - one of the queues notifies copy_files_to_arc
 and the other queue updates the file status to STAGED in the DB.
 
 """
-
 from enum import Enum
 import json
 import os
@@ -52,18 +51,18 @@ def lambda_handler(event, context):
     # SQL for checking database
     query_db_sql = (
         """
-        SELECT
+        (SELECT
             job_id, granule_id, restore_destination
         FROM
             orca_recoverfile
         WHERE
             filename = %s
         AND
-            status_id = 1
+            status_id = 1, (filename,))
     """
     )
 
-    # Run the query
+    # todo Run the query
     results = connection.execute(query_db_sql)
     for row in results:
         db_exists = row[0]
@@ -73,7 +72,7 @@ def lambda_handler(event, context):
     shared_recovery.post_status_for_file_to_queue(
         job_id,
         granule_id,
-        filename,
+        filename = filename,
         restore_destination,
         status_id,
         error_message,
@@ -86,7 +85,7 @@ def lambda_handler(event, context):
     shared_recovery.post_status_for_file_to_queue(
         job_id,
         granule_id,
-        filename,
+        filename = filename,
         restore_destination,
         status_id,
         error_message,
