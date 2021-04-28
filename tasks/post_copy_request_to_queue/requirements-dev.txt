@@ -1,0 +1,4 @@
+boto3==1.17.43
+pytest==6.1.2
+coverage==5.3
+../dr_dbutils/dist/dr_dbutils-1.0.tar.gz
