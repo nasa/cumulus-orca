@@ -16,14 +16,14 @@ provider "aws" {
 }
 
 
-## Local Variables
+# Local Variables
 locals {
   tags         = merge(var.tags, { Deployment = var.prefix })
   orca_buckets = [for k, v in var.buckets : v.name if v.type == "orca"]
 }
 
 
-## Referenced Modules
+# # Referenced Modules
 # lambda_security_group - Security Groups module reference
 # ------------------------------------------------------------------------------
 module "lambda_security_group" {
@@ -46,7 +46,7 @@ module "lambda_security_group" {
 }
 
 # restore_object_arn - IAM module reference
-# ------------------------------------------------------------------------------
+# # ------------------------------------------------------------------------------
 module "restore_object_arn" {
   source = "../iam"
   ## --------------------------
@@ -57,20 +57,20 @@ module "restore_object_arn" {
   buckets                  = var.buckets
   permissions_boundary_arn = var.permissions_boundary_arn
   prefix                   = var.prefix
-  ## OPTIONAL
+  # OPTIONAL
   region = var.region
   tags   = local.tags
-  ## --------------------------
-  ## ORCA Variables
-  ## --------------------------
-  ## OPTIONAL
+  # --------------------------
+  # ORCA Variables
+  # --------------------------
+  # OPTIONAL
   orca_recovery_buckets = var.orca_recovery_buckets
 }
 
 
-## =============================================================================
-## Ingest Lambdas Definitions and Resources
-## =============================================================================
+# =============================================================================
+# Ingest Lambdas Definitions and Resources
+# =============================================================================
 
 # copy_to_glacier - Copies files to the ORCA S3 Glacier bucket
 # ==============================================================================
@@ -215,29 +215,6 @@ resource "aws_lambda_permission" "allow_sqs_trigger" {
   source_arn   = var.orca_sqs_staged_recovery_queue_arn
 }
 
-# todo: Use the below as a base for s3 triggering of new lambda
-## copy_lambda_trigger - Bucket notification trigger pointed to lambda
-#resource "aws_s3_bucket_notification" "copy_lambda_trigger" {
-#  # Create loop so we can handle multiple orca buckets
-#  for_each = toset(local.orca_buckets)
-#
-#  # The permissions must be defined first
-#  depends_on = [aws_lambda_permission.allow_s3_trigger]
-#
-#  ## REQUIRED
-#  bucket = each.value
-#
-#  ## OPTIONAL
-#  lambda_function {
-#    ## REQUIRED
-#    events              = ["s3:ObjectRestore:Completed"]
-#    lambda_function_arn = aws_lambda_function.copy_files_to_archive.arn
-#
-#    ## OPTIONAL
-#    filter_prefix = var.orca_recovery_complete_filter_prefix
-#  }
-#}
-
 # request_status_for_granule - Provides recovery status information on a specific granule
 # ==============================================================================
 resource "aws_lambda_function" "request_status_for_granule" {
@@ -303,6 +280,45 @@ resource "aws_lambda_function" "request_status_for_job" {
   }
 }
 
+# post_copy_request_to_queue -Posts to two queues for notifying copy_files_to_archive lambda and updating the DB."
+# ==============================================================================
+resource "aws_lambda_function" "post_copy_request_to_queue" {
+  ## REQUIRED
+  function_name = "${var.prefix}_post_copy_request_to_queue"
+  role          = module.restore_object_arn.restore_object_role_arn
+  ## OPTIONAL
+  description      = "Posts to two queues for notifying copy_files_to_archive lambda and updating the DB."
+  filename         = "${path.module}/../../tasks/post_copy_request_to_queue/post_copy_request_to_queue.zip"
+  handler          = "post_copy_request_to_queue.handler"
+  memory_size      = var.orca_recovery_lambda_memory_size
+  runtime          = "python3.7"
+  source_code_hash = filebase64sha256("${path.module}/../../tasks/post_copy_request_to_queue/post_copy_request_to_queue.zip")
+  tags             = local.tags
+  timeout          = var.orca_recovery_lambda_timeout
+  vpc_config {
+    subnet_ids         = var.lambda_subnet_ids
+    security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
+  }
+}
+
+# Permissions to allow S3 trigger to invoke lambda
+resource "aws_lambda_permission" "allow_bucket" {
+  statement_id  = "AllowExecutionFromS3Bucket"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.post_copy_request_to_queue.function_name
+  principal     = "s3.amazonaws.com"
+  source_arn    = "arn:aws:s3:::test-lambda-trigger-riz" #todo need ARN of s3 bucket
+}
+
+resource "aws_s3_bucket_notification" "post_copy_request_to_queue_trigger" {
+  bucket = "test-lambda-trigger-riz" #todo replcae with orca bucket name
+  lambda_function {
+    lambda_function_arn = aws_lambda_function.post_copy_request_to_queue.arn
+    events              = ["s3:ObjectRestore:Completed"]
+  }
+
+  depends_on = [aws_lambda_permission.allow_bucket]
+}
 
 ## =============================================================================
 ## Utility Lambda Definitions
@@ -341,4 +357,3 @@ resource "aws_lambda_function" "db_deploy" {
     }
   }
 }
-
