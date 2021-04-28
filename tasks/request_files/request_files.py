@@ -455,12 +455,10 @@ def post_status_for_file_to_queue(job_id: str, granule_id: str, filename: str, k
                         db_queue_url, max_retries, retry_sleep_secs)
 
 
-sqs = boto3.client('sqs')
-
-
 # todo: Move to shared lib after ORCA-170
 def post_entry_to_queue(table_name: str, new_data: Dict[str, Any], request_method: RequestMethod, db_queue_url: str,
                         max_retries: int, retry_sleep_secs: float):
+    sqs = boto3.client('sqs')
     body = json.dumps(new_data, indent=4)
     for attempt in range(1, max_retries + 1):
         try:

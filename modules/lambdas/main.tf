@@ -154,16 +154,12 @@ resource "aws_lambda_function" "request_files" {
 
   environment {
     variables = {
-      PREFIX                   = var.prefix
-      DATABASE_PORT            = var.database_port
-      DATABASE_NAME            = var.database_name
-      DATABASE_USER            = var.database_app_user
       RESTORE_EXPIRE_DAYS      = var.orca_recovery_expiration_days
       RESTORE_REQUEST_RETRIES  = var.orca_recovery_retry_limit
       RESTORE_RETRY_SLEEP_SECS = var.orca_recovery_retry_interval
       RESTORE_RETRIEVAL_TYPE   = var.orca_recovery_retrieval_type
-	  DB_QUEUE_URL             = var.orca_sqs_status_update_queue_id
-	  ORCA_DEFAULT_BUCKET      = var.orca_default_bucket
+      DB_QUEUE_URL             = var.orca_sqs_status_update_queue_id
+      ORCA_DEFAULT_BUCKET      = var.orca_default_bucket
     }
   }
 }
@@ -193,90 +189,54 @@ resource "aws_lambda_function" "copy_files_to_archive" {
 
   environment {
     variables = {
-      PREFIX                = var.prefix
-      DATABASE_PORT         = var.database_port
-      DATABASE_NAME         = var.database_name
-      DATABASE_USER         = var.database_app_user
       COPY_RETRIES          = var.orca_recovery_retry_limit
       COPY_RETRY_SLEEP_SECS = var.orca_recovery_retry_interval
+      DB_QUEUE_URL          = var.orca_sqs_status_update_queue_id
     }
   }
 }
 
+resource "aws_lambda_event_source_mapping" "copy_files_to_archive_event_source_mapping" {
+  event_source_arn = var.orca_sqs_staged_recovery_queue_arn
+  function_name    = aws_lambda_function.copy_files_to_archive.handler
+}
 
 # Additional resources needed by copy_files_to_archive
 # ------------------------------------------------------------------------------
-# allow_s3_trigger - Permissions to allow S3 bucket trigger to invoke lambda
-resource "aws_lambda_permission" "allow_s3_trigger" {
-  # Create loop so we can handle multiple orca buckets
-  for_each = toset(local.orca_buckets)
-
+# Permissions to allow SQS trigger to invoke lambda
+resource "aws_lambda_permission" "allow_sqs_trigger" {
   ## REQUIRED
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.copy_files_to_archive.function_name
-  principal     = "s3.amazonaws.com"
+  principal     = "sqs.amazonaws.com"
 
   ## OPTIONAL
-  statement_id = "AllowExecutionFromS3"
-  source_arn   = "arn:aws:s3:::${each.value}"
+  statement_id = "AllowExecutionFromSQS"
+  source_arn   = module.sqs.orca_sqs_staged_recovery_queue_arn
 }
 
-
-# copy_lambda_trigger - Bucket notification trigger pointed to lambda
-resource "aws_s3_bucket_notification" "copy_lambda_trigger" {
-  # Create loop so we can handle multiple orca buckets
-  for_each = toset(local.orca_buckets)
-
-  # The permissions must be defined first
-  depends_on = [aws_lambda_permission.allow_s3_trigger]
-
-  ## REQUIRED
-  bucket = each.value
-
-  ## OPTIONAL
-  lambda_function {
-    ## REQUIRED
-    events              = ["s3:ObjectRestore:Completed"]
-    lambda_function_arn = aws_lambda_function.copy_files_to_archive.arn
-
-    ## OPTIONAL
-    filter_prefix = var.orca_recovery_complete_filter_prefix
-  }
-}
-
-
-# request_status - CLI to provide operator status of recovery job
-# ==============================================================================
-resource "aws_lambda_function" "request_status" {
-  ## REQUIRED
-  function_name = "${var.prefix}_request_status"
-  role          = module.restore_object_arn.restore_object_role_arn
-
-  ## OPTIONAL
-  description      = "Queries the Disaster Recovery database for status"
-  filename         = "${path.module}/../../tasks/request_status/request_status.zip"
-  handler          = "request_status.handler"
-  memory_size      = var.orca_recovery_lambda_memory_size
-  runtime          = "python3.7"
-  source_code_hash = filebase64sha256("${path.module}/../../tasks/request_status/request_status.zip")
-  tags             = local.tags
-  timeout          = var.orca_recovery_lambda_timeout
-
-  vpc_config {
-    subnet_ids         = var.lambda_subnet_ids
-    security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
-  }
-
-  environment {
-    variables = {
-      PREFIX        = var.prefix
-      DATABASE_PORT = var.database_port
-      DATABASE_NAME = var.database_name
-      DATABASE_USER = var.database_app_user
-    }
-  }
-}
-
+# todo: Use the below as a base for s3 triggering of new lambda
+## copy_lambda_trigger - Bucket notification trigger pointed to lambda
+#resource "aws_s3_bucket_notification" "copy_lambda_trigger" {
+#  # Create loop so we can handle multiple orca buckets
+#  for_each = toset(local.orca_buckets)
+#
+#  # The permissions must be defined first
+#  depends_on = [aws_lambda_permission.allow_s3_trigger]
+#
+#  ## REQUIRED
+#  bucket = each.value
+#
+#  ## OPTIONAL
+#  lambda_function {
+#    ## REQUIRED
+#    events              = ["s3:ObjectRestore:Completed"]
+#    lambda_function_arn = aws_lambda_function.copy_files_to_archive.arn
+#
+#    ## OPTIONAL
+#    filter_prefix = var.orca_recovery_complete_filter_prefix
+#  }
+#}
 
 # request_status_for_granule - Provides recovery status information on a specific granule
 # ==============================================================================

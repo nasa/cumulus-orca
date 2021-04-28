@@ -7,24 +7,20 @@ import json
 import os
 import unittest
 import uuid
-from datetime import datetime, timezone
 from random import randint, uniform
 from unittest import mock
 from unittest.mock import patch, MagicMock, call, Mock
 
-import database
 # noinspection PyPackageRequirements
 import fastjsonschema as fastjsonschema
 from botocore.exceptions import ClientError
 
 import request_files
-from test.request_helpers import (REQUEST_GROUP_ID_EXP_1, REQUEST_GROUP_ID_EXP_3, REQUEST_ID1, LambdaContextMock,
-                                  create_handler_event, create_insert_request,
-                                  mock_secretsmanager_get_parameter)
+from test.request_helpers import (LambdaContextMock,
+                                  create_handler_event)
 
 # noinspection PyPackageRequirements
 
-UTC_NOW_EXP_1 = datetime.now(timezone.utc).isoformat()
 FILE1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5"
 FILE2 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5.met"
 FILE3 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321_ndvi.jpg"
@@ -43,15 +39,8 @@ class TestRequestFiles(unittest.TestCase):
     """
 
     def setUp(self):
-        # todo: single_query is not called in code. Replace with higher-level checks.
-        self.mock_single_query = database.single_query
         # todo: These values should NOT be hard-coded as present for every test.
-        os.environ["DATABASE_HOST"] = "my.db.host.gov"
-        os.environ["DATABASE_PORT"] = "54"
-        os.environ["DATABASE_NAME"] = "sndbx"
-        os.environ["DATABASE_USER"] = "unittestdbuser"
-        os.environ["DATABASE_PW"] = "unittestdbpw"
-        os.environ["DB_QUEUE_URL"] = "https://db.queue.url"
+        os.environ[request_files.OS_ENVIRON_DB_QUEUE_URL_KEY] = "https://db.queue.url"
         os.environ[request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY] = '5'
         os.environ[request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY] = '2'
         os.environ[request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY] = 'default_glacier_bucket'
@@ -60,18 +49,12 @@ class TestRequestFiles(unittest.TestCase):
         self.context = LambdaContextMock()
 
     def tearDown(self):
-        database.single_query = self.mock_single_query
         os.environ.pop('PREFIX', None)
         os.environ.pop(request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY, None)
         os.environ.pop(request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY, None)
         os.environ.pop(request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY, None)
         os.environ.pop(request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY, None)
         os.environ.pop(request_files.OS_ENVIRON_DB_QUEUE_URL_KEY, None)
-        del os.environ["DATABASE_HOST"]
-        del os.environ["DATABASE_NAME"]
-        del os.environ["DATABASE_USER"]
-        del os.environ["DATABASE_PW"]
-        del os.environ["DATABASE_PORT"]
 
     @patch('request_files.inner_task')
     def test_task_happy_path(self,
@@ -389,6 +372,7 @@ class TestRequestFiles(unittest.TestCase):
         restore_expire_days = randint(0, 99999)
         mock_s3_cli = mock_boto3_client('s3')
 
+        # noinspection PyUnusedLocal
         def object_exists_return_func(input_s3_cli, input_glacier_bucket, input_file_key):
             return input_file_key in [file_key_0, file_key_1]
 
@@ -708,6 +692,7 @@ class TestRequestFiles(unittest.TestCase):
                                                                    'GlacierJobParameters': {
                                                                        'Tier': retrieval_type}})
 
+    # noinspection PyUnusedLocal
     @patch('cumulus_logger.CumulusLogger.error')
     @patch('cumulus_logger.CumulusLogger.info')
     def test_restore_object_client_error_last_attempt_logs_and_raises(self,
@@ -734,6 +719,7 @@ class TestRequestFiles(unittest.TestCase):
                                                                    'GlacierJobParameters': {
                                                                        'Tier': retrieval_type}})
 
+    # noinspection PyUnusedLocal
     @patch('cumulus_logger.CumulusLogger.error')
     @patch('cumulus_logger.CumulusLogger.info')
     def test_restore_object_log_to_db_fails_does_not_halt(self,
@@ -809,28 +795,10 @@ class TestRequestFiles(unittest.TestCase):
                                                   None,
                                                   None
                                                   ]
-        qresult_1_inprogress, _ = create_insert_request(
-            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, files[0],
-            "restore", "some_bucket", "inprogress",
-            UTC_NOW_EXP_1, None, None)
-        qresult_2_inprogress, _ = create_insert_request(
-            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, files[1],
-            "restore", "some_bucket", "inprogress",
-            UTC_NOW_EXP_1, None, None)
-        qresult_3_inprogress, _ = create_insert_request(
-            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, files[2],
-            "restore", "some_bucket", "inprogress",
-            UTC_NOW_EXP_1, None, None)
-        qresult_4_inprogress, _ = create_insert_request(
-            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, files[3],
-            "restore", "some_bucket", "inprogress",
-            UTC_NOW_EXP_1, None, None)
-
-        mock_secretsmanager_get_parameter(4)
 
         result = request_files.task(input_event, self.context)
 
-        mock_boto3_client.assert_has_calls([call('secretsmanager')])
+        mock_boto3_client.assert_has_calls([call('s3')])
         mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
                                                 Key=FILE1)
         mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
@@ -938,7 +906,6 @@ class TestRequestFiles(unittest.TestCase):
         mock_s3_cli = mock_boto3_client('s3')
         mock_s3_cli.restore_object.side_effect = [None]
         mock_post_entry_to_queue.side_effect = [Exception("mock insert failed error")]
-        mock_secretsmanager_get_parameter(1)
         try:
             result = request_files.task(input_event, self.context)
         except Exception as err:
@@ -1048,10 +1015,6 @@ class TestRequestFiles(unittest.TestCase):
             ],
             request_files.INPUT_JOB_ID_KEY: event['input']['job_id']
         }
-        qresult_1_inprogress, _ = create_insert_request(
-            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, FILE1, "restore", "some_bucket",
-            "inprogress", UTC_NOW_EXP_1, None, None)
-        mock_secretsmanager_get_parameter(1)
         result = request_files.task(event, self.context)
         os.environ['RESTORE_REQUEST_RETRIES'] = '2'  # todo: This test claims 'no_retries'
         self.assertEqual(exp_granules, result)
@@ -1068,13 +1031,11 @@ class TestRequestFiles(unittest.TestCase):
 
     # todo: single_query is not called in code. Replace with higher-level checks.
     @patch('request_files.post_entry_to_queue')
-    @patch('database.single_query')
     @patch('boto3.client')
     @patch('cumulus_logger.CumulusLogger.info')
     def test_task_no_expire_days_env_var(self,
                                          mock_logger_info: MagicMock,
                                          mock_boto3_client: MagicMock,
-                                         mock_database_single_query: MagicMock,
                                          mock_post_entry_to_queue: MagicMock):
         """
         Test environment var RESTORE_EXPIRE_DAYS not set - use default.
@@ -1103,12 +1064,6 @@ class TestRequestFiles(unittest.TestCase):
             ],
             'job_id': event['input']['job_id']
         }
-
-        qresult_1_inprogress, _ = create_insert_request(
-            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, FILE1, "restore", "some_bucket",
-            "inprogress", UTC_NOW_EXP_1, None, None)
-        mock_database_single_query.side_effect = [qresult_1_inprogress]
-        mock_secretsmanager_get_parameter(1)
 
         result = request_files.task(event, self.context)
         self.assertEqual(exp_granules, result)
@@ -1149,7 +1104,6 @@ class TestRequestFiles(unittest.TestCase):
         mock_s3_cli.restore_object.side_effect = [ClientError({'Error': {'Code': 'NoSuchBucket'}}, 'restore_object'),
                                                   ClientError({'Error': {'Code': 'NoSuchBucket'}}, 'restore_object'),
                                                   ClientError({'Error': {'Code': 'NoSuchBucket'}}, 'restore_object')]
-        mock_secretsmanager_get_parameter(1)
         os.environ['RESTORE_RETRIEVAL_TYPE'] = 'Standard'  # todo: This is not reset between tests
 
         exp_gran = {
@@ -1222,23 +1176,6 @@ class TestRequestFiles(unittest.TestCase):
             'recover_files': self.get_exp_files_3_errs()
         }
         exp_err = f"One or more files failed to be requested. {exp_gran}"
-        qresult_1_inprogress, _ = create_insert_request(
-            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, gran["granuleId"], FILE1,
-            "restore", "some_bucket",
-            "inprogress", UTC_NOW_EXP_1, None, None)
-        qresult_1_error, _ = create_insert_request(
-            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, gran["granuleId"], FILE1,
-            "restore", "some_bucket",
-            "error", UTC_NOW_EXP_1, None, "'Code': 'NoSuchBucket'")
-        qresult_3_inprogress, _ = create_insert_request(
-            REQUEST_ID1, REQUEST_GROUP_ID_EXP_3, gran["granuleId"], FILE2,
-            "restore", "some_bucket",
-            "inprogress", UTC_NOW_EXP_1, None, None)
-        qresult_3_error, _ = create_insert_request(
-            REQUEST_ID1, REQUEST_GROUP_ID_EXP_3, gran["granuleId"], FILE2,
-            "restore", "some_bucket",
-            "error", UTC_NOW_EXP_1, None, "'Code': 'NoSuchBucket'")
-        mock_secretsmanager_get_parameter(5)
         try:
             request_files.task(event, self.context)
             self.fail("RestoreRequestError expected")
@@ -1330,8 +1267,6 @@ class TestRequestFiles(unittest.TestCase):
             'job_id': event['input']['job_id']
         }
 
-        mock_secretsmanager_get_parameter(4)
-
         result = request_files.task(event, self.context)
         self.assertEqual(exp_granules, result)
 
@@ -1375,28 +1310,10 @@ class TestRequestFiles(unittest.TestCase):
                                                   None,
                                                   None
                                                   ]
-        qresult_1_inprogress, _ = create_insert_request(
-            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, files[0],
-            "restore", "some_bucket", "inprogress",
-            UTC_NOW_EXP_1, None, None)
-        qresult_2_inprogress, _ = create_insert_request(
-            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, files[1],
-            "restore", "some_bucket", "inprogress",
-            UTC_NOW_EXP_1, None, None)
-        qresult_3_inprogress, _ = create_insert_request(
-            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, files[2],
-            "restore", "some_bucket", "inprogress",
-            UTC_NOW_EXP_1, None, None)
-        qresult_4_inprogress, _ = create_insert_request(
-            REQUEST_ID1, REQUEST_GROUP_ID_EXP_1, granule_id, files[3],
-            "restore", "some_bucket", "inprogress",
-            UTC_NOW_EXP_1, None, None)
-
-        mock_secretsmanager_get_parameter(4)
 
         result = request_files.task(input_event, self.context)
 
-        mock_boto3_client.assert_has_calls([call('secretsmanager')])
+        mock_boto3_client.assert_has_calls([call('s3')])
         mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
                                                 Key=FILE1)
         mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
