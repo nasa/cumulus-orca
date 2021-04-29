@@ -11,19 +11,18 @@ import boto3
 from typing import Dict, Any, List, Optional
 from datetime import datetime, timezone
 import shared_recovery
-import shared_db
+import requests_db
+import database
+from requests_db import DatabaseError
 
+PREFIX = 'dev'
+DB_HOST = 'dev-drdb-host'
+DATABASE_NAME = 'postgres'
+DATABASE_PORT = '5432'
+DATABASE_USER = 'rhassan'
+DB_PW = '12345678'
 OS_ENVIRON_DB_QUEUE_URL_KEY = 'DB_QUEUE_URL'
 OS_ENVIRON_RECOVERY_QUEUE_URL_KEY = 'DB_QUEUE_URL_RECOVERY'
-
-INPUT_JOB_ID_KEY = 'job_id'
-INPUT_GRANULE_ID_KEY = 'granule_id'
-INPUT_FILENAME_KEY = 'filename'
-INPUT_TARGET_BUCKET_KEY = 'restore_destination'
-INPUT_SOURCE_BUCKET_KEY = 'source_bucket'
-DATABASE_NAME = 'disaster-recovery'
-DATABASE_PORT = '5432'
-DATABASE_USER = 'user'
 
 
 def lambda_handler(event, context):
@@ -48,47 +47,54 @@ def lambda_handler(event, context):
     for record in event['Records']:
         filename = record['s3']['object']['key']
 
-    # SQL for checking database
-    query_db_sql = (
-        """
-        (SELECT
+    sql = """
+        SELECT
             job_id, granule_id, restore_destination
         FROM
             orca_recoverfile
         WHERE
             filename = %s
         AND
-            status_id = 1, (filename,))
+            status_id = %d
     """
-    )
+    #Gets the dbconnection info.
 
-    # todo Run the query
-    results = connection.execute(query_db_sql)
-    for row in results:
-        db_exists = row[0]
+    db_connect_info = requests_db.get_dbconnect_info()
+
+    try:
+        rows = database.single_query(sql, database.db_connect_info, (filename, shared_recovery.OrcaStatus.PENDING))
+    except database.DbError as err:
+        LOGGER.error(f"DbError: {str(err)}")
+        raise DatabaseError(str(err))
+
+    if len(rows) == 0:
+        return None
+    orca_recoveryfile = rows[0]
+    # grab the parameters from the db in json format
+    job_id = database.result_to_json(orca_recoveryjob)['job_id']
+    granule_id = database.result_to_json(orca_recoveryjob)['granule_id']
+    restore_destination = database.result_to_json(orca_recoveryjob)['restore_destination']
 
     #post to staged-recovery-queue
-
     shared_recovery.post_status_for_file_to_queue(
-        job_id,
-        granule_id,
+        job_id = job_id,
+        granule_id = granule_id,
         filename = filename,
-        restore_destination,
-        status_id,
-        error_message,
-        request_method,
+        restore_destination = restore_destination,
+        status_id = shared_recovery.OrcaStatus.PENDING,
+        error_message = '',
+        request_method = shared_recovery.RequestMethod.NEW,
         db_queue_url= OS_ENVIRON_RECOVERY_QUEUE_URL_KEY
         )
 
     #post to DB-queue
-
     shared_recovery.post_status_for_file_to_queue(
-        job_id,
-        granule_id,
+        job_id = job_id,
+        granule_id = granule_id,
         filename = filename,
-        restore_destination,
-        status_id,
-        error_message,
-        request_method,
+        restore_destination = restore_destination,
+        status_id = shared_recovery.OrcaStatus.PENDING,
+        error_message = '',
+        request_method = shared_recovery.RequestMethod.NEW,
         db_queue_url= OS_ENVIRON_DB_QUEUE_URL_KEY
         )
