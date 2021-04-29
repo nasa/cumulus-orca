@@ -8,6 +8,7 @@ import os
 import boto3
 from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
+from sqlalchemy.future import Engine
 from cumulus_logger import CumulusLogger
 from typing import Any, List, Dict, Optional, Union
 
@@ -15,7 +16,7 @@ from typing import Any, List, Dict, Optional, Union
 logger = CumulusLogger(name="db_deploy")
 
 
-def get_configuration() -> Dict:
+def get_configuration() -> Dict[str, str]:
     """
     Create a dictionary of configuration values based on environment variables
     parameter store information and other items needed to create the database.
@@ -34,7 +35,7 @@ def get_configuration() -> Dict:
         <prefix>-drdb-admin-pass: The password for the admin user
 
     Args:
-        TODO
+        None
 
     Returns:
         Configuration (Dict): Dictionary with all of the configuration information
@@ -77,15 +78,7 @@ def get_configuration() -> Dict:
     # Get the secret variables
     try:
         logger.debug("Creating secretsmanager resource.")
-        # TODO: Remove workaround for accessing localstack in final
-        secretsmanager = boto3.client(
-            "secretsmanager",
-            endpoint_url="http://127.0.0.1:4566",
-            use_ssl=False,
-            aws_access_key_id="000000000",
-            aws_secret_access_key="0000000000",
-            region_name="us-west-2",
-        )
+        secretsmanager = boto3.client("secretsmanager")
 
         logger.debug("Retrieving database application user password.")
         app_user_pw = secretsmanager.get_secret_value(
@@ -107,14 +100,11 @@ def get_configuration() -> Dict:
         logger.critical("Failed to retrieve secret.", exc_info=True)
         raise Exception("Failed to retrieve secret manager value.")
 
-    # Get passed configuration
-    # TODO
-
     # return the config dict
     return config
 
 
-def _create_connection(**kwargs):
+def _create_connection(**kwargs: Any) -> Engine:
     """
     Base function for creating a connection
 
@@ -137,7 +127,7 @@ def _create_connection(**kwargs):
     return create_engine(connection_url, future=True)
 
 
-def get_root_connection(config, database=None):
+def get_root_connection(config: Dict[str, str], database: str = None) -> Engine:
     """
     Creates a connection to the database as a superuser.
 
