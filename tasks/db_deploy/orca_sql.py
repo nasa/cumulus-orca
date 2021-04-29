@@ -10,7 +10,7 @@ from sqlalchemy import text
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating the Database
 # ----------------------------------------------------------------------------
-def app_database_sql():
+def app_database_sql() -> text:
     """
     Full SQL for creating the ORCA application database.
 
@@ -33,7 +33,7 @@ def app_database_sql():
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA schema, roles, and users
 # ----------------------------------------------------------------------------
-def dbo_role_sql():
+def dbo_role_sql() -> text:
     """
     Full SQL for creating the ORCA dbo role that owns the ORCA schema and
     objects.
@@ -67,7 +67,7 @@ def dbo_role_sql():
     )
 
 
-def app_role_sql():
+def app_role_sql() -> text:
     """
     Full SQL for creating the ORCA application role that has all the privileges
     to interact with the ORCA schema.
@@ -100,7 +100,7 @@ def app_role_sql():
     )
 
 
-def orca_schema_sql():
+def orca_schema_sql() -> text:
     """
     Full SQL for creating the ORCA application schema that contains all the
     ORCA tables and objects. This SQL must be used after the dbo_role_sql and
@@ -137,7 +137,7 @@ def orca_schema_sql():
     )
 
 
-def app_user_sql(user_password):
+def app_user_sql(user_password: str) -> text:
     """
     Full SQL for creating the ORCA application database user. Must be created
     after the app_role_sql and orca_schema_sql.
@@ -184,7 +184,7 @@ def app_user_sql(user_password):
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA general metadata tables
 # ----------------------------------------------------------------------------
-def schema_versions_table_sql():
+def schema_versions_table_sql() -> text:
     """
     Full SQL for creating the schema_versions table.
 
@@ -225,7 +225,7 @@ def schema_versions_table_sql():
     )
 
 
-def schema_versions_data_sql():
+def schema_versions_data_sql() -> text:
     """
     Data for the schema_versions table. Inserts the current schema
     version into the table.
@@ -252,7 +252,7 @@ def schema_versions_data_sql():
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA recovery tables
 # ----------------------------------------------------------------------------
-def recovery_status_table_sql():
+def recovery_status_table_sql() -> text:
     """
     Full SQL for creating the recovery_status table. This SQL must be run
     before any of the other recovery table sql.
@@ -285,7 +285,7 @@ def recovery_status_table_sql():
     )
 
 
-def recovery_status_data_sql():
+def recovery_status_data_sql() -> text:
     """
     Data for the recovery_status table. Inserts the current status values into
     the table.
@@ -308,7 +308,7 @@ def recovery_status_data_sql():
     )
 
 
-def recovery_job_table_sql():
+def recovery_job_table_sql() -> text:
     """
     Full SQL for creating the recovery_job table. This SQL must be run
     before the other recovery_file table sql and after the recovery_status
@@ -354,7 +354,7 @@ def recovery_job_table_sql():
     )
 
 
-def recovery_file_table_sql():
+def recovery_file_table_sql() -> text:
     """
     Full SQL for creating the recovery_file table. This SQL must be run
     after the recovery_job table sql to maintain key dependencies.
@@ -415,7 +415,7 @@ def recovery_file_table_sql():
 # ----------------------------------------------------------------------------
 # ORCA SQL used for migration of schema v1 to schema v2
 # ----------------------------------------------------------------------------
-def migrate_recovery_job_data_sql():
+def migrate_recovery_job_data_sql() -> text:
     """
     SQL that migrates data from the old dr.request_status table to the new
     orca.recovery_job table.
@@ -458,7 +458,7 @@ def migrate_recovery_job_data_sql():
     )
 
 
-def migrate_recovery_file_data_sql():
+def migrate_recovery_file_data_sql() -> text:
     """
     SQL that migrates data from the old dr.request_status table to the new
     orca.recovery_file table.
@@ -493,7 +493,7 @@ def migrate_recovery_file_data_sql():
     )
 
 
-def drop_request_status_table_sql():
+def drop_request_status_table_sql() -> text:
     """
     SQL that removes the dr.request_status table.
 
@@ -507,7 +507,7 @@ def drop_request_status_table_sql():
     )
 
 
-def drop_dr_schema_sql():
+def drop_dr_schema_sql() -> text:
     """
     SQL that removes the dr schema.
 
@@ -521,7 +521,7 @@ def drop_dr_schema_sql():
     )
 
 
-def drop_druser_user_sql():
+def drop_druser_user_sql() -> text:
     """
     SQL that removes the druser user.
 
@@ -535,7 +535,7 @@ def drop_druser_user_sql():
     )
 
 
-def drop_dbo_user_sql():
+def drop_dbo_user_sql() -> text:
     """
     SQL that removes the dbo user.
 
@@ -550,7 +550,7 @@ def drop_dbo_user_sql():
     )
 
 
-def drop_dr_role_sql():
+def drop_dr_role_sql() -> text:
     """
     SQL that removes the dr_role role.
 
@@ -565,7 +565,7 @@ def drop_dr_role_sql():
     )
 
 
-def drop_drdbo_role_sql():
+def drop_drdbo_role_sql() -> text:
     """
     SQL that removes the drdbo_role role.
 
