@@ -121,6 +121,10 @@ output "orca_lambda_request_status_for_job_arn" {
   value       = module.orca.orca_lambda_request_status_for_job_arn
 }
 
+output "orca_lambda_post_copy_request_to_queue_arn" {
+  description = "AWS ARN of the ORCA post_copy_request_to_queue lambda."
+  value       = module.orca.orca_lambda_post_copy_request_to_queue_arn
+}
 
 ## SQS Module outputs
 ## =============================================================================

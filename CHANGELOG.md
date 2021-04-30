@@ -105,6 +105,10 @@ See the documentation for specifics on the various files and changes specified b
   ```
 
 ### Added
+- *ORCA-165* Added new lambda function *post_copy_request_to_queue.py* under *tasks/post_copy_request_to_queue/ for querying the DB 
+  and  posting to two queues.
+  Added unit tests *test_post_copy_request_to_queue.py* under *tasks/post_copy_request_to_queue/test/unit_tests/* to test the new lambda.
+  Added new scripts *run_tests.sh* and *build.sh* under */tasks/post_copy_request_to_queue/bin* to run the unit tests.
 - *ORCA-163* Added shared library *shared_recovery.py* under *tasks/shared_libraries/recovery/* for posting to status SQS queue.
   This include *post_status_for_job_to_queue()* function that posts status of jobs to SQS queue,
   *post_status_for_job_to_queue()* function that posts status of files to SQS queue,
