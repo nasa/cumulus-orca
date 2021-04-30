@@ -24,6 +24,7 @@ module.exports = {
     "Getting Started": [
         'developer/quickstart/developer-intro',
     ],
+
     "Development Guide": [
         {
             "Developing Code": [
@@ -55,11 +56,6 @@ module.exports = {
         'developer/deployment-guide/recovery-workflow',
         'developer/deployment-guide/testing_deployment',
     ],
-    "Research": [
-      'developer/research/research-intro',
-      'developer/research/research-localstack',
-      'developer/research/research-APIGateway'
-    ],
   },
   cookbook: {
     "Getting Started": [
@@ -76,5 +72,5 @@ module.exports = {
     "Configuration": [
       'operator/collection-configuration',
     ],
-  }
+  },
 };
