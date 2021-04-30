@@ -10,8 +10,8 @@ description: Research Notes on Localstack.
 This can be used to bypass the requirement of a remote sandbox environment, making testing easier.
 
 
-### Implementation Details
-- Some features and not present, and some are locked behind the [Pro Version](https://localstack.cloud/#pricing).
+### Implemenration Details
+- Some features and not present, and smore are locked behind the [Pro Version](https://localstack.cloud/#pricing).
   - RDS is not present, but testing can be done with a local database.
 - Can be run in a Docker container using Docker Compose.
 - Can be run directly via a docker command.
@@ -32,7 +32,7 @@ Docker's localhost can be accessed on the parent machine at http://host.docker.i
     ```
 - There currently is no page for services running in localstack.
 :::tip
-[Commandeer](www.getcommandeer.com) could theoretically be used to provide a UI, but make sure it is approved by IT.
+[Commandeer](getcommandeer.com) could theoretically be used to provide a UI, but make sure it is approved by IT.
 :::
 - [AWS CLI](https://aws.amazon.com/cli/) and [botocore3](https://github.com/boto/botocore) can both contact Localstack if properly (configured)[https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html].
   - AWS credentials are not checked, and can therefore be dummy values.
