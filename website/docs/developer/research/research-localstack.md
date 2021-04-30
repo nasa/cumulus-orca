@@ -65,6 +65,10 @@ Docker's localhost can be accessed on the parent machine at http://host.docker.i
   - Security checks are not present.
   - Is, by its nature, a simulation.
 
+### Future Direction
+- Localstack in a Docker container would be an excellent place to deploy ORCA for local testing.
+  - Could also be used for automated large testing in Bamboo if deployment scripting can be added.
+
 #### Sources
 - Meeting with Aafaque
 - https://github.com/localstack/localstack
