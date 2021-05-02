@@ -20,7 +20,6 @@ DB_HOST = 'dev-drdb-host'
 DATABASE_NAME = 'postgres'
 DATABASE_PORT = '5432'
 DATABASE_USER = 'rhassan'
-DB_PW = '12345678'
 OS_ENVIRON_DB_QUEUE_URL_KEY = 'DB_QUEUE_URL'
 OS_ENVIRON_RECOVERY_QUEUE_URL_KEY = 'DB_QUEUE_URL_RECOVERY'
 
@@ -81,7 +80,7 @@ def lambda_handler(event, context):
         granule_id = granule_id,
         filename = filename,
         restore_destination = restore_destination,
-        status_id = shared_recovery.OrcaStatus.PENDING,
+        status_id = shared_recovery.OrcaStatus.STAGED,
         error_message = '',
         request_method = shared_recovery.RequestMethod.NEW,
         db_queue_url= OS_ENVIRON_RECOVERY_QUEUE_URL_KEY
@@ -93,7 +92,7 @@ def lambda_handler(event, context):
         granule_id = granule_id,
         filename = filename,
         restore_destination = restore_destination,
-        status_id = shared_recovery.OrcaStatus.PENDING,
+        status_id = shared_recovery.OrcaStatus.STAGED,
         error_message = '',
         request_method = shared_recovery.RequestMethod.NEW,
         db_queue_url= OS_ENVIRON_DB_QUEUE_URL_KEY
