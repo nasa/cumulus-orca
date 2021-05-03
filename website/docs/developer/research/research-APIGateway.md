@@ -55,6 +55,7 @@ description: Research Notes on API Gateway.
       principal     = "apigateway.amazonaws.com"
     
       # More: http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-control-access-using-iam-policies-to-invoke-api.html
+      # Alternate potential source_arn: "${aws_api_gateway_rest_api.[name]_api.execution_arn}/*/$ {aws_api_gateway_method.request_status[name]api_method.http_method}${aws_api_gateway_resource.[name]_api_resource.path}"
       source_arn = "arn:aws:execute-api:${var.region}:${var.accountId}:${aws_api_gateway_rest_api.[name]_api.id}/*/${aws_api_gateway_method.[name]_api_method.http_method}${aws_api_gateway_resource.[name]_api_resource.path}"
     }
     ```  
