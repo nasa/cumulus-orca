@@ -63,6 +63,13 @@ if [ $return_code -ne 0 ]; then
   exit 1
 fi
 
+#copy shared library file to build/
+if [ ! -f "/build/shared_recovery.py" ]; then
+    cp ../shared_libraries/recovery/shared_recovery.py build/
+    let return_code=$?
+    check_rc $return_code "ERROR: Unable to copy shared library."
+fi
+
 ## Create the virtual env. Remove it if it already exists.
 echo "INFO: Creating virtual environment ..."
 if [ -d venv ]; then
@@ -101,7 +108,6 @@ fi
 cp ../package/awslambda-psycopg2/psycopg2-3.7/* build/psycopg2/
 let return_code=$?
 check_rc $return_code "ERROR: Unable to install psycopg2."
-
 
 ## Copy the lambda files to build
 echo "INFO: Creating the Lambda package ..."

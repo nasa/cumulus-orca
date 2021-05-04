@@ -301,10 +301,12 @@ resource "aws_lambda_function" "post_copy_request_to_queue" {
   }
   environment {
     variables = {
-      PREFIX        = var.prefix
-      DATABASE_PORT = var.database_port
-      DATABASE_NAME = var.database_name
-      DATABASE_USER = var.database_app_user
+      PREFIX             = var.prefix
+      DATABASE_PORT      = var.database_port
+      DATABASE_NAME      = var.database_name
+      DATABASE_USER      = var.database_app_user
+      DB_QUEUE_URL       = var.orca_sqs_status_update_queue_id
+      RECOVERY_QUEUE_URL = var.orca_sqs_recovery_queue_id
     }
   }
 }
