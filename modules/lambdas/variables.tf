@@ -151,7 +151,7 @@ variable "orca_recovery_retrieval_type" {
 }
 
 variable "orca_sqs_staged_recovery_queue_arn" {
-  type        = "string"
+  type        = string
   description = "The ARN of the staged-recovery-queue SQS"
 }
 
@@ -163,4 +163,11 @@ variable "orca_sqs_status_update_queue_id" {
 variable "platform" {
   type        = string
   description = "String that determines deployment platform. AWS or local."
+}
+
+# list of orca bucket arn needed to provide permission to post_copy_request_to_queue lambda
+variable "orca_buckets_arn" {
+  type        = list(string)
+  description = "List of ORCA S3 bucket ARN needed for lambda permission"
+  default     = []
 }
