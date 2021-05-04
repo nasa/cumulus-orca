@@ -136,7 +136,7 @@ class TestDbDeployFunctions(unittest.TestCase):
         mock_migration_version.return_value = 1
 
         db_deploy.task(self.config)
-        mock_perform_migration.assert_called_with(1, 2, self.config)
+        mock_perform_migration.assert_called_with(1, self.config)
 
     @patch("db_deploy.get_root_connection")
     @patch("db_deploy.logger.info")

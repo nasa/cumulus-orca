@@ -85,7 +85,7 @@ def task(config: Dict[str, str]) -> None:
             else:
                 # Run the migration
                 logger.info("Performing migration of the ORCA schema.")
-                perform_migration(current_version, LATEST_ORCA_SCHEMA_VERSION, config)
+                perform_migration(current_version, config)
 
         else:
             # Run a fresh install

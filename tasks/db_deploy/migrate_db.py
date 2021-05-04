@@ -3,27 +3,33 @@ Name: migrate_db.py
 
 Description: Migrates the current ORCA schema version to the latest version.
 """
+from typing import Dict
 from orca_sql import *
 from shared_db import get_root_connection, logger
 
 
-def perform_migration(current_schema_version, latest_schema_version, config):
+def perform_migration(current_schema_version: int, config: Dict[str, str]) -> None:
     """
     Performs a migration of the ORCA database. Determines the order and
     migrations to run.
 
     Args:
         current_schema_version (int): Current version of the ORCA schema
-        latest_schema_version (int): Latest deployable version of the ORCA schema
         config (Dict): Dictionary containing database connection information
+
+    Returns:
+        None
     """
     # Determine migrations to run based on current_schema_version and
-    # latest_schema_version.
+    # update the versions table based on the latest_schema_version.
     if current_schema_version == 1:
+        # Run migrations from version 1 to the latest version
+        # in this case version 2 is the latest so we set the latest version
+        # flag to True
         migrate_versions_1_to_2(config, True)
 
 
-def migrate_versions_1_to_2(config, is_latest_version=False):
+def migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> None:
     """
     Performs the migration of the ORCA schema from version 1 to version 2 of
     the ORCA schema.
@@ -31,7 +37,11 @@ def migrate_versions_1_to_2(config, is_latest_version=False):
     Args:
         config (Dict): Connection information for the database.
         is_latest_version (bool): Flag to dtermine if version 2 is the latest schema version.
+
+    Returns:
+        None
     """
+    # Get the admin engine to the app database
     root_app_connection = get_root_connection(config, config["database"])
 
     # Create all of the new objects, users, roles, etc.
