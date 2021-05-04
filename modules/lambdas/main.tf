@@ -299,25 +299,42 @@ resource "aws_lambda_function" "post_copy_request_to_queue" {
     subnet_ids         = var.lambda_subnet_ids
     security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
   }
+  environment {
+    variables = {
+      PREFIX        = var.prefix
+      DATABASE_PORT = var.database_port
+      DATABASE_NAME = var.database_name
+      DATABASE_USER = var.database_app_user
+    }
+  }
 }
 
 # Permissions to allow S3 trigger to invoke lambda
 resource "aws_lambda_permission" "allow_bucket" {
-  statement_id  = "AllowExecutionFromS3Bucket"
-  action        = "lambda:InvokeFunction"
+  ## REQUIRED
+  for_each      = toset(var.orca_buckets_arn)
+  source_arn    = each.value
   function_name = aws_lambda_function.post_copy_request_to_queue.function_name
-  principal     = "s3.amazonaws.com"
-  source_arn    = "arn:aws:s3:::test-lambda-trigger-riz" #todo need ARN of s3 bucket
+  ## OPTIONAL
+  principal = "s3.amazonaws.com"
+  action    = "lambda:InvokeFunction"
 }
 
 resource "aws_s3_bucket_notification" "post_copy_request_to_queue_trigger" {
-  bucket = "test-lambda-trigger-riz" #todo replcae with orca bucket name
+  depends_on = [aws_lambda_permission.allow_bucket]
+  # Creating loop so we can handle multiple orca buckets
+  for_each = toset(local.orca_buckets)
+  ## REQUIRED
+  bucket = each.value
+  ## OPTIONAL
   lambda_function {
+    ## REQUIRED  
     lambda_function_arn = aws_lambda_function.post_copy_request_to_queue.arn
     events              = ["s3:ObjectRestore:Completed"]
+    ## OPTIONAL
+    filter_prefix = var.orca_recovery_complete_filter_prefix
   }
 
-  depends_on = [aws_lambda_permission.allow_bucket]
 }
 
 ## =============================================================================
