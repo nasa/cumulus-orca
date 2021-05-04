@@ -60,7 +60,7 @@ python3 -m venv venv
 source venv/bin/activate
 
 ## Install the requirements
-pip install -q --upgrade pip
+pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org
 pip install -q -r requirements-dev.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
 let return_code=$?
 

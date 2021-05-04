@@ -61,7 +61,7 @@ source venv/bin/activate
 
 ## Install the requirements
 echo "Installing necessary requirement packages.........."
-pip install -q --upgrade pip
+pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org
 pip install -q -r requirements-dev.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
 let return_code=$?
 
@@ -72,7 +72,7 @@ check_rc $return_code "ERROR: pip install encountered an error."
 echo "INFO: Running unit and coverage tests ....................."
 
 # Currently just running unit tests until we fix/support large tests
-coverage run --source shared_recovery -m pytest -v
+coverage run --source shared_recovery -m pytest
 let return_code=$?
 check_rc $return_code "ERROR: Unit tests encountered failures."
 
