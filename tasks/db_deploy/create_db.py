@@ -3,31 +3,22 @@ Name: create_db.py
 
 Description: Creates the current version on the ORCA database.
 """
+from typing import Dict
+from sqlalchemy.future import Connection
 from shared_db import get_configuration, get_root_connection, logger
 from orca_sql import *
 
 
-def create_orca_database():
-    # Check to see if database exists if it does not create the database.
-    # root_connection = shared_db.get_root_connection(config)
-
-    # TODO: Need to fix this so it is not in a transaction
-    # with root_connection.connect() as conn:
-    #    _create_app_database(conn, config["database"], config["root_user"])
-
-    # Check to see if database exists if it does then perform more checks to
-    # determine the next actions to take otherwise create the database, users,
-    # roles and install the schema
-    pass
-
-
-def create_fresh_orca_install(config):
+def create_fresh_orca_install(config: Dict[str, str]) -> None:
     """
     This task will create the ORCA roles, users, schema, and tables needed
     by the ORCA application as a fresh install.
 
     Args:
         config (Dict): Dictionary with database connection information
+
+    Returns:
+        None
     """
     # Assume the database has been created at this point. Connect to the ORCA
     # database as a super user and create the roles, users,  schema, and
@@ -36,7 +27,7 @@ def create_fresh_orca_install(config):
 
     with root_app_connection.connect() as conn:
         # Create the roles, schema and user
-        create_app_schema_role_users(conn, config)
+        create_app_schema_role_users(conn, config["app_user_password"])
 
         # Change to DBO role and set search path
         set_search_path_and_role(conn)
@@ -49,12 +40,15 @@ def create_fresh_orca_install(config):
         conn.commit()
 
 
-def create_app_schema_role_users(connection, config):
+def create_app_schema_role_users(connection: Connection, app_password: str) -> None:
     """
     Creates the ORCA application database schema, users and roles.
 
     Args:
-        connection (sqlalchemy.engine.future.connect): Database connection.
+        connection (sqlalchemy.future.Connection): Database connection.
+
+    Returns:
+        None
     """
     # Create the roles first since they are needed by schema and users
     logger.debug("Creating the ORCA dbo role ...")
@@ -72,18 +66,21 @@ def create_app_schema_role_users(connection, config):
 
     # Create the users last
     logger.debug("Creating the ORCA application user ...")
-    connection.execute(app_user_sql(config["app_user_password"]))
+    connection.execute(app_user_sql(app_password))
     logger.info("ORCA application user created.")
 
 
-def set_search_path_and_role(connection):
+def set_search_path_and_role(connection: Connection) -> None:
     """
     Sets the role to the dbo role to create/modify ORCA objects and sets the
     search_path to make the orca schema first. This must be run before any
     creations or modifications to ORCA objects in the ORCA schema.
 
     Args:
-        connection (sqlalchemy.engine.future.connect): Database connection.
+        connection (sqlalchemy.future.Connection): Database connection.
+
+    Returns:
+        None
     """
     # Set the user and search_path for the install
     logger.debug("Changing to the dbo role to create objects ...")
@@ -93,14 +90,17 @@ def set_search_path_and_role(connection):
     connection.execute(text("SET search_path TO orca, public;"))
 
 
-def create_metadata_objects(connection):
+def create_metadata_objects(connection: Connection) -> None:
     """
     Create the ORCA application metadata tables used to manage application
     versions and other ORCA internal information in the proper order.
     - schema_versions
 
     Args:
-        connection (sqlalchemy.engine.future.connect): Database connection.
+        connection (sqlalchemy.future.Connection): Database connection.
+
+    Returns:
+        None
     """
     # Create metadata tables
     logger.debug("Creating schema_versions table ...")
@@ -113,7 +113,7 @@ def create_metadata_objects(connection):
     logger.info("Data added to the schema_versions table.")
 
 
-def create_recovery_objects(connection):
+def create_recovery_objects(connection: Connection) -> None:
     """
     Creates the ORCA recovery tables in the proper order.
     - recovery_status
@@ -121,7 +121,10 @@ def create_recovery_objects(connection):
     - recovery_table
 
     Args:
-        connection (sqlalchemy.engine.future.connect): Database connection.
+        connection (sqlalchemy.future.Connection): Database connection.
+
+    Returns:
+        None
     """
     # Create recovery table objects
     # Create the recovery_status table
