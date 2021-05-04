@@ -212,7 +212,7 @@ resource "aws_lambda_permission" "allow_sqs_trigger" {
 
   ## OPTIONAL
   statement_id = "AllowExecutionFromSQS"
-  source_arn   = module.sqs.orca_sqs_staged_recovery_queue_arn
+  source_arn   = var.orca_sqs_staged_recovery_queue_arn
 }
 
 # todo: Use the below as a base for s3 triggering of new lambda
@@ -332,14 +332,12 @@ resource "aws_lambda_function" "db_deploy" {
 
   environment {
     variables = {
-      PREFIX        = var.prefix
-      DATABASE_PORT = var.database_port
-      DATABASE_NAME = var.database_name
-      DATABASE_USER = var.database_app_user
-      DROP_DATABASE = var.drop_database
-      DDL_DIR       = var.ddl_dir
-      ## TODO: Look into removing this variable and associated logic.
-      PLATFORM = var.platform
+      PREFIX           = var.prefix
+      DATABASE_PORT    = var.database_port
+      DATABASE_NAME    = var.database_name
+      APPLICATION_USER = var.database_app_user
+      ROOT_USER        = "postgres"
+      ROOT_DATABASE    = "postgres"
     }
   }
 }
