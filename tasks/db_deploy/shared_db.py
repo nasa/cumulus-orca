@@ -51,6 +51,14 @@ def get_configuration() -> Dict[str, str]:
         logger.critical("Environment variable PREFIX is not set.")
         raise Exception("Environment variable PREFIX is not set.")
 
+    # Get the PREFIX
+    logger.debug("Getting environment variable AWS_REGION value.")
+    aws_region = os.getenv("AWS_REGION", None)
+
+    if aws_region is None or len(aws_region) == 0:
+        logger.critical("Environment variable AWS_REGION is not set.")
+        raise Exception("Environment variable AWS_REGION is not set.")
+
     # Create config dictionary
     config = {}
 
@@ -78,7 +86,7 @@ def get_configuration() -> Dict[str, str]:
     # Get the secret variables
     try:
         logger.debug("Creating secretsmanager resource.")
-        secretsmanager = boto3.client("secretsmanager")
+        secretsmanager = boto3.client("secretsmanager", region_name=aws_region)
 
         logger.debug("Retrieving database application user password.")
         app_user_pw = secretsmanager.get_secret_value(

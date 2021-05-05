@@ -333,6 +333,7 @@ resource "aws_lambda_function" "db_deploy" {
   environment {
     variables = {
       PREFIX           = var.prefix
+      AWS_REGION       = var.region
       DATABASE_PORT    = var.database_port
       DATABASE_NAME    = var.database_name
       APPLICATION_USER = var.database_app_user
