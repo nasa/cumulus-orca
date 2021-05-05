@@ -301,9 +301,9 @@ def recovery_status_data_sql() -> TextClause:
             ON CONFLICT (id) DO NOTHING;
         INSERT INTO recovery_status VALUES (2, 'staged')
             ON CONFLICT (id) DO NOTHING;
-        INSERT INTO recovery_status VALUES (3, 'complete')
+        INSERT INTO recovery_status VALUES (3, 'error')
             ON CONFLICT (id) DO NOTHING;
-        INSERT INTO recovery_status VALUES (4, 'error')
+        INSERT INTO recovery_status VALUES (4, 'complete')
             ON CONFLICT (id) DO NOTHING;
     """
     )
@@ -432,8 +432,8 @@ def migrate_recovery_job_data_sql() -> TextClause:
             request_group_id AS job_id,
             granule_id,
             CASE job_status
-              WHEN 'error' THEN 4::int2
-              WHEN 'complete' THEN 3::int2
+              WHEN 'error' THEN 3::int2
+              WHEN 'complete' THEN 4::int2
               ELSE 1::int2
             END AS status_id,
             request_time,
@@ -449,7 +449,7 @@ def migrate_recovery_job_data_sql() -> TextClause:
             job_id,
             granule_id,
             archive_destination,
-            MAX(status_id) AS status_id,
+            MIN(status_id) AS status_id,
             MIN(request_time) AS request_time,
             MAX(completion_time) AS completion_time
         FROM reformatted_table
@@ -477,8 +477,8 @@ def migrate_recovery_file_data_sql() -> TextClause:
             object_key AS key_path,
             archive_bucket_dest AS restore_destination,
             CASE job_status
-              WHEN 'error' THEN 4::int2
-              WHEN 'complete' THEN 3::int2
+              WHEN 'error' THEN 3::int2
+              WHEN 'complete' THEN 4::int2
               ELSE 1::int2
             END AS status_id,
             err_msg AS error_message,
