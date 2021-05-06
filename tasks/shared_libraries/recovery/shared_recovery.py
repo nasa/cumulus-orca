@@ -98,7 +98,7 @@ def update_status_for_file(
                 raise Exception("error message is required.")
             new_data["error_message"] = error_message
 
-    post_entry_to_queue(new_data, RequestMethod.UPDATE, db_queue_url)
+    post_entry_to_queue(new_data, RequestMethod.UPDATE_FILE, db_queue_url)
 
 
 def post_entry_to_queue(
@@ -130,8 +130,7 @@ def post_entry_to_queue(
             "RequestMethod": {
                 "DataType": "String",
                 "StringValue": request_method.value,
-            },
-            "TableName": {"DataType": "String"},
+            }
         },
         MessageBody=body,
     )
