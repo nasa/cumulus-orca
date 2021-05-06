@@ -10,11 +10,13 @@ import os
 import boto3
 from typing import Dict, Any, List, Optional
 from datetime import datetime, timezone
+import time
+import random
 from shared_recovery import (
     OrcaStatus,
     RequestMethod,
     post_status_for_file_to_queue,
-    post_entry_to_queue
+    post_entry_to_queue,
 )
 from requests_db import get_dbconnect_info
 from database import single_query, result_to_json
@@ -24,8 +26,14 @@ from cumulus_logger import CumulusLogger
 # instantiate CumulusLogger
 LOGGER = CumulusLogger()
 
-
-def task(records: Dict[str, Any], db_queue_url: str, recovery_queue_url: str) -> None:
+def task(
+    records: Dict[str, Any],
+    db_queue_url: str,
+    recovery_queue_url: str,
+    copy_retries: int,
+    copy_retry_sleep_secs: int,
+    copy_retry_backoff: int,
+) -> None:
     """
     Task called by the handler to perform the work.
 
@@ -37,103 +45,118 @@ def task(records: Dict[str, Any], db_queue_url: str, recovery_queue_url: str) ->
         records: A dictionary passed through from the handler.
         db_queue_url: The SQS URL of status_update_queue
         recovery_queue_url: The SQS URL of staged_recovery_queue
+        copy_retries: Number of times the code will retry in case of failure.
+        copy_retry_sleep_secs: Number of seconds to wait between recovery failure retries.
+        copy_retry_backoff: The multiplier by which the retry interval increases during each attempt.
     Returns:
         None
     Raises:
-        Exception: If unable to retrieve filename or db parameters, convert db result to json,
+        Exception: If unable to retrieve key_path or db parameters, convert db result to json,
         or post to queue.
 
     """
-
-    # grab the filename and bucketname from event
+    # grab the key_path and bucketname from event
+    # We only expect one record.
     for record in records:
-        filename = record["s3"]["object"]["key"]
+        key_path = record["s3"]["object"]["key"]
         bucket_name = record["s3"]["bucket"]["name"]
 
     sql = """
         SELECT
-            job_id, granule_id, restore_destination
+            job_id, granule_id, filename, restore_destination
         FROM
             orca_recoverfile
         WHERE
-            filename = %s
+            key_path = %s
         AND
             status_id = %d
     """
     # Gets the dbconnection info.
-
     db_connect_info = get_dbconnect_info()
-
+    #query the db table
     try:
-        rows = single_query(sql, db_connect_info, (filename, OrcaStatus.PENDING.value))
-    except Exception as ex:
-        LOGGER.error("Unable to retrieve {filename} metadata")
-        raise ex("Unable to retrieve {filename} metadata")
-
-    if len(rows) == 0:
-        LOGGER.fatal("DB tables cannot be empty")
-        raise Exception("No metadata found for {filename}")
-    # convert db result to json
-    try:
+        rows = single_query(sql, db_connect_info, (key_path, OrcaStatus.PENDING.value))
+        if len(rows) == 0:
+            LOGGER.fatal("DB tables cannot be empty")
+            raise Exception(f"No metadata found for {key_path}")
+        # convert db result to json
         db_result_json = result_to_json(rows)
+
     except Exception as ex:
-        LOGGER.error("Unable to convert db result to json")
-        raise ex("Unable to convert db result to json")
+        message = f"Unable to retrieve {key_path} metadata"
+        LOGGER.error(message)
+        raise ex(message)
 
-    # grab the parameters from the db in json format. Retry 3 times if it fails
-    for retry in range(3):
-        try:
-            job_id = db_result_json["job_id"]
-            granule_id = db_result_json["granule_id"]
-            restore_destination = db_result_json["restore_destination"]
-        except Exception:
-            LOGGER.error(
-                "Unable to retrieve the parameters from db result. Retrying..."
-            )
-            continue
-        break
-    else:
-        raise Exception("Unable to retrieve the parameters from db result")
+    # grab the parameters from the db in json format.
+    job_id = db_result_json["job_id"]
+    granule_id = db_result_json["granule_id"]
+    filename = db_result_json["filename"]
+    restore_destination = db_result_json["restore_destination"]
 
-    # post to recovery queue for copy_files_to_archive lambda. Retry 3 times if it fails
+    # Set variable
+    my_base_delay = copy_retry_sleep_secs
+    # define the input body for copy_files_to_archive lambda
     new_data = {
         "job_id": job_id,
         "granule_id": granule_id,
         "filename": filename,
+        "source_key": key_path,
+        "target_key": key_path,  # todo add a card to configure target_key in the future
         "restore_destination": restore_destination,
-        "source_bucket": bucket_name
+        "source_bucket": bucket_name,
     }
-    for retry in range(3):
+    # post to recovery queue. Retry using exponential delay if it fails
+    for retry in range(copy_retries):
         try:
             post_entry_to_queue(
-                orca_recoveryfile, new_data, RequestMethod.NEW.value, recovery_queue_url
+                orca_recoveryfile, new_data, RequestMethod.NEW, recovery_queue_url
             )
         except Exception:
-            LOGGER.error("Unable to send message to recovery SQS. Retrying...")
+            LOGGER.error(f"Ran into error {retry+1} time(s)")
+            my_base_delay = exponential_delay(my_base_delay, copy_retry_backoff)
             continue
         break
     else:
         raise Exception("Unable to send message to recovery SQS.")
 
-    # post to DB-queue. Retry 3 times if it fails
-    for retry in range(3):
+    # post to DB-queue. Retry using exponential delay if it fails
+    for retry in range(max_retries):
         try:
             post_status_for_file_to_queue(
                 job_id,
                 granule_id,
                 filename,
                 restore_destination,
-                OrcaStatus.STAGED.value,
+                OrcaStatus.STAGED,
                 None,
-                RequestMethod.UPDATE.value,
+                RequestMethod.UPDATE,
                 db_queue_url,
             )
         except Exception:
-            LOGGER.error("Unable to send message to db SQS. Retrying...")
+            LOGGER.error(f"Ran into error {retry+1} time(s)")
+            my_base_delay = exponential_delay(my_base_delay, copy_retry_backoff)
             continue
         break
     else:
         raise Exception("Unable to send message to db SQS.")
+
+# Define our exponential delay function
+# maybe move to shared library or somewhere else?
+def exponential_delay(base_delay: int, exponential_backoff: int = 2) -> int:
+    """
+    Exponential delay function. This function is used for retries during failure.
+    Args:
+        base_delay: Number of seconds to wait between recovery failure retries.
+        exponential_backoff: The multiplier by which the retry interval increases during each attempt.
+    Returns:
+        An integer which is multiplication of base_delay and exponential_backoff.
+    Raises:
+        None
+    """
+    delay = base_delay + (random.randint(0, 1000) / 1000.0)
+    time.sleep(delay)
+    print(f"Slept for {delay} seconds.")
+    return base_delay * exponential_backoff
 
 
 def handler(event: Dict[str, Any], context: None) -> None:
@@ -158,21 +181,48 @@ def handler(event: Dict[str, Any], context: None) -> None:
     Returns:
         None
     Raises:
-        Exception: If unable to retrieve the SQS URLs from env variables.
+        Exception: If unable to retrieve the SQS URLs or exponential retry fields from env variables.
 
     """
     LOGGER.setMetadata(event, context)
-    # retrieving db_queue_url from env variable
-    db_queue_url = os.environ["DB_QUEUE_URL"]
-    if len(db_queue_url) == 0 or db_queue_url is None:
-        LOGGER.error("db_queue_url cannot be None or empty")
-        raise Exception("db_queue_url cannot be None or empty")
-    # retrieving recovery_queue_url from env variable
-    recovery_queue_url = os.environ["RECOVERY_QUEUE_URL"]
-    if len(recovery_queue_url) == 0 or recovery_queue_url is None:
-        LOGGER.error("recovery_queue_url cannot be None or empty")
-        raise Exception("recovery_queue_url cannot be None or empty")
+    # retrieving DB_QUEUE_URL from env variable orelse defaulted to None if not present
+    db_queue_url = os.getenv("DB_QUEUE_URL", None)
+    if db_queue_url is None or len(db_queue_url) == 0:
+        message = "SQS URL DB_QUEUE_URL is not set and is required"
+        LOGGER.critical(message)
+        raise Exception(message)
+    # retrieving RECOVERY_QUEUE_URL from env variable orelse defaulted to None if not present
+    recovery_queue_url = os.getenv("RECOVERY_QUEUE_URL", None)
+    if recovery_queue_url is None or len(recovery_queue_url) == 0:
+        message = "SQS URL RECOVERY_QUEUE_URL is not set and is required"
+        LOGGER.critical(message)
+        raise Exception(message)
+    # retrieving COPY_RETRIES from env variable orelse defaulted to None if not present   
+    copy_retries = os.getenv("COPY_RETRIES", None)
+    if copy_retries is None or len(copy_retries) == 0:
+        message = "COPY_RETRIES is not set and is required"
+        LOGGER.critical(message)
+        raise Exception(message)
+    # retrieving COPY_RETRY_SLEEP_SECS from env variable orelse defaulted to None if not present 
+    copy_retry_sleep_secs = os.getenv("COPY_RETRY_SLEEP_SECS", None)
+    if copy_retry_sleep_secs is None or len(copy_retry_sleep_secs) == 0:
+        message = "copy_retry_sleep_secs is not set and is required"
+        LOGGER.critical(message)
+        raise Exception(message)
+    # retrieving COPY_RETRY_BACKOFF from env variable orelse defaulted to None if not present
+    copy_retry_backoff = os.getenv("COPY_RETRY_BACKOFF", None)
+    if copy_retry_backoff is None or len(copy_retry_backoff) == 0:
+        message = "copy_retry_backoff is not set and is required"
+        LOGGER.critical(message)
+        raise Exception(message)
 
     records = event["Records"]
     # calling the task function to perform the work
-    task(records, db_queue_url, recovery_queue_url)
+    task(
+        records,
+        db_queue_url,
+        recovery_queue_url,
+        copy_retries,
+        copy_retry_sleep_secs,
+        copy_retry_backoff,
+    )

@@ -118,6 +118,10 @@ variable "orca_recovery_retry_interval" {
   description = "Number of seconds to wait between recovery failure retries."
 }
 
+variable "orca_recovery_retry_backoff" {
+  type        = number
+  description = "The multiplier by which the retry interval increases during each attempt."
+}
 
 ## OPTIONAL (DO NOT CHANGE!) - Development use only
 variable "database_app_user" {
