@@ -312,10 +312,10 @@ resource "aws_lambda_function" "post_copy_request_to_queue" {
 }
 
 # Permissions to allow S3 trigger to invoke lambda
-resource "aws_lambda_permission" "allow_bucket" {
+resource "aws_lambda_permission" "allow_s3_trigger" {
   ## REQUIRED
-  for_each      = toset(var.orca_buckets_arn)
-  source_arn    = each.value
+  for_each      = toset(local.orca_buckets)
+  source_arn    = "arn:aws:s3:::${each.value}"
   function_name = aws_lambda_function.post_copy_request_to_queue.function_name
   ## OPTIONAL
   principal = "s3.amazonaws.com"
@@ -323,7 +323,7 @@ resource "aws_lambda_permission" "allow_bucket" {
 }
 
 resource "aws_s3_bucket_notification" "post_copy_request_to_queue_trigger" {
-  depends_on = [aws_lambda_permission.allow_bucket]
+  depends_on = [aws_lambda_permission.allow_s3_trigger]
   # Creating loop so we can handle multiple orca buckets
   for_each = toset(local.orca_buckets)
   ## REQUIRED
