@@ -47,7 +47,7 @@ done
 
 ## Call each tasks testing suite
 ## TODO: Add more logging output and possibly make asynchronus
-for task in $(ls -d tasks/* | grep request_status_)
+for task in $(ls -d tasks/* | 'grep request_status_|post_to_database')
 do
   echo
   echo "Running tests in $task"

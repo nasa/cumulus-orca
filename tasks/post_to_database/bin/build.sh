@@ -46,7 +46,6 @@ function check_rc () {
   fi
 }
 
-
 ## MAIN
 ## -----------------------------------------------------------------------------
 ## Create the build director. Remove it if it exists.
@@ -62,6 +61,25 @@ if [ $return_code -ne 0 ]; then
   >&2 echo "ERROR: Failed to create build directory."
   exit 1
 fi
+
+## SHARED LIBS
+echo "INFO: Copying orca_shared libraries."
+if [ -d orca_shared ]; then
+    rm -rf sorca_hared
+fi
+
+mkdir orca_shared
+let return_code=$?
+
+if [ $return_code -ne 0 ]; then
+  >&2 echo "ERROR: Failed to create orca_shared directory."
+  exit 1
+fi
+
+cp ../shared_libraries/recovery/shared_recovery.py orca_shared/
+cp ../shared_libraries/database/shared_db.py orca_shared/
+
+cp -r orca_shared build/orca_shared
 
 ## Create the virtual env. Remove it if it already exists.
 echo "INFO: Creating virtual environment ..."

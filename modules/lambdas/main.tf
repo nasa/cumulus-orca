@@ -215,6 +215,59 @@ resource "aws_lambda_permission" "allow_sqs_trigger" {
   source_arn   = module.sqs.orca_sqs_staged_recovery_queue_arn
 }
 
+
+# post_to_database - Posts entries from SQS queue to database.
+# ==============================================================================
+resource "aws_lambda_function" "post_to_database" {
+  ## REQUIRED
+  function_name = "${var.prefix}_post_to_database"
+  role          = module.restore_object_arn.restore_object_role_arn
+
+  ## OPTIONAL
+  description      = "Posts entries from SQS queue to database."
+  filename         = "${path.module}/../../tasks/post_to_database/post_to_database.zip"
+  handler          = "post_to_database.handler"
+  memory_size      = var.orca_recovery_lambda_memory_size
+  runtime          = "python3.7"
+  source_code_hash = filebase64sha256("${path.module}/../../tasks/post_to_database/post_to_database.zip")
+  tags             = local.tags
+  timeout          = var.orca_recovery_lambda_timeout
+
+  vpc_config {
+    subnet_ids         = var.lambda_subnet_ids
+    security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
+  }
+
+  environment {
+    variables = {
+      PREFIX           = var.prefix
+      DATABASE_PORT    = var.database_port
+      DATABASE_NAME    = var.database_name
+      APPLICATION_USER = var.database_app_user
+    }
+  }
+}
+
+resource "aws_lambda_event_source_mapping" "post_to_database_event_source_mapping" {
+  event_source_arn = var.orca_sqs_status_update_queue_arn
+  function_name    = aws_lambda_function.post_to_database.handler
+}
+
+# Additional resources needed by post_to_database
+# ------------------------------------------------------------------------------
+# Permissions to allow SQS trigger to invoke lambda
+resource "aws_lambda_permission" "allow_sqs_trigger" {
+  ## REQUIRED
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.post_to_database.function_name
+  principal     = "sqs.amazonaws.com"
+
+  ## OPTIONAL
+  statement_id = "AllowExecutionFromSQS"
+  source_arn   = module.sqs.orca_sqs_status_update_queue_arn
+}
+
+
 # todo: Use the below as a base for s3 triggering of new lambda
 ## copy_lambda_trigger - Bucket notification trigger pointed to lambda
 #resource "aws_s3_bucket_notification" "copy_lambda_trigger" {

@@ -155,6 +155,11 @@ variable "orca_sqs_staged_recovery_queue_arn" {
   description = "The ARN of the staged-recovery-queue SQS"
 }
 
+variable "orca_sqs_status_update_queue_arn" {
+  type        = "string"
+  description = "The ARN of the status-update-queue SQS"
+}
+
 variable "orca_sqs_status_update_queue_id" {
   type        = string
   description = "The URL of the SQS queue that recoery status updates are read from/posted to."

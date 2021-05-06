@@ -44,22 +44,15 @@ def create_status_for_job(
         job_id: The unique identifier used for tracking requests.
         granule_id: The id of the granule being restored.
         archive_destination: The S3 bucket destination of where the data is archived.
-        files: A List of Dicts with the following keys:
-            'filename' (str)
-            'key_path' (str)
-            'restore_destination' (str)
-            'status_id' (int)
-            'error_message' (str, Optional)
-            'request_time' (str)
-            'last_update' (str)
-            'completion_time' (str, Optional)
+        files: TODO
         db_queue_url: The SQS queue URL defined by AWS.
+
     """
     new_data = {"job_id": job_id, "granule_id": granule_id,
                 "request_time": datetime.now(timezone.utc).isoformat(), "archive_destination": archive_destination,
                 "files": files}
 
-    post_entry_to_queue(new_data, RequestMethod.NEW_JOB, db_queue_url)
+    post_entry_to_queue("orca_recoveryjob", new_data, RequestMethod.NEW_JOB, db_queue_url)
 
 
 def update_status_for_file(
@@ -68,7 +61,7 @@ def update_status_for_file(
     filename: str,
     status_id: OrcaStatus,
     error_message: Optional[str],
-    db_queue_url: str
+    db_queue_url: str,
 ):
     """
     Creates update information for a file's status entry, and posts to queue.
@@ -98,10 +91,11 @@ def update_status_for_file(
                 raise Exception("error message is required.")
             new_data["error_message"] = error_message
 
-    post_entry_to_queue(new_data, RequestMethod.UPDATE, db_queue_url)
+    post_entry_to_queue("orca_recoverfile", new_data, RequestMethod.UPDATE, db_queue_url)
 
 
 def post_entry_to_queue(
+    table_name: str,
     new_data: Dict[str, Any],
     request_method: RequestMethod,
     db_queue_url: str,
@@ -110,6 +104,7 @@ def post_entry_to_queue(
     Posts messages to an SQS queue.
 
     Args:
+        table_name: The name of the DB table.
         new_data: A dictionary representing the column/value pairs to write to the DB table.
         request_method: The method action for the database lambda to take when posting to the SQS queue.
         db_queue_url: The SQS queue URL defined by AWS.
@@ -124,14 +119,14 @@ def post_entry_to_queue(
 
     mysqs.send_message(
         QueueUrl=db_queue_url,
-        MessageDeduplicationId=request_method.value + body,
+        MessageDeduplicationId=table_name + request_method.value + body,
         MessageGroupId="request_files",
         MessageAttributes={
             "RequestMethod": {
                 "DataType": "String",
                 "StringValue": request_method.value,
             },
-            "TableName": {"DataType": "String"},
+            "TableName": {"DataType": "String", "StringValue": table_name},
         },
         MessageBody=body,
     )

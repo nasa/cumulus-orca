@@ -3,39 +3,17 @@ Name: post_to_database.py
 
 Description:  Pulls entries from a queue and posts them to a DB.
 """
+import datetime
 import json
-from enum import Enum
-from typing import Any, List, Dict
+from typing import Any, List, Dict, Optional
 
-# noinspection PyPackageRequirements
-import database
 # noinspection PyUnresolvedReferences
-import requests_db
 from cumulus_logger import CumulusLogger
+# todo: Auto-copy shared libs
+from sqlalchemy import text
 
-
-# todo: Shared lib
-class RequestMethod(Enum):
-    """
-    An enumeration.
-    Provides potential actions for the database lambda to take when posting to the SQS queue.
-    """
-    NEW_JOB = "new_job"
-    UPDATE_FILE = "update_file"
-
-
-# todo: Shared lib
-class OrcaStatus(Enum):
-    """
-    An enumeration.
-    Defines the status value used in the ORCA Recovery database for use by the recovery functions.
-
-    """
-    PENDING = 1
-    STAGED = 2
-    FAILED = 3
-    SUCCESS = 4
-
+from shared import shared_db, shared_recovery
+from shared.shared_recovery import RequestMethod, OrcaStatus
 
 LOGGER = CumulusLogger()
 
@@ -56,10 +34,9 @@ def send_record_to_database(record: Dict[str, Any], db_connect_info: Dict) -> No
             'messageAttributes' (dict): Contains the following keys:
                 'TableName' (str): The name of the table to target.
                 'RequestMethod' (str): 'post' or 'put', depending on if row should be created or updated respectively.
-        db_connect_info: See requests_db.py's get_dbconnect_info for further details.
+        db_connect_info: See shared_db.py's get_configuration for further details.
     """
     values = json.loads(record['body'])
-    table_name = record['messageAttributes']['TableName']
     request_method = RequestMethod(record['messageAttributes']['RequestMethod'])
     if request_method == RequestMethod.NEW_JOB:
         # todo: Better key checks here and elsewhere
@@ -69,16 +46,17 @@ def send_record_to_database(record: Dict[str, Any], db_connect_info: Dict) -> No
                                         values['archive_destination'],
                                         values['files'],
                                         db_connect_info)
-        pass
     elif request_method == RequestMethod.UPDATE_FILE:
-        # todo: Remember to update job if needed.
-        update_status_for_file(values, db_connect_info)
-        pass
+        update_status_for_file(values['job_id'],
+                               values['granule_id'],
+                               values['filename'],
+                               values['last_update'],
+                               values.get('completion_time', None),
+                               values['status_id'],
+                               values.get('error_message', None),
+                               db_connect_info)
     else:
         raise ValueError(f"RequestMethod '{request_method}' not found.")
-
-    # todo: Remove
-    # send_values_to_database(table_name, values, request_method, db_connect_info)
 
 
 def create_status_for_job_and_files(job_id: str,
@@ -88,30 +66,44 @@ def create_status_for_job_and_files(job_id: str,
                                     files: List[Dict[str, Any]],
                                     db_connect_info: Dict) -> None:
     """
-    todo
+    Posts the entry for the job, followed by individual entries for each file.
+
+    Args:
+        job_id: The unique identifier used for tracking requests.
+        granule_id: The id of the granule being restored.
+        archive_destination: The S3 bucket destination of where the data is archived.
+        request_time: The time the restore was requested in utc and iso-format.
+        files: A List of Dicts with the following keys:
+            'filename' (str)
+            'key_path' (str)
+            'restore_destination' (str)
+            'status_id' (int)
+            'error_message' (str, Optional)
+            'request_time' (str)
+            'last_update' (str)
+            'completion_time' (str, Optional)
+        db_connect_info: See shared_db.py's get_configuration for further details.
     """
 
     # Create job status in DB
-    # todo: Use driver's auto-transaction functionality.
-    # engine, with engine, do stuff, do commit
-    sql = f"""
-            BEGIN TRANSACTION
-                INSERT INTO orca_recoveryjob
-                    ('job_id', 'granule_id', 'status_id', 'request_time', 'completion_time', 'archive_destination')
-                VALUES
-                    (%s, %s, %s, %s, %s, %s)"""
+    job_sql = text("""
+            INSERT INTO recovery_job
+                ("job_id", "granule_id", "status_id", "request_time", "completion_time", "archive_destination")
+            VALUES
+                (:job_id, :granule_id, :status_id, :request_time, :completion_time, :archive_destination)""")
 
     # Create file statuses in DB
-    sql += f"""
-                INSERT INTO orca_recoverfile
-                    ('job_id', 'granule_id', 'filename', 'key_path', 'restore_destination', 'status_id',
-                    'error_message', 'request_time', 'last_update', 'completion_time')
-                VALUES"""
+    file_sql = text("""
+            INSERT INTO recovery_file
+                ("job_id", "granule_id", "filename", "key_path", "restore_destination", "status_id",
+                "error_message", "request_time", "last_update", "completion_time")
+            VALUES
+                (:job_id, :granule_id, :filename, :key_path, :restore_destination, :status_id, :error_message, 
+                :request_time, :last_update, :completion_time)""")
+
     found_pending = False
     job_completion_time = None
-
-    sql += ', '.join(['(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'] * len(files))
-    file_parameters = tuple()
+    file_parameters = []
     for file in files:
         if file['status_id'] == OrcaStatus.PENDING.value:
             found_pending = True
@@ -119,9 +111,11 @@ def create_status_for_job_and_files(job_id: str,
             job_completion_time = max(job_completion_time, file['completion_time'])
         else:
             raise ValueError(f"Status ID '{file['status_id']}' not allowed for new status.")
-        file_parameters += tuple(file['job_id'], file['granule_id'], file['filename'], file['key_path'],
-                                 file['restore_destination'], file['status_id'], file.get('error_message', None),
-                                 file['request_time'], file['last_update'], file.get('completion_time', None))
+        file_parameters.append({'job_id': job_id, 'granule_id': granule_id, 'filename': file['filename'],
+                                'key_path': file['key_path'], 'restore_destination': file['restore_destination'],
+                                'status_id': file['status_id'], 'error_message': file.get('error_message', None),
+                                'request_time': file['request_time'], 'last_update': file['last_update'],
+                                'completion_time': file.get('completion_time', None)})
 
     if found_pending:
         # Most jobs will be this. Some files are still pending.
@@ -131,133 +125,78 @@ def create_status_for_job_and_files(job_id: str,
         # All files failed during recovery request.
         job_status = OrcaStatus.FAILED
 
-    parameters = tuple(job_id, granule_id, job_status.value, request_time, job_completion_time,
-                       archive_destination) + file_parameters
-    # Commit transaction
-    sql += f"""
-            COMMIT"""
+    # todo: Don't use root user.
+    engine = shared_db.get_user_connection(db_connect_info)
+    with engine.begin() as connection:
+        connection.execute(job_sql, [{'job_id': job_id, 'granule_id': granule_id, 'status_id': job_status.value,
+                                      'request_time': request_time, 'completion_time': job_completion_time,
+                                      'archive_destination': archive_destination}])
+        connection.execute(file_sql, file_parameters)
 
-    database.single_query(sql, db_connect_info, parameters)
 
-
-def update_status_for_file(values: Dict[str, Any], db_connect_info: Dict) -> None:
+def update_status_for_file(job_id: str,
+                           granule_id: str,
+                           filename: str,
+                           last_update: str,
+                           completion_time: Optional[str],
+                           status_id: OrcaStatus,
+                           error_message: Optional[str],
+                           db_connect_info: Dict) -> None:
     """
-    todo
-    """
+    Updates a given file's status entry, modifying the job if all files for that job have advanced in status.
 
-    # todo: orca_recoverfile -> recovery_file
-    # todo: orca_recoveryjob -> recovery_job
-    # todo: orca_status -> recover_status
+    Args:
+        job_id: The unique identifier used for tracking requests.
+        granule_id: The id of the granule being restored.
+        filename: The name of the file being copied.
+        last_update: The time this status update occurred, in UTC iso-format.
+        completion_time: The completion time, in UTC iso-format.
+        status_id: Defines the status id used in the ORCA Recovery database.
+        error_message: message displayed on error.
+
+        db_connect_info: See shared_db.py's get_configuration for further details.
+    """
     # Update entry in DB
-    # todo: Use sqlalchemy suggestions from above
-    sql = """
-            BEGIN TRANSACTION
-                UPDATE orca_recoverfile
-                SET status_id = %s, last_update = %s, completion_time = %s, error_message = %s
-                WHERE job_id = %s AND granule_id = %s AND filename = %s
-            COMMIT"""
-    # todo: If all files for job completed, update job.
-    # todo: Update Select to update the JOB
-    # Common Table Expression?
+    file_sql = """
+            UPDATE recovery_file
+            SET status_id = :status_id, last_update = :last_update, completion_time = :completion_time,
+                error_message = :error_message
+            WHERE job_id = :job_id AND granule_id = :granule_id AND filename = :filename"""
+    job_sql = """
+            with granule_status as (
+                SELECT
+                    job_id,
+                    granule_id,
+                    MIN(status_id) AS status_id,
+                    CASE
+                        WHEN MIN(status_id) IN (3, 4) THEN MAX(completion_time)
+                        ELSE NULL
+                    END AS completion_time
+                FROM
+                    recovery_file
+                WHERE
+                    job_id = :job_id
+                AND
+                    granule_id = :granule_id
+            )
+            UPDATE
+                recovery_job
+            SET
+                status_id = granule_status.status_id,
+                completion_time = granule_status.completion_time
+            WHERE
+                recovery_job.job_id = granule_status.job_id
+            AND
+                recovery_job.granule_id = granule_status.granule_id"""
 
-    # (staged)
-    # if ALL status == staged
-    #   Set job to staged
-    # (success)
-    # if ALL status == Success
-    #   Set job to Success
-    # (error)
-    # if ALL status == Success OR Error
-    #   Set job to Error
-
-    parameters = tuple(values['status_id'], values['last_update'], values['completion_time'], values['error_message'],
-                       values['job_id'], values['granule_id'], values['filename'])
-    database.single_query(sql, db_connect_info, parameters)
-
-
-def send_values_to_database(table_name: str, values: Dict[str, Any], request_method: RequestMethod,
-                            db_connect_info: Dict) -> None:
-    """
-
-    Args:
-        table_name: The name of the table to target.
-        values: Contains key/value pairs of column names and values for those columns.
-        request_method: POST or PUT, depending on if row should be created or updated respectively.
-        db_connect_info: See requests_db.py's get_dbconnect_info for further details.
-    """
-    try:
-        if request_method == RequestMethod.PUT:
-            keys = table_key_dictionary.get(table_name, None)
-            if keys is not None:
-                update_row_in_table(table_name, keys, values, db_connect_info)
-            else:
-                raise NotImplementedError()
-        elif request_method == RequestMethod.POST:
-            insert_row_from_values(table_name, values, db_connect_info)
-    except Exception as ex:
-        LOGGER.error(ex)
-
-
-def insert_row_from_values(table_name: str, values: Dict[str, Any], db_connect_info: Dict) -> None:
-    """
-    Inserts a new row into the given table.
-
-    Args:
-        table_name: The name of the table to target.
-        values: Contains key/value pairs of column names and values for those columns.
-        db_connect_info: See requests_db.py's get_dbconnect_info for further details.
-
-    Raises: database.DbError if error occurs when contacting database.
-    """
-    sql = f"""
-                    INSERT INTO {table_name} ("""
-    sql += ', '.join(values.keys())
-    sql += f""")
-                    VALUES ("""
-    sql += ', '.join(['%s'] * len(values))
-    sql += ')'
-
-    parameters = tuple(values[value_key] for value_key in values)
-    database.single_query(sql, db_connect_info, parameters)
-
-
-def update_row_in_table(table_name: str, table_keys: List[str], values: Dict[str, Any], db_connect_info: Dict) -> None:
-    """
-    Updates a row in the target table, using table_keys to identify the row that should be modified.
-
-    Args:
-        table_name: The name of the table to target.
-        table_keys: A list of keys. Used to identify the row to change.
-        values: Contains key/value pairs of column names and values for those columns.
-            If a column name is in table_keys, the value will be used to identify the target row.
-        db_connect_info: See requests_db.py's get_dbconnect_info for further details.
-
-    Raises: database.DbError if error occurs when contacting database.
-    """
-    key_values = {table_key: None for table_key in table_keys}
-    updated_values = {}
-    for key in values:
-        if table_keys.__contains__(key):
-            key_values[key] = values[key]
-        else:
-            updated_values[key] = values[key]
-    sql = f"""
-                    UPDATE {table_name}
-                    SET """
-
-    sql += ", ".join([f"{updating_value_key} = %s" for updating_value_key in updated_values])
-
-    sql += f"""
-                    WHERE """
-
-    sql += " AND ".join([f"{table_key} = %s" for table_key in table_keys])
-
-    #    sql += f"""
-    #                    LIMIT 1"""
-
-    parameters = tuple(updated_values[updated_value_key] for updated_value_key in updated_values)
-    parameters += tuple(key_values[table_key] for table_key in table_keys)
-    database.single_query(sql, db_connect_info, parameters)
+    file_parameters = {'status_id': status_id, 'last_update': last_update,
+                       'completion_time': completion_time, 'error_message': error_message,
+                       'job_id': job_id, 'granule_id': granule_id, 'filename': filename}
+    job_parameters = {'job_id': job_id, 'granule_id': granule_id}
+    engine = shared_db.get_user_connection(db_connect_info)
+    with engine.begin() as connection:
+        connection.execute(file_sql, file_parameters)
+        connection.execute(job_sql, job_parameters)
 
 
 def handler(event: Dict[str, List], context) -> None:
@@ -270,22 +209,21 @@ def handler(event: Dict[str, List], context) -> None:
                 'messageId' (str)
                 'receiptHandle' (str)
                 'body' (str): A json string representing a dict.
-                    Contains key/value pairs of column names and values for those columns.
+                    See files in schemas for details.  # todo: write them up.
                 'attributes' (Dict)
                 'messageAttributes' (Dict): A dict with the following keys defined in the functions that write to queue.
-                    'RequestMethod' (str): 'post' or 'put', depending on if row should be created or updated respectively.
-                    'TableName' (str): The name of the table to target.
+                    'RequestMethod' (str): Matches to a shared_recovery.RequestMethod.
         context: An object passed through by AWS. Used for tracking.
-    Environment Vars: See requests_db.py's get_dbconnect_info for further details.
+    Environment Vars: See shared_db.py's get_configuration for further details.
         'DATABASE_PORT' (int): Defaults to 5432
         'DATABASE_NAME' (str)
-        'DATABASE_USER' (str)
+        'APPLICATION_USER' (str)
         'PREFIX' (str)
         '{prefix}-drdb-host' (str, secretsmanager)
         '{prefix}-drdb-user-pass' (str, secretsmanager)
     """
     LOGGER.setMetadata(event, context)
 
-    db_connect_info = requests_db.get_dbconnect_info()
+    db_connect_info = shared_db.get_configuration()
 
     task(event['Records'], db_connect_info)
