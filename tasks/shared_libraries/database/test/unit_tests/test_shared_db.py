@@ -5,6 +5,7 @@ Description: Runs unit tests for the shared_db.py library.
 """
 # import shared_db
 from moto import mock_secretsmanager
+from sqlalchemy.engine import URL
 import boto3
 import unittest
 from unittest.mock import Mock, call, patch, MagicMock
@@ -49,8 +50,8 @@ class TestSharedDatabseLibraries(unittest.TestCase):
             "DATABASE_NAME": "disaster_recovery",
             "DATABASE_PORT": "5432",
             "APPLICATION_USER": "orcauser",
-            "ROOT_USER": "postgres",
-            "ROOT_DATABASE": "postgres",
+            "ADMIN_USER": "postgres",
+            "ADMIN_DATABASE": "postgres",
             "AWS_REGION": "us-west-2",
         },
         clear=True,
@@ -63,11 +64,11 @@ class TestSharedDatabseLibraries(unittest.TestCase):
             "host": "aws.postgresrds.host",
             "port": "5432",
             "database": "disaster_recovery",
-            "root_database": "postgres",
+            "admin_database": "postgres",
             "app_user": "orcauser",
-            "root_user": "postgres",
+            "admin_user": "postgres",
             "app_user_password": "MySecretUserPassword",
-            "root_user_password": "MySecretAdminPassword",
+            "admin_user_password": "MySecretAdminPassword",
         }
 
         testing_config = shared_db.get_configuration()
@@ -93,7 +94,7 @@ class TestSharedDatabseLibraries(unittest.TestCase):
         },
         clear=True,
     )
-    def test_get_configuration_aws_region(self):
+    def test_get_configuration_no_aws_region(self):
         """
         Validate an error is thrown if PREFIX is not set.
         """
@@ -110,13 +111,13 @@ class TestSharedDatabseLibraries(unittest.TestCase):
             "DATABASE_NAME": "disaster_recovery",
             "DATABASE_PORT": "5432",
             "APPLICATION_USER": "orcauser",
-            "ROOT_USER": "postgres",
-            "ROOT_DATABASE": "postgres",
+            "ADMIN_USER": "postgres",
+            "ADMIN_DATABASE": "postgres",
             "AWS_REGION": "us-west-2",
         },
         clear=True,
     )
-    def test_get_configuration_bad_env(self):
+    def test_get_configuration_bad_env_required(self):
         """
         Validate an error is thrown if an expected environment variable is not
         is not set.
@@ -125,15 +126,15 @@ class TestSharedDatabseLibraries(unittest.TestCase):
             "DATABASE_NAME",
             "DATABASE_PORT",
             "APPLICATION_USER",
-            "ROOT_USER",
-            "ROOT_DATABASE",
         ]
         env_bad_values = [None, ""]
-        env_good_value = "This Really Long String"
 
         for name in env_names:
+            good_value = os.getenv(name)
             for bad_value in env_bad_values:
-                with self.subTest(name=name, bad_value=bad_value):
+                with self.subTest(
+                    name=name, bad_value=bad_value, good_value=good_value
+                ):
                     # Set the variable to the bad value and create the message
                     if bad_value is None:
                         del os.environ[name]
@@ -148,7 +149,7 @@ class TestSharedDatabseLibraries(unittest.TestCase):
                         self.assertEquals(ex.message, message)
 
                     # Reset the value
-                    os.environ[name] = env_good_value
+                    os.environ[name] = good_value
 
     @patch.dict(
         os.environ,
@@ -157,8 +158,58 @@ class TestSharedDatabseLibraries(unittest.TestCase):
             "DATABASE_NAME": "disaster_recovery",
             "DATABASE_PORT": "5432",
             "APPLICATION_USER": "orcauser",
-            "ROOT_USER": "postgres",
-            "ROOT_DATABASE": "postgres",
+            "ADMIN_USER": "postgres",
+            "ADMIN_DATABASE": "postgres",
+            "AWS_REGION": "us-west-2",
+        },
+        clear=True,
+    )
+    @patch("shared_db.logger")
+    def test_get_configuration_bad_env_optional(self, mock_logger: MagicMock):
+        """
+        Validate an error is thrown if an expected environment variable is not
+        is not set.
+        """
+        env_names = [
+            "ADMIN_USER",
+            "ADMIN_DATABASE",
+        ]
+        env_bad_values = [None, ""]
+
+        for name in env_names:
+            good_value = os.getenv(name)
+            for bad_value in env_bad_values:
+                with self.subTest(
+                    name=name, bad_value=bad_value, good_value=good_value
+                ):
+
+                    # Set the variable to the bad value and create the message
+                    if bad_value is None:
+                        del os.environ[name]
+                    else:
+                        os.environ[name] = bad_value
+
+                    message = f"Setting variable {name} value to postgres"
+
+                    # Run the test
+                    test_config = shared_db.get_configuration()
+
+                    # Check log message and default value set
+                    mock_logger.info.assert_called_with(message)
+                    self.assertEqual(test_config[name.lower()], "postgres")
+
+                    # Reset the value for the next loop
+                    os.environ[name] = good_value
+
+    @patch.dict(
+        os.environ,
+        {
+            "PREFIX": "orcatest",
+            "DATABASE_NAME": "disaster_recovery",
+            "DATABASE_PORT": "5432",
+            "APPLICATION_USER": "orcauser",
+            "ADMIN_USER": "postgres",
+            "ADMIN_DATABASE": "postgres",
             "AWS_REGION": "us-west-2",
         },
         clear=True,
@@ -198,14 +249,14 @@ class TestSharedDatabseLibraries(unittest.TestCase):
             "DATABASE_NAME": "disaster_recovery",
             "DATABASE_PORT": "5432",
             "APPLICATION_USER": "orcauser",
-            "ROOT_USER": "postgres",
-            "ROOT_DATABASE": "postgres",
+            "ADMIN_USER": "postgres",
+            "ADMIN_DATABASE": "postgres",
             "AWS_REGION": "us-west-2",
         },
         clear=True,
     )
     @patch("shared_db._create_connection")
-    def test_get_root_connections_database_values(self, mock_connection: MagicMock):
+    def test_get_admin_connection_database_values(self, mock_connection: MagicMock):
         """
         Tests the function to make sure the correct database value is passed.
         """
@@ -213,7 +264,7 @@ class TestSharedDatabseLibraries(unittest.TestCase):
             "host": "aws.postgresrds.host",
             "port": "5432",
             "database": "postgres",
-            "user": "postgres",
+            "username": "postgres",
             "password": "MySecretAdminPassword",
         }
 
@@ -221,14 +272,76 @@ class TestSharedDatabseLibraries(unittest.TestCase):
             "host": "aws.postgresrds.host",
             "port": "5432",
             "database": "disaster_recovery",
-            "user": "postgres",
+            "username": "postgres",
             "password": "MySecretAdminPassword",
         }
 
         config = shared_db.get_configuration()
 
-        root_db_creds = shared_db.get_root_connection(config)
+        root_db_creds = shared_db.get_admin_connection(config)
         mock_connection.assert_called_with(**root_db_call)
 
-        user_db_creds = shared_db.get_root_connection(config, "disaster_recovery")
+        user_db_creds = shared_db.get_admin_connection(config, "disaster_recovery")
         mock_connection.assert_called_with(**user_db_call)
+
+    @patch.dict(
+        os.environ,
+        {
+            "PREFIX": "orcatest",
+            "DATABASE_NAME": "disaster_recovery",
+            "DATABASE_PORT": "5432",
+            "APPLICATION_USER": "orcauser",
+            "ADMIN_USER": "postgres",
+            "ADMIN_DATABASE": "postgres",
+            "AWS_REGION": "us-west-2",
+        },
+        clear=True,
+    )
+    @patch("shared_db._create_connection")
+    def test_get_user_connection_database_values(self, mock_connection: MagicMock):
+        """
+        Tests the function to make sure the correct database value is passed.
+        """
+        user_db_call = {
+            "host": "aws.postgresrds.host",
+            "port": "5432",
+            "database": "disaster_recovery",
+            "username": "orcauser",
+            "password": "MySecretUserPassword",
+        }
+
+        config = shared_db.get_configuration()
+
+        user_db_creds = shared_db.get_user_connection(config)
+        mock_connection.assert_called_with(**user_db_call)
+
+    @patch.dict(
+        os.environ,
+        {
+            "PREFIX": "orcatest",
+            "DATABASE_NAME": "disaster_recovery",
+            "DATABASE_PORT": "5432",
+            "APPLICATION_USER": "orcauser",
+            "ADMIN_USER": "postgres",
+            "ADMIN_DATABASE": "postgres",
+            "AWS_REGION": "us-west-2",
+        },
+        clear=True,
+    )
+    @patch("shared_db.create_engine")
+    def test__create_connection_call_values(self, mock_connection: MagicMock):
+        """
+        Tests the function to make sure the correct database value is passed.
+        """
+        user_db_call = {
+            "host": "aws.postgresrds.host",
+            "port": "5432",
+            "database": "disaster_recovery",
+            "username": "orcauser",
+            "password": "MySecretUserPassword",
+        }
+
+        user_db_url = URL.create(drivername="postgresql", **user_db_call)
+
+        user_db_creds = shared_db._create_connection(**user_db_call)
+        mock_connection.assert_called_once_with(user_db_url, future=True)
