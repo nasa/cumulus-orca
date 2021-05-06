@@ -14,7 +14,7 @@ from shared_recovery import (
     OrcaStatus,
     RequestMethod,
     post_status_for_file_to_queue,
-    post_entry_to_queue,
+    post_entry_to_queue
 )
 from requests_db import get_dbconnect_info
 from database import single_query, result_to_json
@@ -68,7 +68,7 @@ def task(records: Dict[str, Any], db_queue_url: str, recovery_queue_url: str) ->
         rows = single_query(sql, db_connect_info, (filename, OrcaStatus.PENDING.value))
     except Exception as ex:
         LOGGER.error("Unable to retrieve {filename} metadata")
-        raise ex
+        raise ex("Unable to retrieve {filename} metadata")
 
     if len(rows) == 0:
         LOGGER.fatal("DB tables cannot be empty")
@@ -78,7 +78,7 @@ def task(records: Dict[str, Any], db_queue_url: str, recovery_queue_url: str) ->
         db_result_json = result_to_json(rows)
     except Exception as ex:
         LOGGER.error("Unable to convert db result to json")
-        raise ex
+        raise ex("Unable to convert db result to json")
 
     # grab the parameters from the db in json format. Retry 3 times if it fails
     for retry in range(3):
