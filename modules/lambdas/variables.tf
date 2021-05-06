@@ -169,10 +169,3 @@ variable "platform" {
   type        = string
   description = "String that determines deployment platform. AWS or local."
 }
-
-# list of orca bucket arn needed to provide permission to post_copy_request_to_queue lambda
-variable "orca_buckets_arn" {
-  type        = list(string)
-  description = "List of ORCA S3 bucket ARN needed for lambda permission"
-  default     = []
-}

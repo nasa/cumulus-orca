@@ -24,15 +24,7 @@ from cumulus_logger import CumulusLogger
 # instantiate CumulusLogger
 LOGGER = CumulusLogger()
 
-PREFIX = os.environ["PREFIX"]
-DATABASE_NAME = os.environ["DATABASE_NAME"]
-DATABASE_PORT = os.environ["DATABASE_PORT"]
-DATABASE_USER = os.environ["DATABASE_USER"]
-DB_QUEUE_URL = os.environ["DB_QUEUE_URL"]
-RECOVERY_QUEUE_URL = os.environ["RECOVERY_QUEUE_URL"]
-
-
-def task(records):
+def task(records, db_queue_url, recovery_queue_url):
     """
     Task called by the handler to perform the work.
 
@@ -42,6 +34,8 @@ def task(records):
 
     Args:
         records: A dictionary passed through from the handler.
+        db_queue_url: The SQS URL of status_update_queue
+        recovery_queue_url: The SQS URL of staged_recovery_queue
     """
 
     # grab the filename from event
@@ -68,11 +62,15 @@ def task(records):
         LOGGER.error(ex)
 
     if len(rows) == 0:
+        LOGGER.fatal("DB tables cannot be empty")
         raise Exception(
-            "length of rows cannot be empty since there will always be a record in the database"
+            "No metadata found for {filename}"
         )
     # convert db result to json
-    db_result_json = result_to_json(rows)
+    try:
+        db_result_json = result_to_json(rows)
+    except Exception as e:
+
 
     # grab the parameters from the db in json format
     job_id = db_result_json["job_id"]
@@ -86,7 +84,7 @@ def task(records):
         filename,
         restore_destination,
         OrcaStatus.STAGED.value,
-        "",
+        None,
         RequestMethod.NEW.value,
         RECOVERY_QUEUE_URL,
     )
@@ -98,11 +96,10 @@ def task(records):
         filename,
         restore_destination,
         OrcaStatus.STAGED.value,
-        "",
+        None,
         RequestMethod.UPDATE.value,
         DB_QUEUE_URL,
     )
-
 
 def handler(event, context):
     """
@@ -127,6 +124,18 @@ def handler(event, context):
         None
 
     """
+    LOGGER.setMetadata(event, context)
+    # retrieving db_queue_url from env variable
+    db_queue_url = os.environ["DB_QUEUE_URL"]
+    if len(db_queue_url) == 0 or db_queue_url is None:
+        LOGGER.error("db_queue_url cannot be None or empty")
+        raise Exception("db_queue_url cannot be None or empty")
+    # retrieving recovery_queue_url from env variable
+    recovery_queue_url = os.environ["RECOVERY_QUEUE_URL"]
+    if len(recovery_queue_url) == 0 or recovery_queue_url is None:
+        LOGGER.error("recovery_queue_url cannot be None or empty")
+        raise Exception("recovery_queue_url cannot be None or empty")
+
     records = event["Records"]
     # calling the task function to perform the work
-    task(records)
+    task(records, db_queue_url, recovery_queue_url)
