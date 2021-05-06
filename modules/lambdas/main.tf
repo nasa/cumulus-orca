@@ -320,7 +320,7 @@ resource "aws_lambda_function" "db_deploy" {
   filename         = "${path.module}/../../tasks/db_deploy/db_deploy.zip"
   handler          = "db_deploy.handler"
   memory_size      = var.orca_recovery_lambda_memory_size
-  runtime          = "python3.7"
+  runtime          = "python3.8"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/db_deploy/db_deploy.zip")
   tags             = local.tags
   timeout          = var.orca_recovery_lambda_timeout
@@ -333,12 +333,11 @@ resource "aws_lambda_function" "db_deploy" {
   environment {
     variables = {
       PREFIX           = var.prefix
-      AWS_REGION       = var.region
       DATABASE_PORT    = var.database_port
       DATABASE_NAME    = var.database_name
       APPLICATION_USER = var.database_app_user
-      ROOT_USER        = "postgres"
-      ROOT_DATABASE    = "postgres"
+      ADMIN_USER       = "postgres"
+      ADMIN_DATABASE   = "postgres"
     }
   }
 }

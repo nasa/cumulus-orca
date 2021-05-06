@@ -182,6 +182,18 @@ in the environment block. Note that some variables are OPTIONAL.
 | ADMIN_USER       | *OPTIONAL* The name of the database super user.             | Set to "postgres"     | postgres          |
 | ADMIN_DATABASE   | *OPTIONAL* The name of the admin database for the instance. | Set to "postgres"     | postgres          |
 
+The following is an example of the minimum environment variables that must be
+set as part of your terraform lambda environment configuration.
+
+```yaml
+  environment {
+    variables = {
+      PREFIX           = var.prefix
+      DATABASE_PORT    = var.database_port
+      DATABASE_NAME    = var.database_name
+      APPLICATION_USER = var.database_app_user
+    }
+```
 
 **IMPORTANT**: The *AWS_REGION* variable is set at runtime by AWS. This variable
 does not need to be added to your terraform configuration. However, any unit
