@@ -22,11 +22,11 @@ class TestMigrateDatabseLibraries(unittest.TestCase):
             "host": "aws.postgresrds.host",
             "port": "5432",
             "database": "disaster_recovery",
-            "root_database": "postgres",
+            "admin_database": "postgres",
             "app_user": "orcauser",
-            "root_user": "postgres",
+            "admin_user": "postgres",
             "app_user_password": "MySecretUserPassword",
-            "root_user_password": "MySecretAdminPassword",
+            "admin_user_password": "MySecretAdminPassword",
         }
 
     def tearDown(self):
@@ -75,7 +75,7 @@ class TestMigrateDatabseLibraries(unittest.TestCase):
     @patch("migrate_db.orca_schema_sql")
     @patch("migrate_db.app_role_sql")
     @patch("migrate_db.dbo_role_sql")
-    @patch("migrate_db.get_root_connection")
+    @patch("migrate_db.get_admin_connection")
     def test_migrate_versions_1_to_2_happy_path(
         self,
         mock_connection: MagicMock,

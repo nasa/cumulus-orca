@@ -66,6 +66,25 @@ let return_code=$?
 
 check_rc $return_code "ERROR: pip install encountered an error."
 
+
+echo "INFO: Copying ORCA shared libraries ..."
+if [ -d orca_shared ]; then
+    rm -rf orca_shared
+fi
+
+mkdir orca_shared
+let return_code=$?
+check_rc $return_code "ERROR: Unable to create orca_shared directory."
+
+touch orca_shared/__init__.py
+let return_code=$?
+check_rc $return_code "ERROR: Unable to create [orca_shared/__init__.py] file"
+
+cp ../shared_libraries/database/shared_db.py orca_shared/
+let return_code=$?
+check_rc $return_code "ERROR: Unable to copy shared library [orca_shared/shared_db.py]"
+
+
 ## Get the modules we want to test
 file_list=""
 first_time="1"
@@ -83,7 +102,13 @@ done
 ## Run unit tests and check Coverage
 echo "INFO: Running unit and coverage tests ..."
 
-# Currently just running unit tests until we fix/support large tests
+# Export the AWS_REGION for the boto3 clients. Note that if you clear the
+# environment for unit tests, you will need to add this environment variable back
+# in to avoid a client error "botocore.exceptions.NoRegionError: You must specify
+# a region." In real AWS, the AWS_REGION is set for you per the Lamda developer
+# docs seen here https://docs.aws.amazon.com/lambda/latest/dg/lambda-dg.pdf
+export AWS_REGION="us-west-2"
+
 coverage run --source ${file_list} -m pytest
 let return_code=$?
 check_rc $return_code "ERROR: Unit tests encountered failures."
@@ -98,5 +123,8 @@ echo "INFO: Cleaning up the environment ..."
 deactivate
 rm -rf venv
 find . -type d -name "__pycache__" -exec rm -rf {} +
+
+# Remove the shared library
+rm -rf orca_shared
 
 exit 0

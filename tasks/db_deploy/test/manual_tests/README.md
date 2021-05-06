@@ -41,7 +41,7 @@ To setup the testing environment perform the following steps.
    **pgclient** window in the remaining instructions. run the following commands
    in the window.
    ```bash
-   cd /data/test/manual_tests
+   cd /data/tasks/db_deploy/test/manual_tests
    psql
    ```
 4. In a new terminal window run the setup script with the `python` action
@@ -53,7 +53,7 @@ To setup the testing environment perform the following steps.
    ```bash
    python3 -m venv venv
    . venv/bin/activate
-   cd /data
+   cd /data/tasks/db_deploy
    pip install -r requirements-dev.txt
    cd test/manual_tests
    ```
@@ -66,7 +66,7 @@ Once all tests are complete perform the following:
 1. Close the **python** window by typing `exit` at the command prompt.
 2. Close the **pgclient** window by quiting psql via the `\q` command and then
    typing `exit` at the command prompt.
-3. Shut down PostgreSQL and cleanup by running the `./setu_testing stop` command
+3. Shut down PostgreSQL and cleanup by running the `./setup_testing stop` command
    in the setup window.
 4. Remove the defined `DATA_DIR` directory and data.
 
@@ -106,7 +106,7 @@ at the psql prompt.
 ### Running the DNE Test
 
 To run the DNE test, in your **python** window run the command
-`python manual_tests.py`. The output should look similar to below.
+`python manual_test.py`. The output should look similar to below.
 
 ```bash
 {"message": "Beginning manual test.", "timestamp": "2021-04-28T22:19:52.948107", "level": "info"}
@@ -195,7 +195,7 @@ exist in the database.
 ### Running the Fresh Install Test
 
 To run the fresh install test, in your **python** window run the command
-`python manual_tests.py`. The output should look similar to below.
+`python manual_test.py`. The output should look similar to below.
 
 ```bash
 (venv) root@cf4b0741a628:/data/test/manual_tests# python manual_test.py
@@ -316,8 +316,8 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    ----+----------
      1 | pending
      2 | staged
-     3 | complete
-     4 | error
+     3 | error
+     4 | complete
    (4 rows)
    ```
 5. Verify the static data in the *schema_versions* table.
@@ -470,7 +470,7 @@ schema and run the migration of objects and data to an ORCA v2 schema.
 ### Running the Migration Test
 
 To run the migration test, in your **python** window run the command
-`python manual_tests.py`. The output should look similar to below.
+`python manual_test.py`. The output should look similar to below.
 
 ```bash
 (venv) root@cf4b0741a628:/data/test/manual_tests# python manual_test.py
@@ -624,8 +624,8 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    ----+----------
      1 | pending
      2 | staged
-     3 | complete
-     4 | error
+     3 | error
+     4 | complete
    (4 rows)
    ```
 5. Verify the static data in the *schema_versions* table.
@@ -673,28 +673,28 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
 
    # Check the complete data. Verify completion date is set and arcive_destination
    # is set to myglacierarchivebucket
-    disaster_recovery=# select * from recovery_job where status_id = 3 LIMIT 5;
+    disaster_recovery=# select * from recovery_job where status_id = 4 LIMIT 5;
 
                   job_id                |        granule_id        |  archive_destination   | status_id |         request_time          | completion_time
    -------------------------------------+--------------------------+------------------------+-----------+-------------------------------+-------------------------------
-   04c9db6d-2d09-4e75-af79-feaf54c7771e | 64e83cc5103965b83fca62ad | myarchiveglacierbucket |         3 | 2021-04-19 08:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   057e1fe7-c561-48c3-b539-65193de99279 | 0a1662031cfecd9c5190bf6d | myarchiveglacierbucket |         3 | 2021-04-18 20:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   0c86fa12-8773-4da6-b0e3-38104230c12e | 7b8be6c8f9076afe64f1aa62 | myarchiveglacierbucket |         3 | 2021-04-16 03:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   0e377a25-e8a6-4de8-86de-42dfad803b75 | cca7d86de488a25864f18095 | myarchiveglacierbucket |         3 | 2021-04-18 02:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   0eefcaf1-5dc5-47eb-a299-a9c206bf58d5 | 11790a3ddcdfcd1cbd6e341b | myarchiveglacierbucket |         3 | 2021-04-19 20:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   04c9db6d-2d09-4e75-af79-feaf54c7771e | 64e83cc5103965b83fca62ad | myarchiveglacierbucket |         4 | 2021-04-19 08:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   057e1fe7-c561-48c3-b539-65193de99279 | 0a1662031cfecd9c5190bf6d | myarchiveglacierbucket |         4 | 2021-04-18 20:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   0c86fa12-8773-4da6-b0e3-38104230c12e | 7b8be6c8f9076afe64f1aa62 | myarchiveglacierbucket |         4 | 2021-04-16 03:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   0e377a25-e8a6-4de8-86de-42dfad803b75 | cca7d86de488a25864f18095 | myarchiveglacierbucket |         4 | 2021-04-18 02:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   0eefcaf1-5dc5-47eb-a299-a9c206bf58d5 | 11790a3ddcdfcd1cbd6e341b | myarchiveglacierbucket |         4 | 2021-04-19 20:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
    (5 rows)
 
    # Check the complete data. Verify completion date is set and arcive_destination
    # is set to myglacierarchivebucket
-   disaster_recovery=# select * from recovery_job where status_id = 4 LIMIT 5;
+   disaster_recovery=# select * from recovery_job where status_id = 3 LIMIT 5;
 
                   job_id                |        granule_id        |  archive_destination   | status_id |         request_time          | completion_time
    -------------------------------------+--------------------------+------------------------+-----------+-------------------------------+-------------------------------
-   0169a025-1e3e-4a69-ab64-498634cd933b | 865a440a34c319b22ee52419 | myarchiveglacierbucket |         4 | 2021-04-24 10:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   0673403b-6c52-459f-b59a-04ab9b87b93f | 9eda38da05d01ade96a3a3e8 | myarchiveglacierbucket |         4 | 2021-04-23 20:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   072db1cb-0efd-41b7-bc09-03272f0a6ab9 | 1bbf8c9d3b4b52a44220bdfc | myarchiveglacierbucket |         4 | 2021-04-24 08:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   09ccd4bc-7904-47f6-93e3-1f4ec21ff9b6 | 5510126af9eae7e6baab940a | myarchiveglacierbucket |         4 | 2021-04-21 13:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   0b4620bd-07d3-46a7-aa7c-db3c1316b697 | ac40bb34b5d64655daca2f1d | myarchiveglacierbucket |         4 | 2021-04-22 13:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   0169a025-1e3e-4a69-ab64-498634cd933b | 865a440a34c319b22ee52419 | myarchiveglacierbucket |         3 | 2021-04-24 10:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   0673403b-6c52-459f-b59a-04ab9b87b93f | 9eda38da05d01ade96a3a3e8 | myarchiveglacierbucket |         3 | 2021-04-23 20:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   072db1cb-0efd-41b7-bc09-03272f0a6ab9 | 1bbf8c9d3b4b52a44220bdfc | myarchiveglacierbucket |         3 | 2021-04-24 08:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   09ccd4bc-7904-47f6-93e3-1f4ec21ff9b6 | 5510126af9eae7e6baab940a | myarchiveglacierbucket |         3 | 2021-04-21 13:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   0b4620bd-07d3-46a7-aa7c-db3c1316b697 | ac40bb34b5d64655daca2f1d | myarchiveglacierbucket |         3 | 2021-04-22 13:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
    (5 rows)
    ```
 8. Validate that the data was properly migrated into the recovery files table. The
@@ -722,22 +722,22 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    
    # Check the complete data. Verify completion date is set and error_message
    # is NULL.
-   disaster_recovery=# select * from recovery_file where status_id=3 LIMIT 2;
+   disaster_recovery=# select * from recovery_file where status_id=4 LIMIT 2;
 
                    job_id                |        granule_id        |         filename        |         key_path         |   restore_destination    | status_id | error_message |         request_time          |          last_update          | completion_time
    --------------------------------------+--------------------------+-------------------------+--------------------------+--------------------------+-----------+---------------+-------------------------------+-------------------------------+------------------------------
-   5cad5640-ec11-48d0-9edb-a69cc0db99ef | 379f47a2f4b20801422242fa | 677c162d5e01009773a90b4e | 677c162d5e01009773a90b4e | eb9032c408f08350b1544054 |         3 |               | 2021-04-15 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   b4ccf94e-d439-4b71-b9e4-6d3ba6b867a9 | d8420b485a8a2ad194a1fdc4 | bc859b2dec647a32c8a2edc9 | bc859b2dec647a32c8a2edc9 | afd07600908d2c476ccceb72 |         3 |               | 2021-04-15 16:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   5cad5640-ec11-48d0-9edb-a69cc0db99ef | 379f47a2f4b20801422242fa | 677c162d5e01009773a90b4e | 677c162d5e01009773a90b4e | eb9032c408f08350b1544054 |         4 |               | 2021-04-15 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   b4ccf94e-d439-4b71-b9e4-6d3ba6b867a9 | d8420b485a8a2ad194a1fdc4 | bc859b2dec647a32c8a2edc9 | bc859b2dec647a32c8a2edc9 | afd07600908d2c476ccceb72 |         4 |               | 2021-04-15 16:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
                                          (2 rows)
    
    # Check the error data. Verify completion date is set and error_message
    # is set to "Some error occured here".
-   disaster_recovery=# select * from recovery_file where status_id=4 LIMIT 2;
+   disaster_recovery=# select * from recovery_file where status_id=3 LIMIT 2;
 
                    job_id                |        granule_id        |         filename        |         key_path         |   restore_destination    | status_id |      error_message      |         request_time          |          last_update          | completion_time
    --------------------------------------+--------------------------+-------------------------+--------------------------+--------------------------+-----------+-------------------------+-------------------------------+-------------------------------+------------------------------
-   bd325313-e4fb-4c8d-8941-14e27942c081 | 140f54e91f70cdf5c23ceb9f | 7237771bd8e9c8614ebdf1fe | 7237771bd8e9c8614ebdf1fe | 8752510fd8053d01a33dd002 |         4 | Some error occured here | 2021-04-20 05:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   f87f219e-b04b-4ca7-abc2-bcdec1809182 | e1f62c411040f269a5aef941 | d4a228869f83a3395c36eaf1 | d4a228869f83a3395c36eaf1 | a27b5b0a2c08a40067c409f0 |         4 | Some error occured here | 2021-04-20 06:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   bd325313-e4fb-4c8d-8941-14e27942c081 | 140f54e91f70cdf5c23ceb9f | 7237771bd8e9c8614ebdf1fe | 7237771bd8e9c8614ebdf1fe | 8752510fd8053d01a33dd002 |         3 | Some error occured here | 2021-04-20 05:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   f87f219e-b04b-4ca7-abc2-bcdec1809182 | e1f62c411040f269a5aef941 | d4a228869f83a3395c36eaf1 | d4a228869f83a3395c36eaf1 | a27b5b0a2c08a40067c409f0 |         3 | Some error occured here | 2021-04-20 06:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
    (2 rows)
 
    ```
@@ -798,7 +798,7 @@ test so that a validated v2 schema is in place.
 ### Running the No Migration Test
 
 To run the no migration test, in your **python** window run the command
-`python manual_tests.py`. The output should look similar to below.
+`python manual_test.py`. The output should look similar to below.
 
 ```bash
 (venv) root@cf4b0741a628:/data/test/manual_tests# python manual_test.py

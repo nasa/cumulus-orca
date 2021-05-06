@@ -22,11 +22,11 @@ class TestCreateDatabseLibraries(unittest.TestCase):
             "host": "aws.postgresrds.host",
             "port": "5432",
             "database": "disaster_recovery",
-            "root_database": "postgres",
+            "admin_database": "postgres",
             "app_user": "orcauser",
-            "root_user": "postgres",
+            "admin_user": "postgres",
             "app_user_password": "MySecretUserPassword",
-            "root_user_password": "MySecretAdminPassword",
+            "admin_user_password": "MySecretAdminPassword",
         }
 
         self.mock_connection = MagicMock()
@@ -42,7 +42,7 @@ class TestCreateDatabseLibraries(unittest.TestCase):
     @patch("create_db.create_metadata_objects")
     @patch("create_db.set_search_path_and_role")
     @patch("create_db.create_app_schema_role_users")
-    @patch("create_db.get_root_connection")
+    @patch("create_db.get_admin_connection")
     def test_create_fresh_orca_install_happy_path(
         self,
         mock_connection: MagicMock,

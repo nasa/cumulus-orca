@@ -6,12 +6,12 @@
 export DATA_DIR=""
 
 # OS level file system directory that points to the base of the
-# cumulus-orca/task/db_deploy directory. For example "/Users/myuser/git/cumulus-orca/task/db_deploy"
+# cumulus-orca directory. For example "/Users/myuser/git/cumulus-orca"
 export TASK_DIR=""
 
 ## Password variables needed for the database.
 # root password for postgres user. Must be at least 12 characters long.
-export ROOT_PASSWORD=""
+export ADMIN_PASSWORD=""
 
 # application password for orcauser user. Must be at least 12 characters long.
 export APPLICATION_PASSWORD=""

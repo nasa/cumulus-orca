@@ -4,7 +4,7 @@ Name: db_deploy.py
 Description: Performs database installation and migration for the ORCA schema.
 """
 # Imports
-from shared_db import logger, get_configuration, get_root_connection
+from orca_shared.shared_db import logger, get_configuration, get_admin_connection
 from sqlalchemy import text
 from sqlalchemy.future import Connection
 from create_db import create_fresh_orca_install
@@ -56,8 +56,8 @@ def task(config: Dict[str, str]) -> None:
         Exception: If database does not exist.
     """
     # Create the engines
-    postgres_admin_engine = get_root_connection(config)
-    user_admin_engine = get_root_connection(config, config["database"])
+    postgres_admin_engine = get_admin_connection(config)
+    user_admin_engine = get_admin_connection(config, config["database"])
 
     # Connect as admin user to the postgres database
     with postgres_admin_engine.connect() as connection:

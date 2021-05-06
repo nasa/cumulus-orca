@@ -22,17 +22,17 @@ def get_configuration():
     are variable per user.
     """
     my_host = os.getenv("DATABASE_HOST")
-    my_root_pass = os.getenv("ROOT_PASSWORD")
+    my_admin_pass = os.getenv("ADMIN_PASSWORD")
     my_app_pass = os.getenv("APPLICATION_PASSWORD")
 
     return {
         "database": "disaster_recovery",
-        "root_database": "postgres",
+        "admin_database": "postgres",
         "port": "5433",
         "app_user": "orcauser",
-        "root_user": "postgres",
+        "admin_user": "postgres",
         "app_user_password": my_app_pass,
-        "root_user_password": my_root_pass,
+        "admin_user_password": my_admin_pass,
         "host": my_host,
     }
 
@@ -40,7 +40,7 @@ def get_configuration():
 if __name__ == "__main__":
     set_search_path()
     from db_deploy import task
-    from shared_db import logger
+    from orca_shared.shared_db import logger
 
     logger.info("Beginning manual test.")
     # We skip handle since we do not want to create the secretmanager objects

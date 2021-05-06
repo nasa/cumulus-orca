@@ -9,7 +9,7 @@ from unittest.mock import Mock, call, patch, MagicMock
 from moto import mock_secretsmanager
 import boto3
 import db_deploy
-import shared_db
+from orca_shared import shared_db
 from sqlalchemy import text
 
 
@@ -38,11 +38,11 @@ class TestDbDeployFunctions(unittest.TestCase):
             "host": "localhost",
             "port": "5432",
             "database": "disaster_recovery",
-            "root_database": "postgres",
+            "admin_database": "postgres",
             "app_user": "orcauser",
-            "root_user": "postgres",
+            "admin_user": "postgres",
             "app_user_password": "MySecretUserPassword",
-            "root_user_password": "MySecretAdminPassword",
+            "admin_user_password": "MySecretAdminPassword",
         }
 
     def tearDown(self):
@@ -58,8 +58,8 @@ class TestDbDeployFunctions(unittest.TestCase):
             "DATABASE_NAME": "disaster_recovery",
             "DATABASE_PORT": "5432",
             "APPLICATION_USER": "orcauser",
-            "ROOT_USER": "postgres",
-            "ROOT_DATABASE": "postgres",
+            "ADMIN_USER": "postgres",
+            "ADMIN_DATABASE": "postgres",
             "AWS_REGION": "us-west-2",
         },
         clear=True,
@@ -78,7 +78,7 @@ class TestDbDeployFunctions(unittest.TestCase):
 
         mock_task.assert_called_with(self.config)
 
-    @patch("db_deploy.get_root_connection")
+    @patch("db_deploy.get_admin_connection")
     @patch("db_deploy.app_db_exists")
     def test_task_no_database(
         self, mock_db_exists: MagicMock, mock_connection: MagicMock
@@ -94,7 +94,7 @@ class TestDbDeployFunctions(unittest.TestCase):
             self.assertEquals(ex.message, message)
             mock_db_exists.assert_called_with(self.config)
 
-    @patch("db_deploy.get_root_connection")
+    @patch("db_deploy.get_admin_connection")
     @patch("db_deploy.create_fresh_orca_install")
     @patch("db_deploy.app_schema_exists")
     @patch("db_deploy.app_db_exists")
@@ -115,7 +115,7 @@ class TestDbDeployFunctions(unittest.TestCase):
         db_deploy.task(self.config)
         mock_fresh_install.assert_called_with(self.config)
 
-    @patch("db_deploy.get_root_connection")
+    @patch("db_deploy.get_admin_connection")
     @patch("db_deploy.perform_migration")
     @patch("db_deploy.get_migration_version")
     @patch("db_deploy.app_schema_exists")
@@ -139,7 +139,7 @@ class TestDbDeployFunctions(unittest.TestCase):
         db_deploy.task(self.config)
         mock_perform_migration.assert_called_with(1, self.config)
 
-    @patch("db_deploy.get_root_connection")
+    @patch("db_deploy.get_admin_connection")
     @patch("db_deploy.logger.info")
     @patch("db_deploy.get_migration_version")
     @patch("db_deploy.app_schema_exists")

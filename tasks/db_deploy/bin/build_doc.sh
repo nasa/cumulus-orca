@@ -80,6 +80,7 @@ do
     fi
 done
 
+echo "INFO: Creating API markdown file ..."
 ## Run the documentation command
 pydoc-markdown -I . ${file_list} --render-toc > API.md
 let return_code=$?

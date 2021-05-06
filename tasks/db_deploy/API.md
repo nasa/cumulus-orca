@@ -36,9 +36,6 @@
   * [drop\_dbo\_user\_sql](#orca_sql.drop_dbo_user_sql)
   * [drop\_dr\_role\_sql](#orca_sql.drop_dr_role_sql)
   * [drop\_drdbo\_role\_sql](#orca_sql.drop_drdbo_role_sql)
-* [shared\_db](#shared_db)
-  * [get\_configuration](#shared_db.get_configuration)
-  * [get\_root\_connection](#shared_db.get_root_connection)
 
 <a name="create_db"></a>
 # create\_db
@@ -585,65 +582,4 @@ SQL that removes the drdbo_role role.
 **Returns**:
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for dropping drdbo_role role.
-
-<a name="shared_db"></a>
-# shared\_db
-
-Name: shared_db.py
-
-Description: Shared library for database objects needed by the various libraries.
-
-<a name="shared_db.get_configuration"></a>
-#### get\_configuration
-
-```python
-get_configuration() -> Dict[str, str]
-```
-
-Create a dictionary of configuration values based on environment variables
-parameter store information and other items needed to create the database.
-
-Environment Vars:
-PREFIX (str): Deployment prefix used to pull the proper AWS secret.
-DATABASE_PORT (str): The database port. The standard is 5432
-DATABASE_NAME (str): The name of the application database being created.
-APPLICATION_USER (str): The name of the database application user.
-ROOT_USER (str): The name of the database super user.
-ROOT_DATABASE (str): The name of the root database for the instance.
-
-Parameter Store:
-<prefix>-drdb-user-pass (string): The password for the application user (APPLICATION_USER).
-<prefix>-drdb-host (string): The database host.
-<prefix>-drdb-admin-pass: The password for the admin user
-
-**Arguments**:
-
-  None
-  
-
-**Returns**:
-
-- `Configuration` _Dict_ - Dictionary with all of the configuration information
-  
-
-**Raises**:
-
-- `Exception` _Exception_ - When variables or secrets are not available.
-
-<a name="shared_db.get_root_connection"></a>
-#### get\_root\_connection
-
-```python
-get_root_connection(config: Dict[str, str], database: str = None) -> Engine
-```
-
-Creates a connection to the database as a superuser.
-
-**Arguments**:
-
-- `config` _Dict_ - Configuration containing connection information.
-- `database` _str_ - Database for the root user to connect to. Defaults to root database.
-  
-  Returns
-  Connection (): Connection object
 

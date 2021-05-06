@@ -27,10 +27,29 @@ if [ ! -d "${TASK_DIR}" ]; then
     exit 1
 fi
 
+export DB_DEPLOY_DIR="${TASK_DIR}/tasks/db_deploy"
+export SHARED_LIBRARY_DIR="${TASK_DIR}/tasks/shared_libraries/database"
+
+if [ ! -d "$DB_DEPLOY_DIR" ]; then
+    echo "Directory [$DB_DEPLOY_DIR] does not exist. Make sure TASK_DIR is set to the base of the cumulus-orca repo."
+    exit 1
+fi
+
+if [ ! -d "$SHARED_LIBRARY_DIR" ]; then
+    echo "Directory [$SHARED_LIBRARY_DIR] does not exist. Make sure TASK_DIR is set to the base of the cumulus-orca repo."
+    exit 1
+fi
+
 # Perform an action
 case $1 in
     "setup")
+        # Bring up the postgres databse
         docker-compose up -d
+
+        # Copy shared library files
+        mkdir -p ${DB_DEPLOY_DIR}/orca_shared
+        touch ${DB_DEPLOY_DIR}/orca_shared/__init__.py
+        cp ${SHARED_LIBRARY_DIR}/shared_db.py ${DB_DEPLOY_DIR}/orca_shared/
     ;;
 
     "pgclient")
@@ -40,7 +59,7 @@ case $1 in
             -e "PGHOST=${DATABASE_HOST}" \
             -e "PGDATABASE=postgres" \
             -e "PGUSER=postgres" \
-            -e "PGPASSWORD=${ROOT_PASSWORD}" \
+            -e "PGPASSWORD=${ADMIN_PASSWORD}" \
             -e "PGPORT=5433" \
             -v "${TASK_DIR}:/data" \
             postgres:12 \
@@ -52,7 +71,7 @@ case $1 in
         docker run \
             -it --rm \
             --name orca-test-python \
-            -e "ROOT_PASSWORD=${ROOT_PASSWORD}" \
+            -e "ADMIN_PASSWORD=${ADMIN_PASSWORD}" \
             -e "APPLICATION_PASSWORD=${APPLICATION_PASSWORD}" \
             -e "DATABASE_HOST=${DATABASE_HOST}" \
             -v "${TASK_DIR}:/data" \
@@ -61,7 +80,11 @@ case $1 in
     ;;
 
     "stop")
+        # Destroy the postgres database
         docker-compose down
+
+        # Remove shared library files
+        rm -rf ${DB_DEPLOY_DIR}/orca_shared
     ;;
 
     *)

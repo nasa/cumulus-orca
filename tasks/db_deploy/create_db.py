@@ -5,7 +5,7 @@ Description: Creates the current version on the ORCA database.
 """
 from typing import Dict
 from sqlalchemy.future import Connection
-from shared_db import get_configuration, get_root_connection, logger
+from orca_shared.shared_db import get_configuration, get_admin_connection, logger
 from orca_sql import *
 
 
@@ -23,9 +23,9 @@ def create_fresh_orca_install(config: Dict[str, str]) -> None:
     # Assume the database has been created at this point. Connect to the ORCA
     # database as a super user and create the roles, users,  schema, and
     # objects.
-    root_app_connection = get_root_connection(config, config["database"])
+    admin_app_connection = get_admin_connection(config, config["database"])
 
-    with root_app_connection.connect() as conn:
+    with admin_app_connection.connect() as conn:
         # Create the roles, schema and user
         create_app_schema_role_users(conn, config["app_user_password"])
 

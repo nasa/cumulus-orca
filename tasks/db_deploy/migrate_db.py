@@ -5,7 +5,7 @@ Description: Migrates the current ORCA schema version to the latest version.
 """
 from typing import Dict
 from orca_sql import *
-from shared_db import get_root_connection, logger
+from orca_shared.shared_db import get_admin_connection, logger
 
 
 def perform_migration(current_schema_version: int, config: Dict[str, str]) -> None:
@@ -42,7 +42,7 @@ def migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> 
         None
     """
     # Get the admin engine to the app database
-    root_app_connection = get_root_connection(config, config["database"])
+    root_app_connection = get_admin_connection(config, config["database"])
 
     # Create all of the new objects, users, roles, etc.
     with root_app_connection.connect() as connection:
