@@ -13,7 +13,7 @@ from cumulus_logger import CumulusLogger
 from typing import Any, List, Dict, Optional, Union
 
 # instantiate CumulusLogger
-logger = CumulusLogger(name="db_deploy")
+logger = CumulusLogger(name="orca")
 
 
 def get_configuration() -> Dict[str, str]:

@@ -84,13 +84,84 @@ the repository.
 
 ## Using shared_db
 
-To use the **shared_db** library, copy the library file `shared_db.py` to the
-same directory as the code that will use the library. Once copied use standard
-import syntax to use the various functions that are needed.
+To use the **shared_db** library in your lambda code base perform the following.
 
+1. Create an `orca_shared` directory and `__init__.py` dummy file.
+   ```bash
+   cd tasks/<your task name>
+   mkdir orca_shared
+   touch orca_shared/__init__.py
+   ```
+2. Copy the library file `shared_db.py` to the newly created `orca_shared`
+   directory as seen below.
+   ```bash
+   cd tasks/<your task name>
+   cp ../shared_libraries/database/shared_db.py orca_shared/
+   ```
+3. The library can now be used in your python code via a normal import per the
+   examples seen below.
+   ```python
+   # Import the whole library
+   from orca_shared import shared_db
+
+   # Import specific functions
+   from orca_shared.shared_db import get_configuration, get_admin_connection, get_user_connection
+   ```
+
+### Integrating the Shared Library into Testing and Builds
+
+When automating the use of this library it is recommended that the library is
+imported into the lambda code base during testing and builds and not saved as
+part of the lambda code base.
+
+To automate the usage of this library during testing, it is recommended to add
+code similar to the following to the `bin/run_tests.sh` script in your lambda
+base directory.
+
+```bash
+echo "INFO: Copying ORCA shared libraries ..."
+if [ -d orca_shared ]; then
+    rm -rf orca_shared
+fi
+
+mkdir orca_shared
+let return_code=$?
+check_rc $return_code "ERROR: Unable to create orca_shared directory."
+
+touch orca_shared/__init__.py
+let return_code=$?
+check_rc $return_code "ERROR: Unable to create [orca_shared/__init__.py] file"
+
+cp ../shared_libraries/database/shared_db.py orca_shared/
+let return_code=$?
+check_rc $return_code "ERROR: Unable to copy shared library [orca_shared/shared_db.py]"
 ```
-from shared_db import get_configuration, get_admin_connection, get_user_connection
+
+To automate the usage of this library during builds, it is recommended to add
+code similar to the following to the `bin/build.sh` script in your lambda
+base directory.
+
+```bash
+echo "INFO: Copying ORCA shared libraries ..."
+if [ -d orca_shared ]; then
+    rm -rf orca_shared
+fi
+
+mkdir -p build/orca_shared
+let return_code=$?
+check_rc $return_code "ERROR: Unable to create orca_shared directory."
+
+touch build/orca_shared/__init__.py
+let return_code=$?
+check_rc $return_code "ERROR: Unable to create [orca_shared/__init__.py] file"
+
+cp ../shared_libraries/database/shared_db.py build/orca_shared/
+let return_code=$?
+check_rc $return_code "ERROR: Unable to copy shared library [orca_shared/shared_db.py]"
 ```
+
+
+### Important Notes About Using and Deploying the Library
 
 Note that the library relies on external items like the environment and AWS
 SecretsManager to get the proper values for creating the connection strings.
