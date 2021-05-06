@@ -61,6 +61,7 @@ module "orca_lambdas" {
   orca_recovery_lambda_timeout         = var.orca_recovery_lambda_timeout
   orca_recovery_retry_limit            = var.orca_recovery_retry_limit
   orca_recovery_retry_interval         = var.orca_recovery_retry_interval
+  orca_recovery_retry_backoff          = var.orca_recovery_retry_backoff
 
   ## OPTIONAL (DO NOT CHANGE DEFAULT VALUES!)
   database_app_user            = var.database_app_user

@@ -62,6 +62,7 @@ module "orca" {
   orca_recovery_lambda_timeout                 = var.orca_recovery_lambda_timeout
   orca_recovery_retry_limit                    = var.orca_recovery_retry_limit
   orca_recovery_retry_interval                 = var.orca_recovery_retry_interval
+  orca_recovery_retry_backoff                  = var.orca_recovery_retry_backoff
   sqs_delay_time                               = var.sqs_delay_time
   sqs_maximum_message_size                     = var.sqs_maximum_message_size
   staged_recovery_queue_message_retention_time = var.staged_recovery_queue_message_retention_time
