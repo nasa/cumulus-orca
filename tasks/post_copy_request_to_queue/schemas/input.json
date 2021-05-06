@@ -1,11 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "post_copy_request_to_queue Lambda Input",
-  "description": "The input for the post_copy_request_to_queue Lambda coming from S3 trigger.",
   "type": "object",
   "properties": {
     "Records": {
-      "description": "A list of dicts representing details of the S3 object that was recovered.",
       "type": "array",
       "items": [
         {
@@ -17,6 +14,9 @@
                 "object": {
                   "type": "object",
                   "properties": {
+                    "bucket": {
+                      "type": "string"
+                    },
                     "key": {
                       "type": "string"
                     },
@@ -31,7 +31,11 @@
                     }
                   },
                   "required": [
-                    "key"
+                    "bucket",
+                    "key",
+                    "size",
+                    "eTag",
+                    "sequencer"
                   ]
                 }
               },
