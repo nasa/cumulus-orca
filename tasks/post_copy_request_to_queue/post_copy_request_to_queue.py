@@ -199,8 +199,14 @@ def handler(event: Dict[str, Any], context: None) -> None:
     """
     LOGGER.setMetadata(event, context)
 
-    #retrieving values from the env variables
-    backoff_env = ["DB_QUEUE_URL","RECOVERY_QUEUE_URL", "MAX_RETRIES", "RETRY_SLEEP_SECS", "RETRY_BACKOFF"]
+    # retrieving values from the env variables
+    backoff_env = [
+        "DB_QUEUE_URL",
+        "RECOVERY_QUEUE_URL",
+        "MAX_RETRIES",
+        "RETRY_SLEEP_SECS",
+        "RETRY_BACKOFF",
+    ]
     backoff_args = []
     for var in backoff_env:
         env_var_value = os.getenv(var, None)
@@ -208,7 +214,7 @@ def handler(event: Dict[str, Any], context: None) -> None:
             message = f"{var} is not set and is required"
             LOGGER.critical(message)
             raise Exception(message)
-        
+
         if var in ["MAX_RETRIES", "RETRY_SLEEP_SECS", "RETRY_BACKOFF"]:
             try:
                 env_var_value = int(env_var_value)
