@@ -63,23 +63,22 @@ if [ $return_code -ne 0 ]; then
 fi
 
 ## SHARED LIBS
-echo "INFO: Copying orca_shared libraries."
+echo "INFO: Copying ORCA shared libraries ..."
 if [ -d orca_shared ]; then
-    rm -rf sorca_hared
+    rm -rf orca_shared
 fi
-
-mkdir orca_shared
+mkdir -p build/orca_shared
 let return_code=$?
-
-if [ $return_code -ne 0 ]; then
-  >&2 echo "ERROR: Failed to create orca_shared directory."
-  exit 1
-fi
-
-cp ../shared_libraries/recovery/shared_recovery.py orca_shared/
-cp ../shared_libraries/database/shared_db.py orca_shared/
-
-cp -r orca_shared build/orca_shared
+check_rc $return_code "ERROR: Unable to create orca_shared directory."
+touch build/orca_shared/__init__.py
+let return_code=$?
+check_rc $return_code "ERROR: Unable to create [orca_shared/__init__.py] file"
+cp ../shared_libraries/database/shared_db.py build/orca_shared/
+let return_code=$?
+check_rc $return_code "ERROR: Unable to copy shared library [orca_shared/shared_db.py]"
+cp ../shared_libraries/recovery/shared_recovery.py build/orca_shared/
+let return_code=$?
+check_rc $return_code "ERROR: Unable to copy shared library [orca_shared/shared_recovery.py]"
 
 ## Create the virtual env. Remove it if it already exists.
 echo "INFO: Creating virtual environment ..."

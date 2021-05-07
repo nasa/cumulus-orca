@@ -17,18 +17,18 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
     """
 
     @patch('post_to_database.task')
-    @patch('requests_db.get_dbconnect_info')
+    @patch('orca_shared.shared_db.get_configuration')
     @patch('cumulus_logger.CumulusLogger.setMetadata')
     def test_handler_happy_path(self,
                                 mock_set_metadata: MagicMock,
-                                mock_get_dbconnect_info: MagicMock,
+                                mock_get_configuration: MagicMock,
                                 mock_task: MagicMock):
         records = Mock()
         event = {'Records': records}
         context = Mock()
         post_to_database.handler(event, context)
         mock_set_metadata.assert_called_once_with(event, context)
-        mock_task.assert_called_once_with(records, mock_get_dbconnect_info.return_value)
+        mock_task.assert_called_once_with(records, mock_get_configuration.return_value)
 
     @patch('post_to_database.send_record_to_database')
     def test_task_happy_path(self,
@@ -43,21 +43,36 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
         mock_send_record_to_database.assert_has_calls([call(record0, db_connect_info), call(record1, db_connect_info)])
         self.assertEqual(2, mock_send_record_to_database.call_count)
 
-    @patch('post_to_database.send_values_to_database')
+    @patch('post_to_database.update_status_for_file')
     def test_send_record_to_database(self,
-                                     mock_send_values_to_database: MagicMock):
-        table_name = uuid.uuid4().__str__()
-        values = {uuid.uuid4().__str__(): uuid.uuid4().__str__()}
-        request_method = post_to_database.RequestMethod.PUT
+                                     mock_update_status_for_file: MagicMock):
+        job_id = uuid.uuid4().__str__()
+        granule_id = uuid.uuid4().__str__()
+        filename = uuid.uuid4().__str__()
+        last_update = uuid.uuid4().__str__()
+        completion_time = uuid.uuid4().__str__()  # todo: Another test with missing
+        status_id = uuid.uuid4().__str__()
+        error_message = uuid.uuid4().__str__()  # todo: Another test with missing
+        values = {
+            "job_id": job_id,
+            "granule_id": granule_id,
+            "filename": filename,
+            "last_update": last_update,
+            "status_id": status_id,
+            "completion_time": completion_time,
+            "error_message": error_message
+        }
+        request_method = post_to_database.RequestMethod.UPDATE_FILE
         db_connect_info = Mock()
         record = {
             'body': json.dumps(values, indent=4),
-            'messageAttributes': {'TableName': table_name, 'RequestMethod': request_method.value.__str__()}
+            'messageAttributes': {'RequestMethod': request_method.value.__str__()}
         }
 
         post_to_database.send_record_to_database(record, db_connect_info)
 
-        mock_send_values_to_database.assert_called_once_with(table_name, values, request_method, db_connect_info)
+        mock_update_status_for_file.assert_called_once_with(job_id, granule_id, filename, last_update, completion_time,
+                                                            status_id, error_message, db_connect_info)
 
     @patch('post_to_database.update_row_in_table')
     def test_send_values_to_database_PUT_orca_recoverfile(self,

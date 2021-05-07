@@ -66,7 +66,7 @@ def update_status_for_file(
     job_id: str,
     granule_id: str,
     filename: str,
-    status_id: OrcaStatus,
+    orca_status: OrcaStatus,
     error_message: Optional[str],
     db_queue_url: str
 ):
@@ -78,7 +78,7 @@ def update_status_for_file(
         job_id: The unique identifier used for tracking requests.
         granule_id: The id of the granule being restored.
         filename: The name of the file being copied.
-        status_id: Defines the status id used in the ORCA Recovery database.
+        orca_status: Defines the status id used in the ORCA Recovery database.
         error_message: message displayed on error.
         db_queue_url: The SQS queue URL defined by AWS.
     """
@@ -88,12 +88,12 @@ def update_status_for_file(
         "granule_id": granule_id,
         "filename": filename,
         "last_update": last_update,
-        "status_id": status_id.value,
+        "status_id": orca_status.value,
     }
 
-    if status_id == OrcaStatus.SUCCESS or status_id == OrcaStatus.FAILED:
+    if orca_status == OrcaStatus.SUCCESS or orca_status == OrcaStatus.FAILED:
         new_data["completion_time"] = datetime.now(timezone.utc).isoformat()
-        if status_id == OrcaStatus.FAILED:
+        if orca_status == OrcaStatus.FAILED:
             if len(error_message) == 0 or error_message is None:
                 raise Exception("error message is required.")
             new_data["error_message"] = error_message

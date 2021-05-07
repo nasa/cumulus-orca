@@ -12,8 +12,8 @@ from cumulus_logger import CumulusLogger
 # todo: Auto-copy shared libs
 from sqlalchemy import text
 
-from shared import shared_db, shared_recovery
-from shared.shared_recovery import RequestMethod, OrcaStatus
+from orca_shared import shared_db, shared_recovery
+from orca_shared.shared_recovery import RequestMethod, OrcaStatus
 
 LOGGER = CumulusLogger()
 
