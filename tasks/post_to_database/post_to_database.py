@@ -125,7 +125,6 @@ def create_status_for_job_and_files(job_id: str,
         # All files failed during recovery request.
         job_status = OrcaStatus.FAILED
 
-    # todo: Don't use root user.
     engine = shared_db.get_user_connection(db_connect_info)
     with engine.begin() as connection:
         connection.execute(job_sql, [{'job_id': job_id, 'granule_id': granule_id, 'status_id': job_status.value,
@@ -157,16 +156,14 @@ def update_status_for_file(job_id: str,
         db_connect_info: See shared_db.py's get_configuration for further details.
     """
     # Update entry in DB
-    file_sql = """
+    file_sql = text("""
             UPDATE recovery_file
             SET status_id = :status_id, last_update = :last_update, completion_time = :completion_time,
                 error_message = :error_message
-            WHERE job_id = :job_id AND granule_id = :granule_id AND filename = :filename"""
-    job_sql = """
+            WHERE job_id = :job_id AND granule_id = :granule_id AND filename = :filename""")
+    job_sql = text("""
             with granule_status as (
                 SELECT
-                    job_id,
-                    granule_id,
                     MIN(status_id) AS status_id,
                     CASE
                         WHEN MIN(status_id) IN (3, 4) THEN MAX(completion_time)
@@ -185,9 +182,9 @@ def update_status_for_file(job_id: str,
                 status_id = granule_status.status_id,
                 completion_time = granule_status.completion_time
             WHERE
-                recovery_job.job_id = granule_status.job_id
+                recovery_job.job_id = :job_id
             AND
-                recovery_job.granule_id = granule_status.granule_id"""
+                recovery_job.granule_id = :granule_id""")
 
     file_parameters = {'status_id': status_id, 'last_update': last_update,
                        'completion_time': completion_time, 'error_message': error_message,
@@ -227,3 +224,53 @@ def handler(event: Dict[str, List], context) -> None:
     db_connect_info = shared_db.get_configuration()
 
     task(event['Records'], db_connect_info)
+
+
+temp_db_connect_info = {
+    'host': 'localhost',
+    'port': '5432',
+    'database': 'disaster_recovery',
+    'app_user': 'postgres',
+    'app_user_password': 'postgres'
+}
+
+
+def test1():
+    print(task([{
+        'body': json.dumps({
+            'job_id': 'job_id_0',
+            'granule_id': 'granule_id_0',
+            'request_time': datetime.datetime.now().utcnow().isoformat().__str__(),
+            'archive_destination': 'archive_destination_0',
+            'files': [
+                {
+                    'key_path': 'key_path0',
+                    'restore_destination': 'restore_destination0',
+                    'status_id': shared_recovery.OrcaStatus.PENDING.value,
+                    'filename': 'filename0',
+                    'request_time': datetime.datetime.now().utcnow().isoformat().__str__(),
+                    'last_update': datetime.datetime.now().utcnow().isoformat().__str__()
+                }
+            ]
+        }, indent=4),
+        'messageAttributes': {'RequestMethod': 'new_job'}
+    }], temp_db_connect_info))
+
+
+def test2():
+    print(task([{
+        'body': json.dumps({
+            'status_id': OrcaStatus.FAILED.value,
+            'last_update': datetime.datetime.now().utcnow().isoformat().__str__(),
+            'completion_time': datetime.datetime.now().utcnow().isoformat().__str__(),
+            'error_message': 'WHY!???',
+            'job_id': 'job_id_0',
+            'granule_id': 'granule_id_0',
+            'filename': 'filename0',
+
+        }, indent=4),
+        'messageAttributes': {'RequestMethod': RequestMethod.UPDATE_FILE.value}
+    }], temp_db_connect_info))
+
+
+test2()
