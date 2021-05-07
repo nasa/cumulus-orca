@@ -22,17 +22,19 @@ from requests_db import get_dbconnect_info
 from database import single_query, result_to_json
 from requests_db import DatabaseError
 from cumulus_logger import CumulusLogger
+import logging
 
 # instantiate CumulusLogger
 LOGGER = CumulusLogger()
+
 
 def task(
     records: Dict[str, Any],
     db_queue_url: str,
     recovery_queue_url: str,
-    copy_retries: int,
-    copy_retry_sleep_secs: int,
-    copy_retry_backoff: int,
+    max_retries: int,
+    retry_sleep_secs: int,
+    retry_backoff: int,
 ) -> None:
     """
     Task called by the handler to perform the work.
@@ -45,9 +47,9 @@ def task(
         records: A dictionary passed through from the handler.
         db_queue_url: The SQS URL of status_update_queue
         recovery_queue_url: The SQS URL of staged_recovery_queue
-        copy_retries: Number of times the code will retry in case of failure.
-        copy_retry_sleep_secs: Number of seconds to wait between recovery failure retries.
-        copy_retry_backoff: The multiplier by which the retry interval increases during each attempt.
+        max_retries: Number of times the code will retry in case of failure.
+        retry_sleep_secs: Number of seconds to wait between recovery failure retries.
+        retry_backoff: The multiplier by which the retry interval increases during each attempt.
     Returns:
         None
     Raises:
@@ -73,12 +75,13 @@ def task(
     """
     # Gets the dbconnection info.
     db_connect_info = get_dbconnect_info()
-    #query the db table
+    # query the db table
     try:
         rows = single_query(sql, db_connect_info, (key_path, OrcaStatus.PENDING.value))
         if len(rows) == 0:
-            LOGGER.fatal("DB tables cannot be empty")
-            raise Exception(f"No metadata found for {key_path}")
+            message = f"No metadata found for {key_path}"
+            LOGGER.fatal(message)
+            raise Exception(message)
         # convert db result to json
         db_result_json = result_to_json(rows)
 
@@ -93,8 +96,7 @@ def task(
     filename = db_result_json["filename"]
     restore_destination = db_result_json["restore_destination"]
 
-    # Set variable
-    my_base_delay = copy_retry_sleep_secs
+    my_base_delay = retry_sleep_secs
     # define the input body for copy_files_to_archive lambda
     new_data = {
         "job_id": job_id,
@@ -106,19 +108,25 @@ def task(
         "source_bucket": bucket_name,
     }
     # post to recovery queue. Retry using exponential delay if it fails
-    for retry in range(copy_retries):
+    for retry in range(max_retries):
         try:
             post_entry_to_queue(
                 orca_recoveryfile, new_data, RequestMethod.NEW, recovery_queue_url
             )
         except Exception:
-            LOGGER.error(f"Ran into error {retry+1} time(s)")
-            my_base_delay = exponential_delay(my_base_delay, copy_retry_backoff)
+            LOGGER.error(
+                f"Ran into error posting to SQS {recovery_queue_url} {retry+1} time(s)"
+            )
+            my_base_delay = exponential_delay(my_base_delay, retry_backoff)
             continue
         break
     else:
-        raise Exception("Unable to send message to recovery SQS.")
+        message = f"Error sending message to {recovery_queue_url} for {new_data}"
+        logging.critical(message)
+        raise Exception(message)
 
+    # resetting my_base_delay
+    my_base_delay = retry_sleep_secs
     # post to DB-queue. Retry using exponential delay if it fails
     for retry in range(max_retries):
         try:
@@ -133,12 +141,17 @@ def task(
                 db_queue_url,
             )
         except Exception:
-            LOGGER.error(f"Ran into error {retry+1} time(s)")
-            my_base_delay = exponential_delay(my_base_delay, copy_retry_backoff)
+            LOGGER.error(
+                f"Ran into error posting to SQS {db_queue_url} {retry+1} time(s)"
+            )
+            my_base_delay = exponential_delay(my_base_delay, retry_backoff)
             continue
         break
     else:
-        raise Exception("Unable to send message to db SQS.")
+        message =f"Error sending message to {db_queue_url} for {new_data}"
+        logging.critical(message)
+        raise Exception(message)
+
 
 # Define our exponential delay function
 # maybe move to shared library or somewhere else?
@@ -155,7 +168,7 @@ def exponential_delay(base_delay: int, exponential_backoff: int = 2) -> int:
     """
     delay = base_delay + (random.randint(0, 1000) / 1000.0)
     time.sleep(delay)
-    print(f"Slept for {delay} seconds.")
+    LOGGER.debug(f"Performing back off retry sleeping {delay} seconds")
     return base_delay * exponential_backoff
 
 
@@ -186,35 +199,38 @@ def handler(event: Dict[str, Any], context: None) -> None:
     """
     LOGGER.setMetadata(event, context)
     # retrieving DB_QUEUE_URL from env variable orelse defaulted to None if not present
-    db_queue_url = os.getenv("DB_QUEUE_URL", None)
+    # db_queue_url = os.getenv("DB_QUEUE_URL", None)
+    db_queue_url = "asfasfasf"
     if db_queue_url is None or len(db_queue_url) == 0:
         message = "SQS URL DB_QUEUE_URL is not set and is required"
         LOGGER.critical(message)
         raise Exception(message)
     # retrieving RECOVERY_QUEUE_URL from env variable orelse defaulted to None if not present
-    recovery_queue_url = os.getenv("RECOVERY_QUEUE_URL", None)
+    # recovery_queue_url = os.getenv("RECOVERY_QUEUE_URL", None)
+    recovery_queue_url = "fsdfasdfsdf"
     if recovery_queue_url is None or len(recovery_queue_url) == 0:
         message = "SQS URL RECOVERY_QUEUE_URL is not set and is required"
         LOGGER.critical(message)
         raise Exception(message)
-    # retrieving COPY_RETRIES from env variable orelse defaulted to None if not present   
-    copy_retries = os.getenv("COPY_RETRIES", None)
-    if copy_retries is None or len(copy_retries) == 0:
-        message = "COPY_RETRIES is not set and is required"
-        LOGGER.critical(message)
-        raise Exception(message)
-    # retrieving COPY_RETRY_SLEEP_SECS from env variable orelse defaulted to None if not present 
-    copy_retry_sleep_secs = os.getenv("COPY_RETRY_SLEEP_SECS", None)
-    if copy_retry_sleep_secs is None or len(copy_retry_sleep_secs) == 0:
-        message = "copy_retry_sleep_secs is not set and is required"
-        LOGGER.critical(message)
-        raise Exception(message)
-    # retrieving COPY_RETRY_BACKOFF from env variable orelse defaulted to None if not present
-    copy_retry_backoff = os.getenv("COPY_RETRY_BACKOFF", None)
-    if copy_retry_backoff is None or len(copy_retry_backoff) == 0:
-        message = "copy_retry_backoff is not set and is required"
-        LOGGER.critical(message)
-        raise Exception(message)
+
+    backoff_env = ["MAX_RETRIES", "RETRY_SLEEP_SECS", "RETRY_BACKOFF"]
+    backoff_args = []
+    for var in backoff_env:
+        # env_var_value = os.getenv(var, None)
+        env_var_value = "2"
+        if env_var_value is None or len(env_var_value) == 0:
+            message = f"{var} is not set and is required"
+            LOGGER.critical(message)
+            raise Exception(message)
+
+        try:
+            backoff_args.append(int(env_var_value))
+        except ValueError as ve:
+            LOGGER.critical(f"{var} must be set to an integer.")
+            raise ve
+    max_retries = backoff_args[0]
+    retry_sleep_secs = backoff_args[1]
+    retry_backoff = backoff_args[2]
 
     records = event["Records"]
     # calling the task function to perform the work
@@ -222,7 +238,7 @@ def handler(event: Dict[str, Any], context: None) -> None:
         records,
         db_queue_url,
         recovery_queue_url,
-        copy_retries,
-        copy_retry_sleep_secs,
-        copy_retry_backoff,
+        max_retries,
+        retry_sleep_secs,
+        retry_backoff,
     )
