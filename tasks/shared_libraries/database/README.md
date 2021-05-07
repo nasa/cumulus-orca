@@ -135,6 +135,11 @@ check_rc $return_code "ERROR: Unable to create [orca_shared/__init__.py] file"
 cp ../shared_libraries/database/shared_db.py orca_shared/
 let return_code=$?
 check_rc $return_code "ERROR: Unable to copy shared library [orca_shared/shared_db.py]"
+
+# Run tests and other stuff
+
+# Cleanup shared libraries
+rm -rf orca_shared
 ```
 
 To automate the usage of this library during builds, it is recommended to add
