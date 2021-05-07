@@ -307,9 +307,9 @@ resource "aws_lambda_function" "post_copy_request_to_queue" {
       DATABASE_USER         = var.database_app_user
       DB_QUEUE_URL          = var.orca_sqs_status_update_queue_id
       RECOVERY_QUEUE_URL    = var.orca_sqs_recovery_queue_id
-      COPY_RETRIES          = var.orca_recovery_retry_limit
-      COPY_RETRY_SLEEP_SECS = var.orca_recovery_retry_interval
-      COPY_RETRY_BACKOFF    = var.orca_recovery_retry_backoff
+      MAX_RETRIES           = var.orca_recovery_retry_limit
+      RETRY_SLEEP_SECS      = var.orca_recovery_retry_interval
+      RETRY_BACKOFF         = var.orca_recovery_retry_backoff
     }
   }
 }
