@@ -148,7 +148,7 @@ def task(
             continue
         break
     else:
-        message =f"Error sending message to {db_queue_url} for {new_data}"
+        message = f"Error sending message to {db_queue_url} for {new_data}"
         logging.critical(message)
         raise Exception(message)
 
@@ -198,20 +198,9 @@ def handler(event: Dict[str, Any], context: None) -> None:
 
     """
     LOGGER.setMetadata(event, context)
-    # retrieving DB_QUEUE_URL from env variable orelse defaulted to None if not present
-    db_queue_url = os.getenv("DB_QUEUE_URL", None)
-    if db_queue_url is None or len(db_queue_url) == 0:
-        message = "SQS URL DB_QUEUE_URL is not set and is required"
-        LOGGER.critical(message)
-        raise Exception(message)
-    # retrieving RECOVERY_QUEUE_URL from env variable orelse defaulted to None if not present
-    recovery_queue_url = os.getenv("RECOVERY_QUEUE_URL", None)
-    if recovery_queue_url is None or len(recovery_queue_url) == 0:
-        message = "SQS URL RECOVERY_QUEUE_URL is not set and is required"
-        LOGGER.critical(message)
-        raise Exception(message)
 
-    backoff_env = ["MAX_RETRIES", "RETRY_SLEEP_SECS", "RETRY_BACKOFF"]
+    #retrieving values from the env variables
+    backoff_env = ["DB_QUEUE_URL","RECOVERY_QUEUE_URL", "MAX_RETRIES", "RETRY_SLEEP_SECS", "RETRY_BACKOFF"]
     backoff_args = []
     for var in backoff_env:
         env_var_value = os.getenv(var, None)
@@ -219,23 +208,15 @@ def handler(event: Dict[str, Any], context: None) -> None:
             message = f"{var} is not set and is required"
             LOGGER.critical(message)
             raise Exception(message)
-
-        try:
-            backoff_args.append(int(env_var_value))
-        except ValueError as ve:
-            LOGGER.critical(f"{var} must be set to an integer.")
-            raise ve
-    max_retries = backoff_args[0]
-    retry_sleep_secs = backoff_args[1]
-    retry_backoff = backoff_args[2]
+        
+        if var in ["MAX_RETRIES", "RETRY_SLEEP_SECS", "RETRY_BACKOFF"]:
+            try:
+                env_var_value = int(env_var_value)
+            except ValueError as ve:
+                LOGGER.critical(f"{var} must be set to an integer.")
+                raise ve
+        backoff_args.append(env_var_value)
 
     records = event["Records"]
     # calling the task function to perform the work
-    task(
-        records,
-        db_queue_url,
-        recovery_queue_url,
-        max_retries,
-        retry_sleep_secs,
-        retry_backoff,
-    )
+    task(records, db_queue_url, recovery_queue_url, *backoff_args)
