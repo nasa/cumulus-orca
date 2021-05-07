@@ -199,15 +199,13 @@ def handler(event: Dict[str, Any], context: None) -> None:
     """
     LOGGER.setMetadata(event, context)
     # retrieving DB_QUEUE_URL from env variable orelse defaulted to None if not present
-    # db_queue_url = os.getenv("DB_QUEUE_URL", None)
-    db_queue_url = "asfasfasf"
+    db_queue_url = os.getenv("DB_QUEUE_URL", None)
     if db_queue_url is None or len(db_queue_url) == 0:
         message = "SQS URL DB_QUEUE_URL is not set and is required"
         LOGGER.critical(message)
         raise Exception(message)
     # retrieving RECOVERY_QUEUE_URL from env variable orelse defaulted to None if not present
-    # recovery_queue_url = os.getenv("RECOVERY_QUEUE_URL", None)
-    recovery_queue_url = "fsdfasdfsdf"
+    recovery_queue_url = os.getenv("RECOVERY_QUEUE_URL", None)
     if recovery_queue_url is None or len(recovery_queue_url) == 0:
         message = "SQS URL RECOVERY_QUEUE_URL is not set and is required"
         LOGGER.critical(message)
@@ -216,8 +214,7 @@ def handler(event: Dict[str, Any], context: None) -> None:
     backoff_env = ["MAX_RETRIES", "RETRY_SLEEP_SECS", "RETRY_BACKOFF"]
     backoff_args = []
     for var in backoff_env:
-        # env_var_value = os.getenv(var, None)
-        env_var_value = "2"
+        env_var_value = os.getenv(var, None)
         if env_var_value is None or len(env_var_value) == 0:
             message = f"{var} is not set and is required"
             LOGGER.critical(message)
