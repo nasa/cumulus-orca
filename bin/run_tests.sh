@@ -5,7 +5,7 @@ base=$(pwd)
 failed=0
 
 # Crawl the task directories
-for taskdir in `ls -d tasks/* | egrep -v 'request_status_for|shared_libraries' `
+for taskdir in `ls -d tasks/* | egrep -v 'request_status_for|shared_libraries|db_deploy|package' `
 do
   # Build and run tests for each task directory
   cd $taskdir
@@ -15,7 +15,7 @@ do
   rm -rf venv
   python3 -m venv venv
   source venv/bin/activate
-  pip install -q --upgrade pip
+  pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org
   pip install -q -r requirements-dev.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
   # Currenty just running unit tests until we fix/support large tests
   coverage run --source test/unit_tests/ -m pytest test/unit_tests/
@@ -47,7 +47,7 @@ done
 
 ## Call each tasks testing suite
 ## TODO: Add more logging output and possibly make asynchronus
-for task in $(ls -d tasks/* | 'grep request_status_|post_to_database')
+for task in $(ls -d tasks/* | egrep "request_status_|db_deploy|post_to_database")
 do
   echo
   echo "Running tests in $task"

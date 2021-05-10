@@ -132,26 +132,13 @@ variable "database_name" {
 }
 
 
-variable "ddl_dir" {
-  type        = string
-  description = "Location of database DDL SQL files. Must have trailing /."
-}
-
-
-variable "drop_database" {
-  ##TODO: Maybe this needs to be a boolean false?
-  type        = string
-  description = "Boolean True/False that indicates the ORCA databse should be dropped."
-}
-
-
 variable "orca_recovery_retrieval_type" {
   type        = string
   description = "AWS glacier recovery type to use. One of Bulk, Standard, Express."
 }
 
 variable "orca_sqs_staged_recovery_queue_arn" {
-  type        = "string"
+  type        = string
   description = "The ARN of the staged-recovery-queue SQS"
 }
 
@@ -163,9 +150,4 @@ variable "orca_sqs_status_update_queue_arn" {
 variable "orca_sqs_status_update_queue_id" {
   type        = string
   description = "The URL of the SQS queue that recoery status updates are read from/posted to."
-}
-
-variable "platform" {
-  type        = string
-  description = "String that determines deployment platform. AWS or local."
 }

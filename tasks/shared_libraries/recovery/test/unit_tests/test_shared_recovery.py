@@ -23,7 +23,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         Perform initial setup for the tests.
         """
         self.mock_sqs.start()
-        self.test_sqs = boto3.resource("sqs")
+        self.test_sqs = boto3.resource("sqs", region_name="us-west-2")
         self.queue = self.test_sqs.create_queue(QueueName="unit-test-queue")
         self.db_queue_url = self.queue.url
         self.request_methods = [

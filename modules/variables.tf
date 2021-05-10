@@ -193,7 +193,7 @@ variable "status_update_queue_message_retention_time" {
 variable "database_app_user" {
   type        = string
   description = "Name of the database application user."
-  default     = "druser"
+  default     = "orcauser"
 }
 
 
@@ -204,30 +204,8 @@ variable "database_name" {
 }
 
 
-variable "ddl_dir" {
-  type        = string
-  description = "Location of database DDL SQL files. Must have trailing /."
-  default     = "ddl/"
-}
-
-
-variable "drop_database" {
-  ##TODO: Maybe this needs to be a boolean false?
-  type        = string
-  description = "Boolean True/False that indicates the ORCA databse should be dropped."
-  default     = "False"
-}
-
-
 variable "orca_recovery_retrieval_type" {
   type        = string
   description = "AWS glacier recovery type to use. One of Bulk, Standard, Express."
   default     = "Standard"
-}
-
-
-variable "platform" {
-  type        = string
-  description = "String that determines deployment platform. AWS or local."
-  default     = "AWS"
 }

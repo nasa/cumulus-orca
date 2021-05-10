@@ -6,23 +6,25 @@ import requests_db
 from cumulus_logger import CumulusLogger
 from requests_db import DatabaseError
 
-INPUT_GRANULE_ID_KEY = 'granule_id'
-INPUT_JOB_ID_KEY = 'asyncOperationId'
+INPUT_GRANULE_ID_KEY = "granule_id"
+INPUT_JOB_ID_KEY = "asyncOperationId"
 
-OUTPUT_GRANULE_ID_KEY = 'granule_id'
-OUTPUT_JOB_ID_KEY = 'asyncOperationId'
-OUTPUT_FILES_KEY = 'files'
-OUTPUT_FILENAME_KEY = 'file_name'
-OUTPUT_RESTORE_DESTINATION_KEY = 'restore_destination'
-OUTPUT_STATUS_KEY = 'status'
-OUTPUT_ERROR_MESSAGE_KEY = 'error_message'
-OUTPUT_REQUEST_TIME_KEY = 'request_time'
-OUTPUT_COMPLETION_TIME_KEY = 'completion_time'
+OUTPUT_GRANULE_ID_KEY = "granule_id"
+OUTPUT_JOB_ID_KEY = "asyncOperationId"
+OUTPUT_FILES_KEY = "files"
+OUTPUT_FILENAME_KEY = "file_name"
+OUTPUT_RESTORE_DESTINATION_KEY = "restore_destination"
+OUTPUT_STATUS_KEY = "status"
+OUTPUT_ERROR_MESSAGE_KEY = "error_message"
+OUTPUT_REQUEST_TIME_KEY = "request_time"
+OUTPUT_COMPLETION_TIME_KEY = "completion_time"
 
 LOGGER = CumulusLogger()
 
 
-def task(granule_id: str, db_connect_info: Dict, request_id: str, job_id: str = None) -> Dict[str, Any]:
+def task(
+    granule_id: str, db_connect_info: Dict, request_id: str, job_id: str = None
+) -> Dict[str, Any]:
     # noinspection SpellCheckingInspection
     """
     Args:
@@ -52,19 +54,27 @@ def task(granule_id: str, db_connect_info: Dict, request_id: str, job_id: str = 
         job_id = get_most_recent_job_id_for_granule(granule_id, db_connect_info)
         if job_id is None:
             return create_http_error_dict(
-                "NotFound", HTTPStatus.NOT_FOUND, request_id,
-                f"No job for granule id '{granule_id}'.")
+                "NotFound",
+                HTTPStatus.NOT_FOUND,
+                request_id,
+                f"No job for granule id '{granule_id}'.",
+            )
 
     job_entry = get_job_entry_for_granule(granule_id, job_id, db_connect_info)
     if job_entry is None:
         return create_http_error_dict(
-            "NotFound", HTTPStatus.NOT_FOUND, request_id,
-            f"No job found for granule id '{granule_id}' and job id '{job_id}'.")
+            "NotFound",
+            HTTPStatus.NOT_FOUND,
+            request_id,
+            f"No job found for granule id '{granule_id}' and job id '{job_id}'.",
+        )
 
     if job_entry[OUTPUT_COMPLETION_TIME_KEY] is None:
         del job_entry[OUTPUT_COMPLETION_TIME_KEY]
 
-    file_entries = get_file_entries_for_granule_in_job(granule_id, job_id, db_connect_info)
+    file_entries = get_file_entries_for_granule_in_job(
+        granule_id, job_id, db_connect_info
+    )
     for file_entry in file_entries:
         if file_entry[OUTPUT_ERROR_MESSAGE_KEY] is None:
             del file_entry[OUTPUT_ERROR_MESSAGE_KEY]
@@ -73,7 +83,9 @@ def task(granule_id: str, db_connect_info: Dict, request_id: str, job_id: str = 
     return job_entry
 
 
-def get_most_recent_job_id_for_granule(granule_id: str, db_connect_info: Dict[str, any]) -> str:
+def get_most_recent_job_id_for_granule(
+    granule_id: str, db_connect_info: Dict[str, any]
+) -> str:
     """
     Gets the job_id for the most recent job that restores the given granule.
 
@@ -87,7 +99,7 @@ def get_most_recent_job_id_for_granule(granule_id: str, db_connect_info: Dict[st
             SELECT
                 job_id
             FROM
-                orca_recoveryjob
+                recovery_job
             WHERE
                 granule_id = %s
             ORDER BY
@@ -101,17 +113,16 @@ def get_most_recent_job_id_for_granule(granule_id: str, db_connect_info: Dict[st
 
     if len(rows) == 0:
         return None
-    orca_recoveryjob = rows[0]
-    return database.result_to_json(orca_recoveryjob)['job_id']
+    recovery_job = rows[0]
+    return database.result_to_json(recovery_job)["job_id"]
 
 
 def get_job_entry_for_granule(
-        granule_id: str,
-        job_id: str,
-        db_connect_info: Dict) -> Dict[str, Any]:
+    granule_id: str, job_id: str, db_connect_info: Dict
+) -> Dict[str, Any]:
     # noinspection SpellCheckingInspection
     """
-    Gets the orca_recoverfile status entries for the associated granule_id.
+    Gets the recovery_file status entries for the associated granule_id.
     If async_operation_id is non-None, then it will be used to filter results.
     Otherwise, only the item with the most recent request_time will be returned.
 
@@ -125,7 +136,7 @@ def get_job_entry_for_granule(
         'request_time' (DateTime): The time, in UTC isoformat, when the request to restore the granule was initiated.
         'completion_time' (DateTime, Optional):
             The time, in UTC isoformat, when all granule_files were no longer 'pending'/'staged'.
-        """
+    """
     sql = f"""
             SELECT
                 granule_id as "{OUTPUT_GRANULE_ID_KEY}",
@@ -133,23 +144,32 @@ def get_job_entry_for_granule(
                 request_time as "{OUTPUT_REQUEST_TIME_KEY}",
                 completion_time as "{OUTPUT_COMPLETION_TIME_KEY}"
             FROM
-                orca_recoveryjob
+                recovery_job
             WHERE
                 granule_id = %s AND job_id = %s"""
     try:
-        rows = database.single_query(sql, db_connect_info, (granule_id, job_id,))
+        rows = database.single_query(
+            sql,
+            db_connect_info,
+            (
+                granule_id,
+                job_id,
+            ),
+        )
     except database.DbError as err:
         LOGGER.error(f"DbError: {str(err)}")
         raise DatabaseError(str(err))
 
     if len(rows) == 0:
         return None
-    orca_recoveryjob = rows[0]
-    result = database.result_to_json(orca_recoveryjob)
+    recovery_job = rows[0]
+    result = database.result_to_json(recovery_job)
     return result
 
 
-def get_file_entries_for_granule_in_job(granule_id: str, job_id: str, db_connect_info: Dict) -> List[Dict]:
+def get_file_entries_for_granule_in_job(
+    granule_id: str, job_id: str, db_connect_info: Dict
+) -> List[Dict]:
     """
     Gets the individual status entries for the files for the given job+granule.
 
@@ -163,18 +183,25 @@ def get_file_entries_for_granule_in_job(granule_id: str, job_id: str, db_connect
     """
     sql = f"""
             SELECT
-                orca_recoverfile.filename AS "{OUTPUT_FILENAME_KEY}",
-                orca_recoverfile.restore_destination AS "{OUTPUT_RESTORE_DESTINATION_KEY}",
-                orca_status.value AS "{OUTPUT_STATUS_KEY}",
-                orca_recoverfile.error_message as "{OUTPUT_ERROR_MESSAGE_KEY}"
+                recovery_file.filename AS "{OUTPUT_FILENAME_KEY}",
+                recovery_file.restore_destination AS "{OUTPUT_RESTORE_DESTINATION_KEY}",
+                recovery_status.value AS "{OUTPUT_STATUS_KEY}",
+                recovery_file.error_message as "{OUTPUT_ERROR_MESSAGE_KEY}"
             FROM
-                orca_recoverfile
-            JOIN orca_status ON orca_recoverfile.status_id=orca_status.id
+                recovery_file
+            JOIN recovery_status ON recovery_file.status_id=recovery_status.id
             WHERE
                 granule_id = %s AND job_id = %s
             ORDER BY filename desc"""
     try:
-        rows = database.single_query(sql, db_connect_info, (granule_id, job_id,))
+        rows = database.single_query(
+            sql,
+            db_connect_info,
+            (
+                granule_id,
+                job_id,
+            ),
+        )
     except database.DbError as err:
         LOGGER.error(f"DbError: {str(err)}")
         raise DatabaseError(str(err))
@@ -183,7 +210,9 @@ def get_file_entries_for_granule_in_job(granule_id: str, job_id: str, db_connect
     return result
 
 
-def create_http_error_dict(error_type: str, http_status_code: int, request_id: str, message: str) -> Dict[str, Any]:
+def create_http_error_dict(
+    error_type: str, http_status_code: int, request_id: str, message: str
+) -> Dict[str, Any]:
     """
     Creates a standardized dictionary for error reporting.
     Args:
@@ -200,10 +229,10 @@ def create_http_error_dict(error_type: str, http_status_code: int, request_id: s
     """
     LOGGER.error(message)
     return {
-        'errorType': error_type,
-        'httpStatus': http_status_code,
-        'requestId': request_id,
-        'message': message
+        "errorType": error_type,
+        "httpStatus": http_status_code,
+        "requestId": request_id,
+        "message": message,
     }
 
 
@@ -237,7 +266,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         'request_time' (DateTime): The time, in UTC isoformat, when the request to restore the granule was initiated.
         'completion_time' (DateTime, Optional):
             The time, in UTC isoformat, when all granule_files were no longer 'pending'/'staged'.
-            
+
         Or, if an error occurs, see create_http_error_dict
             400 if granule_id is missing. 500 if an error occurs when querying the database, 404 if not found.
     """
@@ -245,12 +274,25 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
 
     granule_id = event.get(INPUT_GRANULE_ID_KEY, None)
     if granule_id is None or len(granule_id) == 0:
-        return create_http_error_dict("BadRequest", HTTPStatus.BAD_REQUEST, context.aws_request_id,
-                                      f"{INPUT_GRANULE_ID_KEY} must be set to a non-empty value.")
+        return create_http_error_dict(
+            "BadRequest",
+            HTTPStatus.BAD_REQUEST,
+            context.aws_request_id,
+            f"{INPUT_GRANULE_ID_KEY} must be set to a non-empty value.",
+        )
 
     db_connect_info = requests_db.get_dbconnect_info()
     try:
-        return task(granule_id, db_connect_info, context.aws_request_id, event.get(INPUT_JOB_ID_KEY, None))
+        return task(
+            granule_id,
+            db_connect_info,
+            context.aws_request_id,
+            event.get(INPUT_JOB_ID_KEY, None),
+        )
     except DatabaseError as db_error:
         return create_http_error_dict(
-            "InternalServerError", HTTPStatus.INTERNAL_SERVER_ERROR, context.aws_request_id, db_error.__str__())
+            "InternalServerError",
+            HTTPStatus.INTERNAL_SERVER_ERROR,
+            context.aws_request_id,
+            db_error.__str__(),
+        )

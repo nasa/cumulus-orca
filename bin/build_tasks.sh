@@ -18,28 +18,6 @@ fi
 cd ../../
 
 
-TASK='tasks/db_deploy/'
-echo "Building `pwd`/${TASK}"
-cd "`pwd`/${TASK}"
-rm -rf build
-mkdir build
-source ../../venv/bin/activate
-pip install -q -t build -r requirements.txt --trusted-host pypi.org --trusted-host pypi.org --trusted-host files.pythonhosted.org
-deactivate
-cp db_deploy.py build/
-cd build
-mkdir psycopg2
-mkdir ddl
-cd ..
-cp ../package/awslambda-psycopg2/psycopg2-3.7/* build/psycopg2/
-cp -r ../../database/ddl/base/* build/ddl/
-cd build
-zip -qr "../db_deploy.zip" .
-cd ..
-rm -rf build
-cd ../../
-
-
 TASK='tasks/extract_filepaths_for_granule/'
 echo "Building `pwd`/${TASK}"
 cd "`pwd`/${TASK}"
@@ -111,7 +89,7 @@ cd ../../
 
 
 failure=0
-for TASK in $(ls -d tasks/* | grep 'request_status_|post_to_database')
+for TASK in $(ls -d tasks/* | egrep "request_status_|db_deploy|post_to_database")
 do
   echo "Building ${TASK}"
   cd ${TASK}
