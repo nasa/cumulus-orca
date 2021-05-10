@@ -18,9 +18,8 @@ from shared_recovery import (
     post_status_for_file_to_queue,
     post_entry_to_queue,
 )
-from requests_db import get_dbconnect_info
+from requests_db import get_dbconnect_info,DatabaseError
 from database import single_query, result_to_json
-from requests_db import DatabaseError
 from cumulus_logger import CumulusLogger
 import logging
 
@@ -225,4 +224,4 @@ def handler(event: Dict[str, Any], context: None) -> None:
 
     records = event["Records"]
     # calling the task function to perform the work
-    task(records, db_queue_url, recovery_queue_url, *backoff_args)
+    task(records, *backoff_args)
