@@ -38,8 +38,11 @@ user$ docker run \
       -it \
       --rm \
       -v /path/to/cumulus-orca/repo:/data \
-      maven.earthdata.nasa.gov/aws-sam-cli-build-image-python3.8:latest \
+      amazonlinux:2 \
       /bin/bash
+
+# Install the python development binaries
+bash-4.2# yum install python3-devel
 
 # In the container cd to /data
 bash-4.2# cd /data
@@ -68,6 +71,8 @@ module is installed into your Cumulus instance and several recovery jobs have
 been run and are in various states (pending, error, complete). Status values
 may have to be manipulated in the PostgreSQL database to achieve a full test.
 
+Upload the latest version of the **db_deploy** Lambda code to AWS using the
+AWS CLI `aws lambda update-function-code --function-name <prefix>_db_deploy --zip-file fileb://db_deploy.zip --profile <profile-name>`.
 
 Using the AWS Lambda interface for db_deploy perform the following steps:
 
@@ -109,8 +114,11 @@ user$ docker run \
       -it \
       --rm \
       -v /path/to/cumulus-orca/repo:/data \
-      maven.earthdata.nasa.gov/aws-sam-cli-build-image-python3.8:latest \
+      amazonlinux:2 \
       /bin/bash
+
+# Install the python development binaries
+bash-4.2# yum install python3-devel
 
 # In the container cd to /data
 bash-4.2# cd /data

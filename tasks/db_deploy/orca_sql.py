@@ -62,6 +62,7 @@ def dbo_role_sql() -> TextClause:
             -- Grants
             GRANT CONNECT ON DATABASE disaster_recovery TO orca_dbo;
             GRANT CREATE ON DATABASE disaster_recovery TO orca_dbo;
+            GRANT orca_dbo TO postgres;
           END
         $$
     """

@@ -33,8 +33,11 @@ user$ docker run \
       -it \
       --rm \
       -v /path/to/cumulus-orca/repo:/data \
-      maven.earthdata.nasa.gov/aws-sam-cli-build-image-python3.8:latest \
+      amazonlinux:2 \
       /bin/bash
+
+# Install the python development binaries
+bash-4.2# yum install python3-devel
 
 # In the container cd to /data
 bash-4.2# cd /data
@@ -65,8 +68,11 @@ user$ docker run \
       -it \
       --rm \
       -v /path/to/cumulus-orca/repo:/data \
-      maven.earthdata.nasa.gov/aws-sam-cli-build-image-python3.8:latest \
+      amazonlinux:2 \
       /bin/bash
+
+# Install the python development binaries
+bash-4.2# yum install python3-devel
 
 # In the container cd to /data
 bash-4.2# cd /data
@@ -86,19 +92,27 @@ the repository.
 
 To use the **shared_db** library in your lambda code base perform the following.
 
-1. Create an `orca_shared` directory and `__init__.py` dummy file.
+1. Install the necessary python libraries shown below.
+   - boto3==1.12.49
+   - cumulus-message-adapter==1.3.0
+   - cumulus-message-adapter-python==1.2.1
+   - SQLAlchemy==1.4.11
+   - *psycopg2-binary==2.8.6* - For development work only.
+   - *AWS psycopg2 Lambda Library* - For builds and creating a zip file for Lambda deploys.
+
+2. Create an `orca_shared` directory and `__init__.py` dummy file.
    ```bash
    cd tasks/<your task name>
    mkdir orca_shared
    touch orca_shared/__init__.py
    ```
-2. Copy the library file `shared_db.py` to the newly created `orca_shared`
+3. Copy the library file `shared_db.py` to the newly created `orca_shared`
    directory as seen below.
    ```bash
    cd tasks/<your task name>
    cp ../shared_libraries/database/shared_db.py orca_shared/
    ```
-3. The library can now be used in your python code via a normal import per the
+4. The library can now be used in your python code via a normal import per the
    examples seen below.
    ```python
    # Import the whole library
