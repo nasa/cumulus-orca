@@ -1,0 +1,74 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/post_to_database/schemas/new_job_input.json",
+	"title": "post_to_database Lambda Input (new_job)",
+	"description": "The input for the post_to_database Lambda when posting the new status for a job and its files.",
+	"type": "object",
+	"properties": {
+		"job_id": {
+			"description": "The unique ID of the asyncOperation.",
+			"type": "string"
+		},
+		"granule_id": {
+			"description": "The unique ID of the granule to retrieve status for.",
+			"type": "string"
+		},
+		"request_time": {
+			"description": "The time, in UTC and isoformat, when the request to restore the granule was initiated.",
+			"type": "string",
+			"pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?$"
+		},
+        "archive_destination": {
+            "description": "The archive destination for the individual files.",
+            "type": "string"
+        },
+		"files": {
+			"description": "Description and status of the files within the given granule.",
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"filename": {
+						"description": "The name and extension of the file.",
+						"type": "string"
+					},
+                    "key_path": {
+                        "description": "The key of the file to restore.",
+                        "type": "string"
+                    },
+					"restore_destination": {
+						"description": "The name of the glacier bucket the granule is being copied to.",
+						"type": "string"
+					},
+					"status_id": {
+						"description": "The status_id of the restoration of the file. May be 'pending' or 'failed'.",
+						"type": "integer",
+						"pattern": "^(1|3)$"
+					},
+					"error_message": {
+						"description": "If the restoration of the file errored, the error will be stored here.",
+						"type": "string"
+					},
+                    "request_time": {
+                        "description": "The time the restore was requested, in UTC and iso-format.",
+                        "type": "string",
+                        "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?$"
+                    },
+                    "last_update": {
+                        "description": "The last time the file's status changed, in UTC and iso-format.",
+                        "type": "string",
+                        "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?$"
+                    },
+                    "completion_time": {
+                        "description": "The time the restore was completed, in UTC and iso-format.",
+                        "type": "string",
+                        "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?$"
+                    }
+				},
+				"required": [ "filename", "key_path","restore_destination", "status_id", "request_time", "last_update" ]
+			},
+			"uniqueItems": true
+		}
+	},
+	"required": [ "job_id", "granule_id", "request_time", "archive_destination", "files" ]
+}

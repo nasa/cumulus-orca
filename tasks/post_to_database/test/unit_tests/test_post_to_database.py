@@ -50,9 +50,14 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
                                                                      mock_create_status_for_job_and_files: MagicMock):
         job_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
-        request_time = uuid.uuid4().__str__()
+        request_time = datetime.datetime.utcnow().isoformat().__str__()
         archive_destination = uuid.uuid4().__str__()
-        files = [uuid.uuid4().__str__(), uuid.uuid4().__str__()]
+        files = [{
+            'filename': uuid.uuid4().__str__(), 'key_path': uuid.uuid4().__str__(),
+            'restore_destination': uuid.uuid4().__str__(), 'status_id': 1,
+            'request_time': datetime.datetime.utcnow().isoformat(),
+            'last_update': datetime.datetime.utcnow().isoformat()
+        }]
 
         values = {
             "job_id": job_id,
@@ -79,9 +84,9 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
         job_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
         filename = uuid.uuid4().__str__()
-        last_update = uuid.uuid4().__str__()
-        completion_time = uuid.uuid4().__str__()
-        status_id = uuid.uuid4().__str__()
+        last_update = datetime.datetime.utcnow().isoformat().__str__()
+        completion_time = datetime.datetime.utcnow().isoformat().__str__()
+        status_id = 2
         error_message = uuid.uuid4().__str__()
         values = {
             "job_id": job_id,
@@ -111,8 +116,8 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
         job_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
         filename = uuid.uuid4().__str__()
-        last_update = uuid.uuid4().__str__()
-        status_id = uuid.uuid4().__str__()
+        last_update = datetime.datetime.utcnow().isoformat().__str__()
+        status_id = 3
         values = {
             "job_id": job_id,
             "granule_id": granule_id,
@@ -353,7 +358,7 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
         filename = uuid.uuid4().__str__()
         last_update = uuid.uuid4().__str__()
         completion_time = uuid.uuid4().__str__()
-        status_id = uuid.uuid4().__str__()
+        status_id = 4
         error_message = uuid.uuid4().__str__()
 
         db_connect_info = Mock()

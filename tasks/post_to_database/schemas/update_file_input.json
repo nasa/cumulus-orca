@@ -1,0 +1,41 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/post_to_database/schemas/update_file_input.json",
+	"title": "post_to_database Lambda Input (update_file)",
+	"description": "The input for the post_to_database Lambda when updating the status for a file.",
+	"type": "object",
+	"properties": {
+		"job_id": {
+			"description": "The unique ID of the asyncOperation.",
+			"type": "string"
+		},
+		"granule_id": {
+			"description": "The unique ID of the granule to retrieve status for.",
+			"type": "string"
+		},
+        "filename": {
+            "description": "The name and extension of the file.",
+            "type": "string"
+        },
+        "last_update": {
+            "description": "The last time the file's status changed, in UTC and iso-format.",
+            "type": "string",
+            "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?$"
+        },
+        "completion_time": {
+            "description": "The time the restore was completed, in UTC and iso-format.",
+            "type": "string",
+            "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?$"
+        },
+        "status_id": {
+            "description": "The status_id of the restoration of the file.",
+            "type": "integer",
+            "pattern": "^(1|2|3|4)$"
+        },
+        "error_message": {
+            "description": "If the restoration of the file errored, the error will be stored here.",
+            "type": "string"
+        }
+    },
+	"required": [ "job_id", "granule_id", "filename", "last_update", "status_id" ]
+}

@@ -7,15 +7,19 @@ import datetime
 import json
 from typing import Any, List, Dict, Optional
 
-# noinspection PyUnresolvedReferences
+# noinspection SpellCheckingInspection
+import fastjsonschema as fastjsonschema
 from cumulus_logger import CumulusLogger
-# todo: Auto-copy shared libs
 from sqlalchemy import text
 
 from orca_shared import shared_db
 from orca_shared.shared_recovery import RequestMethod, OrcaStatus
 
 LOGGER = CumulusLogger()
+with open("schemas/new_job_input.json", "r") as raw_schema:
+    new_job_validate = fastjsonschema.compile(json.loads(raw_schema.read()))
+with open("schemas/update_file_input.json", "r") as raw_schema:
+    update_file_validate = fastjsonschema.compile(json.loads(raw_schema.read()))
 
 
 def task(records: List[Dict[str, Any]], db_connect_info: Dict):
@@ -39,7 +43,7 @@ def send_record_to_database(record: Dict[str, Any], db_connect_info: Dict) -> No
     values = json.loads(record['body'])
     request_method = RequestMethod(record['messageAttributes']['RequestMethod'])
     if request_method == RequestMethod.NEW_JOB:
-        # todo: Better key checks here and elsewhere
+        new_job_validate(values)
         create_status_for_job_and_files(values['job_id'],
                                         values['granule_id'],
                                         values['request_time'],
@@ -47,6 +51,7 @@ def send_record_to_database(record: Dict[str, Any], db_connect_info: Dict) -> No
                                         values['files'],
                                         db_connect_info)
     elif request_method == RequestMethod.UPDATE_FILE:
+        update_file_validate(values)
         update_status_for_file(values['job_id'],
                                values['granule_id'],
                                values['filename'],
@@ -129,7 +134,7 @@ def update_status_for_file(job_id: str,
                            filename: str,
                            last_update: str,
                            completion_time: Optional[str],
-                           status_id: OrcaStatus,
+                           status_id: int,
                            error_message: Optional[str],
                            db_connect_info: Dict) -> None:
     """
@@ -224,7 +229,7 @@ def handler(event: Dict[str, List], context) -> None:
                 'messageId' (str)
                 'receiptHandle' (str)
                 'body' (str): A json string representing a dict.
-                    See files in schemas for details.  # todo: write them up.
+                    See files in schemas for details.
                 'attributes' (Dict)
                 'messageAttributes' (Dict): A dict with the following keys defined in the functions that write to queue.
                     'RequestMethod' (str): Matches to a shared_recovery.RequestMethod.
