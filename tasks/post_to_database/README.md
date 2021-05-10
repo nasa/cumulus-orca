@@ -18,51 +18,35 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
 Help on module post_to_database:
 
 NAME
-    post_to_database - Name: copy_files_to_archive.py
+    post_to_database - Name: post_to_database.py
 
 DESCRIPTION
-    Description:  Lambda function that copies files from one s3 bucket
-    to another s3 bucket.
-
-CLASSES
-    enum.Enum(builtins.object)
-        RequestMethod
-    
-    class RequestMethod(enum.Enum)
-     |  RequestMethod(value, names=None, *, module=None, qualname=None, type=None, start=1)
-     |  
-     |  An enumeration.
-     |  
-     |  Method resolution order:
-     |      RequestMethod
-     |      enum.Enum
-     |      builtins.object
-     |  
-     |  Data and other attributes defined here:
-     |  
-     |  POST = <RequestMethod.POST: 'post'>
-     |  
-     |  PUT = <RequestMethod.PUT: 'put'>
-     |  
-     |  ----------------------------------------------------------------------
-     |  Data descriptors inherited from enum.Enum:
-     |  
-     |  name
-     |      The name of the Enum member.
-     |  
-     |  value
-     |      The value of the Enum member.
-     |  
-     |  ----------------------------------------------------------------------
-     |  Readonly properties inherited from enum.EnumMeta:
-     |  
-     |  __members__
-     |      Returns a mapping of member name->value.
-     |      
-     |      This mapping lists all enum members, including aliases. Note that this
-     |      is a read-only view of the internal mapping.
+    Description:  Pulls entries from a queue and posts them to a DB.
 
 FUNCTIONS
+    create_file_sql()
+    
+    create_job_sql()
+    
+    create_status_for_job_and_files(job_id: str, granule_id: str, request_time: str, archive_destination: str, files: List[Dict[str, Any]], db_connect_info: Dict) -> None
+        Posts the entry for the job, followed by individual entries for each file.
+        
+        Args:
+            job_id: The unique identifier used for tracking requests.
+            granule_id: The id of the granule being restored.
+            archive_destination: The S3 bucket destination of where the data is archived.
+            request_time: The time the restore was requested in utc and iso-format.
+            files: A List of Dicts with the following keys:
+                'filename' (str)
+                'key_path' (str)
+                'restore_destination' (str)
+                'status_id' (int)
+                'error_message' (str, Optional)
+                'request_time' (str)
+                'last_update' (str)
+                'completion_time' (str, Optional)
+            db_connect_info: See shared_db.py's get_configuration for further details.
+    
     handler(event: Dict[str, List], context) -> None
         Lambda handler. Receives a list of queue entries from an SQS queue, and posts them to a database.
         
@@ -72,29 +56,18 @@ FUNCTIONS
                     'messageId' (str)
                     'receiptHandle' (str)
                     'body' (str): A json string representing a dict.
-                        Contains key/value pairs of column names and values for those columns.
+                        See files in schemas for details.
                     'attributes' (Dict)
                     'messageAttributes' (Dict): A dict with the following keys defined in the functions that write to queue.
-                        'RequestMethod' (str): 'post' or 'put', depending on if row should be created or updated respectively.
-                        'TableName' (str): The name of the table to target.
+                        'RequestMethod' (str): Matches to a shared_recovery.RequestMethod.
             context: An object passed through by AWS. Used for tracking.
-        Environment Vars: See requests_db.py's get_dbconnect_info for further details.
+        Environment Vars: See shared_db.py's get_configuration for further details.
             'DATABASE_PORT' (int): Defaults to 5432
             'DATABASE_NAME' (str)
-            'DATABASE_USER' (str)
+            'APPLICATION_USER' (str)
             'PREFIX' (str)
             '{prefix}-drdb-host' (str, secretsmanager)
             '{prefix}-drdb-user-pass' (str, secretsmanager)
-    
-    insert_row_from_values(table_name: str, values: Dict[str, Any], db_connect_info: Dict) -> None
-        Inserts a new row into the given table.
-        
-        Args:
-            table_name: The name of the table to target.
-            values: Contains key/value pairs of column names and values for those columns.
-            db_connect_info: See requests_db.py's get_dbconnect_info for further details.
-        
-        Raises: database.DbError if error occurs when contacting database.
     
     send_record_to_database(record: Dict[str, Any], db_connect_info: Dict) -> None
         Deconstructs a record to its components and calls send_values_to_database with the result.
@@ -106,33 +79,33 @@ FUNCTIONS
                 'messageAttributes' (dict): Contains the following keys:
                     'TableName' (str): The name of the table to target.
                     'RequestMethod' (str): 'post' or 'put', depending on if row should be created or updated respectively.
-            db_connect_info: See requests_db.py's get_dbconnect_info for further details.
-    
-    send_values_to_database(table_name: str, values: Dict[str, Any], request_method: post_to_database.RequestMethod, db_connect_info: Dict) -> None
-        Args:
-            table_name: The name of the table to target.
-            values: Contains key/value pairs of column names and values for those columns.
-            request_method: POST or PUT, depending on if row should be created or updated respectively.
-            db_connect_info: See requests_db.py's get_dbconnect_info for further details.
+            db_connect_info: See shared_db.py's get_configuration for further details.
     
     task(records: List[Dict[str, Any]], db_connect_info: Dict)
     
-    update_row_in_table(table_name: str, table_keys: List[str], values: Dict[str, Any], db_connect_info: Dict) -> None
-        Updates a row in the target table, using table_keys to identify the row that should be modified.
+    update_file_sql()
+    
+    update_job_sql()
+    
+    update_status_for_file(job_id: str, granule_id: str, filename: str, last_update: str, completion_time: Union[str, NoneType], status_id: int, error_message: Union[str, NoneType], db_connect_info: Dict) -> None
+        Updates a given file's status entry, modifying the job if all files for that job have advanced in status.
         
         Args:
-            table_name: The name of the table to target.
-            table_keys: A list of keys. Used to identify the row to change.
-            values: Contains key/value pairs of column names and values for those columns.
-                If a column name is in table_keys, the value will be used to identify the target row.
-            db_connect_info: See requests_db.py's get_dbconnect_info for further details.
+            job_id: The unique identifier used for tracking requests.
+            granule_id: The id of the granule being restored.
+            filename: The name of the file being copied.
+            last_update: The time this status update occurred, in UTC iso-format.
+            completion_time: The completion time, in UTC iso-format.
+            status_id: Defines the status id used in the ORCA Recovery database.
+            error_message: message displayed on error.
         
-        Raises: database.DbError if error occurs when contacting database.
+            db_connect_info: See shared_db.py's get_configuration for further details.
 
 DATA
     Any = typing.Any
     Dict = typing.Dict
     LOGGER = <cumulus_logger.CumulusLogger object>
     List = typing.List
-    table_key_dictionary = {'orca_recoverfile': ['job_id', 'granule_id', '...
+    Optional = typing.Optional
+    raw_schema = <_io.TextIOWrapper name='schemas/update_file_input.json' ...
 ```
