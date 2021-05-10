@@ -159,7 +159,10 @@ def post_entry_to_queue(
     """
     body = json.dumps(new_data)
 
-    mysqs_resource = boto3.resource("sqs")
+    # TODO: pass AWS region value to function. SHOULD be gotten from environment
+    # higher up. Setting this to us-west-2 initially since that is where
+    # EOSDIS runs from normally. SEE ORCA-203 https://bugs.earthdata.nasa.ov/browse/ORCA-203
+    mysqs_resource = boto3.resource("sqs", region_name="us-west-2")
     mysqs = mysqs_resource.Queue(db_queue_url)
 
     mysqs.send_message(

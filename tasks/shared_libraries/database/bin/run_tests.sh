@@ -5,18 +5,19 @@
 ##
 ## DESCRIPTION
 ## -----------------------------------------------------------------------------
-## Tests the lambda (task) for request_status_for_job using unit tests.
+## Tests the shared library for shared_db using unit tests.
 ##
 ##
 ## USAGE
 ## -----------------------------------------------------------------------------
 ## bin/run_tests.sh
 ##
-## This must be called from the (root) lambda directory /tasks/request_status_for_job
+## This must be called from the (root) shared library directory
+## tasks/shared_libraries/database
 ## =============================================================================
 
 ## Set this for Debugging only
-#set -ex
+#set -x
 
 ## Make sure we are calling the script the correct way.
 BASEDIR=$(dirname $0)
@@ -66,12 +67,31 @@ let return_code=$?
 
 check_rc $return_code "ERROR: pip install encountered an error."
 
+## Get the modules we want to test
+file_list=""
+first_time="1"
+for file in `ls -1 *.py`
+do
+    module=${file%%".py"}
+    if [ "${first_time}" = "1" ]; then
+        file_list="${module}"
+        first_time="0"
+    else
+        file_list="${file_list},${module}"
+    fi
+done
 
 ## Run unit tests and check Coverage
 echo "INFO: Running unit and coverage tests ..."
 
-# Currently just running unit tests until we fix/support large tests
-coverage run --source request_status_for_job -m pytest
+# Export the AWS_REGION for the boto3 clients. Note that if you clear the
+# environment for unit tests, you will need to add this environment variable back
+# in to avoid a client error "botocore.exceptions.NoRegionError: You must specify
+# a region." In real AWS, the AWS_REGION is set for you per the Lamda developer
+# docs seen here https://docs.aws.amazon.com/lambda/latest/dg/lambda-dg.pdf
+export AWS_REGION="us-west-2"
+
+coverage run --source ${file_list} -m pytest
 let return_code=$?
 check_rc $return_code "ERROR: Unit tests encountered failures."
 
@@ -87,4 +107,3 @@ rm -rf venv
 find . -type d -name "__pycache__" -exec rm -rf {} +
 
 exit 0
-

@@ -47,8 +47,9 @@ module "orca_lambdas" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  orca_default_bucket = var.orca_default_bucket
-  orca_sqs_staged_recovery_queue_arn = module.sqs.orca_sqs_staged_recovery_queue_arn
+  orca_default_bucket                = var.orca_default_bucket
+  orca_sqs_staged_recovery_queue_arn = module.orca_sqs.orca_sqs_staged_recovery_queue_arn
+  orca_sqs_status_update_queue_id    = module.orca_sqs.orca_sqs_status_update_queue_id
 
   ## OPTIONAL
   database_port                        = var.database_port
@@ -65,10 +66,7 @@ module "orca_lambdas" {
   ## OPTIONAL (DO NOT CHANGE DEFAULT VALUES!)
   database_app_user            = var.database_app_user
   database_name                = var.database_name
-  ddl_dir                      = var.ddl_dir
-  drop_database                = var.drop_database
   orca_recovery_retrieval_type = var.orca_recovery_retrieval_type
-  platform                     = var.platform
 }
 
 
@@ -96,7 +94,6 @@ module "orca_workflows" {
   orca_default_bucket                           = var.orca_default_bucket
   orca_lambda_extract_filepaths_for_granule_arn = module.orca_lambdas.extract_filepaths_for_granule_arn
   orca_lambda_request_files_arn                 = module.orca_lambdas.request_files_arn
-  orca_sqs_status_update_queue_id               = module.sqs.orca_sqs_status_update_queue_id
 }
 
 
