@@ -73,9 +73,9 @@ def task(
             status_id = %d
     """
     # Gets the dbconnection info.
-    db_connect_info = get_dbconnect_info()
     # query the db table
     try:
+        db_connect_info = get_dbconnect_info()
         rows = single_query(sql, db_connect_info, (key_path, OrcaStatus.PENDING.value))
         if len(rows) == 0:
             message = f"No metadata found for {key_path}"
