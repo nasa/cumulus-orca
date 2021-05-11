@@ -4,14 +4,141 @@
 
 Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/development-guide/code/contrib-code-intro) for information on environment setup and testing.
 
-- [Deployment](#deployment)
+- [Testing shared_recovery](#testing-shared_recovery) - Testing the library via unit tests
+- [Building shared_recovery](#building-shared_recovery) - Building the library
+- [Using shared_recovery](#using-shared_recovery) - Using the shared_recovery library in code.
 - [pydoc recovery](#pydoc)
 
-<a name="deployment"></a>
-## Deployment
+## Testing shared_recovery
+
+There are several methods for testing **shared_recovery**. The various testing methods
+are outlined in the sections below.
+
+
+### Unit Testing shared_recovery
+
+To run unit tests for **shared_recovery** run the `bin/run_tests.sh` script from the
+`/tasks/shared_libraries/recovery` directory. Ideally, the tests should be run in a docker
+container. The following shows setting up a container to run the tests.
+
+```bash
+# Invoke a docker container in interactive mode.
+user$ docker run \
+      -it \
+      --rm \
+      -v /path/to/cumulus-orca/repo:/data \
+      amazonlinux:2 \
+      /bin/bash
+
+# Install the python development binaries
+bash-4.2# yum install python3-devel
+
+# In the container cd to /data
+bash-4.2# cd /data
+
+# Go to the task
+bash-4.2# cd /tasks/shared_libraries/database/
+
+# Run the tests
+bash-4.2# bin/run_tests.sh
 ```
-    see /bin/build_tasks.sh to build the zip file. Upload the zip file to AWS.
+
+Note that Bamboo will run this same script via the `bin/run_tests.sh` script found
+in the cumulus-orca base of the repo.
+
+
+## Building shared_recovery
+
+Since the shared_recovery library is a single file there are no build steps for the
+library.
+
+Once the `API.md` file is created successfully, make sure to commit the file to
+the repository.
+
+
+## Using shared_recovery
+
+To use the **shared_recovery** library in your lambda code base perform the following.
+
+1. Install the necessary python libraries shown below.
+   - boto3==1.12.47
+
+2. Create an `orca_shared` directory and `__init__.py` dummy file.
+   ```bash
+   cd tasks/<your task name>
+   mkdir orca_shared
+   touch orca_shared/__init__.py
+   ```
+3. Copy the library file `shared_recovery.py` to the newly created `orca_shared`
+   directory as seen below.
+   ```bash
+   cd tasks/<your task name>
+   cp ../shared_libraries/database/shared_recovery.py orca_shared/
+   ```
+4. The library can now be used in your python code via a normal import per the
+   examples seen below.
+   ```python
+   # Import the whole library
+   from orca_shared import shared_recovery
+   ```
+
+### Integrating the Shared Library into Testing and Builds
+
+When automating the use of this library it is recommended that the library is
+imported into the lambda code base during testing and builds and not saved as
+part of the lambda code base.
+
+To automate the usage of this library during testing, it is recommended to add
+code similar to the following to the `bin/run_tests.sh` script in your lambda
+base directory.
+
+```bash
+echo "INFO: Copying ORCA shared libraries ..."
+if [ -d orca_shared ]; then
+    rm -rf orca_shared
+fi
+
+mkdir orca_shared
+let return_code=$?
+check_rc $return_code "ERROR: Unable to create orca_shared directory."
+
+touch orca_shared/__init__.py
+let return_code=$?
+check_rc $return_code "ERROR: Unable to create [orca_shared/__init__.py] file"
+
+cp ../shared_libraries/database/shared_recovery.py orca_shared/
+let return_code=$?
+check_rc $return_code "ERROR: Unable to copy shared library [orca_shared/shared_recovery.py]"
+
+# Run tests and other stuff
+
+# Cleanup shared libraries
+rm -rf orca_shared
 ```
+
+To automate the usage of this library during builds, it is recommended to add
+code similar to the following to the `bin/build.sh` script in your lambda
+base directory.
+
+```bash
+echo "INFO: Copying ORCA shared libraries ..."
+if [ -d orca_shared ]; then
+    rm -rf orca_shared
+fi
+
+mkdir -p build/orca_shared
+let return_code=$?
+check_rc $return_code "ERROR: Unable to create orca_shared directory."
+
+touch build/orca_shared/__init__.py
+let return_code=$?
+check_rc $return_code "ERROR: Unable to create [orca_shared/__init__.py] file"
+
+cp ../shared_libraries/database/shared_recovery.py build/orca_shared/
+let return_code=$?
+check_rc $return_code "ERROR: Unable to copy shared library [orca_shared/shared_recovery.py]"
+```
+
 <a name="pydoc"></a>
 ## pydoc recovery
 ```

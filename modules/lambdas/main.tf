@@ -264,7 +264,7 @@ resource "aws_lambda_permission" "allow_sqs_trigger" {
 
   ## OPTIONAL
   statement_id = "AllowExecutionFromSQS"
-  source_arn   = module.sqs.orca_sqs_status_update_queue_arn
+  source_arn   = var.orca_sqs_status_update_queue_arn
 }
 
 

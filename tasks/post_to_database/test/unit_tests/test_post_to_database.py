@@ -32,17 +32,21 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
         mock_set_metadata.assert_called_once_with(event, context)
         mock_task.assert_called_once_with(records, mock_get_configuration.return_value)
 
+    @patch('orca_shared.shared_db.get_user_connection')
     @patch('post_to_database.send_record_to_database')
     def test_task_happy_path(self,
-                             mock_send_record_to_database: MagicMock):
+                             mock_send_record_to_database: MagicMock,
+                             mock_get_user_connection: MagicMock):
         record0 = Mock()
         record1 = Mock()
         records = [record0, record1]
         db_connect_info = Mock()
+        mock_engine = Mock()
+        mock_get_user_connection.return_value = mock_engine
 
         post_to_database.task(records, db_connect_info)
 
-        mock_send_record_to_database.assert_has_calls([call(record0, db_connect_info), call(record1, db_connect_info)])
+        mock_send_record_to_database.assert_has_calls([call(record0, mock_engine), call(record1, mock_engine)])
         self.assertEqual(2, mock_send_record_to_database.call_count)
 
     @patch('post_to_database.create_status_for_job_and_files')
@@ -67,16 +71,16 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
             "files": files
         }
         request_method = post_to_database.RequestMethod.NEW_JOB
-        db_connect_info = Mock()
+        mock_engine = Mock()
         record = {
             'body': json.dumps(values, indent=4),
             'messageAttributes': {'RequestMethod': request_method.value.__str__()}
         }
 
-        post_to_database.send_record_to_database(record, db_connect_info)
+        post_to_database.send_record_to_database(record, mock_engine)
 
         mock_create_status_for_job_and_files.assert_called_once_with(job_id, granule_id, request_time,
-                                                                     archive_destination, files, db_connect_info)
+                                                                     archive_destination, files, mock_engine)
 
     @patch('post_to_database.update_status_for_file')
     def test_send_record_to_database_update_status_for_file(self,
@@ -98,16 +102,16 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
             "error_message": error_message
         }
         request_method = post_to_database.RequestMethod.UPDATE_FILE
-        db_connect_info = Mock()
+        mock_engine = Mock()
         record = {
             'body': json.dumps(values, indent=4),
             'messageAttributes': {'RequestMethod': request_method.value.__str__()}
         }
 
-        post_to_database.send_record_to_database(record, db_connect_info)
+        post_to_database.send_record_to_database(record, mock_engine)
 
         mock_update_status_for_file.assert_called_once_with(job_id, granule_id, filename, last_update, completion_time,
-                                                            status_id, error_message, db_connect_info)
+                                                            status_id, error_message, mock_engine)
 
     @patch('post_to_database.update_status_for_file')
     def test_send_record_to_database_update_status_for_file_defaults_for_missing_properties(
@@ -126,22 +130,20 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
             "status_id": status_id
         }
         request_method = post_to_database.RequestMethod.UPDATE_FILE
-        db_connect_info = Mock()
+        mock_engine = Mock()
         record = {
             'body': json.dumps(values, indent=4),
             'messageAttributes': {'RequestMethod': request_method.value.__str__()}
         }
 
-        post_to_database.send_record_to_database(record, db_connect_info)
+        post_to_database.send_record_to_database(record, mock_engine)
 
         mock_update_status_for_file.assert_called_once_with(job_id, granule_id, filename, last_update, None,
-                                                            status_id, None, db_connect_info)
+                                                            status_id, None, mock_engine)
 
     @patch('post_to_database.create_file_sql')
     @patch('post_to_database.create_job_sql')
-    @patch('orca_shared.shared_db.get_user_connection')
     def test_create_status_for_job_and_files_happy_path(self,
-                                                        mock_get_user_connection: MagicMock,
                                                         mock_create_job_sql: MagicMock,
                                                         mock_create_file_sql: MagicMock):
         job_id = uuid.uuid4().__str__()
@@ -182,20 +184,16 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
             }
         ]
 
-        db_connect_info = Mock()
-
         mock_engine = Mock()
         mock_engine.begin.return_value = Mock()
         mock_connection = Mock()
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
         mock_engine.begin.return_value.__exit__ = Mock()
-        mock_get_user_connection.return_value = mock_engine
 
         post_to_database.create_status_for_job_and_files(job_id, granule_id, request_time, archive_destination, files,
-                                                         db_connect_info)
+                                                         mock_engine)
 
-        mock_get_user_connection.assert_called_once_with(db_connect_info)
         mock_connection.execute.assert_has_calls([
             call(
                 mock_create_job_sql.return_value,
@@ -226,9 +224,7 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
 
     @patch('post_to_database.create_file_sql')
     @patch('post_to_database.create_job_sql')
-    @patch('orca_shared.shared_db.get_user_connection')
     def test_create_status_for_job_and_files_all_files_failed(self,
-                                                              mock_get_user_connection: MagicMock,
                                                               mock_create_job_sql: MagicMock,
                                                               mock_create_file_sql: MagicMock
                                                               ):
@@ -295,20 +291,16 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
             }
         ]
 
-        db_connect_info = Mock()
-
         mock_engine = Mock()
         mock_engine.begin.return_value = Mock()
         mock_connection = Mock()
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
         mock_engine.begin.return_value.__exit__ = Mock()
-        mock_get_user_connection.return_value = mock_engine
 
         post_to_database.create_status_for_job_and_files(job_id, granule_id, request_time, archive_destination, files,
-                                                         db_connect_info)
+                                                         mock_engine)
 
-        mock_get_user_connection.assert_called_once_with(db_connect_info)
         mock_connection.execute.assert_has_calls([
             call(
                 mock_create_job_sql.return_value,
@@ -347,9 +339,7 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
 
     @patch('post_to_database.update_file_sql')
     @patch('post_to_database.update_job_sql')
-    @patch('orca_shared.shared_db.get_user_connection')
     def test_update_status_for_file_happy_path(self,
-                                               mock_get_user_connection: MagicMock,
                                                mock_update_job_sql: MagicMock,
                                                mock_update_file_sql: MagicMock
                                                ):
@@ -361,19 +351,15 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
         status_id = 4
         error_message = uuid.uuid4().__str__()
 
-        db_connect_info = Mock()
-
         mock_engine = Mock()
         mock_engine.begin.return_value = Mock()
         mock_connection = Mock()
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
         mock_engine.begin.return_value.__exit__ = Mock()
-        mock_get_user_connection.return_value = mock_engine
 
         post_to_database.update_status_for_file(job_id, granule_id, filename, last_update, completion_time, status_id,
-                                                error_message, db_connect_info)
-        mock_get_user_connection.assert_called_once_with(db_connect_info)
+                                                error_message, mock_engine)
         mock_connection.execute.assert_has_calls([
             call(
                 mock_update_file_sql.return_value,

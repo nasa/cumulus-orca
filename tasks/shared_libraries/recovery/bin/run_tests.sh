@@ -67,6 +67,23 @@ let return_code=$?
 
 check_rc $return_code "ERROR: pip install encountered an error."
 
+## Copy shared libraries
+echo "INFO: Copying ORCA shared libraries ..."
+if [ -d orca_shared ]; then
+    rm -rf orca_shared
+fi
+
+mkdir orca_shared
+let return_code=$?
+check_rc $return_code "ERROR: Unable to create orca_shared directory."
+
+touch orca_shared/__init__.py
+let return_code=$?
+check_rc $return_code "ERROR: Unable to create [orca_shared/__init__.py] file"
+
+cp ../shared_libraries/database/shared_recovery.py orca_shared/
+let return_code=$?
+check_rc $return_code "ERROR: Unable to copy shared library [orca_shared/shared_recovery.py]"
 
 ## Run unit tests and check Coverage
 echo "INFO: Running unit and coverage tests ....................."
@@ -80,6 +97,9 @@ check_rc $return_code "ERROR: Unit tests encountered failures."
 coverage report --fail-under=80
 let return_code=$?
 check_rc $return_code "ERROR: Unit tests coverage is less than 80%"
+
+# Cleanup shared libraries
+rm -rf orca_shared
 
 ## Deactivate and remove the virtual env
 echo "INFO: Cleaning up the environment ..."

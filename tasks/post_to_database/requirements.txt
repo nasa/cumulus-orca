@@ -1,4 +1,4 @@
-boto3==1.16.9
+boto3~=1.12.47
 cumulus-message-adapter-python>=1.1.1
 SQLAlchemy~=1.4.13
 fastjsonschema~=2.15.1

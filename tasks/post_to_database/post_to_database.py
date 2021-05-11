@@ -11,23 +11,37 @@ from typing import Any, List, Dict, Optional
 import fastjsonschema as fastjsonschema
 from cumulus_logger import CumulusLogger
 from sqlalchemy import text
+from sqlalchemy.future import Engine
 
 from orca_shared import shared_db
 from orca_shared.shared_recovery import RequestMethod, OrcaStatus
 
 LOGGER = CumulusLogger()
-with open("schemas/new_job_input.json", "r") as raw_schema:
-    new_job_validate = fastjsonschema.compile(json.loads(raw_schema.read()))
-with open("schemas/update_file_input.json", "r") as raw_schema:
-    update_file_validate = fastjsonschema.compile(json.loads(raw_schema.read()))
+# Generating schema validators can take time, so do it once and reuse.
+try:
+    with open("schemas/new_job_input.json", "r") as raw_schema:
+        _NEW_JOB_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
+    with open("schemas/update_file_input.json", "r") as raw_schema:
+        _UPDATE_FILE_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
+except Exception as ex:
+    LOGGER.error(f"Could not build schema validator: {ex}")
+    raise
 
 
-def task(records: List[Dict[str, Any]], db_connect_info: Dict):
+def task(records: List[Dict[str, Any]], db_connect_info: Dict) -> None:
+    """
+    Sends each individual record to send_record_to_database.
+
+    Args:
+        records: A list of Dicts. See send_record_to_database for schema info.
+        db_connect_info: See shared_db.py's get_configuration for further details.
+    """
+    engine = shared_db.get_user_connection(db_connect_info)
     for record in records:
-        send_record_to_database(record, db_connect_info)
+        send_record_to_database(record, engine)
 
 
-def send_record_to_database(record: Dict[str, Any], db_connect_info: Dict) -> None:
+def send_record_to_database(record: Dict[str, Any], engine: Engine) -> None:
     """
     Deconstructs a record to its components and calls send_values_to_database with the result.
 
@@ -35,23 +49,24 @@ def send_record_to_database(record: Dict[str, Any], db_connect_info: Dict) -> No
         record: Contains the following keys:
             'body' (str): A json string representing a dict.
                 Contains key/value pairs of column names and values for those columns.
+                Must match one of the schemas.
             'messageAttributes' (dict): Contains the following keys:
                 'TableName' (str): The name of the table to target.
                 'RequestMethod' (str): 'post' or 'put', depending on if row should be created or updated respectively.
-        db_connect_info: See shared_db.py's get_configuration for further details.
+        engine: The sqlalchemy engine to use for contacting the database.
     """
     values = json.loads(record['body'])
     request_method = RequestMethod(record['messageAttributes']['RequestMethod'])
     if request_method == RequestMethod.NEW_JOB:
-        new_job_validate(values)
+        _NEW_JOB_VALIDATE(values)
         create_status_for_job_and_files(values['job_id'],
                                         values['granule_id'],
                                         values['request_time'],
                                         values['archive_destination'],
                                         values['files'],
-                                        db_connect_info)
+                                        engine)
     elif request_method == RequestMethod.UPDATE_FILE:
-        update_file_validate(values)
+        _UPDATE_FILE_VALIDATE(values)
         update_status_for_file(values['job_id'],
                                values['granule_id'],
                                values['filename'],
@@ -59,9 +74,11 @@ def send_record_to_database(record: Dict[str, Any], db_connect_info: Dict) -> No
                                values.get('completion_time', None),
                                values['status_id'],
                                values.get('error_message', None),
-                               db_connect_info)
+                               engine)
     else:
-        raise ValueError(f"RequestMethod '{request_method}' not found.")
+        error = ValueError(f"RequestMethod '{request_method.value}' not found.")
+        LOGGER.critical(error)
+        raise error
 
 
 def create_status_for_job_and_files(job_id: str,
@@ -69,7 +86,7 @@ def create_status_for_job_and_files(job_id: str,
                                     request_time: str,
                                     archive_destination: str,
                                     files: List[Dict[str, Any]],
-                                    db_connect_info: Dict) -> None:
+                                    engine: Engine) -> None:
     """
     Posts the entry for the job, followed by individual entries for each file.
 
@@ -87,7 +104,7 @@ def create_status_for_job_and_files(job_id: str,
             'request_time' (str)
             'last_update' (str)
             'completion_time' (str, Optional)
-        db_connect_info: See shared_db.py's get_configuration for further details.
+        engine: The sqlalchemy engine to use for contacting the database.
     """
     found_pending = False
     job_completion_time = None
@@ -103,7 +120,9 @@ def create_status_for_job_and_files(job_id: str,
                 job_completion_time = max(job_completion_time,
                                           file_completion_time)
         else:
-            raise ValueError(f"Status ID '{file['status_id']}' not allowed for new status.")
+            error = ValueError(f"Status ID '{file['status_id']}' not allowed for new status.")
+            LOGGER.critical(error)
+            raise error
         file_parameters.append({'job_id': job_id, 'granule_id': granule_id, 'filename': file['filename'],
                                 'key_path': file['key_path'], 'restore_destination': file['restore_destination'],
                                 'status_id': file['status_id'], 'error_message': file.get('error_message', None),
@@ -119,14 +138,17 @@ def create_status_for_job_and_files(job_id: str,
         job_status = OrcaStatus.FAILED
         job_completion_time = job_completion_time.isoformat().__str__()
 
-    engine = shared_db.get_user_connection(db_connect_info)
-    with engine.begin() as connection:
-        connection.execute(create_job_sql(),
-                           [{'job_id': job_id, 'granule_id': granule_id, 'status_id': job_status.value,
-                             'request_time': request_time,
-                             'completion_time': job_completion_time,
-                             'archive_destination': archive_destination}])
-        connection.execute(create_file_sql(), file_parameters)
+    try:
+        with engine.begin() as connection:
+            connection.execute(create_job_sql(),
+                               [{'job_id': job_id, 'granule_id': granule_id, 'status_id': job_status.value,
+                                 'request_time': request_time,
+                                 'completion_time': job_completion_time,
+                                 'archive_destination': archive_destination}])
+            connection.execute(create_file_sql(), file_parameters)
+    except Exception as sql_ex:
+        LOGGER.error(f"Error while creating statuses for job '{job_id}': {sql_ex}")
+        raise
 
 
 def update_status_for_file(job_id: str,
@@ -136,7 +158,7 @@ def update_status_for_file(job_id: str,
                            completion_time: Optional[str],
                            status_id: int,
                            error_message: Optional[str],
-                           db_connect_info: Dict) -> None:
+                           engine: Engine) -> None:
     """
     Updates a given file's status entry, modifying the job if all files for that job have advanced in status.
 
@@ -149,16 +171,19 @@ def update_status_for_file(job_id: str,
         status_id: Defines the status id used in the ORCA Recovery database.
         error_message: message displayed on error.
 
-        db_connect_info: See shared_db.py's get_configuration for further details.
+        engine: The sqlalchemy engine to use for contacting the database.
     """
     file_parameters = {'status_id': status_id, 'last_update': last_update,
                        'completion_time': completion_time, 'error_message': error_message,
                        'job_id': job_id, 'granule_id': granule_id, 'filename': filename}
     job_parameters = {'job_id': job_id, 'granule_id': granule_id}
-    engine = shared_db.get_user_connection(db_connect_info)
-    with engine.begin() as connection:
-        connection.execute(update_file_sql(), file_parameters)
-        connection.execute(update_job_sql(), job_parameters)
+    try:
+        with engine.begin() as connection:
+            connection.execute(update_file_sql(), file_parameters)
+            connection.execute(update_job_sql(), job_parameters)
+    except Exception as sql_ex:
+        LOGGER.error(f"Error while creating statuses for job '{job_id}': {sql_ex}")
+        raise
 
 
 def create_job_sql():
