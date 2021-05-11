@@ -144,6 +144,8 @@ class TestMigrateDatabseLibraries(unittest.TestCase):
                     call("SET search_path TO orca, public;"),
                     call("RESET ROLE;"),
                     call("SET search_path TO orca, dr, public;"),
+                    call("SET ROLE dbo;"),
+                    call("RESET ROLE;"),
                 ]
                 mock_text.assert_has_calls(text_calls, any_order=False)
 
@@ -170,7 +172,9 @@ class TestMigrateDatabseLibraries(unittest.TestCase):
                         call.execute(mock_recovery_job_data()),
                         call.execute(mock_recovery_file_data()),
                         call.execute(mock_drop_request_status_table()),
+                        call.execute(mock_text("SET ROLE dbo;")),
                         call.execute(mock_drop_dr_schema()),
+                        call.execute(mock_text("RESET ROLE;")),
                         call.execute(mock_drop_drdbo_role()),
                         call.execute(mock_drop_dr_role()),
                         call.execute(mock_drop_dbo_user()),
@@ -201,7 +205,9 @@ class TestMigrateDatabseLibraries(unittest.TestCase):
                         call.execute(mock_recovery_job_data()),
                         call.execute(mock_recovery_file_data()),
                         call.execute(mock_drop_request_status_table()),
+                        call.execute(mock_text("SET ROLE dbo;")),
                         call.execute(mock_drop_dr_schema()),
+                        call.execute(mock_text("RESET ROLE;")),
                         call.execute(mock_drop_drdbo_role()),
                         call.execute(mock_drop_dr_role()),
                         call.execute(mock_drop_dbo_user()),
