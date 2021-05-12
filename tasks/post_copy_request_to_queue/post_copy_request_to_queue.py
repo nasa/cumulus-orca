@@ -22,7 +22,6 @@ from requests_db import get_dbconnect_info,DatabaseError
 from database import single_query, result_to_json
 from cumulus_logger import CumulusLogger
 import logging
-
 # instantiate CumulusLogger
 LOGGER = CumulusLogger()
 
@@ -81,7 +80,7 @@ def task(
             message = f"No metadata found for {key_path}"
             LOGGER.fatal(message)
             raise Exception(message)
-        # convert db result to json
+        # # convert db result to json
         db_result_json = result_to_json(rows)
 
     except Exception as ex:
@@ -104,13 +103,13 @@ def task(
         "source_key": key_path,
         "target_key": key_path,  # todo add a card to configure target_key in the future
         "restore_destination": restore_destination,
-        "source_bucket": bucket_name,
-    }
+        "source_bucket": bucket_name
+        }
     # post to recovery queue. Retry using exponential delay if it fails
     for retry in range(max_retries):
         try:
             post_entry_to_queue(
-                orca_recoveryfile, new_data, RequestMethod.NEW, recovery_queue_url
+                "orca_recoveryfile", new_data, RequestMethod.NEW, recovery_queue_url
             )
         except Exception:
             LOGGER.error(
@@ -133,6 +132,7 @@ def task(
                 job_id,
                 granule_id,
                 filename,
+                key_path,
                 restore_destination,
                 OrcaStatus.STAGED,
                 None,
