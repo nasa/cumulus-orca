@@ -18,10 +18,11 @@ from shared_recovery import (
     post_status_for_file_to_queue,
     post_entry_to_queue,
 )
-from requests_db import get_dbconnect_info,DatabaseError
+from requests_db import get_dbconnect_info, DatabaseError
 from database import single_query, result_to_json
 from cumulus_logger import CumulusLogger
 import logging
+
 # instantiate CumulusLogger
 LOGGER = CumulusLogger()
 
@@ -103,8 +104,8 @@ def task(
         "source_key": key_path,
         "target_key": key_path,  # todo add a card to configure target_key in the future
         "restore_destination": restore_destination,
-        "source_bucket": bucket_name
-        }
+        "source_bucket": bucket_name,
+    }
     # post to recovery queue. Retry using exponential delay if it fails
     for retry in range(max_retries):
         try:
