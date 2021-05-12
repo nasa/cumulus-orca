@@ -15,10 +15,12 @@ from requests_db import get_dbconnect_info, DatabaseError
 from database import single_query, result_to_json, get_db_connect_info
 from shared_recovery import OrcaStatus
 
+
 class TestPostCopyRequestToQueue(TestCase):
     """
     Unit tests for the post_copy_request_to_queue lambda function.
     """
+
     # Create the mock instance for unit tests
     mock_sqs = mock_sqs()
     mock_sm = mock_secretsmanager()
@@ -34,7 +36,7 @@ class TestPostCopyRequestToQueue(TestCase):
         self.recovery_queue = self.test_sqs.create_queue(QueueName="recoveryqueue")
         self.db_queue_url = self.db_queue.url
         self.recovery_queue_url = self.recovery_queue.url
-               
+
         self.test_sm = boto3.client("secretsmanager", region_name="us-west-2")
         self.test_sm.create_secret(
             Name="dev-drdb-host", SecretString="aws.postgresrds.host"
@@ -42,8 +44,6 @@ class TestPostCopyRequestToQueue(TestCase):
         self.test_sm.create_secret(
             Name="dev-drdb-user-pass", SecretString="MySecretUserPassword"
         )
-
-
 
         self.event = {
             "Records": [
@@ -294,18 +294,18 @@ class TestPostCopyRequestToQueue(TestCase):
         """
         tests delay function. Raises TypeError when args are non-integer
         """
-    
+
         base_delay = "non-integer"
         exponential_backoff = "non-integer"
 
-        self.assertRaises(TypeError, exponential_delay, base_delay,exponential_backoff)
+        self.assertRaises(TypeError, exponential_delay, base_delay, exponential_backoff)
 
     # --------------------------------------task test that is having issues---------------------------------
-    
+
     @patch.dict(
         os.environ,
         {
-            'PREFIX': "dev",
+            "PREFIX": "dev",
             "DB_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
             "RECOVERY_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
             "MAX_RETRIES": "2",
@@ -315,12 +315,16 @@ class TestPostCopyRequestToQueue(TestCase):
             "DATABASE_NAME": "disaster_recovery",
             "DATABASE_USER": "rhassan",
         },
-    clear=True,
+        clear=True,
     )
-
-    @patch('database.single_query')
+    @patch("database.single_query")
     def test_task_happy_path(self, mock_single_query: MagicMock):
-        mock_single_query.return_value = {"job_id":"1", "granule_id": "3", "filename": "f1.doc", "restore_destination": "s3://restore"}
+        mock_single_query.return_value = {
+            "job_id": "1",
+            "granule_id": "3",
+            "filename": "f1.doc",
+            "restore_destination": "s3://restore",
+        }
         records = self.event["Records"]
         backoff_args = [
             self.db_queue_url,
@@ -328,9 +332,8 @@ class TestPostCopyRequestToQueue(TestCase):
             2,
             2,
             2,
-            ]
+        ]
         # task(records, *backoff_args)
-
 
         sql = """
             SELECT
@@ -345,5 +348,7 @@ class TestPostCopyRequestToQueue(TestCase):
         db_connect_info = get_dbconnect_info()
         for record in records:
             key_path = record["s3"]["object"]["key"]
-            
-        mock_single_query.assert_called_once_with(sql, db_connect_info, (key_path, OrcaStatus.PENDING.value))
+
+        mock_single_query.assert_called_once_with(
+            sql, db_connect_info, (key_path, OrcaStatus.PENDING.value)
+        )
