@@ -1,4 +1,5 @@
 boto3~=1.12.47
+moto[sqs,secretsmanager]
 pytest==6.1.2
 coverage==5.3
 ../dr_dbutils/dist/dr_dbutils-1.0.tar.gz

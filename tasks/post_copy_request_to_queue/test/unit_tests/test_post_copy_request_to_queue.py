@@ -7,22 +7,44 @@ import boto3
 import json
 import os
 import random
-from moto import mock_secretsmanager
+from moto import mock_sqs, mock_secretsmanager
 from post_copy_request_to_queue import handler, task, exponential_delay
 from unittest import mock, TestCase
 from unittest.mock import Mock, call, patch, MagicMock
 from requests_db import get_dbconnect_info, DatabaseError
-from database import single_query, result_to_json
-from botocore.exceptions import ClientError
+from database import single_query, result_to_json, get_db_connect_info
+from shared_recovery import OrcaStatus
 
 class TestPostCopyRequestToQueue(TestCase):
     """
     Unit tests for the post_copy_request_to_queue lambda function.
     """
-    # Create the mock instance of secrets manager
+    # Create the mock instance for unit tests
+    mock_sqs = mock_sqs()
     mock_sm = mock_secretsmanager()
 
     def setUp(self):
+        """
+        Perform initial setup for the tests.
+        """
+        self.mock_sqs.start()
+        self.mock_sm.start()
+        self.test_sqs = boto3.resource("sqs", region_name="us-west-2")
+        self.db_queue = self.test_sqs.create_queue(QueueName="dbqueue")
+        self.recovery_queue = self.test_sqs.create_queue(QueueName="recoveryqueue")
+        self.db_queue_url = self.db_queue.url
+        self.recovery_queue_url = self.recovery_queue.url
+               
+        self.test_sm = boto3.client("secretsmanager", region_name="us-west-2")
+        self.test_sm.create_secret(
+            Name="dev-drdb-host", SecretString="aws.postgresrds.host"
+        )
+        self.test_sm.create_secret(
+            Name="dev-drdb-user-pass", SecretString="MySecretUserPassword"
+        )
+
+
+
         self.event = {
             "Records": [
                 {
@@ -37,26 +59,19 @@ class TestPostCopyRequestToQueue(TestCase):
                 }
             ]
         }
-        self.mock_sm.start()
-        self.test_sm = boto3.client("secretsmanager", region_name="us-west-2")
-        self.test_sm.create_secret(
-            Name="dev-drdb-host", SecretString="postgres"
-        )
-        self.test_sm.create_secret(
-            Name="dev-drdb-user-pass", SecretString="MySecretUserPassword"
-        )
 
     def tearDown(self):
         """
         Perform tear down actions
         """
+        self.mock_sqs.stop()
         self.mock_sm.stop()
 
     # ------------------------------test key_path is missing from event---------------------------------------------------------------
     @patch.dict(
         os.environ,
         {
-            "RECOVERY_QUEUE_URL": "sqs.us-west-2.amazonaws.com/1234567890/recoveryqueue",
+            "RECOVERY_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
             "MAX_RETRIES": "2",
             "RETRY_SLEEP_SECS": "2",
             "RETRY_BACKOFF": "2",
@@ -73,7 +88,7 @@ class TestPostCopyRequestToQueue(TestCase):
         os.environ,
         {
             "DB_QUEUE_URL": "",
-            "RECOVERY_QUEUE_URL": "sqs.us-west-2.amazonaws.com/1234567890/recoveryqueue",
+            "RECOVERY_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
             "MAX_RETRIES": "2",
             "RETRY_SLEEP_SECS": "2",
             "RETRY_BACKOFF": "2",
@@ -90,7 +105,7 @@ class TestPostCopyRequestToQueue(TestCase):
     @patch.dict(
         os.environ,
         {
-            "DB_QUEUE_URL": "sqs.us-west-2.amazonaws.com/1234567890/dbqueue",
+            "DB_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
             "MAX_RETRIES": "2",
             "RETRY_SLEEP_SECS": "2",
             "RETRY_BACKOFF": "2",
@@ -106,7 +121,7 @@ class TestPostCopyRequestToQueue(TestCase):
     @patch.dict(
         os.environ,
         {
-            "DB_QUEUE_URL": "sqs.us-west-2.amazonaws.com/1234567890/dbqueue",
+            "DB_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
             "RECOVERY_QUEUE_URL": "",
             "MAX_RETRIES": "2",
             "RETRY_SLEEP_SECS": "2",
@@ -124,8 +139,8 @@ class TestPostCopyRequestToQueue(TestCase):
     @patch.dict(
         os.environ,
         {
-            "DB_QUEUE_URL": "sqs.us-west-2.amazonaws.com/1234567890/dbqueue",
-            "RECOVERY_QUEUE_URL": "sqs.us-west-2.amazonaws.com/1234567890/recoveryqueue",
+            "DB_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
+            "RECOVERY_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
             "RETRY_SLEEP_SECS": "2",
             "RETRY_BACKOFF": "2",
         },
@@ -140,8 +155,8 @@ class TestPostCopyRequestToQueue(TestCase):
     @patch.dict(
         os.environ,
         {
-            "DB_QUEUE_URL": "sqs.us-west-2.amazonaws.com/1234567890/dbqueue",
-            "RECOVERY_QUEUE_URL": "sqs.us-west-2.amazonaws.com/1234567890/recoveryqueue",
+            "DB_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
+            "RECOVERY_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
             "MAX_RETRIES": "",
             "RETRY_SLEEP_SECS": "2",
             "RETRY_BACKOFF": "2",
@@ -157,8 +172,8 @@ class TestPostCopyRequestToQueue(TestCase):
     @patch.dict(
         os.environ,
         {
-            "DB_QUEUE_URL": "sqs.us-west-2.amazonaws.com/1234567890/dbqueue",
-            "RECOVERY_QUEUE_URL": "sqs.us-west-2.amazonaws.com/1234567890/recoveryqueue",
+            "DB_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
+            "RECOVERY_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
             "MAX_RETRIES": "non-integer",
             "RETRY_SLEEP_SECS": "2",
             "RETRY_BACKOFF": "2",
@@ -175,8 +190,8 @@ class TestPostCopyRequestToQueue(TestCase):
     @patch.dict(
         os.environ,
         {
-            "DB_QUEUE_URL": "sqs.us-west-2.amazonaws.com/1234567890/dbqueue",
-            "RECOVERY_QUEUE_URL": "sqs.us-west-2.amazonaws.com/1234567890/recoveryqueue",
+            "DB_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
+            "RECOVERY_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
             "MAX_RETRIES": "2",
             "RETRY_BACKOFF": "2",
         },
@@ -191,8 +206,8 @@ class TestPostCopyRequestToQueue(TestCase):
     @patch.dict(
         os.environ,
         {
-            "DB_QUEUE_URL": "sqs.us-west-2.amazonaws.com/1234567890/dbqueue",
-            "RECOVERY_QUEUE_URL": "sqs.us-west-2.amazonaws.com/1234567890/recoveryqueue",
+            "DB_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
+            "RECOVERY_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
             "MAX_RETRIES": "2",
             "RETRY_SLEEP_SECS": "",
             "RETRY_BACKOFF": "2",
@@ -208,8 +223,8 @@ class TestPostCopyRequestToQueue(TestCase):
     @patch.dict(
         os.environ,
         {
-            "DB_QUEUE_URL": "sqs.us-west-2.amazonaws.com/1234567890/dbqueue",
-            "RECOVERY_QUEUE_URL": "sqs.us-west-2.amazonaws.com/1234567890/recoveryqueue",
+            "DB_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
+            "RECOVERY_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
             "MAX_RETRIES": "2",
             "RETRY_SLEEP_SECS": "non-integer",
             "RETRY_BACKOFF": "2",
@@ -227,8 +242,8 @@ class TestPostCopyRequestToQueue(TestCase):
     @patch.dict(
         os.environ,
         {
-            "DB_QUEUE_URL": "sqs.us-west-2.amazonaws.com/1234567890/dbqueue",
-            "RECOVERY_QUEUE_URL": "sqs.us-west-2.amazonaws.com/1234567890/recoveryqueue",
+            "DB_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
+            "RECOVERY_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
             "MAX_RETRIES": "2",
             "RETRY_SLEEP_SECS": "2",
         },
@@ -243,8 +258,8 @@ class TestPostCopyRequestToQueue(TestCase):
     @patch.dict(
         os.environ,
         {
-            "DB_QUEUE_URL": "sqs.us-west-2.amazonaws.com/1234567890/dbqueue",
-            "RECOVERY_QUEUE_URL": "sqs.us-west-2.amazonaws.com/1234567890/recoveryqueue",
+            "DB_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
+            "RECOVERY_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
             "MAX_RETRIES": "2",
             "RETRY_SLEEP_SECS": "2",
             "RETRY_BACKOFF": "",
@@ -260,8 +275,8 @@ class TestPostCopyRequestToQueue(TestCase):
     @patch.dict(
         os.environ,
         {
-            "DB_QUEUE_URL": "sqs.us-west-2.amazonaws.com/1234567890/dbqueue",
-            "RECOVERY_QUEUE_URL": "sqs.us-west-2.amazonaws.com/1234567890/recoveryqueue",
+            "DB_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
+            "RECOVERY_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
             "MAX_RETRIES": "2",
             "RETRY_SLEEP_SECS": "2",
             "RETRY_BACKOFF": "non-integer",
@@ -285,34 +300,50 @@ class TestPostCopyRequestToQueue(TestCase):
 
         self.assertRaises(TypeError, exponential_delay, base_delay,exponential_backoff)
 
-    # --------------------------------------task test---------------------------------
+    # --------------------------------------task test that is having issues---------------------------------
+    
+    @patch.dict(
+        os.environ,
+        {
+            'PREFIX': "dev",
+            "DB_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
+            "RECOVERY_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
+            "MAX_RETRIES": "2",
+            "RETRY_SLEEP_SECS": "2",
+            "RETRY_BACKOFF": "2",
+            "DATABASE_PORT": "5432",
+            "DATABASE_NAME": "disaster_recovery",
+            "DATABASE_USER": "rhassan",
+        },
+    clear=True,
+    )
 
-    # @patch.dict(
-    #     os.environ,
-    #     {
-    #         "DB_QUEUE_URL": "sqs.us-west-2.amazonaws.com/1234567890/dbqueue",
-    #         "RECOVERY_QUEUE_URL": "sqs.us-west-2.amazonaws.com/1234567890/recoveryqueue",
-    #         "MAX_RETRIES": "2",
-    #         "RETRY_SLEEP_SECS": "2",
-    #         "RETRY_BACKOFF": "2",
-    #         "DATABASE_PORT": "5432",
-    #         "DATABASE_NAME": "disaster_recovery",
-    #         "DATABASE_USER": "rhassan",
-    #         # "dev-drdb-host": "test",
-    #         # "dev-drdb-user-pass": "1234"
-    #     },
-    #     clear=True,
-    # )
-    # def test_task_others(self):
-    #     """
-    #     raises ClientError if secrets are not present in secrets manager
-    #     """
-    #     records = self.event["Records"]
-    #     backoff_args = [
-    #         "sqs.us-west-2.amazonaws.com/1234567890/dbqueue",
-    #         "sqs.us-west-2.amazonaws.com/1234567890/recoveryqueue",
-    #         2,
-    #         2,
-    #         2,
-    #     ]
-    #     self.assertRaises(ClientError, task, records, *backoff_args)
+    @patch('database.single_query')
+    def test_task_happy_path(self, mock_single_query: MagicMock):
+        mock_single_query.return_value = {"job_id":"1", "granule_id": "3", "filename": "f1.doc", "restore_destination": "s3://restore"}
+        records = self.event["Records"]
+        backoff_args = [
+            self.db_queue_url,
+            self.recovery_queue_url,
+            2,
+            2,
+            2,
+            ]
+        # task(records, *backoff_args)
+
+
+        sql = """
+            SELECT
+                job_id, granule_id, filename, restore_destination
+            FROM
+                orca_recoverfile
+            WHERE
+                key_path = %s
+            AND
+                status_id = %d
+            """
+        db_connect_info = get_dbconnect_info()
+        for record in records:
+            key_path = record["s3"]["object"]["key"]
+            
+        mock_single_query.assert_called_once_with(sql, db_connect_info, (key_path, OrcaStatus.PENDING.value))
