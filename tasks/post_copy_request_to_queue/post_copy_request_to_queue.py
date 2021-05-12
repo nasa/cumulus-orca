@@ -18,8 +18,8 @@ from shared_recovery import (
     post_status_for_file_to_queue,
     post_entry_to_queue,
 )
-from requests_db import get_dbconnect_info, DatabaseError
-from database import single_query, result_to_json
+import requests_db
+import database
 from cumulus_logger import CumulusLogger
 import logging
 
@@ -75,14 +75,14 @@ def task(
     # Gets the dbconnection info.
     # query the db table
     try:
-        db_connect_info = get_dbconnect_info()
-        rows = single_query(sql, db_connect_info, (key_path, OrcaStatus.PENDING.value))
+        db_connect_info = requests_db.get_dbconnect_info()
+        rows = database.single_query(sql, db_connect_info, (key_path, OrcaStatus.PENDING.value))
         if len(rows) == 0:
             message = f"No metadata found for {key_path}"
             LOGGER.fatal(message)
             raise Exception(message)
         # # convert db result to json
-        db_result_json = result_to_json(rows)
+        db_result_json = database.result_to_json(rows)
 
     except Exception as ex:
         message = f"Unable to retrieve {key_path} metadata"

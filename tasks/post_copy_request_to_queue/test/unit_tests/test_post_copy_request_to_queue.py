@@ -4,15 +4,11 @@ Description: unit tests for post_copy_request_to_queue.py
 
 """
 import boto3
-import json
 import os
-import random
-from moto import mock_sqs, mock_secretsmanager
+from moto import mock_sqs
 from post_copy_request_to_queue import handler, task, exponential_delay
-from unittest import mock, TestCase
-from unittest.mock import Mock, call, patch, MagicMock
-from requests_db import get_dbconnect_info, DatabaseError
-from database import single_query, result_to_json, get_db_connect_info
+from unittest import TestCase
+from unittest.mock import patch, MagicMock
 from shared_recovery import OrcaStatus
 
 
@@ -23,28 +19,17 @@ class TestPostCopyRequestToQueue(TestCase):
 
     # Create the mock instance for unit tests
     mock_sqs = mock_sqs()
-    mock_sm = mock_secretsmanager()
 
     def setUp(self):
         """
         Perform initial setup for the tests.
         """
         self.mock_sqs.start()
-        self.mock_sm.start()
         self.test_sqs = boto3.resource("sqs", region_name="us-west-2")
         self.db_queue = self.test_sqs.create_queue(QueueName="dbqueue")
         self.recovery_queue = self.test_sqs.create_queue(QueueName="recoveryqueue")
         self.db_queue_url = self.db_queue.url
         self.recovery_queue_url = self.recovery_queue.url
-
-        self.test_sm = boto3.client("secretsmanager", region_name="us-west-2")
-        self.test_sm.create_secret(
-            Name="dev-drdb-host", SecretString="aws.postgresrds.host"
-        )
-        self.test_sm.create_secret(
-            Name="dev-drdb-user-pass", SecretString="MySecretUserPassword"
-        )
-
         self.event = {
             "Records": [
                 {
@@ -65,243 +50,7 @@ class TestPostCopyRequestToQueue(TestCase):
         Perform tear down actions
         """
         self.mock_sqs.stop()
-        self.mock_sm.stop()
-
-    # ------------------------------test key_path is missing from event---------------------------------------------------------------
-    @patch.dict(
-        os.environ,
-        {
-            "RECOVERY_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
-            "MAX_RETRIES": "2",
-            "RETRY_SLEEP_SECS": "2",
-            "RETRY_BACKOFF": "2",
-        },
-        clear=True,
-    )
-    def test_event_no_db_queue(self):
-        """
-        raises exception if db_queue_url is missing
-        """
-        self.assertRaises(Exception, handler, self.event, context=None)
-
-    @patch.dict(
-        os.environ,
-        {
-            "DB_QUEUE_URL": "",
-            "RECOVERY_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
-            "MAX_RETRIES": "2",
-            "RETRY_SLEEP_SECS": "2",
-            "RETRY_BACKOFF": "2",
-        },
-        clear=True,
-    )
-    def test_event_empty_db_queue(self):
-        """
-        raises exception if db_queue_url is empty string
-        """
-        self.assertRaises(Exception, handler, self.event, context=None)
-
-    # ------------------------------test RECOVERY_QUEUE_URL env var---------------------------------------------------------------
-    @patch.dict(
-        os.environ,
-        {
-            "DB_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
-            "MAX_RETRIES": "2",
-            "RETRY_SLEEP_SECS": "2",
-            "RETRY_BACKOFF": "2",
-        },
-        clear=True,
-    )
-    def test_event_no_recovery_queue(self):
-        """
-        raises exception if recovery_queue_url is missing.
-        """
-        self.assertRaises(Exception, handler, self.event, context=None)
-
-    @patch.dict(
-        os.environ,
-        {
-            "DB_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
-            "RECOVERY_QUEUE_URL": "",
-            "MAX_RETRIES": "2",
-            "RETRY_SLEEP_SECS": "2",
-            "RETRY_BACKOFF": "2",
-        },
-        clear=True,
-    )
-    def test_event_empty_recovery_queue(self):
-        """
-        raises exception if recovery_queue_url is empty string.
-        """
-        self.assertRaises(Exception, handler, self.event, context=None)
-
-    # ------------------------------test MAX_RETRIES env var---------------------------------------------------------------
-    @patch.dict(
-        os.environ,
-        {
-            "DB_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
-            "RECOVERY_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
-            "RETRY_SLEEP_SECS": "2",
-            "RETRY_BACKOFF": "2",
-        },
-        clear=True,
-    )
-    def test_event_no_max_retries(self):
-        """
-        raises exception if MAX_RETRIES is missing.
-        """
-        self.assertRaises(Exception, handler, self.event, context=None)
-
-    @patch.dict(
-        os.environ,
-        {
-            "DB_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
-            "RECOVERY_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
-            "MAX_RETRIES": "",
-            "RETRY_SLEEP_SECS": "2",
-            "RETRY_BACKOFF": "2",
-        },
-        clear=True,
-    )
-    def test_event_empty_max_retries(self):
-        """
-        raises exception if MAX_RETRIES is empty string.
-        """
-        self.assertRaises(Exception, handler, self.event, context=None)
-
-    @patch.dict(
-        os.environ,
-        {
-            "DB_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
-            "RECOVERY_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
-            "MAX_RETRIES": "non-integer",
-            "RETRY_SLEEP_SECS": "2",
-            "RETRY_BACKOFF": "2",
-        },
-        clear=True,
-    )
-    def test_event_non_int_max_retries(self):
-        """
-        raises ValueError if MAX_RETRIES is non-integer.
-        """
-        self.assertRaises(ValueError, handler, self.event, context=None)
-
-    # ------------------------------test RETRY_SLEEP_SECS env var---------------------------------------------------------------
-    @patch.dict(
-        os.environ,
-        {
-            "DB_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
-            "RECOVERY_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
-            "MAX_RETRIES": "2",
-            "RETRY_BACKOFF": "2",
-        },
-        clear=True,
-    )
-    def test_event_no_retry_sleep_secs(self):
-        """
-        raises exception if RETRY_SLEEP_SECS is missing.
-        """
-        self.assertRaises(Exception, handler, self.event, context=None)
-
-    @patch.dict(
-        os.environ,
-        {
-            "DB_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
-            "RECOVERY_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
-            "MAX_RETRIES": "2",
-            "RETRY_SLEEP_SECS": "",
-            "RETRY_BACKOFF": "2",
-        },
-        clear=True,
-    )
-    def test_event_empty_retry_sleep_secs(self):
-        """
-        raises exception if RETRY_SLEEP_SECS is empty string.
-        """
-        self.assertRaises(Exception, handler, self.event, context=None)
-
-    @patch.dict(
-        os.environ,
-        {
-            "DB_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
-            "RECOVERY_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
-            "MAX_RETRIES": "2",
-            "RETRY_SLEEP_SECS": "non-integer",
-            "RETRY_BACKOFF": "2",
-        },
-        clear=True,
-    )
-    def test_event_non_int_retry_sleep_secs(self):
-        """
-        raises ValueError if RETRY_SLEEP_SECS is non-integer.
-        """
-        self.assertRaises(ValueError, handler, self.event, context=None)
-
-    # ------------------------------test RETRY_BACKOFF env var---------------------------------------------------------------
-
-    @patch.dict(
-        os.environ,
-        {
-            "DB_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
-            "RECOVERY_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
-            "MAX_RETRIES": "2",
-            "RETRY_SLEEP_SECS": "2",
-        },
-        clear=True,
-    )
-    def test_event_no_retry_backoff(self):
-        """
-        raises exception if RETRY_BACKOFF is missing.
-        """
-        self.assertRaises(Exception, handler, self.event, context=None)
-
-    @patch.dict(
-        os.environ,
-        {
-            "DB_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
-            "RECOVERY_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
-            "MAX_RETRIES": "2",
-            "RETRY_SLEEP_SECS": "2",
-            "RETRY_BACKOFF": "",
-        },
-        clear=True,
-    )
-    def test_event_empty_retry_backoff(self):
-        """
-        raises exception if RETRY_BACKOFF is empty string.
-        """
-        self.assertRaises(Exception, handler, self.event, context=None)
-
-    @patch.dict(
-        os.environ,
-        {
-            "DB_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
-            "RECOVERY_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
-            "MAX_RETRIES": "2",
-            "RETRY_SLEEP_SECS": "2",
-            "RETRY_BACKOFF": "non-integer",
-        },
-        clear=True,
-    )
-    def test_event_non_int_retry_backoff(self):
-        """
-        raises ValueError if RETRY_BACKOFF is non-integer.
-        """
-        self.assertRaises(ValueError, handler, self.event, context=None)
-
-    # --------------------------------------exponential delay test---------------------------------
-    def test_exponential_delay(self):
-        """
-        tests delay function. Raises TypeError when args are non-integer
-        """
-
-        base_delay = "non-integer"
-        exponential_backoff = "non-integer"
-
-        self.assertRaises(TypeError, exponential_delay, base_delay, exponential_backoff)
-
-    # --------------------------------------task test that is having issues---------------------------------
-
+    # --------------------------------------unit test for task fn.---------------------------------
     @patch.dict(
         os.environ,
         {
@@ -318,7 +67,12 @@ class TestPostCopyRequestToQueue(TestCase):
         clear=True,
     )
     @patch("database.single_query")
-    def test_task_happy_path(self, mock_single_query: MagicMock):
+    @patch("requests_db.get_dbconnect_info")
+
+    def test_task_happy_path(self, mock_get_db_connect_info: MagicMock, mock_single_query: MagicMock):
+        """
+        happy path. Mocks db_connect_info and single_query.
+        """
         mock_single_query.return_value = {
             "job_id": "1",
             "granule_id": "3",
@@ -333,22 +87,108 @@ class TestPostCopyRequestToQueue(TestCase):
             2,
             2,
         ]
-        # task(records, *backoff_args)
+        #calling the task function
+        task(records, *backoff_args)
 
         sql = """
-            SELECT
-                job_id, granule_id, filename, restore_destination
-            FROM
-                orca_recoverfile
-            WHERE
-                key_path = %s
-            AND
-                status_id = %d
-            """
-        db_connect_info = get_dbconnect_info()
+        SELECT
+            job_id, granule_id, filename, restore_destination
+        FROM
+            orca_recoverfile
+        WHERE
+            key_path = %s
+        AND
+            status_id = %d
+    """
         for record in records:
             key_path = record["s3"]["object"]["key"]
 
         mock_single_query.assert_called_once_with(
-            sql, db_connect_info, (key_path, OrcaStatus.PENDING.value)
+            sql, mock_get_db_connect_info.return_value, (key_path, OrcaStatus.PENDING.value)
         )
+# -----------------------------------------------------------------------------------------------------
+
+    @patch.dict(
+    os.environ,
+    {
+        "DB_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
+        "RECOVERY_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
+        "MAX_RETRIES": "2",
+        "RETRY_SLEEP_SECS": "2",
+        "RETRY_BACKOFF": "2",
+    },
+    clear=True,
+    )
+    
+    def test_event_var_None_empty(self):
+        """
+        Validates that an error is thrown if an expected environment variable is not
+        set.
+        """
+        env_names = [
+            "DB_QUEUE_URL",
+            "RECOVERY_QUEUE_URL",
+            "MAX_RETRIES",
+            "RETRY_SLEEP_SECS",
+            "RETRY_BACKOFF"
+        ]
+        env_bad_values = [None, ""]
+
+        for name in env_names:
+            good_value = os.getenv(name)
+            for bad_value in env_bad_values:
+                with self.subTest(
+                    name=name, bad_value=bad_value, good_value=good_value
+                ):
+                    # Set the variable to the bad value and create the message
+                    if bad_value is None:
+                        del os.environ[name]
+                    else:
+                        os.environ[name] = bad_value
+                    # Run the test
+                    self.assertRaises(Exception, handler, self.event, context=None)
+                    # Reset the value
+                    os.environ[name] = good_value
+
+# -----------------------------------------------------------------------------------------------------
+    @patch.dict(
+        os.environ,
+        {
+            "DB_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
+            "RECOVERY_QUEUE_URL": "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
+            "MAX_RETRIES": "non-integer",
+            "RETRY_SLEEP_SECS": "non-integer",
+            "RETRY_BACKOFF": "non-integer",
+        },
+        clear=True,
+    )
+    def test_event_non_int(self):
+        """
+        raises ValueError when MAX_RETRIES, RETRY_SLEEP_SECS, RETRY_BACKOFF is non-integer.
+        """
+        env_names = [
+            "DB_QUEUE_URL",
+            "RECOVERY_QUEUE_URL",
+            "MAX_RETRIES",
+            "RETRY_SLEEP_SECS",
+            "RETRY_BACKOFF"
+        ]
+
+        for name in env_names:
+            value = os.getenv(name)
+            with self.subTest(
+                name=name, value=value
+            ):
+                if name in ["MAX_RETRIES", "RETRY_SLEEP_SECS", "RETRY_BACKOFF"]:
+                    self.assertRaises(ValueError, handler, self.event, context=None)
+
+    # --------------------------------------exponential delay test---------------------------------
+    def test_exponential_delay(self):
+        """
+        tests delay function. Raises TypeError when args are non-integer
+        """
+
+        base_delay = "non-integer"
+        exponential_backoff = "non-integer"
+
+        self.assertRaises(TypeError, exponential_delay, base_delay, exponential_backoff)
