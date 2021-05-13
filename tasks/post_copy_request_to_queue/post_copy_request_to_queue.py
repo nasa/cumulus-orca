@@ -12,12 +12,7 @@ from typing import Dict, Any, List, Optional
 from datetime import datetime, timezone
 import time
 import random
-from shared_recovery import (
-    OrcaStatus,
-    RequestMethod,
-    post_status_for_file_to_queue,
-    post_entry_to_queue,
-)
+import shared_recovery
 import requests_db
 import database
 from cumulus_logger import CumulusLogger
@@ -28,7 +23,7 @@ LOGGER = CumulusLogger()
 
 
 def task(
-    records: Dict[str, Any],
+    records: List[Dict[str, Any]],
     db_queue_url: str,
     recovery_queue_url: str,
     max_retries: int,
@@ -76,7 +71,7 @@ def task(
     # query the db table
     try:
         db_connect_info = requests_db.get_dbconnect_info()
-        rows = database.single_query(sql, db_connect_info, (key_path, OrcaStatus.PENDING.value))
+        rows = database.single_query(sql, db_connect_info, (key_path, shared_recovery.OrcaStatus.PENDING.value))
         if len(rows) == 0:
             message = f"No metadata found for {key_path}"
             LOGGER.fatal(message)
@@ -109,8 +104,8 @@ def task(
     # post to recovery queue. Retry using exponential delay if it fails
     for retry in range(max_retries):
         try:
-            post_entry_to_queue(
-                "orca_recoveryfile", new_data, RequestMethod.NEW, recovery_queue_url
+            shared_recovery.post_entry_to_queue(
+                "orca_recoveryfile", new_data, shared_recovery.RequestMethod.NEW, recovery_queue_url
             )
         except Exception:
             LOGGER.error(
@@ -129,15 +124,15 @@ def task(
     # post to DB-queue. Retry using exponential delay if it fails
     for retry in range(max_retries):
         try:
-            post_status_for_file_to_queue(
+            shared_recovery.post_status_for_file_to_queue(
                 job_id,
                 granule_id,
                 filename,
                 key_path,
                 restore_destination,
-                OrcaStatus.STAGED,
+                shared_recovery.OrcaStatus.STAGED,
                 None,
-                RequestMethod.UPDATE,
+                shared_recovery.RequestMethod.UPDATE,
                 db_queue_url,
             )
         except Exception:
