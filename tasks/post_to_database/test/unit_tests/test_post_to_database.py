@@ -117,6 +117,9 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
     def test_send_record_to_database_update_status_for_file_defaults_for_missing_properties(
             self,
             mock_update_status_for_file: MagicMock):
+        """
+        Missing completion time and error_message are fine.
+        """
         job_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
         filename = uuid.uuid4().__str__()
