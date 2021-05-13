@@ -182,7 +182,6 @@ class TestPostCopyRequestToQueue(TestCase):
                     else:
                         os.environ[name] = bad_value
                     # Run the test
-                    # test with message
                     self.assertRaises(Exception, handler, self.event, context=None)
                     # Reset the value
                     os.environ[name] = good_value
