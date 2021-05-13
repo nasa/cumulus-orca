@@ -13,19 +13,19 @@ versioning can be found [here](https://semver.org/).
 
 ## Release Process
 
-1. **Create a release branch.**
+### Create a release branch
 
 From develop, create a new release branch from develop following the
 `release-MAJOR.MINOR.x`. For example, `release-1.14.1`. Push this branch 
 to github if you created it locally.
 
-2. **Update CHANGELOG.md.**
+### Update CHANGELOG.md
 
 Update the [CHANGELOG.md](https://github.com/nasa/cumulus-orca/blob/master/CHANGELOG.md). 
 Put a header under the 'Unreleased' section with the new version number and 
 the date.
 
-3. **Create a git tag for the release.**
+### Create a git tag for the release
 
 Make sure you're on the latest commit of the release branch.
 
@@ -36,44 +36,44 @@ Create and push a new git tag:
     git push origin vx.y.z
 ```
 
-4. **Running the deployment**
+### Running the deployment
 
 Publishing of new releases is handled by a Bamboo release plan and is manually
 triggered.
 
-If you created a new release plan in step one, you will need to create a new
+If you created a new release branch in step one, you will need to create a new
 bamboo deployment plan.
 
-**Creating a Bamboo deployment plan**
+#### Creating a Bamboo deployment plan
 
-* In the ORCA project (https://ci.earthdata.nasa.gov/browse/ORCA-OI), click
-  `Actions -> Configure Plan` at the top right.
-* Scroll to the bottom of the branch list in the bottom left and select
-  `Create Plan Branch`.
-* Add the values in that list. Choose a display name that makes it very clear 
-  this is a deployment branch plan. Release (branch name) seems to work well. 
-  Make sure you enter the correct branch name.
-* Important Deselect Enable Branch - if you do not do this, it will immediately
-  fire off a build.
-* Do Immediately On the Branch Details page, enable 'Change Trigger'. Set the 
-  Trigger type to manual, and this will prevent commits to the branch from 
-  triggering the build plan. You should have been redirected to the 'Branch 
-  Details' tab after creating the plan. If not, navigate to the branch from
-  the list where you clicked 'Create Plan Branch' in the previous step.
-* Go to the Variables tab. Ensure that you are on your branch plan and not the
-  master plan: You should not see a large list of configured variables, but 
-  instead a dropdown allowing you to select variables to override, and the tab 
-  title will be Branch Variables. Set a DEPLOYMENT variable appropriate for the
-  release (defaults to last committer). This should be cumulus-from-npm-tf 
-  except in special cases such as incompatible backport branches. Then set:
-  * ORCA_VERSION: `<version number>`
-  * RELEASE_FLAG: true
-* Enable the branch from the 'Branch Details' page.
-* Run the branch using the 'Run' button in the top right.
+1. In the ORCA project (https://ci.earthdata.nasa.gov/browse/ORCA-OI), click
+   `Actions -> Configure Plan` at the top right.
+2. Scroll to the bottom of the branch list in the bottom left and select
+   `Create Plan Branch`.
+3. Add the values in that list. Choose a display name that makes it very clear 
+   this is a deployment branch plan. Release (branch name) seems to work well. 
+   Make sure you enter the correct branch name.
+4. Important Deselect Enable Branch - if you do not do this, it will immediately
+   fire off a build.
+5. Do Immediately On the Branch Details page, enable 'Change Trigger'. Set the 
+   Trigger type to manual, and this will prevent commits to the branch from 
+   triggering the build plan. You should have been redirected to the 'Branch 
+   Details' tab after creating the plan. If not, navigate to the branch from
+   the list where you clicked 'Create Plan Branch' in the previous step.
+6. Go to the Variables tab. Ensure that you are on your branch plan and not the
+   master plan: You should not see a large list of configured variables, but 
+   instead a dropdown allowing you to select variables to override, and the tab 
+   title will be Branch Variables. Set a DEPLOYMENT variable appropriate for the
+   release (defaults to last committer). This should be cumulus-from-npm-tf 
+   except in special cases such as incompatible backport branches. Then set:
+     * ORCA_VERSION: `<version number>`
+     * RELEASE_FLAG: true
+7. Enable the branch from the 'Branch Details' page.
+8. Run the branch using the 'Run' button in the top right.
 
 Bamboo will build and run unit tests against that tagged release.
 
-**Create a new ORCA release on github**
+## Create a new ORCA release on github
 
 The release is automated in Bamboo, but the step must be manually started. If
 you set the `RELEASE_FLAG` to `true` and the build steps passed, you will
@@ -94,8 +94,8 @@ the release process is complete.
 Finally, you need to merge the version update changes back into develop and 
 master.
 
-If this is the latest version, you can simply create a PR to merge the release 
-branch into develop and master. 
+If this is the latest version, create the PRs to merge the release branch 
+into develop and master. 
 
 :::note Note: 
 
@@ -107,7 +107,7 @@ base branch.
 
 ## Troubleshooting
 
-**Delete and regenerate the tag**
+### Delete and regenerate the tag
 
 To delete a published tag to re-tag, follow these steps:
 
