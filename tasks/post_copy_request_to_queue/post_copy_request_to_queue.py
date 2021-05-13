@@ -150,7 +150,7 @@ def task(
 
 # Define our exponential delay function
 # maybe move to shared library or somewhere else?
-def exponential_delay(base_delay: int, exponential_backoff: int = 2) -> int:
+def exponential_delay(base_delay: int, exponential_backoff: int) -> int:
     """
     Exponential delay function. This function is used for retries during failure.
     Args:

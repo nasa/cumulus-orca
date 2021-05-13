@@ -17,36 +17,15 @@ Input coming from ORCA S3 bucket trigger event.
 {
     "Records": [
       {
-        "eventVersion": "2.1",
         "eventSource": "aws:s3",
-        "awsRegion": "us-west-2",
-        "eventTime": "2019-09-03T19:37:27.192Z",
         "eventName": "ObjectRestore:Completed",
-        "userIdentity": {
-          "principalId": "AWS:AIDAINPONIXQXHT3IKHL2"
-        },
-        "requestParameters": {
-          "sourceIPAddress": "205.255.255.255"
-        },
-        "responseElements": {
-          "x-amz-request-id": "D82B88E5F771F645",
-          "x-amz-id-2": "vlR7PnpV2Ce81l0PRw6jlUpck7Jo5ZsQjryTjKlc5aLWGVHPZLj5NeC6qMa0emYBDXOo6QBU0Wo="
-        },
         "s3": {
-          "s3SchemaVersion": "1.0",
-          "configurationId": "828aa6fc-f7b5-4305-8584-487c791949c1",
           "bucket": {
             "name": "orca-bucket",
-            "ownerIdentity": {
-              "principalId": "A3I5XTEXAMAI3E"
-            },
             "arn": "arn:aws:s3:::orca-bucket"
           },
           "object": {
             "key": "f1.doc",
-            "size": 1305107,
-            "eTag": "b21b84d653bb07b05b1e6b33684dc11b",
-            "sequencer": "0C0F6F405D6ED209E1"
           }
         }
       }
@@ -63,19 +42,49 @@ NAME
     post_copy_request_to_queue
 
 FUNCTIONS
-    handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]
+    handler(event: Dict[str, Any], context: None) -> None
         Lambda handler. Queries the DB and then posts to the recovery queue and DB queue.
         Args:
-            event: A dict with the following keys:
-                granule_id: The unique ID of the granule to retrieve status for.
-                asyncOperationId (Optional): The unique ID of the asyncOperation.
-            context: An object provided by AWS Lambda. Used for context tracking.
+            event: A dictionary coming from the S3 bucket trigger event. See schemas/input.json for more information.
+            context: An object provided by AWS Lambda. Unused.
         
-            Environment Vars:
-                DATABASE_PORT (string): the database port. The standard is 5432.
-                DATABASE_NAME (string): the name of the database.
-                DATABASE_USER (string): the name of the application user.
-                'PREFIX' (string): The prefix used in names. 
-                OS_ENVIRON_DB_QUEUE_URL_KEY (string): The AWS SQS URL for the DB queue.
-                OS_ENVIRON_RECOVERY_QUEUE_URL_KEY (string): The AWS SQS URL for the recovery queue.
+          Environment Vars:
+              PREFIX (string): the prefix
+              DATABASE_PORT (string): the database port. The standard is 5432.
+              DATABASE_NAME (string): the name of the database.
+              DATABASE_USER (string): the name of the application user.
+              DB_QUEUE_URL (string): the SQS URL for status-update-queue
+              RECOVERY_QUEUE_URL (string): the SQS URL for staged_recovery_queue
+          Parameter store:
+              {prefix}-drdb-host (string): host name that will be retrieved from secrets manager
+              {prefix}-drdb-user-pass (string):db password that will be retrieved from secrets manager
+        Returns:
+          None
+        Raises:
+          Exception: If unable to retrieve the SQS URLs or exponential retry fields from env variables.
+
+    exponential_delay(base_delay: int, exponential_backoff: int) -> int:
+        Exponential delay function. This function is used for retries during failure.
+        Args:
+            base_delay: Number of seconds to wait between recovery failure retries.
+            exponential_backoff: The multiplier by which the retry interval increases during each attempt.
+        Returns:
+            An integer which is multiplication of base_delay and exponential_backoff.
+        Raises:
+            None
+    task(records: List[Dict[str, Any]], db_queue_url: str, recovery_queue_url: str, max_retries: int, retry_sleep_secs: int retry_backoff: int,) -> None:
+        Task called by the handler to perform the work. This task queries all entries from orca_recoverfile table that match the given filename and whose status_id is 'PENDING'. The result is then sent to the staged-recovery-queue SQS and status-update-queue SQS.
+
+      Args:
+          records: A list of dictionary passed through from the handler.
+          db_queue_url: The SQS URL of status_update_queue
+          recovery_queue_url: The SQS URL of staged_recovery_queue
+          max_retries: Number of times the code will retry in case of failure.
+          retry_sleep_secs: Number of seconds to wait between recovery failure retries.
+          retry_backoff: The multiplier by which the retry interval increases during each attempt.
+      Returns:
+          None
+      Raises:
+          Exception: If unable to retrieve key_path or db parameters, convert db result to json,
+          or post to queue.
 ```
