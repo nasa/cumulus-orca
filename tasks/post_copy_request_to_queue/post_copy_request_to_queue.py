@@ -127,11 +127,8 @@ def task(
                 job_id,
                 granule_id,
                 filename,
-                # key_path,
-                # restore_destination,
                 shared_recovery.OrcaStatus.STAGED,
                 None,
-                # shared_recovery.RequestMethod.UPDATE_FILE,
                 db_queue_url,
             )
         except Exception:
