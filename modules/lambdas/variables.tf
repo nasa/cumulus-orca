@@ -136,6 +136,19 @@ variable "database_name" {
 }
 
 
+variable "ddl_dir" {
+  type        = string
+  description = "Location of database DDL SQL files. Must have trailing /."
+}
+
+
+variable "drop_database" {
+  ##TODO: Maybe this needs to be a boolean false?
+  type        = string
+  description = "Boolean True/False that indicates the ORCA databse should be dropped."
+}
+
+
 variable "orca_recovery_retrieval_type" {
   type        = string
   description = "AWS glacier recovery type to use. One of Bulk, Standard, Express."
