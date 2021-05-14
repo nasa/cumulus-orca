@@ -63,10 +63,6 @@ cp ../shared_libraries/recovery/shared_recovery.py orca_shared/
 let return_code=$?
 check_rc $return_code "ERROR: Unable to copy shared library [orca_shared/shared_recovery.py]"
 
-# Run tests and other stuff
-
-# Cleanup shared libraries
-rm -rf orca_shared
 ## MAIN
 ## -----------------------------------------------------------------------------
 ## Create the virtual env. Remove it if it exists.
