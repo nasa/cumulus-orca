@@ -118,10 +118,6 @@ variable "orca_recovery_retry_interval" {
   description = "Number of seconds to wait between recovery failure retries."
 }
 
-variable "orca_recovery_retry_backoff" {
-  type        = number
-  description = "The multiplier by which the retry interval increases during each attempt."
-}
 
 ## OPTIONAL (DO NOT CHANGE!) - Development use only
 variable "database_app_user" {
@@ -133,19 +129,6 @@ variable "database_app_user" {
 variable "database_name" {
   type        = string
   description = "Name of the ORCA database in PostgreSQL"
-}
-
-
-variable "ddl_dir" {
-  type        = string
-  description = "Location of database DDL SQL files. Must have trailing /."
-}
-
-
-variable "drop_database" {
-  ##TODO: Maybe this needs to be a boolean false?
-  type        = string
-  description = "Boolean True/False that indicates the ORCA databse should be dropped."
 }
 
 
@@ -161,15 +144,10 @@ variable "orca_sqs_staged_recovery_queue_arn" {
 
 variable "orca_sqs_status_update_queue_id" {
   type        = string
-  description = "The URL of the SQS queue that recovery status updates are read from/posted to."
+  description = "The URL of the SQS queue that recoery status updates are read from/posted to."
 }
 
 variable "orca_sqs_recovery_queue_id" {
   type        = string
   description = "SQS URL of recovery queue."
-}
-
-variable "platform" {
-  type        = string
-  description = "String that determines deployment platform. AWS or local."
 }
