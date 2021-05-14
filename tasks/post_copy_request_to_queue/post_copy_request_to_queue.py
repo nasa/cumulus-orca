@@ -100,7 +100,7 @@ def task(
         "source_bucket": bucket_name,
     }
     # post to recovery queue. Retry using exponential delay if it fails
-    for retry in range(10):
+    for retry in range(max_retries):
         try:
             shared_recovery.post_entry_to_queue(
                 new_data, shared_recovery.RequestMethod.NEW_JOB, recovery_queue_url
