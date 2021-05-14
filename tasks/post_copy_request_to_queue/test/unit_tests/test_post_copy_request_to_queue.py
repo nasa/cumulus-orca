@@ -9,8 +9,7 @@ from moto import mock_sqs
 from post_copy_request_to_queue import handler, task, exponential_delay
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
-import shared_recovery
-
+from orca_shared import shared_recovery
 
 class TestPostCopyRequestToQueue(TestCase):
     """
@@ -87,7 +86,7 @@ class TestPostCopyRequestToQueue(TestCase):
             "filename": "f1.doc",
             "restore_destination": "s3://restore",
         }
-        records = self.event["Records"]
+        records = self.event["Records"][0]
         new_data = {
             "job_id": "1",
             "granule_id": "3",
@@ -117,8 +116,7 @@ class TestPostCopyRequestToQueue(TestCase):
         AND
             status_id = %d
     """
-        for record in records:
-            key_path = record["s3"]["object"]["key"]
+        key_path = records["s3"]["object"]["key"]
 
         mock_single_query.assert_called_once_with(
             sql,
@@ -248,7 +246,7 @@ class TestPostCopyRequestToQueue(TestCase):
         }
         mock_post_entry_to_queue.side_effect = Exception
 
-        records = self.event["Records"]
+        records = self.event["Records"][0]
         new_data = {
             "job_id": "1",
             "granule_id": "3",
@@ -276,8 +274,7 @@ class TestPostCopyRequestToQueue(TestCase):
         AND
             status_id = %d
     """
-        for record in records:
-            key_path = record["s3"]["object"]["key"]
+        key_path = records["s3"]["object"]["key"]
                 # calling the task function
         self.assertRaises(Exception, task,records, *backoff_args)
         message = f"Error sending message to {self.recovery_queue_url} for {new_data}"
@@ -308,7 +305,7 @@ class TestPostCopyRequestToQueue(TestCase):
         #set the mock_update_status_for_file to Exception
         mock_update_status_for_file.side_effect = Exception
 
-        records = self.event["Records"]
+        records = self.event["Records"][0]
         new_data = {
             "job_id": "1",
             "granule_id": "3",
@@ -336,8 +333,7 @@ class TestPostCopyRequestToQueue(TestCase):
         AND
             status_id = %d
     """
-        for record in records:
-            key_path = record["s3"]["object"]["key"]
+        key_path = records["s3"]["object"]["key"]
                 # calling the task function
         # calling the task function
         self.assertRaises(Exception, task,records, *backoff_args)

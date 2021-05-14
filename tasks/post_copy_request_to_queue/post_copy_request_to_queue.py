@@ -11,7 +11,7 @@ import boto3
 from typing import Dict, Any, List
 import time
 import random
-import shared_recovery
+from orca_shared import shared_recovery
 import requests_db
 import database
 from cumulus_logger import CumulusLogger
@@ -52,9 +52,8 @@ def task(
     """
     # grab the key_path and bucketname from event
     # We only expect one record.
-    for record in records:
-        key_path = record["s3"]["object"]["key"]
-        bucket_name = record["s3"]["bucket"]["name"]
+    key_path = records["s3"]["object"]["key"]
+    bucket_name = records["s3"]["bucket"]["name"]
 
     sql = """
         SELECT
@@ -101,7 +100,7 @@ def task(
         "source_bucket": bucket_name,
     }
     # post to recovery queue. Retry using exponential delay if it fails
-    for retry in range(max_retries):
+    for retry in range(10):
         try:
             shared_recovery.post_entry_to_queue(
                 new_data, shared_recovery.RequestMethod.NEW_JOB, recovery_queue_url
@@ -214,6 +213,6 @@ def handler(event: Dict[str, Any], context: None) -> None:
                 raise ve
         backoff_args.append(env_var_value)
 
-    records = event["Records"]
+    records = event["Records"][0]
     # calling the task function to perform the work
     task(records, *backoff_args)
