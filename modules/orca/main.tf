@@ -47,9 +47,9 @@ module "orca_lambdas" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  orca_default_bucket = var.orca_default_bucket
+  orca_default_bucket                = var.orca_default_bucket
   orca_sqs_staged_recovery_queue_arn = module.orca_sqs.orca_sqs_staged_recovery_queue_arn
-  orca_sqs_status_update_queue_id = module.orca_sqs.orca_sqs_status_update_queue_id
+  orca_sqs_status_update_queue_id    = module.orca_sqs.orca_sqs_status_update_queue_id
 
   ## OPTIONAL
   database_port                        = var.database_port

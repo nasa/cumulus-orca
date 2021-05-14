@@ -370,13 +370,12 @@ resource "aws_lambda_function" "db_deploy" {
 
   environment {
     variables = {
-      PREFIX        = var.prefix
-      DATABASE_PORT = var.database_port
-      DATABASE_NAME = var.database_name
-      DATABASE_USER = var.database_app_user
-      DROP_DATABASE = var.drop_database
-      DDL_DIR       = var.ddl_dir
-      ## TODO: Look into removing this variable and associated logic.
+      PREFIX           = var.prefix
+      DATABASE_PORT    = var.database_port
+      DATABASE_NAME    = var.database_name
+      APPLICATION_USER = var.database_app_user
+      ADMIN_USER       = "postgres"
+      ADMIN_DATABASE   = "postgres"
     }
   }
 }
