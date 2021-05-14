@@ -118,6 +118,10 @@ variable "orca_recovery_retry_interval" {
   description = "Number of seconds to wait between recovery failure retries."
 }
 
+variable "orca_recovery_retry_backoff" {
+  type        = number
+  description = "The multiplier by which the retry interval increases during each attempt."
+}
 
 ## OPTIONAL (DO NOT CHANGE!) - Development use only
 variable "database_app_user" {
@@ -129,6 +133,19 @@ variable "database_app_user" {
 variable "database_name" {
   type        = string
   description = "Name of the ORCA database in PostgreSQL"
+}
+
+
+variable "ddl_dir" {
+  type        = string
+  description = "Location of database DDL SQL files. Must have trailing /."
+}
+
+
+variable "drop_database" {
+  ##TODO: Maybe this needs to be a boolean false?
+  type        = string
+  description = "Boolean True/False that indicates the ORCA databse should be dropped."
 }
 
 
