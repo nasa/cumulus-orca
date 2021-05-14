@@ -45,7 +45,23 @@ function check_rc () {
       exit 1
   fi
 }
+## copy the shared_recovery.py
+echo "INFO: Copying ORCA shared libraries ..."
+if [ -d orca_shared ]; then
+    rm -rf orca_shared
+fi
 
+mkdir -p build/orca_shared
+let return_code=$?
+check_rc $return_code "ERROR: Unable to create orca_shared directory."
+
+touch build/orca_shared/__init__.py
+let return_code=$?
+check_rc $return_code "ERROR: Unable to create [orca_shared/__init__.py] file"
+
+cp ../shared_libraries/recovery/shared_recovery.py build/orca_shared/
+let return_code=$?
+check_rc $return_code "ERROR: Unable to copy shared library [orca_shared/shared_recovery.py]"
 
 ## MAIN
 ## -----------------------------------------------------------------------------
@@ -61,13 +77,6 @@ let return_code=$?
 if [ $return_code -ne 0 ]; then
   >&2 echo "ERROR: Failed to create build directory."
   exit 1
-fi
-
-#copy shared library file to build/
-if [ ! -f "/build/shared_recovery.py" ]; then
-    cp ../shared_libraries/recovery/shared_recovery.py build/
-    let return_code=$?
-    check_rc $return_code "ERROR: Unable to copy shared library."
 fi
 
 ## Create the virtual env. Remove it if it already exists.
