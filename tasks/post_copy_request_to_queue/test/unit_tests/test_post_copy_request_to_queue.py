@@ -70,16 +70,16 @@ class TestPostCopyRequestToQueue(TestCase):
     @patch("database.single_query")
     @patch("requests_db.get_dbconnect_info")
     @patch("shared_recovery.post_entry_to_queue")
-    @patch("shared_recovery.post_status_for_file_to_queue")
+    @patch("shared_recovery.update_status_for_file")
     def test_task_happy_path(
         self,
-        mock_post_status_for_file_to_queue: MagicMock,
+        mock_update_status_for_file: MagicMock,
         mock_post_entry_to_queue: MagicMock,
         mock_get_db_connect_info: MagicMock,
         mock_single_query: MagicMock,
     ):
         """
-        happy path. Mocks db_connect_info,single_query, post_entry_to_queue and post_status_for_file_to_queue.
+        happy path. Mocks db_connect_info,single_query, post_entry_to_queue and update_status_for_file.
         """
         mock_single_query.return_value = {
             "job_id": "1",
@@ -125,21 +125,17 @@ class TestPostCopyRequestToQueue(TestCase):
             mock_get_db_connect_info.return_value,
             (key_path, shared_recovery.OrcaStatus.PENDING.value),
         )
-        mock_post_status_for_file_to_queue.assert_called_once_with(
+        mock_update_status_for_file.assert_called_once_with(
             "1",
             "3",
             "f1.doc",
-            "b21b84d653bb07b05b1e6b33684dc11b",
-            "s3://restore",
             shared_recovery.OrcaStatus.STAGED,
             None,
-            shared_recovery.RequestMethod.UPDATE,
             self.db_queue_url,
         )
         mock_post_entry_to_queue.assert_called_with(
-            "orca_recoveryfile",
             new_data,
-            shared_recovery.RequestMethod.NEW,
+            shared_recovery.RequestMethod.NEW_JOB,
             self.recovery_queue_url,
         )
 
@@ -291,17 +287,17 @@ class TestPostCopyRequestToQueue(TestCase):
 
     @patch("database.single_query")
     @patch("requests_db.get_dbconnect_info")
-    @patch("shared_recovery.post_status_for_file_to_queue")
+    @patch("shared_recovery.update_status_for_file")
     @patch("post_copy_request_to_queue.logging")
-    def test_task_post_status_for_file_to_queue_exception(
+    def test_task_update_status_for_file_exception(
         self,
         mock_logging: MagicMock,
-        mock_post_status_for_file_to_queue: MagicMock,
+        mock_update_status_for_file: MagicMock,
         mock_get_db_connect_info: MagicMock,
         mock_single_query: MagicMock,
     ):
         """
-        mocks post_status_for_file_to_queue to raise an exception.
+        mocks update_status_for_file to raise an exception.
         """
         mock_single_query.return_value = {
             "job_id": "1",
@@ -309,8 +305,8 @@ class TestPostCopyRequestToQueue(TestCase):
             "filename": "f1.doc",
             "restore_destination": "s3://restore",
         }
-        #set the mock_post_status_for_file_to_queue to Exception
-        mock_post_status_for_file_to_queue.side_effect = Exception
+        #set the mock_update_status_for_file to Exception
+        mock_update_status_for_file.side_effect = Exception
 
         records = self.event["Records"]
         new_data = {

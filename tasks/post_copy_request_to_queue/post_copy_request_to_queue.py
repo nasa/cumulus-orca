@@ -8,8 +8,7 @@ from enum import Enum
 import json
 import os
 import boto3
-from typing import Dict, Any, List, Optional
-from datetime import datetime, timezone
+from typing import Dict, Any, List
 import time
 import random
 import shared_recovery
@@ -105,7 +104,7 @@ def task(
     for retry in range(max_retries):
         try:
             shared_recovery.post_entry_to_queue(
-                "orca_recoveryfile", new_data, shared_recovery.RequestMethod.NEW, recovery_queue_url
+                new_data, shared_recovery.RequestMethod.NEW_JOB, recovery_queue_url
             )
         except Exception:
             LOGGER.error(
@@ -124,15 +123,15 @@ def task(
     # post to DB-queue. Retry using exponential delay if it fails
     for retry in range(max_retries):
         try:
-            shared_recovery.post_status_for_file_to_queue(
+            shared_recovery.update_status_for_file(
                 job_id,
                 granule_id,
                 filename,
-                key_path,
-                restore_destination,
+                # key_path,
+                # restore_destination,
                 shared_recovery.OrcaStatus.STAGED,
                 None,
-                shared_recovery.RequestMethod.UPDATE,
+                # shared_recovery.RequestMethod.UPDATE_FILE,
                 db_queue_url,
             )
         except Exception:
@@ -150,7 +149,7 @@ def task(
 
 # Define our exponential delay function
 # maybe move to shared library or somewhere else?
-def exponential_delay(base_delay: int, exponential_backoff: int) -> int:
+def exponential_delay(base_delay: int, exponential_backoff: int = 2) -> int:
     """
     Exponential delay function. This function is used for retries during failure.
     Args:
