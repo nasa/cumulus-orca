@@ -143,7 +143,7 @@ variable "orca_sqs_staged_recovery_queue_arn" {
 }
 
 variable "orca_sqs_status_update_queue_arn" {
-  type        = "string"
+  type        = string
   description = "The ARN of the status-update-queue SQS"
 }
 

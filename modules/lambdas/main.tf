@@ -204,7 +204,7 @@ resource "aws_lambda_event_source_mapping" "copy_files_to_archive_event_source_m
 # Additional resources needed by copy_files_to_archive
 # ------------------------------------------------------------------------------
 # Permissions to allow SQS trigger to invoke lambda
-resource "aws_lambda_permission" "allow_sqs_trigger" {
+resource "aws_lambda_permission" "copy_files_to_archive_allow_sqs_trigger" {
   ## REQUIRED
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.copy_files_to_archive.function_name
@@ -256,7 +256,7 @@ resource "aws_lambda_event_source_mapping" "post_to_database_event_source_mappin
 # Additional resources needed by post_to_database
 # ------------------------------------------------------------------------------
 # Permissions to allow SQS trigger to invoke lambda
-resource "aws_lambda_permission" "allow_sqs_trigger" {
+resource "aws_lambda_permission" "post_to_database_allow_sqs_trigger" {
   ## REQUIRED
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.post_to_database.function_name
