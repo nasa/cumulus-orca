@@ -59,7 +59,8 @@ module.exports = {
     "Research": [
       'developer/research/research-intro',
       'developer/research/research-localstack',
-      'developer/research/research-APIGateway'
+      'developer/research/research-APIGateway',
+      'developer/research/research-reconciliation',
     ],
   },
   cookbook: {
