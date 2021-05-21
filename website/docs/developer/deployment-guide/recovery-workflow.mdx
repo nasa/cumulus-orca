@@ -7,24 +7,24 @@ description: Provides developers with the steps of how data are recovered.
 import MyImage from '@site/docs/templates/pan-zoom-image.mdx';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 
-The ORCA recovery workflow diagram below visualizes the process of 
+The ORCA recovery workflow diagram below visualizes the process of
 recovering missing data in Cumulus. As each user organization will
 have unique needs when recovering data, the diagram provides details
 on which components can be modified and which components should not
 be modified. Refer to the legend on the diagram for details on which
 components can be modified.
 
-Recovery processes are kicked off manually by an operator through 
-the Cumulus Dashboard. The dashboard calls an API which kicks off a 
-recovery workflow. Recovery is an asynchronous operation since data 
-requested from Glacier can take up to 4 hours or more to reconstitute 
-in most scenarios. Since it is asynchronous, the recovery container 
-relies on a database to maintain the status of the request and event 
-driven triggers to restore the data once it has been reconstituted 
-from Glacier into an S3 bucket. Currently data is copied back to the 
+Recovery processes are kicked off manually by an operator through
+the Cumulus Dashboard. The dashboard calls an API which kicks off a
+recovery workflow. Recovery is an asynchronous operation since data
+requested from Glacier can take up to 4 hours or more to reconstitute
+in most scenarios. Since it is asynchronous, the recovery container
+relies on a database to maintain the status of the request and event
+driven triggers to restore the data once it has been reconstituted
+from Glacier into an S3 bucket. Currently data is copied back to the
 Cumulus S3 primary data bucket as the final restore step. Determining
-the status of the recovery job is done manually by either using the 
-provided request_status lambda or querying the database directly.
+the status of the recovery job is done manually by querying the database
+directly or by checking the status on the Cumulus Dashboard.
 
 <MyImage
     imageSource={useBaseUrl('img/ORCA-Recovery-Workflow.svg')}
