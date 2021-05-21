@@ -67,6 +67,18 @@ The following provides the potential metadata attributes that need to be capture
 for each object in order to properly filter and provide information back to Cumulus
 for reconciliation and Operator investigation of discrepancies.
 
+A draft schema for how the objects would interact and be tied together can be
+seen below.
+
+<MyImage
+    imageSource={useBaseUrl('img/Research-Reconciliation-orca-inventory-schema.png')}
+    imageAlt="System Context"
+    zoomInPic={useBaseUrl('img/zoom-in.svg')}
+    zoomOutPic={useBaseUrl('img/zoom-out.svg')}
+    resetPic={useBaseUrl('img/zoom-pan-reset.svg')}
+/>
+
+
 :::note Optional Attributes
 
 When noted, optional attributes are items not strictly needed for reconciliation
@@ -105,19 +117,27 @@ seemed a bit challenging and did not appear to provide a real benefit.
 
 | Attribute Name   | Data Type | Description                                                            | Notable Items   |
 | ---------------- | --------- | ---------------------------------------------------------------------- | --------------- |
-| granule_id       | `string`  | granuleId that is provided by Cumulus.                                 | Must be unique per collectionId |
+| cumulus_granule_id | `string`  | granuleId that is provided by Cumulus.                                 | Must be unique per collectionId |
 | acquisition_time | `timestamp` | Date and time in UTC that the data was captured.                     | TBD - Not sure if we can get this from Cumulus. Potentially Optional but would like to use as date comparator.|
 | ingest_time      | `timestamp` | Date and time in UTC that the data was originally ingested into ORCA | None |
 | last_update      | `timestamp` | Date and time in UTC that information was updated.                   | Potential time filter for Cumulus reconciliation. |
 | archive_location | `string`  | S3 bucket the data was archived to.                                    | Potentially optional as this could be stored at the file level but would be duplicated. |
 
+Note that the combination of the Cumulus Granule ID (cumulus_granule_id) and
+the Cumulus Collection ID (collection_id) is unique in the
+[Cumulus granules table](https://github.com/nasa/cumulus/blob/master/lambdas/db-migration/src/migrations/20201014105058_create_granules_table.ts).
 
 #### File Metadata Object
 
-| Attribute Name | Data Type | Description                                       | Notable Items   |
-| -------------- | --------- | ------------------------------------------------- | --------------- |
-| name           | `string`  | Name of the file. (MOD14A1.061.2020245.hdf)       | Must be unique per granuleId |
-| key_path       | `string`  | Full S3 path to the file including the file name. | Must be unique per archive location |
+| Attribute Name           | Data Type | Description                                       | Notable Items   |
+| ------------------------ | --------- | ------------------------------------------------- | --------------- |
+| name                     | `string`  | Name of the file. (MOD14A1.061.2020245.hdf)       | Must be unique per granuleId |
+| orca_archive_location    | `string`  | ORCA S3 Glacier bucket the file resides in.       | |
+| cumulus_archive_location | `string`  | Cumulus S3 bucket the file is expected to reside in. | |
+| key_path                 | `string`  | Full S3 path to the file including the file name. | Must be unique per archive location |
+
+Note that in Cumulus the combination of the bucket (cumulus_archive_location)
+and key (key_path) is unique in the [Cumulus files table](https://github.com/nasa/cumulus/blob/master/lambdas/db-migration/src/migrations/20201014105102_create_files_table.ts).
 
 
 #### File Version Object
@@ -128,7 +148,7 @@ seemed a bit challenging and did not appear to provide a real benefit.
 | is_latest      | `boolean` | AWS provided flag denoting that it is the latest version. | Only one can be latest per file name/key_path. Depending of final table structure this may be optional. |
 | etag           | `string`  | AWS provided etag of the versioned file. Semi unique      | Potentially optional maybe able to be used for internal comparisons and/or data management investigations. |
 | cumulus_etag   | `string`  | Cumulus provided AWS etag of the file in Cumulus.         | Potentially optional. Would need to determine if this information passed along. May be helpful for data management comparisons. |
-| size           | `bigint`  | Size in bytes of the file. From Cumulus ingest.           | Part of object passed to archive from Cumulus. |
+| size_in_bytes  | `bigint`  | Size in bytes of the file. From Cumulus ingest.           | Part of object passed to archive from Cumulus. |
 | hash           | `string`  | Checksum hash of the file provided by Cumulus.            | Part of object passed to archive from Cumulus. |
 | hash_type      | `string`  | Hash type used to calculate the hash value of the file.   | Part of object passed to archive from Cumulus. |
 | ingest_time    | `timestamp` | Date and time in UTC that the file was ingested into ORCA | None |
@@ -603,6 +623,18 @@ The objects needed for managing ORCA internal reconciliation and reporting are
 provided in detail below. This is just a first design pass and is not the final
 design.
 
+An example schema showing how the objects interact and would be tied together is
+shown below.
+
+<MyImage
+    imageSource={useBaseUrl('img/Research-Reconciliation-orca-internal-reconciliation-schema.png')}
+    imageAlt="System Context"
+    zoomInPic={useBaseUrl('img/zoom-in.svg')}
+    zoomOutPic={useBaseUrl('img/zoom-out.svg')}
+    resetPic={useBaseUrl('img/zoom-pan-reset.svg')}
+/>
+
+
 #### S3 Inventory Temporary Table
 
 This is a temporary object that would store the listing from the S3 bucket for
@@ -614,7 +646,7 @@ comparison.
 | key_path       | `string`  | Key key value from S3 listing.            | Should be able to match to the key_path in the ORCA catalog *File* metadata object. Must be unique. |
 | etag           | `string`  | ETag key value from S3 listing.           | Should be able to match to the orca_etag value in the ORCA catalog *File* metadata object. |
 | last_update    | `timestamptz` | LastModified key value from the S3 listing. | Should be able to match the last_update value in the ORCA catalog *File* metadata object. |
-| size           | `int8`    | Size key value from the S3 listing.       | Should be able to match the size value in the ORCA catalog *File* metadata object. |
+| size_in_bytes  | `int8`    | Size key value from the S3 listing.       | Should be able to match the size value in the ORCA catalog *File* metadata object. |
 | storage_class  | `string`  | StorageClass key value from the S3 listing. | May be used as a filter to exclude newly added items by excluding those with a value of *STANDARD* |
 
 
@@ -670,7 +702,7 @@ items need to be re-ingested into ORCA.
 | key_path         | `string`  | Key key value from S3 listing.            | |
 | etag             | `string`  | ETag key value from S3 listing.           | |
 | last_update      | `timestamptz` | LastModified key value from the S3 listing. | |
-| size             | `int8`    | Size key value from the S3 listing.       | |
+| size_in_bytes    | `int8`    | Size key value from the S3 listing.       | |
 | storage_class    | `string`  | StorageClass key value from the S3 listing. | |
 
 
@@ -681,3 +713,34 @@ items need to be re-ingested into ORCA.
 - Should optional identified attributes be added an populated now or should we start with the minimum needed?
 - What is the best back population strategy to use for those running older versions of ORCA?
 - Is GraphQL a good replacement for the current SQS - Lambda architecture?
+
+
+## Additional Artifacts from the Research
+
+As part of the research, additional artifacts were created in order to help speed
+along prototyping and design. Information and instructions on the artifacts are
+provided below.
+
+### Aqua Data Studio ERD File
+
+An entity relationship diagram (ERD) was created in [Aqua Data Studio (ADS)](https://www.aquafold.com/aquadatastudio).
+The ERD provides table, constraint, and refrence information for the various
+objects in the PostgreSQL database used by ORCA. The ERD diagram can be used
+for development and scripting as well as a way to visualize object interactions.
+The ADS ERD for ORCA can be downloaded <a href={useBaseUrl('files/ads_orca_schema.xed')} target="_blank" download>here</a>.
+
+
+### Schema Install SQL Scripts
+
+In order to quickly prototype, two SQL install scripts were created. The scripts
+install the ORCA inventory catalog and the internal reconciliation tables respectively.
+The following preconditions are expected before the install scripts are run.
+
+- The latest ORCA schema is installed in PostgreSQL (v3.x)
+- The user is logged into the disaster_recovery database as the postgres user to run the script.
+
+The ORCA inventory catalog build script is available for download <a href={useBaseUrl('files/build_orca_inventory.sql')} target="_blank" download>here</a>.
+
+The ORCA internal reconciliation tables build script is available for download <a href={useBaseUrl('files/build_orca_reconcile.sql')} target="_blank" download>here</a>.
+
+
