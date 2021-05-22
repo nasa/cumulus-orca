@@ -626,7 +626,7 @@ class TestRequestFiles(unittest.TestCase):
         self.assertTrue(result)
 
     def test_object_exists_client_error_raised(self):
-        expected_error = ClientError({'Error': {'Code': 'Teapot'}}, '')
+        expected_error = ClientError({'Error': {'Code': 'Teapot', 'Message': 'test'}}, '')
         mock_s3_cli = Mock()
         mock_s3_cli.head_object.side_effect = expected_error
         glacier_bucket = uuid.uuid4().__str__()
@@ -639,7 +639,7 @@ class TestRequestFiles(unittest.TestCase):
             self.assertEqual(expected_error, err)
 
     def test_object_exists_NotFound_returns_false(self):
-        expected_error = ClientError({'Error': {'Code': 'NotFound'}}, '')
+        expected_error = ClientError({'Error': {'Code': '404', 'Message': 'Not Found'}}, '')
         mock_s3_cli = Mock()
         mock_s3_cli.head_object.side_effect = expected_error
         glacier_bucket = uuid.uuid4().__str__()
@@ -959,7 +959,7 @@ class TestRequestFiles(unittest.TestCase):
         }
         mock_s3_cli = mock_boto3_client('s3')
         # todo: Verify the below with a real-world db. If not the same, fix request_files.object_exists
-        mock_s3_cli.head_object.side_effect = [ClientError({'Error': {'Code': 'NotFound'}}, 'head_object')]
+        mock_s3_cli.head_object.side_effect = [ClientError({'Error': {'Code': '404', 'Message': 'Not Found'}}, 'head_object')]
         result = request_files.task(event, self.context)
 
         # todo: Kill all of this,
