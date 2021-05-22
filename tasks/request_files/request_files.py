@@ -166,7 +166,7 @@ def inner_task(event: Dict, max_retries: int, retry_sleep_secs: float,
             event: A dict with the following keys:
                 'config' (dict): A dict with the following keys:
                     'glacier-bucket' (str): The name of the glacier bucket from which the files
-                    will be restored. Defaults to os.environ['DB_QUEUE_URL']
+                    will be restored. Defaults to OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY
                 'input' (dict): A dict with the following keys:
                     'granules' (list(dict)): A list of dicts with the following keys:
                         'granuleId' (str): The id of the granule being restored.
@@ -227,6 +227,8 @@ def inner_task(event: Dict, max_retries: int, retry_sleep_secs: float,
                     FILE_ERROR_MESSAGE_KEY: ''
                 }
                 files.append(a_file)
+            else:
+                LOGGER.info(f"{file_key} does not exist in S3 bucket")
         copied_granule = granule.copy()
         copied_granule[GRANULE_RECOVER_FILES_KEY] = files
 
