@@ -226,12 +226,14 @@ class TestPostCopyRequestToQueue(TestCase):
 
     @patch("database.single_query")
     @patch("requests_db.get_dbconnect_info")
+    @patch("post_copy_request_to_queue.shared_recovery.update_status_for_file")
     @patch("post_copy_request_to_queue.shared_recovery.post_entry_to_queue")
     @patch("post_copy_request_to_queue.logging")
     def test_task_post_entry_to_queue_exception(
         self,
         mock_logging: MagicMock,
         mock_post_entry_to_queue: MagicMock,
+        mock_update_status_for_file: MagicMock,
         mock_get_db_connect_info: MagicMock,
         mock_single_query: MagicMock,
     ):
