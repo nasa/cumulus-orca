@@ -363,7 +363,7 @@ def object_exists(s3_cli: BaseClient, glacier_bucket: str, file_key: str) -> boo
         LOGGER.error(err)
         code = err.response['Error']['Code']
         message = err.response['Error']['Message']
-        if message == 'NoSuchKey' or message == 'Not Found' or code == '404':  # Unit tests say 'NotFound', some online docs say 'NoSuchKey'
+        if message == 'NoSuchKey' or message == 'Not Found' or code == '404':  # Unit tests say 'Not Found', some online docs say 'NoSuchKey'
             return False
         raise
         # todo: Online docs suggest we could catch 'S3.Client.exceptions.NoSuchKey instead of deconstructing ClientError
