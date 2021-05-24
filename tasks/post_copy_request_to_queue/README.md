@@ -1,13 +1,13 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/post_copy_request_to_queue/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/copy_files_to_archive/requirements.txt)
 
-**Lambda function post_copy_request_to_queue **
+# Lambda function post_copy_request_to_queue
 
 Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/development-guide/code/contrib-code-intro) for information on environment setup and testing.
 
-- [Input Schema and Example](#input-schema)
-- [pydoc post_copy_request_to_queue](#pydoc)
+- [Input Schema and Example](#input-schema-and-example)
+- [pydoc post_copy_request_to_queue](#pydoc-post_copy_request_to_queue)
 
-<a name="input-schema"></a>
+
 ## Input Schema and Example
 Fully defined json schemas written in the schema of https://json-schema.org/ can be found in the [schemas folder](schemas).
 
@@ -33,7 +33,6 @@ Input coming from ORCA S3 bucket trigger event.
   }
 ```
 
-<a name="pydoc"></a>
 ## pydoc post_copy_request_to_queue
 ```
 Help on module post_copy_request_to_queue:

@@ -22,7 +22,7 @@ LOGGER = CumulusLogger()
 
 
 def task(
-    records: List[Dict[str, Any]],
+    records: Dict[str, Any],
     db_queue_url: str,
     recovery_queue_url: str,
     max_retries: int,
@@ -99,27 +99,8 @@ def task(
         "restore_destination": restore_destination,
         "source_bucket": bucket_name,
     }
-    # post to recovery queue. Retry using exponential delay if it fails
-    for retry in range(max_retries+1):
-        try:
-            shared_recovery.post_entry_to_queue(
-                new_data, shared_recovery.RequestMethod.NEW_JOB, recovery_queue_url
-            )
-        except Exception as ex:
-            LOGGER.error(
-                f"Ran into error posting to SQS {recovery_queue_url} {retry+1} time(s) with exception {ex}"
-            )
-            my_base_delay = exponential_delay(my_base_delay, retry_backoff)
-            continue
-        break
-    else:
-        message = f"Error sending message to {recovery_queue_url} for {new_data}"
-        logging.critical(message)
-        raise Exception(message)
 
-    # resetting my_base_delay
-    my_base_delay = retry_sleep_secs
-    # post to DB-queue. Retry using exponential delay if it fails
+        # post to DB-queue. Retry using exponential delay if it fails
     for retry in range(max_retries+1):
         try:
             shared_recovery.update_status_for_file(
@@ -142,6 +123,26 @@ def task(
         logging.critical(message)
         raise Exception(message)
 
+    # resetting my_base_delay
+    my_base_delay = retry_sleep_secs
+
+    # post to recovery queue. Retry using exponential delay if it fails
+    for retry in range(max_retries+1):
+        try:
+            shared_recovery.post_entry_to_queue(
+                new_data, shared_recovery.RequestMethod.NEW_JOB, recovery_queue_url
+            )
+        except Exception as ex:
+            LOGGER.error(
+                f"Ran into error posting to SQS {recovery_queue_url} {retry+1} time(s) with exception {ex}"
+            )
+            my_base_delay = exponential_delay(my_base_delay, retry_backoff)
+            continue
+        break
+    else:
+        message = f"Error sending message to {recovery_queue_url} for {new_data}"
+        logging.critical(message)
+        raise Exception(message)
 
 # Define our exponential delay function
 # maybe move to shared library or somewhere else?
