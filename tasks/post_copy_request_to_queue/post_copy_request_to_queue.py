@@ -77,10 +77,10 @@ def task(
         # # convert db result to json
         db_result_json = database.result_to_json(rows)
 
-    except Exception as ex:
+    except Exception:
         message = f"Unable to retrieve {key_path} metadata"
         LOGGER.error(message)
-        raise ex(message)
+        raise Exception(message)
 
     # grab the parameters from the db in json format.
     job_id = db_result_json["job_id"]
