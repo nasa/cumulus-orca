@@ -1,6 +1,5 @@
 """
 Name: copy_files_to_archive.py
-
 Description:  Lambda function that copies files from one s3 bucket
 to another s3 bucket.
 """
@@ -18,13 +17,7 @@ import boto3
 from botocore.client import BaseClient
 # noinspection PyPackageRequirements
 from botocore.exceptions import ClientError
-
-
-# todo: Move to shared lib after ORCA-170
-class RequestMethod(Enum):
-    POST = 'post'
-    PUT = 'put'
-
+from orca_shared import shared_recovery
 
 OS_ENVIRON_DB_QUEUE_URL_KEY = 'DB_QUEUE_URL'
 
@@ -41,27 +34,17 @@ INPUT_TARGET_KEY_KEY = 'target_key'
 INPUT_TARGET_BUCKET_KEY = 'restore_destination'
 INPUT_SOURCE_BUCKET_KEY = 'source_bucket'
 
-# todo: Move to shared lib after ORCA-170
-ORCA_STATUS_PENDING = 1
-ORCA_STATUS_STAGED = 2
-ORCA_STATUS_SUCCESS = 3
-ORCA_STATUS_FAILED = 4
-
-
 class CopyRequestError(Exception):
     """
     Exception to be raised if the copy request fails for any of the files.
     """
 
-
 def task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: float, db_queue_url: str) -> None:
     """
     Task called by the handler to perform the work.
-
     This task will call copy_object for each file. A copy will be tried
     up to {retries} times if it fails, waiting {retry_sleep_secs}
     between each attempt.
-
     Args:
         records: Passed through from the handler.
         max_retries: The number of attempts to retry a failed copy.
@@ -85,13 +68,11 @@ def task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: floa
                 if err_msg is None:
                     a_file[FILE_SUCCESS_KEY] = True
                     now = datetime.now(timezone.utc).isoformat()
-                    post_status_for_file_to_queue(
-                        a_file[INPUT_JOB_ID_KEY], a_file[INPUT_GRANULE_ID_KEY], a_file[INPUT_FILENAME_KEY], None,
-                        None,
-                        ORCA_STATUS_SUCCESS, None,
-                        None, now, now, RequestMethod.PUT, db_queue_url,
-                        max_retries, retry_sleep_secs
-                    )
+                    shared_recovery.update_status_for_file(
+                        a_file[INPUT_JOB_ID_KEY], a_file[INPUT_GRANULE_ID_KEY], a_file[INPUT_FILENAME_KEY],
+                        shared_recovery.OrcaStatus.SUCCESS.value, None,
+                        db_queue_url
+                        )
                 else:
                     a_file[FILE_ERROR_MESSAGE_KEY] = err_msg
 
@@ -105,92 +86,19 @@ def task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: floa
         if not a_file[FILE_SUCCESS_KEY]:
             any_error = True
             now = datetime.now(timezone.utc).isoformat()
-            post_status_for_file_to_queue(
-                a_file[INPUT_JOB_ID_KEY], a_file[INPUT_GRANULE_ID_KEY], a_file[INPUT_FILENAME_KEY], None,
-                None,
-                ORCA_STATUS_FAILED, a_file.get(FILE_ERROR_MESSAGE_KEY, None),
-                None, now, now, RequestMethod.PUT, db_queue_url,
-                max_retries, retry_sleep_secs)
-
+            shared_recovery.update_status_for_file(
+                a_file[INPUT_JOB_ID_KEY], a_file[INPUT_GRANULE_ID_KEY], a_file[INPUT_FILENAME_KEY], 
+                shared_recovery.OrcaStatus.FAILED.value, a_file.get(FILE_ERROR_MESSAGE_KEY, None),db_queue_url)
     if any_error:
         logging.error(
             f'File copy failed. {files}')
         raise CopyRequestError(f'File copy failed. {files}')
 
-
-# todo: Move to shared lib after ORCA-170
-def post_status_for_file_to_queue(job_id: str, granule_id: str, filename: str, key_path: Optional[str],
-                                  restore_destination: Optional[str],
-                                  status_id: Optional[int], error_message: Optional[str],
-                                  request_time: Optional[str], last_update: str,
-                                  completion_time: Optional[str],
-                                  request_method: RequestMethod,
-                                  db_queue_url: str,
-                                  max_retries: int, retry_sleep_secs: float):
-    new_data = {'job_id': job_id,
-                'granule_id': granule_id,
-                'filename': filename}
-    if key_path is not None:
-        new_data['key_path'] = key_path
-    if restore_destination is not None:
-        new_data['restore_destination'] = restore_destination
-    if status_id is not None:
-        new_data['status_id'] = status_id
-    if error_message is not None:
-        new_data['error_message'] = error_message
-    if request_time is not None:
-        new_data['request_time'] = request_time
-    if last_update is not None:
-        new_data['last_update'] = last_update
-    if completion_time is not None:
-        new_data['completion_time'] = completion_time
-
-    post_entry_to_queue('orca_recoverfile',
-                        new_data,
-                        request_method,
-                        db_queue_url, max_retries, retry_sleep_secs)
-
-
-# todo: Move to shared lib after ORCA-170
-def post_entry_to_queue(table_name: str, new_data: Dict[str, Any], request_method: RequestMethod, db_queue_url: str,
-                        max_retries: int, retry_sleep_secs: float):
-    body = json.dumps(new_data, indent=4)
-    sqs = boto3.client('sqs')
-    for attempt in range(1, max_retries + 1):
-        try:
-            sqs.send_message(
-                QueueUrl=db_queue_url,
-                MessageDeduplicationId=table_name + request_method.value + body,
-                MessageGroupId='copy_files_to_archive',
-                MessageAttributes={
-                    'RequestMethod': {
-                        'DataType': 'String',
-                        'StringValue': request_method.value
-                    },
-                    'TableName': {
-                        'DataType': 'String',
-                        'StringValue': table_name
-                    }
-                },
-                MessageBody=body
-            )
-            return
-        except Exception as e:
-            if attempt == max_retries + 1:
-                logging.error(f"Error while logging row {json.dumps(new_data, indent=4)} "
-                              f"to table {table_name}: {e}")
-                raise e
-            time.sleep(retry_sleep_secs)
-            continue
-
-
 def get_files_from_records(records: List[Dict[str, Any]]) -> List[Dict[str, Union[str, bool]]]:
     """
     Parses the input records and returns the files to be restored.
-
     Args:
         records: passed through from the handler.
-
     Returns:
         records, parsed into Dicts, with the additional KVP 'success' = False
     """
@@ -210,7 +118,6 @@ def get_files_from_records(records: List[Dict[str, Any]]) -> List[Dict[str, Unio
 def copy_object(s3_cli: BaseClient, src_bucket_name: str, src_object_name: str,
                 dest_bucket_name: str, dest_object_name: str = None) -> Optional[str]:
     """Copy an Amazon S3 bucket object
-
     Args:
         s3_cli: An instance of boto3 s3 client.
         src_bucket_name: The source S3 bucket name.
@@ -219,7 +126,6 @@ def copy_object(s3_cli: BaseClient, src_bucket_name: str, src_object_name: str,
         dest_object_name: Optional; The key of the destination object.
             If an object with the same name exists in the given bucket, the object is overwritten.
             Defaults to {src_object_name}.
-
     Returns:
         None if object was copied, otherwise contains error message.
     """
@@ -244,11 +150,9 @@ def copy_object(s3_cli: BaseClient, src_bucket_name: str, src_object_name: str,
 # noinspection PyUnusedLocal
 def handler(event: Dict[str, Any], context: object) -> None:  # pylint: disable-msg=unused-argument
     """Lambda handler. Copies a file from its temporary s3 bucket to the s3 archive.
-
     If the copy for a file in the request fails, the lambda
     throws an exception. Environment variables can be set to override how many
     times to retry a copy before failing, and how long to wait between retries.
-
         Environment Vars:
             COPY_RETRIES (number, optional, default = 3): The number of
                 attempts to retry a copy that failed.
@@ -257,17 +161,13 @@ def handler(event: Dict[str, Any], context: object) -> None:  # pylint: disable-
             DATABASE_PORT (string): the database port. The standard is 5432.
             DATABASE_NAME (string): the name of the database.
             DATABASE_USER (string): the name of the application user.
-
         Parameter Store:
                 drdb-user-pass (string): the password for the application user (DATABASE_USER).
                 drdb-host (string): the database host
-
     Args:
         event:
             A dict from the SQS queue. See schemas/input.json for more information.
-
         context: An object required by AWS Lambda. Unused.
-
     Raises:
         CopyRequestError: An error occurred calling copy_object for one or more files.
         The same dict that is returned for a successful copy will be included in the

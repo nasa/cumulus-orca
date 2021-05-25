@@ -1,6 +1,5 @@
 """
 Name: test_copy_files_to_archive.py
-
 Description:  Unit tests for copy_files_to_archive.py.
 """
 import json
@@ -14,7 +13,6 @@ from unittest.mock import Mock, call, patch, MagicMock
 from botocore.exceptions import ClientError
 
 import copy_files_to_archive
-
 
 class TestCopyFilesToArchive(TestCase):
     """
@@ -48,7 +46,7 @@ class TestCopyFilesToArchive(TestCase):
         mock_task.assert_called_with(records, 2, 30, 'something.else')
 
     @patch('time.sleep')
-    @patch('copy_files_to_archive.post_status_for_file_to_queue')
+    @patch('copy_files_to_archive.shared_recovery.update_status_for_file')
     @patch('copy_files_to_archive.copy_object')
     @patch('copy_files_to_archive.get_files_from_records')
     @patch('boto3.client')
@@ -56,7 +54,7 @@ class TestCopyFilesToArchive(TestCase):
                              mock_boto3_client: MagicMock,
                              mock_get_files_from_records: MagicMock,
                              mock_copy_object: MagicMock,
-                             mock_post_status_for_file_to_queue: MagicMock,
+                             mock_update_status_for_file: MagicMock,
                              mock_sleep: MagicMock):
         """
         If all files go through without errors, return without sleeps.
@@ -116,20 +114,18 @@ class TestCopyFilesToArchive(TestCase):
             call(mock_boto3_client.return_value, file1_source_bucket, file1_source_key, file1_target_bucket,
                  file1_target_key)])
         self.assertEqual(2, mock_copy_object.call_count)
-        mock_post_status_for_file_to_queue.assert_has_calls([
-            call(file0_job_id, file0_granule_id, file0_input_filename, None, None,
-                 copy_files_to_archive.ORCA_STATUS_SUCCESS, None, None,
-                 mock.ANY, mock.ANY,
-                 copy_files_to_archive.RequestMethod.PUT, db_queue_url, max_retries, retry_sleep_secs),
-            call(file1_job_id, file1_granule_id, file1_input_filename, None, None,
-                 copy_files_to_archive.ORCA_STATUS_SUCCESS, None, None,
-                 mock.ANY, mock.ANY,
-                 copy_files_to_archive.RequestMethod.PUT, db_queue_url, max_retries, retry_sleep_secs)])
-        self.assertEqual(2, mock_post_status_for_file_to_queue.call_count)
+        mock_update_status_for_file.assert_has_calls([
+            call(file0_job_id, file0_granule_id, file0_input_filename,
+                 copy_files_to_archive.shared_recovery.OrcaStatus.SUCCESS.value, None,
+                 db_queue_url),
+            call(file1_job_id, file1_granule_id, file1_input_filename,
+                 copy_files_to_archive.shared_recovery.OrcaStatus.SUCCESS.value, None,
+                db_queue_url)])
+        self.assertEqual(2, mock_update_status_for_file.call_count)
         mock_sleep.assert_not_called()
 
     @patch('time.sleep')
-    @patch('copy_files_to_archive.post_status_for_file_to_queue')
+    @patch('copy_files_to_archive.shared_recovery.update_status_for_file')
     @patch('copy_files_to_archive.copy_object')
     @patch('copy_files_to_archive.get_files_from_records')
     @patch('boto3.client')
@@ -137,7 +133,7 @@ class TestCopyFilesToArchive(TestCase):
                                                          mock_boto3_client: MagicMock,
                                                          mock_get_files_from_records: MagicMock,
                                                          mock_copy_object: MagicMock,
-                                                         mock_post_status_for_file_to_queue: MagicMock,
+                                                         mock_update_status_for_file: MagicMock,
                                                          mock_sleep: MagicMock):
         """
         If one file causes errors during copy, retry up to limit then post error status and raise CopyRequestError.
@@ -202,17 +198,15 @@ class TestCopyFilesToArchive(TestCase):
                      file0_target_key)
             ])
             self.assertEqual(3, mock_copy_object.call_count)
-            mock_post_status_for_file_to_queue.assert_has_calls([
-                call(file1_job_id, file1_granule_id, file1_input_filename, None, None,
-                     copy_files_to_archive.ORCA_STATUS_SUCCESS, None, None,
-                     mock.ANY, mock.ANY,
-                     copy_files_to_archive.RequestMethod.PUT, db_queue_url, max_retries, retry_sleep_secs),
-                call(file0_job_id, file0_granule_id, file0_input_filename, None, None,
-                     copy_files_to_archive.ORCA_STATUS_FAILED, error_message, None,
-                     mock.ANY, mock.ANY,
-                     copy_files_to_archive.RequestMethod.PUT, db_queue_url, max_retries, retry_sleep_secs)
+            mock_update_status_for_file.assert_has_calls([
+                call(file1_job_id, file1_granule_id, file1_input_filename,
+                     copy_files_to_archive.shared_recovery.OrcaStatus.SUCCESS.value, None,
+                     db_queue_url),
+                call(file0_job_id, file0_granule_id, file0_input_filename,
+                     copy_files_to_archive.shared_recovery.OrcaStatus.FAILED.value, error_message,
+                     db_queue_url)
             ])
-            self.assertEqual(max_retries, mock_post_status_for_file_to_queue.call_count)
+            self.assertEqual(max_retries, mock_update_status_for_file.call_count)
             mock_sleep.assert_has_calls([call(retry_sleep_secs), call(retry_sleep_secs)])
             self.assertEqual(max_retries, mock_sleep.call_count)
             return
