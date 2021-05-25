@@ -15,7 +15,6 @@ from orca_shared import shared_recovery
 import requests_db
 import database
 from cumulus_logger import CumulusLogger
-import logging
 
 # instantiate CumulusLogger
 LOGGER = CumulusLogger()
@@ -78,8 +77,8 @@ def task(
         db_result_json = database.result_to_json(rows)
 
     except Exception:
-        message = f"Unable to retrieve {key_path} metadata. Got Exception: {Exception}"
-        LOGGER.error(message)
+        message = f"Unable to retrieve {key_path} metadata."
+        LOGGER.error(message, exc_info=True)
         raise Exception(message)
 
     # grab the parameters from the db in json format.
@@ -119,9 +118,9 @@ def task(
             my_base_delay = exponential_delay(my_base_delay, retry_backoff)
             continue
     else:
-        message = f"Error sending message to {db_queue_url} for {new_data}"
-        logging.critical(message)
-        raise Exception(message)
+        message = "Error sending message to db_queue_url for {new_data}"
+        LOGGER.critical(message, new_data = str(new_data))  #PO DAAC needs to fix cumulus logger to handle dict
+        raise Exception(message.format(new_data=str(new_data)))
 
     # resetting my_base_delay
     my_base_delay = retry_sleep_secs
@@ -140,9 +139,9 @@ def task(
             my_base_delay = exponential_delay(my_base_delay, retry_backoff)
             continue
     else:
-        message = f"Error sending message to {recovery_queue_url} for {new_data}"
-        logging.critical(message)
-        raise Exception(message)
+        message = "Error sending message to recovery_queue_url for {new_data}"
+        LOGGER.critical(message, new_data = str(new_data))  #PO DAAC needs to fix cumulus logger to handle dict
+        raise Exception(message.format(new_data=str(new_data)))
 
 # Define our exponential delay function
 # maybe move to shared library or somewhere else?
@@ -157,11 +156,14 @@ def exponential_delay(base_delay: int, exponential_backoff: int = 2) -> int:
     Raises:
         None
     """
-    delay = base_delay + (random.randint(0, 1000) / 1000.0)
-    time.sleep(delay)
-    LOGGER.debug(f"Performing back off retry sleeping {delay} seconds")
-    return base_delay * exponential_backoff
-
+    if type(base_delay) ==int and type(exponential_backoff)==int:
+        delay = base_delay + (random.randint(0, 1000) / 1000.0)
+        time.sleep(delay)
+        LOGGER.debug(f"Performing back off retry sleeping {delay} seconds")
+        return base_delay * exponential_backoff
+    message = f"{base_delay} or {exponential_backoff} is not integer"
+    LOGGER.error(message, exc_info=True)
+    raise Exception(message)
 
 def handler(event: Dict[str, Any], context: None) -> None:
     """

@@ -217,10 +217,10 @@ class TestPostCopyRequestToQueue(TestCase):
     @patch("requests_db.get_dbconnect_info")
     @patch("post_copy_request_to_queue.shared_recovery.update_status_for_file")
     @patch("post_copy_request_to_queue.shared_recovery.post_entry_to_queue")
-    @patch("post_copy_request_to_queue.logging")
+    @patch("post_copy_request_to_queue.LOGGER")
     def test_task_post_entry_to_queue_exception(
         self,
-        mock_logging: MagicMock,
+        mock_LOGGER: MagicMock,
         mock_post_entry_to_queue: MagicMock,
         mock_update_status_for_file: MagicMock,
         mock_get_db_connect_info: MagicMock,
@@ -268,18 +268,18 @@ class TestPostCopyRequestToQueue(TestCase):
         key_path = record["s3"]["object"]["key"]
                 # calling the task function
         self.assertRaises(Exception, task,record, *backoff_args)
-        message = f"Error sending message to {self.recovery_queue_url} for {new_data}"
+        message = "Error sending message to recovery_queue_url for {new_data}"
         # verify the logging captured matches the expected message
-        mock_logging.critical.assert_called_once_with(message)
+        mock_LOGGER.critical.assert_called_once_with(message, new_data = str(new_data))
 # # ------------------------------------------------------------------------------------------------------
 
     @patch("database.single_query")
     @patch("requests_db.get_dbconnect_info")
     @patch("post_copy_request_to_queue.shared_recovery.update_status_for_file")
-    @patch("post_copy_request_to_queue.logging")
+    @patch("post_copy_request_to_queue.LOGGER")
     def test_task_update_status_for_file_exception(
         self,
-        mock_logging: MagicMock,
+        mock_LOGGER: MagicMock,
         mock_update_status_for_file: MagicMock,
         mock_get_db_connect_info: MagicMock,
         mock_single_query: MagicMock,
@@ -328,6 +328,22 @@ class TestPostCopyRequestToQueue(TestCase):
                 # calling the task function
         # calling the task function
         self.assertRaises(Exception, task,record, *backoff_args)
-        message = f"Error sending message to {self.db_queue_url} for {new_data}"
+        message = "Error sending message to db_queue_url for {new_data}"
         # verify the logging captured matches the expected message
-        mock_logging.critical.assert_called_once_with(message)
+        mock_LOGGER.critical.assert_called_once_with(message, new_data=str(new_data))
+
+    def test_exponential_delay(self):
+        """
+        tests delay function. Raises Exception when args are non-integer
+        """
+        base_delay_values = [ 2, "non-integer"]
+        exponential_backoff_values = ["non-integer", 2]
+
+        for i in range(2):
+            base_delay = base_delay_values[i]
+            exponential_backoff = exponential_backoff_values[i]
+            self.assertRaises(Exception, exponential_delay, base_delay, exponential_backoff)
+        
+        base_delay =2
+        exponential_backoff =2
+        self.assertEqual(exponential_delay(base_delay, exponential_backoff), base_delay*exponential_backoff)
