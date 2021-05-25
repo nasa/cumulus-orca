@@ -111,13 +111,13 @@ def task(
                 None,
                 db_queue_url,
             )
+            break
         except Exception as ex:
             LOGGER.error(
                 f"Ran into error posting to SQS {db_queue_url} {retry+1} time(s) with exception {ex}"
             )
             my_base_delay = exponential_delay(my_base_delay, retry_backoff)
             continue
-        break
     else:
         message = f"Error sending message to {db_queue_url} for {new_data}"
         logging.critical(message)
@@ -132,13 +132,13 @@ def task(
             shared_recovery.post_entry_to_queue(
                 new_data, shared_recovery.RequestMethod.NEW_JOB, recovery_queue_url
             )
+            break
         except Exception as ex:
             LOGGER.error(
                 f"Ran into error posting to SQS {recovery_queue_url} {retry+1} time(s) with exception {ex}"
             )
             my_base_delay = exponential_delay(my_base_delay, retry_backoff)
             continue
-        break
     else:
         message = f"Error sending message to {recovery_queue_url} for {new_data}"
         logging.critical(message)
