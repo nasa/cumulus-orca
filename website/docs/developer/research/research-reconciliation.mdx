@@ -12,7 +12,7 @@ file(s) are missing or extra in each catalog. The ORCA team has met with Cumulus
 several times to understand current reconciliation patterns. Notes from those
 interface meetings are available below. In addition, there are several resources
 available from Cumulus and LZARDS which also has to deal with reconciliation in
-a manor similar to ORCA. It is understood that ORCA will provide the data but,
+a manor similar to ORCA. It is understood that ORCA will provide the data, but
 Cumulus will perform the comparison and reporting work to match current reconcile
 patterns.
 
@@ -233,7 +233,7 @@ large returns and limiting size of the message across the wire.
 
 ### Potential ORCA Reconciliation Data Reporting Architecture
 
-The following provides a rough high level architecture for reporting the ORCA
+The following provides a rough, high level architecture for reporting the ORCA
 holdings to Cumulus. When providing data back to Cumulus, the solution should be
 able to handle the filters supplied and return back the needed data. In addition,
 the solution should be extensible and should allow for potential changes in the
@@ -262,10 +262,12 @@ what the underlying architecture may look like to perform the tasks.
 The conventional way of populating the objects with metadata would be through
 the normal Cumulus ingest workflow that contains ORCA's `copy_to_glacier` lambda.
 The `copy_to_glacier` lambda would need to be modified to take or pull additional
-metadata needed for a granule's files like `providerId` and `collectionId` and
-various file information and send it to a queue. The body sent to the queue
-would have enough information for another ORCA lambda to write and/or update the
-metadata records for the various objects.
+metadata needed to associate a granule's files to Cumulus, like `providerId`, 
+`collectionId`, `granuleId`, and various other file metadata information. The
+additional collected metadata would sent to a queue to be written to the ORCA
+catalog. The body sent to the queue would have enough information for another
+ORCA lambda to write and/or update the records for the various objects in the ORCA
+catalog.
 
 Note that this new database write lambda or the `copy_to_glacier` lambda may need
 to make some additional queries to the S3 ORCA bucket to pull information like
@@ -274,11 +276,12 @@ is used to copy data to the ORCA archive. Based on initial research located
 [here](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.copy),
 the `s3.copy` command does not return any information. See the test performed
 below. Because of this, we will likely need to perform a listing on the object to
-get additional information like the version as seen in the sample seen below.
-Some things to consider when looking at the options
-for getting the additional data include speed (how fast can I get the data), cost
-(what is the cost impact of additional gets on the  s3 bucket), and complexity
-(where is the best place to put these additional gets, is it overly complex)
+get additional information like the S3 object vversion as seen in the sample below.
+Some items to consider when looking at the options for retrieving the additional
+metadata include:
+- *speed* - How fast can I get the needed metadata?
+- *cost* - What is the cost impact of additional gets on the s3 bucket?
+- *complexity* - Where is the best place to put these additional gets? Is the overall design and/or implementation to complex?
 
 #### Boto3 Copy Test
 
@@ -349,7 +352,7 @@ the `null` value for VersionId.
 #### Boto3 Use Multipart Copy
 
 In addition to the items above, I also looked at multipart copy which would
-return the information natively but, there is a 5Mb minimum size limit when
+return the information natively, but there is a 5Mb minimum size limit when
 using this functionality which is not small enough for some of the small files
 we may encounter. Reference information on multipart copy is provided below.
 
@@ -359,7 +362,7 @@ we may encounter. Reference information on multipart copy is provided below.
 
 ### Manually Run ORCA Ingest Workflows
 
-When manually running a workflow to ingest data into ORCA it is assumed that the
+When manually running a workflow to ingest data into ORCA, it is assumed that the
 same modified `copy_to_glacier` lambda used in an automated workflow would be used
 in the manual workflow. This would mean the translation lambda used to pass the
 proper information from the Cumulus Dashboard call to the `copy_to_archive` lambda
@@ -412,7 +415,10 @@ following:
 
 There are likely several ways to optimize this flow. The above is just a general
 concept to help get the information needed to match files. Collection regex information
-could also possibly be used.
+could also possibly be used. The Cumulus [files table](https://github.com/nasa/cumulus/blob/master/lambdas/db-migration/src/migrations/20201014105102_create_files_table.ts)
+allows us to match key based on our listing, but the combination of key and Cumulus
+bucket are unique unique which means we could match multiple records based on
+key alone.
 
 Note that this concept of back populating by matching data is not 100% accurate
 and is a best attempt to pull data and match it without "re-ingesting" items
@@ -448,7 +454,7 @@ A full list of AWS services available in NGAP is available [here](https://wiki.e
 ### API Gateway
 
 The ORCA API Gateway provides an entry point for the Cumulus dashboard and users
-to interact directly with ORCA. For more information on the ORCA API gateway see
+to interact directly with ORCA. For more information on the ORCA API gateway, see
 the [API Gateway research page](research-APIGateway.md). All reconciliation
 calls from Cumulus should occur through the ORCA API Gateway.
 
@@ -487,8 +493,8 @@ the code to one area. This may or may not be needed if GraphQL is utilized.
 To better align with Cumulus, ORCA will utilize the AWS PostgreSQL RDS offerings.
 See notes on the ORCA transition to the ORCA database [here](https://wiki.earthdata.nasa.gov/display/ORCA/ORCA+Migration+to+Cumulus+RDS).
 The resultant code from the reconciliation work should be able to handle working
-with a PostgreSQL backed. Both PostgreSQL RDS and Amazon Aurora are viable back end
-choices that may be utilized. See a comparison article on the databases
+with a PostgreSQL back end. Both PostgreSQL RDS and Amazon Aurora are viable back
+end choices that may be utilized. See a comparison article on the databases
 [here](https://aws.amazon.com/blogs/database/is-amazon-rds-for-postgresql-or-amazon-aurora-postgresql-a-better-choice-for-me/).
 
 
@@ -518,8 +524,8 @@ and detail orphan and missing files. We could possibly create a temporary report
 table to hold these values that the Cumulus Dashboard could display for us.
 
 Some things to think through when designing this solution are factors of scale
-and managing them. To provide some thought and guidance, LP DAAC one of the larger
-DAACs has approximately 300 million files in the archive and growing. If all the
+and managing them. To provide some thought and guidance, LP DAAC (one of the larger
+DAACs) has approximately 300 million files in the archive and growing. If all the
 files are also stored in ORCA, we will need to reconcile all the files in a smart
 and somewhat quick way on a semi regular basis.
 
@@ -603,7 +609,7 @@ for file in files["Contents"]:
 
 The following provides a rough architecture of how ORCA internal reconciliation
 may work in an AWS environment with Cumulus. The architecture reuses known
-architectural patterns from Cumulus including AWS Cloudwatch rules to fire the
+architectural patterns from Cumulus, including AWS Cloudwatch rules, to fire the
 comparison off on a normal schedule. Likely the running of this type of job will
 need to scale and may require configuration parameters to examine pieces of the
 ORCA catalog using bucket and prefix information.
