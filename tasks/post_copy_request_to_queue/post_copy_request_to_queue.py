@@ -22,7 +22,7 @@ LOGGER = CumulusLogger()
 
 
 def task(
-    records: Dict[str, Any],
+    record: Dict[str, Any],
     db_queue_url: str,
     recovery_queue_url: str,
     max_retries: int,
@@ -37,7 +37,7 @@ def task(
     The result is then sent to the staged-recovery-queue SQS and status-update-queue SQS.
 
     Args:
-        records: A dictionary passed through from the handler.
+        record: A dictionary passed through from the handler.
         db_queue_url: The SQS URL of status_update_queue
         recovery_queue_url: The SQS URL of staged_recovery_queue
         max_retries: Number of times the code will retry in case of failure.
@@ -52,8 +52,8 @@ def task(
     """
     # grab the key_path and bucketname from event
     # We only expect one record.
-    key_path = records["s3"]["object"]["key"]
-    bucket_name = records["s3"]["bucket"]["name"]
+    key_path = record["s3"]["object"]["key"]
+    bucket_name = record["s3"]["bucket"]["name"]
 
     sql = """
         SELECT
@@ -78,7 +78,7 @@ def task(
         db_result_json = database.result_to_json(rows)
 
     except Exception:
-        message = f"Unable to retrieve {key_path} metadata"
+        message = f"Unable to retrieve {key_path} metadata. Got Exception: {Exception}"
         LOGGER.error(message)
         raise Exception(message)
 
@@ -214,6 +214,6 @@ def handler(event: Dict[str, Any], context: None) -> None:
                 raise ve
         backoff_args.append(env_var_value)
 
-    records = event["Records"][0]
+    record = event["Records"][0]
     # calling the task function to perform the work
-    task(records, *backoff_args)
+    task(record, *backoff_args)

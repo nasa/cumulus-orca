@@ -86,7 +86,7 @@ class TestPostCopyRequestToQueue(TestCase):
             "filename": "f1.doc",
             "restore_destination": "s3://restore",
         }
-        records = self.event["Records"][0]
+        record = self.event["Records"][0]
         new_data = {
             "job_id": "1",
             "granule_id": "3",
@@ -104,7 +104,7 @@ class TestPostCopyRequestToQueue(TestCase):
             2,
         ]
         # calling the task function
-        task(records, *backoff_args)
+        task(record, *backoff_args)
 
         sql = """
         SELECT
@@ -116,7 +116,7 @@ class TestPostCopyRequestToQueue(TestCase):
         AND
             status_id = %d
     """
-        key_path = records["s3"]["object"]["key"]
+        key_path = record["s3"]["object"]["key"]
 
         mock_single_query.assert_called_once_with(
             sql,
@@ -237,7 +237,7 @@ class TestPostCopyRequestToQueue(TestCase):
         }
         mock_post_entry_to_queue.side_effect = Exception
 
-        records = self.event["Records"][0]
+        record = self.event["Records"][0]
         new_data = {
             "job_id": "1",
             "granule_id": "3",
@@ -265,9 +265,9 @@ class TestPostCopyRequestToQueue(TestCase):
         AND
             status_id = %d
     """
-        key_path = records["s3"]["object"]["key"]
+        key_path = record["s3"]["object"]["key"]
                 # calling the task function
-        self.assertRaises(Exception, task,records, *backoff_args)
+        self.assertRaises(Exception, task,record, *backoff_args)
         message = f"Error sending message to {self.recovery_queue_url} for {new_data}"
         # verify the logging captured matches the expected message
         mock_logging.critical.assert_called_once_with(message)
@@ -296,7 +296,7 @@ class TestPostCopyRequestToQueue(TestCase):
         #set the mock_update_status_for_file to Exception
         mock_update_status_for_file.side_effect = Exception
 
-        records = self.event["Records"][0]
+        record = self.event["Records"][0]
         new_data = {
             "job_id": "1",
             "granule_id": "3",
@@ -324,10 +324,10 @@ class TestPostCopyRequestToQueue(TestCase):
         AND
             status_id = %d
     """
-        key_path = records["s3"]["object"]["key"]
+        key_path = record["s3"]["object"]["key"]
                 # calling the task function
         # calling the task function
-        self.assertRaises(Exception, task,records, *backoff_args)
+        self.assertRaises(Exception, task,record, *backoff_args)
         message = f"Error sending message to {self.db_queue_url} for {new_data}"
         # verify the logging captured matches the expected message
         mock_logging.critical.assert_called_once_with(message)
