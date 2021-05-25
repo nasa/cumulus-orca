@@ -211,17 +211,6 @@ class TestPostCopyRequestToQueue(TestCase):
                         handler(self.event, context=None)
                         self.assertEquals(ve.message, message)
 
-    # --------------------------------------exponential delay test---------------------------------
-    def test_exponential_delay_non_int(self):
-        """
-        tests delay function. Raises TypeError when args are non-integer
-        """
-
-        base_delay = "non-integer"
-        exponential_backoff = "non-integer"
-
-        self.assertRaises(TypeError, exponential_delay, base_delay, exponential_backoff)
-
     # # ------------------------------------------------------------------------------------------------------
 
     @patch("database.single_query")
