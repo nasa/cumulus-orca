@@ -320,8 +320,8 @@ def process_granule(
                 granule[GRANULE_RECOVER_FILES_KEY][FILE_KEY_KEY]
             )
         },
-        {"key_path": "TBD"},
-        {"restore_destination": "TBD"},
+        {"key_path": "TBD"}, #TBD
+        {"restore_destination": "TBD"}, #TBD
         {"status_id": shared_recovery.OrcaStatus.PENDING.value},
         {"error_message": None},
         {"request_time": datetime.now(timezone.utc).isoformat()},
@@ -329,7 +329,7 @@ def process_granule(
         {"completion_time": datetime.now(timezone.utc).isoformat()},
     ]
     shared_recovery.create_status_for_job(
-        job_id, granule_id, glacier_bucket, files, db_queue_url
+        job_id, granule_id, glacier_bucket, files , db_queue_url
     )
 
     while attempt <= max_retries + 1:

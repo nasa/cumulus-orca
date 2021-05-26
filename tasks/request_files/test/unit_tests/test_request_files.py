@@ -434,9 +434,22 @@ class TestRequestFiles(unittest.TestCase):
 
         self.assertTrue(granule[request_files.GRANULE_RECOVER_FILES_KEY][0][request_files.FILE_SUCCESS_KEY])
         self.assertTrue(granule[request_files.GRANULE_RECOVER_FILES_KEY][1][request_files.FILE_SUCCESS_KEY])
-
+        files = [
+            {
+                "filename": os.path.basename(
+                    granule[GRANULE_RECOVER_FILES_KEY][FILE_KEY_KEY]
+                )
+            },
+            {"key_path": mock.ANY}, #TBD
+            {"restore_destination": mock.ANY}, #TBD
+            {"status_id": shared_recovery.OrcaStatus.PENDING.value},
+            {"error_message": None},
+            {"request_time": mock.ANY},
+            {"last_update": mock.ANY},
+            {"completion_time": None},
+        ]
         mock_create_status_for_job.assert_called_once_with(job_id, granule_id, glacier_bucket,
-                                                                    files, #TBD
+                                                                    files,
                                                                   db_queue_url,
                                                                   )
         mock_restore_object.assert_has_calls([
@@ -867,7 +880,7 @@ class TestRequestFiles(unittest.TestCase):
         ]
 
     # todo: single_query is not called in code. Replace with higher-level checks.
-    @patch('request_files.post_entry_to_queue')
+    @patch('request_files.shared_recovery.post_entry_to_queue')
     @patch('boto3.client')
     @patch('cumulus_logger.CumulusLogger.error')
     @patch('cumulus_logger.CumulusLogger.info')
@@ -929,7 +942,7 @@ class TestRequestFiles(unittest.TestCase):
         except request_files.RestoreRequestError as roe:
             self.assertEqual(exp_err, str(roe))
 
-    @patch('request_files.post_entry_to_queue')
+    @patch('request_files.shared_recovery.post_entry_to_queue')
     @patch('boto3.client')
     @patch('cumulus_logger.CumulusLogger.info')
     def test_task_file_not_in_glacier(self,
@@ -977,7 +990,7 @@ class TestRequestFiles(unittest.TestCase):
         mock_boto3_client.assert_called_with('s3')
         mock_s3_cli.head_object.assert_called_with(Bucket='my-bucket', Key=file1)
 
-    @patch('request_files.post_entry_to_queue')
+    @patch('request_files.shared_recovery.post_entry_to_queue')
     @patch('boto3.client')
     def test_task_no_retries_env_var(self,
                                      mock_boto3_client: MagicMock,
@@ -1024,7 +1037,7 @@ class TestRequestFiles(unittest.TestCase):
         mock_post_entry_to_queue.assert_called()
 
     # todo: single_query is not called in code. Replace with higher-level checks.
-    @patch('request_files.post_entry_to_queue')
+    @patch('request_files.shared_recovery.post_entry_to_queue')
     @patch('boto3.client')
     @patch('cumulus_logger.CumulusLogger.info')
     def test_task_no_expire_days_env_var(self,
@@ -1073,7 +1086,7 @@ class TestRequestFiles(unittest.TestCase):
             RestoreRequest=restore_req_exp)
         self.assertEqual(2, mock_post_entry_to_queue.call_count)
 
-    @patch('request_files.post_entry_to_queue')
+    @patch('request_files.shared_recovery.post_entry_to_queue')
     @patch('boto3.client')
     @patch('cumulus_logger.CumulusLogger.error')
     @patch('cumulus_logger.CumulusLogger.info')
@@ -1132,7 +1145,7 @@ class TestRequestFiles(unittest.TestCase):
             Key=FILE1,
             RestoreRequest=restore_req_exp)
 
-    @patch('request_files.post_entry_to_queue')
+    @patch('request_files.shared_recovery.post_entry_to_queue')
     @patch('boto3.client')
     @patch('cumulus_logger.CumulusLogger.error')
     @patch('cumulus_logger.CumulusLogger.info')
@@ -1210,7 +1223,7 @@ class TestRequestFiles(unittest.TestCase):
         ]
 
     # todo: single_query is not called in code. Replace with higher-level checks.
-    @patch('request_files.post_entry_to_queue')
+    @patch('request_files.shared_recovery.post_entry_to_queue')
     @patch('boto3.client')
     @patch('cumulus_logger.CumulusLogger.error')
     @patch('cumulus_logger.CumulusLogger.info')
@@ -1271,7 +1284,7 @@ class TestRequestFiles(unittest.TestCase):
             RestoreRequest={'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}})
         mock_post_entry_to_queue.assert_called()  # 4 times # todo: No..?
 
-    @patch('request_files.post_entry_to_queue')
+    @patch('request_files.shared_recovery.post_entry_to_queue')
     @patch('boto3.client')
     @patch('cumulus_logger.CumulusLogger.info')
     def test_task_output_json_schema(self,
