@@ -47,7 +47,7 @@ done
 
 ## Call each tasks testing suite
 ## TODO: Add more logging output and possibly make asynchronus
-for task in $(ls -d tasks/* | egrep "request_status_|db_deploy|copy_files_to_archive")
+for task in $(ls -d tasks/* | egrep "request_status_|db_deploy"|copy_files_to_archive")
 do
   echo
   echo "Running tests in $task"
