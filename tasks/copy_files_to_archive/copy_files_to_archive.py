@@ -7,8 +7,6 @@ import json
 import logging
 import os
 import time
-from datetime import datetime, timezone
-from enum import Enum
 from typing import Any, List, Dict, Optional, Union
 import fastjsonschema
 
@@ -78,7 +76,6 @@ def task(
                 )
                 if err_msg is None:
                     a_file[FILE_SUCCESS_KEY] = True
-                    now = datetime.now(timezone.utc).isoformat()
                     shared_recovery.update_status_for_file(
                         a_file[INPUT_JOB_ID_KEY],
                         a_file[INPUT_GRANULE_ID_KEY],
@@ -101,7 +98,6 @@ def task(
     for a_file in files:
         if not a_file[FILE_SUCCESS_KEY]:
             any_error = True
-            now = datetime.now(timezone.utc).isoformat()
             shared_recovery.update_status_for_file(
                 a_file[INPUT_JOB_ID_KEY],
                 a_file[INPUT_GRANULE_ID_KEY],

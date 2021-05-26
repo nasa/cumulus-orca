@@ -7,7 +7,7 @@ import os
 import unittest
 import uuid
 from random import randint
-from unittest import mock, TestCase
+from unittest import TestCase
 from unittest.mock import Mock, call, patch, MagicMock
 
 from botocore.exceptions import ClientError
@@ -174,7 +174,8 @@ class TestCopyFilesToArchive(TestCase):
         mock_sleep: MagicMock,
     ):
         """
-        If one file causes errors during copy, retry up to limit then post error status and raise CopyRequestError.
+        If one file causes errors during copy,
+        retry up to limit then post error status and raise CopyRequestError.
         """
         db_queue_url = uuid.uuid4().__str__()
         max_retries = 2
