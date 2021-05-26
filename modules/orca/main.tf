@@ -38,7 +38,7 @@ module "orca_lambdas" {
   permissions_boundary_arn = var.permissions_boundary_arn
   prefix                   = var.prefix
   vpc_id                   = var.vpc_id
-
+  orca_sqs_staged_recovery_queue_id = module.orca_sqs.orca_sqs_staged_recovery_queue_id
   ## OPTIONAL
   region = var.region
   tags   = local.tags
