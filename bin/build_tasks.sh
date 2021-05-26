@@ -66,26 +66,6 @@ cd ..
 rm -rf build
 cd ../../
 
-TASK='tasks/post_copy_request_to_queue/'
-echo "Building `pwd`/${TASK}"
-cd "`pwd`/${TASK}"
-rm -rf build
-mkdir build
-source ../../venv/bin/activate
-pip install -q -t build -r requirements.txt --trusted-host pypi.org --trusted-host pypi.org --trusted-host files.pythonhosted.org
-deactivate
-cp post_copy_request_to_queue.py build/
-cd build
-mkdir psycopg2
-cd ..
-cp ../package/awslambda-psycopg2/psycopg2-3.7/* build/psycopg2/
-cd build
-zip -qr "../post_copy_request_to_queue.zip" .
-cd ..
-rm -rf build
-cd ../../
-
-failure=0
 for TASK in $(ls -d tasks/* | egrep "request_status_|db_deploy|copy_files_to_archive|post_copy_request_to_queue")
 do
   echo "Building ${TASK}"
