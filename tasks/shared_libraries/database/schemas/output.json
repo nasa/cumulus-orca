@@ -1,0 +1,51 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/shared_libraries/database/schemas/output.json",
+    "title": "shared_db.get_configuration OUTPUT Dictionary",
+    "description": "The output dictionary from the get_configuration call.",
+    "type": "object",
+    "properties": {
+        "admin_database": {
+            "description": "Admin database name used for URL connection string. Typically postgres for PostgreSQL RDS",
+            "type": "string"
+        },
+        "admin_user": {
+            "description": "Admin (super user) database user name used for URL connection string. Typically postgres for PostgreSQL RDS",
+            "type": "string"
+        },
+        "admin_user_password": {
+            "description": "Admin database user password used for URL connection string.",
+            "type": "string"
+        },
+        "app_user": {
+            "description": "Application non-privelaged database user name used for URL connection string.",
+            "type": "string"
+        },
+        "app_user_password": {
+            "description": "Application user database password used for URL connection string.",
+            "type": "string"
+        },
+        "database": {
+            "description": "Application database name used for URL connection string.",
+            "type": "string"
+        },
+        "host": {
+            "description": "Database host address used for URL connection string.",
+            "type": "string"
+        },
+        "port": {
+            "description": "Database port used for URL connection string. Typically 5432 for PostgreSQL RDS.",
+            "type": "string"
+        }
+    },
+    "required": [
+        "admin_database",
+        "admin_user",
+        "admin_user_password",
+        "app_user",
+        "app_user_password",
+        "database",
+        "host",
+        "port"
+    ]
+}

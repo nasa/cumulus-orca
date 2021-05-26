@@ -324,7 +324,7 @@ class TestRequestStatusForGranuleUnit(
             SELECT
                 job_id
             FROM
-                orca_recoveryjob
+                recovery_job
             WHERE
                 granule_id = %s
             ORDER BY
@@ -383,7 +383,7 @@ class TestRequestStatusForGranuleUnit(
                 request_time as "{request_status_for_granule.OUTPUT_REQUEST_TIME_KEY}",
                 completion_time as "{request_status_for_granule.OUTPUT_COMPLETION_TIME_KEY}"
             FROM
-                orca_recoveryjob
+                recovery_job
             WHERE
                 granule_id = %s AND job_id = %s""",
             db_connect_info,
@@ -435,13 +435,13 @@ class TestRequestStatusForGranuleUnit(
         mock_single_query.assert_called_once_with(
             f"""
             SELECT
-                orca_recoverfile.filename AS "{request_status_for_granule.OUTPUT_FILENAME_KEY}",
-                orca_recoverfile.restore_destination AS "{request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY}",
-                orca_status.value AS "{request_status_for_granule.OUTPUT_STATUS_KEY}",
-                orca_recoverfile.error_message as "{request_status_for_granule.OUTPUT_ERROR_MESSAGE_KEY}"
+                recovery_file.filename AS "{request_status_for_granule.OUTPUT_FILENAME_KEY}",
+                recovery_file.restore_destination AS "{request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY}",
+                recovery_status.value AS "{request_status_for_granule.OUTPUT_STATUS_KEY}",
+                recovery_file.error_message as "{request_status_for_granule.OUTPUT_ERROR_MESSAGE_KEY}"
             FROM
-                orca_recoverfile
-            JOIN orca_status ON orca_recoverfile.status_id=orca_status.id
+                recovery_file
+            JOIN recovery_status ON recovery_file.status_id=recovery_status.id
             WHERE
                 granule_id = %s AND job_id = %s
             ORDER BY filename desc""",
