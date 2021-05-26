@@ -358,7 +358,7 @@ resource "aws_lambda_function" "db_deploy" {
   filename         = "${path.module}/../../tasks/db_deploy/db_deploy.zip"
   handler          = "db_deploy.handler"
   memory_size      = var.orca_recovery_lambda_memory_size
-  runtime          = "python3.7"
+  runtime          = "python3.8"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/db_deploy/db_deploy.zip")
   tags             = local.tags
   timeout          = var.orca_recovery_lambda_timeout

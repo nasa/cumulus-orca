@@ -77,7 +77,7 @@ module "orca" {
   ## REQUIRED
   database_app_user_pw = var.database_app_user_pw
   orca_default_bucket  = var.orca_default_bucket
-  postgres_user_pw     = var.database_app_user_pw
+  postgres_user_pw     = var.postgres_user_pw
 
   ## OPTIONAL
   # database_port                                = 5432
@@ -377,8 +377,12 @@ the ingest workflow.
 
 ### Modify the Recovery Workflow (*OPTIONAL*)
 
-Copy the workflow from `workflows/workflows.yml.dr` into your Cumulus workflow.
-Modify as needed.
+It is not recommended to modify the ORCA Recovery Workflow. The workflow JSON
+file is located in the `modules/workflows/OrcaRecoveryWorkflow` of the repository.
+The workflow file name is `orca_recover_workflow.asl.json`. To change the
+behavior of the workflow, it is recommended to modify or replace the
+`copy_files_to_archive` lambda.
+
 
 ### Workflow Failures
 
@@ -520,7 +524,7 @@ run `terraform destroy`.
 ## Collection Configuration
 
 To configure a collection to enable ORCA, add the line
-`"granuleRecoveryWorkflow": "DrRecoveryWorkflow"` to the collection configuration
+`"granuleRecoveryWorkflow": "OrcaRecoveryWorkflow"` to the collection configuration
 as seen below. Optionally, you can exclude files by adding values to an
 `"excludeFileTypes"` variable. For more information, see the documentation on the
 [`copy_to_glacier` task](https://github.com/nasa/cumulus-orca/tree/master/tasks/copy_to_glacier).
@@ -537,7 +541,7 @@ as seen below. Optionally, you can exclude files by adding values to an
   "granuleId": "^.*$",
   "provider_path": "L0A_HR_RAW/",
   "meta": {
-    "granuleRecoveryWorkflow": "DrRecoveryWorkflow",
+    "granuleRecoveryWorkflow": "OrcaRecoveryWorkflow",
     "excludeFileTypes": [".cmr", ".xml", ".met"]
   },
   ...

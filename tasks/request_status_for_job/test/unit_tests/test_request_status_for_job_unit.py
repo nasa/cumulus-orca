@@ -124,7 +124,7 @@ class TestRequestStatusForJobUnit(
         mock_create_http_error_dict: MagicMock,
     ):
         """
-        If no orca_recoveryjob entries exist for the given job_id, return 404.
+        If no recovery_job entries exist for the given job_id, return 404.
         """
         job_id = uuid.uuid4().__str__()
         db_connect_info = Mock()
@@ -161,10 +161,10 @@ class TestRequestStatusForJobUnit(
             f"""
             SELECT
                 granule_id as "{request_status_for_job.OUTPUT_GRANULE_ID_KEY}",
-                orca_status.value AS "{request_status_for_job.OUTPUT_STATUS_KEY}"
+                recovery_status.value AS "{request_status_for_job.OUTPUT_STATUS_KEY}"
             FROM
-                orca_recoveryjob
-            JOIN orca_status ON orca_recoveryjob.status_id=orca_status.id
+                recovery_job
+            JOIN recovery_status ON recovery_job.status_id=recovery_status.id
             WHERE
                 job_id = %s
             """,
@@ -214,13 +214,13 @@ class TestRequestStatusForJobUnit(
             with granule_status_count AS (
                 SELECT status_id
                     , count(*) as total
-                FROM orca_recoveryjob
+                FROM recovery_job
                 WHERE job_id = %s
                 GROUP BY status_id
             )
             SELECT value
                 , coalesce(total, 0) as total
-            FROM orca_status os
+            FROM recovery_status os
             LEFT JOIN granule_status_count gsc ON (gsc.status_id = os.id)""",
             db_connect_info,
             (job_id,),

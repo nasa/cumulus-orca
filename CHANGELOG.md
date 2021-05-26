@@ -165,6 +165,7 @@ See the documentation for specifics on the various files and changes specified b
 - *ORCA-109* request_files now uses SQS queue for recovery status updates, and receives input from a separate SQS queue.
 - *ORCA-91* copy_files_to_archive now uses SQS queue for recovery status updates. Will generate a job_id if none is given, and return it in the output.
 - request_files now uses the same default glacier bucket as copy_to_glacier.
+- *ORCA-172* db_deploy lambda now will migrate the database or create a new orca database based off of the presence of certain objects in the database. This has led to the addition/removal of environment variables and updates to the task documentation (README.md) and ORCA website documentation for architecture and ORCA schema information. The lambda has been modified to add future migrations.
 
 ### Deprecated
 - None

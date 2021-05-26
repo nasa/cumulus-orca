@@ -31,6 +31,7 @@ module.exports = {
                 'developer/development-guide/code/contrib-code-intro',
                 'developer/development-guide/code/setup-dev-env',
                 'developer/development-guide/code/best-practices',
+                'developer/development-guide/code/versioning-releases',
                 'developer/development-guide/code/linting',
                 'developer/development-guide/code/unit-tests',
                 'developer/development-guide/code/postgres-tests',
@@ -55,6 +56,11 @@ module.exports = {
         'developer/deployment-guide/deployment-upgrading-orca',
         'developer/deployment-guide/recovery-workflow',
         'developer/deployment-guide/testing_deployment',
+    ],
+    "Research": [
+      'developer/research/research-intro',
+      'developer/research/research-localstack',
+      'developer/research/research-APIGateway'
     ],
   },
   cookbook: {

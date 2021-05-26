@@ -1,0 +1,21 @@
+## Use the following as a template for needed test environment variables
+
+## Data and Code directory variables
+# OS level file system directory that docker will mount to in order to persist
+# the database data between tests. For example "/Users/myuser/tmp/data"
+export DATA_DIR=""
+
+# OS level file system directory that points to the base of the
+# cumulus-orca directory. For example "/Users/myuser/git/cumulus-orca"
+export TASK_DIR=""
+
+## Password variables needed for the database.
+# root password for postgres user. Must be at least 12 characters long.
+export ADMIN_PASSWORD=""
+
+# application password for orcauser user. Must be at least 12 characters long.
+export APPLICATION_PASSWORD=""
+
+
+## OS HOST IP address for connecting to PostgreSQL database.
+export DATABASE_HOST=""

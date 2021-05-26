@@ -71,8 +71,5 @@ module "orca" {
   ## OPTIONAL (DO NOT CHANGE DEFAULT VALUES!)
   database_app_user            = var.database_app_user
   database_name                = var.database_name
-  ddl_dir                      = var.ddl_dir
-  drop_database                = var.drop_database
   orca_recovery_retrieval_type = var.orca_recovery_retrieval_type
-  platform                     = var.platform
 }
