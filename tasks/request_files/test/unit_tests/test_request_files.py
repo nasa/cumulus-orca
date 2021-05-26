@@ -388,15 +388,15 @@ class TestRequestFiles(unittest.TestCase):
             {request_files.INPUT_GRANULES_KEY: [expected_input_granule], request_files.INPUT_JOB_ID_KEY: job_id},
             result)
 
-    @patch('request_files.post_status_for_job_to_queue')
-    @patch('request_files.post_status_for_file_to_queue')
+    @patch('request_files.shared_recovery.create_status_for_job')
+    @patch('request_files.shared_recovery.update_status_for_file')
     @patch('time.sleep')
     @patch('request_files.restore_object')
     def test_process_granule_minimal_path(self,
                                           mock_restore_object: MagicMock,
                                           mock_sleep: MagicMock,
-                                          mock_post_status_for_file_to_queue: MagicMock,
-                                          mock_post_status_for_job_to_queue: MagicMock):
+                                          mock_update_status_for_file: MagicMock,
+                                          mock_create_status_for_job: MagicMock):
         mock_s3 = Mock()
         max_retries = randint(10, 999)
         glacier_bucket = uuid.uuid4().__str__()
@@ -435,10 +435,10 @@ class TestRequestFiles(unittest.TestCase):
         self.assertTrue(granule[request_files.GRANULE_RECOVER_FILES_KEY][0][request_files.FILE_SUCCESS_KEY])
         self.assertTrue(granule[request_files.GRANULE_RECOVER_FILES_KEY][1][request_files.FILE_SUCCESS_KEY])
 
-        mock_post_status_for_job_to_queue.assert_called_once_with(job_id, granule_id, request_files.ORCA_STATUS_PENDING,
-                                                                  mock.ANY, None, glacier_bucket,
-                                                                  request_files.RequestMethod.POST, db_queue_url,
-                                                                  max_retries, retry_sleep_secs)
+        mock_create_status_for_job.assert_called_once_with(job_id, granule_id, glacier_bucket,
+                                                                    files, #TBD
+                                                                  db_queue_url,
+                                                                  )
         mock_restore_object.assert_has_calls([
             call(
                 mock_s3,
@@ -456,25 +456,23 @@ class TestRequestFiles(unittest.TestCase):
             )
         ])
         self.assertEqual(2, mock_restore_object.call_count)
-        mock_post_status_for_file_to_queue.assert_has_calls([
-            call(job_id, granule_id, file_name_0, file_name_0, dest_bucket_0, request_files.ORCA_STATUS_PENDING, None,
-                 mock.ANY, mock.ANY, None,
-                 request_files.RequestMethod.POST, db_queue_url, max_retries, retry_sleep_secs),
-            call(job_id, granule_id, file_name_1, file_name_1, dest_bucket_1, request_files.ORCA_STATUS_PENDING, None,
-                 mock.ANY, mock.ANY, None,
-                 request_files.RequestMethod.POST, db_queue_url, max_retries, retry_sleep_secs)])
-        self.assertEqual(2, mock_post_status_for_file_to_queue.call_count)
+        mock_update_status_for_file.assert_has_calls([
+            call(job_id, granule_id, file_name_0, request_files.shared_recovery.OrcaStatus.PENDING.value, 
+                 None,db_queue_url),
+            call(job_id, granule_id, file_name_1, request_files.shared_recovery.OrcaStatus.PENDING.value, 
+                None,db_queue_url,)])
+        self.assertEqual(2, mock_update_status_for_file.call_count)
         mock_sleep.assert_not_called()
 
-    @patch('request_files.post_status_for_job_to_queue')
-    @patch('request_files.post_status_for_file_to_queue')
+    @patch('request_files.shared_recovery.create_status_for_job')
+    @patch('request_files.shared_recovery.update_status_for_file')
     @patch('time.sleep')
     @patch('request_files.restore_object')
     def test_process_granule_one_client_error_retries(self,
                                                       mock_restore_object: MagicMock,
                                                       mock_sleep: MagicMock,
-                                                      mock_post_status_for_file_to_queue: MagicMock,
-                                                      mock_post_status_for_job_to_queue: MagicMock):
+                                                      mock_update_status_for_file: MagicMock,
+                                                      mock_create_status_for_job: MagicMock):
         mock_s3 = Mock()
         max_retries = 5
         glacier_bucket = uuid.uuid4().__str__()
@@ -506,10 +504,9 @@ class TestRequestFiles(unittest.TestCase):
 
         self.assertTrue(granule[request_files.GRANULE_RECOVER_FILES_KEY][0][request_files.FILE_SUCCESS_KEY])
 
-        mock_post_status_for_job_to_queue.assert_called_once_with(job_id, granule_id, request_files.ORCA_STATUS_PENDING,
-                                                                  mock.ANY, None, glacier_bucket,
-                                                                  request_files.RequestMethod.POST, db_queue_url,
-                                                                  max_retries, retry_sleep_secs)
+        mock_create_status_for_job.assert_called_once_with(job_id, granule_id, glacier_bucket,
+                                                            files, #TBD
+                                                             db_queue_url,)
         mock_restore_object.assert_has_calls([
             call(
                 mock_s3,
@@ -527,15 +524,14 @@ class TestRequestFiles(unittest.TestCase):
             )
         ])
         self.assertEqual(2, mock_restore_object.call_count)
-        mock_post_status_for_file_to_queue.assert_has_calls([
-            call(job_id, granule_id, file_name_0, file_name_0, dest_bucket_0, request_files.ORCA_STATUS_PENDING, None,
-                 mock.ANY, mock.ANY, None,
-                 request_files.RequestMethod.POST, db_queue_url, max_retries, retry_sleep_secs)])
-        self.assertEqual(1, mock_post_status_for_file_to_queue.call_count)
+        mock_update_status_for_file.assert_has_calls([
+            call(job_id, granule_id, file_name_0, request_files.shared_recovery.OrcaStatus.PENDING.value, None,
+                  db_queue_url)])
+        self.assertEqual(1, mock_update_status_for_file.call_count)
         mock_sleep.assert_called_once_with(retry_sleep_secs)
 
-    @patch('request_files.post_status_for_job_to_queue')
-    @patch('request_files.post_status_for_file_to_queue')
+    @patch('request_files.shared_recovery.create_status_for_job')
+    @patch('request_files.shared_recovery.update_status_for_file')
     @patch('time.sleep')
     @patch('request_files.restore_object')
     @patch('cumulus_logger.CumulusLogger.error')
@@ -543,8 +539,8 @@ class TestRequestFiles(unittest.TestCase):
                                                              mock_logger_error: MagicMock,
                                                              mock_restore_object: MagicMock,
                                                              mock_sleep: MagicMock,
-                                                             mock_post_status_for_file_to_queue: MagicMock,
-                                                             mock_post_status_for_job_to_queue: MagicMock):
+                                                             mock_update_status_for_file: MagicMock,
+                                                             mock_create_status_for_job: MagicMock):
         mock_s3 = Mock()
         max_retries = randint(3, 20)
         glacier_bucket = uuid.uuid4().__str__()
@@ -578,9 +574,9 @@ class TestRequestFiles(unittest.TestCase):
         except request_files.RestoreRequestError:
             self.assertFalse(granule[request_files.GRANULE_RECOVER_FILES_KEY][0][request_files.FILE_SUCCESS_KEY])
 
-            mock_post_status_for_job_to_queue.assert_called_once_with(job_id, granule_id,
+            mock_create_status_for_job.assert_called_once_with(job_id, granule_id, glacier_bucket,
                                                                       request_files.ORCA_STATUS_PENDING, mock.ANY, None,
-                                                                      glacier_bucket,
+                                                                      ,
                                                                       request_files.RequestMethod.POST, db_queue_url,
                                                                       max_retries, retry_sleep_secs)
 
