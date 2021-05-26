@@ -342,7 +342,7 @@ class TestPostCopyRequestToQueue(TestCase):
         for i in range(2):
             base_delay = base_delay_values[i]
             exponential_backoff = exponential_backoff_values[i]
-            self.assertRaises(Exception, exponential_delay, base_delay, exponential_backoff)
+            self.assertRaises(ValueError, exponential_delay, base_delay, exponential_backoff)
         
         base_delay =2
         exponential_backoff =2

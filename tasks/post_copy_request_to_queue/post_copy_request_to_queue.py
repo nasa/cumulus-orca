@@ -119,7 +119,7 @@ def task(
             continue
     else:
         message = "Error sending message to db_queue_url for {new_data}"
-        LOGGER.critical(message, new_data = str(new_data))  #PO DAAC needs to fix cumulus logger to handle dict
+        LOGGER.critical(message, new_data = str(new_data))  #Cumulus will update this library in the future to be better behaved.
         raise Exception(message.format(new_data=str(new_data)))
 
     # resetting my_base_delay
@@ -140,7 +140,7 @@ def task(
             continue
     else:
         message = "Error sending message to recovery_queue_url for {new_data}"
-        LOGGER.critical(message, new_data = str(new_data))  #PO DAAC needs to fix cumulus logger to handle dict
+        LOGGER.critical(message, new_data = str(new_data))  #Cumulus will update this library in the future to be better behaved.
         raise Exception(message.format(new_data=str(new_data)))
 
 # Define our exponential delay function
@@ -156,14 +156,16 @@ def exponential_delay(base_delay: int, exponential_backoff: int = 2) -> int:
     Raises:
         None
     """
-    if type(base_delay) ==int and type(exponential_backoff)==int:
-        delay = base_delay + (random.randint(0, 1000) / 1000.0)
-        time.sleep(delay)
+    try:
+        _base_delay = int(base_delay)
+        _exponential_backoff = int(exponential_backoff)
+        delay = _base_delay + (random.randint(0, 1000) / 1000.0)
         LOGGER.debug(f"Performing back off retry sleeping {delay} seconds")
-        return base_delay * exponential_backoff
-    message = f"{base_delay} or {exponential_backoff} is not integer"
-    LOGGER.error(message, exc_info=True)
-    raise Exception(message)
+        time.sleep(delay)
+        return _base_delay * _exponential_backoff
+    except ValueError as ve:
+        LOGGER.error(f"arguments are not integer. Raised ValueError: {ve}")
+        raise ve
 
 def handler(event: Dict[str, Any], context: None) -> None:
     """
