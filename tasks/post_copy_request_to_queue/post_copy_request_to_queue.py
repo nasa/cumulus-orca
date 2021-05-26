@@ -1,20 +1,18 @@
 """
 Name: post_copy_request_to_queue.py
 Description:  lambda function that queries the db for file metadata, updates the status
-of recovered file to staged, and sends the staged file info to staged_recovery queue for further processing.
+of recovered file to staged,
+and sends the staged file info to staged_recovery queue for further processing.
 
 """
-from enum import Enum
-import json
 import os
-import boto3
-from typing import Dict, Any, List
+from typing import Dict, Any
 import time
 import random
 from orca_shared import shared_recovery
+from cumulus_logger import CumulusLogger
 import requests_db
 import database
-from cumulus_logger import CumulusLogger
 
 # instantiate CumulusLogger
 LOGGER = CumulusLogger()
@@ -166,7 +164,7 @@ def exponential_delay(base_delay: int, exponential_backoff: int = 2) -> int:
     try:
         _base_delay = int(base_delay)
         _exponential_backoff = int(exponential_backoff)
-        delay = _base_delay + (random.randint(0, 1000) / 1000.0)
+        delay = _base_delay + (random.randint(0, 1000) / 1000.0) # nosec
         LOGGER.debug(f"Performing back off retry sleeping {delay} seconds")
         time.sleep(delay)
         return _base_delay * _exponential_backoff
