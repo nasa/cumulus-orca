@@ -1,15 +1,15 @@
 """
 Name: test_post_copy_request_to_queue.py
-Description: unit tests for post_copy_request_to_queue.py 
+Description: unit tests for post_copy_request_to_queue.py
 
 """
-import boto3
-import os
-from moto import mock_sqs
-from post_copy_request_to_queue import handler, task, exponential_delay
 from unittest import TestCase
+import os
 from unittest.mock import patch, MagicMock
+import boto3
+from moto import mock_sqs
 from orca_shared import shared_recovery
+from post_copy_request_to_queue import handler, task, exponential_delay
 
 
 class TestPostCopyRequestToQueue(TestCase):
@@ -79,7 +79,8 @@ class TestPostCopyRequestToQueue(TestCase):
         mock_single_query: MagicMock,
     ):
         """
-        happy path. Mocks db_connect_info,single_query, post_entry_to_queue and update_status_for_file.
+        happy path. Mocks db_connect_info,single_query,
+        post_entry_to_queue and update_status_for_file.
         """
         mock_single_query.return_value = {
             "job_id": "1",
@@ -138,8 +139,6 @@ class TestPostCopyRequestToQueue(TestCase):
             self.recovery_queue_url,
         )
 
-    # -----------------------------------------------------------------------------------------------------
-
     @patch.dict(
         os.environ,
         {
@@ -181,7 +180,6 @@ class TestPostCopyRequestToQueue(TestCase):
                     # Reset the value
                     os.environ[name] = good_value
 
-    # -----------------------------------------------------------------------------------------------------
     @patch.dict(
         os.environ,
         {
@@ -210,9 +208,7 @@ class TestPostCopyRequestToQueue(TestCase):
                     with self.assertRaises(ValueError) as ve:
                         message = f"{name} must be set to an integer."
                         handler(self.event, context=None)
-                        self.assertEquals(ve.message, message)
-
-    # # ------------------------------------------------------------------------------------------------------
+                        self.assertEqual(ve.message, message)
 
     @patch("database.single_query")
     @patch("requests_db.get_dbconnect_info")
@@ -224,7 +220,7 @@ class TestPostCopyRequestToQueue(TestCase):
         mock_LOGGER: MagicMock,
         mock_post_entry_to_queue: MagicMock,
         mock_update_status_for_file: MagicMock,
-        mock_get_db_connect_info: MagicMock,
+        mock_get_dbconnect_info: MagicMock,
         mock_single_query: MagicMock,
     ):
         """
@@ -255,25 +251,11 @@ class TestPostCopyRequestToQueue(TestCase):
             2,
             2,
         ]
-
-        sql = """
-        SELECT
-            job_id, granule_id, filename, restore_destination
-        FROM
-            orca_recoverfile
-        WHERE
-            key_path = %s
-        AND
-            status_id = %d
-    """
-        key_path = record["s3"]["object"]["key"]
         # calling the task function
         self.assertRaises(Exception, task, record, *backoff_args)
         message = "Error sending message to recovery_queue_url for {new_data}"
         # verify the logging captured matches the expected message
         mock_LOGGER.critical.assert_called_once_with(message, new_data=str(new_data))
-
-    # # ------------------------------------------------------------------------------------------------------
 
     @patch("database.single_query")
     @patch("requests_db.get_dbconnect_info")
@@ -283,7 +265,7 @@ class TestPostCopyRequestToQueue(TestCase):
         self,
         mock_LOGGER: MagicMock,
         mock_update_status_for_file: MagicMock,
-        mock_get_db_connect_info: MagicMock,
+        mock_get_dbconnect_info: MagicMock,
         mock_single_query: MagicMock,
     ):
         """
@@ -315,18 +297,6 @@ class TestPostCopyRequestToQueue(TestCase):
             2,
             2,
         ]
-
-        sql = """
-        SELECT
-            job_id, granule_id, filename, restore_destination
-        FROM
-            orca_recoverfile
-        WHERE
-            key_path = %s
-        AND
-            status_id = %d
-    """
-        key_path = record["s3"]["object"]["key"]
         # calling the task function
         # calling the task function
         self.assertRaises(Exception, task, record, *backoff_args)
