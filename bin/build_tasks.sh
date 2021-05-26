@@ -88,7 +88,7 @@ rm -rf build
 cd ../../
 
 failure=0
-for TASK in $(ls -d tasks/* | egrep "request_status_|db_deploy|copy_files_to_archive|post_copy_request_to_queue")
+for TASK in $(ls -d tasks/* | egrep "request_status_|db_deploy|copy_files_to_archive")
 do
   echo "Building ${TASK}"
   cd ${TASK}
@@ -101,5 +101,6 @@ do
     failure=1
   fi
 done
+
 
 exit $failure
