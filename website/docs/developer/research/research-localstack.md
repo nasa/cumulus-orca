@@ -32,9 +32,9 @@ Docker's localhost can be accessed on the parent machine at http://host.docker.i
     ```
 - There currently is no page for services running in localstack.
 :::tip
-[Commandeer](www.getcommandeer.com) could theoretically be used to provide a UI, but make sure it is approved by IT.
+[Commandeer](https://www.getcommandeer.com) could theoretically be used to provide a UI, but make sure it is approved by IT.
 :::
-- [AWS CLI](https://aws.amazon.com/cli/) and [botocore3](https://github.com/boto/botocore) can both contact Localstack if properly (configured)[https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html].
+- [AWS CLI](https://aws.amazon.com/cli/) and [botocore3](https://github.com/boto/botocore) can both contact Localstack if properly [configured](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html).
   - AWS credentials are not checked, and can therefore be dummy values.
   - Most commands work, including those for creating, modifying, and listing services. For example:
     - Localstack In Docker:
