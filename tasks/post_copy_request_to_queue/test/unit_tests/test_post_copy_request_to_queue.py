@@ -11,6 +11,7 @@ from unittest import TestCase
 from unittest.mock import patch, MagicMock
 from orca_shared import shared_recovery
 
+
 class TestPostCopyRequestToQueue(TestCase):
     """
     Unit tests for the post_copy_request_to_queue lambda function.
@@ -266,12 +267,13 @@ class TestPostCopyRequestToQueue(TestCase):
             status_id = %d
     """
         key_path = record["s3"]["object"]["key"]
-                # calling the task function
-        self.assertRaises(Exception, task,record, *backoff_args)
+        # calling the task function
+        self.assertRaises(Exception, task, record, *backoff_args)
         message = "Error sending message to recovery_queue_url for {new_data}"
         # verify the logging captured matches the expected message
-        mock_LOGGER.critical.assert_called_once_with(message, new_data = str(new_data))
-# # ------------------------------------------------------------------------------------------------------
+        mock_LOGGER.critical.assert_called_once_with(message, new_data=str(new_data))
+
+    # # ------------------------------------------------------------------------------------------------------
 
     @patch("database.single_query")
     @patch("requests_db.get_dbconnect_info")
@@ -293,7 +295,7 @@ class TestPostCopyRequestToQueue(TestCase):
             "filename": "f1.doc",
             "restore_destination": "s3://restore",
         }
-        #set the mock_update_status_for_file to Exception
+        # set the mock_update_status_for_file to Exception
         mock_update_status_for_file.side_effect = Exception
 
         record = self.event["Records"][0]
@@ -325,9 +327,9 @@ class TestPostCopyRequestToQueue(TestCase):
             status_id = %d
     """
         key_path = record["s3"]["object"]["key"]
-                # calling the task function
         # calling the task function
-        self.assertRaises(Exception, task,record, *backoff_args)
+        # calling the task function
+        self.assertRaises(Exception, task, record, *backoff_args)
         message = "Error sending message to db_queue_url for {new_data}"
         # verify the logging captured matches the expected message
         mock_LOGGER.critical.assert_called_once_with(message, new_data=str(new_data))
@@ -336,14 +338,19 @@ class TestPostCopyRequestToQueue(TestCase):
         """
         tests delay function. Raises Exception when args are non-integer
         """
-        base_delay_values = [ 2, "non-integer"]
+        base_delay_values = [2, "non-integer"]
         exponential_backoff_values = ["non-integer", 2]
 
         for i in range(2):
             base_delay = base_delay_values[i]
             exponential_backoff = exponential_backoff_values[i]
-            self.assertRaises(ValueError, exponential_delay, base_delay, exponential_backoff)
-        
-        base_delay =2
-        exponential_backoff =2
-        self.assertEqual(exponential_delay(base_delay, exponential_backoff), base_delay*exponential_backoff)
+            self.assertRaises(
+                ValueError, exponential_delay, base_delay, exponential_backoff
+            )
+
+        base_delay = 2
+        exponential_backoff = 2
+        self.assertEqual(
+            exponential_delay(base_delay, exponential_backoff),
+            base_delay * exponential_backoff,
+        )

@@ -68,7 +68,9 @@ def task(
     # query the db table
     try:
         db_connect_info = requests_db.get_dbconnect_info()
-        rows = database.single_query(sql, db_connect_info, (key_path, shared_recovery.OrcaStatus.PENDING.value))
+        rows = database.single_query(
+            sql, db_connect_info, (key_path, shared_recovery.OrcaStatus.PENDING.value)
+        )
         if len(rows) == 0:
             message = f"No metadata found for {key_path}"
             LOGGER.fatal(message)
@@ -99,8 +101,8 @@ def task(
         "source_bucket": bucket_name,
     }
 
-        # post to DB-queue. Retry using exponential delay if it fails
-    for retry in range(max_retries+1):
+    # post to DB-queue. Retry using exponential delay if it fails
+    for retry in range(max_retries + 1):
         try:
             shared_recovery.update_status_for_file(
                 job_id,
@@ -119,14 +121,16 @@ def task(
             continue
     else:
         message = "Error sending message to db_queue_url for {new_data}"
-        LOGGER.critical(message, new_data = str(new_data))  #Cumulus will update this library in the future to be better behaved.
+        LOGGER.critical(
+            message, new_data=str(new_data)
+        )  # Cumulus will update this library in the future to be better behaved.
         raise Exception(message.format(new_data=str(new_data)))
 
     # resetting my_base_delay
     my_base_delay = retry_sleep_secs
 
     # post to recovery queue. Retry using exponential delay if it fails
-    for retry in range(max_retries+1):
+    for retry in range(max_retries + 1):
         try:
             shared_recovery.post_entry_to_queue(
                 new_data, shared_recovery.RequestMethod.NEW_JOB, recovery_queue_url
@@ -140,8 +144,11 @@ def task(
             continue
     else:
         message = "Error sending message to recovery_queue_url for {new_data}"
-        LOGGER.critical(message, new_data = str(new_data))  #Cumulus will update this library in the future to be better behaved.
+        LOGGER.critical(
+            message, new_data=str(new_data)
+        )  # Cumulus will update this library in the future to be better behaved.
         raise Exception(message.format(new_data=str(new_data)))
+
 
 # Define our exponential delay function
 # maybe move to shared library or somewhere else?
@@ -166,6 +173,7 @@ def exponential_delay(base_delay: int, exponential_backoff: int = 2) -> int:
     except ValueError as ve:
         LOGGER.error(f"arguments are not integer. Raised ValueError: {ve}")
         raise ve
+
 
 def handler(event: Dict[str, Any], context: None) -> None:
     """
