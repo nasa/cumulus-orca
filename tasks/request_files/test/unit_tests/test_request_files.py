@@ -575,10 +575,9 @@ class TestRequestFiles(unittest.TestCase):
             self.assertFalse(granule[request_files.GRANULE_RECOVER_FILES_KEY][0][request_files.FILE_SUCCESS_KEY])
 
             mock_create_status_for_job.assert_called_once_with(job_id, granule_id, glacier_bucket,
-                                                                      request_files.ORCA_STATUS_PENDING, mock.ANY, None,
-                                                                      ,
-                                                                      request_files.RequestMethod.POST, db_queue_url,
-                                                                      max_retries, retry_sleep_secs)
+                                                                      files, #TBD
+                                                                      db_queue_url,
+                                                                      )
 
             mock_restore_object.assert_has_calls([
                 call(
@@ -604,12 +603,11 @@ class TestRequestFiles(unittest.TestCase):
                 )
             ])
             self.assertEqual(max_retries + 1, mock_restore_object.call_count)
-            mock_post_status_for_file_to_queue.assert_has_calls([
-                call(job_id, granule_id, file_name_0, file_name_0, dest_bucket_0, request_files.ORCA_STATUS_FAILED,
-                     mock.ANY, mock.ANY, mock.ANY,
+            mock_update_status_for_file.assert_has_calls([
+                call(job_id, granule_id, file_name_0,  request_files.shared_recovery.OrcaStatus.FAILED.value,
                      None,
-                     request_files.RequestMethod.POST, db_queue_url, max_retries, retry_sleep_secs)])
-            self.assertEqual(1, mock_post_status_for_file_to_queue.call_count)
+                     db_queue_url)])
+            self.assertEqual(1, mock_update_status_for_file.call_count)
             mock_sleep.assert_has_calls([call(retry_sleep_secs)] * max_retries)
 
     def test_object_exists_happy_path(self):
@@ -758,7 +756,7 @@ class TestRequestFiles(unittest.TestCase):
 
         self.assertEqual(mock_task.return_value, result['payload'])
 
-    @patch('request_files.post_entry_to_queue')
+    @patch('request_files.shared_recovery.post_entry_to_queue')
     @patch('boto3.client')
     @patch('cumulus_logger.CumulusLogger.info')
     def test_task_one_granule_4_files_success(self,
