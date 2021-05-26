@@ -90,7 +90,7 @@ cd ../../
 
 
 failure=0
-for TASK in $(ls -d tasks/* | egrep "request_status_|db_deploy")
+for TASK in $(ls -d tasks/* | egrep "request_status_|db_deploy|copy_files_to_archive")
 do
   echo "Building ${TASK}"
   cd ${TASK}
