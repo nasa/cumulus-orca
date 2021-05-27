@@ -38,7 +38,7 @@ module "orca_lambdas" {
   permissions_boundary_arn = var.permissions_boundary_arn
   prefix                   = var.prefix
   vpc_id                   = var.vpc_id
-
+  orca_sqs_staged_recovery_queue_id = module.orca_sqs.orca_sqs_staged_recovery_queue_id
   ## OPTIONAL
   region = var.region
   tags   = local.tags
@@ -62,6 +62,7 @@ module "orca_lambdas" {
   orca_recovery_lambda_timeout         = var.orca_recovery_lambda_timeout
   orca_recovery_retry_limit            = var.orca_recovery_retry_limit
   orca_recovery_retry_interval         = var.orca_recovery_retry_interval
+  orca_recovery_retry_backoff          = var.orca_recovery_retry_backoff
 
   ## OPTIONAL (DO NOT CHANGE DEFAULT VALUES!)
   database_app_user            = var.database_app_user

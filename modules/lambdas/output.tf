@@ -46,6 +46,11 @@ output "request_status_for_job_arn" {
   value       = aws_lambda_function.request_status_for_job.arn
 }
 
+output "post_copy_request_to_queue_arn" {
+  description = "AWS ARN for the post_copy_request_to_queue lambda."
+  value       = aws_lambda_function.post_copy_request_to_queue.arn
+}
+
 
 # Utility Lambdas
 # ------------------------------------------------------------------------------

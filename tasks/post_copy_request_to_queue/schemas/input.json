@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "Records": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "s3": {
+              "type": "object",
+              "properties": {
+                "object": {
+                  "type": "object",
+                  "properties": {
+                    "bucket": {
+                      "type": "string"
+                    },
+                    "key": {
+                      "type": "string"
+                    },
+                    "size": {
+                      "type": "integer"
+                    },
+                    "eTag": {
+                      "type": "string"
+                    },
+                    "sequencer": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "bucket",
+                    "key",
+                    "size",
+                    "eTag",
+                    "sequencer"
+                  ]
+                }
+              },
+              "required": [
+                "object"
+              ]
+            }
+          },
+          "required": [
+            "s3"
+          ]
+        }
+      ]
+    }
+  },
+  "required": [
+    "Records"
+  ]
+}
