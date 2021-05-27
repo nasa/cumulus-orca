@@ -160,6 +160,11 @@ variable "orca_recovery_retry_interval" {
   default     = 1
 }
 
+variable "orca_recovery_retry_backoff" {
+  type        = number
+  description = "The multiplier by which the retry interval increases during each attempt."
+  default     = 2
+}
 
 variable "sqs_delay_time" {
   type        = number

@@ -118,6 +118,10 @@ variable "orca_recovery_retry_interval" {
   description = "Number of seconds to wait between recovery failure retries."
 }
 
+variable "orca_recovery_retry_backoff" {
+  type        = number
+  description = "The multiplier by which the retry interval increases during each attempt."
+}
 
 ## OPTIONAL (DO NOT CHANGE!) - Development use only
 variable "database_app_user" {
@@ -131,10 +135,14 @@ variable "database_name" {
   description = "Name of the ORCA database in PostgreSQL"
 }
 
-
 variable "orca_recovery_retrieval_type" {
   type        = string
   description = "AWS glacier recovery type to use. One of Bulk, Standard, Express."
+}
+
+variable "orca_sqs_staged_recovery_queue_id" {
+  type        = string
+  description = "SQS URL of recovery queue."
 }
 
 variable "orca_sqs_staged_recovery_queue_arn" {
