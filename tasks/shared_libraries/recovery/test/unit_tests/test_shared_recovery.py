@@ -93,77 +93,60 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         Tests that messages are correctly constructed by function and sent to
         the queue based on RequestMethod and Status values.
         """
-        for status_id in self.statuses:
-            # Setting the message attribute values to what we expect.
-            # noinspection PyPep8Naming
-            MessageAttributes = {
-                "RequestMethod": {
-                    "DataType": "String",
-                    "StringValue": shared_recovery.RequestMethod.NEW_JOB,
-                }
+        # Setting the message attribute values to what we expect.
+        # noinspection PyPep8Naming
+        MessageAttributes = {
+            "RequestMethod": {
+                "DataType": "String",
+                "StringValue": shared_recovery.RequestMethod.NEW_JOB.value,
             }
+        }
 
-            # Setting other variables unique to this test
-            archive_destination = "s3://archive-bucket"
+        # Setting other variables unique to this test
+        archive_destination = "s3://archive-bucket"
 
-            # Run subtests
-            with self.subTest(request_method=shared_recovery.RequestMethod.NEW_JOB):
+        # Run subtests
+        with self.subTest(request_method=shared_recovery.RequestMethod.NEW_JOB):
 
-                # Send values to the function
-                shared_recovery.create_status_for_job(
-                    self.job_id,
-                    self.granule_id,
-                    archive_destination,
-                    [],
-                    self.db_queue_url,
-                )
+            # Send values to the function
+            shared_recovery.create_status_for_job(
+                self.job_id,
+                self.granule_id,
+                archive_destination,
+                [],
+                self.db_queue_url,
+            )
 
-                # grabbing queue contents after the message is sent
-                queue_contents = self.queue.receive_messages(
-                    MessageAttributeNames=["All"]
-                )
-                queue_output_body = json.loads(queue_contents[0].body)
+            # grabbing queue contents after the message is sent
+            queue_contents = self.queue.receive_messages(
+                MessageAttributeNames=["All"]
+            )
+            queue_output_body = json.loads(queue_contents[0].body)
 
-                # Testing Message attribute information
-                self.assertEqual(
-                    queue_contents[0].attributes["MessageGroupId"],
-                    self.MessageGroupId,
-                )
-                self.assertEqual(
-                    queue_contents[0].message_attributes, MessageAttributes
-                )
+            # Testing Message attribute information
+            self.assertEqual(
+                queue_contents[0].attributes["MessageGroupId"],
+                self.MessageGroupId,
+            )
+            self.assertEqual(
+                queue_contents[0].message_attributes, MessageAttributes
+            )
 
-                # Testing required fields
-                self.assertEqual(queue_output_body["job_id"], self.job_id)
-                self.assertEqual(queue_output_body["granule_id"], self.granule_id)
-                self.assertEqual(queue_output_body["status_id"], status_id.value)
+            # Testing required fields
+            self.assertEqual(queue_output_body["job_id"], self.job_id)
+            self.assertEqual(queue_output_body["granule_id"], self.granule_id)
 
-                # Testing optional fields
-                self.assertIn("request_time", queue_output_body)
-                # Get the request time
-                new_request_time = datetime.fromisoformat(
-                    queue_output_body["request_time"]
-                )
-                self.assertEqual(new_request_time.tzinfo, timezone.utc)
-                self.assertEqual(
-                    queue_output_body["archive_destination"],
-                    archive_destination,
-                )
-
-                # Testing fields based on status_id
-                completion_status = [
-                    shared_recovery.OrcaStatus.SUCCESS,
-                    shared_recovery.OrcaStatus.FAILED,
-                ]
-
-                if status_id in completion_status:
-                    self.assertIn("completion_time", queue_output_body)
-                    new_completion_time = datetime.fromisoformat(
-                        queue_output_body["completion_time"]
-                    )
-                    self.assertEqual(new_completion_time.tzinfo, timezone.utc)
-                else:
-                    self.assertNotIn("completion_time", queue_output_body)
+            # Testing optional fields
+            self.assertIn("request_time", queue_output_body)
+            # Get the request time
+            new_request_time = datetime.fromisoformat(
+                queue_output_body["request_time"]
+            )
+            self.assertEqual(new_request_time.tzinfo, timezone.utc)
+            self.assertEqual(
+                queue_output_body["archive_destination"],
+                archive_destination,
+            )
 
     def test_update_status_for_file_no_errors(self):
         """
@@ -265,7 +248,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                         self.granule_id,
                         status_id,
                         archive_destination,
-                        request_method,
+                        request_method.value,
                         self.db_queue_url,
                     )
 
@@ -296,7 +279,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                         restore_destination,
                         status_id,
                         error_message,
-                        request_method,
+                        request_method.value,
                         self.db_queue_url,
                     )
 
@@ -325,7 +308,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                         restore_destination,
                         status_id,
                         error_message,
-                        request_method,
+                        request_method.value,
                         self.db_queue_url,
                     )
 
@@ -354,6 +337,6 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                 restore_destination,
                 status_id,
                 error_message,
-                request_method,
+                request_method.value,
                 self.db_queue_url,
             )
