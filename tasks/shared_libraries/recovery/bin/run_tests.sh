@@ -80,9 +80,6 @@ coverage report --fail-under=80
 let return_code=$?
 check_rc $return_code "ERROR: Unit tests coverage is less than 80%"
 
-# Cleanup shared libraries
-rm -rf orca_shared
-
 ## Deactivate and remove the virtual env
 echo "INFO: Cleaning up the environment ..."
 deactivate
