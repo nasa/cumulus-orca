@@ -5,7 +5,7 @@ base=$(pwd)
 failed=0
 
 # Crawl the task directories
-for taskdir in `ls -d tasks/* | egrep -v 'request_status_for|shared_libraries|db_deploy|package|copy_files_to_archive|post_copy_request_to_queue' `
+for taskdir in `ls -d tasks/* | egrep -v 'request_status_for|shared_libraries|db_deploy|package|post_to_database|copy_files_to_archive|post_copy_request_to_queue' `
 do
   # Build and run tests for each task directory
   cd $taskdir
