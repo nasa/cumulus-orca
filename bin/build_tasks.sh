@@ -31,27 +31,6 @@ cd build
 zip -qr "../extract_filepaths_for_granule.zip" .
 cd ../../../
 
-
-TASK='tasks/copy_files_to_archive/'
-echo "Building `pwd`/${TASK}"
-cd "`pwd`/${TASK}"
-rm -rf build
-mkdir build
-source ../../venv/bin/activate
-pip install -q -t build -r requirements.txt --trusted-host pypi.org --trusted-host pypi.org --trusted-host files.pythonhosted.org
-deactivate
-cp copy_files_to_archive.py build/
-cd build
-mkdir psycopg2
-cd ..
-cp ../package/awslambda-psycopg2/psycopg2-3.7/* build/psycopg2/
-cd build
-zip -qr "../copy_files_to_archive.zip" .
-cd ..
-rm -rf build
-cd ../../
-
-
 TASK='tasks/request_files/'
 echo "Building `pwd`/${TASK}"
 cd "`pwd`/${TASK}"
@@ -89,7 +68,7 @@ cd ../../
 
 
 failure=0
-for TASK in $(ls -d tasks/* | egrep "request_status_|db_deploy|post_to_database")
+for TASK in $(ls -d tasks/* | egrep "request_status_|db_deploy|post_to_database|copy_files_to_archive")
 do
   echo "Building ${TASK}"
   cd ${TASK}

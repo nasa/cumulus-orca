@@ -5,7 +5,7 @@ base=$(pwd)
 failed=0
 
 # Crawl the task directories
-for taskdir in `ls -d tasks/* | egrep -v 'request_status_for|shared_libraries|db_deploy|package' `
+for taskdir in `ls -d tasks/* | egrep -v 'request_status_for|shared_libraries|db_deploy|package|copy_files_to_archive' `
 do
   # Build and run tests for each task directory
   cd $taskdir
@@ -47,7 +47,7 @@ done
 
 ## Call each tasks testing suite
 ## TODO: Add more logging output and possibly make asynchronus
-for task in $(ls -d tasks/* | egrep "request_status_|db_deploy|post_to_database")
+for task in $(ls -d tasks/* | egrep "request_status_|db_deploy|post_to_database|copy_files_to_archive")
 do
   echo
   echo "Running tests in $task"
