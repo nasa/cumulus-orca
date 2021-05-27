@@ -64,7 +64,7 @@ cp ../shared_libraries/recovery/shared_recovery.py orca_shared/
 let return_code=$?
 check_rc $return_code "ERROR: Unable to copy shared library [orca_shared/shared_recovery.py]"
 
-cp ../shared_libraries/recovery/shared_db.py orca_shared/
+cp ../shared_libraries/database/shared_db.py orca_shared/
 let return_code=$?
 check_rc $return_code "ERROR: Unable to copy shared library [orca_shared/shared_db.py]"
 
