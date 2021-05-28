@@ -198,7 +198,7 @@ resource "aws_lambda_function" "copy_files_to_archive" {
 
 resource "aws_lambda_event_source_mapping" "copy_files_to_archive_event_source_mapping" {
   event_source_arn = var.orca_sqs_staged_recovery_queue_arn
-  function_name    = aws_lambda_function.copy_files_to_archive.handler
+  function_name    = aws_lambda_function.copy_files_to_archive.arn
 }
 
 # Additional resources needed by copy_files_to_archive
@@ -249,7 +249,7 @@ resource "aws_lambda_function" "post_to_database" {
 
 resource "aws_lambda_event_source_mapping" "post_to_database_event_source_mapping" {
   event_source_arn = var.orca_sqs_status_update_queue_arn
-  function_name    = aws_lambda_function.post_to_database.handler
+  function_name    = aws_lambda_function.post_to_database.arn
 }
 
 # Additional resources needed by post_to_database

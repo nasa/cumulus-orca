@@ -120,6 +120,15 @@ data "aws_iam_policy_document" "restore_object_role_policy_document" {
       "arn:aws:kms:::key/CMK"
     ]
   }
+  statement {
+    actions = [
+      "sqs:ReceiveMessage",
+      "sqs:SendMessage",
+      "sqs:DeleteMessage",
+      "sqs:GetQueueAttributes"
+    ]
+    resources = ["*"]
+  }
 }
 
 
