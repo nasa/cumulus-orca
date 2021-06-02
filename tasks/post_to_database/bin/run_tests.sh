@@ -5,23 +5,23 @@
 ##
 ## DESCRIPTION
 ## -----------------------------------------------------------------------------
-## Tests the shared library for SQS queue using unit tests.
+## Tests the lambda (task) for post_to_database using unit tests.
 ##
 ##
 ## USAGE
 ## -----------------------------------------------------------------------------
-## shared_libraries/run_tests.sh
+## bin/run_tests.sh
 ##
-## This must be called from the directory /tasks/shared_libraries
+## This must be called from the (root) lambda directory /tasks/post_to_database
 ## =============================================================================
 
 ## Set this for Debugging only
 #set -ex
 
-# Make sure we are calling the script the correct way.
+## Make sure we are calling the script the correct way.
 BASEDIR=$(dirname $0)
 if [ "$BASEDIR" != "bin" ]; then
-  >&2 echo "ERROR: This script must be called from [bin]."
+  >&2 echo "ERROR: This script must be called from the root directory of the task lambda [bin/run_tests.sh]."
   exit 1
 fi
 
@@ -46,6 +46,27 @@ function check_rc () {
   fi
 }
 
+## copy the shared_recovery.py
+echo "INFO: Copying ORCA shared libraries ..."
+if [ -d orca_shared ]; then
+    rm -rf orca_shared
+fi
+
+mkdir orca_shared
+let return_code=$?
+check_rc $return_code "ERROR: Unable to create orca_shared directory."
+
+touch orca_shared/__init__.py
+let return_code=$?
+check_rc $return_code "ERROR: Unable to create [orca_shared/__init__.py] file"
+
+cp ../shared_libraries/recovery/shared_recovery.py orca_shared/
+let return_code=$?
+check_rc $return_code "ERROR: Unable to copy shared library [orca_shared/shared_recovery.py]"
+
+cp ../shared_libraries/database/shared_db.py orca_shared/
+let return_code=$?
+check_rc $return_code "ERROR: Unable to copy shared library [orca_shared/shared_db.py]"
 
 ## MAIN
 ## -----------------------------------------------------------------------------
@@ -60,7 +81,6 @@ python3 -m venv venv
 source venv/bin/activate
 
 ## Install the requirements
-echo "Installing necessary requirement packages.........."
 pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org
 pip install -q -r requirements-dev.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
 let return_code=$?
@@ -68,10 +88,10 @@ let return_code=$?
 check_rc $return_code "ERROR: pip install encountered an error."
 
 ## Run unit tests and check Coverage
-echo "INFO: Running unit and coverage tests ....................."
+echo "INFO: Running unit and coverage tests ..."
 
 # Currently just running unit tests until we fix/support large tests
-coverage run --source shared_recovery -m pytest
+coverage run --source post_to_database -m pytest
 let return_code=$?
 check_rc $return_code "ERROR: Unit tests encountered failures."
 
@@ -86,5 +106,8 @@ deactivate
 rm -rf venv
 find . -type d -name "__pycache__" -exec rm -rf {} +
 
-echo "INFO: Unit testing complete."
+# Remove the shared library
+rm -rf orca_shared
+
 exit 0
+

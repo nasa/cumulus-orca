@@ -9,8 +9,8 @@ The **shared_db** library contains several functions for connecting to a databas
 
 The following sections going into more detail on utilizing this Lambda.
 
-- [Testing shared_db](#test-shared_db) - Testing the library via unit tests
-- [Bulding shared_db](#building-shared_db) - Building the library
+- [Testing shared_db](#testing-shared_db) - Testing the library via unit tests
+- [Building shared_db](#building-shared_db) - Building the library
 - [Using shared_db](#using-shared_db) - Using the shared_db library in code.
 - [shared_db API Reference](#shared_db-api-reference) - API refrence
 
