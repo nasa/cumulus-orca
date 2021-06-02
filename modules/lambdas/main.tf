@@ -298,6 +298,79 @@ resource "aws_lambda_function" "request_status_for_granule" {
   }
 }
 
+# API Gateway
+resource "aws_api_gateway_rest_api" "request_status_for_granule_api" {
+  name = "${var.prefix}_request_status_for_granule_api"
+}
+
+resource "aws_api_gateway_resource" "request_status_for_granule_api_resource" {
+  path_part   = "{proxy+}"
+  parent_id   = aws_api_gateway_rest_api.request_status_for_granule_api.root_resource_id
+  rest_api_id = aws_api_gateway_rest_api.request_status_for_granule_api.id
+}
+
+resource "aws_api_gateway_method" "request_status_for_granule_api_method" {
+  rest_api_id   = aws_api_gateway_rest_api.request_status_for_granule_api.id
+  resource_id   = aws_api_gateway_resource.request_status_for_granule_api_resource.id
+  http_method   = "ANY"
+  # todo: Make sure this is locked down against external access.
+  authorization = "NONE"
+}
+
+# todo: Error coes?
+resource "aws_api_gateway_integration" "request_status_for_granule_api_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.request_status_for_granule_api.id
+  resource_id             = aws_api_gateway_resource.request_status_for_granule_api_resource.id
+  http_method             = aws_api_gateway_method.request_status_for_granule_api_method.http_method
+  integration_http_method = "POST"
+  type                    = "AWS"
+  uri                     = aws_lambda_function.request_status_for_granule.invoke_arn
+}
+
+resource "aws_api_gateway_method_response" "response_200" {
+  rest_api_id = aws_api_gateway_rest_api.request_status_for_granule_api.id
+  resource_id = aws_api_gateway_resource.request_status_for_granule_api_resource.id
+  http_method = aws_api_gateway_method.request_status_for_granule_api_method.http_method
+  status_code = "200"
+}
+
+resource "aws_api_gateway_integration_response" "request_status_for_granule_api_response" {
+  depends_on = [aws_api_gateway_integration.request_status_for_granule_api_integration]
+  rest_api_id = aws_api_gateway_rest_api.request_status_for_granule_api.id
+  resource_id = aws_api_gateway_resource.request_status_for_granule_api_resource.id
+  http_method = aws_api_gateway_method.request_status_for_granule_api_method.http_method
+  status_code = aws_api_gateway_method_response.response_200.status_code
+
+  # Transforms the backend JSON response to XML
+  response_templates = {
+    "application/json" = <<EOF
+#set($inputRoot = $input.path('$'))
+$input.json("$")
+
+#if($input.path("stackTrace") != '')
+#set($context.responseOverride.status = 500)
+#elseif($input.path("httpStatus") != '')
+#set($context.responseOverride.status = $input.path('httpStatus'))
+#end
+EOF
+  }
+}
+
+# Lambda
+resource "aws_lambda_permission" "request_status_for_granule_api_permission" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.request_status_for_granule.function_name
+  # todo: Could make this the accountID. https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_permission
+  principal     = "apigateway.amazonaws.com"
+
+  # More: http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-control-access-using-iam-policies-to-invoke-api.html
+  # todo: does this work?
+  #source_arn = aws_api_gateway_resource.request_status_for_granule_api.arn
+  # todo: Add accountId as var
+  #source_arn = "arn:aws:execute-api:${var.region}:${var.accountId}:${aws_api_gateway_rest_api.request_status_for_granule_api.id}/*/${aws_api_gateway_method.request_status_for_granule_api_method.http_method}${aws_api_gateway_resource.request_status_for_granule_api_resource.path}"
+}
+
 
 # request_status_for_job - Provides recovery status information for a job.
 # ==============================================================================
