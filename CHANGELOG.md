@@ -105,6 +105,7 @@ See the documentation for specifics on the various files and changes specified b
   ```
 
 ### Added
+- *ORCA-177* Added AWS API Gateway in lambdas.tf for the request_status lambdas.
 - *ORCA-165* Added new lambda function *post_copy_request_to_queue.py* under *tasks/post_copy_request_to_queue/ for querying the DB 
   and  posting to two queues.
   Added unit tests *test_post_copy_request_to_queue.py* under *tasks/post_copy_request_to_queue/test/unit_tests/* to test the new lambda.
