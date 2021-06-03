@@ -360,7 +360,6 @@ resource "aws_lambda_permission" "request_status_for_granule_api_permission" {
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.request_status_for_granule.function_name
-  # todo: Could make this the accountID. https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_permission
   principal     = "apigateway.amazonaws.com"
 
   # More: http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-control-access-using-iam-policies-to-invoke-api.html
