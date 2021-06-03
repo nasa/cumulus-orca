@@ -317,7 +317,6 @@ resource "aws_api_gateway_method" "request_status_for_granule_api_method" {
   authorization = "NONE"
 }
 
-# todo: Error coes?
 resource "aws_api_gateway_integration" "request_status_for_granule_api_integration" {
   rest_api_id             = aws_api_gateway_rest_api.request_status_for_granule_api.id
   resource_id             = aws_api_gateway_resource.request_status_for_granule_api_resource.id
@@ -365,10 +364,7 @@ resource "aws_lambda_permission" "request_status_for_granule_api_permission" {
   principal     = "apigateway.amazonaws.com"
 
   # More: http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-control-access-using-iam-policies-to-invoke-api.html
-  # todo: does this work?
-  #source_arn = aws_api_gateway_resource.request_status_for_granule_api.arn
-  # todo: Add accountId as var
-  #source_arn = "arn:aws:execute-api:${var.region}:${var.accountId}:${aws_api_gateway_rest_api.request_status_for_granule_api.id}/*/${aws_api_gateway_method.request_status_for_granule_api_method.http_method}${aws_api_gateway_resource.request_status_for_granule_api_resource.path}"
+  # source_arn = "arn:aws:execute-api:${var.region}:${var.accountId}:${aws_api_gateway_rest_api.request_status_for_granule_api.id}/*/${aws_api_gateway_method.request_status_for_granule_api_method.http_method}${aws_api_gateway_resource.request_status_for_granule_api_resource.path}"
 }
 
 
