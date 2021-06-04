@@ -1,0 +1,111 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/orca_catalog_reporting_dummy/schemas/output.json",
+	"title": "orca_catalog_reporting_dummy Lambda Input (Granule Specific)",
+	"description": "The output from the orca_catalog_reporting_dummy Lambda when retrieving reconciliation reports.",
+	"type": "array",
+	"items": {
+		"type": "object",
+		"properties": {
+			"providerId": {
+				"description": "providerId that is provided by Cumulus. Unique.",
+				"type": "string"
+			},
+			"collections": {
+				"description": "A list of collections.",
+				"type": "array",
+				"items": {
+					"properties": {
+						"collectionId": {
+							"description": "collectionId that is provided by Cumulus. Unique per providerId.",
+							"type": "string"
+						},
+						"granules": {
+							"description": "A list of granules",
+							"type": "array",
+							"items": {
+								"properties": {
+									"granuleId": {
+										"description": "granuleId that is provided by Cumulus. Unique per collectionId.",
+										"type": "string"
+									},
+									"date": {
+										"description": "TBD",
+										"type": "string"
+									},
+									"createDate": {
+										"description": "Date and time in UTC that the data was originally ingested into ORCA.",
+										"type": "string",
+										"pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?\\+00:00$"
+									},
+									"lastUpdate": {
+										"description": "Date and time in UTC that information was updated.",
+										"type": "string",
+										"pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?\\+00:00$"
+									},
+									"files": {
+										"description": "A list of files within the granule.",
+										"type": "array",
+										"items": {
+											"properties": {
+												"fileName": {
+													"description": "Name of the file. (MOD14A1.061.2020245.hdf)",
+													"type": "string"
+												},
+												"orcaLocation": {
+													"description": "ORCA S3 Glacier bucket the file resides in. TODO: Can we call that out in the name?",
+													"type": "string"
+												},
+												"fileSize": {
+													"description": "Size in bytes of the file. From Cumulus ingest. TODO: Can we call that out in the name?",
+													"type": "integer"
+												},
+												"fileChecksum": {
+													"description": "Checksum hash of the file provided by Cumulus.",
+													"type": "string"
+												},
+												"fileChecksumType": {
+													"description": "Hash type used to calculate the hash value of the file.",
+													"type": "string"
+												},
+												"fileVersion": {
+													"description": "AWS provided version of the file.",
+													"type": "string"
+												},
+												"orcaEtag": {
+													"description": "AWS provided etag of the versioned file. Semi unique.",
+													"type": "string"
+												}
+											},
+											"required": [
+												"fileName",
+												"orcaLocation",
+												"fileSize",
+												"fileChecksum",
+												"fileChecksumType",
+												"fileVersion",
+												"orcaEtag"
+											]
+										}
+									}
+								},
+								"required": [
+									"granuleId",
+									"date",
+									"createDate",
+									"lastUpdate",
+									"files"
+								]
+							}
+						}
+					},
+					"required": ["collectionId", "granules"]
+				}
+			}
+		},
+		"required": [
+			"providerId",
+			"collections"
+		]
+	}
+}
