@@ -51,6 +51,11 @@ output "post_copy_request_to_queue_arn" {
   value       = aws_lambda_function.post_copy_request_to_queue.arn
 }
 
+output "orca_catalog_reporting_arn" {
+  description = "AWS ARN for the orca_catalog_reporting lambda."
+  value       = aws_lambda_function.orca_catalog_reporting_dummy.arn
+}
+
 
 # Utility Lambdas
 # ------------------------------------------------------------------------------

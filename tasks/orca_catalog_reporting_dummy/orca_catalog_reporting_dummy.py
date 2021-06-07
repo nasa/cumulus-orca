@@ -1,12 +1,8 @@
 import json
-import uuid
-from datetime import datetime, timezone, timedelta
-from http import HTTPStatus
 from typing import Dict, Any, List
 
 import fastjsonschema as fastjsonschema
 from cumulus_logger import CumulusLogger
-from fastjsonschema import JsonSchemaException
 
 LOGGER = CumulusLogger()
 
@@ -40,28 +36,14 @@ def create_http_error_dict(
 def handler(event: Dict[str, Any], context: Any) -> List[Dict[str, Any]]:
     # noinspection SpellCheckingInspection
     """
-    Entry point for the request_status_for_granule Lambda.
+    Entry point for the orca_catalog_reporting_dummy Lambda.
     Args:
-        event: A dict with the following keys:
-            granule_id: The unique ID of the granule to retrieve status for.
-            asyncOperationId (Optional): The unique ID of the asyncOperation.
-                May apply to a request that covers multiple granules.
+        event: See schemas/input.json
         context: An object provided by AWS Lambda. Used for context tracking.
 
-    Returns: A Dict with the following keys:
-        'granule_id' (str): The unique ID of the granule to retrieve status for.
-        'asyncOperationId' (str): The unique ID of the asyncOperation.
-        'files' (List): Description and status of the files within the given granule. List of Dicts with keys:
-            'file_name' (str): The name and extension of the file.
-            'restore_destination' (str): The name of the glacier bucket the file is being copied to.
-            'status' (str): The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.
-            'error_message' (str, Optional): If the restoration of the file errored, the error will be stored here.
-        'request_time' (DateTime): The time, in UTC isoformat, when the request to restore the granule was initiated.
-        'completion_time' (DateTime, Optional):
-            The time, in UTC isoformat, when all granule_files were no longer 'pending'/'staged'.
-            
+    Returns:
+        See schemas/output.json
         Or, if an error occurs, see create_http_error_dict
-            400 if granule_id is missing. 500 if an error occurs when querying the database, 404 if not found.
     """
     LOGGER.setMetadata(event, context)
 
