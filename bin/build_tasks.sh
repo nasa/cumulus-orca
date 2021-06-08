@@ -48,7 +48,7 @@ cd ../../
 
 
 failure=0
-for TASK in $(ls -d tasks/* | egrep "request_status_|db_deploy|copy_files_to_archive|post_copy_request_to_queue|request_files")
+for TASK in $(ls -d tasks/* | egrep "request_status_|db_deploy|post_to_database|copy_files_to_archive|post_copy_request_to_queue|orca_catalog_reporting_dummy")
 do
   echo "Building ${TASK}"
   cd ${TASK}
