@@ -315,7 +315,7 @@ def process_granule(
                     )
                     a_file[FILE_SUCCESS_KEY] = True
                     a_file[FILE_ERROR_MESSAGE_KEY] = ""
-                    
+
                     files = [
                         {"filename": os.path.basename(a_file[FILE_KEY_KEY])},
                         {"key_path": a_file[FILE_KEY_KEY]},

@@ -11,6 +11,7 @@ from random import randint, uniform
 from unittest import mock
 from unittest.mock import patch, MagicMock, call, Mock
 from test.request_helpers import LambdaContextMock, create_handler_event
+
 # noinspection PyPackageRequirements
 import fastjsonschema as fastjsonschema
 from botocore.exceptions import ClientError
@@ -69,10 +70,10 @@ class TestRequestFiles(unittest.TestCase):
                 request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
             },
         }
-        max_retries = randint(0, 99999) # nosec
-        retry_sleep_secs = uniform(0, 99999) # nosec
+        max_retries = randint(0, 99999)  # nosec
+        retry_sleep_secs = uniform(0, 99999)  # nosec
         retrieval_type = "Bulk"
-        exp_days = randint(0, 99999) # nosec
+        exp_days = randint(0, 99999)  # nosec
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
 
         os.environ["DB_QUEUE_URL"] = db_queue_url
@@ -116,9 +117,9 @@ class TestRequestFiles(unittest.TestCase):
                 request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
             },
         }
-        retry_sleep_secs = uniform(0, 99999) # nosec
+        retry_sleep_secs = uniform(0, 99999)  # nosec
         retrieval_type = "Bulk"
-        exp_days = randint(0, 99999) # nosec
+        exp_days = randint(0, 99999)  # nosec
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
 
         os.environ["DB_QUEUE_URL"] = db_queue_url
@@ -159,9 +160,9 @@ class TestRequestFiles(unittest.TestCase):
                 request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
             },
         }
-        max_retries = randint(0, 99999) # nosec
+        max_retries = randint(0, 99999)  # nosec
         retrieval_type = "Bulk"
-        exp_days = randint(0, 99999) # nosec
+        exp_days = randint(0, 99999)  # nosec
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
         os.environ["DB_QUEUE_URL"] = db_queue_url
 
@@ -202,9 +203,9 @@ class TestRequestFiles(unittest.TestCase):
                 request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
             },
         }
-        max_retries = randint(0, 99999) # nosec
-        retry_sleep_secs = uniform(0, 99999) # nosec
-        exp_days = randint(0, 99999) # nosec
+        max_retries = randint(0, 99999)  # nosec
+        retry_sleep_secs = uniform(0, 99999)  # nosec
+        exp_days = randint(0, 99999)  # nosec
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
         os.environ["DB_QUEUE_URL"] = db_queue_url
 
@@ -247,10 +248,10 @@ class TestRequestFiles(unittest.TestCase):
                 request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
             },
         }
-        max_retries = randint(0, 99999) # nosec
-        retry_sleep_secs = uniform(0, 99999) # nosec
+        max_retries = randint(0, 99999)  # nosec
+        retry_sleep_secs = uniform(0, 99999)  # nosec
         retrieval_type = "Nope"
-        exp_days = randint(0, 99999) # nosec
+        exp_days = randint(0, 99999)  # nosec
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
 
         os.environ["DB_QUEUE_URL"] = db_queue_url
@@ -294,8 +295,8 @@ class TestRequestFiles(unittest.TestCase):
                 request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
             },
         }
-        max_retries = randint(0, 99999) # nosec
-        retry_sleep_secs = uniform(0, 99999) # nosec
+        max_retries = randint(0, 99999)  # nosec
+        retry_sleep_secs = uniform(0, 99999)  # nosec
         retrieval_type = "Bulk"
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
 
@@ -336,10 +337,10 @@ class TestRequestFiles(unittest.TestCase):
                 request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
             },
         }
-        max_retries = randint(0, 99999) # nosec
-        retry_sleep_secs = uniform(0, 99999) # nosec
+        max_retries = randint(0, 99999)  # nosec
+        retry_sleep_secs = uniform(0, 99999)  # nosec
         retrieval_type = "Bulk"
-        exp_days = randint(0, 99999) # nosec
+        exp_days = randint(0, 99999)  # nosec
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
         job_id = uuid.uuid4()
 
@@ -388,10 +389,10 @@ class TestRequestFiles(unittest.TestCase):
         os.environ[
             request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY
         ] = glacier_bucket
-        max_retries = randint(0, 99999) # nosec
-        retry_sleep_secs = uniform(0, 99999) # nosec
+        max_retries = randint(0, 99999)  # nosec
+        retry_sleep_secs = uniform(0, 99999)  # nosec
         retrieval_type = "Bulk"
-        exp_days = randint(0, 99999) # nosec
+        exp_days = randint(0, 99999)  # nosec
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
 
         os.environ["DB_QUEUE_URL"] = db_queue_url
@@ -429,10 +430,10 @@ class TestRequestFiles(unittest.TestCase):
         try:
             request_files.inner_task(
                 {request_files.EVENT_CONFIG_KEY: dict()},
-                randint(0, 99999), # nosec
-                randint(0, 99999), # nosec
+                randint(0, 99999),  # nosec
+                randint(0, 99999),  # nosec
                 uuid.uuid4().__str__(),
-                randint(0, 99999), # nosec
+                randint(0, 99999),  # nosec
                 "https://db.queue.url",
             )
             self.fail("Error not raised.")
@@ -500,10 +501,10 @@ class TestRequestFiles(unittest.TestCase):
                 request_files.INPUT_JOB_ID_KEY: job_id,
             },
         }
-        max_retries = randint(0, 99999) # nosec
-        retry_sleep_secs = randint(0, 99999) # nosec
+        max_retries = randint(0, 99999)  # nosec
+        retry_sleep_secs = randint(0, 99999)  # nosec
         retrieval_type = uuid.uuid4().__str__()
-        restore_expire_days = randint(0, 99999) # nosec
+        restore_expire_days = randint(0, 99999)  # nosec
         mock_s3_cli = mock_boto3_client("s3")
 
         # noinspection PyUnusedLocal
@@ -548,21 +549,23 @@ class TestRequestFiles(unittest.TestCase):
             result,
         )
 
-    @patch('request_files.shared_recovery.create_status_for_job')
-    @patch('request_files.shared_recovery.update_status_for_file')
-    @patch('time.sleep')
-    @patch('request_files.restore_object')
-    def test_process_granule_minimal_path(self,
-                                          mock_restore_object: MagicMock,
-                                          mock_sleep: MagicMock,
-                                          mock_update_status_for_file: MagicMock,
-                                          mock_create_status_for_job: MagicMock):
+    @patch("request_files.shared_recovery.create_status_for_job")
+    @patch("request_files.shared_recovery.update_status_for_file")
+    @patch("time.sleep")
+    @patch("request_files.restore_object")
+    def test_process_granule_minimal_path(
+        self,
+        mock_restore_object: MagicMock,
+        mock_sleep: MagicMock,
+        mock_update_status_for_file: MagicMock,
+        mock_create_status_for_job: MagicMock,
+    ):
         mock_s3 = Mock()
-        max_retries = randint(10, 999) # nosec
+        max_retries = randint(10, 999)  # nosec
         glacier_bucket = uuid.uuid4().__str__()
-        retry_sleep_secs = randint(0, 99999) # nosec
+        retry_sleep_secs = randint(0, 99999)  # nosec
         retrieval_type = uuid.uuid4().__str__()
-        restore_expire_days = randint(0, 99999) # nosec
+        restore_expire_days = randint(0, 99999)  # nosec
         granule_id = uuid.uuid4().__str__()
         file_name_0 = uuid.uuid4().__str__()
         dest_bucket_0 = uuid.uuid4().__str__()
@@ -578,27 +581,42 @@ class TestRequestFiles(unittest.TestCase):
                     request_files.FILE_KEY_KEY: file_name_0,
                     request_files.FILE_DEST_BUCKET_KEY: dest_bucket_0,
                     request_files.FILE_SUCCESS_KEY: False,
-                    request_files.FILE_ERROR_MESSAGE_KEY: ''
+                    request_files.FILE_ERROR_MESSAGE_KEY: "",
                 },
                 {
                     request_files.FILE_KEY_KEY: file_name_1,
                     request_files.FILE_DEST_BUCKET_KEY: dest_bucket_1,
                     request_files.FILE_SUCCESS_KEY: False,
-                    request_files.FILE_ERROR_MESSAGE_KEY: ''
-                }
-            ]
+                    request_files.FILE_ERROR_MESSAGE_KEY: "",
+                },
+            ],
         }
 
-        request_files.process_granule(mock_s3, granule, glacier_bucket, restore_expire_days, max_retries,
-                                      retry_sleep_secs, retrieval_type, job_id, db_queue_url)
+        request_files.process_granule(
+            mock_s3,
+            granule,
+            glacier_bucket,
+            restore_expire_days,
+            max_retries,
+            retry_sleep_secs,
+            retrieval_type,
+            job_id,
+            db_queue_url,
+        )
 
-        self.assertTrue(granule[request_files.GRANULE_RECOVER_FILES_KEY][0][request_files.FILE_SUCCESS_KEY])
-        self.assertTrue(granule[request_files.GRANULE_RECOVER_FILES_KEY][1][request_files.FILE_SUCCESS_KEY])
+        self.assertTrue(
+            granule[request_files.GRANULE_RECOVER_FILES_KEY][0][
+                request_files.FILE_SUCCESS_KEY
+            ]
+        )
+        self.assertTrue(
+            granule[request_files.GRANULE_RECOVER_FILES_KEY][1][
+                request_files.FILE_SUCCESS_KEY
+            ]
+        )
 
         files_0 = [
-            {
-                "filename": file_name_0
-            },
+            {"filename": file_name_0},
             {"key_path": file_name_0},
             {"restore_destination": dest_bucket_0},
             {"status_id": request_files.shared_recovery.OrcaStatus.PENDING.value},
@@ -609,9 +627,7 @@ class TestRequestFiles(unittest.TestCase):
         ]
 
         files_1 = [
-            {
-                "filename": file_name_1
-            },
+            {"filename": file_name_1},
             {"key_path": file_name_1},
             {"restore_destination": dest_bucket_1},
             {"status_id": request_files.shared_recovery.OrcaStatus.PENDING.value},
@@ -620,34 +636,57 @@ class TestRequestFiles(unittest.TestCase):
             {"last_update": mock.ANY},
             {"completion_time": mock.ANY},
         ]
-        
-        mock_create_status_for_job.assert_has_calls([
-            call(job_id, granule_id, glacier_bucket, files_0, db_queue_url),
-            call(job_id, granule_id, glacier_bucket, files_1, db_queue_url)])
 
+        mock_create_status_for_job.assert_has_calls(
+            [
+                call(job_id, granule_id, glacier_bucket, files_0, db_queue_url),
+                call(job_id, granule_id, glacier_bucket, files_1, db_queue_url),
+            ]
+        )
 
-        mock_restore_object.assert_has_calls([
-            call(
-                mock_s3,
-                file_name_0, restore_expire_days, glacier_bucket,
-                1,
-                job_id,
-                retrieval_type
-            ),
-            call(
-                mock_s3,
-                file_name_1, restore_expire_days, glacier_bucket,
-                1,
-                job_id,
-                retrieval_type
-            )
-        ])
+        mock_restore_object.assert_has_calls(
+            [
+                call(
+                    mock_s3,
+                    file_name_0,
+                    restore_expire_days,
+                    glacier_bucket,
+                    1,
+                    job_id,
+                    retrieval_type,
+                ),
+                call(
+                    mock_s3,
+                    file_name_1,
+                    restore_expire_days,
+                    glacier_bucket,
+                    1,
+                    job_id,
+                    retrieval_type,
+                ),
+            ]
+        )
         self.assertEqual(2, mock_restore_object.call_count)
-        mock_update_status_for_file.assert_has_calls([
-            call(job_id, granule_id, file_name_0, request_files.shared_recovery.OrcaStatus.PENDING,
-                 None,db_queue_url),
-            call(job_id, granule_id, file_name_1, request_files.shared_recovery.OrcaStatus.PENDING,
-                None,db_queue_url,)])
+        mock_update_status_for_file.assert_has_calls(
+            [
+                call(
+                    job_id,
+                    granule_id,
+                    file_name_0,
+                    request_files.shared_recovery.OrcaStatus.PENDING,
+                    None,
+                    db_queue_url,
+                ),
+                call(
+                    job_id,
+                    granule_id,
+                    file_name_1,
+                    request_files.shared_recovery.OrcaStatus.PENDING,
+                    None,
+                    db_queue_url,
+                ),
+            ]
+        )
         self.assertEqual(2, mock_update_status_for_file.call_count)
         mock_sleep.assert_not_called()
 
@@ -665,9 +704,9 @@ class TestRequestFiles(unittest.TestCase):
         mock_s3 = Mock()
         max_retries = 5
         glacier_bucket = uuid.uuid4().__str__()
-        retry_sleep_secs = randint(0, 99999) # nosec
+        retry_sleep_secs = randint(0, 99999)  # nosec
         retrieval_type = uuid.uuid4().__str__()
-        restore_expire_days = randint(0, 99999) # nosec
+        restore_expire_days = randint(0, 99999)  # nosec
         granule_id = uuid.uuid4().__str__()
         file_name_0 = uuid.uuid4().__str__()
         dest_bucket_0 = uuid.uuid4().__str__()
@@ -774,11 +813,11 @@ class TestRequestFiles(unittest.TestCase):
         mock_create_status_for_job: MagicMock,
     ):
         mock_s3 = Mock()
-        max_retries = randint(3, 20) # nosec
+        max_retries = randint(3, 20)  # nosec
         glacier_bucket = uuid.uuid4().__str__()
-        retry_sleep_secs = randint(0, 99999) # nosec
+        retry_sleep_secs = randint(0, 99999)  # nosec
         retrieval_type = uuid.uuid4().__str__()
-        restore_expire_days = randint(0, 99999) # nosec
+        restore_expire_days = randint(0, 99999)  # nosec
         granule_id = uuid.uuid4().__str__()
         file_name_0 = uuid.uuid4().__str__()
         dest_bucket_0 = uuid.uuid4().__str__()
@@ -916,7 +955,7 @@ class TestRequestFiles(unittest.TestCase):
     def test_restore_object_happy_path(self, mock_logger_info: MagicMock):
         glacier_bucket = uuid.uuid4().__str__()
         key = uuid.uuid4().__str__()
-        restore_expire_days = randint(0, 99999) # nosec
+        restore_expire_days = randint(0, 99999)  # nosec
         retrieval_type = uuid.uuid4().__str__()
         mock_s3_cli = Mock()
 
@@ -925,7 +964,7 @@ class TestRequestFiles(unittest.TestCase):
             key,
             restore_expire_days,
             glacier_bucket,
-            randint(0, 99999), # nosec
+            randint(0, 99999),  # nosec
             uuid.uuid4().__str__(),
             retrieval_type,
         )
@@ -944,7 +983,7 @@ class TestRequestFiles(unittest.TestCase):
         job_id = uuid.uuid4().__str__()
         glacier_bucket = uuid.uuid4().__str__()
         key = uuid.uuid4().__str__()
-        restore_expire_days = randint(0, 99999) # nosec
+        restore_expire_days = randint(0, 99999)  # nosec
         retrieval_type = uuid.uuid4().__str__()
         expected_error = ClientError({}, "")
         mock_s3_cli = Mock()
@@ -980,7 +1019,7 @@ class TestRequestFiles(unittest.TestCase):
     ):
         glacier_bucket = uuid.uuid4().__str__()
         key = uuid.uuid4().__str__()
-        restore_expire_days = randint(0, 99999) # nosec
+        restore_expire_days = randint(0, 99999)  # nosec
         retrieval_type = uuid.uuid4().__str__()
         expected_error = ClientError({}, "")
         mock_s3_cli = Mock()
@@ -1016,7 +1055,7 @@ class TestRequestFiles(unittest.TestCase):
     ):
         glacier_bucket = uuid.uuid4().__str__()
         key = uuid.uuid4().__str__()
-        restore_expire_days = randint(0, 99999) # nosec
+        restore_expire_days = randint(0, 99999)  # nosec
         retrieval_type = uuid.uuid4().__str__()
         mock_s3_cli = Mock()
 
@@ -1025,7 +1064,7 @@ class TestRequestFiles(unittest.TestCase):
             key,
             restore_expire_days,
             glacier_bucket,
-            randint(0, 99999), # nosec
+            randint(0, 99999),  # nosec
             uuid.uuid4().__str__(),
             retrieval_type,
         )
@@ -1070,13 +1109,15 @@ class TestRequestFiles(unittest.TestCase):
 
         self.assertEqual(mock_task.return_value, result["payload"])
 
-    @patch('request_files.shared_recovery.post_entry_to_queue')
-    @patch('boto3.client')
-    @patch('cumulus_logger.CumulusLogger.info')
-    def test_task_one_granule_4_files_success(self,
-                                              mock_logger_info: MagicMock,
-                                              mock_boto3_client: MagicMock,
-                                              mock_post_entry_to_queue: MagicMock):
+    @patch("request_files.shared_recovery.post_entry_to_queue")
+    @patch("boto3.client")
+    @patch("cumulus_logger.CumulusLogger.info")
+    def test_task_one_granule_4_files_success(
+        self,
+        mock_logger_info: MagicMock,
+        mock_boto3_client: MagicMock,
+        mock_post_entry_to_queue: MagicMock,
+    ):
         """
         Test four files for one granule - successful
         """
@@ -1084,62 +1125,62 @@ class TestRequestFiles(unittest.TestCase):
         files = [KEY1, KEY2, KEY3, KEY4]
         input_event = {
             "input": {
-                "granules": [
-                    {
-                        "granuleId": granule_id,
-                        "keys": files
-                    }
-                ],
-                'job_id': uuid.uuid4().__str__()
+                "granules": [{"granuleId": granule_id, "keys": files}],
+                "job_id": uuid.uuid4().__str__(),
             },
-            "config": {
-                "glacier-bucket": "my-dr-fake-glacier-bucket"
-            }
+            "config": {"glacier-bucket": "my-dr-fake-glacier-bucket"},
         }
 
-        mock_s3_cli = mock_boto3_client('s3')
-        mock_s3_cli.restore_object.side_effect = [None,
-                                                  None,
-                                                  None,
-                                                  None
-                                                  ]
+        mock_s3_cli = mock_boto3_client("s3")
+        mock_s3_cli.restore_object.side_effect = [None, None, None, None]
 
         result = request_files.task(input_event, self.context)
 
-        mock_boto3_client.assert_has_calls([call('s3')])
-        mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
-                                                Key=FILE1)
-        mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
-                                                Key=FILE2)
-        mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
-                                                Key=FILE3)
-        mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
-                                                Key=FILE4)
-        restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}}
+        mock_boto3_client.assert_has_calls([call("s3")])
+        mock_s3_cli.head_object.assert_any_call(
+            Bucket="my-dr-fake-glacier-bucket", Key=FILE1
+        )
+        mock_s3_cli.head_object.assert_any_call(
+            Bucket="my-dr-fake-glacier-bucket", Key=FILE2
+        )
+        mock_s3_cli.head_object.assert_any_call(
+            Bucket="my-dr-fake-glacier-bucket", Key=FILE3
+        )
+        mock_s3_cli.head_object.assert_any_call(
+            Bucket="my-dr-fake-glacier-bucket", Key=FILE4
+        )
+        restore_req_exp = {"Days": 5, "GlacierJobParameters": {"Tier": "Standard"}}
 
         mock_s3_cli.restore_object.assert_any_call(
-            Bucket='my-dr-fake-glacier-bucket',
+            Bucket="my-dr-fake-glacier-bucket",
             Key=FILE1,
-            RestoreRequest=restore_req_exp)
+            RestoreRequest=restore_req_exp,
+        )
         mock_s3_cli.restore_object.assert_any_call(
-            Bucket='my-dr-fake-glacier-bucket',
+            Bucket="my-dr-fake-glacier-bucket",
             Key=FILE2,
-            RestoreRequest=restore_req_exp)
+            RestoreRequest=restore_req_exp,
+        )
         mock_s3_cli.restore_object.assert_any_call(
-            Bucket='my-dr-fake-glacier-bucket',
+            Bucket="my-dr-fake-glacier-bucket",
             Key=FILE3,
-            RestoreRequest=restore_req_exp)
+            RestoreRequest=restore_req_exp,
+        )
         mock_s3_cli.restore_object.assert_called_with(
-            Bucket='my-dr-fake-glacier-bucket',
+            Bucket="my-dr-fake-glacier-bucket",
             Key=FILE4,
-            RestoreRequest=restore_req_exp)
+            RestoreRequest=restore_req_exp,
+        )
 
         exp_gran = {
-            'granuleId': granule_id,
-            'keys': self.get_expected_keys(),
-            'recover_files': self.get_expected_files()
+            "granuleId": granule_id,
+            "keys": self.get_expected_keys(),
+            "recover_files": self.get_expected_files(),
         }
-        exp_granules = {'granules': [exp_gran], 'job_id': input_event['input']['job_id']}
+        exp_granules = {
+            "granules": [exp_gran],
+            "job_id": input_event["input"]["job_id"],
+        }
 
         self.assertEqual(exp_granules, result)
         mock_post_entry_to_queue.assert_called()  # called 4 times # todo: No..?
@@ -1298,143 +1339,167 @@ class TestRequestFiles(unittest.TestCase):
         mock_boto3_client.assert_called_with("s3")
         mock_s3_cli.head_object.assert_called_with(Bucket="my-bucket", Key=file1)
 
-    @patch('request_files.shared_recovery.post_entry_to_queue')
-    @patch('boto3.client')
-    def test_task_no_retries_env_var(self,
-                                     mock_boto3_client: MagicMock,
-                                     mock_post_entry_to_queue: MagicMock):
+    @patch("request_files.shared_recovery.post_entry_to_queue")
+    @patch("boto3.client")
+    def test_task_no_retries_env_var(
+        self, mock_boto3_client: MagicMock, mock_post_entry_to_queue: MagicMock
+    ):
         """
         Test environment var RESTORE_REQUEST_RETRIES not set - use default.
         """
-        del os.environ['RESTORE_REQUEST_RETRIES']
+        del os.environ["RESTORE_REQUEST_RETRIES"]
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
         # todo: Reduce string copy/paste for test values here and elsewhere.
         event = {
             "input": {
-                "granules":
-                    [{"granuleId": granule_id, "keys": [KEY1]}],
-                request_files.INPUT_JOB_ID_KEY: uuid.uuid4().__str__()
-            }, "config": {"glacier-bucket": "some_bucket"}
+                "granules": [{"granuleId": granule_id, "keys": [KEY1]}],
+                request_files.INPUT_JOB_ID_KEY: uuid.uuid4().__str__(),
+            },
+            "config": {"glacier-bucket": "some_bucket"},
         }
 
-        mock_s3_cli = mock_boto3_client('s3')
+        mock_s3_cli = mock_boto3_client("s3")
         mock_s3_cli.restore_object.side_effect = [None]
 
         exp_granules = {
-            'granules': [
+            "granules": [
                 {
-                    'granuleId': granule_id,
-                    'keys': [{'key': FILE1, 'dest_bucket': PROTECTED_BUCKET}],
-                    'recover_files': [{'key': FILE1, 'dest_bucket': PROTECTED_BUCKET, 'success': True, 'err_msg': ''}]
+                    "granuleId": granule_id,
+                    "keys": [{"key": FILE1, "dest_bucket": PROTECTED_BUCKET}],
+                    "recover_files": [
+                        {
+                            "key": FILE1,
+                            "dest_bucket": PROTECTED_BUCKET,
+                            "success": True,
+                            "err_msg": "",
+                        }
+                    ],
                 }
             ],
-            request_files.INPUT_JOB_ID_KEY: event['input']['job_id']
+            request_files.INPUT_JOB_ID_KEY: event["input"]["job_id"],
         }
         result = request_files.task(event, self.context)
-        os.environ['RESTORE_REQUEST_RETRIES'] = '2'  # todo: This test claims 'no_retries'
+        os.environ[
+            "RESTORE_REQUEST_RETRIES"
+        ] = "2"  # todo: This test claims 'no_retries'
         self.assertEqual(exp_granules, result)
 
-        mock_boto3_client.assert_called_with('s3')
-        mock_s3_cli.head_object.assert_called_with(Bucket='some_bucket',
-                                                   Key=FILE1)
-        restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}}
+        mock_boto3_client.assert_called_with("s3")
+        mock_s3_cli.head_object.assert_called_with(Bucket="some_bucket", Key=FILE1)
+        restore_req_exp = {"Days": 5, "GlacierJobParameters": {"Tier": "Standard"}}
         mock_s3_cli.restore_object.assert_called_with(
-            Bucket='some_bucket',
-            Key=FILE1,
-            RestoreRequest=restore_req_exp)
+            Bucket="some_bucket", Key=FILE1, RestoreRequest=restore_req_exp
+        )
         mock_post_entry_to_queue.assert_called()
 
     # todo: single_query is not called in code. Replace with higher-level checks.
-    @patch('request_files.shared_recovery.post_entry_to_queue')
-    @patch('boto3.client')
-    @patch('cumulus_logger.CumulusLogger.info')
-    def test_task_no_expire_days_env_var(self,
-                                         mock_logger_info: MagicMock,
-                                         mock_boto3_client: MagicMock,
-                                         mock_post_entry_to_queue: MagicMock):
+    @patch("request_files.shared_recovery.post_entry_to_queue")
+    @patch("boto3.client")
+    @patch("cumulus_logger.CumulusLogger.info")
+    def test_task_no_expire_days_env_var(
+        self,
+        mock_logger_info: MagicMock,
+        mock_boto3_client: MagicMock,
+        mock_post_entry_to_queue: MagicMock,
+    ):
         """
         Test environment var RESTORE_EXPIRE_DAYS not set - use default.
         """
-        del os.environ['RESTORE_EXPIRE_DAYS']
-        os.environ['RESTORE_RETRIEVAL_TYPE'] = 'Expedited'
+        del os.environ["RESTORE_EXPIRE_DAYS"]
+        os.environ["RESTORE_RETRIEVAL_TYPE"] = "Expedited"
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
         event = {
             "config": {"glacier-bucket": "some_bucket"},
             "input": {
                 "granules": [{"granuleId": granule_id, "keys": [KEY1]}],
-                'job_id': uuid.uuid4().__str__()
-            }
+                "job_id": uuid.uuid4().__str__(),
+            },
         }
 
-        mock_s3_cli = mock_boto3_client('s3')
+        mock_s3_cli = mock_boto3_client("s3")
         # mock_s3_cli.head_object = Mock()  # todo: Look into why this line was in so many tests without asserts.
         mock_s3_cli.restore_object.side_effect = [None]
         exp_granules = {
-            'granules': [
+            "granules": [
                 {
-                    'granuleId': granule_id,
-                    'keys': [{'key': FILE1, 'dest_bucket': PROTECTED_BUCKET}],
-                    'recover_files': [{'key': FILE1, 'dest_bucket': PROTECTED_BUCKET, 'success': True, 'err_msg': ''}]
+                    "granuleId": granule_id,
+                    "keys": [{"key": FILE1, "dest_bucket": PROTECTED_BUCKET}],
+                    "recover_files": [
+                        {
+                            "key": FILE1,
+                            "dest_bucket": PROTECTED_BUCKET,
+                            "success": True,
+                            "err_msg": "",
+                        }
+                    ],
                 }
             ],
-            'job_id': event['input']['job_id']
+            "job_id": event["input"]["job_id"],
         }
 
         result = request_files.task(event, self.context)
         self.assertEqual(exp_granules, result)
-        os.environ['RESTORE_EXPIRE_DAYS'] = '3'  # todo: Why is this set here?
-        del os.environ['RESTORE_RETRIEVAL_TYPE']
-        mock_boto3_client.assert_called_with('s3')
-        mock_s3_cli.head_object.assert_called_with(Bucket='some_bucket',
-                                                   Key=FILE1)
-        restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Expedited'}}
+        os.environ["RESTORE_EXPIRE_DAYS"] = "3"  # todo: Why is this set here?
+        del os.environ["RESTORE_RETRIEVAL_TYPE"]
+        mock_boto3_client.assert_called_with("s3")
+        mock_s3_cli.head_object.assert_called_with(Bucket="some_bucket", Key=FILE1)
+        restore_req_exp = {"Days": 5, "GlacierJobParameters": {"Tier": "Expedited"}}
         mock_s3_cli.restore_object.assert_called_with(
-            Bucket='some_bucket',
-            Key=FILE1,
-            RestoreRequest=restore_req_exp)
+            Bucket="some_bucket", Key=FILE1, RestoreRequest=restore_req_exp
+        )
         self.assertEqual(2, mock_post_entry_to_queue.call_count)
 
-    @patch('request_files.shared_recovery.post_entry_to_queue')
-    @patch('boto3.client')
-    @patch('cumulus_logger.CumulusLogger.error')
-    @patch('cumulus_logger.CumulusLogger.info')
-    def test_task_client_error_one_file(self,
-                                        mock_logger_info: MagicMock,
-                                        mock_logger_error: MagicMock,
-                                        mock_boto3_client: MagicMock,
-                                        mock_post_entry_to_queue: MagicMock):
+    @patch("request_files.shared_recovery.post_entry_to_queue")
+    @patch("boto3.client")
+    @patch("cumulus_logger.CumulusLogger.error")
+    @patch("cumulus_logger.CumulusLogger.info")
+    def test_task_client_error_one_file(
+        self,
+        mock_logger_info: MagicMock,
+        mock_logger_error: MagicMock,
+        mock_boto3_client: MagicMock,
+        mock_post_entry_to_queue: MagicMock,
+    ):
         """
         Test retries for restore error for one file.
         """
         event = {
             "config": {"glacier-bucket": "some_bucket"},
             "input": {
-                "granules": [{"granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
-                              "keys": [KEY1]}]},
-            'job_id': uuid.uuid4().__str__()
+                "granules": [
+                    {
+                        "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
+                        "keys": [KEY1],
+                    }
+                ]
+            },
+            "job_id": uuid.uuid4().__str__(),
         }
 
-        os.environ['RESTORE_RETRY_SLEEP_SECS'] = '.5'  # todo: This is not reset between tests
-        mock_s3_cli = mock_boto3_client('s3')
-        mock_s3_cli.restore_object.side_effect = [ClientError({'Error': {'Code': 'NoSuchBucket'}}, 'restore_object'),
-                                                  ClientError({'Error': {'Code': 'NoSuchBucket'}}, 'restore_object'),
-                                                  ClientError({'Error': {'Code': 'NoSuchBucket'}}, 'restore_object')]
-        os.environ['RESTORE_RETRIEVAL_TYPE'] = 'Standard'  # todo: This is not reset between tests
+        os.environ[
+            "RESTORE_RETRY_SLEEP_SECS"
+        ] = ".5"  # todo: This is not reset between tests
+        mock_s3_cli = mock_boto3_client("s3")
+        mock_s3_cli.restore_object.side_effect = [
+            ClientError({"Error": {"Code": "NoSuchBucket"}}, "restore_object"),
+            ClientError({"Error": {"Code": "NoSuchBucket"}}, "restore_object"),
+            ClientError({"Error": {"Code": "NoSuchBucket"}}, "restore_object"),
+        ]
+        os.environ[
+            "RESTORE_RETRIEVAL_TYPE"
+        ] = "Standard"  # todo: This is not reset between tests
 
         exp_gran = {
-            'granuleId': 'MOD09GQ.A0219114.N5aUCG.006.0656338553321',
-            'keys': [
+            "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
+            "keys": [{"key": FILE1, "dest_bucket": PROTECTED_BUCKET}],
+            "recover_files": [
                 {
-                    'key': FILE1,
-                    'dest_bucket': PROTECTED_BUCKET
+                    "key": FILE1,
+                    "dest_bucket": PROTECTED_BUCKET,
+                    "success": False,
+                    "err_msg": "An error occurred (NoSuchBucket) when calling the restore_object operation: Unknown",
                 }
             ],
-            'recover_files': [
-                {
-                    'key': FILE1, 'dest_bucket': PROTECTED_BUCKET, 'success': False,
-                    'err_msg': 'An error occurred (NoSuchBucket) when calling the restore_object operation: Unknown'
-                }
-            ]
         }
         exp_err = f"One or more files failed to be requested. {exp_gran}"
         try:
@@ -1442,26 +1507,26 @@ class TestRequestFiles(unittest.TestCase):
             self.fail("RestoreRequestError expected")
         except request_files.RestoreRequestError as err:
             self.assertEqual(exp_err, str(err))
-        del os.environ['RESTORE_RETRY_SLEEP_SECS']
-        del os.environ['RESTORE_RETRIEVAL_TYPE']
-        mock_boto3_client.assert_called_with('s3')
-        mock_s3_cli.head_object.assert_called_with(Bucket='some_bucket',
-                                                   Key=FILE1)
-        restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}}
+        del os.environ["RESTORE_RETRY_SLEEP_SECS"]
+        del os.environ["RESTORE_RETRIEVAL_TYPE"]
+        mock_boto3_client.assert_called_with("s3")
+        mock_s3_cli.head_object.assert_called_with(Bucket="some_bucket", Key=FILE1)
+        restore_req_exp = {"Days": 5, "GlacierJobParameters": {"Tier": "Standard"}}
         mock_s3_cli.restore_object.assert_any_call(
-            Bucket='some_bucket',
-            Key=FILE1,
-            RestoreRequest=restore_req_exp)
+            Bucket="some_bucket", Key=FILE1, RestoreRequest=restore_req_exp
+        )
 
-    @patch('request_files.shared_recovery.post_entry_to_queue')
-    @patch('boto3.client')
-    @patch('cumulus_logger.CumulusLogger.error')
-    @patch('cumulus_logger.CumulusLogger.info')
-    def test_task_client_error_3_times(self,
-                                       mock_logger_info: MagicMock,
-                                       mock_logger_error: MagicMock,
-                                       mock_boto3_client: MagicMock,
-                                       mock_post_entry_to_queue: MagicMock):
+    @patch("request_files.shared_recovery.post_entry_to_queue")
+    @patch("boto3.client")
+    @patch("cumulus_logger.CumulusLogger.error")
+    @patch("cumulus_logger.CumulusLogger.info")
+    def test_task_client_error_3_times(
+        self,
+        mock_logger_info: MagicMock,
+        mock_logger_error: MagicMock,
+        mock_boto3_client: MagicMock,
+        mock_post_entry_to_queue: MagicMock,
+    ):
         """
         Test three files, two successful, one errors on all retries and fails.
         """
@@ -1469,26 +1534,24 @@ class TestRequestFiles(unittest.TestCase):
 
         event = {
             "config": {"glacier-bucket": "some_bucket"},
-            'job_id': uuid.uuid4().__str__()}
+            "job_id": uuid.uuid4().__str__(),
+        }
         gran = {"granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321", "keys": keys}
 
-        event["input"] = {
-            "granules": [gran]}
-        mock_s3_cli = mock_boto3_client('s3')
-        mock_s3_cli.restore_object.side_effect = [None,
-                                                  ClientError({'Error': {'Code': 'NoSuchBucket'}},
-                                                              'restore_object'),
-                                                  None,
-                                                  ClientError({'Error': {'Code': 'NoSuchBucket'}},
-                                                              'restore_object'),
-                                                  ClientError({'Error': {'Code': 'NoSuchKey'}},
-                                                              'restore_object')
-                                                  ]
+        event["input"] = {"granules": [gran]}
+        mock_s3_cli = mock_boto3_client("s3")
+        mock_s3_cli.restore_object.side_effect = [
+            None,
+            ClientError({"Error": {"Code": "NoSuchBucket"}}, "restore_object"),
+            None,
+            ClientError({"Error": {"Code": "NoSuchBucket"}}, "restore_object"),
+            ClientError({"Error": {"Code": "NoSuchKey"}}, "restore_object"),
+        ]
 
         exp_gran = {
-            'granuleId': gran["granuleId"],
-            'keys': self.get_exp_keys_3_errs(),
-            'recover_files': self.get_exp_files_3_errs()
+            "granuleId": gran["granuleId"],
+            "keys": self.get_exp_keys_3_errs(),
+            "recover_files": self.get_exp_files_3_errs(),
         }
         exp_err = f"One or more files failed to be requested. {exp_gran}"
         try:
@@ -1497,13 +1560,13 @@ class TestRequestFiles(unittest.TestCase):
         except request_files.RestoreRequestError as err:
             self.assertEqual(exp_err, str(err))
 
-        mock_boto3_client.assert_called_with('s3')
-        mock_s3_cli.head_object.assert_any_call(Bucket='some_bucket',
-                                                Key=FILE1)
+        mock_boto3_client.assert_called_with("s3")
+        mock_s3_cli.head_object.assert_any_call(Bucket="some_bucket", Key=FILE1)
         mock_s3_cli.restore_object.assert_any_call(
-            Bucket='some_bucket',
+            Bucket="some_bucket",
             Key=FILE1,
-            RestoreRequest={'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}})
+            RestoreRequest={"Days": 5, "GlacierJobParameters": {"Tier": "Standard"}},
+        )
         mock_post_entry_to_queue.assert_called()  # 5 times # todo: No..?
 
     @staticmethod
@@ -1545,74 +1608,83 @@ class TestRequestFiles(unittest.TestCase):
         ]
 
     # todo: single_query is not called in code. Replace with higher-level checks.
-    @patch('request_files.shared_recovery.post_entry_to_queue')
-    @patch('boto3.client')
-    @patch('cumulus_logger.CumulusLogger.error')
-    @patch('cumulus_logger.CumulusLogger.info')
-    def test_task_client_error_2_times(self,
-                                       mock_logger_info: MagicMock,
-                                       mock_logger_error: MagicMock,
-                                       mock_boto3_client: MagicMock,
-                                       mock_post_entry_to_queue: MagicMock):
+    @patch("request_files.shared_recovery.post_entry_to_queue")
+    @patch("boto3.client")
+    @patch("cumulus_logger.CumulusLogger.error")
+    @patch("cumulus_logger.CumulusLogger.info")
+    def test_task_client_error_2_times(
+        self,
+        mock_logger_info: MagicMock,
+        mock_logger_error: MagicMock,
+        mock_boto3_client: MagicMock,
+        mock_post_entry_to_queue: MagicMock,
+    ):
         """
         Test two files, first successful, second has two errors, then success.
         """
-        event = {
-            "config": {"glacier-bucket": "some_bucket"}
-        }
+        event = {"config": {"glacier-bucket": "some_bucket"}}
         gran = {}
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
         gran["granuleId"] = granule_id
         keys = [KEY1, KEY2]
         gran["keys"] = keys
-        event["input"] = {
-            "granules": [gran],
-            'job_id': uuid.uuid4().__str__()
-        }
-        mock_s3_cli = mock_boto3_client('sqs')
+        event["input"] = {"granules": [gran], "job_id": uuid.uuid4().__str__()}
+        mock_s3_cli = mock_boto3_client("sqs")
 
-        mock_s3_cli.restore_object.side_effect = [None,
-                                                  ClientError({'Error': {'Code': 'NoSuchBucket'}},
-                                                              'restore_object'),
-                                                  ClientError({'Error': {'Code': 'NoSuchBucket'}},
-                                                              'restore_object'),
-                                                  None
-                                                  ]
+        mock_s3_cli.restore_object.side_effect = [
+            None,
+            ClientError({"Error": {"Code": "NoSuchBucket"}}, "restore_object"),
+            ClientError({"Error": {"Code": "NoSuchBucket"}}, "restore_object"),
+            None,
+        ]
 
         exp_granules = {
-            'granules': [
+            "granules": [
                 {
-                    'granuleId': granule_id,
-                    'keys': [
-                        {'key': FILE1, 'dest_bucket': PROTECTED_BUCKET},
-                        {'key': FILE2, 'dest_bucket': PROTECTED_BUCKET}
+                    "granuleId": granule_id,
+                    "keys": [
+                        {"key": FILE1, "dest_bucket": PROTECTED_BUCKET},
+                        {"key": FILE2, "dest_bucket": PROTECTED_BUCKET},
                     ],
-                    'recover_files': [
-                        {'key': FILE1, 'dest_bucket': PROTECTED_BUCKET, 'success': True, 'err_msg': ''},
-                        {'key': FILE2, 'dest_bucket': PROTECTED_BUCKET, 'success': True, 'err_msg': ''}
-                    ]
+                    "recover_files": [
+                        {
+                            "key": FILE1,
+                            "dest_bucket": PROTECTED_BUCKET,
+                            "success": True,
+                            "err_msg": "",
+                        },
+                        {
+                            "key": FILE2,
+                            "dest_bucket": PROTECTED_BUCKET,
+                            "success": True,
+                            "err_msg": "",
+                        },
+                    ],
                 }
             ],
-            'job_id': event['input']['job_id']
+            "job_id": event["input"]["job_id"],
         }
 
         result = request_files.task(event, self.context)
         self.assertEqual(exp_granules, result)
 
-        mock_boto3_client.assert_has_calls([call('sqs')])
+        mock_boto3_client.assert_has_calls([call("sqs")])
         mock_s3_cli.restore_object.assert_any_call(
-            Bucket='some_bucket',
+            Bucket="some_bucket",
             Key=FILE1,
-            RestoreRequest={'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}})
+            RestoreRequest={"Days": 5, "GlacierJobParameters": {"Tier": "Standard"}},
+        )
         mock_post_entry_to_queue.assert_called()  # 4 times # todo: No..?
 
-    @patch('request_files.shared_recovery.post_entry_to_queue')
-    @patch('boto3.client')
-    @patch('cumulus_logger.CumulusLogger.info')
-    def test_task_output_json_schema(self,
-                                     mock_logger_info: MagicMock,
-                                     mock_boto3_client: MagicMock,
-                                     mock_post_entry_to_queue: MagicMock):
+    @patch("request_files.shared_recovery.post_entry_to_queue")
+    @patch("boto3.client")
+    @patch("cumulus_logger.CumulusLogger.info")
+    def test_task_output_json_schema(
+        self,
+        mock_logger_info: MagicMock,
+        mock_boto3_client: MagicMock,
+        mock_post_entry_to_queue: MagicMock,
+    ):
         """
         Test four files for one granule - successful. Check against output schema.
         """
@@ -1620,62 +1692,62 @@ class TestRequestFiles(unittest.TestCase):
         files = [KEY1, KEY2, KEY3, KEY4]
         input_event = {
             "input": {
-                "granules": [
-                    {
-                        "granuleId": granule_id,
-                        "keys": files
-                    }
-                ],
-                'job_id': uuid.uuid4().__str__()
+                "granules": [{"granuleId": granule_id, "keys": files}],
+                "job_id": uuid.uuid4().__str__(),
             },
-            "config": {
-                "glacier-bucket": "my-dr-fake-glacier-bucket"
-            }
+            "config": {"glacier-bucket": "my-dr-fake-glacier-bucket"},
         }
 
-        mock_s3_cli = mock_boto3_client('s3')
-        mock_s3_cli.restore_object.side_effect = [None,
-                                                  None,
-                                                  None,
-                                                  None
-                                                  ]
+        mock_s3_cli = mock_boto3_client("s3")
+        mock_s3_cli.restore_object.side_effect = [None, None, None, None]
 
         result = request_files.task(input_event, self.context)
 
-        mock_boto3_client.assert_has_calls([call('s3')])
-        mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
-                                                Key=FILE1)
-        mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
-                                                Key=FILE2)
-        mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
-                                                Key=FILE3)
-        mock_s3_cli.head_object.assert_any_call(Bucket='my-dr-fake-glacier-bucket',
-                                                Key=FILE4)
-        restore_req_exp = {'Days': 5, 'GlacierJobParameters': {'Tier': 'Standard'}}
+        mock_boto3_client.assert_has_calls([call("s3")])
+        mock_s3_cli.head_object.assert_any_call(
+            Bucket="my-dr-fake-glacier-bucket", Key=FILE1
+        )
+        mock_s3_cli.head_object.assert_any_call(
+            Bucket="my-dr-fake-glacier-bucket", Key=FILE2
+        )
+        mock_s3_cli.head_object.assert_any_call(
+            Bucket="my-dr-fake-glacier-bucket", Key=FILE3
+        )
+        mock_s3_cli.head_object.assert_any_call(
+            Bucket="my-dr-fake-glacier-bucket", Key=FILE4
+        )
+        restore_req_exp = {"Days": 5, "GlacierJobParameters": {"Tier": "Standard"}}
 
         mock_s3_cli.restore_object.assert_any_call(
-            Bucket='my-dr-fake-glacier-bucket',
+            Bucket="my-dr-fake-glacier-bucket",
             Key=FILE1,
-            RestoreRequest=restore_req_exp)
+            RestoreRequest=restore_req_exp,
+        )
         mock_s3_cli.restore_object.assert_any_call(
-            Bucket='my-dr-fake-glacier-bucket',
+            Bucket="my-dr-fake-glacier-bucket",
             Key=FILE2,
-            RestoreRequest=restore_req_exp)
+            RestoreRequest=restore_req_exp,
+        )
         mock_s3_cli.restore_object.assert_any_call(
-            Bucket='my-dr-fake-glacier-bucket',
+            Bucket="my-dr-fake-glacier-bucket",
             Key=FILE3,
-            RestoreRequest=restore_req_exp)
+            RestoreRequest=restore_req_exp,
+        )
         mock_s3_cli.restore_object.assert_called_with(
-            Bucket='my-dr-fake-glacier-bucket',
+            Bucket="my-dr-fake-glacier-bucket",
             Key=FILE4,
-            RestoreRequest=restore_req_exp)
+            RestoreRequest=restore_req_exp,
+        )
 
         exp_gran = {
-            'granuleId': granule_id,
-            'keys': self.get_expected_keys(),
-            'recover_files': self.get_expected_files()
+            "granuleId": granule_id,
+            "keys": self.get_expected_keys(),
+            "recover_files": self.get_expected_files(),
         }
-        exp_granules = {'granules': [exp_gran], 'job_id': input_event['input']['job_id']}
+        exp_granules = {
+            "granules": [exp_gran],
+            "job_id": input_event["input"]["job_id"],
+        }
 
         self.assertEqual(exp_granules, result)
         mock_post_entry_to_queue.assert_called()  # called 4 times # todo: No..?
