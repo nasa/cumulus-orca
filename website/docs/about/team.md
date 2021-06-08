@@ -20,4 +20,4 @@ description: ORCA Team Listing
 | Mike Gangl        | [@mike-gangl](https://github.com/mike-gangl)   | [PO DAAC](https://podaac.jpl.nasa.gov/)        |
 | Nga Chung         | [@ngachung](https://github.com/ngachung)       | [PO DAAC](https://podaac.jpl.nasa.gov/)        |
 | Lisa Baatz        | [@lbaatz](https://github.com/lbaatz)           | [LP DAAC](https://lpdaac.usgs.gov)             |
-| Abdelhak Marouane | [@camposeddie](https://github.com/camposeddie) | [GHRC DAAC](https://ghrc.nsstc.nasa.gov/home/) |
+| Abdelhak Marouane | [@amarouane-ABDELHAK](https://github.com/amarouane-ABDELHAK) | [GHRC DAAC](https://ghrc.nsstc.nasa.gov/home/) |
