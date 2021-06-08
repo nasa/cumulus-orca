@@ -77,7 +77,7 @@ def handler(event: Dict[str, Any], context: Any) -> List[Dict[str, Any]]:
                                 },
                                 {
                                     "fileName": "MOD14A1.061.A23V45.2020235.2020250215421.jpg",
-                                    "orcaLocation": "s3://orca-archive/MOD14A1/061/MOD14A1.061.A23V45.2020235.2020250215421.hdf",
+                                    "orcaLocation": "s3://orca-archive/MOD14A1/061/MOD14A1.061.A23V45.2020235.2020250215421.jpg",
                                     "fileSizeBytes": 118219,
                                     "fileChecksum": "ACFH325128030192834127347",
                                     "fileChecksumType": "SHA-256",
@@ -86,7 +86,7 @@ def handler(event: Dict[str, Any], context: Any) -> List[Dict[str, Any]]:
                                 },
                                 {
                                     "fileName": "MOD14A1.061.A23V45.2020235.2020260334421.xml",
-                                    "orcaLocation": "s3://orca-archive/MOD14A1/061/MOD14A1.061.A23V45.2020235.2020260334421.hdf",
+                                    "orcaLocation": "s3://orca-archive/MOD14A1/061/MOD14A1.061.A23V45.2020235.2020260334421.xml",
                                     "fileSizeBytes": 12110,
                                     "fileChecksum": "ACFH325128030192834127347",
                                     "fileChecksumType": "SHA-256",
