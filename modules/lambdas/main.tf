@@ -326,7 +326,7 @@ resource "aws_api_gateway_integration" "request_status_for_granule_api_integrati
   uri                     = aws_lambda_function.request_status_for_granule.invoke_arn
 }
 
-resource "aws_api_gateway_method_response" "response_200" {
+resource "aws_api_gateway_method_response" "request_status_for_granule_response_200" {
   rest_api_id = aws_api_gateway_rest_api.request_status_for_granule_api.id
   resource_id = aws_api_gateway_resource.request_status_for_granule_api_resource.id
   http_method = aws_api_gateway_method.request_status_for_granule_api_method.http_method
@@ -338,7 +338,7 @@ resource "aws_api_gateway_integration_response" "request_status_for_granule_api_
   rest_api_id = aws_api_gateway_rest_api.request_status_for_granule_api.id
   resource_id = aws_api_gateway_resource.request_status_for_granule_api_resource.id
   http_method = aws_api_gateway_method.request_status_for_granule_api_method.http_method
-  status_code = aws_api_gateway_method_response.response_200.status_code
+  status_code = aws_api_gateway_method_response.request_status_for_granule_response_200.status_code
 
   # Transforms the backend JSON response to XML
   response_templates = {
@@ -427,7 +427,7 @@ resource "aws_api_gateway_integration" "request_status_for_job_api_integration" 
   uri                     = aws_lambda_function.request_status_for_job.invoke_arn
 }
 
-resource "aws_api_gateway_method_response" "response_200" {
+resource "aws_api_gateway_method_response" "request_status_for_job_response_200" {
   rest_api_id = aws_api_gateway_rest_api.request_status_for_job_api.id
   resource_id = aws_api_gateway_resource.request_status_for_job_api_resource.id
   http_method = aws_api_gateway_method.request_status_for_job_api_method.http_method
@@ -439,7 +439,7 @@ resource "aws_api_gateway_integration_response" "request_status_for_job_api_resp
   rest_api_id = aws_api_gateway_rest_api.request_status_for_job_api.id
   resource_id = aws_api_gateway_resource.request_status_for_job_api_resource.id
   http_method = aws_api_gateway_method.request_status_for_job_api_method.http_method
-  status_code = aws_api_gateway_method_response.response_200.status_code
+  status_code = aws_api_gateway_method_response.request_status_for_job_response_200.status_code
 
   # Transforms the backend JSON response to XML
   response_templates = {
