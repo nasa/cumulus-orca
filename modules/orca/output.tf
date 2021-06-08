@@ -7,6 +7,10 @@ output "orca_lambda_copy_to_glacier_arn" {
   value       = module.orca_lambdas.copy_to_glacier_arn
 }
 
+output "orca_lambda_orca_catalog_reporting_arn" {
+  value = module.orca_lambdas.orca_catalog_reporting_arn
+}
+
 
 # Recovery Lambdas
 # ------------------------------------------------------------------------------

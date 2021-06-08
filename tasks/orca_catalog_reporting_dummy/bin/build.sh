@@ -5,26 +5,25 @@
 ##
 ## DESCRIPTION
 ## -----------------------------------------------------------------------------
-## Builds the lambda (task) zip file for post_to_database.
+## Builds the lambda (task) zip file for orca_catalog_reporting_dummy.
 ##
 ##
 ## USAGE
 ## -----------------------------------------------------------------------------
 ## bin/build.sh
 ##
-## This must be called from the (root) lambda directory /tasks/post_to_database
+## This must be called from the (root) lambda directory /tasks/orca_catalog_reporting_dummy
 ## =============================================================================
 
 ## Set this for Debugging only
 #set -ex
-
 ## Make sure we are calling the script the correct way.
 BASEDIR=$(dirname $0)
 if [ "$BASEDIR" != "bin" ]; then
-  >&2 echo "ERROR: This script must be called from the root directory of the task lambda [bin/build.sh]."
+  >&2 echo "ERROR: This script must be called from the root directory of the task lambda [bin/build.sh]. Was $BASEDIR"
+  sleep 5
   exit 1
 fi
-
 
 ## FUNCTIONS
 ## -----------------------------------------------------------------------------
@@ -46,6 +45,7 @@ function check_rc () {
   fi
 }
 
+
 ## MAIN
 ## -----------------------------------------------------------------------------
 ## Create the build director. Remove it if it exists.
@@ -61,24 +61,6 @@ if [ $return_code -ne 0 ]; then
   >&2 echo "ERROR: Failed to create build directory."
   exit 1
 fi
-
-## SHARED LIBS
-echo "INFO: Copying ORCA shared libraries ..."
-if [ -d orca_shared ]; then
-    rm -rf orca_shared
-fi
-mkdir -p build/orca_shared
-let return_code=$?
-check_rc $return_code "ERROR: Unable to create orca_shared directory."
-touch build/orca_shared/__init__.py
-let return_code=$?
-check_rc $return_code "ERROR: Unable to create [orca_shared/__init__.py] file"
-cp ../shared_libraries/database/shared_db.py build/orca_shared/
-let return_code=$?
-check_rc $return_code "ERROR: Unable to copy shared library [orca_shared/shared_db.py]"
-cp ../shared_libraries/recovery/shared_recovery.py build/orca_shared/
-let return_code=$?
-check_rc $return_code "ERROR: Unable to copy shared library [orca_shared/shared_recovery.py]"
 
 ## Create the virtual env. Remove it if it already exists.
 echo "INFO: Creating virtual environment ..."
@@ -100,8 +82,6 @@ check_rc $return_code "ERROR: pip install encountered an error."
 # Install the aws-lambda psycopg2 libraries
 mkdir -p build/psycopg2
 
-##TODO: Adjust build scripts to put shared packages needed under a task/build/packages directory.
-##      and copy the packages from there.
 if [ ! -d "../package" ]; then
     mkdir -p ../package
     let return_code=$?
@@ -139,7 +119,7 @@ check_rc $return_code "ERROR: Failed to copy schema files to build directory."
 
 ## Create the zip archive
 cd build
-zip -qr ../post_to_database.zip .
+zip -qr ../orca_catalog_reporting_dummy.zip .
 let return_code=$?
 cd -
 
@@ -149,7 +129,5 @@ check_rc $return_code "ERROR: Failed to create zip archive."
 echo "INFO: Cleaning up build ..."
 deactivate
 rm -rf build
-rm -rf include
 
 exit 0
-

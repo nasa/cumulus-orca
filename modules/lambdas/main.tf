@@ -467,7 +467,7 @@ resource "aws_lambda_permission" "request_status_for_job_api_permission" {
   # source_arn = "arn:aws:execute-api:${var.region}:${var.accountId}:${aws_api_gateway_rest_api.request_status_for_job_api.id}/*/${aws_api_gateway_method.request_status_for_job_api_method.http_method}${aws_api_gateway_resource.request_status_for_job_api_resource.path}"
 }
 
-# post_copy_request_to_queue -Posts to two queues for notifying copy_files_to_archive lambda and updating the DB."
+# post_copy_request_to_queue - Posts to two queues for notifying copy_files_to_archive lambda and updating the DB."
 # ==============================================================================
 resource "aws_lambda_function" "post_copy_request_to_queue" {
   ## REQUIRED
@@ -528,6 +528,30 @@ resource "aws_s3_bucket_notification" "post_copy_request_to_queue_trigger" {
   }
 
 }
+
+# orca_catalog_reporting_dummy - Returns reconcilliation report sample data
+# ==============================================================================
+resource "aws_lambda_function" "orca_catalog_reporting_dummy" {
+  ## REQUIRED
+  function_name = "${var.prefix}_orca_catalog_reporting_dummy"
+  role          = module.restore_object_arn.restore_object_role_arn
+
+  ## OPTIONAL
+  description      = "Returns reconcilliation report sample data."
+  filename         = "${path.module}/../../tasks/orca_catalog_reporting_dummy/orca_catalog_reporting_dummy.zip"
+  handler          = "orca_catalog_reporting_dummy.handler"
+  memory_size      = var.orca_ingest_lambda_memory_size
+  runtime          = "python3.7"
+  source_code_hash = filebase64sha256("${path.module}/../../tasks/orca_catalog_reporting_dummy/orca_catalog_reporting_dummy.zip")
+  tags             = local.tags
+  timeout          = var.orca_ingest_lambda_timeout
+
+  vpc_config {
+    subnet_ids         = var.lambda_subnet_ids
+    security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
+  }
+}
+
 
 ## =============================================================================
 ## Utility Lambda Definitions
