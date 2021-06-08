@@ -427,6 +427,16 @@ let end users know where discrepancies and best guesses or misses occur. We
 should also talk with end users about this option prior to implementing to
 determine if this is needed.
 
+After discussions with the [ORCA Working Group](https://wiki.earthdata.nasa.gov/display/CUMULUS/ORCA+Working+Group)
+during the [June meeting](https://wiki.earthdata.nasa.gov/display/CUMULUS/2021-06-02+ORCA+Meeting+Notes)
+the concept above was discussed. The general consensus from the group was that repopulation
+of ORCA through a standalone workflow similar to the items laid out in the
+[manual run](#manually-run-orca-ingest-workflows) was the best option. In addition,
+the question of whether the back population method described above was a
+worthwhile path to pursue was posed on the orca Slack channel and the users
+currently using ORCA all agreed they would rather re-ingest into ORCA as seen by
+the Slack thread [here](https://eosdis.slack.com/archives/CSXEM5MPX/p1622735484015400).
+
 
 ### Potential ORCA Catalog Population Architecture
 
@@ -717,7 +727,6 @@ items need to be re-ingested into ORCA.
 - What is the proper date to use when receiving a date range from Cumulus for a reconciliation report?
 - Should granule acquisition date be a part of the metadata?
 - Should optional identified attributes be added an populated now or should we start with the minimum needed?
-- What is the best back population strategy to use for those running older versions of ORCA?
 - Is GraphQL a good replacement for the current SQS - Lambda architecture?
 
 
