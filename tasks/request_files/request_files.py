@@ -2,12 +2,10 @@
 Name: request_files.py
 Description:  Lambda function that makes a restore request from glacier for each input file.
 """
-import json
 import os
 import time
 import uuid
-from enum import Enum
-from typing import Dict, Any, Union, List, Optional
+from typing import Dict, Any, Union, List
 from datetime import datetime, timezone
 
 # noinspection PyPackageRequirements
@@ -21,14 +19,7 @@ from botocore.exceptions import ClientError
 from cumulus_logger import CumulusLogger
 from run_cumulus_task import run_cumulus_task
 
-# from orca_shared import shared_recovery
-import shared_recovery
-
-# # todo: Move to shared lib after ORCA-170
-# class RequestMethod(Enum):
-#     POST = 'post'
-#     PUT = 'put'
-
+from orca_shared import shared_recovery
 
 DEFAULT_RESTORE_EXPIRE_DAYS = 5
 DEFAULT_MAX_REQUEST_RETRIES = 2
@@ -61,12 +52,6 @@ FILE_DEST_BUCKET_KEY = "dest_bucket"
 FILE_KEY_KEY = "key"
 FILE_SUCCESS_KEY = "success"
 FILE_ERROR_MESSAGE_KEY = "err_msg"
-
-# # todo: Move to shared lib after ORCA-170
-# ORCA_STATUS_PENDING = 1
-# # ORCA_STATUS_STAGED = 2
-# # ORCA_STATUS_SUCCESS = 3
-# ORCA_STATUS_FAILED = 4
 
 LOGGER = CumulusLogger()
 
@@ -314,23 +299,6 @@ def process_granule(
     """
     attempt = 1
     granule_id = granule[GRANULE_GRANULE_ID_KEY]
-    files = [
-        {
-            "filename": os.path.basename(
-                granule[GRANULE_RECOVER_FILES_KEY][FILE_KEY_KEY]
-            )
-        },
-        {"key_path": "TBD"}, #TBD
-        {"restore_destination": "TBD"}, #TBD
-        {"status_id": shared_recovery.OrcaStatus.PENDING.value},
-        {"error_message": None},
-        {"request_time": datetime.now(timezone.utc).isoformat()},
-        {"last_update": datetime.now(timezone.utc).isoformat()},
-        {"completion_time": datetime.now(timezone.utc).isoformat()},
-    ]
-    shared_recovery.create_status_for_job(
-        job_id, granule_id, glacier_bucket, files , db_queue_url
-    )
 
     while attempt <= max_retries + 1:
         for a_file in granule[GRANULE_RECOVER_FILES_KEY]:
@@ -347,12 +315,26 @@ def process_granule(
                     )
                     a_file[FILE_SUCCESS_KEY] = True
                     a_file[FILE_ERROR_MESSAGE_KEY] = ""
+                    
+                    files = [
+                        {"filename": os.path.basename(a_file[FILE_KEY_KEY])},
+                        {"key_path": a_file[FILE_KEY_KEY]},
+                        {"restore_destination": a_file[FILE_DEST_BUCKET_KEY]},
+                        {"status_id": shared_recovery.OrcaStatus.PENDING.value},
+                        {"error_message": None},
+                        {"request_time": datetime.now(timezone.utc).isoformat()},
+                        {"last_update": datetime.now(timezone.utc).isoformat()},
+                        {"completion_time": datetime.now(timezone.utc).isoformat()},
+                    ]
+                    shared_recovery.create_status_for_job(
+                        job_id, granule_id, glacier_bucket, files, db_queue_url
+                    )
 
                     shared_recovery.update_status_for_file(
                         job_id,
                         granule_id,
                         os.path.basename(a_file[FILE_KEY_KEY]),
-                        shared_recovery.OrcaStatus.PENDING.value,
+                        shared_recovery.OrcaStatus.PENDING,
                         None,
                         db_queue_url,
                     )
@@ -383,7 +365,7 @@ def process_granule(
                 job_id,
                 granule_id,
                 os.path.basename(a_file[FILE_KEY_KEY]),
-                shared_recovery.OrcaStatus.FAILED.value,
+                shared_recovery.OrcaStatus.FAILED,
                 a_file.get(FILE_ERROR_MESSAGE_KEY, None),
                 db_queue_url,
             )

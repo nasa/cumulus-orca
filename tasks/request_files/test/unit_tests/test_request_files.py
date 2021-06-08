@@ -594,22 +594,38 @@ class TestRequestFiles(unittest.TestCase):
 
         self.assertTrue(granule[request_files.GRANULE_RECOVER_FILES_KEY][0][request_files.FILE_SUCCESS_KEY])
         self.assertTrue(granule[request_files.GRANULE_RECOVER_FILES_KEY][1][request_files.FILE_SUCCESS_KEY])
-        files = [
+
+        files_0 = [
             {
-                "filename": mock.ANY
+                "filename": file_name_0
             },
-            {"key_path": mock.ANY}, #TBD
-            {"restore_destination": mock.ANY}, #TBD
+            {"key_path": file_name_0},
+            {"restore_destination": dest_bucket_0},
             {"status_id": request_files.shared_recovery.OrcaStatus.PENDING.value},
             {"error_message": None},
             {"request_time": mock.ANY},
             {"last_update": mock.ANY},
-            {"completion_time": None},
+            {"completion_time": mock.ANY},
         ]
-        mock_create_status_for_job.assert_called_once_with(job_id, granule_id, glacier_bucket,
-                                                                    files,
-                                                                  db_queue_url,
-                                                                  )
+
+        files_1 = [
+            {
+                "filename": file_name_1
+            },
+            {"key_path": file_name_1},
+            {"restore_destination": dest_bucket_1},
+            {"status_id": request_files.shared_recovery.OrcaStatus.PENDING.value},
+            {"error_message": None},
+            {"request_time": mock.ANY},
+            {"last_update": mock.ANY},
+            {"completion_time": mock.ANY},
+        ]
+        
+        mock_create_status_for_job.assert_has_calls([
+            call(job_id, granule_id, glacier_bucket, files_0, db_queue_url),
+            call(job_id, granule_id, glacier_bucket, files_1, db_queue_url)])
+
+
         mock_restore_object.assert_has_calls([
             call(
                 mock_s3,
@@ -628,9 +644,9 @@ class TestRequestFiles(unittest.TestCase):
         ])
         self.assertEqual(2, mock_restore_object.call_count)
         mock_update_status_for_file.assert_has_calls([
-            call(job_id, granule_id, file_name_0, request_files.shared_recovery.OrcaStatus.PENDING.value,
+            call(job_id, granule_id, file_name_0, request_files.shared_recovery.OrcaStatus.PENDING,
                  None,db_queue_url),
-            call(job_id, granule_id, file_name_1, request_files.shared_recovery.OrcaStatus.PENDING.value,
+            call(job_id, granule_id, file_name_1, request_files.shared_recovery.OrcaStatus.PENDING,
                 None,db_queue_url,)])
         self.assertEqual(2, mock_update_status_for_file.call_count)
         mock_sleep.assert_not_called()
@@ -690,9 +706,9 @@ class TestRequestFiles(unittest.TestCase):
             ]
         )
         files = [
-            {"filename": mock.ANY},
-            {"key_path": mock.ANY},
-            {"restore_destination": mock.ANY},
+            {"filename": file_name_0},
+            {"key_path": file_name_0},
+            {"restore_destination": dest_bucket_0},
             {"status_id": request_files.shared_recovery.OrcaStatus.PENDING.value},
             {"error_message": None},
             {"request_time": mock.ANY},
@@ -735,7 +751,7 @@ class TestRequestFiles(unittest.TestCase):
                     job_id,
                     granule_id,
                     file_name_0,
-                    request_files.shared_recovery.OrcaStatus.PENDING.value,
+                    request_files.shared_recovery.OrcaStatus.PENDING,
                     None,
                     db_queue_url,
                 )
@@ -803,22 +819,15 @@ class TestRequestFiles(unittest.TestCase):
                 ]
             )
             files = [
-                {"filename": mock.ANY},
-                {"key_path": mock.ANY},
-                {"restore_destination": mock.ANY},
+                {"filename": file_name_0},
+                {"key_path": file_name_0},
+                {"restore_destination": dest_bucket_0},
                 {"status_id": request_files.shared_recovery.OrcaStatus.PENDING.value},
                 {"error_message": None},
                 {"request_time": mock.ANY},
                 {"last_update": mock.ANY},
                 {"completion_time": mock.ANY},
             ]
-            mock_create_status_for_job.assert_called_once_with(
-                job_id,
-                granule_id,
-                glacier_bucket,
-                files,
-                db_queue_url,
-            )
 
             mock_restore_object.assert_has_calls(
                 [
@@ -858,7 +867,7 @@ class TestRequestFiles(unittest.TestCase):
                         job_id,
                         granule_id,
                         file_name_0,
-                        request_files.shared_recovery.OrcaStatus.FAILED.value,
+                        request_files.shared_recovery.OrcaStatus.FAILED,
                         mock.ANY,
                         db_queue_url,
                     )
