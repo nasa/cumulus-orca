@@ -404,11 +404,11 @@ resource "aws_lambda_function" "orca_catalog_reporting_dummy" {
   description      = "Returns reconcilliation report sample data."
   filename         = "${path.module}/../../tasks/orca_catalog_reporting_dummy/orca_catalog_reporting_dummy.zip"
   handler          = "orca_catalog_reporting_dummy.handler"
-  memory_size      = var.orca_recovery_lambda_memory_size
+  memory_size      = var.orca_ingest_lambda_memory_size
   runtime          = "python3.7"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/orca_catalog_reporting_dummy/orca_catalog_reporting_dummy.zip")
   tags             = local.tags
-  timeout          = var.orca_recovery_lambda_timeout
+  timeout          = var.orca_ingest_lambda_timeout
 
   vpc_config {
     subnet_ids         = var.lambda_subnet_ids

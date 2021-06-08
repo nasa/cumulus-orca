@@ -15,6 +15,11 @@ output "copy_to_glacier_arn" {
   value       = aws_lambda_function.copy_to_glacier.arn
 }
 
+output "orca_catalog_reporting_arn" {
+  description = "AWS ARN for the orca_catalog_reporting lambda."
+  value       = aws_lambda_function.orca_catalog_reporting_dummy.arn
+}
+
 
 # Recovery Lambdas
 # ------------------------------------------------------------------------------
@@ -49,11 +54,6 @@ output "request_status_for_job_arn" {
 output "post_copy_request_to_queue_arn" {
   description = "AWS ARN for the post_copy_request_to_queue lambda."
   value       = aws_lambda_function.post_copy_request_to_queue.arn
-}
-
-output "orca_catalog_reporting_arn" {
-  description = "AWS ARN for the orca_catalog_reporting lambda."
-  value       = aws_lambda_function.orca_catalog_reporting_dummy.arn
 }
 
 

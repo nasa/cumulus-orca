@@ -34,13 +34,13 @@ Fully defined json schemas written in the schema of https://json-schema.org/ can
           {
             "granuleId": "MOD14A1.061.A23V45.2020235",
             "date": "TBD",
-            "createDate": "2020-01-01T23:00:00+0",
-            "lastUpdate": "2020-01-01T23:00:00+0",
+            "createDate": "2020-01-01T23:00:00+00:00",
+            "lastUpdate": "2020-01-01T23:00:00+00:00",
             "files": [
               {
                 "fileName": "MOD14A1.061.A23V45.2020235.2020240145621.hdf",
                 "orcaLocation": "s3://orca-archive/MOD14A1/061/...",
-                "fileSize": 100934568723,
+                "fileSizeBytes": 100934568723,
                 "fileChecksum": "ACFH325128030192834127347",
                 "fileChecksumType": "SHA-256",
                 "fileVersion": "VXCDEG902",

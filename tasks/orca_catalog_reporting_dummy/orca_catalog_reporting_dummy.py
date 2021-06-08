@@ -63,13 +63,31 @@ def handler(event: Dict[str, Any], context: Any) -> List[Dict[str, Any]]:
                         {
                             "granuleId": "MOD14A1.061.A23V45.2020235",
                             "date": "TBD",
-                            "createDate": "2020-01-01T23:00:00+00:00",  # todo: Mind if we add these 0s?
+                            "createDate": "2020-01-01T23:00:00+00:00",
                             "lastUpdate": "2020-01-01T23:00:00+00:00",
                             "files": [
                                 {
                                     "fileName": "MOD14A1.061.A23V45.2020235.2020240145621.hdf",
-                                    "orcaLocation": "s3://orca-archive/MOD14A1/061/...",
-                                    "fileSize": 100934568723,
+                                    "orcaLocation": "s3://orca-archive/MOD14A1/061/MOD14A1.061.A23V45.2020235.2020240145621.hdf",
+                                    "fileSizeBytes": 100934568723,
+                                    "fileChecksum": "ACFH325128030192834127347",
+                                    "fileChecksumType": "SHA-256",
+                                    "fileVersion": "VXCDEG902",
+                                    "orcaEtag": "YXC432BGT789"
+                                },
+                                {
+                                    "fileName": "MOD14A1.061.A23V45.2020235.2020250215421.jpg",
+                                    "orcaLocation": "s3://orca-archive/MOD14A1/061/MOD14A1.061.A23V45.2020235.2020250215421.hdf",
+                                    "fileSizeBytes": 118219,
+                                    "fileChecksum": "ACFH325128030192834127347",
+                                    "fileChecksumType": "SHA-256",
+                                    "fileVersion": "VXCDEG902",
+                                    "orcaEtag": "YXC432BGT789"
+                                },
+                                {
+                                    "fileName": "MOD14A1.061.A23V45.2020235.2020260334421.xml",
+                                    "orcaLocation": "s3://orca-archive/MOD14A1/061/MOD14A1.061.A23V45.2020235.2020260334421.hdf",
+                                    "fileSizeBytes": 12110,
                                     "fileChecksum": "ACFH325128030192834127347",
                                     "fileChecksumType": "SHA-256",
                                     "fileVersion": "VXCDEG902",

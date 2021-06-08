@@ -53,11 +53,11 @@
 													"type": "string"
 												},
 												"orcaLocation": {
-													"description": "ORCA S3 Glacier bucket the file resides in. TODO: Can we call that out in the name?",
+													"description": "ORCA S3 Glacier bucket the file resides in.",
 													"type": "string"
 												},
-												"fileSize": {
-													"description": "Size in bytes of the file. From Cumulus ingest. TODO: Can we call that out in the name?",
+												"fileSizeBytes": {
+													"description": "Size in bytes of the file. From Cumulus ingest.",
 													"type": "integer"
 												},
 												"fileChecksum": {
@@ -80,7 +80,7 @@
 											"required": [
 												"fileName",
 												"orcaLocation",
-												"fileSize",
+												"fileSizeBytes",
 												"fileChecksum",
 												"fileChecksumType",
 												"fileVersion",

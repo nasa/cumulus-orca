@@ -7,6 +7,10 @@ output "orca_lambda_copy_to_glacier_arn" {
   value       = module.orca_lambdas.copy_to_glacier_arn
 }
 
+output "orca_lambda_orca_catalog_reporting_arn" {
+  value = module.orca_lambdas.orca_catalog_reporting_arn
+}
+
 
 # Recovery Lambdas
 # ------------------------------------------------------------------------------
@@ -41,10 +45,6 @@ output "orca_lambda_request_status_for_job_arn" {
 output "orca_lambda_post_copy_request_to_queue_arn" {
   description = "AWS ARN of the ORCA post_copy_request_to_queue lambda."
   value       = module.orca_lambdas.post_copy_request_to_queue_arn
-}
-
-output "orca_lambda_orca_catalog_reporting_arn" {
-  value = module.orca_lambdas.orca_catalog_reporting_arn
 }
 
 ## Workflow Module Outputs (orca_workflows)
