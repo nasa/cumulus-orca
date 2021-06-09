@@ -98,7 +98,7 @@ description: Research Notes on API Gateway.
   - For more potential patterns, see https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-integration-settings-integration-response.html and https://aws.amazon.com/blogs/compute/error-handling-patterns-in-amazon-api-gateway-and-aws-lambda/
 
 ### Future Direction
-- This code is not secure. See the "authorization" value in aws_api_gateway_method.
+- This code is not secure. See the "authorization" value in [aws_api_gateway_method](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/api_gateway_method).
 - Examples show 'source_arn' as a rather complex value. Test if it can be evaluated as aws_api_gateway_resource.[name].arn
 
 #### Sources
