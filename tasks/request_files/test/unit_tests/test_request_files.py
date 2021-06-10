@@ -639,7 +639,7 @@ class TestRequestFiles(unittest.TestCase):
             },
         ]
 
-        files_all= [
+        files_all = [
             {
                 "filename": file_name_0,
                 "key_path": file_name_0,
@@ -650,7 +650,6 @@ class TestRequestFiles(unittest.TestCase):
                 "last_update": mock.ANY,
                 "completion_time": None,
             },
-
             {
                 "filename": file_name_1,
                 "key_path": file_name_1,
@@ -661,9 +660,11 @@ class TestRequestFiles(unittest.TestCase):
                 "last_update": mock.ANY,
                 "completion_time": None,
             },
-            ]
+        ]
 
-        mock_create_status_for_job.assert_called_with(job_id, granule_id, glacier_bucket, files_all, db_queue_url)
+        mock_create_status_for_job.assert_called_with(
+            job_id, granule_id, glacier_bucket, files_all, db_queue_url
+        )
 
         mock_restore_object.assert_has_calls(
             [

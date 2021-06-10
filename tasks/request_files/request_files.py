@@ -129,7 +129,7 @@ def task(
             LOGGER.info(msg)
             retrieval_type = DEFAULT_RESTORE_RETRIEVAL_TYPE
     except KeyError:
-        LOGGER.info("We are setting the default value here for retrieval_type")
+        LOGGER.info(f"Invalid RESTORE_RETRIEVAL_TYPE: 'None' defaulting to 'Standard'")
         retrieval_type = DEFAULT_RESTORE_RETRIEVAL_TYPE
 
     db_queue_url = str(os.environ[OS_ENVIRON_DB_QUEUE_URL_KEY])
@@ -334,23 +334,28 @@ def process_granule(
 
     files = []
     any_error = False
+    time_stamp = datetime.now(timezone.utc).isoformat()
     for a_file in granule[GRANULE_RECOVER_FILES_KEY]:
-        # if any file failed, the whole granule will fail
+        # Creating the dictionary for a successful granule
+        file = {
+            "filename": os.path.basename(a_file[FILE_KEY_KEY]),
+            "key_path": a_file[FILE_KEY_KEY],
+            "restore_destination": a_file[FILE_DEST_BUCKET_KEY],
+            "status_id": shared_recovery.OrcaStatus.PENDING.value,
+            "error_message": None,
+            "request_time": time_stamp,
+            "last_update": time_stamp,
+            "completion_time": None,
+        }
+
+        # if any file failed, the whole granule will fail and the file information should be updated
         if not a_file[FILE_SUCCESS_KEY]:
             any_error = True
-        
-        files.append(
-            {
-                "filename": os.path.basename(a_file[FILE_KEY_KEY]),
-                "key_path": a_file[FILE_KEY_KEY],
-                "restore_destination": a_file[FILE_DEST_BUCKET_KEY],
-                "status_id": shared_recovery.OrcaStatus.FAILED.value if not a_file[FILE_SUCCESS_KEY] else shared_recovery.OrcaStatus.PENDING.value,
-                "error_message": a_file[FILE_ERROR_MESSAGE_KEY] if not a_file[FILE_SUCCESS_KEY] else None,
-                "request_time": datetime.now(timezone.utc).isoformat(),
-                "last_update": datetime.now(timezone.utc).isoformat(),
-                "completion_time": datetime.now(timezone.utc).isoformat() if not a_file[FILE_SUCCESS_KEY] else None
-            }
-        )
+            file["status_id"] = shared_recovery.OrcaStatus.FAILED.value
+            file["error_message"] = a_file[FILE_ERROR_MESSAGE_KEY]
+            file["completion_time"] = time_stamp
+
+        files.append(file)
         # send message to DB SQS
         # post to DB-queue. Retry using exponential delay if it fails
         for retry in range(max_retries + 1):
@@ -363,7 +368,7 @@ def process_granule(
                 LOGGER.error(
                     f"Ran into error posting to SQS {retry+1} time(s) with exception {ex}"
                 )
-                time.sleep(retry_sleep_secs) # todo: Use backoff code. ORCA-201
+                time.sleep(retry_sleep_secs)  # todo: Use backoff code. ORCA-201
                 continue
         else:
             message = "Error sending message to db_queue_url"
