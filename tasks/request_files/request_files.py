@@ -19,8 +19,7 @@ from botocore.exceptions import ClientError
 from cumulus_logger import CumulusLogger
 from run_cumulus_task import run_cumulus_task
 
-# from orca_shared import shared_recovery
-import shared_recovery
+from orca_shared import shared_recovery
 
 DEFAULT_RESTORE_EXPIRE_DAYS = 5
 DEFAULT_MAX_REQUEST_RETRIES = 2
@@ -364,7 +363,7 @@ def process_granule(
                 LOGGER.error(
                     f"Ran into error posting to SQS {retry+1} time(s) with exception {ex}"
                 )
-                time.sleep(2)
+                time.sleep(retry_sleep_secs) # todo: Use backoff code. ORCA-201
                 continue
         else:
             message = "Error sending message to db_queue_url"
