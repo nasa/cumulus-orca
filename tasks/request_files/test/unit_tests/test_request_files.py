@@ -639,12 +639,31 @@ class TestRequestFiles(unittest.TestCase):
             },
         ]
 
-        mock_create_status_for_job.assert_has_calls(
-            [
-                call(job_id, granule_id, glacier_bucket, files_0, db_queue_url),
-                call(job_id, granule_id, glacier_bucket, files_1, db_queue_url),
+        files_all= [
+            {
+                "filename": file_name_0,
+                "key_path": file_name_0,
+                "restore_destination": dest_bucket_0,
+                "status_id": request_files.shared_recovery.OrcaStatus.PENDING.value,
+                "error_message": None,
+                "request_time": mock.ANY,
+                "last_update": mock.ANY,
+                "completion_time": None,
+            },
+
+            {
+                "filename": file_name_1,
+                "key_path": file_name_1,
+                "restore_destination": dest_bucket_1,
+                "status_id": request_files.shared_recovery.OrcaStatus.PENDING.value,
+                "error_message": None,
+                "request_time": mock.ANY,
+                "last_update": mock.ANY,
+                "completion_time": None,
+            },
             ]
-        )
+
+        mock_create_status_for_job.assert_called_with(job_id, granule_id, glacier_bucket, files_all, db_queue_url)
 
         mock_restore_object.assert_has_calls(
             [
@@ -1212,7 +1231,7 @@ class TestRequestFiles(unittest.TestCase):
         try:
             result = request_files.task(input_event, self.context)
         except Exception as err:
-            mock_post_entry_to_queue.assert_called_once()
+            mock_post_entry_to_queue.assert_called
             return
         self.fail(f"failed post to status queue should throw exception.")
 

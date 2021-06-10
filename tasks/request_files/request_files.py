@@ -19,7 +19,8 @@ from botocore.exceptions import ClientError
 from cumulus_logger import CumulusLogger
 from run_cumulus_task import run_cumulus_task
 
-from orca_shared import shared_recovery
+# from orca_shared import shared_recovery
+import shared_recovery
 
 DEFAULT_RESTORE_EXPIRE_DAYS = 5
 DEFAULT_MAX_REQUEST_RETRIES = 2
@@ -338,20 +339,17 @@ def process_granule(
         # if any file failed, the whole granule will fail
         if not a_file[FILE_SUCCESS_KEY]:
             any_error = True
-            files["status_id"] = shared_recovery.OrcaStatus.FAILED.value
-            files["error_message"] = a_file[FILE_ERROR_MESSAGE_KEY]
-            files["completion_time"] = datetime.now(timezone.utc).isoformat()
         
         files.append(
             {
                 "filename": os.path.basename(a_file[FILE_KEY_KEY]),
                 "key_path": a_file[FILE_KEY_KEY],
                 "restore_destination": a_file[FILE_DEST_BUCKET_KEY],
-                "status_id": files["status_id"],
-                "error_message": files["error_message"],
+                "status_id": shared_recovery.OrcaStatus.FAILED.value if not a_file[FILE_SUCCESS_KEY] else shared_recovery.OrcaStatus.PENDING.value,
+                "error_message": a_file[FILE_ERROR_MESSAGE_KEY] if not a_file[FILE_SUCCESS_KEY] else None,
                 "request_time": datetime.now(timezone.utc).isoformat(),
                 "last_update": datetime.now(timezone.utc).isoformat(),
-                "completion_time": files["completion_time"]
+                "completion_time": datetime.now(timezone.utc).isoformat() if not a_file[FILE_SUCCESS_KEY] else None
             }
         )
         # send message to DB SQS
