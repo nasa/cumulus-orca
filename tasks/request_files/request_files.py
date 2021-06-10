@@ -332,19 +332,7 @@ def process_granule(
                 break
             time.sleep(retry_sleep_secs)
 
-    files = [
-        {
-            "filename": os.path.basename(a_file[FILE_KEY_KEY]),
-            "key_path": a_file[FILE_KEY_KEY],
-            "restore_destination": a_file[FILE_DEST_BUCKET_KEY],
-            "status_id": shared_recovery.OrcaStatus.PENDING.value,
-            "error_message": None,
-            "request_time": datetime.now(timezone.utc).isoformat(),
-            "last_update": datetime.now(timezone.utc).isoformat(),
-            "completion_time": None,
-        },
-    ]
-
+    files = []
     any_error = False
     for a_file in granule[GRANULE_RECOVER_FILES_KEY]:
         # if any file failed, the whole granule will fail
@@ -353,7 +341,19 @@ def process_granule(
             files["status_id"] = shared_recovery.OrcaStatus.FAILED.value
             files["error_message"] = a_file[FILE_ERROR_MESSAGE_KEY]
             files["completion_time"] = datetime.now(timezone.utc).isoformat()
-
+        
+        files.append(
+            {
+                "filename": os.path.basename(a_file[FILE_KEY_KEY]),
+                "key_path": a_file[FILE_KEY_KEY],
+                "restore_destination": a_file[FILE_DEST_BUCKET_KEY],
+                "status_id": files["status_id"],
+                "error_message": files["error_message"],
+                "request_time": datetime.now(timezone.utc).isoformat(),
+                "last_update": datetime.now(timezone.utc).isoformat(),
+                "completion_time": files["completion_time"]
+            }
+        )
         # send message to DB SQS
         # post to DB-queue. Retry using exponential delay if it fails
         for retry in range(max_retries + 1):
