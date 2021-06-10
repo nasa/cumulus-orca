@@ -550,14 +550,12 @@ class TestRequestFiles(unittest.TestCase):
         )
 
     @patch("request_files.shared_recovery.create_status_for_job")
-    @patch("request_files.shared_recovery.update_status_for_file")
     @patch("time.sleep")
     @patch("request_files.restore_object")
     def test_process_granule_minimal_path(
         self,
         mock_restore_object: MagicMock,
         mock_sleep: MagicMock,
-        mock_update_status_for_file: MagicMock,
         mock_create_status_for_job: MagicMock,
     ):
         mock_s3 = Mock()
@@ -616,25 +614,29 @@ class TestRequestFiles(unittest.TestCase):
         )
 
         files_0 = [
-            {"filename": file_name_0},
-            {"key_path": file_name_0},
-            {"restore_destination": dest_bucket_0},
-            {"status_id": request_files.shared_recovery.OrcaStatus.PENDING.value},
-            {"error_message": None},
-            {"request_time": mock.ANY},
-            {"last_update": mock.ANY},
-            {"completion_time": mock.ANY},
+            {
+                "filename": file_name_0,
+                "key_path": file_name_0,
+                "restore_destination": dest_bucket_0,
+                "status_id": request_files.shared_recovery.OrcaStatus.PENDING.value,
+                "error_message": None,
+                "request_time": mock.ANY,
+                "last_update": mock.ANY,
+                "completion_time": None,
+            },
         ]
 
         files_1 = [
-            {"filename": file_name_1},
-            {"key_path": file_name_1},
-            {"restore_destination": dest_bucket_1},
-            {"status_id": request_files.shared_recovery.OrcaStatus.PENDING.value},
-            {"error_message": None},
-            {"request_time": mock.ANY},
-            {"last_update": mock.ANY},
-            {"completion_time": mock.ANY},
+            {
+                "filename": file_name_1,
+                "key_path": file_name_1,
+                "restore_destination": dest_bucket_1,
+                "status_id": request_files.shared_recovery.OrcaStatus.PENDING.value,
+                "error_message": None,
+                "request_time": mock.ANY,
+                "last_update": mock.ANY,
+                "completion_time": None,
+            },
         ]
 
         mock_create_status_for_job.assert_has_calls(
@@ -667,38 +669,15 @@ class TestRequestFiles(unittest.TestCase):
             ]
         )
         self.assertEqual(2, mock_restore_object.call_count)
-        mock_update_status_for_file.assert_has_calls(
-            [
-                call(
-                    job_id,
-                    granule_id,
-                    file_name_0,
-                    request_files.shared_recovery.OrcaStatus.PENDING,
-                    None,
-                    db_queue_url,
-                ),
-                call(
-                    job_id,
-                    granule_id,
-                    file_name_1,
-                    request_files.shared_recovery.OrcaStatus.PENDING,
-                    None,
-                    db_queue_url,
-                ),
-            ]
-        )
-        self.assertEqual(2, mock_update_status_for_file.call_count)
         mock_sleep.assert_not_called()
 
     @patch("request_files.shared_recovery.create_status_for_job")
-    @patch("request_files.shared_recovery.update_status_for_file")
     @patch("time.sleep")
     @patch("request_files.restore_object")
     def test_process_granule_one_client_error_retries(
         self,
         mock_restore_object: MagicMock,
         mock_sleep: MagicMock,
-        mock_update_status_for_file: MagicMock,
         mock_create_status_for_job: MagicMock,
     ):
         mock_s3 = Mock()
@@ -745,14 +724,16 @@ class TestRequestFiles(unittest.TestCase):
             ]
         )
         files = [
-            {"filename": file_name_0},
-            {"key_path": file_name_0},
-            {"restore_destination": dest_bucket_0},
-            {"status_id": request_files.shared_recovery.OrcaStatus.PENDING.value},
-            {"error_message": None},
-            {"request_time": mock.ANY},
-            {"last_update": mock.ANY},
-            {"completion_time": mock.ANY},
+            {
+                "filename": file_name_0,
+                "key_path": file_name_0,
+                "restore_destination": dest_bucket_0,
+                "status_id": request_files.shared_recovery.OrcaStatus.PENDING.value,
+                "error_message": None,
+                "request_time": mock.ANY,
+                "last_update": mock.ANY,
+                "completion_time": None,
+            },
         ]
         mock_create_status_for_job.assert_called_once_with(
             job_id,
@@ -784,23 +765,9 @@ class TestRequestFiles(unittest.TestCase):
             ]
         )
         self.assertEqual(2, mock_restore_object.call_count)
-        mock_update_status_for_file.assert_has_calls(
-            [
-                call(
-                    job_id,
-                    granule_id,
-                    file_name_0,
-                    request_files.shared_recovery.OrcaStatus.PENDING,
-                    None,
-                    db_queue_url,
-                )
-            ]
-        )
-        self.assertEqual(1, mock_update_status_for_file.call_count)
         mock_sleep.assert_called_once_with(retry_sleep_secs)
 
     @patch("request_files.shared_recovery.create_status_for_job")
-    @patch("request_files.shared_recovery.update_status_for_file")
     @patch("time.sleep")
     @patch("request_files.restore_object")
     @patch("cumulus_logger.CumulusLogger.error")
@@ -809,7 +776,6 @@ class TestRequestFiles(unittest.TestCase):
         mock_logger_error: MagicMock,
         mock_restore_object: MagicMock,
         mock_sleep: MagicMock,
-        mock_update_status_for_file: MagicMock,
         mock_create_status_for_job: MagicMock,
     ):
         mock_s3 = Mock()
@@ -858,14 +824,16 @@ class TestRequestFiles(unittest.TestCase):
                 ]
             )
             files = [
-                {"filename": file_name_0},
-                {"key_path": file_name_0},
-                {"restore_destination": dest_bucket_0},
-                {"status_id": request_files.shared_recovery.OrcaStatus.PENDING.value},
-                {"error_message": None},
-                {"request_time": mock.ANY},
-                {"last_update": mock.ANY},
-                {"completion_time": mock.ANY},
+                {
+                    "filename": file_name_0,
+                    "key_path": file_name_0,
+                    "restore_destination": dest_bucket_0,
+                    "status_id": request_files.shared_recovery.OrcaStatus.PENDING.value,
+                    "error_message": None,
+                    "request_time": mock.ANY,
+                    "last_update": mock.ANY,
+                    "completion_time": None,
+                },
             ]
 
             mock_restore_object.assert_has_calls(
@@ -900,19 +868,6 @@ class TestRequestFiles(unittest.TestCase):
                 ]
             )
             self.assertEqual(max_retries + 1, mock_restore_object.call_count)
-            mock_update_status_for_file.assert_has_calls(
-                [
-                    call(
-                        job_id,
-                        granule_id,
-                        file_name_0,
-                        request_files.shared_recovery.OrcaStatus.FAILED,
-                        mock.ANY,
-                        db_queue_url,
-                    )
-                ]
-            )
-            self.assertEqual(1, mock_update_status_for_file.call_count)
             mock_sleep.assert_has_calls([call(retry_sleep_secs)] * max_retries)
 
     def test_object_exists_happy_path(self):
@@ -1447,7 +1402,7 @@ class TestRequestFiles(unittest.TestCase):
         mock_s3_cli.restore_object.assert_called_with(
             Bucket="some_bucket", Key=FILE1, RestoreRequest=restore_req_exp
         )
-        self.assertEqual(2, mock_post_entry_to_queue.call_count)
+        self.assertEqual(1, mock_post_entry_to_queue.call_count)
 
     @patch("request_files.shared_recovery.post_entry_to_queue")
     @patch("boto3.client")

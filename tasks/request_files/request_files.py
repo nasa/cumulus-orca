@@ -129,6 +129,7 @@ def task(
             LOGGER.info(msg)
             retrieval_type = DEFAULT_RESTORE_RETRIEVAL_TYPE
     except KeyError:
+        LOGGER.info("We are setting the default value here for retrieval_type")
         retrieval_type = DEFAULT_RESTORE_RETRIEVAL_TYPE
 
     db_queue_url = str(os.environ[OS_ENVIRON_DB_QUEUE_URL_KEY])
@@ -315,30 +316,6 @@ def process_granule(
                     )
                     a_file[FILE_SUCCESS_KEY] = True
                     a_file[FILE_ERROR_MESSAGE_KEY] = ""
-
-                    files = [
-                        {"filename": os.path.basename(a_file[FILE_KEY_KEY])},
-                        {"key_path": a_file[FILE_KEY_KEY]},
-                        {"restore_destination": a_file[FILE_DEST_BUCKET_KEY]},
-                        {"status_id": shared_recovery.OrcaStatus.PENDING.value},
-                        {"error_message": None},
-                        {"request_time": datetime.now(timezone.utc).isoformat()},
-                        {"last_update": datetime.now(timezone.utc).isoformat()},
-                        {"completion_time": datetime.now(timezone.utc).isoformat()},
-                    ]
-                    shared_recovery.create_status_for_job(
-                        job_id, granule_id, glacier_bucket, files, db_queue_url
-                    )
-
-                    shared_recovery.update_status_for_file(
-                        job_id,
-                        granule_id,
-                        os.path.basename(a_file[FILE_KEY_KEY]),
-                        shared_recovery.OrcaStatus.PENDING,
-                        None,
-                        db_queue_url,
-                    )
-
                 except ClientError as err:
                     LOGGER.warning(err)
                     a_file[FILE_ERROR_MESSAGE_KEY] = str(err)
@@ -355,21 +332,50 @@ def process_granule(
                 break
             time.sleep(retry_sleep_secs)
 
+    files = [
+        {
+            "filename": os.path.basename(a_file[FILE_KEY_KEY]),
+            "key_path": a_file[FILE_KEY_KEY],
+            "restore_destination": a_file[FILE_DEST_BUCKET_KEY],
+            "status_id": shared_recovery.OrcaStatus.PENDING.value,
+            "error_message": None,
+            "request_time": datetime.now(timezone.utc).isoformat(),
+            "last_update": datetime.now(timezone.utc).isoformat(),
+            "completion_time": None,
+        },
+    ]
+
     any_error = False
     for a_file in granule[GRANULE_RECOVER_FILES_KEY]:
         # if any file failed, the whole granule will fail
         if not a_file[FILE_SUCCESS_KEY]:
             any_error = True
-            # If this is reached, that means there is no entry in the db for file's status.
-            shared_recovery.update_status_for_file(
-                job_id,
-                granule_id,
-                os.path.basename(a_file[FILE_KEY_KEY]),
-                shared_recovery.OrcaStatus.FAILED,
-                a_file.get(FILE_ERROR_MESSAGE_KEY, None),
-                db_queue_url,
-            )
+            files["status_id"] = shared_recovery.OrcaStatus.FAILED.value
+            files["error_message"] = a_file[FILE_ERROR_MESSAGE_KEY]
+            files["completion_time"] = datetime.now(timezone.utc).isoformat()
 
+        # send message to DB SQS
+        # post to DB-queue. Retry using exponential delay if it fails
+        for retry in range(max_retries + 1):
+            try:
+                shared_recovery.create_status_for_job(
+                    job_id, granule_id, glacier_bucket, files, db_queue_url
+                )
+                break
+            except Exception as ex:
+                LOGGER.error(
+                    f"Ran into error posting to SQS {retry+1} time(s) with exception {ex}"
+                )
+                time.sleep(2)
+                continue
+        else:
+            message = "Error sending message to db_queue_url"
+            LOGGER.critical(
+                message, new_data=str(files)
+            )  # Cumulus will update this library in the future to be better behaved.
+            raise Exception(message.format(new_data=str(files)))
+
+            # If this is reached, that means there is no entry in the db for file's status.
     if any_error:
         LOGGER.error(
             f"One or more files failed to be requested from {glacier_bucket}.{granule}"
