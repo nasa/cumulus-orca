@@ -148,8 +148,15 @@ def handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any:
 
     Args:
         event: Event passed into the step from the aws workflow. A dict with the following keys:
-            input (dict): Dictionary with the followig keys:
+            input (dict): Dictionary with the following keys:
                 granules (List): List of granule objects (dictionaries)
+                    granuleId (str)
+                    files (List): A list of Dicts with the following keys:
+                        name (str)
+                        bucket (str)
+                        filepath(str)
+                        filename (str)
+
             config (dict): A dict with the following keys:
                 collection (dict): The collection from AWS.
                     See https://nasa.github.io/cumulus/docs/data-cookbooks/sips-workflow

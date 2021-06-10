@@ -1,18 +1,79 @@
 {
 	"$schema": "http://json-schema.org/draft-07/schema#",
-	"$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/request_status_for_granule/schemas/input.json",
-	"title": "request_status Lambda Input (Granule Specific)",
-	"description": "The input for the request_status Lambda when retrieving status for a particular granule.",
+	"$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier_cumulus_translator/schemas/input.json",
+	"title": "copy_to_glacier_cumulus_translator Lambda Input",
+	"description": "The input for the copy_to_glacier_cumulus_translator Lambda.",
 	"type": "object",
+	"required": [
+		"config",
+		"input"
+	],
 	"properties": {
-		"granule_id": {
-			"description": "The unique ID of the granule to retrieve status for.",
-			"type": "string"
+		"config": {
+			"type": "object",
+			"required": ["file_mapping"],
+			"properties": {
+				"file_mapping": {
+					"type": "object",
+					"required": ["name", "filepath", "bucket"],
+					"properties": {
+						"name": {
+							"description": "The key to use as files[0][name]. The name of the file (no prefix).",
+							"type": "string"
+						},
+						"filepath": {
+							"description": "The key to use as files[0][filepath]. The object key (prefix/name).",
+							"type": "string"
+						},
+						"filename": {
+							"description": "The key to use as files[0][filename]. The s3 uri of the file (s3://bucket/prefix/name).",
+							"type": "string"
+						},
+						"bucket": {
+							"description": "The key to use as files[0][bucket]. The name of the bucket to copy from.",
+							"type": "string"
+						}
+					}
+				},
+				"output_file_types": {
+					"description": "List of strings containing files types (extensions) to be output. If not supplied, all types will be output",
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				}
+			}
 		},
-		"asyncOperationId": {
-			"description": "The unique ID of the asyncOperation. May apply to a request that covers multiple granules.",
-			"type": "string"
+		"input": {
+			"type": "object",
+			"required": [
+				"granules"
+			],
+			"properties": {
+				"granules": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"required": [
+							"granuleId",
+							"files"
+						],
+						"properties": {
+							"granuleId": {
+								"description": "The unique ID of the granule.",
+								"type": "string"
+							},
+							"files": {
+								"description": "The files to copy. See file_mapping for keys.",
+								"type": "array",
+								"items": {
+									"type": "object"
+								}
+							}
+						}
+					}
+				}
+			}
 		}
-	},
-	"required": [ "granule_id" ]
+	}
 }

@@ -17,7 +17,7 @@ class TestCopyToGlacierCumulusTranslatorUnit(
     """
 
     # noinspection PyPep8Naming
-    @patch("copy_to_glacier_cumulus_translator.task")
+    @patch("run_cumulus_task.run_cumulus_task")
     @patch("cumulus_logger.CumulusLogger.setMetadata")
     def test_handler_happy_path(
         self,
@@ -33,6 +33,6 @@ class TestCopyToGlacierCumulusTranslatorUnit(
 
         mock_setMetadata.assert_called_once_with(event, context)
         mock_task.assert_called_once_with(
-            event
+            copy_to_glacier_cumulus_translator.task, event, context
         )
         self.assertEqual(mock_task.return_value, result)
