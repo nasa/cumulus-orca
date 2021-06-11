@@ -85,6 +85,11 @@ output "orca_subnet_group_arn" {
 ## =============================================================================
 # Ingest Lambdas
 # ------------------------------------------------------------------------------
+output "orca_lambda_copy_to_glacier_cumulus_translator_arn" {
+  description = "AWS ARN of the ORCA copy_to_glacier_cumulus_translator lambda."
+  value       = module.orca.orca_lambda_copy_to_glacier_cumulus_translator_arn
+}
+
 output "orca_lambda_copy_to_glacier_arn" {
   description = "AWS ARN of the ORCA copy_to_glacier lambda."
   value       = module.orca.orca_lambda_copy_to_glacier_arn
