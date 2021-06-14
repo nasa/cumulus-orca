@@ -49,7 +49,7 @@ module "orca" {
   ## REQUIRED
   database_app_user_pw = var.database_app_user_pw
   orca_default_bucket  = var.orca_default_bucket
-  postgres_user_pw     = var.database_app_user_pw
+  postgres_user_pw     = var.postgres_user_pw
 
   ## OPTIONAL
   database_port                                = var.database_port
