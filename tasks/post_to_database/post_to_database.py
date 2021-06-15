@@ -51,12 +51,11 @@ def send_record_to_database(record: Dict[str, Any], engine: Engine) -> None:
                 Contains key/value pairs of column names and values for those columns.
                 Must match one of the schemas.
             'messageAttributes' (dict): Contains the following keys:
-                'TableName' (str): The name of the table to target.
                 'RequestMethod' (str): 'post' or 'put', depending on if row should be created or updated respectively.
         engine: The sqlalchemy engine to use for contacting the database.
     """
     values = json.loads(record['body'])
-    request_method = RequestMethod(record['messageAttributes']['RequestMethod'])
+    request_method = RequestMethod(record['messageAttributes']['RequestMethod']['stringValue'])
     if request_method == RequestMethod.NEW_JOB:
         _NEW_JOB_VALIDATE(values)
         create_status_for_job_and_files(values['job_id'],

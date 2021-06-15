@@ -76,7 +76,7 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
         mock_engine = Mock()
         record = {
             'body': json.dumps(values, indent=4),
-            'messageAttributes': {'RequestMethod': request_method.value.__str__()}
+            'messageAttributes': {'RequestMethod': {'stringValue': request_method.value.__str__()}}
         }
 
         post_to_database.send_record_to_database(record, mock_engine)
@@ -114,7 +114,7 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
             input_values.pop(key)
             record = {
                 'body': json.dumps(input_values, indent=4),
-                'messageAttributes': {'RequestMethod': request_method.value.__str__()}
+                'messageAttributes': {'RequestMethod': {'stringValue': request_method.value.__str__()}}
             }
             schema_error_raised = False
             try:
@@ -148,7 +148,7 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
         mock_engine = Mock()
         record = {
             'body': json.dumps(values, indent=4),
-            'messageAttributes': {'RequestMethod': request_method.value.__str__()}
+            'messageAttributes': {'RequestMethod': {'stringValue': request_method.value.__str__()}}
         }
 
         post_to_database.send_record_to_database(record, mock_engine)
@@ -189,7 +189,7 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
             input_values.pop(key)
             record = {
                 'body': json.dumps(input_values, indent=4),
-                'messageAttributes': {'RequestMethod': request_method.value.__str__()}
+                'messageAttributes': {'RequestMethod': {'stringValue': request_method.value.__str__()}}
             }
             schema_error_raised = False
             try:
