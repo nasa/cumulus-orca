@@ -16,7 +16,9 @@ def task(event: Dict[str, Any], context) -> List[Dict[str, Any]]:
     """
     Transforms event from Cumulus format to Orca copy_to_glacier format.
     Args:
-        event: See schemas/input.json
+        event: A dict with the following keys:
+            'input': See schemas/input.json
+            'config': See schemas/config.json
         context: An object passed through by CMA. Unused.
 
     Returns:
@@ -67,7 +69,7 @@ def handler(event: Dict[str, Any], context: Any) -> List[Dict[str, Any]]:
     """
     Entry point for the copy_to_glacier_cumulus_translator Lambda.
     Args:
-        event: See schemas/input.json and combine with knowledge of CMA.
+        event: See schemas/input.json, schemas/config.json, and CMA.
         context: An object provided by AWS Lambda. Used for context tracking.
 
     Returns: See schemas/output.json
