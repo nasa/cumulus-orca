@@ -223,9 +223,49 @@ Some examples of CLI commands and their corresponding outputs are shown below.
         "PackageType": "Zip"
     }
 #### SQS
-#### Secerts manager
 
+`awslocal sqs create-queue --queue-name test-queue`
 
+     Response: 
+    {
+        "QueueUrl": "http://localhost:4566/000000000000/test-queue"
+    }
+`awslocal sqs send-message --queue-url http://localhost:4566/000000000000/test-queue --message-body "test message." --delay-seconds 0`
+
+     Response: 
+    {
+      "MD5OfMessageBody": "5cbd04aaf0430ff7fac38ebd11b72083",
+      "MessageId": "0d4d8a75-276d-9687-6604-975cc0a84c68"
+  }
+`awslocal sqs receive-message --queue-url http://localhost:4566/000000000000/test-queue --attribute-names All --message-attribute-names All`
+
+     Response: 
+    {
+        "Messages": [
+            {
+                "MessageId": "0d4d8a75-276d-9687-6604-975cc0a84c68",
+                "ReceiptHandle": "ljwfjwrrlolejmrqcqbsrrxajygjsbkleesnyxtvwlffoikfstreipeutydtzhxosvjicazswakagyfhcxbrbpxxofkzsdbgjlofnpbmfxxtztrsmjkhkecfbqvdxnyotoujibxdavaiewtthscexnvplkmfrryisowurnxrymfzvyozubidbhsms",
+                "MD5OfBody": "5cbd04aaf0430ff7fac38ebd11b72083",
+                "Body": "test message.",
+                "Attributes": {
+                    "SenderId": "AIDAIT2UOQQY3AUEKVGXU",
+                    "SentTimestamp": "1623871655817",
+                    "ApproximateReceiveCount": "1",
+                    "ApproximateFirstReceiveTimestamp": "1623871770221"
+                }
+            }
+        ]
+    }
+#### Secrets manager
+
+`awslocal secretsmanager create-secret --name localstack-secret`
+
+      Response: 
+    {
+        "ARN": "arn:aws:secretsmanager:us-east-1:000000000000:secret:localstack-secret-PAnuzB",
+        "Name": "localstack-secret",
+        "VersionId": "8c6c77a1-6400-441a-b8f7-730abec4b9d5"
+    }
 ### Known Limitations
 - While commonly used AWS services are present, some more uncommon services are not.
 - Is not a total replacement for AWS Sandbox testing.
