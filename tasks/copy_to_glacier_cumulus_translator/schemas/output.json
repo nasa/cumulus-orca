@@ -15,7 +15,7 @@
 					"files"
 				],
 				"properties": {
-					"granuleId": {
+					"granule_id": {
 						"description": "The unique ID of the granule.",
 						"type": "string"
 					},

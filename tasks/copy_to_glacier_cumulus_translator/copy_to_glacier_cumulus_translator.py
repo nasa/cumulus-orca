@@ -24,7 +24,8 @@ def task(event: Dict[str, Any], context) -> List[Dict[str, Any]]:
     Returns:
         See schemas/output.json
     """
-    LOGGER.debug(f"event: {event}")
+    # Cannot use f"" because of '{}' handling bug in CumulusLogger
+    LOGGER.debug("event: {event}", event=event)
     file_name_mapping = event['config']['file_mapping']["name"]
     file_filepath_mapping = event['config']['file_mapping']["filepath"]
     file_bucket_mapping = event['config']['file_mapping']["bucket"]
@@ -56,10 +57,11 @@ def task(event: Dict[str, Any], context) -> List[Dict[str, Any]]:
             else:
                 translated_file['filename'] = file[file_filename_mapping]
 
-            LOGGER.info(f"Translated File: {translated_file}")
+            # Cannot use f"" because of '{}' handling bug in CumulusLogger
+            LOGGER.info("Translated File: {translated_file}", translated_file=translated_file)
             translated_files += translated_file
-        translated_granules += {'granuleId': granule_id,
-                                'files': translated_files}
+        translated_granules.append({'granule_id': granule_id,
+                                    'files': translated_files})
 
     return {'granules': translated_granules}
 
