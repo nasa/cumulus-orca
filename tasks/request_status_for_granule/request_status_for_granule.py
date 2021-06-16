@@ -235,7 +235,8 @@ def create_http_error_dict(
         "errorType": error_type,
         "httpStatus": http_status_code,
         "requestId": request_id,
-        "message": message,
+        # CumulusLogger will error if a string containing '{' or '}' is passed in without escaping.
+        "message": message.replace("{", "{{").replace("}", "}}")
     }
 
 
