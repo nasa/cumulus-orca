@@ -86,7 +86,8 @@ def get_granule_status_entries_for_job(
     try:
         rows = database.single_query(sql, db_connect_info, (job_id,))
     except database.DbError as err:
-        LOGGER.error(f"DbError: {str(err)}")
+        # Can't use f"" because of '{}' bug in CumulusLogger.
+        LOGGER.error("DbError: {err}", err=str(err))
         raise DatabaseError(str(err))
     result = database.result_to_json(rows)
     return result
@@ -124,7 +125,8 @@ def get_status_totals_for_job(job_id: str, db_connect_info: Dict) -> Dict[str, i
     try:
         rows = database.single_query(sql, db_connect_info, (job_id,))
     except database.DbError as err:
-        LOGGER.error(f"DbError: {str(err)}")
+        # Can't use f"" because of '{}' bug in CumulusLogger.
+        LOGGER.error("DbError: {err}", err=str(err))
         raise DatabaseError(str(err))
     totals = {row["value"]: row["total"] for row in rows}
     return totals

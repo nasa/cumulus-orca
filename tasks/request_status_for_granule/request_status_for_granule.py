@@ -108,7 +108,8 @@ def get_most_recent_job_id_for_granule(
     try:
         rows = database.single_query(sql, db_connect_info, (granule_id,))
     except database.DbError as err:
-        LOGGER.error(f"DbError: {str(err)}")
+        # Can't use f"" because '{}' of bug in CumulusLogger.
+        LOGGER.error("DbError: {err}", err=str(err))
         raise DatabaseError(str(err))
 
     if len(rows) == 0:
@@ -157,7 +158,8 @@ def get_job_entry_for_granule(
             ),
         )
     except database.DbError as err:
-        LOGGER.error(f"DbError: {str(err)}")
+        # Can't use f"" because of '{}' bug in CumulusLogger.
+        LOGGER.error("DbError: {err}", err=str(err))
         raise DatabaseError(str(err))
 
     if len(rows) == 0:
@@ -203,7 +205,8 @@ def get_file_entries_for_granule_in_job(
             ),
         )
     except database.DbError as err:
-        LOGGER.error(f"DbError: {str(err)}")
+        # Can't use f"" because of '{}' bug in CumulusLogger.
+        LOGGER.error("DbError: {err}", err=str(err))
         raise DatabaseError(str(err))
 
     result = database.result_to_json(rows)
