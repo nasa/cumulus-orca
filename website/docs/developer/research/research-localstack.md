@@ -154,7 +154,8 @@ From your windows cmd, run the following command to start localstack: `docker co
         localstack-container  | Starting mock Redshift service on http port 4566 ...
         localstack-container  | Starting mock Route53 service on http port 4566 ...
 
-Localstack is now running in docker. Open the docker desktop and click on the container's CLI to open the container.
+Localstack is now running in docker. To verify that the services are running, check the link http://localhost:4566/ should show a status of "running".
+Open the docker desktop and click on the container's CLI to open the container.
 Install the AWS CLI to run CLI commands in the docker container.
 
     pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org awscli-local
@@ -256,8 +257,9 @@ Some examples of CLI commands and their corresponding outputs are shown below.
             }
         ]
     }
-#### Secrets manager
 
+
+#### Secerts manager
 `awslocal secretsmanager create-secret --name localstack-secret`
 
       Response: 
@@ -266,6 +268,90 @@ Some examples of CLI commands and their corresponding outputs are shown below.
         "Name": "localstack-secret",
         "VersionId": "8c6c77a1-6400-441a-b8f7-730abec4b9d5"
     }
+
+
+### Deploying AWS resources using terraform and localstack
+
+Terraform can also be used to deploy and test AWS resources locally using localstack. Make sure to have Terraform installed on your local machine. An example of deploying services like lambda, API gateway, SQS, S3 and SNS is shown below:
+
+    provider "aws" {
+      region = "us-east-1"
+      access_key = "123"
+      secret_key = "xyz"
+      skip_credentials_validation = true
+      skip_requesting_account_id = true
+      skip_metadata_api_check = true
+      s3_force_path_style = true
+      endpoints {
+        s3 = "http://localhost:4566"
+        sqs = "http://localhost:4566"
+        apigateway = "http://localhost:4566"
+        lambda = "http://localhost:4566"
+        sns = "http://localhost:4566"
+      }
+    }
+    #-------------------------------- resources-------------------
+    resource "aws_s3_bucket" "localstack-test-bucket" {
+      bucket = "localstack-test-bucket"
+    }
+    resource "aws_sqs_queue" "localstack-test-sqs" {
+      name                      = "localstack-test-sqs"
+      tags = {
+        Environment = "dev"
+      }
+    }
+
+    resource "aws_api_gateway_rest_api" "localstack-rest-api" {
+      name = "localstack-rest-api"
+    }
+
+    resource "aws_api_gateway_resource" "localstack-rest-api-resource" {
+      parent_id   = aws_api_gateway_rest_api.localstack-rest-api.root_resource_id
+      path_part   = "test"
+      rest_api_id = aws_api_gateway_rest_api.localstack-rest-api.id
+    }
+
+    resource "aws_lambda_function" "test_lambda" {
+      filename      = "test.zip"
+      function_name = "localstack-lambda"
+      role          = "test"
+      handler       = "test.lambda_handler"
+      source_code_hash = filebase64sha256("test.zip")
+      runtime = "python3.7"
+    }
+
+    resource "aws_sns_topic" "localstack-sns-topic" {
+      name = "localstack-sns-topic"
+    }
+
+Here is the output after running `terraform apply`
+
+    Output:
+    Plan: 6 to add, 0 to change, 0 to destroy.
+    Do you want to perform these actions?
+      Terraform will perform the actions described above.
+      Only 'yes' will be accepted to approve.
+
+      Enter a value: yes
+
+    aws_api_gateway_rest_api.localstack-rest-api: Creating...
+    aws_sqs_queue.localstack-test-sqs: Creating...
+    aws_sns_topic.localstack-sns-topic: Creating...
+    aws_lambda_function.test_lambda: Creating...
+    aws_s3_bucket.localstack-test-bucket: Creating...
+    aws_api_gateway_rest_api.localstack-rest-api: Creation complete after 0s [id=husgqgb0ml]
+    aws_sns_topic.localstack-sns-topic: Creation complete after 0s [id=arn:aws:sns:us-east-1:000000000000:localstack-sns-topic]
+    aws_api_gateway_resource.localstack-rest-api-resource: Creating...
+    aws_sqs_queue.localstack-test-sqs: Creation complete after 0s [id=http://localhost:4566/000000000000/localstack-test-sqs]
+    aws_api_gateway_resource.localstack-rest-api-resource: Creation complete after 1s [id=yzzy2ob604]
+    aws_s3_bucket.localstack-test-bucket: Creation complete after 1s [id=localstack-test-bucket]
+    aws_lambda_function.test_lambda: Creation complete after 6s [id=localstack-lambda]
+
+    Apply complete! Resources: 6 added, 0 changed, 0 destroyed.
+
+
+
+
 ### Known Limitations
 - While commonly used AWS services are present, some more uncommon services are not.
 - Is not a total replacement for AWS Sandbox testing.
@@ -280,3 +366,4 @@ Some examples of CLI commands and their corresponding outputs are shown below.
 - Meeting with Aafaque
 - https://github.com/localstack/localstack
 - [AppEEARS' Docker Implementation](https://git.cr.usgs.gov/LPDA/appeears/-/blob/feature/rds-setup/deployment/terraform/dev/main.tf)
+- https://registry.terraform.io/providers/hashicorp/aws/latest/docs/guides/custom-service-endpoints
