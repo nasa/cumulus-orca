@@ -4,24 +4,24 @@
 
 Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/development-guide/code/contrib-code-intro) for information on environment setup and testing.
 
-- [Input/Output Schemas and Examples](#input-output-schemas)
+- [Input/Output Examples](#input-output-examples)
 - [pydoc copy_to_glacier_cumulus_translator](#pydoc)
 
-<a name="input-output-schemas"></a>
-## Input/Output Schemas and Examples
+<a name="input-output-examples"></a>
+## Input/Output Examples
 Fully defined json schemas written in the schema of https://json-schema.org/ can be found in the [schemas folder](schemas).
 
 ### Example Input
 ```json
 {
-  todo
+  todo once we can test in a workflow
 }
 ```
 
 ### Example Output
 ```json
 {
-  todo
+  todo once we can test in a workflow
 }
 ```
 <a name="pydoc"></a>
