@@ -26,40 +26,50 @@ def task(event: Dict[str, Any], context) -> List[Dict[str, Any]]:
     """
     # Cannot use f"" because of '{}' handling bug in CumulusLogger
     LOGGER.debug("event: {event}", event=event)
-    file_name_mapping = event['config']['file_mapping']["name"]
-    file_filepath_mapping = event['config']['file_mapping']["filepath"]
-    file_bucket_mapping = event['config']['file_mapping']["bucket"]
-    file_filename_mapping = event['config']['file_mapping'].get('filename', None)
-    output_file_types = event['config'].get('output_file_types', [])
-    granules = event['input']['granules']
+    file_name_mapping = event["config"]["file_mapping"]["name"]
+    file_filepath_mapping = event["config"]["file_mapping"]["filepath"]
+    file_bucket_mapping = event["config"]["file_mapping"]["bucket"]
+    file_filename_mapping = event["config"]["file_mapping"].get("filename", None)
+    output_file_types = event["config"].get("output_file_types", [])
+    granules = event["input"]["granules"]
     translated_granules = []
     for granule in granules:
         translated_files = []
-        for file in granule['files']:
+        for file in granule["files"]:
             try:
-                if any(file[file_name_mapping].endswith(ext) for ext in output_file_types):
+                if any(
+                    file[file_name_mapping].endswith(ext) for ext in output_file_types
+                ):
                     continue
             except KeyError:
                 raise ReformatRequestError(
-                    f"file: {file} does not contain a value for '{file[file_name_mapping]}'")
+                    f"file: {file} does not contain a value for '{file[file_name_mapping]}'"
+                )
 
             translated_file = {
-                'name': file[file_name_mapping],
-                'bucket': file[file_bucket_mapping],
-                'filepath': file[file_filepath_mapping]
+                "name": file[file_name_mapping],
+                "bucket": file[file_bucket_mapping],
+                "filepath": file[file_filepath_mapping],
             }
-            if file_filename_mapping is None or not file.keys().__contains__(file_filename_mapping):
-                translated_file['filename'] = '/'.join(['s3:/', translated_file['bucket'], translated_file['filepath']])
+            if file_filename_mapping is None or not file.keys().__contains__(
+                file_filename_mapping
+            ):
+                translated_file["filename"] = "/".join(
+                    ["s3:/", translated_file["bucket"], translated_file["filepath"]]
+                )
             else:
-                translated_file['filename'] = file[file_filename_mapping]
+                translated_file["filename"] = file[file_filename_mapping]
 
             # Cannot use f"" because of '{}' handling bug in CumulusLogger
-            LOGGER.info("Translated File: {translated_file}", translated_file=translated_file)
+            LOGGER.info(
+                "Translated File: {translated_file}", translated_file=translated_file
+            )
             translated_files.append(translated_file)
-        translated_granules.append({'granuleId': granule['granuleId'],
-                                    'files': translated_files})
+        translated_granules.append(
+            {"granuleId": granule["granuleId"], "files": translated_files}
+        )
 
-    return {'granules': translated_granules}
+    return {"granules": translated_granules}
 
 
 def handler(event: Dict[str, Any], context: Any) -> List[Dict[str, Any]]:
