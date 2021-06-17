@@ -288,6 +288,8 @@ Terraform can also be used to deploy and test AWS resources locally using locals
         apigateway = "http://localhost:4566"
         lambda = "http://localhost:4566"
         sns = "http://localhost:4566"
+        secretsmanager = "http://localhost:4566"
+        iam = "http://localhost:4566"
       }
     }
     #-------------------------------- resources-------------------
@@ -314,7 +316,7 @@ Terraform can also be used to deploy and test AWS resources locally using locals
     resource "aws_lambda_function" "test_lambda" {
       filename      = "test.zip"
       function_name = "localstack-lambda"
-      role          = "test"
+      role          = aws_iam_role.localstack-role.arn
       handler       = "test.lambda_handler"
       source_code_hash = filebase64sha256("test.zip")
       runtime = "python3.7"
@@ -322,6 +324,23 @@ Terraform can also be used to deploy and test AWS resources locally using locals
 
     resource "aws_sns_topic" "localstack-sns-topic" {
       name = "localstack-sns-topic"
+    }
+
+    resource "aws_secretsmanager_secret" "localstack-secret" {
+      name                    = "localstack-secret"
+      recovery_window_in_days = 0
+    }
+
+    data "aws_iam_policy_document" "localstack_policy" {
+      statement {
+        actions   = ["*"]
+        effect    = "Allow"
+      }
+    }
+
+    resource "aws_iam_role" "localstack-role" {
+      name               = "localstack-role"
+      assume_role_policy = data.aws_iam_policy_document.localstack_policy.json
     }
 
 Here is the output after running `terraform apply`
@@ -335,22 +354,27 @@ Here is the output after running `terraform apply`
       Enter a value: yes
 
     aws_api_gateway_rest_api.localstack-rest-api: Creating...
+    aws_secretsmanager_secret.localstack-secret: Creating...
+    aws_iam_role.localstack-role: Creating...
     aws_sqs_queue.localstack-test-sqs: Creating...
     aws_sns_topic.localstack-sns-topic: Creating...
-    aws_lambda_function.test_lambda: Creating...
     aws_s3_bucket.localstack-test-bucket: Creating...
-    aws_api_gateway_rest_api.localstack-rest-api: Creation complete after 0s [id=husgqgb0ml]
     aws_sns_topic.localstack-sns-topic: Creation complete after 0s [id=arn:aws:sns:us-east-1:000000000000:localstack-sns-topic]
+    aws_api_gateway_rest_api.localstack-rest-api: Creation complete after 0s [id=kxg64u2jdv]
     aws_api_gateway_resource.localstack-rest-api-resource: Creating...
+    aws_secretsmanager_secret.localstack-secret: Creation complete after 0s [id=arn:aws:secretsmanager:us-east-1:000000000000:secret:localstack-secret-iIRbKa]
+    aws_iam_role.localstack-role: Creation complete after 0s [id=localstack-role]
     aws_sqs_queue.localstack-test-sqs: Creation complete after 0s [id=http://localhost:4566/000000000000/localstack-test-sqs]
-    aws_api_gateway_resource.localstack-rest-api-resource: Creation complete after 1s [id=yzzy2ob604]
-    aws_s3_bucket.localstack-test-bucket: Creation complete after 1s [id=localstack-test-bucket]
+    aws_lambda_function.test_lambda: Creating...
+    aws_api_gateway_resource.localstack-rest-api-resource: Creation complete after 0s [id=b97isejc8z]
+    aws_s3_bucket.localstack-test-bucket: Creation complete after 0s [id=localstack-test-bucket]
     aws_lambda_function.test_lambda: Creation complete after 6s [id=localstack-lambda]
 
-    Apply complete! Resources: 6 added, 0 changed, 0 destroyed.
+    Apply complete! Resources: 8 added, 0 changed, 0 destroyed.
 
 
-
+### IDE for Localstack
+- Currently there is an IDE named [Commandeer](https://getcommandeer.com/) that can be used to maintain localstack environments but requires to buy a premium version to use. This could be something to look into in the future if we plan to buy a premium version.
 
 ### Known Limitations
 - While commonly used AWS services are present, some more uncommon services are not.
@@ -366,4 +390,3 @@ Here is the output after running `terraform apply`
 - Meeting with Aafaque
 - https://github.com/localstack/localstack
 - [AppEEARS' Docker Implementation](https://git.cr.usgs.gov/LPDA/appeears/-/blob/feature/rds-setup/deployment/terraform/dev/main.tf)
-- https://registry.terraform.io/providers/hashicorp/aws/latest/docs/guides/custom-service-endpoints
