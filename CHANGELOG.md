@@ -15,6 +15,8 @@ and includes an additional section for migration notes.
 
 
 ## [Unreleased]
+### Added
+- *ORCA-175* Added copy_to_glacier_cumulus_translator for transforming CumulusDashboard input to the proper format.
 
 ### Migration Notes
 See the documentation for specifics on the various files and changes specified below.
