@@ -63,7 +63,7 @@ class TestCopyToGlacierCumulusTranslatorUnit(
 
         context = Mock()
 
-        mock_task.return_value = {"granules": [{"granule_id": "some_granule_id", "files": []}]}
+        mock_task.return_value = {"granules": [{"granuleId": "some_granule_id", "files": []}]}
 
         result = copy_to_glacier_cumulus_translator.handler(event, context)
         self.assertEqual(mock_task.return_value, result['payload'])
@@ -103,4 +103,4 @@ class TestCopyToGlacierCumulusTranslatorUnit(
 
         result = copy_to_glacier_cumulus_translator.handler(event, context)
         self.assertEqual({'granules': [{'files': ['name', 'bucket', 'filepath', 'filename'],
-                                        'granule_id': 'some_granule_id'}]}, result['payload'])
+                                        'granuleId': 'some_granule_id'}]}, result['payload'])

@@ -59,8 +59,8 @@ def task(event: Dict[str, Any], context) -> List[Dict[str, Any]]:
 
             # Cannot use f"" because of '{}' handling bug in CumulusLogger
             LOGGER.info("Translated File: {translated_file}", translated_file=translated_file)
-            translated_files += translated_file
-        translated_granules.append({'granule_id': granule_id,
+            translated_files.append(translated_file)
+        translated_granules.append({'granuleId': granule_id,
                                     'files': translated_files})
 
     return {'granules': translated_granules}
