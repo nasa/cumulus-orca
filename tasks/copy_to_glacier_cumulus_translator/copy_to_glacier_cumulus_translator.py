@@ -34,10 +34,6 @@ def task(event: Dict[str, Any], context) -> List[Dict[str, Any]]:
     granules = event['input']['granules']
     translated_granules = []
     for granule in granules:
-        # todo: Make sure schema errors cover this adequately.
-        # todo: If it does, we don't need to store this value.
-        granule_id = granule['granuleId']
-
         translated_files = []
         for file in granule['files']:
             try:
@@ -60,7 +56,7 @@ def task(event: Dict[str, Any], context) -> List[Dict[str, Any]]:
             # Cannot use f"" because of '{}' handling bug in CumulusLogger
             LOGGER.info("Translated File: {translated_file}", translated_file=translated_file)
             translated_files.append(translated_file)
-        translated_granules.append({'granuleId': granule_id,
+        translated_granules.append({'granuleId': granule['granuleId'],
                                     'files': translated_files})
 
     return {'granules': translated_granules}
