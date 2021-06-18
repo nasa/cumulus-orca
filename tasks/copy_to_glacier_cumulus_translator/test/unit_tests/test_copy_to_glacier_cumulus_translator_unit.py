@@ -38,6 +38,7 @@ class TestCopyToGlacierCumulusTranslatorUnit(
         )
         self.assertEqual(mock_run_cumulus_task.return_value, result)
 
+    # noinspection PyPep8Naming
     @patch("copy_to_glacier_cumulus_translator.task")
     @patch("cumulus_logger.CumulusLogger.setMetadata")
     def test_handler_passthrough(
@@ -124,6 +125,9 @@ class TestCopyToGlacierCumulusTranslatorUnit(
     # noinspection PyPep8Naming
     @patch("cumulus_logger.CumulusLogger.setMetadata")
     def test_handler_rejects_bad_input(self, mock_setMetadata: MagicMock):
+        """
+        CMA should reject improperly formatted data.
+        """
         expected_config = {
             "file_mapping": {
                 "name": "nameKey",
@@ -154,6 +158,9 @@ class TestCopyToGlacierCumulusTranslatorUnit(
             copy_to_glacier_cumulus_translator.handler(event, context)
 
     def test_task_happy_path(self):
+        """
+        Basic path will all information present.
+        """
         granule_id = uuid.uuid4().__str__()
 
         file0_name = uuid.uuid4().__str__() + ".jpg"
