@@ -1,0 +1,35 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier_cumulus_translator/schemas/input.json",
+	"title": "copy_to_glacier_cumulus_translator Lambda Input",
+	"description": "The input for the copy_to_glacier_cumulus_translator Lambda.",
+	"type": "object",
+	"required": [
+		"granules"
+	],
+	"properties": {
+		"granules": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"required": [
+					"granuleId",
+					"files"
+				],
+				"properties": {
+					"granuleId": {
+						"description": "The unique ID of the granule.",
+						"type": "string"
+					},
+					"files": {
+						"description": "The files to copy. See file_mapping for keys.",
+						"type": "array",
+						"items": {
+							"type": "object"
+						}
+					}
+				}
+			}
+		}
+	}
+}
