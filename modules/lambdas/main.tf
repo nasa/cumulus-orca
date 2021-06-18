@@ -80,7 +80,7 @@ resource "aws_lambda_function" "copy_to_glacier_cumulus_translator" {
   role          = module.restore_object_arn.restore_object_role_arn
 
   ## OPTIONAL
-  description      = "ORCA archiving lambda used to copy data to an ORCA S3 glacier bucket."
+  description      = "Transforms input from Cumulus Dashboard to copy_to_glacier format."
   filename         = "${path.module}/../../tasks/copy_to_glacier_cumulus_translator/copy_to_glacier_cumulus_translator.zip"
   handler          = "copy_to_glacier_cumulus_translator.handler"
   memory_size      = var.orca_ingest_lambda_memory_size

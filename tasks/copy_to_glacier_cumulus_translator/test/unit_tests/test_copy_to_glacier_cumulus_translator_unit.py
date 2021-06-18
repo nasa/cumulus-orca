@@ -43,6 +43,9 @@ class TestCopyToGlacierCumulusTranslatorUnit(
     def test_handler_passthrough(
         self, mock_setMetadata: MagicMock, mock_task: MagicMock
     ):
+        """
+        Checks that input is properly transformed for Task.
+        """
         expected_config = {
             "file_mapping": {
                 "name": "nameKey",
