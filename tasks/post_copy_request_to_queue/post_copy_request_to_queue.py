@@ -112,8 +112,10 @@ def task(
             )
             break
         except Exception as ex:
+            # Can't use f"" because of '{}' bug in CumulusLogger.
             LOGGER.error(
-                f"Ran into error posting to SQS {db_queue_url} {retry+1} time(s) with exception {ex}"
+                "Ran into error posting to SQS {db_queue_url} {retry} time(s) with exception {ex}",
+                db_queue_url=db_queue_url, retry=retry+1, ex=str(ex)
             )
             my_base_delay = exponential_delay(my_base_delay, retry_backoff)
             continue
@@ -135,8 +137,10 @@ def task(
             )
             break
         except Exception as ex:
+            # Can't use f"" because of '{}' bug in CumulusLogger.
             LOGGER.error(
-                f"Ran into error posting to SQS {recovery_queue_url} {retry+1} time(s) with exception {ex}"
+                "Ran into error posting to SQS {recovery_queue_url} {retry} time(s) with exception {ex}",
+                recovery_queue_url=recovery_queue_url, retry=retry+1, ex=str(ex)
             )
             my_base_delay = exponential_delay(my_base_delay, retry_backoff)
             continue
@@ -169,7 +173,8 @@ def exponential_delay(base_delay: int, exponential_backoff: int = 2) -> int:
         time.sleep(delay)
         return _base_delay * _exponential_backoff
     except ValueError as ve:
-        LOGGER.error(f"arguments are not integer. Raised ValueError: {ve}")
+        # Can't use f"" because of '{}' bug in CumulusLogger.
+        LOGGER.error("arguments are not integer. Raised ValueError: {ve}", ve=ve)
         raise ve
 
 

@@ -56,13 +56,13 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
                                                                      mock_create_status_for_job_and_files: MagicMock):
         job_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
-        request_time = datetime.datetime.utcnow().isoformat().__str__()
+        request_time = datetime.datetime.now(datetime.timezone.utc).isoformat()
         archive_destination = uuid.uuid4().__str__()
         files = [{
             'filename': uuid.uuid4().__str__(), 'key_path': uuid.uuid4().__str__(),
             'restore_destination': uuid.uuid4().__str__(), 'status_id': 1,
-            'request_time': datetime.datetime.utcnow().isoformat(),
-            'last_update': datetime.datetime.utcnow().isoformat()
+            'request_time': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            'last_update': datetime.datetime.now(datetime.timezone.utc).isoformat()
         }]
 
         values = {
@@ -76,7 +76,7 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
         mock_engine = Mock()
         record = {
             'body': json.dumps(values, indent=4),
-            'messageAttributes': {'RequestMethod': request_method.value.__str__()}
+            'messageAttributes': {'RequestMethod': {'stringValue': request_method.value.__str__()}}
         }
 
         post_to_database.send_record_to_database(record, mock_engine)
@@ -91,7 +91,7 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
         """
         job_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
-        request_time = datetime.datetime.utcnow().isoformat().__str__()
+        request_time = datetime.datetime.now(datetime.timezone.utc).isoformat()
         archive_destination = uuid.uuid4().__str__()
         files = [{
             'filename': uuid.uuid4().__str__(), 'key_path': uuid.uuid4().__str__(),
@@ -114,7 +114,7 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
             input_values.pop(key)
             record = {
                 'body': json.dumps(input_values, indent=4),
-                'messageAttributes': {'RequestMethod': request_method.value.__str__()}
+                'messageAttributes': {'RequestMethod': {'stringValue': request_method.value.__str__()}}
             }
             schema_error_raised = False
             try:
@@ -131,8 +131,8 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
         job_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
         filename = uuid.uuid4().__str__()
-        last_update = datetime.datetime.utcnow().isoformat().__str__()
-        completion_time = datetime.datetime.utcnow().isoformat().__str__()
+        last_update = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        completion_time = datetime.datetime.now(datetime.timezone.utc).isoformat()
         status_id = 2
         error_message = uuid.uuid4().__str__()
         values = {
@@ -148,7 +148,7 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
         mock_engine = Mock()
         record = {
             'body': json.dumps(values, indent=4),
-            'messageAttributes': {'RequestMethod': request_method.value.__str__()}
+            'messageAttributes': {'RequestMethod': {'stringValue': request_method.value.__str__()}}
         }
 
         post_to_database.send_record_to_database(record, mock_engine)
@@ -168,9 +168,9 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
         job_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
         filename = uuid.uuid4().__str__()
-        last_update = datetime.datetime.utcnow().isoformat().__str__()
+        last_update = datetime.datetime.now(datetime.timezone.utc).isoformat()
         status_id = 3
-        completion_time = datetime.datetime.utcnow().isoformat().__str__()
+        completion_time = datetime.datetime.now(datetime.timezone.utc).isoformat()
         error_message = uuid.uuid4().__str__()
         values = {
             "job_id": job_id,
@@ -189,7 +189,7 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
             input_values.pop(key)
             record = {
                 'body': json.dumps(input_values, indent=4),
-                'messageAttributes': {'RequestMethod': request_method.value.__str__()}
+                'messageAttributes': {'RequestMethod': {'stringValue': request_method.value.__str__()}}
             }
             schema_error_raised = False
             try:
