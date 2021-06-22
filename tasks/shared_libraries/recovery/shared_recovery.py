@@ -7,7 +7,12 @@ import json
 import boto3
 from typing import Dict, Any, Optional, List
 from datetime import datetime, timezone
+import os
+import boto3
+from cumulus_logger import CumulusLogger
 
+# instantiate CumulusLogger
+logger = CumulusLogger()
 
 class RequestMethod(Enum):
     """
@@ -28,6 +33,22 @@ class OrcaStatus(Enum):
     FAILED = 3
     SUCCESS = 4
 
+def get_aws_region()-> str:
+    """
+    Gets AWS region variable from the runtime environment variable.
+        Returns:
+            The AWS region variable.
+        Raises:
+            Exception: Thrown if AWS region is empty or None.
+    """
+    logger.debug("Getting environment variable AWS_REGION value.")
+    aws_region = os.getenv("AWS_REGION", None)
+    if aws_region is None or len(aws_region) == 0:
+        message = "Runtime environment variable AWS_REGION is not set."
+        logger.critical(message)
+        raise Exception(message)
+    logger.info(f"Got environment variable for AWS_REGION = {aws_region}")
+    return aws_region
 
 def create_status_for_job(
     job_id: str,
@@ -114,10 +135,7 @@ def post_entry_to_queue(
     """
     body = json.dumps(new_data)
 
-    # TODO: pass AWS region value to function. SHOULD be gotten from environment
-    # higher up. Setting this to us-west-2 initially since that is where
-    # EOSDIS runs from normally. SEE ORCA-203 https://bugs.earthdata.nasa.ov/browse/ORCA-203
-    mysqs_resource = boto3.resource("sqs", region_name="us-west-2")
+    mysqs_resource = boto3.resource("sqs", region_name= get_aws_region())
     mysqs = mysqs_resource.Queue(db_queue_url)
 
     mysqs.send_message(

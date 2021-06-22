@@ -188,6 +188,7 @@ resource "aws_lambda_function" "request_files" {
       RESTORE_RETRIEVAL_TYPE   = var.orca_recovery_retrieval_type
       DB_QUEUE_URL             = var.orca_sqs_status_update_queue_id
       ORCA_DEFAULT_BUCKET      = var.orca_default_bucket
+      AWS_REGION_VAR           = var.region
     }
   }
 }
@@ -220,6 +221,7 @@ resource "aws_lambda_function" "copy_files_to_archive" {
       COPY_RETRIES          = var.orca_recovery_retry_limit
       COPY_RETRY_SLEEP_SECS = var.orca_recovery_retry_interval
       DB_QUEUE_URL          = var.orca_sqs_status_update_queue_id
+      AWS_REGION_VAR        = var.region
     }
   }
 }
@@ -271,6 +273,7 @@ resource "aws_lambda_function" "post_to_database" {
       DATABASE_PORT    = var.database_port
       DATABASE_NAME    = var.database_name
       APPLICATION_USER = var.database_app_user
+      AWS_REGION_VAR   = var.region
     }
   }
 }
@@ -389,6 +392,7 @@ resource "aws_lambda_function" "post_copy_request_to_queue" {
       MAX_RETRIES           = var.orca_recovery_retry_limit
       RETRY_SLEEP_SECS      = var.orca_recovery_retry_interval
       RETRY_BACKOFF         = var.orca_recovery_retry_backoff
+      AWS_REGION_VAR        = var.region
     }
   }
 }
