@@ -165,12 +165,14 @@ Localstack is now running in docker. To verify that the services are running, ch
 Open the docker desktop and click on the container's CLI to open the container.
 Install the AWS CLI to run CLI commands in the docker container.
 
-    pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org awscli-local
-:::note
-AWSlocal is a thin wrapper around the aws command line interface for use with LocalStack.
-This prevents the need for specifying --endpoint-url everytime aws cli command is run. The container is now ready to test AWS services locally.
+:::tip
+`awslocal` is a thin wrapper around the AWS CLI for use with LocalStack. This
+prevents the need for specifying `--endpoint-url` every-time the AWS CLI
+command is run. To install `awslocal`, run:
+`pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org awscli-local`
 :::
-### Examples of AWS services deployed using localstack
+
+:::  Examples of AWS services deployed using localstack
 Some examples of CLI commands and their corresponding outputs are shown below.
 ```commandline
 
