@@ -69,7 +69,7 @@ Make sure you have Docker desktop installed in your laptop and approved by your 
 #### Docker compose
 
 A sample docker-compose.yml file is shown below: 
-```commandline
+```yaml
     version: "3.8"
 
     services:
@@ -94,10 +94,7 @@ A sample docker-compose.yml file is shown below:
 ```
 
 
-From your command line, run the following command to start localstack: 
-```commandline
-   docker compose up
-```
+From the command line, run `docker compose up` from within the directory containing the docker-compose.yml file shown above to start localstack.
 
 ```commandline
     C:\Users\test\localstack-test>docker compose up
@@ -176,12 +173,12 @@ AWSlocal is a thin wrapper around the aws command line interface for use with Lo
 :::
 ### Examples of AWS services deployed using localstack
 Some examples of CLI commands and their corresponding outputs are shown below.
-#### API gateway
-  ```commandline
-  awslocal apigateway create-rest-api --name test-api
-  ```
 ```commandline
-     Response: 
+
+# Create the api gateway called test-api
+C:\Users\test\localstack-test> awslocal apigateway create-rest-api --name test-api
+
+Response: 
         {
             "id": "0zqyew47ie",
             "name": "test-api",
@@ -197,27 +194,27 @@ Some examples of CLI commands and their corresponding outputs are shown below.
             "tags": {},
             "disableExecuteApiEndpoint": false
         }
-```
-  ```commandline
-  PARENT_RESOURCE_ID=$(awslocal apigateway get-resources --rest-api-id 0zqyew47ie --query 'items[?path==`/`].id' --output text)
 
-  awslocal apigateway create-resource --rest-api-id 0zqyew47ie --parent-id  $PARENT_RESOURCE_ID --path-part "{test}
-  ```
-  ```commandline       
-     Response: 
+# Get the parent resource id to create an api gateway resource using the api gateway id from above
+C:\Users\test\localstack-test> PARENT_RESOURCE_ID=$(awslocal apigateway get-resources --rest-api-id 0zqyew47ie --query 'items[?path==`/`].id' --output text)
+
+# Create an API resource Gateway
+C:\Users\test\localstack-test> awslocal apigateway create-resource --rest-api-id 0zqyew47ie --parent-id $PARENT_RESOURCE_ID --path-part "{test}"
+
+Response: 
     {
         "id": "7z17qim7fw",
         "parentId": "d22pls3twh",
         "pathPart": "{test}",
         "path": "/{test}"
-}
-  ```
+    }
+```
         
 #### Lambda function
   ```commandline
-    awslocal lambda create-function --function-name test-function --runtime python3.7 --zip-file fileb://test.zip --handler test.lambda_handler --role test
-  ```
-  ```commandline
+  # Create a lambda function named test-function
+    C:\Users\test\localstack-test> awslocal lambda create-function --function-name test-function --runtime python3.7 --zip-file fileb://test.zip --handler test.lambda_handler --role test
+
      Response: 
     {
         "FunctionName": "test-function",
@@ -244,30 +241,25 @@ Some examples of CLI commands and their corresponding outputs are shown below.
 #### SQS
 
   ```commandline
-    awslocal sqs create-queue --queue-name test-queue 
-  ```
-  ```commandline
+    # Create an SQS queue named test-queue
+    C:\Users\test\localstack-test> awslocal sqs create-queue --queue-name test-queue
+
      Response: 
     {
         "QueueUrl": "http://localhost:4566/000000000000/test-queue"
     }
-  ```
 
-  ```commandline
-    awslocal sqs send-message --queue-url http://localhost:4566/000000000000/test-queue --message-body "test message." --delay-seconds 0
-  ```
-  ```commandline
+    # Send a message to the SQS created above.
+    C:\Users\test\localstack-test> awslocal sqs send-message --queue-url http://localhost:4566/000000000000/test-queue --message-body "test message." --delay-seconds 0
+
      Response: 
     {
       "MD5OfMessageBody": "5cbd04aaf0430ff7fac38ebd11b72083",
       "MessageId": "0d4d8a75-276d-9687-6604-975cc0a84c68"
   }
-  ```
-```commandline
-  awslocal sqs receive-message --queue-url http://localhost:4566/000000000000/test-queue --attribute-names All --message-attribute-names All
-```
+    # Receive the sent message from the SQS.
+    C:\Users\test\localstack-test> awslocal sqs receive-message --queue-url http://localhost:4566/000000000000/test-queue --attribute-names All --message-attribute-names All
 
-```commandline
      Response: 
     {
         "Messages": [
@@ -289,10 +281,9 @@ Some examples of CLI commands and their corresponding outputs are shown below.
 
 #### Secrets manager
 ```commandline
-  awslocal secretsmanager create-secret --name localstack-secret
-```
+    # Create a secret named localstack-secret in secrets manager
+    C:\Users\test\localstack-test> awslocal secretsmanager create-secret --name localstack-secret
 
-```commandline
       Response: 
     {
         "ARN": "arn:aws:secretsmanager:us-east-1:000000000000:secret:localstack-secret-PAnuzB",
@@ -404,7 +395,7 @@ Here is the output after running `terraform apply`
     Apply complete! Resources: 8 added, 0 changed, 0 destroyed.
 ```
 ### IDE for Localstack
-- Currently, there is an IDE named [Commandeer](https://getcommandeer.com/) that can be used to maintain localstack environments but requires to buy a premium version to use. This could be something to look into in the future if we plan to buy a premium version.
+- Currently, there is an IDE named [Commandeer](https://getcommandeer.com/) that can be used to maintain localstack environments but requires a licensed premium version of the software to use. This could be something to look into in the future if we plan to buy a premium version.
 
 ### Known Limitations
 - While commonly used AWS services are present, some more uncommon services are not.
@@ -420,3 +411,4 @@ Here is the output after running `terraform apply`
 - Meeting with Aafaque
 - https://github.com/localstack/localstack
 - [AppEEARS' Docker Implementation](https://git.cr.usgs.gov/LPDA/appeears/-/blob/feature/rds-setup/deployment/terraform/dev/main.tf)
+- https://registry.terraform.io/providers/hashicorp/aws/latest/docs/guides/custom-service-endpoints
