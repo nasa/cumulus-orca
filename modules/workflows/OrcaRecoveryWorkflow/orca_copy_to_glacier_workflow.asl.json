@@ -1,0 +1,70 @@
+{
+    "Comment": "On-Demand execution of copy_to_glacier.",
+    "StartAt": "CopyToGlacierCumulusTranslator",
+    "States": {
+        "CopyToGlacierCumulusTranslator": {
+            "Parameters": {
+                "cma": {
+                    "event.$": "$",
+                    "task_config": {
+                        "name": "fileName",
+                        "filepath": "key",
+                        "bucket": "bucket",
+                        "filename": "source"
+                    }
+                }
+            },
+            "Type": "Task",
+            "Resource": "${orca_lambda_copy_to_glacier_cumulus_translator_arn}",
+            "Retry": [
+                {
+                  "ErrorEquals": [
+                    "Lambda.ServiceException",
+                    "Lambda.AWSLambdaException",
+                    "Lambda.SdkClientException"
+                  ],
+                  "IntervalSeconds": 2,
+                  "MaxAttempts": 3,
+                  "BackoffRate": 2
+                }
+            ],
+            "Next": "CopyToGlacier"
+        },
+        "CopyToGlacier": {
+            "Parameters": {
+              "cma": {
+                "event.$": "$",
+                "task_config": {
+                  "granules": "{$.meta.processed_granules}",
+                  "buckets": "{$.meta.buckets}",
+                  "provider": "{$.meta.provider}",
+                  "collection": "{$.meta.collection}",
+                  "files_config": "{$.meta.collection.files}"
+                }
+              }
+            },
+            "Type": "Task",
+            "Resource": "${orca_lambda_copy_to_glacier_arn}",
+            "Retry": [
+              {
+                "ErrorEquals": [
+                  "Lambda.ServiceException",
+                  "Lambda.AWSLambdaException",
+                  "Lambda.SdkClientException"
+                ],
+                "IntervalSeconds": 2,
+                "MaxAttempts": 6,
+                "BackoffRate": 2
+              }
+            ],
+            "Next": "WorkflowSucceeded"
+        },
+        "WorkflowFailed": {
+          "Type": "Fail",
+          "Cause": "Workflow failed"
+        },
+        "WorkflowSucceeded": {
+          "Type": "Succeed"
+        }
+    }
+}
