@@ -172,7 +172,7 @@ command is run. To install `awslocal`, run:
 `pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org awscli-local`
 :::
 
-:::  Examples of AWS services deployed using localstack
+### Examples of AWS services deployed using localstack
 Some examples of CLI commands and their corresponding outputs are shown below.
 ```commandline
 
