@@ -60,22 +60,25 @@ the repository.
 
 To use the **shared_recovery** library in your lambda code base perform the following.
 
-1. Install the necessary python libraries shown below.
+1. The AWS environment variable "AWS_REGION_VAR" must be added to the lambda environment variable configuration 
+   if this shared library is used.
+
+2. Install the necessary python libraries shown below.
    - boto3==1.12.47
 
-2. Create an `orca_shared` directory and `__init__.py` dummy file.
+3. Create an `orca_shared` directory and `__init__.py` dummy file.
    ```bash
    cd tasks/<your task name>
    mkdir orca_shared
    touch orca_shared/__init__.py
    ```
-3. Copy the library file `shared_recovery.py` to the newly created `orca_shared`
+4. Copy the library file `shared_recovery.py` to the newly created `orca_shared`
    directory as seen below.
    ```bash
    cd tasks/<your task name>
    cp ../shared_libraries/database/shared_recovery.py orca_shared/
    ```
-4. The library can now be used in your python code via a normal import per the
+5. The library can now be used in your python code via a normal import per the
    examples seen below.
    ```python
    # Import the whole library
