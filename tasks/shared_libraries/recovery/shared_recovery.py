@@ -8,7 +8,6 @@ import boto3
 from typing import Dict, Any, Optional, List
 from datetime import datetime, timezone
 import os
-import boto3
 from cumulus_logger import CumulusLogger
 
 # instantiate CumulusLogger
@@ -47,7 +46,7 @@ def get_aws_region()-> str:
         message = "Runtime environment variable AWS_REGION is not set."
         logger.critical(message)
         raise Exception(message)
-    logger.info(f"Got environment variable for AWS_REGION_VAR = {aws_region}")
+    logger.debug(f"Got environment variable for AWS_REGION = {aws_region}")
     return aws_region
 
 def create_status_for_job(

@@ -60,7 +60,7 @@ the repository.
 
 To use the **shared_recovery** library in your lambda code base perform the following.
 
-1. Keep in mind that the shared library is dependent upon the AWS environment variable "AWS_REGION" and will throw an error if this variable is missing.
+1. Keep in mind that the shared library is dependent upon the AWS reserved runtime environment variable [AWS_REGION](https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html).
 
 2. Install the necessary python libraries shown below.
    - boto3==1.12.47
