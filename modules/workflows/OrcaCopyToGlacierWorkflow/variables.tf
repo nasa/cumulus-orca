@@ -48,19 +48,12 @@ variable "tags" {
 
 ## Variables unique to ORCA
 ## REQUIRED
-variable "orca_default_bucket" {
+variable "orca_lambda_copy_to_glacier_arn" {
   type        = string
-  description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
+  description = "AWS ARN for the copy_to_glacier lambda."
 }
 
-
-variable "orca_lambda_extract_filepaths_for_granule_arn" {
+variable "orca_lambda_copy_to_glacier_cumulus_translator_arn" {
   type        = string
-  description = "AWS ARN of the ORCA extract_filepaths_for_granule lambda"
-}
-
-
-variable "orca_lambda_request_files_arn" {
-  type        = string
-  description = "AWS ARN of the ORCA request_files lambda."
+  description = "AWS ARN for the orca_catalog_reporting lambda."
 }

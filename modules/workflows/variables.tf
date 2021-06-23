@@ -61,3 +61,13 @@ variable "orca_lambda_request_files_arn" {
   type        = string
   description = "AWS ARN of the ORCA request_files lambda."
 }
+
+variable "orca_lambda_copy_to_glacier_arn" {
+  type        = string
+  description = "AWS ARN for the copy_to_glacier lambda."
+}
+
+variable "orca_lambda_copy_to_glacier_cumulus_translator_arn" {
+  type        = string
+  description = "AWS ARN for the orca_catalog_reporting lambda."
+}
