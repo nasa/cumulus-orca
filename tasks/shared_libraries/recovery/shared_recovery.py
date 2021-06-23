@@ -42,7 +42,7 @@ def get_aws_region()-> str:
             Exception: Thrown if AWS region is empty or None.
     """
     logger.debug("Getting environment variable AWS_REGION value.")
-    aws_region = os.getenv("AWS_REGION_VAR", None)
+    aws_region = os.getenv("AWS_REGION", None)
     if aws_region is None or len(aws_region) == 0:
         message = "Runtime environment variable AWS_REGION is not set."
         logger.critical(message)
