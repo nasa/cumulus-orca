@@ -139,6 +139,7 @@ def create_status_for_job_and_files(job_id: str,
         job_completion_time = job_completion_time.isoformat().__str__()
 
     try:
+        LOGGER.debug(f"Creating recovery records for job_id {job_id}.")
         with engine.begin() as connection:
             connection.execute(create_job_sql(),
                                [{'job_id': job_id, 'granule_id': granule_id, 'status_id': job_status.value,
@@ -179,6 +180,7 @@ def update_status_for_file(job_id: str,
                        'job_id': job_id, 'granule_id': granule_id, 'filename': filename}
     job_parameters = {'job_id': job_id, 'granule_id': granule_id}
     try:
+        LOGGER.debug(f"Updating status for recovery record job_id {job_id} granule_id {granule_id} and file {filename}." )
         with engine.begin() as connection:
             connection.execute(update_file_sql(), file_parameters)
             connection.execute(update_job_sql(), job_parameters)
