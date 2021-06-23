@@ -90,7 +90,8 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     config = event['config']
 
     collection = config.get(CONFIG_COLLECTION_KEY)
-    exclude_file_types = collection.get(COLLECTION_META_KEY, {}).get(EXCLUDE_FILE_TYPES_KEY, [])
+    exclude_file_types = [] if collection is None else \
+        collection.get(COLLECTION_META_KEY, {}).get(EXCLUDE_FILE_TYPES_KEY, [])
 
     #TODO: Should look at bucket type orca and check for default
     #      Should also be flexible enough to handle input precedence order of

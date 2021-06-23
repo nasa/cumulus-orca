@@ -7,10 +7,13 @@
         "cma": {
           "event.$": "$",
           "task_config": {
-            "name": "fileName",
-            "filepath": "key",
-            "bucket": "bucket",
-            "filename": "source"
+            "file_mapping":
+            {
+              "name": "fileName",
+              "filepath": "key",
+              "bucket": "bucket",
+              "filename": "source"
+            }
           }
         }
       },
