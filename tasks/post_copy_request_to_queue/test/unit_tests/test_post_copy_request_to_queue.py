@@ -5,7 +5,7 @@ Description: unit tests for post_copy_request_to_queue.py
 """
 from unittest import TestCase
 import os
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, Mock
 import boto3
 from moto import mock_sqs
 from orca_shared import shared_recovery
@@ -63,12 +63,12 @@ class TestPostCopyRequestToQueue(TestCase):
             "RETRY_BACKOFF": "2",
             "DATABASE_PORT": "5432",
             "DATABASE_NAME": "disaster_recovery",
-            "DATABASE_USER": "rhassan",
+            "DATABASE_USER": "orcauser",
         },
         clear=True,
     )
-    @patch("database.single_query")
-    @patch("requests_db.get_dbconnect_info")
+    @patch("post_copy_request_to_queue.shared_db.get_user_connection")
+    @patch("post_copy_request_to_queue.shared_db.get_configuration")
     @patch("post_copy_request_to_queue.shared_recovery.post_entry_to_queue")
     @patch("post_copy_request_to_queue.shared_recovery.update_status_for_file")
     def test_task_happy_path(
@@ -82,12 +82,20 @@ class TestPostCopyRequestToQueue(TestCase):
         happy path. Mocks db_connect_info,single_query,
         post_entry_to_queue and update_status_for_file.
         """
-        mock_single_query.return_value = {
-            "job_id": "1",
-            "granule_id": "3",
-            "filename": "f1.doc",
-            "restore_destination": "s3://restore",
-        }
+        # mock_conn = MagicMock()
+        # mock_conn.execute.return_value.fetchall.return_value = [
+        # mock_single_query.begin.return_value.__enter__.return_value = mock_conn
+        # mock_conn.execute = Mock(return_value=[("1", "3", "f1.doc", "restore-bucket")])
+        mock_execute = Mock()
+        mock_execute.execute = Mock(
+            return_value=[("1", "3", "f1.doc", "restore-bucket")]
+        )
+        mock_enter = Mock()
+        mock_enter.__enter__ = Mock(return_value=mock_execute)
+        mock_engine = Mock()
+        mock_engine.begin = Mock(return_value=mock_enter)
+        mock_single_query.return_value = mock_engine
+
         record = self.event["Records"][0]
         new_data = {
             "job_id": "1",
@@ -210,8 +218,8 @@ class TestPostCopyRequestToQueue(TestCase):
                         handler(self.event, context=None)
                         self.assertEqual(ve.message, message)
 
-    @patch("database.single_query")
-    @patch("requests_db.get_dbconnect_info")
+    @patch("post_copy_request_to_queue.shared_db.get_user_connection")
+    @patch("post_copy_request_to_queue.shared_db.get_configuration")
     @patch("post_copy_request_to_queue.shared_recovery.update_status_for_file")
     @patch("post_copy_request_to_queue.shared_recovery.post_entry_to_queue")
     @patch("post_copy_request_to_queue.LOGGER")
@@ -226,7 +234,7 @@ class TestPostCopyRequestToQueue(TestCase):
         """
         mocks post_entry_to_queue to raise an exception.
         """
-        mock_single_query.return_value = {
+        mock_single_query.execute.return_value = {
             "job_id": "1",
             "granule_id": "3",
             "filename": "f1.doc",
@@ -252,13 +260,18 @@ class TestPostCopyRequestToQueue(TestCase):
             2,
         ]
         # calling the task function
-        self.assertRaises(Exception, task, record, *backoff_args)
         message = "Error sending message to recovery_queue_url for {new_data}"
-        # verify the logging captured matches the expected message
-        mock_LOGGER.critical.assert_called_once_with(message, new_data=str(new_data))
+        with self.assertRaises(Exception) as ex:
+            task(record, *backoff_args)
+            # Check the message from the exception
+            self.assertEquals(ex.message, message)
+            # verify the logging captured matches the expected message
+            mock_LOGGER.critical.assert_called_once_with(
+                message, new_data=str(new_data)
+            )
 
-    @patch("database.single_query")
-    @patch("requests_db.get_dbconnect_info")
+    @patch("post_copy_request_to_queue.shared_db.get_user_connection")
+    @patch("post_copy_request_to_queue.shared_db.get_configuration")
     @patch("post_copy_request_to_queue.shared_recovery.update_status_for_file")
     @patch("post_copy_request_to_queue.LOGGER")
     def test_task_update_status_for_file_exception(
@@ -271,7 +284,7 @@ class TestPostCopyRequestToQueue(TestCase):
         """
         mocks update_status_for_file to raise an exception.
         """
-        mock_single_query.return_value = {
+        mock_single_query.execute.return_value = {
             "job_id": "1",
             "granule_id": "3",
             "filename": "f1.doc",
@@ -299,10 +312,15 @@ class TestPostCopyRequestToQueue(TestCase):
         ]
         # calling the task function
         # calling the task function
-        self.assertRaises(Exception, task, record, *backoff_args)
         message = "Error sending message to db_queue_url for {new_data}"
-        # verify the logging captured matches the expected message
-        mock_LOGGER.critical.assert_called_once_with(message, new_data=str(new_data))
+        with self.assertRaises(Exception) as ex:
+            task(record, *backoff_args)
+            # Check the message from the exception
+            self.assertEquals(ex.message, message)
+            # verify the logging captured matches the expected message
+            mock_LOGGER.critical.assert_called_once_with(
+                message, new_data=str(new_data)
+            )
 
     def test_exponential_delay(self):
         """
