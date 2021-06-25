@@ -9,10 +9,12 @@ import os
 from typing import Dict, Any
 import time
 import random
+
 from orca_shared import shared_recovery
+from orca_shared import shared_db
+
 from cumulus_logger import CumulusLogger
-import requests_db
-import database
+from sqlalchemy import text
 
 # instantiate CumulusLogger
 LOGGER = CumulusLogger()
@@ -47,109 +49,147 @@ def task(
         or post to queue.
 
     """
-    # grab the key_path and bucketname from event
-    # We only expect one record.
+    # grab the key_path and bucket name from event
+    # We only expect one record from the event.
     key_path = record["s3"]["object"]["key"]
     bucket_name = record["s3"]["bucket"]["name"]
 
-    sql = """
-        SELECT
-            job_id, granule_id, filename, restore_destination
-        FROM
-            orca_recoverfile
-        WHERE
-            key_path = %s
-        AND
-            status_id = %d
-    """
-    # Gets the dbconnection info.
-    # query the db table
+    # Query the database and get the needed metadata to send to the SQS Queue
+    # for the copy_files_to_archive lambda and to update the status in the
+    # database.
     try:
-        db_connect_info = requests_db.get_dbconnect_info()
-        rows = database.single_query(
-            sql, db_connect_info, (key_path, shared_recovery.OrcaStatus.PENDING.value)
+        LOGGER.debug("Getting database connection information.")
+        db_connect_info = shared_db.get_configuration()
+        LOGGER.debug(
+            "Retrieved the following database connection info {info}",
+            info=db_connect_info,
         )
+
+        engine = shared_db.get_user_connection(db_connect_info)
+        LOGGER.debug("Querying database for metadata on {path}", path=key_path)
+
+        # It is possible to have multiple returns so we want to capture all of
+        # them to update status
+        rows = []
+        with engine.begin() as connection:
+            # Query for all rows that contain that key and have a status of
+            # PENDING
+            for row in connection.execute(get_metadata_sql(key_path)):
+                # Create dictionary for with the info needed for the
+                # copy_files_to_archive lambda
+                row_dict = {
+                    "job_id": row[0],
+                    "granule_id": row[1],
+                    "filename": row[2],
+                    "restore_destination": row[3],
+                    "source_key": key_path,
+                    "target_key": key_path,  # todo add a card to configure target_key in the future
+                    "source_bucket": bucket_name,
+                }
+                rows.append(row_dict)
+
+        # Check to make sure we found some metadata
         if len(rows) == 0:
             message = f"No metadata found for {key_path}"
             LOGGER.fatal(message)
             raise Exception(message)
-        # # convert db result to json
-        db_result_json = database.result_to_json(rows)
 
     except Exception:
         message = f"Unable to retrieve {key_path} metadata."
         LOGGER.error(message, exc_info=True)
         raise Exception(message)
 
-    # grab the parameters from the db in json format.
-    job_id = db_result_json["job_id"]
-    granule_id = db_result_json["granule_id"]
-    filename = db_result_json["filename"]
-    restore_destination = db_result_json["restore_destination"]
-
-    my_base_delay = retry_sleep_secs
-    # define the input body for copy_files_to_archive lambda
-    new_data = {
-        "job_id": job_id,
-        "granule_id": granule_id,
-        "filename": filename,
-        "source_key": key_path,
-        "target_key": key_path,  # todo add a card to configure target_key in the future
-        "restore_destination": restore_destination,
-        "source_bucket": bucket_name,
-    }
-
-    # post to DB-queue. Retry using exponential delay if it fails
-    for retry in range(max_retries + 1):
-        try:
-            shared_recovery.update_status_for_file(
-                job_id,
-                granule_id,
-                filename,
-                shared_recovery.OrcaStatus.STAGED,
-                None,
-                db_queue_url,
-            )
-            break
-        except Exception as ex:
-            # Can't use f"" because of '{}' bug in CumulusLogger.
-            LOGGER.error(
-                "Ran into error posting to SQS {db_queue_url} {retry} time(s) with exception {ex}",
-                db_queue_url=db_queue_url, retry=retry+1, ex=str(ex)
-            )
-            my_base_delay = exponential_delay(my_base_delay, retry_backoff)
-            continue
-    else:
-        message = "Error sending message to db_queue_url for {new_data}"
-        LOGGER.critical(
-            message, new_data=str(new_data)
-        )  # Cumulus will update this library in the future to be better behaved.
-        raise Exception(message.format(new_data=str(new_data)))
-
-    # resetting my_base_delay
     my_base_delay = retry_sleep_secs
 
-    # post to recovery queue. Retry using exponential delay if it fails
-    for retry in range(max_retries + 1):
-        try:
-            shared_recovery.post_entry_to_queue(
-                new_data, shared_recovery.RequestMethod.NEW_JOB, recovery_queue_url
-            )
-            break
-        except Exception as ex:
-            # Can't use f"" because of '{}' bug in CumulusLogger.
-            LOGGER.error(
-                "Ran into error posting to SQS {recovery_queue_url} {retry} time(s) with exception {ex}",
-                recovery_queue_url=recovery_queue_url, retry=retry+1, ex=str(ex)
-            )
-            my_base_delay = exponential_delay(my_base_delay, retry_backoff)
-            continue
-    else:
-        message = "Error sending message to recovery_queue_url for {new_data}"
-        LOGGER.critical(
-            message, new_data=str(new_data)
-        )  # Cumulus will update this library in the future to be better behaved.
-        raise Exception(message.format(new_data=str(new_data)))
+    # Iterate through the records. Usually we expect only 1 but we could get
+    # multiple.
+    for record in rows:
+        # Get the values needed for the call to update the status
+        job_id = record["job_id"]
+        granule_id = record["granule_id"]
+        filename = record["filename"]
+        restore_destination = record["restore_destination"]
+
+        # Make sure we update the status, retry if we fail.
+        for retry in range(max_retries + 1):
+            try:
+                shared_recovery.update_status_for_file(
+                    job_id,
+                    granule_id,
+                    filename,
+                    shared_recovery.OrcaStatus.STAGED,
+                    None,
+                    db_queue_url,
+                )
+                break
+            except Exception as ex:
+                # Can't use f"" because of '{}' bug in CumulusLogger.
+                LOGGER.error(
+                    "Ran into error posting to SQS {db_queue_url} {retry} time(s) with exception {ex}",
+                    db_queue_url=db_queue_url,
+                    retry=retry + 1,
+                    ex=str(ex),
+                )
+                my_base_delay = exponential_delay(my_base_delay, retry_backoff)
+                continue
+        else:
+            message = "Error sending message to db_queue_url for {record}"
+            LOGGER.critical(
+                message, new_data=str(record)
+            )  # Cumulus will update this library in the future to be better behaved.
+            raise Exception(message.format(new_data=str(record)))
+
+        # resetting my_base_delay
+        my_base_delay = retry_sleep_secs
+
+        # Post to recovery queue so data is copied back to proper Cumulus
+        # primary location. Retry using exponential delay if it fails.
+        for retry in range(max_retries + 1):
+            try:
+                shared_recovery.post_entry_to_queue(
+                    record, shared_recovery.RequestMethod.NEW_JOB, recovery_queue_url
+                )
+                break
+            except Exception as ex:
+                # Can't use f"" because of '{}' bug in CumulusLogger.
+                LOGGER.error(
+                    "Ran into error posting to SQS {recovery_queue_url} {retry} time(s) with exception {ex}",
+                    recovery_queue_url=recovery_queue_url,
+                    retry=retry + 1,
+                    ex=str(ex),
+                )
+                my_base_delay = exponential_delay(my_base_delay, retry_backoff)
+                continue
+        else:
+            message = "Error sending message to recovery_queue_url for {new_data}"
+            LOGGER.critical(
+                message, new_data=str(record)
+            )  # Cumulus will update this library in the future to be better behaved.
+            raise Exception(message.format(new_data=str(record)))
+
+
+def get_metadata_sql(key_path: str) -> text:
+    """
+    Query for finding metadata based on key_path and PENDING status.
+
+    Args:
+        key_path (str): s3 key for the file less the bucket name
+
+    Returns:
+        (sqlalchemy.text): SQL statement
+    """
+    return text(
+        f"""
+            SELECT
+                job_id, granule_id, filename, restore_destination
+            FROM
+                recovery_file
+            WHERE
+                key_path = '{key_path}'
+            AND
+                status_id = {shared_recovery.OrcaStatus.PENDING.value}
+        """
+    )
 
 
 # Define our exponential delay function
@@ -168,7 +208,7 @@ def exponential_delay(base_delay: int, exponential_backoff: int = 2) -> int:
     try:
         _base_delay = int(base_delay)
         _exponential_backoff = int(exponential_backoff)
-        delay = _base_delay + (random.randint(0, 1000) / 1000.0) # nosec
+        delay = _base_delay + (random.randint(0, 1000) / 1000.0)  # nosec
         LOGGER.debug(f"Performing back off retry sleeping {delay} seconds")
         time.sleep(delay)
         return _base_delay * _exponential_backoff
@@ -230,5 +270,6 @@ def handler(event: Dict[str, Any], context: None) -> None:
         backoff_args.append(env_var_value)
 
     record = event["Records"][0]
+    LOGGER.debug("Event passed = {event}", event=event)
     # calling the task function to perform the work
     task(record, *backoff_args)
