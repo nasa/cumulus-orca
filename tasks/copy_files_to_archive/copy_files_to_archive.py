@@ -131,7 +131,7 @@ def get_files_from_records(
     files = []
     for record in records:
         a_file = json.loads(record["body"])
-        LOGGER.debug(f"Validating {file}", file=a_file)
+        LOGGER.debug("Validating {file}", file=a_file)
         validate(a_file)
         a_file[FILE_SUCCESS_KEY] = False
         files.append(a_file)
