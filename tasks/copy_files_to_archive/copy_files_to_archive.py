@@ -4,13 +4,12 @@ Description:  Lambda function that copies files from one s3 bucket
 to another s3 bucket.
 """
 import json
-import logging
 import os
 import time
 from typing import Any, List, Dict, Optional, Union
-import fastjsonschema
 
 import boto3
+import fastjsonschema
 
 # noinspection PyPackageRequirements
 from botocore.client import BaseClient
@@ -18,6 +17,8 @@ from botocore.client import BaseClient
 # noinspection PyPackageRequirements
 from botocore.exceptions import ClientError
 from orca_shared import shared_recovery
+from cumulus_logger import CumulusLogger
+
 
 OS_ENVIRON_DB_QUEUE_URL_KEY = "DB_QUEUE_URL"
 
@@ -33,6 +34,8 @@ INPUT_SOURCE_KEY_KEY = "source_key"
 INPUT_TARGET_KEY_KEY = "target_key"
 INPUT_TARGET_BUCKET_KEY = "restore_destination"
 INPUT_SOURCE_BUCKET_KEY = "source_bucket"
+
+LOGGER = CumulusLogger()
 
 
 class CopyRequestError(Exception):
@@ -107,7 +110,7 @@ def task(
                 db_queue_url,
             )
     if any_error:
-        logging.error(f"File copy failed. {files}")
+        LOGGER.error("File copy failed. {files}", files=files)
         raise CopyRequestError(f"File copy failed. {files}")
 
 
@@ -128,6 +131,7 @@ def get_files_from_records(
     files = []
     for record in records:
         a_file = json.loads(record["body"])
+        LOGGER.debug(f"Validating {file}", file=a_file)
         validate(a_file)
         a_file[FILE_SUCCESS_KEY] = False
         files.append(a_file)
@@ -164,9 +168,9 @@ def copy_object(
         response = s3_cli.copy_object(
             CopySource=copy_source, Bucket=dest_bucket_name, Key=dest_object_name
         )
-        logging.debug(f"Copy response: {response}")
+        LOGGER.debug("Copy response: {response}", response=response)
     except ClientError as ex:
-        logging.error(ex)
+        LOGGER.error("Client error: {ex}", ex=ex)
         return ex.__str__()
     return None
 
@@ -199,27 +203,27 @@ def handler(
         The same dict that is returned for a successful copy will be included in the
         message, with 'success' = False for the files for which the copy failed.
     """
-    logging.basicConfig(
-        level=logging.INFO, format="%(levelname)s: %(asctime)s: %(message)s"
-    )
+    LOGGER.setMetadata(event, context)
     try:
         str_env_val = os.environ["COPY_RETRIES"]
         retries = int(str_env_val)
     except KeyError:
+        LOGGER.warn("Setting COPY_RETRIES value to a default of 2")
         retries = 2
 
     try:
         str_env_val = os.environ["COPY_RETRY_SLEEP_SECS"]
         retry_sleep_secs = float(str_env_val)
     except KeyError:
+        LOGGER.warn("Setting COPY_RETRY_SLEEP_SECS value to a default of 30")
         retry_sleep_secs = 30
 
     try:
         db_queue_url = str(os.environ[OS_ENVIRON_DB_QUEUE_URL_KEY])
     except KeyError as key_error:
-        logging.error(f"os.environ[{OS_ENVIRON_DB_QUEUE_URL_KEY}] not found.")
+        LOGGER.error(f"{OS_ENVIRON_DB_QUEUE_URL_KEY} environment value not found.")
         raise key_error
-    logging.debug(f"event: {event}")
+    LOGGER.debug("event: {event}", event=event)
     records = event["Records"]
 
     task(records, retries, retry_sleep_secs, db_queue_url)
