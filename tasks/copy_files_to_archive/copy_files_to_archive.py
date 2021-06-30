@@ -80,7 +80,7 @@ def task(
                         a_file[INPUT_JOB_ID_KEY],
                         a_file[INPUT_GRANULE_ID_KEY],
                         a_file[INPUT_FILENAME_KEY],
-                        shared_recovery.OrcaStatus.SUCCESS.value,
+                        shared_recovery.OrcaStatus.SUCCESS,
                         None,
                         db_queue_url,
                     )
@@ -102,7 +102,7 @@ def task(
                 a_file[INPUT_JOB_ID_KEY],
                 a_file[INPUT_GRANULE_ID_KEY],
                 a_file[INPUT_FILENAME_KEY],
-                shared_recovery.OrcaStatus.FAILED.value,
+                shared_recovery.OrcaStatus.FAILED,
                 a_file.get(FILE_ERROR_MESSAGE_KEY, None),
                 db_queue_url,
             )
