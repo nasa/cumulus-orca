@@ -166,7 +166,7 @@ variable "orca_recovery_retry_backoff" {
   default     = 2
 }
 
-variable "sqs_delay_time" {
+variable "sqs_delay_time_seconds" {
   type        = number
   description = "The time in seconds that the delivery of all messages in the queue will be delayed."
   default     = 0
@@ -180,14 +180,14 @@ variable "sqs_maximum_message_size" {
 }
 
 
-variable "staged_recovery_queue_message_retention_time" {
+variable "staged_recovery_queue_message_retention_time_seconds" {
   type        = number
   description = "The number of seconds staged-recovery-queue fifo SQS retains a message in seconds. Maximum value is 14 days."
   default     = 432000 #5 days
 }
 
 
-variable "status_update_queue_message_retention_time" {
+variable "status_update_queue_message_retention_time_seconds" {
   type        = number
   description = "The number of seconds status_update_queue SQS retains a message in seconds. Maximum value is 14 days."
   default     = 777600 #9 days

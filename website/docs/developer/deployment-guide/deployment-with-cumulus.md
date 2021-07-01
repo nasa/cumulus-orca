@@ -457,22 +457,22 @@ file. The variables can be set with proper values for your environment in the
 `cumulus-tf/terraform.tfvars` file. The default setting for each of the optional
 variables is shown in the table below.
 
-| Variable                                      | Type          | Definition                                                                                              | Default Value |
-| --------------------------------------        | ------------- | ---------------------------------------------------------------------------------------------------     | ------------- |
-| `database_port`                               | number        | Database port that PostgreSQL traffic will be allowed on.                                               | 5432 |
-| `orca_ingest_lambda_memory_size`              | number        | Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime.                              | 2240 |
-| `orca_ingest_lambda_timeout`                  | number        | Timeout in number of seconds for ORCA copy_to_glacier lambda.                                           | 600 |
-| `orca_recovery_buckets`                       | List (string) | List of bucket names that ORCA has permissions to restore data to. Default is all in the `buckets` map. | [] |
-| `orca_recovery_complete_filter_prefix`        | string        | Specifies object key name prefix by the Glacier Bucket trigger.                                         | "" |
-| `orca_recovery_expiration_days`               | number        | Number of days a recovered file will remain available for copy.                                         | 5 |
-| `orca_recovery_lambda_memory_size`            | number        | Amount of memory in MB the ORCA recovery lambda can use at runtime.                                     | 128 |
-| `orca_recovery_lambda_timeout`                | number        | Timeout in number of seconds for ORCA recovery lambdas.                                                 | 300 |
-| `orca_recovery_retry_limit`                   | number        | Maximum number of retries of a recovery failure before giving up.                                       | 3 |
-| `orca_recovery_retry_interval`                | number        | Number of seconds to wait between recovery failure retries.                                             | 1 |
-| `sqs_delay_time              `                | number        | Number of seconds that the delivery of all messages in the queue will be delayed.                       | 0 |
-| `sqs_maximum_message_size`                    | number        | The limit of how many bytes a message can contain before Amazon SQS rejects it.                         | 262144 |
-| `staged_recovery_queue_message_retention_time`| number        | Number of seconds the staged-recovery-queue fifo SQS retains a message.                                 | 432000 |
-| `status_update_queue_message_retention_time`  | number        | Number of seconds the status_update_queue fifo SQS retains a message.                                   | 777600 |
+| Variable                                        | Type                | Definition                                                                                              | Default Value |
+| -------------------------------------------     | ------------------  | ---------------------------------------------------------------------------------------------------     | ------------- |
+| `database_port`                                       | number        | Database port that PostgreSQL traffic will be allowed on.                                               | 5432 |
+| `orca_ingest_lambda_memory_size`                      | number        | Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime.                              | 2240 |
+| `orca_ingest_lambda_timeout`                          | number        | Timeout in number of seconds for ORCA copy_to_glacier lambda.                                           | 600 |
+| `orca_recovery_buckets`                               | List (string) | List of bucket names that ORCA has permissions to restore data to. Default is all in the `buckets` map. | [] |
+| `orca_recovery_complete_filter_prefix`                | string        | Specifies object key name prefix by the Glacier Bucket trigger.                                         | "" |
+| `orca_recovery_expiration_days`                       | number        | Number of days a recovered file will remain available for copy.                                         | 5 |
+| `orca_recovery_lambda_memory_size`                    | number        | Amount of memory in MB the ORCA recovery lambda can use at runtime.                                     | 128 |
+| `orca_recovery_lambda_timeout`                        | number        | Timeout in number of seconds for ORCA recovery lambdas.                                                 | 300 |
+| `orca_recovery_retry_limit`                           | number        | Maximum number of retries of a recovery failure before giving up.                                       | 3 |
+| `orca_recovery_retry_interval`                        | number        | Number of seconds to wait between recovery failure retries.                                             | 1 |
+| `sqs_delay_time_seconds`                              | number        | Number of seconds that the delivery of all messages in the queue will be delayed.                       | 0 |
+| `sqs_maximum_message_size`                            | number        | The limit of how many bytes a message can contain before Amazon SQS rejects it.                         | 262144 |
+| `staged_recovery_queue_message_retention_time_seconds`| number        | Number of seconds the staged-recovery-queue fifo SQS retains a message.                                 | 432000 |
+| `status_update_queue_message_retention_time_seconds`  | number        | Number of seconds the status_update_queue fifo SQS retains a message.                                   | 777600 |
 
 
 ## ORCA Module Outputs
@@ -482,31 +482,32 @@ accessed using terraform dot syntax in the format of `module.orca.variable_name`
 
 | Output Variable                               | Description                               |
 | --------------------------------------------- | ----------------------------------------- |
-| `orca_lambda_copy_to_glacier_arn`               | AWS ARN of the ORCA copy_to_glacier lambda. |
-| `orca_lambda_extract_filepaths_for_granule_arn` | AWS ARN of the ORCA extract_filepaths_for_granule lambda. |
-| `orca_lambda_request_files_arn`                 | AWS ARN of the ORCA request_files lambda. |
-| `orca_lambda_copy_files_to_archive_arn`         | AWS ARN of the ORCA copy_files_to_archive lambda. |
-| `orca_lambda_request_status_for_granule_arn`    | AWS ARN of the ORCA request_status_for_granule lambda. |
-| `orca_lambda_request_status_for_job_arn`        | AWS ARN of the ORCA request_status_for_job lambda. |
-| `orca_lambda_post_copy_request_to_queue_arn`    | AWS ARN of the ORCA post_copy_request_to_queue lambda. |
-| `orca_lambda_orca_catalog_reporting_arn`  | AWS ARN of the ORCA orca_catalog_reporting lambda. |
-| `orca_rds_address`                              | The address of the RDS instance |
-| `orca_rds_arn`                                  | The ARN of the RDS instance |
-| `orca_rds_availability_zone`                    | The availability zone of the RDS instance |
-| `orca_rds_endpoint`                             | The connection endpoint in address:port format |
-| `orca_rds_hosted_zone_id`                       | The canonical hosted zone ID of the DB instance (to be used in a Route 53 Alias record) |
-| `orca_rds_id`                                   | The RDS instance ID |
-| `orca_rds_resource_id`                          | The RDS Resource ID of this instance |
-| `orca_rds_status`                               | The RDS instance status |
-| `orca_rds_name`                                 | The database name |
-| `orca_rds_username`                             | The master username for the database |
-| `orca_rds_port`                                 | The database port |
-| `orca_subnet_group_id`                          | The ORCA database subnet group name |
-| `orca_subnet_group_arn`                         | The ARN of the ORCA database subnet group |
-| `orca_sqs_staged_recovery_queue_arn`            | The ARN of the staged-recovery-queue SQS |
-| `orca_sqs_staged_recovery_queue_id`             | The URL ID of the staged-recovery-queue SQS |
-| `orca_sqs_status_update_queue_arn`              | The ARN of the status-update-queue SQS |
-| `orca_sqs_status_update_queue_id`               | The URL ID of the status-update-queue SQS |
+| `orca_lambda_copy_to_glacier_cumulus_translator_arn` | AWS ARN of the ORCA orca_lambda_copy_to_glacier_cumulus_translator lambda. |
+| `orca_lambda_copy_to_glacier_arn`                    | AWS ARN of the ORCA copy_to_glacier lambda. |
+| `orca_lambda_extract_filepaths_for_granule_arn`      | AWS ARN of the ORCA extract_filepaths_for_granule lambda. |
+| `orca_lambda_request_files_arn`                      | AWS ARN of the ORCA request_files lambda. |
+| `orca_lambda_copy_files_to_archive_arn`              | AWS ARN of the ORCA copy_files_to_archive lambda. |
+| `orca_lambda_request_status_for_granule_arn`         | AWS ARN of the ORCA request_status_for_granule lambda. |
+| `orca_lambda_request_status_for_job_arn`             | AWS ARN of the ORCA request_status_for_job lambda. |
+| `orca_lambda_post_copy_request_to_queue_arn`         | AWS ARN of the ORCA post_copy_request_to_queue lambda. |
+| `orca_lambda_orca_catalog_reporting_arn`             | AWS ARN of the ORCA orca_catalog_reporting lambda. |
+| `orca_rds_address`                                   | The address of the RDS instance |
+| `orca_rds_arn`                                       | The ARN of the RDS instance |
+| `orca_rds_availability_zone`                         | The availability zone of the RDS instance |
+| `orca_rds_endpoint`                                  | The connection endpoint in address:port format |
+| `orca_rds_hosted_zone_id`                            | The canonical hosted zone ID of the DB instance (to be used in a Route 53 Alias record) |
+| `orca_rds_id`                                        | The RDS instance ID |
+| `orca_rds_resource_id`                               | The RDS Resource ID of this instance |
+| `orca_rds_status`                                    | The RDS instance status |
+| `orca_rds_name`                                      | The database name |
+| `orca_rds_username`                                  | The master username for the database |
+| `orca_rds_port`                                      | The database port |
+| `orca_subnet_group_id`                               | The ORCA database subnet group name |
+| `orca_subnet_group_arn`                              | The ARN of the ORCA database subnet group |
+| `orca_sqs_staged_recovery_queue_arn`                 | The ARN of the staged-recovery-queue SQS |
+| `orca_sqs_staged_recovery_queue_id`                  | The URL ID of the staged-recovery-queue SQS |
+| `orca_sqs_status_update_queue_arn`                   | The ARN of the status-update-queue SQS |
+| `orca_sqs_status_update_queue_id`                    | The URL ID of the status-update-queue SQS |
 
 
 ## Deploy ORCA with Terraform

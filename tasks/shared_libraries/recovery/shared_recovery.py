@@ -8,6 +8,8 @@ import json
 from enum import Enum
 from typing import Dict, Any, Optional, List
 from datetime import datetime, timezone
+import os
+from cumulus_logger import CumulusLogger
 
 # Third party libraries
 from cumulus_logger import CumulusLogger
@@ -16,7 +18,6 @@ import boto3
 
 # Set Cumulus LOGGER
 LOGGER = CumulusLogger(name="ORCA")
-
 
 class RequestMethod(Enum):
     """
@@ -39,6 +40,22 @@ class OrcaStatus(Enum):
     FAILED = 3
     SUCCESS = 4
 
+def get_aws_region()-> str:
+    """
+    Gets AWS region variable from the runtime environment variable.
+        Returns:
+            The AWS region variable.
+        Raises:
+            Exception: Thrown if AWS region is empty or None.
+    """
+    LOGGER.debug("Getting environment variable AWS_REGION value.")
+    aws_region = os.getenv("AWS_REGION", None)
+    if aws_region is None or len(aws_region) == 0:
+        message = "Runtime environment variable AWS_REGION is not set."
+        LOGGER.critical(message)
+        raise Exception(message)
+    LOGGER.debug(f"Got environment variable for AWS_REGION = {aws_region}")
+    return aws_region
 
 def create_status_for_job(
     job_id: str,
@@ -139,7 +156,7 @@ def post_entry_to_queue(
     # higher up. Setting this to us-west-2 initially since that is where
     # EOSDIS runs from normally. SEE ORCA-203 https://bugs.earthdata.nasa.ov/browse/ORCA-203
     LOGGER.debug("Creating SQS resource for {db_queue_url}", db_queue_url=db_queue_url)
-    mysqs_resource = boto3.resource("sqs", region_name="us-west-2")
+    mysqs_resource = boto3.resource("sqs", region_name= get_aws_region())
     mysqs = mysqs_resource.Queue(db_queue_url)
 
     # Create hash for De-duplication ID max size is 128 characters
