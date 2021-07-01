@@ -94,10 +94,10 @@ def task(
             LOGGER.fatal(message)
             raise Exception(message)
 
-    except Exception:
-        message = f"Unable to retrieve {key_path} metadata."
-        LOGGER.error(message, exc_info=True)
-        raise Exception(message)
+    except Exception as ex:
+        message = "Unable to retrieve {key_path} metadata. Exception {ex} encountered."
+        LOGGER.error(message, key_path=key_path, ex=ex, exc_info=True)
+        raise Exception(message.format(key_path=key_path, ex=ex))
 
     my_base_delay = retry_sleep_secs
 
