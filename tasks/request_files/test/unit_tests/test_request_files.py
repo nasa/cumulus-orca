@@ -454,7 +454,7 @@ class TestRequestFiles(unittest.TestCase):
         mock_object_exists: MagicMock,
         mock_process_granule: MagicMock,
         mock_sleep: MagicMock,
-        mock_create_status_for_job: MagicMock
+        mock_create_status_for_job: MagicMock,
     ):
         """
         A return of 'false' from object_exists should ignore the file and continue.
@@ -475,12 +475,12 @@ class TestRequestFiles(unittest.TestCase):
         }
         expected_file0_output = {
             request_files.FILE_SUCCESS_KEY: False,
-            'filename': file_key_0,
-            'key_path': file_key_0,
-            'restore_destination': file_dest_bucket_0,
-            'status_id': OrcaStatus.PENDING.value,
-            'request_time': mock.ANY,
-            'last_update': mock.ANY
+            "filename": file_key_0,
+            "key_path": file_key_0,
+            "restore_destination": file_dest_bucket_0,
+            "status_id": OrcaStatus.PENDING.value,
+            "request_time": mock.ANY,
+            "last_update": mock.ANY,
         }
         file_1 = {
             request_files.FILE_KEY_KEY: file_key_1,
@@ -488,12 +488,12 @@ class TestRequestFiles(unittest.TestCase):
         }
         expected_file1_output = {
             request_files.FILE_SUCCESS_KEY: False,
-            'filename': file_key_1,
-            'key_path': file_key_1,
-            'restore_destination': file_dest_bucket_1,
-            'status_id': OrcaStatus.PENDING.value,
-            'request_time': mock.ANY,
-            'last_update': mock.ANY
+            "filename": file_key_1,
+            "key_path": file_key_1,
+            "restore_destination": file_dest_bucket_1,
+            "status_id": OrcaStatus.PENDING.value,
+            "request_time": mock.ANY,
+            "last_update": mock.ANY,
         }
         expected_input_granule_files = [expected_file0_output, expected_file1_output]
         granule = {
@@ -551,7 +551,7 @@ class TestRequestFiles(unittest.TestCase):
                 "restore_destination": file_dest_bucket_0,
                 "status_id": request_files.shared_recovery.OrcaStatus.PENDING.value,
                 "request_time": mock.ANY,
-                "last_update": mock.ANY
+                "last_update": mock.ANY,
             },
             {
                 "success": False,
@@ -560,10 +560,12 @@ class TestRequestFiles(unittest.TestCase):
                 "restore_destination": file_dest_bucket_1,
                 "status_id": request_files.shared_recovery.OrcaStatus.PENDING.value,
                 "request_time": mock.ANY,
-                "last_update": mock.ANY
+                "last_update": mock.ANY,
             },
         ]
-        mock_create_status_for_job.assert_called_once_with(job_id, granule_id, glacier_bucket, files_all, db_queue_url)
+        mock_create_status_for_job.assert_called_once_with(
+            job_id, granule_id, glacier_bucket, files_all, db_queue_url
+        )
         mock_process_granule.assert_has_calls(
             [
                 call(
@@ -593,9 +595,7 @@ class TestRequestFiles(unittest.TestCase):
     @patch("time.sleep")
     @patch("request_files.restore_object")
     def test_process_granule_minimal_path(
-        self,
-        mock_restore_object: MagicMock,
-        mock_sleep: MagicMock
+        self, mock_restore_object: MagicMock, mock_sleep: MagicMock
     ):
         mock_s3 = Mock()
         max_retries = randint(10, 999)  # nosec
@@ -682,9 +682,7 @@ class TestRequestFiles(unittest.TestCase):
     @patch("time.sleep")
     @patch("request_files.restore_object")
     def test_process_granule_one_client_error_retries(
-        self,
-        mock_restore_object: MagicMock,
-        mock_sleep: MagicMock
+        self, mock_restore_object: MagicMock, mock_sleep: MagicMock
     ):
         mock_s3 = Mock()
         max_retries = 5
@@ -774,7 +772,7 @@ class TestRequestFiles(unittest.TestCase):
         self,
         mock_logger_error: MagicMock,
         mock_restore_object: MagicMock,
-        mock_sleep: MagicMock
+        mock_sleep: MagicMock,
     ):
         mock_s3 = Mock()
         max_retries = randint(3, 20)  # nosec
@@ -1219,31 +1217,6 @@ class TestRequestFiles(unittest.TestCase):
             mock_post_entry_to_queue.assert_called
             return
         self.fail(f"failed post to status queue should throw exception.")
-
-    def test_task_two_granules(self):
-        """
-        Test two granules with one file each - successful.  todo: Invalid description/title.
-        """
-        granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
-        exp_event = {
-            "input": {
-                "granules": [
-                    {"granuleId": granule_id, "keys": [KEY1]},
-                    {"granuleId": granule_id, "keys": [KEY2]},
-                ]
-            },
-            "config": {"glacier-bucket": "my-bucket"},
-            "job_id": uuid.uuid4().__str__(),
-        }
-
-        exp_err = (
-            "request_files can only accept 1 granule in the list. This input contains 2"
-        )
-        try:
-            request_files.task(exp_event, self.context)
-            self.fail("RestoreRequestError expected")
-        except request_files.RestoreRequestError as roe:
-            self.assertEqual(exp_err, str(roe))
 
     @patch("request_files.shared_recovery.post_entry_to_queue")
     @patch("boto3.client")

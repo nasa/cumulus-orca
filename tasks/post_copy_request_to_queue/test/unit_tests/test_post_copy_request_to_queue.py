@@ -261,7 +261,7 @@ class TestPostCopyRequestToQueue(TestCase):
         with self.assertRaises(Exception) as ex:
             task(record, *backoff_args)
             # Check the message from the exception
-        self.assertEquals(str.format(message, new_data=new_data), ex.exception.args[0])
+        self.assertEqual(str.format(message, new_data=new_data), ex.exception.args[0])
         # verify the logging captured matches the expected message
         mock_LOGGER.critical.assert_called_once_with(
             message, new_data=str(new_data)
@@ -317,7 +317,7 @@ class TestPostCopyRequestToQueue(TestCase):
         with self.assertRaises(Exception) as ex:
             task(record, *backoff_args)
         # Check the message from the exception
-        self.assertEquals(str.format(message, record=new_data), ex.exception.args[0])
+        self.assertEqual(str.format(message, record=new_data), ex.exception.args[0])
         # verify the logging captured matches the expected message
         mock_LOGGER.critical.assert_called_once_with(
             message, new_data=str(new_data)
@@ -347,7 +347,7 @@ class TestPostCopyRequestToQueue(TestCase):
     def test_get_metadata_sql_happy_path(self):
         key_path = uuid.uuid4().__str__()
         result = post_copy_request_to_queue.get_metadata_sql(key_path)
-        self.assertEquals(f"""
+        self.assertEqual(f"""
             SELECT
                 job_id, granule_id, filename, restore_destination
             FROM
