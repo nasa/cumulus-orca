@@ -137,7 +137,7 @@ def task(
             LOGGER.critical(
                 message, new_data=str(record)
             )  # Cumulus will update this library in the future to be better behaved.
-            raise Exception(message.format(new_data=str(record)))
+            raise Exception(message.format(record=str(record)))
 
         # resetting my_base_delay
         my_base_delay = retry_sleep_secs

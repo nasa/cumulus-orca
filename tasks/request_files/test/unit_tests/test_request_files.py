@@ -10,6 +10,8 @@ import uuid
 from random import randint, uniform
 from unittest import mock
 from unittest.mock import patch, MagicMock, call, Mock
+
+from orca_shared.shared_recovery import OrcaStatus
 from test.request_helpers import LambdaContextMock, create_handler_event
 
 # noinspection PyPackageRequirements
@@ -71,10 +73,10 @@ class TestRequestFiles(unittest.TestCase):
                 request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
             },
         }
-        max_retries = randint(0, 99999)  # nosec
-        retry_sleep_secs = uniform(0, 99999)  # nosec
+        max_retries = randint(0, 99)  # nosec
+        retry_sleep_secs = uniform(0, 99)  # nosec
         retrieval_type = "Bulk"
-        exp_days = randint(0, 99999)  # nosec
+        exp_days = randint(0, 99)  # nosec
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
 
         os.environ["DB_QUEUE_URL"] = db_queue_url
@@ -118,9 +120,9 @@ class TestRequestFiles(unittest.TestCase):
                 request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
             },
         }
-        retry_sleep_secs = uniform(0, 99999)  # nosec
+        retry_sleep_secs = uniform(0, 99)  # nosec
         retrieval_type = "Bulk"
-        exp_days = randint(0, 99999)  # nosec
+        exp_days = randint(0, 99)  # nosec
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
 
         os.environ["DB_QUEUE_URL"] = db_queue_url
@@ -161,9 +163,9 @@ class TestRequestFiles(unittest.TestCase):
                 request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
             },
         }
-        max_retries = randint(0, 99999)  # nosec
+        max_retries = randint(0, 99)  # nosec
         retrieval_type = "Bulk"
-        exp_days = randint(0, 99999)  # nosec
+        exp_days = randint(0, 99)  # nosec
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
         os.environ["DB_QUEUE_URL"] = db_queue_url
 
@@ -204,9 +206,9 @@ class TestRequestFiles(unittest.TestCase):
                 request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
             },
         }
-        max_retries = randint(0, 99999)  # nosec
-        retry_sleep_secs = uniform(0, 99999)  # nosec
-        exp_days = randint(0, 99999)  # nosec
+        max_retries = randint(0, 99)  # nosec
+        retry_sleep_secs = uniform(0, 99)  # nosec
+        exp_days = randint(0, 99)  # nosec
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
         os.environ["DB_QUEUE_URL"] = db_queue_url
 
@@ -249,10 +251,10 @@ class TestRequestFiles(unittest.TestCase):
                 request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
             },
         }
-        max_retries = randint(0, 99999)  # nosec
-        retry_sleep_secs = uniform(0, 99999)  # nosec
+        max_retries = randint(0, 99)  # nosec
+        retry_sleep_secs = uniform(0, 99)  # nosec
         retrieval_type = "Nope"
-        exp_days = randint(0, 99999)  # nosec
+        exp_days = randint(0, 99)  # nosec
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
 
         os.environ["DB_QUEUE_URL"] = db_queue_url
@@ -296,8 +298,8 @@ class TestRequestFiles(unittest.TestCase):
                 request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
             },
         }
-        max_retries = randint(0, 99999)  # nosec
-        retry_sleep_secs = uniform(0, 99999)  # nosec
+        max_retries = randint(0, 99)  # nosec
+        retry_sleep_secs = uniform(0, 99)  # nosec
         retrieval_type = "Bulk"
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
 
@@ -338,10 +340,10 @@ class TestRequestFiles(unittest.TestCase):
                 request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
             },
         }
-        max_retries = randint(0, 99999)  # nosec
-        retry_sleep_secs = uniform(0, 99999)  # nosec
+        max_retries = randint(0, 99)  # nosec
+        retry_sleep_secs = uniform(0, 99)  # nosec
         retrieval_type = "Bulk"
-        exp_days = randint(0, 99999)  # nosec
+        exp_days = randint(0, 99)  # nosec
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
         job_id = uuid.uuid4()
 
@@ -390,10 +392,10 @@ class TestRequestFiles(unittest.TestCase):
         os.environ[
             request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY
         ] = glacier_bucket
-        max_retries = randint(0, 99999)  # nosec
-        retry_sleep_secs = uniform(0, 99999)  # nosec
+        max_retries = randint(0, 99)  # nosec
+        retry_sleep_secs = uniform(0, 99)  # nosec
         retrieval_type = "Bulk"
-        exp_days = randint(0, 99999)  # nosec
+        exp_days = randint(0, 99)  # nosec
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
 
         os.environ["DB_QUEUE_URL"] = db_queue_url
@@ -431,143 +433,176 @@ class TestRequestFiles(unittest.TestCase):
         try:
             request_files.inner_task(
                 {request_files.EVENT_CONFIG_KEY: dict()},
-                randint(0, 99999),  # nosec
-                randint(0, 99999),  # nosec
+                randint(0, 99),  # nosec
+                randint(0, 99),  # nosec
                 uuid.uuid4().__str__(),
-                randint(0, 99999),  # nosec
+                randint(0, 99),  # nosec
                 "https://db.queue.url",
             )
             self.fail("Error not raised.")
         except request_files.RestoreRequestError:
             pass
 
-    # This seems to cause the tests to hang indefinetly. Commented out for now.
-    #    @patch("request_files.process_granule")
-    #    @patch("request_files.object_exists")
-    #    @patch("boto3.client")
-    #    def test_inner_task_missing_files_do_not_halt(
-    #        self,
-    #        mock_boto3_client: MagicMock,
-    #        mock_object_exists: MagicMock,
-    #        mock_process_granule: MagicMock,
-    #    ):
-    #        """
-    #        A return of 'false' from object_exists should ignore the file and continue.
-    #        """
-    #        glacier_bucket = uuid.uuid4().__str__()
-    #        file_key_0 = uuid.uuid4().__str__()
-    #        file_key_1 = uuid.uuid4().__str__()
-    #        missing_file_key = uuid.uuid4().__str__()
-    #        file_dest_bucket_0 = uuid.uuid4().__str__()
-    #        file_dest_bucket_1 = uuid.uuid4().__str__()
-    #        missing_file_dest_bucket = uuid.uuid4().__str__()
-    #        job_id = uuid.uuid4().__str__()
-    #        granule_id = uuid.uuid4().__str__()
-    #        db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
-    #        file_0 = {
-    #            request_files.FILE_KEY_KEY: file_key_0,
-    #            request_files.FILE_DEST_BUCKET_KEY: file_dest_bucket_0,
-    #        }
-    #        expected_file0_output = file_0.copy()
-    #        # noinspection PyTypeChecker
-    #        expected_file0_output[request_files.FILE_SUCCESS_KEY] = False
-    #        expected_file0_output[request_files.FILE_ERROR_MESSAGE_KEY] = ""
-    #        file_1 = {
-    #            request_files.FILE_KEY_KEY: file_key_1,
-    #            request_files.FILE_DEST_BUCKET_KEY: file_dest_bucket_1,
-    #        }
-    #        expected_file1_output = file_1.copy()
-    #        # noinspection PyTypeChecker
-    #        expected_file1_output[request_files.FILE_SUCCESS_KEY] = False
-    #        expected_file1_output[request_files.FILE_ERROR_MESSAGE_KEY] = ""
-    #        expected_input_granule_files = [expected_file0_output, expected_file1_output]
-    #        granule = {
-    #            request_files.GRANULE_GRANULE_ID_KEY: granule_id,
-    #            request_files.GRANULE_KEYS_KEY: [
-    #                file_0,
-    #                {
-    #                    request_files.FILE_KEY_KEY: missing_file_key,
-    #                    request_files.FILE_DEST_BUCKET_KEY: missing_file_dest_bucket,
-    #                },
-    #                file_1,
-    #            ],
-    #        }
-    #        expected_input_granule = granule.copy()
-    #        expected_input_granule[
-    #            request_files.GRANULE_RECOVER_FILES_KEY
-    #        ] = expected_input_granule_files
-    #        event = {
-    #            request_files.EVENT_CONFIG_KEY: {
-    #                request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
-    #            },
-    #            request_files.EVENT_INPUT_KEY: {
-    #                request_files.INPUT_GRANULES_KEY: [granule],
-    #                request_files.INPUT_JOB_ID_KEY: job_id,
-    #            },
-    #        }
-    #        max_retries = randint(0, 99999)  # nosec
-    #        retry_sleep_secs = randint(0, 99999)  # nosec
-    #        retrieval_type = uuid.uuid4().__str__()
-    #        restore_expire_days = randint(0, 99999)  # nosec
-    #        mock_s3_cli = mock_boto3_client("s3")
-    #
-    #        # noinspection PyUnusedLocal
-    #        def object_exists_return_func(
-    #            input_s3_cli, input_glacier_bucket, input_file_key
-    #        ):
-    #            return input_file_key in [file_key_0, file_key_1]
-    #
-    #        mock_object_exists.side_effect = object_exists_return_func
-    #
-    #        result = request_files.inner_task(
-    #            event,
-    #            max_retries,
-    #            retry_sleep_secs,
-    #            retrieval_type,
-    #            restore_expire_days,
-    #            db_queue_url,
-    #        )
-    #        mock_process_granule.assert_has_calls(
-    #            [
-    #                call(
-    #                    mock_s3_cli,
-    #                    expected_input_granule,
-    #                    glacier_bucket,
-    #                    restore_expire_days,
-    #                    max_retries,
-    #                    retry_sleep_secs,
-    #                    retrieval_type,
-    #                    job_id,
-    #                    db_queue_url,
-    #                )
-    #            ]
-    #        )
-    #        self.assertEqual(
-    #            1, mock_process_granule.call_count
-    #        )  # I'm hoping that we can remove the 'one granule' limit.
-    #        self.assertEqual(
-    #            {
-    #                request_files.INPUT_GRANULES_KEY: [expected_input_granule],
-    #                request_files.INPUT_JOB_ID_KEY: job_id,
-    #            },
-    #            result,
-    #        )
-
     @patch("request_files.shared_recovery.create_status_for_job")
+    @patch("time.sleep")
+    @patch("request_files.process_granule")
+    @patch("request_files.object_exists")
+    @patch("boto3.client")
+    def test_inner_task_missing_files_do_not_halt(
+        self,
+        mock_boto3_client: MagicMock,
+        mock_object_exists: MagicMock,
+        mock_process_granule: MagicMock,
+        mock_sleep: MagicMock,
+        mock_create_status_for_job: MagicMock
+    ):
+        """
+        A return of 'false' from object_exists should ignore the file and continue.
+        """
+        glacier_bucket = uuid.uuid4().__str__()
+        file_key_0 = uuid.uuid4().__str__()
+        file_key_1 = uuid.uuid4().__str__()
+        missing_file_key = uuid.uuid4().__str__()
+        file_dest_bucket_0 = uuid.uuid4().__str__()
+        file_dest_bucket_1 = uuid.uuid4().__str__()
+        missing_file_dest_bucket = uuid.uuid4().__str__()
+        job_id = uuid.uuid4().__str__()
+        granule_id = uuid.uuid4().__str__()
+        db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
+        file_0 = {
+            request_files.FILE_KEY_KEY: file_key_0,
+            request_files.FILE_DEST_BUCKET_KEY: file_dest_bucket_0,
+        }
+        expected_file0_output = {
+            request_files.FILE_SUCCESS_KEY: False,
+            'filename': file_key_0,
+            'key_path': file_key_0,
+            'restore_destination': file_dest_bucket_0,
+            'status_id': OrcaStatus.PENDING.value,
+            'request_time': mock.ANY,
+            'last_update': mock.ANY
+        }
+        file_1 = {
+            request_files.FILE_KEY_KEY: file_key_1,
+            request_files.FILE_DEST_BUCKET_KEY: file_dest_bucket_1,
+        }
+        expected_file1_output = {
+            request_files.FILE_SUCCESS_KEY: False,
+            'filename': file_key_1,
+            'key_path': file_key_1,
+            'restore_destination': file_dest_bucket_1,
+            'status_id': OrcaStatus.PENDING.value,
+            'request_time': mock.ANY,
+            'last_update': mock.ANY
+        }
+        expected_input_granule_files = [expected_file0_output, expected_file1_output]
+        granule = {
+            request_files.GRANULE_GRANULE_ID_KEY: granule_id,
+            request_files.GRANULE_KEYS_KEY: [
+                file_0,
+                {
+                    request_files.FILE_KEY_KEY: missing_file_key,
+                    request_files.FILE_DEST_BUCKET_KEY: missing_file_dest_bucket,
+                },
+                file_1,
+            ],
+        }
+        expected_input_granule = granule.copy()
+        expected_input_granule[
+            request_files.GRANULE_RECOVER_FILES_KEY
+        ] = expected_input_granule_files
+        event = {
+            request_files.EVENT_CONFIG_KEY: {
+                request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
+            },
+            request_files.EVENT_INPUT_KEY: {
+                request_files.INPUT_GRANULES_KEY: [granule],
+                request_files.INPUT_JOB_ID_KEY: job_id,
+            },
+        }
+        max_retries = randint(0, 99)  # nosec
+        retry_sleep_secs = randint(0, 99)  # nosec
+        retrieval_type = uuid.uuid4().__str__()
+        restore_expire_days = randint(0, 99)  # nosec
+        mock_s3_cli = mock_boto3_client("s3")
+
+        # noinspection PyUnusedLocal
+        def object_exists_return_func(
+            input_s3_cli, input_glacier_bucket, input_file_key
+        ):
+            return input_file_key in [file_key_0, file_key_1]
+
+        mock_object_exists.side_effect = object_exists_return_func
+
+        result = request_files.inner_task(
+            event,
+            max_retries,
+            retry_sleep_secs,
+            retrieval_type,
+            restore_expire_days,
+            db_queue_url,
+        )
+
+        files_all = [
+            {
+                "success": False,
+                "filename": file_key_0,
+                "key_path": file_key_0,
+                "restore_destination": file_dest_bucket_0,
+                "status_id": request_files.shared_recovery.OrcaStatus.PENDING.value,
+                "request_time": mock.ANY,
+                "last_update": mock.ANY
+            },
+            {
+                "success": False,
+                "filename": file_key_1,
+                "key_path": file_key_1,
+                "restore_destination": file_dest_bucket_1,
+                "status_id": request_files.shared_recovery.OrcaStatus.PENDING.value,
+                "request_time": mock.ANY,
+                "last_update": mock.ANY
+            },
+        ]
+        mock_create_status_for_job.assert_called_once_with(job_id, granule_id, glacier_bucket, files_all, db_queue_url)
+        mock_process_granule.assert_has_calls(
+            [
+                call(
+                    mock_s3_cli,
+                    expected_input_granule,
+                    glacier_bucket,
+                    restore_expire_days,
+                    max_retries,
+                    retry_sleep_secs,
+                    retrieval_type,
+                    job_id,
+                    db_queue_url,
+                )
+            ]
+        )
+        self.assertEqual(
+            1, mock_process_granule.call_count
+        )  # I'm hoping that we can remove the 'one granule' limit.
+        self.assertEqual(
+            {
+                request_files.INPUT_GRANULES_KEY: [expected_input_granule],
+                request_files.INPUT_JOB_ID_KEY: job_id,
+            },
+            result,
+        )
+
     @patch("time.sleep")
     @patch("request_files.restore_object")
     def test_process_granule_minimal_path(
         self,
         mock_restore_object: MagicMock,
-        mock_sleep: MagicMock,
-        mock_create_status_for_job: MagicMock,
+        mock_sleep: MagicMock
     ):
         mock_s3 = Mock()
         max_retries = randint(10, 999)  # nosec
         glacier_bucket = uuid.uuid4().__str__()
-        retry_sleep_secs = randint(0, 99999)  # nosec
+        retry_sleep_secs = randint(0, 99)  # nosec
         retrieval_type = uuid.uuid4().__str__()
-        restore_expire_days = randint(0, 99999)  # nosec
+        restore_expire_days = randint(0, 99)  # nosec
         granule_id = uuid.uuid4().__str__()
         file_name_0 = uuid.uuid4().__str__()
         dest_bucket_0 = uuid.uuid4().__str__()
@@ -580,17 +615,17 @@ class TestRequestFiles(unittest.TestCase):
             request_files.GRANULE_GRANULE_ID_KEY: granule_id,
             request_files.GRANULE_RECOVER_FILES_KEY: [
                 {
+                    "success": False,
                     "filename": os.path.basename(file_name_0),
                     "key_path": file_name_0,
                     "restore_destination": dest_bucket_0,
-                    "success": False,
                     "status_id": 1,
                 },
                 {
+                    "success": False,
                     "filename": os.path.basename(file_name_1),
                     "key_path": file_name_1,
                     "restore_destination": dest_bucket_1,
-                    "success": False,
                     "status_id": 1,
                 },
             ],
@@ -619,55 +654,6 @@ class TestRequestFiles(unittest.TestCase):
             ]
         )
 
-        files_0 = [
-            {
-                "filename": file_name_0,
-                "key_path": file_name_0,
-                "restore_destination": dest_bucket_0,
-                "status_id": request_files.shared_recovery.OrcaStatus.PENDING.value,
-                "error_message": None,
-                "request_time": mock.ANY,
-                "last_update": mock.ANY,
-                "completion_time": None,
-            },
-        ]
-
-        files_1 = [
-            {
-                "filename": file_name_1,
-                "key_path": file_name_1,
-                "restore_destination": dest_bucket_1,
-                "status_id": request_files.shared_recovery.OrcaStatus.PENDING.value,
-                "error_message": None,
-                "request_time": mock.ANY,
-                "last_update": mock.ANY,
-                "completion_time": None,
-            },
-        ]
-
-        files_all = [
-            {
-                "filename": file_name_0,
-                "key_path": file_name_0,
-                "restore_destination": dest_bucket_0,
-                "status_id": request_files.shared_recovery.OrcaStatus.PENDING.value,
-                "error_message": None,
-                "request_time": mock.ANY,
-                "last_update": mock.ANY,
-                "completion_time": None,
-            },
-            {
-                "filename": file_name_1,
-                "key_path": file_name_1,
-                "restore_destination": dest_bucket_1,
-                "status_id": request_files.shared_recovery.OrcaStatus.PENDING.value,
-                "error_message": None,
-                "request_time": mock.ANY,
-                "last_update": mock.ANY,
-                "completion_time": None,
-            },
-        ]
-
         mock_restore_object.assert_has_calls(
             [
                 call(
@@ -693,21 +679,19 @@ class TestRequestFiles(unittest.TestCase):
         self.assertEqual(2, mock_restore_object.call_count)
         mock_sleep.assert_not_called()
 
-    @patch("request_files.shared_recovery.create_status_for_job")
     @patch("time.sleep")
     @patch("request_files.restore_object")
     def test_process_granule_one_client_error_retries(
         self,
         mock_restore_object: MagicMock,
-        mock_sleep: MagicMock,
-        mock_create_status_for_job: MagicMock,
+        mock_sleep: MagicMock
     ):
         mock_s3 = Mock()
         max_retries = 5
         glacier_bucket = uuid.uuid4().__str__()
-        retry_sleep_secs = randint(0, 99999)  # nosec
+        retry_sleep_secs = randint(0, 99)  # nosec
         retrieval_type = uuid.uuid4().__str__()
-        restore_expire_days = randint(0, 99999)  # nosec
+        restore_expire_days = randint(0, 99)  # nosec
         granule_id = uuid.uuid4().__str__()
         file_name_0 = uuid.uuid4().__str__()
         dest_bucket_0 = uuid.uuid4().__str__()
@@ -783,7 +767,6 @@ class TestRequestFiles(unittest.TestCase):
         self.assertEqual(2, mock_restore_object.call_count)
         mock_sleep.assert_called_once_with(retry_sleep_secs)
 
-    @patch("request_files.shared_recovery.create_status_for_job")
     @patch("time.sleep")
     @patch("request_files.restore_object")
     @patch("cumulus_logger.CumulusLogger.error")
@@ -791,15 +774,14 @@ class TestRequestFiles(unittest.TestCase):
         self,
         mock_logger_error: MagicMock,
         mock_restore_object: MagicMock,
-        mock_sleep: MagicMock,
-        mock_create_status_for_job: MagicMock,
+        mock_sleep: MagicMock
     ):
         mock_s3 = Mock()
         max_retries = randint(3, 20)  # nosec
         glacier_bucket = uuid.uuid4().__str__()
-        retry_sleep_secs = randint(0, 99999)  # nosec
+        retry_sleep_secs = randint(0, 99)  # nosec
         retrieval_type = uuid.uuid4().__str__()
-        restore_expire_days = randint(0, 99999)  # nosec
+        restore_expire_days = randint(0, 99)  # nosec
         granule_id = uuid.uuid4().__str__()
         file_name_0 = uuid.uuid4().__str__()
         dest_bucket_0 = uuid.uuid4().__str__()
@@ -841,18 +823,6 @@ class TestRequestFiles(unittest.TestCase):
                     request_files.FILE_SUCCESS_KEY
                 ]
             )
-            files = [
-                {
-                    "filename": file_name_0,
-                    "key_path": file_name_0,
-                    "restore_destination": dest_bucket_0,
-                    "status_id": request_files.shared_recovery.OrcaStatus.PENDING.value,
-                    "error_message": None,
-                    "request_time": mock.ANY,
-                    "last_update": mock.ANY,
-                    "completion_time": None,
-                },
-            ]
 
             mock_restore_object.assert_has_calls(
                 [
@@ -928,7 +898,7 @@ class TestRequestFiles(unittest.TestCase):
     def test_restore_object_happy_path(self, mock_logger_info: MagicMock):
         glacier_bucket = uuid.uuid4().__str__()
         key = uuid.uuid4().__str__()
-        restore_expire_days = randint(0, 99999)  # nosec
+        restore_expire_days = randint(0, 99)  # nosec
         retrieval_type = uuid.uuid4().__str__()
         mock_s3_cli = Mock()
 
@@ -937,7 +907,7 @@ class TestRequestFiles(unittest.TestCase):
             key,
             restore_expire_days,
             glacier_bucket,
-            randint(0, 99999),  # nosec
+            randint(0, 99),  # nosec
             uuid.uuid4().__str__(),
             retrieval_type,
         )
@@ -956,7 +926,7 @@ class TestRequestFiles(unittest.TestCase):
         job_id = uuid.uuid4().__str__()
         glacier_bucket = uuid.uuid4().__str__()
         key = uuid.uuid4().__str__()
-        restore_expire_days = randint(0, 99999)  # nosec
+        restore_expire_days = randint(0, 99)  # nosec
         retrieval_type = uuid.uuid4().__str__()
         expected_error = ClientError({}, "")
         mock_s3_cli = Mock()
@@ -992,7 +962,7 @@ class TestRequestFiles(unittest.TestCase):
     ):
         glacier_bucket = uuid.uuid4().__str__()
         key = uuid.uuid4().__str__()
-        restore_expire_days = randint(0, 99999)  # nosec
+        restore_expire_days = randint(0, 99)  # nosec
         retrieval_type = uuid.uuid4().__str__()
         expected_error = ClientError({}, "")
         mock_s3_cli = Mock()
@@ -1028,7 +998,7 @@ class TestRequestFiles(unittest.TestCase):
     ):
         glacier_bucket = uuid.uuid4().__str__()
         key = uuid.uuid4().__str__()
-        restore_expire_days = randint(0, 99999)  # nosec
+        restore_expire_days = randint(0, 99)  # nosec
         retrieval_type = uuid.uuid4().__str__()
         mock_s3_cli = Mock()
 
@@ -1037,7 +1007,7 @@ class TestRequestFiles(unittest.TestCase):
             key,
             restore_expire_days,
             glacier_bucket,
-            randint(0, 99999),  # nosec
+            randint(0, 99),  # nosec
             uuid.uuid4().__str__(),
             retrieval_type,
         )
