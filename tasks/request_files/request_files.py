@@ -238,19 +238,12 @@ def inner_task(
 
     # Get the granule array from the event
     granules = event[EVENT_INPUT_KEY][INPUT_GRANULES_KEY]
-    if len(granules) > 1:
-        # todo: This is either a lie, or the loop below should be removed.  ORCA-202
-        raise RestoreRequestError(
-            f"request_files can only accept 1 granule in the list. "
-            f"This input contains {len(granules)}"
-        )
 
     # Create the S3 client
     s3 = boto3.client("s3")  # pylint: disable-msg=invalid-name
 
     # Setup additional information and formatting for the event granule files
-    # todo: Singular output variable from loop?  ORCA-202
-    # Stup initial array for the granules processed
+    # Setup initial array for the granules processed
     copied_granules = []
     for granule in granules:
         # Initialize the granule copy, file array and timestamp variables
@@ -320,11 +313,6 @@ def inner_task(
             LOGGER.critical(message, exec_info=True)
             raise Exception(message)
 
-        # todo: Looks like this line is why multiple granules are not supported.
-        #       will need to update see ORCA-202
-        # todo: Using the default value {} for copied_granule will cause this
-        #       function to raise errors every time.  ORCA-202
-        #
         # Process the granules by restoring them from glacier and updating the
         # database with any failure information.
         process_granule(
@@ -339,7 +327,7 @@ def inner_task(
             db_queue_url,
         )
 
-        # If no errors add to copied_granules array for output.
+        # Add to copied_granules array for output.
         # todo: update process_granule to return copied_granule with updated
         #       file information and stick that into the array.
         copied_granules.append(copied_granule)

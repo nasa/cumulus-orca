@@ -40,6 +40,8 @@ resource "aws_security_group" "vpc-postgres-ingress-all-egress" {
     self      = true
   }
 
+  ## This is added to allow all egress for lambdas. See Terraform documentation
+  ## for egress everything notes.
   egress {
     from_port        = 0
     to_port          = 0
