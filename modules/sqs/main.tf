@@ -49,9 +49,9 @@ resource "aws_sqs_queue" "staged_recovery_queue" {
   name                        = "${var.prefix}-staged-recovery-queue.fifo"
   fifo_queue                  = true
   content_based_deduplication = true
-  delay_seconds               = var.sqs_delay_time
+  delay_seconds               = var.sqs_delay_time_seconds
   max_message_size            = var.sqs_maximum_message_size
-  message_retention_seconds   = var.staged_recovery_queue_message_retention_time
+  message_retention_seconds   = var.staged_recovery_queue_message_retention_time_seconds
   tags                        = local.tags
   policy                      = data.aws_iam_policy_document.staged_recovery_queue_policy.json
   visibility_timeout_seconds  = 300
@@ -64,9 +64,9 @@ resource "aws_sqs_queue" "status_update_queue" {
   name                        = "${var.prefix}-status-update-queue.fifo"
   fifo_queue                  = true
   content_based_deduplication = true
-  delay_seconds               = var.sqs_delay_time
+  delay_seconds               = var.sqs_delay_time_seconds
   max_message_size            = var.sqs_maximum_message_size
-  message_retention_seconds   = var.status_update_queue_message_retention_time
+  message_retention_seconds   = var.status_update_queue_message_retention_time_seconds
   tags                        = local.tags
   policy                      = data.aws_iam_policy_document.status_update_queue_policy.json
   visibility_timeout_seconds  = 300
