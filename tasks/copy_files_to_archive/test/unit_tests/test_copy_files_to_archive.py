@@ -29,8 +29,13 @@ class TestCopyFilesToArchive(TestCase):
         },
         clear=True,
     )
+    @patch("copy_files_to_archive.LOGGER")
     @patch("copy_files_to_archive.task")
-    def test_handler_happy_path(self, mock_task: MagicMock):
+    def test_handler_happy_path(
+        self,
+        mock_task: MagicMock,
+        mock_logger: MagicMock,
+    ):
         records = Mock()
         event = {"Records": records}
 
@@ -39,8 +44,11 @@ class TestCopyFilesToArchive(TestCase):
         mock_task.assert_called_with(records, 703, 108.5, "something.blah")
 
     @patch.dict(os.environ, {"DB_QUEUE_URL": "something.else"}, clear=True)
+    @patch("copy_files_to_archive.LOGGER")
     @patch("copy_files_to_archive.task")
-    def test_handler_uses_default_retry_settings(self, mock_task: MagicMock):
+    def test_handler_uses_default_retry_settings(
+        self, mock_task: MagicMock, mock_logger: MagicMock
+    ):
         """
         If retry settings not in os.environ, uses 2 retries and 30 seconds.
         """
@@ -143,7 +151,7 @@ class TestCopyFilesToArchive(TestCase):
                     file0_job_id,
                     file0_granule_id,
                     file0_input_filename,
-                    copy_files_to_archive.shared_recovery.OrcaStatus.SUCCESS.value,
+                    copy_files_to_archive.shared_recovery.OrcaStatus.SUCCESS,
                     None,
                     db_queue_url,
                 ),
@@ -151,7 +159,7 @@ class TestCopyFilesToArchive(TestCase):
                     file1_job_id,
                     file1_granule_id,
                     file1_input_filename,
-                    copy_files_to_archive.shared_recovery.OrcaStatus.SUCCESS.value,
+                    copy_files_to_archive.shared_recovery.OrcaStatus.SUCCESS,
                     None,
                     db_queue_url,
                 ),
@@ -160,6 +168,7 @@ class TestCopyFilesToArchive(TestCase):
         self.assertEqual(2, mock_update_status_for_file.call_count)
         mock_sleep.assert_not_called()
 
+    @patch("copy_files_to_archive.LOGGER")
     @patch("time.sleep")
     @patch("copy_files_to_archive.shared_recovery.update_status_for_file")
     @patch("copy_files_to_archive.copy_object")
@@ -172,6 +181,7 @@ class TestCopyFilesToArchive(TestCase):
         mock_copy_object: MagicMock,
         mock_update_status_for_file: MagicMock,
         mock_sleep: MagicMock,
+        mock_logger: MagicMock,
     ):
         """
         If one file causes errors during copy,
@@ -267,7 +277,7 @@ class TestCopyFilesToArchive(TestCase):
                         file1_job_id,
                         file1_granule_id,
                         file1_input_filename,
-                        copy_files_to_archive.shared_recovery.OrcaStatus.SUCCESS.value,
+                        copy_files_to_archive.shared_recovery.OrcaStatus.SUCCESS,
                         None,
                         db_queue_url,
                     ),
@@ -275,7 +285,7 @@ class TestCopyFilesToArchive(TestCase):
                         file0_job_id,
                         file0_granule_id,
                         file0_input_filename,
-                        copy_files_to_archive.shared_recovery.OrcaStatus.FAILED.value,
+                        copy_files_to_archive.shared_recovery.OrcaStatus.FAILED,
                         error_message,
                         db_queue_url,
                     ),
@@ -289,7 +299,11 @@ class TestCopyFilesToArchive(TestCase):
             return
         self.fail("Error not raised.")
 
-    def test_get_files_from_records_adds_success_key(self):
+    @patch("copy_files_to_archive.LOGGER")
+    def test_get_files_from_records_adds_success_key(
+        self,
+        mock_logger: MagicMock,
+    ):
         """
         Function should transform json into file dict, and add 'success' key.
         """

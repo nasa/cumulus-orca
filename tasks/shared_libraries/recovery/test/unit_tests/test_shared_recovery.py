@@ -8,6 +8,8 @@ from moto import mock_sqs
 import shared_recovery
 import unittest
 from datetime import datetime, timezone
+from unittest.mock import patch
+import os
 
 
 class TestSharedRecoveryLibraries(unittest.TestCase):
@@ -45,7 +47,14 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         Perform teardown for the tests
         """
         self.mock_sqs.stop()
-
+        
+    @patch.dict(
+    os.environ,
+    {
+        "AWS_REGION": "us-west-2"
+    },
+    clear=True,
+    )
     def test_post_entry_to_queue_no_errors(self):
         """
         *Happy Path*
@@ -87,6 +96,13 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                 # Testing SQS body
                 self.assertEqual(queue_output_body, new_data)
 
+    @patch.dict(
+    os.environ,
+    {
+        "AWS_REGION": "us-west-2"
+    },
+    clear=True,
+    )
     def test_create_status_for_job_no_errors(self):
         """
         *Happy Path*
@@ -147,7 +163,13 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                 queue_output_body["archive_destination"],
                 archive_destination,
             )
-
+    @patch.dict(
+    os.environ,
+    {
+        "AWS_REGION": "us-west-2"
+    },
+    clear=True,
+    )
     def test_update_status_for_file_no_errors(self):
         """
         *Happy Path*
