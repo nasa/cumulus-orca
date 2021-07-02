@@ -66,6 +66,8 @@ check_rc "mkdir -p build/tasks"
 ## Copy the static items that do not need to be built
 # Terraform Module
 check_rc "cp -r modules build"
+check_rc "cp *.tf build"
+check_rc "cp terraform.tfvars.example build"
 
 # Documentation
 check_rc "cp README.md build"
