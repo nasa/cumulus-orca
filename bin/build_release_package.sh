@@ -67,9 +67,6 @@ check_rc "mkdir -p build/tasks"
 # Terraform Module
 check_rc "cp -r modules build"
 
-# Database code
-check_rc "cp -r database build"
-
 # Documentation
 check_rc "cp README.md build"
 check_rc "cp LICENSE.txt build"
