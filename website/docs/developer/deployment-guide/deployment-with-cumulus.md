@@ -53,7 +53,7 @@ URL path to the release. In the example below the release being used is v3.0.0.
 ## ORCA Module
 ## =============================================================================
 module "orca" {
-  source = "https://github.com/nasa/cumulus-orca/releases/download/v3.0.0/cumulus-orca-terraform.zip//modules"
+  source = "https://github.com/nasa/cumulus-orca/releases/download/v3.0.0/cumulus-orca-terraform.zip"
   ## --------------------------
   ## Cumulus Variables
   ## --------------------------
