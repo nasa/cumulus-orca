@@ -383,7 +383,7 @@ resource "aws_lambda_function" "post_copy_request_to_queue" {
       PREFIX             = var.prefix
       DATABASE_PORT      = var.database_port
       DATABASE_NAME      = var.database_name
-      DATABASE_USER      = var.database_app_user
+      APPLICATION_USER   = var.database_app_user
       DB_QUEUE_URL       = var.orca_sqs_status_update_queue_id
       RECOVERY_QUEUE_URL = var.orca_sqs_staged_recovery_queue_id
       MAX_RETRIES        = var.orca_recovery_retry_limit
