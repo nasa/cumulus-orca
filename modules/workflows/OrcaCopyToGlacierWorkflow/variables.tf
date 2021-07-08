@@ -4,6 +4,7 @@
 variable "aws_profile" {
   type        = string
   description = "AWS profile used to deploy the terraform application."
+  default     = null
 }
 
 
@@ -30,38 +31,23 @@ variable "workflow_config" {
 }
 
 
-## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
+## OPTIONAL
 variable "region" {
   type        = string
   description = "AWS region to deploy configuration to."
+  default     = "us-west-2"
 }
 
 
 variable "tags" {
   type        = map(string)
   description = "Tags to be applied to resources that support tags."
+  default     = {}
 }
 
 
 ## Variables unique to ORCA
 ## REQUIRED
-variable "orca_default_bucket" {
-  type        = string
-  description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
-}
-
-
-variable "orca_lambda_extract_filepaths_for_granule_arn" {
-  type        = string
-  description = "AWS ARN of the ORCA extract_filepaths_for_granule lambda"
-}
-
-
-variable "orca_lambda_request_files_arn" {
-  type        = string
-  description = "AWS ARN of the ORCA request_files lambda."
-}
-
 variable "orca_lambda_copy_to_glacier_arn" {
   type        = string
   description = "AWS ARN for the copy_to_glacier lambda."

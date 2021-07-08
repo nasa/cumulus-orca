@@ -93,9 +93,11 @@ module "orca_workflows" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  orca_default_bucket                           = var.orca_default_bucket
-  orca_lambda_extract_filepaths_for_granule_arn = module.orca_lambdas.extract_filepaths_for_granule_arn
-  orca_lambda_request_files_arn                 = module.orca_lambdas.request_files_arn
+  orca_default_bucket                                = var.orca_default_bucket
+  orca_lambda_extract_filepaths_for_granule_arn      = module.orca_lambdas.extract_filepaths_for_granule_arn
+  orca_lambda_request_files_arn                      = module.orca_lambdas.request_files_arn
+  orca_lambda_copy_to_glacier_arn                    = module.orca_lambdas.copy_to_glacier_arn
+  orca_lambda_copy_to_glacier_cumulus_translator_arn = module.orca_lambdas.copy_to_glacier_cumulus_translator_arn
 }
 
 
