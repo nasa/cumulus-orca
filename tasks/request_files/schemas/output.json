@@ -70,10 +70,10 @@
         "required": ["granuleId", "recover_files"]
       }
     },
-    "job_id": {
+    "asyncOperationId": {
       "description": "The 'job_id' from input event if present, otherwise a newly-generated uuid.",
       "type": "string"
     }
   },
-  "required": ["granules", "job_id"]
+  "required": ["granules", "asyncOperationId"]
 }

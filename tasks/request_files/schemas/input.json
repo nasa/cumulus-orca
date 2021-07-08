@@ -5,7 +5,7 @@
   "description": "The input for the request_files Lambda.",
   "type": "object",
   "properties": {
-    "job_id": {
+    "asyncOperationId": {
       "description": "The unique identifier used for tracking requests. If not present, will be generated.",
       "type": "string"
     },

@@ -1047,7 +1047,7 @@ class TestRequestFiles(unittest.TestCase):
                     ],
                 }
             ],
-            "job_id": "some_job_id",
+            "asyncOperationId": "some_job_id",
         }
         result = request_files.handler(input_event, self.context)
         mock_task.assert_called_once_with(expected_task_input, self.context)
@@ -1071,7 +1071,7 @@ class TestRequestFiles(unittest.TestCase):
         input_event = {
             "input": {
                 "granules": [{"granuleId": granule_id, "keys": files}],
-                "job_id": uuid.uuid4().__str__(),
+                "asyncOperationId": uuid.uuid4().__str__(),
             },
             "config": {"glacier-bucket": "my-dr-fake-glacier-bucket"},
         }
@@ -1124,7 +1124,7 @@ class TestRequestFiles(unittest.TestCase):
         }
         exp_granules = {
             "granules": [exp_gran],
-            "job_id": input_event["input"]["job_id"],
+            "asyncOperationId": input_event["input"]["asyncOperationId"],
         }
 
         # Check the values of the result less the times since those will never match
@@ -1205,7 +1205,7 @@ class TestRequestFiles(unittest.TestCase):
         input_event = {
             "input": {"granules": [{"granuleId": granule_id, "keys": [KEY1]}]},
             "config": {"glacier-bucket": "my-dr-fake-glacier-bucket"},
-            "job_id": uuid.uuid4().__str__(),
+            "asyncOperationId": uuid.uuid4().__str__(),
         }
 
         mock_s3_cli = mock_boto3_client("s3")
@@ -1242,7 +1242,7 @@ class TestRequestFiles(unittest.TestCase):
                         "keys": [{"key": file1, "dest_bucket": dest_bucket}],
                     }
                 ],
-                "job_id": uuid.uuid4(),
+                "asyncOperationId": uuid.uuid4(),
             },
             "config": {"glacier-bucket": "my-bucket"},
         }
@@ -1265,7 +1265,7 @@ class TestRequestFiles(unittest.TestCase):
                     "recover_files": [],
                 }
             ],
-            "job_id": event["input"]["job_id"],
+            "asyncOperationId": event["input"]["asyncOperationId"],
         }
         self.assertEqual(expected_granules, result)
         mock_boto3_client.assert_called_with("s3")
@@ -1309,7 +1309,7 @@ class TestRequestFiles(unittest.TestCase):
                     ],
                 }
             ],
-            request_files.INPUT_JOB_ID_KEY: event["input"]["job_id"],
+            request_files.INPUT_JOB_ID_KEY: event["input"]["asyncOperationId"],
         }
         result = request_files.task(event, self.context)
         os.environ[
@@ -1354,7 +1354,7 @@ class TestRequestFiles(unittest.TestCase):
             "config": {"glacier-bucket": "some_bucket"},
             "input": {
                 "granules": [{"granuleId": granule_id, "keys": [KEY1]}],
-                "job_id": uuid.uuid4().__str__(),
+                "asyncOperationId": uuid.uuid4().__str__(),
             },
         }
 
@@ -1377,7 +1377,7 @@ class TestRequestFiles(unittest.TestCase):
                     ],
                 }
             ],
-            "job_id": event["input"]["job_id"],
+            "asyncOperationId": event["input"]["asyncOperationId"],
         }
 
         result = request_files.task(event, self.context)
@@ -1425,7 +1425,7 @@ class TestRequestFiles(unittest.TestCase):
                     }
                 ]
             },
-            "job_id": uuid.uuid4().__str__(),
+            "asyncOperationId": uuid.uuid4().__str__(),
         }
 
         os.environ[
@@ -1488,7 +1488,7 @@ class TestRequestFiles(unittest.TestCase):
 
         event = {
             "config": {"glacier-bucket": "some_bucket"},
-            "job_id": uuid.uuid4().__str__(),
+            "asyncOperationId": uuid.uuid4().__str__(),
         }
         gran = {"granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321", "keys": keys}
 
@@ -1584,7 +1584,10 @@ class TestRequestFiles(unittest.TestCase):
         gran["granuleId"] = granule_id
         keys = [KEY1, KEY2]
         gran["keys"] = keys
-        event["input"] = {"granules": [gran], "job_id": uuid.uuid4().__str__()}
+        event["input"] = {
+            "granules": [gran],
+            "asyncOperationId": uuid.uuid4().__str__(),
+        }
         mock_s3_cli = mock_boto3_client("sqs")
 
         mock_s3_cli.restore_object.side_effect = [
@@ -1621,7 +1624,7 @@ class TestRequestFiles(unittest.TestCase):
                     ],
                 }
             ],
-            "job_id": event["input"]["job_id"],
+            "asyncOperationId": event["input"]["asyncOperationId"],
         }
 
         result = request_files.task(event, self.context)
@@ -1660,7 +1663,7 @@ class TestRequestFiles(unittest.TestCase):
         input_event = {
             "input": {
                 "granules": [{"granuleId": granule_id, "keys": files}],
-                "job_id": uuid.uuid4().__str__(),
+                "asyncOperationId": uuid.uuid4().__str__(),
             },
             "config": {"glacier-bucket": "my-dr-fake-glacier-bucket"},
         }
@@ -1713,7 +1716,7 @@ class TestRequestFiles(unittest.TestCase):
         }
         exp_granules = {
             "granules": [exp_gran],
-            "job_id": input_event["input"]["job_id"],
+            "asyncOperationId": input_event["input"]["asyncOperationId"],
         }
 
         # Validate the output is correct
