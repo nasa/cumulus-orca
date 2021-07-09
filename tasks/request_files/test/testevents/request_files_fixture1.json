@@ -72,7 +72,7 @@
         ]
       }
     ],
-    "job_id": "ad6ed089-f020-4374-9174-0fb5a4a1ebc1"
+    "cumulus_meta": {"job_id": "ad6ed089-f020-4374-9174-0fb5a4a1ebc1"}
   },
   "exception": "None",
   "workflow_config": {

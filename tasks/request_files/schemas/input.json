@@ -55,6 +55,7 @@
     }
   },
   "required": [
+    "cumulus_meta",
     "granules"
   ]
 }
