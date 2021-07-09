@@ -36,7 +36,9 @@ OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY = "ORCA_DEFAULT_BUCKET"
 
 EVENT_CONFIG_KEY = "config"
 EVENT_INPUT_KEY = "input"
-INPUT_JOB_ID_KEY = "asyncOperationId"
+
+INPUT_META_KEY = "cumulus_meta"
+META_JOB_ID_KEY = "asyncOperationId"
 
 INPUT_GRANULES_KEY = "granules"
 
@@ -165,11 +167,11 @@ def task(
         exp_days = DEFAULT_RESTORE_EXPIRE_DAYS
 
     # Set the JOB ID if one is not given
-    if not event[EVENT_INPUT_KEY].keys().__contains__(INPUT_JOB_ID_KEY):
-        event[EVENT_INPUT_KEY][INPUT_JOB_ID_KEY] = uuid.uuid4().__str__()
+    if not event[EVENT_INPUT_KEY][INPUT_META_KEY].keys().__contains__(META_JOB_ID_KEY):
+        event[EVENT_INPUT_KEY][INPUT_META_KEY][META_JOB_ID_KEY] = uuid.uuid4().__str__()
         LOGGER.debug(
             f"No bulk job_id sent. Generated value"
-            f" {event[EVENT_INPUT_KEY][INPUT_JOB_ID_KEY]} for job_id."
+            f" {event[EVENT_INPUT_KEY][INPUT_META_KEY][META_JOB_ID_KEY]} for job_id."
         )
 
     # Call the inner task to perform the work of restoring
@@ -289,7 +291,7 @@ def inner_task(
         # Send initial job and status information to the database queues
         # post to DB-queue. Retry using exponential delay if it fails
         LOGGER.debug("Sending initial job status information to DB QUEUE.")
-        job_id = event[EVENT_INPUT_KEY][INPUT_JOB_ID_KEY]
+        job_id = event[EVENT_INPUT_KEY][INPUT_META_KEY][META_JOB_ID_KEY]
         granule_id = granule[GRANULE_GRANULE_ID_KEY]
 
         for retry in range(max_retries + 1):
@@ -336,8 +338,8 @@ def inner_task(
     # Ideally, we should get a return from process granule with the updated file
     # information.
     return {
-        INPUT_GRANULES_KEY: copied_granules,
-        INPUT_JOB_ID_KEY: event[EVENT_INPUT_KEY][INPUT_JOB_ID_KEY],
+        "granules": copied_granules,
+        "asyncOperationId": event[EVENT_INPUT_KEY][INPUT_META_KEY][META_JOB_ID_KEY],
     }
 
 

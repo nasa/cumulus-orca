@@ -5,9 +5,15 @@
   "description": "The input for the request_files Lambda.",
   "type": "object",
   "properties": {
-    "asyncOperationId": {
-      "description": "The unique identifier used for tracking requests. If not present, will be generated.",
-      "type": "string"
+    "cumulus_meta": {
+      "description": "Defined by the Cumulus Dashboard and CMA.",
+      "type": "object",
+      "properties": {
+        "asyncOperationId": {
+          "description": "The unique identifier used for tracking requests. If not present, will be generated.",
+          "type": "string"
+        }
+      }
     },
     "granules": {
       "description": "A list of objects representing individual files to restore.",

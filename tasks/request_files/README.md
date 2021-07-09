@@ -341,7 +341,8 @@ DATA
     GRANULE_KEYS_KEY = 'keys'
     GRANULE_RECOVER_FILES_KEY = 'recover_files'
     INPUT_GRANULES_KEY = 'granules'
-    INPUT_JOB_ID_KEY = 'job_id'
+    INPUT_META_KEY = 'cumulus_meta'
+    META_JOB_ID_KEY = 'job_id'
     LOGGER = <cumulus_logger.CumulusLogger object>
     List = typing.List
     ORCA_STATUS_FAILED = 4
