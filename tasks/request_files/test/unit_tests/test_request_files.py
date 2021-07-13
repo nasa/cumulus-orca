@@ -68,13 +68,9 @@ class TestRequestFiles(unittest.TestCase):
         job_id = uuid.uuid4().__str__()
         glacier_bucket = uuid.uuid4().__str__()
         mock_event = {
-            request_files.EVENT_INPUT_KEY: {
-                request_files.INPUT_META_KEY: {
-                    request_files.META_JOB_ID_KEY: job_id
-                }
-            },
             request_files.EVENT_CONFIG_KEY: {
-                request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
+                request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
+                request_files.CONFIG_JOB_ID_KEY: job_id
             },
         }
         max_retries = randint(0, 99)  # nosec
@@ -99,9 +95,9 @@ class TestRequestFiles(unittest.TestCase):
 
         mock_inner_task.assert_called_once_with(
             {
-                request_files.EVENT_INPUT_KEY: {request_files.INPUT_META_KEY: {request_files.META_JOB_ID_KEY: job_id}},
                 request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
+                    request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
+                    request_files.CONFIG_JOB_ID_KEY: job_id
                 },
             },
             max_retries,
@@ -119,9 +115,9 @@ class TestRequestFiles(unittest.TestCase):
         job_id = uuid.uuid4().__str__()
         glacier_bucket = uuid.uuid4().__str__()
         mock_event = {
-            request_files.EVENT_INPUT_KEY: {request_files.INPUT_META_KEY: {request_files.META_JOB_ID_KEY: job_id}},
             request_files.EVENT_CONFIG_KEY: {
-                request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
+                request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
+                request_files.CONFIG_JOB_ID_KEY: job_id
             },
         }
         retry_sleep_secs = uniform(0, 99)  # nosec
@@ -142,9 +138,9 @@ class TestRequestFiles(unittest.TestCase):
 
         mock_inner_task.assert_called_once_with(
             {
-                request_files.EVENT_INPUT_KEY: {request_files.INPUT_META_KEY: {request_files.META_JOB_ID_KEY: job_id}},
                 request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
+                    request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
+                    request_files.CONFIG_JOB_ID_KEY: job_id
                 },
             },
             request_files.DEFAULT_MAX_REQUEST_RETRIES,
@@ -162,9 +158,9 @@ class TestRequestFiles(unittest.TestCase):
         job_id = uuid.uuid4().__str__()
         glacier_bucket = uuid.uuid4().__str__()
         mock_event = {
-            request_files.EVENT_INPUT_KEY: {request_files.INPUT_META_KEY: {request_files.META_JOB_ID_KEY: job_id}},
             request_files.EVENT_CONFIG_KEY: {
-                request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
+                request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
+                request_files.CONFIG_JOB_ID_KEY: job_id
             },
         }
         max_retries = randint(0, 99)  # nosec
@@ -185,9 +181,9 @@ class TestRequestFiles(unittest.TestCase):
 
         mock_inner_task.assert_called_once_with(
             {
-                request_files.EVENT_INPUT_KEY: {request_files.INPUT_META_KEY: {request_files.META_JOB_ID_KEY: job_id}},
                 request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
+                    request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
+                    request_files.CONFIG_JOB_ID_KEY: job_id
                 },
             },
             max_retries,
@@ -205,9 +201,9 @@ class TestRequestFiles(unittest.TestCase):
         job_id = uuid.uuid4().__str__()
         glacier_bucket = uuid.uuid4().__str__()
         mock_event = {
-            request_files.EVENT_INPUT_KEY: {request_files.INPUT_META_KEY: {request_files.META_JOB_ID_KEY: job_id}},
             request_files.EVENT_CONFIG_KEY: {
-                request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
+                request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
+                request_files.CONFIG_JOB_ID_KEY: job_id
             },
         }
         max_retries = randint(0, 99)  # nosec
@@ -230,9 +226,9 @@ class TestRequestFiles(unittest.TestCase):
 
         mock_inner_task.assert_called_once_with(
             {
-                request_files.EVENT_INPUT_KEY: {request_files.INPUT_META_KEY: {request_files.META_JOB_ID_KEY: job_id}},
                 request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
+                    request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
+                    request_files.CONFIG_JOB_ID_KEY: job_id
                 },
             },
             max_retries,
@@ -250,9 +246,9 @@ class TestRequestFiles(unittest.TestCase):
         job_id = uuid.uuid4().__str__()
         glacier_bucket = uuid.uuid4().__str__()
         mock_event = {
-            request_files.EVENT_INPUT_KEY: {request_files.INPUT_META_KEY: {request_files.META_JOB_ID_KEY: job_id}},
             request_files.EVENT_CONFIG_KEY: {
-                request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
+                request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
+                request_files.CONFIG_JOB_ID_KEY: job_id
             },
         }
         max_retries = randint(0, 99)  # nosec
@@ -277,9 +273,9 @@ class TestRequestFiles(unittest.TestCase):
 
         mock_inner_task.assert_called_once_with(
             {
-                request_files.EVENT_INPUT_KEY: {request_files.INPUT_META_KEY: {request_files.META_JOB_ID_KEY: job_id}},
                 request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
+                    request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
+                    request_files.CONFIG_JOB_ID_KEY: job_id
                 },
             },
             max_retries,
@@ -297,9 +293,9 @@ class TestRequestFiles(unittest.TestCase):
         job_id = uuid.uuid4().__str__()
         glacier_bucket = uuid.uuid4().__str__()
         mock_event = {
-            request_files.EVENT_INPUT_KEY: {request_files.INPUT_META_KEY: {request_files.META_JOB_ID_KEY: job_id}},
             request_files.EVENT_CONFIG_KEY: {
-                request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
+                request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
+                request_files.CONFIG_JOB_ID_KEY: job_id
             },
         }
         max_retries = randint(0, 99)  # nosec
@@ -320,9 +316,9 @@ class TestRequestFiles(unittest.TestCase):
 
         mock_inner_task.assert_called_once_with(
             {
-                request_files.EVENT_INPUT_KEY: {request_files.INPUT_META_KEY: {request_files.META_JOB_ID_KEY: job_id}},
                 request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
+                    request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
+                    request_files.CONFIG_JOB_ID_KEY: job_id
                 },
             },
             max_retries,
@@ -339,9 +335,9 @@ class TestRequestFiles(unittest.TestCase):
         """
         glacier_bucket = uuid.uuid4().__str__()
         mock_event = {
-            request_files.EVENT_INPUT_KEY: {request_files.INPUT_META_KEY: {}},
             request_files.EVENT_CONFIG_KEY: {
-                request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
+                request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
+                request_files.CONFIG_JOB_ID_KEY: None
             },
         }
         max_retries = randint(0, 99)  # nosec
@@ -368,11 +364,9 @@ class TestRequestFiles(unittest.TestCase):
 
         mock_inner_task.assert_called_once_with(
             {
-                request_files.EVENT_INPUT_KEY: {
-                    request_files.INPUT_META_KEY: {request_files.META_JOB_ID_KEY: job_id.__str__()}
-                },
                 request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
+                    request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
+                    request_files.CONFIG_JOB_ID_KEY: job_id.__str__()
                 },
             },
             max_retries,
@@ -390,8 +384,7 @@ class TestRequestFiles(unittest.TestCase):
         job_id = uuid.uuid4().__str__()
         glacier_bucket = uuid.uuid4().__str__()
         mock_event = {
-            request_files.EVENT_INPUT_KEY: {request_files.INPUT_META_KEY: {request_files.META_JOB_ID_KEY: job_id}},
-            request_files.EVENT_CONFIG_KEY: {},
+            request_files.EVENT_CONFIG_KEY: {request_files.CONFIG_JOB_ID_KEY: job_id},
         }
         os.environ[
             request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY
@@ -419,11 +412,9 @@ class TestRequestFiles(unittest.TestCase):
 
         mock_inner_task.assert_called_once_with(
             {
-                request_files.EVENT_INPUT_KEY: {
-                    request_files.INPUT_META_KEY: {request_files.META_JOB_ID_KEY: job_id.__str__()}
-                },
                 request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
+                    request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
+                    request_files.CONFIG_JOB_ID_KEY: job_id.__str__()
                 },
             },
             max_retries,
@@ -517,13 +508,11 @@ class TestRequestFiles(unittest.TestCase):
         ] = expected_input_granule_files
         event = {
             request_files.EVENT_CONFIG_KEY: {
-                request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket
+                request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
+                request_files.CONFIG_JOB_ID_KEY: job_id
             },
             request_files.EVENT_INPUT_KEY: {
-                request_files.INPUT_GRANULES_KEY: [granule],
-                request_files.INPUT_META_KEY: {
-                    request_files.META_JOB_ID_KEY: job_id
-                }
+                request_files.INPUT_GRANULES_KEY: [granule]
             },
         }
         max_retries = randint(0, 99)  # nosec
@@ -1076,10 +1065,10 @@ class TestRequestFiles(unittest.TestCase):
         files = [KEY1, KEY2, KEY3, KEY4]
         input_event = {
             "input": {
-                "granules": [{"granuleId": granule_id, "keys": files}],
-                request_files.INPUT_META_KEY: {"asyncOperationId": uuid.uuid4().__str__()},
+                "granules": [{"granuleId": granule_id, "keys": files}]
             },
-            "config": {"glacier-bucket": "my-dr-fake-glacier-bucket"},
+            "config": {"glacier-bucket": "my-dr-fake-glacier-bucket",
+                       "asyncOperationId": uuid.uuid4().__str__()}
         }
 
         mock_s3_cli = mock_boto3_client("s3")
@@ -1130,7 +1119,7 @@ class TestRequestFiles(unittest.TestCase):
         }
         exp_granules = {
             "granules": [exp_gran],
-            "asyncOperationId": input_event["input"][request_files.INPUT_META_KEY]["asyncOperationId"],
+            "asyncOperationId": input_event["config"]["asyncOperationId"],
         }
 
         # Check the values of the result less the times since those will never match
@@ -1209,9 +1198,9 @@ class TestRequestFiles(unittest.TestCase):
         """
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
         input_event = {
-            "input": {"granules": [{"granuleId": granule_id, "keys": [KEY1]}], request_files.INPUT_META_KEY: {}},
-            "config": {"glacier-bucket": "my-dr-fake-glacier-bucket"},
-            request_files.INPUT_META_KEY: {"asyncOperationId": uuid.uuid4().__str__()},
+            "input": {"granules": [{"granuleId": granule_id, "keys": [KEY1]}]},
+            "config": {"glacier-bucket": "my-dr-fake-glacier-bucket",
+                       "asyncOperationId": uuid.uuid4().__str__()}
         }
 
         mock_s3_cli = mock_boto3_client("s3")
@@ -1247,10 +1236,10 @@ class TestRequestFiles(unittest.TestCase):
                         "granuleId": granule_id,
                         "keys": [{"key": file1, "dest_bucket": dest_bucket}],
                     }
-                ],
-                request_files.INPUT_META_KEY: {"asyncOperationId": uuid.uuid4()}
+                ]
             },
-            "config": {"glacier-bucket": "my-bucket"},
+            "config": {"glacier-bucket": "my-bucket",
+                       "asyncOperationId": uuid.uuid4().__str__()},
         }
         mock_s3_cli = mock_boto3_client("s3")
         # todo: Verify the below with a real-world db. If not the same, fix request_files.object_exists
@@ -1271,7 +1260,7 @@ class TestRequestFiles(unittest.TestCase):
                     "recover_files": [],
                 }
             ],
-            "asyncOperationId": event["input"][request_files.INPUT_META_KEY]["asyncOperationId"],
+            "asyncOperationId": event["config"]["asyncOperationId"],
         }
         self.assertEqual(expected_granules, result)
         mock_boto3_client.assert_called_with("s3")
@@ -1290,12 +1279,10 @@ class TestRequestFiles(unittest.TestCase):
         # todo: Reduce string copy/paste for test values here and elsewhere.
         event = {
             "input": {
-                "granules": [{"granuleId": granule_id, "keys": [KEY1]}],
-                request_files.INPUT_META_KEY: {
-                    "asyncOperationId": uuid.uuid4().__str__()
-                }
+                "granules": [{"granuleId": granule_id, "keys": [KEY1]}]
             },
-            "config": {"glacier-bucket": "some_bucket"},
+            "config": {"glacier-bucket": "some_bucket",
+                       "asyncOperationId": uuid.uuid4().__str__()},
         }
 
         mock_s3_cli = mock_boto3_client("s3")
@@ -1317,7 +1304,7 @@ class TestRequestFiles(unittest.TestCase):
                     ],
                 }
             ],
-            "asyncOperationId": event["input"]["cumulus_meta"]["asyncOperationId"],
+            "asyncOperationId": event["config"]["asyncOperationId"],
         }
         result = request_files.task(event, self.context)
         os.environ[
@@ -1359,10 +1346,10 @@ class TestRequestFiles(unittest.TestCase):
         os.environ["RESTORE_RETRIEVAL_TYPE"] = "Expedited"
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
         event = {
-            "config": {"glacier-bucket": "some_bucket"},
+            "config": {"glacier-bucket": "some_bucket",
+                       "asyncOperationId": uuid.uuid4().__str__()},
             "input": {
-                "granules": [{"granuleId": granule_id, "keys": [KEY1]}],
-                request_files.INPUT_META_KEY: {"asyncOperationId": uuid.uuid4().__str__()},
+                "granules": [{"granuleId": granule_id, "keys": [KEY1]}]
             },
         }
 
@@ -1385,7 +1372,7 @@ class TestRequestFiles(unittest.TestCase):
                     ],
                 }
             ],
-            "asyncOperationId": event["input"][request_files.INPUT_META_KEY]["asyncOperationId"],
+            "asyncOperationId": event["config"]["asyncOperationId"],
         }
 
         result = request_files.task(event, self.context)
@@ -1424,15 +1411,15 @@ class TestRequestFiles(unittest.TestCase):
         Test retries for restore error for one file.
         """
         event = {
-            "config": {"glacier-bucket": "some_bucket"},
+            "config": {"glacier-bucket": "some_bucket",
+                       "asyncOperationId": uuid.uuid4().__str__()},
             "input": {
                 "granules": [
                     {
                         "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
                         "keys": [KEY1],
                     }
-                ],
-                request_files.INPUT_META_KEY: {"asyncOperationId": uuid.uuid4().__str__()}
+                ]
             }
         }
 
@@ -1495,12 +1482,12 @@ class TestRequestFiles(unittest.TestCase):
         keys = [KEY1, KEY3, KEY4]
 
         event = {
-            "config": {"glacier-bucket": "some_bucket"}
+            "config": {"glacier-bucket": "some_bucket",
+                       "asyncOperationId": uuid.uuid4().__str__()}
         }
         gran = {"granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321", "keys": keys}
 
-        event["input"] = {"granules": [gran],
-                          request_files.INPUT_META_KEY: {"asyncOperationId": uuid.uuid4().__str__()}}
+        event["input"] = {"granules": [gran]}
         mock_s3_cli = mock_boto3_client("s3")
         mock_s3_cli.restore_object.side_effect = [
             None,
@@ -1586,15 +1573,15 @@ class TestRequestFiles(unittest.TestCase):
         """
         Test two files, first successful, second has two errors, then success.
         """
-        event = {"config": {"glacier-bucket": "some_bucket"}}
+        event = {"config": {"glacier-bucket": "some_bucket",
+                            "asyncOperationId": uuid.uuid4().__str__()}}
         gran = {}
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
         gran["granuleId"] = granule_id
         keys = [KEY1, KEY2]
         gran["keys"] = keys
         event["input"] = {
-            "granules": [gran],
-            request_files.INPUT_META_KEY: {"asyncOperationId": uuid.uuid4().__str__()},
+            "granules": [gran]
         }
         mock_s3_cli = mock_boto3_client("sqs")
 
@@ -1632,7 +1619,7 @@ class TestRequestFiles(unittest.TestCase):
                     ],
                 }
             ],
-            "asyncOperationId": event["input"]["cumulus_meta"]["asyncOperationId"],
+            "asyncOperationId": event["config"]["asyncOperationId"],
         }
 
         result = request_files.task(event, self.context)
@@ -1670,10 +1657,10 @@ class TestRequestFiles(unittest.TestCase):
         files = [KEY1, KEY2, KEY3, KEY4]
         input_event = {
             "input": {
-                "granules": [{"granuleId": granule_id, "keys": files}],
-                request_files.INPUT_META_KEY: {"asyncOperationId": uuid.uuid4().__str__()},
+                "granules": [{"granuleId": granule_id, "keys": files}]
             },
-            "config": {"glacier-bucket": "my-dr-fake-glacier-bucket"},
+            "config": {"glacier-bucket": "my-dr-fake-glacier-bucket",
+                       "asyncOperationId": uuid.uuid4().__str__()},
         }
 
         mock_s3_cli = mock_boto3_client("s3")
@@ -1724,7 +1711,7 @@ class TestRequestFiles(unittest.TestCase):
         }
         exp_granules = {
             "granules": [exp_gran],
-            "asyncOperationId": input_event["input"][request_files.INPUT_META_KEY]["asyncOperationId"],
+            "asyncOperationId": input_event["config"]["asyncOperationId"],
         }
 
         # Validate the output is correct

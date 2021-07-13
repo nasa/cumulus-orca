@@ -37,14 +37,12 @@ OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY = "ORCA_DEFAULT_BUCKET"
 EVENT_CONFIG_KEY = "config"
 EVENT_INPUT_KEY = "input"
 
-INPUT_META_KEY = "cumulus_meta"
-META_JOB_ID_KEY = "asyncOperationId"
-
 INPUT_GRANULES_KEY = "granules"
 
 CONFIG_GLACIER_BUCKET_KEY = (
     "glacier-bucket"  # todo: Rename. This ONE property uses '-' instead of '_'
 )
+CONFIG_JOB_ID_KEY = "asyncOperationId"
 
 GRANULE_GRANULE_ID_KEY = "granuleId"
 GRANULE_KEYS_KEY = "keys"
@@ -79,6 +77,7 @@ def task(
                 'config' (dict): A dict with the following keys:
                     'glacier-bucket' (str): The name of the glacier bucket from which the files
                     will be restored.
+                    'job_id' (str): The unique identifier used for tracking requests. If not present, will be generated.
                 'input' (dict): A dict with the following keys:
                     'granules' (list(dict)): A list of dicts with the following keys:
                         'granuleId' (str): The id of the granule being restored.
@@ -86,7 +85,6 @@ def task(
                             'key' (str): Name of the file within the granule.  # TODO: It actually might be a path.
                             'dest_bucket' (str): The bucket the restored file will be moved
                                 to after the restore completes.
-                    'job_id' (str): The unique identifier used for tracking requests. If not present, will be generated.
         Environment Vars:
             RESTORE_EXPIRE_DAYS (int, optional, default = 5): The number of days
                 the restored file will be accessible in the S3 bucket before it expires.
@@ -167,11 +165,11 @@ def task(
         exp_days = DEFAULT_RESTORE_EXPIRE_DAYS
 
     # Set the JOB ID if one is not given
-    if not event[EVENT_INPUT_KEY][INPUT_META_KEY].keys().__contains__(META_JOB_ID_KEY):
-        event[EVENT_INPUT_KEY][INPUT_META_KEY][META_JOB_ID_KEY] = uuid.uuid4().__str__()
+    if event[EVENT_CONFIG_KEY][CONFIG_JOB_ID_KEY] is None:
+        event[EVENT_CONFIG_KEY][CONFIG_JOB_ID_KEY] = uuid.uuid4().__str__()
         LOGGER.debug(
             f"No bulk job_id sent. Generated value"
-            f" {event[EVENT_INPUT_KEY][INPUT_META_KEY][META_JOB_ID_KEY]} for job_id."
+            f" {event[EVENT_CONFIG_KEY][CONFIG_JOB_ID_KEY]} for job_id."
         )
 
     # Call the inner task to perform the work of restoring
@@ -199,6 +197,7 @@ def inner_task(
                 'config' (dict): A dict with the following keys:
                     'glacier-bucket' (str): The name of the glacier bucket from which the files
                     will be restored. Defaults to OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY
+                    'asyncOperationId' (str): The unique identifier used for tracking requests.
                 'input' (dict): A dict with the following keys:
                     'granules' (list(dict)): A list of dicts with the following keys:
                         'granuleId' (str): The id of the granule being restored.
@@ -206,7 +205,6 @@ def inner_task(
                             'key' (str): Name of the file within the granule.  # TODO: It actually might be a path.
                             'dest_bucket' (str): The bucket the restored file will be moved
                                 to after the restore completes.
-                    'job_id' (str): The unique identifier used for tracking requests.
             max_retries: The maximum number of retries for network operations.
             retry_sleep_secs: The number of time to sleep between retries.
             retrieval_type: The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
@@ -291,7 +289,7 @@ def inner_task(
         # Send initial job and status information to the database queues
         # post to DB-queue. Retry using exponential delay if it fails
         LOGGER.debug("Sending initial job status information to DB QUEUE.")
-        job_id = event[EVENT_INPUT_KEY][INPUT_META_KEY][META_JOB_ID_KEY]
+        job_id = event[EVENT_CONFIG_KEY][CONFIG_JOB_ID_KEY]
         granule_id = granule[GRANULE_GRANULE_ID_KEY]
 
         for retry in range(max_retries + 1):
@@ -339,7 +337,7 @@ def inner_task(
     # information.
     return {
         "granules": copied_granules,
-        "asyncOperationId": event[EVENT_INPUT_KEY][INPUT_META_KEY][META_JOB_ID_KEY],
+        "asyncOperationId": event[EVENT_CONFIG_KEY][CONFIG_JOB_ID_KEY],
     }
 
 
