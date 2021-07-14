@@ -62,13 +62,21 @@ Cons:
 - File uploading is a bit complex.
 
 
-## Deploying GraphQL Server
+## GraphQL Server
 
-..................
+There are numerous servers for GraphQL that support different programming languages. A list of all the servers can be seen [here](https://graphql.org/code/).
+:::tip
+Popular servers using Javascript include [GraphQL.js](https://graphql.org/graphql-js/), [Apollo Server](https://www.apollographql.com/docs/) and [Express GraphQL](https://github.com/graphql/express-graphql).
+Popular servers using Python include [Graphehe](https://github.com/graphql-python/graphene), [Ariadne](https://ariadnegraphql.org/) and [Strawberry](https://strawberry.rocks/).
+:::
 
 
+## AWS AppSync
 
-
+AWS AppSync is a fully managed service that develops GraphQL APIs by handling the heavy lifting of securely connecting to data sources like AWS DynamoDB, Lambda, and more. AWS AppSync automatically scales GraphQL API execution engine up and down to meet API request volumes. 
+:::tip
+Details on creating and configuring a GraphQL API using AppSync can be found [here](https://docs.aws.amazon.com/appsync/latest/devguide/quickstart-launch-a-sample-schema.html).
+:::
 
 
 
@@ -83,10 +91,22 @@ Some of the lambdas that will be affected are:
 - request_status_for_granule
 - request_status_for_granule
 
-:::tip
-Currently, there is an IDE named [GraphiQL](https://github.com/graphql/graphiql)that can interact with GraphQL API calls and developers can query the server. 
-The live IDE can be seen [here](http://graphql.org/swapi-graphql). 
-:::
+## GraphQL IDE
+There are a few IDE that developers can use to interact with GraphQL API calls and query the server.
+- [GraphiQL](https://github.com/graphql/graphiql). The live IDE can be seen [here](http://graphql.org/swapi-graphql). 
+- [GraphQL Playground](https://github.com/graphql/graphql-playground)
+- [GraphQL IDE](https://github.com/andev-software/graphql-ide)
+
+## Useful tools
+The following tools might be  uueful for developers while working with GraphQL
+- GraphQL CLI- CLI for GraphQL development workflows.
+- GraphQL Docs- generates GraphQL documents.
+- GraphDoc- generates GraphQL documents.
+- GraphQL Network- useful for debugging.
+- GraphQL Voyager- for visualizing data relations.
+- GraphQL Config- useful for configuring dev environment with GraphQL schema.
+- GraphQL Bindings- SDK for sharing GraphQL APIs
+- GraphQL Boilerplates- useful for backend projects.
 
 #### Sources
 - https://graphql.org/learn/queries/
