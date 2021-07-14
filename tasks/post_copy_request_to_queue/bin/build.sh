@@ -100,6 +100,10 @@ cp ../shared_libraries/recovery/shared_recovery.py build/orca_shared/
 let return_code=$?
 check_rc $return_code "ERROR: Unable to copy shared library [orca_shared/shared_recovery.py]"
 
+cp ../shared_libraries/database/shared_db.py build/orca_shared/
+let return_code=$?
+check_rc $return_code "ERROR: Unable to copy shared library [orca_shared/shared_db.py]"
+
 ##TODO: Adjust build scripts to put shared packages needed under a task/build/packages directory.
 ##      and copy the packages from there.
 if [ ! -d "../package" ]; then
@@ -138,5 +142,11 @@ check_rc $return_code "ERROR: Failed to create zip archive."
 echo "INFO: Cleaning up build ..."
 deactivate
 rm -rf build
+# Remove the include dir from greenlet sqlalchemy
+rm -rf include
+rm -rf venv
+find . -type d -name "__pycache__" -exec rm -rf {} +
+# Remove the shared library
+rm -rf orca_shared
 
 exit 0

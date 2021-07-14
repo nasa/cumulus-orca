@@ -5,10 +5,6 @@
   "description": "The input for the request_files Lambda.",
   "type": "object",
   "properties": {
-    "job_id": {
-      "description": "The unique identifier used for tracking requests. If not present, will be generated.",
-      "type": "string"
-    },
     "granules": {
       "description": "A list of objects representing individual files to restore.",
       "type": "array",

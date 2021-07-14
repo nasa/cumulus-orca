@@ -4,8 +4,8 @@ set -e
 base=$(pwd)
 failed=0
 
-# Crawl the task directories
-for taskdir in `ls -d tasks/* | egrep -v 'request_status_for|shared_libraries|db_deploy|package|post_to_database|copy_files_to_archive|post_copy_request_to_queue|orca_catalog_reporting_dummy|copy_to_glacier_cumulus_translator' `
+# Crawl the task directories for tasks that do not have individual test scripts.
+for taskdir in $(ls -d tasks/* | egrep "copy_to_glacier$|extract_filepaths_for_granule|dr_dbutils|pg_utils")
 do
   # Build and run tests for each task directory
   cd $taskdir
@@ -47,7 +47,7 @@ done
 
 ## Call each tasks testing suite
 ## TODO: Add more logging output and possibly make asynchronus
-for task in $(ls -d tasks/* | egrep "request_status_|db_deploy|post_to_database|copy_files_to_archive|post_copy_request_to_queue|orca_catalog_reporting_dummy|copy_to_glacier_cumulus_translator")
+for task in $(ls -d tasks/* | egrep -v "copy_to_glacier$|extract_filepaths_for_granule|dr_dbutils|pg_utils|shared_libraries|package")
 do
   echo
   echo "Running tests in $task"

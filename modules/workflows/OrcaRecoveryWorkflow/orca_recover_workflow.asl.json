@@ -53,7 +53,8 @@
             "FullMessage": true
           },
           "task_config": {
-            "glacier-bucket": "${orca_default_bucket}"
+            "glacier-bucket": "${orca_default_bucket}",
+            "asyncOperationId": "{$.cumulus_meta.asyncOperationId}"
           }
         }
       },

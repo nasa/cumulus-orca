@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/request_files/schemas/config.json",
+  "title": "request_files Lambda Config",
+  "description": "The config for the request_files Lambda.",
+  "type": "object",
+  "properties": {
+    "glacier-bucket": {
+      "description": "The name of the glacier bucket from which the files will be restored. Defaults to OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY",
+      "type": "string"
+    },
+    "asyncOperationId": {
+      "description": "The unique identifier used for tracking requests. If not present, will be generated.",
+      "type": "string"
+    }
+  }
+}

@@ -52,7 +52,7 @@ class TestCopyToGlacierCumulusTranslatorUnit(
                 "name": "nameKey",
                 "filepath": "pathKey",
                 "bucket": "bucketKey",
-                "filename": "filenameKey",
+                "filename": "filenameKey"
             }
         }
         expected_input = {"granules": [{"granuleId": "some_granule_id", "files": []}]}
@@ -81,7 +81,7 @@ class TestCopyToGlacierCumulusTranslatorUnit(
                 "name": "nameKey",
                 "filepath": "pathKey",
                 "bucket": "bucketKey",
-                "filename": "filenameKey",
+                "filename": "filenameKey"
             }
         }
         expected_input = {
@@ -93,9 +93,9 @@ class TestCopyToGlacierCumulusTranslatorUnit(
                             "nameKey": "someName",
                             "pathKey": "somePath",
                             "bucketKey": "someBucket",
-                            "filenameKey": "someFilename",
+                            "filenameKey": "someFilename"
                         }
-                    ],
+                    ]
                 }
             ]
         }
@@ -112,14 +112,14 @@ class TestCopyToGlacierCumulusTranslatorUnit(
                                 "bucket": "someBucket",
                                 "filename": "someFilename",
                                 "filepath": "somePath",
-                                "name": "someName",
+                                "name": "someName"
                             }
                         ],
-                        "granuleId": "some_granule_id",
+                        "granuleId": "some_granule_id"
                     }
                 ]
             },
-            result["payload"],
+            result["payload"]
         )
 
     # noinspection PyPep8Naming
@@ -133,7 +133,7 @@ class TestCopyToGlacierCumulusTranslatorUnit(
                 "name": "nameKey",
                 "filepath": "pathKey",
                 "bucket": "bucketKey",
-                "filename": "filenameKey",
+                "filename": "filenameKey"
             }
         }
         expected_input = {
@@ -145,9 +145,9 @@ class TestCopyToGlacierCumulusTranslatorUnit(
                             "nameKey": "someName",
                             "pathKey": "somePath",
                             "bucketKey": "someBucket",
-                            "filenameKey": "someFilename",
+                            "filenameKey": "someFilename"
                         }
-                    ],
+                    ]
                 }
             ]
         }
@@ -178,7 +178,7 @@ class TestCopyToGlacierCumulusTranslatorUnit(
                 "name": "nameKey",
                 "filepath": "pathKey",
                 "bucket": "bucketKey",
-                "filename": "filenameKey",
+                "filename": "filenameKey"
             }
         }
         expected_input = {
@@ -190,15 +190,15 @@ class TestCopyToGlacierCumulusTranslatorUnit(
                             "nameKey": file0_name,
                             "pathKey": file0_path,
                             "bucketKey": file0_bucket,
-                            "filenameKey": file0_source,
+                            "filenameKey": file0_source
                         },
                         {
                             "nameKey": file1_name,
                             "pathKey": file1_path,
                             "bucketKey": file1_bucket,
-                            "filenameKey": file1_source,
-                        },
-                    ],
+                            "filenameKey": file1_source
+                        }
+                    ]
                 }
             ]
         }

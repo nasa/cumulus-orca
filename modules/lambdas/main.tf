@@ -380,15 +380,15 @@ resource "aws_lambda_function" "post_copy_request_to_queue" {
   }
   environment {
     variables = {
-      PREFIX                = var.prefix
-      DATABASE_PORT         = var.database_port
-      DATABASE_NAME         = var.database_name
-      DATABASE_USER         = var.database_app_user
-      DB_QUEUE_URL          = var.orca_sqs_status_update_queue_id
-      RECOVERY_QUEUE_URL    = var.orca_sqs_staged_recovery_queue_id
-      MAX_RETRIES           = var.orca_recovery_retry_limit
-      RETRY_SLEEP_SECS      = var.orca_recovery_retry_interval
-      RETRY_BACKOFF         = var.orca_recovery_retry_backoff
+      PREFIX             = var.prefix
+      DATABASE_PORT      = var.database_port
+      DATABASE_NAME      = var.database_name
+      APPLICATION_USER   = var.database_app_user
+      DB_QUEUE_URL       = var.orca_sqs_status_update_queue_id
+      RECOVERY_QUEUE_URL = var.orca_sqs_staged_recovery_queue_id
+      MAX_RETRIES        = var.orca_recovery_retry_limit
+      RETRY_SLEEP_SECS   = var.orca_recovery_retry_interval
+      RETRY_BACKOFF      = var.orca_recovery_retry_backoff
     }
   }
 }
@@ -461,7 +461,7 @@ resource "aws_lambda_function" "db_deploy" {
   filename         = "${path.module}/../../tasks/db_deploy/db_deploy.zip"
   handler          = "db_deploy.handler"
   memory_size      = var.orca_recovery_lambda_memory_size
-  runtime          = "python3.8"
+  runtime          = "python3.7"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/db_deploy/db_deploy.zip")
   tags             = local.tags
   timeout          = var.orca_recovery_lambda_timeout

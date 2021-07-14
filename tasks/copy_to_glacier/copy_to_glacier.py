@@ -89,7 +89,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     granules_list = event_input['granules']
     config = event['config']
 
-    collection = config.get(CONFIG_COLLECTION_KEY)
+    collection = config.get(CONFIG_COLLECTION_KEY, {})
     exclude_file_types = collection.get(COLLECTION_META_KEY, {}).get(EXCLUDE_FILE_TYPES_KEY, [])
 
     #TODO: Should look at bucket type orca and check for default
