@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/request_files/schemas/input.json",
+  "title": "request_files Lambda Input",
+  "description": "The input for the request_files Lambda.",
+  "type": "object",
+  "properties": {
+    "granules": {
+      "description": "A list of objects representing individual files to restore.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "granuleId": {
+            "description": "The id of the granule being restored.",
+            "type": "string"
+          },
+          "keys": {
+            "description": "Keys related to where the files will be located.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "description": "Name of the file within the granule.  # TODO: It actually might be a path.",
+                  "type": "string"
+                },
+                "dest_bucket": {
+                  "description": "The bucket the restored file will be moved to after the restore completes.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "dest_bucket"
+              ]
+            }
+          }
+        },
+        "required": [
+          "granuleId",
+          "keys"
+        ]
+      }
+    }
+  },
+  "required": [
+    "granules"
+  ]
+}

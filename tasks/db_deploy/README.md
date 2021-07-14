@@ -1,219 +1,178 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/db_deploy/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/db_deploy/requirements.txt)
 
-**Lambda function db_deploy **
+Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/development-guide/code/contrib-code-intro)
+for information on environment setup and testing.
 
-- [Setup](#setup)
-  * [Docker Database Setup](#docker-db-setup)
-- [Development](#development)
-  * [Unit Testing and Coverage](#unit-testing-and-coverage)
-  * [Linting](#linting)
-- [Deployment](#deployment)
-  * [Deployment Validation](#deployment-validation)
-- [pydoc db_deploy](#pydoc)
+# Lambda Function db_deploy
 
-<a name="setup"></a>
-# Setup
-    See the README in the tasks folder for general development setup instructions
-    See the README in the tasks/dr_dbutils folder to install dr_dbutils
+The **db_deploy** Lambda performs an install of ORCA objects into a PostgreSQL
+database. The Lambda will check various attributes of the database and perform
+either a fresh install of the ORCA schema, roes, users, and tables or a
+migration from an older ORCA schema to the currently supported ORCA schema
+version. This lambda is designed to run once during a terraform deployment of
+the ORCA version.
 
-<a name="docker-db-setup"></a>
-## Docker Database Setup
-```
-The unit tests run against a Docker instance of Postgres. No methods are mocked.
+The following sections going into more detail on utilizing this Lambda.
 
-Setup the Database instance in Docker:
-Substitute actual values for these placeholders throughout this README:
-    %DB_PW_HERE%    the actual password for the app users database login
-    %MASTER_USER_PW_HERE% the actual password for the master user
-    %GIT_WORK_DIR%  the directory where you cloned the repo to (ex. '/home/myuser/dr-podaac-swot'
-    %DOCKER_HOST%   the Docker hostname
-    %DB_PORT%       the datbase port. The standard is 5432.
-    %DB_NAME%       from database/ddl/base/database/database_create.sql
-    %APP_USER_NAME% from database/ddl/base/users/appuser.sql
+- [Testing db_deploy](#test-db_deploy) - Testing the lambda via unit and manual tests
+- [Building db_deploy](#building-db_deploy) - Building the lambda and documentation.
+- [Deploying db_deploy](#deploying-db_deploy) - Deploying and using the db_deploy lambda
+- [db_deploy API Reference](#db_deploy-api-reference) - API refrence
 
-On a Docker server:
-->setenv PASS %DB_PW_HERE%; docker run -p 5432:%DB_PORT% -e POSTGRES_PASSWORD=$PASS --name daac_db -d postgres:11.4 
-->bash
-(this next command maps %GIT_WORK_DIR%/database to /data inside the container)
-bash-4.2$docker run -it --rm -v %GIT_WORK_DIR%/database:/data postgres:11.4 /bin/bash
-root@883bc270c77f:/# cd /data/base
-root@883bc270c77f:/data/base# psql -h %DOCKER_HOST% -U postgres postgres
-Password for user postgres:  %DB_PW_HERE%
 
-To list the databases:
-postgres-# \l
-                                     List of databases
-       Name        |  Owner   | Encoding |  Collate   |   Ctype    |   Access privileges
--------------------+----------+----------+------------+------------+------------------------
- postgres          | postgres | UTF8     | en_US.utf8 | en_US.utf8 |
- template0         | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres           +
-                   |          |          |            |            | postgres=CTc/postgres
- template1         | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres           +
-                   |          |          |            |            | postgres=CTc/postgres
+## Testing db_deploy
 
-To change the password for the appuser:
-postgres=# \password %APP_USER_NAME%
-Enter new password:
-Enter it again:
+There are several methods for testing **db_deploy**. The various testing methods
+are outlined in the sections below.
 
-To exit psql:
-postgres=# \q
 
-Connect to the DB in AquaData Studio:
-Right click on ‘PostgreSQL Servers’ and click ‘Register Server’
-Choose PostgreSQL on the left.
-Name:  dr docker - postgres
-Login Name:  postgres       
-Password:    %MASTER_USER_PW_HERE%
-Host:   %DOCKER_HOST%
-Port: %DB_PORT%
-Database:  postgres  
-```
-<a name="development"></a>
-# Development
+### Unit Testing db_deploy
 
-<a name="unit-testing-and-coverage"></a>
-## Unit Testing and Coverage
-```
-To run the tests you'll need to define these 5 environment variables in a file
-named `private_config.json` in the `test/large_tests/` folder. Do NOT check it into GIT. 
-ex:
-(podr2) λ cat private_config.json 
-{"DATABASE_HOST": "%DOCKER_HOST%",
-"DATABASE_PORT": "%DB_PORT%", 
-"DATABASE_NAME": "%DB_NAME%",
-"DATABASE_USER": "%APP_USER_NAME%",
-"DATABASE_PW": "%DB_PW_HERE%",
-"MASTER_USER_PW": %MASTER_USER_PW_HERE%}
+To run unit tests for **db_deploy** run the `bin/run_tests.sh` script from the
+`tasks/db_deploy` directory. Ideally, the tests should be run in a docker
+container. The following shows setting up a container to run the tests.
 
-## Create docker container with DB for testing
+```bash
+# Invoke a docker container in interactive mode.
+user$ docker run \
+      -it \
+      --rm \
+      -v /path/to/cumulus-orca/repo:/data \
+      amazonlinux:2 \
+      /bin/bash
 
-`docker run -it --rm --name some-postgres -v /Users/jmcampbell/cumulus-orca/database/ddl/base:/docker-entrypoint-initdb.d/ -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres`
+# Install the python development binaries
+bash-4.2# yum install python3-devel
 
-*In another terminal:*
+# In the container cd to /data
+bash-4.2# cd /data
 
-`docker run -it --rm --network host -e POSTGRES_PASSWORD=<new_password> postgres psql -h localhost -U postgres`
+# Go to the task
+bash-4.2# cd tasks/db_deploy/
 
-```
-psql=# ALTER USER druser WITH PASSWORD 'new_password';
+# Run the tests
+bash-4.2# bin/run_tests.sh
 ```
 
-Once you've made these changes, update your `private_config.json` file with:
+Note that Bamboo will run this same script via the `bin/run_tests.sh` script found
+in the cumulus-orca base of the repo.
 
-```json
-{
-    "DATABASE_USER": "druser",
-    "DATABASE_PW": "<the value you added"
-}
 
-### Note that you have to use the druser account, otherwise the schema path won't quite match and you may receive errors like "table doesn't exist"
+### Manually Testing db_deploy
 
-λ activate podr
+To manually test the db_deploy application against a real database, follow the
+instructions laid out in the [manual test documentation](test/manual_tests/README.md).
 
-(podr) λ cd C:\devpy\poswotdr\tasks\db_deploy
-(podr) λ coverage run --source db_deploy -m pytest
-(podr) λ coverage report
 
-Name           Stmts   Miss  Cover
-----------------------------------
-db_deploy.py     159      0   100%
-----------------------------------------------------------------------
-Ran 8 tests in 0.987s
+### Integration Testing of db_deploy
 
+To perform integration testing, make sure version 2.0.1 or older of the ORCA
+module is installed into your Cumulus instance and several recovery jobs have
+been run and are in various states (pending, error, complete). Status values
+may have to be manipulated in the PostgreSQL database to achieve a full test.
+
+Upload the latest version of the **db_deploy** Lambda code to AWS using the
+AWS CLI `aws lambda update-function-code --function-name <prefix>_db_deploy --zip-file fileb://db_deploy.zip --profile <profile-name>`.
+
+Using the AWS Lambda interface for db_deploy perform the following steps:
+
+1. Make sure the following environment variables are set for the Lambda. The
+   defaults are provided in parentheses.
+   ```
+   PREFIX           - Your var.prefix value from variables.tfvars
+   AWS_REGION       - Your var.region value from variables.tfvars (us-west-2)
+   DATABASE_PORT    = Your var.database_port value from variables.tfvars (5432)
+   DATABASE_NAME    = Your var.database_name value from variables.tfvars (disaster_recovery)
+   APPLICATION_USER = Your var.database_app_user value from variables.tfvars (orcauser)
+   ROOT_USER        = "postgres"
+   ROOT_DATABASE    = "postgres"
+   ```
+2. Create an empty JSON test event.
+   ```
+   {}
+   ```
+3. Perform validation of the migration similar to the tests and commands provided
+   in the [manual test documentation](test/manual_tests/README.md) for validating
+   a migration.
+4. Check the Lambda logs and error messages in CloudWatch.
+
+
+## Building db_deploy
+
+To build the db_deploy API documentation and lambda zip file use the provided
+scripts. Information on the scripts is provided in the following sections.
+
+### Building API documentation
+
+To build the lambda API documentation, run the `bin/build_doc.sh` script from the
+`tasks/db_deploy` directory. Ideally, the build document should be run in the
+same docker container as tests.
+
+```bash
+# Invoke a docker container in interactive mode.
+user$ docker run \
+      -it \
+      --rm \
+      -v /path/to/cumulus-orca/repo:/data \
+      amazonlinux:2 \
+      /bin/bash
+
+# Install the python development binaries
+bash-4.2# yum install python3-devel
+
+# In the container cd to /data
+bash-4.2# cd /data
+
+# Go to the task
+bash-4.2# cd tasks/db_deploy/
+
+# Run the build
+bash-4.2# bin/build_doc.sh
 ```
-<a name="linting"></a>
-## Linting
+
+Once the `API.md` file is created successfully, make sure to commit the file to
+the repository.
+
+
+### Building the Lambda zip file
+
+To build the lambda, run the `bin/build.sh` script from the `tasks/db_deploy`
+directory. Ideally, the build should be run in the same docker container as tests.
+
+```bash
+# Invoke a docker container in interactive mode.
+user$ docker run \
+      -it \
+      --rm \
+      -v /path/to/cumulus-orca/repo:/data \
+      maven.earthdata.nasa.gov/aws-sam-cli-build-image-python3.8:latest \
+      /bin/bash
+
+# In the container cd to /data
+bash-4.2# cd /data
+
+# Go to the task
+bash-4.2# cd tasks/db_deploy/
+
+# Run the build
+bash-4.2# bin/build.sh
 ```
-Run pylint against the code:
 
-(podr) λ cd C:\devpy\poswotdr\tasks\db_deploy
-(podr) λ pylint db_deploy.py
---------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
+Note that Bamboo will run this same script via the `bin/build_tasks.sh` script found
+in the cumulus-orca base of the repo.
 
-(podr) λ pylint utils/database.py
-************* Module utils.database
-utils\database.py:22:1: W0511: TODO develop tests for database.py later. in those mock psycopg2.cursor, etc (fixme)
-------------------------------------------------------------------
-Your code has been rated at 9.77/10 (previous run: 9.77/10, +0.00)
 
-(podr) λ pylint test/test_db_deploy.py
---------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
+## Deploying db_deploy
 
-```
-<a name="deployment"></a>
-## Deployment
-```
-    see /bin/build_tasks.sh to build the zip file. Upload the zip file to AWS.
-```
-<a name="deployment-validation"></a>
-### Deployment Validation
-```
-1.  When deploying the complete Disaster Recovery Solution, this lambda is 
-    excuted as part of the deployment and should create the disaster_recovery
-    database. Use the request_status lambda to query it.
-    
-    If you are in a sandbox environment, and want to re-create the database,
-    set the DROP_DATABASE environment variable to True. To update the tables in 
-    an existing database set it to False.
+Generally **db_deploy** should be deployed as part of the ORCA terraform
+deployment. The deployment can be done manually by using the AWS CLI to upload
+the zip file created in the [build step](#building-the-lambda-zip-file) with the
+proper variables. See the [integation testing section](#integration-testing-of-db_deploy)
+of this document for more information on validating the deployment.
 
-2.  Set the following environment variables
-    DATABASE_PORT   %DB_PORT%
-    DATABASE_NAME   %DB_NAME%
-    DATABASE_USER   %APP_USER_NAME%
-    DDL_DIR         ddl/
-    DROP_DATABASE   True to perform DROP_DATABASE, False to keep existing database
-    PLATFORM        AWS 
 
-3.  create an empty JSON test event:
-    {}
-    Execute the test event.
+## db_deploy API Reference
 
-4.  Use the request_status lambda to verify the database.
-```
-<a name="pydoc"></a>
-## pydoc db_deploy
-```
-NAME
-    db_deploy - Name: db_deploy.py
+API reference information is available in the [API Reference documentation.](API.md).
 
-DESCRIPTION
-    Description:  Deploys a database, roles, users, schema, and tables.
 
-CLASSES
-    builtins.Exception(builtins.BaseException)
-        DatabaseError
-
-    class DatabaseError(builtins.Exception)
-     |  Exception to be raised when there's a database error.
-
-FUNCTIONS
-    handler(event, context)
-    
-        This task will create the database, roles, users, schema, and tables.
-
-            Environment Vars:
-                DATABASE_PORT (string): the database port. The standard is 5432.
-                DATABASE_NAME (string): the name of the database being created.
-                DATABASE_USER (string): the name of the application user.
-                DROP_DATABASE (bool, optional, default is False): When true, will
-                    execute a DROP DATABASE command.
-                PLATFORM (string): 'onprem' or 'AWS'
-
-            Parameter Store:
-                drdb-user-pass (string): the password for the application user (DATABASE_USER).
-                drdb-host (string): the database host
-                drdb-admin-pass: the password for the admin user
-
-            Args:
-                event (dict): empty
-                    Example: event: {}
-                context (Object): None
-
-            Returns:
-                string: status description.
-
-            Raises:
-                DatabaseError: An error occurred.
-```

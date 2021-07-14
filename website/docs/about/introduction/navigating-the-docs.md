@@ -6,7 +6,7 @@ description: Provides tips and tricks to navigate the ORCA documentation.
 ## Developer Documents
 
 ### ORCA Developer Documentation
-ORCA developer documentation can be found [here](../../developer/developer-intro.md).
+ORCA developer documentation can be found [here](../../developer/quickstart/developer-intro.md).
 
 ORCA README documents in the [ORCA main repository](https://github.com/nasa/cumulus-orca).
 

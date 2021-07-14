@@ -5,7 +5,7 @@ set -e
 rm -rf venv
 python3 -m venv venv
 source venv/bin/activate
-pip install --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org
+pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org
 deactivate
 echo "pwd `pwd`"
 
@@ -17,26 +17,6 @@ if [ ! -d "awslambda-psycopg2" ]; then
 fi
 cd ../../
 
-TASK='tasks/db_deploy/'
-echo "Building `pwd`/${TASK}"
-cd "`pwd`/${TASK}"
-rm -rf build
-mkdir build
-source ../../venv/bin/activate
-pip install -t build -r requirements.txt --trusted-host pypi.org --trusted-host pypi.org --trusted-host files.pythonhosted.org
-deactivate
-cp db_deploy.py build/
-cd build
-mkdir psycopg2
-mkdir ddl
-cd ..
-cp ../package/awslambda-psycopg2/psycopg2-3.7/* build/psycopg2/
-cp -r ../../database/ddl/base/* build/ddl/
-cd build
-zip -r "../db_deploy.zip" .
-cd ..
-rm -rf build
-cd ../../
 
 TASK='tasks/extract_filepaths_for_granule/'
 echo "Building `pwd`/${TASK}"
@@ -44,70 +24,12 @@ cd "`pwd`/${TASK}"
 rm -rf build
 mkdir build
 source ../../venv/bin/activate
-pip install -t build -r requirements.txt --trusted-host pypi.org --trusted-host pypi.org --trusted-host files.pythonhosted.org
+pip install -q -t build -r requirements.txt --trusted-host pypi.org --trusted-host pypi.org --trusted-host files.pythonhosted.org
 deactivate
 cp *.py build/
 cd build
-zip -r "../extract_filepaths_for_granule.zip" .
+zip -qr "../extract_filepaths_for_granule.zip" .
 cd ../../../
-
-TASK='tasks/request_status/'
-echo "Building `pwd`/${TASK}"
-cd "`pwd`/${TASK}"
-rm -rf build
-mkdir build
-source ../../venv/bin/activate
-pip install -t build -r requirements.txt --trusted-host pypi.org --trusted-host pypi.org --trusted-host files.pythonhosted.org
-deactivate
-cp request_status.py build/
-cd build
-mkdir psycopg2
-cd ..
-cp ../package/awslambda-psycopg2/psycopg2-3.7/* build/psycopg2/
-cd build
-zip -r "../request_status.zip" .
-cd ..
-rm -rf build
-cd ../../
-
-TASK='tasks/copy_files_to_archive/'
-echo "Building `pwd`/${TASK}"
-cd "`pwd`/${TASK}"
-rm -rf build
-mkdir build
-source ../../venv/bin/activate
-pip install -t build -r requirements.txt --trusted-host pypi.org --trusted-host pypi.org --trusted-host files.pythonhosted.org
-deactivate
-cp copy_files_to_archive.py build/
-cd build
-mkdir psycopg2
-cd ..
-cp ../package/awslambda-psycopg2/psycopg2-3.7/* build/psycopg2/
-cd build
-zip -r "../copy_files_to_archive.zip" .
-cd ..
-rm -rf build
-cd ../../
-	
-TASK='tasks/request_files/'
-echo "Building `pwd`/${TASK}"
-cd "`pwd`/${TASK}"
-rm -rf build
-mkdir build
-source ../../venv/bin/activate
-pip install -t build -r requirements.txt --trusted-host pypi.org --trusted-host pypi.org --trusted-host files.pythonhosted.org
-deactivate
-cp request_files.py build/
-cd build
-mkdir psycopg2
-cd ..
-cp ../package/awslambda-psycopg2/psycopg2-3.7/* build/psycopg2/
-cd build
-zip -r "../request_files.zip" .
-cd ..
-rm -rf build
-cd ../../
-
 
 TASK='tasks/copy_to_glacier/'
 echo "Building `pwd`/${TASK}"
@@ -115,11 +37,29 @@ cd "`pwd`/${TASK}"
 rm -rf build
 mkdir build
 source ../../venv/bin/activate
-pip install -t build -r requirements.txt --trusted-host pypi.org --trusted-host pypi.org --trusted-host files.pythonhosted.org
+pip install -q -t build -r requirements.txt --trusted-host pypi.org --trusted-host pypi.org --trusted-host files.pythonhosted.org
 deactivate
 cp *.py build/
 cd build
-zip -r "../copy_to_glacier.zip" .
+zip -qr "../copy_to_glacier.zip" .
 cd ..
 rm -rf build
 cd ../../
+
+failure=0
+for TASK in $(ls -d tasks/* | egrep -v "copy_to_glacier$|extract_filepaths_for_granule|package|dr_dbutils|pg_utils|shared_libraries")
+do
+  echo "Building ${TASK}"
+  cd ${TASK}
+  bin/build.sh
+  return_code=$?
+  cd -
+
+  if [ $return_code -ne 0 ]; then
+    echo "ERROR: Building of $TASK failed."
+    failure=1
+  fi
+done
+
+
+exit $failure

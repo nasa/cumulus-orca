@@ -1,0 +1,3 @@
+boto3~=1.12.47
+cumulus-message-adapter-python>=1.1.1
+SQLAlchemy~=1.4.13

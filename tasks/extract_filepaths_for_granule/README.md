@@ -1,59 +1,16 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/extract_filepaths_for_granule/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/extract_filepaths_for_granule/requirements.txt)
 
-**Lambda function extract_filepaths_for_granule **
+Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/development-guide/code/contrib-code-intro) for information on environment setup and testing.
 
-- [Setup](#setup)
-- [Development](#development)
-  * [Unit Testing and Coverage](#unit-testing-and-coverage)
-  * [Linting](#linting)
+**Lambda function extract_filepaths_for_granule**
+
 - [Deployment](#deployment)
   * [Deployment Validation](#deployment-validation)
 - [pydoc extract_filepaths_for_granule](#pydoc)
 
-<a name="setup"></a>
-# Setup
-    See the README in the tasks folder for general development setup instructions
-
 <a name="development"></a>
 # Development
 
-<a name="unit-testing-and-coverage"></a>
-## Unit Testing and Coverage
-```
-Run the unit tests with code coverage:
-
-λ activate podr
-
-(podr) λ cd C:\devpy\poswotdr\tasks\extract_filepaths_for_granule
-(podr) λ coverage run --source extract_filepaths_for_granule -m pytest
-(podr) λ coverage report
-
-Name                               Stmts   Miss  Cover
-------------------------------------------------------
-extract_filepaths_for_granule.py      50      1    98%
-----------------------------------------------------------------------
-Ran 8 tests in 0.781s
-
-```
-<a name="linting"></a>
-## Linting
-```
-Run pylint against the code:
-
-(podr) λ cd C:\devpy\poswotdr\tasks\extract_filepaths_for_granule
-(podr) λ pylint extract_filepaths_for_granule.py
---------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-
-(podr) λ pylint test/test_extract_file_paths_for_granule.py
---------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-
-pylint test/helpers.py
---------------------------------------------------------------------
-Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
-```
-<a name="deployment"></a>
 ## Deployment
 ```
     cd tasks\extract_filepaths_for_granule
@@ -76,7 +33,7 @@ Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
     Edit the ['payload']['granules']['keys'] values as needed to be the file(s) you wish to restore.
     Edit the ['cumulus_meta']['execution_name'] to be something unique (like yyyymmdd_hhmm). Then
     copy and paste the same value to the execution name field above the input field.
-    
+
 2.  Execute the workflow. Once it passes the extract step, you can look at the output from it.
 ```
 <a name="pydoc"></a>
@@ -94,7 +51,7 @@ CLASSES
 
     class ExtractFilePathsError(builtins.Exception)
      |  Exception to be raised if any errors occur
-     
+
 FUNCTIONS
     handler(event, context)
         Lambda handler. Extracts the key's for a granule from an input dict.

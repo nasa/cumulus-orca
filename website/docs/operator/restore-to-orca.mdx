@@ -1,0 +1,115 @@
+---
+id: restore-to-orca
+title: Restoring Data to ORCA
+description: Provides documentation for Operators to restore data back to ORCA.
+---
+
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
+The following operations procedure details how an operator would re-ingest data
+into ORCA through the Cumulus Dashboard without running a full ingest pipeline.
+At a high level, the following steps should be used to manually ingest data into
+ORCA.
+
+1. Use the Cumulus Dashboard Granule Bulk Operations functionality to run the
+   **OrcaCopyToArchiveWorkflow** step function against the granules that need to
+   be ingested into ORCA.
+2. Monitor the execution status of the job and workflows.
+
+The sections below go into further detail on how to accomplish the high level
+steps above.
+
+## Submit Granules to be Restored in ORCA
+
+The following steps will guide the operator through submitting a bulk operation
+to restore data in ORCA.
+
+1. On the **Granules** tab of the Cumulus Dashboard, click on the **Granule Actions**
+   button. The button is highlighted in figure 1 below.
+  <img alt="Selecting Granule Actions on the Granules tab on Cumulus dashboard"
+      src={useBaseUrl('img/restore-orca-granule-tab.png')} />
+
+   **Figure 1. Selecting Granule Actions to Perform Bulk Operations**
+
+2. Under **Granule Actions** click on the **Run Bulk Granules** button highlighted
+   below in figure 2.
+   <img alt="Selecting the Run Bulk Granules Button under Granule Actions"
+       src={useBaseUrl('img/restore-orca-run-bulk-granules.png')} />
+
+   **Figure 2. Select the Run Bulk Granules Button**
+
+
+3. In the bulk operations pop up click on the **Bulk Operations** button as seen
+   below in figure 3.
+   <img alt="Selecting the Bulk Operations Button"
+       src={useBaseUrl('img/restore-orca-run-bulk-operations.png')} />
+
+   **Figure 3. Select the Bulk Operations Button**
+
+4. Fill out the details in the **Bulk Operations** form utilizing any of the bulk
+   operations methods to provide the list of granules to act upon.
+   :::important Workflow Name
+    Make sure that the workflow name value is set to **OrcaCopyToArchiveWorkflow**
+    as seen below in the figure.
+
+    ```json
+    {
+      "WorkflowName": "OrcaCopyToArchiveWorkflow",
+      "index": "",
+      "query": "",
+      "ids": [],
+      "meta": {}
+    }
+    ```
+   :::
+   Figure 4 below shows using the *ids* key to list granules to act upon.
+   Once the form is filled out, click the **Run Bulk Operations** button.
+   <img alt="Filling out the Bulk Operations Form."
+       src={useBaseUrl('img/restore-orca-bulk-operations-form.png')} />
+
+   **Figure 4. Filling out the Bulk Operations Form**
+
+5. Save the Job ID value displayed in the **Bulk Granule Operations** pop up
+   window as seen below in figure 5. The ID will be used used for monitoring.
+   Click on the **Go To Operations** button to begin monitoring the job.
+   <img alt="Saving the Job ID for monitoring."
+       src={useBaseUrl('img/restore-orca-bulk-operations-id.png')} />
+
+   **Figure 5. Saving the Job ID**
+
+
+## Monitor Executions and Job Status
+
+Monitoring the Bulk Granule Operations Job and *OrcaCopyToArchiveWorkflow*
+workflow can be done through the *Operations* and *Executions* tabs. The Job ID
+obtained from step 5 in the [Submit Granules to be Restored in ORCA](#submit-granules-to-be-restored-in-orca)
+section above will be needed for monitoring.  The sections below go into more details.
+
+
+### Monitoring the Overall Job via the Operations Tab
+
+Using the obtained Job ID, the operations can be filtered. The page will provide
+information on the overall bulk granule operations job and the status. This page
+does not contain any further drill down, but an operator can view the *Executions*
+tab for additional information. Figure 6 below shows the status of a job
+submitted in the example used in the above figures.
+
+<img alt=""
+    src={useBaseUrl('img/restore-orca-operations-view.png')} />
+
+**Figure 6. Monitoring the Operations Tab**
+
+
+### Monitoring Individual Granules Executions via the Executions Tab
+
+Using the obtained Job ID (*asyncOperationsId*), the executions can be filtered.
+The page will provide the operator with information on each specific execution of the
+*OrcaCopyToArchiveWorkflow* workflow. There is one execution per granule. The
+execution can be drilled down further to look at failures and logs. Figure 7
+below shows the status of executions based on a Job ID.
+
+<img alt=""
+    src={useBaseUrl('img/restore-orca-executions-view.png')} />
+
+**Figure 7. Monitoring the Executions Tab**
+

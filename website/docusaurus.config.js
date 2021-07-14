@@ -1,11 +1,11 @@
 module.exports = {
   title: 'Operational Recovery Cloud Archive (ORCA)',
   tagline: 'Providing a second line of defense for your Cumulus data.',
-  url: 'https://nasa.github.io/docs/cumulus-orca',
-  baseUrl: '/',
+  url: 'https://nasa.github.io/cumulus-orca/',
+  baseUrl: '/cumulus-orca/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
-  favicon: 'static/img/favicon.ico',
+  favicon: 'img/favicon.ico',
   organizationName: 'nasa', // Usually your GitHub org/user name.
   projectName: 'cumulus-orca', // Usually your repo name.
   themeConfig: {
@@ -13,7 +13,7 @@ module.exports = {
       title: 'Operational Recovery Cloud Archive (ORCA)',
       logo: {
         alt: 'ORCA site logo',
-        src: 'static/img/cumulus-orca-logo.svg',
+        src: 'img/cumulus-orca-logo.svg',
       },
       items: [
         {
@@ -23,7 +23,7 @@ module.exports = {
           position: 'right',
         },
         {
-          to: 'docs/developer/developer-intro',
+          to: 'docs/developer/quickstart/developer-intro',
           activeBasePath: 'docs/developer/',
           label: 'Developer Guide',
           position: 'right',
@@ -55,11 +55,11 @@ module.exports = {
           items: [
             {
               label: 'About ORCA',
-              to: 'docs/about/orca-intro',
+              to: 'docs/about/introduction/orca-intro',
             },
             {
               label: 'ORCA Developer Guide',
-              to: 'docs/developer/developer-intro',
+              to: 'docs/developer/quickstart/developer-intro',
             },
             {
               label: 'ORCA Cookbooks',
@@ -114,7 +114,6 @@ module.exports = {
       {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
-          // Please change this to your repo.
           editUrl:
             'https://github.com/nasa/cumulus-orca/edit/develop/website/',
         },

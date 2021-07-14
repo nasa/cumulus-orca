@@ -1,3 +1,7 @@
+[![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/copy_to_glacier/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/copy_to_glacier/requirements.txt)
+
+Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/development-guide/code/contrib-code-intro) for information on environment setup and testing.
+
 ## Description
 
 The `copy_to_glacier` module is meant to be deployed as a lambda function that takes a Cumulus message, extracts a list of files, and copies those files from their current storage location into a staging/glacier location.
@@ -11,7 +15,7 @@ You are able to specify a list of file types (extensions) that you'd like to exc
 {
   ...
   "meta": {
-    "exclue_file_type": [".cmr", ".xml", ".cmr.xml"]
+    "excludeFileTypes": [".cmr", ".xml", ".cmr.xml"]
   }
 }
 ```
@@ -41,7 +45,7 @@ resource "aws_lambda_function" "copy_to_glacier" {
   function_name    = "${var.prefix}_copy_to_glacier"
   filename         = "${path.module}/../../tasks/copy_to_glacier/copy_to_glacier.zip"
   source_code_hash = filemd5("${path.module}/../../tasks/copy_to_glacier/copy_to_glacier.zip")
-  handler          = "handler.handler"
+  handler          = "copy_to_glacier.handler"
   role             = module.restore_object_arn.restore_object_role_arn
   runtime          = "python3.7"
   memory_size      = 2240
@@ -56,19 +60,6 @@ resource "aws_lambda_function" "copy_to_glacier" {
     }
   }
 ```
-
-## Testing & Linting
-
-This example uses `pytest`, a package for testing Python projects.
-
-```
-# pytest and coverage are installed as part of requirements-dev.txt
-coverage run --source copy_to_glacier -m pytest # Run the tests
-...
-coverage report -m # Report the coverage stats
-```
-
-Manual integration testing is being worked on. TBD.
 
 ## Input
 
@@ -205,7 +196,7 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_glaci
 
 ```
 NAME
-    handler
+    copy_to_glacier
 
 FUNCTIONS
     copy_granule_between_buckets(source_bucket_name: str, source_key: str, destination_bucket: str, destination_key: str) -> None
@@ -215,11 +206,11 @@ FUNCTIONS
             source_key: source Granule path excluding s3://[bucket]/
             destination_bucket: The name of the bucket the granule is to be copied to.
             destination_key: Destination granule path excluding s3://[bucket]/
-    
+
     handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any
         Lambda handler. Runs a cumulus task that
         copies the files in {event}['input'] from the collection specified in {config} to the {config}'s 'glacier' bucket.
-        
+
         Args:
             event: Event passed into the step from the aws workflow. A dict with the following keys:
                 input (dict): Dictionary with the followig keys:
@@ -242,13 +233,13 @@ FUNCTIONS
                     buckets (dict): A dict with the following keys:
                         glacier (dict): A dict with the following keys:
                             name (str): The name of the bucket to copy to.
-        
-        
+
+
             context: An object required by AWS Lambda. Unused.
-        
+
         Returns:
             The result of the cumulus task.
-    
+
     should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -> bool
         Tests whether or not file is included in {excludeFileTypes} from copy to glacier.
         Args:
@@ -256,14 +247,14 @@ FUNCTIONS
             exclude_file_types: List of extensions to exclude in the backup
         Returns:
             True if file should be excluded from copy, False otherwise.
-    
+
     task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str, Any]
         Copies the files in {event}['input'] from the collection specified in {config} to the {config}'s 'glacier' bucket.
-        
+
         Args:
             event: Passed through from {handler}
             context: An object required by AWS Lambda. Unused.
-        
+
         Returns:
             A dict with the following keys:
                 granules (List[Dict[str, Union[str, bytes, list]]]): A list of dicts where each dict has the following keys:

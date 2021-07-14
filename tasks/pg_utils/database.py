@@ -11,7 +11,7 @@ import os
 import uuid
 from contextlib import contextmanager
 # noinspection PyPackageRequirements
-from typing import Optional, Union, List, Dict
+from typing import Optional, Union, List, Dict, Tuple
 
 # noinspection PyPackageRequirements
 import boto3
@@ -104,7 +104,7 @@ def get_connection(dbconnect_info: Dict[str, Union[str, int]]) -> connection:
     # create and yield a connection
     try:
         db_port = dbconnect_info['db_port']
-    except ValueError:
+    except ValueError:  # todo: Shouldn't this be KeyError?
         db_port = 5432
 
     new_connection = None
@@ -154,7 +154,7 @@ def get_cursor(dbconnect_info: Dict[str, Union[str, int]]) -> cursor:
             conn_cursor.close()
 
 
-def single_query(sql_stmt, dbconnect_info: Dict[str, Union[str, int]], params=None) -> List:
+def single_query(sql_stmt, dbconnect_info: Dict[str, Union[str, int]], params=None) -> List[Tuple]:
     """
     This is a convenience function for running single statement transactions
     against the database. It will automatically commit the transaction and
@@ -230,6 +230,8 @@ def read_db_connect_info(param_source):  # todo: wha?
     return dbconnect_info
 
 
+# todo: Duplicate name with other dist. get_db_connect_variable?
+# todo: Also, has nothing directly to do with connect_info. get_env_or_secretsmanager_variable?
 def get_db_connect_info(env_or_secretsmanager: str, param_name: str) -> str:
     f"""
     This function will retrieve a database connection parameter from
@@ -250,7 +252,7 @@ def get_db_connect_info(env_or_secretsmanager: str, param_name: str) -> str:
     return param_value
 
 
-def multi_query(sql_stmt, params, db_cursor: cursor) -> List:
+def multi_query(sql_stmt, params, db_cursor: cursor) -> List[Tuple]:
     """
     This function will use the provided cursor to run the query instead of
     retrieving one itself. This is intended to be used when the caller wants
@@ -263,7 +265,7 @@ def multi_query(sql_stmt, params, db_cursor: cursor) -> List:
     return _query(sql_stmt, params, db_cursor)
 
 
-def _query(sql_stmt, params, db_cursor: cursor) -> List:
+def _query(sql_stmt, params, db_cursor: cursor) -> List[Tuple]:
     """
     Wrapper for running queries that will automatically handle errors in a
     consistent manner.
@@ -295,7 +297,7 @@ def return_connection(dbconnect_info) -> connection:
     # create a connection
     try:
         db_port = dbconnect_info['db_port']
-    except ValueError:
+    except ValueError:  # todo: Repeated code, plus ValueError vs KeyError.
         db_port = 5432
 
     try:

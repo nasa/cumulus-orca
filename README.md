@@ -1,3 +1,22 @@
+## ORCA Static Documentation
+
+ORCA documentation can be found at [nasa.github.io/cumulus-orca](https://nasa.github.io/cumulus-orca). 
+The documentation is available for developers, data managers, and users.
+Additional documentation is being added continually.
+
+Make sure you are using the following node.js versions to view the documentation.
+- npm 6.14.10
+- node 12.15.0
+
+Further ORCA documentation can be read locally by performing the following:
+```
+cd website
+npm install
+npm run start
+```
+
+Once the server is running, documentation should be available on `http://localhost:3000`.
+
 ## Clone and build Operational Recovery Cloud Archive (ORCA)
 
 Clone the `dr-podaac-swot` repo from https://github.com/ghrcdaac/operational-recovery-cloud-archive
@@ -6,9 +25,9 @@ Clone the `dr-podaac-swot` repo from https://github.com/ghrcdaac/operational-rec
 git clone https://github.com/ghrcdaac/operational-recovery-cloud-archive
 ```
 ## Build lambdas
-Before you can deploy this infrastructure, you must download the release zip or the build the lambda function source-code locally.
+Before you can deploy this infrastructure, you must download the release zip, or the build the lambda function source-code locally.
 
-`./bin/build_tasks.sh` will crawl the `tasks` directory and build a `.zip` file (currently by just `zipping` all python files and dependencies) in each of it's sub-directories. That `.zip` is then referenced in the `modules/lambdas/main.tf` lamdba definitions.
+`./bin/build_tasks.sh` will crawl the `tasks` directory and build a `.zip` file (currently by just `zipping` all python files and dependencies) in each of it's sub-directories. That `.zip` is then referenced in the `modules/lambdas/main.tf` lambda definitions.
 
 ```
 ./bin/build_tasks.sh
@@ -141,7 +160,7 @@ First, run a `mv terraform.tfvars.example terraform.tfvars` to get a template `t
   Defaults to 0.
 * `ddl_dir` - the location of the ddl dir that contains the sql to create the application database. 
   Defaults to 'ddl/'.
-* `drop_database` - Whether or not to drop the database if it exists (True), or keep it (False). 
+* `drop_database` - Whether to drop the database if it exists (True), or keep it (False). 
   Defaults to False.
 * `database_port` - the port for the postgres database. 
   Defaults to '5432'.
@@ -244,7 +263,9 @@ variable "database_app_user_pw" {
 The values corresponding to these variables must be set in your `cumulus-tf/terraform.tfvars` file, but note that many of these variables are actually hardcoded at the time of updating this README
 
 #### Adding the Copy To Glacier Step to the Ingest Workflow
-Navigate to `cumulus-tf/ingest_granule_workflow.tf` then add the following step after the PostToCMR step being sure to change the PostToCMR's "Next" paramter equal to "CopyToGlacier"
+Navigate to `cumulus-tf/ingest_granule_workflow.tf` then add the following
+step to anywhere after the MoveGranule step being sure to change the 
+"Next" parameter equal to "CopyToGlacier".
 ```
 "CopyToGlacier":{
          "Parameters":{
@@ -329,19 +350,3 @@ Here is an example command to run the Cumulus Dashboard locally:
 ## Release Documentation:
 
 Information about how to create an ORCA release can be found [here](docs/release.md).
-
-
-## ORCA Static Documentation
-
-Nake sure you are using the following node.js versions to view the documentation.
-- npm 6.14.10
-- node 12.15.0
-
-ORCA documentation can be read locally by performing the following:
-```
-cd website
-npm install
-npm run start
-```
-
-Once the server is running, documentation should be available on `http://localhost:3000`.

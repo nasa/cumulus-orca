@@ -1,0 +1,56 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier_cumulus_translator/schemas/output.json",
+	"title": "copy_to_glacier_cumulus_translator Lambda Output",
+	"description": "The output from the request_status Lambda.",
+	"type": "object",
+	"required": ["granules"],
+	"properties": {
+		"granules": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"required": [
+					"granuleId",
+					"files"
+				],
+				"properties": {
+					"granuleId": {
+						"description": "The unique ID of the granule.",
+						"type": "string"
+					},
+					"files": {
+						"description": "A list of Dicts representing files to copy.",
+						"type": "array",
+						"items": {
+							"required": [
+								"name",
+								"bucket",
+								"filepath",
+								"filename"
+							],
+							"properties": {
+								"name": {
+									"description": "The name and extension of the file.",
+									"type": "string"
+								},
+								"bucket": {
+									"description": "The name of the bucket to copy from.",
+									"type": "string"
+								},
+								"filepath": {
+									"description": "The path to copy the file from.",
+									"type": "string"
+								},
+								"filename": {
+									"description": "The name to copy the file from. Full path.",
+									"type": "string"
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

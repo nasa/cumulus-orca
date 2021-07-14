@@ -1,102 +1,75 @@
-module "dr_recovery_workflow" {
-  source = "https://github.com/nasa/cumulus/releases/download/v1.21.0/terraform-aws-cumulus-workflow.zip"
-
-  prefix          = var.prefix
-  name            = var.name
-  workflow_config = var.workflow_config
-  system_bucket   = var.system_bucket
-  tags            = var.tags
-
-  state_machine_definition = <<JSON
-{
-  "Comment": "Recover files belonging to a granule",
-  "StartAt": "ExtractFilepaths",
-  "TimeoutSeconds": 18000,
-  "States": {
-    "ExtractFilepaths": {
-      "Parameters": {
-        "cma": {
-          "event.$": "$",
-          "ReplaceConfig": {
-            "FullMessage": true
-          },
-          "task_config": {
-            "glacier-bucket": "{$.meta.buckets.glacier.name}",
-            "public-bucket": "{$.meta.buckets.public.name}",
-            "protected-bucket": "{$.meta.buckets.protected.name}",
-            "private-bucket": "{$.meta.buckets.private.name}",
-            "internal-bucket": "{$.meta.buckets.internal.name}",
-            "file-buckets": "{$.meta.collection.files}"
-          }
-        }
-      },
-      "Type": "Task",
-      "Resource": "${var.extract_filepaths_lambda_arn}",
-      "Retry": [
-        {
-          "ErrorEquals": [
-            "Lambda.ServiceException",
-            "Lambda.AWSLambdaException",
-            "Lambda.SdkClientException"
-          ],
-          "IntervalSeconds": 2,
-          "MaxAttempts": 6,
-          "BackoffRate": 2
-        }
-      ],
-      "Catch": [
-        {
-          "ErrorEquals": [
-            "States.ALL"
-          ],
-          "ResultPath": "$.exception",
-          "Next": "WorkflowFailed"
-        }
-      ],
-      "Next": "RequestFiles"
-    },
-    "RequestFiles": {
-      "Parameters": {
-        "cma": {
-          "event.$": "$",
-          "ReplaceConfig": {
-            "FullMessage": true
-          },
-          "task_config": {
-            "glacier-bucket": "{$.meta.buckets.glacier.name}"
-          }
-        }
-      },
-      "Type": "Task",
-      "Resource": "${var.request_files_lambda_arn}",
-      "Retry": [
-        {
-          "ErrorEquals": [
-            "Lambda.ServiceException",
-            "Lambda.AWSLambdaException",
-            "Lambda.SdkClientException"
-          ],
-          "IntervalSeconds": 2,
-          "MaxAttempts": 6,
-          "BackoffRate": 2
-        }
-      ],
-      "Catch": [
-        {
-          "ErrorEquals": [
-            "States.ALL"
-          ],
-          "ResultPath": "$.exception",
-          "Next": "WorkflowFailed"
-        }
-      ],
-      "End": true
-    },
-    "WorkflowFailed": {
-      "Type": "Fail",
-      "Cause": "Workflow failed"
+## Terraform Requirements
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 3.5.0"
     }
   }
 }
-JSON
+
+
+## AWS Provider Settings
+provider "aws" {
+  region  = var.region
+  profile = var.aws_profile
+}
+
+
+## Local Variables
+locals {
+  tags = merge(var.tags, { Deployment = var.prefix })
+}
+
+
+## Referenced Modules - Workflows
+
+# orca_recovery_workflow - Default workflow that starts the recovery process.
+# ===============================================================================
+module "orca_recovery_workflow" {
+  source = "./OrcaRecoveryWorkflow"
+  ## --------------------------
+  ## Cumulus Variables
+  ## --------------------------
+  ## REQUIRED
+  aws_profile     = var.aws_profile
+  prefix          = var.prefix
+  region          = var.region
+  system_bucket   = var.system_bucket
+  tags            = local.tags
+  workflow_config = var.workflow_config
+
+  ## --------------------------
+  ## ORCA Variables
+  ## --------------------------
+  ## REQUIRED
+  orca_default_bucket = var.orca_default_bucket
+
+  # Task ARNS needed for workflow template
+  orca_lambda_extract_filepaths_for_granule_arn = var.orca_lambda_extract_filepaths_for_granule_arn
+  orca_lambda_request_files_arn                 = var.orca_lambda_request_files_arn
+}
+
+# copy_to_glacier_workflow - On-Demand execution of copy_to_glacier.
+# ===============================================================================
+module "orca_copy_to_glacier_workflow" {
+  source = "./OrcaCopyToGlacierWorkflow"
+  ## --------------------------
+  ## Cumulus Variables
+  ## --------------------------
+  ## REQUIRED
+  aws_profile     = var.aws_profile
+  prefix          = var.prefix
+  region          = var.region
+  system_bucket   = var.system_bucket
+  tags            = local.tags
+  workflow_config = var.workflow_config
+
+  ## --------------------------
+  ## ORCA Variables
+  ## --------------------------
+  ## REQUIRED
+  # Task ARNS needed for workflow template
+  orca_lambda_copy_to_glacier_cumulus_translator_arn = var.orca_lambda_copy_to_glacier_cumulus_translator_arn
+  orca_lambda_copy_to_glacier_arn                    = var.orca_lambda_copy_to_glacier_arn
 }

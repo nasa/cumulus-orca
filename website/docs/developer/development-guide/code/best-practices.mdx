@@ -1,0 +1,80 @@
+---
+id: best-practices
+title: Best Practices
+description: Best practices for coding in ORCA.
+---
+
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
+## Unit Testing
+All code should reach minimum 80% coverage through [Unit Tests](unit-tests.md).
+
+## Code Style
+We use the [Google Style Guide](https://google.github.io/styleguide/pyguide.html) for style elements such as documentation, titling, and structure.
+
+## Stop on Failure
+Failures within ORCA break through to the Cumulus workflow they are a part of.
+To this end, raising an error is preferred over catching the error and returning a null value or error message.
+The code examples below exemplify this idea by showing how to raise an error using python in different contexts.
+```python
+try:
+    value = function(param)
+except requests_db.DatabaseError as err:
+    logging.error(err)
+    raise
+```
+```python
+if not success:
+    logging.error(f"You may log additional information if desired. "
+                  f"param: {param}")
+    raise DescriptiveErrorType(f'Error message to be raised info Cumulus workflow.')
+```
+Retries can then be configured in the workflow json if desired. See
+[documentation](https://docs.aws.amazon.com/step-functions/latest/dg/concepts-error-handling.html)
+and
+[tutorials](https://aws.amazon.com/getting-started/hands-on/handle-serverless-application-errors-step-functions-lambda/)
+for more information.
+The following snippet from the copy_to_glacier lambda demonstrates usage of retries for a lambda in an ingest workflow.
+`MaxAttempts` is set to 6, meaning that it will run the function a maximum of 7 times before transitioning to the `WorkflowFailed` state.
+`IntervalSeconds` determines how many seconds the workflow will sleep between retries.
+A `BackOffRate` of 2 means that the `IntervalSeconds` will be doubled on each failure beyond the first.
+
+```json
+"CopyToGlacier": {
+  ...
+  "Type": "Task",
+  "Resource": "${copy_to_glacier_task_arn}",
+  "Retry": [
+    {
+      "ErrorEquals": [
+        "Lambda.ServiceException",
+        "Lambda.AWSLambdaException",
+        "Lambda.SdkClientException"
+      ],
+      "IntervalSeconds": 2,
+      "MaxAttempts": 6,
+      "BackoffRate": 2
+    }
+  ],
+  "Catch": [
+    {
+      "ErrorEquals": [
+        "States.ALL"
+      ],
+      "ResultPath": "$.exception",
+      "Next": "WorkflowFailed"
+    }
+  ],
+  "Next": "WorkflowSucceeded"
+},
+```
+If the retries are exceeded and the error is caught, then the workflow will show that it jumped to the `WorkflowFailed` state.
+<img alt="Workflow Failed" src={useBaseUrl('img/Workflow Failed.png')} />
+
+If the 'WorkflowFailed' state was not triggered, then the workflow will move on to the step defined in `Next`.
+<img alt="Workflow Succeeded" src={useBaseUrl('img/Workflow Succeeded.png')} />
+
+:::note
+In the event that an error may be transient, and failing would cause a large amount of redundant work for other objects, retrying a failing operation in code is acceptable with a strictly limited number of retries.
+You will likely want to log each individual error for analytics and debugging.
+:::
