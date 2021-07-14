@@ -16,6 +16,10 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 
+
+## [v3.0.0] 2021-07-12
+
+
 ### Migration Notes
 See the documentation for specifics on the various files and changes specified below.
 
