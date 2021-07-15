@@ -61,7 +61,6 @@ Cons:
 - Not recommended for small applications. Moreover, the learning curve is higher compared to other methods.
 - File uploading is a bit complex.
 
-
 ### GraphQL Servers
 
 There are numerous servers for GraphQL that support different programming languages. A list of all the servers can be seen [here](https://graphql.org/code/).
@@ -73,11 +72,13 @@ There are numerous servers for GraphQL that support different programming langua
 - [AWS AppSync](https://aws.amazon.com/appsync/) is a fully managed service that develops GraphQL APIs by handling the heavy lifting of securely connecting to data sources like AWS DynamoDB, Lambda, and more. 
 - automatically scales GraphQL API execution engine up and down to meet API request volumes.
 - Pricing is $4.00 per million Query and Data Modification Operations and $0.08 per million minutes of connection to the AWS AppSync service. Details of pricing can be found [here](https://aws.amazon.com/appsync/pricing/).
+- Details on deploying  AppSync GraphQL API using terraform can be found below.
+    - [terraform docs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appsync_graphql_api).
+    - [Deploying AppSync with Terraform](https://tech.ovoenergy.com/deploying-appsync-with-terraform/)
 
 :::tip
 Details on creating and configuring a GraphQL API using AppSync can be found [here](https://docs.aws.amazon.com/appsync/latest/devguide/quickstart-launch-a-sample-schema.html).
 :::
-
 
 #### Hasura
 
@@ -91,7 +92,23 @@ Details on creating and configuring a GraphQL API using AppSync can be found [he
 #### PostGraphile 
 
 - [Postgraphile](https://www.graphile.org/postgraphile/) is similar to Hasura and can create GraphQL API from a PostgreSQL schema faster.
-- 
+- Most operations can be performed using [CLI](https://www.graphile.org/postgraphile/usage-cli/).
+- uses PostgreSQL's "role-based grant system" and "row-level security policies".
+- [Pricing](https://www.graphile.org/postgraphile/pricing/) is $25/month for PostGraphile Pro which has additional features compared to PostGraphile.
+
+ :::tip
+ PostGraphile can be deployed using AWS lambda on Mac, Linux or Windows. Check [this example](https://github.com/graphile/postgraphile-lambda-example).
+:::
+
+ #### Apollo Server
+ - [Apollo Server](https://www.apollographql.com/docs/apollo-server/) is open source and uses javascript.
+ - needs [apollo-server](https://npm.im/apollo-server) and [graphql](https://npm.im/graphql) libraries as preriquisites.
+ - Pricing- $59/user /month
+ - A good example to create the server can be found [here].(https://www.apollographql.com/docs/apollo-server/getting-started/)
+ - It can be deployed using lambda in AWS by utilizing serverless framework. A few examples are given below.
+   - [How to deploy Apollo Server with AWS Lambda](https://www.apollographql.com/docs/apollo-server/deployment/lambda/)
+   - [How to Build a Serverless Apollo GraphQL Server with AWS Lambda, Webpack and TypeScript](https://itnext.io/how-to-build-a-serverless-apollo-graphql-server-with-aws-lambda-webpack-and-typescript-64a377739208)
+ - Can be deployed faster using [Heroku](https://www.apollographql.com/docs/apollo-server/deployment/heroku/) but has additional cost.
 
 ### Building own GraphQL servers
 
