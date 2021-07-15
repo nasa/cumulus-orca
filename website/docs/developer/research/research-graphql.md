@@ -46,7 +46,7 @@ Output:
   }
 ```
 
-## Pros and cons
+### Pros and cons
 
 Pros:
 - Able to get many resources in a single request compared to REST API.
@@ -62,25 +62,48 @@ Cons:
 - File uploading is a bit complex.
 
 
-## GraphQL Server
+### GraphQL Servers
 
 There are numerous servers for GraphQL that support different programming languages. A list of all the servers can be seen [here](https://graphql.org/code/).
-:::tip
-Popular servers using Javascript include [GraphQL.js](https://graphql.org/graphql-js/), [Apollo Server](https://www.apollographql.com/docs/) and [Express GraphQL](https://github.com/graphql/express-graphql).
-Popular servers using Python include [Graphehe](https://github.com/graphql-python/graphene), [Ariadne](https://ariadnegraphql.org/) and [Strawberry](https://strawberry.rocks/).
-:::
 
+### Prebuilt GraphQL servers
 
-## AWS AppSync
+#### AWS AppSync
 
-AWS AppSync is a fully managed service that develops GraphQL APIs by handling the heavy lifting of securely connecting to data sources like AWS DynamoDB, Lambda, and more. AWS AppSync automatically scales GraphQL API execution engine up and down to meet API request volumes. 
+- [AWS AppSync](https://aws.amazon.com/appsync/) is a fully managed service that develops GraphQL APIs by handling the heavy lifting of securely connecting to data sources like AWS DynamoDB, Lambda, and more. 
+- automatically scales GraphQL API execution engine up and down to meet API request volumes.
+- Pricing is $4.00 per million Query and Data Modification Operations and $0.08 per million minutes of connection to the AWS AppSync service. Details of pricing can be found [here](https://aws.amazon.com/appsync/pricing/).
+
 :::tip
 Details on creating and configuring a GraphQL API using AppSync can be found [here](https://docs.aws.amazon.com/appsync/latest/devguide/quickstart-launch-a-sample-schema.html).
 :::
 
 
+#### Hasura
 
-## GraphQL in ORCA
+- [Hasura](https://hasura.io/) is an open source service that can create APIs without having to build, operate & scale a GraphQL server.
+- Supports GraphQL on Postgres, AWS Aurora, Microsoft SQL server.
+- Can be run in [cloud](https://hasura.io/docs/latest/graphql/cloud/getting-started/index.html#cloud-getting-started) (fastest way) or using [docker locally](https://hasura.io/docs/latest/graphql/core/getting-started/docker-simple.html#docker-simple).
+- comes with its own authentication and authorization features. To prevent GraphQL endpoint from being publicly accessible, developers have to create an [admin secret](https://hasura.io/docs/latest/graphql/core/deployment/deployment-guides/docker.html#docker-secure).
+- [Pricing](https://hasura.io/pricing/)- Fully managed cloud service is $99/month/project and supports upto 20GB data with $2/additional GB data.
+- written in Haskell programming language.
+
+#### PostGraphile 
+
+- [Postgraphile](https://www.graphile.org/postgraphile/) is similar to Hasura and can create GraphQL API from a PostgreSQL schema faster.
+- 
+
+### Building own GraphQL servers
+
+- [GraphQL.js](https://graphql.org/graphql-js/)- Server using Javascript.
+- [Apollo Server](https://www.apollographql.com/docs/)- Server using Javascript.
+- [Express GraphQL](https://github.com/graphql/express-graphql)- Server using Javascript.
+- [Graphehe](https://github.com/graphql-python/graphene)- Server using Python. Most popular and contributors.
+- [Ariadne](https://ariadnegraphql.org/)- Server using Python
+- [Strawberry](https://strawberry.rocks/)- Server using Python
+
+
+### GraphQL in ORCA
 
 Some of the lambdas that will be affected are:
 - post_copy_request_to_queue
@@ -91,13 +114,13 @@ Some of the lambdas that will be affected are:
 - request_status_for_granule
 - request_status_for_granule
 
-## GraphQL IDE
+### GraphQL IDE
 There are a few IDE that developers can use to interact with GraphQL API calls and query the server.
 - [GraphiQL](https://github.com/graphql/graphiql). The live IDE can be seen [here](http://graphql.org/swapi-graphql). 
 - [GraphQL Playground](https://github.com/graphql/graphql-playground)
 - [GraphQL IDE](https://github.com/andev-software/graphql-ide)
 
-## Useful tools
+### Useful tools
 The following tools might be  uueful for developers while working with GraphQL
 - GraphQL CLI- CLI for GraphQL development workflows.
 - GraphQL Docs- generates GraphQL documents.
@@ -107,8 +130,11 @@ The following tools might be  uueful for developers while working with GraphQL
 - GraphQL Config- useful for configuring dev environment with GraphQL schema.
 - GraphQL Bindings- SDK for sharing GraphQL APIs
 - GraphQL Boilerplates- useful for backend projects.
+- Apollo Graph Manager-  useful for monitoring the performance and usage of GraphQL backend.
 
-#### Sources
+##### Sources
 - https://graphql.org/learn/queries/
 - https://github.com/graphql-python
 - https://www.altexsoft.com/blog/engineering/graphql-core-features-architecture-pros-and-cons/
+- https://hasura.io/docs/latest/graphql/core/index.html
+- https://www.moesif.com/blog/graphql/technical/Ways-To-Add-GraphQL-To-Your-Postgres-Database-Comparing-Hasura-Prisma-and-Others/
