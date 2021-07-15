@@ -96,7 +96,7 @@ Details on creating and configuring a GraphQL API using AppSync can be found [he
 - uses PostgreSQL's "role-based grant system" and "row-level security policies".
 - [Pricing](https://www.graphile.org/postgraphile/pricing/) is $25/month for PostGraphile Pro which has additional features compared to PostGraphile.
 
- :::tip
+:::tip
  PostGraphile can be deployed using AWS lambda on Mac, Linux or Windows. Check [this example](https://github.com/graphile/postgraphile-lambda-example).
 :::
 
