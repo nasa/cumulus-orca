@@ -28,6 +28,7 @@ Instead, emphasis will be placed on connecting to and querying an already-unifie
     May be multiple timeouts in play.
   - Scaling up after this point did not cause query performance degradation, despite what was documented. However, the UI is poorly made, and may be reporting incorrectly.
 - Connections canceled due to scaling raise an error in SQLAlchemy.
+  If the query is ongoing:
   ```
   [SQL: 
   SELECT pg_sleep(600);
@@ -51,10 +52,39 @@ Instead, emphasis will be placed on connecting to and querying an already-unifie
   sqlalchemy.exc.OperationalError: (psycopg2.errors.AdminShutdown) terminating connection due to serverless scale event timeout
   SSL connection has been closed unexpectedly
   ```
-  - Retrying when this error occurs should be sufficient to sidestep scaling errors, as scaling does not take long.
+  
+  If the query is starting up:
+  ```
+  Database connection failed due to (psycopg2.OperationalError) FATAL:  terminating connection because backend initialization completed past serverless scale point
+  
+  (Background on this error at: https://sqlalche.me/e/14/e3q8)
+  Traceback (most recent call last):
+    ...
+    File "...\venv\lib\site-packages\psycopg2\__init__.py", line 122, in connect
+      conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+  psycopg2.OperationalError: FATAL:  terminating connection because backend initialization completed past serverless scale point
+  
+  
+  The above exception was the direct cause of the following exception:
+  
+  Traceback (most recent call last):
+    File ".../main.py", line 84, in <module>
+      with engine.begin() as connection:
+    File "...\engine.py", line 393, in begin
+      conn = self.connect()
+    ...
+  sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) FATAL:  terminating connection because backend initialization completed past serverless scale point
+  
+  (Background on this error at: https://sqlalche.me/e/14/e3q8)
+  ```
+  
+  - Retrying when these errors occur should be sufficient to sidestep scaling errors, as scaling does not take long.
+  :::warning
+    Disconnections caused by these errors are NOT reported to Cloudwatch. Connecting lambdas/modules should have reliable and robust error logging.
+  :::
 
 ### Future Direction
-- Modifications should be made to database code to account for AdminShutdown and connection timeout issues.
+- Modifications should be made to database code to account for AdminShutdown, OperationalError, and connection timeout issues.
 - Timeouts for Lambdas/code that use the database should account for the 30-40 second scale-up-time.
 - Note that this code has not been tested with Lambdas.
   - [A SQLAlchemy plugin](https://pypi.org/project/sqlalchemy-serverless-aurora-plugin/) suggests that Lambdas "freeze" causing connection errors.
