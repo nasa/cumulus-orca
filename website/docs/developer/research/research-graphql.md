@@ -118,6 +118,7 @@ As of 07/18/2021, AWS AppSync is currently yet not approved in NGAP AWS account 
 - [Graphehe](https://github.com/graphql-python/graphene)- Server using Python. Most popular and contributors.
 - [Ariadne](https://ariadnegraphql.org/)- Server using Python
 - [Strawberry](https://strawberry.rocks/)- Server using Python
+- [CMR-GraphQL](https://git.earthdata.nasa.gov/projects/CMRQL/repos/hackfest-cmr-graphql/browse)- Currently being used by NASA GHRC developers.
 
 
 ### GraphQL in ORCA
@@ -151,13 +152,13 @@ In case of using Python library like [Graphene](https://github.com/graphql-pytho
 
 # --------------------copy_files_to_archive--------------------------------
 
-  ## shared_recovery.update_status_for_file(), shared_recovery.post_entry_to_queue() functions for sending to SQS might need to be removed and replaced this code for writing to the DB.
+  ## shared_recovery.update_status_for_file(), shared_recovery.post_entry_to_queue() functions for sending to SQS might need to be removed and replaced with code for writing to the DB.
   ## Additional changes are expected.
 
 
 # --------------------request_files----------------------------------------
 
-  ## shared_recovery.update_status_for_file(), shared_recovery.create_status_for_job(), shared_recovery.post_entry_to_queue() function for sending to SQS might need to be removed and replaced this with code for writing to the DB.
+  ## shared_recovery.update_status_for_file(), shared_recovery.create_status_for_job(), shared_recovery.post_entry_to_queue() function for sending to SQS might need to be removed and replaced with code for writing to the DB.
   ##  "db_queue_url" arg in inner_task() will not be needed if SQS is not used.
   ## Modify process_granule() function.
   ## Additional changes are expected.
@@ -194,7 +195,7 @@ Based on this research, GraphQL has a higher learning curve compared to other te
 - The easiest way to set up Hasura GraphQL engine on local environment without any cost is using Docker. 
 - It supports GraphQL on Postgres, AWS Aurora and seems to be compatible with the current ORCA architecture. 
 - Cost to use the cloud is $99/month/project and supports upto 20GB data with $2/additional GB data. 
-- Creating the server using the given [`docker-compose.yml`](https://github.com/hasura/graphql-engine/blob/stable/install-manifests/docker-compose/docker-compose.yaml) file will be easy and the server can be queried from the  Hasura console. Instructions to create the server can be found [here](https://hasura.io/docs/latest/graphql/core/getting-started/docker-simple.html#docker-simple). \
+- Creating the server using the given [`docker-compose.yml`](https://github.com/hasura/graphql-engine/blob/stable/install-manifests/docker-compose/docker-compose.yaml) file will be easy and the server can be queried from the Hasura console. Instructions to create the server can be found [here](https://hasura.io/docs/latest/graphql/core/getting-started/docker-simple.html#docker-simple). \
 - Instructions on connecting Postgres to the GraphQL server can be found [here](https://hasura.io/docs/latest/graphql/cloud/getting-started/cloud-databases/aws-postgres.html#cloud-db-aws-rds-postgres)
 
 
@@ -224,7 +225,7 @@ There are a few IDE that developers can use to interact with GraphQL API calls a
 - [GraphQL IDE](https://github.com/andev-software/graphql-ide)
 
 ### Useful tools
-The following tools might be  uueful for developers while working with GraphQL
+The following tools might be useful for developers while working with GraphQL
 - GraphQL CLI- CLI for GraphQL development workflows.
 - GraphQL Docs- generates GraphQL documents. 
 - GraphDoc- generates GraphQL documents.
