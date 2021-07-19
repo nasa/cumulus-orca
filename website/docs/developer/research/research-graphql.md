@@ -76,8 +76,8 @@ There are numerous servers for GraphQL that support different programming langua
     - [terraform docs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appsync_graphql_api).
     - [Deploying AppSync with Terraform](https://tech.ovoenergy.com/deploying-appsync-with-terraform/)
 
-:::tip
-Details on creating and configuring a GraphQL API using AppSync can be found [here](https://docs.aws.amazon.com/appsync/latest/devguide/quickstart-launch-a-sample-schema.html).
+:::warning
+As of 07/18/2021, AWS AppSync is currently yet not approved in NGAP AWS account by NASA. However, it could be a good future approach when approved. 
 :::
 
 #### Hasura
@@ -122,14 +122,100 @@ Details on creating and configuring a GraphQL API using AppSync can be found [he
 
 ### GraphQL in ORCA
 
-Some of the lambdas that will be affected are:
+Some of the lambdas that might be affected are:
 - post_copy_request_to_queue
 - db_deploy
 - post_to_database
 - request_files
 - copy_files_to_archive
 - request_status_for_granule
-- request_status_for_granule
+- request_status_for_job
+- db_deploy
+- post_to_database
+
+:::important
+Apart from updating those lambdas, developers need to create the GraphQL endpoint using terraform or AWS SAM, update requirements.txt, requirements-dev.txt or bin/build.sh, bin/run_tests.sh by adding additional dependiencies like `graphene` in case of using graphene, or `npm install apollo-server graphql` in case of using Apollo server.
+In case of using Javascript libraries like Apollo server, additional files/codes are needed to write the [schema](https://github.com/serverless/serverless-graphql/blob/master/app-backend/dynamodb/schema.js) and [resolver](https://github.com/serverless/serverless-graphql/blob/master/app-backend/dynamodb/resolvers.js).
+In case of using Python library like [Graphene](https://github.com/graphql-python/graphene), developers need to update .py files to import libraries, create class and queries, and to create schema and resolver. 
+:::
+  
+  
+  A few suggestions are given below:
+```commandline
+#---------------------------post_copy_request_to_queue----------------------
+
+  ## developers might need to modify get_metadata_sql(key_path) and use the graphql query. See https://docs.graphene-python.org/en/latest/execution/execute/.
+  ## update test_post_copy_request_to_queue.py based on changes in post_copy_request_to_queue.py. One test could be `test_get_metadata_sql_happy_path()`
+  ## shared_recovery.update_status_for_file(), shared_recovery.post_entry_to_queue() function for sending to SQS might need to be removed and replace this with code for writing to the DB.
+  ## Additional changes are expected.
+
+# --------------------copy_files_to_archive--------------------------------
+
+  ## shared_recovery.update_status_for_file(), shared_recovery.post_entry_to_queue() functions for sending to SQS might need to be removed and replaced this code for writing to the DB.
+  ## Additional changes are expected.
+
+
+# --------------------request_files----------------------------------------
+
+  ## shared_recovery.update_status_for_file(), shared_recovery.create_status_for_job(), shared_recovery.post_entry_to_queue() function for sending to SQS might need to be removed and replaced this with code for writing to the DB.
+  ##  "db_queue_url" arg in inner_task() will not be needed if SQS is not used.
+  ## Modify process_granule() function.
+  ## Additional changes are expected.
+
+# --------------------request_status_for_granule----------------------------------------
+
+  ## Modify get_most_recent_job_id_for_granule() function to use GraphQL query.
+  ## Modify get_status_totals_for_job() function to use GraphQL query.
+  ## Additional changes are expected.
+
+# --------------------request_status_for_job----------------------------------------
+
+  ## Modify get_granule_status_entries_for_job() function to use GraphQL query.
+  ## Modify get_granule_status_entries_for_job() function to use GraphQL query.
+
+# --------------------db_deploy----------------------------------------
+
+  ## app_db_exists(), app_schema_exists(), app_version_table_exists(), get_migration_version() functions might need to be updated.
+  ## Additional changes are expected.
+
+# --------------------post_to_database----------------------------------------
+
+  ## This will need to be removed if GraphQL is used since it will write to the DB instead of SQS.
+
+```
+
+### GraphQL server recommendation
+
+Based on this research, GraphQL has a higher learning curve compared to other technologies and will take some time for developers to learn and then implement. If using Javascript libraries, developers should have good background in this language in order to execute this approach. Using some prebuilt GraphQL servers that automatically generates GraphQL schema and resolvers could save some time and simplify the design. Building a prototype in ORCA could reveal if it is worth the effort and time. However, using lambda, API gateway and SQS(the resources in existing ORCA architecture) seem to contain more resources and examples online than GraphQL.
+
+#### Recommendation #1- [Hasura](https://hasura.io/)
+
+- Hasura GraphQL engine can be deployed using using Docker and Docker Compose or using Hasura cloud. 
+- The easiest way to set up Hasura GraphQL engine on local environment without any cost is using Docker. 
+- It supports GraphQL on Postgres, AWS Aurora and seems to be compatible with the current ORCA architecture. 
+- Cost to use the cloud is $99/month/project and supports upto 20GB data with $2/additional GB data. 
+- Creating the server using the given [`docker-compose.yml`](https://github.com/hasura/graphql-engine/blob/stable/install-manifests/docker-compose/docker-compose.yaml) file will be easy and the server can be queried from the  Hasura console. Instructions to create the server can be found [here](https://hasura.io/docs/latest/graphql/core/getting-started/docker-simple.html#docker-simple). \
+- Instructions on connecting Postgres to the GraphQL server can be found [here](https://hasura.io/docs/latest/graphql/cloud/getting-started/cloud-databases/aws-postgres.html#cloud-db-aws-rds-postgres)
+
+
+#### Recommendation #2- [Apollo Server](https://www.apollographql.com/)
+
+- This server has to be built from scratch and developer has to be familiar with Javascript. 
+- It is completely free and has over 108,000 users and 400+ contributors which make it a good candidate to look into further for prototyping.
+- Developer has to write his  own GraphQL schema when using this method which could be time consuming.
+- Developers have to work with two libraries that are required by the server:
+    - [apollo-server](https://npm.im/apollo-server): library for Apollo Server which defines the shape of the data and how to fetch it.
+    - [graphql](https://www.npmjs.com/package/graphql): library used to build a GraphQL schema and execute queries against it.
+- Some examples of the schema and resolvers for this server can be found [here](https://www.apollographql.com/docs/apollo-server/getting-started/).
+- Once created, GraphQL queries can be executed from Apollo Sandbox console.
+
+
+#### Recommendation #3- [Graphene](https://github.com/graphql-python/graphene)
+
+- Python library with 9000+ users for building GraphQL schemas/types. Since all ORCA lambdas are written in Python, using this library will make it easier for code changes.
+-  Instead of writing GraphQL Schema Definition Language, deveopers will use Python code to describe the data provided by the server.
+- Can be deployed using lambda function with the help of [SAM]https://github.com/ivanchoo/demo-aws-graphql-python/blob/master/template.yml) or cloudformation. So serverless approach will charge when it is only used. 
+
 
 ### GraphQL IDE
 There are a few IDE that developers can use to interact with GraphQL API calls and query the server.
@@ -140,7 +226,7 @@ There are a few IDE that developers can use to interact with GraphQL API calls a
 ### Useful tools
 The following tools might be  uueful for developers while working with GraphQL
 - GraphQL CLI- CLI for GraphQL development workflows.
-- GraphQL Docs- generates GraphQL documents.
+- GraphQL Docs- generates GraphQL documents. 
 - GraphDoc- generates GraphQL documents.
 - GraphQL Network- useful for debugging.
 - GraphQL Voyager- for visualizing data relations.
@@ -155,3 +241,5 @@ The following tools might be  uueful for developers while working with GraphQL
 - https://www.altexsoft.com/blog/engineering/graphql-core-features-architecture-pros-and-cons/
 - https://hasura.io/docs/latest/graphql/core/index.html
 - https://www.moesif.com/blog/graphql/technical/Ways-To-Add-GraphQL-To-Your-Postgres-Database-Comparing-Hasura-Prisma-and-Others/
+- https://docs.graphene-python.org/en/latest/quickstart/
+- https://github.com/ivanchoo/demo-aws-graphql-python
