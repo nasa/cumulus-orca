@@ -118,7 +118,7 @@ As of 07/18/2021, AWS AppSync is currently yet not approved in NGAP AWS account 
 - [Graphehe](https://github.com/graphql-python/graphene)- Server using Python. Most popular and contributors.
 - [Ariadne](https://ariadnegraphql.org/)- Server using Python
 - [Strawberry](https://strawberry.rocks/)- Server using Python
-- [CMR-GraphQL](https://git.earthdata.nasa.gov/projects/CMRQL/repos/hackfest-cmr-graphql/browse)- Currently being used by NASA GHRC developers.
+- [CMR-GraphQL](https://git.earthdata.nasa.gov/projects/CMRQL/repos/hackfest-cmr-graphql/browse)- Currently being used by NASA GHRC developers Check out the example of their GraphQL schema and resolver [here](https://git.earthdata.nasa.gov/projects/CMRQL/repos/hackfest-cmr-graphql/browse/cmr-graphql/graphql/graphql.js)
 
 
 ### GraphQL in ORCA
@@ -236,11 +236,13 @@ The following tools might be useful for developers while working with GraphQL
 - GraphQL Boilerplates- useful for backend projects.
 - Apollo Graph Manager-  useful for monitoring the performance and usage of GraphQL backend.
 
-##### Sources
+##### References
 - https://graphql.org/learn/queries/
 - https://github.com/graphql-python
 - https://www.altexsoft.com/blog/engineering/graphql-core-features-architecture-pros-and-cons/
 - https://hasura.io/docs/latest/graphql/core/index.html
+- https://hasura.io/docs/latest/graphql/core/getting-started/docker-simple.html#docker-simple
 - https://www.moesif.com/blog/graphql/technical/Ways-To-Add-GraphQL-To-Your-Postgres-Database-Comparing-Hasura-Prisma-and-Others/
 - https://docs.graphene-python.org/en/latest/quickstart/
 - https://github.com/ivanchoo/demo-aws-graphql-python
+- https://git.earthdata.nasa.gov/projects/CMRQL/repos/hackfest-cmr-graphql/browse
