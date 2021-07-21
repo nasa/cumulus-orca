@@ -142,48 +142,46 @@ In case of using Python library like [Graphene](https://github.com/graphql-pytho
   
   
   A few suggestions are given below:
-```commandline
-#---------------------------post_copy_request_to_queue----------------------
 
-  ## developers might need to modify get_metadata_sql(key_path) and use the graphql query. See https://docs.graphene-python.org/en/latest/execution/execute/.
-  ## update test_post_copy_request_to_queue.py based on changes in post_copy_request_to_queue.py. One test could be `test_get_metadata_sql_happy_path()`
-  ## shared_recovery.update_status_for_file(), shared_recovery.post_entry_to_queue() function for sending to SQS might need to be removed and replace this with code for writing to the DB.
-  ## Additional changes are expected.
+#### post_copy_request_to_queue
 
-# --------------------copy_files_to_archive--------------------------------
+ - developers might need to modify `get_metadata_sql(key_path)` and use the graphql query. See https://docs.graphene-python.org/en/latest/execution/execute/.
+ - update `test_post_copy_request_to_queue.py` based on changes in `post_copy_request_to_queue.py`. One test could be `test_get_metadata_sql_happy_path()`
+ - `shared_recovery.update_status_for_file()`, `shared_recovery.post_entry_to_queue()` function for sending to SQS might need to be removed and  replaced with code for writing to the DB.
+ - Additional changes are expected.
 
-  ## shared_recovery.update_status_for_file(), shared_recovery.post_entry_to_queue() functions for sending to SQS might need to be removed and replaced with code for writing to the DB.
-  ## Additional changes are expected.
+#### copy_files_to_archive
+
+ - `shared_recovery.update_status_for_file()`, `shared_recovery.post_entry_to_queue()` functions for sending to SQS might need to be removed and replaced with code for writing to the DB.
+ - Additional changes are expected.
 
 
-# --------------------request_files----------------------------------------
+#### request_files
 
-  ## shared_recovery.update_status_for_file(), shared_recovery.create_status_for_job(), shared_recovery.post_entry_to_queue() function for sending to SQS might need to be removed and replaced with code for writing to the DB.
-  ##  "db_queue_url" arg in inner_task() will not be needed if SQS is not used.
-  ## Modify process_granule() function.
-  ## Additional changes are expected.
+ - `shared_recovery.update_status_for_file()`, `shared_recovery.create_status_for_job()`, `shared_recovery.post_entry_to_queue()` function for sending to SQS might need to be removed and replaced with code for writing to the DB.
+ - `db_queue_url` arg in `inner_task()` will not be needed if SQS is not used.
+ - Modify `process_granule()` function.
+ - Additional changes are expected.
 
-# --------------------request_status_for_granule----------------------------------------
+#### request_status_for_granule
 
-  ## Modify get_most_recent_job_id_for_granule() function to use GraphQL query.
-  ## Modify get_status_totals_for_job() function to use GraphQL query.
-  ## Additional changes are expected.
+ - Modify `get_most_recent_job_id_for_granule()` function to use GraphQL query.
+ - Modify `get_status_totals_for_job()` function to use GraphQL query.
+ - Additional changes are expected.
 
-# --------------------request_status_for_job----------------------------------------
+#### request_status_for_job
 
-  ## Modify get_granule_status_entries_for_job() function to use GraphQL query.
-  ## Modify get_granule_status_entries_for_job() function to use GraphQL query.
+- Modify `get_granule_status_entries_for_job()` function to use GraphQL query.
+- Modify `get_granule_status_entries_for_job()` function to use GraphQL query.
 
-# --------------------db_deploy----------------------------------------
+#### db_deploy
 
-  ## app_db_exists(), app_schema_exists(), app_version_table_exists(), get_migration_version() functions might need to be updated.
-  ## Additional changes are expected.
+- `app_db_exists()`, `app_schema_exists()`, `app_version_table_exists()`, `get_migration_version()` functions might need to be updated.
+- Additional changes are expected.
 
-# --------------------post_to_database----------------------------------------
+#### post_to_database
 
-  ## This will need to be removed if GraphQL is used since it will write to the DB instead of SQS.
-
-```
+- This will need to be removed if GraphQL is used since it will write to the DB instead of SQS.
 
 ### GraphQL server recommendation
 
