@@ -145,20 +145,20 @@ In case of using Python library like [Graphene](https://github.com/graphql-pytho
 
 #### post_copy_request_to_queue
 
- - developers might need to modify `get_metadata_sql(key_path)` and use the graphql query. See https://docs.graphene-python.org/en/latest/execution/execute/.
- - update `test_post_copy_request_to_queue.py` based on changes in `post_copy_request_to_queue.py`. One test could be `test_get_metadata_sql_happy_path()`
- - `shared_recovery.update_status_for_file()`, `shared_recovery.post_entry_to_queue()` function for sending to SQS might need to be removed and  replaced with code for writing to the DB.
+ - Developers might need to modify `get_metadata_sql(key_path)` and use the graphql query. See this [example](https://docs.graphene-python.org/en/latest/execution/execute/).
+ - Update `test_post_copy_request_to_queue.py` based on changes in `post_copy_request_to_queue.py`. One test could be `test_get_metadata_sql_happy_path()`
+ - `shared_recovery.update_status_for_file()` and `shared_recovery.post_entry_to_queue()` functions for sending to SQS might need to be removed and  replaced with code that leverages GraphQL to write to the database.
  - Additional changes are expected.
 
 #### copy_files_to_archive
 
- - `shared_recovery.update_status_for_file()`, `shared_recovery.post_entry_to_queue()` functions for sending to SQS might need to be removed and replaced with code for writing to the DB.
+ - `shared_recovery.update_status_for_file()` and `shared_recovery.post_entry_to_queue()` functions for sending to SQS might need to be removed and replaced with code that leverages GraphQL to write to the database.
  - Additional changes are expected.
 
 
 #### request_files
 
- - `shared_recovery.update_status_for_file()`, `shared_recovery.create_status_for_job()`, `shared_recovery.post_entry_to_queue()` function for sending to SQS might need to be removed and replaced with code for writing to the DB.
+ - `shared_recovery.update_status_for_file()`, `shared_recovery.create_status_for_job()` and `shared_recovery.post_entry_to_queue()` functions for sending to SQS might need to be removed and replaced with code that leverages GraphQL to write to the database.
  - `db_queue_url` arg in `inner_task()` will not be needed if SQS is not used.
  - Modify `process_granule()` function.
  - Additional changes are expected.
@@ -176,7 +176,7 @@ In case of using Python library like [Graphene](https://github.com/graphql-pytho
 
 #### db_deploy
 
-- `app_db_exists()`, `app_schema_exists()`, `app_version_table_exists()`, `get_migration_version()` functions might need to be updated.
+- `app_db_exists()`, `app_schema_exists()`, `app_version_table_exists()` and `get_migration_version()` functions might need to be updated.
 - Additional changes are expected.
 
 #### post_to_database
@@ -195,6 +195,9 @@ Based on this research, GraphQL has a higher learning curve compared to other te
 - Cost to use the cloud is $99/month/project and supports upto 20GB data with $2/additional GB data. 
 - Creating the server using the given [`docker-compose.yml`](https://github.com/hasura/graphql-engine/blob/stable/install-manifests/docker-compose/docker-compose.yaml) file will be easy and the server can be queried from the Hasura console. Instructions to create the server can be found [here](https://hasura.io/docs/latest/graphql/core/getting-started/docker-simple.html#docker-simple). \
 - Instructions on connecting Postgres to the GraphQL server can be found [here](https://hasura.io/docs/latest/graphql/cloud/getting-started/cloud-databases/aws-postgres.html#cloud-db-aws-rds-postgres)
+:::warning
+Hasura cloud service is not approved by NGAP so it cannot be used for now. However, developers can use the docker version for testing.
+:::
 
 
 #### Recommendation #2- [Apollo Server](https://www.apollographql.com/)
