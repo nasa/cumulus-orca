@@ -62,8 +62,8 @@ module.exports = {
       'developer/research/research-localstack',
       'developer/research/research-APIGateway',
       'developer/research/research-reconciliation',
+      'developer/research/research-graphql',
       'developer/research/research-AuroraServerless',
-      'developer/research/research-graphql'
     ],
   },
   cookbook: {
