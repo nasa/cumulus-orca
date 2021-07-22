@@ -1,4 +1,5 @@
-boto3==1.17.43
+boto3==1.12.47
 pytest==6.1.2
 coverage==5.3
 fastjsonschema==2.15.0
+cumulus-message-adapter-python>=1.1.1

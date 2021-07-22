@@ -77,6 +77,7 @@ module.exports = {
     ],
     "Operations": [
       'operator/data-recovery',
+      'operator/restore-to-orca',
     ],
     "Configuration": [
       'operator/collection-configuration',

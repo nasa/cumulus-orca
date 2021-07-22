@@ -1,1 +1,2 @@
 cumulus-message-adapter-python>=1.1.1
+boto3==1.12.47

@@ -32,12 +32,12 @@ module "orca_lambdas" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  aws_profile              = var.aws_profile
-  buckets                  = var.buckets
-  lambda_subnet_ids        = var.lambda_subnet_ids
-  permissions_boundary_arn = var.permissions_boundary_arn
-  prefix                   = var.prefix
-  vpc_id                   = var.vpc_id
+  aws_profile                       = var.aws_profile
+  buckets                           = var.buckets
+  lambda_subnet_ids                 = var.lambda_subnet_ids
+  permissions_boundary_arn          = var.permissions_boundary_arn
+  prefix                            = var.prefix
+  vpc_id                            = var.vpc_id
   orca_sqs_staged_recovery_queue_id = module.orca_sqs.orca_sqs_staged_recovery_queue_id
   ## OPTIONAL
   region = var.region
@@ -93,9 +93,11 @@ module "orca_workflows" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  orca_default_bucket                           = var.orca_default_bucket
-  orca_lambda_extract_filepaths_for_granule_arn = module.orca_lambdas.extract_filepaths_for_granule_arn
-  orca_lambda_request_files_arn                 = module.orca_lambdas.request_files_arn
+  orca_default_bucket                                = var.orca_default_bucket
+  orca_lambda_extract_filepaths_for_granule_arn      = module.orca_lambdas.extract_filepaths_for_granule_arn
+  orca_lambda_request_files_arn                      = module.orca_lambdas.request_files_arn
+  orca_lambda_copy_to_glacier_arn                    = module.orca_lambdas.copy_to_glacier_arn
+  orca_lambda_copy_to_glacier_cumulus_translator_arn = module.orca_lambdas.copy_to_glacier_cumulus_translator_arn
 }
 
 

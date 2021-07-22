@@ -47,7 +47,7 @@ rm -rf build
 cd ../../
 
 failure=0
-for TASK in $(ls -d tasks/* | egrep "request_status_|db_deploy|post_to_database|copy_files_to_archive|post_copy_request_to_queue|orca_catalog_reporting_dummy|copy_to_glacier_cumulus_translator")
+for TASK in $(ls -d tasks/* | egrep -v "copy_to_glacier$|extract_filepaths_for_granule|package|dr_dbutils|pg_utils|shared_libraries")
 do
   echo "Building ${TASK}"
   cd ${TASK}

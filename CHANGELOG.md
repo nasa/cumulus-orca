@@ -16,6 +16,10 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 
+
+## [v3.0.0] 2021-07-12
+
+
 ### Migration Notes
 See the documentation for specifics on the various files and changes specified below.
 
@@ -105,6 +109,7 @@ See the documentation for specifics on the various files and changes specified b
   ```
 
 ### Added
+- *ORCA-149* Added a new workflow, OrcaCopyToGlacierWorkflow, for ingest on-demand.
 - *ORCA-175* Added copy_to_glacier_cumulus_translator for transforming CumulusDashboard input to the proper format.
 - *ORCA-181* Added orca_catalog_reporting_dummy lambda for integration testing.
 - *ORCA-165* Added new lambda function *post_copy_request_to_queue.py* under *tasks/post_copy_request_to_queue/ for querying the DB 

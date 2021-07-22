@@ -193,6 +193,7 @@ FUNCTIONS
                     'config' (dict): A dict with the following keys:
                         'glacier-bucket' (str): The name of the glacier bucket from which the files
                         will be restored. Defaults to os.environ['DB_QUEUE_URL']
+                        'asyncOperationId' (str): The unique identifier used for tracking requests.
                     'input' (dict): A dict with the following keys:
                         'granules' (list(dict)): A list of dicts with the following keys:
                             'granuleId' (str): The id of the granule being restored.
@@ -200,7 +201,6 @@ FUNCTIONS
                                 'key' (str): Name of the file within the granule.  # TODO: It actually might be a path.
                                 'dest_bucket' (str): The bucket the restored file will be moved
                                     to after the restore completes.
-                        'job_id' (str): The unique identifier used for tracking requests.
                 max_retries: The maximum number of retries for network operations.
                 retry_sleep_secs: The number of time to sleep between retries.
                 retrieval_type: The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
@@ -220,7 +220,7 @@ FUNCTIONS
                             'err_msg' (string): when success is False, this will contain
                                 the error message from the restore error.
                         'keys': Same as recover_files, but without 'success' and 'err_msg'.
-                    'job_id' (str): The 'job_id' from event if present, otherwise a newly-generated uuid.
+                    'asyncOperationId' (str): The 'asyncOperationId' from event if present, otherwise a newly-generated uuid.
             Raises:
                 RestoreRequestError: Thrown if there are errors with the input request.
     
@@ -289,6 +289,7 @@ FUNCTIONS
                     'config' (dict): A dict with the following keys:
                         'glacier-bucket' (str): The name of the glacier bucket from which the files
                         will be restored.
+                        'asyncOperationId' (str): The unique identifier used for tracking requests. If not present, will be generated.
                     'input' (dict): A dict with the following keys:
                         'granules' (list(dict)): A list of dicts with the following keys:
                             'granuleId' (str): The id of the granule being restored.
@@ -296,7 +297,6 @@ FUNCTIONS
                                 'key' (str): Name of the file within the granule.  # TODO: It actually might be a path.
                                 'dest_bucket' (str): The bucket the restored file will be moved
                                     to after the restore completes.
-                        'job_id' (str): The unique identifier used for tracking requests. If not present, will be generated.
             Environment Vars:
                 RESTORE_EXPIRE_DAYS (int, optional, default = 5): The number of days
                     the restored file will be accessible in the S3 bucket before it expires.
@@ -341,7 +341,8 @@ DATA
     GRANULE_KEYS_KEY = 'keys'
     GRANULE_RECOVER_FILES_KEY = 'recover_files'
     INPUT_GRANULES_KEY = 'granules'
-    INPUT_JOB_ID_KEY = 'job_id'
+    INPUT_META_KEY = 'cumulus_meta'
+    CONFIG_JOB_ID_KEY = 'job_id'
     LOGGER = <cumulus_logger.CumulusLogger object>
     List = typing.List
     ORCA_STATUS_FAILED = 4

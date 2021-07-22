@@ -72,7 +72,7 @@ resource "aws_db_instance" "postgresql" {
   final_snapshot_identifier           = "daacx"
   iam_database_authentication_enabled = true
   maintenance_window                  = "Mon:00:00-Mon:03:00"
-  name                                = "postgres"
+  name                                = var.database_name
   port                                = var.database_port
   publicly_accessible                 = false
   skip_final_snapshot                 = true

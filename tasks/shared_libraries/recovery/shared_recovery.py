@@ -2,22 +2,29 @@
 Name: shared_recovery.py
 Description: Shared library that combines common functions and classes needed for recovery operations.
 """
-from enum import Enum
+# Standard libraries
+import hashlib
 import json
-import boto3
+from enum import Enum
 from typing import Dict, Any, Optional, List
 from datetime import datetime, timezone
 import os
 from cumulus_logger import CumulusLogger
 
-# instantiate CumulusLogger
-logger = CumulusLogger()
+# Third party libraries
+from cumulus_logger import CumulusLogger
+import boto3
+
+
+# Set Cumulus LOGGER
+LOGGER = CumulusLogger(name="ORCA")
 
 class RequestMethod(Enum):
     """
     An enumeration.
     Provides potential actions for the database lambda to take when posting to the SQS queue.
     """
+
     NEW_JOB = "new_job"
     UPDATE_FILE = "update_file"
 
@@ -27,6 +34,7 @@ class OrcaStatus(Enum):
     An enumeration.
     Defines the status value used in the ORCA Recovery database for use by the recovery functions.
     """
+
     PENDING = 1
     STAGED = 2
     FAILED = 3
@@ -40,13 +48,13 @@ def get_aws_region()-> str:
         Raises:
             Exception: Thrown if AWS region is empty or None.
     """
-    logger.debug("Getting environment variable AWS_REGION value.")
+    LOGGER.debug("Getting environment variable AWS_REGION value.")
     aws_region = os.getenv("AWS_REGION", None)
     if aws_region is None or len(aws_region) == 0:
         message = "Runtime environment variable AWS_REGION is not set."
-        logger.critical(message)
+        LOGGER.critical(message)
         raise Exception(message)
-    logger.debug(f"Got environment variable for AWS_REGION = {aws_region}")
+    LOGGER.debug(f"Got environment variable for AWS_REGION = {aws_region}")
     return aws_region
 
 def create_status_for_job(
@@ -54,7 +62,7 @@ def create_status_for_job(
     granule_id: str,
     archive_destination: str,
     files: List[Dict[str, Any]],
-    db_queue_url: str
+    db_queue_url: str,
 ):
     """
     Creates status information for a new job and its files, and posts to queue.
@@ -73,9 +81,16 @@ def create_status_for_job(
             'completion_time' (str, Optional)
         db_queue_url: The SQS queue URL defined by AWS.
     """
-    new_data = {"job_id": job_id, "granule_id": granule_id,
-                "request_time": datetime.now(timezone.utc).isoformat(), "archive_destination": archive_destination,
-                "files": files}
+    new_data = {
+        "job_id": job_id,
+        "granule_id": granule_id,
+        "request_time": datetime.now(timezone.utc).isoformat(),
+        "archive_destination": archive_destination,
+        "files": files,
+    }
+
+    message = "Sending the following data to queue: {new_data}"
+    LOGGER.debug(message, new_data=new_data)
 
     post_entry_to_queue(new_data, RequestMethod.NEW_JOB, db_queue_url)
 
@@ -86,7 +101,7 @@ def update_status_for_file(
     filename: str,
     orca_status: OrcaStatus,
     error_message: Optional[str],
-    db_queue_url: str
+    db_queue_url: str,
 ):
     """
     Creates update information for a file's status entry, and posts to queue.
@@ -115,6 +130,9 @@ def update_status_for_file(
                 raise Exception("error message is required.")
             new_data["error_message"] = error_message
 
+    message = "Sending the following data to queue: {new_data}"
+    LOGGER.debug(message, new_data=new_data)
+
     post_entry_to_queue(new_data, RequestMethod.UPDATE_FILE, db_queue_url)
 
 
@@ -134,12 +152,25 @@ def post_entry_to_queue(
     """
     body = json.dumps(new_data)
 
+    # TODO: pass AWS region value to function. SHOULD be gotten from environment
+    # higher up. Setting this to us-west-2 initially since that is where
+    # EOSDIS runs from normally. SEE ORCA-203 https://bugs.earthdata.nasa.ov/browse/ORCA-203
+    LOGGER.debug("Creating SQS resource for {db_queue_url}", db_queue_url=db_queue_url)
     mysqs_resource = boto3.resource("sqs", region_name= get_aws_region())
     mysqs = mysqs_resource.Queue(db_queue_url)
 
-    mysqs.send_message(
+    # Create hash for De-duplication ID max size is 128 characters
+    # sha256 will be 64 characters long sha512 is 128 characters
+    deduplication_id = (
+        request_method.value + hashlib.sha256(body.encode("utf8")).hexdigest()
+    )
+
+    md5_body = hashlib.md5(body.encode("utf8")).hexdigest()
+
+    LOGGER.debug("Sending message to the QUEUE")
+    response = mysqs.send_message(
         QueueUrl=db_queue_url,
-        MessageDeduplicationId=request_method.value + body,
+        MessageDeduplicationId=deduplication_id,
         MessageGroupId="request_files",
         MessageAttributes={
             "RequestMethod": {
@@ -149,3 +180,17 @@ def post_entry_to_queue(
         },
         MessageBody=body,
     )
+    LOGGER.debug("SQS Message Response: {response}", response=json.dumps(response))
+
+    # Make sure we didn't have an error sending message
+    return_status = response["ResponseMetadata"]["HTTPStatusCode"]
+    if return_status < 200 or return_status > 299:
+        raise Exception(
+            f"Failed to send message to Queue. HTTP Response was {return_status}"
+        )
+
+    sqs_md5 = response.get("MD5OfMessageBody")
+    if md5_body != sqs_md5:
+        raise Exception(
+            f"Calculated MD5 of {md5_body} does not match SQS MD5 of {sqs_md5}"
+        )
