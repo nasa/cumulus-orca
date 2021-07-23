@@ -256,8 +256,6 @@ def inner_task(
             file_key = keys[FILE_KEY_KEY]
             # get the glacier bucket the file resides in
             destination_bucket_name = keys[FILE_DEST_BUCKET_KEY]
-            # todo: provide better failure logging and database information
-            #       here when a file does not exist based on ORCA-207 changes
             if object_exists(s3, glacier_bucket, file_key):
                 LOGGER.info(
                     f"Added {file_key} to the list of files we'll attempt to recover."
@@ -275,12 +273,23 @@ def inner_task(
 
                 files.append(a_file)
             else:
-                # todo: ORCA-207 if files are already filtered based on exclude
-                #       then this should be an error and `a_file` should be set
-                #       to failure instead of pending with a completion_time
-                #       and error_message value.
-                LOGGER.warn(f"{file_key} does not exist in S3 bucket")
-
+                message = f"{file_key} does not exist in S3 bucket"
+                LOGGER.error(message)
+                # Set the file status state to FAILED.
+                a_file = {
+                    FILE_SUCCESS_KEY: False,
+                    "filename": os.path.basename(file_key),
+                    "key_path": file_key,
+                    "restore_destination": destination_bucket_name,
+                    "status_id": shared_recovery.OrcaStatus.FAILED.value,
+                    "error_message": message,
+                    "request_time": time_stamp,
+                    "last_update": time_stamp,
+                    "completion_time": time_stamp
+                }
+                # Cannot use f"" because of '{}' handling bug in CumulusLogger
+                LOGGER.error("details of the file with failed state that is sent to the DB: {a_file}", a_file= a_file)
+                files.append(a_file)
         # Create a copy of the granule and add file information in the proper
         # format
         copied_granule = granule.copy()
@@ -509,7 +518,6 @@ def object_exists(s3_cli: BaseClient, glacier_bucket: str, file_key: str) -> boo
             return False
         raise
         # todo: Online docs suggest we could catch 'S3.Client.exceptions.NoSuchKey instead of deconstructing ClientError
-
 
 def restore_object(
     s3_cli: BaseClient,

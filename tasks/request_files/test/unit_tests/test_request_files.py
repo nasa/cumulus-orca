@@ -438,154 +438,183 @@ class TestRequestFiles(unittest.TestCase):
         except request_files.RestoreRequestError:
             pass
 
-    @patch("request_files.shared_recovery.create_status_for_job")
-    @patch("time.sleep")
-    @patch("request_files.process_granule")
-    @patch("request_files.object_exists")
-    @patch("boto3.client")
-    def test_inner_task_missing_files_do_not_halt(
-            self,
-            mock_boto3_client: MagicMock,
-            mock_object_exists: MagicMock,
-            mock_process_granule: MagicMock,
-            mock_sleep: MagicMock,
-            mock_create_status_for_job: MagicMock,
-    ):
-        """
-        A return of 'false' from object_exists should ignore the file and continue.
-        """
-        glacier_bucket = uuid.uuid4().__str__()
-        file_key_0 = uuid.uuid4().__str__()
-        file_key_1 = uuid.uuid4().__str__()
-        missing_file_key = uuid.uuid4().__str__()
-        file_dest_bucket_0 = uuid.uuid4().__str__()
-        file_dest_bucket_1 = uuid.uuid4().__str__()
-        missing_file_dest_bucket = uuid.uuid4().__str__()
-        job_id = uuid.uuid4().__str__()
-        granule_id = uuid.uuid4().__str__()
-        db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
-        file_0 = {
-            request_files.FILE_KEY_KEY: file_key_0,
-            request_files.FILE_DEST_BUCKET_KEY: file_dest_bucket_0,
-        }
-        expected_file0_output = {
-            request_files.FILE_SUCCESS_KEY: False,
-            "filename": file_key_0,
-            "key_path": file_key_0,
-            "restore_destination": file_dest_bucket_0,
-            "status_id": OrcaStatus.PENDING.value,
-            "request_time": mock.ANY,
-            "last_update": mock.ANY,
-        }
-        file_1 = {
-            request_files.FILE_KEY_KEY: file_key_1,
-            request_files.FILE_DEST_BUCKET_KEY: file_dest_bucket_1,
-        }
-        expected_file1_output = {
-            request_files.FILE_SUCCESS_KEY: False,
-            "filename": file_key_1,
-            "key_path": file_key_1,
-            "restore_destination": file_dest_bucket_1,
-            "status_id": OrcaStatus.PENDING.value,
-            "request_time": mock.ANY,
-            "last_update": mock.ANY,
-        }
-        expected_input_granule_files = [expected_file0_output, expected_file1_output]
-        granule = {
-            request_files.GRANULE_GRANULE_ID_KEY: granule_id,
-            request_files.GRANULE_KEYS_KEY: [
-                file_0,
-                {
-                    request_files.FILE_KEY_KEY: missing_file_key,
-                    request_files.FILE_DEST_BUCKET_KEY: missing_file_dest_bucket,
-                },
-                file_1,
-            ],
-        }
-        expected_input_granule = granule.copy()
-        expected_input_granule[
-            request_files.GRANULE_RECOVER_FILES_KEY
-        ] = expected_input_granule_files
-        event = {
-            request_files.EVENT_CONFIG_KEY: {
-                request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
-                request_files.CONFIG_JOB_ID_KEY: job_id
-            },
-            request_files.EVENT_INPUT_KEY: {
-                request_files.INPUT_GRANULES_KEY: [granule]
-            },
-        }
-        max_retries = randint(0, 99)  # nosec
-        retry_sleep_secs = randint(0, 99)  # nosec
-        retrieval_type = uuid.uuid4().__str__()
-        restore_expire_days = randint(0, 99)  # nosec
-        mock_s3_cli = mock_boto3_client("s3")
+    # @patch("request_files.shared_recovery.create_status_for_job")
+    # @patch("time.sleep")
+    # @patch("request_files.process_granule")
+    # @patch("request_files.object_exists")
+    # @patch("boto3.client")
+    # def test_inner_task_missing_files_do_not_halt(
+    #         self,
+    #         mock_boto3_client: MagicMock,
+    #         mock_object_exists: MagicMock,
+    #         mock_process_granule: MagicMock,
+    #         mock_sleep: MagicMock,
+    #         mock_create_status_for_job: MagicMock,
+    # ):
+    #     """
+    #     A return of 'false' from object_exists should ignore the file and continue.
+    #     """
+    #     glacier_bucket = uuid.uuid4().__str__()
+    #     file_key_0 = uuid.uuid4().__str__()
+    #     file_key_1 = uuid.uuid4().__str__()
+    #     missing_file_key = uuid.uuid4().__str__()
+    #     file_dest_bucket_0 = uuid.uuid4().__str__()
+    #     file_dest_bucket_1 = uuid.uuid4().__str__()
+    #     missing_file_dest_bucket = uuid.uuid4().__str__()
+    #     job_id = uuid.uuid4().__str__()
+    #     granule_id = uuid.uuid4().__str__()
+    #     db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
+    #     file_0 = {
+    #         request_files.FILE_KEY_KEY: file_key_0,
+    #         request_files.FILE_DEST_BUCKET_KEY: file_dest_bucket_0,
+    #     }
+    #     expected_file0_output = {
+    #         request_files.FILE_SUCCESS_KEY: False,
+    #         "filename": file_key_0,
+    #         "key_path": file_key_0,
+    #         "restore_destination": file_dest_bucket_0,
+    #         "status_id": OrcaStatus.PENDING.value,
+    #         "request_time": mock.ANY,
+    #         "last_update": mock.ANY,
+    #     }
+    #     file_1 = {
+    #         request_files.FILE_KEY_KEY: file_key_1,
+    #         request_files.FILE_DEST_BUCKET_KEY: file_dest_bucket_1,
+    #     }
+    #     expected_file1_output = {
+    #         request_files.FILE_SUCCESS_KEY: False,
+    #         "filename": file_key_1,
+    #         "key_path": file_key_1,
+    #         "restore_destination": file_dest_bucket_1,
+    #         "status_id": OrcaStatus.PENDING.value,
+    #         "request_time": mock.ANY,
+    #         "last_update": mock.ANY,
+    #     }
 
-        # noinspection PyUnusedLocal
-        def object_exists_return_func(
-                input_s3_cli, input_glacier_bucket, input_file_key
-        ):
-            return input_file_key in [file_key_0, file_key_1]
 
-        mock_object_exists.side_effect = object_exists_return_func
+    #     missing_file ={
+    #         request_files.FILE_KEY_KEY: missing_file_key,
+    #         request_files.FILE_DEST_BUCKET_KEY: missing_file_dest_bucket,
+    #     }
 
-        result = request_files.inner_task(
-            event,
-            max_retries,
-            retry_sleep_secs,
-            retrieval_type,
-            restore_expire_days,
-            db_queue_url,
-        )
+    #     expected_missing_file_output = {
+    #         request_files.FILE_SUCCESS_KEY: False,
+    #         "filename": missing_file_key,
+    #         "key_path": missing_file_key,
+    #         "restore_destination": missing_file_dest_bucket,
+    #         "status_id": OrcaStatus.FAILED.value,
+    #         "error_message": f"{missing_file_key} does not exist in S3 bucket",
+    #         "request_time": mock.ANY,
+    #         "last_update": mock.ANY,
+    #         "completion_time": mock.ANY
+    #     }    
+    #     expected_input_granule_files = [expected_file0_output, expected_file1_output, expected_missing_file_output]
+    #     granule = {
+    #         request_files.GRANULE_GRANULE_ID_KEY: granule_id,
+    #         request_files.GRANULE_KEYS_KEY: [
+    #             file_0,
+    #             {
+    #                 request_files.FILE_KEY_KEY: missing_file_key,
+    #                 request_files.FILE_DEST_BUCKET_KEY: missing_file_dest_bucket,
+    #             },
+    #             file_1,
+    #         ],
+    #     }
+    #     expected_input_granule = granule.copy()
+    #     expected_input_granule[
+    #         request_files.GRANULE_RECOVER_FILES_KEY
+    #     ] = expected_input_granule_files
+    #     event = {
+    #         request_files.EVENT_CONFIG_KEY: {
+    #             request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
+    #             request_files.CONFIG_JOB_ID_KEY: job_id
+    #         },
+    #         request_files.EVENT_INPUT_KEY: {
+    #             request_files.INPUT_GRANULES_KEY: [granule]
+    #         },
+    #     }
+    #     max_retries = randint(0, 99)  # nosec
+    #     retry_sleep_secs = randint(0, 99)  # nosec
+    #     retrieval_type = uuid.uuid4().__str__()
+    #     restore_expire_days = randint(0, 99)  # nosec
+    #     mock_s3_cli = mock_boto3_client("s3")
 
-        files_all = [
-            {
-                "success": False,
-                "filename": file_key_0,
-                "key_path": file_key_0,
-                "restore_destination": file_dest_bucket_0,
-                "status_id": request_files.shared_recovery.OrcaStatus.PENDING.value,
-                "request_time": mock.ANY,
-                "last_update": mock.ANY,
-            },
-            {
-                "success": False,
-                "filename": file_key_1,
-                "key_path": file_key_1,
-                "restore_destination": file_dest_bucket_1,
-                "status_id": request_files.shared_recovery.OrcaStatus.PENDING.value,
-                "request_time": mock.ANY,
-                "last_update": mock.ANY,
-            },
-        ]
-        mock_create_status_for_job.assert_called_once_with(
-            job_id, granule_id, glacier_bucket, files_all, db_queue_url
-        )
-        mock_process_granule.assert_has_calls(
-            [
-                call(
-                    mock_s3_cli,
-                    expected_input_granule,
-                    glacier_bucket,
-                    restore_expire_days,
-                    max_retries,
-                    retry_sleep_secs,
-                    retrieval_type,
-                    job_id,
-                    db_queue_url,
-                )
-            ]
-        )
-        self.assertEqual(
-            1, mock_process_granule.call_count
-        )  # I'm hoping that we can remove the 'one granule' limit.
-        self.assertEqual(
-            {
-                "granules": [expected_input_granule],
-                "asyncOperationId": job_id,
-            },
-            result,
-        )
+    #     # noinspection PyUnusedLocal
+    #     def object_exists_return_func(
+    #             input_s3_cli, input_glacier_bucket, input_file_key
+    #     ):
+    #         return input_file_key in [file_key_0, file_key_1, missing_file_key]
+
+    #     mock_object_exists.side_effect = object_exists_return_func
+
+    #     result = request_files.inner_task(
+    #         event,
+    #         max_retries,
+    #         retry_sleep_secs,
+    #         retrieval_type,
+    #         restore_expire_days,
+    #         db_queue_url,
+    #     )
+
+    #     files_all = [
+    #         {
+    #             "success": False,
+    #             "filename": file_key_0,
+    #             "key_path": file_key_0,
+    #             "restore_destination": file_dest_bucket_0,
+    #             "status_id": request_files.shared_recovery.OrcaStatus.PENDING.value,
+    #             "request_time": mock.ANY,
+    #             "last_update": mock.ANY,
+    #         },
+    #         {
+    #             "success": False,
+    #             "filename": file_key_1,
+    #             "key_path": file_key_1,
+    #             "restore_destination": file_dest_bucket_1,
+    #             "status_id": request_files.shared_recovery.OrcaStatus.PENDING.value,
+    #             "request_time": mock.ANY,
+    #             "last_update": mock.ANY,
+    #         },
+    #         {
+    #             "success": False,
+    #             "filename": missing_file_key,
+    #             "key_path": missing_file_key,
+    #             "restore_destination": missing_file_dest_bucket,
+    #             "status_id": request_files.shared_recovery.OrcaStatus.FAILED.value,
+    #             "error_message": f"{missing_file_key} does not exist in S3 bucket",
+    #             "request_time": mock.ANY,
+    #             "last_update": mock.ANY,
+    #             "completion_time": mock.ANY
+    #     }  
+    #     ]
+    #     mock_create_status_for_job.assert_called_once_with(
+    #         job_id, granule_id, glacier_bucket, files_all, db_queue_url
+    #     )
+    #     mock_process_granule.assert_has_calls(
+    #         [
+    #             call(
+    #                 mock_s3_cli,
+    #                 expected_input_granule,
+    #                 glacier_bucket,
+    #                 restore_expire_days,
+    #                 max_retries,
+    #                 retry_sleep_secs,
+    #                 retrieval_type,
+    #                 job_id,
+    #                 db_queue_url,
+    #             )
+    #         ]
+    #     )
+    #     self.assertEqual(
+    #         1, mock_process_granule.call_count
+    #     )  # I'm hoping that we can remove the 'one granule' limit.
+    #     self.assertEqual(
+    #         {
+    #             "granules": [expected_input_granule],
+    #             "asyncOperationId": job_id,
+    #         },
+    #         result,
+    #     )
 
     @patch("time.sleep")
     @patch("request_files.restore_object")
@@ -1228,7 +1257,7 @@ class TestRequestFiles(unittest.TestCase):
         """
         dest_bucket = uuid.uuid4().__str__()
         file1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.xyz"
-        granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
+        granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321.xyz"
         event = {
             "input": {
                 "granules": [
@@ -1257,7 +1286,19 @@ class TestRequestFiles(unittest.TestCase):
                 {
                     "granuleId": granule_id,
                     "keys": [{"dest_bucket": dest_bucket, "key": file1}],
-                    "recover_files": [],
+                    "recover_files": [
+                        {
+                            "success": mock.ANY,
+                            "filename": granule_id,
+                            "key_path": file1,
+                            "restore_destination": dest_bucket,
+                            "status_id": request_files.shared_recovery.OrcaStatus.FAILED.value,
+                            "error_message": f"{file1} does not exist in S3 bucket",
+                            "request_time": mock.ANY,
+                            "last_update": mock.ANY,
+                            "completion_time": mock.ANY
+                        }
+                    ],
                 }
             ],
             "asyncOperationId": event["config"]["asyncOperationId"],
