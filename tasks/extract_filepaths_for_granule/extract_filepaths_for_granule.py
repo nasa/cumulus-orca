@@ -9,8 +9,15 @@ import os
 
 from cumulus_logger import CumulusLogger
 from run_cumulus_task import run_cumulus_task
+from typing import List
 
 LOGGER = CumulusLogger()
+
+# NOTE: not sure if this is right. I am importing these values to get the "exclude_file_types" args in "should_exclude_files_type()" function from following the code in copy_to_glacier.
+EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
+config = event['config']
+collection = config.get(CONFIG_COLLECTION_KEY, {})
+exclude_file_types = collection.get(COLLECTION_META_KEY, {}).get(EXCLUDE_FILE_TYPES_KEY, [])
 
 class ExtractFilePathsError(Exception):
     """Exception to be raised if any errors occur"""
@@ -98,6 +105,23 @@ def get_regex_buckets(event):
     except KeyError as err:
         raise ExtractFilePathsError(f'KeyError: "{level}[{str(err)}]" is required')
     return regex_buckets
+
+# taken from copy_to_glacier
+# please also make some suggestions on where to use this filtering above
+def should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -> bool:
+    """
+    Tests whether or not file is included in {excludeFileTypes}.
+    Args:
+        granule_url: s3 url of granule.
+        exclude_file_types: List of file extensions to exclude from sending to request_files
+    Returns:
+        True if file should be excluded from copy, False otherwise.
+    """
+    for file_type in exclude_file_types:
+        # Returns the first instance in the string that matches .ext or None if no match was found.
+        if re.search(f"^.*{file_type}$", granule_url) is not None:
+            return True
+    return False
 
 def handler(event, context):            #pylint: disable-msg=unused-argument
     """Lambda handler. Extracts the key's for a granule from an input dict.
