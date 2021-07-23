@@ -285,10 +285,13 @@ def inner_task(
                     "error_message": message,
                     "request_time": time_stamp,
                     "last_update": time_stamp,
-                    "completion_time": time_stamp
+                    "completion_time": time_stamp,
                 }
                 # Cannot use f"" because of '{}' handling bug in CumulusLogger
-                LOGGER.error("details of the file with failed state that is sent to the DB: {a_file}", a_file= a_file)
+                LOGGER.error(
+                    "details of the file with failed state that is sent to the DB: {a_file}",
+                    a_file=a_file,
+                )
                 files.append(a_file)
         # Create a copy of the granule and add file information in the proper
         # format
@@ -518,6 +521,7 @@ def object_exists(s3_cli: BaseClient, glacier_bucket: str, file_key: str) -> boo
             return False
         raise
         # todo: Online docs suggest we could catch 'S3.Client.exceptions.NoSuchKey instead of deconstructing ClientError
+
 
 def restore_object(
     s3_cli: BaseClient,
