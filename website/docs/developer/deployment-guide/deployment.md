@@ -10,7 +10,7 @@ deploy ORCA with or along-side Cumulus.
 In order to deploy ORCA into an NGAP environment with 
 Cumulus, a deployment environment needs be created.
 
-Visit [Creating a Deployment Environment](setting-up-deployment-environment.md)
+Visit [Creating a Deployment Environment](setting-up-deployment-environment.mdx)
 to view the instructions for setting up your ORCA deployment environment.
 
 ### ORCA Archive Bucket

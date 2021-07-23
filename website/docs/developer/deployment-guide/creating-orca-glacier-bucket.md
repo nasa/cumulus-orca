@@ -26,7 +26,7 @@ The sections below go into further detail on creating the ORCA archive bucket.
 ## Create the ORCA Archive Bucket
 
 Prior to creating the S3 bucket, make sure the deployment environment is created
-per the [Creating the Deployment Environment](setting-up-deployment-environment.md)
+per the [Creating the Deployment Environment](setting-up-deployment-environment.mdx)
 documentation.
 
 To create the ORCA archive bucket run the AWS CLI command below and replace the

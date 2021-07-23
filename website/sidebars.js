@@ -56,6 +56,7 @@ module.exports = {
         'developer/deployment-guide/deployment-upgrading-orca',
         'developer/deployment-guide/recovery-workflow',
         'developer/deployment-guide/testing_deployment',
+        'developer/deployment-guide/deploying-from-windows',
     ],
     "Research": [
       'developer/research/research-intro',
