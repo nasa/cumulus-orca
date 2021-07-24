@@ -17,7 +17,7 @@ The following sections going into more detail on utilizing this Lambda.
 - [Testing db_deploy](#test-db_deploy) - Testing the lambda via unit and manual tests
 - [Building db_deploy](#building-db_deploy) - Building the lambda and documentation.
 - [Deploying db_deploy](#deploying-db_deploy) - Deploying and using the db_deploy lambda
-- [db_deploy API Reference](#db_deploy-api-reference) - API refrence
+- [db_deploy API Reference](#db_deploy-api-reference) - API reference
 
 
 ## Testing db_deploy

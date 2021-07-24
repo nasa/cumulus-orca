@@ -12,7 +12,7 @@ The following sections going into more detail on utilizing this Lambda.
 - [Testing shared_db](#testing-shared_db) - Testing the library via unit tests
 - [Building shared_db](#building-shared_db) - Building the library
 - [Using shared_db](#using-shared_db) - Using the shared_db library in code.
-- [shared_db API Reference](#shared_db-api-reference) - API refrence
+- [shared_db API Reference](#shared_db-api-reference) - API reference
 
 
 ## Testing shared_db

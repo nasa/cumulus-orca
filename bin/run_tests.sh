@@ -17,7 +17,7 @@ do
   source venv/bin/activate
   pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org
   pip install -q -r requirements-dev.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
-  # Currenty just running unit tests until we fix/support large tests
+  # Currently just running unit tests until we fix/support large tests
   coverage run --source test/unit_tests/ -m pytest test/unit_tests/
   result=$?
   if [[ $result -eq 1 ]]; then

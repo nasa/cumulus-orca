@@ -64,7 +64,7 @@ To setup the testing environment perform the following steps.
 Once all tests are complete perform the following:
 
 1. Close the **python** window by typing `exit` at the command prompt.
-2. Close the **pgclient** window by quiting psql via the `\q` command and then
+2. Close the **pgclient** window by quitting psql via the `\q` command and then
    typing `exit` at the command prompt.
 3. Shut down PostgreSQL and cleanup by running the `./setup_testing stop` command
    in the setup window.
@@ -736,8 +736,8 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
 
                    job_id                |        granule_id        |         filename        |         key_path         |   restore_destination    | status_id |      error_message      |         request_time          |          last_update          | completion_time
    --------------------------------------+--------------------------+-------------------------+--------------------------+--------------------------+-----------+-------------------------+-------------------------------+-------------------------------+------------------------------
-   bd325313-e4fb-4c8d-8941-14e27942c081 | 140f54e91f70cdf5c23ceb9f | 7237771bd8e9c8614ebdf1fe | 7237771bd8e9c8614ebdf1fe | 8752510fd8053d01a33dd002 |         3 | Some error occured here | 2021-04-20 05:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   f87f219e-b04b-4ca7-abc2-bcdec1809182 | e1f62c411040f269a5aef941 | d4a228869f83a3395c36eaf1 | d4a228869f83a3395c36eaf1 | a27b5b0a2c08a40067c409f0 |         3 | Some error occured here | 2021-04-20 06:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   bd325313-e4fb-4c8d-8941-14e27942c081 | 140f54e91f70cdf5c23ceb9f | 7237771bd8e9c8614ebdf1fe | 7237771bd8e9c8614ebdf1fe | 8752510fd8053d01a33dd002 |         3 | Some error occurerd here | 2021-04-20 05:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   f87f219e-b04b-4ca7-abc2-bcdec1809182 | e1f62c411040f269a5aef941 | d4a228869f83a3395c36eaf1 | d4a228869f83a3395c36eaf1 | a27b5b0a2c08a40067c409f0 |         3 | Some error occurred here | 2021-04-20 06:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
    (2 rows)
 
    ```

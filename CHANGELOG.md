@@ -225,7 +225,7 @@ None - this is the baseline release.
 
 ### Added
 * *Misc*
-  * Unit test upgrades - mocking unecessary dependencies.
+  * Unit test upgrades - mocking unnecessary dependencies.
   * Code formatting and styling
 * *ORCA-65* Copy Lambda
   * We're including a copy lambda in the v1.0.0 release. The use of this lambda function is optional and explained in the task readme/documentation.

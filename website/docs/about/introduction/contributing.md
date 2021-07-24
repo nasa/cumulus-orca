@@ -18,7 +18,7 @@ ORCA into their DAAC workflows and Cumulus instances.
 **Contributor:**  Developers, engineers, and users who are not a
 part of the core team that actively provides fixes, enhancements,
 and features through code pull requests to the cumulus-orca
-respository.
+repository.
 
 **Core Developer:**  Part of the core ORCA team that develops code and
 documentation for the ORCA components. If you would like to be a part of
