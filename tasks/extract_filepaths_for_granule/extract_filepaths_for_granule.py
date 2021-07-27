@@ -134,10 +134,10 @@ def should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -
     for file_type in exclude_file_types:
         # Returns the first instance in the string that matches .ext or None if no match was found.
         if re.search(f"^.*{file_type}$", granule_url) is not None:
-            LOGGER.debug(f"The file {granule_url} will not be restored because it matches the excluded file type {file_type}.")
+            LOGGER.warn(f"The file {granule_url} will not be restored because it matches the excluded file type {file_type}.")
             return True
         else:
-            LOGGER.debug(f"file {granule_url} will be restored")
+            LOGGER.debug(f"File {granule_url} will be restored")
     return False
 
 def handler(event, context):            #pylint: disable-msg=unused-argument
