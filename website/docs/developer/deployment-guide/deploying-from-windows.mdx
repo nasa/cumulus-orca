@@ -58,9 +58,9 @@ This application will be used in future steps to authenticate users.
   ```commandline
   aws s3api put-bucket-versioning --bucket PREFIX-tf-state --versioning-configuration Status=Enabled
   ```
-  :::warning
-  We presently have no instructions for creating a VPC, Subnet, Security Group, or PostgreSQL database.
-  Borrow them from an existing setup.
+  :::tip
+  VPC and Subnets are created by [NGAP](https://wiki.earthdata.nasa.gov/display/ESKB/AWS+Services+Approval+Status+Page#AWSServicesApprovalStatusPage-VPC).
+  It is recommended you copy values from an existing deployment setup.
   :::
 - Go to [this repo](https://git.earthdata.nasa.gov/projects/ORCA/repos/cumulus-orca-template-deploy/browse) and clone it to your machine.
 - Unzip.
@@ -95,13 +95,13 @@ This application will be used in future steps to authenticate users.
 - Open a commandline in the same folder.
     - Run `docker build -t orca .` and `docker run -it --rm -v pathToYourFolder:/CIRRUS-core orca /bin/bash`
     - The commandline should now be inside a docker container.
-      `bash
+      ```bash
       cd cumulus-orca-template-deploy/rds-cluster-tf/
       aws configure
       terraform init
       terraform plan
       terraform apply
-      `
+      ```
 
 - In data-persistence-tf/terraform.tfvars
     - Set `permissions_boundary_arn` to `arn:aws:iam::12345:policy/NGAPShRoleBoundary` replacing the `12345` with your Account Id.
@@ -135,6 +135,7 @@ terraform apply
       :::tip
       The "orca-sandbox-s3-provider" bucket contains test data.
       If creating a separate environment, you can create your own bucket.
+      It is recommended that all buckets include the same test data.
       :::
 
     - Replace the `cumulus_message_adapter_lambda_layer_version_arn` with a valid one.
@@ -199,4 +200,4 @@ terraform apply
 - Applications -> My Applications
 - Click on the Edit button for your application.
 - Click on Manage -> Redirect Uris
-- Add the `archive_api_redirect_uri` and `distribution_redirect_uri` output from `terraform apply`.
+- Add http://localhost:3000/auth and the `archive_api_redirect_uri` and `distribution_redirect_uri` output from `terraform apply`.
