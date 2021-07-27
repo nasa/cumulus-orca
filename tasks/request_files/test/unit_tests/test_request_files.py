@@ -1255,7 +1255,8 @@ class TestRequestFiles(unittest.TestCase):
         """
         dest_bucket = uuid.uuid4().__str__()
         file1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.xyz"
-        granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321.xyz"
+        granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
+        filename = "MOD09GQ.A0219114.N5aUCG.006.0656338553321.xyz"
         event = {
             "input": {
                 "granules": [
@@ -1289,7 +1290,7 @@ class TestRequestFiles(unittest.TestCase):
                     "recover_files": [
                         {
                             "success": True,
-                            "filename": granule_id,
+                            "filename": filename,
                             "key_path": file1,
                             "restore_destination": dest_bucket,
                             "status_id": OrcaStatus.FAILED.value,

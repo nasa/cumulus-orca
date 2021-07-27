@@ -36,22 +36,19 @@ def task(event, context):    #pylint: disable-msg=unused-argument
         Raises:
             ExtractFilePathsError: An error occurred parsing the input.
     """
-    LOGGER.debug(event)
+    LOGGER.debug("event: {event}", event=event)
     try:
         config = event['config']
         collection = config.get(CONFIG_COLLECTION_KEY, {})
         exclude_file_types = collection.get(COLLECTION_META_KEY, {}).get(EXCLUDE_FILE_TYPES_KEY, [])
         if len(exclude_file_types) == 0:
-            LOGGER.info(f"exclude_files_types list is empty.")
+            LOGGER.debug(f"The configuration list {EXCLUDE_FILE_TYPES_KEY} is empty.")
         else:
-            LOGGER.info(f"collected excluded file types {exclude_file_types} from the collection in event.")
-    except KeyError:
-        message = f"arguments are missing from {config}"
-        LOGGER.error(message)
-        raise KeyError(message)
-
-
-    # check if these are available
+            LOGGER.debug(f"The configuration {EXCLUDE_FILE_TYPES_KEY} list {exclude_file_types} was found.")
+    except KeyError as ke:
+            message = "Key {key} is missing from the event configuration: {config}"
+            LOGGER.error(message, key=ke, config=config)
+            raise KeyError(message.format(key=ke, config=config))
     result = {}
     try:
         regex_buckets = get_regex_buckets(event)
@@ -66,18 +63,18 @@ def task(event, context):    #pylint: disable-msg=unused-argument
                 level = "event['input']['granules'][]['files']"
                 file_name = os.path.basename(afile['fileName']) if \
                     re.search('^s3://', afile['fileName']) else afile['fileName']
-                LOGGER.info(f"grabbed filename {file_name}")
-                # filtering excludeFileTypes
+                LOGGER.debug(f"Validating file {file_name}")
+                # filtering excludedFileTypes
                 if not should_exclude_files_type(file_name, exclude_file_types):
                     fkey = afile['key']
-                    LOGGER.info(f"grabbed file key {fkey}")
+                    LOGGER.debug(f"Retrieving information for {fkey}")
                     dest_bucket = None
                     for key in regex_buckets:
                         pat = re.compile(key)
                         if pat.match(file_name):
                             dest_bucket = regex_buckets[key]
+                            LOGGER.debug("Found retrieval destination {dest_bucket} for {file}", dest_bucket=dest_bucket, file=file_name)
                     files.append({'key': fkey, 'dest_bucket': dest_bucket})
-                    LOGGER.info(f"added to files- 'key': {fkey}, 'dest_bucket': {dest_bucket}")
             gran['keys'] = files
             grans.append(gran)
         result['granules'] = grans
@@ -137,10 +134,10 @@ def should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -
     for file_type in exclude_file_types:
         # Returns the first instance in the string that matches .ext or None if no match was found.
         if re.search(f"^.*{file_type}$", granule_url) is not None:
-            LOGGER.info(f"The file {granule_url} will not be restored because it matches the excluded file type {file_type}.")
+            LOGGER.debug(f"The file {granule_url} will not be restored because it matches the excluded file type {file_type}.")
             return True
-
-        # logger.debug ..file .. will be restored
+        else:
+            LOGGER.debug(f"file {granule_url} will be restored")
     return False
 
 def handler(event, context):            #pylint: disable-msg=unused-argument
