@@ -473,7 +473,7 @@ class TestRequestFiles(unittest.TestCase):
             "filename": file_key_0,
             "key_path": file_key_0,
             "restore_destination": file_dest_bucket_0,
-            "status_id": request_files.shared_recovery.OrcaStatus.PENDING.value,
+            "status_id": OrcaStatus.PENDING.value,
             "request_time": mock.ANY,
             "last_update": mock.ANY,
         }
@@ -486,35 +486,34 @@ class TestRequestFiles(unittest.TestCase):
             "filename": file_key_1,
             "key_path": file_key_1,
             "restore_destination": file_dest_bucket_1,
-            "status_id": request_files.shared_recovery.OrcaStatus.PENDING.value,
+            "status_id": OrcaStatus.PENDING.value,
             "request_time": mock.ANY,
             "last_update": mock.ANY,
         }
 
-        missing_file ={
+        missing_file = {
             request_files.FILE_KEY_KEY: missing_file_key,
             request_files.FILE_DEST_BUCKET_KEY: missing_file_dest_bucket,
         }
-
         expected_missing_file_output = {
-            request_files.FILE_SUCCESS_KEY: False,
+            request_files.FILE_SUCCESS_KEY: True,
             "filename": missing_file_key,
             "key_path": missing_file_key,
             "restore_destination": missing_file_dest_bucket,
-            "status_id": request_files.shared_recovery.OrcaStatus.PENDING.value,
+            "status_id": OrcaStatus.FAILED.value,
             "request_time": mock.ANY,
             "last_update": mock.ANY,
+            "error_message": f"{missing_file_key} does not exist in S3 bucket",
+            "completion_time": mock.ANY
         }
-        expected_input_granule_files = [expected_file0_output, expected_file1_output, expected_missing_file_output]
+
+        expected_input_granule_files = [expected_file0_output, expected_missing_file_output, expected_file1_output]
         granule = {
             request_files.GRANULE_GRANULE_ID_KEY: granule_id,
             request_files.GRANULE_KEYS_KEY: [
                 file_0,
+                missing_file,
                 file_1,
-                                {
-                request_files.FILE_KEY_KEY: missing_file_key,
-                request_files.FILE_DEST_BUCKET_KEY: missing_file_dest_bucket,
-                },
             ],
         }
         expected_input_granule = granule.copy()
@@ -540,7 +539,7 @@ class TestRequestFiles(unittest.TestCase):
         def object_exists_return_func(
                 input_s3_cli, input_glacier_bucket, input_file_key
         ):
-            return input_file_key in [file_key_0, file_key_1, missing_file_key]
+            return input_file_key in [file_key_0, file_key_1]
 
         mock_object_exists.side_effect = object_exists_return_func
 
@@ -559,30 +558,30 @@ class TestRequestFiles(unittest.TestCase):
                 "filename": file_key_0,
                 "key_path": file_key_0,
                 "restore_destination": file_dest_bucket_0,
-                "status_id": request_files.shared_recovery.OrcaStatus.PENDING.value,
+                "status_id": OrcaStatus.PENDING.value,
                 "request_time": mock.ANY,
                 "last_update": mock.ANY,
+            },
+            {
+                "success": True,
+                "filename": missing_file_key,
+                "key_path": missing_file_key,
+                "restore_destination": missing_file_dest_bucket,
+                "status_id": OrcaStatus.FAILED.value,
+                "request_time": mock.ANY,
+                "last_update": mock.ANY,
+                "error_message": f"{missing_file_key} does not exist in S3 bucket",
+                "completion_time": mock.ANY
             },
             {
                 "success": False,
                 "filename": file_key_1,
                 "key_path": file_key_1,
                 "restore_destination": file_dest_bucket_1,
-                "status_id": request_files.shared_recovery.OrcaStatus.PENDING.value,
+                "status_id": OrcaStatus.PENDING.value,
                 "request_time": mock.ANY,
                 "last_update": mock.ANY,
             },
-            {
-                "success": False,
-                "filename": missing_file_key,
-                "key_path": missing_file_key,
-                "restore_destination": missing_file_dest_bucket,
-                "status_id": request_files.shared_recovery.OrcaStatus.PENDING.value,
-                # "error_message": f"{missing_file_key} does not exist in S3 bucket",
-                "request_time": mock.ANY,
-                "last_update": mock.ANY,
-                # "completion_time": mock.ANY
-        }
         ]
         mock_create_status_for_job.assert_called_once_with(
             job_id, granule_id, glacier_bucket, files_all, db_queue_url
@@ -754,7 +753,7 @@ class TestRequestFiles(unittest.TestCase):
                 "filename": file_name_0,
                 "key_path": file_name_0,
                 "restore_destination": dest_bucket_0,
-                "status_id": request_files.shared_recovery.OrcaStatus.PENDING.value,
+                "status_id": OrcaStatus.PENDING.value,
                 "error_message": None,
                 "request_time": mock.ANY,
                 "last_update": mock.ANY,
@@ -1289,11 +1288,11 @@ class TestRequestFiles(unittest.TestCase):
                     "keys": [{"dest_bucket": dest_bucket, "key": file1}],
                     "recover_files": [
                         {
-                            "success": mock.ANY,
+                            "success": True,
                             "filename": granule_id,
                             "key_path": file1,
                             "restore_destination": dest_bucket,
-                            "status_id": request_files.shared_recovery.OrcaStatus.FAILED.value,
+                            "status_id": OrcaStatus.FAILED.value,
                             "error_message": f"{file1} does not exist in S3 bucket",
                             "request_time": mock.ANY,
                             "last_update": mock.ANY,

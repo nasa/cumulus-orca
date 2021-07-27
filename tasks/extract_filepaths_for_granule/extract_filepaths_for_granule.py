@@ -10,14 +10,12 @@ import os
 from cumulus_logger import CumulusLogger
 from run_cumulus_task import run_cumulus_task
 from typing import List
-
+# instantiate Cumulus logger
 LOGGER = CumulusLogger()
 
-# NOTE: not sure if this is right. I am importing these values to get the "exclude_file_types" args in "should_exclude_files_type()" function from following the code in copy_to_glacier.
 EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
-config = event['config']
-collection = config.get(CONFIG_COLLECTION_KEY, {})
-exclude_file_types = collection.get(COLLECTION_META_KEY, {}).get(EXCLUDE_FILE_TYPES_KEY, [])
+CONFIG_COLLECTION_KEY = 'collection'
+COLLECTION_META_KEY = 'meta'
 
 class ExtractFilePathsError(Exception):
     """Exception to be raised if any errors occur"""
@@ -38,6 +36,22 @@ def task(event, context):    #pylint: disable-msg=unused-argument
         Raises:
             ExtractFilePathsError: An error occurred parsing the input.
     """
+    LOGGER.debug(event)
+    try:
+        config = event['config']
+        collection = config.get(CONFIG_COLLECTION_KEY, {})
+        exclude_file_types = collection.get(COLLECTION_META_KEY, {}).get(EXCLUDE_FILE_TYPES_KEY, [])
+        if len(exclude_file_types) == 0:
+            LOGGER.info(f"exclude_files_types list is empty.")
+        else:
+            LOGGER.info(f"collected excluded file types {exclude_file_types} from the collection in event.")
+    except KeyError:
+        message = f"arguments are missing from {config}"
+        LOGGER.error(message)
+        raise KeyError(message)
+
+
+    # check if these are available
     result = {}
     try:
         regex_buckets = get_regex_buckets(event)
@@ -52,13 +66,18 @@ def task(event, context):    #pylint: disable-msg=unused-argument
                 level = "event['input']['granules'][]['files']"
                 file_name = os.path.basename(afile['fileName']) if \
                     re.search('^s3://', afile['fileName']) else afile['fileName']
-                fkey = afile['key']
-                dest_bucket = None
-                for key in regex_buckets:
-                    pat = re.compile(key)
-                    if pat.match(file_name):
-                        dest_bucket = regex_buckets[key]
-                files.append({'key': fkey, 'dest_bucket': dest_bucket})
+                LOGGER.info(f"grabbed filename {file_name}")
+                # filtering excludeFileTypes
+                if not should_exclude_files_type(file_name, exclude_file_types):
+                    fkey = afile['key']
+                    LOGGER.info(f"grabbed file key {fkey}")
+                    dest_bucket = None
+                    for key in regex_buckets:
+                        pat = re.compile(key)
+                        if pat.match(file_name):
+                            dest_bucket = regex_buckets[key]
+                    files.append({'key': fkey, 'dest_bucket': dest_bucket})
+                    LOGGER.info(f"added to files- 'key': {fkey}, 'dest_bucket': {dest_bucket}")
             gran['keys'] = files
             grans.append(gran)
         result['granules'] = grans
@@ -106,8 +125,6 @@ def get_regex_buckets(event):
         raise ExtractFilePathsError(f'KeyError: "{level}[{str(err)}]" is required')
     return regex_buckets
 
-# taken from copy_to_glacier
-# please also make some suggestions on where to use this filtering above
 def should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -> bool:
     """
     Tests whether or not file is included in {excludeFileTypes}.
@@ -120,7 +137,10 @@ def should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -
     for file_type in exclude_file_types:
         # Returns the first instance in the string that matches .ext or None if no match was found.
         if re.search(f"^.*{file_type}$", granule_url) is not None:
+            LOGGER.info(f"The file {granule_url} will not be restored because it matches the excluded file type {file_type}.")
             return True
+
+        # logger.debug ..file .. will be restored
     return False
 
 def handler(event, context):            #pylint: disable-msg=unused-argument

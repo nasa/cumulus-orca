@@ -246,7 +246,15 @@ class TestExtractFilePaths(unittest.TestCase):
 
         result = extract_filepaths_for_granule.task(self.task_input_event, self.context)
         self.assertEqual(exp_result, result)
-
+# -------------------------------------------------------------------------------------------------
+    def test_exclude_file_types(self):
+        """
+        Testing filtering of exclude file types.
+        """
+        result_true = extract_filepaths_for_granule.should_exclude_files_type('s3://test-bucket/exclude.xml', ['.xml'])
+        result_false = extract_filepaths_for_granule.should_exclude_files_type('s3://test-bucket/will_not_exclude.cmr', ['.xml', ".met"])
+        self.assertEqual(result_true, True)
+        self.assertEqual(result_false, False)
 
 if __name__ == '__main__':
     unittest.main(argv=['start'])

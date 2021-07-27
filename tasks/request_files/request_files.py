@@ -17,9 +17,7 @@ from botocore.client import BaseClient
 
 # noinspection PyPackageRequirements
 from botocore.exceptions import ClientError
-from cumulus_logger import CumulusLogger
 from run_cumulus_task import run_cumulus_task
-
 from orca_shared import shared_recovery
 
 DEFAULT_RESTORE_EXPIRE_DAYS = 5
@@ -256,43 +254,30 @@ def inner_task(
             file_key = keys[FILE_KEY_KEY]
             # get the glacier bucket the file resides in
             destination_bucket_name = keys[FILE_DEST_BUCKET_KEY]
+
+            # Set the initial pending state for the file.
+            a_file = {
+                FILE_SUCCESS_KEY: False,
+                "filename": os.path.basename(file_key),
+                "key_path": file_key,
+                "restore_destination": destination_bucket_name,
+                "status_id": shared_recovery.OrcaStatus.PENDING.value,
+                "request_time": time_stamp,
+                "last_update": time_stamp,
+            }
             if object_exists(s3, glacier_bucket, file_key):
                 LOGGER.info(
                     f"Added {file_key} to the list of files we'll attempt to recover."
                 )
-                # Set the initial pending state for the file.
-                a_file = {
-                    FILE_SUCCESS_KEY: False,
-                    "filename": os.path.basename(file_key),
-                    "key_path": file_key,
-                    "restore_destination": destination_bucket_name,
-                    "status_id": shared_recovery.OrcaStatus.PENDING.value,
-                    "request_time": time_stamp,
-                    "last_update": time_stamp,
-                }
-
-                files.append(a_file)
             else:
                 message = f"{file_key} does not exist in S3 bucket"
                 LOGGER.error(message)
-                # Set the file status state to FAILED.
-                a_file = {
-                    FILE_SUCCESS_KEY: False,
-                    "filename": os.path.basename(file_key),
-                    "key_path": file_key,
-                    "restore_destination": destination_bucket_name,
-                    "status_id": shared_recovery.OrcaStatus.FAILED.value,
-                    "error_message": message,
-                    "request_time": time_stamp,
-                    "last_update": time_stamp,
-                    "completion_time": time_stamp,
-                }
-                # Cannot use f"" because of '{}' handling bug in CumulusLogger
-                LOGGER.error(
-                    "details of the file with failed state that is sent to the DB: {a_file}",
-                    a_file=a_file,
-                )
-                files.append(a_file)
+                a_file[FILE_SUCCESS_KEY] = True
+                a_file["status_id"] = shared_recovery.OrcaStatus.FAILED.value
+                a_file["error_message"] = message
+                a_file["completion_time"] = time_stamp
+            files.append(a_file)
+
         # Create a copy of the granule and add file information in the proper
         # format
         copied_granule = granule.copy()
@@ -521,7 +506,6 @@ def object_exists(s3_cli: BaseClient, glacier_bucket: str, file_key: str) -> boo
             return False
         raise
         # todo: Online docs suggest we could catch 'S3.Client.exceptions.NoSuchKey instead of deconstructing ClientError
-
 
 def restore_object(
     s3_cli: BaseClient,
