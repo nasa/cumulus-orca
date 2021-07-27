@@ -15,24 +15,27 @@ The goal of this page is to provide a set of modified instructions to get around
   :::warning
   The VPN drastically slows down Terraform operations, and limits what documentation can be viewed. Switch off when applicable.
   :::
-- Commands here will use ```us-west-2``` for region because of the current state of our sandbox. Replace consistently as needed.
+- Commands here will use `us-west-2` for region because of the current state of our sandbox and ESDIS recommendations. Replace consistently as needed.
     - Make sure any operations in AWS are done under the correct region.
 
 ## Application
 This application will be used in future steps to authenticate users.
 - Go to https://uat.urs.earthdata.nasa.gov/profile
 - Applications -> My Applications
-- Create a new Application
-    - Application ID: ```prefix_cumulus```
-    - Application Name ```Prefix Cumulus```
-    - Application Type: ```OAuth 2```
-    - Redirect URL: todo
+  :::tip
+  If this option is not present, then [you must get the "Application Developer" permission.](https://wiki.earthdata.nasa.gov/display/EL/How+To+Register+An+Application)
+  :::
+- Create a new Application. Remember to update with your own prefix.
+    - Application ID: `PREFIX_cumulus`
+    - Application Name `PREFIX Cumulus`
+    - Application Type: `OAuth 2`
+    - Redirect URL: For now, `http://localhost:3000/`. Proper URLs will be defined in the [ORCA deployment](#redirect-definition).
 
 ## Initial Setup
 - Follow the [deployment environment setup instructions](setting-up-deployment-environment.mdx).
     - You may need to install Terraform manually.
     - Only configure the default profile.
-    - Keep the access keys in plain-text. You will need to run ```aws configure``` in multiple environments.
+    - Keep the access keys in plain-text. You will need to run `aws configure` in multiple environments.
 - Create an AWS Key Value Pair by following  [the AWS instructions](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html#having-ec2-create-your-key-pair).
     - Choose the '.pem' format.
     - Naming convention is PREFIX-key-pair.pem
@@ -40,7 +43,7 @@ This application will be used in future steps to authenticate users.
     - Same OU and region would not be ideal for a real backup system, but is generally sufficient for testing.
     - Required buckets are PREFIX-tf-state, PREFIX-glacier, PREFIX-internal, PREFIX-private, PREFIX-protected, PREFIX-public, and PREFIX-orca
     :::tip
-    An example command for creating a bucket in us-west-2. Remember to run ```aws configure``` first.
+    An example command for creating a bucket in us-west-2. Remember to run `aws configure` first.
     ```commandline
     aws s3api create-bucket --bucket PREFIX-tf-state --profile default --region us-west-2 --create-bucket-configuration "LocationConstraint=us-west-2"
     ```
@@ -59,7 +62,7 @@ This application will be used in future steps to authenticate users.
   We presently have no instructions for creating a VPC, Subnet, Security Group, or PostgreSQL database.
   Borrow them from an existing setup.
   :::
-- Go to [this repo](https://git.earthdata.nasa.gov/projects/ORCA/repos/cumulus-orca-template-deploy/browse) and download.
+- Go to [this repo](https://git.earthdata.nasa.gov/projects/ORCA/repos/cumulus-orca-template-deploy/browse) and clone it to your machine.
 - Unzip.
 - Remove the '.example' on terraform.tf and terraform.tfvars files in data-persistence-tf, cumulus-tf, and rds-cluster-tf.
 - In each terraform.tf and terraform.tfvars, use your own prefix, region, vpc id, and subnet ids.
@@ -70,42 +73,42 @@ This application will be used in future steps to authenticate users.
   Only use the non-lambda subnet id in the data-persistence-tf/terraform.tfvars. In cumulus-tf use both.
   :::
   :::warning
-  Overwrite the ```orca-sandbox``` in ```orca-sandbox-tf-locks``` with your prefix as well.
+  Overwrite the `orca-sandbox` in `orca-sandbox-tf-locks` with your prefix as well.
   :::
 - In rds-cluster-tf/terraform.tfvars
-    - Use values of your choice for ```db_admin_username``` and ```db_admin_password```
-    - Set ```tags``` to ```{ "Deployment" = "PREFIX" }```
-    - Set ```permissions_boundary_arn``` to ```arn:aws:iam::YOUR ACCOUNT ID:policy/NGAPShRoleBoundary```
-    - Add ```rds_user_password = "CumulusD3faultPassw0rd"``` and change as desired.
-    - Set ```provision_user_database``` to ```true```
-    - Set ```cluster_identifier``` to ```"PREFIX-cumulus-db"```
+    - Use values of your choice for `db_admin_username` and `db_admin_password`
+    - Set `tags` to `{ "Deployment" = "PREFIX" }`
+    - Set `permissions_boundary_arn` to `arn:aws:iam::YOUR ACCOUNT ID:policy/NGAPShRoleBoundary`
+    - Add `rds_user_password = "CumulusD3faultPassw0rd"` and change as desired.
+    - Set `provision_user_database` to `true`
+    - Set `cluster_identifier` to `"PREFIX-cumulus-db"`
 
 - In rds-cluster-tf/terraform.tf
-    - Set ```bucket``` to ```"PREFIX-tf-state"```
-    - Set ```key``` to ```"PREFIX/cumulus/terraform.tfstate"```
-    - Set ```dynamodb_table``` to ```"PREFIX-tf-locks"```
+    - Set `bucket` to `"PREFIX-tf-state"`
+    - Set `key` to `"PREFIX/cumulus/terraform.tfstate"`
+    - Set `dynamodb_table` to `"PREFIX-tf-locks"`
 
 - Go to https://github.com/asfadmin/CIRRUS-core/blob/master/Dockerfile and download the file to the same folder as your downloaded repo and orca folder.
   :::tip
   Make sure that no extension is added.
   :::
 - Open a commandline in the same folder.
-    - Run ```docker build -t orca .``` and ```docker run -it --rm -v pathToYourFolder:/CIRRUS-core orca /bin/bash```
+    - Run `docker build -t orca .` and `docker run -it --rm -v pathToYourFolder:/CIRRUS-core orca /bin/bash`
     - The commandline should now be inside a docker container.
-      ```bash
+      `bash
       cd cumulus-orca-template-deploy/rds-cluster-tf/
       aws configure
       terraform init
       terraform plan
       terraform apply
-      ```
+      `
 
 - In data-persistence-tf/terraform.tfvars
-    - Set ```permissions_boundary_arn``` to ```arn:aws:iam::12345:policy/NGAPShRoleBoundary``` replacing the ```12345``` with your Account Id.
+    - Set `permissions_boundary_arn` to `arn:aws:iam::12345:policy/NGAPShRoleBoundary` replacing the `12345` with your Account Id.
       <img alt="Location of Account Id" src={useBaseUrl('img/aws-account-id.PNG')} />
-    - Set ```rds_user_access_secret_arn``` to the ```user_credentials_secret_urn``` output from ```terraform apply```.
-    - Set ```rds_security_group``` to the ```security_group_id``` output from ```terraform apply```.
-    - Set ```vpc_id``` to your borrowed VPC.
+    - Set `rds_user_access_secret_arn` to the `user_credentials_secret_urn` output from `terraform apply`.
+    - Set `rds_security_group` to the `security_group_id` output from `terraform apply`.
+    - Set `vpc_id` to your borrowed VPC.
 
 ```bash
 cd ../data-persistence-tf/
@@ -116,12 +119,12 @@ terraform apply
 ```
 
 - In cumulus-tf/terraform.tfvars
-    - Add the line ```aws_profile = "default"```
+    - Add the line `aws_profile = "default"`
     - Replace 12345 in permissions_boundary_arn with the Account Id.
     - Add to the buckets:
       ```
       default_orca = {
-         name = "prefix-orca"
+         name = "PREFIX-orca"
          type = "orca"
         },
         provider = {
@@ -134,20 +137,31 @@ terraform apply
       If creating a separate environment, you can create your own bucket.
       :::
 
-    - Replace the ```cumulus_message_adapter_lambda_layer_version_arn``` with a valid one.
-
+    - Replace the `cumulus_message_adapter_lambda_layer_version_arn` with a valid one.
+      :::tip
+      If the CMA is not deployed, follow [the deployment instructions](https://nasa.github.io/cumulus/docs/deployment/deployment-readme#deploy-the-cumulus-message-adapter-layer) and note the output ARN.
+      :::
       :::warning
       Process for finding the correct arn is not documented.
       :::
--
-    - Set the ```ecs_cluster_instance_image_id``` to ```""```
-    - ```ecs_cluster_instance_subnet_ids``` and ```lambda_subnet_ids``` should have the same two values.
-    - Set ```urs_client_id``` and ```urs_client_password``` to the values from your created application.
-    - Add an extra property ```urs_url = "https://uat.urs.earthdata.nasa.gov"```
-    - Add your username to the ```api_users```
-    - Set ```token_secret``` to a value of your choice.
-    - Comment out the ```archive_api_port``` property and value.
-    - Uncomment the ```key_name property``` and set the value to ```"PREFIX-key-pair"```
+
+    - Set the `ecs_cluster_instance_image_id` to `""`
+    - `ecs_cluster_instance_subnet_ids` and `lambda_subnet_ids` should have the same two values.
+    - Set `urs_client_id` and `urs_client_password` to the values from your created application.
+    - Add an extra property `urs_url = "https://uat.urs.earthdata.nasa.gov"`
+    - Add your username to the `api_users`
+        - If you want all Orca developers to have access, set to
+          ```
+          api_users = [
+            "bhazuka",
+            "andrew.dorn",
+            "rizbi.hassan",
+            "scott.saxon",
+          ]
+          ```
+    - Set `token_secret` to a value of your choice.
+    - Comment out the `archive_api_port` property and value.
+    - Uncomment the `key_name property` and set the value to `"PREFIX-key-pair"`
     - Add this section to the bottom of the file and edit as desired:
       ```
       ## =============================================================================
@@ -170,7 +184,8 @@ terraform apply
     The instructions in the tfvars file suggest swapping '12345' with your account ID. This may not work, depending on how your dependencies such as the cumulus_message_adapter_lambda_layer_version_arn were set up.
     :::
 - In cumulus-tf/orca.tf:
-    - You may change ```source``` to an alternate release. If local, make sure it is within the scope of the container.
+    - You may change `source` to an alternate release. If local, make sure it is within the scope of the container.
+
 ```bash
 cd ../cumulus-tf
 terraform init
@@ -178,8 +193,10 @@ terraform plan
 terraform apply
 ```
 
+<a name="redirect-definition"></a>
+
 - Go to https://uat.urs.earthdata.nasa.gov/profile
 - Applications -> My Applications
 - Click on the Edit button for your application.
 - Click on Manage -> Redirect Uris
-- Add the ```archive_api_redirect_uri``` and ```distribution_redirect_uri``` output from ```terraform apply```.
+- Add the `archive_api_redirect_uri` and `distribution_redirect_uri` output from `terraform apply`.
