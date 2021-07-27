@@ -140,10 +140,11 @@ terraform apply
 
     - Replace the `cumulus_message_adapter_lambda_layer_version_arn` with a valid one.
       :::tip
+      The CMA for the current sandbox environment can be found by running
+      ```
+      aws lambda --profile default list-layers --query "Layers[?LayerName=='orca-bh-sandbox-CMA-layer'].[LayerName, LayerArn, LatestMatchingVersion.LayerVersionArn]"
+      ```
       If the CMA is not deployed, follow [the deployment instructions](https://nasa.github.io/cumulus/docs/deployment/deployment-readme#deploy-the-cumulus-message-adapter-layer) and note the output ARN.
-      :::
-      :::warning
-      Process for finding the correct arn is not documented.
       :::
 
     - Set the `ecs_cluster_instance_image_id` to `""`
