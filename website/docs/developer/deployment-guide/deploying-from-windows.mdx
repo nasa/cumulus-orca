@@ -178,4 +178,8 @@ terraform plan
 terraform apply
 ```
 
-## Orca
+- Go to https://uat.urs.earthdata.nasa.gov/profile
+- Applications -> My Applications
+- Click on the Edit button for your application.
+- Click on Manage -> Redirect Uris
+- Add the ```archive_api_redirect_uri``` and ```distribution_redirect_uri``` output from ```terraform apply```.
