@@ -60,7 +60,7 @@ found in the [Docusaurus documentation](https://v2.docusaurus.io/docs/installati
 ## From the repository base move to the website directory.
 cd website
 
-## Start the server on port 8080 with verbose output for debuging
+## Start the server on port 8080 with verbose output for debugging
 npm run start --verbose -- --port 8080
 ```
 

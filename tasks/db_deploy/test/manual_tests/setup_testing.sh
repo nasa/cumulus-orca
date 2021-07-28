@@ -43,7 +43,7 @@ fi
 # Perform an action
 case $1 in
     "setup")
-        # Bring up the postgres databse
+        # Bring up the postgres database
         docker-compose up -d
 
         # Copy shared library files

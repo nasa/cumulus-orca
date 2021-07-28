@@ -1,7 +1,7 @@
 ---
 id: contrib-documentation-add
 title: Adding New Content
-desc: Provides instruction on adding a page to ORCA documentaion.
+desc: Provides instruction on adding a page to ORCA documentation.
 ---
 
 ## Add a New Documentation Page

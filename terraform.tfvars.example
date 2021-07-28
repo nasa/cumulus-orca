@@ -85,7 +85,7 @@ postgres_user_pw =
 ## Location of database DDL SQL files. Must have trailing /.
 # ddl_dir = "ddl/"
 
-## Boolean True/False that indicates the ORCA databse should be dropped.
+## Boolean True/False that indicates the ORCA database should be dropped.
 # drop_database = "False"
 
 ## AWS glacier recovery type to use. One of Bulk, Standard, Express.
