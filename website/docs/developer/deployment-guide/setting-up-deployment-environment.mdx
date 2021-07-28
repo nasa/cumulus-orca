@@ -4,6 +4,8 @@ title: Creating a Deployment Environment
 description: Provides developer with information on setting up deployment environment.
 ---
 
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
 In order to deploy ORCA into an NGAP environment with Cumulus, a deployment
 environment needs be created. The sections below describe the tool chain needed
 and any additional environmental setup that should occur. The setup for deploying
@@ -47,8 +49,10 @@ and the access information should be for the Cumulus OU. The second profile shou
 be have access information for the Disaster Recovery OU.
 
 Use the [Cloud Tamer](https://cloud.earthdatacloud.nasa.gov) application to create
-long term access keys to both the Cumulus and Recovery OU environments. Using the
-Access Key ID and Secret Access Key values configure the different profiles as seen
+long term access keys to both the Cumulus and Recovery OU environments.
+<img alt="UI for generating long term access keys"
+      src={useBaseUrl('img/long-term-access-key-ui.PNG')} />
+Using the Access Key ID and Secret Access Key values configure the different profiles as seen
 below.
 
 **Creating the Default Profile.**

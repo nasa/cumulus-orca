@@ -6,7 +6,7 @@ description: Provides developer information for ORCA code deployment with Cumulu
 
 :::important
 
-Prior to following this document, make sure that your [deployment environment](setting-up-deployment-environment.md)
+Prior to following this document, make sure that your [deployment environment](setting-up-deployment-environment.mdx)
 is setup and an [ORCA archive glacier bucket](creating-orca-glacier-bucket.md) is
 created.
 
