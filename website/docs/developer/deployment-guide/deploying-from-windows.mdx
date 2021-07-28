@@ -145,6 +145,10 @@ terraform apply
       aws lambda --profile default list-layers --query "Layers[?LayerName=='orca-bh-sandbox-CMA-layer'].[LayerName, LayerArn, LatestMatchingVersion.LayerVersionArn]"
       ```
       If the CMA is not deployed, follow [the deployment instructions](https://nasa.github.io/cumulus/docs/deployment/deployment-readme#deploy-the-cumulus-message-adapter-layer) and note the output ARN.
+      If you have already deployed your own CMA layer, it can be found using
+      ```
+      aws lambda --profile default list-layers --query "Layers[?LayerName=='PREFIX-CMA-layer'].[LayerName, LayerArn, LatestMatchingVersion.LayerVersionArn]"
+      ```
       :::
 
     - Set the `ecs_cluster_instance_image_id` to `""`
