@@ -11,7 +11,7 @@ from cumulus_logger import CumulusLogger
 from run_cumulus_task import run_cumulus_task
 from typing import List
 # instantiate Cumulus logger
-LOGGER = CumulusLogger()
+LOGGER = CumulusLogger(name="ORCA")
 
 EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
 CONFIG_COLLECTION_KEY = 'collection'
@@ -39,8 +39,7 @@ def task(event, context):    #pylint: disable-msg=unused-argument
     LOGGER.debug("event: {event}", event=event)
     try:
         config = event['config']
-        collection = config.get(CONFIG_COLLECTION_KEY, {})
-        exclude_file_types = collection.get(COLLECTION_META_KEY, {}).get(EXCLUDE_FILE_TYPES_KEY, [])
+        exclude_file_types = config['exclude_file_types']
         if len(exclude_file_types) == 0:
             LOGGER.debug(f"The configuration list {EXCLUDE_FILE_TYPES_KEY} is empty.")
         else:

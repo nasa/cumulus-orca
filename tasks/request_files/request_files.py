@@ -270,7 +270,7 @@ def inner_task(
                     f"Added {file_key} to the list of files we'll attempt to recover."
                 )
             else:
-                message = f"{file_key} does not exist in S3 bucket"
+                message = f"{file_key} does not exist in {glacier_bucket} bucket"
                 LOGGER.error(message)
                 a_file[FILE_SUCCESS_KEY] = True
                 a_file["status_id"] = shared_recovery.OrcaStatus.FAILED.value

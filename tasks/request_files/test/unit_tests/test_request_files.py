@@ -503,7 +503,7 @@ class TestRequestFiles(unittest.TestCase):
             "status_id": OrcaStatus.FAILED.value,
             "request_time": mock.ANY,
             "last_update": mock.ANY,
-            "error_message": f"{missing_file_key} does not exist in S3 bucket",
+            "error_message": f"{missing_file_key} does not exist in {glacier_bucket} bucket",
             "completion_time": mock.ANY
         }
 
@@ -570,7 +570,7 @@ class TestRequestFiles(unittest.TestCase):
                 "status_id": OrcaStatus.FAILED.value,
                 "request_time": mock.ANY,
                 "last_update": mock.ANY,
-                "error_message": f"{missing_file_key} does not exist in S3 bucket",
+                "error_message": f"{missing_file_key} does not exist in {glacier_bucket} bucket",
                 "completion_time": mock.ANY
             },
             {
@@ -1294,7 +1294,7 @@ class TestRequestFiles(unittest.TestCase):
                             "key_path": file1,
                             "restore_destination": dest_bucket,
                             "status_id": OrcaStatus.FAILED.value,
-                            "error_message": f"{file1} does not exist in S3 bucket",
+                            "error_message": f"{file1} does not exist in my-bucket bucket",
                             "request_time": mock.ANY,
                             "last_update": mock.ANY,
                             "completion_time": mock.ANY,
