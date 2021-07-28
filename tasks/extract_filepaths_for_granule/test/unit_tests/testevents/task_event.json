@@ -59,6 +59,8 @@
         {"regex": ".*.cmr.json$", "sampleFileName": "L0A_HR_RAW_product_0001-of-0019.cmr.json", "bucket": "public"
     }
 ],
-      "exclude_file_types": "xml"
+    "excludeFileTypes": [
+      ".xml"
+    ]
 }
 }

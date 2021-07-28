@@ -14,8 +14,6 @@ from typing import List
 LOGGER = CumulusLogger(name="ORCA")
 
 EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
-CONFIG_COLLECTION_KEY = 'collection'
-COLLECTION_META_KEY = 'meta'
 
 class ExtractFilePathsError(Exception):
     """Exception to be raised if any errors occur"""
@@ -39,7 +37,7 @@ def task(event, context):    #pylint: disable-msg=unused-argument
     LOGGER.debug("event: {event}", event=event)
     try:
         config = event['config']
-        exclude_file_types = config['exclude_file_types']
+        exclude_file_types = config.get(EXCLUDE_FILE_TYPES_KEY, [])
         if len(exclude_file_types) == 0:
             LOGGER.debug(f"The configuration list {EXCLUDE_FILE_TYPES_KEY} is empty.")
         else:
