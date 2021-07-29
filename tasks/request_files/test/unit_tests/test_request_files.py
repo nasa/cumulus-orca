@@ -70,7 +70,7 @@ class TestRequestFiles(unittest.TestCase):
         mock_event = {
             request_files.EVENT_CONFIG_KEY: {
                 request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
-                request_files.CONFIG_JOB_ID_KEY: job_id
+                request_files.CONFIG_JOB_ID_KEY: job_id,
             },
         }
         max_retries = randint(0, 99)  # nosec
@@ -97,7 +97,7 @@ class TestRequestFiles(unittest.TestCase):
             {
                 request_files.EVENT_CONFIG_KEY: {
                     request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
-                    request_files.CONFIG_JOB_ID_KEY: job_id
+                    request_files.CONFIG_JOB_ID_KEY: job_id,
                 },
             },
             max_retries,
@@ -117,7 +117,7 @@ class TestRequestFiles(unittest.TestCase):
         mock_event = {
             request_files.EVENT_CONFIG_KEY: {
                 request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
-                request_files.CONFIG_JOB_ID_KEY: job_id
+                request_files.CONFIG_JOB_ID_KEY: job_id,
             },
         }
         retry_sleep_secs = uniform(0, 99)  # nosec
@@ -140,7 +140,7 @@ class TestRequestFiles(unittest.TestCase):
             {
                 request_files.EVENT_CONFIG_KEY: {
                     request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
-                    request_files.CONFIG_JOB_ID_KEY: job_id
+                    request_files.CONFIG_JOB_ID_KEY: job_id,
                 },
             },
             request_files.DEFAULT_MAX_REQUEST_RETRIES,
@@ -160,7 +160,7 @@ class TestRequestFiles(unittest.TestCase):
         mock_event = {
             request_files.EVENT_CONFIG_KEY: {
                 request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
-                request_files.CONFIG_JOB_ID_KEY: job_id
+                request_files.CONFIG_JOB_ID_KEY: job_id,
             },
         }
         max_retries = randint(0, 99)  # nosec
@@ -183,7 +183,7 @@ class TestRequestFiles(unittest.TestCase):
             {
                 request_files.EVENT_CONFIG_KEY: {
                     request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
-                    request_files.CONFIG_JOB_ID_KEY: job_id
+                    request_files.CONFIG_JOB_ID_KEY: job_id,
                 },
             },
             max_retries,
@@ -203,7 +203,7 @@ class TestRequestFiles(unittest.TestCase):
         mock_event = {
             request_files.EVENT_CONFIG_KEY: {
                 request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
-                request_files.CONFIG_JOB_ID_KEY: job_id
+                request_files.CONFIG_JOB_ID_KEY: job_id,
             },
         }
         max_retries = randint(0, 99)  # nosec
@@ -228,7 +228,7 @@ class TestRequestFiles(unittest.TestCase):
             {
                 request_files.EVENT_CONFIG_KEY: {
                     request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
-                    request_files.CONFIG_JOB_ID_KEY: job_id
+                    request_files.CONFIG_JOB_ID_KEY: job_id,
                 },
             },
             max_retries,
@@ -248,7 +248,7 @@ class TestRequestFiles(unittest.TestCase):
         mock_event = {
             request_files.EVENT_CONFIG_KEY: {
                 request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
-                request_files.CONFIG_JOB_ID_KEY: job_id
+                request_files.CONFIG_JOB_ID_KEY: job_id,
             },
         }
         max_retries = randint(0, 99)  # nosec
@@ -275,7 +275,7 @@ class TestRequestFiles(unittest.TestCase):
             {
                 request_files.EVENT_CONFIG_KEY: {
                     request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
-                    request_files.CONFIG_JOB_ID_KEY: job_id
+                    request_files.CONFIG_JOB_ID_KEY: job_id,
                 },
             },
             max_retries,
@@ -295,7 +295,7 @@ class TestRequestFiles(unittest.TestCase):
         mock_event = {
             request_files.EVENT_CONFIG_KEY: {
                 request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
-                request_files.CONFIG_JOB_ID_KEY: job_id
+                request_files.CONFIG_JOB_ID_KEY: job_id,
             },
         }
         max_retries = randint(0, 99)  # nosec
@@ -318,7 +318,7 @@ class TestRequestFiles(unittest.TestCase):
             {
                 request_files.EVENT_CONFIG_KEY: {
                     request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
-                    request_files.CONFIG_JOB_ID_KEY: job_id
+                    request_files.CONFIG_JOB_ID_KEY: job_id,
                 },
             },
             max_retries,
@@ -337,7 +337,7 @@ class TestRequestFiles(unittest.TestCase):
         mock_event = {
             request_files.EVENT_CONFIG_KEY: {
                 request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
-                request_files.CONFIG_JOB_ID_KEY: None
+                request_files.CONFIG_JOB_ID_KEY: None,
             },
         }
         max_retries = randint(0, 99)  # nosec
@@ -366,7 +366,7 @@ class TestRequestFiles(unittest.TestCase):
             {
                 request_files.EVENT_CONFIG_KEY: {
                     request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
-                    request_files.CONFIG_JOB_ID_KEY: job_id.__str__()
+                    request_files.CONFIG_JOB_ID_KEY: job_id.__str__(),
                 },
             },
             max_retries,
@@ -414,7 +414,7 @@ class TestRequestFiles(unittest.TestCase):
             {
                 request_files.EVENT_CONFIG_KEY: {
                     request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
-                    request_files.CONFIG_JOB_ID_KEY: job_id.__str__()
+                    request_files.CONFIG_JOB_ID_KEY: job_id.__str__(),
                 },
             },
             max_retries,
@@ -490,15 +490,29 @@ class TestRequestFiles(unittest.TestCase):
             "request_time": mock.ANY,
             "last_update": mock.ANY,
         }
-        expected_input_granule_files = [expected_file0_output, expected_file1_output]
+
+        missing_file = {
+            request_files.FILE_KEY_KEY: missing_file_key,
+            request_files.FILE_DEST_BUCKET_KEY: missing_file_dest_bucket,
+        }
+        expected_missing_file_output = {
+            request_files.FILE_SUCCESS_KEY: True,
+            "filename": missing_file_key,
+            "key_path": missing_file_key,
+            "restore_destination": missing_file_dest_bucket,
+            "status_id": OrcaStatus.FAILED.value,
+            "request_time": mock.ANY,
+            "last_update": mock.ANY,
+            "error_message": f"{missing_file_key} does not exist in {glacier_bucket} bucket",
+            "completion_time": mock.ANY
+        }
+
+        expected_input_granule_files = [expected_file0_output, expected_missing_file_output, expected_file1_output]
         granule = {
             request_files.GRANULE_GRANULE_ID_KEY: granule_id,
             request_files.GRANULE_KEYS_KEY: [
                 file_0,
-                {
-                    request_files.FILE_KEY_KEY: missing_file_key,
-                    request_files.FILE_DEST_BUCKET_KEY: missing_file_dest_bucket,
-                },
+                missing_file,
                 file_1,
             ],
         }
@@ -544,16 +558,27 @@ class TestRequestFiles(unittest.TestCase):
                 "filename": file_key_0,
                 "key_path": file_key_0,
                 "restore_destination": file_dest_bucket_0,
-                "status_id": request_files.shared_recovery.OrcaStatus.PENDING.value,
+                "status_id": OrcaStatus.PENDING.value,
                 "request_time": mock.ANY,
                 "last_update": mock.ANY,
+            },
+            {
+                "success": True,
+                "filename": missing_file_key,
+                "key_path": missing_file_key,
+                "restore_destination": missing_file_dest_bucket,
+                "status_id": OrcaStatus.FAILED.value,
+                "request_time": mock.ANY,
+                "last_update": mock.ANY,
+                "error_message": f"{missing_file_key} does not exist in {glacier_bucket} bucket",
+                "completion_time": mock.ANY
             },
             {
                 "success": False,
                 "filename": file_key_1,
                 "key_path": file_key_1,
                 "restore_destination": file_dest_bucket_1,
-                "status_id": request_files.shared_recovery.OrcaStatus.PENDING.value,
+                "status_id": OrcaStatus.PENDING.value,
                 "request_time": mock.ANY,
                 "last_update": mock.ANY,
             },
@@ -590,7 +615,7 @@ class TestRequestFiles(unittest.TestCase):
     @patch("time.sleep")
     @patch("request_files.restore_object")
     def test_process_granule_minimal_path(
-            self, mock_restore_object: MagicMock, mock_sleep: MagicMock
+        self, mock_restore_object: MagicMock, mock_sleep: MagicMock
     ):
         mock_s3 = Mock()
         max_retries = randint(10, 999)  # nosec
@@ -677,7 +702,7 @@ class TestRequestFiles(unittest.TestCase):
     @patch("time.sleep")
     @patch("request_files.restore_object")
     def test_process_granule_one_client_error_retries(
-            self, mock_restore_object: MagicMock, mock_sleep: MagicMock
+        self, mock_restore_object: MagicMock, mock_sleep: MagicMock
     ):
         mock_s3 = Mock()
         max_retries = 5
@@ -728,7 +753,7 @@ class TestRequestFiles(unittest.TestCase):
                 "filename": file_name_0,
                 "key_path": file_name_0,
                 "restore_destination": dest_bucket_0,
-                "status_id": request_files.shared_recovery.OrcaStatus.PENDING.value,
+                "status_id": OrcaStatus.PENDING.value,
                 "error_message": None,
                 "request_time": mock.ANY,
                 "last_update": mock.ANY,
@@ -764,10 +789,10 @@ class TestRequestFiles(unittest.TestCase):
     @patch("request_files.restore_object")
     @patch("cumulus_logger.CumulusLogger.error")
     def test_process_granule_client_errors_retries_until_cap(
-            self,
-            mock_logger_error: MagicMock,
-            mock_restore_object: MagicMock,
-            mock_sleep: MagicMock,
+        self,
+        mock_logger_error: MagicMock,
+        mock_restore_object: MagicMock,
+        mock_sleep: MagicMock,
     ):
         mock_s3 = Mock()
         max_retries = randint(3, 20)  # nosec
@@ -951,7 +976,7 @@ class TestRequestFiles(unittest.TestCase):
     @patch("cumulus_logger.CumulusLogger.error")
     @patch("cumulus_logger.CumulusLogger.info")
     def test_restore_object_client_error_last_attempt_logs_and_raises(
-            self, mock_logger_info: MagicMock, mock_logger_error: MagicMock
+        self, mock_logger_info: MagicMock, mock_logger_error: MagicMock
     ):
         glacier_bucket = uuid.uuid4().__str__()
         key = uuid.uuid4().__str__()
@@ -987,7 +1012,7 @@ class TestRequestFiles(unittest.TestCase):
     @patch("cumulus_logger.CumulusLogger.error")
     @patch("cumulus_logger.CumulusLogger.info")
     def test_restore_object_log_to_db_fails_does_not_halt(
-            self, mock_logger_info: MagicMock, mock_logger_error: MagicMock
+        self, mock_logger_info: MagicMock, mock_logger_error: MagicMock
     ):
         glacier_bucket = uuid.uuid4().__str__()
         key = uuid.uuid4().__str__()
@@ -1053,10 +1078,10 @@ class TestRequestFiles(unittest.TestCase):
     @patch("boto3.client")
     @patch("cumulus_logger.CumulusLogger.info")
     def test_task_one_granule_4_files_success(
-            self,
-            mock_logger_info: MagicMock,
-            mock_boto3_client: MagicMock,
-            mock_post_entry_to_queue: MagicMock,
+        self,
+        mock_logger_info: MagicMock,
+        mock_boto3_client: MagicMock,
+        mock_post_entry_to_queue: MagicMock,
     ):
         """
         Test four files for one granule - successful
@@ -1064,11 +1089,11 @@ class TestRequestFiles(unittest.TestCase):
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
         files = [KEY1, KEY2, KEY3, KEY4]
         input_event = {
-            "input": {
-                "granules": [{"granuleId": granule_id, "keys": files}]
+            "input": {"granules": [{"granuleId": granule_id, "keys": files}]},
+            "config": {
+                "glacier-bucket": "my-dr-fake-glacier-bucket",
+                "asyncOperationId": uuid.uuid4().__str__(),
             },
-            "config": {"glacier-bucket": "my-dr-fake-glacier-bucket",
-                       "asyncOperationId": uuid.uuid4().__str__()}
         }
 
         mock_s3_cli = mock_boto3_client("s3")
@@ -1187,11 +1212,11 @@ class TestRequestFiles(unittest.TestCase):
     @patch("cumulus_logger.CumulusLogger.error")
     @patch("cumulus_logger.CumulusLogger.info")
     def test_task_one_granule_1_file_db_error(
-            self,
-            mock_logger_info: MagicMock,
-            mock_logger_error: MagicMock,
-            mock_boto3_client: MagicMock,
-            mock_post_entry_to_queue: MagicMock,
+        self,
+        mock_logger_info: MagicMock,
+        mock_logger_error: MagicMock,
+        mock_boto3_client: MagicMock,
+        mock_post_entry_to_queue: MagicMock,
     ):
         """
         Test one file for one granule - db error inserting status
@@ -1199,8 +1224,10 @@ class TestRequestFiles(unittest.TestCase):
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
         input_event = {
             "input": {"granules": [{"granuleId": granule_id, "keys": [KEY1]}]},
-            "config": {"glacier-bucket": "my-dr-fake-glacier-bucket",
-                       "asyncOperationId": uuid.uuid4().__str__()}
+            "config": {
+                "glacier-bucket": "my-dr-fake-glacier-bucket",
+                "asyncOperationId": uuid.uuid4().__str__(),
+            },
         }
 
         mock_s3_cli = mock_boto3_client("s3")
@@ -1217,10 +1244,10 @@ class TestRequestFiles(unittest.TestCase):
     @patch("boto3.client")
     @patch("cumulus_logger.CumulusLogger.info")
     def test_task_file_not_in_glacier(
-            self,
-            mock_logger_info: MagicMock,
-            mock_boto3_client: MagicMock,
-            mock_post_entry_to_queue: MagicMock,
+        self,
+        mock_logger_info: MagicMock,
+        mock_boto3_client: MagicMock,
+        mock_post_entry_to_queue: MagicMock,
     ):
         """
         Test a file that is not in glacier.
@@ -1229,6 +1256,7 @@ class TestRequestFiles(unittest.TestCase):
         dest_bucket = uuid.uuid4().__str__()
         file1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.xyz"
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
+        filename = "MOD09GQ.A0219114.N5aUCG.006.0656338553321.xyz"
         event = {
             "input": {
                 "granules": [
@@ -1238,8 +1266,10 @@ class TestRequestFiles(unittest.TestCase):
                     }
                 ]
             },
-            "config": {"glacier-bucket": "my-bucket",
-                       "asyncOperationId": uuid.uuid4().__str__()},
+            "config": {
+                "glacier-bucket": "my-bucket",
+                "asyncOperationId": uuid.uuid4().__str__(),
+            },
         }
         mock_s3_cli = mock_boto3_client("s3")
         # todo: Verify the below with a real-world db. If not the same, fix request_files.object_exists
@@ -1257,7 +1287,19 @@ class TestRequestFiles(unittest.TestCase):
                 {
                     "granuleId": granule_id,
                     "keys": [{"dest_bucket": dest_bucket, "key": file1}],
-                    "recover_files": [],
+                    "recover_files": [
+                        {
+                            "success": True,
+                            "filename": filename,
+                            "key_path": file1,
+                            "restore_destination": dest_bucket,
+                            "status_id": OrcaStatus.FAILED.value,
+                            "error_message": f"{file1} does not exist in my-bucket bucket",
+                            "request_time": mock.ANY,
+                            "last_update": mock.ANY,
+                            "completion_time": mock.ANY,
+                        }
+                    ],
                 }
             ],
             "asyncOperationId": event["config"]["asyncOperationId"],
@@ -1269,7 +1311,7 @@ class TestRequestFiles(unittest.TestCase):
     @patch("request_files.shared_recovery.post_entry_to_queue")
     @patch("boto3.client")
     def test_task_no_retries_env_var(
-            self, mock_boto3_client: MagicMock, mock_post_entry_to_queue: MagicMock
+        self, mock_boto3_client: MagicMock, mock_post_entry_to_queue: MagicMock
     ):
         """
         Test environment var RESTORE_REQUEST_RETRIES not set - use default.
@@ -1278,11 +1320,11 @@ class TestRequestFiles(unittest.TestCase):
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
         # todo: Reduce string copy/paste for test values here and elsewhere.
         event = {
-            "input": {
-                "granules": [{"granuleId": granule_id, "keys": [KEY1]}]
+            "input": {"granules": [{"granuleId": granule_id, "keys": [KEY1]}]},
+            "config": {
+                "glacier-bucket": "some_bucket",
+                "asyncOperationId": uuid.uuid4().__str__(),
             },
-            "config": {"glacier-bucket": "some_bucket",
-                       "asyncOperationId": uuid.uuid4().__str__()},
         }
 
         mock_s3_cli = mock_boto3_client("s3")
@@ -1334,10 +1376,10 @@ class TestRequestFiles(unittest.TestCase):
     @patch("boto3.client")
     @patch("cumulus_logger.CumulusLogger.info")
     def test_task_no_expire_days_env_var(
-            self,
-            mock_logger_info: MagicMock,
-            mock_boto3_client: MagicMock,
-            mock_post_entry_to_queue: MagicMock,
+        self,
+        mock_logger_info: MagicMock,
+        mock_boto3_client: MagicMock,
+        mock_post_entry_to_queue: MagicMock,
     ):
         """
         Test environment var RESTORE_EXPIRE_DAYS not set - use default.
@@ -1346,11 +1388,11 @@ class TestRequestFiles(unittest.TestCase):
         os.environ["RESTORE_RETRIEVAL_TYPE"] = "Expedited"
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
         event = {
-            "config": {"glacier-bucket": "some_bucket",
-                       "asyncOperationId": uuid.uuid4().__str__()},
-            "input": {
-                "granules": [{"granuleId": granule_id, "keys": [KEY1]}]
+            "config": {
+                "glacier-bucket": "some_bucket",
+                "asyncOperationId": uuid.uuid4().__str__(),
             },
+            "input": {"granules": [{"granuleId": granule_id, "keys": [KEY1]}]},
         }
 
         mock_s3_cli = mock_boto3_client("s3")
@@ -1401,18 +1443,20 @@ class TestRequestFiles(unittest.TestCase):
     @patch("cumulus_logger.CumulusLogger.error")
     @patch("cumulus_logger.CumulusLogger.info")
     def test_task_client_error_one_file(
-            self,
-            mock_logger_info: MagicMock,
-            mock_logger_error: MagicMock,
-            mock_boto3_client: MagicMock,
-            mock_post_entry_to_queue: MagicMock,
+        self,
+        mock_logger_info: MagicMock,
+        mock_logger_error: MagicMock,
+        mock_boto3_client: MagicMock,
+        mock_post_entry_to_queue: MagicMock,
     ):
         """
         Test retries for restore error for one file.
         """
         event = {
-            "config": {"glacier-bucket": "some_bucket",
-                       "asyncOperationId": uuid.uuid4().__str__()},
+            "config": {
+                "glacier-bucket": "some_bucket",
+                "asyncOperationId": uuid.uuid4().__str__(),
+            },
             "input": {
                 "granules": [
                     {
@@ -1420,7 +1464,7 @@ class TestRequestFiles(unittest.TestCase):
                         "keys": [KEY1],
                     }
                 ]
-            }
+            },
         }
 
         os.environ[
@@ -1470,11 +1514,11 @@ class TestRequestFiles(unittest.TestCase):
     @patch("cumulus_logger.CumulusLogger.error")
     @patch("cumulus_logger.CumulusLogger.info")
     def test_task_client_error_3_times(
-            self,
-            mock_logger_info: MagicMock,
-            mock_logger_error: MagicMock,
-            mock_boto3_client: MagicMock,
-            mock_post_entry_to_queue: MagicMock,
+        self,
+        mock_logger_info: MagicMock,
+        mock_logger_error: MagicMock,
+        mock_boto3_client: MagicMock,
+        mock_post_entry_to_queue: MagicMock,
     ):
         """
         Test three files, two successful, one errors on all retries and fails.
@@ -1482,8 +1526,10 @@ class TestRequestFiles(unittest.TestCase):
         keys = [KEY1, KEY3, KEY4]
 
         event = {
-            "config": {"glacier-bucket": "some_bucket",
-                       "asyncOperationId": uuid.uuid4().__str__()}
+            "config": {
+                "glacier-bucket": "some_bucket",
+                "asyncOperationId": uuid.uuid4().__str__(),
+            }
         }
         gran = {"granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321", "keys": keys}
 
@@ -1537,7 +1583,7 @@ class TestRequestFiles(unittest.TestCase):
                 "dest_bucket": PUBLIC_BUCKET,
                 "success": False,
                 "err_msg": "An error occurred (NoSuchKey) when calling the restore_object "
-                           "operation: Unknown",
+                "operation: Unknown",
             },
             {
                 "key": FILE4,
@@ -1564,25 +1610,27 @@ class TestRequestFiles(unittest.TestCase):
     @patch("cumulus_logger.CumulusLogger.error")
     @patch("cumulus_logger.CumulusLogger.info")
     def test_task_client_error_2_times(
-            self,
-            mock_logger_info: MagicMock,
-            mock_logger_error: MagicMock,
-            mock_boto3_client: MagicMock,
-            mock_post_entry_to_queue: MagicMock,
+        self,
+        mock_logger_info: MagicMock,
+        mock_logger_error: MagicMock,
+        mock_boto3_client: MagicMock,
+        mock_post_entry_to_queue: MagicMock,
     ):
         """
         Test two files, first successful, second has two errors, then success.
         """
-        event = {"config": {"glacier-bucket": "some_bucket",
-                            "asyncOperationId": uuid.uuid4().__str__()}}
+        event = {
+            "config": {
+                "glacier-bucket": "some_bucket",
+                "asyncOperationId": uuid.uuid4().__str__(),
+            }
+        }
         gran = {}
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
         gran["granuleId"] = granule_id
         keys = [KEY1, KEY2]
         gran["keys"] = keys
-        event["input"] = {
-            "granules": [gran]
-        }
+        event["input"] = {"granules": [gran]}
         mock_s3_cli = mock_boto3_client("sqs")
 
         mock_s3_cli.restore_object.side_effect = [
@@ -1645,10 +1693,10 @@ class TestRequestFiles(unittest.TestCase):
     @patch("boto3.client")
     @patch("cumulus_logger.CumulusLogger.info")
     def test_task_output_json_schema(
-            self,
-            mock_logger_info: MagicMock,
-            mock_boto3_client: MagicMock,
-            mock_post_entry_to_queue: MagicMock,
+        self,
+        mock_logger_info: MagicMock,
+        mock_boto3_client: MagicMock,
+        mock_post_entry_to_queue: MagicMock,
     ):
         """
         Test four files for one granule - successful. Check against output schema.
@@ -1656,11 +1704,11 @@ class TestRequestFiles(unittest.TestCase):
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
         files = [KEY1, KEY2, KEY3, KEY4]
         input_event = {
-            "input": {
-                "granules": [{"granuleId": granule_id, "keys": files}]
+            "input": {"granules": [{"granuleId": granule_id, "keys": files}]},
+            "config": {
+                "glacier-bucket": "my-dr-fake-glacier-bucket",
+                "asyncOperationId": uuid.uuid4().__str__(),
             },
-            "config": {"glacier-bucket": "my-dr-fake-glacier-bucket",
-                       "asyncOperationId": uuid.uuid4().__str__()},
         }
 
         mock_s3_cli = mock_boto3_client("s3")
