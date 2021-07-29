@@ -149,8 +149,7 @@ def should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -
                 f"The file {granule_url} will not be restored because it matches the excluded file type {file_type}."
             )
             return True
-        else:
-            LOGGER.debug(f"File {granule_url} will be restored")
+    LOGGER.debug(f"File {granule_url} will be restored")
     return False
 
 

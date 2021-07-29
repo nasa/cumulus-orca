@@ -17,7 +17,7 @@
             "private-bucket": "{$.meta.buckets.private.name}",
             "internal-bucket": "{$.meta.buckets.internal.name}",
             "file-buckets": "{$.meta.collection.files}",
-            "excludeFileTypes": "{[$.meta.collection.meta.excludeFileTypes]}"
+            "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}"
           }
         }
       },
