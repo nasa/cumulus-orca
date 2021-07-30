@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "granules": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "granuleId": {
+              "type": "string"
+            },
+            "keys": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "required": [
+            "granuleId",
+            "keys"
+          ]
+        }
+      ]
+    }
+  },
+  "required": [
+    "granules"
+  ]
+}

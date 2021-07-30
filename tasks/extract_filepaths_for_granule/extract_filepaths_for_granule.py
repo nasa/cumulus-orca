@@ -108,7 +108,6 @@ def get_regex_buckets(event):
     """
     buckets = {}
     try:
-        level = "event['config']"
         buckets["protected"] = event["config"]["protected-bucket"]
         buckets["internal"] = event["config"]["internal-bucket"]
         buckets["private"] = event["config"]["private-bucket"]
@@ -121,7 +120,7 @@ def get_regex_buckets(event):
         # {'regex': '.*.cmr.json$', 'sampleFileName': 'L0A_0420.cmr.json', 'bucket': 'public'}]
         regex_buckets = {}
         for regx in file_buckets:
-            regex_buckets[regx["regex"]] = buckets[regx["bucket"]]
+            regex_buckets[regx["regex"]] = buckets[regx["bucket"]["name"]]
 
         # regex_buckets example:
         # {'.*.h5$': 'podaac-sndbx-cumulus-protected',
@@ -129,6 +128,7 @@ def get_regex_buckets(event):
         #  '.*.h5.mp$': 'podaac-sndbx-cumulus-public',
         #  '.*.cmr.json$': 'podaac-sndbx-cumulus-public'}
     except KeyError as err:
+        level = "event['config']"
         raise ExtractFilePathsError(f'KeyError: "{level}[{str(err)}]" is required')
     return regex_buckets
 
@@ -166,17 +166,24 @@ def handler(event, context):  # pylint: disable-msg=unused-argument
                     other dictionary keys may be included, but are not used.
                 other dictionary keys may be included, but are not used.
 
-            Example: event: {'granules': [
-                                  {'granuleId': 'granxyz',
-                                   'version": '006',
-                                   'files': [
-                                        {'name': 'file1',
-                                         'key': 'key1',
-                                         'filename': 's3://dr-test-sandbox-protected/file1',
-                                         'type': 'metadata'} ]
-                                   }
-                                ]
-                             }
+            Example: {
+                        "event":{
+                            "granules":[
+                                {
+                                    "granuleId":"granxyz",
+                                    "version":"006",
+                                    "files":[
+                                    {
+                                        "name":"file1",
+                                        "key":"key1",
+                                        "filename":"s3://dr-test-sandbox-protected/file1",
+                                        "type":"metadata"
+                                    }
+                                    ]
+                                }
+                            ]
+                        }
+                        }
 
         context (Object): None
 

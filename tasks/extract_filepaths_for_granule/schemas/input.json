@@ -1,0 +1,244 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "input": {
+      "type": "object",
+      "properties": {
+        "granules": {
+          "type": "array",
+          "items": [
+            {
+              "type": "object",
+              "properties": {
+                "granuleId": {
+                  "type": "string"
+                },
+                "dataType": {
+                  "type": "string"
+                },
+                "version": {
+                  "type": "string"
+                },
+                "files": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "key": {
+                          "type": "string"
+                        },
+                        "bucket": {
+                          "type": "string"
+                        },
+                        "fileName": {
+                          "type": "string"
+                        },
+                        "path": {
+                          "type": "string"
+                        },
+                        "url_path": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string"
+                        },
+                        "duplicate_found": {
+                          "type": "string"
+                        },
+                        "size": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "key",
+                        "bucket",
+                        "fileName",
+                        "path",
+                        "url_path",
+                        "type",
+                        "duplicate_found",
+                        "size"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "key": {
+                          "type": "string"
+                        },
+                        "bucket": {
+                          "type": "string"
+                        },
+                        "fileName": {
+                          "type": "string"
+                        },
+                        "path": {
+                          "type": "string"
+                        },
+                        "url_path": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string"
+                        },
+                        "duplicate_found": {
+                          "type": "string"
+                        },
+                        "size": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "key",
+                        "bucket",
+                        "fileName",
+                        "path",
+                        "url_path",
+                        "type",
+                        "duplicate_found",
+                        "size"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "granuleId",
+                "dataType",
+                "version",
+                "files"
+              ]
+            }
+          ]
+        }
+      },
+      "required": [
+        "granules"
+      ]
+    },
+    "config": {
+      "type": "object",
+      "properties": {
+        "glacier-bucket": {
+          "type": "string"
+        },
+        "protected-bucket": {
+          "type": "string"
+        },
+        "internal-bucket": {
+          "type": "string"
+        },
+        "private-bucket": {
+          "type": "string"
+        },
+        "public-bucket": {
+          "type": "string"
+        },
+        "file-buckets": {
+          "type": "array",
+          "items": [
+            {
+              "type": "object",
+              "properties": {
+                "regex": {
+                  "type": "string"
+                },
+                "sampleFileName": {
+                  "type": "string"
+                },
+                "bucket": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "regex",
+                "sampleFileName",
+                "bucket"
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "regex": {
+                  "type": "string"
+                },
+                "sampleFileName": {
+                  "type": "string"
+                },
+                "bucket": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "regex",
+                "sampleFileName",
+                "bucket"
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "regex": {
+                  "type": "string"
+                },
+                "sampleFileName": {
+                  "type": "string"
+                },
+                "bucket": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "regex",
+                "sampleFileName",
+                "bucket"
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "regex": {
+                  "type": "string"
+                },
+                "sampleFileName": {
+                  "type": "string"
+                },
+                "bucket": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "regex",
+                "sampleFileName",
+                "bucket"
+              ]
+            }
+          ]
+        },
+        "excludeFileTypes": {
+          "type": "array",
+          "items": [
+            {
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "required": [
+        "glacier-bucket",
+        "protected-bucket",
+        "internal-bucket",
+        "private-bucket",
+        "public-bucket",
+        "file-buckets",
+        "excludeFileTypes"
+      ]
+    }
+  },
+  "required": [
+    "input",
+    "config"
+  ]
+}

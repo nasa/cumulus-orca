@@ -166,21 +166,21 @@ class TestExtractFilePaths(unittest.TestCase):
         self.task_input_event["config"]["private-bucket"] = "my_private_bucket"
         self.task_input_event["config"]["public-bucket"] = "my_public_bucket"
         self.task_input_event["config"]["file-buckets"] = [
-            {"regex": ".*.h5$", "sampleFileName": "L_10-420.h5", "bucket": "protected"},
+            {"regex": ".*.h5$", "sampleFileName": "L_10-420.h5", "bucket": {"name": "protected"}},
             {
                 "regex": ".*.iso.xml$",
                 "sampleFileName": "L_10-420.iso.xml",
-                "bucket": "protected",
+                "bucket": {"name": "protected"},
             },
             {
                 "regex": ".*.h5.mp$",
                 "sampleFileName": "L_10-420.h5.mp",
-                "bucket": "public",
+                "bucket": {"name": "public"},
             },
             {
                 "regex": ".*.cmr.json$",
                 "sampleFileName": "L_10-420.cmr.json",
-                "bucket": "public",
+                "bucket": {"name": "public"},
             },
         ]
         self.task_input_event["input"]["granules"] = [
@@ -189,7 +189,7 @@ class TestExtractFilePaths(unittest.TestCase):
                 "files": [
                     {
                         "fileName": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
-                        "bucket": "cumulus-test-sandbox-protected-2",
+                        "bucket": {"name": "cumulus-test-sandbox-protected-2"},
                     }
                 ],
             }
