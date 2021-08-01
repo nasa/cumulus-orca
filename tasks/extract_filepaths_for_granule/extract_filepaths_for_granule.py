@@ -129,7 +129,9 @@ def get_regex_buckets(event):
         #  '.*.cmr.json$': 'podaac-sndbx-cumulus-public'}
     except KeyError as err:
         level = "event['config']"
-        raise ExtractFilePathsError(f'KeyError: "{level}[{str(err)}]" is required')
+        message = f'KeyError: "{level}[{str(err)}]" is required'
+        LOGGER.error(message)
+        raise ExtractFilePathsError(message)
     return regex_buckets
 
 
