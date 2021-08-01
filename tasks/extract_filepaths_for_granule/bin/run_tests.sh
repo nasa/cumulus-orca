@@ -75,7 +75,7 @@ let return_code=$?
 check_rc $return_code "ERROR: Unit tests encountered failures."
 
 # Unit tests expected to cover minimum of 80%.
-coverage report --fail-under=10
+coverage report --fail-under=80
 let return_code=$?
 check_rc $return_code "ERROR: Unit tests coverage is less than 80%"
 
