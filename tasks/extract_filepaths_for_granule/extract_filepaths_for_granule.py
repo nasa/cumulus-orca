@@ -120,7 +120,7 @@ def get_regex_buckets(event):
         # {'regex': '.*.cmr.json$', 'sampleFileName': 'L0A_0420.cmr.json', 'bucket': 'public'}]
         regex_buckets = {}
         for regx in file_buckets:
-            regex_buckets[regx["regex"]] = buckets[regx["bucket"]["name"]]
+            regex_buckets[regx["regex"]] = buckets[regx["bucket"]]
 
         # regex_buckets example:
         # {'.*.h5$': 'podaac-sndbx-cumulus-protected',

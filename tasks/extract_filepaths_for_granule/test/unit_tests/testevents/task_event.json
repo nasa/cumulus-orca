@@ -57,10 +57,10 @@
         "public-bucket": "sndbx-cumulus-public",
         "file-buckets": 
             [
-              {"regex": ".*.h5$", "sampleFileName": "L0A_HR_RAW_product_0010-of-0420.h5", "bucket": {"name": "protected"}},
-              {"regex": ".*.cmr.xml$", "sampleFileName": "L0A_HR_RAW_product_0010-of-0420.iso.xml", "bucket": {"name": "protected"}},
-              {"regex": ".*.h5.mp$", "sampleFileName": "L0A_HR_RAW_product_0001-of-0019.h5.mp", "bucket": {"name": "public"}},
-              {"regex": ".*.cmr.json$", "sampleFileName": "L0A_HR_RAW_product_0001-of-0019.cmr.json", "bucket": {"name": "public"}
+              {"regex": ".*.h5$", "sampleFileName": "L0A_HR_RAW_product_0010-of-0420.h5", "bucket": "protected"},
+              {"regex": ".*.cmr.xml$", "sampleFileName": "L0A_HR_RAW_product_0010-of-0420.iso.xml", "bucket": "protected"},
+              {"regex": ".*.h5.mp$", "sampleFileName": "L0A_HR_RAW_product_0001-of-0019.h5.mp", "bucket": "public"},
+              {"regex": ".*.cmr.json$", "sampleFileName": "L0A_HR_RAW_product_0001-of-0019.cmr.json", "bucket": "public"
             }
           ],
         "excludeFileTypes": [

@@ -166,21 +166,21 @@ class TestExtractFilePaths(unittest.TestCase):
         self.task_input_event["config"]["private-bucket"] = "my_private_bucket"
         self.task_input_event["config"]["public-bucket"] = "my_public_bucket"
         self.task_input_event["config"]["file-buckets"] = [
-            {"regex": ".*.h5$", "sampleFileName": "L_10-420.h5", "bucket": {"name": "protected"}},
+            {"regex": ".*.h5$", "sampleFileName": "L_10-420.h5", "bucket": "protected"},
             {
                 "regex": ".*.iso.xml$",
                 "sampleFileName": "L_10-420.iso.xml",
-                "bucket": {"name": "protected"},
+                "bucket": "protected",
             },
             {
                 "regex": ".*.h5.mp$",
                 "sampleFileName": "L_10-420.h5.mp",
-                "bucket": {"name": "public"},
+                "bucket": "public",
             },
             {
                 "regex": ".*.cmr.json$",
                 "sampleFileName": "L_10-420.cmr.json",
-                "bucket": {"name": "public"},
+                "bucket": "public",
             },
         ]
         self.task_input_event["input"]["granules"] = [
@@ -189,7 +189,7 @@ class TestExtractFilePaths(unittest.TestCase):
                 "files": [
                     {
                         "fileName": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
-                        "bucket": {"name": "cumulus-test-sandbox-protected-2"},
+                        "bucket": "cumulus-test-sandbox-protected-2",
                     }
                 ],
             }
@@ -344,7 +344,6 @@ class TestExtractFilePaths(unittest.TestCase):
         result = extract_filepaths_for_granule.task(self.task_input_event, self.context)
         self.assertEqual(exp_result, result)
 
-    # -------------------------------------------------------------------------------------------------
     def test_exclude_file_types(self):
         """
         Testing filtering of exclude file types.

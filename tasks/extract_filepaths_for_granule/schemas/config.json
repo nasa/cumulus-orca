@@ -1,0 +1,102 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+      "glacier-bucket": {
+        "type": "string"
+      },
+      "protected-bucket": {
+        "type": "string"
+      },
+      "internal-bucket": {
+        "type": "string"
+      },
+      "private-bucket": {
+        "type": "string"
+      },
+      "public-bucket": {
+        "type": "string"
+      },
+      "file-buckets": {
+        "type": "array",
+        "items": [
+          {
+            "type": "object",
+            "properties": {
+              "regex": {
+                "type": "string"
+              },
+              "sampleFileName": {
+                "type": "string"
+              },
+              "bucket": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "regex",
+              "sampleFileName",
+              "bucket"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "regex": {
+                "type": "string"
+              },
+              "sampleFileName": {
+                "type": "string"
+              },
+              "bucket": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "regex",
+              "sampleFileName",
+              "bucket"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "regex": {
+                "type": "string"
+              },
+              "sampleFileName": {
+                "type": "string"
+              },
+              "bucket": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "regex",
+              "sampleFileName",
+              "bucket"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "regex": {
+                "type": "string"
+              },
+              "sampleFileName": {
+                "type": "string"
+              },
+              "bucket": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "regex",
+              "sampleFileName",
+              "bucket"
+            ]
+          }
+        ]
+      }
+    }
+  }
