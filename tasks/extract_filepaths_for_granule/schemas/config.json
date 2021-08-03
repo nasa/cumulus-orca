@@ -1,98 +1,51 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "extract_filepaths_for_granule Lambda Config",
+    "description": "The config for the extract_filepaths_for_granule Lambda function.",
     "type": "object",
     "properties": {
       "glacier-bucket": {
+        "description": "The name of the glacier S3 bucket from which files will be restored.",
         "type": "string"
       },
       "protected-bucket": {
+        "description": "The name of the protected S3 bucket.",
         "type": "string"
       },
       "internal-bucket": {
+        "description": "The name of the internal S3 bucket.",
         "type": "string"
       },
       "private-bucket": {
+        "description": "The name of the private  S3 bucket.",
         "type": "string"
       },
       "public-bucket": {
+        "description": "The name of the public S3 bucket that is visible to users",
         "type": "string"
       },
       "file-buckets": {
+        "description": "The list of dictionary that contains details of the bucket and regex.",
         "type": "array",
         "items": [
           {
             "type": "object",
             "properties": {
               "regex": {
+                "description": "The regex that matches the file extension type",
                 "type": "string"
               },
               "sampleFileName": {
+                "description": "name of a sample file having extension.",
                 "type": "string"
               },
               "bucket": {
+                "description": "The name of the S3 bucket where the file is stored.",
                 "type": "string"
               }
             },
             "required": [
               "regex",
-              "sampleFileName",
-              "bucket"
-            ]
-          },
-          {
-            "type": "object",
-            "properties": {
-              "regex": {
-                "type": "string"
-              },
-              "sampleFileName": {
-                "type": "string"
-              },
-              "bucket": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "regex",
-              "sampleFileName",
-              "bucket"
-            ]
-          },
-          {
-            "type": "object",
-            "properties": {
-              "regex": {
-                "type": "string"
-              },
-              "sampleFileName": {
-                "type": "string"
-              },
-              "bucket": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "regex",
-              "sampleFileName",
-              "bucket"
-            ]
-          },
-          {
-            "type": "object",
-            "properties": {
-              "regex": {
-                "type": "string"
-              },
-              "sampleFileName": {
-                "type": "string"
-              },
-              "bucket": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "regex",
-              "sampleFileName",
               "bucket"
             ]
           }
