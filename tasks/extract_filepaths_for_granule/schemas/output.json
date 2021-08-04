@@ -23,9 +23,17 @@
                     "key":{
                       "desription": "The key of the file.",
                       "type": "string"
+                    },
+                    "dest_bucket": {
+                      "description": "The bucket the file will be moved to after it is located.",
+                      "type": "string"
                     }
+                  },
+                  "required": [
+                    "key",
+                    "dest_bucket"
+                  ]
                   }
-                }
               ]
             }
           },

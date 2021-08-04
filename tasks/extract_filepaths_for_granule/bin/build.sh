@@ -90,7 +90,7 @@ check_rc $return_code "ERROR: Failed to copy lambda files to build directory."
 mkdir -p build/schemas
 let return_code=$?
 check_rc $return_code "ERROR: Unable to create build/schemas directory."
-echo "INFO: Creating the Lambda package ..."
+echo "INFO:  Copying the input, output and config schemas..."
 cp schemas/*.json build/schemas/
 let return_code=$?
 

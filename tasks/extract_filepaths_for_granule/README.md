@@ -77,7 +77,7 @@ resource "aws_lambda_function" "extract_filepaths_for_granule" {
 
 
 ## Input
-The lambda handler event excepts a dictionary having a list of granules as input. Check the input schema example [here](https://github.com/nasa/cumulus-orca/blob/develop/tasks/extract_filepaths_for_granule/schemas/input.json).
+The lambda handler event excepts a dictionary having a list of granules as input. Check the input schema [here](https://github.com/nasa/cumulus-orca/blob/master/tasks/extract_filepaths_for_granule/schemas/input.json) and the configuration schema [here](https://github.com/nasa/cumulus-orca/blob/master/tasks/extract_filepaths_for_granule/schemas/config.json). An example input to the Lambda function can be seen below.
 ```
 {
       "granules":[
@@ -144,7 +144,7 @@ The lambda handler event excepts a dictionary having a list of granules as input
 }
 ```
 ## Output
-The output of lambda handler returns a dictionary having a list of granules that consist of granuleID and keys. Check the output schema example [here](https://github.com/nasa/cumulus-orca/blob/develop/tasks/extract_filepaths_for_granule/schemas/output.json).
+The output of lambda handler returns a dictionary having a list of granules that consist of granuleID and keys. Check the output schema example [here](https://github.com/nasa/cumulus-orca/blob/master/tasks/extract_filepaths_for_granule/schemas/output.json).
 ```
 {
    "granules":[

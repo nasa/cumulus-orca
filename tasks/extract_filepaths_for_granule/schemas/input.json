@@ -30,7 +30,7 @@
                         "type": "string"
                       },
                       "key": {
-                        "description": "The key of the file.",
+                        "description": "The S3 key of the file (full path and file name less the bucket name).",
                         "type": "string"
                       },
                       "bucket": {

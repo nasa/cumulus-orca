@@ -4,25 +4,111 @@
     "description": "The config for the extract_filepaths_for_granule Lambda function.",
     "type": "object",
     "properties": {
-      "glacier-bucket": {
-        "description": "The name of the glacier S3 bucket from which files will be restored.",
-        "type": "string"
-      },
-      "protected-bucket": {
-        "description": "The name of the protected S3 bucket.",
-        "type": "string"
-      },
-      "internal-bucket": {
-        "description": "The name of the internal S3 bucket.",
-        "type": "string"
-      },
-      "private-bucket": {
-        "description": "The name of the private  S3 bucket.",
-        "type": "string"
-      },
-      "public-bucket": {
-        "description": "The name of the public S3 bucket that is visible to users",
-        "type": "string"
+      "buckets": {
+        "description": "The list of dictionary having bucket name and type",
+        "type": "array",
+        "items": [
+          {
+            "type": "object",
+            "properties": {
+              "protected": {
+                "description": "A dictionary having protected S3 bucket name and bucket type values",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "description": "Name of S3 protected bucket",
+                    "type": "string"
+                  },
+                  "type": {
+                    "description": "The type of bucket. It shows whether the bucket is public, private, protected or internal",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            },
+            "required": [
+              "protected"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "internal": {
+                "description": "A dictionary having internal S3 bucket name and bucket type values",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "description": "Name of S3 internal bucket",
+                    "type": "string"
+                  },
+                  "type": {
+                    "description": "The type of bucket. It shows whether the bucket is public, private, protected or internal",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            },
+            "required": [
+              "internal"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "private": {
+                "description": "A dictionary having private S3 bucket name and bucket type values",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "description": "Name of S3 private bucket",
+                    "type": "string"
+                  },
+                  "type": {
+                    "description": "The type of bucket. It shows whether the bucket is public, private, protected or internal",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            },
+            "required": [
+              "private"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "public": {
+                "description": "A dictionary having public S3 bucket name and bucket type values",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "description": "Name of S3 public bucket",
+                    "type": "string"
+                  },
+                  "type": {
+                    "description":  "The type of bucket. It shows whether the bucket is public, private, protected or internal",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            },
+            "required": [
+              "public"
+            ]
+          }
+        ]
       },
       "file-buckets": {
         "description": "The list of dictionary that contains details of the bucket and regex.",
@@ -40,7 +126,7 @@
                 "type": "string"
               },
               "bucket": {
-                "description": "The name of the S3 bucket where the file is stored.",
+                "description": "The name of the key that points to the correct S3 bucket. Examples include public, private, protected, etc",
                 "type": "string"
               }
             },
