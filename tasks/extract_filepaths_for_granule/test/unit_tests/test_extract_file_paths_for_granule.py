@@ -4,11 +4,13 @@ Name: test_extract_filepaths_for_granule.py
 Description:  Unit tests for extract_file_paths_for_granule.py.
 """
 import unittest
+import json
 from unittest.mock import Mock
 from cumulus_logger import CumulusLogger
 from test.helpers import LambdaContextMock, create_handler_event, create_task_event
 import extract_filepaths_for_granule
-
+# noinspection PyPackageRequirements
+import fastjsonschema as fastjsonschema
 
 class TestExtractFilePaths(unittest.TestCase):
     """
@@ -304,6 +306,7 @@ class TestExtractFilePaths(unittest.TestCase):
                 ],
             },
         ]
+
         exp_result = {
             "granules": [
                 {
@@ -344,6 +347,13 @@ class TestExtractFilePaths(unittest.TestCase):
         result = extract_filepaths_for_granule.task(self.task_input_event, self.context)
         self.assertEqual(exp_result, result)
 
+        # Validate the output is correct by matching with the output schema
+        with open("schemas/output.json", "r") as output_schema:
+            output_schema = json.loads(output_schema.read())
+
+        validate_output = fastjsonschema.compile(output_schema)
+        validate_output(exp_result)
+
     def test_exclude_file_types(self):
         """
         Testing filtering of exclude file types.
@@ -357,6 +367,31 @@ class TestExtractFilePaths(unittest.TestCase):
         self.assertEqual(result_true, True)
         self.assertEqual(result_false, False)
 
+    def test_task_input_schema_return_error(self):
+        """
+        Test that having no granules["files"]["key"] and granules["files"]["bucket"] give an error in input schema.
+        """
+        input_event = {
+                            "granules":[
+                                {
+                                    "granuleId":"MOD09GQ.A0219115.N5aUCG.006.0656338553321",
+                                    "version":"006",
+                                    "files":[
+                                    {
+                                        "filename":"MOD09GQ.A0219115.N5aUCG.006.0656338553321.cmr.xml",
+                                    }
+                                    ]
+                                }
+                            ]
+                        }
+         # Validate the input is correct by matching with the input schema
+        with open("schemas/input.json", "r") as input_schema:
+            input_schema = json.loads(input_schema.read())
+        try:
+            validate_input = fastjsonschema.compile(input_schema)
+            validate_input(input_event)
+        except Exception as ex:
+            self.assertEqual(ex.message, "data.granules[0].files[0] must contain ['key', 'bucket'] properties")
 
 if __name__ == "__main__":
     unittest.main(argv=["start"])

@@ -15,11 +15,16 @@
               "type": "string"
             },
             "keys": {
-              "description": "Keys related to where the files will be located.",
+              "description": "List of Keys related to where the files will be located.",
               "type": "array",
               "items": [
                 {
-                  "type": "string"
+                  "properties": {
+                    "key":{
+                      "desription": "The key of the file.",
+                      "type": "string"
+                    }
+                  }
                 }
               ]
             }
