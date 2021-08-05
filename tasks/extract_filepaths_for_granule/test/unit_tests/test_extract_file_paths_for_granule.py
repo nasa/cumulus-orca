@@ -31,7 +31,7 @@ class TestExtractFilePaths(unittest.TestCase):
         todo: That is not what this test does.
         """
         handler_input_event = create_handler_event()
-        exp_msg = "KeyError: \"event['config']['protected-bucket']\" is required"
+        exp_msg = "KeyError: \"event['config']['file-buckets']\" is required"
         try:
             extract_filepaths_for_granule.handler(handler_input_event, self.context)
         except extract_filepaths_for_granule.ExtractFilePathsError as ex:

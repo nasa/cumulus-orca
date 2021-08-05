@@ -115,10 +115,10 @@ def get_regex_buckets(event):
         # {'regex': '.*.cmr.json$', 'sampleFileName': 'L0A_0420.cmr.json', 'bucket': 'public'}]
         buckets =  event["config"]["buckets"]
         # buckets example:
-        # [{"protected": {"name": "sndbx-cumulus-protected", "type": "protected"}},
-        # {"internal": {"name": "sndbx-cumulus-internal", "type": "internal"}},
-        # {"private": {"name": "sndbx-cumulus-private", "type": "private"}},
-        # {"public": {"name": "sndbx-cumulus-public", "type": "public"}}]
+        # {"protected": {"name": "sndbx-cumulus-protected", "type": "protected"},
+        # "internal": {"name": "sndbx-cumulus-internal", "type": "internal"},
+        # "private": {"name": "sndbx-cumulus-private", "type": "private"},
+        # "public": {"name": "sndbx-cumulus-public", "type": "public"}}
         regex_buckets = {}
         for regx in file_buckets:
             regex_buckets[regx["regex"]] = buckets[regx["bucket"]]["name"]

@@ -59,12 +59,12 @@
             }
           ],
         "buckets": 
-        [
-          {"protected": {"name": "sndbx-cumulus-protected", "type": "protected"}},
-          {"internal": {"name": "sndbx-cumulus-internal", "type": "internal"}},
-          {"private": {"name": "sndbx-cumulus-private", "type": "private"}},
-          {"public": {"name": "sndbx-cumulus-public", "type": "public"}}
-      ],
+
+          {"protected": {"name": "sndbx-cumulus-protected", "type": "protected"},
+          "internal": {"name": "sndbx-cumulus-internal", "type": "internal"},
+          "private": {"name": "sndbx-cumulus-private", "type": "private"},
+          "public": {"name": "sndbx-cumulus-public", "type": "public"}},
+      
         "excludeFileTypes": [
         ".cmr"
       ]

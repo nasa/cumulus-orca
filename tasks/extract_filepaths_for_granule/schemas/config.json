@@ -5,110 +5,24 @@
     "type": "object",
     "properties": {
       "buckets": {
-        "description": "The list of dictionary having bucket name and type",
-        "type": "array",
-        "items": [
-          {
+        "type": "object",
+        "description": "AWS S3 buckets used by this task",
+        "patternProperties": {
+          "\\S*": {
+            "description": "bucket configuration for the key'd bucket",
             "type": "object",
             "properties": {
-              "protected": {
-                "description": "A dictionary having protected S3 bucket name and bucket type values",
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "description": "Name of S3 protected bucket",
-                    "type": "string"
-                  },
-                  "type": {
-                    "description": "The type of bucket. It shows whether the bucket is public, private, protected or internal",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "name"
-                ]
+              "name": {
+                "type": "string",
+                "description": "name of the S3 bucket"
+              },
+              "type": {
+                "type": "string",
+                "description": "the type of bucket - i.e. internal, public, private, protected"
               }
-            },
-            "required": [
-              "protected"
-            ]
-          },
-          {
-            "type": "object",
-            "properties": {
-              "internal": {
-                "description": "A dictionary having internal S3 bucket name and bucket type values",
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "description": "Name of S3 internal bucket",
-                    "type": "string"
-                  },
-                  "type": {
-                    "description": "The type of bucket. It shows whether the bucket is public, private, protected or internal",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "name"
-                ]
-              }
-            },
-            "required": [
-              "internal"
-            ]
-          },
-          {
-            "type": "object",
-            "properties": {
-              "private": {
-                "description": "A dictionary having private S3 bucket name and bucket type values",
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "description": "Name of S3 private bucket",
-                    "type": "string"
-                  },
-                  "type": {
-                    "description": "The type of bucket. It shows whether the bucket is public, private, protected or internal",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "name"
-                ]
-              }
-            },
-            "required": [
-              "private"
-            ]
-          },
-          {
-            "type": "object",
-            "properties": {
-              "public": {
-                "description": "A dictionary having public S3 bucket name and bucket type values",
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "description": "Name of S3 public bucket",
-                    "type": "string"
-                  },
-                  "type": {
-                    "description":  "The type of bucket. It shows whether the bucket is public, private, protected or internal",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "name"
-                ]
-              }
-            },
-            "required": [
-              "public"
-            ]
+            }
           }
-        ]
+        }
       },
       "file-buckets": {
         "description": "The list of dictionary that contains details of the bucket and regex.",
