@@ -11,6 +11,7 @@ from test.helpers import LambdaContextMock, create_handler_event, create_task_ev
 import extract_filepaths_for_granule
 # noinspection PyPackageRequirements
 import fastjsonschema as fastjsonschema
+from unittest.mock import patch, MagicMock, Mock
 
 class TestExtractFilePaths(unittest.TestCase):
     """
@@ -25,16 +26,24 @@ class TestExtractFilePaths(unittest.TestCase):
     def tearDown(self):
         CumulusLogger.error = self.mock_error
 
-    def test_handler_config_missing_key(self):
+    @patch("extract_filepaths_for_granule.task") 
+    def test_handler_happy_path(self, mock_task: MagicMock):
         """
-        Test that the handler returns an error since event['config']['file-buckets'] is missing.
+        Tests that between the lambda handler and CMA, input is translated into what task expects.
         """
         handler_input_event = create_handler_event()
-        exp_msg = "KeyError: \"event['config']['file-buckets']\" is required"
-        try:
-            extract_filepaths_for_granule.handler(handler_input_event, self.context)
-        except extract_filepaths_for_granule.ExtractFilePathsError as ex:
-            self.assertEqual(exp_msg, str(ex))
+        expected_task_input = {
+            "input": handler_input_event["payload"],
+            'config': {}      
+            }
+        mock_task.return_value = {
+            "granules": [{"granuleId": "L0A_HR_RAW_product_0003-of-0420",
+                         "keys": ["L0A_HR_RAW_product_0003-of-0420.h5",
+                                       "L0A_HR_RAW_product_0003-of-0420.cmr.json"]}]}
+        result = extract_filepaths_for_granule.handler(handler_input_event, self.context)
+        mock_task.assert_called_once_with(expected_task_input, self.context)
+
+        self.assertEqual(mock_task.return_value, result["payload"])
 
     def test_task(self):
         """
