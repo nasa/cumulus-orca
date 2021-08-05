@@ -3,6 +3,7 @@
     "title": "extract_filepaths_for_granule Lambda Config",
     "description": "The config for the extract_filepaths_for_granule Lambda function.",
     "type": "object",
+    "required":["buckets", "file-buckets"],
     "properties": {
       "buckets": {
         "type": "object",
