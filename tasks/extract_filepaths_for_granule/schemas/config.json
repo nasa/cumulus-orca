@@ -6,7 +6,7 @@
     "properties": {
       "buckets": {
         "type": "object",
-        "description": "AWS S3 buckets used by this task",
+        "description": "AWS S3 bucket mapping used for Cumulus and ORCA configuration.",
         "patternProperties": {
           "\\S*": {
             "description": "bucket configuration for the key'd bucket",
@@ -25,7 +25,7 @@
         }
       },
       "file-buckets": {
-        "description": "The list of dictionary that contains details of the bucket and regex.",
+        "description": "A list of dictionaries that contains details of the configured storage bucket and file regex.",
         "type": "array",
         "items": [
           {

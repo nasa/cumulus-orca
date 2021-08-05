@@ -25,10 +25,9 @@ class TestExtractFilePaths(unittest.TestCase):
     def tearDown(self):
         CumulusLogger.error = self.mock_error
 
-    def test_handler(self):
+    def test_handler_config_missing_key(self):
         """
-        Test successful with four keys returned.
-        todo: That is not what this test does.
+        Test that the handler returns an error since event['config']['file-buckets'] is missing.
         """
         handler_input_event = create_handler_event()
         exp_msg = "KeyError: \"event['config']['file-buckets']\" is required"
