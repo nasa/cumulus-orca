@@ -193,11 +193,16 @@ Based on this research, GraphQL has a higher learning curve compared to other te
 - The easiest way to set up Hasura GraphQL engine on local environment without any cost is using Docker. 
 - It supports GraphQL on Postgres, AWS Aurora and seems to be compatible with the current ORCA architecture. 
 - Cost to use the cloud is $99/month/project and supports upto 20GB data with $2/additional GB data. 
-- Creating the server using the given [`docker-compose.yml`](https://github.com/hasura/graphql-engine/blob/stable/install-manifests/docker-compose/docker-compose.yaml) file will be easy and the server can be queried from the Hasura console. Instructions to create the server can be found [here](https://hasura.io/docs/latest/graphql/core/getting-started/docker-simple.html#docker-simple). \
+- Creating the server using the given [`docker-compose.yml`](https://github.com/hasura/graphql-engine/blob/stable/install-manifests/docker-compose/docker-compose.yaml) file will be easy and the server can be queried from the Hasura console. Instructions to create the server can be found [here](https://hasura.io/docs/latest/graphql/core/getting-started/docker-simple.html#docker-simple).
 - Instructions on connecting Postgres to the GraphQL server can be found [here](https://hasura.io/docs/latest/graphql/cloud/getting-started/cloud-databases/aws-postgres.html#cloud-db-aws-rds-postgres)
 :::warning
 Hasura cloud service is not approved by NGAP so it cannot be used for now. However, developers can use the docker version for testing.
 :::
+
+##### Practical Evaluation
+- Setting up locally is the easiest out of all three recommendations.
+- Only supports PostgreSQL, MS SQL Server, and Citrys, with BigQuery in beta.
+- Did not attempt to deploy to AWS.
 
 
 #### Recommendation #2- [Apollo Server](https://www.apollographql.com/)
@@ -211,12 +216,41 @@ Hasura cloud service is not approved by NGAP so it cannot be used for now. Howev
 - Some examples of the schema and resolvers for this server can be found [here](https://www.apollographql.com/docs/apollo-server/getting-started/).
 - Once created, GraphQL queries can be executed from Apollo Sandbox console.
 
+##### Practical Evaluation
+- Documentation is severely limited, with the section for connecting to databases requesting additional coders to complete missing functionality.
+- Some tutorials exist, but they are generally a few years old and out-of-date.
+- Recommendations use auto-magical Sequelize integration, which may not give us a solid boundary should DB technology change.
+  - Unsure if the driver would correctly handle [Aurora Serverless](research-AuroraServerless.md) errors.
+- Deployment is similarly undocumented. The [best source](https://levelup.gitconnected.com/deploying-an-apollo-graphql-application-as-an-aws-lambda-function-through-serverless-77fa33612bae) states outright that deployment is over-complicated, so developers should rely on "serverless" which we cannot use in our current architecture.
+- Attempted to create resources manually, invoked, and got
+  ```
+  {
+    "errorType": "Error",
+    "errorMessage": "Unable to determine event source based on event.",
+    "trace": [
+      "Error: Unable to determine event source based on event.",
+      "    at getEventSourceNameBasedOnEvent (/var/task/node_modules/@vendia/serverless-express/src/event-sources/utils.js:79:9)",
+      "    at proxy (/var/task/node_modules/@vendia/serverless-express/src/configure.js:37:51)",
+      "    at handler (/var/task/node_modules/@vendia/serverless-express/src/configure.js:95:12)",
+      "    at Runtime.handler (/var/task/node_modules/apollo-server-lambda/dist/ApolloServer.js:51:27)"
+    ]
+  }
+  ```
+
 
 #### Recommendation #3- [Graphene](https://github.com/graphql-python/graphene)
 
 - Python library with 9000+ users for building GraphQL schemas/types. Since all ORCA lambdas are written in Python, using this library will make it easier for code changes.
--  Instead of writing GraphQL Schema Definition Language, deveopers will use Python code to describe the data provided by the server.
-- Can be deployed using lambda function with the help of [SAM]https://github.com/ivanchoo/demo-aws-graphql-python/blob/master/template.yml) or cloudformation. So serverless approach will charge when it is only used. 
+- Instead of writing GraphQL Schema Definition Language, developers will use Python code to describe the data provided by the server.
+- Can be deployed using lambda function with the help of [SAM]https://github.com/ivanchoo/demo-aws-graphql-python/blob/master/template.yml) or cloudformation. So serverless approach will charge when it is only used.
+
+##### Practical Evaluation
+- More flexible than other libraries; Would be much easier to switch DB technology.
+  - Could use current database code.
+- Deployed something using [these basic instructions](https://thomasstep.com/blog/graphene-and-lambda-functions)
+  - Can't access any form of UI.
+  - Looking at code, UI/UI Endpoints may not be present. Requires `query` in Lambda input.
+  - Without UI, doesn't have any advantage over building our own MS.
 
 
 ### GraphQL IDE
