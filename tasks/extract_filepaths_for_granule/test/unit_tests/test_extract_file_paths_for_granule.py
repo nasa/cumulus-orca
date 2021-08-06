@@ -32,10 +32,27 @@ class TestExtractFilePaths(unittest.TestCase):
         Tests that between the lambda handler and CMA, input is translated into what task expects.
         """
         handler_input_event = create_handler_event()
+        handler_input_event["task_config"] =       {
+        "file-buckets": 
+            [
+              {"regex": ".*.h5$", "sampleFileName": "L0A_HR_RAW_product_0010-of-0420.h5", "bucket": "protected"},
+              {"regex": ".*.cmr.xml$", "sampleFileName": "L0A_HR_RAW_product_0010-of-0420.iso.xml", "bucket": "protected"},
+              {"regex": ".*.h5.mp$", "sampleFileName": "L0A_HR_RAW_product_0001-of-0019.h5.mp", "bucket": "public"},
+              {"regex": ".*.cmr.json$", "sampleFileName": "L0A_HR_RAW_product_0001-of-0019.cmr.json", "bucket": "public"
+            }
+          ],
+        "buckets": 
+
+          {"protected": {"name": "sndbx-cumulus-protected", "type": "protected"},
+          "internal": {"name": "sndbx-cumulus-internal", "type": "internal"},
+          "private": {"name": "sndbx-cumulus-private", "type": "private"},
+          "public": {"name": "sndbx-cumulus-public", "type": "public"}}
+        }
+            
         expected_task_input = {
             "input": handler_input_event["payload"],
-            'config': {}      
-            }
+            "config": handler_input_event["task_config"]
+        } 
         mock_task.return_value = {
             "granules": [{"granuleId": "L0A_HR_RAW_product_0003-of-0420",
                          "keys": ["L0A_HR_RAW_product_0003-of-0420.h5",
