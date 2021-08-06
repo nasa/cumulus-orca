@@ -1,0 +1,62 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "extract_filepaths_for_granule Lambda Config",
+    "description": "The config for the extract_filepaths_for_granule Lambda function.",
+    "type": "object",
+    "required": [
+      "buckets",
+      "file-buckets"
+    ],
+    "properties": {
+      "buckets": {
+        "type": "object",
+        "description": "AWS S3 bucket mapping used for Cumulus and ORCA configuration.",
+        "patternProperties": {
+          "\\S*": {
+            "description": "bucket configuration for the key'd bucket",
+            "type": "object",
+            "required": [
+              "name"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "name of the S3 bucket"
+              },
+              "type": {
+                "type": "string",
+                "description": "the type of bucket - i.e. internal, public, private, protected"
+              }
+            }
+          }
+        }
+      },
+      "file-buckets": {
+        "description": "A list of dictionaries that contains details of the configured storage bucket and file regex.",
+        "type": "array",
+        "items": [
+          {
+            "type": "object",
+            "properties": {
+              "regex": {
+                "description": "The regex that matches the file extension type",
+                "type": "string"
+              },
+              "sampleFileName": {
+                "description": "name of a sample file having extension.",
+                "type": "string"
+              },
+              "bucket": {
+                "description": "The name of the key that points to the correct S3 bucket. Examples include public, private, protected, etc",
+                "type": "string"
+              }
+            },
+            "required": [
+              "regex",
+              "bucket"
+            ]
+          }
+        ]
+      }
+    }
+  }

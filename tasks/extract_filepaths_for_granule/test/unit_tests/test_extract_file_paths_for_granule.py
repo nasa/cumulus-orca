@@ -4,11 +4,14 @@ Name: test_extract_filepaths_for_granule.py
 Description:  Unit tests for extract_file_paths_for_granule.py.
 """
 import unittest
+import json
 from unittest.mock import Mock
 from cumulus_logger import CumulusLogger
 from test.helpers import LambdaContextMock, create_handler_event, create_task_event
 import extract_filepaths_for_granule
-
+# noinspection PyPackageRequirements
+import fastjsonschema as fastjsonschema
+from unittest.mock import patch, MagicMock, Mock
 
 class TestExtractFilePaths(unittest.TestCase):
     """
@@ -23,17 +26,41 @@ class TestExtractFilePaths(unittest.TestCase):
     def tearDown(self):
         CumulusLogger.error = self.mock_error
 
-    def test_handler(self):
+    @patch("extract_filepaths_for_granule.task") 
+    def test_handler_happy_path(self, mock_task: MagicMock):
         """
-        Test successful with four keys returned.
-        todo: That is not what this test does.
+        Tests that between the lambda handler and CMA, input is translated into what task expects.
         """
         handler_input_event = create_handler_event()
-        exp_msg = "KeyError: \"event['config']['protected-bucket']\" is required"
-        try:
-            extract_filepaths_for_granule.handler(handler_input_event, self.context)
-        except extract_filepaths_for_granule.ExtractFilePathsError as ex:
-            self.assertEqual(exp_msg, str(ex))
+        handler_input_event["task_config"] =       {
+        "file-buckets": 
+            [
+              {"regex": ".*.h5$", "sampleFileName": "L0A_HR_RAW_product_0010-of-0420.h5", "bucket": "protected"},
+              {"regex": ".*.cmr.xml$", "sampleFileName": "L0A_HR_RAW_product_0010-of-0420.iso.xml", "bucket": "protected"},
+              {"regex": ".*.h5.mp$", "sampleFileName": "L0A_HR_RAW_product_0001-of-0019.h5.mp", "bucket": "public"},
+              {"regex": ".*.cmr.json$", "sampleFileName": "L0A_HR_RAW_product_0001-of-0019.cmr.json", "bucket": "public"
+            }
+          ],
+        "buckets": 
+
+          {"protected": {"name": "sndbx-cumulus-protected", "type": "protected"},
+          "internal": {"name": "sndbx-cumulus-internal", "type": "internal"},
+          "private": {"name": "sndbx-cumulus-private", "type": "private"},
+          "public": {"name": "sndbx-cumulus-public", "type": "public"}}
+        }
+            
+        expected_task_input = {
+            "input": handler_input_event["payload"],
+            "config": handler_input_event["task_config"]
+        } 
+        mock_task.return_value = {
+            "granules": [{"granuleId": "L0A_HR_RAW_product_0003-of-0420",
+                         "keys": ["L0A_HR_RAW_product_0003-of-0420.h5",
+                                       "L0A_HR_RAW_product_0003-of-0420.cmr.json"]}]}
+        result = extract_filepaths_for_granule.handler(handler_input_event, self.context)
+        mock_task.assert_called_once_with(expected_task_input, self.context)
+
+        self.assertEqual(mock_task.return_value, result["payload"])
 
     def test_task(self):
         """
@@ -304,6 +331,7 @@ class TestExtractFilePaths(unittest.TestCase):
                 ],
             },
         ]
+
         exp_result = {
             "granules": [
                 {
@@ -344,7 +372,13 @@ class TestExtractFilePaths(unittest.TestCase):
         result = extract_filepaths_for_granule.task(self.task_input_event, self.context)
         self.assertEqual(exp_result, result)
 
-    # -------------------------------------------------------------------------------------------------
+        # Validate the output is correct by matching with the output schema
+        with open("schemas/output.json", "r") as output_schema:
+            output_schema = json.loads(output_schema.read())
+
+        validate_output = fastjsonschema.compile(output_schema)
+        validate_output(exp_result)
+
     def test_exclude_file_types(self):
         """
         Testing filtering of exclude file types.
@@ -358,6 +392,31 @@ class TestExtractFilePaths(unittest.TestCase):
         self.assertEqual(result_true, True)
         self.assertEqual(result_false, False)
 
+    def test_task_input_schema_return_error(self):
+        """
+        Test that having no granules["files"]["key"] and granules["files"]["bucket"] give an error in input schema.
+        """
+        input_event = {
+                            "granules":[
+                                {
+                                    "granuleId":"MOD09GQ.A0219115.N5aUCG.006.0656338553321",
+                                    "version":"006",
+                                    "files":[
+                                    {
+                                        "filename":"MOD09GQ.A0219115.N5aUCG.006.0656338553321.cmr.xml",
+                                    }
+                                    ]
+                                }
+                            ]
+                        }
+         # Validate the input is correct by matching with the input schema
+        with open("schemas/input.json", "r") as input_schema:
+            input_schema = json.loads(input_schema.read())
+        try:
+            validate_input = fastjsonschema.compile(input_schema)
+            validate_input(input_event)
+        except Exception as ex:
+            self.assertEqual(ex.message, "data.granules[0].files[0] must contain ['key', 'bucket'] properties")
 
 if __name__ == "__main__":
     unittest.main(argv=["start"])

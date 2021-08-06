@@ -106,30 +106,32 @@ def get_regex_buckets(event):
         Raises:
             ExtractFilePathsError: An error occurred parsing the input.
     """
-    buckets = {}
     try:
-        level = "event['config']"
-        buckets["protected"] = event["config"]["protected-bucket"]
-        buckets["internal"] = event["config"]["internal-bucket"]
-        buckets["private"] = event["config"]["private-bucket"]
-        buckets["public"] = event["config"]["public-bucket"]
         file_buckets = event["config"]["file-buckets"]
         # file_buckets example:
         # [{'regex': '.*.h5$', 'sampleFileName': 'L0A_0420.h5', 'bucket': 'protected'},
         # {'regex': '.*.iso.xml$', 'sampleFileName': 'L0A_0420.iso.xml', 'bucket': 'protected'},
         # {'regex': '.*.h5.mp$', 'sampleFileName': 'L0A_0420.h5.mp', 'bucket': 'public'},
         # {'regex': '.*.cmr.json$', 'sampleFileName': 'L0A_0420.cmr.json', 'bucket': 'public'}]
+        buckets =  event["config"]["buckets"]
+        # buckets example:
+        # {"protected": {"name": "sndbx-cumulus-protected", "type": "protected"},
+        # "internal": {"name": "sndbx-cumulus-internal", "type": "internal"},
+        # "private": {"name": "sndbx-cumulus-private", "type": "private"},
+        # "public": {"name": "sndbx-cumulus-public", "type": "public"}}
         regex_buckets = {}
         for regx in file_buckets:
-            regex_buckets[regx["regex"]] = buckets[regx["bucket"]]
-
+            regex_buckets[regx["regex"]] = buckets[regx["bucket"]]["name"]
         # regex_buckets example:
         # {'.*.h5$': 'podaac-sndbx-cumulus-protected',
         #  '.*.iso.xml$': 'podaac-sndbx-cumulus-protected',
         #  '.*.h5.mp$': 'podaac-sndbx-cumulus-public',
         #  '.*.cmr.json$': 'podaac-sndbx-cumulus-public'}
     except KeyError as err:
-        raise ExtractFilePathsError(f'KeyError: "{level}[{str(err)}]" is required')
+        level = "event['config']"
+        message = f'KeyError: "{level}[{str(err)}]" is required'
+        LOGGER.error(message)
+        raise ExtractFilePathsError(message)
     return regex_buckets
 
 
@@ -166,17 +168,24 @@ def handler(event, context):  # pylint: disable-msg=unused-argument
                     other dictionary keys may be included, but are not used.
                 other dictionary keys may be included, but are not used.
 
-            Example: event: {'granules': [
-                                  {'granuleId': 'granxyz',
-                                   'version": '006',
-                                   'files': [
-                                        {'name': 'file1',
-                                         'key': 'key1',
-                                         'filename': 's3://dr-test-sandbox-protected/file1',
-                                         'type': 'metadata'} ]
-                                   }
-                                ]
-                             }
+            Example: {
+                        "event":{
+                            "granules":[
+                                {
+                                    "granuleId":"granxyz",
+                                    "version":"006",
+                                    "files":[
+                                    {
+                                        "name":"file1",
+                                        "key":"key1",
+                                        "filename":"s3://dr-test-sandbox-protected/file1",
+                                        "type":"metadata"
+                                    }
+                                    ]
+                                }
+                            ]
+                        }
+                        }
 
         context (Object): None
 

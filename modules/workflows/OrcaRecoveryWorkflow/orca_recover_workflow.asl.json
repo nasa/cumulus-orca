@@ -11,13 +11,9 @@
             "FullMessage": true
           },
           "task_config": {
-            "glacier-bucket": "${orca_default_bucket}",
-            "public-bucket": "{$.meta.buckets.public.name}",
-            "protected-bucket": "{$.meta.buckets.protected.name}",
-            "private-bucket": "{$.meta.buckets.private.name}",
-            "internal-bucket": "{$.meta.buckets.internal.name}",
             "file-buckets": "{$.meta.collection.files}",
-            "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}"
+            "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
+            "buckets": "{$.meta.buckets}"
           }
         }
       },
