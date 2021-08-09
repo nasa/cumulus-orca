@@ -252,8 +252,20 @@ Hasura cloud service is not approved by NGAP, so it cannot be used for now. Howe
   - Can't access any form of UI.
   - Looking at code, UI/UI-Endpoints may not be present. Requires `query` in Lambda input.
   - Without UI, doesn't have any advantage over building our own MS.
-  - No information on filtering returned values. Can only test basic queries.
+  - Filtering functions.
+    ```json
+    {
+      "query": "query doesnotmatter{ mirror(word: \"apples\") { backward } }"
+    }
+    ```
+    ```json
+    {
+      "statusCode": 200,
+      "body": "{\"mirror\": {\"backward\": \"selppa\"}}"
+    }
+    ```
   - Documentation at https://docs.graphene-python.org/ is unavailable.
+  - Errors are not properly communicated, instead returning 200 with a "null" body.
 
 
 ### GraphQL IDE
