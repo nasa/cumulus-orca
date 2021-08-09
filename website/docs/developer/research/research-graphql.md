@@ -11,7 +11,7 @@ description: Research Notes on GraphQL.
  - A GraphQL server provides a client with a predefined schema written down in Schema Definition Language (SDL). 
  - The schema defines the queries that can be made.
  - The SDL consists of `Type`that describe object types that can be queried on that server and the fields they have.
- - It can return many resources in a single request which makes it faster then REST API.
+ - It can return many resources in a single request which makes it faster than REST API.
  
  An example of a type `Project` written using SDL is shown below:
  ```commandline
@@ -52,9 +52,10 @@ Pros:
 - Able to get many resources in a single request compared to REST API.
 - Able to only fetch the needed information in a single request instead of fetching all the data.
 - There is no need to validate the data format, as GraphQL will do the validation. Developers need only to write resolvers – how the data will be received.
-- A developer can view the available data before making the request.
+- A developer can view the available schemas before making the request.
 - There is only one version of GraphQL API thus allowing more maintainable and cleaner code.
 - Shows detailed error message including all the resolvers and referring to the exact query part during error in query. This is useful during debugging.
+- Centralizes our DB code, making it easier to switch or update DB libraries.
 
 Cons:
 - Performance issues with complex queries- it could face performance issues if a client asks for too many nested fields at once.
@@ -189,19 +190,19 @@ Based on this research, GraphQL has a higher learning curve compared to other te
 
 #### Recommendation #1- [Hasura](https://hasura.io/)
 
-- Hasura GraphQL engine can be deployed using using Docker and Docker Compose or using Hasura cloud. 
+- Hasura GraphQL engine can be deployed using Docker and Docker Compose or using Hasura cloud. 
 - The easiest way to set up Hasura GraphQL engine on local environment without any cost is using Docker. 
 - It supports GraphQL on Postgres, AWS Aurora and seems to be compatible with the current ORCA architecture. 
-- Cost to use the cloud is $99/month/project and supports upto 20GB data with $2/additional GB data. 
+- Cost to use the cloud is $99/month/project and supports up to 20GB data with $2/additional GB data. 
 - Creating the server using the given [`docker-compose.yml`](https://github.com/hasura/graphql-engine/blob/stable/install-manifests/docker-compose/docker-compose.yaml) file will be easy and the server can be queried from the Hasura console. Instructions to create the server can be found [here](https://hasura.io/docs/latest/graphql/core/getting-started/docker-simple.html#docker-simple).
 - Instructions on connecting Postgres to the GraphQL server can be found [here](https://hasura.io/docs/latest/graphql/cloud/getting-started/cloud-databases/aws-postgres.html#cloud-db-aws-rds-postgres)
 :::warning
-Hasura cloud service is not approved by NGAP so it cannot be used for now. However, developers can use the docker version for testing.
+Hasura cloud service is not approved by NGAP, so it cannot be used for now. However, developers can use the docker version for testing.
 :::
 
 ##### Practical Evaluation
 - Setting up locally is the easiest out of all three recommendations.
-- Only supports PostgreSQL, MS SQL Server, and Citrys, with BigQuery in beta.
+- Only supports PostgreSQL, MS SQL Server, and Citrus, with BigQuery in beta.
 - Did not attempt to deploy to AWS.
 
 
@@ -217,8 +218,8 @@ Hasura cloud service is not approved by NGAP so it cannot be used for now. Howev
 - Once created, GraphQL queries can be executed from Apollo Sandbox console.
 
 ##### Practical Evaluation
-- Documentation is severely limited, with the section for connecting to databases requesting additional coders to complete missing functionality.
-- Some tutorials exist, but they are generally a few years old and out-of-date.
+- Documentation is severely limited, with the section for connecting to databases [requesting additional coders to complete missing functionality](https://www.apollographql.com/docs/tutorial/data-source/).
+- Some tutorials exist, but they are [generally a few years old and out-of-date](https://www.robinwieruch.de/graphql-apollo-server-tutorial).
 - Recommendations use auto-magical Sequelize integration, which may not give us a solid boundary should DB technology change.
   - Unsure if the driver would correctly handle [Aurora Serverless](research-AuroraServerless.md) errors.
 - Deployment is similarly undocumented. The [best source](https://levelup.gitconnected.com/deploying-an-apollo-graphql-application-as-an-aws-lambda-function-through-serverless-77fa33612bae) states outright that deployment is over-complicated, so developers should rely on "serverless" which we cannot use in our current architecture.
@@ -249,8 +250,10 @@ Hasura cloud service is not approved by NGAP so it cannot be used for now. Howev
   - Could use current database code.
 - Deployed something using [these basic instructions](https://thomasstep.com/blog/graphene-and-lambda-functions)
   - Can't access any form of UI.
-  - Looking at code, UI/UI Endpoints may not be present. Requires `query` in Lambda input.
+  - Looking at code, UI/UI-Endpoints may not be present. Requires `query` in Lambda input.
   - Without UI, doesn't have any advantage over building our own MS.
+  - No information on filtering returned values. Can only test basic queries.
+  - Documentation at https://docs.graphene-python.org/ is unavailable.
 
 
 ### GraphQL IDE
@@ -270,6 +273,18 @@ The following tools might be useful for developers while working with GraphQL
 - GraphQL Bindings- SDK for sharing GraphQL APIs
 - GraphQL Boilerplates- useful for backend projects.
 - Apollo Graph Manager-  useful for monitoring the performance and usage of GraphQL backend.
+
+### Recommendation
+While GraphQL is an interesting technology, the lack of documentation makes implementation difficult.
+In particular, deployment and integration lack vital instructions, with most tutorials running in a docker container or Python script rather than a realistic environment.
+Theoretically GraphQL could be run in an EC2 instance with some form of connecting layer such as [Fargate](https://aws.amazon.com/fargate/?whats-new-cards.sort-by=item.additionalFields.postDateTime&whats-new-cards.sort-order=desc&fargate-blogs.sort-by=item.additionalFields.createdDate&fargate-blogs.sort-order=desc) but this is untested and would need research and cost analysis.
+
+Should this be desired, I feel strongly that Graphene is the only known option that gives us the flexibility that is required to justify this level of adaptation.
+Research would be required for:
+- Ideal deployment method
+- Accessing API
+- Security
+- GraphQL UI
 
 ##### References
 - https://graphql.org/learn/queries/
