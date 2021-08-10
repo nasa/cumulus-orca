@@ -11,7 +11,7 @@ terraform {
 
 ## AWS Provider Settings
 provider "aws" {
-  profile = var.aws_profile
+  profile = local.modified_aws_profile
   region  = var.region
 }
 
@@ -19,6 +19,7 @@ provider "aws" {
 ## Local Variables
 locals {
   tags = merge(var.tags, { Deployment = var.prefix })
+  modified_aws_profile = "${var.aws_profile == null ? "default" : var.aws_profile}"
 }
 
 
@@ -32,7 +33,7 @@ module "orca_lambdas" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  aws_profile                       = var.aws_profile
+  aws_profile                       = local.modified_aws_profile
   buckets                           = var.buckets
   lambda_subnet_ids                 = var.lambda_subnet_ids
   permissions_boundary_arn          = var.permissions_boundary_arn
@@ -80,7 +81,7 @@ module "orca_workflows" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  aws_profile     = var.aws_profile
+  aws_profile     = local.modified_aws_profile
   prefix          = var.prefix
   system_bucket   = var.system_bucket
   workflow_config = var.workflow_config
@@ -109,7 +110,7 @@ module "orca_rds" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  aws_profile       = var.aws_profile
+  aws_profile       = local.modified_aws_profile
   lambda_subnet_ids = var.lambda_subnet_ids
   prefix            = var.prefix
 
@@ -143,7 +144,7 @@ module "orca_sqs" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  aws_profile = var.aws_profile
+  aws_profile = local.modified_aws_profile
   prefix      = var.prefix
 
   ## OPTIONAL

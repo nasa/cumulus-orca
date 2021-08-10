@@ -88,8 +88,8 @@ if necessary.
 
 From the directory of your `cumulus` deployment module (e.g., `cumulus-tf`):
 
-`$ AWS_REGION=<region> \ # e.g. us-west-2`
-    `AWS_PROFILE=<profile> \`
+`$ AWS_REGION=<region> \ # default "us-west-2"`
+    `AWS_PROFILE=<profile> \ # default "default"`
     `terraform apply`
 
 Once you have successfully updated all of your resources, verify that your

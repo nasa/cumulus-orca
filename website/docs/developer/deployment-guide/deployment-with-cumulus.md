@@ -115,7 +115,6 @@ required by the ORCA module. More information about setting these variables can
 be found in the [Cumulus variable definitions](https://github.com/nasa/cumulus/blob/master/tf-modules/cumulus/variables.tf).
 The variables must be set with the proper values in the `terraform.tfvavrs` file.
 
-- aws_profile
 - buckets
 - lambda_subnet_ids
 - permissions_boundary_arn
@@ -127,6 +126,8 @@ The variables must be set with the proper values in the `terraform.tfvavrs` file
 
 Though optional, it is recommended that you also set the `region` variable. The
 default value for `region` is set to `us-west-2` in the ORCA module.
+
+Similarly, you can overwrite the `default` aws-profile with the `aws_profile` variable.
 
 The `tags` value automatically adds a *Deployment* tag like the Cumulus
 deployment.
@@ -409,7 +410,6 @@ file. The variables must be set with proper values for your environment in the
 
 | Variable                   | Definition                                                                                                                                   | Example Value      |
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
-| `aws_profile`              | AWS CLI Profile (configured via `aws configure`) to use for deployment.                                                                      | "default" |
 | `buckets`                  | Mapping of all S3 buckets used by Cumulus and ORCA that contains a S3 `name` and `type`. A bucket with a `type` of **orca** is required.     | `buckets = { orca_default = { name = "PREFIX-orca-primary", type = "orca", ...}}` |
 | `lambda_subnet_ids`        | A list of subnets that the Lambda's and the database have access to for working with Cumulus.                                                | ["subnet-12345", "subnet-abc123"] |
 | `permissions_boundary_arn` | AWS ARN value of the permission boundary for the VPC account.                                                                                | "arn:aws:iam::1234567890:policy/NGAPShRoleBoundary" |
@@ -473,6 +473,7 @@ variables is shown in the table below.
 | `sqs_maximum_message_size`                            | number        | The limit of how many bytes a message can contain before Amazon SQS rejects it.                         | 262144 |
 | `staged_recovery_queue_message_retention_time_seconds`| number        | Number of seconds the staged-recovery-queue fifo SQS retains a message.                                 | 432000 |
 | `status_update_queue_message_retention_time_seconds`  | number        | Number of seconds the status_update_queue fifo SQS retains a message.                                   | 777600 |
+| `aws_profile`                                         | string        | AWS CLI Profile (configured via `aws configure`) to use for deployment.                                 | "default" |
 
 
 ## ORCA Module Outputs
