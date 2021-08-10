@@ -175,7 +175,8 @@ resource "aws_secretsmanager_secret_version" "drdb-host" {
 data "aws_iam_policy_document" "orca_kms_key_policy" {
   statement {
     sid = "orca_kms_policy"
-    actions = ["kms:Encrypt",
+    actions = [
+      "kms:Encrypt",
       "kms:Decrypt",
       "kms:ReEncrypt",
       "kms:GenerateDataKey*",
@@ -188,7 +189,8 @@ data "aws_iam_policy_document" "orca_kms_key_policy" {
       "kms:CancelKeyDeletion",
       "kms:DescribeKey",
       "kms:Get*",
-    "kms:List*"]
+      "kms:List*"
+      ]
     resources = ["*"]
     effect    = "Allow"
     principals {
