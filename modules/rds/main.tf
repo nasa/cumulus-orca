@@ -170,3 +170,38 @@ resource "aws_secretsmanager_secret_version" "drdb-host" {
   secret_string = aws_db_instance.postgresql.address
 }
 
+## KMS key policy
+## ====================================================================================================
+data "aws_iam_policy_document" "orca_kms_key_policy" {
+  statement {
+    sid = "orca_kms_policy"
+    actions = ["kms:Encrypt",
+      "kms:Decrypt",
+      "kms:ReEncrypt",
+      "kms:GenerateDataKey*",
+      "kms:CreateKey",
+      "kms:PutKeyPolicy",
+      "kms:UpdateKeyDescription",
+      "kms:DisableKey",
+      "kms:DisableKeyRotation",
+      "kms:ScheduleKeyDeletion",
+      "kms:CancelKeyDeletion",
+      "kms:DescribeKey",
+      "kms:Get*",
+    "kms:List*"]
+    resources = ["*"]
+    effect    = "Allow"
+    principals {
+      type = "AWS"
+      #currently defaulted to all AWS roles/users
+      identifiers = ["*"]
+    }
+  }
+}
+
+resource "aws_kms_key" "orca_kms_key" {
+  description             = "KMS key for secrets in order to avoid Snyk vulnerability."
+  deletion_window_in_days = 7 # range is between 7 and 30 days.
+  is_enabled              = true
+  policy                  = data.aws_iam_policy_document.orca_kms_key_policy.json
+}
