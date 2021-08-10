@@ -264,8 +264,8 @@ Hasura cloud service is not approved by NGAP, so it cannot be used for now. Howe
       "body": "{\"mirror\": {\"backward\": \"selppa\"}}"
     }
     ```
-  - Documentation at https://docs.graphene-python.org/ is unavailable.
   - Errors are not properly communicated, instead returning 200 with a "null" body.
+    - Could be fixed with further development.
 
 
 ### GraphQL IDE
@@ -288,15 +288,20 @@ The following tools might be useful for developers while working with GraphQL
 
 ### Recommendation
 While GraphQL is an interesting technology, the lack of documentation makes implementation difficult.
-In particular, deployment and integration lack vital instructions, with most tutorials running in a docker container or Python script rather than a realistic environment.
-Theoretically GraphQL could be run in an EC2 instance with some form of connecting layer such as [Fargate](https://aws.amazon.com/fargate/?whats-new-cards.sort-by=item.additionalFields.postDateTime&whats-new-cards.sort-order=desc&fargate-blogs.sort-by=item.additionalFields.createdDate&fargate-blogs.sort-order=desc) but this is untested and would need research and cost analysis.
+In particular, deployment and integration lack vital instructions, with most tutorials running in a docker container or a Python script rather than a realistic environment.
+At this time, I recommend not radically adjusting our architecture to work in a poorly documented and developed library, especially as we are likely to discover further pain-points.
+Even the one example that was functional in AWS had major flaws, such as a lack of proper error reporting, though this could be fixed with further development.
+Simply put, There would need to be significant research and development before our GraphQL functionality would reach our current level of database integration.
 
+### Future Options
 Should this be desired, I feel strongly that Graphene is the only known option that gives us the flexibility that is required to justify this level of adaptation.
 Research would be required for:
 - Ideal deployment method
-- Accessing API
+- Accessing API + Error Codes
 - Security
-- GraphQL UI
+- GraphQL UI for use in development
+
+Alternatively, GraphQL could theoretically be run in an EC2 instance managed by an orchestration service such as [Fargate](https://aws.amazon.com/fargate/?whats-new-cards.sort-by=item.additionalFields.postDateTime&whats-new-cards.sort-order=desc&fargate-blogs.sort-by=item.additionalFields.createdDate&fargate-blogs.sort-order=desc) with some form of connecting layer providing an API, but this is untested and would need research and cost analysis.
 
 ##### References
 - https://graphql.org/learn/queries/
