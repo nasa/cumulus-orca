@@ -301,6 +301,8 @@ Research would be required for:
 - Security
 - GraphQL UI for use in development
 
+If the above are resolved, then Graphene would give slight benefits to output-filtering, but would not be any less code or any more maintainable than a centralized DB library.
+
 Alternatively, GraphQL could theoretically be run in an EC2 instance managed by an orchestration service such as [Fargate](https://aws.amazon.com/fargate/?whats-new-cards.sort-by=item.additionalFields.postDateTime&whats-new-cards.sort-order=desc&fargate-blogs.sort-by=item.additionalFields.createdDate&fargate-blogs.sort-order=desc) with some form of connecting layer providing an API, but this is untested and would need research and cost analysis.
 
 ##### References
