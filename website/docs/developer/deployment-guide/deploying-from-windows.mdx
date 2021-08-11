@@ -93,7 +93,7 @@ This application will be used in future steps to authenticate users.
   Make sure that no extension is added.
   :::
 - Open a commandline in the same folder.
-    - Run `docker build -t orca .` and `docker run -it --rm -v pathToYourFolder:/CIRRUS-core orca /bin/bash`
+    - Run `docker volume create aws-creds` to create a persistent volume for your AWS configuration. Then run `docker build -t orca .` and `docker run -it --rm -v aws-creds:/root/.aws -v pathToYourFolder:/CIRRUS-core orca /bin/bash`
     - The commandline should now be inside a docker container.
       ```bash
       cd cumulus-orca-template-deploy/rds-cluster-tf/
