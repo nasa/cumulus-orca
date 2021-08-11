@@ -36,6 +36,7 @@ resource "aws_secretsmanager_secret" "db_login" {
   tags                    = local.tags
 }
 
+#Reference to Cumulus secretsmanager: https://github.com/nasa/cumulus/blob/35afbd2921e56ec2bea93f76809f26ca3340c996/tf-modules/cumulus-rds-tf/main.tf#L33
 resource "aws_secretsmanager_secret_version" "db_login" {
   secret_id  = aws_secretsmanager_secret.db_login.id
   depends_on = [aws_secretsmanager_secret.db_login]
