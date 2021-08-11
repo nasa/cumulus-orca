@@ -47,10 +47,12 @@ module "orca" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  database_app_user_pw = var.database_app_user_pw
-  orca_default_bucket  = var.orca_default_bucket
-  postgres_user_pw     = var.postgres_user_pw
-
+  orca_default_bucket   = var.orca_default_bucket
+  db_admin_username     = var.db_admin_username
+  db_admin_password     = var.db_admin_password
+  db_engine             = var.db_engine
+  db_cluster_identifier = var.db_cluster_identifier
+  db_host_endpoint      = var.db_host_endpoint
   ## OPTIONAL
   database_port                                        = var.database_port
   orca_ingest_lambda_memory_size                       = var.orca_ingest_lambda_memory_size
@@ -69,7 +71,6 @@ module "orca" {
   status_update_queue_message_retention_time_seconds   = var.status_update_queue_message_retention_time_seconds
 
   ## OPTIONAL (DO NOT CHANGE DEFAULT VALUES!)
-  database_app_user            = var.database_app_user
   database_name                = var.database_name
   orca_recovery_retrieval_type = var.orca_recovery_retrieval_type
 }

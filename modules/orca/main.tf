@@ -101,17 +101,16 @@ module "orca_workflows" {
 }
 
 
-## orca_rds - rds module
+## orca_secretsmanager - secretsmanager module
 ## =============================================================================
-module "orca_rds" {
-  source = "../rds"
+module "orca_secretsmanager" {
+  source = "../secretsmanager"
   ## --------------------------
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  aws_profile       = var.aws_profile
-  lambda_subnet_ids = var.lambda_subnet_ids
-  prefix            = var.prefix
+  aws_profile = var.aws_profile
+  prefix      = var.prefix
 
   ## OPTIONAL
   region = var.region
@@ -121,11 +120,11 @@ module "orca_rds" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  database_app_user_pw               = var.database_app_user_pw
-  db_deploy_arn                      = module.orca_lambdas.db_deploy_arn
-  db_deploy_source_code_hash         = module.orca_lambdas.db_deploy_source_code_hash
-  postgres_user_pw                   = var.postgres_user_pw
-  vpc_postgres_ingress_all_egress_id = module.orca_lambdas.vpc_postgres_ingress_all_egress_id
+  db_admin_username     = var.db_admin_username
+  db_admin_password     = var.db_admin_password
+  db_engine             = var.db_engine
+  db_cluster_identifier = var.db_cluster_identifier
+  db_host_endpoint      = var.db_host_endpoint
 
   ## OPTIONAL
   database_port = var.database_port
@@ -133,7 +132,6 @@ module "orca_rds" {
   ## OPTIONAL (DO NOT CHANGE DEFAULT VALUES!)
   database_name = var.database_name
 }
-
 
 ## orca_sqs - SQS module
 ## =============================================================================

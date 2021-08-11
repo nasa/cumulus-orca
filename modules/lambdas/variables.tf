@@ -124,11 +124,6 @@ variable "orca_recovery_retry_backoff" {
 }
 
 ## OPTIONAL (DO NOT CHANGE!) - Development use only
-variable "database_app_user" {
-  type        = string
-  description = "Name of the database application user."
-}
-
 
 variable "database_name" {
   type        = string

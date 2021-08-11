@@ -57,20 +57,6 @@ output "orca_lambda_post_copy_request_to_queue_arn" {
 ## No workflow outputs currently requested/needed
 
 
-## RDS Module Outputs (orca_rds)
-## =============================================================================
-output "orca_rds" {
-  description = "PostgreSQL database object. Used only for development validation."
-  value       = module.orca_rds.rds
-}
-
-
-output "orca_subnet_group" {
-  description = "PostgreSQL subnet group object. Used only for development validation."
-  value       = module.orca_rds.rds_subnet_group
-}
-
-
 ## SQS Module Outputs (orca_sqs)
 ## =============================================================================
 output "orca_sqs_staged_recovery_queue_arn" {

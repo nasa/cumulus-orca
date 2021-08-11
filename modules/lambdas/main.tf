@@ -268,9 +268,6 @@ resource "aws_lambda_function" "post_to_database" {
   environment {
     variables = {
       PREFIX           = var.prefix
-      DATABASE_PORT    = var.database_port
-      DATABASE_NAME    = var.database_name
-      APPLICATION_USER = var.database_app_user
     }
   }
 }
@@ -319,9 +316,6 @@ resource "aws_lambda_function" "request_status_for_granule" {
   environment {
     variables = {
       PREFIX        = var.prefix
-      DATABASE_PORT = var.database_port
-      DATABASE_NAME = var.database_name
-      DATABASE_USER = var.database_app_user
     }
   }
 }
@@ -352,9 +346,6 @@ resource "aws_lambda_function" "request_status_for_job" {
   environment {
     variables = {
       PREFIX        = var.prefix
-      DATABASE_PORT = var.database_port
-      DATABASE_NAME = var.database_name
-      DATABASE_USER = var.database_app_user
     }
   }
 }
@@ -381,9 +372,6 @@ resource "aws_lambda_function" "post_copy_request_to_queue" {
   environment {
     variables = {
       PREFIX             = var.prefix
-      DATABASE_PORT      = var.database_port
-      DATABASE_NAME      = var.database_name
-      APPLICATION_USER   = var.database_app_user
       DB_QUEUE_URL       = var.orca_sqs_status_update_queue_id
       RECOVERY_QUEUE_URL = var.orca_sqs_staged_recovery_queue_id
       MAX_RETRIES        = var.orca_recovery_retry_limit
@@ -474,9 +462,6 @@ resource "aws_lambda_function" "db_deploy" {
   environment {
     variables = {
       PREFIX           = var.prefix
-      DATABASE_PORT    = var.database_port
-      DATABASE_NAME    = var.database_name
-      APPLICATION_USER = var.database_app_user
       ADMIN_USER       = "postgres"
       ADMIN_DATABASE   = "postgres"
     }

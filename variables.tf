@@ -72,23 +72,35 @@ variable "tags" {
 
 ## Variables unique to ORCA
 ## REQUIRED
-variable "database_app_user_pw" {
+
+variable "db_admin_username" {
+  description = "Username for RDS database administrator authentication"
   type        = string
-  description = "ORCA application database user password."
+}
+variable "db_admin_password" {
+  description = "Password for RDS database administrator authentication"
+  type        = string
 }
 
+variable "db_engine" {
+  description = "Name of the DB engine."
+  type        = string
+  default     = "aurora-postgresql" #Reference: https://github.com/nasa/cumulus/blob/35afbd2921e56ec2bea93f76809f26ca3340c996/tf-modules/cumulus-rds-tf/main.tf#L59
+}
 
+variable "db_cluster_identifier" {
+  type        = string
+  description = "DB Itentifier for the RDS cluster that will be created."
+}
+
+variable "db_host_endpoint" {
+  type        = string
+  description = "Database host endpoint to connect to."
+}
 variable "orca_default_bucket" {
   type        = string
   description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
 }
-
-
-variable "postgres_user_pw" {
-  type        = string
-  description = "postgres database user password."
-}
-
 
 ## OPTIONAL
 variable "database_port" {
@@ -195,11 +207,6 @@ variable "status_update_queue_message_retention_time_seconds" {
 
 
 ## OPTIONAL (DO NOT CHANGE!) - Development use only
-variable "database_app_user" {
-  type        = string
-  description = "Name of the database application user."
-  default     = "orcauser"
-}
 
 
 variable "database_name" {
