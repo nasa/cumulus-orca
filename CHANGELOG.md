@@ -17,7 +17,7 @@ and includes an additional section for migration notes.
 ## [Unreleased]
 
 ### Changed
-- *ORCA-236* 'aws-profile' is no longer required in terraform.tfvars. Will default to `default`.
+- *ORCA-236* 'aws_profile' is no longer required in terraform.tfvars. Will default to `default`.
 
 ## [v3.0.0] 2021-07-12
 
