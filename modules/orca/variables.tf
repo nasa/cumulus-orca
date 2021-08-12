@@ -74,32 +74,37 @@ variable "db_admin_username" {
   description = "Username for RDS database administrator authentication"
   type        = string
 }
+variable "database_admin_name" {
+  description = "Name of RDS database administrator authentication"
+  type        = string
+}
+variable "db_admin_password" {
+  description = "Password for RDS database administrator authentication"
+  type        = string
+}
+variable "database_user_name" {
+  description = "Name of RDS database user authentication"
+  type        = string
+}
 
+variable "db_user_username" {
+  description = "Username for RDS database user authentication"
+  type        = string
+}
+variable "db_user_password" {
+  description = "Password for RDS database user authentication"
+  type        = string
+}
+variable "db_host_endpoint" {
+  type        = string
+  description = "Database host endpoint to connect to."
+}
 
 variable "orca_default_bucket" {
   type        = string
   description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
 }
 
-variable "db_admin_password" {
-  description = "Password for RDS database administrator authentication"
-  type        = string
-}
-
-variable "db_engine" {
-  description = "Name of the DB engine."
-  type        = string
-}
-
-variable "db_cluster_identifier" {
-  type        = string
-  description = "DB Itentifier for the RDS cluster that will be created."
-}
-
-variable "db_host_endpoint" {
-  type        = string
-  description = "Database host endpoint to connect to."
-}
 ## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
 variable "database_port" {
   type        = number

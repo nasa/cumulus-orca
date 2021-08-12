@@ -66,7 +66,6 @@ module "orca_lambdas" {
   orca_recovery_retry_backoff          = var.orca_recovery_retry_backoff
 
   ## OPTIONAL (DO NOT CHANGE DEFAULT VALUES!)
-  database_app_user            = var.database_app_user
   database_name                = var.database_name
   orca_recovery_retrieval_type = var.orca_recovery_retrieval_type
 }
@@ -120,11 +119,15 @@ module "orca_secretsmanager" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
+  database_admin_name = var.database_admin_name
   db_admin_username     = var.db_admin_username
   db_admin_password     = var.db_admin_password
-  db_engine             = var.db_engine
-  db_cluster_identifier = var.db_cluster_identifier
+  database_user_name = var.database_user_name
+  db_user_username = var.db_user_username
+  db_user_password = var.db_user_password
   db_host_endpoint      = var.db_host_endpoint
+  db_deploy_arn        = module.orca_lambdas.db_deploy_arn
+  db_deploy_source_code_hash         = module.orca_lambdas.db_deploy_source_code_hash
 
   ## OPTIONAL
   database_port = var.database_port

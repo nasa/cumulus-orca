@@ -13,7 +13,6 @@ provider "aws" {
   region  = var.region
   profile = var.aws_profile
 }
-
 # Local Variables
 locals {
   tags = merge(var.tags, { Deployment = var.prefix })
@@ -24,6 +23,25 @@ locals {
 
 ## Resources
 
+## =============================================================================
+## NULL RESOURCES - 1x Use
+## =============================================================================
+
+## bootstrap - Bootstrap lambda that creates/modifies database objects on deploys
+## =============================================================================
+# https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource
+# https://www.terraform.io/docs/language/resources/provisioners/local-exec.html
+resource "null_resource" "bootstrap" {
+  # Determine what has to change to trigger this resource being created/re-created.
+  triggers = {
+    bootstrap_lambda_hash = var.db_deploy_source_code_hash
+  }
+
+  # Execute the db_deploy lambda 1 time if the resource is created/re-created.
+  provisioner "local-exec" {
+    command = "aws lambda invoke --function-name ${var.db_deploy_arn} ${local.used_profile} --region ${var.region} 'db_deploy-response.out'"
+  }
+}
 ## =============================================================================
 ## SECRET MANAGER RESOURCES
 ## =============================================================================
@@ -41,13 +59,15 @@ resource "aws_secretsmanager_secret_version" "db_login" {
   secret_id  = aws_secretsmanager_secret.db_login.id
   depends_on = [aws_secretsmanager_secret.db_login]
   secret_string = jsonencode({
-    username            = var.db_admin_username
-    password            = var.db_admin_password
-    database            = var.database_name
-    engine              = var.db_engine
-    host                = var.db_host_endpoint
-    port                = var.database_port
-    dbClusterIdentifier = var.db_cluster_identifier
+    admin_username = var.db_admin_username
+    admin_password = var.db_admin_password
+    admin_database = var.database_admin_name
+    user_username  = var.db_user_username
+    user_password  = var.db_user_password
+    user_database  = var.database_user_name
+    host           = var.db_host_endpoint
+    port           = var.database_port
+    tags           = local.tags
   })
 }
 ## KMS key policy

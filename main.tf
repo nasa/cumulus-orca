@@ -47,12 +47,14 @@ module "orca" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  orca_default_bucket   = var.orca_default_bucket
-  db_admin_username     = var.db_admin_username
-  db_admin_password     = var.db_admin_password
-  db_engine             = var.db_engine
-  db_cluster_identifier = var.db_cluster_identifier
-  db_host_endpoint      = var.db_host_endpoint
+  orca_default_bucket = var.orca_default_bucket
+  database_admin_name = var.database_admin_name
+  db_admin_username   = var.db_admin_username
+  db_admin_password   = var.db_admin_password
+  database_user_name  = var.database_user_name
+  db_user_username    = var.db_user_username
+  db_user_password    = var.db_user_password
+  db_host_endpoint    = var.db_host_endpoint
   ## OPTIONAL
   database_port                                        = var.database_port
   orca_ingest_lambda_memory_size                       = var.orca_ingest_lambda_memory_size

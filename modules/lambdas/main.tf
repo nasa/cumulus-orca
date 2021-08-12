@@ -462,8 +462,6 @@ resource "aws_lambda_function" "db_deploy" {
   environment {
     variables = {
       PREFIX           = var.prefix
-      ADMIN_USER       = "postgres"
-      ADMIN_DATABASE   = "postgres"
     }
   }
 }
