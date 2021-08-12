@@ -124,10 +124,11 @@ The variables must be set with the proper values in the `terraform.tfvavrs` file
 
 :::note Optional Cumulus Values
 
-aws_profile should be set if using an aws_profile other than `default` for Cumulus' deployment.
+Though optional, it is recommended that you also set the `aws_profile` variable. The
+default value for `aws_profile` is set to `default` for running the `db_deploy` lambda.
 
 Though optional, it is recommended that you also set the `region` variable. The
-default value for `region` is set to `us-west-2` in the ORCA module.
+default value for `region` is set to `us-west-2` for running the `db_deploy` lambda.
 
 The `tags` value automatically adds a *Deployment* tag like the Cumulus
 deployment.
