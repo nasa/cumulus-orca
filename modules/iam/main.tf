@@ -9,13 +9,6 @@ terraform {
 }
 
 
-## AWS Provider Settings
-provider "aws" {
-  region  = var.region
-  profile = var.aws_profile
-}
-
-
 ## Local Variables
 locals {
   all_bucket_names  = length(var.orca_recovery_buckets) > 0 ? var.orca_recovery_buckets : [for k, v in var.buckets : v.name]
