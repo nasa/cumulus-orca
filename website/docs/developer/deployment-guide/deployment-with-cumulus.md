@@ -58,7 +58,6 @@ module "orca" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  aws_profile              = var.aws_profile
   buckets                  = var.buckets
   lambda_subnet_ids        = var.lambda_subnet_ids
   permissions_boundary_arn = var.permissions_boundary_arn
@@ -68,8 +67,9 @@ module "orca" {
   workflow_config          = module.cumulus.workflow_config
 
   ## OPTIONAL
-  region = var.region
-  tags   = var.tags
+  aws_profile = var.aws_profile
+  region      = var.region
+  tags        = var.tags
 
   ## --------------------------
   ## ORCA Variables
@@ -115,7 +115,6 @@ required by the ORCA module. More information about setting these variables can
 be found in the [Cumulus variable definitions](https://github.com/nasa/cumulus/blob/master/tf-modules/cumulus/variables.tf).
 The variables must be set with the proper values in the `terraform.tfvavrs` file.
 
-- aws_profile
 - buckets
 - lambda_subnet_ids
 - permissions_boundary_arn
@@ -124,6 +123,8 @@ The variables must be set with the proper values in the `terraform.tfvavrs` file
 - vpc_id
 
 :::note Optional Cumulus Values
+
+aws_profile should be set if using an aws_profile other than `default` for Cumulus' deployment.
 
 Though optional, it is recommended that you also set the `region` variable. The
 default value for `region` is set to `us-west-2` in the ORCA module.
