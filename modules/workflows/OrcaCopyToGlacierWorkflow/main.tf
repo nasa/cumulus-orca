@@ -1,10 +1,3 @@
-## AWS Provider Settings
-provider "aws" {
-  region  = var.region
-  profile = var.aws_profile
-}
-
-
 ## Local Variables
 locals {
   tags = merge(var.tags, { Deployment = var.prefix })

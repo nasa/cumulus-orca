@@ -1,10 +1,3 @@
-## AWS Provider Settings
-provider "aws" {
-  region  = var.region
-  profile = var.aws_profile
-}
-
-
 ## Local Variables
 locals {
   tags = merge(var.tags, { Deployment = var.prefix }, { team = "ORCA", application = "ORCA" })
@@ -19,7 +12,6 @@ module "orca" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  aws_profile              = var.aws_profile
   buckets                  = var.buckets
   lambda_subnet_ids        = var.lambda_subnet_ids
   permissions_boundary_arn = var.permissions_boundary_arn
@@ -29,8 +21,9 @@ module "orca" {
   workflow_config          = var.workflow_config
 
   ## OPTIONAL
-  region = var.region
-  tags   = local.tags
+  aws_profile = var.aws_profile
+  region      = var.region
+  tags        = local.tags
 
   ## --------------------------
   ## ORCA Variables
