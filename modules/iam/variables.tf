@@ -29,7 +29,7 @@ variable "tags" {
 ## REQUIRED
 
 
-## OPTIONAL - Default variable value is set in ../main.tf to disallow any modification.
+## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
 variable "orca_recovery_buckets" {
   type        = list(string)
   description = "List of bucket names that ORCA has permissions to restore data to."

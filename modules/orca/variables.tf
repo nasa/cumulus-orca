@@ -49,7 +49,7 @@ variable "workflow_config" {
 }
 
 
-## OPTIONAL - Default variable value is set in ../main.tf to disallow any modification.
+## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
 variable "aws_profile" {
   type        = string
   description = "AWS profile used to deploy the terraform application."
@@ -88,7 +88,7 @@ variable "postgres_user_pw" {
 }
 
 
-## OPTIONAL - Default variable value is set in ../main.tf to disallow any modification.
+## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
 variable "database_port" {
   type        = number
   description = "Database port that PostgreSQL traffic will be allowed on."
