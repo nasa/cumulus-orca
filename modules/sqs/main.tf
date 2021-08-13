@@ -1,13 +1,3 @@
-## Terraform Requirements
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = ">= 3.5.0"
-    }
-  }
-}
-
 ## Local Variables
 locals {
   tags = merge(var.tags, { Deployment = var.prefix })
