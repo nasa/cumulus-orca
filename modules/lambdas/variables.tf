@@ -45,7 +45,7 @@ variable "orca_default_bucket" {
 }
 
 
-## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
+## OPTIONAL - Default variable value is set in ../main.tf to disallow any modification.
 variable "database_port" {
   type        = number
   description = "Database port that PostgreSQL traffic will be allowed on."

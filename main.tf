@@ -51,7 +51,7 @@ module "orca" {
   status_update_queue_message_retention_time_seconds   = var.status_update_queue_message_retention_time_seconds
 
   ## OPTIONAL (DO NOT CHANGE DEFAULT VALUES!)
-  database_app_user            = var.database_app_user
-  database_name                = var.database_name
-  orca_recovery_retrieval_type = var.orca_recovery_retrieval_type
+  database_app_user            = "orcauser"
+  database_name                = "disaster_recovery"
+  orca_recovery_retrieval_type = "Standard"
 }

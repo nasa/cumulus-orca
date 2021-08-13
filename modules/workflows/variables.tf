@@ -24,7 +24,7 @@ variable "workflow_config" {
 }
 
 
-## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
+## OPTIONAL - Default variable value is set in ../main.tf to disallow any modification.
 variable "tags" {
   type        = map(string)
   description = "Tags to be applied to resources that support tags."

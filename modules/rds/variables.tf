@@ -19,7 +19,7 @@ variable "prefix" {
 }
 
 
-## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
+## OPTIONAL - Default variable value is set in ../main.tf to disallow any modification.
 variable "region" {
   type        = string
   description = "AWS region to deploy configuration to."
@@ -63,7 +63,7 @@ variable "vpc_postgres_ingress_all_egress_id" {
 }
 
 
-## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
+## OPTIONAL - Default variable value is set in ../main.tf to disallow any modification.
 variable "database_port" {
   type        = number
   description = "Database port that PostgreSQL traffic will be allowed on."
@@ -71,7 +71,7 @@ variable "database_port" {
 
 
 ## OPTIONAL (DO NOT CHANGE!) - Development use only
-## Default variable value is set in ../variables.tf to keep default values centralized.
+## Default variable value is set in ../main.tf to disallow any modification.
 variable "database_name" {
   type        = string
   description = "Name of the ORCA database in PostgreSQL"

@@ -193,25 +193,3 @@ variable "status_update_queue_message_retention_time_seconds" {
   description = "The number of seconds status_update_queue SQS retains a message in seconds. Maximum value is 14 days."
   default     = 777600 #9 days
 }
-
-
-## OPTIONAL (DO NOT CHANGE!) - Development use only
-variable "database_app_user" {
-  type        = string
-  description = "Name of the database application user."
-  default     = "orcauser"
-}
-
-
-variable "database_name" {
-  type        = string
-  description = "Name of the ORCA database in PostgreSQL"
-  default     = "disaster_recovery"
-}
-
-
-variable "orca_recovery_retrieval_type" {
-  type        = string
-  description = "AWS glacier recovery type to use. One of Bulk, Standard, Express."
-  default     = "Standard"
-}
