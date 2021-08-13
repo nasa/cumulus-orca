@@ -28,7 +28,7 @@ def get_configuration() -> Dict[str, str]:
         AWS_REGION (str): AWS reserved runtime variable used to set boto3 client region.
 
     Parameter Store:
-        <prefix>-orca-db-login-secret (string): The password for the application user (APPLICATION_USER).
+        <prefix>-orca-db-login-secret (string): The json string containing all the admin and user db login info.
     ```
 
     Args:

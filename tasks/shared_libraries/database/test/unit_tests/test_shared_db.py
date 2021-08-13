@@ -3,13 +3,13 @@ Name: test_shared_db.py
 
 Description: Runs unit tests for the shared_db.py library.
 """
-# import shared_db
 from moto import mock_secretsmanager
 from sqlalchemy.engine import URL
 import boto3
 import unittest
 from unittest.mock import Mock, call, patch, MagicMock
 import os
+import json
 import shared_db
 
 
@@ -27,14 +27,9 @@ class TestSharedDatabseLibraries(unittest.TestCase):
         """
         self.mock_sm.start()
         self.test_sm = boto3.client("secretsmanager", region_name="us-west-2")
+        self.secretstring = '{"admin_database":"admin_db", "admin_password":"admin123", "admin_username":"admin", "host":"aws.postgresrds.host", "port":5432, "user_database":"user_db", "user_password":"user123", "user_username":"user"}'
         self.test_sm.create_secret(
-            Name="orcatest-drdb-host", SecretString="aws.postgresrds.host"
-        )
-        self.test_sm.create_secret(
-            Name="orcatest-drdb-admin-pass", SecretString="MySecretAdminPassword"
-        )
-        self.test_sm.create_secret(
-            Name="orcatest-drdb-user-pass", SecretString="MySecretUserPassword"
+            Name="orcatest-orca-db-login-secret", SecretString=self.secretstring
         )
 
     def tearDown(self):
@@ -47,11 +42,6 @@ class TestSharedDatabseLibraries(unittest.TestCase):
         os.environ,
         {
             "PREFIX": "orcatest",
-            "DATABASE_NAME": "disaster_recovery",
-            "DATABASE_PORT": "5432",
-            "APPLICATION_USER": "orcauser",
-            "ADMIN_USER": "postgres",
-            "ADMIN_DATABASE": "postgres",
             "AWS_REGION": "us-west-2",
         },
         clear=True,
@@ -60,22 +50,9 @@ class TestSharedDatabseLibraries(unittest.TestCase):
         """
         Testing the rainbows and bunnies path of this call.
         """
-        check_config = {
-            "host": "aws.postgresrds.host",
-            "port": "5432",
-            "database": "disaster_recovery",
-            "admin_database": "postgres",
-            "app_user": "orcauser",
-            "admin_user": "postgres",
-            "app_user_password": "MySecretUserPassword",
-            "admin_user_password": "MySecretAdminPassword",
-        }
-
         testing_config = shared_db.get_configuration()
 
-        for key in check_config:
-            self.assertIn(key, testing_config)
-            self.assertEqual(check_config[key], testing_config[key])
+        self.assertEqual(json.loads(self.secretstring), testing_config)
 
     def test_get_configuration_no_prefix(self):
         """
@@ -108,108 +85,6 @@ class TestSharedDatabseLibraries(unittest.TestCase):
         os.environ,
         {
             "PREFIX": "orcatest",
-            "DATABASE_NAME": "disaster_recovery",
-            "DATABASE_PORT": "5432",
-            "APPLICATION_USER": "orcauser",
-            "ADMIN_USER": "postgres",
-            "ADMIN_DATABASE": "postgres",
-            "AWS_REGION": "us-west-2",
-        },
-        clear=True,
-    )
-    def test_get_configuration_bad_env_required(self):
-        """
-        Validate an error is thrown if an expected environment variable is not
-        is not set.
-        """
-        env_names = [
-            "DATABASE_NAME",
-            "DATABASE_PORT",
-            "APPLICATION_USER",
-        ]
-        env_bad_values = [None, ""]
-
-        for name in env_names:
-            good_value = os.getenv(name)
-            for bad_value in env_bad_values:
-                with self.subTest(
-                    name=name, bad_value=bad_value, good_value=good_value
-                ):
-                    # Set the variable to the bad value and create the message
-                    if bad_value is None:
-                        del os.environ[name]
-                    else:
-                        os.environ[name] = bad_value
-
-                    message = f"Environment variable {name} is not set and is required"
-
-                    # Run the test
-                    with self.assertRaises(Exception) as ex:
-                        shared_db.get_configuration()
-                        self.assertEquals(ex.message, message)
-
-                    # Reset the value
-                    os.environ[name] = good_value
-
-    @patch.dict(
-        os.environ,
-        {
-            "PREFIX": "orcatest",
-            "DATABASE_NAME": "disaster_recovery",
-            "DATABASE_PORT": "5432",
-            "APPLICATION_USER": "orcauser",
-            "ADMIN_USER": "postgres",
-            "ADMIN_DATABASE": "postgres",
-            "AWS_REGION": "us-west-2",
-        },
-        clear=True,
-    )
-    @patch("shared_db.logger")
-    def test_get_configuration_bad_env_optional(self, mock_logger: MagicMock):
-        """
-        Validate an error is thrown if an expected environment variable is not
-        is not set.
-        """
-        env_names = [
-            "ADMIN_USER",
-            "ADMIN_DATABASE",
-        ]
-        env_bad_values = [None, ""]
-
-        for name in env_names:
-            good_value = os.getenv(name)
-            for bad_value in env_bad_values:
-                with self.subTest(
-                    name=name, bad_value=bad_value, good_value=good_value
-                ):
-
-                    # Set the variable to the bad value and create the message
-                    if bad_value is None:
-                        del os.environ[name]
-                    else:
-                        os.environ[name] = bad_value
-
-                    message = f"Setting variable {name} value to postgres"
-
-                    # Run the test
-                    test_config = shared_db.get_configuration()
-
-                    # Check log message and default value set
-                    mock_logger.info.assert_called_with(message)
-                    self.assertEqual(test_config[name.lower()], "postgres")
-
-                    # Reset the value for the next loop
-                    os.environ[name] = good_value
-
-    @patch.dict(
-        os.environ,
-        {
-            "PREFIX": "orcatest",
-            "DATABASE_NAME": "disaster_recovery",
-            "DATABASE_PORT": "5432",
-            "APPLICATION_USER": "orcauser",
-            "ADMIN_USER": "postgres",
-            "ADMIN_DATABASE": "postgres",
             "AWS_REGION": "us-west-2",
         },
         clear=True,
@@ -218,39 +93,27 @@ class TestSharedDatabseLibraries(unittest.TestCase):
         """
         Validates a secret is thrown if a secretmanager ID is invalid.
         """
-        secret_keys = [
-            "orcatest-drdb-host",
-            "orcatest-drdb-admin-pass",
-            "orcatest-drdb-user-pass",
-        ]
+        secret_key = "orcatest-orca-db-login-secret"
         message = "Failed to retrieve secret manager value."
 
-        for secret_key in secret_keys:
-            with self.subTest(secret_key=secret_key):
-                # Delete the key
-                self.test_sm.delete_secret(
+        self.test_sm.delete_secret(
                     SecretId=secret_key, ForceDeleteWithoutRecovery=True
                 )
 
-                # Run the test
-                with self.assertRaises(Exception) as ex:
-                    shared_db.get_configuration()
-                    self.assertEquals(ex.message, message)
+        # Run the test
+        with self.assertRaises(Exception) as ex:
+            shared_db.get_configuration()
+            self.assertEquals(ex.message, message)
 
-                # Recreate the key
-                self.test_sm.create_secret(
-                    Name=secret_key, SecretString="Some-Value-Here"
+        # Recreate the key
+        self.test_sm.create_secret(
+            Name=secret_key, SecretString="Some-Value-Here"
                 )
 
     @patch.dict(
         os.environ,
         {
             "PREFIX": "orcatest",
-            "DATABASE_NAME": "disaster_recovery",
-            "DATABASE_PORT": "5432",
-            "APPLICATION_USER": "orcauser",
-            "ADMIN_USER": "postgres",
-            "ADMIN_DATABASE": "postgres",
             "AWS_REGION": "us-west-2",
         },
         clear=True,
@@ -262,18 +125,18 @@ class TestSharedDatabseLibraries(unittest.TestCase):
         """
         root_db_call = {
             "host": "aws.postgresrds.host",
-            "port": "5432",
-            "database": "postgres",
-            "username": "postgres",
-            "password": "MySecretAdminPassword",
+            "port": 5432,
+            "database": "admin_db",
+            "username": "admin",
+            "password": "admin123"
         }
 
         user_db_call = {
             "host": "aws.postgresrds.host",
-            "port": "5432",
+            "port": 5432,
             "database": "disaster_recovery",
-            "username": "postgres",
-            "password": "MySecretAdminPassword",
+            "username": "admin",
+            "password": "admin123"
         }
 
         config = shared_db.get_configuration()
@@ -288,11 +151,6 @@ class TestSharedDatabseLibraries(unittest.TestCase):
         os.environ,
         {
             "PREFIX": "orcatest",
-            "DATABASE_NAME": "disaster_recovery",
-            "DATABASE_PORT": "5432",
-            "APPLICATION_USER": "orcauser",
-            "ADMIN_USER": "postgres",
-            "ADMIN_DATABASE": "postgres",
             "AWS_REGION": "us-west-2",
         },
         clear=True,
@@ -304,10 +162,10 @@ class TestSharedDatabseLibraries(unittest.TestCase):
         """
         user_db_call = {
             "host": "aws.postgresrds.host",
-            "port": "5432",
-            "database": "disaster_recovery",
-            "username": "orcauser",
-            "password": "MySecretUserPassword",
+            "port": 5432,
+            "database": "user_db",
+            "username": "user",
+            "password": "user123",
         }
 
         config = shared_db.get_configuration()
@@ -319,11 +177,6 @@ class TestSharedDatabseLibraries(unittest.TestCase):
         os.environ,
         {
             "PREFIX": "orcatest",
-            "DATABASE_NAME": "disaster_recovery",
-            "DATABASE_PORT": "5432",
-            "APPLICATION_USER": "orcauser",
-            "ADMIN_USER": "postgres",
-            "ADMIN_DATABASE": "postgres",
             "AWS_REGION": "us-west-2",
         },
         clear=True,
@@ -335,10 +188,10 @@ class TestSharedDatabseLibraries(unittest.TestCase):
         """
         user_db_call = {
             "host": "aws.postgresrds.host",
-            "port": "5432",
-            "database": "disaster_recovery",
-            "username": "orcauser",
-            "password": "MySecretUserPassword",
+            "port": 5432,
+            "database": "user_db",
+            "username": "user",
+            "password": "user123",
         }
 
         user_db_url = URL.create(drivername="postgresql", **user_db_call)
