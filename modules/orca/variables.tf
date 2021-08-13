@@ -177,7 +177,7 @@ variable "status_update_queue_message_retention_time_seconds" {
 }
 
 ## OPTIONAL (DO NOT CHANGE!) - Development use only
-## Default variable value is set in ../variables.tf to keep default values centralized.
+## Default variable value is set in ../main.tf to disallow any modification.
 variable "database_app_user" {
   type        = string
   description = "Name of the database application user."

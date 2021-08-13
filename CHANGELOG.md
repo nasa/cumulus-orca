@@ -15,6 +15,8 @@ and includes an additional section for migration notes.
 
 
 ## [Unreleased]
+### Removed
+- *ORCA-240* Removed development-only variables from variables.tf
 
 
 ## [v3.0.0] 2021-07-12
