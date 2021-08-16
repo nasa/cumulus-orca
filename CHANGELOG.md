@@ -16,6 +16,10 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 
+### Added
+- *ORCA-227* Added modules/secretsmanager directory that contains terraform code for deploying AWS secretsmanager.
+### Removed
+- The `modules/rds` directory is removed since ORCA will utilize the Cumulus DB.
 
 ## [v3.0.0] 2021-07-12
 
@@ -180,7 +184,6 @@ See the documentation for specifics on the various files and changes specified b
 ### Removed
 - The `request_status` lambda under */tasks* is removed since it is replaced by the `requests_status_for_job` 
   and `request_status_for_granule` lambdas. The terraform modules, shell scripts and variables related to the lambda are also removed.
-- The `modules/rds` directory is removed since ORCA will utilize the Cumulus DB.
 
 ### Fixed
 - Updated IAM policies to better include all buckets by type instead of looking at the bucket variable key name.
@@ -211,8 +214,6 @@ the copy_to_glacier lambda). See how to configure this for your collections [her
   * Configured in a collection.meta configuration
 * *ORCA-67* Generalize input/output scheme of copy_to_glacier lambda so it can be used more easily
 in a Cumulus workflow.
-* *ORCA-227* Update tf and deployment instructions for shared postgres db.
-  * Added modules/secretsmanager directory that contains terraform code for deploying AWS secretsmanager.
 
 ### Changed
 * *ORCA-68* Update DB tests to use mocking instead of real Postgres DB.
