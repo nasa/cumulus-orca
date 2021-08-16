@@ -425,11 +425,15 @@ The following variables should be present in the `cumulus-tf/orca_variables.tf`
 file. The variables must be set with proper values for your environment in the
 `cumulus-tf/terraform.tfvars` file.
 
-| Variable               | Definition                                    | Example Value                 |
-| ---------------------- | --------------------------------------------- | ----------------------------- |
-| `database_app_user_pw` | ORCA application database user password.      | "My_Sup3rS3cr3t_App_Passw0rd" |
-| `orca_default_bucket`  | Default ORCA S3 Glacier bucket to use.        | "PREFIX-orca-primary"         |
-| `postgres_user_pw`     | PostgreSQL *postgres* database user password. | "My_Sup3rS3cr3t_R00tPassw0rd" |
+| Variable               | Definition                                              | Example Value                 |
+| ---------------------- | --------------------------------------------- ----------| ----------------------------- |
+| `db_admin_username`    | Username for RDS database administrator authentication. | "admin"                       |
+| `database_admin_name`  | Name of RDS database administrator authentication       | "postgres"                    |
+| `db_admin_password`    | Password for RDS database administrator authentication  | "My_Sup3rS3cr3t_admin_Passw0rd"|
+| `orca_default_bucket`  | Default ORCA S3 Glacier bucket to use.                  | "PREFIX-orca-primary"         |
+| `database_user_name`   | Name of RDS database user authentication                | "orcadb"                      |
+| `db_user_username`     | Username for RDS database user authentication           | "orcauser"                    |
+| `db_user_password`     | Password for RDS database user authentication           | "My_Sup3rS3cr3tuserPassw0rd"  |
 
 
 ### Optional Variables
@@ -491,17 +495,6 @@ accessed using terraform dot syntax in the format of `module.orca.variable_name`
 | `orca_lambda_request_status_for_job_arn`             | AWS ARN of the ORCA request_status_for_job lambda. |
 | `orca_lambda_post_copy_request_to_queue_arn`         | AWS ARN of the ORCA post_copy_request_to_queue lambda. |
 | `orca_lambda_orca_catalog_reporting_arn`             | AWS ARN of the ORCA orca_catalog_reporting lambda. |
-| `orca_rds_address`                                   | The address of the RDS instance |
-| `orca_rds_arn`                                       | The ARN of the RDS instance |
-| `orca_rds_availability_zone`                         | The availability zone of the RDS instance |
-| `orca_rds_endpoint`                                  | The connection endpoint in address:port format |
-| `orca_rds_hosted_zone_id`                            | The canonical hosted zone ID of the DB instance (to be used in a Route 53 Alias record) |
-| `orca_rds_id`                                        | The RDS instance ID |
-| `orca_rds_resource_id`                               | The RDS Resource ID of this instance |
-| `orca_rds_status`                                    | The RDS instance status |
-| `orca_rds_name`                                      | The database name |
-| `orca_rds_username`                                  | The master username for the database |
-| `orca_rds_port`                                      | The database port |
 | `orca_subnet_group_id`                               | The ORCA database subnet group name |
 | `orca_subnet_group_arn`                              | The ARN of the ORCA database subnet group |
 | `orca_sqs_staged_recovery_queue_arn`                 | The ARN of the staged-recovery-queue SQS |

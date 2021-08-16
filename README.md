@@ -134,10 +134,13 @@ First, run a `mv terraform.tfvars.example terraform.tfvars` to get a template `t
 * `internal_bucket` - Analogous to the Cumulus internal bucket 
 * `protected_bucket` - Analogous to the Cumulus protected bucket
 * `permissions_boundary_arn` - Permission Boundary Arn (Policy) for NGAP compliance
-* `postgres_user_pw` - password for the postgres user
-* `database_name` - disaster_recovery
-* `database_app_user` - druser 
-* `database_app_user_pw` - the password for the application user
+* `db_admin_username` -  Username for RDS database administrator authentication.
+* `database_admin_name` - Name of RDS database administrator authentication 
+* `db_admin_password` - Password for RDS database administrator authentication
+* `database_user_name` - Name of RDS database user authentication
+* `db_user_username` - Username for RDS database user authentication 
+* `db_user_password` - Password for RDS database user authentication  
+
 
 **Optional:**
 * `prefix` - Prefix that will be pre-pended to resource names created by terraform. 
@@ -218,10 +221,12 @@ module "orca" {
   prefix = var.prefix
   subnet_ids = module.ngap.ngap_subnets_ids
   database_port = "5432"
-  database_user_pw = var.database_user_pw
-  database_name = var.database_name
-  database_app_user = var.database_app_user
-  database_app_user_pw = var.database_app_user_pw
+  database_admin_name = var.database_admin_name
+  db_admin_username   = var.db_admin_username
+  db_admin_password   = var.db_admin_password
+  database_user_name  = var.database_user_name
+  db_user_username    = var.db_user_username
+  db_user_password    = var.db_user_password
   ddl_dir = "ddl/"
   drop_database = "False"
   platform = "AWS"
@@ -243,19 +248,25 @@ module "orca" {
 To support this module, you'll have to add the following values to your `cumulus-tf/variables.tf` file:
 ```
 # Variables specific to ORCA
-variable "database_user_pw" {
+variable "database_admin_name" {
   type = string
 }
 
-variable "database_name" {
+variable "db_admin_username" {
   type = string
 }
 
-variable "database_app_user" {
+variable "db_admin_password" {
   type = string
 }
 
-variable "database_app_user_pw" {
+variable "database_user_name" {
+  type = string
+}
+variable "db_user_username" {
+  type = string
+}
+variable "db_user_password" {
   type = string
 }
 ```

@@ -7,7 +7,8 @@ Description: Shared library for database objects needed by the various libraries
 import os
 import boto3
 import json
-from sqlalchemy import create_engine
+import time
+from sqlalchemy import create_engine, exc
 from sqlalchemy.engine import URL
 from sqlalchemy.future import Engine
 from cumulus_logger import CumulusLogger
@@ -15,7 +16,10 @@ from typing import Any, List, Dict, Optional, Union
 
 # instantiate CumulusLogger
 logger = CumulusLogger(name="orca")
-
+# number of retries for db connection
+retries = 3
+#sleep time for retries
+sleep_time =3
 
 def get_configuration() -> Dict[str, str]:
     """
@@ -147,3 +151,25 @@ def get_user_connection(config: Dict[str, str]) -> Engine:
     )
 
     return connection
+
+
+def begin_engine_with_error_handling(engine):
+    for retry in range(retries):
+        try:
+            engine.begin()
+            break
+        except exc.OperationalError as err:
+            logger.error(f"Failed to begin the engine due to {err}. Retrying {retry+1} time(s) after sleeping for {sleep_time} seconds.")
+            continue
+    return engine.begin()
+
+def execute_connection_with_error_handling(connection, sql, parameters):
+    for retry in range(retries):
+        try:
+            connection.execute(sql, parameters)
+            break
+        except exc.OperationalError as err:
+            time.sleep(sleep_time)
+            logger.error(f"Failed to execute the query due to {err}. Retrying {retry+1} time(s) after sleeping for {sleep_time} seconds ")
+            continue
+    return connection.execute(sql, parameters)

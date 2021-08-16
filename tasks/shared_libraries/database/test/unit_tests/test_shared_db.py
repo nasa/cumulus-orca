@@ -96,9 +96,7 @@ class TestSharedDatabseLibraries(unittest.TestCase):
         secret_key = "orcatest-orca-db-login-secret"
         message = "Failed to retrieve secret manager value."
 
-        self.test_sm.delete_secret(
-                    SecretId=secret_key, ForceDeleteWithoutRecovery=True
-                )
+        self.test_sm.delete_secret(SecretId=secret_key, ForceDeleteWithoutRecovery=True)
 
         # Run the test
         with self.assertRaises(Exception) as ex:
@@ -106,9 +104,7 @@ class TestSharedDatabseLibraries(unittest.TestCase):
             self.assertEquals(ex.message, message)
 
         # Recreate the key
-        self.test_sm.create_secret(
-            Name=secret_key, SecretString="Some-Value-Here"
-                )
+        self.test_sm.create_secret(Name=secret_key, SecretString="Some-Value-Here")
 
     @patch.dict(
         os.environ,
@@ -128,7 +124,7 @@ class TestSharedDatabseLibraries(unittest.TestCase):
             "port": 5432,
             "database": "admin_db",
             "username": "admin",
-            "password": "admin123"
+            "password": "admin123",
         }
 
         user_db_call = {
@@ -136,7 +132,7 @@ class TestSharedDatabseLibraries(unittest.TestCase):
             "port": 5432,
             "database": "disaster_recovery",
             "username": "admin",
-            "password": "admin123"
+            "password": "admin123",
         }
 
         config = shared_db.get_configuration()
@@ -195,6 +191,19 @@ class TestSharedDatabseLibraries(unittest.TestCase):
         }
 
         user_db_url = URL.create(drivername="postgresql", **user_db_call)
-
         user_db_creds = shared_db._create_connection(**user_db_call)
         mock_connection.assert_called_once_with(user_db_url, future=True)
+
+    def test_begin_engine_with_error_handling(self):
+        """
+        Tests begin_engine_with_error_handling function. Returns exception when engine.begin() has issues after retries.
+        """
+        connection_credentials = {
+            "host": "aws.postgresrds.host",
+            "port": 5432,
+            "database": "user_db",
+            "username": "",
+            "password": "user123",
+        }
+        engine = shared_db._create_connection(**connection_credentials)
+        self.assertRaises(Exception, shared_db.begin_engine_with_error_handling, engine)
