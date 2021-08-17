@@ -29,7 +29,7 @@ resource "null_resource" "bootstrap" {
 ## =============================================================================
 
 resource "aws_secretsmanager_secret" "db_login" {
-  description             = "Admin password to be used for the Aurora PostgreSQL DB"
+  description             = "AWS secret to be used for the Aurora PostgreSQL DB"
   kms_key_id              = aws_kms_key.orca_kms_key.arn
   name                    = "${var.prefix}-orca-db-login-secret"
   recovery_window_in_days = 0
