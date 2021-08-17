@@ -18,8 +18,9 @@ from typing import Any, List, Dict, Optional, Union
 logger = CumulusLogger(name="orca")
 # number of retries for db connection
 retries = 3
-#sleep time for retries
-sleep_time =3
+# sleep time for retries
+sleep_time = 3
+
 
 def get_configuration() -> Dict[str, str]:
     """
@@ -67,11 +68,17 @@ def get_configuration() -> Dict[str, str]:
         logger.debug("Creating secretsmanager resource.")
         secretsmanager = boto3.client("secretsmanager", region_name=aws_region)
 
-        logger.debug("Retrieving db login info for both user and admin as a dictionary.")
-        config = json.loads(secretsmanager.get_secret_value(
-            SecretId=f"{prefix}-orca-db-login-secret"
-        )["SecretString"])
-        logger.debug("Successfully retrieved db login info for both user and admin as a dictionary.")
+        logger.debug(
+            "Retrieving db login info for both user and admin as a dictionary."
+        )
+        config = json.loads(
+            secretsmanager.get_secret_value(SecretId=f"{prefix}-orca-db-login-secret")[
+                "SecretString"
+            ]
+        )
+        logger.debug(
+            "Successfully retrieved db login info for both user and admin as a dictionary."
+        )
     except Exception as e:
         logger.critical("Failed to retrieve secret.", exc_info=True)
         raise Exception("Failed to retrieve secret manager value.")
@@ -123,7 +130,7 @@ def get_admin_connection(config: Dict[str, str], database: str = None) -> Engine
         port=config["port"],
         database=admin_database,
         username=config["admin_username"],
-        password=config["admin_password"]
+        password=config["admin_password"],
     )
 
     return connection
@@ -159,9 +166,12 @@ def begin_engine_with_error_handling(engine):
             engine.begin()
             break
         except exc.OperationalError as err:
-            logger.error(f"Failed to begin the engine due to {err}. Retrying {retry+1} time(s) after sleeping for {sleep_time} seconds.")
+            logger.error(
+                f"Failed to begin the engine due to {err}. Retrying {retry+1} time(s) after sleeping for {sleep_time} seconds."
+            )
             continue
     return engine.begin()
+
 
 def execute_connection_with_error_handling(connection, sql, parameters):
     for retry in range(retries):
@@ -170,6 +180,8 @@ def execute_connection_with_error_handling(connection, sql, parameters):
             break
         except exc.OperationalError as err:
             time.sleep(sleep_time)
-            logger.error(f"Failed to execute the query due to {err}. Retrying {retry+1} time(s) after sleeping for {sleep_time} seconds ")
+            logger.error(
+                f"Failed to execute the query due to {err}. Retrying {retry+1} time(s) after sleeping for {sleep_time} seconds "
+            )
             continue
     return connection.execute(sql, parameters)

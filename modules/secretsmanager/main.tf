@@ -1,24 +1,6 @@
-## Terraform Requirements
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = ">= 3.5.0"
-    }
-  }
-}
-
-# AWS Provider Settings
-provider "aws" {
-  region  = var.region
-  profile = var.aws_profile
-}
 # Local Variables
 locals {
   tags = merge(var.tags, { Deployment = var.prefix })
-  # Ignore aws profile in case this was deployed with CI or in a machine without
-  # aws profile defined
-  used_profile = contains([var.aws_profile], "default") ? "" : "--profile ${var.aws_profile}"
 }
 
 ## Resources
@@ -39,7 +21,7 @@ resource "null_resource" "bootstrap" {
 
   # Execute the db_deploy lambda 1 time if the resource is created/re-created.
   provisioner "local-exec" {
-    command = "aws lambda invoke --function-name ${var.db_deploy_arn} ${local.used_profile} --region ${var.region} 'db_deploy-response.out'"
+    command = "aws lambda invoke --function-name ${var.db_deploy_arn} 'db_deploy-response.out'"
   }
 }
 ## =============================================================================

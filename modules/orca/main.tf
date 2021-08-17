@@ -86,13 +86,10 @@ module "orca_secretsmanager" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  aws_profile = var.aws_profile
   prefix      = var.prefix
 
   ## OPTIONAL
-  region = var.region
   tags   = local.tags
-
   ## --------------------------
   ## ORCA Variables
   ## --------------------------
