@@ -15,6 +15,8 @@ and includes an additional section for migration notes.
 
 
 ## [Unreleased]
+### Removed
+- *ORCA-240* Removed development-only variables from variables.tf
 
 ### Added
 - *ORCA-227* Added modules/secretsmanager directory that contains terraform code for deploying AWS secretsmanager.

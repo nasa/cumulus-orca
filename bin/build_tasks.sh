@@ -17,23 +17,8 @@ if [ ! -d "awslambda-psycopg2" ]; then
 fi
 cd ../../
 
-TASK='tasks/copy_to_glacier/'
-echo "Building `pwd`/${TASK}"
-cd "`pwd`/${TASK}"
-rm -rf build
-mkdir build
-source ../../venv/bin/activate
-pip install -q -t build -r requirements.txt --trusted-host pypi.org --trusted-host pypi.org --trusted-host files.pythonhosted.org
-deactivate
-cp *.py build/
-cd build
-zip -qr "../copy_to_glacier.zip" .
-cd ..
-rm -rf build
-cd ../../
-
 failure=0
-for TASK in $(ls -d tasks/* | egrep -v "copy_to_glacier$|package|dr_dbutils|pg_utils|shared_libraries")
+for TASK in $(ls -d tasks/* | egrep -v "package|dr_dbutils|pg_utils|shared_libraries")
 do
   echo "Building ${TASK}"
   cd ${TASK}

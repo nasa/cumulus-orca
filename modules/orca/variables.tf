@@ -1,12 +1,6 @@
-# Variables obtained by Cumulus deployment
-# Should exist in https://github.com/nasa/cumulus-template-deploy/blob/master/cumulus-tf/variables.tf
-# REQUIRED
-variable "aws_profile" {
-  type        = string
-  description = "AWS profile used to deploy the terraform application."
-}
-
-
+## Variables obtained by Cumulus deployment
+## Should exist in https://github.com/nasa/cumulus-template-deploy/blob/master/cumulus-tf/variables.tf
+## REQUIRED
 variable "buckets" {
   type        = map(object({ name = string, type = string }))
   description = "S3 bucket locations for the various storage types being used."

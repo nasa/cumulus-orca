@@ -1,21 +1,3 @@
-## Terraform Requirements
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = ">= 3.5.0"
-    }
-  }
-}
-
-
-## AWS Provider Settings
-provider "aws" {
-  profile = var.aws_profile
-  region  = var.region
-}
-
-
 ## Local Variables
 locals {
   tags = merge(var.tags, { Deployment = var.prefix })
@@ -32,7 +14,6 @@ module "orca_lambdas" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  aws_profile                       = var.aws_profile
   buckets                           = var.buckets
   lambda_subnet_ids                 = var.lambda_subnet_ids
   permissions_boundary_arn          = var.permissions_boundary_arn
@@ -40,7 +21,6 @@ module "orca_lambdas" {
   vpc_id                            = var.vpc_id
   orca_sqs_staged_recovery_queue_id = module.orca_sqs.orca_sqs_staged_recovery_queue_id
   ## OPTIONAL
-  region = var.region
   tags   = local.tags
 
   ## --------------------------
@@ -79,13 +59,11 @@ module "orca_workflows" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  aws_profile     = var.aws_profile
   prefix          = var.prefix
   system_bucket   = var.system_bucket
   workflow_config = var.workflow_config
 
   ## OPTIONAL
-  region = var.region
   tags   = local.tags
 
   ## --------------------------
@@ -144,11 +122,9 @@ module "orca_sqs" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  aws_profile = var.aws_profile
   prefix      = var.prefix
 
   ## OPTIONAL
-  region = var.region
   tags   = local.tags
 
   ## --------------------------

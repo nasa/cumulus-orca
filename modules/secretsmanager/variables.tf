@@ -73,7 +73,7 @@ variable "db_host_endpoint" {
 }
 
 ## OPTIONAL (DO NOT CHANGE!) - Development use only
-## Default variable value is set in ../variables.tf to keep default values centralized.
+## Default variable value is set in ../main.tf to disallow any modification.
 variable "database_name" {
   type        = string
   description = "Name of the ORCA database in PostgreSQL"
