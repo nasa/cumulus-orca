@@ -74,12 +74,6 @@ variable "tags" {
 ## Variables unique to ORCA
 ## REQUIRED
 
-variable "db_admin_username" {
-  description = "Username for RDS database administrator authentication"
-  type        = string
-  default     = "postgres"
-}
-
 variable "db_admin_password" {
   description = "Password for RDS database administrator authentication"
   type        = string
@@ -101,6 +95,12 @@ variable "orca_default_bucket" {
 }
 
 ## OPTIONAL
+
+variable "db_admin_username" {
+  description = "Username for RDS database administrator authentication"
+  type        = string
+  default     = "postgres"
+}
 
 variable "orca_ingest_lambda_memory_size" {
   type        = number

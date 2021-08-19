@@ -429,17 +429,20 @@ file. The variables must be set with proper values for your environment in the
 
 | Variable               | Definition                                              | Example Value                 |
 | ---------------------- | --------------------------------------------- ----------| ----------------------------- |
-| `db_admin_username`    | Username for RDS database administrator authentication. | "postgres"                    |
 | `db_admin_password`    | Password for RDS database administrator authentication  | "My_Sup3rS3cr3t_admin_Passw0rd"|
+| `db_host_endpoint`     | Database host endpoint to connect to.                   | "aws.postgresrds.host"        |
 | `db_user_password`     | Password for RDS database user authentication           | "My_Sup3rS3cr3tuserPassw0rd"  |
 | `orca_default_bucket`  | Default ORCA S3 Glacier bucket to use.                  | "PREFIX-orca-primary"         |
-| `db_host_endpoint`     | Database host endpoint to connect to.                   | "aws.postgresrds.host"        |
 
 
 ### Optional Variables
 
-The following variables are optional for the ORCA module and can be set by the
+The following variable is optional for the ORCA module and can be set by the
 end user to better adjust ORCA for their specific environment.
+
+| Variable               | Definition                                              | Example Value                 |
+| ---------------------- | --------------------------------------------- ----------| ----------------------------- |
+| `db_admin_username`    | Username for RDS database administrator authentication. | "postgres"                    |
 
 #### Cumulus Optional Variables
 

@@ -129,17 +129,14 @@ First, run a `mv terraform.tfvars.example terraform.tfvars` to get a template `t
 * `ngap_subnets` - NGAP Subnets (array)
 * `vpc_id` - ID of VPC to place resources in - recommended that this be a private VPC (or at least one with restricted access).
 * `glacier_bucket` - Bucket with Glacier policy
-* `public_bucket` - Bucket with public permissions (Cumulus public bucket)
-* `private_bucket` - Bucket with private permissions (Cumulus private bucket)
-* `internal_bucket` - Analogous to the Cumulus internal bucket 
-* `protected_bucket` - Analogous to the Cumulus protected bucket
+* `buckets` - AWS S3 bucket mapping used for Cumulus and ORCA configuration.
 * `permissions_boundary_arn` - Permission Boundary Arn (Policy) for NGAP compliance
-* `db_admin_username` -  Username for RDS database administrator authentication.
 * `db_admin_password` - Password for RDS database administrator authentication
 * `db_user_password` - Password for RDS database user authentication  
 
 
 **Optional:**
+* `db_admin_username` -  Username for RDS database administrator authentication.
 * `prefix` - Prefix that will be pre-pended to resource names created by terraform. 
   Defaults to `dr`.
 * `profile` - AWS CLI Profile (configured via `aws configure`) to use. 

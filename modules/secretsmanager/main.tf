@@ -22,7 +22,7 @@ resource "aws_secretsmanager_secret_version" "db_login" {
   secret_id  = aws_secretsmanager_secret.db_login.id
   depends_on = [aws_secretsmanager_secret.db_login]
   secret_string = jsonencode({
-    admin_username = "var.db_admin_username"
+    admin_username = var.db_admin_username
     admin_password = var.db_admin_password
     admin_database = "postgres"
     user_username  = "orcauser"

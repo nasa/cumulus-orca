@@ -28,7 +28,6 @@ variable "db_host_endpoint" {
   description = "Database host endpoint to connect to."
 }
 
-## OPTIONAL (DO NOT CHANGE!) - Development use only
 ## Default variable value is set in ../main.tf to disallow any modification.
 
 variable "db_admin_username" {

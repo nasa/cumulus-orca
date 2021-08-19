@@ -124,12 +124,6 @@ variable "orca_recovery_retry_backoff" {
 
 ## OPTIONAL (DO NOT CHANGE!) - Development use only
 
-variable "orca_recovery_retrieval_type" {
-  type        = string
-  description = "AWS glacier recovery type to use. One of Bulk, Standard, Express."
-  default     = "Standard"
-}
-
 variable "orca_sqs_staged_recovery_queue_id" {
   type        = string
   description = "SQS URL of recovery queue."

@@ -19,6 +19,7 @@ from typing import Any, List, Dict, Optional, Union
 logger = CumulusLogger(name="orca")
 RETRIES = 3  # number of times to retry.
 BACKOFF_FACTOR = 2  # Value of the factor used to backoff
+INITIAL_BACKOFF_IN_SECONDS = 1  # Number of seconds to sleep the first time through.
 
 
 def get_configuration() -> Dict[str, str]:
@@ -171,7 +172,6 @@ def execute_connection_with_error_handling(engine, sql: str, parameters: Dict):
     Returns
         A ResultProxy?? Reference: https://docs.sqlalchemy.org/en/13/core/connections.html
     """
-    INITIAL_BACKOFF_IN_SECONDS = 1  # Number of seconds to sleep the first time through.
     for retry in range(RETRIES + 1):
         try:
             with engine.begin() as connection:
@@ -182,7 +182,7 @@ def execute_connection_with_error_handling(engine, sql: str, parameters: Dict):
                 "Failed to execute the query due to {err}. Retrying {retry} time(s)"
             )
             logger.error(message, err=err, retry=retry + 1)
-            INITIAL_BACKOFF_IN_SECONDS = exponential_delay(
+            backoff_in_seconds = exponential_delay(
                 INITIAL_BACKOFF_IN_SECONDS, BACKOFF_FACTOR
             )
             continue
@@ -208,7 +208,7 @@ def exponential_delay(base_delay: int, exponential_backoff: int = 2) -> int:
         _base_delay = int(base_delay)
         _exponential_backoff = int(exponential_backoff)
         delay = _base_delay + (random.randint(0, 1000) / 1000.0)  # nosec
-        logger.debug(f"Performing back off retry sleeping {delay} seconds")
+        logger.debug("Performing back off retry sleeping {delay} seconds", delay=delay)
         time.sleep(delay)
         return _base_delay * _exponential_backoff
     except ValueError as ve:
