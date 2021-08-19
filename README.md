@@ -214,7 +214,7 @@ Navigate to `cumulus-tf/main.tf` within your Cumulus deployment directory and ad
 ```
 module "orca" {
   source = "https://github.com/ghrcdaac/operational-recovery-cloud-archive/releases/download/1.0.2/orca-1.0.2.zip"
-
+  
   ## --------------------------
   ## Cumulus Variables
   ## --------------------------
@@ -256,10 +256,8 @@ module "orca" {
   sqs_maximum_message_size                             = var.sqs_maximum_message_size
   staged_recovery_queue_message_retention_time_seconds = var.staged_recovery_queue_message_retention_time_seconds
   status_update_queue_message_retention_time_seconds   = var.status_update_queue_message_retention_time_seconds
-
-  ## OPTIONAL (DO NOT CHANGE DEFAULT VALUES!)
-  orca_recovery_retrieval_type = "Standard"
 }
+
 ```
 
 *Note*: This above snippet assumes that you've configured your Cumulus deployment. More information on that process can be found in their [documentation](https://nasa.github.io/cumulus/docs/deployment/deployment-readme#configure-and-deploy-the-cumulus-tf-root-module)
