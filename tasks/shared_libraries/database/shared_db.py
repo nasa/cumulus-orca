@@ -17,9 +17,8 @@ from typing import Any, List, Dict, Optional, Union
 
 # instantiate CumulusLogger
 logger = CumulusLogger(name="orca")
-RETRIES = 3 # number of times to retry.
-BACKOFF_FACTOR = 2 # Value of the factor used to backoff
-INITIAL_BACKOFF_IN_SECONDS = 1 # Number of seconds to sleep the first time through.
+RETRIES = 3  # number of times to retry.
+BACKOFF_FACTOR = 2  # Value of the factor used to backoff
 
 
 def get_configuration() -> Dict[str, str]:
@@ -160,50 +159,37 @@ def get_user_connection(config: Dict[str, str]) -> Engine:
     return connection
 
 
-def begin_engine_with_error_handling(engine: Engine):
-    """
-    Creates a connection engine to the database.
-
-    Args:
-        engine: The sqlalchemy engine to use for contacting the database.
-
-    Returns
-        A Connection object delivering a sqlalchemy.engine.base.Connection.
-    """
-    for retry in range(RETRIES):
-        try:
-            engine.begin()
-            break
-        except exc.OperationalError as err:
-            INITIAL_BACKOFF_IN_SECONDS = exponential_delay(INITIAL_BACKOFF_IN_SECONDS, BACKOFF_FACTOR)
-            message = "Failed to begin the engine due to {err}. Retrying {retry+1} time(s) after waiting for {INITIAL_BACKOFF_IN_SECONDS} seconds"
-            logger.error(message, err=err, retry=retry, INITIAL_BACKOFF_IN_SECONDS= INITIAL_BACKOFF_IN_SECONDS)
-            continue
-    return engine.begin()
-
-
-def execute_connection_with_error_handling(connection, sql: str, parameters: Dict):
+def execute_connection_with_error_handling(engine, sql: str, parameters: Dict):
     """
     Executes an SQL query from the database using the connection engine.
 
     Args:
-        connection: Connection object delivering a sqlalchemy.engine.base.Connection.
+        engine: The sqlalchemy engine to use for contacting the database.
         sql: SQL query to execute
         parameters: A dictionary
 
     Returns
         A ResultProxy?? Reference: https://docs.sqlalchemy.org/en/13/core/connections.html
     """
-    for retry in range(RETRIES):
+    INITIAL_BACKOFF_IN_SECONDS = 1  # Number of seconds to sleep the first time through.
+    for retry in range(RETRIES + 1):
         try:
-            connection.execute(sql, parameters)
+            with engine.begin() as connection:
+                connection.execute(sql, parameters)
             break
         except exc.OperationalError as err:
-            INITIAL_BACKOFF_IN_SECONDS = exponential_delay(INITIAL_BACKOFF_IN_SECONDS, BACKOFF_FACTOR)
-            message = "Failed to execute the query due to {err}. Retrying {retry+1} time(s) after waiting for {INITIAL_BACKOFF_IN_SECONDS} seconds"
-            logger.error(message, err=err, retry=retry)
+            message = (
+                "Failed to execute the query due to {err}. Retrying {retry} time(s)"
+            )
+            logger.error(message, err=err, retry=retry + 1)
+            INITIAL_BACKOFF_IN_SECONDS = exponential_delay(
+                INITIAL_BACKOFF_IN_SECONDS, BACKOFF_FACTOR
+            )
             continue
-    return connection.execute(sql, parameters)
+    else:
+        message = f"Failed to execute the query after {RETRIES} retries."
+        logger.error(message)
+        raise Exception(message)
 
 
 # Define our exponential delay function

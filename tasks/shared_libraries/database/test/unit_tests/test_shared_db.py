@@ -194,9 +194,9 @@ class TestSharedDatabseLibraries(unittest.TestCase):
         user_db_creds = shared_db._create_connection(**user_db_call)
         mock_connection.assert_called_once_with(user_db_url, future=True)
 
-    def test_begin_engine_with_error_handling(self):
+    def test_execute_connection_with_error_handling(self):
         """
-        Tests begin_engine_with_error_handling function. Returns exception when engine.begin() has issues after retries.
+        Tests execute_connection_with_error_handling function. Raises exception when connection.execute() has issues after retries.
         """
         connection_credentials = {
             "host": "aws.postgresrds.host",
@@ -206,4 +206,31 @@ class TestSharedDatabseLibraries(unittest.TestCase):
             "password": "user123",
         }
         engine = shared_db._create_connection(**connection_credentials)
-        self.assertRaises(Exception, shared_db.begin_engine_with_error_handling, engine)
+
+        sql = "SHOW TABLES"
+        parameters = {"Test": 1}
+        with self.assertRaises(Exception) as ex:
+            shared_db.execute_connection_with_error_handling(engine, sql, parameters)
+        error_message = "Failed to execute the query after 3 retries."
+        self.assertEqual(error_message, ex.exception.args[0])
+
+    def test_exponential_delay(self):
+        """
+        tests delay function. Raises Exception when args are non-integer
+        """
+        base_delay_values = [2, "non-integer"]
+        exponential_backoff_values = ["non-integer", 2]
+
+        for i in range(2):
+            base_delay = base_delay_values[i]
+            exponential_backoff = exponential_backoff_values[i]
+            self.assertRaises(
+                ValueError, shared_db.exponential_delay, base_delay, exponential_backoff
+            )
+
+        base_delay = 2
+        exponential_backoff = 2
+        self.assertEqual(
+            shared_db.exponential_delay(base_delay, exponential_backoff),
+            base_delay * exponential_backoff,
+        )
