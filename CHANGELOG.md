@@ -17,11 +17,18 @@ and includes an additional section for migration notes.
 ## [Unreleased]
 ### Removed
 - *ORCA-240* Removed development-only variables from variables.tf
+- The `modules/rds` directory is removed since ORCA will utilize the Cumulus DB.
 
 ### Added
 - *ORCA-227* Added modules/secretsmanager directory that contains terraform code for deploying AWS secretsmanager.
-### Removed
-- The `modules/rds` directory is removed since ORCA will utilize the Cumulus DB.
+
+### Migration
+- The following variable names have been changed:
+  - postgres_user_pw-> db_admin_password
+  - database_app_user_pw-> db_user_password
+- These are the new variables added:
+  - db_admin_username (defaults to "postgres")
+  - db_host_endpoint
 
 ## [v3.0.0] 2021-07-12
 

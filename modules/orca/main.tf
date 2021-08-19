@@ -21,7 +21,7 @@ module "orca_lambdas" {
   vpc_id                            = var.vpc_id
   orca_sqs_staged_recovery_queue_id = module.orca_sqs.orca_sqs_staged_recovery_queue_id
   ## OPTIONAL
-  tags   = local.tags
+  tags = local.tags
 
   ## --------------------------
   ## ORCA Variables
@@ -31,9 +31,12 @@ module "orca_lambdas" {
   orca_sqs_staged_recovery_queue_arn = module.orca_sqs.orca_sqs_staged_recovery_queue_arn
   orca_sqs_status_update_queue_id    = module.orca_sqs.orca_sqs_status_update_queue_id
   orca_sqs_status_update_queue_arn   = module.orca_sqs.orca_sqs_status_update_queue_arn
+  region                             = var.region
+  aws_profile                        = var.aws_profile
+  db_deploy_arn                      = module.orca_lambdas.db_deploy_arn
+  db_deploy_source_code_hash         = module.orca_lambdas.db_deploy_source_code_hash
 
   ## OPTIONAL
-  database_port                        = var.database_port
   orca_ingest_lambda_memory_size       = var.orca_ingest_lambda_memory_size
   orca_ingest_lambda_timeout           = var.orca_ingest_lambda_timeout
   orca_recovery_buckets                = var.orca_recovery_buckets
@@ -44,10 +47,6 @@ module "orca_lambdas" {
   orca_recovery_retry_limit            = var.orca_recovery_retry_limit
   orca_recovery_retry_interval         = var.orca_recovery_retry_interval
   orca_recovery_retry_backoff          = var.orca_recovery_retry_backoff
-
-  ## OPTIONAL (DO NOT CHANGE DEFAULT VALUES!)
-  database_name                = var.database_name
-  orca_recovery_retrieval_type = var.orca_recovery_retrieval_type
 }
 
 
@@ -64,7 +63,7 @@ module "orca_workflows" {
   workflow_config = var.workflow_config
 
   ## OPTIONAL
-  tags   = local.tags
+  tags = local.tags
 
   ## --------------------------
   ## ORCA Variables
@@ -86,31 +85,21 @@ module "orca_secretsmanager" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  prefix      = var.prefix
+  prefix = var.prefix
 
   ## OPTIONAL
-  tags   = local.tags
+  tags = local.tags
   ## --------------------------
   ## ORCA Variables
   ## --------------------------
-  ## REQUIRED
-  database_admin_name = var.database_admin_name
-  db_admin_username     = var.db_admin_username
-  db_admin_password     = var.db_admin_password
-  database_user_name = var.database_user_name
-  db_user_username = var.db_user_username
-  db_user_password = var.db_user_password
-  db_host_endpoint      = var.db_host_endpoint
-  db_deploy_arn        = module.orca_lambdas.db_deploy_arn
-  db_deploy_source_code_hash         = module.orca_lambdas.db_deploy_source_code_hash
+  ## REQUIRED  
+  db_admin_password = var.db_admin_password
+  db_user_password  = var.db_user_password
+  db_host_endpoint  = var.db_host_endpoint
 
   ## OPTIONAL
-  database_port = var.database_port
-
-  ## OPTIONAL (DO NOT CHANGE DEFAULT VALUES!)
-  database_name = var.database_name
+  db_admin_username = var.db_admin_username
 }
-
 ## orca_sqs - SQS module
 ## =============================================================================
 module "orca_sqs" {
@@ -119,10 +108,10 @@ module "orca_sqs" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  prefix      = var.prefix
+  prefix = var.prefix
 
   ## OPTIONAL
-  tags   = local.tags
+  tags = local.tags
 
   ## --------------------------
   ## ORCA Variables

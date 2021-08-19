@@ -72,3 +72,9 @@ output "orca_sqs_status_update_queue_id" {
   description = "The URL ID of the status-update-queue SQS"
   value       = module.orca.orca_sqs_status_update_queue_id
 }
+## Secretsmanager Module outputs
+## =============================================================================
+output "orca_secretsmanager_arn" {
+  description = "The Amazon Resource Name (ARN) of the AWS secretsmanager"
+  value       = module.orca.orca_secretsmanager_arn
+}

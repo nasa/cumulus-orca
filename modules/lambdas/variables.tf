@@ -5,8 +5,6 @@ variable "buckets" {
   type        = map(object({ name = string, type = string }))
   description = "S3 bucket locations for the various storage types being used."
 }
-
-
 variable "lambda_subnet_ids" {
   type        = list(string)
   description = "List of subnets the lambda functions have access to."
@@ -36,6 +34,25 @@ variable "tags" {
   description = "Tags to be applied to resources that support tags."
 }
 
+# variables needed by bootstrap lambda. Remove in ORCA-243
+variable "aws_profile" {
+  type        = string
+  description = "AWS profile used to deploy the terraform application."
+}
+variable "db_deploy_arn" {
+  type        = string
+  description = "AWS ARN of the db_deploy lambda used to create/modify the DB."
+}
+variable "region" {
+  type        = string
+  description = "AWS region to deploy configuration to."
+}
+
+variable "db_deploy_source_code_hash" {
+  type        = string
+  description = "Base 64 SHA-256 hash of the db_deploy lambda used to create/modify the DB."
+}
+
 
 ## Variables unique to ORCA
 ## REQUIRED
@@ -46,11 +63,6 @@ variable "orca_default_bucket" {
 
 
 ## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
-variable "database_port" {
-  type        = number
-  description = "Database port that PostgreSQL traffic will be allowed on."
-}
-
 
 variable "orca_ingest_lambda_memory_size" {
   type        = number
@@ -112,14 +124,10 @@ variable "orca_recovery_retry_backoff" {
 
 ## OPTIONAL (DO NOT CHANGE!) - Development use only
 
-variable "database_name" {
-  type        = string
-  description = "Name of the ORCA database in PostgreSQL"
-}
-
 variable "orca_recovery_retrieval_type" {
   type        = string
   description = "AWS glacier recovery type to use. One of Bulk, Standard, Express."
+  default     = "Standard"
 }
 
 variable "orca_sqs_staged_recovery_queue_id" {

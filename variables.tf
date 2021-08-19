@@ -4,7 +4,7 @@
 variable "aws_profile" {
   type        = string
   description = "AWS profile used to deploy the terraform application."
-  default = null
+  default     = null
 }
 
 
@@ -73,29 +73,18 @@ variable "tags" {
 
 ## Variables unique to ORCA
 ## REQUIRED
-variable "database_admin_name" {
-  description = "Name of RDS database administrator authentication"
-  type        = string
-}
+
 variable "db_admin_username" {
   description = "Username for RDS database administrator authentication"
   type        = string
+  default     = "postgres"
 }
+
 variable "db_admin_password" {
   description = "Password for RDS database administrator authentication"
   type        = string
 }
 
-variable "database_user_name" {
-  description = "Name of RDS database user authentication"
-  type        = string
-}
-
-variable "db_user_username" {
-  description = "Username for RDS database user authentication"
-  type        = string
-  default     = "orcauser"
-}
 variable "db_user_password" {
   description = "Password for RDS database user authentication"
   type        = string
@@ -105,18 +94,13 @@ variable "db_host_endpoint" {
   type        = string
   description = "Database host endpoint to connect to."
 }
+
 variable "orca_default_bucket" {
   type        = string
   description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
 }
 
 ## OPTIONAL
-variable "database_port" {
-  type        = number
-  description = "Database port that PostgreSQL traffic will be allowed on."
-  default     = 5432
-}
-
 
 variable "orca_ingest_lambda_memory_size" {
   type        = number
@@ -211,20 +195,4 @@ variable "status_update_queue_message_retention_time_seconds" {
   type        = number
   description = "The number of seconds status_update_queue SQS retains a message in seconds. Maximum value is 14 days."
   default     = 777600 #9 days
-}
-
-
-## OPTIONAL (DO NOT CHANGE!) - Development use only
-
-variable "database_name" {
-  type        = string
-  description = "Name of the ORCA database in PostgreSQL"
-  default     = "disaster_recovery"
-}
-
-
-variable "orca_recovery_retrieval_type" {
-  type        = string
-  description = "AWS glacier recovery type to use. One of Bulk, Standard, Express."
-  default     = "Standard"
 }

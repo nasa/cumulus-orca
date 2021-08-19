@@ -2,8 +2,31 @@
 locals {
   tags         = merge(var.tags, { Deployment = var.prefix })
   orca_buckets = [for k, v in var.buckets : v.name if v.type == "orca"]
+  # Ignore aws profile in case this was deployed with CI or in a machine without
+  # remove aws_profile in ORCA-243
+  used_profile = contains(["${var.aws_profile == null ? "" : var.aws_profile}"], "default") ? "" : "--profile ${var.aws_profile}"
 }
 
+## =============================================================================
+## NULL RESOURCES - 1x Use
+## =============================================================================
+
+## bootstrap - Bootstrap lambda that creates/modifies database objects on deploys
+## =============================================================================
+# https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource
+# https://www.terraform.io/docs/language/resources/provisioners/local-exec.html
+resource "null_resource" "bootstrap" {
+  # Determine what has to change to trigger this resource being created/re-created.
+  triggers = {
+    bootstrap_lambda_hash = var.db_deploy_source_code_hash
+  }
+
+  # Execute the db_deploy lambda 1 time if the resource is created/re-created.
+  # need to remove var.region in ORCA-243
+  provisioner "local-exec" {
+    command = "aws lambda invoke --function-name ${var.db_deploy_arn} ${local.used_profile} --region ${var.region} 'db_deploy-response.out'"
+  }
+}
 
 # # Referenced Modules
 # lambda_security_group - Security Groups module reference
@@ -14,15 +37,10 @@ module "lambda_security_group" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  prefix      = var.prefix
-  vpc_id      = var.vpc_id
+  prefix = var.prefix
+  vpc_id = var.vpc_id
   ## OPTIONAL
-  tags   = local.tags
-  ## --------------------------
-  ## ORCA Variables
-  ## --------------------------
-  ## OPTIONAL
-  database_port = var.database_port
+  tags = local.tags
 }
 
 # restore_object_arn - IAM module reference
@@ -37,7 +55,7 @@ module "restore_object_arn" {
   permissions_boundary_arn = var.permissions_boundary_arn
   prefix                   = var.prefix
   # OPTIONAL
-  tags   = local.tags
+  tags = local.tags
   # --------------------------
   # ORCA Variables
   # --------------------------
@@ -245,7 +263,7 @@ resource "aws_lambda_function" "post_to_database" {
 
   environment {
     variables = {
-      PREFIX           = var.prefix
+      PREFIX = var.prefix
     }
   }
 }
@@ -293,7 +311,7 @@ resource "aws_lambda_function" "request_status_for_granule" {
 
   environment {
     variables = {
-      PREFIX        = var.prefix
+      PREFIX = var.prefix
     }
   }
 }
@@ -323,7 +341,7 @@ resource "aws_lambda_function" "request_status_for_job" {
 
   environment {
     variables = {
-      PREFIX        = var.prefix
+      PREFIX = var.prefix
     }
   }
 }
@@ -439,7 +457,7 @@ resource "aws_lambda_function" "db_deploy" {
 
   environment {
     variables = {
-      PREFIX           = var.prefix
+      PREFIX = var.prefix
     }
   }
 }

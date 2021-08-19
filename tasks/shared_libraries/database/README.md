@@ -186,7 +186,7 @@ Note that the library relies on external items like the environment and AWS
 SecretsManager to get the proper values for creating the connection strings.
 
 When using this shared library in your code, the following environment
-variable must be set as part of your terraform configuration for your lambda.
+variables must be set as part of your terraform configuration for your lambda.
 The table below provides information on the variables that should be set along
 with the ORCA terraform variable to use when setting them in your terraform code
 in the environment block. Note that some variables are OPTIONAL.
@@ -194,6 +194,8 @@ in the environment block. Note that some variables are OPTIONAL.
 | Name             | Description                                                            | Terraform Variable    | Example Value |
 | ---------------- | ---------------------------------------------------------------------- | --------------------- | -------------     |
 | PREFIX           | Deployment prefix used to pull the proper AWS secret.                  | var.prefix            | dev               |
+| AWS_REGION       | AWS reserved runtime variable used to set boto3 client region.         | Set by AWS            | us-west-2         |
+
 
 The following is an example of the minimum environment variables that must be
 set as part of your terraform lambda environment configuration.

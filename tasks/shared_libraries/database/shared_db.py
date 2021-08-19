@@ -8,6 +8,7 @@ import os
 import boto3
 import json
 import time
+import random
 from sqlalchemy import create_engine, exc
 from sqlalchemy.engine import URL
 from sqlalchemy.future import Engine
@@ -16,10 +17,9 @@ from typing import Any, List, Dict, Optional, Union
 
 # instantiate CumulusLogger
 logger = CumulusLogger(name="orca")
-# number of retries for db connection
-retries = 3
-# sleep time for retries
-sleep_time = 3
+RETRIES = 3 # number of times to retry.
+BACKOFF_FACTOR = 2 # Value of the factor used to backoff
+INITIAL_BACKOFF_IN_SECONDS = 1 # Number of seconds to sleep the first time through.
 
 
 def get_configuration() -> Dict[str, str]:
@@ -160,28 +160,72 @@ def get_user_connection(config: Dict[str, str]) -> Engine:
     return connection
 
 
-def begin_engine_with_error_handling(engine):
-    for retry in range(retries):
+def begin_engine_with_error_handling(engine: Engine):
+    """
+    Creates a connection engine to the database.
+
+    Args:
+        engine: The sqlalchemy engine to use for contacting the database.
+
+    Returns
+        A Connection object delivering a sqlalchemy.engine.base.Connection.
+    """
+    for retry in range(RETRIES):
         try:
             engine.begin()
             break
         except exc.OperationalError as err:
-            logger.error(
-                f"Failed to begin the engine due to {err}. Retrying {retry+1} time(s) after sleeping for {sleep_time} seconds."
-            )
+            INITIAL_BACKOFF_IN_SECONDS = exponential_delay(INITIAL_BACKOFF_IN_SECONDS, BACKOFF_FACTOR)
+            message = "Failed to begin the engine due to {err}. Retrying {retry+1} time(s) after waiting for {INITIAL_BACKOFF_IN_SECONDS} seconds"
+            logger.error(message, err=err, retry=retry, INITIAL_BACKOFF_IN_SECONDS= INITIAL_BACKOFF_IN_SECONDS)
             continue
     return engine.begin()
 
 
-def execute_connection_with_error_handling(connection, sql, parameters):
-    for retry in range(retries):
+def execute_connection_with_error_handling(connection, sql: str, parameters: Dict):
+    """
+    Executes an SQL query from the database using the connection engine.
+
+    Args:
+        connection: Connection object delivering a sqlalchemy.engine.base.Connection.
+        sql: SQL query to execute
+        parameters: A dictionary
+
+    Returns
+        A ResultProxy?? Reference: https://docs.sqlalchemy.org/en/13/core/connections.html
+    """
+    for retry in range(RETRIES):
         try:
             connection.execute(sql, parameters)
             break
         except exc.OperationalError as err:
-            time.sleep(sleep_time)
-            logger.error(
-                f"Failed to execute the query due to {err}. Retrying {retry+1} time(s) after sleeping for {sleep_time} seconds "
-            )
+            INITIAL_BACKOFF_IN_SECONDS = exponential_delay(INITIAL_BACKOFF_IN_SECONDS, BACKOFF_FACTOR)
+            message = "Failed to execute the query due to {err}. Retrying {retry+1} time(s) after waiting for {INITIAL_BACKOFF_IN_SECONDS} seconds"
+            logger.error(message, err=err, retry=retry)
             continue
     return connection.execute(sql, parameters)
+
+
+# Define our exponential delay function
+def exponential_delay(base_delay: int, exponential_backoff: int = 2) -> int:
+    """
+    Exponential delay function. This function is used for retries during failure.
+    Args:
+        base_delay: Number of seconds to wait between recovery failure retries.
+        exponential_backoff: The multiplier by which the retry interval increases during each attempt.
+    Returns:
+        An integer which is multiplication of base_delay and exponential_backoff.
+    Raises:
+        None
+    """
+    try:
+        _base_delay = int(base_delay)
+        _exponential_backoff = int(exponential_backoff)
+        delay = _base_delay + (random.randint(0, 1000) / 1000.0)  # nosec
+        logger.debug(f"Performing back off retry sleeping {delay} seconds")
+        time.sleep(delay)
+        return _base_delay * _exponential_backoff
+    except ValueError as ve:
+        # Can't use f"" because of '{}' bug in CumulusLogger.
+        logger.error("arguments are not integer. Raised ValueError: {ve}", ve=ve)
+        raise ve

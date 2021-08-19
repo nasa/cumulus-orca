@@ -24,4 +24,5 @@ variable "tags" {
 variable "database_port" {
   type        = number
   description = "Database port that PostgreSQL traffic will be allowed on."
+  default     = "5432"
 }
