@@ -12,9 +12,9 @@ import random
 import functools
 from sqlalchemy import create_engine, exc
 from sqlalchemy.engine import URL
-from sqlalchemy.future import Engine, Connection
+from sqlalchemy.future import Engine
 from cumulus_logger import CumulusLogger
-from typing import Any, List, Dict, Optional, Union
+from typing import Any, Dict
 
 # instantiate CumulusLogger
 logger = CumulusLogger(name="orca")

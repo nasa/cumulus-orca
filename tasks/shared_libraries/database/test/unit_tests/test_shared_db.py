@@ -11,7 +11,6 @@ from unittest.mock import patch, MagicMock
 import os
 import json
 import shared_db
-from sqlalchemy import exc
 
 class TestSharedDatabseLibraries(unittest.TestCase):
     """
