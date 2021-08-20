@@ -18,7 +18,7 @@ from typing import Any, Dict
 
 # instantiate CumulusLogger
 logger = CumulusLogger(name="orca")
-RETRIES = 3  # number of times to retry.
+MAX_RETRIES = 3  # number of times to retry.
 BACKOFF_FACTOR = 2  # Value of the factor used to backoff
 INITIAL_BACKOFF_IN_SECONDS = 1  # Number of seconds to sleep the first time through.
 
@@ -161,11 +161,11 @@ def get_user_connection(config: Dict[str, str]) -> Engine:
     return connection
 
 # Retry decorator for functions
-def retry_operational_error(retries = RETRIES, backoff_in_seconds = INITIAL_BACKOFF_IN_SECONDS, backoff_factor = BACKOFF_FACTOR):
+def retry_operational_error(max_retries: int = MAX_RETRIES, backoff_in_seconds: int = INITIAL_BACKOFF_IN_SECONDS, backoff_factor: int = BACKOFF_FACTOR):
     """
     Decorator takes arguments to adjust number of retries and backoff strategy.
     Args:
-        retries (int): number of times to retry in case of failure.
+        max_retries (int): number of times to retry in case of failure.
         backoff_in_seconds (int): Number of seconds to sleep the first time through.
         backoff_factor (int): Value of the factor used for backoff.
     """
@@ -179,7 +179,7 @@ def retry_operational_error(retries = RETRIES, backoff_in_seconds = INITIAL_BACK
             Wrapper that performs our extra tasks on the function
             """
             # Initialize the retry loop
-            retry = 0
+            total_retries = 0
           
             # Enter loop
             while True:
@@ -187,16 +187,16 @@ def retry_operational_error(retries = RETRIES, backoff_in_seconds = INITIAL_BACK
                 try:
                     return func(*args, **kwargs)
                 except exc.OperationalError:
-                    if retry == retries:
+                    if total_retries == max_retries:
                         # Log it and re-raise if we maxed our retries
-                        logger.error("Encountered  OperationalError {retry} times. Reached max retry limit.", retry = retry+1)
+                        logger.error("Encountered  OperationalError {total_retries} times. Reached max retry limit.", total_retries = total_retries+1)
                         raise
                     else:
                         # perform exponential delay
-                        sleep = (backoff_in_seconds * backoff_factor ** retry + random.uniform(0, 1))
-                        logger.error("Encountered OperationalError {retry} times. Sleeping {sleep} seconds.", retry=retry+1, sleep =sleep)
-                        time.sleep(sleep)
-                        retry += 1
+                        backoff_time = (backoff_in_seconds * backoff_factor ** total_retries + random.uniform(0, 1))
+                        logger.error("Encountered OperationalError {total_retries} times. Sleeping {backoff_time} seconds.", total_retries=total_retries+1, backoff_time =backoff_time)
+                        time.sleep(backoff_time)
+                        total_retries += 1
                 except:
                     logger.error("Encountered a non retriable error.")
                     raise
