@@ -437,12 +437,8 @@ file. The variables must be set with proper values for your environment in the
 
 ### Optional Variables
 
-The following variable is optional for the ORCA module and can be set by the
+The following variables are optional for the ORCA module and can be set by the
 end user to better adjust ORCA for their specific environment.
-
-| Variable               | Definition                                              | Example Value                 |
-| ---------------------- | --------------------------------------------- ----------| ----------------------------- |
-| `db_admin_username`    | Username for RDS database administrator authentication. | "postgres"                    |
 
 #### Cumulus Optional Variables
 
@@ -464,9 +460,7 @@ file. The variables can be set with proper values for your environment in the
 `cumulus-tf/terraform.tfvars` file. The default setting for each of the optional
 variables is shown in the table below.
 
-| Variable                                        | Type                | Definition                                                                                              | Default Value |
-| -------------------------------------------     | ------------------  | ---------------------------------------------------------------------------------------------------     | ------------- |
-| `database_port`                                       | number        | Database port that PostgreSQL traffic will be allowed on.                                               | 5432 |
+| -------------------------------------------     | ------------------  | ---------------------------------------------------------------------------------------------------     | ------------- | `db_admin_username`                                   |string         | Username for RDS database administrator authentication.                                                 | "postgres" |
 | `orca_ingest_lambda_memory_size`                      | number        | Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime.                              | 2240 |
 | `orca_ingest_lambda_timeout`                          | number        | Timeout in number of seconds for ORCA copy_to_glacier lambda.                                           | 600 |
 | `orca_recovery_buckets`                               | List (string) | List of bucket names that ORCA has permissions to restore data to. Default is all in the `buckets` map. | [] |
@@ -504,6 +498,8 @@ accessed using terraform dot syntax in the format of `module.orca.variable_name`
 | `orca_sqs_staged_recovery_queue_id`                  | The URL ID of the staged-recovery-queue SQS |
 | `orca_sqs_status_update_queue_arn`                   | The ARN of the status-update-queue SQS |
 | `orca_sqs_status_update_queue_id`                    | The URL ID of the status-update-queue SQS |
+| `orca_secretsmanager_arn`                            | The Amazon Resource Name (ARN) of the AWS secretsmanager |                                 
+
 
 
 ## Deploy ORCA with Terraform

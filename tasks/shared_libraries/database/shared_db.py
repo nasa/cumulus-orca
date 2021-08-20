@@ -159,7 +159,6 @@ def get_user_connection(config: Dict[str, str]) -> Engine:
 
     return connection
 
-
 def execute_connection_with_error_handling(engine, sql: str, parameters: Dict):
     """
     Executes an SQL query from the database using the connection engine.
@@ -172,6 +171,7 @@ def execute_connection_with_error_handling(engine, sql: str, parameters: Dict):
     Returns
         A ResultProxy?? Reference: https://docs.sqlalchemy.org/en/13/core/connections.html
     """
+    delay = INITIAL_BACKOFF_IN_SECONDS
     for retry in range(RETRIES + 1):
         try:
             with engine.begin() as connection:
@@ -182,8 +182,8 @@ def execute_connection_with_error_handling(engine, sql: str, parameters: Dict):
                 "Failed to execute the query due to {err}. Retrying {retry} time(s)"
             )
             logger.error(message, err=err, retry=retry + 1)
-            backoff_in_seconds = exponential_delay(
-                INITIAL_BACKOFF_IN_SECONDS, BACKOFF_FACTOR
+            delay = exponential_delay(
+                delay, BACKOFF_FACTOR
             )
             continue
     else:
