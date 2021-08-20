@@ -9,9 +9,10 @@ import boto3
 import json
 import time
 import random
+import functools
 from sqlalchemy import create_engine, exc
 from sqlalchemy.engine import URL
-from sqlalchemy.future import Engine
+from sqlalchemy.future import Engine, Connection
 from cumulus_logger import CumulusLogger
 from typing import Any, List, Dict, Optional, Union
 
@@ -159,59 +160,48 @@ def get_user_connection(config: Dict[str, str]) -> Engine:
 
     return connection
 
-def execute_connection_with_error_handling(engine, sql: str, parameters: Dict):
+# Retry decorator for functions
+def retry_operational_error(retries = RETRIES, backoff_in_seconds = INITIAL_BACKOFF_IN_SECONDS, backoff_factor = BACKOFF_FACTOR):
     """
-    Executes an SQL query from the database using the connection engine.
-
+    Decorator takes arguments to adjust number of retries and backoff strategy.
     Args:
-        engine: The sqlalchemy engine to use for contacting the database.
-        sql: SQL query to execute
-        parameters: A dictionary
-
-    Returns
-        A ResultProxy?? Reference: https://docs.sqlalchemy.org/en/13/core/connections.html
+        retries (int): number of times to retry in case of failure.
+        backoff_in_seconds (int): Number of seconds to sleep the first time through.
+        backoff_factor (int): Value of the factor used for backoff.
     """
-    delay = INITIAL_BACKOFF_IN_SECONDS
-    for retry in range(RETRIES + 1):
-        try:
-            with engine.begin() as connection:
-                connection.execute(sql, parameters)
-            break
-        except exc.OperationalError as err:
-            message = (
-                "Failed to execute the query due to {err}. Retrying {retry} time(s)"
-            )
-            logger.error(message, err=err, retry=retry + 1)
-            delay = exponential_delay(
-                delay, BACKOFF_FACTOR
-            )
-            continue
-    else:
-        message = f"Failed to execute the query after {RETRIES} retries."
-        logger.error(message)
-        raise Exception(message)
-
-
-# Define our exponential delay function
-def exponential_delay(base_delay: int, exponential_backoff: int = 2) -> int:
-    """
-    Exponential delay function. This function is used for retries during failure.
-    Args:
-        base_delay: Number of seconds to wait between recovery failure retries.
-        exponential_backoff: The multiplier by which the retry interval increases during each attempt.
-    Returns:
-        An integer which is multiplication of base_delay and exponential_backoff.
-    Raises:
-        None
-    """
-    try:
-        _base_delay = int(base_delay)
-        _exponential_backoff = int(exponential_backoff)
-        delay = _base_delay + (random.randint(0, 1000) / 1000.0)  # nosec
-        logger.debug("Performing back off retry sleeping {delay} seconds", delay=delay)
-        time.sleep(delay)
-        return _base_delay * _exponential_backoff
-    except ValueError as ve:
-        # Can't use f"" because of '{}' bug in CumulusLogger.
-        logger.error("arguments are not integer. Raised ValueError: {ve}", ve=ve)
-        raise ve
+    def decorator_retry_operational_error(func):
+        """
+        Main Decorator that takes our function as an argument
+        """
+        @functools.wraps(func) # Use built in for decorators
+        def wrapper_retry_operational_error(*args, **kwargs):
+            """
+            Wrapper that performs our extra tasks on the function
+            """
+            # Initialize the retry loop
+            retry = 0
+          
+            # Enter loop
+            while True:
+                # Try the function and catch the expected error
+                try:
+                    return func(*args, **kwargs)
+                except exc.OperationalError:
+                    if retry == retries:
+                        # Log it and re-raise if we maxed our retries
+                        logger.error("Encountered  OperationalError {retry} times. Reached max retry limit.", retry = retry+1)
+                        raise
+                    else:
+                        # perform exponential delay
+                        sleep = (backoff_in_seconds * backoff_factor ** retry + random.uniform(0, 1))
+                        logger.error("Encountered OperationalError {retry} times. Sleeping {sleep} seconds.", retry=retry+1, sleep =sleep)
+                        time.sleep(sleep)
+                        retry += 1
+                except:
+                    logger.error("Encountered a non retriable error.")
+                    raise
+    
+        # Return our wrapper
+        return wrapper_retry_operational_error
+    # Return our decorator
+    return decorator_retry_operational_error

@@ -492,13 +492,13 @@ accessed using terraform dot syntax in the format of `module.orca.variable_name`
 | `orca_lambda_request_status_for_job_arn`             | AWS ARN of the ORCA request_status_for_job lambda. |
 | `orca_lambda_post_copy_request_to_queue_arn`         | AWS ARN of the ORCA post_copy_request_to_queue lambda. |
 | `orca_lambda_orca_catalog_reporting_arn`             | AWS ARN of the ORCA orca_catalog_reporting lambda. |
-| `orca_subnet_group_id`                               | The ORCA database subnet group name |
-| `orca_subnet_group_arn`                              | The ARN of the ORCA database subnet group |
+| `orca_secretsmanager_arn`                            | The Amazon Resource Name (ARN) of the AWS secretsmanager |
 | `orca_sqs_staged_recovery_queue_arn`                 | The ARN of the staged-recovery-queue SQS |
 | `orca_sqs_staged_recovery_queue_id`                  | The URL ID of the staged-recovery-queue SQS |
 | `orca_sqs_status_update_queue_arn`                   | The ARN of the status-update-queue SQS |
 | `orca_sqs_status_update_queue_id`                    | The URL ID of the status-update-queue SQS |
-| `orca_secretsmanager_arn`                            | The Amazon Resource Name (ARN) of the AWS secretsmanager |                                 
+| `orca_subnet_group_id`                               | The ORCA database subnet group name |
+| `orca_subnet_group_arn`                              | The ARN of the ORCA database subnet group |
 
 
 
