@@ -11,6 +11,8 @@ from unittest.mock import patch, MagicMock
 import os
 import json
 import shared_db
+from sqlalchemy import exc
+
 
 class TestSharedDatabseLibraries(unittest.TestCase):
     """
@@ -192,3 +194,8 @@ class TestSharedDatabseLibraries(unittest.TestCase):
         user_db_url = URL.create(drivername="postgresql", **user_db_call)
         user_db_creds = shared_db._create_connection(**user_db_call)
         mock_connection.assert_called_once_with(user_db_url, future=True)
+
+    @shared_db.retry_operational_error()
+    def test_retry_operational_error(self):
+        #todo: add unit test for decorator
+        pass
