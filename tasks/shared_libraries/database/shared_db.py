@@ -14,14 +14,14 @@ from sqlalchemy import create_engine, exc
 from sqlalchemy.engine import URL
 from sqlalchemy.future import Engine
 from cumulus_logger import CumulusLogger
-from typing import Any, Dict
+from typing import Any, Dict, TypeVar, Callable
 
 # instantiate CumulusLogger
 logger = CumulusLogger(name="orca")
 MAX_RETRIES = 3  # number of times to retry.
 BACKOFF_FACTOR = 2  # Value of the factor used to backoff
 INITIAL_BACKOFF_IN_SECONDS = 1  # Number of seconds to sleep the first time through.
-
+RT = TypeVar('RT')  # return type
 
 def get_configuration() -> Dict[str, str]:
     """
@@ -161,7 +161,7 @@ def get_user_connection(config: Dict[str, str]) -> Engine:
     return connection
 
 # Retry decorator for functions
-def retry_operational_error(max_retries: int = MAX_RETRIES, backoff_in_seconds: int = INITIAL_BACKOFF_IN_SECONDS, backoff_factor: int = BACKOFF_FACTOR):
+def retry_operational_error(max_retries: int = MAX_RETRIES, backoff_in_seconds: int = INITIAL_BACKOFF_IN_SECONDS, backoff_factor: int = BACKOFF_FACTOR) -> Callable[[Callable[[], RT]], Callable[[], RT]]:
     """
     Decorator takes arguments to adjust number of retries and backoff strategy.
     Args:
@@ -169,12 +169,12 @@ def retry_operational_error(max_retries: int = MAX_RETRIES, backoff_in_seconds: 
         backoff_in_seconds (int): Number of seconds to sleep the first time through.
         backoff_factor (int): Value of the factor used for backoff.
     """
-    def decorator_retry_operational_error(func):
+    def decorator_retry_operational_error(func: Callable[[],RT])-> Callable[[], RT]:
         """
         Main Decorator that takes our function as an argument
         """
         @functools.wraps(func) # Use built in for decorators
-        def wrapper_retry_operational_error(*args, **kwargs):
+        def wrapper_retry_operational_error(*args, **kwargs) -> RT:
             """
             Wrapper that performs our extra tasks on the function
             """
