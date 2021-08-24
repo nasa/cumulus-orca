@@ -162,7 +162,7 @@ def get_user_connection(config: Dict[str, str]) -> Engine:
     return connection
 
 # Retry decorator for functions
-def retry_operational_error(max_retries: int = MAX_RETRIES, backoff_in_seconds: int = INITIAL_BACKOFF_IN_SECONDS, backoff_factor: int = BACKOFF_FACTOR) -> Callable[[Callable[[], RT]], Callable[[], RT]]:
+def retry_adminshutdown_error(max_retries: int = MAX_RETRIES, backoff_in_seconds: int = INITIAL_BACKOFF_IN_SECONDS, backoff_factor: int = BACKOFF_FACTOR) -> Callable[[Callable[[], RT]], Callable[[], RT]]:
     """
     Decorator takes arguments to adjust number of retries and backoff strategy.
     Args:
@@ -170,12 +170,12 @@ def retry_operational_error(max_retries: int = MAX_RETRIES, backoff_in_seconds: 
         backoff_in_seconds (int): Number of seconds to sleep the first time through.
         backoff_factor (int): Value of the factor used for backoff.
     """
-    def decorator_retry_operational_error(func: Callable[[],RT])-> Callable[[], RT]:
+    def decorator_retry_adminshutdown_error(func: Callable[[],RT])-> Callable[[], RT]:
         """
         Main Decorator that takes our function as an argument
         """
         @functools.wraps(func) # Use built in for decorators
-        def wrapper_retry_operational_error(*args, **kwargs) -> RT:
+        def wrapper_retry_adminshutdown_error(*args, **kwargs) -> RT:
             """
             Wrapper that performs our extra tasks on the function
             """
@@ -195,7 +195,7 @@ def retry_operational_error(max_retries: int = MAX_RETRIES, backoff_in_seconds: 
                     else:
                         # perform exponential delay
                         backoff_time = (backoff_in_seconds * backoff_factor ** total_retries + random.uniform(0, 1))
-                        logger.error("Encountered AdminShutdown {total_retries} times. Sleeping {backoff_time} seconds.", total_retries=total_retries+1, backoff_time =backoff_time)
+                        logger.error("Encountered AdminShutdown {total_retries} error times. Sleeping {backoff_time} seconds.", total_retries=total_retries+1, backoff_time =backoff_time)
                         time.sleep(backoff_time)
                         total_retries += 1
                 except Exception as ex:
@@ -203,6 +203,6 @@ def retry_operational_error(max_retries: int = MAX_RETRIES, backoff_in_seconds: 
                     raise ex
     
         # Return our wrapper
-        return wrapper_retry_operational_error
+        return wrapper_retry_adminshutdown_error
     # Return our decorator
-    return decorator_retry_operational_error
+    return decorator_retry_adminshutdown_error

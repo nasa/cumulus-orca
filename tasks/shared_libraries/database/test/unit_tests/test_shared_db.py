@@ -11,7 +11,7 @@ from unittest.mock import patch, MagicMock
 import os
 import json
 import shared_db
-from sqlalchemy import exc
+import psycopg2
 
 class TestSharedDatabseLibraries(unittest.TestCase):
     """
@@ -202,25 +202,22 @@ class TestSharedDatabseLibraries(unittest.TestCase):
         },
         clear=True,
     )
-    @shared_db.retry_operational_error()
-    def test_app_operational_error(self):
+    @shared_db.retry_adminshutdown_error()
+    def test_app_adminshutdown_error(self):
         """
-        Creates a fake OperationalError for testing
+        Creates a fake AdminShutdown error for testing
         """
 
         config = shared_db.get_configuration()
 
         engine = shared_db.get_user_connection(config)
-        def app_operational_error(connection):
+        def app_adminshutdown_error(connection):
             """
-            Creates a fake OperationalError.
+            Creates a fake AdminShutdown error.
             """
-            raise exc.OperationalError("TESTING should retry.", None, None)
-
-
+            raise psycopg2.errors.AdminShutdown
         with self.assertRaises(Exception) as ex:
             try:  
-                with engine.connect() as connection:
-                    result = app_operational_error(connection)
+                app_adminshutdown_error(engine.connect())
             except Exception as ex:
-                self.assertEqual(ex.exception.args[0], "psycopg2.OperationalError")
+                self.assertEqual(ex.exception.args[0], "psycopg2.errors.AdminShutdown")
