@@ -12,7 +12,6 @@ import os
 import json
 import shared_db
 from sqlalchemy import exc
-from sqlalchemy.future import Engine, Connection
 
 class TestSharedDatabseLibraries(unittest.TestCase):
     """
