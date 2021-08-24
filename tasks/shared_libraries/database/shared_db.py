@@ -197,9 +197,9 @@ def retry_operational_error(max_retries: int = MAX_RETRIES, backoff_in_seconds: 
                         logger.error("Encountered OperationalError {total_retries} times. Sleeping {backoff_time} seconds.", total_retries=total_retries+1, backoff_time =backoff_time)
                         time.sleep(backoff_time)
                         total_retries += 1
-                except:
-                    logger.error("Encountered a non retriable error.")
-                    raise
+                except Exception as ex:
+                    logger.error("Encountered a non retriable error {ex}", ex=ex)
+                    raise ex
     
         # Return our wrapper
         return wrapper_retry_operational_error
