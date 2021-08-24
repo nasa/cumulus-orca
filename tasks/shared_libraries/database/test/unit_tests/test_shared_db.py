@@ -18,7 +18,6 @@ from sqlalchemy.engine import URL
 
 import shared_db
 
-
 class TestSharedDatabseLibraries(unittest.TestCase):
     """
     Runs unit tests for all of the functions in the shared_db library.
