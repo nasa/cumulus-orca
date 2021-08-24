@@ -12,7 +12,7 @@ import os
 import json
 import shared_db
 from sqlalchemy import exc
-
+from sqlalchemy.future import Engine, Connection
 
 class TestSharedDatabseLibraries(unittest.TestCase):
     """
@@ -195,7 +195,33 @@ class TestSharedDatabseLibraries(unittest.TestCase):
         user_db_creds = shared_db._create_connection(**user_db_call)
         mock_connection.assert_called_once_with(user_db_url, future=True)
 
+    @patch.dict(
+        os.environ,
+        {
+            "PREFIX": "orcatest",
+            "AWS_REGION": "us-west-2",
+        },
+        clear=True,
+    )
     @shared_db.retry_operational_error()
-    def test_retry_operational_error(self):
-        #todo: add unit test for decorator
-        pass
+    def test_app_operational_error(self):
+        """
+        Creates a fake OperationalError for testing
+        """
+
+        config = shared_db.get_configuration()
+
+        engine = shared_db.get_user_connection(config)
+        def app_operational_error(connection):
+            """
+            Creates a fake OperationalError.
+            """
+            raise exc.OperationalError("TESTING should retry.", None, None)
+
+
+        with self.assertRaises(Exception) as ex:
+            try:  
+                with engine.connect() as connection:
+                    result = app_operational_error(connection)
+            except Exception as ex:
+                self.assertEqual(ex.exception.args[0], "psycopg2.OperationalError")
