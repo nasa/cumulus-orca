@@ -12,6 +12,7 @@ import random
 import functools
 from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.future import Engine
 from cumulus_logger import CumulusLogger
 from typing import Any, Dict, TypeVar, Callable
@@ -23,6 +24,7 @@ MAX_RETRIES = 3  # number of times to retry.
 BACKOFF_FACTOR = 2  # Value of the factor used to backoff
 INITIAL_BACKOFF_IN_SECONDS = 1  # Number of seconds to sleep the first time through.
 RT = TypeVar('RT')  # return type
+
 
 def get_configuration() -> Dict[str, str]:
     """
@@ -161,8 +163,10 @@ def get_user_connection(config: Dict[str, str]) -> Engine:
 
     return connection
 
+
 # Retry decorator for functions
-def retry_adminshutdown_error(max_retries: int = MAX_RETRIES, backoff_in_seconds: int = INITIAL_BACKOFF_IN_SECONDS, backoff_factor: int = BACKOFF_FACTOR) -> Callable[[Callable[[], RT]], Callable[[], RT]]:
+def retry_operational_error(max_retries: int = MAX_RETRIES, backoff_in_seconds: int = INITIAL_BACKOFF_IN_SECONDS,
+                            backoff_factor: int = BACKOFF_FACTOR) -> Callable[[Callable[[], RT]], Callable[[], RT]]:
     """
     Decorator takes arguments to adjust number of retries and backoff strategy.
     Args:
@@ -170,39 +174,47 @@ def retry_adminshutdown_error(max_retries: int = MAX_RETRIES, backoff_in_seconds
         backoff_in_seconds (int): Number of seconds to sleep the first time through.
         backoff_factor (int): Value of the factor used for backoff.
     """
-    def decorator_retry_adminshutdown_error(func: Callable[[],RT])-> Callable[[], RT]:
+
+    def decorator_retry_operational_error(func: Callable[[], RT]) -> Callable[[], RT]:
         """
         Main Decorator that takes our function as an argument
         """
-        @functools.wraps(func) # Use built in for decorators
-        def wrapper_retry_adminshutdown_error(*args, **kwargs) -> RT:
+
+        @functools.wraps(func)  # Use built in for decorators
+        def wrapper_retry_operational_error(*args, **kwargs) -> RT:
             """
             Wrapper that performs our extra tasks on the function
             """
             # Initialize the retry loop
             total_retries = 0
-          
+
             # Enter loop
             while True:
                 # Try the function and catch the expected error
                 try:
                     return func(*args, **kwargs)
-                except psycopg2.errors.AdminShutdown:
+                except OperationalError:
                     if total_retries == max_retries + 1:
-                        # Log it and re-raise if we maxed our retries
-                        logger.error("Encountered  AdminShutdown error {total_retries} times. Reached max retry limit.", total_retries = total_retries+1)
+                        # Log it and re-raise if we maxed our retries + initial attempt
+                        logger.error(
+                            "Encountered Errors {total_attempts} times. Reached max retry limit.",
+                            total_attempts=total_retries + 1)
                         raise
                     else:
                         # perform exponential delay
                         backoff_time = (backoff_in_seconds * backoff_factor ** total_retries + random.uniform(0, 1))
-                        logger.error("Encountered AdminShutdown {total_retries} error times. Sleeping {backoff_time} seconds.", total_retries=total_retries+1, backoff_time =backoff_time)
+                        logger.error(
+                            "Encountered OperationalError on attempt {total_attempts}. "
+                            "Sleeping {backoff_time} seconds.",
+                            total_attempts=total_retries + 1, backoff_time=backoff_time)
                         time.sleep(backoff_time)
                         total_retries += 1
                 except Exception as ex:
-                    logger.error("Encountered a non retriable error: {ex}", ex=ex)
+                    logger.error("Encountered a non-retriable error: {ex}", ex=ex)
                     raise ex
-    
+
         # Return our wrapper
-        return wrapper_retry_adminshutdown_error
+        return wrapper_retry_operational_error
+
     # Return our decorator
-    return decorator_retry_adminshutdown_error
+    return decorator_retry_operational_error

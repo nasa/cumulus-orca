@@ -18,6 +18,7 @@ from sqlalchemy.engine import URL
 
 import shared_db
 
+
 class TestSharedDatabseLibraries(unittest.TestCase):
     """
     Runs unit tests for all of the functions in the shared_db library.
@@ -238,6 +239,7 @@ class TestSharedDatabseLibraries(unittest.TestCase):
         If the error raised is an OperationalError, it should retry up to the maximum allowed.
         """
         max_retries = 16
+        # I have not tested that the below is a perfect recreation of an AdminShutdown error.
         expected_error = sqlalchemy.exc.OperationalError(Mock(), Mock(), psycopg2.errors.AdminShutdown)
 
         @shared_db.retry_operational_error(max_retries)
@@ -246,7 +248,8 @@ class TestSharedDatabseLibraries(unittest.TestCase):
 
         try:
             dummy_call()
-        except expected_error:
+        except sqlalchemy.exc.OperationalError as caught_error:
+            self.assertEquals(expected_error, caught_error)
             self.assertEquals(max_retries + 1, mock_sleep.call_count)
             return
         self.fail("Error not raised.")
