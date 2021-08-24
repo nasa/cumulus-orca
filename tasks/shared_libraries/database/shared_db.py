@@ -188,7 +188,7 @@ def retry_operational_error(max_retries: int = MAX_RETRIES, backoff_in_seconds: 
                 try:
                     return func(*args, **kwargs)
                 except psycopg2.errors.AdminShutdown:
-                    if total_retries == max_retries:
+                    if total_retries == max_retries + 1:
                         # Log it and re-raise if we maxed our retries
                         logger.error("Encountered  AdminShutdown error {total_retries} times. Reached max retry limit.", total_retries = total_retries+1)
                         raise

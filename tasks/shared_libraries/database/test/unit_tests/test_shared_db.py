@@ -3,15 +3,21 @@ Name: test_shared_db.py
 
 Description: Runs unit tests for the shared_db.py library.
 """
-from moto import mock_secretsmanager
-from sqlalchemy.engine import URL
-import boto3
-import unittest
-from unittest.mock import patch, MagicMock
-import os
+
 import json
-import shared_db
+import os
+import unittest
+from unittest.mock import patch, MagicMock, Mock
+
+import boto3
+import psycopg2
+import sqlalchemy
+from moto import mock_secretsmanager
 from sqlalchemy import exc
+from sqlalchemy.engine import URL
+
+import shared_db
+
 
 class TestSharedDatabseLibraries(unittest.TestCase):
     """
@@ -194,33 +200,54 @@ class TestSharedDatabseLibraries(unittest.TestCase):
         user_db_creds = shared_db._create_connection(**user_db_call)
         mock_connection.assert_called_once_with(user_db_url, future=True)
 
-    @patch.dict(
-        os.environ,
-        {
-            "PREFIX": "orcatest",
-            "AWS_REGION": "us-west-2",
-        },
-        clear=True,
-    )
-    @shared_db.retry_operational_error()
-    def test_app_operational_error(self):
+    @patch("time.sleep")
+    def test_retry_operational_error_happy_path(self,
+                                                mock_sleep: MagicMock):
+        expected_result = Mock()
+
+        @shared_db.retry_operational_error(3)
+        def dummy_call():
+            return expected_result
+
+        result = dummy_call()
+
+        self.assertEquals(expected_result, result)
+        mock_sleep.assert_not_called()
+
+    @patch("time.sleep")
+    def test_retry_operational_error_non_operational_error_raises(self,
+                                                                  mock_sleep: MagicMock):
         """
-        Creates a fake OperationalError for testing
+        If the error raised is not an OperationalError, it should just be raised.
         """
 
-        config = shared_db.get_configuration()
+        @shared_db.retry_operational_error(3)
+        def dummy_call():
+            raise KeyError
 
-        engine = shared_db.get_user_connection(config)
-        def app_operational_error(connection):
-            """
-            Creates a fake OperationalError.
-            """
-            raise exc.OperationalError("TESTING should retry.", None, None)
+        try:
+            dummy_call()
+        except KeyError:
+            mock_sleep.assert_not_called()
+            return
+        self.fail("Error not raised.")
 
+    @patch("time.sleep")
+    def test_retry_operational_error_operational_error_retries_and_raises(self,
+                                                                          mock_sleep: MagicMock):
+        """
+        If the error raised is an OperationalError, it should retry up to the maximum allowed.
+        """
+        max_retries = 16
+        expected_error = sqlalchemy.exc.OperationalError(Mock(), Mock(), psycopg2.errors.AdminShutdown)
 
-        with self.assertRaises(Exception) as ex:
-            try:  
-                with engine.connect() as connection:
-                    result = app_operational_error(connection)
-            except Exception as ex:
-                self.assertEqual(ex.exception.args[0], "psycopg2.OperationalError")
+        @shared_db.retry_operational_error(max_retries)
+        def dummy_call():
+            raise expected_error
+
+        try:
+            dummy_call()
+        except expected_error:
+            self.assertEquals(max_retries + 1, mock_sleep.call_count)
+            return
+        self.fail("Error not raised.")
