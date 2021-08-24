@@ -13,7 +13,6 @@ import boto3
 import psycopg2
 import sqlalchemy
 from moto import mock_secretsmanager
-from sqlalchemy import exc
 from sqlalchemy.engine import URL
 
 import shared_db
@@ -250,6 +249,6 @@ class TestSharedDatabseLibraries(unittest.TestCase):
             dummy_call()
         except sqlalchemy.exc.OperationalError as caught_error:
             self.assertEquals(expected_error, caught_error)
-            self.assertEquals(max_retries + 1, mock_sleep.call_count)
+            self.assertEquals(max_retries+1, mock_sleep.call_count)
             return
         self.fail("Error not raised.")
