@@ -43,7 +43,3 @@ We currently are using the default value of 8mb, which will cause problems when 
 - Recommend adding the environment variable `ORCA_COPY_CHUNK_SIZE_MB` to TF and Lambda.
   - Worth waiting to use the same name as Cumulus, as they are going through a similar change.
 - I have read in a couple of sources that increasing `io_chunksize` can also have a significant impact on performance. May be worth looking into if more improvements are desired.
-
-#### Sources
-- [Best Practices for Working With Amazon Aurora Serverless](https://aws.amazon.com/blogs/database/best-practices-for-working-with-amazon-aurora-serverless/)
-- [Aurora Serverless: How it Works](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.how-it-works.html)
