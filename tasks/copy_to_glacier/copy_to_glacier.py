@@ -3,6 +3,7 @@ import os
 from typing import Dict, Any, List, Union
 
 import boto3
+from boto3.s3.transfer import TransferConfig, MB
 from run_cumulus_task import run_cumulus_task
 
 CONFIG_FILE_STAGING_DIRECTORY_KEY = 'fileStagingDir'
@@ -14,6 +15,8 @@ COLLECTION_VERSION_KEY = 'version'
 COLLECTION_URL_PATH_KEY = 'url_path'
 COLLECTION_META_KEY = 'meta'
 EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
+
+DEFAULT_ORCA_MULTIPART_CHUNKSIZE_MB = 250
 
 
 def should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -> bool:
@@ -33,7 +36,7 @@ def should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -
 
 
 def copy_granule_between_buckets(source_bucket_name: str, source_key: str, destination_bucket: str,
-                                 destination_key: str) -> None:
+                                 destination_key: str, multipart_chunksize_mb: int) -> None:
     """
     Copies granule from source bucket to destination.
     Args:
@@ -41,6 +44,7 @@ def copy_granule_between_buckets(source_bucket_name: str, source_key: str, desti
         source_key: source Granule path excluding s3://[bucket]/
         destination_bucket: The name of the bucket the granule is to be copied to.
         destination_key: Destination granule path excluding s3://[bucket]/
+        multipart_chunksize_mb: The maximum size of chunks to use when copying.
     """
     s3 = boto3.client('s3')
     copy_source = {
@@ -55,7 +59,8 @@ def copy_granule_between_buckets(source_bucket_name: str, source_key: str, desti
             'MetadataDirective': 'COPY',
             'ContentType': s3.head_object(Bucket=source_bucket_name, Key=source_key)['ContentType'],
             'ACL': 'bucket-owner-full-control'  # Sets the x-amz-acl URI Request Parameter. Needed for cross-OU copies.
-        }
+        },
+        Config=TransferConfig(multipart_chunksize=multipart_chunksize_mb * MB)
     )
 
 
@@ -67,6 +72,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
 
         Environment Variables:
             ORCA_DEFAULT_BUCKET (string, required): Name of the default ORCA S3 Glacier bucket.
+            ORCA_MULTIPART_CHUNKSIZE_MB (string, optional): The maximum size of chunks to use when copying.
 
     Args:
         event: Passed through from {handler}
@@ -83,7 +89,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
                     bucket (str)
             copied_to_glacier (list): List of S3 paths - one for each file copied
     """
-    #TODO: Possibly remove print statement and change to a logging statement.
+    # TODO: Possibly remove print statement and change to a logging statement.
     print(event)
     event_input = event['input']
     granules_list = event_input['granules']
@@ -92,7 +98,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     collection = config.get(CONFIG_COLLECTION_KEY, {})
     exclude_file_types = collection.get(COLLECTION_META_KEY, {}).get(EXCLUDE_FILE_TYPES_KEY, [])
 
-    #TODO: Should look at bucket type orca and check for default
+    # TODO: Should look at bucket type orca and check for default
     #      Should also be flexible enough to handle input precedence order of
     #      - task input
     #      - collection configuration
@@ -102,9 +108,15 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
         if default_bucket is None or len(default_bucket) == 0:
             raise KeyError('ORCA_DEFAULT_BUCKET environment variable is not set.')
     except KeyError:
-        #TODO: Change this to a logging statement
+        # TODO: Change this to a logging statement
         print('ORCA_DEFAULT_BUCKET environment variable is not set.')
         raise
+    try:
+        multipart_chunksize_mb = float(os.environ['ORCA_MULTIPART_CHUNKSIZE_MB'])
+    except KeyError:
+        # TODO: Change this to a logging statement
+        print('ORCA_MULTIPART_CHUNKSIZE_MB environment variable is not set.')
+        multipart_chunksize_mb = DEFAULT_ORCA_MULTIPART_CHUNKSIZE_MB
 
     granule_data = {}
     copied_file_urls = []
@@ -128,7 +140,8 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
             copy_granule_between_buckets(source_bucket_name=file['bucket'],
                                          source_key=source_filepath,
                                          destination_bucket=default_bucket,
-                                         destination_key=source_filepath)
+                                         destination_key=source_filepath,
+                                         multipart_chunksize_mb=multipart_chunksize_mb)
             copied_file_urls.append(file['filename'])
             print(f"Copied {source_filepath} into glacier storage bucket {default_bucket}.")
 

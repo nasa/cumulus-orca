@@ -193,3 +193,9 @@ variable "status_update_queue_message_retention_time_seconds" {
   description = "The number of seconds status_update_queue SQS retains a message in seconds. Maximum value is 14 days."
   default     = 777600 #9 days
 }
+
+variable "orca_multipart_chunksize_mb" {
+  type        = number
+  description = "The maximum size of chunks to use when copying."
+  default     = "250"
+}

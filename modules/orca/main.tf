@@ -44,6 +44,8 @@ module "orca_lambdas" {
   orca_recovery_retry_limit            = var.orca_recovery_retry_limit
   orca_recovery_retry_interval         = var.orca_recovery_retry_interval
   orca_recovery_retry_backoff          = var.orca_recovery_retry_backoff
+  orca_multipart_chunksize_mb          = var.orca_multipart_chunksize_mb
+}
 
   ## OPTIONAL (DO NOT CHANGE DEFAULT VALUES!)
   database_app_user            = var.database_app_user

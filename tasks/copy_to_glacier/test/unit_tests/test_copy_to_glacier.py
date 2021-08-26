@@ -1,8 +1,8 @@
 import copy
-import os
+import unittest
 import uuid
 from unittest import TestCase
-from unittest.mock import Mock, call, patch
+from unittest.mock import Mock, call, patch, MagicMock
 
 from copy_to_glacier import *
 
@@ -89,19 +89,21 @@ class TestCopyToGlacierHandler(TestCase):
         not_excluded_flag = should_exclude_files_type(self.not_excluded_file, ['.example'])
         self.assertEqual(not_excluded_flag, False)
 
-    @patch.dict(os.environ, {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__()}, clear=True)
-    def test_task_happy_path(self):
+    @patch.dict(os.environ, {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__(), "ORCA_MULTIPART_CHUNKSIZE_MB": "4.2"},
+                clear=True)
+    @patch('boto3.s3.transfer.TransferConfig.__init__')
+    def test_task_happy_path(self,
+                             mock_transferconfig_init: MagicMock):
         """
         Basic path with buckets present.
         """
         collection_name = uuid.uuid4().__str__()
         collection_version = uuid.uuid4().__str__()
         destination_bucket_name = os.environ['ORCA_DEFAULT_BUCKET']
-        source_bucket_name = uuid.uuid4().__str__()
-        collection_url_path = uuid.uuid4().__str__()
         content_type = uuid.uuid4().__str__()
         source_bucket_names = [file['bucket'] for file in self.event_granules['granules'][0]['files']]
         source_keys = [file['filepath'] for file in self.event_granules['granules'][0]['files']]
+        mock_transferconfig_init.return_value = None
 
         # todo: use 'side_effect' to verify args. It is safer, as current method does not deep-copy args
         boto3.client = Mock()
@@ -142,8 +144,13 @@ class TestCopyToGlacierHandler(TestCase):
                     'MetadataDirective': 'COPY',
                     'ContentType': content_type,
                     'ACL': 'bucket-owner-full-control'
-                }
+                },
+                Config=unittest.mock.ANY
             ))
+
+        mock_transferconfig_init.assert_has_calls([
+            call(multipart_chunksize=4.2 * MB)
+        ] * len(source_bucket_names))
 
         s3_cli.head_object.assert_has_calls(head_object_calls)
         s3_cli.copy.assert_has_calls(copy_calls)
@@ -163,7 +170,6 @@ class TestCopyToGlacierHandler(TestCase):
         # todo: use 'side_effect' to verify args. It is safer, as current method does not deep-copy args
         collection_name = uuid.uuid4().__str__()
         collection_version = uuid.uuid4().__str__()
-        destination_bucket_name = os.environ['ORCA_DEFAULT_BUCKET']
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.copy = Mock()
@@ -198,12 +204,7 @@ class TestCopyToGlacierHandler(TestCase):
         """
         collection_name = uuid.uuid4().__str__()
         collection_version = uuid.uuid4().__str__()
-        destination_bucket_name = os.environ['ORCA_DEFAULT_BUCKET']
-        source_bucket_name = uuid.uuid4().__str__()
-        collection_url_path = uuid.uuid4().__str__()
         content_type = uuid.uuid4().__str__()
-        source_bucket_names = [file['bucket'] for file in self.event_granules['granules'][0]['files']]
-        source_keys = [file['filepath'] for file in self.event_granules['granules'][0]['files']]
 
         # todo: use 'side_effect' to verify args. It is safer, as current method does not deep-copy args
         boto3.client = Mock()

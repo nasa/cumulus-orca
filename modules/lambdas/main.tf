@@ -102,7 +102,8 @@ resource "aws_lambda_function" "copy_to_glacier" {
 
   environment {
     variables = {
-      ORCA_DEFAULT_BUCKET = var.orca_default_bucket
+      ORCA_DEFAULT_BUCKET = var.orca_default_bucket,
+      ORCA_MULTIPART_CHUNKSIZE_MB = var.orca_multipart_chunksize_mb
     }
   }
 }

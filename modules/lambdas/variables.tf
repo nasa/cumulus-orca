@@ -110,6 +110,11 @@ variable "orca_recovery_retry_backoff" {
   description = "The multiplier by which the retry interval increases during each attempt."
 }
 
+variable "orca_multipart_chunksize_mb" {
+  type        = number
+  description = "The maximum size of chunks to use when copying."
+}
+
 ## OPTIONAL (DO NOT CHANGE!) - Development use only
 variable "database_app_user" {
   type        = string
