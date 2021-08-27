@@ -67,8 +67,6 @@ module "orca" {
   workflow_config          = module.cumulus.workflow_config
 
   ## OPTIONAL
-  aws_profile = var.aws_profile
-  region      = var.region
   tags        = var.tags
 
   ## --------------------------
@@ -123,9 +121,6 @@ The variables must be set with the proper values in the `terraform.tfvavrs` file
 - vpc_id
 
 :::note Optional Cumulus Values
-
-Though optional, it is recommended that you also set the `aws_profile` variable. The
-default value for `aws_profile` is set to `default` for running the `db_deploy` lambda.
 
 Though optional, it is recommended that you also set the `region` variable. The
 default value for `region` is set to `us-west-2` for running the `db_deploy` lambda.
@@ -411,7 +406,6 @@ file. The variables must be set with proper values for your environment in the
 
 | Variable                   | Definition                                                                                                                                   | Example Value      |
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
-| `aws_profile`              | AWS CLI Profile (configured via `aws configure`) to use for deployment.                                                                      | "default" |
 | `buckets`                  | Mapping of all S3 buckets used by Cumulus and ORCA that contains a S3 `name` and `type`. A bucket with a `type` of **orca** is required.     | `buckets = { orca_default = { name = "PREFIX-orca-primary", type = "orca", ...}}` |
 | `lambda_subnet_ids`        | A list of subnets that the Lambda's and the database have access to for working with Cumulus.                                                | ["subnet-12345", "subnet-abc123"] |
 | `permissions_boundary_arn` | AWS ARN value of the permission boundary for the VPC account.                                                                                | "arn:aws:iam::1234567890:policy/NGAPShRoleBoundary" |
