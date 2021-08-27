@@ -43,3 +43,4 @@ We currently are using the default value of 8mb, which will cause problems when 
 - Recommend adding the environment variable `ORCA_COPY_CHUNK_SIZE_MB` to TF and Lambda.
   - Worth waiting to use the same name as Cumulus, as they are going through a similar change.
 - I have read in a couple of sources that increasing `io_chunksize` can also have a significant impact on performance. May be worth looking into if more improvements are desired.
+  - The other variables should be considered as well.
