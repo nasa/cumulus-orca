@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_files/schemas/config.json",
+  "title": "copy_to_files Lambda Config",
+  "description": "The config for the copy_to_files Lambda.",
+  "type": "object",
+  "required": ["collection"],
+  "properties": {
+    "collection": {
+      "description": "The collection from AWS.",
+      "type": "object",
+      "required": ["name", "version", "files", "url_path"],
+      "properties": {
+        "name": {
+          "description": "The name of the collection. Used when generating the default value for {event}[config][fileStagingDir].",
+          "type": "string"
+        },
+        "version":
+        {
+          "description": "The version of the collection. Used when generating the default value for {event}[config][fileStagingDir].",
+          "type": "string"
+        },
+        "files": {
+          "description": "A list of dicts representing file types within the collection. The first file where the file's ['regex'] matches the filename from the input. Used to identify the bucket referenced in return's['granules'][filename]['files']['bucket']",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["regex", "bucket"],
+            "properties": {
+              "regex": {
+                "description": "The regex that all files in the bucket must match with their name.",
+                "type": "string"
+              },
+              "bucket": {
+                "description": "The name of the bucket containing the files.",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "url_path": {
+          "description": "Used when calling {copy_granule_between_buckets} as a part of the destination_key.",
+          "type": "string"
+        }
+      }
+    }
+  }
+}

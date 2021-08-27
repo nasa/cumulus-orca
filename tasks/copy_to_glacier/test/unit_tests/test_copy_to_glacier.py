@@ -1,9 +1,11 @@
 import copy
+import json
 import os
 import uuid
-from unittest import TestCase
-from unittest.mock import Mock, call, patch
+from unittest import TestCase, result
+from unittest.mock import Mock, call, patch, MagicMock
 
+import copy_to_glacier
 from copy_to_glacier import *
 
 
@@ -73,6 +75,12 @@ class TestCopyToGlacierHandler(TestCase):
             }
         ]
     }
+
+    @patch("copy_to_glacier.task")
+    def test_handler_happy_path(self,
+                                mock_task: MagicMock):
+        # todo
+        pass
 
     def test_exclude_file_types_excluded(self):
         """
@@ -226,8 +234,18 @@ class TestCopyToGlacierHandler(TestCase):
             task(event, None)
             self.assertTrue('ORCA_DEFAULT_BUCKET environment variable is not set.' in context.exception)
 
+    def test_task_output_json_schema(
+            self
+    ):
+        # todo
+        # Validate the output is correct
+        with open("schemas/output.json", "r") as raw_schema:
+            schema = json.loads(raw_schema.read())
 
-  ##TODO: Write tests to validate file name regex exclusion
+        validate = fastjsonschema.compile(schema)
+        validate(result)
+
+##TODO: Write tests to validate file name regex exclusion
 
 # todo: switch this to large test
 #    def test_5_task(self):
