@@ -122,9 +122,6 @@ The variables must be set with the proper values in the `terraform.tfvavrs` file
 
 :::note Optional Cumulus Values
 
-Though optional, it is recommended that you also set the `region` variable. The
-default value for `region` is set to `us-west-2` for running the `db_deploy` lambda.
-
 The `tags` value automatically adds a *Deployment* tag like the Cumulus
 deployment.
 
@@ -442,7 +439,6 @@ is set to the proper AWS region for deployments.
 
 | Variable               | Definition                                         | Example Value                 |
 | ---------------------- | -------------------------------------------------- | ----------------------------- |
-| `region`               | AWS region to deploy the application to.           | "us-west-2" |
 | `tags`                 | Tags to be applied to resources that support tags. | `{ environment = "development", developer = "me" }` |
 
 
