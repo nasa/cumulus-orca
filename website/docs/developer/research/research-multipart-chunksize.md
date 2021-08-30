@@ -27,16 +27,25 @@ We currently are using the default value of 8mb, which will cause problems when 
     Config=TransferConfig(multipart_chunksize=multipart_chunksize_mb * MB)
   )
   ```
-- This will require a variable passed into the lambda, likely an environment variable. In the lambdas/main.tf entry for `copy_to_glacier` this would look like
-  ```
-  environment {
-    variables = {
-      ORCA_DEFAULT_BUCKET = var.orca_default_bucket,
-      ORCA_COPY_CHUNK_SIZE_MB = var.orca_copy_chunk_size
+- This will require a variable passed into the lambda.
+  - Could be set at the collection level under `config['collection']['multipart_chunksize_mb']` with a default value in the lambdas/main.tf entry for `copy_to_glacier` defined as
+    ```
+    environment {
+      variables = {
+        ORCA_DEFAULT_BUCKET = var.orca_default_bucket,
+        DEFAULT_ORCA_COPY_CHUNK_SIZE_MB = var.orca_copy_chunk_size
+      }
     }
-  }
-  ```
-- Alternatively, this could be set at the workflow level, though this does not grant significant advantages and will spread the definition across more files.
+    ```
+  - Could also be an overall environment variable, though this is less flexible. In the lambdas/main.tf entry for `copy_to_glacier` this would look like
+    ```
+    environment {
+      variables = {
+        ORCA_DEFAULT_BUCKET = var.orca_default_bucket,
+        ORCA_COPY_CHUNK_SIZE_MB = var.orca_copy_chunk_size
+      }
+    }
+    ```
 - The above should be added to other TF files such as terraform.tfvars, orca/main.tf, orca/variables.tf, and lambdas/variables.tf as well as documentation.
 
 ### Future Direction
