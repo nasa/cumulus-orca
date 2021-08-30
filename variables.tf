@@ -194,8 +194,8 @@ variable "status_update_queue_message_retention_time_seconds" {
   default     = 777600 #9 days
 }
 
-variable "orca_multipart_chunksize_mb" {
+variable "orca_default_multipart_chunksize_mb" {
   type        = number
-  description = "The maximum size of chunks to use when copying."
-  default     = "250"
+  description = "The default maximum size of chunks to use when copying. Can be overridden by collection config."
+  default     = "16"
 }

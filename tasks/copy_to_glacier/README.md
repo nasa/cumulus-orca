@@ -195,8 +195,6 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_glaci
 ## pydoc copy_to_glacier
 
 ```
-Help on module copy_to_glacier:
-
 NAME
     copy_to_glacier
 
@@ -219,6 +217,8 @@ FUNCTIONS
                 ORCA_DEFAULT_BUCKET (str, required): Name of the default S3 Glacier
                                                      ORCA bucket files should be
                                                      archived to.
+                ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB (str, required): The default maximum size of chunks to use when copying.
+                                                                     Can be overridden by collection config.
         
         Args:
             event: Event passed into the step from the aws workflow. A dict with the following keys:
@@ -245,6 +245,8 @@ FUNCTIONS
                             Each dict contains the following keys:
                                 regex (str): The regex that all files in the bucket must match with their name.
                                 bucket (str): The name of the bucket containing the files.
+                        multipart_chunksize_mb (float, optional): The maximum size of chunks to use when copying.
+                            Defaults to Environment Var ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB
                         url_path (str): Used when calling {copy_granule_between_buckets} as a part of the destination_key.
                     buckets (dict): A dict with the following keys:
                         glacier (dict): A dict with the following keys:
@@ -270,7 +272,7 @@ FUNCTIONS
         
             Environment Variables:
                 ORCA_DEFAULT_BUCKET (string, required): Name of the default ORCA S3 Glacier bucket.
-                ORCA_MULTIPART_CHUNKSIZE_MB (string, optional): The maximum size of chunks to use when copying.
+                ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB (string, optional): The default maximum size of chunks to use when copying. Can be overridden by collection config.
         
         Args:
             event: Passed through from {handler}
@@ -290,13 +292,14 @@ FUNCTIONS
 DATA
     Any = typing.Any
     COLLECTION_META_KEY = 'meta'
+    COLLECTION_MULTIPART_CHUNKSIZE_MB_KEY = 'multipart_chunksize_mb'
     COLLECTION_NAME_KEY = 'name'
     COLLECTION_URL_PATH_KEY = 'url_path'
     COLLECTION_VERSION_KEY = 'version'
     CONFIG_COLLECTION_KEY = 'collection'
     CONFIG_FILE_STAGING_DIRECTORY_KEY = 'fileStagingDir'
     CONFIG_URL_PATH_KEY = 'url_path'
-    DEFAULT_ORCA_MULTIPART_CHUNKSIZE_MB = 250
+    DEFAULT_ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB = 16
     Dict = typing.Dict
     EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
     List = typing.List

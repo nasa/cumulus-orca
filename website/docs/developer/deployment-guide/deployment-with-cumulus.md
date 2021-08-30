@@ -475,7 +475,7 @@ variables is shown in the table below.
 | `sqs_maximum_message_size`                            | number        | The limit of how many bytes a message can contain before Amazon SQS rejects it.                         | 262144 |
 | `staged_recovery_queue_message_retention_time_seconds`| number        | Number of seconds the staged-recovery-queue fifo SQS retains a message.                                 | 432000 |
 | `status_update_queue_message_retention_time_seconds`  | number        | Number of seconds the status_update_queue fifo SQS retains a message.                                   | 777600 |
-| `orca_multipart_chunksize_mb`                         | number        | The maximum size of chunks to use when copying.                                                         | 250 |
+| `orca_default_multipart_chunksize_mb`                 | number        | The default maximum size of chunks to use when copying. Can be overridden by collection config.         | 250 |
 
 
 ## ORCA Module Outputs

@@ -110,9 +110,9 @@ variable "orca_recovery_retry_backoff" {
   description = "The multiplier by which the retry interval increases during each attempt."
 }
 
-variable "orca_multipart_chunksize_mb" {
+variable "orca_default_multipart_chunksize_mb" {
   type        = number
-  description = "The maximum size of chunks to use when copying."
+  description = "The default maximum size of chunks to use when copying. Can be overridden by collection config."
 }
 
 ## OPTIONAL (DO NOT CHANGE!) - Development use only

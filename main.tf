@@ -49,7 +49,7 @@ module "orca" {
   sqs_maximum_message_size                             = var.sqs_maximum_message_size
   staged_recovery_queue_message_retention_time_seconds = var.staged_recovery_queue_message_retention_time_seconds
   status_update_queue_message_retention_time_seconds   = var.status_update_queue_message_retention_time_seconds
-  orca_multipart_chunksize_mb                          = var.orca_multipart_chunksize_mb
+  orca_default_multipart_chunksize_mb                  = var.orca_default_multipart_chunksize_mb
 
   ## OPTIONAL (DO NOT CHANGE DEFAULT VALUES!)
   database_app_user            = "orcauser"

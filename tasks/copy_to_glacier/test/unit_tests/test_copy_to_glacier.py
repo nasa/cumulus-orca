@@ -89,7 +89,7 @@ class TestCopyToGlacierHandler(TestCase):
         not_excluded_flag = should_exclude_files_type(self.not_excluded_file, ['.example'])
         self.assertEqual(not_excluded_flag, False)
 
-    @patch.dict(os.environ, {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__(), "ORCA_MULTIPART_CHUNKSIZE_MB": "4.2"},
+    @patch.dict(os.environ, {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__(), "ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB": "4.2"},
                 clear=True)
     @patch('boto3.s3.transfer.TransferConfig.__init__')
     def test_task_happy_path(self,
@@ -162,7 +162,9 @@ class TestCopyToGlacierHandler(TestCase):
         self.assertEqual(expected_copied_file_urls, result['copied_to_glacier'])
         self.assertEqual(self.event_granules['granules'], result['granules'])
 
-    @patch.dict(os.environ, {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__()}, clear=True)
+    @patch.dict(os.environ,
+                {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__(), "ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB": "4.2"},
+                clear=True)
     def test_task_empty_granules_list(self):
         """
         Basic path with buckets present.

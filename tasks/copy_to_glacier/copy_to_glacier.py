@@ -14,9 +14,10 @@ COLLECTION_NAME_KEY = 'name'
 COLLECTION_VERSION_KEY = 'version'
 COLLECTION_URL_PATH_KEY = 'url_path'
 COLLECTION_META_KEY = 'meta'
+COLLECTION_MULTIPART_CHUNKSIZE_MB_KEY = 'multipart_chunksize_mb'
 EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
 
-DEFAULT_ORCA_MULTIPART_CHUNKSIZE_MB = 250
+DEFAULT_ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB = 16
 
 
 def should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -> bool:
@@ -72,7 +73,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
 
         Environment Variables:
             ORCA_DEFAULT_BUCKET (string, required): Name of the default ORCA S3 Glacier bucket.
-            ORCA_MULTIPART_CHUNKSIZE_MB (string, optional): The maximum size of chunks to use when copying.
+            ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB (string, optional): The default maximum size of chunks to use when copying. Can be overridden by collection config.
 
     Args:
         event: Passed through from {handler}
@@ -112,11 +113,12 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
         print('ORCA_DEFAULT_BUCKET environment variable is not set.')
         raise
     try:
-        multipart_chunksize_mb = float(os.environ['ORCA_MULTIPART_CHUNKSIZE_MB'])
+        multipart_chunksize_mb = float(config[CONFIG_COLLECTION_KEY].get(
+            COLLECTION_MULTIPART_CHUNKSIZE_MB_KEY, os.environ['ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB']))
     except KeyError:
         # TODO: Change this to a logging statement
-        print('ORCA_MULTIPART_CHUNKSIZE_MB environment variable is not set.')
-        multipart_chunksize_mb = DEFAULT_ORCA_MULTIPART_CHUNKSIZE_MB
+        print('ORCA_DEFRAULT_MULTIPART_CHUNKSIZE_MB environment variable is not set.')
+        multipart_chunksize_mb = DEFAULT_ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB
 
     granule_data = {}
     copied_file_urls = []
@@ -158,6 +160,8 @@ def handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any:
             ORCA_DEFAULT_BUCKET (str, required): Name of the default S3 Glacier
                                                  ORCA bucket files should be
                                                  archived to.
+            ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB (str, required): The default maximum size of chunks to use when copying.
+                                                                 Can be overridden by collection config.
 
     Args:
         event: Event passed into the step from the aws workflow. A dict with the following keys:
@@ -184,6 +188,8 @@ def handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any:
                         Each dict contains the following keys:
                             regex (str): The regex that all files in the bucket must match with their name.
                             bucket (str): The name of the bucket containing the files.
+                    multipart_chunksize_mb (float, optional): The maximum size of chunks to use when copying.
+                        Defaults to Environment Var ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB
                     url_path (str): Used when calling {copy_granule_between_buckets} as a part of the destination_key.
                 buckets (dict): A dict with the following keys:
                     glacier (dict): A dict with the following keys:
