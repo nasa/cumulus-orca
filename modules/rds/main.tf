@@ -3,7 +3,8 @@ locals {
   tags = merge(var.tags, { Deployment = var.prefix })
   # Ignore aws profile in case this was deployed with CI or in a machine without
   # aws profile defined
-  used_profile = contains(["${var.aws_profile == null ? "" : var.aws_profile}"], "default") ? "" : "--profile ${var.aws_profile}"
+  checked_profile = var.aws_profile == null ? "default" : var.aws_profile
+  used_profile    = contains([local.checked_profile], "default") ? "" : "--profile ${local.checked_profile}"
 }
 
 
