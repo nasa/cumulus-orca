@@ -15,8 +15,18 @@ and includes an additional section for migration notes.
 
 
 ## [Unreleased]
+
+
+## [v3.0.1] 2021-08-30
 ### Removed
-- *ORCA-240* Removed development-only variables from variables.tf
+- *ORCA-240* Removed development-only variables from ORCA terraform.
+
+### Fixed
+- ORCA-199 Standardized build and test scripts for remaining ORCA lambdas
+- ORCA-236 Removed aws_profile and region variables as requirements for ORCA deployment. They are now optional.
+- ORCA-238 Moved all terraform requirements to a single versions.tf file as part of the deployments.
+- ORCA-239 Removed terraform provider block from all ORCA files and consolidated to main.tf file.
+- Removed technical debt and fixed recovery bug where bucket keys that were not the standard (internal, public, private, etc.) were being ignored.
 
 
 ## [v3.0.0] 2021-07-12
