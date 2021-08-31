@@ -21,8 +21,6 @@ module "orca_lambdas" {
   vpc_id                            = var.vpc_id
   orca_sqs_staged_recovery_queue_id = module.orca_sqs.orca_sqs_staged_recovery_queue_id
   ## OPTIONAL
-  region                             = var.region
-  aws_profile                        = var.aws_profile
   tags = local.tags
 
   ## --------------------------
@@ -33,8 +31,7 @@ module "orca_lambdas" {
   orca_sqs_staged_recovery_queue_arn = module.orca_sqs.orca_sqs_staged_recovery_queue_arn
   orca_sqs_status_update_queue_id    = module.orca_sqs.orca_sqs_status_update_queue_id
   orca_sqs_status_update_queue_arn   = module.orca_sqs.orca_sqs_status_update_queue_arn
-  db_deploy_arn                      = module.orca_lambdas.db_deploy_arn
-  db_deploy_source_code_hash         = module.orca_lambdas.db_deploy_source_code_hash
+  db_deploy_function_name            = module.orca_lambdas.db_deploy_function_name
 
   ## OPTIONAL
   orca_ingest_lambda_memory_size       = var.orca_ingest_lambda_memory_size

@@ -49,8 +49,7 @@ variable "workflow_config" {
 }
 
 
-# OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
-
+## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
 variable "tags" {
   type        = map(string)
   description = "Tags to be applied to resources that support tags."
@@ -164,15 +163,4 @@ variable "staged_recovery_queue_message_retention_time_seconds" {
 variable "status_update_queue_message_retention_time_seconds" {
   type        = number
   description = "The number of seconds status_update_queue SQS retains a message in seconds. Maximum value is 14 days."
-}
-
-# variables needed by bootstrap lambda. Remove in ORCA-243
-variable "aws_profile" {
-  type        = string
-  description = "AWS profile used to deploy the terraform application."
-}
-
-variable "region" {
-  type        = string
-  description = "AWS region to deploy configuration to."
 }
