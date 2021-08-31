@@ -56,12 +56,15 @@ module.exports = {
         'developer/deployment-guide/deployment-upgrading-orca',
         'developer/deployment-guide/recovery-workflow',
         'developer/deployment-guide/testing_deployment',
+        'developer/deployment-guide/deploying-from-windows',
     ],
     "Research": [
       'developer/research/research-intro',
       'developer/research/research-localstack',
       'developer/research/research-APIGateway',
       'developer/research/research-reconciliation',
+      'developer/research/research-AuroraServerless',
+      'developer/research/research-graphql'
     ],
   },
   cookbook: {

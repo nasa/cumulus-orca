@@ -6,7 +6,7 @@ description: Provides developer information for ORCA code deployment with Cumulu
 
 :::important
 
-Prior to following this document, make sure that your [deployment environment](setting-up-deployment-environment.md)
+Prior to following this document, make sure that your [deployment environment](setting-up-deployment-environment.mdx)
 is setup and an [ORCA archive glacier bucket](creating-orca-glacier-bucket.md) is
 created.
 
@@ -58,7 +58,6 @@ module "orca" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  aws_profile              = var.aws_profile
   buckets                  = var.buckets
   lambda_subnet_ids        = var.lambda_subnet_ids
   permissions_boundary_arn = var.permissions_boundary_arn
@@ -68,8 +67,7 @@ module "orca" {
   workflow_config          = module.cumulus.workflow_config
 
   ## OPTIONAL
-  region = var.region
-  tags   = var.tags
+  tags        = var.tags
 
   ## --------------------------
   ## ORCA Variables
@@ -115,7 +113,6 @@ required by the ORCA module. More information about setting these variables can
 be found in the [Cumulus variable definitions](https://github.com/nasa/cumulus/blob/master/tf-modules/cumulus/variables.tf).
 The variables must be set with the proper values in the `terraform.tfvavrs` file.
 
-- aws_profile
 - buckets
 - lambda_subnet_ids
 - permissions_boundary_arn
@@ -124,9 +121,6 @@ The variables must be set with the proper values in the `terraform.tfvavrs` file
 - vpc_id
 
 :::note Optional Cumulus Values
-
-Though optional, it is recommended that you also set the `region` variable. The
-default value for `region` is set to `us-west-2` in the ORCA module.
 
 The `tags` value automatically adds a *Deployment* tag like the Cumulus
 deployment.
@@ -409,7 +403,6 @@ file. The variables must be set with proper values for your environment in the
 
 | Variable                   | Definition                                                                                                                                   | Example Value      |
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
-| `aws_profile`              | AWS CLI Profile (configured via `aws configure`) to use for deployment.                                                                      | "default" |
 | `buckets`                  | Mapping of all S3 buckets used by Cumulus and ORCA that contains a S3 `name` and `type`. A bucket with a `type` of **orca** is required.     | `buckets = { orca_default = { name = "PREFIX-orca-primary", type = "orca", ...}}` |
 | `lambda_subnet_ids`        | A list of subnets that the Lambda's and the database have access to for working with Cumulus.                                                | ["subnet-12345", "subnet-abc123"] |
 | `permissions_boundary_arn` | AWS ARN value of the permission boundary for the VPC account.                                                                                | "arn:aws:iam::1234567890:policy/NGAPShRoleBoundary" |
@@ -446,7 +439,6 @@ is set to the proper AWS region for deployments.
 
 | Variable               | Definition                                         | Example Value                 |
 | ---------------------- | -------------------------------------------------- | ----------------------------- |
-| `region`               | AWS region to deploy the application to.           | "us-west-2" |
 | `tags`                 | Tags to be applied to resources that support tags. | `{ environment = "development", developer = "me" }` |
 
 

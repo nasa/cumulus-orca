@@ -213,7 +213,7 @@ FUNCTIONS
 
         Args:
             event: Event passed into the step from the aws workflow. A dict with the following keys:
-                input (dict): Dictionary with the followig keys:
+                input (dict): Dictionary with the following keys:
                     granules (List): List of granule objects (dictionaries)
                 config (dict): A dict with the following keys:
                     collection (dict): The collection from AWS.

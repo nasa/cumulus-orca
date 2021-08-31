@@ -1,21 +1,3 @@
-## Terraform Requirements
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = ">= 3.5.0"
-    }
-  }
-}
-
-
-## AWS Provider Settings
-provider "aws" {
-  region  = var.region
-  profile = var.aws_profile
-}
-
-
 ## Local Variables
 locals {
   tags = merge(var.tags, { Deployment = var.prefix }, { team = "ORCA", application = "ORCA" })
@@ -30,7 +12,6 @@ module "orca" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  aws_profile              = var.aws_profile
   buckets                  = var.buckets
   lambda_subnet_ids        = var.lambda_subnet_ids
   permissions_boundary_arn = var.permissions_boundary_arn
@@ -40,8 +21,7 @@ module "orca" {
   workflow_config          = var.workflow_config
 
   ## OPTIONAL
-  region = var.region
-  tags   = local.tags
+  tags        = local.tags
 
   ## --------------------------
   ## ORCA Variables
@@ -69,7 +49,7 @@ module "orca" {
   status_update_queue_message_retention_time_seconds   = var.status_update_queue_message_retention_time_seconds
 
   ## OPTIONAL (DO NOT CHANGE DEFAULT VALUES!)
-  database_app_user            = var.database_app_user
-  database_name                = var.database_name
-  orca_recovery_retrieval_type = var.orca_recovery_retrieval_type
+  database_app_user            = "orcauser"
+  database_name                = "disaster_recovery"
+  orca_recovery_retrieval_type = "Standard"
 }

@@ -1,21 +1,3 @@
-## Terraform Requirements
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = ">= 3.5.0"
-    }
-  }
-}
-
-
-## AWS Provider Settings
-provider "aws" {
-  region  = var.region
-  profile = var.aws_profile
-}
-
-
 # Local Variables
 locals {
   tags         = merge(var.tags, { Deployment = var.prefix })
@@ -32,11 +14,9 @@ module "lambda_security_group" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  aws_profile = var.aws_profile
   prefix      = var.prefix
   vpc_id      = var.vpc_id
   ## OPTIONAL
-  region = var.region
   tags   = local.tags
   ## --------------------------
   ## ORCA Variables
@@ -53,12 +33,10 @@ module "restore_object_arn" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  aws_profile              = var.aws_profile
   buckets                  = var.buckets
   permissions_boundary_arn = var.permissions_boundary_arn
   prefix                   = var.prefix
   # OPTIONAL
-  region = var.region
   tags   = local.tags
   # --------------------------
   # ORCA Variables

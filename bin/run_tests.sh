@@ -5,7 +5,7 @@ base=$(pwd)
 failed=0
 
 # Crawl the task directories for tasks that do not have individual test scripts.
-for taskdir in $(ls -d tasks/* | egrep "copy_to_glacier$|extract_filepaths_for_granule|dr_dbutils|pg_utils")
+for taskdir in $(ls -d tasks/* | egrep "dr_dbutils|pg_utils")
 do
   # Build and run tests for each task directory
   cd $taskdir
@@ -17,7 +17,7 @@ do
   source venv/bin/activate
   pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org
   pip install -q -r requirements-dev.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
-  # Currenty just running unit tests until we fix/support large tests
+  # Currently just running unit tests until we fix/support large tests
   coverage run --source test/unit_tests/ -m pytest test/unit_tests/
   result=$?
   if [[ $result -eq 1 ]]; then
@@ -45,9 +45,9 @@ do
   fi
 done
 
-## Call each tasks testing suite
+## Call each task's testing suite
 ## TODO: Add more logging output and possibly make asynchronus
-for task in $(ls -d tasks/* | egrep -v "copy_to_glacier$|extract_filepaths_for_granule|dr_dbutils|pg_utils|shared_libraries|package")
+for task in $(ls -d tasks/* | egrep -v "dr_dbutils|pg_utils|shared_libraries|package")
 do
   echo
   echo "Running tests in $task"

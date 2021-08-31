@@ -1,12 +1,6 @@
 ## Variables obtained by Cumulus deployment
 ## Should exist in https://github.com/nasa/cumulus-template-deploy/blob/master/cumulus-tf/variables.tf
 ## REQUIRED
-variable "aws_profile" {
-  type        = string
-  description = "AWS profile used to deploy the terraform application."
-}
-
-
 variable "buckets" {
   type        = map(object({ name = string, type = string }))
   description = "S3 bucket locations for the various storage types being used."
@@ -56,13 +50,6 @@ variable "workflow_config" {
 
 
 ## OPTIONAL
-variable "region" {
-  type        = string
-  description = "AWS region to deploy configuration to."
-  default     = "us-west-2"
-}
-
-
 variable "tags" {
   type        = map(string)
   description = "Tags to be applied to resources that support tags."
@@ -191,26 +178,4 @@ variable "status_update_queue_message_retention_time_seconds" {
   type        = number
   description = "The number of seconds status_update_queue SQS retains a message in seconds. Maximum value is 14 days."
   default     = 777600 #9 days
-}
-
-
-## OPTIONAL (DO NOT CHANGE!) - Development use only
-variable "database_app_user" {
-  type        = string
-  description = "Name of the database application user."
-  default     = "orcauser"
-}
-
-
-variable "database_name" {
-  type        = string
-  description = "Name of the ORCA database in PostgreSQL"
-  default     = "disaster_recovery"
-}
-
-
-variable "orca_recovery_retrieval_type" {
-  type        = string
-  description = "AWS glacier recovery type to use. One of Bulk, Standard, Express."
-  default     = "Standard"
 }

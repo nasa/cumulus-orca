@@ -34,7 +34,7 @@ WITH cte AS (
 )
 UPDATE dr.request_status rs
    SET job_status = 'error',
-       err_msg = 'Some error occured here'
+       err_msg = 'Some error occurred here'
   FROM cte
  WHERE rs.request_id = cte.request_id;
 

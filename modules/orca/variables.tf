@@ -1,12 +1,6 @@
 ## Variables obtained by Cumulus deployment
 ## Should exist in https://github.com/nasa/cumulus-template-deploy/blob/master/cumulus-tf/variables.tf
 ## REQUIRED
-variable "aws_profile" {
-  type        = string
-  description = "AWS profile used to deploy the terraform application."
-}
-
-
 variable "buckets" {
   type        = map(object({ name = string, type = string }))
   description = "S3 bucket locations for the various storage types being used."
@@ -56,12 +50,6 @@ variable "workflow_config" {
 
 
 ## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
-variable "region" {
-  type        = string
-  description = "AWS region to deploy configuration to."
-}
-
-
 variable "tags" {
   type        = map(string)
   description = "Tags to be applied to resources that support tags."
@@ -177,7 +165,7 @@ variable "status_update_queue_message_retention_time_seconds" {
 }
 
 ## OPTIONAL (DO NOT CHANGE!) - Development use only
-## Default variable value is set in ../variables.tf to keep default values centralized.
+## Default variable value is set in ../main.tf to disallow any modification.
 variable "database_app_user" {
   type        = string
   description = "Name of the database application user."

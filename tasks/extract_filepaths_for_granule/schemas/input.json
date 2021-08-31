@@ -1,0 +1,68 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "description": "The input for the extract_filepaths_for_granule Lambda.",
+    "type": "object",
+    "properties": {
+      "granules": {
+        "description": "A list of objects representing individual files.",
+        "type": "array",
+        "items": [
+          {
+            "type": "object",
+            "properties": {
+              "granuleId": {
+                "description": "The ID of the granule.",
+                "type": "string"
+              },
+              "version": {
+                "description": "The version of the granule.",
+                "type": "string"
+              },
+              "files": {
+                "description": "Description of the files within the given granule.",
+                "type": "array",
+                "items": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "description": "The name and extension of the file.",
+                        "type": "string"
+                      },
+                      "key": {
+                        "description": "The S3 key of the file (full path and file name less the bucket name).",
+                        "type": "string"
+                      },
+                      "bucket": {
+                        "description": "The S3 bucket name where the file exists.",
+                        "type": "string"
+                      },
+                      "filename": {
+                        "description": "The whole S3 URL of the file.",
+                        "type": "string"
+                      },
+                      "type": {
+                        "description": "The type of the file",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "key",
+                      "bucket"
+                    ]
+                  }
+                ]
+              }
+            },
+            "required": [
+              "granuleId",
+              "files"
+            ]
+          }
+        ]
+      }
+    },
+    "required": [
+      "granules"
+    ]
+  }

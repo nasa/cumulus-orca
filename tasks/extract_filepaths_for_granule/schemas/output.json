@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "The output for the extract_filepaths_for_granule Lambda.",
+  "type": "object",
+  "properties": {
+    "granules": {
+      "description": "A list of objects representing individual files.",
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "granuleId": {
+              "description": "The ID of the granule.",
+              "type": "string"
+            },
+            "keys": {
+              "description": "List of Keys related to where the files will be located.",
+              "type": "array",
+              "items": [
+                {
+                  "properties": {
+                    "key":{
+                      "desription": "The key of the file.",
+                      "type": "string"
+                    },
+                    "dest_bucket": {
+                      "description": "The bucket the file will be moved to after it is located.",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "dest_bucket"
+                  ]
+                  }
+              ]
+            }
+          },
+          "required": [
+            "granuleId",
+            "keys"
+          ]
+        }
+      ]
+    }
+  },
+  "required": [
+    "granules"
+  ]
+}

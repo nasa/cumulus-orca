@@ -1,20 +1,3 @@
-## Terraform Requirements
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = ">= 3.5.0"
-    }
-  }
-}
-
-
-## AWS Provider Settings
-provider "aws" {
-  profile = var.aws_profile
-  region  = var.region
-}
-
 ## Local Variables
 locals {
   tags = merge(var.tags, { Deployment = var.prefix })
