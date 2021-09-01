@@ -66,7 +66,6 @@ BEGIN
     , collection_id       text NOT NULL
     , cumulus_granule_id  text NOT NULL
     , execution_id  	  text NOT NULL
-    , acquisition_time    timestamp with time zone NOT NULL
     , ingest_time         timestamp with time zone NOT NULL
     , last_update         timestamp with time zone NOT NULL
     , CONSTRAINT PK_granules PRIMARY KEY(id)
@@ -84,8 +83,6 @@ BEGIN
       IS 'Granule ID from Cumulus';
     COMMENT ON COLUMN granules.execution_id
       IS 'Step function execution ID from AWS';
-    COMMENT ON COLUMN granules.acquisition_time
-      IS 'Data acquistion time in UTC.';
     COMMENT ON COLUMN granules.ingest_time
       IS 'Date and time the granule was originally ingested into ORCA.';
     COMMENT ON COLUMN granules.last_update
@@ -104,8 +101,8 @@ BEGIN
     , etag                        text NOT NULL
     , version                     text NOT NULL
     , size_in_bytes               int8 NOT NULL
-    , hash                        text NOT NULL
-    , hash_type                   text NOT NULL
+    , hash                        text NULL
+    , hash_type                   text NULL
     , CONSTRAINT PK_files PRIMARY KEY(id)
     , CONSTRAINT UNIQUE_files_1 UNIQUE (cumulus_archive_location, key_path)
     , CONSTRAINT UNIQUE_files_2 UNIQUE (orca_archive_location, key_path)
