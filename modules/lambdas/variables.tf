@@ -41,11 +41,6 @@ variable "orca_default_bucket" {
   description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
 }
 
-variable "db_deploy_function_name" {
-  type        = string
-  description = "AWS Function Name of the db_deploy lambda used to create/modify the DB."
-}
-
 
 ## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
 

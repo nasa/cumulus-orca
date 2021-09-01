@@ -1,15 +1,7 @@
 # Local Variables
 locals {
   tags         = merge(var.tags, { Deployment = var.prefix })
-}
-
-## =============================================================================
-## NULL RESOURCES - 1x Use
-## =============================================================================
-data "aws_lambda_invocation" "db_migration" {
-  # depends_on = [aws_db_instance.postgresql]
-  function_name = var.db_deploy_function_name
-  input = jsonencode({})
+  orca_buckets = [for k, v in var.buckets : v.name if v.type == "orca"]
 }
 
 
@@ -445,4 +437,13 @@ resource "aws_lambda_function" "db_deploy" {
       PREFIX = var.prefix
     }
   }
+}
+
+## =============================================================================
+## NULL RESOURCES - 1x Use
+## =============================================================================
+data "aws_lambda_invocation" "db_migration" {
+  # depends_on = [aws_db_instance.postgresql]
+  function_name = aws_lambda_function.db_deploy.function_name
+  input = jsonencode({})
 }
