@@ -66,16 +66,14 @@ variable "db_host_endpoint" {
   workflow_config          = module.cumulus.workflow_config
 
   ## OPTIONAL
-  aws_profile = var.aws_profile
-  region      = var.region
   tags        = local.tags
 
   ## --------------------------
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  orca_default_bucket                                  = var.orca_default_bucket
-  db_admin_password                                    = var.db_admin_password
+  orca_default_bucket = var.orca_default_bucket
+  db_admin_password   = var.db_admin_password
   db_user_password    = var.db_user_password
   db_host_endpoint    = var.db_host_endpoint
   ## OPTIONAL
