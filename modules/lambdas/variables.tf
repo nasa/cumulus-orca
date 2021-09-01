@@ -34,31 +34,16 @@ variable "tags" {
   description = "Tags to be applied to resources that support tags."
 }
 
-# variables needed by bootstrap lambda. Remove in ORCA-243
-variable "aws_profile" {
-  type        = string
-  description = "AWS profile used to deploy the terraform application."
-}
-variable "db_deploy_arn" {
-  type        = string
-  description = "AWS ARN of the db_deploy lambda used to create/modify the DB."
-}
-variable "region" {
-  type        = string
-  description = "AWS region to deploy configuration to."
-}
-
-variable "db_deploy_source_code_hash" {
-  type        = string
-  description = "Base 64 SHA-256 hash of the db_deploy lambda used to create/modify the DB."
-}
-
-
 ## Variables unique to ORCA
 ## REQUIRED
 variable "orca_default_bucket" {
   type        = string
   description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
+}
+
+variable "db_deploy_function_name" {
+  type        = string
+  description = "AWS Function Name of the db_deploy lambda used to create/modify the DB."
 }
 
 

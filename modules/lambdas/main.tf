@@ -1,32 +1,17 @@
 # Local Variables
 locals {
   tags         = merge(var.tags, { Deployment = var.prefix })
-  orca_buckets = [for k, v in var.buckets : v.name if v.type == "orca"]
-  # Ignore aws profile in case this was deployed with CI or in a machine without
-  # remove aws_profile in ORCA-243
-  used_profile = contains(["${var.aws_profile == null ? "" : var.aws_profile}"], "default") ? "" : "--profile ${var.aws_profile}"
 }
 
 ## =============================================================================
 ## NULL RESOURCES - 1x Use
 ## =============================================================================
-
-## bootstrap - Bootstrap lambda that creates/modifies database objects on deploys
-## =============================================================================
-# https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource
-# https://www.terraform.io/docs/language/resources/provisioners/local-exec.html
-resource "null_resource" "bootstrap" {
-  # Determine what has to change to trigger this resource being created/re-created.
-  triggers = {
-    bootstrap_lambda_hash = var.db_deploy_source_code_hash
-  }
-
-  # Execute the db_deploy lambda 1 time if the resource is created/re-created.
-  # need to remove var.region in ORCA-243
-  provisioner "local-exec" {
-    command = "aws lambda invoke --function-name ${var.db_deploy_arn} ${local.used_profile} --region ${var.region} 'db_deploy-response.out'"
-  }
+data "aws_lambda_invocation" "db_migration" {
+  # depends_on = [aws_db_instance.postgresql]
+  function_name = var.db_deploy_function_name
+  input = jsonencode({})
 }
+
 
 # # Referenced Modules
 # lambda_security_group - Security Groups module reference

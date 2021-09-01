@@ -13,7 +13,6 @@ import boto3
 import psycopg2
 import sqlalchemy
 from moto import mock_secretsmanager
-from sqlalchemy import exc
 from sqlalchemy.engine import URL
 
 import shared_db
@@ -68,7 +67,7 @@ class TestSharedDatabseLibraries(unittest.TestCase):
 
         with self.assertRaises(Exception) as ex:
             shared_db.get_configuration()
-            self.assertEquals(ex.message, error_message)
+            self.assertEqual(ex.message, error_message)
 
     @patch.dict(
         os.environ,
@@ -85,7 +84,7 @@ class TestSharedDatabseLibraries(unittest.TestCase):
 
         with self.assertRaises(Exception) as ex:
             shared_db.get_configuration()
-            self.assertEquals(ex.message, error_message)
+            self.assertEqual(ex.message, error_message)
 
     @patch.dict(
         os.environ,
@@ -107,7 +106,7 @@ class TestSharedDatabseLibraries(unittest.TestCase):
         # Run the test
         with self.assertRaises(Exception) as ex:
             shared_db.get_configuration()
-            self.assertEquals(ex.message, message)
+            self.assertEqual(ex.message, message)
 
         # Recreate the key
         self.test_sm.create_secret(Name=secret_key, SecretString="Some-Value-Here")
@@ -211,7 +210,7 @@ class TestSharedDatabseLibraries(unittest.TestCase):
 
         result = dummy_call()
 
-        self.assertEquals(expected_result, result)
+        self.assertEqual(expected_result, result)
         mock_sleep.assert_not_called()
 
     @patch("time.sleep")
@@ -249,7 +248,7 @@ class TestSharedDatabseLibraries(unittest.TestCase):
         try:
             dummy_call()
         except sqlalchemy.exc.OperationalError as caught_error:
-            self.assertEquals(expected_error, caught_error)
-            self.assertEquals(max_retries + 1, mock_sleep.call_count)
+            self.assertEqual(expected_error, caught_error)
+            self.assertEqual(max_retries+1, mock_sleep.call_count)
             return
         self.fail("Error not raised.")

@@ -27,16 +27,9 @@ parameter store information and other items needed to create the database.
 Environment Variables:
     PREFIX (str): Deployment prefix used to pull the proper AWS secret.
     AWS_REGION (str): AWS reserved runtime variable used to set boto3 client region.
-    DATABASE_PORT (str): The database port. The standard is 5432
-    DATABASE_NAME (str): The name of the application database.
-    APPLICATION_USER (str): The name of the database application user.
-    ADMIN_USER (str): *OPTIONAL* The name of the database super user (postgres).
-    ADMIN_DATABASE (str): *OPTIONAL* The name of the admin database for the instance (postgres).
 
 Parameter Store:
-    <prefix>-drdb-user-pass (string): The password for the application user (APPLICATION_USER).
-    <prefix>-drdb-host (string): The database host.
-    <prefix>-drdb-admin-pass: The password for the admin user
+    <prefix>-orca-db-login-secret(string): The json string containing all the admin and user db login info.
 ```
 
 **Arguments**:

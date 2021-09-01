@@ -16,7 +16,6 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy.future import Engine
 from cumulus_logger import CumulusLogger
 from typing import Any, Dict, TypeVar, Callable
-import psycopg2
 
 # instantiate CumulusLogger
 logger = CumulusLogger(name="orca")
