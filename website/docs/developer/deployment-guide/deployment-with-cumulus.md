@@ -73,9 +73,10 @@ module "orca" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  database_app_user_pw = var.database_app_user_pw
-  orca_default_bucket  = var.orca_default_bucket
-  postgres_user_pw     = var.postgres_user_pw
+  orca_default_bucket = var.orca_default_bucket
+  db_admin_password   = var.db_admin_password
+  db_user_password    = var.db_user_password
+  db_host_endpoint    = var.db_host_endpoint
 
   ## OPTIONAL
   # database_port                                = 5432
@@ -101,10 +102,10 @@ The following variables are unique to the ORCA module and required to be set by
 the user. More information about these required variables, as well as the
 optional variables can be found in the [variables section](#orca-variables).
 
-- database_app_user_pw
+- db_admin_password
 - orca_default_bucket
-- postgres_user_pw
-
+- db_user_password
+- db_host_endpoint
 
 #### Required Values Retrieved from Cumulus Variables
 
@@ -146,21 +147,25 @@ For more information on the variables, see the [variables section](#orca-variabl
 ```terraform
 ## Variables unique to ORCA
 ## REQUIRED
-variable "database_app_user_pw" {
+variable "db_admin_password" {
+  description = "Password for RDS database administrator authentication"
   type        = string
-  description = "ORCA application database user password."
+}
+
+variable "db_user_password" {
+  description = "Password for RDS database user authentication"
+  type        = string
+}
+
+variable "db_host_endpoint" {
+  type        = string
+  description = "Database host endpoint to connect to."
 }
 
 
 variable "orca_default_bucket" {
   type        = string
   description = "Default ORCA S3 Glacier bucket to use."
-}
-
-
-variable "postgres_user_pw" {
-  type        = string
-  description = "postgres database user password."
 }
 
 ```
@@ -189,21 +194,25 @@ provides additional information on variables that can be set for the ORCA applic
 ## -----------------------------------------------------------------------------
 
 ## ORCA application database user password.
-database_app_user_pw = "my-super-secret-orca-application-user-password"
+db_user_password = "my-super-secret-orca-application-user-password"
 
 ## Default ORCA S3 Glacier bucket to use
 orca_default_bucket = "orca-archive-primary"
 
 ## PostgreSQL database (root) user password
-postgres_user_pw = "my-super-secret-database-owner-password"
+db_admin_password = "my-super-secret-database-owner-password"
+
+## PostgreSQL database host endpoint to connect to.
+db_host_endpoint = "aws.postgresrds.host"
 
 ```
 
 Below describes the type of value expected for each variable.
 
-* `database_app_user_pw` (string) - the password for the application user
-* `orca_default_bucket` (string) - default S3 glacier bucket to use for ORCA data
-* `postgres_user_pw` (string) - password for the postgres user
+* `db_user_password` (string) - the password for the application user.
+* `orca_default_bucket` (string) - default S3 glacier bucket to use for ORCA data.
+* `db_admin_password` (string) - password for the postgres user.
+* `db_host_endpoint`(string) - Database host endpoint to connect to.
 
 Additional variable definitions can be found in the [ORCA variables](#orca-variables)
 section of the document.
