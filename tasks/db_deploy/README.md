@@ -7,7 +7,7 @@ for information on environment setup and testing.
 
 The **db_deploy** Lambda performs an install of ORCA objects into a PostgreSQL
 database. The Lambda will check various attributes of the database and perform
-either a fresh install of the ORCA schema, roes, users, and tables or a
+either a fresh install of the ORCA schema, roles, users, and tables or a
 migration from an older ORCA schema to the currently supported ORCA schema
 version. This lambda is designed to run once during a terraform deployment of
 the ORCA version.
@@ -76,16 +76,9 @@ AWS CLI `aws lambda update-function-code --function-name <prefix>_db_deploy --zi
 
 Using the AWS Lambda interface for db_deploy perform the following steps:
 
-1. Make sure the following environment variables are set for the Lambda. The
-   defaults are provided in parentheses.
+1. Make sure the following environment variable is set for the Lambda.
    ```
    PREFIX           - Your var.prefix value from variables.tfvars
-   AWS_REGION       - Your var.region value from variables.tfvars (us-west-2)
-   DATABASE_PORT    = Your var.database_port value from variables.tfvars (5432)
-   DATABASE_NAME    = Your var.database_name value from variables.tfvars (disaster_recovery)
-   APPLICATION_USER = Your var.database_app_user value from variables.tfvars (orcauser)
-   ROOT_USER        = "postgres"
-   ROOT_DATABASE    = "postgres"
    ```
 2. Create an empty JSON test event.
    ```
@@ -174,5 +167,3 @@ of this document for more information on validating the deployment.
 ## db_deploy API Reference
 
 API reference information is available in the [API Reference documentation.](API.md).
-
-
