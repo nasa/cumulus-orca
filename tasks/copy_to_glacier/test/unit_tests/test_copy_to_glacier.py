@@ -2,9 +2,10 @@ import copy
 import unittest
 import uuid
 from unittest import TestCase
-from unittest.mock import Mock, call, patch, MagicMock
+from unittest.mock import Mock, call, patch
 
 from copy_to_glacier import *
+from test.unit_tests.configcheck import ConfigCheck
 
 
 class TestCopyToGlacierHandler(TestCase):
@@ -89,11 +90,10 @@ class TestCopyToGlacierHandler(TestCase):
         not_excluded_flag = should_exclude_files_type(self.not_excluded_file, ['.example'])
         self.assertEqual(not_excluded_flag, False)
 
-    @patch.dict(os.environ, {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__(), "ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB": "4.2"},
+    @patch.dict(os.environ,
+                {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__(), "ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB": "4.2"},
                 clear=True)
-    @patch('boto3.s3.transfer.TransferConfig.__init__')
-    def test_task_happy_path(self,
-                             mock_transferconfig_init: MagicMock):
+    def test_task_happy_path(self):
         """
         Basic path with buckets present.
         """
@@ -103,12 +103,14 @@ class TestCopyToGlacierHandler(TestCase):
         content_type = uuid.uuid4().__str__()
         source_bucket_names = [file['bucket'] for file in self.event_granules['granules'][0]['files']]
         source_keys = [file['filepath'] for file in self.event_granules['granules'][0]['files']]
-        mock_transferconfig_init.return_value = None
+
+        config_check = ConfigCheck(4.2 * MB)
 
         # todo: use 'side_effect' to verify args. It is safer, as current method does not deep-copy args
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.copy = Mock(return_value=None)
+        s3_cli.copy.side_effect = config_check.check_multipart_chunksize
         s3_cli.head_object = Mock(return_value={'ContentType': content_type})
 
         event = {
@@ -145,12 +147,8 @@ class TestCopyToGlacierHandler(TestCase):
                     'ContentType': content_type,
                     'ACL': 'bucket-owner-full-control'
                 },
-                Config=unittest.mock.ANY
+                Config=unittest.mock.ANY  # Checked by ConfigCheck. Equality checkers do not work.
             ))
-
-        mock_transferconfig_init.assert_has_calls([
-            call(multipart_chunksize=4.2 * MB)
-        ] * len(source_bucket_names))
 
         s3_cli.head_object.assert_has_calls(head_object_calls)
         s3_cli.copy.assert_has_calls(copy_calls)
@@ -161,6 +159,80 @@ class TestCopyToGlacierHandler(TestCase):
         expected_copied_file_urls = [file['filename'] for file in self.event_granules['granules'][0]['files']]
         self.assertEqual(expected_copied_file_urls, result['copied_to_glacier'])
         self.assertEqual(self.event_granules['granules'], result['granules'])
+        self.assertIsNone(config_check.bad_config)
+
+    @patch.dict(os.environ,
+                {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__(), "ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB": "4.2"},
+                clear=True)
+    def test_task_overridden_multipart_chunksize(self):
+        """
+        If the collection has a different multipart chunksize, it should override the default.
+        """
+        overridden_multipart_chunksize_mb = 4.1
+        collection_name = uuid.uuid4().__str__()
+        collection_version = uuid.uuid4().__str__()
+        destination_bucket_name = os.environ['ORCA_DEFAULT_BUCKET']
+        content_type = uuid.uuid4().__str__()
+        source_bucket_names = [file['bucket'] for file in self.event_granules['granules'][0]['files']]
+        source_keys = [file['filepath'] for file in self.event_granules['granules'][0]['files']]
+
+        config_check = ConfigCheck(overridden_multipart_chunksize_mb * MB)
+
+        # todo: use 'side_effect' to verify args. It is safer, as current method does not deep-copy args
+        boto3.client = Mock()
+        s3_cli = boto3.client('s3')
+        s3_cli.copy = Mock(return_value=None)
+        s3_cli.copy.side_effect = config_check.check_multipart_chunksize
+        s3_cli.head_object = Mock(return_value={'ContentType': content_type})
+
+        event = {
+            'input': copy.deepcopy(self.event_granules),
+            'config': {
+                CONFIG_COLLECTION_KEY: {
+                    COLLECTION_NAME_KEY: collection_name,
+                    COLLECTION_VERSION_KEY: collection_version,
+                    COLLECTION_MULTIPART_CHUNKSIZE_MB_KEY: str(overridden_multipart_chunksize_mb)
+                }
+            }
+
+        }
+
+        result = task(event, None)
+
+        self.assertEqual(event['input']['granules'], result['granules'])
+        granules = result['granules']
+        self.assertIsNotNone(granules)
+        self.assertEqual(1, len(granules))
+        granule = granules[0]
+        self.assertEqual(4, len(granule['files']))
+
+        head_object_calls = []
+        copy_calls = []
+        for i in range(0, len(source_bucket_names)):
+            head_object_calls.append(call(Bucket=source_bucket_names[i], Key=source_keys[i]))
+            copy_calls.append(call(
+                {'Bucket': source_bucket_names[i], 'Key': source_keys[i]},
+                destination_bucket_name,
+                source_keys[i],
+                ExtraArgs={
+                    'StorageClass': 'GLACIER',
+                    'MetadataDirective': 'COPY',
+                    'ContentType': content_type,
+                    'ACL': 'bucket-owner-full-control'
+                },
+                Config=unittest.mock.ANY  # Checked by ConfigCheck. Equality checkers do not work.
+            ))
+
+        s3_cli.head_object.assert_has_calls(head_object_calls)
+        s3_cli.copy.assert_has_calls(copy_calls)
+
+        self.assertEqual(s3_cli.head_object.call_count, 4)
+        self.assertEqual(s3_cli.copy.call_count, 4)
+
+        expected_copied_file_urls = [file['filename'] for file in self.event_granules['granules'][0]['files']]
+        self.assertEqual(expected_copied_file_urls, result['copied_to_glacier'])
+        self.assertEqual(self.event_granules['granules'], result['granules'])
+        self.assertIsNone(config_check.bad_config)
 
     @patch.dict(os.environ,
                 {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__(), "ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB": "4.2"},
@@ -229,8 +301,7 @@ class TestCopyToGlacierHandler(TestCase):
             task(event, None)
             self.assertTrue('ORCA_DEFAULT_BUCKET environment variable is not set.' in context.exception)
 
-
-  ##TODO: Write tests to validate file name regex exclusion
+##TODO: Write tests to validate file name regex exclusion
 
 # todo: switch this to large test
 #    def test_5_task(self):
