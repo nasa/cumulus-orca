@@ -5,6 +5,8 @@ import uuid
 from unittest import TestCase, result
 from unittest.mock import Mock, call, patch, MagicMock
 
+import fastjsonschema as fastjsonschema
+
 import copy_to_glacier
 from copy_to_glacier import *
 
@@ -163,6 +165,12 @@ class TestCopyToGlacierHandler(TestCase):
         self.assertEqual(expected_copied_file_urls, result['copied_to_glacier'])
         self.assertEqual(self.event_granules['granules'], result['granules'])
 
+        with open("schemas/output.json", "r") as raw_schema:
+            schema = json.loads(raw_schema.read())
+
+        validate = fastjsonschema.compile(schema)
+        validate(result)
+
     @patch.dict(os.environ, {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__()}, clear=True)
     def test_task_empty_granules_list(self):
         """
@@ -199,6 +207,12 @@ class TestCopyToGlacierHandler(TestCase):
         s3_cli.head_object.assert_not_called()
         s3_cli.copy.assert_not_called()
 
+        with open("schemas/output.json", "r") as raw_schema:
+            schema = json.loads(raw_schema.read())
+
+        validate = fastjsonschema.compile(schema)
+        validate(result)
+
     @patch.dict(os.environ, {"ORCA_DEFAULT_BUCKET": ""}, clear=True)
     def test_task_invalid_environment_variable(self):
         """
@@ -234,16 +248,6 @@ class TestCopyToGlacierHandler(TestCase):
             task(event, None)
             self.assertTrue('ORCA_DEFAULT_BUCKET environment variable is not set.' in context.exception)
 
-    def test_task_output_json_schema(
-            self
-    ):
-        # todo
-        # Validate the output is correct
-        with open("schemas/output.json", "r") as raw_schema:
-            schema = json.loads(raw_schema.read())
-
-        validate = fastjsonschema.compile(schema)
-        validate(result)
 
 ##TODO: Write tests to validate file name regex exclusion
 
