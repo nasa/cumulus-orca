@@ -27,12 +27,12 @@ module "orca" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  database_app_user_pw = var.database_app_user_pw
-  orca_default_bucket  = var.orca_default_bucket
-  postgres_user_pw     = var.postgres_user_pw
-
+  orca_default_bucket = var.orca_default_bucket
+  db_admin_password   = var.db_admin_password
+  db_user_password    = var.db_user_password
+  db_host_endpoint    = var.db_host_endpoint
   ## OPTIONAL
-  database_port                                        = var.database_port
+  db_admin_username                                    = var.db_admin_username
   orca_ingest_lambda_memory_size                       = var.orca_ingest_lambda_memory_size
   orca_ingest_lambda_timeout                           = var.orca_ingest_lambda_timeout
   orca_recovery_buckets                                = var.orca_recovery_buckets
@@ -47,9 +47,4 @@ module "orca" {
   sqs_maximum_message_size                             = var.sqs_maximum_message_size
   staged_recovery_queue_message_retention_time_seconds = var.staged_recovery_queue_message_retention_time_seconds
   status_update_queue_message_retention_time_seconds   = var.status_update_queue_message_retention_time_seconds
-
-  ## OPTIONAL (DO NOT CHANGE DEFAULT VALUES!)
-  database_app_user            = "orcauser"
-  database_name                = "disaster_recovery"
-  orca_recovery_retrieval_type = "Standard"
 }

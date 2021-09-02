@@ -65,6 +65,7 @@ This application will be used in future steps to authenticate users.
 - Go to [this repo](https://git.earthdata.nasa.gov/projects/ORCA/repos/cumulus-orca-template-deploy/browse) and clone it to your machine.
 - Unzip.
 - Remove the '.example' on terraform.tf and terraform.tfvars files in data-persistence-tf, cumulus-tf, and rds-cluster-tf.
+- Globally find and replace `postgres_user_pw` to `db_admin_password` and `database_app_user_pw` to `db_user_password`.
 - In each terraform.tf and terraform.tfvars, use your own prefix, region, vpc id, and subnet ids.
   :::warning
   The region and prefix are not always in simple variables. Do a global search for 'PREFIX' and 'us-east-1'.
@@ -137,13 +138,7 @@ terraform apply
       It is recommended that all buckets include the same test data.
       :::
 
-    - Replace the `cumulus_message_adapter_lambda_layer_version_arn` with a valid one.
-      :::tip
-      The CMA for the current sandbox environment can be found by running
-      ```
-      aws lambda --profile default list-layers --query "Layers[?LayerName=='orca-bh-sandbox-CMA-layer'].[LayerName, LayerArn, LatestMatchingVersion.LayerVersionArn]"
-      ```
-      If the CMA is not deployed, follow [the deployment instructions](https://nasa.github.io/cumulus/docs/deployment/deployment-readme#deploy-the-cumulus-message-adapter-layer) and note the output ARN.
+    - If the CMA is not deployed, follow [the deployment instructions](https://nasa.github.io/cumulus/docs/deployment/deployment-readme#deploy-the-cumulus-message-adapter-layer) and note the version used. Must match `cumulus_message_adapter_version`.
       If you have already deployed your own CMA layer, it can be found using
       ```
       aws lambda --profile default list-layers --query "Layers[?LayerName=='PREFIX-CMA-layer'].[LayerName, LayerArn, LatestMatchingVersion.LayerVersionArn]"
@@ -164,7 +159,6 @@ terraform apply
             "scott.saxon",
           ]
           ```
-    - Set `token_secret` to a value of your choice.
     - Comment out the `archive_api_port` property and value.
     - Uncomment the `key_name property` and set the value to `"PREFIX-key-pair"`
     - Add this section to the bottom of the file and edit as desired:
@@ -177,18 +171,47 @@ terraform apply
       ## -----------------------------------------------------------------------------
 
       ## ORCA application database user password.
-      database_app_user_pw = "This1sAS3cr3t"
+      db_user_password = "This1sAS3cr3t"
 
       ## Default ORCA S3 Glacier bucket to use
       orca_default_bucket = PREFIX-glacier"
 
       ## PostgreSQL database (root) user password
-      postgres_user_pw = "An0th3rS3cr3t"
+      db_admin_password = "An0th3rS3cr3t"
       ```
     :::warning
-    The instructions in the tfvars file suggest swapping '12345' with your account ID. This may not work, depending on how your dependencies such as the cumulus_message_adapter_lambda_layer_version_arn were set up.
+    The instructions in the tfvars file suggest swapping '12345' with your account ID. This may not work, depending on how your dependencies were set up.
     :::
 - In cumulus-tf/orca.tf:
+    - Remove the `aws_profile` and `region` variables.
+    - Replace the `ORCA Variables` section with the following:
+      ```
+      ## --------------------------
+      ## ORCA Variables
+      ## --------------------------
+      ## REQUIRED
+      orca_default_bucket = var.orca_default_bucket
+      db_admin_password   = var.db_admin_password
+      db_user_password    = var.db_user_password
+      db_host_endpoint    = var.db_host_endpoint
+      ## OPTIONAL
+      db_admin_username                                    = "postgres"
+      orca_ingest_lambda_memory_size                       = 2240
+      orca_ingest_lambda_timeout                           = 600
+      orca_recovery_buckets                                = []
+      orca_recovery_complete_filter_prefix                 = ""
+      orca_recovery_expiration_days                        = 5
+      orca_recovery_lambda_memory_size                     = 128
+      orca_recovery_lambda_timeout                         = 300
+      orca_recovery_retry_limit                            = 3
+      orca_recovery_retry_interval                         = 1
+      orca_recovery_retry_backoff                          = 2
+      sqs_delay_time_seconds                               = 0
+      sqs_maximum_message_size                             = 262144
+      staged_recovery_queue_message_retention_time_seconds = 432000
+      status_update_queue_message_retention_time_seconds   = 777600
+      ```
+    - Set the value of `db_host_endpoint` to the `rds_endpoint` value output from the rds-cluster deployment.
     - You may change `source` to an alternate release. If local, make sure it is within the scope of the container.
 
 ```bash

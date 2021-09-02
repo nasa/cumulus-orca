@@ -114,7 +114,6 @@ remote state.
 ```
 terraform {
   backend "s3" {
-    region         = "us-west-2"
     bucket         = "dr-tf-state"
     key            = "terraform.tfstate"
     dynamodb_table = "dr-tf-locks"
@@ -128,24 +127,17 @@ First, run a `mv terraform.tfvars.example terraform.tfvars` to get a template `t
 **Necessary:**
 * `ngap_subnets` - NGAP Subnets (array)
 * `vpc_id` - ID of VPC to place resources in - recommended that this be a private VPC (or at least one with restricted access).
-* `glacier_bucket` - Bucket with Glacier policy
-* `public_bucket` - Bucket with public permissions (Cumulus public bucket)
-* `private_bucket` - Bucket with private permissions (Cumulus private bucket)
-* `internal_bucket` - Analogous to the Cumulus internal bucket 
-* `protected_bucket` - Analogous to the Cumulus protected bucket
+* `buckets` - AWS S3 bucket mapping used for Cumulus and ORCA configuration.
 * `permissions_boundary_arn` - Permission Boundary Arn (Policy) for NGAP compliance
-* `postgres_user_pw` - password for the postgres user
-* `database_name` - disaster_recovery
-* `database_app_user` - druser 
-* `database_app_user_pw` - the password for the application user
+* `db_admin_password` - Password for RDS database administrator authentication
+* `db_user_password` - Password for RDS database user authentication
+* `db_host_endpoint` - Database host endpoint to connect to.
+
 
 **Optional:**
+* `db_admin_username` -  Username for RDS database administrator authentication.
 * `prefix` - Prefix that will be pre-pended to resource names created by terraform. 
   Defaults to `dr`.
-* `profile` - AWS CLI Profile (configured via `aws configure`) to use. 
-  Defaults to `default`.
-* `region` - Your AWS region. 
-  Defaults to `us-west-2`.
 * `restore_expire_days` - How many days to restore a file for. 
   Defaults to 5.
 * `restore_request_retries` - How many times to retry a restore request to Glacier. 
@@ -201,8 +193,6 @@ Add an `aws` provider to `main.tf`:
 ```
 provider "aws" {
   version = "~> 2.13"
-  region  = var.region
-  profile = var.profile
 }
 ```
 
@@ -214,26 +204,48 @@ Navigate to `cumulus-tf/main.tf` within your Cumulus deployment directory and ad
 ```
 module "orca" {
   source = "https://github.com/ghrcdaac/operational-recovery-cloud-archive/releases/download/1.0.2/orca-1.0.2.zip"
-
-  prefix = var.prefix
-  subnet_ids = module.ngap.ngap_subnets_ids
-  database_port = "5432"
-  database_user_pw = var.database_user_pw
-  database_name = var.database_name
-  database_app_user = var.database_app_user
-  database_app_user_pw = var.database_app_user_pw
-  ddl_dir = "ddl/"
-  drop_database = "False"
-  platform = "AWS"
-  lambda_timeout = 300
-  restore_complete_filter_prefix = ""
-  vpc_id = module.ngap.ngap_vpc.id
-  copy_retry_sleep_secs = 2
+  
+  ## --------------------------
+  ## Cumulus Variables
+  ## --------------------------
+  ## REQUIRED
+  buckets                  = var.buckets
+  lambda_subnet_ids        = var.lambda_subnet_ids
   permissions_boundary_arn = var.permissions_boundary_arn
-  buckets = var.buckets
-  workflow_config = module.cumulus.workflow_config
-  region = var.region
+  prefix                   = var.prefix
+  system_bucket            = var.system_bucket
+  vpc_id                   = var.vpc_id
+  workflow_config          = var.workflow_config
+
+  ## OPTIONAL
+  tags        = local.tags
+
+  ## --------------------------
+  ## ORCA Variables
+  ## --------------------------
+  ## REQUIRED
+  orca_default_bucket = var.orca_default_bucket
+  db_admin_password   = var.db_admin_password
+  db_user_password    = var.db_user_password
+  db_host_endpoint    = var.db_host_endpoint
+  ## OPTIONAL
+  db_admin_username                                    = var.db_admin_username
+  orca_ingest_lambda_memory_size                       = var.orca_ingest_lambda_memory_size
+  orca_ingest_lambda_timeout                           = var.orca_ingest_lambda_timeout
+  orca_recovery_buckets                                = var.orca_recovery_buckets
+  orca_recovery_complete_filter_prefix                 = var.orca_recovery_complete_filter_prefix
+  orca_recovery_expiration_days                        = var.orca_recovery_expiration_days
+  orca_recovery_lambda_memory_size                     = var.orca_recovery_lambda_memory_size
+  orca_recovery_lambda_timeout                         = var.orca_recovery_lambda_timeout
+  orca_recovery_retry_limit                            = var.orca_recovery_retry_limit
+  orca_recovery_retry_interval                         = var.orca_recovery_retry_interval
+  orca_recovery_retry_backoff                          = var.orca_recovery_retry_backoff
+  sqs_delay_time_seconds                               = var.sqs_delay_time_seconds
+  sqs_maximum_message_size                             = var.sqs_maximum_message_size
+  staged_recovery_queue_message_retention_time_seconds = var.staged_recovery_queue_message_retention_time_seconds
+  status_update_queue_message_retention_time_seconds   = var.status_update_queue_message_retention_time_seconds
 }
+
 ```
 
 *Note*: This above snippet assumes that you've configured your Cumulus deployment. More information on that process can be found in their [documentation](https://nasa.github.io/cumulus/docs/deployment/deployment-readme#configure-and-deploy-the-cumulus-tf-root-module)
@@ -243,20 +255,20 @@ module "orca" {
 To support this module, you'll have to add the following values to your `cumulus-tf/variables.tf` file:
 ```
 # Variables specific to ORCA
-variable "database_user_pw" {
+
+variable "db_admin_username" {
   type = string
+  description = "Username for RDS database administrator authentication"
 }
 
-variable "database_name" {
+variable "db_admin_password" {
   type = string
+  description = "Password for RDS database administrator authentication"
 }
 
-variable "database_app_user" {
+variable "db_user_password" {
   type = string
-}
-
-variable "database_app_user_pw" {
-  type = string
+  description = "Password for RDS database user authentication"
 }
 ```
 

@@ -59,31 +59,34 @@ variable "tags" {
 
 ## Variables unique to ORCA
 ## REQUIRED
-variable "database_app_user_pw" {
+
+variable "db_admin_password" {
+  description = "Password for RDS database administrator authentication"
   type        = string
-  description = "ORCA application database user password."
 }
 
+variable "db_user_password" {
+  description = "Password for RDS database user authentication"
+  type        = string
+}
+
+variable "db_host_endpoint" {
+  type        = string
+  description = "Database host endpoint to connect to."
+}
 
 variable "orca_default_bucket" {
   type        = string
   description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
 }
 
-
-variable "postgres_user_pw" {
-  type        = string
-  description = "postgres database user password."
-}
-
-
 ## OPTIONAL
-variable "database_port" {
-  type        = number
-  description = "Database port that PostgreSQL traffic will be allowed on."
-  default     = 5432
-}
 
+variable "db_admin_username" {
+  description = "Username for RDS database administrator authentication"
+  type        = string
+  default     = "postgres"
+}
 
 variable "orca_ingest_lambda_memory_size" {
   type        = number

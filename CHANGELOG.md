@@ -15,7 +15,84 @@ and includes an additional section for migration notes.
 
 
 ## [Unreleased]
+### Removed
+- The `modules/rds` directory is removed since ORCA will utilize the Cumulus DB.
 
+### Added
+- *ORCA-227* Added modules/secretsmanager directory that contains terraform code for deploying AWS secretsmanager.
+
+### Migration Notes
+
+- The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variables. The following two variable names have changed:
+  - postgres_user_pw-> db_admin_password (*new)*
+  - database_app_user_pw-> db_user_password (*new*)
+- These are the new variables added:
+  - db_admin_username (defaults to "postgres")
+  - db_host_endpoint
+- Add the following ORCA required variables definition to your `variables.tf` or `orca_variables.tf` file.
+```terraform
+variable "db_admin_password" {
+  description = "Password for RDS database administrator authentication"
+  type        = string
+}
+
+variable "db_user_password" {
+  description = "Password for RDS database user authentication"
+  type        = string
+}
+
+variable "db_host_endpoint" {
+  type        = string
+  description = "Database host endpoint to connect to."
+}
+```
+- Update the `orca.tf` file to include all of the updated and new variables as seen below. Note the change to source and the commented out optional variables.
+  ```terraform
+  ## ORCA Module
+  ## =============================================================================
+  module "orca" {
+    source = "https://github.com/nasa/cumulus-orca/releases/download/v3.0.1/cumulus-orca-terraform.zip//modules"
+  ## --------------------------
+  ## Cumulus Variables
+  ## --------------------------
+  ## REQUIRED
+  buckets                  = var.buckets
+  lambda_subnet_ids        = var.lambda_subnet_ids
+  permissions_boundary_arn = var.permissions_boundary_arn
+  prefix                   = var.prefix
+  system_bucket            = var.system_bucket
+  vpc_id                   = var.vpc_id
+  workflow_config          = module.cumulus.workflow_config
+
+  ## OPTIONAL
+  tags        = local.tags
+
+  ## --------------------------
+  ## ORCA Variables
+  ## --------------------------
+  ## REQUIRED
+  orca_default_bucket = var.orca_default_bucket
+  db_admin_password   = var.db_admin_password
+  db_user_password    = var.db_user_password
+  db_host_endpoint    = var.db_host_endpoint
+  ## OPTIONAL
+  db_admin_username                                    = "postgres"
+  orca_ingest_lambda_memory_size                       = 2240
+  orca_ingest_lambda_timeout                           = 600
+  orca_recovery_buckets                                = []
+  orca_recovery_complete_filter_prefix                 = ""
+  orca_recovery_expiration_days                        = 5
+  orca_recovery_lambda_memory_size                     = 128
+  orca_recovery_lambda_timeout                         = 300
+  orca_recovery_retry_limit                            = 3
+  orca_recovery_retry_interval                         = 1
+  orca_recovery_retry_backoff                          = 2
+  sqs_delay_time_seconds                               = 0
+  sqs_maximum_message_size                             = 262144
+  staged_recovery_queue_message_retention_time_seconds = 432000
+  status_update_queue_message_retention_time_seconds   = 777600
+  }
+  ```
 
 ## [v3.0.1] 2021-08-31
 ### Removed
@@ -28,6 +105,63 @@ and includes an additional section for migration notes.
 - ORCA-239 Removed terraform provider block from all ORCA files and consolidated to main.tf file.
 - Removed technical debt and fixed recovery bug where bucket keys that were not the standard (internal, public, private, etc.) were being ignored.
 
+variable "db_user_password" {
+  description = "Password for RDS database user authentication"
+  type        = string
+}
+
+variable "db_host_endpoint" {
+  type        = string
+  description = "Database host endpoint to connect to."
+}
+```
+- Update the `orca.tf` file to include all of the updated and new variables as seen below. Note the change to source and the commented out optional variables.
+  ```terraform
+  ## ORCA Module
+  ## =============================================================================
+  module "orca" {
+    source = "https://github.com/nasa/cumulus-orca/releases/download/v3.0.1/cumulus-orca-terraform.zip//modules"
+  ## --------------------------
+  ## Cumulus Variables
+  ## --------------------------
+  ## REQUIRED
+  buckets                  = var.buckets
+  lambda_subnet_ids        = var.lambda_subnet_ids
+  permissions_boundary_arn = var.permissions_boundary_arn
+  prefix                   = var.prefix
+  system_bucket            = var.system_bucket
+  vpc_id                   = var.vpc_id
+  workflow_config          = module.cumulus.workflow_config
+
+  ## OPTIONAL
+  tags        = local.tags
+
+  ## --------------------------
+  ## ORCA Variables
+  ## --------------------------
+  ## REQUIRED
+  orca_default_bucket                                  = var.orca_default_bucket
+  db_admin_password                                    = var.db_admin_password
+  db_user_password    = var.db_user_password
+  db_host_endpoint    = var.db_host_endpoint
+  ## OPTIONAL
+  db_admin_username                                    = "postgres"
+  orca_ingest_lambda_memory_size                       = 2240
+  orca_ingest_lambda_timeout                           = 600
+  orca_recovery_buckets                                = []
+  orca_recovery_complete_filter_prefix                 = ""
+  orca_recovery_expiration_days                        = 5
+  orca_recovery_lambda_memory_size                     = 128
+  orca_recovery_lambda_timeout                         = 300
+  orca_recovery_retry_limit                            = 3
+  orca_recovery_retry_interval                         = 1
+  orca_recovery_retry_backoff                          = 2
+  sqs_delay_time_seconds                               = 0
+  sqs_maximum_message_size                             = 262144
+  staged_recovery_queue_message_retention_time_seconds = 432000
+  status_update_queue_message_retention_time_seconds   = 777600
+}
+  ```
 ## [v3.0.0] 2021-07-12
 
 
