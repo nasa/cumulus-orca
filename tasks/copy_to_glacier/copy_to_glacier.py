@@ -113,12 +113,12 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
         print('ORCA_DEFAULT_BUCKET environment variable is not set.')
         raise
     try:
-        multipart_chunksize_mb = float(config[CONFIG_COLLECTION_KEY].get(
-            COLLECTION_MULTIPART_CHUNKSIZE_MB_KEY, os.environ['ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB']))
+        multipart_chunksize_mb = float(config[CONFIG_COLLECTION_KEY]
+            [COLLECTION_MULTIPART_CHUNKSIZE_MB_KEY])
     except KeyError:
         # TODO: Change this to a logging statement
         print('ORCA_DEFRAULT_MULTIPART_CHUNKSIZE_MB environment variable is not set.')
-        multipart_chunksize_mb = DEFAULT_ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB
+        multipart_chunksize_mb = os.environ['ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB']
 
     granule_data = {}
     copied_file_urls = []

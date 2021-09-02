@@ -102,7 +102,7 @@ resource "aws_lambda_function" "copy_to_glacier" {
 
   environment {
     variables = {
-      ORCA_DEFAULT_BUCKET = var.orca_default_bucket,
+      ORCA_DEFAULT_BUCKET                 = var.orca_default_bucket
       ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB = var.orca_default_multipart_chunksize_mb
     }
   }
@@ -196,9 +196,10 @@ resource "aws_lambda_function" "copy_files_to_archive" {
 
   environment {
     variables = {
-      COPY_RETRIES          = var.orca_recovery_retry_limit
-      COPY_RETRY_SLEEP_SECS = var.orca_recovery_retry_interval
-      DB_QUEUE_URL          = var.orca_sqs_status_update_queue_id
+      COPY_RETRIES                        = var.orca_recovery_retry_limit
+      COPY_RETRY_SLEEP_SECS               = var.orca_recovery_retry_interval
+      DB_QUEUE_URL                        = var.orca_sqs_status_update_queue_id
+      ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB = var.orca_default_multipart_chunksize_mb
     }
   }
 }

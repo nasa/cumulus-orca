@@ -12,13 +12,13 @@ import boto3
 import fastjsonschema
 
 # noinspection PyPackageRequirements
+from boto3.s3.transfer import TransferConfig, MB
 from botocore.client import BaseClient
 
 # noinspection PyPackageRequirements
 from botocore.exceptions import ClientError
 from orca_shared import shared_recovery
 from cumulus_logger import CumulusLogger
-
 
 OS_ENVIRON_DB_QUEUE_URL_KEY = "DB_QUEUE_URL"
 
@@ -45,10 +45,11 @@ class CopyRequestError(Exception):
 
 
 def task(
-    records: List[Dict[str, Any]],
-    max_retries: int,
-    retry_sleep_secs: float,
-    db_queue_url: str,
+        records: List[Dict[str, Any]],
+        max_retries: int,
+        retry_sleep_secs: float,
+        db_queue_url: str,
+        multipart_chunksize_mb: float
 ) -> None:
     """
     Task called by the handler to perform the work.
@@ -61,6 +62,7 @@ def task(
         retry_sleep_secs: The number of seconds
             to sleep between retry attempts.
         db_queue_url: The URL of the queue that posts status entries.
+        multipart_chunksize_mb: The maximum size of chunks to use when copying.
     Raises:
         CopyRequestError: Thrown if there are errors with the input records or the copy failed.
     """
@@ -75,6 +77,7 @@ def task(
                     a_file[INPUT_SOURCE_BUCKET_KEY],
                     a_file[INPUT_SOURCE_KEY_KEY],
                     a_file[INPUT_TARGET_BUCKET_KEY],
+                    multipart_chunksize_mb,
                     a_file[INPUT_TARGET_KEY_KEY],
                 )
                 if err_msg is None:
@@ -92,7 +95,7 @@ def task(
 
         if attempt < max_retries + 1:  # Only sleep if not on the last attempt.
             if all(
-                a_file[FILE_SUCCESS_KEY] for a_file in files
+                    a_file[FILE_SUCCESS_KEY] for a_file in files
             ):  # Check for early completion
                 break
             time.sleep(retry_sleep_secs)
@@ -115,7 +118,7 @@ def task(
 
 
 def get_files_from_records(
-    records: List[Dict[str, Any]]
+        records: List[Dict[str, Any]]
 ) -> List[Dict[str, Union[str, bool]]]:
     """
     Parses the input records and returns the files to be restored.
@@ -139,11 +142,12 @@ def get_files_from_records(
 
 
 def copy_object(
-    s3_cli: BaseClient,
-    src_bucket_name: str,
-    src_object_name: str,
-    dest_bucket_name: str,
-    dest_object_name: str = None,
+        s3_cli: BaseClient,
+        src_bucket_name: str,
+        src_object_name: str,
+        dest_bucket_name: str,
+        multipart_chunksize_mb: int,
+        dest_object_name: str = None,
 ) -> Optional[str]:
     """Copy an Amazon S3 bucket object
     Args:
@@ -151,6 +155,7 @@ def copy_object(
         src_bucket_name: The source S3 bucket name.
         src_object_name: The key of the s3 object being copied.
         dest_bucket_name: The target S3 bucket name.
+        multipart_chunksize_mb: The maximum size of chunks to use when copying.
         dest_object_name: Optional; The key of the destination object.
             If an object with the same name exists in the given bucket, the object is overwritten.
             Defaults to {src_object_name}.
@@ -165,10 +170,17 @@ def copy_object(
 
     # Copy the object
     try:
-        response = s3_cli.copy_object(
-            CopySource=copy_source, Bucket=dest_bucket_name, Key=dest_object_name
+        s3_cli.copy(
+            copy_source, dest_bucket_name, dest_object_name,
+            ExtraArgs={
+                # 'StorageClass': 'GLACIER',
+                # 'MetadataDirective': 'COPY',
+                # 'ContentType': s3.head_object(Bucket=source_bucket_name, Key=source_key)['ContentType'],
+                # 'ACL': 'bucket-owner-full-control'
+                # Sets the x-amz-acl URI Request Parameter. Needed for cross-OU copies.
+            },
+            Config=TransferConfig(multipart_chunksize=multipart_chunksize_mb * MB)
         )
-        LOGGER.debug("Copy response: {response}", response=response)
     except ClientError as ex:
         LOGGER.error("Client error: {ex}", ex=ex)
         return ex.__str__()
@@ -177,7 +189,7 @@ def copy_object(
 
 # noinspection PyUnusedLocal
 def handler(
-    event: Dict[str, Any], context: object
+        event: Dict[str, Any], context: object
 ) -> None:  # pylint: disable-msg=unused-argument
     """Lambda handler. Copies a file from its temporary s3 bucket to the s3 archive.
     If the copy for a file in the request fails, the lambda
@@ -199,7 +211,7 @@ def handler(
             A dict from the SQS queue. See schemas/input.json for more information.
         context: An object required by AWS Lambda. Unused.
     Raises:
-        CopyRequestError: An error occurred calling copy_object for one or more files.
+        CopyRequestError: An error occurred calling copy for one or more files.
         The same dict that is returned for a successful copy will be included in the
         message, with 'success' = False for the files for which the copy failed.
     """
@@ -226,4 +238,11 @@ def handler(
     LOGGER.debug("event: {event}", event=event)
     records = event["Records"]
 
-    task(records, retries, retry_sleep_secs, db_queue_url)
+    try:
+        multipart_chunksize_mb = float(event['input']['config']['collection']
+                                       ['multipart_chunksize_mb'])
+    except KeyError:
+        LOGGER.debug('ORCA_DEFRAULT_MULTIPART_CHUNKSIZE_MB environment variable is not set.')
+        multipart_chunksize_mb = os.environ['ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB']
+
+    task(records, retries, retry_sleep_secs, db_queue_url, multipart_chunksize_mb)
