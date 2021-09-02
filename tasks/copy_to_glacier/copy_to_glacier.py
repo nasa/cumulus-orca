@@ -17,8 +17,6 @@ COLLECTION_META_KEY = 'meta'
 COLLECTION_MULTIPART_CHUNKSIZE_MB_KEY = 'multipart_chunksize_mb'
 EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
 
-DEFAULT_ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB = 16
-
 
 def should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -> bool:
     """
@@ -114,11 +112,11 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
         raise
     try:
         multipart_chunksize_mb = float(config[CONFIG_COLLECTION_KEY]
-            [COLLECTION_MULTIPART_CHUNKSIZE_MB_KEY])
+                                       [COLLECTION_MULTIPART_CHUNKSIZE_MB_KEY])
     except KeyError:
         # TODO: Change this to a logging statement
         print('ORCA_DEFRAULT_MULTIPART_CHUNKSIZE_MB environment variable is not set.')
-        multipart_chunksize_mb = os.environ['ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB']
+        multipart_chunksize_mb = float(os.environ['ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB'])
 
     granule_data = {}
     copied_file_urls = []

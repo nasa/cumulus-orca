@@ -243,6 +243,6 @@ def handler(
                                        ['multipart_chunksize_mb'])
     except KeyError:
         LOGGER.debug('ORCA_DEFRAULT_MULTIPART_CHUNKSIZE_MB environment variable is not set.')
-        multipart_chunksize_mb = os.environ['ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB']
+        multipart_chunksize_mb = float(os.environ['ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB'])
 
     task(records, retries, retry_sleep_secs, db_queue_url, multipart_chunksize_mb)
