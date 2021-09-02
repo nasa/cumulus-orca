@@ -249,6 +249,6 @@ class TestSharedDatabseLibraries(unittest.TestCase):
             dummy_call()
         except sqlalchemy.exc.OperationalError as caught_error:
             self.assertEqual(expected_error, caught_error)
-            self.assertEqual(max_retries+1, mock_sleep.call_count)
+            self.assertEqual(max_retries, mock_sleep.call_count)
             return
         self.fail("Error not raised.")

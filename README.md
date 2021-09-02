@@ -114,7 +114,6 @@ remote state.
 ```
 terraform {
   backend "s3" {
-    region         = "us-west-2"
     bucket         = "dr-tf-state"
     key            = "terraform.tfstate"
     dynamodb_table = "dr-tf-locks"
@@ -128,21 +127,17 @@ First, run a `mv terraform.tfvars.example terraform.tfvars` to get a template `t
 **Necessary:**
 * `ngap_subnets` - NGAP Subnets (array)
 * `vpc_id` - ID of VPC to place resources in - recommended that this be a private VPC (or at least one with restricted access).
-* `glacier_bucket` - Bucket with Glacier policy
 * `buckets` - AWS S3 bucket mapping used for Cumulus and ORCA configuration.
 * `permissions_boundary_arn` - Permission Boundary Arn (Policy) for NGAP compliance
 * `db_admin_password` - Password for RDS database administrator authentication
-* `db_user_password` - Password for RDS database user authentication  
+* `db_user_password` - Password for RDS database user authentication
+* `db_host_endpoint` - Database host endpoint to connect to.
 
 
 **Optional:**
 * `db_admin_username` -  Username for RDS database administrator authentication.
 * `prefix` - Prefix that will be pre-pended to resource names created by terraform. 
   Defaults to `dr`.
-* `profile` - AWS CLI Profile (configured via `aws configure`) to use. 
-  Defaults to `default`.
-* `region` - Your AWS region. 
-  Defaults to `us-west-2`.
 * `restore_expire_days` - How many days to restore a file for. 
   Defaults to 5.
 * `restore_request_retries` - How many times to retry a restore request to Glacier. 
@@ -198,8 +193,6 @@ Add an `aws` provider to `main.tf`:
 ```
 provider "aws" {
   version = "~> 2.13"
-  region  = var.region
-  profile = var.profile
 }
 ```
 
@@ -225,8 +218,6 @@ module "orca" {
   workflow_config          = var.workflow_config
 
   ## OPTIONAL
-  aws_profile = var.aws_profile
-  region      = var.region
   tags        = local.tags
 
   ## --------------------------
@@ -267,14 +258,17 @@ To support this module, you'll have to add the following values to your `cumulus
 
 variable "db_admin_username" {
   type = string
+  description = "Username for RDS database administrator authentication"
 }
 
 variable "db_admin_password" {
   type = string
+  description = "Password for RDS database administrator authentication"
 }
 
 variable "db_user_password" {
   type = string
+  description = "Password for RDS database user authentication"
 }
 ```
 

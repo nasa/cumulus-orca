@@ -134,8 +134,6 @@ variable "db_host_endpoint" {
   workflow_config          = module.cumulus.workflow_config
 
   ## OPTIONAL
-  aws_profile = var.aws_profile
-  region      = var.region
   tags        = local.tags
 
   ## --------------------------

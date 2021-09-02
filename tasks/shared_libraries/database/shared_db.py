@@ -193,11 +193,11 @@ def retry_operational_error(max_retries: int = MAX_RETRIES, backoff_in_seconds: 
                 try:
                     return func(*args, **kwargs)
                 except OperationalError:
-                    if total_retries == max_retries + 1:
+                    if total_retries == max_retries:
                         # Log it and re-raise if we maxed our retries + initial attempt
                         logger.error(
                             "Encountered Errors {total_attempts} times. Reached max retry limit.",
-                            total_attempts=total_retries + 1)
+                            total_attempts=total_retries)
                         raise
                     else:
                         # perform exponential delay
@@ -205,7 +205,7 @@ def retry_operational_error(max_retries: int = MAX_RETRIES, backoff_in_seconds: 
                         logger.error(
                             "Encountered OperationalError on attempt {total_attempts}. "
                             "Sleeping {backoff_time} seconds.",
-                            total_attempts=total_retries + 1, backoff_time=backoff_time)
+                            total_attempts=total_retries, backoff_time=backoff_time)
                         time.sleep(backoff_time)
                         total_retries += 1
                 except Exception as ex:
