@@ -5,7 +5,7 @@ from unittest import TestCase
 from unittest.mock import Mock, call, patch
 
 from copy_to_glacier import *
-from test.unit_tests.configcheck import ConfigCheck
+from test.unit_tests.ConfigCheck import ConfigCheck
 
 
 class TestCopyToGlacierHandler(TestCase):
