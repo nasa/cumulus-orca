@@ -20,6 +20,7 @@ from botocore.exceptions import ClientError
 from orca_shared import shared_recovery
 from cumulus_logger import CumulusLogger
 
+
 OS_ENVIRON_DB_QUEUE_URL_KEY = "DB_QUEUE_URL"
 
 # These will determine what the output looks like.
@@ -95,7 +96,7 @@ def task(
 
         if attempt < max_retries + 1:  # Only sleep if not on the last attempt.
             if all(
-                    a_file[FILE_SUCCESS_KEY] for a_file in files
+                a_file[FILE_SUCCESS_KEY] for a_file in files
             ):  # Check for early completion
                 break
             time.sleep(retry_sleep_secs)
@@ -175,7 +176,7 @@ def copy_object(
             ExtraArgs={
                 # 'StorageClass': 'GLACIER',
                 # 'MetadataDirective': 'COPY',
-                # 'ContentType': s3.head_object(Bucket=source_bucket_name, Key=source_key)['ContentType'],
+                # 'ContentType': s3_cli.head_object(Bucket=src_bucket_name, Key=src_object_name)['ContentType'],
                 # 'ACL': 'bucket-owner-full-control'
                 # Sets the x-amz-acl URI Request Parameter. Needed for cross-OU copies.
             },
