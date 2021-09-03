@@ -15,6 +15,9 @@ and includes an additional section for migration notes.
 
 
 ## [Unreleased]
+### Added
+- *ORCA-246* Added TF variable `orca_default_multipart_chunksize_mb` which adjusts the maximum chunksize when copying files. Defaults to 250. Can be overridden by `multipart_chunksize_mb` within `config['collection']`.
+
 ### Removed
 - *ORCA-240* Removed development-only variables from variables.tf
 
