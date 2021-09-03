@@ -115,8 +115,8 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
                                        [COLLECTION_MULTIPART_CHUNKSIZE_MB_KEY])
     except KeyError:
         # TODO: Change this to a logging statement
-        print('ORCA_DEFRAULT_MULTIPART_CHUNKSIZE_MB environment variable is not set.')
         multipart_chunksize_mb = float(os.environ['ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB'])
+        print(f'multipart_chunksize_mb is not set for collection. Using default value of {multipart_chunksize_mb}.')
 
     granule_data = {}
     copied_file_urls = []
