@@ -47,36 +47,6 @@ class TestCopyFilesToArchive(TestCase):
 
         mock_task.assert_called_with(records, 703, 108.5, "something.blah", 42.5)
 
-    @patch.dict(
-        os.environ,
-        {
-            "COPY_RETRIES": "703",
-            "COPY_RETRY_SLEEP_SECS": "108.5",
-            "DB_QUEUE_URL": "something.blah",
-            "ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB": "42.5"
-        },
-        clear=True,
-    )
-    @patch("copy_files_to_archive.LOGGER")
-    @patch("copy_files_to_archive.task")
-    def test_handler_collection_multipart_chunksize_overrides_default(
-            self,
-            mock_task: MagicMock,
-            mock_logger: MagicMock,
-    ):
-        """
-        If multipart_chunksize is overridden at collection leve, default should not be used.
-        Likely will require some refactoring if CMA is ever introduced.
-        """
-        multipart_chunksize_mb = random.uniform(0, 500)
-        records = Mock()
-        event = {"Records": records, "input":
-            {"config": {"collection": {"multipart_chunksize_mb": str(multipart_chunksize_mb)}}}}
-
-        copy_files_to_archive.handler(event, Mock())
-
-        mock_task.assert_called_with(records, 703, 108.5, "something.blah", multipart_chunksize_mb)
-
     @patch.dict(os.environ, {"DB_QUEUE_URL": "something.else",
                              "ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB": "42.5"}, clear=True)
     @patch("copy_files_to_archive.LOGGER")
@@ -113,7 +83,7 @@ class TestCopyFilesToArchive(TestCase):
         db_queue_url = uuid.uuid4().__str__()
         max_retries = randint(2, 9999)
         retry_sleep_secs = randint(0, 9999)
-        multipart_chunksize_mb = random.uniform(0, 500)
+        default_multipart_chunksize_mb = random.uniform(0, 500)
 
         file0_job_id = uuid.uuid4().__str__()
         file0_granule_id = uuid.uuid4().__str__()
@@ -130,6 +100,7 @@ class TestCopyFilesToArchive(TestCase):
         file1_source_key = uuid.uuid4().__str__()
         file1_target_bucket = uuid.uuid4().__str__()
         file1_target_key = uuid.uuid4().__str__()
+        file1_multipart_chunksize_mb = random.uniform(0, 1000)
 
         mock_records = Mock()
 
@@ -142,6 +113,7 @@ class TestCopyFilesToArchive(TestCase):
             copy_files_to_archive.INPUT_SOURCE_KEY_KEY: file0_source_key,
             copy_files_to_archive.INPUT_TARGET_BUCKET_KEY: file0_target_bucket,
             copy_files_to_archive.INPUT_TARGET_KEY_KEY: file0_target_key,
+            copy_files_to_archive.INPUT_MULTIPART_CHUNKSIZE_MB: None
         }
         file1 = {
             copy_files_to_archive.INPUT_JOB_ID_KEY: file1_job_id,
@@ -152,12 +124,13 @@ class TestCopyFilesToArchive(TestCase):
             copy_files_to_archive.INPUT_SOURCE_KEY_KEY: file1_source_key,
             copy_files_to_archive.INPUT_TARGET_BUCKET_KEY: file1_target_bucket,
             copy_files_to_archive.INPUT_TARGET_KEY_KEY: file1_target_key,
+            copy_files_to_archive.INPUT_MULTIPART_CHUNKSIZE_MB: file1_multipart_chunksize_mb
         }
         mock_get_files_from_records.return_value = [file0, file1]
         mock_copy_object.return_value = None
 
         copy_files_to_archive.task(
-            mock_records, max_retries, retry_sleep_secs, db_queue_url, multipart_chunksize_mb
+            mock_records, max_retries, retry_sleep_secs, db_queue_url, default_multipart_chunksize_mb
         )
 
         mock_get_files_from_records.assert_called_once_with(mock_records)
@@ -169,7 +142,7 @@ class TestCopyFilesToArchive(TestCase):
                     file0_source_bucket,
                     file0_source_key,
                     file0_target_bucket,
-                    multipart_chunksize_mb,
+                    default_multipart_chunksize_mb,
                     file0_target_key,
                 ),
                 call(
@@ -177,7 +150,7 @@ class TestCopyFilesToArchive(TestCase):
                     file1_source_bucket,
                     file1_source_key,
                     file1_target_bucket,
-                    multipart_chunksize_mb,
+                    file1_multipart_chunksize_mb,
                     file1_target_key,
                 ),
             ]
@@ -357,6 +330,7 @@ class TestCopyFilesToArchive(TestCase):
             "target_key": uuid.uuid4().__str__(),
             "restore_destination": uuid.uuid4().__str__(),
             "source_bucket": uuid.uuid4().__str__(),
+            "multipart_chunksize_mb": random.uniform(0, 1000)
         }
         file1 = {
             "job_id": uuid.uuid4().__str__(),
@@ -366,6 +340,7 @@ class TestCopyFilesToArchive(TestCase):
             "target_key": uuid.uuid4().__str__(),
             "restore_destination": uuid.uuid4().__str__(),
             "source_bucket": uuid.uuid4().__str__(),
+            "multipart_chunksize_mb": None
         }
 
         result = copy_files_to_archive.get_files_from_records(

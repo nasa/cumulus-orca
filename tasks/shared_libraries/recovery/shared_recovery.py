@@ -5,19 +5,18 @@ Description: Shared library that combines common functions and classes needed fo
 # Standard libraries
 import hashlib
 import json
+import os
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Dict, Any, Optional, List
-from datetime import datetime, timezone
-import os
-from cumulus_logger import CumulusLogger
 
+import boto3
 # Third party libraries
 from cumulus_logger import CumulusLogger
-import boto3
-
 
 # Set Cumulus LOGGER
 LOGGER = CumulusLogger(name="ORCA")
+
 
 class RequestMethod(Enum):
     """
@@ -40,7 +39,8 @@ class OrcaStatus(Enum):
     FAILED = 3
     SUCCESS = 4
 
-def get_aws_region()-> str:
+
+def get_aws_region() -> str:
     """
     Gets AWS region variable from the runtime environment variable.
         Returns:
@@ -57,12 +57,13 @@ def get_aws_region()-> str:
     LOGGER.debug(f"Got environment variable for AWS_REGION = {aws_region}")
     return aws_region
 
+
 def create_status_for_job(
-    job_id: str,
-    granule_id: str,
-    archive_destination: str,
-    files: List[Dict[str, Any]],
-    db_queue_url: str,
+        job_id: str,
+        granule_id: str,
+        archive_destination: str,
+        files: List[Dict[str, Any]],
+        db_queue_url: str
 ):
     """
     Creates status information for a new job and its files, and posts to queue.
@@ -74,6 +75,7 @@ def create_status_for_job(
             'filename' (str)
             'key_path' (str)
             'restore_destination' (str)
+            'multipart_chunksize_mb' (float)
             'status_id' (int)
             'error_message' (str, Optional)
             'request_time' (str)
@@ -86,7 +88,7 @@ def create_status_for_job(
         "granule_id": granule_id,
         "request_time": datetime.now(timezone.utc).isoformat(),
         "archive_destination": archive_destination,
-        "files": files,
+        "files": files
     }
 
     message = "Sending the following data to queue: {new_data}"
@@ -96,12 +98,12 @@ def create_status_for_job(
 
 
 def update_status_for_file(
-    job_id: str,
-    granule_id: str,
-    filename: str,
-    orca_status: OrcaStatus,
-    error_message: Optional[str],
-    db_queue_url: str,
+        job_id: str,
+        granule_id: str,
+        filename: str,
+        orca_status: OrcaStatus,
+        error_message: Optional[str],
+        db_queue_url: str,
 ):
     """
     Creates update information for a file's status entry, and posts to queue.
@@ -137,9 +139,9 @@ def update_status_for_file(
 
 
 def post_entry_to_queue(
-    new_data: Dict[str, Any],
-    request_method: RequestMethod,
-    db_queue_url: str,
+        new_data: Dict[str, Any],
+        request_method: RequestMethod,
+        db_queue_url: str,
 ) -> None:
     """
     Posts messages to an SQS queue.
@@ -156,13 +158,13 @@ def post_entry_to_queue(
     # higher up. Setting this to us-west-2 initially since that is where
     # EOSDIS runs from normally. SEE ORCA-203 https://bugs.earthdata.nasa.ov/browse/ORCA-203
     LOGGER.debug("Creating SQS resource for {db_queue_url}", db_queue_url=db_queue_url)
-    mysqs_resource = boto3.resource("sqs", region_name= get_aws_region())
+    mysqs_resource = boto3.resource("sqs", region_name=get_aws_region())
     mysqs = mysqs_resource.Queue(db_queue_url)
 
     # Create hash for De-duplication ID max size is 128 characters
     # sha256 will be 64 characters long sha512 is 128 characters
     deduplication_id = (
-        request_method.value + hashlib.sha256(body.encode("utf8")).hexdigest()
+            request_method.value + hashlib.sha256(body.encode("utf8")).hexdigest()
     )
 
     md5_body = hashlib.md5(body.encode("utf8")).hexdigest()

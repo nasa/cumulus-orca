@@ -35,6 +35,7 @@ INPUT_SOURCE_KEY_KEY = "source_key"
 INPUT_TARGET_KEY_KEY = "target_key"
 INPUT_TARGET_BUCKET_KEY = "restore_destination"
 INPUT_SOURCE_BUCKET_KEY = "source_bucket"
+INPUT_MULTIPART_CHUNKSIZE_MB = "multipart_chunksize_mb"
 
 LOGGER = CumulusLogger()
 
@@ -50,7 +51,7 @@ def task(
         max_retries: int,
         retry_sleep_secs: float,
         db_queue_url: str,
-        multipart_chunksize_mb: float
+        default_multipart_chunksize_mb: float
 ) -> None:
     """
     Task called by the handler to perform the work.
@@ -63,7 +64,7 @@ def task(
         retry_sleep_secs: The number of seconds
             to sleep between retry attempts.
         db_queue_url: The URL of the queue that posts status entries.
-        multipart_chunksize_mb: The maximum size of chunks to use when copying.
+        default_multipart_chunksize_mb: The multipart_chunksize to use if not set on file.
     Raises:
         CopyRequestError: Thrown if there are errors with the input records or the copy failed.
     """
@@ -78,7 +79,7 @@ def task(
                     a_file[INPUT_SOURCE_BUCKET_KEY],
                     a_file[INPUT_SOURCE_KEY_KEY],
                     a_file[INPUT_TARGET_BUCKET_KEY],
-                    multipart_chunksize_mb,
+                    a_file.get(INPUT_MULTIPART_CHUNKSIZE_MB, None) or default_multipart_chunksize_mb,
                     a_file[INPUT_TARGET_KEY_KEY],
                 )
                 if err_msg is None:
@@ -239,12 +240,6 @@ def handler(
     LOGGER.debug("event: {event}", event=event)
     records = event["Records"]
 
-    try:
-        multipart_chunksize_mb = float(event['input']['config']['collection']
-                                       ['multipart_chunksize_mb'])
-    except KeyError:
-        multipart_chunksize_mb = float(os.environ['ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB'])
-        LOGGER.info(
-            f'multipart_chunksize_mb is not set for collection. Using default value of {multipart_chunksize_mb}.')
+    default_multipart_chunksize_mb = float(os.environ['ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB'])
 
-    task(records, retries, retry_sleep_secs, db_queue_url, multipart_chunksize_mb)
+    task(records, retries, retry_sleep_secs, db_queue_url, default_multipart_chunksize_mb)

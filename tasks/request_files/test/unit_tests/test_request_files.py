@@ -5,6 +5,7 @@ Description:  Unit tests for request_files.py.
 """
 import json
 import os
+import random
 import unittest
 import uuid
 from random import randint, uniform
@@ -438,6 +439,7 @@ class TestRequestFiles(unittest.TestCase):
         except request_files.RestoreRequestError:
             pass
 
+    # noinspection PyUnusedLocal
     @patch("request_files.shared_recovery.create_status_for_job")
     @patch("time.sleep")
     @patch("request_files.process_granule")
@@ -455,6 +457,7 @@ class TestRequestFiles(unittest.TestCase):
         A return of 'false' from object_exists should ignore the file and continue.
         """
         glacier_bucket = uuid.uuid4().__str__()
+        collection_multipart_chunksize_mb = random.uniform(0, 1000)
         file_key_0 = uuid.uuid4().__str__()
         file_key_1 = uuid.uuid4().__str__()
         missing_file_key = uuid.uuid4().__str__()
@@ -520,10 +523,15 @@ class TestRequestFiles(unittest.TestCase):
         expected_input_granule[
             request_files.GRANULE_RECOVER_FILES_KEY
         ] = expected_input_granule_files
+        expected_input_granule[request_files.GRANULE_RECOVER_FILES_KEY][1]['multipart_chunksize_mb'] =\
+            collection_multipart_chunksize_mb
         event = {
             request_files.EVENT_CONFIG_KEY: {
                 request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
-                request_files.CONFIG_JOB_ID_KEY: job_id
+                request_files.CONFIG_JOB_ID_KEY: job_id,
+                request_files.CONFIG_COLLECTION_KEY: {
+                    request_files.COLLECTION_MULTIPART_CHUNKSIZE_MB_KEY: collection_multipart_chunksize_mb
+                }
             },
             request_files.EVENT_INPUT_KEY: {
                 request_files.INPUT_GRANULES_KEY: [granule]
@@ -567,6 +575,7 @@ class TestRequestFiles(unittest.TestCase):
                 "filename": missing_file_key,
                 "key_path": missing_file_key,
                 "restore_destination": missing_file_dest_bucket,
+                "multipart_chunksize_mb": collection_multipart_chunksize_mb,
                 "status_id": OrcaStatus.FAILED.value,
                 "request_time": mock.ANY,
                 "last_update": mock.ANY,
@@ -748,18 +757,6 @@ class TestRequestFiles(unittest.TestCase):
                 request_files.FILE_SUCCESS_KEY
             ]
         )
-        files = [
-            {
-                "filename": file_name_0,
-                "key_path": file_name_0,
-                "restore_destination": dest_bucket_0,
-                "status_id": OrcaStatus.PENDING.value,
-                "error_message": None,
-                "request_time": mock.ANY,
-                "last_update": mock.ANY,
-                "completion_time": None,
-            },
-        ]
         mock_restore_object.assert_has_calls(
             [
                 call(
@@ -785,6 +782,7 @@ class TestRequestFiles(unittest.TestCase):
         self.assertEqual(2, mock_restore_object.call_count)
         mock_sleep.assert_called_once_with(retry_sleep_secs)
 
+    # noinspection PyUnusedLocal
     @patch("time.sleep")
     @patch("request_files.restore_object")
     @patch("cumulus_logger.CumulusLogger.error")
@@ -939,6 +937,7 @@ class TestRequestFiles(unittest.TestCase):
             },
         )
 
+    # noinspection PyUnusedLocal
     @patch("cumulus_logger.CumulusLogger.info")
     def test_restore_object_client_error_raises(self, mock_logger_info: MagicMock):
         job_id = uuid.uuid4().__str__()
@@ -1074,6 +1073,7 @@ class TestRequestFiles(unittest.TestCase):
 
         self.assertEqual(mock_task.return_value, result["payload"])
 
+    # noinspection PyUnusedLocal
     @patch("request_files.shared_recovery.post_entry_to_queue")
     @patch("boto3.client")
     @patch("cumulus_logger.CumulusLogger.info")
@@ -1293,6 +1293,7 @@ class TestRequestFiles(unittest.TestCase):
                             "filename": filename,
                             "key_path": file1,
                             "restore_destination": dest_bucket,
+                            "multipart_chunksize_mb": None,
                             "status_id": OrcaStatus.FAILED.value,
                             "error_message": f"{file1} does not exist in my-bucket bucket",
                             "request_time": mock.ANY,

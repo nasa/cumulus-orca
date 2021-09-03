@@ -82,6 +82,7 @@ def task(
                     "granule_id": row[1],
                     "filename": row[2],
                     "restore_destination": row[3],
+                    "multipart_chunksize": row[4],
                     "source_key": key_path,
                     "target_key": key_path,  # todo add a card to configure target_key in the future
                     "source_bucket": bucket_name,
@@ -181,7 +182,7 @@ def get_metadata_sql(key_path: str) -> text:
     return text(
         f"""
             SELECT
-                job_id, granule_id, filename, restore_destination
+                job_id, granule_id, filename, restore_destination, multipart_chunksize_mb
             FROM
                 recovery_file
             WHERE

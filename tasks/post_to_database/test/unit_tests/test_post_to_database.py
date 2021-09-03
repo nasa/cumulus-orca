@@ -5,6 +5,7 @@ Description:  Unit tests for test_post_to_database.py.
 """
 import datetime
 import json
+import random
 import unittest
 import uuid
 from unittest.mock import Mock, call, patch, MagicMock
@@ -62,7 +63,8 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
             'filename': uuid.uuid4().__str__(), 'key_path': uuid.uuid4().__str__(),
             'restore_destination': uuid.uuid4().__str__(), 'status_id': 1,
             'request_time': datetime.datetime.now(datetime.timezone.utc).isoformat(),
-            'last_update': datetime.datetime.now(datetime.timezone.utc).isoformat()
+            'last_update': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            'multipart_chunksize_mb': random.uniform(0, 1000)
         }]
 
         values = {
@@ -82,7 +84,8 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
         post_to_database.send_record_to_database(record, mock_engine)
 
         mock_create_status_for_job_and_files.assert_called_once_with(job_id, granule_id, request_time,
-                                                                     archive_destination, files, mock_engine)
+                                                                     archive_destination,
+                                                                     files, mock_engine)
 
     def test_send_record_to_database_create_status_for_job_and_files_errors_for_missing_properties(
             self):
@@ -97,7 +100,8 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
             'filename': uuid.uuid4().__str__(), 'key_path': uuid.uuid4().__str__(),
             'restore_destination': uuid.uuid4().__str__(), 'status_id': 1,
             'request_time': datetime.datetime.utcnow().isoformat(),
-            'last_update': datetime.datetime.utcnow().isoformat()
+            'last_update': datetime.datetime.utcnow().isoformat(),
+            'multipart_chunksize_mb': None
         }]
         values = {
             "job_id": job_id,
@@ -227,12 +231,14 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
         restore_destination0 = uuid.uuid4().__str__()
         request_time0 = uuid.uuid4().__str__()
         last_update0 = uuid.uuid4().__str__()
+        multipart_chunksize_mb0 = random.uniform(0, 1000)
         filename1 = uuid.uuid4().__str__()
         key_path1 = uuid.uuid4().__str__()
         restore_destination1 = uuid.uuid4().__str__()
         request_time1 = uuid.uuid4().__str__()
         last_update1 = uuid.uuid4().__str__()
         error_message1 = uuid.uuid4().__str__()
+        multipart_chunksize_mb1 = random.uniform(0, 1000)
         completion_time1 = datetime.datetime.utcnow().isoformat()
         files = [
             {
@@ -241,7 +247,8 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
                 'key_path': key_path0,
                 'restore_destination': restore_destination0,
                 'request_time': request_time0,
-                'last_update': last_update0
+                'last_update': last_update0,
+                'multipart_chunksize_mb': multipart_chunksize_mb0
             },
             {
                 'status_id': OrcaStatus.FAILED.value,
@@ -251,7 +258,8 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
                 'request_time': request_time1,
                 'last_update': last_update1,
                 'error_message': error_message1,
-                'completion_time': completion_time1
+                'completion_time': completion_time1,
+                'multipart_chunksize_mb': multipart_chunksize_mb1
             }
         ]
 
@@ -262,8 +270,8 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
         mock_engine.begin.return_value.__exit__ = Mock()
 
-        post_to_database.create_status_for_job_and_files(job_id, granule_id, request_time, archive_destination, files,
-                                                         mock_engine)
+        post_to_database.create_status_for_job_and_files(job_id, granule_id, request_time, archive_destination,
+                                                         files, mock_engine)
 
         mock_connection.execute.assert_has_calls([
             call(
@@ -278,6 +286,7 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
                     {
                         'job_id': job_id, 'granule_id': granule_id, 'filename': filename0,
                         'key_path': key_path0, 'restore_destination': restore_destination0,
+                        'multipart_chunksize_mb': multipart_chunksize_mb0,
                         'status_id': OrcaStatus.PENDING.value, 'error_message': None,
                         'request_time': request_time0, 'last_update': last_update0,
                         'completion_time': None
@@ -285,6 +294,7 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
                     {
                         'job_id': job_id, 'granule_id': granule_id, 'filename': filename1,
                         'key_path': key_path1, 'restore_destination': restore_destination1,
+                        'multipart_chunksize_mb': multipart_chunksize_mb1,
                         'status_id': OrcaStatus.FAILED.value, 'error_message': error_message1,
                         'request_time': request_time1, 'last_update': last_update1,
                         'completion_time': completion_time1
@@ -314,6 +324,7 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
         last_update0 = uuid.uuid4().__str__()
         error_message0 = uuid.uuid4().__str__()
         completion_time0 = datetime.datetime.utcnow().isoformat()
+        multipart_chunksize_mb0 = random.uniform(0, 1000)
         filename1 = uuid.uuid4().__str__()
         key_path1 = uuid.uuid4().__str__()
         restore_destination1 = uuid.uuid4().__str__()
@@ -321,6 +332,7 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
         last_update1 = uuid.uuid4().__str__()
         error_message1 = uuid.uuid4().__str__()
         completion_time1 = datetime.datetime.utcnow().isoformat()
+        multipart_chunksize_mb1 = random.uniform(0, 1000)
         # using a third item to make sure that all branches of file loop are hit
         filename2 = uuid.uuid4().__str__()
         key_path2 = uuid.uuid4().__str__()
@@ -329,6 +341,7 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
         last_update2 = uuid.uuid4().__str__()
         error_message2 = uuid.uuid4().__str__()
         completion_time2 = datetime.datetime.utcnow().isoformat()
+        multipart_chunksize_mb2 = random.uniform(0, 1000)
         files = [
             {
                 'status_id': OrcaStatus.FAILED.value,
@@ -338,7 +351,8 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
                 'request_time': request_time0,
                 'last_update': last_update0,
                 'error_message': error_message0,
-                'completion_time': completion_time0
+                'completion_time': completion_time0,
+                'multipart_chunksize_mb': multipart_chunksize_mb0
             },
             {
                 'status_id': OrcaStatus.FAILED.value,
@@ -348,7 +362,8 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
                 'request_time': request_time1,
                 'last_update': last_update1,
                 'error_message': error_message1,
-                'completion_time': completion_time1
+                'completion_time': completion_time1,
+                'multipart_chunksize_mb': multipart_chunksize_mb1
             },
             {
                 'status_id': OrcaStatus.FAILED.value,
@@ -358,7 +373,8 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
                 'request_time': request_time2,
                 'last_update': last_update2,
                 'error_message': error_message2,
-                'completion_time': completion_time2
+                'completion_time': completion_time2,
+                'multipart_chunksize_mb': multipart_chunksize_mb2
             }
         ]
 
@@ -369,8 +385,8 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
         mock_engine.begin.return_value.__exit__ = Mock()
 
-        post_to_database.create_status_for_job_and_files(job_id, granule_id, request_time, archive_destination, files,
-                                                         mock_engine)
+        post_to_database.create_status_for_job_and_files(job_id, granule_id, request_time, archive_destination,
+                                                         files, mock_engine)
 
         mock_connection.execute.assert_has_calls([
             call(
@@ -385,6 +401,7 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
                     {
                         'job_id': job_id, 'granule_id': granule_id, 'filename': filename0,
                         'key_path': key_path0, 'restore_destination': restore_destination0,
+                        'multipart_chunksize_mb': multipart_chunksize_mb0,
                         'status_id': OrcaStatus.FAILED.value, 'error_message': error_message0,
                         'request_time': request_time0, 'last_update': last_update0,
                         'completion_time': completion_time0
@@ -392,6 +409,7 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
                     {
                         'job_id': job_id, 'granule_id': granule_id, 'filename': filename1,
                         'key_path': key_path1, 'restore_destination': restore_destination1,
+                        'multipart_chunksize_mb': multipart_chunksize_mb1,
                         'status_id': OrcaStatus.FAILED.value, 'error_message': error_message1,
                         'request_time': request_time1, 'last_update': last_update1,
                         'completion_time': completion_time1
@@ -399,6 +417,7 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
                     {
                         'job_id': job_id, 'granule_id': granule_id, 'filename': filename2,
                         'key_path': key_path2, 'restore_destination': restore_destination2,
+                        'multipart_chunksize_mb': multipart_chunksize_mb2,
                         'status_id': OrcaStatus.FAILED.value, 'error_message': error_message2,
                         'request_time': request_time2, 'last_update': last_update2,
                         'completion_time': completion_time2
@@ -437,7 +456,8 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
                     'request_time': request_time0,
                     'last_update': last_update0,
                     'error_message': error_message0,
-                    'completion_time': completion_time0
+                    'completion_time': completion_time0,
+                    'multipart_chunksize_mb': random.uniform(0, 1000)
                 }
             ]
 
