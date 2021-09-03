@@ -147,7 +147,7 @@ def copy_object(
         src_bucket_name: str,
         src_object_name: str,
         dest_bucket_name: str,
-        multipart_chunksize_mb: int,
+        multipart_chunksize_mb: float,
         dest_object_name: str = None,
 ) -> Optional[str]:
     """Copy an Amazon S3 bucket object
@@ -243,7 +243,7 @@ def handler(
         multipart_chunksize_mb = float(event['input']['config']['collection']
                                        ['multipart_chunksize_mb'])
     except KeyError:
-        LOGGER.debug('ORCA_DEFRAULT_MULTIPART_CHUNKSIZE_MB environment variable is not set.')
+        LOGGER.debug('ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB environment variable is not set.')
         multipart_chunksize_mb = float(os.environ['ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB'])
 
     task(records, retries, retry_sleep_secs, db_queue_url, multipart_chunksize_mb)
