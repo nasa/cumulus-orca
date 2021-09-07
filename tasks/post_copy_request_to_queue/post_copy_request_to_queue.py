@@ -82,7 +82,7 @@ def task(
                     "granule_id": row[1],
                     "filename": row[2],
                     "restore_destination": row[3],
-                    "multipart_chunksize": row[4],
+                    "multipart_chunksize_mb": row[4],
                     "source_key": key_path,
                     "target_key": key_path,  # todo add a card to configure target_key in the future
                     "source_bucket": bucket_name,

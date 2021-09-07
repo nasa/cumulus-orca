@@ -3,6 +3,7 @@ Name: test_post_copy_request_to_queue.py
 Description: unit tests for post_copy_request_to_queue.py
 
 """
+import random
 import uuid
 from unittest import TestCase
 import os
@@ -88,7 +89,8 @@ class TestPostCopyRequestToQueue(TestCase):
         happy path. Mocks db_connect_info,single_query,
         post_entry_to_queue and update_status_for_file.
         """
-        mock_execute = Mock(return_value=[("1", "3", "f1.doc", "s3://restore")])
+        multipart_chunksize_mb = random.uniform(0, 1000)
+        mock_execute = Mock(return_value=[("1", "3", "f1.doc", "s3://restore", multipart_chunksize_mb)])
         mock_connection = Mock()
         mock_connection.execute = mock_execute
         mock_exit = Mock()
@@ -106,6 +108,7 @@ class TestPostCopyRequestToQueue(TestCase):
             "filename": "f1.doc",
             # todo: Value incorrect here and elsewhere. As written, must match mock_execute's return value.
             "restore_destination": "s3://restore",
+            "multipart_chunksize_mb": multipart_chunksize_mb,
             "target_key": "b21b84d653bb07b05b1e6b33684dc11b",
             "source_key": "b21b84d653bb07b05b1e6b33684dc11b",
             "source_bucket": "lambda-artifacts-deafc19498e3f2df",
@@ -227,7 +230,8 @@ class TestPostCopyRequestToQueue(TestCase):
         """
         mocks post_entry_to_queue to raise an exception.
         """
-        mock_execute = Mock(return_value=[("1", "3", "f1.doc", "s3://restore")])
+        multipart_chunksize_mb = None
+        mock_execute = Mock(return_value=[("1", "3", "f1.doc", "s3://restore", None)])
         mock_connection = Mock()
         mock_connection.execute = mock_execute
         mock_exit = Mock()
@@ -245,6 +249,7 @@ class TestPostCopyRequestToQueue(TestCase):
             "granule_id": "3",
             "filename": "f1.doc",
             "restore_destination": "s3://restore",
+            "multipart_chunksize_mb": multipart_chunksize_mb,
             "source_key": "b21b84d653bb07b05b1e6b33684dc11b",
             "target_key": "b21b84d653bb07b05b1e6b33684dc11b",
             "source_bucket": "lambda-artifacts-deafc19498e3f2df",
@@ -281,7 +286,8 @@ class TestPostCopyRequestToQueue(TestCase):
         """
         mocks update_status_for_file to raise an exception.
         """
-        mock_execute = Mock(return_value=[("1", "3", "f1.doc", "s3://restore")])
+        multipart_chunksize_mb = random.uniform(0, 1000)
+        mock_execute = Mock(return_value=[("1", "3", "f1.doc", "s3://restore", multipart_chunksize_mb)])
         mock_connection = Mock()
         mock_connection.execute = mock_execute
         mock_exit = Mock()
@@ -300,6 +306,7 @@ class TestPostCopyRequestToQueue(TestCase):
             "granule_id": "3",
             "filename": "f1.doc",
             "restore_destination": "s3://restore",
+            "multipart_chunksize_mb": multipart_chunksize_mb,
             "source_key": "b21b84d653bb07b05b1e6b33684dc11b",
             "target_key": "b21b84d653bb07b05b1e6b33684dc11b",
             "source_bucket": "lambda-artifacts-deafc19498e3f2df",
@@ -349,7 +356,7 @@ class TestPostCopyRequestToQueue(TestCase):
         result = post_copy_request_to_queue.get_metadata_sql(key_path)
         self.assertEqual(f"""
             SELECT
-                job_id, granule_id, filename, restore_destination
+                job_id, granule_id, filename, restore_destination, multipart_chunksize_mb
             FROM
                 recovery_file
             WHERE
