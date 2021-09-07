@@ -109,7 +109,6 @@ def task(
         job_id = record["job_id"]
         granule_id = record["granule_id"]
         filename = record["filename"]
-        restore_destination = record["restore_destination"]
 
         # Make sure we update the status, retry if we fail.
         for retry in range(max_retries + 1):
