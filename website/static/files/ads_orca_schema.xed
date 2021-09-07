@@ -63,22 +63,25 @@
 <Column id="14" name="key_path" type="text" length="0" nulls="false">
 <CP name="COMMENTS">Full key value of the data being restored.</CP>
 </Column>
-<Column id="15" name="restore_destination" type="text" length="25" nulls="false">
+<Column id="15" name="multipart_chunksize_mb" type="number" length="0" nulls="true">
+<CP name="COMMENTS">Overrides orca_default_multipart_chunksize in TF.</CP>
+</Column>
+<Column id="16" name="restore_destination" type="text" length="25" nulls="false">
 <CP name="COMMENTS">S3 bucker where data will be restored to.</CP>
 </Column>
-<Column id="16" name="status_id" type="int2" length="0" nulls="false">
+<Column id="17" name="status_id" type="int2" length="0" nulls="false">
 <CP name="COMMENTS">Current restore status of the file.</CP>
 </Column>
-<Column id="17" name="error_message" type="text" length="0" nulls="true">
+<Column id="18" name="error_message" type="text" length="0" nulls="true">
 <CP name="COMMENTS">Error message that occured during failure.</CP>
 </Column>
-<Column id="18" name="request_time" type="timestamp with time zone" length="0" nulls="false">
+<Column id="19" name="request_time" type="timestamp with time zone" length="0" nulls="false">
 <CP name="COMMENTS">Time the file was requested to be restored.</CP>
 </Column>
-<Column id="19" name="last_update" type="timestamp with time zone" length="0" nulls="false">
+<Column id="20" name="last_update" type="timestamp with time zone" length="0" nulls="false">
 <CP name="COMMENTS">Time the status was last updated for the file.</CP>
 </Column>
-<Column id="20" name="completion_time" type="timestamp with time zone" length="0" nulls="true">
+<Column id="21" name="completion_time" type="timestamp with time zone" length="0" nulls="true">
 <CP name="COMMENTS">Time the file restoration hit a complete state.</CP>
 </Column>
 <Storage name="transferTable" value="false"/>

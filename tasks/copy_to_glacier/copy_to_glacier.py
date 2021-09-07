@@ -35,7 +35,7 @@ def should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -
 
 
 def copy_granule_between_buckets(source_bucket_name: str, source_key: str, destination_bucket: str,
-                                 destination_key: str, multipart_chunksize_mb: int) -> None:
+                                 destination_key: str, multipart_chunksize_mb: float) -> None:
     """
     Copies granule from source bucket to destination.
     Args:

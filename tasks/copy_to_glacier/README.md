@@ -199,7 +199,7 @@ NAME
     copy_to_glacier
 
 FUNCTIONS
-    copy_granule_between_buckets(source_bucket_name: str, source_key: str, destination_bucket: str, destination_key: str, multipart_chunksize_mb: int) -> None
+    copy_granule_between_buckets(source_bucket_name: str, source_key: str, destination_bucket: str, destination_key: str, multipart_chunksize_mb: float) -> None
         Copies granule from source bucket to destination.
         Args:
             source_bucket_name: The name of the bucket in which the granule is currently located.
