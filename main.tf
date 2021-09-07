@@ -21,8 +21,6 @@ module "orca" {
   workflow_config          = var.workflow_config
 
   ## OPTIONAL
-  aws_profile = var.aws_profile
-  region      = var.region
   tags        = local.tags
 
   ## --------------------------
