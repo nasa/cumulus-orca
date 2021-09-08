@@ -22,27 +22,27 @@ def perform_migration(current_schema_version: int, config: Dict[str, str]) -> No
     """
     # Determine migrations to run based on current_schema_version and
     # update the versions table based on the latest_schema_version.
-    if current_schema_version == 1:
-        # Run migrations from version 1 to the latest version
-        # in this case version 2 is the latest so we set the latest version
+    if current_schema_version == 2:
+        # Run migrations from version 2 to the latest version
+        # in this case version 3 is the latest so we set the latest version
         # flag to True
-        migrate_versions_1_to_2(config, True)
+        migrate_versions_2_to_3(config, True)
 
 
-def migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> None:
+def migrate_versions_2_to_3(config: Dict[str, str], is_latest_version: bool) -> None:
     """
-    Performs the migration of the ORCA schema from version 1 to version 2 of
+    Performs the migration of the ORCA schema from version 2 to version 3 of
     the ORCA schema.
 
     Args:
         config (Dict): Connection information for the database.
-        is_latest_version (bool): Flag to dtermine if version 2 is the latest schema version.
+        is_latest_version (bool): Flag to dtermine if version 3 is the latest schema version.
 
     Returns:
         None
     """
     # Get the admin engine to the app database
-    admin_app_connection = get_admin_connection(config, config["database"])
+    admin_app_connection = get_admin_connection(config, config["user_database"])
 
     # Create all of the new objects, users, roles, etc.
     with admin_app_connection.connect() as connection:
@@ -62,7 +62,7 @@ def migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> 
 
         # Create the users last
         logger.debug("Creating the ORCA application user ...")
-        connection.execute(app_user_sql(config["app_user_password"]))
+        connection.execute(app_user_sql(config["user_password"]))
         logger.info("ORCA application user created.")
 
         # Change to DBO role and set search path
@@ -89,6 +89,32 @@ def migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> 
         logger.debug("Creating recovery_file table ...")
         connection.execute(recovery_file_table_sql())
         logger.info("recovery_file table created.")
+
+        #Create ORCA inventory tables
+        #Create providers table
+        logger.debug("Creating providers table ...")
+        connection.execute(providers_table_sql())
+        logger.info("providers table created.")
+
+        #Create collections table
+        logger.debug("Creating collections table ...")
+        connection.execute(collections_table_sql())
+        logger.info("collections table created.")
+
+        #Create provider and collection cross reference table
+        logger.debug("Creating provider and collection cross reference table ...")
+        connection.execute(provider_collection_xref_table_sql())
+        logger.info("provider and collection cross reference table created.")
+
+        #Create granules table
+        logger.debug("Creating granules table ...")
+        connection.execute(granules_table_sql())
+        logger.info("granules table created.")
+
+        #Create files table
+        logger.debug("Creating files table ...")
+        connection.execute(files_table_sql())
+        logger.info("files table created.")
 
         # Commit if there is no issues
         connection.commit()
@@ -149,7 +175,7 @@ def migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> 
         connection.execute(drop_druser_user_sql())
         logger.info("druser user removed.")
 
-        # If v2 is the latest version, update the schema_versions table.
+        # If v3 is the latest version, update the schema_versions table.
         if is_latest_version:
             logger.debug("Populating the schema_versions table with data ...")
             connection.execute(schema_versions_data_sql())

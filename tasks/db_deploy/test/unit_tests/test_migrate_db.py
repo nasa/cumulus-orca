@@ -18,16 +18,7 @@ class TestMigrateDatabseLibraries(unittest.TestCase):
         """
         Set up test.
         """
-        self.config = {
-            "host": "aws.postgresrds.host",
-            "port": "5432",
-            "database": "disaster_recovery",
-            "admin_database": "postgres",
-            "app_user": "orcauser",
-            "admin_user": "postgres",
-            "app_user_password": "MySecretUserPassword",
-            "admin_user_password": "MySecretAdminPassword",
-        }
+        self.config = {"admin_database":"admin_db", "admin_password":"admin123", "admin_username":"admin", "host":"aws.postgresrds.host", "port":5432, "user_database":"user_db", "user_password":"user123", "user_username":"user"}
 
     def tearDown(self):
         """
@@ -35,26 +26,26 @@ class TestMigrateDatabseLibraries(unittest.TestCase):
         """
         self.config = None
 
-    @patch("migrate_db.migrate_versions_1_to_2")
-    def test_perform_migration_happy_path(self, mock_migrate_v1_to_v2: MagicMock):
+    @patch("migrate_db.migrate_versions_2_to_3")
+    def test_perform_migration_happy_path(self, mock_migrate_v2_to_v3: MagicMock):
         """
         Tests the perform_migration function happy paths
         """
-        for version in [1, 2, 3]:
+        for version in [1, 2, 3, 4]:
             with self.subTest(version=version):
                 migrate_db.perform_migration(version, self.config)
 
                 # Make sure the proper migrations happens.
                 # Note that for version 2 and 3 the function is not called so
                 # overall through all the tests it is only called once.
-                if version == 1:
-                    mock_migrate_v1_to_v2.assert_called_once_with(self.config, True)
+                if version == 2:
+                    mock_migrate_v2_to_v3.assert_called_once_with(self.config, True)
 
-                if version >= 2:
-                    mock_migrate_v1_to_v2.assert_not_called()
+                else:
+                    mock_migrate_v2_to_v3.assert_not_called()
 
                 # Reset for next loop
-                mock_migrate_v1_to_v2.reset_mock()
+                mock_migrate_v2_to_v3.reset_mock()
 
     @patch("migrate_db.schema_versions_data_sql")
     @patch("migrate_db.drop_druser_user_sql")
@@ -69,6 +60,11 @@ class TestMigrateDatabseLibraries(unittest.TestCase):
     @patch("migrate_db.recovery_file_table_sql")
     @patch("migrate_db.recovery_job_table_sql")
     @patch("migrate_db.recovery_status_table_sql")
+    @patch("migrate_db.providers_table_sql")
+    @patch("migrate_db.collections_table_sql")
+    @patch("migrate_db.provider_collection_xref_table_sql")
+    @patch("migrate_db.granules_table_sql")
+    @patch("migrate_db.files_table_sql")
     @patch("migrate_db.schema_versions_table_sql")
     @patch("migrate_db.text")
     @patch("migrate_db.app_user_sql")
@@ -78,13 +74,18 @@ class TestMigrateDatabseLibraries(unittest.TestCase):
     @patch("migrate_db.get_admin_connection")
     def test_migrate_versions_1_to_2_happy_path(
         self,
-        mock_connection: MagicMock,
+        mock_connection: MagicMock,                                     
         mock_dbo_role_sql: MagicMock,
         mock_app_role_sql: MagicMock,
         mock_orca_schema_sql: MagicMock,
         mock_app_user_sql: MagicMock,
         mock_text: MagicMock,
         mock_schema_versions_table: MagicMock,
+        mock_files_table: MagicMock,
+        mock_granules_table: MagicMock,
+        mock_provider_collection_xref_table: MagicMock,
+        mock_collections_table: MagicMock,
+        mock_providers_table: MagicMock,
         mock_recovery_status_table: MagicMock,
         mock_recovery_job_table: MagicMock,
         mock_recovery_file_table: MagicMock,
@@ -100,7 +101,7 @@ class TestMigrateDatabseLibraries(unittest.TestCase):
         mock_schema_versions_data: MagicMock,
     ):
         """
-        Tests the migrate_versions_1_to_2 function happy path
+        Tests the migrate_versions_2_to_3 function happy path
         """
         for latest_version in [True, False]:
             with self.subTest(latest_version=latest_version):
@@ -109,23 +110,28 @@ class TestMigrateDatabseLibraries(unittest.TestCase):
                 mock_conn_enter = mock_connection().connect().__enter__()
 
                 # Run the function
-                migrate_db.migrate_versions_1_to_2(self.config, latest_version)
+                migrate_db.migrate_versions_2_to_3(self.config, latest_version)
 
                 # Check that all of the functions were called the correct
                 # number of times with the proper values
-                mock_connection.assert_any_call(self.config, self.config["database"])
+                mock_connection.assert_any_call(self.config, self.config["user_database"])
 
                 # First commit block
                 mock_dbo_role_sql.assert_called_once()
                 mock_app_role_sql.assert_called_once()
                 mock_orca_schema_sql.assert_called_once()
                 mock_app_user_sql.assert_called_once_with(
-                    self.config["app_user_password"]
+                    self.config["user_password"]
                 )
                 mock_schema_versions_table.assert_called_once()
                 mock_recovery_status_table.assert_called_once()
                 mock_recovery_job_table.assert_called_once()
                 mock_recovery_file_table.assert_called_once()
+                mock_providers_table.assert_called_once()
+                mock_collections_table.assert_called_once()
+                mock_provider_collection_xref_table.assert_called_once()
+                mock_granules_table.assert_called_once()
+                mock_files_table.assert_called_once()
 
                 # Second commit block (migration)
                 mock_recovery_status_data.assert_called_once()
@@ -157,7 +163,7 @@ class TestMigrateDatabseLibraries(unittest.TestCase):
                         call.execute(mock_app_role_sql()),
                         call.execute(mock_orca_schema_sql()),
                         call.execute(
-                            mock_app_user_sql(self.config["app_user_password"])
+                            mock_app_user_sql(self.config["user_password"])
                         ),
                         call.execute(mock_text("SET ROLE orca_dbo;")),
                         call.execute(mock_text("SET search_path TO orca, public;")),
@@ -165,6 +171,11 @@ class TestMigrateDatabseLibraries(unittest.TestCase):
                         call.execute(mock_recovery_status_table()),
                         call.execute(mock_recovery_job_table()),
                         call.execute(mock_recovery_file_table()),
+                        call.execute(mock_providers_table()),
+                        call.execute(mock_collections_table()),
+                        call.execute(mock_provider_collection_xref_table()),
+                        call.execute(mock_granules_table()),
+                        call.execute(mock_files_table()),
                         call.commit(),
                         call.execute(mock_text("RESET ROLE;")),
                         call.execute(mock_text("SET search_path TO orca, dr, public;")),
@@ -190,7 +201,7 @@ class TestMigrateDatabseLibraries(unittest.TestCase):
                         call.execute(mock_app_role_sql()),
                         call.execute(mock_orca_schema_sql()),
                         call.execute(
-                            mock_app_user_sql(self.config["app_user_password"])
+                            mock_app_user_sql(self.config["user_password"])
                         ),
                         call.execute(mock_text("SET ROLE orca_dbo;")),
                         call.execute(mock_text("SET search_path TO orca, public;")),
@@ -198,6 +209,11 @@ class TestMigrateDatabseLibraries(unittest.TestCase):
                         call.execute(mock_recovery_status_table()),
                         call.execute(mock_recovery_job_table()),
                         call.execute(mock_recovery_file_table()),
+                        call.execute(mock_providers_table()),
+                        call.execute(mock_collections_table()),
+                        call.execute(mock_provider_collection_xref_table()),
+                        call.execute(mock_granules_table()),
+                        call.execute(mock_files_table()),                       
                         call.commit(),
                         call.execute(mock_text("RESET ROLE;")),
                         call.execute(mock_text("SET search_path TO orca, dr, public;")),
@@ -228,6 +244,11 @@ class TestMigrateDatabseLibraries(unittest.TestCase):
                 mock_recovery_status_table.reset_mock()
                 mock_recovery_job_table.reset_mock()
                 mock_recovery_file_table.reset_mock()
+                mock_providers_table.reset_mock()
+                mock_collections_table.reset_mock()
+                mock_provider_collection_xref_table.reset_mock()
+                mock_granules_table.reset_mock()
+                mock_files_table.reset_mock()     
                 mock_recovery_status_data.reset_mock()
                 mock_recovery_job_data.reset_mock()
                 mock_recovery_file_data.reset_mock()

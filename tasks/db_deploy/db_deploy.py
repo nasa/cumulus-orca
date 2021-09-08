@@ -14,8 +14,7 @@ from typing import Any, Dict
 
 # Globals
 # Latest version of the ORCA schema.
-LATEST_ORCA_SCHEMA_VERSION = 2
-
+LATEST_ORCA_SCHEMA_VERSION = 3
 
 def handler(
     event: Dict[str, Any], context: object
@@ -57,7 +56,7 @@ def task(config: Dict[str, str]) -> None:
     """
     # Create the engines
     postgres_admin_engine = get_admin_connection(config)
-    user_admin_engine = get_admin_connection(config, config["database"])
+    user_admin_engine = get_admin_connection(config, config["user_database"])
 
     # Connect as admin user to the postgres database
     with postgres_admin_engine.connect() as connection:
@@ -204,8 +203,8 @@ def get_migration_version(connection: Connection) -> int:
         Schema Version (int): Version number of the currently installed ORCA schema
     """
     # See if the schema_version table exists. If it doesn't then we are at
-    # version 1 of the schema.
-    schema_version = 1
+    # version 2 of the schema.
+    schema_version = 2
 
     orca_schema_version_sql = text(
         """

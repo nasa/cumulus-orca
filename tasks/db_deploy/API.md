@@ -6,6 +6,7 @@
   * [set\_search\_path\_and\_role](#create_db.set_search_path_and_role)
   * [create\_metadata\_objects](#create_db.create_metadata_objects)
   * [create\_recovery\_objects](#create_db.create_recovery_objects)
+  * [create\_orca\_inventory\_metadata\_objects](#create_db.create_orca_inventory_metadata_objects) 
 * [db\_deploy](#db_deploy)
   * [handler](#db_deploy.handler)
   * [task](#db_deploy.task)
@@ -15,7 +16,7 @@
   * [get\_migration\_version](#db_deploy.get_migration_version)
 * [migrate\_db](#migrate_db)
   * [perform\_migration](#migrate_db.perform_migration)
-  * [migrate\_versions\_1\_to\_2](#migrate_db.migrate_versions_1_to_2)
+  * [migrate\_versions\_2\_to\_3](#migrate_db.migrate_versions_2_to_3)
 * [orca\_sql](#orca_sql)
   * [app\_database\_sql](#orca_sql.app_database_sql)
   * [dbo\_role\_sql](#orca_sql.dbo_role_sql)
@@ -28,6 +29,11 @@
   * [recovery\_status\_data\_sql](#orca_sql.recovery_status_data_sql)
   * [recovery\_job\_table\_sql](#orca_sql.recovery_job_table_sql)
   * [recovery\_file\_table\_sql](#orca_sql.recovery_file_table_sql)
+  * [providers\_table\_sql](#orca_sql.providers_table_sql)
+  * [collections\_table\_sql](#orca_sql.collections_table_sql)
+  * [provider\_collection\_xref\_table\_sql](#orca_sql.provider_collection_xref_table_sql)
+  * [granules\_table\_sql](#orca_sql.granules_table_sql)
+  * [files\_table\_sql](#orca_sql.files_table_sql)
   * [migrate\_recovery\_job\_data\_sql](#orca_sql.migrate_recovery_job_data_sql)
   * [migrate\_recovery\_file\_data\_sql](#orca_sql.migrate_recovery_file_data_sql)
   * [drop\_request\_status\_table\_sql](#orca_sql.drop_request_status_table_sql)
@@ -132,6 +138,29 @@ Creates the ORCA recovery tables in the proper order.
 - recovery_status
 - recovery_job
 - recovery_table
+
+**Arguments**:
+
+- `connection` _sqlalchemy.future.Connection_ - Database connection.
+  
+
+**Returns**:
+
+  None
+
+<a name="create_db.create_orca_inventory_metadata_objects"></a>
+#### create\_orca\_inventory\_metadata\_objects
+
+```python
+create_orca_inventory_metadata_objects(connection: Connection) -> None
+```
+
+  Creates the ORCA catalog metadata tables used for reconciliation with Cumulus in the proper order.
+  - providers
+  - collections
+  - provider_collection_xref
+  - granules
+  - files
 
 **Arguments**:
 
@@ -291,20 +320,20 @@ migrations to run.
 
   None
 
-<a name="migrate_db.migrate_versions_1_to_2"></a>
+<a name="migrate_db.migrate_versions_2_to_3"></a>
 #### migrate\_versions\_1\_to\_2
 
 ```python
-migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> None
+migrate_versions_2_to_3(config: Dict[str, str], is_latest_version: bool) -> None
 ```
 
-Performs the migration of the ORCA schema from version 1 to version 2 of
+Performs the migration of the ORCA schema from version 2 to version 3 of
 the ORCA schema.
 
 **Arguments**:
 
 - `config` _Dict_ - Connection information for the database.
-- `is_latest_version` _bool_ - Flag to dtermine if version 2 is the latest schema version.
+- `is_latest_version` _bool_ - Flag to dtermine if version 3 is the latest schema version.
   
 
 **Returns**:
@@ -476,6 +505,73 @@ after the recovery_job table sql to maintain key dependencies.
 **Returns**:
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for creating recovery_file table.
+
+
+<a name="orca_sql.providers_table_sql"></a>
+#### providers\_table\_sql
+
+```python
+providers_table_sql() -> TextClause
+```
+
+Full SQL for creating the providers table. 
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating providers table.
+
+
+<a name="orca_sql.collections_table_sql"></a>
+#### collections\_table\_sql
+
+```python
+collections_table_sql() -> TextClause
+```
+
+Full SQL for creating the collections table. 
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating collections table.
+
+<a name="orca_sql.provider_collection_xref_table_sql"></a>
+#### provider\_collection\_xref\_table\_sql
+
+```python
+provider_collection_xref_table_sql() -> TextClause
+```
+
+Full SQL for creating the cross reference table that ties a collection and provider together and resolves the many to many relationships.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating provider_collection_xref table.
+
+<a name="orca_sql.granules_table_sql"></a>
+#### granules\_table\_sql
+
+```python
+granules_table_sql() -> TextClause
+```
+
+Full SQL for creating the granules table. 
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating granules table.
+
+<a name="orca_sql.files_table_sql"></a>
+#### files\_table\_sql
+
+```python
+files_table_sql() -> TextClause
+```
+
+Full SQL for creating the files table. 
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating files table.
 
 <a name="orca_sql.migrate_recovery_job_data_sql"></a>
 #### migrate\_recovery\_job\_data\_sql

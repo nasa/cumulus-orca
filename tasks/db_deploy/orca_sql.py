@@ -416,7 +416,7 @@ def recovery_file_table_sql() -> TextClause:
     )
 
 # ----------------------------------------------------------------------------
-# ORCA SQL used for creating ORCA catalog metadata tables
+# ORCA SQL used for creating ORCA inventory metadata tables
 # ----------------------------------------------------------------------------
 
 def providers_table_sql() -> TextClause:
@@ -621,7 +621,7 @@ def files_table_sql() -> TextClause:
 
 
 # ----------------------------------------------------------------------------
-# ORCA SQL used for migration of schema v1 to schema v2
+# ORCA SQL used for migration of schema v2 to schema v3
 # ----------------------------------------------------------------------------
 def migrate_recovery_job_data_sql() -> TextClause:
     """
