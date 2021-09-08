@@ -166,6 +166,8 @@ First, run a `mv terraform.tfvars.example terraform.tfvars` to get a template `t
   Defaults to '5432'.
 * `platform` - indicates if running locally (onprem) or in AWS (AWS). 
   Defaults to 'AWS'.
+* `orca_default_multipart_chunksize` - The default maximum size of chunks to use when copying. Can be overridden by collection config.
+  Defaults to 250.
 
 ## Deploying with Terraform
 Run `terraform init`.
