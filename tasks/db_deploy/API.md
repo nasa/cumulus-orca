@@ -6,7 +6,7 @@
   * [set\_search\_path\_and\_role](#create_db.set_search_path_and_role)
   * [create\_metadata\_objects](#create_db.create_metadata_objects)
   * [create\_recovery\_objects](#create_db.create_recovery_objects)
-  * [create\_orca\_inventory\_metadata\_objects](#create_db.create_orca_inventory_metadata_objects) 
+  * [create\_orca\_inventory\_metadata\_objects](#create_db.create_orca_inventory_metadata_objects)
 * [db\_deploy](#db_deploy)
   * [handler](#db_deploy.handler)
   * [task](#db_deploy.task)
@@ -155,12 +155,12 @@ Creates the ORCA recovery tables in the proper order.
 create_orca_inventory_metadata_objects(connection: Connection) -> None
 ```
 
-  Creates the ORCA catalog metadata tables used for reconciliation with Cumulus in the proper order.
-  - providers
-  - collections
-  - provider_collection_xref
-  - granules
-  - files
+Creates the ORCA catalog metadata tables used for reconciliation with Cumulus in the proper order.
+- providers
+- collections
+- provider_collection_xref
+- granules
+- files
 
 **Arguments**:
 
@@ -321,7 +321,7 @@ migrations to run.
   None
 
 <a name="migrate_db.migrate_versions_2_to_3"></a>
-#### migrate\_versions\_1\_to\_2
+#### migrate\_versions\_2\_to\_3
 
 ```python
 migrate_versions_2_to_3(config: Dict[str, str], is_latest_version: bool) -> None
@@ -506,7 +506,6 @@ after the recovery_job table sql to maintain key dependencies.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for creating recovery_file table.
 
-
 <a name="orca_sql.providers_table_sql"></a>
 #### providers\_table\_sql
 
@@ -514,12 +513,11 @@ after the recovery_job table sql to maintain key dependencies.
 providers_table_sql() -> TextClause
 ```
 
-Full SQL for creating the providers table. 
+Full SQL for creating the providers table.
 
 **Returns**:
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for creating providers table.
-
 
 <a name="orca_sql.collections_table_sql"></a>
 #### collections\_table\_sql
@@ -528,7 +526,7 @@ Full SQL for creating the providers table.
 collections_table_sql() -> TextClause
 ```
 
-Full SQL for creating the collections table. 
+Full SQL for creating the collections table.
 
 **Returns**:
 
@@ -554,7 +552,7 @@ Full SQL for creating the cross reference table that ties a collection and provi
 granules_table_sql() -> TextClause
 ```
 
-Full SQL for creating the granules table. 
+Full SQL for creating the catalog granules table.
 
 **Returns**:
 
@@ -567,7 +565,7 @@ Full SQL for creating the granules table.
 files_table_sql() -> TextClause
 ```
 
-Full SQL for creating the files table. 
+Full SQL for creating the catalog files table.
 
 **Returns**:
 
