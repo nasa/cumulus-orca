@@ -248,6 +248,7 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 mock_schema_versions_data.reset_mock()
                 mock_text.reset_mock()
 
+    @patch("migrate_db.text")
     @patch("migrate_db.schema_versions_data_sql")
     @patch("migrate_db.add_multipart_chunksize_sql")
     @patch("migrate_db.get_admin_connection")
@@ -256,6 +257,7 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
             mock_connection: MagicMock,
             mock_add_multipart_chunksize_sql: MagicMock,
             mock_schema_versions_data: MagicMock,
+            mock_text: MagicMock
     ):
         """
         Tests the migrate_versions_2_to_3 function happy path
@@ -276,10 +278,19 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 # commit block
                 mock_add_multipart_chunksize_sql.assert_called_once()
 
+                # Check the text calls occur and in the proper order
+                text_calls = [
+                    call("SET ROLE orca_dbo;"),
+                    call("SET search_path TO orca, public;"),
+                ]
+                mock_text.assert_has_calls(text_calls, any_order=False)
+
                 # Validate logic switch and set the execution order
                 if latest_version:
                     mock_schema_versions_data.assert_called_once()
                     execution_order = [
+                        call.execute(mock_text("SET ROLE orca_dbo;")),
+                        call.execute(mock_text("SET search_path TO orca, public;")),
                         call.execute(mock_add_multipart_chunksize_sql()),
                         call.execute(mock_schema_versions_data()),
                         call.commit(),
@@ -288,6 +299,8 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 else:
                     mock_schema_versions_data.assert_not_called()
                     execution_order = [
+                        call.execute(mock_text("SET ROLE orca_dbo;")),
+                        call.execute(mock_text("SET search_path TO orca, public;")),
                         call.execute(mock_add_multipart_chunksize_sql()),
                         call.commit(),
                     ]

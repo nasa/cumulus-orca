@@ -178,6 +178,12 @@ def migrate_versions_2_to_3(config: Dict[str, str], is_latest_version: bool) -> 
 
     # Create all of the new objects, users, roles, etc.
     with admin_app_connection.connect() as connection:
+        # Change to DBO role and set search path
+        logger.debug("Changing to the dbo role to modify objects ...")
+        connection.execute(text("SET ROLE orca_dbo;"))
+        logger.debug("Setting search path to the ORCA schema to modify objects ...")
+        connection.execute(text("SET search_path TO orca, public;"))
+
         # Add column multipart_chunksize_mb to orca_files
         logger.debug("Adding multipart_chunksize_mb column...")
         connection.execute(add_multipart_chunksize_sql())
