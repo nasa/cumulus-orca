@@ -156,7 +156,7 @@ FUNCTIONS
             The same dict that is returned for a successful copy will be included in the
             message, with 'success' = False for the files for which the copy failed.
     
-    task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: float, db_queue_url: str, multipart_chunksize_mb: float) -> None
+    task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: float, db_queue_url: str, default_multipart_chunksize_mb: float) -> None
         Task called by the handler to perform the work.
         This task will call copy_object for each file. A copy will be tried
         up to {retries} times if it fails, waiting {retry_sleep_secs}
@@ -167,7 +167,7 @@ FUNCTIONS
             retry_sleep_secs: The number of seconds
                 to sleep between retry attempts.
             db_queue_url: The URL of the queue that posts status entries.
-            multipart_chunksize_mb: The maximum size of chunks to use when copying.
+            default_multipart_chunksize_mb: The multipart_chunksize to use if not set on file.
         Raises:
             CopyRequestError: Thrown if there are errors with the input records or the copy failed.
 
@@ -179,6 +179,7 @@ DATA
     INPUT_FILENAME_KEY = 'filename'
     INPUT_GRANULE_ID_KEY = 'granule_id'
     INPUT_JOB_ID_KEY = 'job_id'
+    INPUT_MULTIPART_CHUNKSIZE_MB = 'multipart_chunksize_mb'
     INPUT_SOURCE_BUCKET_KEY = 'source_bucket'
     INPUT_SOURCE_KEY_KEY = 'source_key'
     INPUT_TARGET_BUCKET_KEY = 'restore_destination'

@@ -195,6 +195,8 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_glaci
 ## pydoc copy_to_glacier
 
 ```
+Help on module copy_to_glacier:
+
 NAME
     copy_to_glacier
 
@@ -299,7 +301,6 @@ DATA
     CONFIG_COLLECTION_KEY = 'collection'
     CONFIG_FILE_STAGING_DIRECTORY_KEY = 'fileStagingDir'
     CONFIG_URL_PATH_KEY = 'url_path'
-    DEFAULT_ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB = 16
     Dict = typing.Dict
     EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
     List = typing.List
