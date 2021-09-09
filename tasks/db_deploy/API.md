@@ -17,6 +17,7 @@
 * [migrate\_db](#migrate_db)
   * [perform\_migration](#migrate_db.perform_migration)
   * [migrate\_versions\_2\_to\_3](#migrate_db.migrate_versions_2_to_3)
+  * [migrate\_versions\_1\_to\_2](#migrate_db.migrate_versions_1_to_2)
 * [orca\_sql](#orca_sql)
   * [app\_database\_sql](#orca_sql.app_database_sql)
   * [dbo\_role\_sql](#orca_sql.dbo_role_sql)
@@ -333,8 +334,27 @@ the ORCA schema.
 **Arguments**:
 
 - `config` _Dict_ - Connection information for the database.
-- `is_latest_version` _bool_ - Flag to dtermine if version 3 is the latest schema version.
+- `is_latest_version` _bool_ - Flag to determine if version 3 is the latest schema version.
   
+
+**Returns**:
+
+  None
+
+<a name="migrate_db.migrate_versions_1_to_2"></a>
+#### migrate\_versions\_1\_to\_2
+
+```python
+migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> None
+```
+
+Performs the migration of the ORCA schema from version 1 to version 2 of
+the ORCA schema.
+
+**Arguments**:
+
+- `config` _Dict_ - Connection information for the database.
+- `is_latest_version` _bool_ - Flag to determine if version 2 is the latest schema version.
 
 **Returns**:
 

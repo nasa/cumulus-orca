@@ -621,7 +621,7 @@ def files_table_sql() -> TextClause:
 
 
 # ----------------------------------------------------------------------------
-# ORCA SQL used for migration of schema v2 to schema v3
+# ORCA SQL used for migration of schema
 # ----------------------------------------------------------------------------
 def migrate_recovery_job_data_sql() -> TextClause:
     """
