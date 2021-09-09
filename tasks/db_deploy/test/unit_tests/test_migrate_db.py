@@ -9,7 +9,7 @@ from unittest.mock import Mock, call, patch, MagicMock
 import migrate_db
 
 
-class TestMigrateDatabseLibraries(unittest.TestCase):
+class TestMigrateDatabaseLibraries(unittest.TestCase):
     """
     Runs unit tests on the migrate_db functions.
     """
@@ -35,8 +35,11 @@ class TestMigrateDatabseLibraries(unittest.TestCase):
         """
         self.config = None
 
+    @patch("migrate_db.migrate_versions_2_to_3")
     @patch("migrate_db.migrate_versions_1_to_2")
-    def test_perform_migration_happy_path(self, mock_migrate_v1_to_v2: MagicMock):
+    def test_perform_migration_happy_path(self,
+                                          mock_migrate_v1_to_v2: MagicMock,
+                                          mock_migrate_v2_to_v3: MagicMock):
         """
         Tests the perform_migration function happy paths
         """
@@ -47,14 +50,19 @@ class TestMigrateDatabseLibraries(unittest.TestCase):
                 # Make sure the proper migrations happens.
                 # Note that for version 2 and 3 the function is not called so
                 # overall through all the tests it is only called once.
-                if version == 1:
-                    mock_migrate_v1_to_v2.assert_called_once_with(self.config, True)
-
-                if version >= 2:
+                if version < 2:
+                    mock_migrate_v1_to_v2.assert_called_once_with(self.config, False)
+                else:
                     mock_migrate_v1_to_v2.assert_not_called()
+
+                if version < 3:
+                    mock_migrate_v2_to_v3.assert_called_once_with(self.config, True)
+                else:
+                    mock_migrate_v2_to_v3.assert_not_called()
 
                 # Reset for next loop
                 mock_migrate_v1_to_v2.reset_mock()
+                mock_migrate_v2_to_v3.reset_mock()
 
     @patch("migrate_db.schema_versions_data_sql")
     @patch("migrate_db.drop_druser_user_sql")
@@ -239,3 +247,55 @@ class TestMigrateDatabseLibraries(unittest.TestCase):
                 mock_drop_druser_user.reset_mock()
                 mock_schema_versions_data.reset_mock()
                 mock_text.reset_mock()
+
+    @patch("migrate_db.schema_versions_data_sql")
+    @patch("migrate_db.add_multipart_chunksize_sql")
+    @patch("migrate_db.get_admin_connection")
+    def test_migrate_versions_2_to_3_happy_path(
+            self,
+            mock_connection: MagicMock,
+            mock_add_multipart_chunksize_sql: MagicMock,
+            mock_schema_versions_data: MagicMock,
+    ):
+        """
+        Tests the migrate_versions_2_to_3 function happy path
+        """
+        for latest_version in [True, False]:
+            with self.subTest(latest_version=latest_version):
+                # Setup the mock object that conn.execute is a part of in
+                # the connection with block
+                mock_conn_enter = mock_connection().connect().__enter__()
+
+                # Run the function
+                migrate_db.migrate_versions_2_to_3(self.config, latest_version)
+
+                # Check that all of the functions were called the correct
+                # number of times with the proper values
+                mock_connection.assert_any_call(self.config, self.config["database"])
+
+                # commit block
+                mock_add_multipart_chunksize_sql.assert_called_once()
+
+                # Validate logic switch and set the execution order
+                if latest_version:
+                    mock_schema_versions_data.assert_called_once()
+                    execution_order = [
+                        call.execute(mock_add_multipart_chunksize_sql()),
+                        call.execute(mock_schema_versions_data()),
+                        call.commit(),
+                    ]
+
+                else:
+                    mock_schema_versions_data.assert_not_called()
+                    execution_order = [
+                        call.execute(mock_add_multipart_chunksize_sql()),
+                        call.commit(),
+                    ]
+
+                # Check that items were called in the proper order
+                mock_conn_enter.assert_has_calls(execution_order, any_order=False)
+
+                # Reset the mocks for next loop
+                mock_connection.reset_mock()
+                mock_add_multipart_chunksize_sql.reset_mock()
+                mock_schema_versions_data.reset_mock()

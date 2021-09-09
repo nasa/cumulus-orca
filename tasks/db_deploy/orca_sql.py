@@ -244,7 +244,7 @@ def schema_versions_data_sql() -> TextClause:
 
         -- Upsert the current version
         INSERT INTO schema_versions
-        VALUES (2, 'Updated recovery schema for v3.x of ORCA application', NOW(), True)
+        VALUES (3, 'Updated recovery schema for v3.x of ORCA application', NOW(), True)
         ON CONFLICT (version_id)
         DO UPDATE SET is_latest = True;
     """
@@ -582,5 +582,19 @@ def drop_drdbo_role_sql() -> TextClause:
         REVOKE CONNECT ON DATABASE disaster_recovery FROM GROUP drdbo_role;
         REVOKE CREATE ON DATABASE disaster_recovery FROM GROUP drdbo_role;
         DROP ROLE IF EXISTS drdbo_role;
+    """
+    )
+
+
+def add_multipart_chunksize_sql() -> TextClause:
+    """
+    SQL that adds the multipart_chunksize_mb column to orca_files.
+
+    Returns: SQL for adding multipart_chunksize_mb.
+    """
+    return text(
+        """
+        ALTER TABLE table_name
+        ADD COLUMN multipart_chunksize_mb numeric NULL;
     """
     )
