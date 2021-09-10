@@ -49,6 +49,13 @@ variable "workflow_config" {
 }
 
 
+variable "default_multipart_chunksize_mb" {
+  type        = number
+  description = "The default maximum size of chunks to use when copying. Can be overridden by collection config."
+  default     = "250"
+}
+
+
 ## OPTIONAL
 variable "tags" {
   type        = map(string)
@@ -178,10 +185,4 @@ variable "status_update_queue_message_retention_time_seconds" {
   type        = number
   description = "The number of seconds status_update_queue SQS retains a message in seconds. Maximum value is 14 days."
   default     = 777600 #9 days
-}
-
-variable "orca_default_multipart_chunksize_mb" {
-  type        = number
-  description = "The default maximum size of chunks to use when copying. Can be overridden by collection config."
-  default     = "250"
 }

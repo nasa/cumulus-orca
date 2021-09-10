@@ -42,7 +42,7 @@ CONFIG_GLACIER_BUCKET_KEY = (
 )
 CONFIG_JOB_ID_KEY = "asyncOperationId"
 CONFIG_COLLECTION_KEY = "collection"
-COLLECTION_MULTIPART_CHUNKSIZE_MB_KEY = "multipart_chunksize_mb"
+CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = "multipart_chunksize_mb"
 
 GRANULE_GRANULE_ID_KEY = "granuleId"
 GRANULE_KEYS_KEY = "keys"
@@ -239,11 +239,11 @@ def inner_task(
     # Get the collection's multipart_chunksize from the event.
     try:
         collection_multipart_chunksize_mb = \
-            int(event[EVENT_CONFIG_KEY][CONFIG_COLLECTION_KEY][COLLECTION_MULTIPART_CHUNKSIZE_MB_KEY])
+            int(event[EVENT_CONFIG_KEY][CONFIG_MULTIPART_CHUNKSIZE_MB_KEY])
     except KeyError:
         collection_multipart_chunksize_mb = None
         LOGGER.info(
-            f'{COLLECTION_MULTIPART_CHUNKSIZE_MB_KEY} is not set for collection.')
+            f'{CONFIG_MULTIPART_CHUNKSIZE_MB_KEY} is not set for config.')
 
     # Get the granule array from the event
     granules = event[EVENT_INPUT_KEY][INPUT_GRANULES_KEY]

@@ -529,9 +529,7 @@ class TestRequestFiles(unittest.TestCase):
             request_files.EVENT_CONFIG_KEY: {
                 request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
                 request_files.CONFIG_JOB_ID_KEY: job_id,
-                request_files.CONFIG_COLLECTION_KEY: {
-                    request_files.COLLECTION_MULTIPART_CHUNKSIZE_MB_KEY: collection_multipart_chunksize_mb
-                }
+                request_files.CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: collection_multipart_chunksize_mb
             },
             request_files.EVENT_INPUT_KEY: {
                 request_files.INPUT_GRANULES_KEY: [granule]

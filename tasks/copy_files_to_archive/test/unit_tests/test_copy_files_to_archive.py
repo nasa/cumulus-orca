@@ -29,7 +29,7 @@ class TestCopyFilesToArchive(TestCase):
             "COPY_RETRIES": "703",
             "COPY_RETRY_SLEEP_SECS": "108.5",
             "DB_QUEUE_URL": "something.blah",
-            "ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB": "42"
+            "DEFAULT_MULTIPART_CHUNKSIZE_MB": "42"
         },
         clear=True,
     )
@@ -48,7 +48,7 @@ class TestCopyFilesToArchive(TestCase):
         mock_task.assert_called_with(records, 703, 108.5, "something.blah", 42)
 
     @patch.dict(os.environ, {"DB_QUEUE_URL": "something.else",
-                             "ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB": "42"}, clear=True)
+                             "DEFAULT_MULTIPART_CHUNKSIZE_MB": "42"}, clear=True)
     @patch("copy_files_to_archive.LOGGER")
     @patch("copy_files_to_archive.task")
     def test_handler_uses_default_retry_settings(

@@ -22,6 +22,7 @@ module "orca_lambdas" {
   orca_sqs_staged_recovery_queue_id = module.orca_sqs.orca_sqs_staged_recovery_queue_id
   ## OPTIONAL
   tags   = local.tags
+  default_multipart_chunksize_mb  = var.default_multipart_chunksize_mb
 
   ## --------------------------
   ## ORCA Variables
@@ -44,7 +45,6 @@ module "orca_lambdas" {
   orca_recovery_retry_limit            = var.orca_recovery_retry_limit
   orca_recovery_retry_interval         = var.orca_recovery_retry_interval
   orca_recovery_retry_backoff          = var.orca_recovery_retry_backoff
-  orca_default_multipart_chunksize_mb  = var.orca_default_multipart_chunksize_mb
 
   ## OPTIONAL (DO NOT CHANGE DEFAULT VALUES!)
   database_app_user            = var.database_app_user

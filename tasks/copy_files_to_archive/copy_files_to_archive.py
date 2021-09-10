@@ -240,6 +240,6 @@ def handler(
     LOGGER.debug("event: {event}", event=event)
     records = event["Records"]
 
-    default_multipart_chunksize_mb = int(os.environ['ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB'])
+    default_multipart_chunksize_mb = int(os.environ['DEFAULT_MULTIPART_CHUNKSIZE_MB'])
 
     task(records, retries, retry_sleep_secs, db_queue_url, default_multipart_chunksize_mb)

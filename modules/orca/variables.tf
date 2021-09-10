@@ -56,6 +56,12 @@ variable "tags" {
 }
 
 
+variable "default_multipart_chunksize_mb" {
+  type        = number
+  description = "The default maximum size of chunks to use when copying. Can be overridden by collection config."
+}
+
+
 ## Variables unique to ORCA
 ## REQUIRED
 variable "database_app_user_pw" {
@@ -164,10 +170,6 @@ variable "status_update_queue_message_retention_time_seconds" {
   description = "The number of seconds status_update_queue SQS retains a message in seconds. Maximum value is 14 days."
 }
 
-variable "orca_default_multipart_chunksize_mb" {
-  type        = number
-  description = "The default maximum size of chunks to use when copying. Can be overridden by collection config."
-}
 
 ## OPTIONAL (DO NOT CHANGE!) - Development use only
 ## Default variable value is set in ../main.tf to disallow any modification.

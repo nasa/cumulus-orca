@@ -12,13 +12,14 @@ module "orca" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  buckets                  = var.buckets
-  lambda_subnet_ids        = var.lambda_subnet_ids
-  permissions_boundary_arn = var.permissions_boundary_arn
-  prefix                   = var.prefix
-  system_bucket            = var.system_bucket
-  vpc_id                   = var.vpc_id
-  workflow_config          = var.workflow_config
+  buckets                        = var.buckets
+  lambda_subnet_ids              = var.lambda_subnet_ids
+  permissions_boundary_arn       = var.permissions_boundary_arn
+  prefix                         = var.prefix
+  system_bucket                  = var.system_bucket
+  vpc_id                         = var.vpc_id
+  workflow_config                = var.workflow_config
+  default_multipart_chunksize_mb = var.default_multipart_chunksize_mb
 
   ## OPTIONAL
   tags        = local.tags
@@ -47,7 +48,6 @@ module "orca" {
   sqs_maximum_message_size                             = var.sqs_maximum_message_size
   staged_recovery_queue_message_retention_time_seconds = var.staged_recovery_queue_message_retention_time_seconds
   status_update_queue_message_retention_time_seconds   = var.status_update_queue_message_retention_time_seconds
-  orca_default_multipart_chunksize_mb                  = var.orca_default_multipart_chunksize_mb
 
   ## OPTIONAL (DO NOT CHANGE DEFAULT VALUES!)
   database_app_user            = "orcauser"

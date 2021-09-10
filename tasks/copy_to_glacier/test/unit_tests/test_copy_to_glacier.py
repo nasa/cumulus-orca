@@ -91,7 +91,7 @@ class TestCopyToGlacierHandler(TestCase):
         self.assertEqual(not_excluded_flag, False)
 
     @patch.dict(os.environ,
-                {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__(), "ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB": "4"},
+                {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__(), "DEFAULT_MULTIPART_CHUNKSIZE_MB": "4"},
                 clear=True)
     def test_task_happy_path(self):
         """
@@ -162,7 +162,7 @@ class TestCopyToGlacierHandler(TestCase):
         self.assertIsNone(config_check.bad_config)
 
     @patch.dict(os.environ,
-                {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__(), "ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB": "4"},
+                {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__(), "DEFAULT_MULTIPART_CHUNKSIZE_MB": "4"},
                 clear=True)
     def test_task_overridden_multipart_chunksize(self):
         """
@@ -190,9 +190,9 @@ class TestCopyToGlacierHandler(TestCase):
             'config': {
                 CONFIG_COLLECTION_KEY: {
                     COLLECTION_NAME_KEY: collection_name,
-                    COLLECTION_VERSION_KEY: collection_version,
-                    COLLECTION_MULTIPART_CHUNKSIZE_MB_KEY: str(overridden_multipart_chunksize_mb)
-                }
+                    COLLECTION_VERSION_KEY: collection_version
+                },
+                CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: str(overridden_multipart_chunksize_mb)
             }
 
         }
@@ -235,7 +235,7 @@ class TestCopyToGlacierHandler(TestCase):
         self.assertIsNone(config_check.bad_config)
 
     @patch.dict(os.environ,
-                {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__(), "ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB": "4"},
+                {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__(), "DEFAULT_MULTIPART_CHUNKSIZE_MB": "4"},
                 clear=True)
     def test_task_empty_granules_list(self):
         """

@@ -34,7 +34,7 @@
       "type": "string"
     },
     "multipart_chunksize_mb": {
-      "description": "Overrides orca_default_multipart_chunksize_mb from TF.",
+      "description": "Overrides default_multipart_chunksize_mb from TF.",
       "type": ["number", "null"]
     }
   },

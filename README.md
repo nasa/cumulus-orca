@@ -166,8 +166,6 @@ First, run a `mv terraform.tfvars.example terraform.tfvars` to get a template `t
   Defaults to '5432'.
 * `platform` - indicates if running locally (onprem) or in AWS (AWS). 
   Defaults to 'AWS'.
-* `orca_default_multipart_chunksize` - The default maximum size of chunks to use when copying. Can be overridden by collection config.
-  Defaults to 250.
 
 ## Deploying with Terraform
 Run `terraform init`.
@@ -234,7 +232,7 @@ module "orca" {
   permissions_boundary_arn = var.permissions_boundary_arn
   buckets = var.buckets
   workflow_config = module.cumulus.workflow_config
-  region = var.region
+  default_multipart_chunksize_mb = module.cumulus.default_multipart_chunksize_mb
 }
 ```
 
@@ -278,6 +276,7 @@ step to anywhere after the MoveGranule step being sure to change the
                   "buckets":"{$.meta.buckets}",
                   "distribution_endpoint":"{$.meta.distribution_endpoint}",
                   "files_config":"{$.meta.collection.files}",
+                  "multipart_chunksize_mb": "{$.meta.collection.multipart_chunksize_mb"},
                   "fileStagingDir":"{$.meta.collection.url_path}",
                   "granuleIdExtraction":"{$.meta.collection.granuleIdExtraction}",
                   "collection":"{$.meta.collection}",

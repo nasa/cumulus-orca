@@ -13,15 +13,9 @@
       "description": "The unique identifier used for tracking requests. If not present, will be generated.",
       "type": "string"
     },
-    "collection": {
-      "description": "Values for the collection.",
-      "type": "object",
-      "properties": {
-        "multipart_chunksize_mb": {
-          "description": "Overrides orca_default_multipart_chunksize from TF.",
-          "type": "number"
-        }
-      }
+    "multipart_chunksize_mb": {
+      "description": "Overrides orca_default_multipart_chunksize from TF.",
+      "type": "number"
     }
   }
 }
