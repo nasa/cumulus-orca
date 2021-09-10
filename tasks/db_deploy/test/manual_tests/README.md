@@ -746,6 +746,7 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    status_id information matches in both tables for a given record.
 
 
+
 ### Migration Test Cleanup
 
 No cleanup is necessary if the next test run is the [Database No Migration Test](#database-no-migration-test).
@@ -786,14 +787,14 @@ COMMIT
 
 ## Database No Migration Test
 
-This test validates that the db_deploy scripts correctly identify that a v2 ORCA
-schema is installed and do not perform any additional action.
+This test validates that the db_deploy scripts correctly identify that a v3 ORCA
+schema is installed and do not perform any additional actions.
 
 ### Database Setup No Migration Test
 
-The *disaster_recovery* database should be installed with the ORCA version 2
+The *disaster_recovery* database should be installed with the ORCA version 3
 schema. This test should be ran immediately after the Fresh Install or Migration
-test so that a validated v2 schema is in place.
+test so that a validated v3 schema is in place.
 
 ### Running the No Migration Test
 

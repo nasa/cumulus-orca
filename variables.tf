@@ -49,18 +49,18 @@ variable "workflow_config" {
 }
 
 
-variable "default_multipart_chunksize_mb" {
-  type        = number
-  description = "The default maximum size of chunks to use when copying. Can be overridden by collection config."
-  default     = "250"
-}
-
-
 ## OPTIONAL
 variable "tags" {
   type        = map(string)
   description = "Tags to be applied to resources that support tags."
   default     = {}
+}
+
+
+variable "default_multipart_chunksize_mb" {
+  type        = number
+  description = "The default maximum size of chunks to use when copying. Can be overridden by collection config."
+  default     = "250"
 }
 
 
