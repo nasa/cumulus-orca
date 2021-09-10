@@ -91,7 +91,7 @@ class TestCopyToGlacierHandler(TestCase):
         self.assertEqual(not_excluded_flag, False)
 
     @patch.dict(os.environ,
-                {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__(), "ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB": "4.2"},
+                {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__(), "ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB": "4"},
                 clear=True)
     def test_task_happy_path(self):
         """
@@ -162,13 +162,13 @@ class TestCopyToGlacierHandler(TestCase):
         self.assertIsNone(config_check.bad_config)
 
     @patch.dict(os.environ,
-                {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__(), "ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB": "4.2"},
+                {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__(), "ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB": "4"},
                 clear=True)
     def test_task_overridden_multipart_chunksize(self):
         """
         If the collection has a different multipart chunksize, it should override the default.
         """
-        overridden_multipart_chunksize_mb = 4.1
+        overridden_multipart_chunksize_mb = 5
         collection_name = uuid.uuid4().__str__()
         collection_version = uuid.uuid4().__str__()
         destination_bucket_name = os.environ['ORCA_DEFAULT_BUCKET']
@@ -235,7 +235,7 @@ class TestCopyToGlacierHandler(TestCase):
         self.assertIsNone(config_check.bad_config)
 
     @patch.dict(os.environ,
-                {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__(), "ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB": "4.2"},
+                {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__(), "ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB": "4"},
                 clear=True)
     def test_task_empty_granules_list(self):
         """

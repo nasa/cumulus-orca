@@ -45,7 +45,7 @@ class TestCopyFilesToArchive(TestCase):
 
         copy_files_to_archive.handler(event, Mock())
 
-        mock_task.assert_called_with(records, 703, 108.5, "something.blah", 42.5)
+        mock_task.assert_called_with(records, 703, 108.5, "something.blah", 42)
 
     @patch.dict(os.environ, {"DB_QUEUE_URL": "something.else",
                              "ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB": "42"}, clear=True)
@@ -62,7 +62,7 @@ class TestCopyFilesToArchive(TestCase):
 
         copy_files_to_archive.handler(event, Mock())
 
-        mock_task.assert_called_with(records, 2, 30, "something.else", 42.5)
+        mock_task.assert_called_with(records, 2, 30, "something.else", 42)
 
     @patch("time.sleep")
     @patch("copy_files_to_archive.shared_recovery.update_status_for_file")
