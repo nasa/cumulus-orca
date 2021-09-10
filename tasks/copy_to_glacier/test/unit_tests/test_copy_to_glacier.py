@@ -104,7 +104,7 @@ class TestCopyToGlacierHandler(TestCase):
         source_bucket_names = [file['bucket'] for file in self.event_granules['granules'][0]['files']]
         source_keys = [file['filepath'] for file in self.event_granules['granules'][0]['files']]
 
-        config_check = ConfigCheck(4.2 * MB)
+        config_check = ConfigCheck(4 * MB)
 
         # todo: use 'side_effect' to verify args. It is safer, as current method does not deep-copy args
         boto3.client = Mock()
