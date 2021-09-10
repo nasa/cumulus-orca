@@ -21,27 +21,28 @@ def perform_migration(current_schema_version: int, config: Dict[str, str]) -> No
     """
     # Determine migrations to run based on current_schema_version and
     # update the versions table based on the latest_schema_version.
+
     if current_schema_version == 1:
         # Run migrations from version 1 to version 2
         migrate_versions_1_to_2(config, False)
-        current_schema_version = 2
-        # Run migrations from version 2 to version 3
-        migrate_versions_2_to_3(config, True)
 
-    elif current_schema_version == 2:
-        # Run migrations from version 2 to the latest version
-        # in this case version 3 is the latest so we set the latest version
-        # flag to True
-        migrate_versions_2_to_3(config, True)
+        #To do: add migrate_versions_2_to_3(config, False) when merging into develop branch
+        current_schema_version = 3
 
-def migrate_versions_2_to_3(config: Dict[str, str], is_latest_version: bool) -> None:
+    if current_schema_version == 3:
+        # Run migrations from version 3 to version 4
+        migrate_versions_3_to_4(config, True)
+        current_schema_version = 4
+
+
+def migrate_versions_3_to_4(config: Dict[str, str], is_latest_version: bool) -> None:
     """
-    Performs the migration of the ORCA schema from version 2 to version 3 of
+    Performs the migration of the ORCA schema from version 3 to version 4 of
     the ORCA schema.
 
     Args:
         config (Dict): Connection information for the database.
-        is_latest_version (bool): Flag to determine if version 3 is the latest schema version.
+        is_latest_version (bool): Flag to determine if version 4 is the latest schema version.
 
     Returns:
         None
@@ -50,6 +51,14 @@ def migrate_versions_2_to_3(config: Dict[str, str], is_latest_version: bool) -> 
     admin_app_connection = get_admin_connection(config, config["user_database"])
 
     with admin_app_connection.connect() as connection:
+        # Change to DBO role and set search path
+        logger.debug("Changing to the dbo role to create objects ...")
+        connection.execute(text("SET ROLE orca_dbo;"))
+
+        # Set the search path
+        logger.debug("Setting search path to the ORCA schema to create objects ...")
+        connection.execute(text("SET search_path TO orca, public;"))
+
         #Create ORCA inventory tables
         #Create providers table
         logger.debug("Creating providers table ...")
