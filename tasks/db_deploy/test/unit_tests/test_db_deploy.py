@@ -28,7 +28,6 @@ class TestDbDeployFunctions(unittest.TestCase):
         """
         self.mock_sm.start()
         self.test_sm = boto3.client("secretsmanager", region_name="us-west-2")
-        self.secretstring = '{"admin_database":"admin_db", "admin_password":"admin123", "admin_username":"admin", "host":"aws.postgresrds.host", "port":5432, "user_database":"user_db", "user_password":"user123", "user_username":"user"}'
         self.config = {
             "admin_database": "admin_db",
             "admin_password": "admin123",
@@ -39,6 +38,7 @@ class TestDbDeployFunctions(unittest.TestCase):
             "user_password": "user123",
             "user_username": "user",
         }
+        self.secretstring = json.dumps(self.config)
         self.test_sm.create_secret(
             Name="orcatest-orca-db-login-secret", SecretString=self.secretstring
         )
@@ -151,7 +151,7 @@ class TestDbDeployFunctions(unittest.TestCase):
         """
         mock_db_exists.return_value = True
         mock_schema_exists.return_value = True
-        mock_migration_version.return_value = 3
+        mock_migration_version.return_value = 4
         message = "Current ORCA schema version detected. No migration needed!"
 
         db_deploy.task(self.config)
@@ -215,7 +215,7 @@ class TestDbDeployFunctions(unittest.TestCase):
         table_exists_array = [True, False]
         mock_conn.execute.return_value.fetchall.return_value = [
             [
-                3,
+                4,
             ],
         ]
 
@@ -227,6 +227,6 @@ class TestDbDeployFunctions(unittest.TestCase):
                 schema_version = db_deploy.get_migration_version(mock_conn)
 
                 if table_exists:
-                    self.assertEqual(schema_version, 3)
+                    self.assertEqual(schema_version, 4)
                 else:
                     self.assertEqual(schema_version, 1)

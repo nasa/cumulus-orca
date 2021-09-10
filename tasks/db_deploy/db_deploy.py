@@ -14,7 +14,7 @@ from typing import Any, Dict
 
 # Globals
 # Latest version of the ORCA schema.
-LATEST_ORCA_SCHEMA_VERSION = 3
+LATEST_ORCA_SCHEMA_VERSION = 4
 MAX_RETRIES = 3
 
 def handler(
@@ -157,7 +157,6 @@ def app_schema_exists(connection: Connection) -> bool:
 
     return schema_exists
 
-@retry_operational_error(MAX_RETRIES)
 def app_version_table_exists(connection: Connection) -> bool:
     """
     Checks to see if the orca.schema_version table exists.
@@ -192,7 +191,6 @@ def app_version_table_exists(connection: Connection) -> bool:
 
     return table_exists
 
-@retry_operational_error(MAX_RETRIES)
 def get_migration_version(connection: Connection) -> int:
     """
     Queries the database version table and returns the latest version.

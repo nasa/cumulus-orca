@@ -189,7 +189,7 @@ class TestCreateDatabseLibraries(unittest.TestCase):
     @patch("create_db.provider_collection_xref_table_sql")
     @patch("create_db.granules_table_sql")
     @patch("create_db.files_table_sql")
-    def create_inventory_objects(
+    def test_create_inventory_objects(
         self,
         mock_files_table: MagicMock,
         mock_granules_table: MagicMock,
