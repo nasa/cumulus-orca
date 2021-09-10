@@ -201,7 +201,7 @@ NAME
     copy_to_glacier
 
 FUNCTIONS
-    copy_granule_between_buckets(source_bucket_name: str, source_key: str, destination_bucket: str, destination_key: str, multipart_chunksize_mb: float) -> None
+    copy_granule_between_buckets(source_bucket_name: str, source_key: str, destination_bucket: str, destination_key: str, multipart_chunksize_mb: int) -> None
         Copies granule from source bucket to destination.
         Args:
             source_bucket_name: The name of the bucket in which the granule is currently located.
@@ -219,7 +219,7 @@ FUNCTIONS
                 ORCA_DEFAULT_BUCKET (str, required): Name of the default S3 Glacier
                                                      ORCA bucket files should be
                                                      archived to.
-                ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB (str, required): The default maximum size of chunks to use when copying.
+                ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB (int, required): The default maximum size of chunks to use when copying.
                                                                      Can be overridden by collection config.
         
         Args:
@@ -247,7 +247,7 @@ FUNCTIONS
                             Each dict contains the following keys:
                                 regex (str): The regex that all files in the bucket must match with their name.
                                 bucket (str): The name of the bucket containing the files.
-                        multipart_chunksize_mb (float, optional): The maximum size of chunks to use when copying.
+                        multipart_chunksize_mb (int, optional): The maximum size of chunks to use when copying.
                             Defaults to Environment Var ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB
                         url_path (str): Used when calling {copy_granule_between_buckets} as a part of the destination_key.
                     buckets (dict): A dict with the following keys:
@@ -274,7 +274,7 @@ FUNCTIONS
         
             Environment Variables:
                 ORCA_DEFAULT_BUCKET (string, required): Name of the default ORCA S3 Glacier bucket.
-                ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB (string, optional): The default maximum size of chunks to use when copying. Can be overridden by collection config.
+                ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB (int, optional): The default maximum size of chunks to use when copying. Can be overridden by collection config.
         
         Args:
             event: Passed through from {handler}

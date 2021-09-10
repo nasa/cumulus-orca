@@ -51,7 +51,7 @@ def task(
         max_retries: int,
         retry_sleep_secs: float,
         db_queue_url: str,
-        default_multipart_chunksize_mb: float
+        default_multipart_chunksize_mb: int
 ) -> None:
     """
     Task called by the handler to perform the work.
@@ -148,7 +148,7 @@ def copy_object(
         src_bucket_name: str,
         src_object_name: str,
         dest_bucket_name: str,
-        multipart_chunksize_mb: float,
+        multipart_chunksize_mb: int,
         dest_object_name: str = None,
 ) -> Optional[str]:
     """Copy an Amazon S3 bucket object
@@ -240,6 +240,6 @@ def handler(
     LOGGER.debug("event: {event}", event=event)
     records = event["Records"]
 
-    default_multipart_chunksize_mb = float(os.environ['ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB'])
+    default_multipart_chunksize_mb = int(os.environ['ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB'])
 
     task(records, retries, retry_sleep_secs, db_queue_url, default_multipart_chunksize_mb)

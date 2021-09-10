@@ -182,7 +182,7 @@
 <Column id="41" name="key_path" type="text" length="25" nulls="false">
 <CP name="COMMENTS">Full AWS key path including file name of the file (does not include bucket name) where the file resides in ORCA.</CP>
 </Column>
-<Column id="42" name="multipart_chunksize_mb" type="numeric" length="25" nulls="true">
+<Column id="42" name="multipart_chunksize_mb" type="integer" length="25" nulls="true">
 <CP name="PRECISION">15</CP>
 <CP name="SCALE">5</CP>
 </Column>

@@ -75,7 +75,7 @@ def create_status_for_job(
             'filename' (str)
             'key_path' (str)
             'restore_destination' (str)
-            'multipart_chunksize_mb' (float)
+            'multipart_chunksize_mb' (int)
             'status_id' (int)
             'error_message' (str, Optional)
             'request_time' (str)

@@ -457,7 +457,7 @@ class TestRequestFiles(unittest.TestCase):
         A return of 'false' from object_exists should ignore the file and continue.
         """
         glacier_bucket = uuid.uuid4().__str__()
-        collection_multipart_chunksize_mb = random.uniform(0, 1000)
+        collection_multipart_chunksize_mb = random.randint(1, 10000)
         file_key_0 = uuid.uuid4().__str__()
         file_key_1 = uuid.uuid4().__str__()
         missing_file_key = uuid.uuid4().__str__()

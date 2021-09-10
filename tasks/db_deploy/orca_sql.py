@@ -373,7 +373,7 @@ def recovery_file_table_sql() -> TextClause:
         , granule_id             text NOT NULL
         , filename               text NOT NULL
         , key_path               text NOT NULL
-        , multipart_chunksize_mb numeric NULL
+        , multipart_chunksize_mb integer NULL
         , restore_destination    text NOT NULL
         , status_id              int2 NOT NULL
         , error_message          text NULL
@@ -595,7 +595,7 @@ def add_multipart_chunksize_sql() -> TextClause:
     return text(
         """
         ALTER TABLE recovery_file
-        ADD COLUMN IF NOT EXISTS multipart_chunksize_mb numeric NULL;
+        ADD COLUMN IF NOT EXISTS multipart_chunksize_mb integer NULL;
         COMMENT ON COLUMN recovery_file.multipart_chunksize
             IS 'Overrides orca_default_multipart_chunksize in TF.';
     """

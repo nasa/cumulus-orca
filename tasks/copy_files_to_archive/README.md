@@ -110,7 +110,7 @@ CLASSES
      |  args
 
 FUNCTIONS
-    copy_object(s3_cli: botocore.client.BaseClient, src_bucket_name: str, src_object_name: str, dest_bucket_name: str, multipart_chunksize_mb: float, dest_object_name: str = None) -> Union[str, NoneType]
+    copy_object(s3_cli: botocore.client.BaseClient, src_bucket_name: str, src_object_name: str, dest_bucket_name: str, multipart_chunksize_mb: int, dest_object_name: str = None) -> Union[str, NoneType]
         Copy an Amazon S3 bucket object
         Args:
             s3_cli: An instance of boto3 s3 client.
@@ -156,7 +156,7 @@ FUNCTIONS
             The same dict that is returned for a successful copy will be included in the
             message, with 'success' = False for the files for which the copy failed.
     
-    task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: float, db_queue_url: str, default_multipart_chunksize_mb: float) -> None
+    task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: float, db_queue_url: str, default_multipart_chunksize_mb: int) -> None
         Task called by the handler to perform the work.
         This task will call copy_object for each file. A copy will be tried
         up to {retries} times if it fails, waiting {retry_sleep_secs}

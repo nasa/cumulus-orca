@@ -239,7 +239,7 @@ def inner_task(
     # Get the collection's multipart_chunksize from the event.
     try:
         collection_multipart_chunksize_mb = \
-            float(event[EVENT_CONFIG_KEY][CONFIG_COLLECTION_KEY][COLLECTION_MULTIPART_CHUNKSIZE_MB_KEY])
+            int(event[EVENT_CONFIG_KEY][CONFIG_COLLECTION_KEY][COLLECTION_MULTIPART_CHUNKSIZE_MB_KEY])
     except KeyError:
         collection_multipart_chunksize_mb = None
         LOGGER.info(

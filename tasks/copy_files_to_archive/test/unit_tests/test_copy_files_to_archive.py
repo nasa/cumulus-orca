@@ -29,7 +29,7 @@ class TestCopyFilesToArchive(TestCase):
             "COPY_RETRIES": "703",
             "COPY_RETRY_SLEEP_SECS": "108.5",
             "DB_QUEUE_URL": "something.blah",
-            "ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB": "42.5"
+            "ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB": "42"
         },
         clear=True,
     )
@@ -48,7 +48,7 @@ class TestCopyFilesToArchive(TestCase):
         mock_task.assert_called_with(records, 703, 108.5, "something.blah", 42.5)
 
     @patch.dict(os.environ, {"DB_QUEUE_URL": "something.else",
-                             "ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB": "42.5"}, clear=True)
+                             "ORCA_DEFAULT_MULTIPART_CHUNKSIZE_MB": "42"}, clear=True)
     @patch("copy_files_to_archive.LOGGER")
     @patch("copy_files_to_archive.task")
     def test_handler_uses_default_retry_settings(
@@ -83,7 +83,7 @@ class TestCopyFilesToArchive(TestCase):
         db_queue_url = uuid.uuid4().__str__()
         max_retries = randint(2, 9999)
         retry_sleep_secs = randint(0, 9999)
-        default_multipart_chunksize_mb = random.uniform(0, 500)
+        default_multipart_chunksize_mb = randint(1, 10000)
 
         file0_job_id = uuid.uuid4().__str__()
         file0_granule_id = uuid.uuid4().__str__()
@@ -100,7 +100,7 @@ class TestCopyFilesToArchive(TestCase):
         file1_source_key = uuid.uuid4().__str__()
         file1_target_bucket = uuid.uuid4().__str__()
         file1_target_key = uuid.uuid4().__str__()
-        file1_multipart_chunksize_mb = random.uniform(0, 1000)
+        file1_multipart_chunksize_mb = randint(1, 10000)
 
         mock_records = Mock()
 
@@ -201,7 +201,7 @@ class TestCopyFilesToArchive(TestCase):
         db_queue_url = uuid.uuid4().__str__()
         max_retries = 2
         retry_sleep_secs = randint(0, 9999)
-        multipart_chunksize_mb = random.uniform(0, 500)
+        multipart_chunksize_mb = randint(1, 10000)
 
         file0_job_id = uuid.uuid4().__str__()
         file0_granule_id = uuid.uuid4().__str__()
@@ -330,7 +330,7 @@ class TestCopyFilesToArchive(TestCase):
             "target_key": uuid.uuid4().__str__(),
             "restore_destination": uuid.uuid4().__str__(),
             "source_bucket": uuid.uuid4().__str__(),
-            "multipart_chunksize_mb": random.uniform(0, 1000)
+            "multipart_chunksize_mb": randint(1, 10000)
         }
         file1 = {
             "job_id": uuid.uuid4().__str__(),
@@ -359,7 +359,7 @@ class TestCopyFilesToArchive(TestCase):
         src_bucket_name = uuid.uuid4().__str__()
         src_object_name = uuid.uuid4().__str__()
         dest_bucket_name = uuid.uuid4().__str__()
-        multipart_chunksize_mb = random.uniform(0, 500)
+        multipart_chunksize_mb = randint(1, 10000)
         dest_object_name = uuid.uuid4().__str__()
 
         mock_s3_cli = Mock()
@@ -391,7 +391,7 @@ class TestCopyFilesToArchive(TestCase):
         src_bucket_name = uuid.uuid4().__str__()
         src_object_name = uuid.uuid4().__str__()
         dest_bucket_name = uuid.uuid4().__str__()
-        multipart_chunksize_mb = random.uniform(0, 500)
+        multipart_chunksize_mb = randint(1, 10000)
         dest_object_name = uuid.uuid4().__str__()
         expected_result = uuid.uuid4().__str__()
 

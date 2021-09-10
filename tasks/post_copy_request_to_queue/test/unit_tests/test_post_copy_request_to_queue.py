@@ -89,7 +89,7 @@ class TestPostCopyRequestToQueue(TestCase):
         happy path. Mocks db_connect_info,single_query,
         post_entry_to_queue and update_status_for_file.
         """
-        multipart_chunksize_mb = random.uniform(0, 1000)
+        multipart_chunksize_mb = random.randint(1, 10000)
         mock_execute = Mock(return_value=[("1", "3", "f1.doc", "s3://restore", multipart_chunksize_mb)])
         mock_connection = Mock()
         mock_connection.execute = mock_execute
@@ -286,7 +286,7 @@ class TestPostCopyRequestToQueue(TestCase):
         """
         mocks update_status_for_file to raise an exception.
         """
-        multipart_chunksize_mb = random.uniform(0, 1000)
+        multipart_chunksize_mb = random.randint(1, 10000)
         mock_execute = Mock(return_value=[("1", "3", "f1.doc", "s3://restore", multipart_chunksize_mb)])
         mock_connection = Mock()
         mock_connection.execute = mock_execute

@@ -64,7 +64,7 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
             'restore_destination': uuid.uuid4().__str__(), 'status_id': 1,
             'request_time': datetime.datetime.now(datetime.timezone.utc).isoformat(),
             'last_update': datetime.datetime.now(datetime.timezone.utc).isoformat(),
-            'multipart_chunksize_mb': random.uniform(0, 1000)
+            'multipart_chunksize_mb': random.randint(1, 10000)
         }]
 
         values = {
@@ -231,14 +231,14 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
         restore_destination0 = uuid.uuid4().__str__()
         request_time0 = uuid.uuid4().__str__()
         last_update0 = uuid.uuid4().__str__()
-        multipart_chunksize_mb0 = random.uniform(0, 1000)
+        multipart_chunksize_mb0 = random.randint(1, 10000)
         filename1 = uuid.uuid4().__str__()
         key_path1 = uuid.uuid4().__str__()
         restore_destination1 = uuid.uuid4().__str__()
         request_time1 = uuid.uuid4().__str__()
         last_update1 = uuid.uuid4().__str__()
         error_message1 = uuid.uuid4().__str__()
-        multipart_chunksize_mb1 = random.uniform(0, 1000)
+        multipart_chunksize_mb1 = random.randint(1, 10000)
         completion_time1 = datetime.datetime.utcnow().isoformat()
         files = [
             {
@@ -324,7 +324,7 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
         last_update0 = uuid.uuid4().__str__()
         error_message0 = uuid.uuid4().__str__()
         completion_time0 = datetime.datetime.utcnow().isoformat()
-        multipart_chunksize_mb0 = random.uniform(0, 1000)
+        multipart_chunksize_mb0 = random.randint(1, 10000)
         filename1 = uuid.uuid4().__str__()
         key_path1 = uuid.uuid4().__str__()
         restore_destination1 = uuid.uuid4().__str__()
@@ -332,7 +332,7 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
         last_update1 = uuid.uuid4().__str__()
         error_message1 = uuid.uuid4().__str__()
         completion_time1 = datetime.datetime.utcnow().isoformat()
-        multipart_chunksize_mb1 = random.uniform(0, 1000)
+        multipart_chunksize_mb1 = random.randint(1, 10000)
         # using a third item to make sure that all branches of file loop are hit
         filename2 = uuid.uuid4().__str__()
         key_path2 = uuid.uuid4().__str__()
@@ -341,7 +341,7 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
         last_update2 = uuid.uuid4().__str__()
         error_message2 = uuid.uuid4().__str__()
         completion_time2 = datetime.datetime.utcnow().isoformat()
-        multipart_chunksize_mb2 = random.uniform(0, 1000)
+        multipart_chunksize_mb2 = random.randint(1, 10000)
         files = [
             {
                 'status_id': OrcaStatus.FAILED.value,
@@ -457,7 +457,7 @@ class TestPostToDatabase(unittest.TestCase):  # pylint: disable-msg=too-many-ins
                     'last_update': last_update0,
                     'error_message': error_message0,
                     'completion_time': completion_time0,
-                    'multipart_chunksize_mb': random.uniform(0, 1000)
+                    'multipart_chunksize_mb': random.randint(1, 10000)
                 }
             ]
 
