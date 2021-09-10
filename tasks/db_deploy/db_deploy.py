@@ -42,7 +42,6 @@ def handler(
 
     return task(config)
 
-@retry_operational_error(MAX_RETRIES)
 def task(config: Dict[str, str]) -> None:
     """
     Checks for the ORCA database and throws an error if it does not exist.
@@ -64,6 +63,7 @@ def task(config: Dict[str, str]) -> None:
         # Check if database exists, if not throw an error
         if not app_db_exists(connection):
             logger.critical("The ORCA database disaster_recovery does not exist.")
+            # TO DO ORCA-233: Add db creation code here and remove the raise Exception error
             raise Exception("Missing application database.")
 
     # Connect as admin user to disaster_recovery database.
@@ -127,7 +127,6 @@ def app_db_exists(connection: Connection) -> bool:
 
     return db_exists
 
-@retry_operational_error(MAX_RETRIES)
 def app_schema_exists(connection: Connection) -> bool:
     """
     Checks to see if the ORCA application schema exists.

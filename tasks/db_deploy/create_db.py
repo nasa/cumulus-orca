@@ -5,12 +5,9 @@ Description: Creates the current version on the ORCA database.
 """
 from typing import Dict
 from sqlalchemy.future import Connection
-from orca_shared.shared_db import get_admin_connection, logger, retry_operational_error
+from orca_shared.shared_db import get_configuration, get_admin_connection, logger
 from orca_sql import *
 
-MAX_RETRIES = 3
-
-@retry_operational_error(MAX_RETRIES)
 def create_fresh_orca_install(config: Dict[str, str]) -> None:
     """
     This task will create the ORCA roles, users, schema, and tables needed
@@ -42,7 +39,6 @@ def create_fresh_orca_install(config: Dict[str, str]) -> None:
         # If everything is good, commit.
         conn.commit()
 
-@retry_operational_error(MAX_RETRIES)
 def create_app_schema_role_users(connection: Connection, app_password: str) -> None:
     """
     Creates the ORCA application database schema, users and roles.
@@ -72,7 +68,6 @@ def create_app_schema_role_users(connection: Connection, app_password: str) -> N
     connection.execute(app_user_sql(app_password))
     logger.info("ORCA application user created.")
 
-@retry_operational_error(MAX_RETRIES)
 def set_search_path_and_role(connection: Connection) -> None:
     """
     Sets the role to the dbo role to create/modify ORCA objects and sets the
@@ -92,7 +87,6 @@ def set_search_path_and_role(connection: Connection) -> None:
     logger.debug("Setting search path to the ORCA schema to create objects ...")
     connection.execute(text("SET search_path TO orca, public;"))
 
-@retry_operational_error(MAX_RETRIES)
 def create_metadata_objects(connection: Connection) -> None:
     """
     Create the ORCA application metadata tables used to manage application
@@ -115,7 +109,6 @@ def create_metadata_objects(connection: Connection) -> None:
     connection.execute(schema_versions_data_sql())
     logger.info("Data added to the schema_versions table.")
 
-@retry_operational_error(MAX_RETRIES)
 def create_recovery_objects(connection: Connection) -> None:
     """
     Creates the ORCA recovery tables in the proper order.
@@ -150,7 +143,6 @@ def create_recovery_objects(connection: Connection) -> None:
     logger.info("recovery_file table created.")
 
 
-@retry_operational_error(MAX_RETRIES)
 def create_inventory_objects(connection: Connection) -> None:
     """
     Creates the ORCA catalog metadata tables used for reconciliation with Cumulus in the proper order.

@@ -5,9 +5,7 @@ Description: Migrates the current ORCA schema version to the latest version.
 """
 from typing import Dict
 from orca_sql import *
-from orca_shared.shared_db import get_admin_connection, logger, retry_operational_error
-
-MAX_RETRIES = 3
+from orca_shared.shared_db import get_admin_connection, logger
 
 def perform_migration(current_schema_version: int, config: Dict[str, str]) -> None:
     """
@@ -36,7 +34,6 @@ def perform_migration(current_schema_version: int, config: Dict[str, str]) -> No
         # flag to True
         migrate_versions_2_to_3(config, True)
 
-@retry_operational_error(MAX_RETRIES)
 def migrate_versions_2_to_3(config: Dict[str, str], is_latest_version: bool) -> None:
     """
     Performs the migration of the ORCA schema from version 2 to version 3 of
@@ -91,7 +88,6 @@ def migrate_versions_2_to_3(config: Dict[str, str], is_latest_version: bool) -> 
         # Commit if there is no issues
         connection.commit()
 
-@retry_operational_error(MAX_RETRIES)
 def migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> None:
     """
     Performs the migration of the ORCA schema from version 1 to version 2 of
