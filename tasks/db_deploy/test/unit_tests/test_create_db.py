@@ -18,11 +18,16 @@ class TestCreateDatabseLibraries(unittest.TestCase):
         """
         Set up test.
         """
-        self.config = {"admin_database":"admin_db", 
-        "admin_password":"admin123", 
-        "admin_username":"admin", 
-        "host":"aws.postgresrds.host", 
-        "port":5432, "user_database":"user_db", "user_password":"user123", "user_username":"user"}
+        self.config = {
+            "admin_database": "admin_db",
+            "admin_password": "admin123",
+            "admin_username": "admin",
+            "host": "aws.postgresrds.host",
+            "port": 5432,
+            "user_database": "user_db",
+            "user_password": "user123",
+            "user_username": "user",
+        }
 
         self.mock_connection = MagicMock()
 
@@ -35,7 +40,7 @@ class TestCreateDatabseLibraries(unittest.TestCase):
 
     @patch("create_db.create_recovery_objects")
     @patch("create_db.create_metadata_objects")
-    @patch("create_db.create_orca_inventory_metadata_objects")
+    @patch("create_db.create_inventory_objects")
     @patch("create_db.set_search_path_and_role")
     @patch("create_db.create_app_schema_role_users")
     @patch("create_db.get_admin_connection")
@@ -44,7 +49,7 @@ class TestCreateDatabseLibraries(unittest.TestCase):
         mock_connection: MagicMock,
         mock_create_app_schema_roles: MagicMock,
         mock_set_search_path_role: MagicMock,
-        mock_create_orca_inventory_metadata: MagicMock,
+        mock_create_inventory_objects: MagicMock,
         mock_create_metadata: MagicMock,
         mock_create_recovery: MagicMock,
     ):
@@ -59,7 +64,7 @@ class TestCreateDatabseLibraries(unittest.TestCase):
             mock_conn_enter, self.config["user_password"]
         )
         mock_set_search_path_role.assert_called_once_with(mock_conn_enter)
-        mock_create_orca_inventory_metadata.assert_called_once_with(mock_conn_enter)
+        mock_create_inventory_objects.assert_called_once_with(mock_conn_enter)
         mock_create_metadata.assert_called_once_with(mock_conn_enter)
         mock_create_recovery.assert_called_once_with(mock_conn_enter)
 
@@ -184,18 +189,18 @@ class TestCreateDatabseLibraries(unittest.TestCase):
     @patch("create_db.provider_collection_xref_table_sql")
     @patch("create_db.granules_table_sql")
     @patch("create_db.files_table_sql")
-    def test_create_orca_inventory_metadata_objects(
+    def create_inventory_objects(
         self,
         mock_files_table: MagicMock,
         mock_granules_table: MagicMock,
         mock_provider_collection_xref_table: MagicMock,
         mock_collections_table: MagicMock,
-        mock_providers_table: MagicMock,  
+        mock_providers_table: MagicMock,
     ):
         """
-        Tests happy path of the create_orca_inventory_metadata_objects function
+        Tests happy path of the create_inventory_objects function
         """
-        create_db.create_orca_inventory_metadata_objects(self.mock_connection)
+        create_db.create_inventory_objects(self.mock_connection)
 
         # Check that the SQL calls were made
         mock_providers_table.assert_called_once()

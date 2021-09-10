@@ -4,7 +4,7 @@ Name: db_deploy.py
 Description: Performs database installation and migration for the ORCA schema.
 """
 # Imports
-from orca_shared.shared_db import logger, get_configuration, get_admin_connection
+from orca_shared.shared_db import logger, get_configuration, get_admin_connection, retry_operational_error
 from sqlalchemy import text
 from sqlalchemy.future import Connection
 from create_db import create_fresh_orca_install
@@ -15,6 +15,7 @@ from typing import Any, Dict
 # Globals
 # Latest version of the ORCA schema.
 LATEST_ORCA_SCHEMA_VERSION = 3
+MAX_RETRIES = 3
 
 def handler(
     event: Dict[str, Any], context: object
@@ -41,7 +42,7 @@ def handler(
 
     return task(config)
 
-
+@retry_operational_error(MAX_RETRIES)
 def task(config: Dict[str, str]) -> None:
     """
     Checks for the ORCA database and throws an error if it does not exist.
@@ -93,6 +94,7 @@ def task(config: Dict[str, str]) -> None:
 
 
 # def app_db_exists(config: Dict[str, str]) -> bool:
+@retry_operational_error(MAX_RETRIES)
 def app_db_exists(connection: Connection) -> bool:
     """
     Checks to see if the ORCA application database exists.
@@ -125,7 +127,7 @@ def app_db_exists(connection: Connection) -> bool:
 
     return db_exists
 
-
+@retry_operational_error(MAX_RETRIES)
 def app_schema_exists(connection: Connection) -> bool:
     """
     Checks to see if the ORCA application schema exists.
@@ -156,7 +158,7 @@ def app_schema_exists(connection: Connection) -> bool:
 
     return schema_exists
 
-
+@retry_operational_error(MAX_RETRIES)
 def app_version_table_exists(connection: Connection) -> bool:
     """
     Checks to see if the orca.schema_version table exists.
@@ -191,7 +193,7 @@ def app_version_table_exists(connection: Connection) -> bool:
 
     return table_exists
 
-
+@retry_operational_error(MAX_RETRIES)
 def get_migration_version(connection: Connection) -> int:
     """
     Queries the database version table and returns the latest version.
@@ -203,8 +205,8 @@ def get_migration_version(connection: Connection) -> int:
         Schema Version (int): Version number of the currently installed ORCA schema
     """
     # See if the schema_version table exists. If it doesn't then we are at
-    # version 2 of the schema.
-    schema_version = 2
+    # version 1 of the schema.
+    schema_version = 1
 
     orca_schema_version_sql = text(
         """

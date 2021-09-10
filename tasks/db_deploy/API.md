@@ -6,7 +6,7 @@
   * [set\_search\_path\_and\_role](#create_db.set_search_path_and_role)
   * [create\_metadata\_objects](#create_db.create_metadata_objects)
   * [create\_recovery\_objects](#create_db.create_recovery_objects)
-  * [create\_orca\_inventory\_metadata\_objects](#create_db.create_orca_inventory_metadata_objects)
+  * [create\_inventory\_objects](#create_db.create_inventory_objects)
 * [db\_deploy](#db_deploy)
   * [handler](#db_deploy.handler)
   * [task](#db_deploy.task)
@@ -55,6 +55,7 @@ Description: Creates the current version on the ORCA database.
 #### create\_fresh\_orca\_install
 
 ```python
+@retry_operational_error(MAX_RETRIES)
 create_fresh_orca_install(config: Dict[str, str]) -> None
 ```
 
@@ -74,6 +75,7 @@ by the ORCA application as a fresh install.
 #### create\_app\_schema\_role\_users
 
 ```python
+@retry_operational_error(MAX_RETRIES)
 create_app_schema_role_users(connection: Connection, app_password: str) -> None
 ```
 
@@ -92,6 +94,7 @@ Creates the ORCA application database schema, users and roles.
 #### set\_search\_path\_and\_role
 
 ```python
+@retry_operational_error(MAX_RETRIES)
 set_search_path_and_role(connection: Connection) -> None
 ```
 
@@ -112,6 +115,7 @@ creations or modifications to ORCA objects in the ORCA schema.
 #### create\_metadata\_objects
 
 ```python
+@retry_operational_error(MAX_RETRIES)
 create_metadata_objects(connection: Connection) -> None
 ```
 
@@ -132,6 +136,7 @@ versions and other ORCA internal information in the proper order.
 #### create\_recovery\_objects
 
 ```python
+@retry_operational_error(MAX_RETRIES)
 create_recovery_objects(connection: Connection) -> None
 ```
 
@@ -149,11 +154,12 @@ Creates the ORCA recovery tables in the proper order.
 
   None
 
-<a name="create_db.create_orca_inventory_metadata_objects"></a>
-#### create\_orca\_inventory\_metadata\_objects
+<a name="create_db.create_inventory_objects"></a>
+#### create\_inventory\_objects
 
 ```python
-create_orca_inventory_metadata_objects(connection: Connection) -> None
+@retry_operational_error(MAX_RETRIES)
+create_inventory_objects(connection: Connection) -> None
 ```
 
 Creates the ORCA catalog metadata tables used for reconciliation with Cumulus in the proper order.
@@ -206,6 +212,7 @@ required by this Lambda.
 #### task
 
 ```python
+@retry_operational_error(MAX_RETRIES)
 task(config: Dict[str, str]) -> None
 ```
 
@@ -226,6 +233,7 @@ schema.
 #### app\_db\_exists
 
 ```python
+@retry_operational_error(MAX_RETRIES)
 app_db_exists(connection: Connection) -> bool
 ```
 
@@ -244,6 +252,7 @@ Checks to see if the ORCA application database exists.
 #### app\_schema\_exists
 
 ```python
+@retry_operational_error(MAX_RETRIES)
 app_schema_exists(connection: Connection) -> bool
 ```
 
@@ -262,6 +271,7 @@ Checks to see if the ORCA application schema exists.
 #### app\_version\_table\_exists
 
 ```python
+@retry_operational_error(MAX_RETRIES)
 app_version_table_exists(connection: Connection) -> bool
 ```
 
@@ -280,6 +290,7 @@ Checks to see if the orca.schema_version table exists.
 #### get\_migration\_version
 
 ```python
+@retry_operational_error(MAX_RETRIES)
 get_migration_version(connection: Connection) -> int
 ```
 
@@ -325,6 +336,7 @@ migrations to run.
 #### migrate\_versions\_2\_to\_3
 
 ```python
+@retry_operational_error(MAX_RETRIES)
 migrate_versions_2_to_3(config: Dict[str, str], is_latest_version: bool) -> None
 ```
 
@@ -345,6 +357,7 @@ the ORCA schema.
 #### migrate\_versions\_1\_to\_2
 
 ```python
+@retry_operational_error(MAX_RETRIES)
 migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> None
 ```
 

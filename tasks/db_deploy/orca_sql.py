@@ -6,10 +6,6 @@ Description: All of the SQL used for creating and migrating the ORCA schema.
 # Imports
 from sqlalchemy import text
 from sqlalchemy.sql.elements import TextClause
-from cumulus_logger import CumulusLogger
-
-# instantiate Cumulus logger
-logger = CumulusLogger(name="ORCA")
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating the Database
 # ----------------------------------------------------------------------------
@@ -246,7 +242,7 @@ def schema_versions_data_sql() -> TextClause:
 
         -- Upsert the current version
         INSERT INTO schema_versions
-        VALUES (2, 'Updated recovery schema for v3.x of ORCA application', NOW(), True)
+        VALUES (3, 'Updated inventory schema for v3.x of ORCA application', NOW(), True)
         ON CONFLICT (version_id)
         DO UPDATE SET is_latest = True;
     """
@@ -434,7 +430,6 @@ def providers_table_sql() -> TextClause:
           provider_id         text NOT NULL
         , name                text NOT NULL
         , CONSTRAINT PK_providers PRIMARY KEY (provider_id)
-        , CONSTRAINT FK_provider_collection_fk FOREIGN KEY (provider_id) REFERENCES provider_collection_xref (provider_id)
         );
 
         -- Comments
@@ -466,8 +461,6 @@ def collections_table_sql() -> TextClause:
         , shortname             text NOT NULL
         , version               text NOT NULL
         , CONSTRAINT PK_collections PRIMARY KEY (collection_id)
-        , CONSTRAINT FK_collection_provider_fk FOREIGN KEY (collection_id) REFERENCES provider_collection_xref (collection_id)
-        , CONSTRAINT FK_collection_granule_fk FOREIGN KEY (collection_id) REFERENCES granules (collection_id)
         );
 
         -- Comments
@@ -500,8 +493,8 @@ def provider_collection_xref_table_sql() -> TextClause:
           provider_id           text NOT NULL
         , collection_id         text NOT NULL
         , CONSTRAINT PK_provider_collection_xref PRIMARY KEY (provider_id,collection_id)
-        , CONSTRAINT FK_provider_collection_fk FOREIGN KEY (provider_id) REFERENCES providers (provider_id)
-        , CONSTRAINT FK_collection_provider_fk FOREIGN KEY (collection_id) REFERENCES collections (collection_id)
+        , CONSTRAINT FK_provider_collection FOREIGN KEY (provider_id) REFERENCES providers (provider_id)
+        , CONSTRAINT FK_collection_provider FOREIGN KEY (collection_id) REFERENCES collections (collection_id)
         );
 
         -- Comments
@@ -537,8 +530,8 @@ def granules_table_sql() -> TextClause:
         , last_update           timestamp with time zone NOT NULL
 
         , CONSTRAINT PK_granules PRIMARY KEY (id)
-        , CONSTRAINT FK_collection_granule_fk FOREIGN KEY (collection_id) REFERENCES collections (collection_id)
-        , CONSTRAINT FK_granule_file_fk FOREIGN KEY (id) REFERENCES files (granule_id)
+        , CONSTRAINT FK_collection_granule FOREIGN KEY (collection_id) REFERENCES collections (collection_id)
+        , CONSTRAINT UNIQUE_collection_granule_id UNIQUE (collection_id, cumulus_granule_id)
         );
 
         -- Comments
@@ -550,6 +543,8 @@ def granules_table_sql() -> TextClause:
             IS 'Collection ID from Cumulus that refrences the Collections table.';
          COMMENT ON COLUMN granules.cumulus_granule_id
             IS 'Granule ID from Cumulus';
+         COMMENT ON COLUMN granules.execution_id
+            IS 'AWS step function execution id';
         COMMENT ON COLUMN granules.ingest_time
             IS 'Date and time the granule was originally ingested into ORCA.';
         COMMENT ON COLUMN granules.last_update
@@ -584,7 +579,9 @@ def files_table_sql() -> TextClause:
         , hash                      text NULL
         , hash_type                 text NULL
         , CONSTRAINT PK_files PRIMARY KEY (id)
-        , CONSTRAINT FK_granule_file_fk FOREIGN KEY (granule_id) REFERENCES granules (id)
+        , CONSTRAINT FK_granule_file FOREIGN KEY (granule_id) REFERENCES granules (id)
+        , CONSTRAINT UNIQUE_orca_archive_location_key_path UNIQUE (orca_archive_location, key_path)
+        , CONSTRAINT UNIQUE_cumulus_archive_location_key_path UNIQUE (cumulus_archive_location, key_path)
         );
 
         -- Comments
@@ -597,7 +594,7 @@ def files_table_sql() -> TextClause:
          COMMENT ON COLUMN files.name
             IS 'Name of the file including extension';
          COMMENT ON COLUMN files.orca_archive_location
-            IS 'S3 Glacier bucket that the file object is stored in';
+            IS 'ORCA S3 Glacier bucket that the file object is stored in';
          COMMENT ON COLUMN files.cumulus_archive_location
             IS 'Cumulus S3 bucket where the file is thought to be stored.';
          COMMENT ON COLUMN files.key_path
@@ -607,7 +604,7 @@ def files_table_sql() -> TextClause:
         COMMENT ON COLUMN files.etag
             IS 'etag of the file object in the AWS S3 Glacier bucket.';
         COMMENT ON COLUMN files.version
-            IS 'Version of the file in the S3 Glacier bucket';   
+            IS 'Latest version of the file in the S3 Glacier bucket';   
         COMMENT ON COLUMN files.size_in_bytes
             IS 'Size of the object in bytes';
         COMMENT ON COLUMN files.hash

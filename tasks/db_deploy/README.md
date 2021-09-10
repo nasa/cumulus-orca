@@ -79,6 +79,7 @@ Using the AWS Lambda interface for db_deploy perform the following steps:
 1. Make sure the following environment variable is set for the Lambda.
    ```
    PREFIX           - Your var.prefix value from variables.tfvars
+   AWS_REGION       - automatically set by AWS as a defined runtime variable
    ```
 2. Create an empty JSON test event.
    ```

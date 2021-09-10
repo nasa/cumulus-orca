@@ -13,6 +13,7 @@ from orca_shared import shared_db
 from sqlalchemy import text
 import json
 
+
 class TestDbDeployFunctions(unittest.TestCase):
     """
     Tests the db_deploy functions.
@@ -28,7 +29,16 @@ class TestDbDeployFunctions(unittest.TestCase):
         self.mock_sm.start()
         self.test_sm = boto3.client("secretsmanager", region_name="us-west-2")
         self.secretstring = '{"admin_database":"admin_db", "admin_password":"admin123", "admin_username":"admin", "host":"aws.postgresrds.host", "port":5432, "user_database":"user_db", "user_password":"user123", "user_username":"user"}'
-        self.config = {"admin_database":"admin_db", "admin_password":"admin123", "admin_username":"admin", "host":"aws.postgresrds.host", "port":5432, "user_database":"user_db", "user_password":"user123", "user_username":"user"}
+        self.config = {
+            "admin_database": "admin_db",
+            "admin_password": "admin123",
+            "admin_username": "admin",
+            "host": "aws.postgresrds.host",
+            "port": 5432,
+            "user_database": "user_db",
+            "user_password": "user123",
+            "user_username": "user",
+        }
         self.test_sm.create_secret(
             Name="orcatest-orca-db-login-secret", SecretString=self.secretstring
         )
@@ -219,4 +229,4 @@ class TestDbDeployFunctions(unittest.TestCase):
                 if table_exists:
                     self.assertEqual(schema_version, 3)
                 else:
-                    self.assertEqual(schema_version, 2)
+                    self.assertEqual(schema_version, 1)
