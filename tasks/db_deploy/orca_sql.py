@@ -522,7 +522,7 @@ def granules_table_sql() -> TextClause:
         -- Create table
         CREATE TABLE IF NOT EXISTS granules
         (
-          id                    text NOT NULL
+          id                    bigserial NOT NULL
         , collection_id         text NOT NULL
         , cumulus_granule_id    text NOT NULL
         , execution_id          text NOT NULL
@@ -566,7 +566,7 @@ def files_table_sql() -> TextClause:
         -- Create table
         CREATE TABLE IF NOT EXISTS files
         (
-          id                        text NOT NULL
+          id                        bigserial NOT NULL
         , granule_id                text NOT NULL         
         , name                      text NOT NULL
         , orca_archive_location     text NOT NULL
