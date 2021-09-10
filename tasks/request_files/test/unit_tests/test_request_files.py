@@ -476,6 +476,7 @@ class TestRequestFiles(unittest.TestCase):
             "filename": file_key_0,
             "key_path": file_key_0,
             "restore_destination": file_dest_bucket_0,
+            "multipart_chunksize_mb": collection_multipart_chunksize_mb,
             "status_id": OrcaStatus.PENDING.value,
             "request_time": mock.ANY,
             "last_update": mock.ANY,
@@ -489,6 +490,7 @@ class TestRequestFiles(unittest.TestCase):
             "filename": file_key_1,
             "key_path": file_key_1,
             "restore_destination": file_dest_bucket_1,
+            "multipart_chunksize_mb": collection_multipart_chunksize_mb,
             "status_id": OrcaStatus.PENDING.value,
             "request_time": mock.ANY,
             "last_update": mock.ANY,
@@ -497,12 +499,14 @@ class TestRequestFiles(unittest.TestCase):
         missing_file = {
             request_files.FILE_KEY_KEY: missing_file_key,
             request_files.FILE_DEST_BUCKET_KEY: missing_file_dest_bucket,
+            "multipart_chunksize_mb": collection_multipart_chunksize_mb,
         }
         expected_missing_file_output = {
             request_files.FILE_SUCCESS_KEY: True,
             "filename": missing_file_key,
             "key_path": missing_file_key,
             "restore_destination": missing_file_dest_bucket,
+            "multipart_chunksize_mb": collection_multipart_chunksize_mb,
             "status_id": OrcaStatus.FAILED.value,
             "request_time": mock.ANY,
             "last_update": mock.ANY,
@@ -523,8 +527,6 @@ class TestRequestFiles(unittest.TestCase):
         expected_input_granule[
             request_files.GRANULE_RECOVER_FILES_KEY
         ] = expected_input_granule_files
-        expected_input_granule[request_files.GRANULE_RECOVER_FILES_KEY][1]['multipart_chunksize_mb'] =\
-            collection_multipart_chunksize_mb
         event = {
             request_files.EVENT_CONFIG_KEY: {
                 request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
@@ -564,7 +566,9 @@ class TestRequestFiles(unittest.TestCase):
                 "filename": file_key_0,
                 "key_path": file_key_0,
                 "restore_destination": file_dest_bucket_0,
+                'multipart_chunksize_mb': collection_multipart_chunksize_mb,
                 "status_id": OrcaStatus.PENDING.value,
+                "multipart_chunksize_mb": collection_multipart_chunksize_mb,
                 "request_time": mock.ANY,
                 "last_update": mock.ANY,
             },
@@ -575,6 +579,7 @@ class TestRequestFiles(unittest.TestCase):
                 "restore_destination": missing_file_dest_bucket,
                 "multipart_chunksize_mb": collection_multipart_chunksize_mb,
                 "status_id": OrcaStatus.FAILED.value,
+                "multipart_chunksize_mb": collection_multipart_chunksize_mb,
                 "request_time": mock.ANY,
                 "last_update": mock.ANY,
                 "error_message": f"{missing_file_key} does not exist in {glacier_bucket} bucket",
@@ -585,7 +590,9 @@ class TestRequestFiles(unittest.TestCase):
                 "filename": file_key_1,
                 "key_path": file_key_1,
                 "restore_destination": file_dest_bucket_1,
+                'multipart_chunksize_mb': collection_multipart_chunksize_mb,
                 "status_id": OrcaStatus.PENDING.value,
+                "multipart_chunksize_mb": collection_multipart_chunksize_mb,
                 "request_time": mock.ANY,
                 "last_update": mock.ANY,
             },
@@ -1167,6 +1174,7 @@ class TestRequestFiles(unittest.TestCase):
                 "key_path": FILE1,
                 "restore_destination": PROTECTED_BUCKET,
                 "success": True,
+                "multipart_chunksize_mb": None,
                 "status_id": 1,
             },
             {
@@ -1174,6 +1182,7 @@ class TestRequestFiles(unittest.TestCase):
                 "key_path": FILE2,
                 "restore_destination": PROTECTED_BUCKET,
                 "success": True,
+                "multipart_chunksize_mb": None,
                 "status_id": 1,
             },
             {
@@ -1181,6 +1190,7 @@ class TestRequestFiles(unittest.TestCase):
                 "key_path": FILE3,
                 "restore_destination": PUBLIC_BUCKET,
                 "success": True,
+                "multipart_chunksize_mb": None,
                 "status_id": 1,
             },
             {
@@ -1188,6 +1198,7 @@ class TestRequestFiles(unittest.TestCase):
                 "key_path": FILE4,
                 "restore_destination": PUBLIC_BUCKET,
                 "success": True,
+                "multipart_chunksize_mb": None,
                 "status_id": 1,
             },
         ]
@@ -1340,6 +1351,7 @@ class TestRequestFiles(unittest.TestCase):
                             "key_path": FILE1,
                             "restore_destination": PROTECTED_BUCKET,
                             "success": True,
+                            'multipart_chunksize_mb': None,
                             "status_id": 1,
                         },
                     ],
@@ -1408,6 +1420,7 @@ class TestRequestFiles(unittest.TestCase):
                             "key_path": FILE1,
                             "restore_destination": PROTECTED_BUCKET,
                             "success": True,
+                            'multipart_chunksize_mb': None,
                             "status_id": 1,
                         },
                     ],
@@ -1651,6 +1664,7 @@ class TestRequestFiles(unittest.TestCase):
                         {
                             "filename": os.path.basename(FILE1),
                             "key_path": FILE1,
+                            'multipart_chunksize_mb': None,
                             "restore_destination": PROTECTED_BUCKET,
                             "success": True,
                             "status_id": 1,
@@ -1659,6 +1673,7 @@ class TestRequestFiles(unittest.TestCase):
                             "error_message": "An error occurred (NoSuchBucket) when calling the restore_object operation: Unknown",
                             "filename": os.path.basename(FILE2),
                             "key_path": FILE2,
+                            'multipart_chunksize_mb': None,
                             "restore_destination": PROTECTED_BUCKET,
                             "success": True,
                             "status_id": 1,

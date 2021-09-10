@@ -271,6 +271,7 @@ def inner_task(
                 "filename": os.path.basename(file_key),
                 "key_path": file_key,
                 "restore_destination": destination_bucket_name,
+                "multipart_chunksize_mb": collection_multipart_chunksize_mb,
                 "status_id": shared_recovery.OrcaStatus.PENDING.value,
                 "request_time": time_stamp,
                 "last_update": time_stamp,
@@ -283,7 +284,6 @@ def inner_task(
                 message = f"{file_key} does not exist in {glacier_bucket} bucket"
                 LOGGER.error(message)
                 a_file[FILE_SUCCESS_KEY] = True
-                a_file["multipart_chunksize_mb"] = collection_multipart_chunksize_mb
                 a_file["status_id"] = shared_recovery.OrcaStatus.FAILED.value
                 a_file["error_message"] = message
                 a_file["completion_time"] = time_stamp
