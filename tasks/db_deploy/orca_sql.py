@@ -396,8 +396,8 @@ def recovery_file_table_sql() -> TextClause:
             IS 'Name of the file being restored.';
         COMMENT ON COLUMN recovery_file.key_path
             IS 'Full key value of the data being restored.';
-        COMMENT ON COLUMN recovery_file.multipart_chunksize
-            IS 'Overrides orca_default_multipart_chunksize in TF.';
+        COMMENT ON COLUMN recovery_file.multipart_chunksize_mb
+            IS 'Overrides orca_default_multipart_chunksize_mb in TF.';
         COMMENT ON COLUMN recovery_file.restore_destination
             IS 'S3 ORCA restoration bucket for the data.';
         COMMENT ON COLUMN recovery_file.status_id
@@ -596,7 +596,7 @@ def add_multipart_chunksize_sql() -> TextClause:
         """
         ALTER TABLE recovery_file
         ADD COLUMN IF NOT EXISTS multipart_chunksize_mb integer NULL;
-        COMMENT ON COLUMN recovery_file.multipart_chunksize
+        COMMENT ON COLUMN recovery_file.multipart_chunksize_mb
             IS 'Overrides orca_default_multipart_chunksize in TF.';
     """
     )
