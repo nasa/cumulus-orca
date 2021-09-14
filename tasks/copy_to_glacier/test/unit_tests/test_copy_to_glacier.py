@@ -1,14 +1,12 @@
 import copy
 import json
-import os
 import unittest
 import uuid
-from unittest import TestCase, result
+from unittest import TestCase
 from unittest.mock import Mock, call, patch, MagicMock
 
 import fastjsonschema as fastjsonschema
 
-import copy_to_glacier
 from copy_to_glacier import *
 from test.unit_tests.ConfigCheck import ConfigCheck
 
