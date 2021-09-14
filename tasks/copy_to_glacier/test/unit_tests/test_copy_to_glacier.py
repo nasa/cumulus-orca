@@ -4,9 +4,12 @@ import unittest
 import uuid
 from unittest import TestCase
 from unittest.mock import Mock, call, patch, MagicMock
+from test.helpers import LambdaContextMock
 
 import fastjsonschema as fastjsonschema
 
+import copy_to_glacier
+import test
 from copy_to_glacier import *
 from test.unit_tests.ConfigCheck import ConfigCheck
 
@@ -81,8 +84,44 @@ class TestCopyToGlacierHandler(TestCase):
     @patch("copy_to_glacier.task")
     def test_handler_happy_path(self,
                                 mock_task: MagicMock):
-        # todo
-        pass
+        granules = [
+            {
+                "granuleId": uuid.uuid4().__str__(),
+                "files": [{"name": uuid.uuid4().__str__(), "bucket": uuid.uuid4().__str__(),
+                           "filepath": uuid.uuid4().__str__(), "filename": uuid.uuid4().__str__()}]
+            }
+        ]
+
+        handler_input_event = {
+            "payload": {
+                "granules": granules
+            },
+            "task_config": {
+                "collection": {
+                    "name": uuid.uuid4().__str__(),
+                    "version": uuid.uuid4().__str__(),
+                    "files": [
+                        {"regex": uuid.uuid4().__str__(), "bucket": uuid.uuid4().__str__()}
+                    ],
+                    "url_path": uuid.uuid4().__str__()
+                }
+            }
+        }
+        handler_input_context = LambdaContextMock()
+
+        expected_task_input = {
+            "input": handler_input_event["payload"],
+            "config": handler_input_event["task_config"]
+        }
+        mock_task.return_value = {
+            "granules": granules,
+            "copied_to_glacier": [uuid.uuid4().__str__()]
+        }
+
+        result = copy_to_glacier.handler(handler_input_event, handler_input_context)
+        mock_task.assert_called_once_with(expected_task_input, handler_input_context)
+
+        self.assertEqual(mock_task.return_value, result["payload"])
 
     def test_exclude_file_types_excluded(self):
         """
@@ -297,7 +336,6 @@ class TestCopyToGlacierHandler(TestCase):
         s3_cli.head_object.assert_not_called()
         s3_cli.copy.assert_not_called()
 
-
     @patch.dict(os.environ, {"ORCA_DEFAULT_BUCKET": ""}, clear=True)
     def test_task_invalid_environment_variable(self):
         """
@@ -327,7 +365,6 @@ class TestCopyToGlacierHandler(TestCase):
         with self.assertRaises(KeyError) as context:
             task(event, None)
             self.assertTrue('ORCA_DEFAULT_BUCKET environment variable is not set.' in context.exception)
-
 
 ##TODO: Write tests to validate file name regex exclusion
 
