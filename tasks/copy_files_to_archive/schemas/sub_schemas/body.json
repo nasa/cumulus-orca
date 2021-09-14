@@ -32,9 +32,13 @@
     "source_bucket": {
       "description": "Set by moveGranules. The bucket the restored file can be copied from.",
       "type": "string"
+    },
+    "multipart_chunksize_mb": {
+      "description": "Overrides default_multipart_chunksize_mb from TF.",
+      "type": ["number", "null"]
     }
   },
   "required": [
-    "job_id", "granule_id", "filename", "source_key", "target_key", "restore_destination", "source_bucket"
+    "job_id", "granule_id", "filename", "source_key", "target_key", "restore_destination", "source_bucket", "multipart_chunksize_mb"
   ]
 }

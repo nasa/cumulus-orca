@@ -182,22 +182,26 @@
 <Column id="41" name="key_path" type="text" length="25" nulls="false">
 <CP name="COMMENTS">Full AWS key path including file name of the file (does not include bucket name) where the file resides in ORCA.</CP>
 </Column>
-<Column id="42" name="ingest_time" type="timestamp with time zone" length="25" nulls="false">
+<Column id="42" name="multipart_chunksize_mb" type="integer" length="25" nulls="true">
+<CP name="PRECISION">15</CP>
+<CP name="SCALE">5</CP>
+</Column>
+<Column id="43" name="ingest_time" type="timestamp with time zone" length="25" nulls="false">
 <CP name="COMMENTS">Date and time the file was ingested into ORCA</CP>
 </Column>
-<Column id="43" name="etag" type="text" length="25" nulls="false">
+<Column id="44" name="etag" type="text" length="25" nulls="false">
 <CP name="COMMENTS">etag of the file object in the AWS S3 Glacier bucket.</CP>
 </Column>
-<Column id="44" name="version" type="text" length="25" nulls="false">
+<Column id="45" name="version" type="text" length="25" nulls="false">
 <CP name="COMMENTS">Version of the file in the S3 Glacier bucket</CP>
 </Column>
-<Column id="45" name="size_in_bytes" type="int8" length="25" nulls="false">
+<Column id="46" name="size_in_bytes" type="int8" length="25" nulls="false">
 <CP name="COMMENTS">Size of the object in bytes</CP>
 </Column>
-<Column id="46" name="hash" type="text" length="25" nulls="true">
+<Column id="47" name="hash" type="text" length="25" nulls="true">
 <CP name="COMMENTS">Hash of the object from Cumulus</CP>
 </Column>
-<Column id="47" name="hash_type" type="text" length="25" nulls="true">
+<Column id="48" name="hash_type" type="text" length="25" nulls="true">
 <CP name="COMMENTS">Hash type used to hash the object. Supplied by Cumulus.</CP>
 </Column>
 <Storage name="transferTable" value="false"/>
@@ -211,12 +215,12 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="48" name="provider_collection_xref" schema="orca" database="disaster_recovery" background="16777165">
+<Table id="49" name="provider_collection_xref" schema="orca" database="disaster_recovery" background="16777165">
 <Text>Cross refrence table that ties a collection and provider together and resolves the many to many relationship.</Text>
-<Column id="49" name="provider_id" type="text" length="25" nulls="false">
+<Column id="50" name="provider_id" type="text" length="25" nulls="false">
 <CP name="COMMENTS">Provider ID from the providers table.</CP>
 </Column>
-<Column id="50" name="collection_id" type="text" length="25" nulls="false">
+<Column id="51" name="collection_id" type="text" length="25" nulls="false">
 <CP name="COMMENTS">Collection ID from the collections table.</CP>
 </Column>
 <Storage name="transferTable" value="false"/>
@@ -230,27 +234,27 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="51" name="reconcile_s3_objects" schema="orca" database="disaster_recovery" background="16777165">
+<Table id="52" name="reconcile_s3_objects" schema="orca" database="disaster_recovery" background="16777165">
 <Text>Temporary table that holds the listing from the ORCA S3 bucket to use for comparisons against the ORCA catalog.</Text>
-<Column id="52" name="job_id" type="int8" length="25" nulls="false">
+<Column id="53" name="job_id" type="int8" length="25" nulls="false">
 <CP name="COMMENTS">Job the S3 listing is a part of for the comparison. Foreign key to the reconcile jobs table.</CP>
 </Column>
-<Column id="53" name="orca_archive_location" type="text" length="25" nulls="false">
+<Column id="54" name="orca_archive_location" type="text" length="25" nulls="false">
 <CP name="COMMENTS">ORCA S3 Glacier bucket name where the file is stored.</CP>
 </Column>
-<Column id="54" name="key_path" type="text" length="25" nulls="false">
+<Column id="55" name="key_path" type="text" length="25" nulls="false">
 <CP name="COMMENTS">Full path and file name of the object in the S3 bucket from the S3 list command.</CP>
 </Column>
-<Column id="55" name="etag" type="text" length="25" nulls="false">
+<Column id="56" name="etag" type="text" length="25" nulls="false">
 <CP name="COMMENTS">AWS etag value from the S3 list command.</CP>
 </Column>
-<Column id="56" name="last_update" type="timestamp with time zone" length="25" nulls="false">
+<Column id="57" name="last_update" type="timestamp with time zone" length="25" nulls="false">
 <CP name="COMMENTS">AWS Last Update from the S3 list command.</CP>
 </Column>
-<Column id="57" name="size_in_bytes" type="int8" length="25" nulls="false">
+<Column id="58" name="size_in_bytes" type="int8" length="25" nulls="false">
 <CP name="COMMENTS">AWS size of the file in bytes from the S3 list command.</CP>
 </Column>
-<Column id="58" name="storage_class" type="text" length="25" nulls="false">
+<Column id="59" name="storage_class" type="text" length="25" nulls="false">
 <CP name="COMMENTS">AWS storage class the object is in from the S3 list command.</CP>
 </Column>
 <Storage name="transferTable" value="false"/>
@@ -264,24 +268,24 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="59" name="reconcile_jobs" schema="orca" database="disaster_recovery" background="16777165">
+<Table id="60" name="reconcile_jobs" schema="orca" database="disaster_recovery" background="16777165">
 <Text>Manages internal reconciliation job information.</Text>
-<Column id="60" name="id" type="int8" length="25" nulls="false">
+<Column id="61" name="id" type="int8" length="25" nulls="false">
 <CP name="COMMENTS">Job ID unique to each internal reconciliation job.</CP>
 </Column>
-<Column id="61" name="status" type="text" length="25" nulls="false">
+<Column id="62" name="status" type="text" length="25" nulls="false">
 <CP name="COMMENTS">Current status of the job.</CP>
 </Column>
-<Column id="62" name="start_time" type="timestamp with time zone" length="25" nulls="false">
+<Column id="63" name="start_time" type="timestamp with time zone" length="25" nulls="false">
 <CP name="COMMENTS">Date and time the internal reconcile job started.</CP>
 </Column>
-<Column id="63" name="last_update" type="timestamp with time zone" length="25" nulls="false">
+<Column id="64" name="last_update" type="timestamp with time zone" length="25" nulls="false">
 <CP name="COMMENTS">Date and time the job status was last updated.</CP>
 </Column>
-<Column id="64" name="end_time" type="timestamp with time zone" length="25" nulls="true">
+<Column id="65" name="end_time" type="timestamp with time zone" length="25" nulls="true">
 <CP name="COMMENTS">Time the job completed and wrote the report information.</CP>
 </Column>
-<Column id="65" name="error_message" type="text" length="25" nulls="true">
+<Column id="66" name="error_message" type="text" length="25" nulls="true">
 <CP name="COMMENTS">Critical error the job ran into that prevented it from finishing.</CP>
 </Column>
 <Storage name="transferTable" value="false"/>
@@ -295,51 +299,51 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="66" name="reconcile_catalog_mismatch_report" schema="orca" database="disaster_recovery" background="16777165">
+<Table id="67" name="reconcile_catalog_mismatch_report" schema="orca" database="disaster_recovery" background="16777165">
 <Text>Table that identifies objects that exist in the ORCA catalog and either do not exist in the ORCA S3 bucket or have mismatched values from the s3 objects table.</Text>
-<Column id="67" name="job_id" type="int8" length="25" nulls="false">
+<Column id="68" name="job_id" type="int8" length="25" nulls="false">
 <CP name="COMMENTS">Job the mismatch or missing granule was foundin. Refrences the reconcile_job table.</CP>
 </Column>
-<Column id="68" name="provider_id" type="text" length="25" nulls="false">
+<Column id="69" name="provider_id" type="text" length="25" nulls="false">
 <CP name="COMMENTS">Cumulus provider ID value from the ORCA catalog.</CP>
 </Column>
-<Column id="69" name="collection_id" type="text" length="25" nulls="false">
+<Column id="70" name="collection_id" type="text" length="25" nulls="false">
 <CP name="COMMENTS">Cumulus Collection ID value from the ORCA catalog.</CP>
 </Column>
-<Column id="70" name="granule_id" type="text" length="25" nulls="false">
+<Column id="71" name="granule_id" type="text" length="25" nulls="false">
 <CP name="COMMENTS">Cumulus granuleID value from the ORCA catalog.</CP>
 </Column>
-<Column id="71" name="orca_archive_location" type="text" length="25" nulls="false">
+<Column id="72" name="orca_archive_location" type="text" length="25" nulls="false">
 <CP name="COMMENTS">ORCA S3 bucket the object is stored in.</CP>
 </Column>
-<Column id="72" name="key_path" type="text" length="25" nulls="false">
+<Column id="73" name="key_path" type="text" length="25" nulls="false">
 <CP name="COMMENTS">key path and filename of the object in the ORCA catalog.</CP>
 </Column>
-<Column id="73" name="cumulus_archive_location" type="text" length="25" nulls="false">
+<Column id="74" name="cumulus_archive_location" type="text" length="25" nulls="false">
 <CP name="COMMENTS">Expected S3 bucket the object is located in Cumulus. From the ORCA catalog.</CP>
 </Column>
-<Column id="74" name="filename" type="text" length="25" nulls="false">
+<Column id="75" name="filename" type="text" length="25" nulls="false">
 <CP name="COMMENTS">Filename of the object from the ORCA catalog.</CP>
 </Column>
-<Column id="75" name="orca_etag" type="text" length="25" nulls="false">
+<Column id="76" name="orca_etag" type="text" length="25" nulls="false">
 <CP name="COMMENTS">etag of the object as reported in the ORCA catalog.</CP>
 </Column>
-<Column id="76" name="s3_etag" type="text" length="25" nulls="true">
+<Column id="77" name="s3_etag" type="text" length="25" nulls="true">
 <CP name="COMMENTS">etag of the object as reported in the S3 bucket.</CP>
 </Column>
-<Column id="77" name="orca_last_update" type="timestamp with time zone" length="25" nulls="false">
+<Column id="78" name="orca_last_update" type="timestamp with time zone" length="25" nulls="false">
 <CP name="COMMENTS">Last update of the object as reported in the ORCA catalog.</CP>
 </Column>
-<Column id="78" name="s3_last_update" type="timestamp with time zone" length="25" nulls="true">
+<Column id="79" name="s3_last_update" type="timestamp with time zone" length="25" nulls="true">
 <CP name="COMMENTS">Last update of the object as reported in the S3 bucket.</CP>
 </Column>
-<Column id="79" name="orca_size" type="int8" length="25" nulls="false">
+<Column id="80" name="orca_size" type="int8" length="25" nulls="false">
 <CP name="COMMENTS">Size in bytes of the object as reported in the ORCA catalog.</CP>
 </Column>
-<Column id="80" name="s3_size" type="int8" length="25" nulls="true">
+<Column id="81" name="s3_size" type="int8" length="25" nulls="true">
 <CP name="COMMENTS">Size in bytes of the object as reported in the S3 bucket.</CP>
 </Column>
-<Column id="81" name="discrepancy_type" type="text" length="25" nulls="false">
+<Column id="82" name="discrepancy_type" type="text" length="25" nulls="false">
 <CP name="COMMENTS">Type of discrepancy found during reconciliation.</CP>
 </Column>
 <Storage name="transferTable" value="false"/>
@@ -353,27 +357,27 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="82" name="reconcile_orphan_report" schema="orca" database="disaster_recovery" background="16777165">
+<Table id="83" name="reconcile_orphan_report" schema="orca" database="disaster_recovery" background="16777165">
 <Text>Table that identifies objects in the ORCA S3 Glacier bucket that are not in the ORCA catalog from the internal reconciliation job.</Text>
-<Column id="83" name="job_id" type="int8" length="25" nulls="false">
+<Column id="84" name="job_id" type="int8" length="25" nulls="false">
 <CP name="COMMENTS">Associates the orphaned file to a internal reconcilation job. Refrences the reconcile jobs table.</CP>
 </Column>
-<Column id="84" name="orca_archive_location" type="text" length="25" nulls="false">
+<Column id="85" name="orca_archive_location" type="text" length="25" nulls="false">
 <CP name="COMMENTS">ORCA S3 Glacier bucket the orphan was found in. Value is obtained from the reconcile_s3_objects (orca_archive_location) column.</CP>
 </Column>
-<Column id="85" name="key_path" type="text" length="25" nulls="false">
+<Column id="86" name="key_path" type="text" length="25" nulls="false">
 <CP name="COMMENTS">Key that contains the path and file name. Value is obtained from the reconcile_s3_objects (key_path) column.</CP>
 </Column>
-<Column id="86" name="etag" type="text" length="25" nulls="false">
+<Column id="87" name="etag" type="text" length="25" nulls="false">
 <CP name="COMMENTS">AWS Etag of the object. Value is obtained from the reconcile_s3_objects (etag) column.</CP>
 </Column>
-<Column id="87" name="last_update" type="timestamp with time zone" length="25" nulls="false">
+<Column id="88" name="last_update" type="timestamp with time zone" length="25" nulls="false">
 <CP name="COMMENTS">AWS last update of the object. Value is obtained from the reconcile_s3_objects (lst_update) column.</CP>
 </Column>
-<Column id="88" name="size_in_bytes" type="int8" length="25" nulls="false">
+<Column id="89" name="size_in_bytes" type="int8" length="25" nulls="false">
 <CP name="COMMENTS">AWS size of the object in bytes. Value is obtained from the reconcile_s3_objects (size) column.</CP>
 </Column>
-<Column id="89" name="storage_class" type="text" length="25" nulls="false">
+<Column id="90" name="storage_class" type="text" length="25" nulls="false">
 <CP name="COMMENTS">ASWS storage class the object is in. Value is obtained from the reconcile_s3_objects (storage_class) column.</CP>
 </Column>
 <Storage name="transferTable" value="false"/>
@@ -387,18 +391,18 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="90" name="schema_versions" schema="orca" database="disaster_recovery" background="16777165">
+<Table id="91" name="schema_versions" schema="orca" database="disaster_recovery" background="16777165">
 <Text>Migration management table that tracks ORCA installed schema versions.</Text>
-<Column id="91" name="version_id" type="int" length="25" nulls="false">
+<Column id="92" name="version_id" type="int" length="25" nulls="false">
 <CP name="COMMENTS">Version of the ORCA schema that is installed</CP>
 </Column>
-<Column id="92" name="description" type="text" length="25" nulls="false">
+<Column id="93" name="description" type="text" length="25" nulls="false">
 <CP name="COMMENTS">'Description of the schema version.</CP>
 </Column>
-<Column id="93" name="install_date" type="timestamp with time zone" length="25" nulls="false">
+<Column id="94" name="install_date" type="timestamp with time zone" length="25" nulls="false">
 <CP name="COMMENTS">'Date and time the schema was installed.</CP>
 </Column>
-<Column id="94" name="is_latest" type="bool" length="25" nulls="false">
+<Column id="95" name="is_latest" type="bool" length="25" nulls="false">
 <CP name="DEFAULT_VALUE">False</CP>
 <CP name="COMMENTS">Flag denoting the current schema installed.</CP>
 </Column>
@@ -413,49 +417,49 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Relation id="95" name="collection_granule_fk" cardinality="-2" identifying="false" nulls="false">
+<Relation id="96" name="collection_granule_fk" cardinality="-2" identifying="false" nulls="false">
 <FK>25</FK>
 <PK>30</PK>
 </Relation>
-<Relation id="96" name="collection_provider_fk" cardinality="-2" identifying="true" nulls="false">
+<Relation id="97" name="collection_provider_fk" cardinality="-2" identifying="true" nulls="false">
 <FK>25</FK>
-<PK>50</PK>
+<PK>51</PK>
 </Relation>
-<Relation id="97" name="granule_file_fk" cardinality="-2" identifying="false" nulls="false">
+<Relation id="98" name="granule_file_fk" cardinality="-2" identifying="false" nulls="false">
 <FK>29</FK>
 <PK>37</PK>
 </Relation>
-<Relation id="98" name="provider_collection_fk" cardinality="-2" identifying="true" nulls="false">
+<Relation id="99" name="provider_collection_fk" cardinality="-2" identifying="true" nulls="false">
 <FK>22</FK>
-<PK>49</PK>
+<PK>50</PK>
 </Relation>
-<Relation id="99" name="reconcile_jobs_catalog_mismatch_fk" cardinality="-2" identifying="true" nulls="false">
-<FK>60</FK>
-<PK>67</PK>
+<Relation id="100" name="reconcile_jobs_catalog_mismatch_fk" cardinality="-2" identifying="true" nulls="false">
+<FK>61</FK>
+<PK>68</PK>
 </Relation>
-<Relation id="100" name="reconcile_jobs_orphan_report_fk" cardinality="-2" identifying="true" nulls="false">
-<FK>60</FK>
-<PK>83</PK>
+<Relation id="101" name="reconcile_jobs_orphan_report_fk" cardinality="-2" identifying="true" nulls="false">
+<FK>61</FK>
+<PK>84</PK>
 </Relation>
-<Relation id="101" name="reconcile_jobs_s3_objects_fk" cardinality="-2" identifying="true" nulls="false">
-<FK>60</FK>
-<PK>52</PK>
+<Relation id="102" name="reconcile_jobs_s3_objects_fk" cardinality="-2" identifying="true" nulls="false">
+<FK>61</FK>
+<PK>53</PK>
 </Relation>
-<Relation id="102" name="FK_recovery_file_recoverjob" cardinality="-2" identifying="true" nulls="false">
+<Relation id="103" name="FK_recovery_file_recoverjob" cardinality="-2" identifying="true" nulls="false">
 <FK>1</FK>
 <FK>2</FK>
 <PK>11</PK>
 <PK>12</PK>
 </Relation>
-<Relation id="103" name="FK_recovery_file_status" cardinality="-2" identifying="false" nulls="false">
+<Relation id="104" name="FK_recovery_file_status" cardinality="-2" identifying="false" nulls="false">
 <FK>8</FK>
 <PK>16</PK>
 </Relation>
-<Relation id="104" name="FK_recovery_job_status" cardinality="-2" identifying="false" nulls="false">
+<Relation id="105" name="FK_recovery_job_status" cardinality="-2" identifying="false" nulls="false">
 <FK>8</FK>
 <PK>4</PK>
 </Relation>
-<Note id="105">
+<Note id="106">
 <Text>Engine:  PostgreSQL
 Database: disaster_recovery
 Schema: orca
@@ -508,96 +512,96 @@ Description: ORCA metadata storage</Text>
 <ConstraintColumn id="39"/>
 <ConstraintColumn id="41"/>
 </Constraint>
-<Constraint table="48" name="PK_provider_collection_xref_1" type="PrimKey">
-<ConstraintColumn id="49"/>
+<Constraint table="49" name="PK_provider_collection_xref_1" type="PrimKey">
 <ConstraintColumn id="50"/>
+<ConstraintColumn id="51"/>
 </Constraint>
-<Constraint table="51" name="PK_reconcile_s3_objects_1" type="PrimKey">
-<ConstraintColumn id="52"/>
+<Constraint table="52" name="PK_reconcile_s3_objects_1" type="PrimKey">
 <ConstraintColumn id="53"/>
 <ConstraintColumn id="54"/>
+<ConstraintColumn id="55"/>
 </Constraint>
-<Constraint table="59" name="PK_reconcile_jobs_1" type="PrimKey">
-<ConstraintColumn id="60"/>
+<Constraint table="60" name="PK_reconcile_jobs_1" type="PrimKey">
+<ConstraintColumn id="61"/>
 </Constraint>
-<Constraint table="59" name="CHECK_reconcile_jobs_status" type="Check" condition="status in ('pending', 'getting S3 list', 'finding orphans', 'finding mismatches', 'error', 'complete')"/>
-<Constraint table="66" name="PK_reconcile_catalog_mismatch_report_1" type="PrimKey">
-<ConstraintColumn id="67"/>
+<Constraint table="60" name="CHECK_reconcile_jobs_status" type="Check" condition="status in ('pending', 'getting S3 list', 'finding orphans', 'finding mismatches', 'error', 'complete')"/>
+<Constraint table="67" name="PK_reconcile_catalog_mismatch_report_1" type="PrimKey">
 <ConstraintColumn id="68"/>
 <ConstraintColumn id="69"/>
 <ConstraintColumn id="70"/>
 <ConstraintColumn id="71"/>
 <ConstraintColumn id="72"/>
+<ConstraintColumn id="73"/>
 </Constraint>
-<Constraint table="82" name="PK_reconcile_orphan_report_1" type="PrimKey">
-<ConstraintColumn id="83"/>
+<Constraint table="83" name="PK_reconcile_orphan_report_1" type="PrimKey">
 <ConstraintColumn id="84"/>
 <ConstraintColumn id="85"/>
+<ConstraintColumn id="86"/>
 </Constraint>
-<Sheet name="orca schema version" id="106" disp_at="true" disp_ph="true" disp_co="true" disp_rn="true" disp_null="true">
-<Place id="105" visible="true">10,10,281,101</Place>
-<Place id="90" visible="true">80,150,331,121</Place>
+<Sheet name="orca schema version" id="107" disp_at="true" disp_ph="true" disp_co="true" disp_rn="true" disp_null="true">
+<Place id="91" visible="true">80,150,331,121</Place>
+<Place id="106" visible="true">10,10,281,101</Place>
 </Sheet>
-<Sheet name="orca recovery status" id="107" disp_at="true" disp_ph="true" disp_co="true" disp_rn="true" disp_null="true">
-<Place id="102" visible="true" options="20.0,149.0,341.0,162.0,818.3367134489793,149.36470111868806,339.0,232.0,2,361.0,180.0,818.0,180.0">508,-11,0,0</Place>
-<Place id="104" visible="true" options="427.0,460.0,332.0,89.0,20.0,149.0,341.0,162.0,4,427.0,490.0,400.0,490.0,400.0,230.0,361.0,230.0">509,52,0,0</Place>
-<Place id="105" visible="true">20,20,270,90</Place>
-<Place id="0" visible="true">20,149,341,162</Place>
+<Sheet name="orca recovery status" id="108" disp_at="true" disp_ph="true" disp_co="true" disp_rn="true" disp_null="true">
 <Place id="7" visible="true">427,460,332,89</Place>
-<Place id="103" visible="true" options="427.0,460.0,332.0,89.0,818.3367134489793,149.36470111868806,339.0,232.0,4,759.0,490.0,790.0,490.0,790.0,260.0,818.0,260.0">590,-36,0,0</Place>
 <Place id="10" visible="true">818,149,339,232</Place>
+<Place id="105" visible="true" options="427.0,460.0,332.0,89.0,20.0,149.0,341.0,162.0,4,427.0,490.0,400.0,490.0,400.0,230.0,361.0,230.0">509,52,0,0</Place>
+<Place id="104" visible="true" options="427.0,460.0,332.0,89.0,818.3367134489793,149.36470111868806,339.0,232.0,4,759.0,490.0,790.0,490.0,790.0,260.0,818.0,260.0">590,-36,0,0</Place>
+<Place id="106" visible="true">20,20,270,90</Place>
+<Place id="103" visible="true" options="20.0,149.0,341.0,162.0,818.3367134489793,149.36470111868806,339.0,232.0,2,361.0,180.0,818.0,180.0">508,-11,0,0</Place>
+<Place id="0" visible="true">20,149,341,162</Place>
 </Sheet>
-<Sheet name="orca inventory" id="108" disp_at="true" disp_ph="true" disp_co="true" disp_rn="true" disp_null="true">
-<Place id="35" visible="true">708,578,332,242</Place>
+<Sheet name="orca inventory" id="109" disp_at="true" disp_ph="true" disp_co="true" disp_rn="true" disp_null="true">
 <Place id="21" visible="true">150,160,351,71</Place>
-<Place id="105" visible="true">10,10,291,100</Place>
-<Place id="48" visible="true">696,241,344,90</Place>
-<Place id="98" visible="true">500,0,0,0</Place>
-<Place id="97" visible="true" options="149.0,579.0,352.0,161.0,708.5136569200217,578.0,332.0,242.0,4,501.0,610.0,600.0,610.0,600.0,660.0,708.5136569200217,660.0">500,0,0,0</Place>
-<Place id="96" visible="true" options="147.33333333333337,350.33333333333337,354.0,91.0,696.0,241.0,344.0,90.0,4,501.33333333333337,380.0,580.0,380.0,580.0,290.0,696.0,290.0">500,0,0,0</Place>
 <Place id="28" visible="true">149,579,352,161</Place>
-<Place id="95" visible="true" options="147.33333333333337,350.33333333333337,354.0,91.0,149.0,579.0,352.0,161.0,4,147.33333333333337,380.0,90.0,380.0,90.0,610.0,149.0,610.0">500,0,0,0</Place>
+<Place id="49" visible="true">696,241,344,90</Place>
+<Place id="97" visible="true" options="147.33333333333337,350.33333333333337,354.0,91.0,696.0,241.0,344.0,90.0,4,501.33333333333337,380.0,580.0,380.0,580.0,290.0,696.0,290.0">500,0,0,0</Place>
 <Place id="24" visible="true">147,350,354,91</Place>
+<Place id="96" visible="true" options="147.33333333333337,350.33333333333337,354.0,91.0,149.0,579.0,352.0,161.0,4,147.33333333333337,380.0,90.0,380.0,90.0,610.0,149.0,610.0">500,0,0,0</Place>
+<Place id="35" visible="true">708,578,332,242</Place>
+<Place id="106" visible="true">10,10,291,100</Place>
+<Place id="99" visible="true">500,0,0,0</Place>
+<Place id="98" visible="true" options="149.0,579.0,352.0,161.0,708.0,578.0,332.0,242.0,4,501.0,610.0,600.0,610.0,600.0,680.0,708.0,680.0">500,0,0,0</Place>
 </Sheet>
-<Sheet name="reconciliation" id="109" disp_at="true" disp_ph="true" disp_co="true" disp_rn="true" disp_null="true">
+<Sheet name="reconciliation" id="110" disp_at="true" disp_ph="true" disp_co="true" disp_rn="true" disp_null="true">
+<Place id="101" visible="true" options="49.18999835058045,270.3952515684763,341.0,141.0,670.3572628324735,271.333265267933,340.0,190.0,2,390.0,300.0,670.0,300.0">572,-1,0,0</Place>
+<Place id="60" visible="true">49,270,341,141</Place>
+<Place id="100" visible="true" options="49.18999835058045,270.3952515684763,341.0,141.0,670.0,499.0,341.0,331.0,4,390.0,320.0,480.0,320.0,480.0,600.0,670.0,600.0">484,-49,0,0</Place>
 <Place id="35" visible="false">40,149,341,241</Place>
-<Place id="101" visible="true" options="49.18999835058045,270.3952515684763,341.0,141.0,670.0,39.0,341.0,171.0,4,390.0,280.0,480.0,280.0,480.0,100.0,670.0,100.0">399,24,0,0</Place>
-<Place id="51" visible="true">670,39,341,171</Place>
-<Place id="105" visible="true">10,10,281,100</Place>
-<Place id="66" visible="true">670,499,341,331</Place>
-<Place id="99" visible="true" options="49.18999835058045,270.3952515684763,341.0,141.0,670.0,499.0,341.0,331.0,4,390.0,320.0,480.0,320.0,480.0,600.0,670.0,600.0">484,-49,0,0</Place>
-<Place id="59" visible="true">49,270,341,141</Place>
-<Place id="82" visible="true">670,271,340,190</Place>
-<Place id="100" visible="true" options="49.18999835058045,270.3952515684763,341.0,141.0,670.3572628324735,271.333265267933,340.0,190.0,2,390.0,300.0,670.0,300.0">572,-1,0,0</Place>
+<Place id="67" visible="true">670,499,341,331</Place>
+<Place id="102" visible="true" options="49.18999835058045,270.3952515684763,341.0,141.0,670.0,39.0,341.0,171.0,4,390.0,280.0,480.0,280.0,480.0,100.0,670.0,100.0">399,24,0,0</Place>
+<Place id="106" visible="true">10,10,281,100</Place>
+<Place id="83" visible="true">670,271,340,190</Place>
+<Place id="52" visible="true">670,39,341,171</Place>
 </Sheet>
-<Sheet name="orca full" id="110" disp_at="true" disp_ph="true" disp_co="true" disp_rn="true" disp_null="true">
-<Place id="101" visible="true">441,19,0,0</Place>
-<Place id="51" visible="true">2019,201,351,171</Place>
-<Place id="98" visible="true">500,0,0,0</Place>
-<Place id="97" visible="true">500,0,0,0</Place>
-<Place id="7" visible="true">449,1199,291,91</Place>
-<Place id="103" visible="true" options="449.0,1199.3178925810917,291.0,91.0,850.0,899.3178925810892,290.0,230.0,4,740.0,1230.0,800.0,1230.0,800.0,1010.0,850.0,1010.0">418,4,0,0</Place>
-<Place id="99" visible="true">501,-39,0,0</Place>
-<Place id="24" visible="true">439,410,351,110</Place>
-<Place id="102" visible="true" options="49.0,899.0,290.0,160.0,850.0,899.3178925810892,290.0,230.0,4,339.0,960.0,510.0,960.0,510.0,930.0,850.0,930.0">500,0,0,0</Place>
-<Place id="104" visible="true" options="449.0,1199.3178925810917,291.0,91.0,49.0,899.0,290.0,160.0,4,449.0,1230.0,390.0,1230.0,390.0,980.0,339.0,980.0">364,20,0,0</Place>
-<Place id="35" visible="true">989,619,330,260</Place>
+<Sheet name="orca full" id="111" disp_at="true" disp_ph="true" disp_co="true" disp_rn="true" disp_null="true">
 <Place id="21" visible="true">441,270,350,81</Place>
-<Place id="105" visible="true">0,0,261,100</Place>
-<Place id="48" visible="true">971,348,351,91</Place>
-<Place id="90" visible="true">1220,1079,330,130</Place>
-<Place id="0" visible="true">49,899,290,160</Place>
-<Place id="96" visible="true">500,0,0,0</Place>
+<Place id="91" visible="true">1220,1079,330,130</Place>
 <Place id="28" visible="true">439,619,350,160</Place>
+<Place id="101" visible="true">500,0,0,0</Place>
+<Place id="60" visible="true">1299,441,351,151</Place>
+<Place id="7" visible="true">449,1199,291,91</Place>
+<Place id="100" visible="true">501,-39,0,0</Place>
+<Place id="104" visible="true" options="449.0,1199.3178925810917,291.0,91.0,850.0,899.3178925810892,290.0,230.0,4,740.0,1230.0,800.0,1230.0,800.0,1010.0,850.0,1010.0">418,4,0,0</Place>
+<Place id="96" visible="true">500,0,0,0</Place>
+<Place id="35" visible="true">989,619,330,260</Place>
+<Place id="67" visible="true">2019,712,351,331</Place>
+<Place id="106" visible="true">0,0,261,100</Place>
+<Place id="103" visible="true" options="49.0,899.0,290.0,160.0,850.0,899.3178925810892,290.0,230.0,4,339.0,960.0,510.0,960.0,510.0,930.0,850.0,930.0">500,0,0,0</Place>
+<Place id="0" visible="true">49,899,290,160</Place>
+<Place id="52" visible="true">2019,201,351,171</Place>
 <Place id="10" visible="true">850,899,290,230</Place>
-<Place id="95" visible="true">500,0,0,0</Place>
-<Place id="66" visible="true">2019,712,351,331</Place>
-<Place id="59" visible="true">1299,441,351,151</Place>
-<Place id="82" visible="true">2019,441,351,190</Place>
-<Place id="100" visible="true">500,0,0,0</Place>
+<Place id="105" visible="true" options="449.0,1199.3178925810917,291.0,91.0,49.0,899.0,290.0,160.0,4,449.0,1230.0,390.0,1230.0,390.0,980.0,339.0,980.0">364,20,0,0</Place>
+<Place id="24" visible="true">439,410,351,110</Place>
+<Place id="49" visible="true">971,348,351,91</Place>
+<Place id="97" visible="true">500,0,0,0</Place>
+<Place id="102" visible="true">441,19,0,0</Place>
+<Place id="99" visible="true">500,0,0,0</Place>
+<Place id="98" visible="true">500,0,0,0</Place>
+<Place id="83" visible="true">2019,441,351,190</Place>
 <Region background="16053503" foreground="0" text="ORCA Recovery Tables">31,829,1139,492</Region>
 <Region background="16119285" foreground="0" text="ORCA Inventory Catalog">230,231,1141,679</Region>
 <Region background="16770019" foreground="0" text="ORCA Internal Reconciliation">1251,149,1172,937</Region>
 </Sheet>
-<Settings sheet="108" zoom="0.5946035575013607"/>
+<Settings sheet="109" zoom="0.7071067811865478"/>
 </Diagram>

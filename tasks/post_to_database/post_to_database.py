@@ -125,6 +125,7 @@ def create_status_for_job_and_files(job_id: str,
             raise error
         file_parameters.append({'job_id': job_id, 'granule_id': granule_id, 'filename': file['filename'],
                                 'key_path': file['key_path'], 'restore_destination': file['restore_destination'],
+                                'multipart_chunksize_mb': file['multipart_chunksize_mb'],
                                 'status_id': file['status_id'], 'error_message': file.get('error_message', None),
                                 'request_time': file['request_time'], 'last_update': file['last_update'],
                                 'completion_time': file.get('completion_time', None)})
@@ -201,11 +202,11 @@ def create_job_sql():
 def create_file_sql():
     return text("""
         INSERT INTO recovery_file
-            ("job_id", "granule_id", "filename", "key_path", "restore_destination", "status_id",
-            "error_message", "request_time", "last_update", "completion_time")
+            ("job_id", "granule_id", "filename", "key_path", "restore_destination", "multipart_chunksize_mb", 
+            "status_id", "error_message", "request_time", "last_update", "completion_time")
         VALUES
-            (:job_id, :granule_id, :filename, :key_path, :restore_destination, :status_id, :error_message, 
-            :request_time, :last_update, :completion_time)""")
+            (:job_id, :granule_id, :filename, :key_path, :restore_destination, :multipart_chunksize_mb, :status_id, 
+            :error_message, :request_time, :last_update, :completion_time)""")
 
 
 def update_file_sql():

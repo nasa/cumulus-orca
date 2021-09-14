@@ -192,29 +192,47 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_glaci
 }
 ```
 
-## pydoc request_files
+## pydoc copy_to_glacier
 
 ```
+Help on module copy_to_glacier:
+
 NAME
     copy_to_glacier
 
 FUNCTIONS
-    copy_granule_between_buckets(source_bucket_name: str, source_key: str, destination_bucket: str, destination_key: str) -> None
+    copy_granule_between_buckets(source_bucket_name: str, source_key: str, destination_bucket: str, destination_key: str, multipart_chunksize_mb: int) -> None
         Copies granule from source bucket to destination.
         Args:
             source_bucket_name: The name of the bucket in which the granule is currently located.
             source_key: source Granule path excluding s3://[bucket]/
             destination_bucket: The name of the bucket the granule is to be copied to.
             destination_key: Destination granule path excluding s3://[bucket]/
-
+            multipart_chunksize_mb: The maximum size of chunks to use when copying.
+    
     handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any
         Lambda handler. Runs a cumulus task that
-        copies the files in {event}['input'] from the collection specified in {config} to the {config}'s 'glacier' bucket.
-
+        Copies the files in {event}['input'] from the collection specified in
+        {config} to the default ORCA bucket. Environment variables must be set to
+        provide a default ORCA bucket to store the files in.
+            Environment Vars:
+                ORCA_DEFAULT_BUCKET (str, required): Name of the default S3 Glacier
+                                                     ORCA bucket files should be
+                                                     archived to.
+                DEFAULT_MULTIPART_CHUNKSIZE_MB (int, required): The default maximum size of chunks to use when copying.
+                                                                Can be overridden by collection config.
+        
         Args:
             event: Event passed into the step from the aws workflow. A dict with the following keys:
                 input (dict): Dictionary with the following keys:
                     granules (List): List of granule objects (dictionaries)
+                        granuleId (str)
+                        files (List): A list of Dicts with the following keys:
+                            name (str)
+                            bucket (str)
+                            filepath(str)
+                            filename (str)
+        
                 config (dict): A dict with the following keys:
                     collection (dict): The collection from AWS.
                         See https://nasa.github.io/cumulus/docs/data-cookbooks/sips-workflow
@@ -229,17 +247,19 @@ FUNCTIONS
                             Each dict contains the following keys:
                                 regex (str): The regex that all files in the bucket must match with their name.
                                 bucket (str): The name of the bucket containing the files.
+                        multipart_chunksize_mb (int, optional): The maximum size of chunks to use when copying.
+                            Defaults to Environment Var DEFAULT_MULTIPART_CHUNKSIZE_MB
                         url_path (str): Used when calling {copy_granule_between_buckets} as a part of the destination_key.
                     buckets (dict): A dict with the following keys:
                         glacier (dict): A dict with the following keys:
                             name (str): The name of the bucket to copy to.
-
-
+        
+        
             context: An object required by AWS Lambda. Unused.
-
+        
         Returns:
             The result of the cumulus task.
-
+    
     should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -> bool
         Tests whether or not file is included in {excludeFileTypes} from copy to glacier.
         Args:
@@ -247,14 +267,19 @@ FUNCTIONS
             exclude_file_types: List of extensions to exclude in the backup
         Returns:
             True if file should be excluded from copy, False otherwise.
-
+    
     task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str, Any]
-        Copies the files in {event}['input'] from the collection specified in {config} to the {config}'s 'glacier' bucket.
-
+        Copies the files in {event}['input'] from the collection specified in {config}
+        to the ORCA glacier bucket defined in ORCA_DEFAULT_BUCKET.
+        
+            Environment Variables:
+                ORCA_DEFAULT_BUCKET (string, required): Name of the default ORCA S3 Glacier bucket.
+                DEFAULT_MULTIPART_CHUNKSIZE_MB (int, optional): The default maximum size of chunks to use when copying. Can be overridden by collection config.
+        
         Args:
             event: Passed through from {handler}
             context: An object required by AWS Lambda. Unused.
-
+        
         Returns:
             A dict with the following keys:
                 granules (List[Dict[str, Union[str, bytes, list]]]): A list of dicts where each dict has the following keys:
@@ -266,5 +291,20 @@ FUNCTIONS
                         bucket (str)
                 copied_to_glacier (list): List of S3 paths - one for each file copied
 
+DATA
+    Any = typing.Any
+    COLLECTION_META_KEY = 'meta'
+    COLLECTION_MULTIPART_CHUNKSIZE_MB_KEY = 'multipart_chunksize_mb'
+    COLLECTION_NAME_KEY = 'name'
+    COLLECTION_URL_PATH_KEY = 'url_path'
+    COLLECTION_VERSION_KEY = 'version'
+    CONFIG_COLLECTION_KEY = 'collection'
+    CONFIG_FILE_STAGING_DIRECTORY_KEY = 'fileStagingDir'
+    CONFIG_URL_PATH_KEY = 'url_path'
+    Dict = typing.Dict
+    EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
+    List = typing.List
+    MB = 1048576
+    Union = typing.Union
 ```
 

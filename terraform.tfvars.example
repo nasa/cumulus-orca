@@ -68,27 +68,3 @@ postgres_user_pw =
 
 ## Number of seconds to wait between recovery failure retries.
 # orca_recovery_retry_interval = 1
-
-
-## OPTIONAL (DO NOT CHANGE!) - Development use only
-## These variables should not be advertised to external users.
-## -----------------------------------------------------------------------------
-
-## Name of the database application user.
-# database_app_user = "druser"
-
-## Name of the ORCA database in PostgreSQL"
-# database_name = "disaster_recovery"
-
-## Location of database DDL SQL files. Must have trailing /.
-# ddl_dir = "ddl/"
-
-## Boolean True/False that indicates the ORCA database should be dropped.
-# drop_database = "False"
-
-## AWS glacier recovery type to use. One of Bulk, Standard, Express.
-# orca_recovery_retrieval_type = "Standard"
-
-## String that determines deployment platform. AWS or local.
-# platform = "AWS"
-

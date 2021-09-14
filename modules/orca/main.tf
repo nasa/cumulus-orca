@@ -22,6 +22,7 @@ module "orca_lambdas" {
   orca_sqs_staged_recovery_queue_id = module.orca_sqs.orca_sqs_staged_recovery_queue_id
   ## OPTIONAL
   tags   = local.tags
+  default_multipart_chunksize_mb  = var.default_multipart_chunksize_mb
 
   ## --------------------------
   ## ORCA Variables

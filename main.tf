@@ -12,13 +12,14 @@ module "orca" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  buckets                  = var.buckets
-  lambda_subnet_ids        = var.lambda_subnet_ids
-  permissions_boundary_arn = var.permissions_boundary_arn
-  prefix                   = var.prefix
-  system_bucket            = var.system_bucket
-  vpc_id                   = var.vpc_id
-  workflow_config          = var.workflow_config
+  buckets                        = var.buckets
+  lambda_subnet_ids              = var.lambda_subnet_ids
+  permissions_boundary_arn       = var.permissions_boundary_arn
+  prefix                         = var.prefix
+  system_bucket                  = var.system_bucket
+  vpc_id                         = var.vpc_id
+  workflow_config                = var.workflow_config
+  default_multipart_chunksize_mb = var.default_multipart_chunksize_mb
 
   ## OPTIONAL
   tags        = local.tags

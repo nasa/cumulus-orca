@@ -15,9 +15,13 @@ and includes an additional section for migration notes.
 
 
 ## [Unreleased]
-
+### Added
+- *ORCA-246* Added TF variable `default_multipart_chunksize_mb` which adjusts the maximum chunksize when copying files. Defaults to 250. Can be overridden by `multipart_chunksize_mb` within `config['collection']`.
 
 ## [v3.0.1] 2021-08-31
+### Migration Notes
+- `database_app_user`, `database_name`, and `orca_recovery_retrieval_type` are no longer variables. If you have set these values, remove them.
+
 ### Removed
 - *ORCA-240* Removed development-only variables from variables.tf
 - *ORCA-243* Removed aws_profile and region variables from variables.tf
