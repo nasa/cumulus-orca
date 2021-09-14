@@ -50,21 +50,15 @@ variable "workflow_config" {
 
 
 ## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
-variable "aws_profile" {
-  type        = string
-  description = "AWS profile used to deploy the terraform application."
-}
-
-
-variable "region" {
-  type        = string
-  description = "AWS region to deploy configuration to."
-}
-
-
 variable "tags" {
   type        = map(string)
   description = "Tags to be applied to resources that support tags."
+}
+
+
+variable "default_multipart_chunksize_mb" {
+  type        = number
+  description = "The default maximum size of chunks to use when copying. Can be overridden by collection config."
 }
 
 
@@ -175,6 +169,7 @@ variable "status_update_queue_message_retention_time_seconds" {
   type        = number
   description = "The number of seconds status_update_queue SQS retains a message in seconds. Maximum value is 14 days."
 }
+
 
 ## OPTIONAL (DO NOT CHANGE!) - Development use only
 ## Default variable value is set in ../main.tf to disallow any modification.

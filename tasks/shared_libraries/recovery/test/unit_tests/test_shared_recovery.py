@@ -2,6 +2,8 @@
 Name: test_shared_recovery.py
 Description: Unit tests for shared_recovery.py shared library.
 """
+import random
+
 import boto3
 import json
 from moto import mock_sqs
@@ -47,13 +49,13 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         Perform teardown for the tests
         """
         self.mock_sqs.stop()
-        
+
     @patch.dict(
-    os.environ,
-    {
-        "AWS_REGION": "us-west-2"
-    },
-    clear=True,
+        os.environ,
+        {
+            "AWS_REGION": "us-west-2"
+        },
+        clear=True,
     )
     def test_post_entry_to_queue_no_errors(self):
         """
@@ -97,11 +99,11 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                 self.assertEqual(queue_output_body, new_data)
 
     @patch.dict(
-    os.environ,
-    {
-        "AWS_REGION": "us-west-2"
-    },
-    clear=True,
+        os.environ,
+        {
+            "AWS_REGION": "us-west-2"
+        },
+        clear=True,
     )
     def test_create_status_for_job_no_errors(self):
         """
@@ -123,14 +125,13 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
 
         # Run subtests
         with self.subTest(request_method=shared_recovery.RequestMethod.NEW_JOB):
-
             # Send values to the function
             shared_recovery.create_status_for_job(
                 self.job_id,
                 self.granule_id,
                 archive_destination,
                 [],
-                self.db_queue_url,
+                self.db_queue_url
             )
 
             # grabbing queue contents after the message is sent
@@ -163,12 +164,13 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                 queue_output_body["archive_destination"],
                 archive_destination,
             )
+
     @patch.dict(
-    os.environ,
-    {
-        "AWS_REGION": "us-west-2"
-    },
-    clear=True,
+        os.environ,
+        {
+            "AWS_REGION": "us-west-2"
+        },
+        clear=True,
     )
     def test_update_status_for_file_no_errors(self):
         """
@@ -272,6 +274,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                         archive_destination,
                         request_method.value,
                         self.db_queue_url,
+                        random.uniform(0, 1000)
                     )
 
     def test_update_status_for_file_raise_errors_restore_destination(self):

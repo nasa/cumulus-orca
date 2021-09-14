@@ -41,42 +41,6 @@ DESCRIPTION
 CLASSES
     builtins.Exception(builtins.BaseException)
         RestoreRequestError
-    enum.Enum(builtins.object)
-        RequestMethod
-    
-    class RequestMethod(enum.Enum)
-     |  RequestMethod(value, names=None, *, module=None, qualname=None, type=None, start=1)
-     |  
-     |  An enumeration.
-     |  
-     |  Method resolution order:
-     |      RequestMethod
-     |      enum.Enum
-     |      builtins.object
-     |  
-     |  Data and other attributes defined here:
-     |  
-     |  POST = <RequestMethod.POST: 'post'>
-     |  
-     |  PUT = <RequestMethod.PUT: 'put'>
-     |  
-     |  ----------------------------------------------------------------------
-     |  Data descriptors inherited from enum.Enum:
-     |  
-     |  name
-     |      The name of the Enum member.
-     |  
-     |  value
-     |      The value of the Enum member.
-     |  
-     |  ----------------------------------------------------------------------
-     |  Readonly properties inherited from enum.EnumMeta:
-     |  
-     |  __members__
-     |      Returns a mapping of member name->value.
-     |      
-     |      This mapping lists all enum members, including aliases. Note that this
-     |      is a read-only view of the internal mapping.
     
     class RestoreRequestError(builtins.Exception)
      |  Exception to be raised if the restore request fails submission for any of the files.
@@ -182,7 +146,7 @@ FUNCTIONS
                 message, with 'success' = False for the files for which the restore request failed to
                 submit.
     
-    inner_task(event: Dict, max_retries: int, retry_sleep_secs: float, retrieval_type: str, restore_expire_days: int, db_queue_url: str)
+    inner_task(event: Dict, max_retries: int, retry_sleep_secs: float, retrieval_type: str, restore_expire_days: int, db_queue_url: str) -> Dict[str, Any]
         Task called by the handler to perform the work.
         This task will call the restore_request for each file. Restored files will be kept
         for {exp_days} days before they expire. A restore request will be tried up to {retries} times
@@ -192,7 +156,7 @@ FUNCTIONS
                 event: A dict with the following keys:
                     'config' (dict): A dict with the following keys:
                         'glacier-bucket' (str): The name of the glacier bucket from which the files
-                        will be restored. Defaults to os.environ['DB_QUEUE_URL']
+                        will be restored. Defaults to OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY
                         'asyncOperationId' (str): The unique identifier used for tracking requests.
                     'input' (dict): A dict with the following keys:
                         'granules' (list(dict)): A list of dicts with the following keys:
@@ -220,7 +184,7 @@ FUNCTIONS
                             'err_msg' (string): when success is False, this will contain
                                 the error message from the restore error.
                         'keys': Same as recover_files, but without 'success' and 'err_msg'.
-                    'asyncOperationId' (str): The 'asyncOperationId' from event if present, otherwise a newly-generated uuid.
+                    'job_id' (str): The 'job_id' from event if present, otherwise a newly-generated uuid.
             Raises:
                 RestoreRequestError: Thrown if there are errors with the input request.
     
@@ -233,16 +197,7 @@ FUNCTIONS
         Returns:
             True if the object exists, otherwise False.
     
-    post_entry_to_queue(table_name: str, new_data: Dict[str, Any], request_method: request_files.RequestMethod, db_queue_url: str, max_retries: int, retry_sleep_secs: float)
-        # todo: Move to shared lib after ORCA-170
-    
-    post_status_for_file_to_queue(job_id: str, granule_id: str, filename: str, key_path: Union[str, NoneType], restore_destination: Union[str, NoneType], status_id: Union[int, NoneType], error_message: Union[str, NoneType], request_time: Union[str, NoneType], last_update: str, completion_time: Union[str, NoneType], request_method: request_files.RequestMethod, db_queue_url: str, max_retries: int, retry_sleep_secs: float)
-        # todo: Move to shared lib after ORCA-170
-    
-    post_status_for_job_to_queue(job_id: str, granule_id: str, status_id: Union[int, NoneType], request_time: Union[str, NoneType], completion_time: Union[str, NoneType], archive_destination: Union[str, NoneType], request_method: request_files.RequestMethod, db_queue_url: str, max_retries: int, retry_sleep_secs: float)
-        # todo: Move to shared lib after ORCA-170
-    
-    process_granule(s3: botocore.client.BaseClient, granule: Dict[str, Union[str, List[Dict]]], glacier_bucket: str, restore_expire_days: int, max_retries: int, retry_sleep_secs: float, retrieval_type: str, job_id: str, db_queue_url: str)
+    process_granule(s3: botocore.client.BaseClient, granule: Dict[str, Union[str, List[Dict]]], glacier_bucket: str, restore_expire_days: int, max_retries: int, retry_sleep_secs: float, retrieval_type: str, job_id: str, db_queue_url: str) -> None
         Call restore_object for the files in the granule_list. Modifies granule for output.
         Args:
             s3: An instance of boto3 s3 client
@@ -289,7 +244,7 @@ FUNCTIONS
                     'config' (dict): A dict with the following keys:
                         'glacier-bucket' (str): The name of the glacier bucket from which the files
                         will be restored.
-                        'asyncOperationId' (str): The unique identifier used for tracking requests. If not present, will be generated.
+                        'job_id' (str): The unique identifier used for tracking requests. If not present, will be generated.
                     'input' (dict): A dict with the following keys:
                         'granules' (list(dict)): A list of dicts with the following keys:
                             'granuleId' (str): The id of the granule being restored.
@@ -297,6 +252,7 @@ FUNCTIONS
                                 'key' (str): Name of the file within the granule.  # TODO: It actually might be a path.
                                 'dest_bucket' (str): The bucket the restored file will be moved
                                     to after the restore completes.
+                context: Passed through from AWS and CMA. Unused.
             Environment Vars:
                 RESTORE_EXPIRE_DAYS (int, optional, default = 5): The number of days
                     the restored file will be accessible in the S3 bucket before it expires.
@@ -325,7 +281,10 @@ FUNCTIONS
 
 DATA
     Any = typing.Any
+    COLLECTION_MULTIPART_CHUNKSIZE_MB_KEY = 'multipart_chunksize_mb'
+    CONFIG_COLLECTION_KEY = 'collection'
     CONFIG_GLACIER_BUCKET_KEY = 'glacier-bucket'
+    CONFIG_JOB_ID_KEY = 'asyncOperationId'
     DEFAULT_MAX_REQUEST_RETRIES = 2
     DEFAULT_RESTORE_EXPIRE_DAYS = 5
     DEFAULT_RESTORE_RETRIEVAL_TYPE = 'Standard'
@@ -334,26 +293,20 @@ DATA
     EVENT_CONFIG_KEY = 'config'
     EVENT_INPUT_KEY = 'input'
     FILE_DEST_BUCKET_KEY = 'dest_bucket'
-    FILE_ERROR_MESSAGE_KEY = 'err_msg'
+    FILE_ERROR_MESSAGE_KEY = 'error_message'
     FILE_KEY_KEY = 'key'
     FILE_SUCCESS_KEY = 'success'
     GRANULE_GRANULE_ID_KEY = 'granuleId'
     GRANULE_KEYS_KEY = 'keys'
     GRANULE_RECOVER_FILES_KEY = 'recover_files'
     INPUT_GRANULES_KEY = 'granules'
-    INPUT_META_KEY = 'cumulus_meta'
-    CONFIG_JOB_ID_KEY = 'job_id'
     LOGGER = <cumulus_logger.CumulusLogger object>
     List = typing.List
-    ORCA_STATUS_FAILED = 4
-    ORCA_STATUS_PENDING = 1
     OS_ENVIRON_DB_QUEUE_URL_KEY = 'DB_QUEUE_URL'
     OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY = 'ORCA_DEFAULT_BUCKET'
     OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY = 'RESTORE_EXPIRE_DAYS'
     OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY = 'RESTORE_REQUEST_RETRIES'
     OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY = 'RESTORE_RETRIEVAL_TYPE'
     OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY = 'RESTORE_RETRY_SLEEP_SECS'
-    Optional = typing.Optional
     Union = typing.Union
-    sqs = <botocore.client.SQS object>
 ```

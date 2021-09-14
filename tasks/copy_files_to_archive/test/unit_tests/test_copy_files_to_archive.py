@@ -4,15 +4,18 @@ Description:  Unit tests for copy_files_to_archive.py.
 """
 import json
 import os
+import random
 import unittest
 import uuid
 from random import randint
-from unittest import TestCase
+from unittest import TestCase, mock
 from unittest.mock import Mock, call, patch, MagicMock
 
 from botocore.exceptions import ClientError
+from s3transfer.constants import MB
 
 import copy_files_to_archive
+from test.unit_tests.ConfigCheck import ConfigCheck
 
 
 class TestCopyFilesToArchive(TestCase):
@@ -26,6 +29,7 @@ class TestCopyFilesToArchive(TestCase):
             "COPY_RETRIES": "703",
             "COPY_RETRY_SLEEP_SECS": "108.5",
             "DB_QUEUE_URL": "something.blah",
+            "DEFAULT_MULTIPART_CHUNKSIZE_MB": "42"
         },
         clear=True,
     )
@@ -41,9 +45,10 @@ class TestCopyFilesToArchive(TestCase):
 
         copy_files_to_archive.handler(event, Mock())
 
-        mock_task.assert_called_with(records, 703, 108.5, "something.blah")
+        mock_task.assert_called_with(records, 703, 108.5, "something.blah", 42)
 
-    @patch.dict(os.environ, {"DB_QUEUE_URL": "something.else"}, clear=True)
+    @patch.dict(os.environ, {"DB_QUEUE_URL": "something.else",
+                             "DEFAULT_MULTIPART_CHUNKSIZE_MB": "42"}, clear=True)
     @patch("copy_files_to_archive.LOGGER")
     @patch("copy_files_to_archive.task")
     def test_handler_uses_default_retry_settings(
@@ -57,7 +62,7 @@ class TestCopyFilesToArchive(TestCase):
 
         copy_files_to_archive.handler(event, Mock())
 
-        mock_task.assert_called_with(records, 2, 30, "something.else")
+        mock_task.assert_called_with(records, 2, 30, "something.else", 42)
 
     @patch("time.sleep")
     @patch("copy_files_to_archive.shared_recovery.update_status_for_file")
@@ -78,6 +83,7 @@ class TestCopyFilesToArchive(TestCase):
         db_queue_url = uuid.uuid4().__str__()
         max_retries = randint(2, 9999)
         retry_sleep_secs = randint(0, 9999)
+        default_multipart_chunksize_mb = randint(1, 10000)
 
         file0_job_id = uuid.uuid4().__str__()
         file0_granule_id = uuid.uuid4().__str__()
@@ -94,6 +100,7 @@ class TestCopyFilesToArchive(TestCase):
         file1_source_key = uuid.uuid4().__str__()
         file1_target_bucket = uuid.uuid4().__str__()
         file1_target_key = uuid.uuid4().__str__()
+        file1_multipart_chunksize_mb = randint(1, 10000)
 
         mock_records = Mock()
 
@@ -106,6 +113,7 @@ class TestCopyFilesToArchive(TestCase):
             copy_files_to_archive.INPUT_SOURCE_KEY_KEY: file0_source_key,
             copy_files_to_archive.INPUT_TARGET_BUCKET_KEY: file0_target_bucket,
             copy_files_to_archive.INPUT_TARGET_KEY_KEY: file0_target_key,
+            copy_files_to_archive.INPUT_MULTIPART_CHUNKSIZE_MB: None
         }
         file1 = {
             copy_files_to_archive.INPUT_JOB_ID_KEY: file1_job_id,
@@ -116,12 +124,13 @@ class TestCopyFilesToArchive(TestCase):
             copy_files_to_archive.INPUT_SOURCE_KEY_KEY: file1_source_key,
             copy_files_to_archive.INPUT_TARGET_BUCKET_KEY: file1_target_bucket,
             copy_files_to_archive.INPUT_TARGET_KEY_KEY: file1_target_key,
+            copy_files_to_archive.INPUT_MULTIPART_CHUNKSIZE_MB: file1_multipart_chunksize_mb
         }
         mock_get_files_from_records.return_value = [file0, file1]
         mock_copy_object.return_value = None
 
         copy_files_to_archive.task(
-            mock_records, max_retries, retry_sleep_secs, db_queue_url
+            mock_records, max_retries, retry_sleep_secs, db_queue_url, default_multipart_chunksize_mb
         )
 
         mock_get_files_from_records.assert_called_once_with(mock_records)
@@ -133,6 +142,7 @@ class TestCopyFilesToArchive(TestCase):
                     file0_source_bucket,
                     file0_source_key,
                     file0_target_bucket,
+                    default_multipart_chunksize_mb,
                     file0_target_key,
                 ),
                 call(
@@ -140,6 +150,7 @@ class TestCopyFilesToArchive(TestCase):
                     file1_source_bucket,
                     file1_source_key,
                     file1_target_bucket,
+                    file1_multipart_chunksize_mb,
                     file1_target_key,
                 ),
             ]
@@ -190,6 +201,7 @@ class TestCopyFilesToArchive(TestCase):
         db_queue_url = uuid.uuid4().__str__()
         max_retries = 2
         retry_sleep_secs = randint(0, 9999)
+        multipart_chunksize_mb = randint(1, 10000)
 
         file0_job_id = uuid.uuid4().__str__()
         file0_granule_id = uuid.uuid4().__str__()
@@ -240,7 +252,7 @@ class TestCopyFilesToArchive(TestCase):
 
         try:
             copy_files_to_archive.task(
-                mock_records, max_retries, retry_sleep_secs, db_queue_url
+                mock_records, max_retries, retry_sleep_secs, db_queue_url, multipart_chunksize_mb
             )
         except copy_files_to_archive.CopyRequestError:
             mock_get_files_from_records.assert_called_once_with(mock_records)
@@ -252,6 +264,7 @@ class TestCopyFilesToArchive(TestCase):
                         file0_source_bucket,
                         file0_source_key,
                         file0_target_bucket,
+                        multipart_chunksize_mb,
                         file0_target_key,
                     ),
                     call(
@@ -259,6 +272,7 @@ class TestCopyFilesToArchive(TestCase):
                         file1_source_bucket,
                         file1_source_key,
                         file1_target_bucket,
+                        multipart_chunksize_mb,
                         file1_target_key,
                     ),
                     call(
@@ -266,6 +280,7 @@ class TestCopyFilesToArchive(TestCase):
                         file0_source_bucket,
                         file0_source_key,
                         file0_target_bucket,
+                        multipart_chunksize_mb,
                         file0_target_key,
                     ),
                 ]
@@ -315,6 +330,7 @@ class TestCopyFilesToArchive(TestCase):
             "target_key": uuid.uuid4().__str__(),
             "restore_destination": uuid.uuid4().__str__(),
             "source_bucket": uuid.uuid4().__str__(),
+            "multipart_chunksize_mb": randint(1, 10000)
         }
         file1 = {
             "job_id": uuid.uuid4().__str__(),
@@ -324,6 +340,7 @@ class TestCopyFilesToArchive(TestCase):
             "target_key": uuid.uuid4().__str__(),
             "restore_destination": uuid.uuid4().__str__(),
             "source_bucket": uuid.uuid4().__str__(),
+            "multipart_chunksize_mb": None
         }
 
         result = copy_files_to_archive.get_files_from_records(
@@ -342,24 +359,30 @@ class TestCopyFilesToArchive(TestCase):
         src_bucket_name = uuid.uuid4().__str__()
         src_object_name = uuid.uuid4().__str__()
         dest_bucket_name = uuid.uuid4().__str__()
+        multipart_chunksize_mb = randint(1, 10000)
         dest_object_name = uuid.uuid4().__str__()
 
         mock_s3_cli = Mock()
+        config_check = ConfigCheck(multipart_chunksize_mb * MB)
+        mock_s3_cli.copy = Mock(return_value=None)
+        mock_s3_cli.copy.side_effect = config_check.check_multipart_chunksize
 
         result = copy_files_to_archive.copy_object(
             mock_s3_cli,
             src_bucket_name,
             src_object_name,
             dest_bucket_name,
+            multipart_chunksize_mb,
             dest_object_name,
         )
 
-        mock_s3_cli.copy_object.assert_called_once_with(
-            CopySource={"Bucket": src_bucket_name, "Key": src_object_name},
-            Bucket=dest_bucket_name,
-            Key=dest_object_name,
+        mock_s3_cli.copy.assert_called_once_with(
+            {"Bucket": src_bucket_name, "Key": src_object_name},
+            dest_bucket_name, dest_object_name,
+            ExtraArgs={}, Config=mock.ANY
         )
         self.assertIsNone(result)
+        self.assertIsNone(config_check.bad_config)
 
     def test_copy_object_client_error_returned_as_string(self):
         """
@@ -368,6 +391,7 @@ class TestCopyFilesToArchive(TestCase):
         src_bucket_name = uuid.uuid4().__str__()
         src_object_name = uuid.uuid4().__str__()
         dest_bucket_name = uuid.uuid4().__str__()
+        multipart_chunksize_mb = randint(1, 10000)
         dest_object_name = uuid.uuid4().__str__()
         expected_result = uuid.uuid4().__str__()
 
@@ -375,20 +399,20 @@ class TestCopyFilesToArchive(TestCase):
         error = ClientError({"Error": {}}, "operation name")
         error.__str__ = Mock()
         error.__str__.return_value = expected_result
-        mock_s3_cli.copy_object.side_effect = error
+        mock_s3_cli.copy.side_effect = error
 
         result = copy_files_to_archive.copy_object(
             mock_s3_cli,
             src_bucket_name,
             src_object_name,
             dest_bucket_name,
+            multipart_chunksize_mb,
             dest_object_name,
         )
 
-        mock_s3_cli.copy_object.assert_called_once_with(
-            CopySource={"Bucket": src_bucket_name, "Key": src_object_name},
-            Bucket=dest_bucket_name,
-            Key=dest_object_name,
+        mock_s3_cli.copy.assert_called_once_with(
+            {"Bucket": src_bucket_name, "Key": src_object_name},
+            dest_bucket_name, dest_object_name, ExtraArgs={}, Config=mock.ANY
         )
         self.assertEqual(expected_result, result)
 

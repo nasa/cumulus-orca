@@ -3,11 +3,13 @@ import os
 from typing import Dict, Any, List, Union
 
 import boto3
+from boto3.s3.transfer import TransferConfig, MB
 from run_cumulus_task import run_cumulus_task
 
 CONFIG_FILE_STAGING_DIRECTORY_KEY = 'fileStagingDir'
 CONFIG_COLLECTION_KEY = 'collection'
 CONFIG_URL_PATH_KEY = 'url_path'
+CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = 'multipart_chunksize_mb'
 
 COLLECTION_NAME_KEY = 'name'
 COLLECTION_VERSION_KEY = 'version'
@@ -33,7 +35,7 @@ def should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -
 
 
 def copy_granule_between_buckets(source_bucket_name: str, source_key: str, destination_bucket: str,
-                                 destination_key: str) -> None:
+                                 destination_key: str, multipart_chunksize_mb: int) -> None:
     """
     Copies granule from source bucket to destination.
     Args:
@@ -41,6 +43,7 @@ def copy_granule_between_buckets(source_bucket_name: str, source_key: str, desti
         source_key: source Granule path excluding s3://[bucket]/
         destination_bucket: The name of the bucket the granule is to be copied to.
         destination_key: Destination granule path excluding s3://[bucket]/
+        multipart_chunksize_mb: The maximum size of chunks to use when copying.
     """
     s3 = boto3.client('s3')
     copy_source = {
@@ -55,7 +58,8 @@ def copy_granule_between_buckets(source_bucket_name: str, source_key: str, desti
             'MetadataDirective': 'COPY',
             'ContentType': s3.head_object(Bucket=source_bucket_name, Key=source_key)['ContentType'],
             'ACL': 'bucket-owner-full-control'  # Sets the x-amz-acl URI Request Parameter. Needed for cross-OU copies.
-        }
+        },
+        Config=TransferConfig(multipart_chunksize=multipart_chunksize_mb * MB)
     )
 
 
@@ -67,6 +71,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
 
         Environment Variables:
             ORCA_DEFAULT_BUCKET (string, required): Name of the default ORCA S3 Glacier bucket.
+            DEFAULT_MULTIPART_CHUNKSIZE_MB (string, optional): The default maximum size of chunks to use when copying. Can be overridden by collection config.
 
     Args:
         event: Passed through from {handler}
@@ -83,7 +88,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
                     bucket (str)
             copied_to_glacier (list): List of S3 paths - one for each file copied
     """
-    #TODO: Possibly remove print statement and change to a logging statement.
+    # TODO: Possibly remove print statement and change to a logging statement.
     print(event)
     event_input = event['input']
     granules_list = event_input['granules']
@@ -92,7 +97,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     collection = config.get(CONFIG_COLLECTION_KEY, {})
     exclude_file_types = collection.get(COLLECTION_META_KEY, {}).get(EXCLUDE_FILE_TYPES_KEY, [])
 
-    #TODO: Should look at bucket type orca and check for default
+    # TODO: Should look at bucket type orca and check for default
     #      Should also be flexible enough to handle input precedence order of
     #      - task input
     #      - collection configuration
@@ -102,9 +107,15 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
         if default_bucket is None or len(default_bucket) == 0:
             raise KeyError('ORCA_DEFAULT_BUCKET environment variable is not set.')
     except KeyError:
-        #TODO: Change this to a logging statement
+        # TODO: Change this to a logging statement
         print('ORCA_DEFAULT_BUCKET environment variable is not set.')
         raise
+    try:
+        multipart_chunksize_mb = int(config[CONFIG_MULTIPART_CHUNKSIZE_MB_KEY])
+    except KeyError:
+        # TODO: Change this to a logging statement
+        multipart_chunksize_mb = int(os.environ['DEFAULT_MULTIPART_CHUNKSIZE_MB'])
+        print(f'{CONFIG_MULTIPART_CHUNKSIZE_MB_KEY} is not set for config. Using default value of {multipart_chunksize_mb}.')
 
     granule_data = {}
     copied_file_urls = []
@@ -128,7 +139,8 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
             copy_granule_between_buckets(source_bucket_name=file['bucket'],
                                          source_key=source_filepath,
                                          destination_bucket=default_bucket,
-                                         destination_key=source_filepath)
+                                         destination_key=source_filepath,
+                                         multipart_chunksize_mb=multipart_chunksize_mb)
             copied_file_urls.append(file['filename'])
             print(f"Copied {source_filepath} into glacier storage bucket {default_bucket}.")
 
@@ -145,6 +157,8 @@ def handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any:
             ORCA_DEFAULT_BUCKET (str, required): Name of the default S3 Glacier
                                                  ORCA bucket files should be
                                                  archived to.
+            DEFAULT_MULTIPART_CHUNKSIZE_MB (int, required): The default maximum size of chunks to use when copying.
+                                                                 Can be overridden by collection config.
 
     Args:
         event: Event passed into the step from the aws workflow. A dict with the following keys:
@@ -171,6 +185,8 @@ def handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any:
                         Each dict contains the following keys:
                             regex (str): The regex that all files in the bucket must match with their name.
                             bucket (str): The name of the bucket containing the files.
+                    multipart_chunksize_mb (int, optional): The maximum size of chunks to use when copying.
+                        Defaults to Environment Var DEFAULT_MULTIPART_CHUNKSIZE_MB
                     url_path (str): Used when calling {copy_granule_between_buckets} as a part of the destination_key.
                 buckets (dict): A dict with the following keys:
                     glacier (dict): A dict with the following keys:

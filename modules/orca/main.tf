@@ -22,6 +22,7 @@ module "orca_lambdas" {
   orca_sqs_staged_recovery_queue_id = module.orca_sqs.orca_sqs_staged_recovery_queue_id
   ## OPTIONAL
   tags   = local.tags
+  default_multipart_chunksize_mb  = var.default_multipart_chunksize_mb
 
   ## --------------------------
   ## ORCA Variables
@@ -87,12 +88,10 @@ module "orca_rds" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  aws_profile       = var.aws_profile
   lambda_subnet_ids = var.lambda_subnet_ids
   prefix            = var.prefix
 
   ## OPTIONAL
-  region = var.region
   tags   = local.tags
 
   ## --------------------------
@@ -100,8 +99,7 @@ module "orca_rds" {
   ## --------------------------
   ## REQUIRED
   database_app_user_pw               = var.database_app_user_pw
-  db_deploy_arn                      = module.orca_lambdas.db_deploy_arn
-  db_deploy_source_code_hash         = module.orca_lambdas.db_deploy_source_code_hash
+  db_deploy_function_name            = module.orca_lambdas.db_deploy_function_name
   postgres_user_pw                   = var.postgres_user_pw
   vpc_postgres_ingress_all_egress_id = module.orca_lambdas.vpc_postgres_ingress_all_egress_id
 

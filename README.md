@@ -232,7 +232,7 @@ module "orca" {
   permissions_boundary_arn = var.permissions_boundary_arn
   buckets = var.buckets
   workflow_config = module.cumulus.workflow_config
-  region = var.region
+  default_multipart_chunksize_mb = module.cumulus.default_multipart_chunksize_mb
 }
 ```
 
@@ -276,6 +276,7 @@ step to anywhere after the MoveGranule step being sure to change the
                   "buckets":"{$.meta.buckets}",
                   "distribution_endpoint":"{$.meta.distribution_endpoint}",
                   "files_config":"{$.meta.collection.files}",
+                  "multipart_chunksize_mb": "{$.meta.collection.multipart_chunksize_mb"},
                   "fileStagingDir":"{$.meta.collection.url_path}",
                   "granuleIdExtraction":"{$.meta.collection.granuleIdExtraction}",
                   "collection":"{$.meta.collection}",
