@@ -8,7 +8,7 @@ section first.
 
 It is recommended to run the tests in the following order.
 - [Database Does Not exist Failure Test](#database-does-not-exist-failure-test)
-- [Database Migration v1 to v2 Test](#database-migration-v1-to-v2-test)
+- [Database Migration v1 to v4 Test](#database-migration-v1-to-v4-test)
 - [Database No Migration Test](#database-no-migration-test)
 - [Database Fresh Install Test](#database-fresh-install-test)
 
@@ -233,6 +233,18 @@ To run the fresh install test, in your **python** window run the command
 {"message": "recovery_job table created.", "timestamp": "2021-04-28T23:39:59.377570", "level": "info"}
 {"message": "Creating recovery_file table ...", "timestamp": "2021-04-28T23:39:59.377898", "level": "debug"}
 {"message": "recovery_file table created.", "timestamp": "2021-04-28T23:39:59.434901", "level": "info"}
+{"message": "Changing to the dbo role to create objects ...", "timestamp": "2021-04-28T15:20:20.231299", "level": "debug"}
+{"message": "Setting search path to the ORCA schema to create objects ...", "timestamp": "2021-04-28T15:20:20.231299", "level": "debug"}
+{"message": "Creating providers table ...", "timestamp": "2021-04-28T15:20:20.231299", "level": "debug"}
+{"message": "providers table created.", "timestamp": "2021-04-28T15:20:20.231299", "level": "info"}
+{"message": "Creating collections table ...", "timestamp": "2021-04-28T15:20:20.231299", "level": "debug"}
+{"message": "collections table created.", "timestamp": "2021-04-28T15:20:20.231299", "level": "info"}
+{"message": "Creating provider and collection cross reference table ...", "timestamp": "2021-04-28T15:20:20.231299", "level": "debug"}
+{"message": "provider and collection cross reference table created.", "timestamp": "2021-04-28T15:20:20.231299", "level": "info"}
+{"message": "Creating granules table ...", "timestamp": "2021-04-28T15:20:20.231299", "level": "debug"}
+{"message": "granules table created.", "timestamp": "2021-04-28T15:20:20.231299", "level": "info"}
+{"message": "Creating files table ...", "timestamp": "2021-04-28T15:20:20.231299", "level": "debug"}
+{"message": "files table created.", "timestamp": "2021-04-28T15:20:20.231299", "level": "info"}
 {"message": "Manual test complete.", "timestamp": "2021-04-28T23:39:59.445350", "level": "info"}
 ```
 
@@ -256,6 +268,12 @@ expressed in the logs.
 {"message": "Data added to the recovery_status table.", "timestamp": "2021-04-28T23:39:59.284255", "level": "info"}
 {"message": "recovery_job table created.", "timestamp": "2021-04-28T23:39:59.377570", "level": "info"}
 {"message": "recovery_file table created.", "timestamp": "2021-04-28T23:39:59.434901", "level": "info"}
+{"message": "providers table created.", "timestamp": "2021-04-28T15:20:20.231299", "level": "info"}
+{"message": "collections table created.", "timestamp": "2021-04-28T15:20:20.231299", "level": "info"}
+{"message": "provider and collection cross reference table created.", "timestamp": "2021-04-28T15:20:20.231299", "level": "info"}
+{"message": "granules table created.", "timestamp": "2021-04-28T15:20:20.231299", "level": "info"}
+{"message": "files table created.", "timestamp": "2021-04-28T15:20:20.231299", "level": "info"}
+
 ```
 
 Next, verify that the objects were actually created with the proper data in the
@@ -375,10 +393,10 @@ COMMIT
 ```
 
 
-## Database Migration v1 to v2 Test
+## Database Migration v1 to v4 Test
 
 This test validates that the db_deploy scripts correctly identify a v1 ORCA
-schema and run the migration of objects and data to an ORCA v2 schema.
+schema and run the migration of objects and data to an ORCA v4 schema.
 
 ### Database Setup Migration Test
 
@@ -397,7 +415,7 @@ schema and run the migration of objects and data to an ORCA v2 schema.
    ```
 3. Run the `sql/orca_schema_v1/create.sql` script as seen below. This will
    populate the database with the users, schema, tables and dummy data used for
-   migrating from v1 of the schema to v2.
+   migrating from v1 of the schema to v4.
    ```bash
    root@26df0390e999:/data/test/manual_tests# psql
    psql (12.6 (Debian 12.6-1.pgdg100+1))
@@ -530,8 +548,20 @@ To run the migration test, in your **python** window run the command
 {"message": "dbo user removed", "timestamp": "2021-04-29T15:20:20.188715", "level": "info"}
 {"message": "Dropping druser user ...", "timestamp": "2021-04-29T15:20:20.189129", "level": "debug"}
 {"message": "druser user removed.", "timestamp": "2021-04-29T15:20:20.199778", "level": "info"}
-{"message": "Populating the schema_versions table with data ...", "timestamp": "2021-04-29T15:20:20.199998", "level": "debug"}
+{"message": "Changing to the dbo role to create objects ...", "timestamp": "2021-04-29T15:20:20.231299", "level": "debug"}
+{"message": "Setting search path to the ORCA schema to create objects ...", "timestamp": "2021-04-29T15:20:20.231299", "level": "debug"}
+{"message": "Creating providers table ...", "timestamp": "2021-04-29T15:20:20.231299", "level": "debug"}
+{"message": "providers table created.", "timestamp": "2021-04-29T15:20:20.231299", "level": "info"}
+{"message": "Creating collections table ...", "timestamp": "2021-04-29T15:20:20.231299", "level": "debug"}
+{"message": "collections table created.", "timestamp": "2021-04-29T15:20:20.231299", "level": "info"}
+{"message": "Creating provider and collection cross reference table ...", "timestamp": "2021-04-29T15:20:20.231299", "level": "debug"}
+{"message": "provider and collection cross reference table created.", "timestamp": "2021-04-29T15:20:20.231299", "level": "info"}
+{"message": "Creating granules table ...", "timestamp": "2021-04-29T15:20:20.231299", "level": "debug"}
+{"message": "granules table created.", "timestamp": "2021-04-29T15:20:20.231299", "level": "info"}
+{"message": "Creating files table ...", "timestamp": "2021-04-29T15:20:20.231299", "level": "debug"}
+{"message": "files table created.", "timestamp": "2021-04-29T15:20:20.231299", "level": "info"}
 {"message": "Data added to the schema_versions table.", "timestamp": "2021-04-29T15:20:20.231299", "level": "info"}
+{"message": "Populating the schema_versions table with data ...", "timestamp": "2021-04-29T15:20:20.199998", "level": "debug"}
 {"message": "Manual test complete.", "timestamp": "2021-04-29T15:20:20.363841", "level": "info"}
 ```
 
@@ -562,7 +592,13 @@ expressed in the logs.
 {"message": "dr_role role removed.", "timestamp": "2021-04-29T15:20:20.181274", "level": "info"}
 {"message": "dbo user removed", "timestamp": "2021-04-29T15:20:20.188715", "level": "info"}
 {"message": "druser user removed.", "timestamp": "2021-04-29T15:20:20.199778", "level": "info"}
+{"message": "providers table created.", "timestamp": "2021-04-29T15:20:20.231299", "level": "info"}
+{"message": "collections table created.", "timestamp": "2021-04-29T15:20:20.231299", "level": "info"}
+{"message": "provider and collection cross reference table created.", "timestamp": "2021-04-29T15:20:20.231299", "level": "info"}
+{"message": "granules table created.", "timestamp": "2021-04-29T15:20:20.231299", "level": "info"}
+{"message": "files table created.", "timestamp": "2021-04-29T15:20:20.231299", "level": "info"}
 {"message": "Data added to the schema_versions table.", "timestamp": "2021-04-29T15:20:20.231299", "level": "info"}
+
 ```
 
 Next, verify that the objects were actually created with the proper data in the
@@ -613,6 +649,11 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
     orca   | recovery_file   | table | orca_dbo
     orca   | recovery_job    | table | orca_dbo
     orca   | recovery_status | table | orca_dbo
+    orca   | providers       | table | orca_dbo
+    orca   | collections     | table | orca_dbo
+    orca   | provider_collection_xref | table | orca_dbo
+    orca   | granules        | table | orca_dbo
+    orca   | files           | table | orca_dbo
     orca   | schema_versions | table | orca_dbo
     (4 rows)
    ```
@@ -634,7 +675,7 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
 
     version_id |                     description                      |         install _date         | is_latest
    ------------+------------------------------------------------------+-------------------------------+-----------
-             2 | Updated recovery schema for v3.x of ORCA application | 2021-04-28 23:3 9:58.63444+00 | t
+             4 | Added inventory schema for v4.x of ORCA application  | 2021-09-13 23:3 9:58.63444+00 | t
    (1 row)
    ```
 6. Verify the orcauser can login with the password provided in the `.env` files
@@ -752,7 +793,7 @@ No cleanup is necessary if the next test run is the [Database No Migration Test]
 
 To cleanup from this test you can use one of two scripts. The `sql/cleanup.sql`
 script will remove all objects including the *disaster_recovery* database. The
-`sql/orca_schema_v2/remove.sql` script will remove only the objects created
+`sql/orca_schema_v4/remove.sql` script will remove only the objects created
 in this test but leave the database in tact. Both scripts must be run as the
 *postgres* user.
 
@@ -764,21 +805,11 @@ Type "help" for help.
 postgres=# \c disaster_recovery
 You are now connected to database "disaster_recovery" as user "postgres".
 
-disaster_recovery=# \i sql/orca_schema_v2/remove.sql
+disaster_recovery=# \i sql/orca_schema_v4/remove.sql
 
-psql:sql/orca_schema_v2/remove.sql:1: NOTICE:  drop cascades to 4 other objects
-DETAIL:  drop cascades to table orca.schema_versions
-drop cascades to table orca.recovery_status
-drop cascades to table orca.recovery_job
-drop cascades to table orca.recovery_file
-DROP SCHEMA
-DROP ROLE
-REVOKE
-REVOKE
-DROP ROLE
-REVOKE
-DROP ROLE
-psql:sql/orca_schema_v2/remove.sql:8: WARNING:  there is no transaction in progress
+psql:sql/orca_schema_v4/remove.sql:1: NOTICE:  drop the 5 inventory tables
+DROP TABLE IF EXISTS orca.providers, orca.collections, orca.provider_collection_xref, orca.granules, orca.files
+psql:sql/orca_schema_v4/remove.sql:8: WARNING:  there is no transaction in progress
 COMMIT
 ```
 
@@ -786,14 +817,14 @@ COMMIT
 
 ## Database No Migration Test
 
-This test validates that the db_deploy scripts correctly identify that a v2 ORCA
+This test validates that the db_deploy scripts correctly identify that a v4 ORCA
 schema is installed and do not perform any additional action.
 
 ### Database Setup No Migration Test
 
-The *disaster_recovery* database should be installed with the ORCA version 2
+The *disaster_recovery* database should be installed with the ORCA version 4
 schema. This test should be ran immediately after the Fresh Install or Migration
-test so that a validated v2 schema is in place.
+test so that a validated v4 schema is in place.
 
 ### Running the No Migration Test
 
@@ -832,7 +863,7 @@ the time stamp value will be different.
 ```
 
 Perform validation tests similar to the Migration or Fresh Install tests to
-verify the v2 schema objects have not changed.
+verify the v4 schema objects have not changed.
 
 ### Cleaning Up the No Migration Test
 
@@ -883,5 +914,3 @@ DROP DATABASE
 
 postgres=# \q
 ```
-
-
