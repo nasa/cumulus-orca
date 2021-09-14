@@ -17,8 +17,6 @@ BEGIN;
       provider_id           text NOT NULL
     , collection_id         text NOT NULL
     , CONSTRAINT PK_provider_collection_xref PRIMARY KEY (provider_id,collection_id)
-    , CONSTRAINT FK_provider_collection FOREIGN KEY (provider_id) REFERENCES providers (provider_id)
-    , CONSTRAINT FK_collection_provider FOREIGN KEY (collection_id) REFERENCES collections (collection_id)
     );
 
     -- Comments

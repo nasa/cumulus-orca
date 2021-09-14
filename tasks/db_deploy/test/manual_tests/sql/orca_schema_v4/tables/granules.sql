@@ -21,7 +21,6 @@ BEGIN;
     , ingest_time           timestamp with time zone NOT NULL
     , last_update           timestamp with time zone NOT NULL
     , CONSTRAINT PK_granules PRIMARY KEY (id)
-    , CONSTRAINT FK_collection_granule FOREIGN KEY (collection_id) REFERENCES collections (collection_id)
     , CONSTRAINT UNIQUE_collection_granule_id UNIQUE (collection_id, cumulus_granule_id)
     );
 

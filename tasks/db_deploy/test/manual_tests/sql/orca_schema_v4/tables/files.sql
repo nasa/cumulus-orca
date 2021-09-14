@@ -27,7 +27,6 @@ BEGIN;
     , hash                      text NULL
     , hash_type                 text NULL
     , CONSTRAINT PK_files PRIMARY KEY (id)
-    , CONSTRAINT FK_granule_file FOREIGN KEY (granule_id) REFERENCES granules (id)
     , CONSTRAINT UNIQUE_orca_archive_location_key_path UNIQUE (orca_archive_location, key_path)
     , CONSTRAINT UNIQUE_cumulus_archive_location_key_path UNIQUE (cumulus_archive_location, key_path)
     );
