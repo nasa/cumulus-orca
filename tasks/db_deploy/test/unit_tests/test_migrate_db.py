@@ -307,20 +307,19 @@ class TestMigrateDatabseLibraries(unittest.TestCase):
                     call("SET search_path TO orca, public;"),
                 ]
                 mock_text.assert_has_calls(text_calls, any_order=False)
-
+                execution_order = [
+                    call.execute(mock_text("SET ROLE orca_dbo;")),
+                    call.execute(mock_text("SET search_path TO orca, public;")),
+                    call.execute(mock_providers_table()),
+                    call.execute(mock_collections_table()),
+                    call.execute(mock_provider_collection_xref_table()),
+                    call.execute(mock_granules_table()),
+                    call.execute(mock_files_table()),
+                    call.commit(),
+                ]
                 # Validate logic switch and set the execution order
                 if latest_version:
                     mock_schema_versions_data.assert_called_once()
-                    execution_order = [
-                        call.execute(mock_text("SET ROLE orca_dbo;")),
-                        call.execute(mock_text("SET search_path TO orca, public;")),
-                        call.execute(mock_providers_table()),
-                        call.execute(mock_collections_table()),
-                        call.execute(mock_provider_collection_xref_table()),
-                        call.execute(mock_granules_table()),
-                        call.execute(mock_files_table()),
-                        call.commit(),
-                    ]
 
                 else:
                     mock_schema_versions_data.assert_not_called()
