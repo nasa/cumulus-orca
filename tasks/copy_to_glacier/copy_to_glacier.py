@@ -113,9 +113,13 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     try:
         multipart_chunksize_mb = int(config[CONFIG_MULTIPART_CHUNKSIZE_MB_KEY])
     except KeyError:
+        multipart_chunksize_mb = None
+
+    if multipart_chunksize_mb is None:
         # TODO: Change this to a logging statement
         multipart_chunksize_mb = int(os.environ['DEFAULT_MULTIPART_CHUNKSIZE_MB'])
-        print(f'{CONFIG_MULTIPART_CHUNKSIZE_MB_KEY} is not set for config. Using default value of {multipart_chunksize_mb}.')
+        print(f'{CONFIG_MULTIPART_CHUNKSIZE_MB_KEY} is not set for config. '
+              f'Using default value of {multipart_chunksize_mb}.')
 
     granule_data = {}
     copied_file_urls = []

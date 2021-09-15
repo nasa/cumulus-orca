@@ -242,6 +242,7 @@ def inner_task(
             int(event[EVENT_CONFIG_KEY][CONFIG_MULTIPART_CHUNKSIZE_MB_KEY])
     except KeyError:
         collection_multipart_chunksize_mb = None
+    if collection_multipart_chunksize_mb is None:
         LOGGER.info(
             f'{CONFIG_MULTIPART_CHUNKSIZE_MB_KEY} is not set for config.')
 

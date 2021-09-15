@@ -119,7 +119,8 @@ class TestCopyToGlacierHandler(TestCase):
                 CONFIG_COLLECTION_KEY: {
                     COLLECTION_NAME_KEY: collection_name,
                     COLLECTION_VERSION_KEY: collection_version
-                }
+                },
+                CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: None
             }
 
         }
@@ -257,7 +258,8 @@ class TestCopyToGlacierHandler(TestCase):
                 CONFIG_COLLECTION_KEY: {
                     COLLECTION_NAME_KEY: collection_name,
                     COLLECTION_VERSION_KEY: collection_version
-                }
+                },
+                CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: None
             }
 
         }
