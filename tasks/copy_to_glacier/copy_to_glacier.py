@@ -6,14 +6,9 @@ import boto3
 from boto3.s3.transfer import TransferConfig, MB
 from run_cumulus_task import run_cumulus_task
 
-CONFIG_FILE_STAGING_DIRECTORY_KEY = 'fileStagingDir'
 CONFIG_COLLECTION_KEY = 'collection'
-CONFIG_URL_PATH_KEY = 'url_path'
 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = 'multipart_chunksize_mb'
 
-COLLECTION_NAME_KEY = 'name'
-COLLECTION_VERSION_KEY = 'version'
-COLLECTION_URL_PATH_KEY = 'url_path'
 COLLECTION_META_KEY = 'meta'
 EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
 
@@ -71,7 +66,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
 
         Environment Variables:
             ORCA_DEFAULT_BUCKET (string, required): Name of the default ORCA S3 Glacier bucket.
-            DEFAULT_MULTIPART_CHUNKSIZE_MB (string, optional): The default maximum size of chunks to use when copying. Can be overridden by collection config.
+            DEFAULT_MULTIPART_CHUNKSIZE_MB (int, optional): The default maximum size of chunks to use when copying. Can be overridden by collection config.
 
     Args:
         event: Passed through from {handler}

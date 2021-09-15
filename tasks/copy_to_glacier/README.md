@@ -246,7 +246,7 @@ FUNCTIONS
         
             Environment Variables:
                 ORCA_DEFAULT_BUCKET (string, required): Name of the default ORCA S3 Glacier bucket.
-                DEFAULT_MULTIPART_CHUNKSIZE_MB (string, optional): The default maximum size of chunks to use when copying. Can be overridden by collection config.
+                DEFAULT_MULTIPART_CHUNKSIZE_MB (int, optional): The default maximum size of chunks to use when copying. Can be overridden by collection config.
         
         Args:
             event: Passed through from {handler}
@@ -258,13 +258,8 @@ FUNCTIONS
 DATA
     Any = typing.Any
     COLLECTION_META_KEY = 'meta'
-    COLLECTION_NAME_KEY = 'name'
-    COLLECTION_URL_PATH_KEY = 'url_path'
-    COLLECTION_VERSION_KEY = 'version'
     CONFIG_COLLECTION_KEY = 'collection'
-    CONFIG_FILE_STAGING_DIRECTORY_KEY = 'fileStagingDir'
     CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = 'multipart_chunksize_mb'
-    CONFIG_URL_PATH_KEY = 'url_path'
     Dict = typing.Dict
     EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
     List = typing.List
