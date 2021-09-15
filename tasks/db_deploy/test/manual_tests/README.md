@@ -7,7 +7,6 @@ To run the tests provided below, run the steps in the [initial setup](#initial-s
 section first.
 
 It is recommended to run the tests in the following order.
-- [Database Does Not exist Failure Test](#database-does-not-exist-failure-test)
 - [Database Migration v1 to v4 Test](#database-migration-v1-to-v4-test)
 - [Database No Migration Test](#database-no-migration-test)
 - [Database Fresh Install Test](#database-fresh-install-test)
@@ -70,105 +69,6 @@ Once all tests are complete perform the following:
    in the setup window.
 4. Remove the defined `DATA_DIR` directory and data.
 
-
-## Database Does Not exist Failure Test
-
-This test validates that the db_deploy scripts fail when the disaster_recovery
-database used by ORCA does not exist in the PostgreSQL instance.
-
-### Database Setup DNE Test
-
-In the **pgclient** window use the `psql` client to connect to the database and
-validate that the *disaster_recovery* database does not exist as seen below.
-
-```bash
-root@26df0390e999:/# psql
-psql (12.6 (Debian 12.6-1.pgdg100+1))
-Type "help" for help.
-
-postgres=# \l
-
-                                 List of databases
-   Name    |  Owner   | Encoding |  Collate   |   Ctype    |   Access privileges
------------+----------+----------+------------+------------+-----------------------
- postgres  | postgres | UTF8     | en_US.utf8 | en_US.utf8 |
- template0 | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
-           |          |          |            |            | postgres=CTc/postgres
- template1 | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
-           |          |          |            |            | postgres=CTc/postgres
-(3 rows)
-```
-
-If the database exists, remove it with the command `\i sql/cleanup.sql`
-at the psql prompt.
-
-
-### Running the DNE Test
-
-To run the DNE test, in your **python** window run the command
-`python manual_test.py`. The output should look similar to below.
-
-```bash
-{"message": "Beginning manual test.", "timestamp": "2021-04-28T22:19:52.948107", "level": "info"}
-{"message": "Creating root user connection object.", "timestamp": "2021-04-28T22:19:52.948701", "level": "debug"}
-{"message": "Database set to postgres for the connection.", "timestamp": "2021-04-28T22:19:52.949417", "level": "debug"}
-{"message": "Creating URL object to connect to the database.", "timestamp": "2021-04-28T22:19:52.950417", "level": "debug"}
-{"message": "The ORCA database disaster_recovery does not exist.", "timestamp": "2021-04-28T22:19:53.243872", "level": "critical"}
-Traceback (most recent call last):
-  File "manual_test.py", line 49, in <module>
-      task(get_configuration())
-        File "/data/db_deploy.py", line 60, in task
-            raise Exception("Missing application database.")
-            Exception: Missing application database.
-```
-
-### DNE Test Validation
-
-Verify the following message line and exception appear in the output. Note that
-the time stamp value will be different.
-
-```bash
-{"message": "The ORCA database disaster_recovery does not exist.", "timestamp": "2021-04-28T22:19:53.243872", "level": "critical"}
-Traceback (most recent call last):
-  File "manual_test.py", line 49, in <module>
-      task(get_configuration())
-        File "/data/db_deploy.py", line 60, in task
-            raise Exception("Missing application database.")
-            Exception: Missing application database.
-```
-
-Verify that only the default users, groups and schemas are present in the postgres
-database.
-
-```bash
-postgres=# \dn
-
-  List of schemas
-  Name  |  Owner
---------+----------
- public | postgres
-(1 row)
-
-postgres=# \dg
-                                  List of roles
- Role name |                         Attributes                         | Member of
------------+------------------------------------------------------------+-----------
- postgres  | Superuser, Create role, Create DB, Replication, Bypass RLS | {}
-
-postgres=# \du
-                                  List of roles
- Role name |                         Attributes                         | Member of
------------+------------------------------------------------------------+-----------
- postgres  | Superuser, Create role, Create DB, Replication, Bypass RLS | {}
-
-```
-
-
-### DNE Test Cleanup
-
-No Cleanup is needed from this test.
-
-
 ## Database Fresh Install Test
 
 This test validates that the db_deploy scripts will perform a fresh install if
@@ -179,17 +79,6 @@ exist in the database.
 
 1. Verify that the *disaster_recovery* database does not exist. If it does, remove
    it using the `\i sql/cleanup.sql` command as described in the [DNE Test](#database-setup-dne-test).
-2. Create the *disaster_recovery* database by using the `\i sql/create_database.sql`
-   command as seen below.
-   ```bash
-   root@26df0390e999:/data/test/manual_tests# psql
-   psql (12.6 (Debian 12.6-1.pgdg100+1))
-   Type "help" for help
-
-   postgres=# \i sql/create_database.sql
-   CREATE DATABASE
-   COMMENT
-   ```
 
 
 ### Running the Fresh Install Test
