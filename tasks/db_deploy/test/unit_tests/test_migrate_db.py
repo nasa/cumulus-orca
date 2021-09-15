@@ -57,10 +57,8 @@ class TestMigrateDatabseLibraries(unittest.TestCase):
 
                 if version == 1:
                     mock_migrate_v1_to_v2.assert_called_once_with(self.config, False)
-
-                    # getting error when adding these two calls: AssertionError: Expected 'migrate_versions_2_to_3' to be called once. Called 0 times.
-                    # mock_migrate_v2_to_v3.assert_called_once_with(self.config, False)
-                    # mock_migrate_v3_to_v4.assert_called_once_with(self.config, True)
+                    mock_migrate_v2_to_v3.assert_called_once_with(self.config, False)
+                    mock_migrate_v3_to_v4.assert_called_once_with(self.config, True)
 
                 elif version == 2:
                     mock_migrate_v2_to_v3.assert_called_once_with(self.config, False)
