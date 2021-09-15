@@ -318,18 +318,18 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    disaster_recovery=# \dt orca.*
 
                  List of relations
-    Schema |      Name       | Type  |  Owner
-   --------+-----------------+-------+----------
-    orca   | recovery_file   | table | orca_dbo
-    orca   | recovery_job    | table | orca_dbo
-    orca   | recovery_status | table | orca_dbo
-    orca   | providers       | table | orca_dbo
-    orca   | collections     | table | orca_dbo
-    orca   | provider_collection_xref | table | orca_dbo
-    orca   | granules        | table | orca_dbo
-    orca   | files           | table | orca_dbo
-    orca   | schema_versions | table | orca_dbo
-    (4 rows)
+    Schema |      Name                 | Type  |  Owner
+   --------+---------------------------+-------+----------
+    orca   | collections               | table | orca_dbo
+    orca   | files                     | table | orca_dbo
+    orca   | granules                  | table | orca_dbo
+    orca   | providers                 | table | orca_dbo
+    orca   | provider_collection_xref  | table | orca_dbo
+    orca   | recovery_file             | table | orca_dbo
+    orca   | recovery_job              | table | orca_dbo
+    orca   | recovery_status           | table | orca_dbo
+    orca   | schema_versions           | table | orca_dbo
+    (9 rows)
    ```
 4. Verify the static data in the *recovery_status* table.
    ```bash
@@ -625,18 +625,18 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    disaster_recovery=# \dt orca.*
 
                  List of relations
-    Schema |      Name       | Type  |  Owner
-   --------+-----------------+-------+----------
-    orca   | recovery_file   | table | orca_dbo
-    orca   | recovery_job    | table | orca_dbo
-    orca   | recovery_status | table | orca_dbo
-    orca   | providers       | table | orca_dbo
-    orca   | collections     | table | orca_dbo
-    orca   | provider_collection_xref | table | orca_dbo
-    orca   | granules        | table | orca_dbo
-    orca   | files           | table | orca_dbo
-    orca   | schema_versions | table | orca_dbo
-    (4 rows)
+    Schema |      Name                 | Type  |  Owner
+   --------+---------------------------+-------+----------
+    orca   | collections               | table | orca_dbo
+    orca   | files                     | table | orca_dbo
+    orca   | granules                  | table | orca_dbo
+    orca   | providers                 | table | orca_dbo
+    orca   | provider_collection_xref  | table | orca_dbo
+    orca   | recovery_file             | table | orca_dbo
+    orca   | recovery_job              | table | orca_dbo
+    orca   | recovery_status           | table | orca_dbo
+    orca   | schema_versions           | table | orca_dbo
+    (9 rows)
    ```
 4. Verify the static data in the *recovery_status* table.
    ```bash
@@ -772,15 +772,8 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
 
 No cleanup is necessary if the next test run is the [Database No Migration Test](#database-no-migration-test).
 
-To cleanup from this test you can use one of two scripts. The `sql/cleanup.sql`
-script will remove all objects including the *disaster_recovery* database. The
-`sql/orca_schema_v4/remove.sql` script will remove only the objects created
-in this test but leave the database in tact. Both scripts must be run as the
-*postgres* user.
-
-- To remove v4 migration, run `sql/orca_schema_v4/remove.sql`.
-- To remove v3 migration, run `sql/orca_schema_v4/remove.sql` and then `sql/orca_schema_v3/remove.sql`.
-- To remove v2 migration, run `sql/orca_schema_v4/remove.sql`, then `sql/orca_schema_v3/remove.sql` and then `sql/orca_schema_v2/remove.sql`
+The `sql/cleanup.sql` script will remove all objects including the *disaster_recovery* database. The
+`sql/orca_schema_v4/remove.sql` script will migrate v4 schema to v3 schema, update the `schema_versions` table with value of 3 and also remove the `providers`, `collections`, `provider_collection_xref`, `granules` and `files` tables. The `sql/orca_schema_v3/remove.sql` script will migrate the schema from v3 to v2, update the `schema_versions` table with value of 2. The `sql/orca_schema_v2/remove.sql` script will migrate the schema from v2 to v1, update the `schema_versions` table with value of 1. The `sql/orca_schema_v1/remove.sql` script will remove all the user and roles created.
 
 ```bash
 root@26df0390e999:/data/test/manual_tests# psql
@@ -792,7 +785,6 @@ You are now connected to database "disaster_recovery" as user "postgres".
 
 disaster_recovery=# \i sql/orca_schema_v4/remove.sql
 
-psql:sql/orca_schema_v4/remove.sql:1: NOTICE:  drop the 5 inventory tables
 DROP TABLE 
 DROP TABLE 
 DROP TABLE 
@@ -887,6 +879,12 @@ DETAIL:  drop cascades to table orca.schema_versions
 drop cascades to table orca.recovery_status
 drop cascades to table orca.recovery_job
 drop cascades to table orca.recovery_file
+drop cascades to table orca.schema_versions
+drop cascades to table orca.files
+drop cascades to table orca.granules
+drop cascades to table orca.provider_collections_xref
+drop cascades to table orca.collections
+drop cascades to table orca.providers
 DROP SCHEMA
 DROP ROLE
 REVOKE
@@ -895,21 +893,6 @@ DROP ROLE
 REVOKE
 DROP ROLE
 psql:sql/orca_schema_v2/remove.sql:8: WARNING:  there is no transaction in progress
-COMMIT
-
-psql:sql/orca_schema_v4/remove.sql:1: NOTICE:  drop the 5 inventory tables
-DETAIL:  
-drop cascades to table orca.schema_versions
-drop cascades to table orca.files
-drop cascades to table orca.granules
-drop cascades to table orca.provider_collections_xref
-drop cascades to table orca.collections
-drop cascades to table orca.providers
-DROP TABLE 
-DROP TABLE 
-DROP TABLE 
-DROP TABLE 
-DROP TABLE 
 COMMIT
 You are now connected to database "postgres" as user "postgres".
 DROP DATABASE

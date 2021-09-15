@@ -566,7 +566,7 @@ def files_table_sql() -> TextClause:
         -- Create table
         CREATE TABLE IF NOT EXISTS files
         (
-          id                        bigint NOT NULL
+          id                        bigserial NOT NULL
         , granule_id                bigint NOT NULL      
         , name                      text NOT NULL
         , orca_archive_location     text NOT NULL
