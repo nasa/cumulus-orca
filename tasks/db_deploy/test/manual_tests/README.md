@@ -323,6 +323,11 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
     orca   | recovery_file   | table | orca_dbo
     orca   | recovery_job    | table | orca_dbo
     orca   | recovery_status | table | orca_dbo
+    orca   | providers       | table | orca_dbo
+    orca   | collections     | table | orca_dbo
+    orca   | provider_collection_xref | table | orca_dbo
+    orca   | granules        | table | orca_dbo
+    orca   | files           | table | orca_dbo
     orca   | schema_versions | table | orca_dbo
     (4 rows)
    ```
@@ -344,7 +349,7 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
 
     version_id |                     description                      |         install _date         | is_latest
    ------------+------------------------------------------------------+-------------------------------+-----------
-             2 | Updated recovery schema for v3.x of ORCA application | 2021-04-28 23:3 9:58.63444+00 | t
+             4 | Added inventory schema for v4.x of ORCA application  | 2021-04-28 23:3 9:58.63444+00 | t
    (1 row)
    ```
 6. Verify the orcauser can login with the password provided in the `.env` files
@@ -773,6 +778,10 @@ script will remove all objects including the *disaster_recovery* database. The
 in this test but leave the database in tact. Both scripts must be run as the
 *postgres* user.
 
+- To remove v4 migration, run `sql/orca_schema_v4/remove.sql`.
+- To remove v3 migration, run `sql/orca_schema_v4/remove.sql` and then `sql/orca_schema_v3/remove.sql`.
+- To remove v2 migration, run `sql/orca_schema_v4/remove.sql`, then `sql/orca_schema_v3/remove.sql` and then `sql/orca_schema_v2/remove.sql`
+
 ```bash
 root@26df0390e999:/data/test/manual_tests# psql
 psql (12.6 (Debian 12.6-1.pgdg100+1))
@@ -784,9 +793,11 @@ You are now connected to database "disaster_recovery" as user "postgres".
 disaster_recovery=# \i sql/orca_schema_v4/remove.sql
 
 psql:sql/orca_schema_v4/remove.sql:1: NOTICE:  drop the 5 inventory tables
-DROP TABLE IF EXISTS orca.providers, orca.collections, orca.provider_collection_xref, orca.granules, orca.files
-psql:sql/orca_schema_v4/remove.sql:8: WARNING:  there is no transaction in progress
-COMMIT
+DROP TABLE 
+DROP TABLE 
+DROP TABLE 
+DROP TABLE 
+DROP TABLE 
 ```
 
 
@@ -885,8 +896,22 @@ REVOKE
 DROP ROLE
 psql:sql/orca_schema_v2/remove.sql:8: WARNING:  there is no transaction in progress
 COMMIT
+
+psql:sql/orca_schema_v4/remove.sql:1: NOTICE:  drop the 5 inventory tables
+DETAIL:  
+drop cascades to table orca.schema_versions
+drop cascades to table orca.files
+drop cascades to table orca.granules
+drop cascades to table orca.provider_collections_xref
+drop cascades to table orca.collections
+drop cascades to table orca.providers
+DROP TABLE 
+DROP TABLE 
+DROP TABLE 
+DROP TABLE 
+DROP TABLE 
+COMMIT
 You are now connected to database "postgres" as user "postgres".
 DROP DATABASE
-
 postgres=# \q
 ```
