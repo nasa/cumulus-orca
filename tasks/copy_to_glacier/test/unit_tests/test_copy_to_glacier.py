@@ -98,12 +98,11 @@ class TestCopyToGlacierHandler(TestCase):
             },
             "task_config": {
                 "collection": {
-                    "name": uuid.uuid4().__str__(),
-                    "version": uuid.uuid4().__str__(),
-                    "files": [
-                        {"regex": uuid.uuid4().__str__(), "bucket": uuid.uuid4().__str__()}
-                    ],
-                    "url_path": uuid.uuid4().__str__()
+                    "meta": {
+                        "excludeFileTypes": [
+                            '.png'
+                        ]
+                    }
                 }
             }
         }
