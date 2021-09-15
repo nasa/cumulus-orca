@@ -200,50 +200,51 @@ To run the fresh install test, in your **python** window run the command
 ```bash
 (venv) root@cf4b0741a628:/data/test/manual_tests# python manual_test.py
 
-{"message": "Beginning manual test.", "timestamp": "2021-09-14T13:37:39.791395", "level": "info"}
-{"message": "Creating admin user connection object.", "timestamp": "2021-09-14T13:37:39.791395", "level": "debug"}
-{"message": "Database set to postgres for the connection.", "timestamp": "2021-09-14T13:37:39.791395", "level": "debug"}
-{"message": "Creating URL object to connect to the database.", "timestamp": "2021-09-14T13:37:39.791395", "level": "debug"}
-{"message": "Creating admin user connection object.", "timestamp": "2021-09-14T13:37:39.826098", "level": "debug"}
-{"message": "Database set to disaster_recovery for the connection.", "timestamp": "2021-09-14T13:37:39.826098", "level": "debug"}
-{"message": "Creating URL object to connect to the database.", "timestamp": "2021-09-14T13:37:39.826098", "level": "debug"}
-{"message": "Performing full install of ORCA schema.", "timestamp": "2021-09-14T13:37:47.649467", "level": "info"}
-{"message": "Creating admin user connection object.", "timestamp": "2021-09-14T13:37:47.649467", "level": "debug"}
-{"message": "Database set to disaster_recovery for the connection.", "timestamp": "2021-09-14T13:37:47.649467", "level": "debug"}
-{"message": "Creating URL object to connect to the database.", "timestamp": "2021-09-14T13:37:47.649467", "level": "debug"}
-{"message": "Creating the ORCA dbo role ...", "timestamp": "2021-09-14T13:37:50.859040", "level": "debug"}
-{"message": "ORCA dbo role created.", "timestamp": "2021-09-14T13:37:51.271456", "level": "info"}
-{"message": "Creating the ORCA app role ...", "timestamp": "2021-09-14T13:37:51.271456", "level": "debug"}
-{"message": "ORCA app role created.", "timestamp": "2021-09-14T13:37:51.472515", "level": "info"}
-{"message": "Creating the ORCA schema ...", "timestamp": "2021-09-14T13:37:51.472515", "level": "debug"}
-{"message": "ORCA schema created.", "timestamp": "2021-09-14T13:37:51.715371", "level": "info"}
-{"message": "Creating the ORCA application user ...", "timestamp": "2021-09-14T13:37:51.715892", "level": "debug"}
-{"message": "ORCA application user created.", "timestamp": "2021-09-14T13:37:51.912015", "level": "info"}
-{"message": "Changing to the dbo role to create objects ...", "timestamp": "2021-09-14T13:37:51.912015", "level": "debug"}
-{"message": "Setting search path to the ORCA schema to create objects ...", "timestamp": "2021-09-14T13:37:52.076420", "level": "debug"}
-{"message": "Creating schema_versions table ...", "timestamp": "2021-09-14T13:37:52.359576", "level": "debug"}
-{"message": "schema_versions table created.", "timestamp": "2021-09-14T13:37:52.720591", "level": "info"}
-{"message": "Populating the schema_versions table with data ...", "timestamp": "2021-09-14T13:37:52.720591", "level": "debug"}
-{"message": "Data added to the schema_versions table.", "timestamp": "2021-09-14T13:37:52.967958", "level": "info"}
-{"message": "Creating recovery_status table ...", "timestamp": "2021-09-14T13:37:52.967958", "level": "debug"}
-{"message": "recovery_status table created.", "timestamp": "2021-09-14T13:37:53.185110", "level": "info"}
-{"message": "Populating the recovery_status table with data ...", "timestamp": "2021-09-14T13:37:53.185110", "level": "debug"}
-{"message": "Data added to the recovery_status table.", "timestamp": "2021-09-14T13:37:53.398124", "level": "info"}
-{"message": "Creating recovery_job table ...", "timestamp": "2021-09-14T13:37:53.398714", "level": "debug"}
-{"message": "recovery_job table created.", "timestamp": "2021-09-14T13:37:53.621899", "level": "info"}
-{"message": "Creating recovery_file table ...", "timestamp": "2021-09-14T13:37:53.621899", "level": "debug"}
-{"message": "recovery_file table created.", "timestamp": "2021-09-14T13:37:53.843190", "level": "info"}
-{"message": "Creating providers table ...", "timestamp": "2021-09-14T13:37:53.843190", "level": "debug"}
-{"message": "providers table created.", "timestamp": "2021-09-14T13:37:54.056274", "level": "info"}
-{"message": "Creating collections table ...", "timestamp": "2021-09-14T13:37:54.056274", "level": "debug"}
-{"message": "collections table created.", "timestamp": "2021-09-14T13:37:54.279718", "level": "info"}
-{"message": "Creating provider and collection cross reference table ...", "timestamp": "2021-09-14T13:37:54.279718", "level": "debug"}
-{"message": "provider and collection cross reference table created.", "timestamp": "2021-09-14T13:37:54.494315", "level": "info"}
-{"message": "Creating granules table ...", "timestamp": "2021-09-14T13:37:54.494315", "level": "debug"}
-{"message": "granules table created.", "timestamp": "2021-09-14T13:37:54.711834", "level": "info"}
-{"message": "Creating files table ...", "timestamp": "2021-09-14T13:37:54.711834", "level": "debug"}
-{"message": "files table created.", "timestamp": "2021-09-14T13:37:54.927886", "level": "info"}
-{"message": "Manual test complete.", "timestamp": "2021-09-14T13:37:55.358726", "level": "info"}
+C:\Users\adorn\GitHub\orca\cumulus-orca\tasks\db_deploy\venv\Scripts\python.exe C:/Users/adorn/GitHub/orca/cumulus-orca/tasks/db_deploy/test/manual_tests/manual_test.py
+{"message": "Beginning manual test.", "timestamp": "2021-09-15T15:32:30.320254", "level": "info"}
+{"message": "Creating admin user connection object.", "timestamp": "2021-09-15T15:32:30.320254", "level": "debug"}
+{"message": "Database set to postgres for the connection.", "timestamp": "2021-09-15T15:32:30.320254", "level": "debug"}
+{"message": "Creating URL object to connect to the database.", "timestamp": "2021-09-15T15:32:30.320254", "level": "debug"}
+{"message": "Creating admin user connection object.", "timestamp": "2021-09-15T15:32:30.351539", "level": "debug"}
+{"message": "Database set to disaster_recovery for the connection.", "timestamp": "2021-09-15T15:32:30.351539", "level": "debug"}
+{"message": "Creating URL object to connect to the database.", "timestamp": "2021-09-15T15:32:30.351539", "level": "debug"}
+{"message": "The ORCA database disaster_recovery does not exist.", "timestamp": "2021-09-15T15:32:33.326334", "level": "critical"}
+{"message": "Creating admin user connection object.", "timestamp": "2021-09-15T15:32:35.184367", "level": "debug"}
+{"message": "Database set to disaster_recovery for the connection.", "timestamp": "2021-09-15T15:32:35.184367", "level": "debug"}
+{"message": "Creating URL object to connect to the database.", "timestamp": "2021-09-15T15:32:35.184367", "level": "debug"}
+{"message": "Creating the ORCA dbo role ...", "timestamp": "2021-09-15T15:32:38.537891", "level": "debug"}
+{"message": "ORCA dbo role created.", "timestamp": "2021-09-15T15:32:38.968242", "level": "info"}
+{"message": "Creating the ORCA app role ...", "timestamp": "2021-09-15T15:32:38.968242", "level": "debug"}
+{"message": "ORCA app role created.", "timestamp": "2021-09-15T15:32:39.187607", "level": "info"}
+{"message": "Creating the ORCA schema ...", "timestamp": "2021-09-15T15:32:39.187607", "level": "debug"}
+{"message": "ORCA schema created.", "timestamp": "2021-09-15T15:32:40.453552", "level": "info"}
+{"message": "Creating the ORCA application user ...", "timestamp": "2021-09-15T15:32:40.453552", "level": "debug"}
+{"message": "ORCA application user created.", "timestamp": "2021-09-15T15:32:40.679509", "level": "info"}
+{"message": "Changing to the dbo role to create objects ...", "timestamp": "2021-09-15T15:32:40.679509", "level": "debug"}
+{"message": "Setting search path to the ORCA schema to create objects ...", "timestamp": "2021-09-15T15:32:40.804050", "level": "debug"}
+{"message": "Creating schema_versions table ...", "timestamp": "2021-09-15T15:32:41.045785", "level": "debug"}
+{"message": "schema_versions table created.", "timestamp": "2021-09-15T15:32:41.287815", "level": "info"}
+{"message": "Populating the schema_versions table with data ...", "timestamp": "2021-09-15T15:32:41.287815", "level": "debug"}
+{"message": "Data added to the schema_versions table.", "timestamp": "2021-09-15T15:32:41.517232", "level": "info"}
+{"message": "Creating recovery_status table ...", "timestamp": "2021-09-15T15:32:41.517232", "level": "debug"}
+{"message": "recovery_status table created.", "timestamp": "2021-09-15T15:32:41.725347", "level": "info"}
+{"message": "Populating the recovery_status table with data ...", "timestamp": "2021-09-15T15:32:41.725347", "level": "debug"}
+{"message": "Data added to the recovery_status table.", "timestamp": "2021-09-15T15:32:41.960324", "level": "info"}
+{"message": "Creating recovery_job table ...", "timestamp": "2021-09-15T15:32:41.960324", "level": "debug"}
+{"message": "recovery_job table created.", "timestamp": "2021-09-15T15:32:42.180611", "level": "info"}
+{"message": "Creating recovery_file table ...", "timestamp": "2021-09-15T15:32:42.180611", "level": "debug"}
+{"message": "recovery_file table created.", "timestamp": "2021-09-15T15:32:42.404445", "level": "info"}
+{"message": "Creating providers table ...", "timestamp": "2021-09-15T15:32:42.404445", "level": "debug"}
+{"message": "providers table created.", "timestamp": "2021-09-15T15:32:42.612921", "level": "info"}
+{"message": "Creating collections table ...", "timestamp": "2021-09-15T15:32:42.612921", "level": "debug"}
+{"message": "collections table created.", "timestamp": "2021-09-15T15:32:42.927131", "level": "info"}
+{"message": "Creating provider and collection cross reference table ...", "timestamp": "2021-09-15T15:32:42.927131", "level": "debug"}
+{"message": "provider and collection cross reference table created.", "timestamp": "2021-09-15T15:32:43.164561", "level": "info"}
+{"message": "Creating granules table ...", "timestamp": "2021-09-15T15:32:43.164561", "level": "debug"}
+{"message": "granules table created.", "timestamp": "2021-09-15T15:32:43.445441", "level": "info"}
+{"message": "Creating files table ...", "timestamp": "2021-09-15T15:32:43.445441", "level": "debug"}
+{"message": "files table created.", "timestamp": "2021-09-15T15:32:43.710367", "level": "info"}
+{"message": "Manual test complete.", "timestamp": "2021-09-15T15:32:44.145858", "level": "info"}
 
 Process finished with exit code 0
 ```

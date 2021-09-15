@@ -7,6 +7,8 @@ Description: Performs database installation and migration for the ORCA schema.
 from orca_shared.shared_db import logger, get_configuration, get_admin_connection, retry_operational_error
 from sqlalchemy import text
 from sqlalchemy.future import Connection
+
+import orca_sql
 from create_db import create_fresh_orca_install
 from migrate_db import perform_migration
 from typing import Any, Dict
@@ -60,11 +62,14 @@ def task(config: Dict[str, str]) -> None:
 
     # Connect as admin user to the postgres database
     with postgres_admin_engine.connect() as connection:
-        # Check if database exists, if not throw an error
+        # Check if database exists. If not, start from scratch.
         if not app_db_exists(connection):
             logger.critical("The ORCA database disaster_recovery does not exist.")
-            # TO DO ORCA-233: Add db creation code here and remove the raise Exception error
-            raise Exception("Missing application database.")
+            connection.execute(orca_sql.commit_sql())  # exit the default transaction to allow database creation.
+            connection.execute(orca_sql.app_database_sql())
+            connection.execute(orca_sql.app_database_comment_sql())
+            create_fresh_orca_install(config)
+            return
 
     # Connect as admin user to disaster_recovery database.
     with user_admin_engine.connect() as connection:
@@ -88,6 +93,7 @@ def task(config: Dict[str, str]) -> None:
                 perform_migration(current_version, config)
 
         else:
+            # If we got here, the DB existed, but was not correctly populated for whatever reason.
             # Run a fresh install
             logger.info("Performing full install of ORCA schema.")
             create_fresh_orca_install(config)

@@ -9,6 +9,15 @@ from sqlalchemy.sql.elements import TextClause
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating the Database
 # ----------------------------------------------------------------------------
+
+
+def commit_sql() -> TextClause:
+    """
+    SQL for a simple 'commit' to exit the current transaction.
+    """
+    return text("commit")
+
+
 def app_database_sql() -> TextClause:
     """
     Full SQL for creating the ORCA application database.
@@ -21,11 +30,21 @@ def app_database_sql() -> TextClause:
         CREATE DATABASE disaster_recovery
             OWNER postgres
             TEMPLATE template1
-            ENCODING 'UTF8';
-
-        COMMENT ON DATABASE disaster_recovery
-            IS 'Operational Recovery Cloud Archive (ORCA) database.';
+            ENCODING 'UTF8';;
     """
+    )
+
+
+def app_database_comment_sql() -> TextClause:
+    """
+    SQL for adding a documentation comment to the database.
+    Cannot be merged with DB creation due to SQLAlchemy limitations.
+    """
+    return text(
+        """
+        COMMENT ON DATABASE disaster_recovery
+            IS 'Operational Recovery Cloud Archive (ORCA) database.'
+"""
     )
 
 
