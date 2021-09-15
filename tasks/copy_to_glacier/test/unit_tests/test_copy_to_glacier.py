@@ -97,9 +97,9 @@ class TestCopyToGlacierHandler(TestCase):
                 "granules": granules
             },
             "task_config": {
-                "collection": {
-                    "meta": {
-                        "excludeFileTypes": [
+                CONFIG_COLLECTION_KEY: {
+                    COLLECTION_META_KEY: {
+                        EXCLUDE_FILE_TYPES_KEY: [
                             '.png'
                         ]
                     }
