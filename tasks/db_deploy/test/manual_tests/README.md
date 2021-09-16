@@ -72,7 +72,7 @@ Once all tests are complete perform the following:
 ## Database Fresh Install Test
 
 This test validates that the db_deploy scripts will perform a fresh install if
-the disaster_recovery database exists and no ORCA schemas (dr or orca namespaces)
+no ORCA schemas (dr or orca namespaces)
 exist in the database.
 
 ### Database Setup Fresh Install Test
@@ -253,7 +253,7 @@ No cleanup is necessary if the next test run is the [Database No Migration Test]
 To cleanup from this test you can use one of two scripts. The `sql/cleanup.sql`
 script will remove all objects including the *disaster_recovery* database. The
 `sql/orca_schema_v2/remove.sql` script will remove only the objects created
-in this test but leave the database in tact. Both scripts must be run as the
+in this test but leave the database intact. Both scripts must be run as the
 *postgres* user.
 
 ```bash
@@ -660,7 +660,7 @@ No cleanup is necessary if the next test run is the [Database No Migration Test]
 To cleanup from this test you can use one of two scripts. The `sql/cleanup.sql`
 script will remove all objects including the *disaster_recovery* database. The
 `sql/orca_schema_v4/remove.sql` script will remove only the objects created
-in this test but leave the database in tact. Both scripts must be run as the
+in this test but leave the database intact. Both scripts must be run as the
 *postgres* user.
 
 ```bash
