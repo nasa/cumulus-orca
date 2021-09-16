@@ -1,0 +1,15 @@
+## Library used for documentation
+pydoc-markdown>=4.0.0,<5.0.0
+## Additional validation libraries
+
+## Standard unit test libraries
+pytest==6.1.2
+coverage==5.3
+## Libraries needed for unit tests
+moto[sqs]==2.0.6
+psycopg2-binary==2.8.6
+## Libraries needed by application
+boto3~=1.12.49
+cumulus-message-adapter==1.3.0
+cumulus-message-adapter-python==1.2.1
+SQLAlchemy==1.4.11
