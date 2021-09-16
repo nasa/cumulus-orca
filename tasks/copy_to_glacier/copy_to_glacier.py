@@ -6,14 +6,9 @@ import boto3
 from boto3.s3.transfer import TransferConfig, MB
 from run_cumulus_task import run_cumulus_task
 
-CONFIG_FILE_STAGING_DIRECTORY_KEY = 'fileStagingDir'
 CONFIG_COLLECTION_KEY = 'collection'
-CONFIG_URL_PATH_KEY = 'url_path'
 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = 'multipart_chunksize_mb'
 
-COLLECTION_NAME_KEY = 'name'
-COLLECTION_VERSION_KEY = 'version'
-COLLECTION_URL_PATH_KEY = 'url_path'
 COLLECTION_META_KEY = 'meta'
 EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
 
@@ -71,22 +66,14 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
 
         Environment Variables:
             ORCA_DEFAULT_BUCKET (string, required): Name of the default ORCA S3 Glacier bucket.
-            DEFAULT_MULTIPART_CHUNKSIZE_MB (string, optional): The default maximum size of chunks to use when copying. Can be overridden by collection config.
+            DEFAULT_MULTIPART_CHUNKSIZE_MB (int, optional): The default maximum size of chunks to use when copying. Can be overridden by collection config.
 
     Args:
         event: Passed through from {handler}
         context: An object required by AWS Lambda. Unused.
 
     Returns:
-        A dict with the following keys:
-            granules (List[Dict[str, Union[str, bytes, list]]]): A list of dicts where each dict has the following keys:
-                granuleId (str): The filename from the granule url.
-                files (List): A list of dicts with the following keys:
-                    name (str)
-                    filename (str)
-                    filepath (str)
-                    bucket (str)
-            copied_to_glacier (list): List of S3 paths - one for each file copied
+        A dict representing input and copied files. See schemas/output.json for more information.
     """
     # TODO: Possibly remove print statement and change to a logging statement.
     print(event)
@@ -161,41 +148,13 @@ def handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any:
                                                                  Can be overridden by collection config.
 
     Args:
-        event: Event passed into the step from the aws workflow. A dict with the following keys:
-            input (dict): Dictionary with the following keys:
-                granules (List): List of granule objects (dictionaries)
-                    granuleId (str)
-                    files (List): A list of Dicts with the following keys:
-                        name (str)
-                        bucket (str)
-                        filepath(str)
-                        filename (str)
-
-            config (dict): A dict with the following keys:
-                collection (dict): The collection from AWS.
-                    See https://nasa.github.io/cumulus/docs/data-cookbooks/sips-workflow
-                    A dict with the following keys:
-                    name (str): The name of the collection.
-                        Used when generating the default value for {event}[config][fileStagingDir].
-                    version (str): The version of the collection.
-                        Used when generating the default value for {event}[config][fileStagingDir].
-                    files (list[Dict]): A list of dicts representing file types within the collection.
-                        The first file where the file's ['regex'] matches the filename from the input
-                        Is used to identify the bucket referenced in return's['granules'][filename]['files']['bucket']
-                        Each dict contains the following keys:
-                            regex (str): The regex that all files in the bucket must match with their name.
-                            bucket (str): The name of the bucket containing the files.
-                    multipart_chunksize_mb (int, optional): The maximum size of chunks to use when copying.
-                        Defaults to Environment Var DEFAULT_MULTIPART_CHUNKSIZE_MB
-                    url_path (str): Used when calling {copy_granule_between_buckets} as a part of the destination_key.
-                buckets (dict): A dict with the following keys:
-                    glacier (dict): A dict with the following keys:
-                        name (str): The name of the bucket to copy to.
+        event: Event passed into the step from the aws workflow.
+            See schemas/input.json and schemas/config.json for more information.
 
 
         context: An object required by AWS Lambda. Unused.
 
     Returns:
-        The result of the cumulus task.
+        The result of the cumulus task. See schemas/output.json for more information.
     """
     return run_cumulus_task(task, event, context)

@@ -1,9 +1,15 @@
 import copy
+import json
 import unittest
 import uuid
 from unittest import TestCase
-from unittest.mock import Mock, call, patch
+from unittest.mock import Mock, call, patch, MagicMock
+from test.helpers import LambdaContextMock
 
+import fastjsonschema as fastjsonschema
+
+import copy_to_glacier
+import test
 from copy_to_glacier import *
 from test.unit_tests.ConfigCheck import ConfigCheck
 
@@ -75,6 +81,47 @@ class TestCopyToGlacierHandler(TestCase):
         ]
     }
 
+    @patch("copy_to_glacier.task")
+    def test_handler_happy_path(self,
+                                mock_task: MagicMock):
+        granules = [
+            {
+                "granuleId": uuid.uuid4().__str__(),
+                "files": [{"name": uuid.uuid4().__str__(), "bucket": uuid.uuid4().__str__(),
+                           "filepath": uuid.uuid4().__str__(), "filename": uuid.uuid4().__str__()}]
+            }
+        ]
+
+        handler_input_event = {
+            "payload": {
+                "granules": granules
+            },
+            "task_config": {
+                CONFIG_COLLECTION_KEY: {
+                    COLLECTION_META_KEY: {
+                        EXCLUDE_FILE_TYPES_KEY: [
+                            '.png'
+                        ]
+                    }
+                }
+            }
+        }
+        handler_input_context = LambdaContextMock()
+
+        expected_task_input = {
+            "input": handler_input_event["payload"],
+            "config": handler_input_event["task_config"]
+        }
+        mock_task.return_value = {
+            "granules": granules,
+            "copied_to_glacier": [uuid.uuid4().__str__()]
+        }
+
+        result = copy_to_glacier.handler(handler_input_event, handler_input_context)
+        mock_task.assert_called_once_with(expected_task_input, handler_input_context)
+
+        self.assertEqual(mock_task.return_value, result["payload"])
+
     def test_exclude_file_types_excluded(self):
         """
         Testing exclude file types to be excluded
@@ -97,8 +144,6 @@ class TestCopyToGlacierHandler(TestCase):
         """
         Basic path with buckets present.
         """
-        collection_name = uuid.uuid4().__str__()
-        collection_version = uuid.uuid4().__str__()
         destination_bucket_name = os.environ['ORCA_DEFAULT_BUCKET']
         content_type = uuid.uuid4().__str__()
         source_bucket_names = [file['bucket'] for file in self.event_granules['granules'][0]['files']]
@@ -117,14 +162,18 @@ class TestCopyToGlacierHandler(TestCase):
             'input': copy.deepcopy(self.event_granules),
             'config': {
                 CONFIG_COLLECTION_KEY: {
-                    COLLECTION_NAME_KEY: collection_name,
-                    COLLECTION_VERSION_KEY: collection_version
                 }
             }
 
         }
 
         result = task(event, None)
+
+        with open("schemas/output.json", "r") as raw_schema:
+            schema = json.loads(raw_schema.read())
+
+        validate = fastjsonschema.compile(schema)
+        validate(result)
 
         self.assertEqual(event['input']['granules'], result['granules'])
         granules = result['granules']
@@ -169,8 +218,6 @@ class TestCopyToGlacierHandler(TestCase):
         If the collection has a different multipart chunksize, it should override the default.
         """
         overridden_multipart_chunksize_mb = 5
-        collection_name = uuid.uuid4().__str__()
-        collection_version = uuid.uuid4().__str__()
         destination_bucket_name = os.environ['ORCA_DEFAULT_BUCKET']
         content_type = uuid.uuid4().__str__()
         source_bucket_names = [file['bucket'] for file in self.event_granules['granules'][0]['files']]
@@ -189,15 +236,18 @@ class TestCopyToGlacierHandler(TestCase):
             'input': copy.deepcopy(self.event_granules),
             'config': {
                 CONFIG_COLLECTION_KEY: {
-                    COLLECTION_NAME_KEY: collection_name,
-                    COLLECTION_VERSION_KEY: collection_version
                 },
                 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: str(overridden_multipart_chunksize_mb)
             }
-
         }
 
         result = task(event, None)
+
+        with open("schemas/output.json", "r") as raw_schema:
+            schema = json.loads(raw_schema.read())
+
+        validate = fastjsonschema.compile(schema)
+        validate(result)
 
         self.assertEqual(event['input']['granules'], result['granules'])
         granules = result['granules']
@@ -242,8 +292,6 @@ class TestCopyToGlacierHandler(TestCase):
         Basic path with buckets present.
         """
         # todo: use 'side_effect' to verify args. It is safer, as current method does not deep-copy args
-        collection_name = uuid.uuid4().__str__()
-        collection_version = uuid.uuid4().__str__()
         boto3.client = Mock()
         s3_cli = boto3.client('s3')
         s3_cli.copy = Mock()
@@ -255,14 +303,18 @@ class TestCopyToGlacierHandler(TestCase):
             },
             'config': {
                 CONFIG_COLLECTION_KEY: {
-                    COLLECTION_NAME_KEY: collection_name,
-                    COLLECTION_VERSION_KEY: collection_version
                 }
             }
 
         }
 
         result = task(event, None)
+
+        with open("schemas/output.json", "r") as raw_schema:
+            schema = json.loads(raw_schema.read())
+
+        validate = fastjsonschema.compile(schema)
+        validate(result)
 
         self.assertEqual([], result['granules'])
         granules = result['granules']
@@ -276,8 +328,6 @@ class TestCopyToGlacierHandler(TestCase):
         """
         Checks to make sure an unset or empty environment variable throws an error
         """
-        collection_name = uuid.uuid4().__str__()
-        collection_version = uuid.uuid4().__str__()
         content_type = uuid.uuid4().__str__()
 
         # todo: use 'side_effect' to verify args. It is safer, as current method does not deep-copy args
@@ -290,8 +340,6 @@ class TestCopyToGlacierHandler(TestCase):
             'input': copy.deepcopy(self.event_granules),
             'config': {
                 CONFIG_COLLECTION_KEY: {
-                    COLLECTION_NAME_KEY: collection_name,
-                    COLLECTION_VERSION_KEY: collection_version
                 }
             }
 

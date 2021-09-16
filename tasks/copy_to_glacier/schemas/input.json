@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/input.json",
+  "title": "copy_to_glacier Lambda Input",
+  "description": "The input for the copy_to_glacier Lambda.",
+  "type": "object",
+  "required": ["granules"],
+  "properties": {
+    "granules": {
+      "description": "A list of objects representing individual files to copy.",
+      "type": "array",
+      "items": {
+        "required": ["granuleId", "files"],
+        "properties": {
+          "granuleId": {
+            "description": "The granule's ID.",
+            "type": "string"
+          },
+          "files": {
+            "description": "The files to copy.",
+            "type": "array",
+            "items": {
+              "required": ["name", "bucket", "filepath", "filename"],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "The name and extension of the file."
+                },
+                "bucket": {
+                  "type": "string",
+                  "description": "The name of the s3 bucket to copy from."
+                },
+                "filepath": {
+                  "type": "string",
+                  "description": "The path, name, and extension of the file."
+                },
+                "filename": {
+                  "type": "string",
+                  "description": "The complete s3 key for the file."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

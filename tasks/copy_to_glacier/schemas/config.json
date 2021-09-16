@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/config.json",
+  "title": "copy_to_glacier Lambda Config",
+  "description": "The config for the copy_to_glacier Lambda.",
+  "type": "object",
+  "properties": {
+    "collection": {
+      "description": "The collection from Cumulus.",
+      "type": "object",
+      "properties": {
+        "meta": {
+          "type": "object",
+          "properties": {
+            "excludeFileTypes": {
+              "type": "array",
+              "description": "A list of file extensions to ignore when copying files.",
+              "items": {
+                "type": "string",
+                "pattern": "\\..+"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
