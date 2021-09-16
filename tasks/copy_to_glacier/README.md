@@ -25,25 +25,31 @@ Note that this must be done for _each_ collection configured. If this list is em
 
 ## Build
 
-The following steps assume you are using a version of Python compliant with 3.7 (`pip` comes with current versions).
+To build the **copy_to_glacier** lambda, run the `bin/build.sh` script from the
+`tasks/copy_to_glacier` directory in a docker
+container. The following shows setting up a container to run the script.
 
-```
-cd tasks\copy_to_glacier
-rm -rf build
-rm -rf venv
-mkdir build
-python3 -m venv venv
-source venv/bin/activate
-pip install --upgrade pip
-pip install -q -t build -r requirements.txt --trusted-host pypi.org --trusted-host pypi.org --trusted-host files.pythonhosted.org
-deactivate
-cp *.py build/
-cd build
-zip -r ../copy_to_glacier.zip .
-cd ..
+```bash
+# Invoke a docker container in interactive mode.
+user$ docker run \
+      -it \
+      --rm \
+      -v /path/to/cumulus-orca/repo:/data \
+      amazonlinux:2 \
+      /bin/bash
 
+# Install the python development binaries
+bash-4.2# yum install python3-devel
+
+# In the container cd to /data
+bash-4.2# cd /data
+
+# Go to the task
+bash-4.2# cd tasks/copy_to_glacier/
+
+# Run the tests
+bash-4.2# bin/build.sh
 ```
-An example of building the `copy_to_glacier` lambda package can be found in `tasks/copy_to_glacier/bin/build.sh`.
 
 ### Testing copy_to_glacier
 
@@ -80,39 +86,9 @@ in the cumulus-orca base of the repo.
 
 The `copy_to_glacier` lambda function can be deployed using terraform using the example shown in  `modules/lambdas/main.tf` file.
 
-```
-resource "aws_lambda_function" "copy_to_glacier" {
-  ## REQUIRED
-  function_name = "${var.prefix}_copy_to_glacier"
-  role          = module.restore_object_arn.restore_object_role_arn
-
-  ## OPTIONAL
-  description      = "ORCA archiving lambda used to copy data to an ORCA S3 glacier bucket."
-  filename         = "${path.module}/../../tasks/copy_to_glacier/copy_to_glacier.zip"
-  handler          = "copy_to_glacier.handler"
-  memory_size      = var.orca_ingest_lambda_memory_size
-  runtime          = "python3.7"
-  source_code_hash = filebase64sha256("${path.module}/../../tasks/copy_to_glacier/copy_to_glacier.zip")
-  tags             = local.tags
-  timeout          = var.orca_ingest_lambda_timeout
-
-  vpc_config {
-    subnet_ids         = var.lambda_subnet_ids
-    security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
-  }
-
-  environment {
-    variables = {
-      ORCA_DEFAULT_BUCKET            = var.orca_default_bucket
-      DEFAULT_MULTIPART_CHUNKSIZE_MB = var.default_multipart_chunksize_mb
-    }
-  }
-}
-```
-
 ## Input
 
-The `handler` function `handler(event, context)` expects input as a Cumulus Message. Event is passed from the AWS step function workflow. The actual format of that input may change over time, so we use the [cumulus-process](https://github.com/nasa/cumulus-process-py) package (check `requirements.txt`), which Cumulus develops and updates, to parse the input.
+The `handler` function `handler(event, context)` expects input as a Cumulus Message. Event is passed from the AWS step function workflow. The actual format of that input may change over time, so we use the [cumulus-message-adapter](https://github.com/nasa/cumulus-message-adapter) package (check `requirements.txt`), which Cumulus develops and updates, to parse the input.
 
 The `copy_to_glacier` lambda function expects that the input payload has a `granules` object, similar to the output of `MoveGranulesStep`:
 
@@ -178,15 +154,15 @@ The `copy_to_glacier` lambda function expects that the input payload has a `gran
 ```
 From the json file, the `filepath` shows the current S3 location of files that need to be copied over to glacier ORCA S3 bucket such as `"filename": "s3://orca-sandbox-protected/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf"`.
 **Note:** We suggest that the `copy_to_glacier` task be placed any time after the `MoveGranulesStep`. It will propagate the input `granules` object as output, so it can be used as the last task in the workflow.
-See `schemas/input.json` for more information.
+See the schema [input file](https://github.com/nasa/cumulus-orca/blob/develop/tasks/copy_to_glacier/schemas/input.json) for more information.
 
 
 ## Output
 
-The copy lambda will, as the name suggests, copy a file from its current source destination. The destination location is defined as 
-`${glacier_bucket}/${filepath}`, where `${glacier_bucket}` is pulled from your Cumulus `meta.bucket` config and `${filepath}` is pulled from the Cumulus granule object input.
+The `copy_to_glacier` lambda will, as the name suggests, copy a file from its current source destination. The destination location is defined as 
+`${glacier_bucket}/${filepath}`, where `${glacier_bucket}` is pulled from the environment variable `ORCA_DEFAULT_BUCKET` and `${filepath}` is pulled from the Cumulus granule object input.
 
-The output of this lambda is a dictionary with a `granules` and `copied_to_glacier` attributes.  See `schemas/output.json` for more information.
+The output of this lambda is a dictionary with a `granules` and `copied_to_glacier` attributes.  See the schema [output file](https://github.com/nasa/cumulus-orca/blob/develop/tasks/copy_to_glacier/schemas/output.json) for more information. Below is an example of the output:
 
 ```json
 {
@@ -241,6 +217,12 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_glaci
   ]
 }
 ```
+
+## Configuration
+
+ 
+ See the schema [configuration file](https://github.com/nasa/cumulus-orca/blob/develop/tasks/copy_to_glacier/schemas/config.json) for more information.
+
 
 ## pydoc copy_to_glacier
 
