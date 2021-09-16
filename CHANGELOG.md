@@ -17,6 +17,7 @@ and includes an additional section for migration notes.
 ## [Unreleased]
 ### Removed
 - The `modules/rds` directory is removed since ORCA will utilize the Cumulus DB.
+- *ORCA-233* The `disaster_recovery` database will now be created by db_deploy instead of Terraform.
 
 ### Added
 - *ORCA-227* Added modules/secretsmanager directory that contains terraform code for deploying AWS secretsmanager.
