@@ -72,8 +72,7 @@ Once all tests are complete perform the following:
 ## Database Fresh Install Test
 
 This test validates that the db_deploy scripts will perform a fresh install if
-no ORCA schemas (dr or orca namespaces)
-exist in the database.
+the server exists without the disaster_recovery database.
 
 ### Database Setup Fresh Install Test
 
