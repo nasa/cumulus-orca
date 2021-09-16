@@ -76,8 +76,27 @@ the server exists without the disaster_recovery database.
 
 ### Database Setup Fresh Install Test
 
-1. Verify that the *disaster_recovery* database does not exist. If it does, remove
-   it using the `\i sql/cleanup.sql` command as described in the [DNE Test](#database-setup-dne-test).
+In the **pgclient** window use the `psql` client to connect to the database and
+validate that the *disaster_recovery* database does not exist as seen below.
+
+```bash
+root@26df0390e999:/# psql
+psql (12.6 (Debian 12.6-1.pgdg100+1))
+Type "help" for help.
+postgres=# \l
+                                 List of databases
+   Name    |  Owner   | Encoding |  Collate   |   Ctype    |   Access privileges
+-----------+----------+----------+------------+------------+-----------------------
+ postgres  | postgres | UTF8     | en_US.utf8 | en_US.utf8 |
+ template0 | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
+           |          |          |            |            | postgres=CTc/postgres
+ template1 | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
+           |          |          |            |            | postgres=CTc/postgres
+(3 rows)
+```
+
+If the database exists, remove it with the command `\i sql/cleanup.sql`
+at the psql prompt.
 
 
 ### Running the Fresh Install Test
@@ -254,8 +273,7 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
 
 No cleanup is necessary if the next test run is the [Database No Migration Test](#database-no-migration-test).
 
-To cleanup from this test you can use one of two scripts. The `sql/cleanup.sql`
-script will remove all objects including the *disaster_recovery* database. The
+The `sql/cleanup.sql` script will remove all objects including the *disaster_recovery* database. The
 `sql/orca_schema_v2/remove.sql` script will remove only the objects created
 in this test but leave the database intact. Both scripts must be run as the
 *postgres* user.

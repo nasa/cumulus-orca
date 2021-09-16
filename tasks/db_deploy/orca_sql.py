@@ -30,7 +30,7 @@ def app_database_sql() -> TextClause:
         CREATE DATABASE disaster_recovery
             OWNER postgres
             TEMPLATE template1
-            ENCODING 'UTF8';;
+            ENCODING 'UTF8';
     """
     )
 

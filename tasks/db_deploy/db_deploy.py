@@ -64,7 +64,7 @@ def task(config: Dict[str, str]) -> None:
     with postgres_admin_engine.connect() as connection:
         # Check if database exists. If not, start from scratch.
         if not app_db_exists(connection):
-            logger.critical("The ORCA database disaster_recovery does not exist.")
+            logger.info("The ORCA database disaster_recovery does not exist.")
             connection.execute(orca_sql.commit_sql())  # exit the default transaction to allow database creation.
             connection.execute(orca_sql.app_database_sql())
             connection.execute(orca_sql.app_database_comment_sql())
