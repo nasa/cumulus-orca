@@ -6,6 +6,7 @@
   * [set\_search\_path\_and\_role](#create_db.set_search_path_and_role)
   * [create\_metadata\_objects](#create_db.create_metadata_objects)
   * [create\_recovery\_objects](#create_db.create_recovery_objects)
+  * [create\_inventory\_objects](#create_db.create_inventory_objects)
 * [db\_deploy](#db_deploy)
   * [handler](#db_deploy.handler)
   * [task](#db_deploy.task)
@@ -15,6 +16,7 @@
   * [get\_migration\_version](#db_deploy.get_migration_version)
 * [migrate\_db](#migrate_db)
   * [perform\_migration](#migrate_db.perform_migration)
+  * [migrate\_versions\_2\_to\_3](#migrate_db.migrate_versions_2_to_3)
   * [migrate\_versions\_1\_to\_2](#migrate_db.migrate_versions_1_to_2)
 * [orca\_sql](#orca_sql)
   * [app\_database\_sql](#orca_sql.app_database_sql)
@@ -28,6 +30,11 @@
   * [recovery\_status\_data\_sql](#orca_sql.recovery_status_data_sql)
   * [recovery\_job\_table\_sql](#orca_sql.recovery_job_table_sql)
   * [recovery\_file\_table\_sql](#orca_sql.recovery_file_table_sql)
+  * [providers\_table\_sql](#orca_sql.providers_table_sql)
+  * [collections\_table\_sql](#orca_sql.collections_table_sql)
+  * [provider\_collection\_xref\_table\_sql](#orca_sql.provider_collection_xref_table_sql)
+  * [granules\_table\_sql](#orca_sql.granules_table_sql)
+  * [files\_table\_sql](#orca_sql.files_table_sql)
   * [migrate\_recovery\_job\_data\_sql](#orca_sql.migrate_recovery_job_data_sql)
   * [migrate\_recovery\_file\_data\_sql](#orca_sql.migrate_recovery_file_data_sql)
   * [drop\_request\_status\_table\_sql](#orca_sql.drop_request_status_table_sql)
@@ -48,6 +55,7 @@ Description: Creates the current version on the ORCA database.
 #### create\_fresh\_orca\_install
 
 ```python
+@retry_operational_error(MAX_RETRIES)
 create_fresh_orca_install(config: Dict[str, str]) -> None
 ```
 
@@ -67,6 +75,7 @@ by the ORCA application as a fresh install.
 #### create\_app\_schema\_role\_users
 
 ```python
+@retry_operational_error(MAX_RETRIES)
 create_app_schema_role_users(connection: Connection, app_password: str) -> None
 ```
 
@@ -85,6 +94,7 @@ Creates the ORCA application database schema, users and roles.
 #### set\_search\_path\_and\_role
 
 ```python
+@retry_operational_error(MAX_RETRIES)
 set_search_path_and_role(connection: Connection) -> None
 ```
 
@@ -105,6 +115,7 @@ creations or modifications to ORCA objects in the ORCA schema.
 #### create\_metadata\_objects
 
 ```python
+@retry_operational_error(MAX_RETRIES)
 create_metadata_objects(connection: Connection) -> None
 ```
 
@@ -125,6 +136,7 @@ versions and other ORCA internal information in the proper order.
 #### create\_recovery\_objects
 
 ```python
+@retry_operational_error(MAX_RETRIES)
 create_recovery_objects(connection: Connection) -> None
 ```
 
@@ -132,6 +144,30 @@ Creates the ORCA recovery tables in the proper order.
 - recovery_status
 - recovery_job
 - recovery_table
+
+**Arguments**:
+
+- `connection` _sqlalchemy.future.Connection_ - Database connection.
+  
+
+**Returns**:
+
+  None
+
+<a name="create_db.create_inventory_objects"></a>
+#### create\_inventory\_objects
+
+```python
+@retry_operational_error(MAX_RETRIES)
+create_inventory_objects(connection: Connection) -> None
+```
+
+Creates the ORCA catalog metadata tables used for reconciliation with Cumulus in the proper order.
+- providers
+- collections
+- provider_collection_xref
+- granules
+- files
 
 **Arguments**:
 
@@ -176,6 +212,7 @@ required by this Lambda.
 #### task
 
 ```python
+@retry_operational_error(MAX_RETRIES)
 task(config: Dict[str, str]) -> None
 ```
 
@@ -196,6 +233,7 @@ schema.
 #### app\_db\_exists
 
 ```python
+@retry_operational_error(MAX_RETRIES)
 app_db_exists(connection: Connection) -> bool
 ```
 
@@ -214,6 +252,7 @@ Checks to see if the ORCA application database exists.
 #### app\_schema\_exists
 
 ```python
+@retry_operational_error(MAX_RETRIES)
 app_schema_exists(connection: Connection) -> bool
 ```
 
@@ -232,6 +271,7 @@ Checks to see if the ORCA application schema exists.
 #### app\_version\_table\_exists
 
 ```python
+@retry_operational_error(MAX_RETRIES)
 app_version_table_exists(connection: Connection) -> bool
 ```
 
@@ -250,6 +290,7 @@ Checks to see if the orca.schema_version table exists.
 #### get\_migration\_version
 
 ```python
+@retry_operational_error(MAX_RETRIES)
 get_migration_version(connection: Connection) -> int
 ```
 
@@ -291,10 +332,32 @@ migrations to run.
 
   None
 
+<a name="migrate_db.migrate_versions_2_to_3"></a>
+#### migrate\_versions\_2\_to\_3
+
+```python
+@retry_operational_error(MAX_RETRIES)
+migrate_versions_2_to_3(config: Dict[str, str], is_latest_version: bool) -> None
+```
+
+Performs the migration of the ORCA schema from version 2 to version 3 of
+the ORCA schema.
+
+**Arguments**:
+
+- `config` _Dict_ - Connection information for the database.
+- `is_latest_version` _bool_ - Flag to determine if version 3 is the latest schema version.
+  
+
+**Returns**:
+
+  None
+
 <a name="migrate_db.migrate_versions_1_to_2"></a>
 #### migrate\_versions\_1\_to\_2
 
 ```python
+@retry_operational_error(MAX_RETRIES)
 migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> None
 ```
 
@@ -304,8 +367,7 @@ the ORCA schema.
 **Arguments**:
 
 - `config` _Dict_ - Connection information for the database.
-- `is_latest_version` _bool_ - Flag to dtermine if version 2 is the latest schema version.
-  
+- `is_latest_version` _bool_ - Flag to determine if version 2 is the latest schema version.
 
 **Returns**:
 
@@ -476,6 +538,71 @@ after the recovery_job table sql to maintain key dependencies.
 **Returns**:
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for creating recovery_file table.
+
+<a name="orca_sql.providers_table_sql"></a>
+#### providers\_table\_sql
+
+```python
+providers_table_sql() -> TextClause
+```
+
+Full SQL for creating the providers table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating providers table.
+
+<a name="orca_sql.collections_table_sql"></a>
+#### collections\_table\_sql
+
+```python
+collections_table_sql() -> TextClause
+```
+
+Full SQL for creating the collections table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating collections table.
+
+<a name="orca_sql.provider_collection_xref_table_sql"></a>
+#### provider\_collection\_xref\_table\_sql
+
+```python
+provider_collection_xref_table_sql() -> TextClause
+```
+
+Full SQL for creating the cross reference table that ties a collection and provider together and resolves the many to many relationships.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating provider_collection_xref table.
+
+<a name="orca_sql.granules_table_sql"></a>
+#### granules\_table\_sql
+
+```python
+granules_table_sql() -> TextClause
+```
+
+Full SQL for creating the catalog granules table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating granules table.
+
+<a name="orca_sql.files_table_sql"></a>
+#### files\_table\_sql
+
+```python
+files_table_sql() -> TextClause
+```
+
+Full SQL for creating the catalog files table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating files table.
 
 <a name="orca_sql.migrate_recovery_job_data_sql"></a>
 #### migrate\_recovery\_job\_data\_sql

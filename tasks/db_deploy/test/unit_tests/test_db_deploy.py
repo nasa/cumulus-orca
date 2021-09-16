@@ -11,6 +11,7 @@ import boto3
 import db_deploy
 from orca_shared import shared_db
 from sqlalchemy import text
+import json
 
 
 class TestDbDeployFunctions(unittest.TestCase):
@@ -27,23 +28,20 @@ class TestDbDeployFunctions(unittest.TestCase):
         """
         self.mock_sm.start()
         self.test_sm = boto3.client("secretsmanager", region_name="us-west-2")
-        self.test_sm.create_secret(Name="orcatest-drdb-host", SecretString="localhost")
-        self.test_sm.create_secret(
-            Name="orcatest-drdb-admin-pass", SecretString="MySecretAdminPassword"
-        )
-        self.test_sm.create_secret(
-            Name="orcatest-drdb-user-pass", SecretString="MySecretUserPassword"
-        )
         self.config = {
-            "host": "localhost",
-            "port": "5432",
-            "database": "disaster_recovery",
-            "admin_database": "postgres",
-            "app_user": "orcauser",
-            "admin_user": "postgres",
-            "app_user_password": "MySecretUserPassword",
-            "admin_user_password": "MySecretAdminPassword",
+            "admin_database": "admin_db",
+            "admin_password": "admin123",
+            "admin_username": "admin",
+            "host": "aws.postgresrds.host",
+            "port": 5432,
+            "user_database": "user_db",
+            "user_password": "user123",
+            "user_username": "user",
         }
+        self.secretstring = json.dumps(self.config)
+        self.test_sm.create_secret(
+            Name="orcatest-orca-db-login-secret", SecretString=self.secretstring
+        )
 
     def tearDown(self):
         """
@@ -55,11 +53,6 @@ class TestDbDeployFunctions(unittest.TestCase):
         os.environ,
         {
             "PREFIX": "orcatest",
-            "DATABASE_NAME": "disaster_recovery",
-            "DATABASE_PORT": "5432",
-            "APPLICATION_USER": "orcauser",
-            "ADMIN_USER": "postgres",
-            "ADMIN_DATABASE": "postgres",
             "AWS_REGION": "us-west-2",
         },
         clear=True,
@@ -76,7 +69,7 @@ class TestDbDeployFunctions(unittest.TestCase):
 
         db_deploy.handler(event, {})
 
-        mock_task.assert_called_with(self.config)
+        mock_task.assert_called_with(json.loads(self.secretstring))
 
     @patch("db_deploy.get_admin_connection")
     @patch("db_deploy.app_db_exists")
@@ -158,7 +151,7 @@ class TestDbDeployFunctions(unittest.TestCase):
         """
         mock_db_exists.return_value = True
         mock_schema_exists.return_value = True
-        mock_migration_version.return_value = 2
+        mock_migration_version.return_value = 4
         message = "Current ORCA schema version detected. No migration needed!"
 
         db_deploy.task(self.config)
@@ -222,7 +215,7 @@ class TestDbDeployFunctions(unittest.TestCase):
         table_exists_array = [True, False]
         mock_conn.execute.return_value.fetchall.return_value = [
             [
-                2,
+                4,
             ],
         ]
 
@@ -234,6 +227,6 @@ class TestDbDeployFunctions(unittest.TestCase):
                 schema_version = db_deploy.get_migration_version(mock_conn)
 
                 if table_exists:
-                    self.assertEqual(schema_version, 2)
+                    self.assertEqual(schema_version, 4)
                 else:
                     self.assertEqual(schema_version, 1)
