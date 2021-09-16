@@ -68,6 +68,7 @@ def task(config: Dict[str, str]) -> None:
             connection.execute(orca_sql.commit_sql())  # exit the default transaction to allow database creation.
             connection.execute(orca_sql.app_database_sql())
             connection.execute(orca_sql.app_database_comment_sql())
+            logger.info("Database created.")
             create_fresh_orca_install(config)
             return
 

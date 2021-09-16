@@ -10,6 +10,7 @@ It is recommended to run the tests in the following order.
 - [Database Migration v1 to v4 Test](#database-migration-v1-to-v4-test)
 - [Database No Migration Test](#database-no-migration-test)
 - [Database Fresh Install Test](#database-fresh-install-test)
+- [Database Exists Install Test](#database-exists-install-test)
 
 
 ## Initial Setup
@@ -98,6 +99,27 @@ postgres=# \l
 If the database exists, remove it with the command `\i sql/cleanup.sql`
 at the psql prompt.
 
+Verify that only the default users, groups and schemas are present in the postgres
+   database.
+
+```bash
+postgres=# \dn
+  List of schemas
+  Name  |  Owner
+--------+----------
+ public | postgres
+(1 row)
+postgres=# \dg
+                                  List of roles
+ Role name |                         Attributes                         | Member of
+-----------+------------------------------------------------------------+-----------
+ postgres  | Superuser, Create role, Create DB, Replication, Bypass RLS | {}
+postgres=# \du
+                                  List of roles
+ Role name |                         Attributes                         | Member of
+-----------+------------------------------------------------------------+-----------
+ postgres  | Superuser, Create role, Create DB, Replication, Bypass RLS | {}
+```
 
 ### Running the Fresh Install Test
 
@@ -115,7 +137,7 @@ C:\Users\adorn\GitHub\orca\cumulus-orca\tasks\db_deploy\venv\Scripts\python.exe 
 {"message": "Creating admin user connection object.", "timestamp": "2021-09-15T15:32:30.351539", "level": "debug"}
 {"message": "Database set to disaster_recovery for the connection.", "timestamp": "2021-09-15T15:32:30.351539", "level": "debug"}
 {"message": "Creating URL object to connect to the database.", "timestamp": "2021-09-15T15:32:30.351539", "level": "debug"}
-{"message": "The ORCA database disaster_recovery does not exist.", "timestamp": "2021-09-15T15:32:33.326334", "level": "critical"}
+{"message": "The ORCA database disaster_recovery does not exist.", "timestamp": "2021-09-15T15:32:33.326334", "level": "info"}
 {"message": "Creating admin user connection object.", "timestamp": "2021-09-15T15:32:35.184367", "level": "debug"}
 {"message": "Database set to disaster_recovery for the connection.", "timestamp": "2021-09-15T15:32:35.184367", "level": "debug"}
 {"message": "Creating URL object to connect to the database.", "timestamp": "2021-09-15T15:32:35.184367", "level": "debug"}
@@ -293,6 +315,12 @@ DETAIL:  drop cascades to table orca.schema_versions
 drop cascades to table orca.recovery_status
 drop cascades to table orca.recovery_job
 drop cascades to table orca.recovery_file
+drop cascades to table orca.schema_versions
+drop cascades to table orca.files
+drop cascades to table orca.granules
+drop cascades to table orca.provider_collections_xref
+drop cascades to table orca.collections
+drop cascades to table orca.providers
 DROP SCHEMA
 DROP ROLE
 REVOKE
@@ -304,6 +332,30 @@ psql:sql/orca_schema_v2/remove.sql:8: WARNING:  there is no transaction in progr
 COMMIT
 ```
 
+## Database Exists Install Test
+
+This is a modification of [Database Fresh Install Test](#database-fresh-install-test) 
+where the disaster-recovery database already exists.
+
+### Database Exists Test Setup
+
+1. If the database exists, remove it with the command `\i sql/cleanup.sql`
+   at the psql prompt.
+
+2. Run `\i sql/create_database.sql` at the psql prompt.
+
+### Running the Database Exists Test
+
+Follow [Running the Fresh Install Test](#running-the-fresh-install-test),
+noting that messages regarding database creation should be skipped.
+
+### Database Exists Test Validation
+
+Follow [Fresh Install Test Validation](#fresh-install-test-validation).
+
+### Database Exists Test Cleanup
+
+Follow [Fresh Install Test Cleanup](#fresh-install-test-cleanup).
 
 ## Database Migration v1 to v4 Test
 
