@@ -25,7 +25,7 @@ def perform_migration(current_schema_version: int, config: Dict[str, str]) -> No
     if current_schema_version == 1:
         # Run migrations from version 1 to version 2
         migrate_versions_1_to_2(config, False)
-        current_schema_version == 2
+        current_schema_version = 2
 
     if current_schema_version == 2:
         # Run migrations from version 2 to version 3

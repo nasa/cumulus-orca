@@ -47,7 +47,7 @@ class TestMigrateDatabseLibraries(unittest.TestCase):
         """
         Tests the perform_migration function happy paths
         """
-        for version in [1, 2, 3, 4, 5]:
+        for version in [1,2,3,4,5]:
             with self.subTest(version=version):
                 migrate_db.perform_migration(version, self.config)
 
@@ -57,9 +57,12 @@ class TestMigrateDatabseLibraries(unittest.TestCase):
 
                 if version == 1:
                     mock_migrate_v1_to_v2.assert_called_once_with(self.config, False)
+                    mock_migrate_v2_to_v3.assert_called_once_with(self.config, False)
+                    mock_migrate_v3_to_v4.assert_called_once_with(self.config, True)
 
                 elif version == 2:
                     mock_migrate_v2_to_v3.assert_called_once_with(self.config, False)
+                    mock_migrate_v3_to_v4.assert_called_once_with(self.config, True)
 
                 elif version == 3:
                     mock_migrate_v3_to_v4.assert_called_once_with(self.config, True)
@@ -302,33 +305,22 @@ class TestMigrateDatabseLibraries(unittest.TestCase):
                     call("SET search_path TO orca, public;"),
                 ]
                 mock_text.assert_has_calls(text_calls, any_order=False)
-
+                execution_order = [
+                    call.execute(mock_text("SET ROLE orca_dbo;")),
+                    call.execute(mock_text("SET search_path TO orca, public;")),
+                    call.execute(mock_providers_table()),
+                    call.execute(mock_collections_table()),
+                    call.execute(mock_provider_collection_xref_table()),
+                    call.execute(mock_granules_table()),
+                    call.execute(mock_files_table()),
+                    call.commit(),
+                ]
                 # Validate logic switch and set the execution order
                 if latest_version:
                     mock_schema_versions_data.assert_called_once()
-                    execution_order = [
-                        call.execute(mock_text("SET ROLE orca_dbo;")),
-                        call.execute(mock_text("SET search_path TO orca, public;")),
-                        call.execute(mock_providers_table()),
-                        call.execute(mock_collections_table()),
-                        call.execute(mock_provider_collection_xref_table()),
-                        call.execute(mock_granules_table()),
-                        call.execute(mock_files_table()),
-                        call.commit(),
-                    ]
 
                 else:
                     mock_schema_versions_data.assert_not_called()
-                    execution_order = [
-                        call.execute(mock_text("SET ROLE orca_dbo;")),
-                        call.execute(mock_text("SET search_path TO orca, public;")),
-                        call.execute(mock_providers_table()),
-                        call.execute(mock_collections_table()),
-                        call.execute(mock_provider_collection_xref_table()),
-                        call.execute(mock_granules_table()),
-                        call.execute(mock_files_table()),
-                        call.commit(),
-                    ]
 
                 # Check that items were called in the proper order
                 mock_conn_enter.assert_has_calls(execution_order, any_order=False)
