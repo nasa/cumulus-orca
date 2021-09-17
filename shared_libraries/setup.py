@@ -32,7 +32,7 @@ install_requirements = ["cumulus-message-adapter-python==1.2.1"]
 
 
 # Additional library dependencies
-_dep_boto3 = "boto3~=1.12.49"
+_dep_boto3 = "boto3~=1.12.47"
 _dep_sqlalchemy = "SQLAlchemy==1.4.11"
 
 
