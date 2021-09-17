@@ -220,9 +220,26 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_glaci
 
 ## Configuration
 
- 
- See the schema [configuration file](https://github.com/nasa/cumulus-orca/blob/develop/tasks/copy_to_glacier/schemas/config.json) for more information.
+To configure a collection to enable ORCA, add the line `granuleRecoveryWorkflow: OrcaRecoveryWorkflow` to the collection configuration. It is also possible to exclude copying certain types of files to glacier bucket by adding the file type values to an `excludeFileTypes` variable.  An example of a collection configuration is given below:
 
+```
+{
+  "queriedAt": "2019-11-07T22:49:46.842Z",
+  "name": "L0A_HR_RAW",
+  "version": "1",
+  "sampleFileName": "L0A_HR_RAW_product_0001-of-0420.h5",
+  "dataType": "L0A_HR_RAW",
+  "granuleIdExtraction": "^(.*)((\\.cmr\\.json)|(\\.iso\\.xml)|(\\.tar\\.gz)|(\\.h5)|(\\.h5\\.mp))$",
+  "reportToEms": true,
+  "granuleId": "^.*$",
+  "provider_path": "L0A_HR_RAW/",
+  "meta": {
+    "granuleRecoveryWorkflow": "OrcaRecoveryWorkflow",
+    "excludeFileTypes": [".cmr", ".xml", ".met"]
+  }
+}
+```
+See the schema [configuration file](https://github.com/nasa/cumulus-orca/blob/develop/tasks/copy_to_glacier/schemas/config.json) for more information.
 
 ## pydoc copy_to_glacier
 
