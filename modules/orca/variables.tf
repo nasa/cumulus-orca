@@ -56,6 +56,12 @@ variable "tags" {
 }
 
 
+variable "default_multipart_chunksize_mb" {
+  type        = number
+  description = "The default maximum size of chunks to use when copying. Can be overridden by collection config."
+}
+
+
 ## Variables unique to ORCA
 ## REQUIRED
 
@@ -163,4 +169,24 @@ variable "staged_recovery_queue_message_retention_time_seconds" {
 variable "status_update_queue_message_retention_time_seconds" {
   type        = number
   description = "The number of seconds status_update_queue SQS retains a message in seconds. Maximum value is 14 days."
+}
+
+
+## OPTIONAL (DO NOT CHANGE!) - Development use only
+## Default variable value is set in ../main.tf to disallow any modification.
+variable "database_app_user" {
+  type        = string
+  description = "Name of the database application user."
+}
+
+
+variable "database_name" {
+  type        = string
+  description = "Name of the ORCA database in PostgreSQL"
+}
+
+
+variable "orca_recovery_retrieval_type" {
+  type        = string
+  description = "AWS glacier recovery type to use. One of Bulk, Standard, Express."
 }

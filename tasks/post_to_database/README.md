@@ -78,7 +78,6 @@ FUNCTIONS
                     Contains key/value pairs of column names and values for those columns.
                     Must match one of the schemas.
                 'messageAttributes' (dict): Contains the following keys:
-                    'TableName' (str): The name of the table to target.
                     'RequestMethod' (str): 'post' or 'put', depending on if row should be created or updated respectively.
             engine: The sqlalchemy engine to use for contacting the database.
     

@@ -86,3 +86,4 @@ orca_default_bucket =
 
 ## The number of seconds status_update_queue SQS retains a message in seconds. Maximum value is 14 days.
 # status_update_queue_message_retention_time_seconds = 777600
+# orca_recovery_retry_interval = 1
