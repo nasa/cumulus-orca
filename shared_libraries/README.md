@@ -13,7 +13,7 @@ available libraries and their purpose.
 - [**recovery**](API.md#orca_shared.recovery) - The recovery library contains several functions used by ORCA recovery workflows.
 
 
-The following sections going into more detail on utilizing these libraries.
+The following sections go into more detail on utilizing the libraries.
 
 - [Installing ORCA Shared Libraries](#installing-orca-shared-libraries) - Information on installing the libraries into your application
 - [Using ORCA Shared Libraries](#using-orca-shared-libraries) - Basic usage and documentation on the shared libraries.
