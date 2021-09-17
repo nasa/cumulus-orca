@@ -84,7 +84,7 @@ in the cumulus-orca base of the repo.
 
 ## Deployment
 
-The `copy_to_glacier` lambda function can be deployed using terraform using the example shown in  `modules/lambdas/main.tf` file.
+The `copy_to_glacier` lambda function can be deployed using terraform using the example shown in  `"aws_lambda_function" "copy_to_glacier"` resource block of `modules/lambdas/main.tf` file.
 
 ## Input
 
@@ -154,7 +154,7 @@ The `copy_to_glacier` lambda function expects that the input payload has a `gran
 ```
 From the json file, the `filepath` shows the current S3 location of files that need to be copied over to glacier ORCA S3 bucket such as `"filename": "s3://orca-sandbox-protected/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf"`.
 **Note:** We suggest that the `copy_to_glacier` task be placed any time after the `MoveGranulesStep`. It will propagate the input `granules` object as output, so it can be used as the last task in the workflow.
-See the schema [input file](https://github.com/nasa/cumulus-orca/blob/develop/tasks/copy_to_glacier/schemas/input.json) for more information.
+See the schema [input file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/input.json) for more information.
 
 
 ## Output
@@ -162,7 +162,7 @@ See the schema [input file](https://github.com/nasa/cumulus-orca/blob/develop/ta
 The `copy_to_glacier` lambda will, as the name suggests, copy a file from its current source destination. The destination location is defined as 
 `${glacier_bucket}/${filepath}`, where `${glacier_bucket}` is pulled from the environment variable `ORCA_DEFAULT_BUCKET` and `${filepath}` is pulled from the Cumulus granule object input.
 
-The output of this lambda is a dictionary with a `granules` and `copied_to_glacier` attributes.  See the schema [output file](https://github.com/nasa/cumulus-orca/blob/develop/tasks/copy_to_glacier/schemas/output.json) for more information. Below is an example of the output:
+The output of this lambda is a dictionary with a `granules` and `copied_to_glacier` attributes.  See the schema [output file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/output.json) for more information. Below is an example of the output:
 
 ```json
 {
@@ -220,26 +220,59 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_glaci
 
 ## Configuration
 
-To configure a collection to enable ORCA, add the line `granuleRecoveryWorkflow: OrcaRecoveryWorkflow` to the collection configuration. It is also possible to exclude copying certain types of files to glacier bucket by adding the file type values to an `excludeFileTypes` variable.  An example of a collection configuration is given below:
+The `task_config` variable in the `OrcaCopyToGlacierWorkflow` configuration file contains the `collection` and `multipart_chunksize_mb` keys. The `collection` key contains important information like the `granuleRecoveryWorkflow` and `excludeFileTypes` keys. The `multipart_chunksize_mb` key can be used to override the default maximum size of chunks to use when copying the files to glacier bucket.
+An example of the `OrcaCopyToGlacierWorkflow` is shown below:
 
 ```
 {
-  "queriedAt": "2019-11-07T22:49:46.842Z",
-  "name": "L0A_HR_RAW",
-  "version": "1",
-  "sampleFileName": "L0A_HR_RAW_product_0001-of-0420.h5",
-  "dataType": "L0A_HR_RAW",
-  "granuleIdExtraction": "^(.*)((\\.cmr\\.json)|(\\.iso\\.xml)|(\\.tar\\.gz)|(\\.h5)|(\\.h5\\.mp))$",
-  "reportToEms": true,
-  "granuleId": "^.*$",
-  "provider_path": "L0A_HR_RAW/",
-  "meta": {
-    "granuleRecoveryWorkflow": "OrcaRecoveryWorkflow",
-    "excludeFileTypes": [".cmr", ".xml", ".met"]
+  "Comment": "On-Demand execution of copy_to_glacier.",
+  "States": {
+    "CopyToGlacier": {
+      "Parameters": {
+        "cma": {
+          "event.$": "$",
+          "task_config": {
+            "collection": "{$.meta.collection}",
+            "multipart_chunksize_mb": "{$.meta.collection.multipart_chunksize_mb"}
+          }
+        }
+      },
+      "Type": "Task",
+      "Resource": "${orca_lambda_copy_to_glacier_arn}",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "ResultPath": "$.exception",
+          "Next": "WorkflowFailed"
+        }
+      ],
+      "Next": "WorkflowSucceeded"
+    },
+    "WorkflowFailed": {
+      "Type": "Fail",
+      "Cause": "Workflow failed"
+    },
+    "WorkflowSucceeded": {
+      "Type": "Succeed"
+    }
   }
 }
 ```
-See the schema [configuration file](https://github.com/nasa/cumulus-orca/blob/develop/tasks/copy_to_glacier/schemas/config.json) for more information.
+See the schema [configuration file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/config.json) for more information.
 
 ## pydoc copy_to_glacier
 
