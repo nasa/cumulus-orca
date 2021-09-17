@@ -33,6 +33,10 @@ and includes an additional section for migration notes.
 - ORCA-239 Removed terraform provider block from all ORCA files and consolidated to main.tf file.
 - Removed technical debt and fixed recovery bug where bucket keys that were not the standard (internal, public, private, etc.) were being ignored.
 
+### Changed
+- *ORCA-237* Updated node requirement versions to fix known security vulnerabilities.
+
+
 ## [v3.0.0] 2021-07-12
 
 
