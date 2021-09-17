@@ -19,6 +19,10 @@ and includes an additional section for migration notes.
 - *ORCA-240* Removed development-only variables from variables.tf
 
 
+### Changed
+- *ORCA-237* Updated node requirement versions to fix known security vulnerabilities.
+
+
 ## [v3.0.0] 2021-07-12
 
 
