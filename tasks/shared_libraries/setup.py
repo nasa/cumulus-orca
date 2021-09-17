@@ -70,5 +70,4 @@ setup(
     install_requires=install_requirements,
     extras_require=extras_per_library,
     include_package_data=True,
-    #python_requires=[">=3.7"],
 )

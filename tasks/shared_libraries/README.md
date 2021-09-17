@@ -114,7 +114,9 @@ and validate the following items:
 - The API documentation has been refreshed by running `bin/build_api.sh`
 - If new library packages have been added or new third party libraries are needed,
   `setup.py` and `requirements.txt` has been updated with the new information.
-- New library packages created have been added to orca_shared/__init.py__ via `lazy_load`
+- New library packages created have been added to `orca_shared/__init.py__` via `lazy_load`
 - New library modules have been added to the proper packages `__init__.py` file.
+- The value of `__version__` has been updated in the `orca_shared/__init__.py`'
+  file to reflect a change using semantic versioning.
 - This REAMDME has been updated with pertinent information.
 
