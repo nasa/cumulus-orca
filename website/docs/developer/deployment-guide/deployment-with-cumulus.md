@@ -242,7 +242,6 @@ buckets = {
 
 :::
 
-
 ## Define the ORCA Wokflows
 
 The ORCA Ingest Workflows follows each step listed below. Adding the Move
@@ -385,6 +384,9 @@ of. More information on addressing workflow failures can be found on the
 ORCA [Best Practices](developer/../../development-guide/code/best-practices.mdx) 
 page.
 
+## Copy To Glacier lambda function
+
+The `copy_to_glacier` lambda function takes input from the `OrcaCopyToGlacierWorkflow`,  extracts a list of files from the input and copies those files from their current storage location into a staging/glacier ORCA S3 bucket. The actual format of `OrcaCopyToGlacierWorkflow` input might change over time, so the [cumulus-message-adapter](https://github.com/nasa/cumulus-message-adapter), which Cumulus develops and updates, is used to parse the input to the right format. For more information, see [copy_to_glacier](https://github.com/nasa/cumulus-orca/tree/master/tasks/copy_to_glacier).
 
 ## ORCA Variables
 
