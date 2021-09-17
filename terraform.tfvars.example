@@ -71,18 +71,3 @@ orca_default_bucket =
 
 ## Number of seconds to wait between recovery failure retries.
 # orca_recovery_retry_interval = 1
-
-## The multiplier by which the retry interval increases during each attempt.
-# orca_recovery_retry_backoff = 2
-
-## The time in seconds that the delivery of all messages in the queue will be delayed."
-# sqs_delay_time_seconds = 0
-
-## The limit of how many bytes a message can contain before Amazon SQS rejects it.
-# sqs_maximum_message_size = 262144
-
-## The number of seconds staged-recovery-queue fifo SQS retains a message in seconds. Maximum value is 14 days.
-# staged_recovery_queue_message_retention_time_seconds = 432000
-
-## The number of seconds status_update_queue SQS retains a message in seconds. Maximum value is 14 days.
-# status_update_queue_message_retention_time_seconds = 777600

@@ -386,16 +386,17 @@ def recovery_file_table_sql() -> TextClause:
         -- Create table
         CREATE TABLE IF NOT EXISTS recovery_file
         (
-          job_id              text NOT NULL
-        , granule_id          text NOT NULL
-        , filename            text NOT NULL
-        , key_path            text NOT NULL
-        , restore_destination text NOT NULL
-        , status_id           int2 NOT NULL
-        , error_message       text NULL
-        , request_time        timestamp with time zone NOT NULL
-        , last_update         timestamp with time zone NOT NULL
-        , completion_time     timestamp with time zone NULL
+          job_id                 text NOT NULL
+        , granule_id             text NOT NULL
+        , filename               text NOT NULL
+        , key_path               text NOT NULL
+        , multipart_chunksize_mb integer NULL
+        , restore_destination    text NOT NULL
+        , status_id              int2 NOT NULL
+        , error_message          text NULL
+        , request_time           timestamp with time zone NOT NULL
+        , last_update            timestamp with time zone NOT NULL
+        , completion_time        timestamp with time zone NULL
         , CONSTRAINT PK_recovery_file PRIMARY KEY (job_id, granule_id, filename)
         , CONSTRAINT FK_recovery_file_status FOREIGN KEY (status_id) REFERENCES recovery_status (id)
         , CONSTRAINT FK_recovery_file_recoverjob FOREIGN KEY (job_id, granule_id) REFERENCES recovery_job (job_id, granule_id)
@@ -412,6 +413,8 @@ def recovery_file_table_sql() -> TextClause:
             IS 'Name of the file being restored.';
         COMMENT ON COLUMN recovery_file.key_path
             IS 'Full key value of the data being restored.';
+        COMMENT ON COLUMN recovery_file.multipart_chunksize_mb
+            IS 'Overrides default_multipart_chunksize_mb in TF.';
         COMMENT ON COLUMN recovery_file.restore_destination
             IS 'S3 ORCA restoration bucket for the data.';
         COMMENT ON COLUMN recovery_file.status_id
@@ -801,5 +804,21 @@ def drop_drdbo_role_sql() -> TextClause:
         REVOKE CONNECT ON DATABASE disaster_recovery FROM GROUP drdbo_role;
         REVOKE CREATE ON DATABASE disaster_recovery FROM GROUP drdbo_role;
         DROP ROLE IF EXISTS drdbo_role;
+    """
+    )
+
+
+def add_multipart_chunksize_sql() -> TextClause:
+    """
+    SQL that adds the multipart_chunksize_mb column to recovery_file.
+
+    Returns: SQL for adding multipart_chunksize_mb.
+    """
+    return text(
+        """
+        ALTER TABLE recovery_file
+        ADD COLUMN IF NOT EXISTS multipart_chunksize_mb integer NULL;
+        COMMENT ON COLUMN recovery_file.multipart_chunksize_mb
+            IS 'Overrides default_multipart_chunksize in TF.';
     """
     )
