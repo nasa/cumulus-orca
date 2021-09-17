@@ -446,6 +446,7 @@ resource "aws_lambda_function" "db_deploy" {
 ## =============================================================================
 data "aws_lambda_invocation" "db_migration" {
   # depends_on = [aws_db_instance.postgresql]
+  depends_on = [aws_lambda_function.db_deploy]
   function_name = aws_lambda_function.db_deploy.function_name
   input = jsonencode({})
 }

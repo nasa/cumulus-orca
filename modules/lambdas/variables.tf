@@ -112,21 +112,6 @@ variable "orca_recovery_retry_backoff" {
 
 
 ## OPTIONAL (DO NOT CHANGE!) - Development use only
-variable "database_app_user" {
-  type        = string
-  description = "Name of the database application user."
-}
-
-variable "database_name" {
-  type        = string
-  description = "Name of the ORCA database in PostgreSQL"
-}
-
-variable "orca_recovery_retrieval_type" {
-  type        = string
-  description = "AWS glacier recovery type to use. One of Bulk, Standard, Express."
-}
-
 variable "orca_sqs_staged_recovery_queue_id" {
   type        = string
   description = "SQS URL of recovery queue."
