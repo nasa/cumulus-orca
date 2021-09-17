@@ -220,12 +220,17 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_glaci
 
 ## Configuration
 
-The `task_config` variable in the `OrcaCopyToGlacierWorkflow` configuration file contains the `collection` and `multipart_chunksize_mb` keys. The `collection` key contains important information like the `granuleRecoveryWorkflow` and `excludeFileTypes` keys. The `multipart_chunksize_mb` key can be used to override the default maximum size of chunks to use when copying the files to glacier bucket.
-An example of the `OrcaCopyToGlacierWorkflow` is shown below:
+As part of the [Cumulus Message Adapter configuration](https://nasa.github.io/cumulus/docs/workflows/input_output#cma-configuration) 
+for `copy_to_glacier`, the `collection` and `multipart_chunksize_mb` keys must be present under the 
+`task_config` object as seen below. Per the [config schema](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/config.json), 
+the values of the two keys are used the following ways. The `collection` key value should contain a meta 
+object with an optional `excludeFileTypes` key that is used to determine file patterns that should not be 
+sent to ORCA. The optional `multipart_chunksize_mb` is used to override the default setting for the lambda 
+s3 copy maximum multipart chunk size value when copying large files to ORCA. Both of these settings can 
+often be derived from the collection configuration in Cumulus as seen below:
 
 ```
 {
-  "Comment": "On-Demand execution of copy_to_glacier.",
   "States": {
     "CopyToGlacier": {
       "Parameters": {
@@ -259,15 +264,7 @@ An example of the `OrcaCopyToGlacierWorkflow` is shown below:
           "ResultPath": "$.exception",
           "Next": "WorkflowFailed"
         }
-      ],
-      "Next": "WorkflowSucceeded"
-    },
-    "WorkflowFailed": {
-      "Type": "Fail",
-      "Cause": "Workflow failed"
-    },
-    "WorkflowSucceeded": {
-      "Type": "Succeed"
+      ]
     }
   }
 }
