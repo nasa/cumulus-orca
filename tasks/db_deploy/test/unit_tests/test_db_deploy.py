@@ -9,7 +9,7 @@ from unittest.mock import Mock, call, patch, MagicMock
 from moto import mock_secretsmanager
 import boto3
 import db_deploy
-from orca_shared import shared_db
+from orca_shared.database import shared_db
 from sqlalchemy import text
 
 
