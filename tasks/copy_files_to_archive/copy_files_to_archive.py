@@ -79,8 +79,7 @@ def task(
                     a_file[INPUT_SOURCE_BUCKET_KEY],
                     a_file[INPUT_SOURCE_KEY_KEY],
                     a_file[INPUT_TARGET_BUCKET_KEY],
-                    a_file.get(INPUT_MULTIPART_CHUNKSIZE_MB, None)
-                    or default_multipart_chunksize_mb,
+                    a_file.get(INPUT_MULTIPART_CHUNKSIZE_MB, None) or default_multipart_chunksize_mb,
                     a_file[INPUT_TARGET_KEY_KEY],
                 )
                 if err_msg is None:
