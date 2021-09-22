@@ -105,29 +105,12 @@ let return_code=$?
 check_rc $return_code "ERROR: Unable to install psycopg2."
 
 
-echo "INFO: Copying ORCA shared libraries ..."
-if [ -d orca_shared ]; then
-    rm -rf orca_shared
-fi
-
-mkdir -p build/orca_shared
-let return_code=$?
-check_rc $return_code "ERROR: Unable to create orca_shared directory."
-
-touch build/orca_shared/__init__.py
-let return_code=$?
-check_rc $return_code "ERROR: Unable to create [orca_shared/__init__.py] file"
-
-cp ../shared_libraries/database/shared_db.py build/orca_shared/
-let return_code=$?
-check_rc $return_code "ERROR: Unable to copy shared library [orca_shared/shared_db.py]"
-
-
 ## Copy the lambda files to build
 echo "INFO: Copying the lambda files ..."
 cp *.py build/
 let return_code=$?
 check_rc $return_code "ERROR: Failed to copy lambda files to build directory."
+
 
 ## Copy the lambda files to build
 echo "INFO: Creating the Lambda package ..."

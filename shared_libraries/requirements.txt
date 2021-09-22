@@ -29,8 +29,8 @@ cumulus-message-adapter==1.3.0
 cumulus-message-adapter-python==1.2.1
 
 ## Libraries used by database package
-boto3~=1.12.49
+boto3~=1.12.47
 SQLAlchemy==1.4.11
 
 ## Libraries used by recovery package
-# boto3~=1.12.49
+# boto3~=1.12.47
