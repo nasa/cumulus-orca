@@ -1,7 +1,13 @@
-boto3~=1.12.47
-moto[sqs]
-pytest==6.1.2
+## Testing libraries
 coverage==5.3
-cumulus-message-adapter-python>=1.1.1
-SQLAlchemy~=1.4.13
+pytest==6.1.2
+
+## Libraries needed for testing the application
+boto3==1.12.47
+moto[sqs]==2.2.7
 psycopg2-binary==2.8.6
+
+## Application libraries
+cumulus-message-adapter-python==1.2.1
+SQLAlchemy==1.4.11
+../../shared_libraries[all] --use-feature=in-tree-build
