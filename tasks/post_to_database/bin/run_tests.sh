@@ -46,27 +46,6 @@ function check_rc () {
   fi
 }
 
-## copy the shared_recovery.py
-echo "INFO: Copying ORCA shared libraries ..."
-if [ -d orca_shared ]; then
-    rm -rf orca_shared
-fi
-
-mkdir orca_shared
-let return_code=$?
-check_rc $return_code "ERROR: Unable to create orca_shared directory."
-
-touch orca_shared/__init__.py
-let return_code=$?
-check_rc $return_code "ERROR: Unable to create [orca_shared/__init__.py] file"
-
-cp ../shared_libraries/recovery/shared_recovery.py orca_shared/
-let return_code=$?
-check_rc $return_code "ERROR: Unable to copy shared library [orca_shared/shared_recovery.py]"
-
-cp ../shared_libraries/database/shared_db.py orca_shared/
-let return_code=$?
-check_rc $return_code "ERROR: Unable to copy shared library [orca_shared/shared_db.py]"
 
 ## MAIN
 ## -----------------------------------------------------------------------------
@@ -105,9 +84,6 @@ echo "INFO: Cleaning up the environment ..."
 deactivate
 rm -rf venv
 find . -type d -name "__pycache__" -exec rm -rf {} +
-
-# Remove the shared library
-rm -rf orca_shared
 
 exit 0
 
