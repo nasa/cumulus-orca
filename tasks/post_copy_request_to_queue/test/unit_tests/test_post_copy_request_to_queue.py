@@ -12,7 +12,7 @@ import boto3
 from moto import mock_sqs
 
 import post_copy_request_to_queue
-from orca_shared import shared_recovery
+from orca_shared.recovery import shared_recovery
 from post_copy_request_to_queue import handler, task, exponential_delay
 
 
@@ -78,19 +78,21 @@ class TestPostCopyRequestToQueue(TestCase):
     @patch("post_copy_request_to_queue.shared_recovery.update_status_for_file")
     @patch("post_copy_request_to_queue.get_metadata_sql")
     def test_task_happy_path(
-            self,
-            mock_get_metadata_sql: MagicMock,
-            mock_update_status_for_file: MagicMock,
-            mock_post_entry_to_queue: MagicMock,
-            mock_get_configuration: MagicMock,
-            mock_get_user_connection: MagicMock,
+        self,
+        mock_get_metadata_sql: MagicMock,
+        mock_update_status_for_file: MagicMock,
+        mock_post_entry_to_queue: MagicMock,
+        mock_get_configuration: MagicMock,
+        mock_get_user_connection: MagicMock,
     ):
         """
         happy path. Mocks db_connect_info,single_query,
         post_entry_to_queue and update_status_for_file.
         """
         multipart_chunksize_mb = random.randint(1, 10000)
-        mock_execute = Mock(return_value=[("1", "3", "f1.doc", "s3://restore", multipart_chunksize_mb)])
+        mock_execute = Mock(
+            return_value=[("1", "3", "f1.doc", "s3://restore", multipart_chunksize_mb)]
+        )
         mock_connection = Mock()
         mock_connection.execute = mock_execute
         mock_exit = Mock()
@@ -172,7 +174,7 @@ class TestPostCopyRequestToQueue(TestCase):
             good_value = os.getenv(name)
             for bad_value in env_bad_values:
                 with self.subTest(
-                        name=name, bad_value=bad_value, good_value=good_value
+                    name=name, bad_value=bad_value, good_value=good_value
                 ):
                     # Set the variable to the bad value and create the message
                     if bad_value is None:
@@ -205,7 +207,7 @@ class TestPostCopyRequestToQueue(TestCase):
             good_value = os.getenv(name)
             for bad_value in env_bad_values:
                 with self.subTest(
-                        name=name, bad_value=bad_value, good_value=good_value
+                    name=name, bad_value=bad_value, good_value=good_value
                 ):
                     os.environ[name] = bad_value
                     # run the test
@@ -220,12 +222,12 @@ class TestPostCopyRequestToQueue(TestCase):
     @patch("post_copy_request_to_queue.shared_recovery.post_entry_to_queue")
     @patch("post_copy_request_to_queue.LOGGER")
     def test_task_post_entry_to_queue_exception(
-            self,
-            mock_LOGGER: MagicMock,
-            mock_post_entry_to_queue: MagicMock,
-            mock_update_status_for_file: MagicMock,
-            mock_get_configuration: MagicMock,
-            mock_get_user_connection: MagicMock,
+        self,
+        mock_LOGGER: MagicMock,
+        mock_post_entry_to_queue: MagicMock,
+        mock_update_status_for_file: MagicMock,
+        mock_get_configuration: MagicMock,
+        mock_get_user_connection: MagicMock,
     ):
         """
         mocks post_entry_to_queue to raise an exception.
@@ -268,26 +270,26 @@ class TestPostCopyRequestToQueue(TestCase):
             # Check the message from the exception
         self.assertEqual(str.format(message, new_data=new_data), ex.exception.args[0])
         # verify the logging captured matches the expected message
-        mock_LOGGER.critical.assert_called_once_with(
-            message, new_data=str(new_data)
-        )
+        mock_LOGGER.critical.assert_called_once_with(message, new_data=str(new_data))
 
     @patch("post_copy_request_to_queue.shared_db.get_user_connection")
     @patch("post_copy_request_to_queue.shared_db.get_configuration")
     @patch("post_copy_request_to_queue.shared_recovery.update_status_for_file")
     @patch("post_copy_request_to_queue.LOGGER")
     def test_task_update_status_for_file_exception(
-            self,
-            mock_LOGGER: MagicMock,
-            mock_update_status_for_file: MagicMock,
-            mock_get_configuration: MagicMock,
-            mock_get_user_connection: MagicMock,
+        self,
+        mock_LOGGER: MagicMock,
+        mock_update_status_for_file: MagicMock,
+        mock_get_configuration: MagicMock,
+        mock_get_user_connection: MagicMock,
     ):
         """
         mocks update_status_for_file to raise an exception.
         """
         multipart_chunksize_mb = random.randint(1, 10000)
-        mock_execute = Mock(return_value=[("1", "3", "f1.doc", "s3://restore", multipart_chunksize_mb)])
+        mock_execute = Mock(
+            return_value=[("1", "3", "f1.doc", "s3://restore", multipart_chunksize_mb)]
+        )
         mock_connection = Mock()
         mock_connection.execute = mock_execute
         mock_exit = Mock()
@@ -326,9 +328,7 @@ class TestPostCopyRequestToQueue(TestCase):
         # Check the message from the exception
         self.assertEqual(str.format(message, record=new_data), ex.exception.args[0])
         # verify the logging captured matches the expected message
-        mock_LOGGER.critical.assert_called_once_with(
-            message, new_data=str(new_data)
-        )
+        mock_LOGGER.critical.assert_called_once_with(message, new_data=str(new_data))
 
     def test_exponential_delay(self):
         """
@@ -354,7 +354,8 @@ class TestPostCopyRequestToQueue(TestCase):
     def test_get_metadata_sql_happy_path(self):
         key_path = uuid.uuid4().__str__()
         result = post_copy_request_to_queue.get_metadata_sql(key_path)
-        self.assertEqual(f"""
+        self.assertEqual(
+            f"""
             SELECT
                 job_id, granule_id, filename, restore_destination, multipart_chunksize_mb
             FROM
@@ -363,4 +364,6 @@ class TestPostCopyRequestToQueue(TestCase):
                 key_path = '{key_path}'
             AND
                 status_id = {shared_recovery.OrcaStatus.PENDING.value}
-        """, result.text)
+        """,
+            result.text,
+        )
