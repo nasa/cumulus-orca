@@ -12,7 +12,7 @@ from random import randint, uniform
 from unittest import mock
 from unittest.mock import patch, MagicMock, call, Mock
 
-from orca_shared.shared_recovery import OrcaStatus
+from orca_shared.recovery.shared_recovery import OrcaStatus
 from test.request_helpers import LambdaContextMock, create_handler_event
 
 # noinspection PyPackageRequirements
