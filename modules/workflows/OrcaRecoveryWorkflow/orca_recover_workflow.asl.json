@@ -52,7 +52,7 @@
           "task_config": {
             "glacier-bucket": "${orca_default_bucket}",
             "asyncOperationId": "{$.cumulus_meta.asyncOperationId}",
-            "multipart_chunksize_mb": "{$.meta.collection.multipart_chunksize_mb"}
+            "multipart_chunksize_mb": "{$.meta.collection.multipart_chunksize_mb}"
           }
         }
       },
