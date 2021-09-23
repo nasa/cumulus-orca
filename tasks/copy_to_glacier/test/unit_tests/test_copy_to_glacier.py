@@ -103,7 +103,8 @@ class TestCopyToGlacierHandler(TestCase):
                             '.png'
                         ]
                     }
-                }
+                },
+                CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: 15
             }
         }
         handler_input_context = LambdaContextMock()

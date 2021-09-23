@@ -21,6 +21,10 @@
               }
             }
           }
+        },
+        "multipart_chunksize_mb": {
+          "type": "integer",
+          "description": "The collection's maximum size of chunks to use when copying. Defaults to environment variable."
         }
       }
     }
