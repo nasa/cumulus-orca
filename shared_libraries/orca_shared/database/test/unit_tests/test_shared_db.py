@@ -3,13 +3,14 @@ Name: test_shared_db.py
 
 Description: Runs unit tests for the shared_db.py library.
 """
-# import shared_db
+import os
+import unittest
+from unittest.mock import MagicMock, patch
+
+import boto3
 from moto import mock_secretsmanager
 from sqlalchemy.engine import URL
-import boto3
-import unittest
-from unittest.mock import Mock, call, patch, MagicMock
-import os
+
 from orca_shared.database import shared_db
 
 
@@ -278,10 +279,10 @@ class TestSharedDatabseLibraries(unittest.TestCase):
 
         config = shared_db.get_configuration()
 
-        root_db_creds = shared_db.get_admin_connection(config)
+        _ = shared_db.get_admin_connection(config)
         mock_connection.assert_called_with(**root_db_call)
 
-        user_db_creds = shared_db.get_admin_connection(config, "disaster_recovery")
+        _ = shared_db.get_admin_connection(config, "disaster_recovery")
         mock_connection.assert_called_with(**user_db_call)
 
     @patch.dict(
@@ -312,7 +313,7 @@ class TestSharedDatabseLibraries(unittest.TestCase):
 
         config = shared_db.get_configuration()
 
-        user_db_creds = shared_db.get_user_connection(config)
+        _ = shared_db.get_user_connection(config)
         mock_connection.assert_called_with(**user_db_call)
 
     @patch.dict(
@@ -329,7 +330,7 @@ class TestSharedDatabseLibraries(unittest.TestCase):
         clear=True,
     )
     @patch("orca_shared.database.shared_db.create_engine")
-    def test__create_connection_call_values(self, mock_connection: MagicMock):
+    def test_create_connection_call_values(self, mock_connection: MagicMock):
         """
         Tests the function to make sure the correct database value is passed.
         """
@@ -343,5 +344,5 @@ class TestSharedDatabseLibraries(unittest.TestCase):
 
         user_db_url = URL.create(drivername="postgresql", **user_db_call)
 
-        user_db_creds = shared_db._create_connection(**user_db_call)
+        _ = shared_db._create_connection(**user_db_call)
         mock_connection.assert_called_once_with(user_db_url, future=True)
