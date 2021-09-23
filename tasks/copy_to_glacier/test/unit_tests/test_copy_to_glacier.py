@@ -161,10 +161,6 @@ class TestCopyToGlacierHandler(TestCase):
         event = {
             'input': copy.deepcopy(self.event_granules),
             'config': {
-                CONFIG_COLLECTION_KEY: {
-                    COLLECTION_NAME_KEY: collection_name,
-                    COLLECTION_VERSION_KEY: collection_version
-                },
                 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: None
             }
         }
@@ -304,13 +300,8 @@ class TestCopyToGlacierHandler(TestCase):
                 "granules": []
             },
             'config': {
-                CONFIG_COLLECTION_KEY: {
-                    COLLECTION_NAME_KEY: collection_name,
-                    COLLECTION_VERSION_KEY: collection_version
-                },
                 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: None
             }
-
         }
 
         result = task(event, None)
