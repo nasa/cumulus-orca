@@ -1,3 +1,7 @@
+"""
+Name: copy_to_glacier.py
+Description: Lambda function that takes a Cumulus message, extracts a list of files, and copies those files from their current storage location into a staging/glacier location.
+"""
 import re
 import os
 from typing import Dict, Any, List, Union
@@ -39,6 +43,8 @@ def copy_granule_between_buckets(source_bucket_name: str, source_key: str, desti
         destination_bucket: The name of the bucket the granule is to be copied to.
         destination_key: Destination granule path excluding s3://[bucket]/
         multipart_chunksize_mb: The maximum size of chunks to use when copying.
+    Returns:
+        None
     """
     s3 = boto3.client('s3')
     copy_source = {
