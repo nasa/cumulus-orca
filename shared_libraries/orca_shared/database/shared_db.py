@@ -5,12 +5,13 @@ Description: Shared library for database objects needed by the various libraries
 """
 
 import os
+from typing import Any, Dict
+
 import boto3
+from cumulus_logger import CumulusLogger
 from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
 from sqlalchemy.future import Engine
-from cumulus_logger import CumulusLogger
-from typing import Any, List, Dict, Optional, Union
 
 # instantiate CumulusLogger
 logger = CumulusLogger(name="orca")
@@ -29,7 +30,7 @@ def get_configuration() -> Dict[str, str]:
         DATABASE_NAME (str): The name of the application database.
         APPLICATION_USER (str): The name of the database application user.
         ADMIN_USER (str): *OPTIONAL* The name of the database super user (postgres).
-        ADMIN_DATABASE (str): *OPTIONAL* The name of the admin database for the instance (postgres).
+        ADMIN_DATABASE (str): *OPTIONAL* The name of the admin database (postgres).
 
     Parameter Store:
         <prefix>-drdb-user-pass (string): The password for the application user (APPLICATION_USER).
@@ -115,7 +116,7 @@ def get_configuration() -> Dict[str, str]:
         db_host = secretsmanager.get_secret_value(SecretId=f"{prefix}-drdb-host")
         config["host"] = db_host["SecretString"]
 
-    except Exception as e:
+    except Exception:
         logger.critical("Failed to retrieve secret.", exc_info=True)
         raise Exception("Failed to retrieve secret manager value.")
 

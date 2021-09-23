@@ -5,6 +5,11 @@ pydoc-markdown>=4.0.0,<5.0.0
 
 ## Additional validation libraries
 ## ---------------------------------------------------------------------------
+bandit==1.7.0
+safety==1.10.3
+flake8==3.9.2
+black==21.9b0
+isort==5.9.3
 
 
 ## Libraries needed for unit tests

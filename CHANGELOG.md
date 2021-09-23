@@ -19,6 +19,10 @@ and includes an additional section for migration notes.
 - *ORCA-244* Added schema files for copy_to_glacier. Errors for improperly formatted requests will look different.
 - *ORCA-246* Added TF variable `default_multipart_chunksize_mb` which adjusts the maximum chunksize when copying files. Defaults to 250. Can be overridden by `multipart_chunksize_mb` within `config['collection']`.
 
+### Fixed
+- *ORCA-205* Fixed installation and usage of orca_shared libraries.
+
+
 ## [v3.0.1] 2021-08-31
 ### Migration Notes
 - `database_app_user`, `database_name`, and `orca_recovery_retrieval_type` are no longer variables. If you have set these values, remove them.
@@ -32,6 +36,10 @@ and includes an additional section for migration notes.
 - ORCA-238 Moved all terraform requirements to a single versions.tf file as part of the deployments.
 - ORCA-239 Removed terraform provider block from all ORCA files and consolidated to main.tf file.
 - Removed technical debt and fixed recovery bug where bucket keys that were not the standard (internal, public, private, etc.) were being ignored.
+
+### Changed
+- *ORCA-237* Updated node requirement versions to fix known security vulnerabilities.
+
 
 ## [v3.0.0] 2021-07-12
 

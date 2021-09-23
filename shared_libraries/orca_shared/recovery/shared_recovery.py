@@ -1,6 +1,7 @@
 """
 Name: shared_recovery.py
-Description: Shared library that combines common functions and classes needed for recovery operations.
+Description: Shared library that combines common functions and classes needed
+for recovery operations.
 """
 # Standard libraries
 import hashlib
@@ -8,9 +9,10 @@ import json
 import os
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Dict, Any, Optional, List
+from typing import Any, Dict, List, Optional
 
 import boto3
+
 # Third party libraries
 from cumulus_logger import CumulusLogger
 
@@ -59,11 +61,11 @@ def get_aws_region() -> str:
 
 
 def create_status_for_job(
-        job_id: str,
-        granule_id: str,
-        archive_destination: str,
-        files: List[Dict[str, Any]],
-        db_queue_url: str
+    job_id: str,
+    granule_id: str,
+    archive_destination: str,
+    files: List[Dict[str, Any]],
+    db_queue_url: str,
 ):
     """
     Creates status information for a new job and its files, and posts to queue.
@@ -88,7 +90,7 @@ def create_status_for_job(
         "granule_id": granule_id,
         "request_time": datetime.now(timezone.utc).isoformat(),
         "archive_destination": archive_destination,
-        "files": files
+        "files": files,
     }
 
     message = "Sending the following data to queue: {new_data}"
@@ -98,16 +100,18 @@ def create_status_for_job(
 
 
 def update_status_for_file(
-        job_id: str,
-        granule_id: str,
-        filename: str,
-        orca_status: OrcaStatus,
-        error_message: Optional[str],
-        db_queue_url: str,
+    job_id: str,
+    granule_id: str,
+    filename: str,
+    orca_status: OrcaStatus,
+    error_message: Optional[str],
+    db_queue_url: str,
 ):
     """
     Creates update information for a file's status entry, and posts to queue.
-    Queue entry will be rejected by post_to_database if status for job_id + granule_id + filename does not exist.
+    Queue entry will be rejected by post_to_database if status for
+    job_id + granule_id + filename does not exist.
+
     Args:
         job_id: The unique identifier used for tracking requests.
         granule_id: The id of the granule being restored.
@@ -139,15 +143,15 @@ def update_status_for_file(
 
 
 def post_entry_to_queue(
-        new_data: Dict[str, Any],
-        request_method: RequestMethod,
-        db_queue_url: str,
+    new_data: Dict[str, Any],
+    request_method: RequestMethod,
+    db_queue_url: str,
 ) -> None:
     """
     Posts messages to an SQS queue.
     Args:
         new_data: A dictionary representing the column/value pairs to write to the DB table.
-        request_method: The method action for the database lambda to take when posting to the SQS queue.
+        request_method: The action for the database lambda to take.
         db_queue_url: The SQS queue URL defined by AWS.
     Raises:
         None
@@ -164,10 +168,10 @@ def post_entry_to_queue(
     # Create hash for De-duplication ID max size is 128 characters
     # sha256 will be 64 characters long sha512 is 128 characters
     deduplication_id = (
-            request_method.value + hashlib.sha256(body.encode("utf8")).hexdigest()
+        request_method.value + hashlib.sha256(body.encode("utf8")).hexdigest()
     )
 
-    md5_body = hashlib.md5(body.encode("utf8")).hexdigest()
+    md5_body = hashlib.md5(body.encode("utf8")).hexdigest()  # nosec
 
     LOGGER.debug("Sending message to the QUEUE")
     response = mysqs.send_message(

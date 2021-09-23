@@ -19,13 +19,13 @@ The installation steps below goes into further details.
 
 1. Install the latest [Node Version Manager (nvm)](https://github.com/nvm-sh/nvm) application to manage Node.js and npm versions.
    ```sh
-   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
+   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
    ```
 
-2. Install the proper Node.js and npm versions to your machine. Currently Node v12.15.0 should be used.
+2. Install the proper Node.js and npm versions to your machine. Currently Node v14.17.6 should be used.
    ```sh
-   nvm install 12.15.0
-   nvm use 12.15.0
+   nvm install 14.17.6
+   nvm use 14.17.6
    npm install npm@latest -g
    ```
 

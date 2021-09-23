@@ -86,6 +86,44 @@ coverage report --fail-under=80
 let return_code=$?
 check_rc $return_code "ERROR: Unit tests coverage is less than 80%"
 
+
+## Run code smell and security tests using bandit
+echo "INFO: Running code smell security tests ..."
+bandit -r orca_shared
+let return_code=$?
+check_rc $return_code "ERROR: Potential security or code issues found."
+
+
+## Check code third party libraries for CVE issues
+echo "INFO: Running checks on third party libraries ..."
+safety check -r requirements.txt
+let return_code=$?
+check_rc $return_code "ERROR: Potential security issues third party libraries."
+
+
+## Check code formatting and styling
+echo "INFO: Checking formatting and style of code ..."
+echo "INFO: Checking lint rules ..."
+flake8 \
+    --max-line-length 99 \
+    --extend-ignore E203 \
+    orca_shared
+check_rc $return_code "ERROR: Linting issues found."
+
+echo "INFO: Sorting imports ..."
+isort \
+    --trailing-comma \
+    --ensure-newline-before-comments \
+    --line-length 88 \
+    --use-parentheses \
+    --force-grid-wrap 0 \
+    -m 3 \
+    orca_shared
+
+echo "INFO: Formatting with black ..."
+black orca_shared
+
+
 ## Deactivate and remove the virtual env
 echo "INFO: Cleaning up the environment ..."
 deactivate

@@ -4,7 +4,7 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
 
 ## Description
 
-The `copy_to_glacier` module is meant to be deployed as a lambda function that takes a Cumulus message, extracts a list of files, and copies those files from their current storage location into a staging/glacier location.
+The `copy_to_glacier` module is meant to be deployed as a lambda function that takes a Cumulus message, extracts a list of files, and copies those files from their current storage location into a staging/glacier ORCA S3 bucket.
 
 
 ## Exclude files by extension.
@@ -25,45 +25,70 @@ Note that this must be done for _each_ collection configured. If this list is em
 
 ## Build
 
-The following steps assume you are using a version of Python compliant with 3.7 (`pip` comes with current versions).
+To build the **copy_to_glacier** lambda, run the `bin/build.sh` script from the
+`tasks/copy_to_glacier` directory in a docker
+container. The following shows setting up a container to run the script.
 
-```
-python -m venv venv
-source venv/bin/activate
-pip install --upgrade pip       # Upgrade pip
-pip install -r requirements.txt # requirements-dev.txt if you're testing/developing
+```bash
+# Invoke a docker container in interactive mode.
+user$ docker run \
+      -it \
+      --rm \
+      -v /path/to/cumulus-orca/repo:/data \
+      amazonlinux:2 \
+      /bin/bash
+
+# Install the python development binaries
+bash-4.2# yum install python3-devel
+
+# In the container cd to /data
+bash-4.2# cd /data
+
+# Go to the task
+bash-4.2# cd tasks/copy_to_glacier/
+
+# Run the tests
+bash-4.2# bin/build.sh
 ```
 
-An explicit example of building the lambda package can be found in `/bin/build_tasks.sh`.
+### Testing copy_to_glacier
+
+To run unit tests for **copy_to_glacier**, run the `bin/run_tests.sh` script from the
+`tasks/copy_to_glacier` directory. Ideally, the tests should be run in a docker
+container. The following shows setting up a container to run the tests.
+
+```bash
+# Invoke a docker container in interactive mode.
+user$ docker run \
+      -it \
+      --rm \
+      -v /path/to/cumulus-orca/repo:/data \
+      amazonlinux:2 \
+      /bin/bash
+
+# Install the python development binaries
+bash-4.2# yum install python3-devel
+
+# In the container cd to /data
+bash-4.2# cd /data
+
+# Go to the task
+bash-4.2# cd tasks/copy_to_glacier/
+
+# Run the tests
+bash-4.2# bin/run_tests.sh
+```
+
+Note that Bamboo will run this same script via the `bin/run_tests.sh` script found
+in the cumulus-orca base of the repo.
 
 ## Deployment
 
-Upload the zip file to AWS (either through the cli or console). Alternatively, `modules/lambdas/main.tf` shows an example of deploying this lambda through Terraform.
-
-```
-resource "aws_lambda_function" "copy_to_glacier" {
-  function_name    = "${var.prefix}_copy_to_glacier"
-  filename         = "${path.module}/../../tasks/copy_to_glacier/copy_to_glacier.zip"
-  source_code_hash = filemd5("${path.module}/../../tasks/copy_to_glacier/copy_to_glacier.zip")
-  handler          = "copy_to_glacier.handler"
-  role             = module.restore_object_arn.restore_object_role_arn
-  runtime          = "python3.7"
-  memory_size      = 2240
-  timeout          = 600 # 10 minutes
-
-  tags = local.default_tags
-  environment {
-    variables = {
-      system_bucket               = var.buckets["internal"]["name"]
-      stackName                   = var.prefix
-      CUMULUS_MESSAGE_ADAPTER_DIR = "/opt/"
-    }
-  }
-```
+The `copy_to_glacier` lambda function can be deployed using terraform using the example shown in  `"aws_lambda_function" "copy_to_glacier"` resource block of `modules/lambdas/main.tf` file.
 
 ## Input
 
-The `handler` function expects input as a Cumulus Message. The actual format of that input may change over time, so we use the `cumulus-process` package (check `requirements.txt`), which Cumulus develops and updates, to parse the input.
+The `handler` function `handler(event, context)` expects input as a Cumulus Message. Event is passed from the AWS step function workflow. The actual format of that input may change over time, so we use the [cumulus-message-adapter](https://github.com/nasa/cumulus-message-adapter) package (check `requirements.txt`), which Cumulus develops and updates, to parse the input.
 
 The `copy_to_glacier` lambda function expects that the input payload has a `granules` object, similar to the output of `MoveGranulesStep`:
 
@@ -127,16 +152,17 @@ The `copy_to_glacier` lambda function expects that the input payload has a `gran
   }
 }
 ```
-
+From the json file, the `filepath` shows the current S3 location of files that need to be copied over to glacier ORCA S3 bucket such as `"filename": "s3://orca-sandbox-protected/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf"`.
 **Note:** We suggest that the `copy_to_glacier` task be placed any time after the `MoveGranulesStep`. It will propagate the input `granules` object as output, so it can be used as the last task in the workflow.
+See the schema [input file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/input.json) for more information.
 
 
 ## Output
 
-The copy lambda will, as the name suggests, copy a file from its current some source destination. The destination location is defined as 
-`${glacier_bucket}/${filepath}`, where `${glacier_bucket}` is pulled from your Cumulus `meta.bucket` config and `${filepath}` is pulled from the Cumulus granule object input.
+The `copy_to_glacier` lambda will, as the name suggests, copy a file from its current source destination. The destination location is defined as 
+`${glacier_bucket}/${filepath}`, where `${glacier_bucket}` is pulled from the environment variable `ORCA_DEFAULT_BUCKET` and `${filepath}` is pulled from the Cumulus granule object input.
 
-The output of this lambda is a dictionary with a `granules` and `copied_to_glacier` attributes:
+The output of this lambda is a dictionary with a `granules` and `copied_to_glacier` attributes.  See the schema [output file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/output.json) for more information. Below is an example of the output:
 
 ```json
 {
@@ -192,6 +218,59 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_glaci
 }
 ```
 
+## Configuration
+
+As part of the [Cumulus Message Adapter configuration](https://nasa.github.io/cumulus/docs/workflows/input_output#cma-configuration) 
+for `copy_to_glacier`, the `collection` and `multipart_chunksize_mb` keys must be present under the 
+`task_config` object as seen below. Per the [config schema](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/config.json), 
+the values of the two keys are used the following ways. The `collection` key value should contain a meta 
+object with an optional `excludeFileTypes` key that is used to determine file patterns that should not be 
+sent to ORCA. The optional `multipart_chunksize_mb` is used to override the default setting for the lambda 
+s3 copy maximum multipart chunk size value when copying large files to ORCA. Both of these settings can 
+often be derived from the collection configuration in Cumulus as seen below:
+
+```
+{
+  "States": {
+    "CopyToGlacier": {
+      "Parameters": {
+        "cma": {
+          "event.$": "$",
+          "task_config": {
+            "collection": "{$.meta.collection}",
+            "multipart_chunksize_mb": "{$.meta.collection.multipart_chunksize_mb"}
+          }
+        }
+      },
+      "Type": "Task",
+      "Resource": "${orca_lambda_copy_to_glacier_arn}",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "ResultPath": "$.exception",
+          "Next": "WorkflowFailed"
+        }
+      ]
+    }
+  }
+}
+```
+See the schema [configuration file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/config.json) for more information.
+
 ## pydoc copy_to_glacier
 
 ```
@@ -209,6 +288,8 @@ FUNCTIONS
             destination_bucket: The name of the bucket the granule is to be copied to.
             destination_key: Destination granule path excluding s3://[bucket]/
             multipart_chunksize_mb: The maximum size of chunks to use when copying.
+        Returns:
+            None
     
     handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any
         Lambda handler. Runs a cumulus task that
@@ -223,7 +304,7 @@ FUNCTIONS
                                                                      Can be overridden by collection config.
         
         Args:
-            event: Event passed into the step from the aws workflow.
+            event: Event passed into the step from the AWS step function workflow.
                 See schemas/input.json and schemas/config.json for more information.
         
         
