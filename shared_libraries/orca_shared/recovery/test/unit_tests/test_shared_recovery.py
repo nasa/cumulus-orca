@@ -2,16 +2,17 @@
 Name: test_shared_recovery.py
 Description: Unit tests for shared_recovery.py shared library.
 """
-import random
-
-import boto3
 import json
-from moto import mock_sqs
-from orca_shared.recovery import shared_recovery
+import os
+import random
 import unittest
 from datetime import datetime, timezone
 from unittest.mock import patch
-import os
+
+import boto3
+from moto import mock_sqs
+
+from orca_shared.recovery import shared_recovery
 
 
 class TestSharedRecoveryLibraries(unittest.TestCase):
@@ -238,8 +239,9 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
     # Other non-happy tests go here for things that should raise exceptions
     def test_create_status_for_job_raise_errors(self):
         """
-        Tests that create_status_for_job will raise an exception if the archive_destination is either None or empty.
-        request_method is set as NEW since the logics only apply for it.
+        Tests that create_status_for_job will raise an exception if the
+        archive_destination is either None or empty. request_method is set as
+        NEW since the logics only apply for it.
         """
         request_method = shared_recovery.RequestMethod.NEW_JOB
 
@@ -259,13 +261,14 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                         archive_destination,
                         request_method.value,
                         self.db_queue_url,
-                        random.uniform(0, 1000),
+                        random.uniform(0, 1000),  # nosec
                     )
 
     def test_update_status_for_file_raise_errors_restore_destination(self):
         """
-        Tests that update_status_for_file will raise an exception if the restore_destination is either None or empty.
-        request_method is set as NEW since the logics only apply for it.
+        Tests that update_status_for_file will raise an exception if the
+        restore_destination is either None or empty. request_method is set as
+        NEW since the logics only apply for it.
         """
         filename = "f1.doc"
         request_method = shared_recovery.RequestMethod.NEW_JOB
@@ -295,8 +298,9 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
 
     def test_update_status_for_file_raise_errors_key_path(self):
         """
-        Tests that the function update_status_for_file will raise an exception if the key_path is either None or empty.
-        request_method is set as NEW since the logics only apply for it.
+        Tests that the function update_status_for_file will raise an exception
+        if the key_path is either None or empty. request_method is set as NEW
+        since the logics only apply for it.
         """
         filename = "f1.doc"
         request_method = shared_recovery.RequestMethod.NEW_JOB
