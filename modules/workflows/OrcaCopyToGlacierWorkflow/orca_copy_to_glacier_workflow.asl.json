@@ -52,7 +52,7 @@
             "provider": "{$.meta.provider}",
             "collection": "{$.meta.collection}",
             "files_config": "{$.meta.collection.files}",
-            "multipart_chunksize_mb": "{$.meta.collection.multipart_chunksize_mb"}
+            "multipart_chunksize_mb": "{$.meta.collection.multipart_chunksize_mb}"
           }
         }
       },
