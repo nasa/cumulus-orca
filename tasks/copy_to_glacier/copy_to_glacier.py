@@ -10,11 +10,8 @@ import boto3
 from boto3.s3.transfer import TransferConfig, MB
 from run_cumulus_task import run_cumulus_task
 
-CONFIG_COLLECTION_KEY = 'collection'
 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = 'multipart_chunksize_mb'
-
-COLLECTION_META_KEY = 'meta'
-EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
+CONFIG_EXCLUDE_FILE_TYPES_KEY = 'exclude_file_types'
 
 
 def should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -> bool:
@@ -67,12 +64,13 @@ def copy_granule_between_buckets(source_bucket_name: str, source_key: str, desti
 # noinspection PyUnusedLocal
 def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str, Any]:
     """
-    Copies the files in {event}['input'] from the collection specified in {config}
+    Copies the files in {event}['input']
     to the ORCA glacier bucket defined in ORCA_DEFAULT_BUCKET.
 
         Environment Variables:
             ORCA_DEFAULT_BUCKET (string, required): Name of the default ORCA S3 Glacier bucket.
-            DEFAULT_MULTIPART_CHUNKSIZE_MB (int, optional): The default maximum size of chunks to use when copying. Can be overridden by collection config.
+            DEFAULT_MULTIPART_CHUNKSIZE_MB (int, optional): The default maximum size of chunks to use when copying.
+                Can be overridden by collection config.
 
     Args:
         event: Passed through from {handler}
@@ -87,8 +85,9 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     granules_list = event_input['granules']
     config = event['config']
 
-    collection = config.get(CONFIG_COLLECTION_KEY, {})
-    exclude_file_types = collection.get(COLLECTION_META_KEY, {}).get(EXCLUDE_FILE_TYPES_KEY, [])
+    exclude_file_types = config.get(CONFIG_EXCLUDE_FILE_TYPES_KEY, None)
+    if exclude_file_types is None:
+        exclude_file_types = []
 
     # TODO: Should look at bucket type orca and check for default
     #      Should also be flexible enough to handle input precedence order of
@@ -130,7 +129,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
             if should_exclude_files_type(source_name, exclude_file_types):
                 print(
                     f"Excluding {source_name} from glacier backup "
-                    f"because of collection configured {EXCLUDE_FILE_TYPES_KEY}.")
+                    f"because of collection configured {CONFIG_EXCLUDE_FILE_TYPES_KEY}.")
                 continue
             copy_granule_between_buckets(source_bucket_name=file['bucket'],
                                          source_key=source_filepath,
@@ -146,8 +145,8 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
 # handler that is provided to aws lambda
 def handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any:
     """Lambda handler. Runs a cumulus task that
-    Copies the files in {event}['input'] from the collection specified in
-    {config} to the default ORCA bucket. Environment variables must be set to
+    Copies the files in {event}['input']
+    to the default ORCA bucket. Environment variables must be set to
     provide a default ORCA bucket to store the files in.
         Environment Vars:
             ORCA_DEFAULT_BUCKET (str, required): Name of the default S3 Glacier

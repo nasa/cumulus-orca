@@ -221,7 +221,7 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_glaci
 ## Configuration
 
 As part of the [Cumulus Message Adapter configuration](https://nasa.github.io/cumulus/docs/workflows/input_output#cma-configuration) 
-for `copy_to_glacier`, the `collection` and `multipart_chunksize_mb` keys must be present under the 
+for `copy_to_glacier`, the `exclude_file_types` and `multipart_chunksize_mb` keys must be present under the 
 `task_config` object as seen below. Per the [config schema](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/config.json), 
 the values of the two keys are used the following ways. The `collection` key value should contain a meta 
 object with an optional `excludeFileTypes` key that is used to determine file patterns that should not be 
@@ -237,8 +237,8 @@ often be derived from the collection configuration in Cumulus as seen below:
         "cma": {
           "event.$": "$",
           "task_config": {
-            "collection": "{$.meta.collection}",
-            "multipart_chunksize_mb": "{$.meta.collection.multipart_chunksize_mb"}
+            "multipart_chunksize_mb": "{$.meta.collection.multipart_chunksize_mb"},
+            "exclude_file_types": "{$.meta.collection.meta.excludeFileTypes}"
           }
         }
       },
@@ -293,8 +293,8 @@ FUNCTIONS
     
     handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any
         Lambda handler. Runs a cumulus task that
-        Copies the files in {event}['input'] from the collection specified in
-        {config} to the default ORCA bucket. Environment variables must be set to
+        Copies the files in {event}['input']
+        to the default ORCA bucket. Environment variables must be set to
         provide a default ORCA bucket to store the files in.
             Environment Vars:
                 ORCA_DEFAULT_BUCKET (str, required): Name of the default S3 Glacier
@@ -322,7 +322,7 @@ FUNCTIONS
             True if file should be excluded from copy, False otherwise.
     
     task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str, Any]
-        Copies the files in {event}['input'] from the collection specified in {config}
+        Copies the files in {event}['input']
         to the ORCA glacier bucket defined in ORCA_DEFAULT_BUCKET.
         
             Environment Variables:
@@ -338,11 +338,9 @@ FUNCTIONS
 
 DATA
     Any = typing.Any
-    COLLECTION_META_KEY = 'meta'
-    CONFIG_COLLECTION_KEY = 'collection'
     CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = 'multipart_chunksize_mb'
     Dict = typing.Dict
-    EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
+    CONFIG_EXCLUDE_FILE_TYPES_KEY = 'exclude_file_types'
     List = typing.List
     MB = 1048576
     Union = typing.Union

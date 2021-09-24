@@ -4,13 +4,12 @@ import unittest
 import uuid
 from unittest import TestCase
 from unittest.mock import Mock, call, patch, MagicMock
-from test.helpers import LambdaContextMock
 
 import fastjsonschema as fastjsonschema
 
 import copy_to_glacier
-import test
 from copy_to_glacier import *
+from test.helpers import LambdaContextMock
 from test.unit_tests.ConfigCheck import ConfigCheck
 
 
@@ -97,13 +96,9 @@ class TestCopyToGlacierHandler(TestCase):
                 "granules": granules
             },
             "task_config": {
-                CONFIG_COLLECTION_KEY: {
-                    COLLECTION_META_KEY: {
-                        EXCLUDE_FILE_TYPES_KEY: [
-                            '.png'
-                        ]
-                    }
-                },
+                CONFIG_EXCLUDE_FILE_TYPES_KEY: [
+                    '.png'
+                ],
                 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: 15
             }
         }
@@ -234,8 +229,6 @@ class TestCopyToGlacierHandler(TestCase):
         event = {
             'input': copy.deepcopy(self.event_granules),
             'config': {
-                CONFIG_COLLECTION_KEY: {
-                },
                 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: str(overridden_multipart_chunksize_mb)
             }
         }
@@ -336,8 +329,6 @@ class TestCopyToGlacierHandler(TestCase):
         event = {
             'input': copy.deepcopy(self.event_granules),
             'config': {
-                CONFIG_COLLECTION_KEY: {
-                }
             }
 
         }

@@ -50,9 +50,9 @@
             "granules": "{$.meta.processed_granules}",
             "buckets": "{$.meta.buckets}",
             "provider": "{$.meta.provider}",
-            "collection": "{$.meta.collection}",
             "files_config": "{$.meta.collection.files}",
-            "multipart_chunksize_mb": "{$.meta.collection.multipart_chunksize_mb}"
+            "multipart_chunksize_mb": "{$.meta.collection.multipart_chunksize_mb}",
+            "exclude_file_types": "{$.meta.collection.meta.excludeFileTypes}"
           }
         }
       },
