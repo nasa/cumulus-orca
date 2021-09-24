@@ -221,7 +221,7 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_glaci
 ## Configuration
 
 As part of the [Cumulus Message Adapter configuration](https://nasa.github.io/cumulus/docs/workflows/input_output#cma-configuration) 
-for `copy_to_glacier`, the `exclude_file_types` and `multipart_chunksize_mb` keys must be present under the 
+for `copy_to_glacier`, the `excludeFileTypes` and `multipart_chunksize_mb` keys must be present under the 
 `task_config` object as seen below. Per the [config schema](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/config.json), 
 the values of the two keys are used the following ways. The `collection` key value should contain a meta 
 object with an optional `excludeFileTypes` key that is used to determine file patterns that should not be 
@@ -238,7 +238,7 @@ often be derived from the collection configuration in Cumulus as seen below:
           "event.$": "$",
           "task_config": {
             "multipart_chunksize_mb": "{$.meta.collection.multipart_chunksize_mb"},
-            "exclude_file_types": "{$.meta.collection.meta.excludeFileTypes}"
+            "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}"
           }
         }
       },
@@ -340,7 +340,7 @@ DATA
     Any = typing.Any
     CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = 'multipart_chunksize_mb'
     Dict = typing.Dict
-    CONFIG_EXCLUDE_FILE_TYPES_KEY = 'exclude_file_types'
+    CONFIG_EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
     List = typing.List
     MB = 1048576
     Union = typing.Union

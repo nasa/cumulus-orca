@@ -48,7 +48,7 @@
           "event.$": "$",
           "task_config": {
             "multipart_chunksize_mb": "{$.meta.collection.multipart_chunksize_mb}",
-            "exclude_file_types": "{$.meta.collection.meta.excludeFileTypes}"
+            "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}"
           }
         }
       },

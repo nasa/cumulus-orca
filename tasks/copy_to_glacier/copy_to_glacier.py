@@ -11,7 +11,7 @@ from boto3.s3.transfer import TransferConfig, MB
 from run_cumulus_task import run_cumulus_task
 
 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = 'multipart_chunksize_mb'
-CONFIG_EXCLUDE_FILE_TYPES_KEY = 'exclude_file_types'
+CONFIG_EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
 
 
 def should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -> bool:
