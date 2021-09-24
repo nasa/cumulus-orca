@@ -157,7 +157,6 @@ class TestCopyToGlacierHandler(TestCase):
         event = {
             'input': copy.deepcopy(self.event_granules),
             'config': {
-                CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: None
             }
         }
 
@@ -294,7 +293,6 @@ class TestCopyToGlacierHandler(TestCase):
                 "granules": []
             },
             'config': {
-                CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: None
             }
         }
 
