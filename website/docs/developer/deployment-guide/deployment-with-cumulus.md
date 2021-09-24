@@ -251,7 +251,6 @@ buckets = {
 
 :::
 
-
 ## Define the ORCA Wokflows
 
 The ORCA Ingest Workflows follows each step listed below. Adding the Move
@@ -343,11 +342,8 @@ the ingest workflow.
       "cma":{
          "event.$":"$",
          "task_config":{
-            "buckets":"{$.meta.buckets}",
-            "provider": "{$.meta.provider}",
             "collection":"{$.meta.collection}",
-            "granules": "{$.meta.processed_granules}",
-            "files_config": "{$.meta.collection.files}"
+            "multipart_chunksize_mb": "{$.meta.collection.multipart_chunksize_mb"}
             }
          }
       }
@@ -376,7 +372,7 @@ the ingest workflow.
    "Next":"WorkflowSucceeded"
 },
 ```
-
+See the copy_to_glacier json schema [configuration file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/config.json), [input file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/input.json)  and [output file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/output.json) for more information.
 
 ### Modify the Recovery Workflow (*OPTIONAL*)
 
@@ -393,7 +389,6 @@ Failures within ORCA break through to the Cumulus workflow they are a part
 of. More information on addressing workflow failures can be found on the
 ORCA [Best Practices](developer/../../development-guide/code/best-practices.mdx) 
 page.
-
 
 ## ORCA Variables
 
