@@ -47,10 +47,6 @@
         "cma": {
           "event.$": "$",
           "task_config": {
-            "granules": "{$.meta.processed_granules}",
-            "buckets": "{$.meta.buckets}",
-            "provider": "{$.meta.provider}",
-            "files_config": "{$.meta.collection.files}",
             "multipart_chunksize_mb": "{$.meta.collection.multipart_chunksize_mb}",
             "exclude_file_types": "{$.meta.collection.meta.excludeFileTypes}"
           }

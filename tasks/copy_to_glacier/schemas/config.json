@@ -5,7 +5,7 @@
   "description": "The config for the copy_to_glacier Lambda.",
   "type": "object",
   "properties": {
-    "excludeFileTypes": {
+    "exclude_file_types": {
       "type": "array",
       "description": "A list of file extensions to ignore when copying files.",
       "items": {
