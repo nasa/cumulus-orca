@@ -237,13 +237,14 @@ def inner_task(
         )
 
     # Get the collection's multipart_chunksize from the event.
-    try:
-        collection_multipart_chunksize_mb = \
-            int(event[EVENT_CONFIG_KEY][CONFIG_MULTIPART_CHUNKSIZE_MB_KEY])
-    except KeyError:
-        collection_multipart_chunksize_mb = None
+    collection_multipart_chunksize_mb_str = \
+        event[EVENT_CONFIG_KEY].get(CONFIG_MULTIPART_CHUNKSIZE_MB_KEY, None)
+    if collection_multipart_chunksize_mb_str is None:
         LOGGER.info(
             f'{CONFIG_MULTIPART_CHUNKSIZE_MB_KEY} is not set for config.')
+        collection_multipart_chunksize_mb = None
+    else:
+        collection_multipart_chunksize_mb = int(collection_multipart_chunksize_mb_str)
 
     # Get the granule array from the event
     granules = event[EVENT_INPUT_KEY][INPUT_GRANULES_KEY]
