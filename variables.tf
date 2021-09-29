@@ -60,7 +60,7 @@ variable "tags" {
 variable "default_multipart_chunksize_mb" {
   type        = number
   description = "The default maximum size of chunks to use when copying. Can be overridden by collection config."
-  default     = "250"
+  default     = 250
 }
 
 

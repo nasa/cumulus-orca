@@ -169,11 +169,11 @@ def migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> 
 
 def migrate_versions_2_to_3(config: Dict[str, str], is_latest_version: bool) -> None:
     """
-    Performs the migration of the ORCA schema from version 1 to version 2 of
+    Performs the migration of the ORCA schema from version 2 to version 3 of
     the ORCA schema.
     Args:
         config (Dict): Connection information for the database.
-        is_latest_version (bool): Flag to determine if version 2 is the latest schema version.
+        is_latest_version (bool): Flag to determine if version 3 is the latest schema version.
     """
     # Get the admin engine to the app database
     admin_app_connection = get_admin_connection(config, config["user_database"])
