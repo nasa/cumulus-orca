@@ -21,6 +21,10 @@ and includes an additional section for migration notes.
 ### Fixed
 - *ORCA-248* `excludeFileTypes` is no longer required, as intended.
 
+### Fixed
+- *ORCA-205* Fixed installation and usage of orca_shared libraries.
+
+
 ## [v3.0.1] 2021-08-31
 ### Migration Notes
 - `database_app_user`, `database_name`, and `orca_recovery_retrieval_type` are no longer variables. If you have set these values, remove them.

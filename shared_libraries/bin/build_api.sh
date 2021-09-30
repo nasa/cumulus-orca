@@ -1,27 +1,27 @@
 #!/bin/bash
 ## =============================================================================
-## NAME: run_tests.sh
+## NAME: build_api.sh
 ##
 ##
 ## DESCRIPTION
 ## -----------------------------------------------------------------------------
-## Tests the lambda (task) for post_copy_request_to_queue using unit tests.
+## Builds the shared ORCA libraries API documentation.
 ##
 ##
 ## USAGE
 ## -----------------------------------------------------------------------------
-## bin/run_tests.sh
+## bin/build_api.sh
 ##
-## This must be called from the (root) lambda directory /tasks/post_copy_request_to_queue
+## This must be called from the (root) lambda directory /tasks/shared_libraries
 ## =============================================================================
 
 ## Set this for Debugging only
-#set -ex
+#set -x
 
 ## Make sure we are calling the script the correct way.
 BASEDIR=$(dirname $0)
 if [ "$BASEDIR" != "bin" ]; then
-  >&2 echo "ERROR: This script must be called from the root directory of the task lambda [bin/run_tests.sh]."
+  >&2 echo "ERROR: This script must be called from the root directory of the shared library [bin/build.sh]."
   exit 1
 fi
 
@@ -49,7 +49,7 @@ function check_rc () {
 
 ## MAIN
 ## -----------------------------------------------------------------------------
-## Create the virtual env. Remove it if it exists.
+## Create the virtual env. Remove it if it already exists.
 echo "INFO: Creating virtual environment ..."
 if [ -d venv ]; then
   rm -rf venv
@@ -61,35 +61,21 @@ source venv/bin/activate
 
 ## Install the requirements
 pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org
-pip install -q -r requirements-dev.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
+pip install -q "pydoc-markdown>=4.0.0,<5.0.0" --trusted-host pypi.org --trusted-host files.pythonhosted.org
 let return_code=$?
 
 check_rc $return_code "ERROR: pip install encountered an error."
 
-## copy the shared_recovery.py
-echo "INFO: Copying ORCA shared libraries ..."
-if [ -d orca_shared ]; then
-    rm -rf orca_shared
-fi
-
-## Run unit tests and check Coverage
-echo "INFO: Running unit and coverage tests ..."
-
-# Currently just running unit tests until we fix/support large tests
-coverage run --source post_copy_request_to_queue -m pytest
+## Run the documentation command
+pydoc-markdown -I . -p orca_shared --render-toc > API.md
 let return_code=$?
-check_rc $return_code "ERROR: Unit tests encountered failures."
 
-# Unit tests expected to cover minimum of 80%.
-coverage report --fail-under=80
-let return_code=$?
-check_rc $return_code "ERROR: Unit tests coverage is less than 80%"
+check_rc $return_code "ERROR: Failed to create API.md file."
 
-## Deactivate and remove the virtual env
-echo "INFO: Cleaning up the environment ..."
+## Perform cleanup
+echo "INFO: Cleaning up environment ..."
 deactivate
 rm -rf venv
 find . -type d -name "__pycache__" -exec rm -rf {} +
-# Remove the include dir from greenlet sqlalchemy
-rm -rf include
+
 exit 0
