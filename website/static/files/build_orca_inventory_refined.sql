@@ -47,8 +47,8 @@ BEGIN
       provider_id     text NOT NULL
     , collection_id   text NOT NULL
     , CONSTRAINT PK_provider_collection_xref PRIMARY KEY(provider_id,collection_id)
-    , CONSTRAINT provider_collection_fk FOREIGN KEY(provider_id) REFERENCES providers(provider_id)
-    , CONSTRAINT collection_provider_fk FOREIGN KEY(collection_id) REFERENCES collections(collection_id)
+    , CONSTRAINT FK_provider_collection FOREIGN KEY(provider_id) REFERENCES providers(provider_id)
+    , CONSTRAINT FK_collection_provider FOREIGN KEY(collection_id) REFERENCES collections(collection_id)
     );
 
     COMMENT ON TABLE provider_collection_xref
@@ -62,7 +62,7 @@ BEGIN
     -- Create the Granules table
     CREATE TABLE IF NOT EXISTS granules
     (
-      id                  int8 NOT NULL
+      id                  bigserial NOT NULL
     , collection_id       text NOT NULL
     , cumulus_granule_id  text NOT NULL
     , execution_id  	  text NOT NULL
@@ -70,7 +70,7 @@ BEGIN
     , last_update         timestamp with time zone NOT NULL
     , CONSTRAINT PK_granules PRIMARY KEY(id)
     , CONSTRAINT UNIQUE_granules UNIQUE (collection_id, cumulus_granule_id)
-    , CONSTRAINT collection_granule_fk FOREIGN KEY(collection_id) REFERENCES collections(collection_id)
+    , CONSTRAINT FK_collection_granule FOREIGN KEY(collection_id) REFERENCES collections(collection_id)
     );
 
     COMMENT ON TABLE granules
@@ -91,7 +91,7 @@ BEGIN
     -- Create the Files table
     CREATE TABLE IF NOT EXISTS files
     (
-      id                          int8 NOT NULL
+      id                          bigserial NOT NULL
     , granule_id                  int8 NOT NULL
     , name                        text NOT NULL
     , orca_archive_location       text NOT NULL
@@ -104,9 +104,9 @@ BEGIN
     , hash                        text NULL
     , hash_type                   text NULL
     , CONSTRAINT PK_files PRIMARY KEY(id)
-    , CONSTRAINT UNIQUE_files_1 UNIQUE (cumulus_archive_location, key_path)
-    , CONSTRAINT UNIQUE_files_2 UNIQUE (orca_archive_location, key_path)
-    , CONSTRAINT granule_file_fk FOREIGN KEY(granule_id) REFERENCES granules(id)
+    , CONSTRAINT UNIQUE_cumulus_archive_location_key_path UNIQUE (cumulus_archive_location, key_path)
+    , CONSTRAINT UNIQUE_orca_archive_location_key_path UNIQUE (orca_archive_location, key_path)
+    , CONSTRAINT FK_granule_file FOREIGN KEY(granule_id) REFERENCES granules(id)
     );
 
     COMMENT ON TABLE files
