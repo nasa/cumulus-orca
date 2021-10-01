@@ -57,13 +57,6 @@ variable "tags" {
 }
 
 
-variable "default_multipart_chunksize_mb" {
-  type        = number
-  description = "The default maximum size of chunks to use when copying. Can be overridden by collection config."
-  default     = "250"
-}
-
-
 ## Variables unique to ORCA
 ## REQUIRED
 variable "database_app_user_pw" {
@@ -89,6 +82,13 @@ variable "database_port" {
   type        = number
   description = "Database port that PostgreSQL traffic will be allowed on."
   default     = 5432
+}
+
+
+variable "default_multipart_chunksize_mb" {
+  type        = number
+  description = "The default maximum size of chunks to use when copying. Can be overridden by collection config."
+  default     = "250"
 }
 
 

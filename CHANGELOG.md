@@ -14,14 +14,12 @@ and includes an additional section for migration notes.
 - *Security* - Vulnerabilities fixes and changes.
 
 
-## [Unreleased]
+## [3.0.2]
 ### Added
 - *ORCA-244* Added schema files for copy_to_glacier. Errors for improperly formatted requests will look different.
 - *ORCA-246* Added TF variable `default_multipart_chunksize_mb` which adjusts the maximum chunksize when copying files. Defaults to 250. Can be overridden by `multipart_chunksize_mb` within `config['collection']`.
 ### Fixed
 - *ORCA-248* `excludeFileTypes` is no longer required, as intended.
-
-### Fixed
 - *ORCA-205* Fixed installation and usage of orca_shared libraries.
 
 

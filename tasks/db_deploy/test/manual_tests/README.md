@@ -678,11 +678,11 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
 
                   job_id                |        granule_id        |  archive_destination   | multipart_chunksize_mb | status_id |         request_time          | completion_time
    -------------------------------------+--------------------------+------------------------+-----------+-------------------------------+-------------------------------
-   04c9db6d-2d09-4e75-af79-feaf54c7771e | 64e83cc5103965b83fca62ad | myarchiveglacierbucket |                        |         4 | 2021-04-19 08:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   057e1fe7-c561-48c3-b539-65193de99279 | 0a1662031cfecd9c5190bf6d | myarchiveglacierbucket |                        |         4 | 2021-04-18 20:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   0c86fa12-8773-4da6-b0e3-38104230c12e | 7b8be6c8f9076afe64f1aa62 | myarchiveglacierbucket |                        |         4 | 2021-04-16 03:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   0e377a25-e8a6-4de8-86de-42dfad803b75 | cca7d86de488a25864f18095 | myarchiveglacierbucket |                        |         4 | 2021-04-18 02:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   0eefcaf1-5dc5-47eb-a299-a9c206bf58d5 | 11790a3ddcdfcd1cbd6e341b | myarchiveglacierbucket |                        |         4 | 2021-04-19 20:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   04c9db6d-2d09-4e75-af79-feaf54c7771e | 64e83cc5103965b83fca62ad | myarchiveglacierbucket |                   NULL |         4 | 2021-04-19 08:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   057e1fe7-c561-48c3-b539-65193de99279 | 0a1662031cfecd9c5190bf6d | myarchiveglacierbucket |                   NULL |         4 | 2021-04-18 20:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   0c86fa12-8773-4da6-b0e3-38104230c12e | 7b8be6c8f9076afe64f1aa62 | myarchiveglacierbucket |                   NULL |         4 | 2021-04-16 03:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   0e377a25-e8a6-4de8-86de-42dfad803b75 | cca7d86de488a25864f18095 | myarchiveglacierbucket |                   NULL |         4 | 2021-04-18 02:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   0eefcaf1-5dc5-47eb-a299-a9c206bf58d5 | 11790a3ddcdfcd1cbd6e341b | myarchiveglacierbucket |                   NULL |         4 | 2021-04-19 20:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
    (5 rows)
 
    # Check the complete data. Verify completion date is set and arcive_destination

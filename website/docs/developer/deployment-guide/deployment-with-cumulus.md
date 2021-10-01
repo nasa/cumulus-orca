@@ -333,8 +333,8 @@ the ingest workflow.
       "cma":{
          "event.$":"$",
          "task_config":{
-            "collection":"{$.meta.collection}",
-            "multipart_chunksize_mb": "{$.meta.collection.multipart_chunksize_mb"}
+            "multipart_chunksize_mb": "{$.meta.collection.multipart_chunksize_mb"},
+            "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}"
             }
          }
       }
@@ -447,6 +447,7 @@ variables is shown in the table below.
 | Variable                                        | Type                | Definition                                                                                              | Default Value |
 | -------------------------------------------     | ------------------  | ---------------------------------------------------------------------------------------------------     | ------------- |
 | `database_port`                                       | number        | Database port that PostgreSQL traffic will be allowed on.                                               | 5432 |
+| `default_multipart_chunksize_mb`                      | number        | The default maximum size of chunks to use when copying. Can be overridden by collection config.         | 250 |
 | `orca_ingest_lambda_memory_size`                      | number        | Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime.                              | 2240 |
 | `orca_ingest_lambda_timeout`                          | number        | Timeout in number of seconds for ORCA copy_to_glacier lambda.                                           | 600 |
 | `orca_recovery_buckets`                               | List (string) | List of bucket names that ORCA has permissions to restore data to. Default is all in the `buckets` map. | [] |
@@ -460,7 +461,6 @@ variables is shown in the table below.
 | `sqs_maximum_message_size`                            | number        | The limit of how many bytes a message can contain before Amazon SQS rejects it.                         | 262144 |
 | `staged_recovery_queue_message_retention_time_seconds`| number        | Number of seconds the staged-recovery-queue fifo SQS retains a message.                                 | 432000 |
 | `status_update_queue_message_retention_time_seconds`  | number        | Number of seconds the status_update_queue fifo SQS retains a message.                                   | 777600 |
-| `default_multipart_chunksize_mb`                      | number        | The default maximum size of chunks to use when copying. Can be overridden by collection config.         | 250 |
 
 
 ## ORCA Module Outputs
