@@ -454,7 +454,8 @@ file. The variables can be set with proper values for your environment in the
 `cumulus-tf/terraform.tfvars` file. The default setting for each of the optional
 variables is shown in the table below.
 
-| -------------------------------------------     | ------------------  | ---------------------------------------------------------------------------------------------------     | ------------- | `db_admin_username`                                   |string         | Username for RDS database administrator authentication.                                                 | "postgres" |
+| -------------------------------------------     | ------------------  | ---------------------------------------------------------------------------------------------------     | ------------- |
+| `db_admin_username`                                   | string        | Username for RDS database administrator authentication.                                                 | "postgres" |
 | `orca_ingest_lambda_memory_size`                      | number        | Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime.                              | 2240 |
 | `orca_ingest_lambda_timeout`                          | number        | Timeout in number of seconds for ORCA copy_to_glacier lambda.                                           | 600 |
 | `orca_recovery_buckets`                               | List (string) | List of bucket names that ORCA has permissions to restore data to. Default is all in the `buckets` map. | [] |

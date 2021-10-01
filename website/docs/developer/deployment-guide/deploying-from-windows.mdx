@@ -145,7 +145,7 @@ terraform apply
       ```
       :::
 
-    - Set the `ecs_cluster_instance_image_id` to `null`
+    - Comment out the `ecs_cluster_instance_image_id`. This will use the latest NGAP ECS image.
     - `ecs_cluster_instance_subnet_ids` and `lambda_subnet_ids` should have the same two values.
     - Set `urs_client_id` and `urs_client_password` to the values from your created application.
     - Add an extra property `urs_url = "https://uat.urs.earthdata.nasa.gov"`
