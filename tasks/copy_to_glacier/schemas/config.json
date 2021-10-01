@@ -6,7 +6,7 @@
   "type": "object",
   "properties": {
     "excludeFileTypes": {
-      "type": "array",
+      "type": ["array", "null"],
       "description": "A list of file extensions to ignore when copying files.",
       "items": {
         "type": "string",
@@ -14,7 +14,7 @@
       }
     },
     "multipart_chunksize_mb": {
-      "type": "integer",
+      "type": ["integer", "null"],
       "description": "The collection's maximum size of chunks to use when copying. Defaults to environment variable."
     }
   }
