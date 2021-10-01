@@ -6,7 +6,7 @@ ALTER TABLE orca.recovery_file
 DELETE FROM orca.schema_versions
     WHERE version_id=3
 -- Upsert the old version
-INSERT INTO schema_versions
+INSERT INTO orca.schema_versions
      VALUES (2, 'Updated recovery schema for ORCA v3.x.', NOW(), True)
      ON CONFLICT (version_id)
      DO UPDATE SET is_latest = True;

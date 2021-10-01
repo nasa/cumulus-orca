@@ -33,7 +33,7 @@ module "orca" {
 
   ## OPTIONAL
   database_port                                        = var.database_port
-  default_multipart_chunksize_mb = var.default_multipart_chunksize_mb
+  default_multipart_chunksize_mb                       = var.default_multipart_chunksize_mb
   orca_ingest_lambda_memory_size                       = var.orca_ingest_lambda_memory_size
   orca_ingest_lambda_timeout                           = var.orca_ingest_lambda_timeout
   orca_recovery_buckets                                = var.orca_recovery_buckets
