@@ -64,30 +64,31 @@ variable "default_multipart_chunksize_mb" {
 
 ## Variables unique to ORCA
 ## REQUIRED
-variable "database_app_user_pw" {
-  type        = string
-  description = "ORCA application database user password."
-}
 
+
+variable "db_admin_password" {
+  description = "Password for RDS database administrator authentication"
+  type        = string
+}
+variable "db_user_password" {
+  description = "Password for RDS database user authentication"
+  type        = string
+}
+variable "db_host_endpoint" {
+  type        = string
+  description = "Database host endpoint to connect to."
+}
 
 variable "orca_default_bucket" {
   type        = string
   description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
 }
 
-
-variable "postgres_user_pw" {
-  type        = string
-  description = "postgres database user password."
-}
-
-
 ## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
-variable "database_port" {
-  type        = number
-  description = "Database port that PostgreSQL traffic will be allowed on."
+variable "db_admin_username" {
+  description = "Username for RDS database administrator authentication"
+  type        = string
 }
-
 
 variable "orca_ingest_lambda_memory_size" {
   type        = number
@@ -168,24 +169,4 @@ variable "staged_recovery_queue_message_retention_time_seconds" {
 variable "status_update_queue_message_retention_time_seconds" {
   type        = number
   description = "The number of seconds status_update_queue SQS retains a message in seconds. Maximum value is 14 days."
-}
-
-
-## OPTIONAL (DO NOT CHANGE!) - Development use only
-## Default variable value is set in ../main.tf to disallow any modification.
-variable "database_app_user" {
-  type        = string
-  description = "Name of the database application user."
-}
-
-
-variable "database_name" {
-  type        = string
-  description = "Name of the ORCA database in PostgreSQL"
-}
-
-
-variable "orca_recovery_retrieval_type" {
-  type        = string
-  description = "AWS glacier recovery type to use. One of Bulk, Standard, Express."
 }

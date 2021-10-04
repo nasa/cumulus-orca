@@ -6,11 +6,18 @@ Description: All of the SQL used for creating and migrating the ORCA schema.
 # Imports
 from sqlalchemy import text
 from sqlalchemy.sql.elements import TextClause
-
-
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating the Database
 # ----------------------------------------------------------------------------
+
+
+def commit_sql() -> TextClause:
+    """
+    SQL for a simple 'commit' to exit the current transaction.
+    """
+    return text("commit")
+
+
 def app_database_sql() -> TextClause:
     """
     Full SQL for creating the ORCA application database.
@@ -24,10 +31,20 @@ def app_database_sql() -> TextClause:
             OWNER postgres
             TEMPLATE template1
             ENCODING 'UTF8';
-
-        COMMENT ON DATABASE disaster_recovery
-            IS 'Operational Recovery Cloud Archive (ORCA) database.';
     """
+    )
+
+
+def app_database_comment_sql() -> TextClause:
+    """
+    SQL for adding a documentation comment to the database.
+    Cannot be merged with DB creation due to SQLAlchemy limitations.
+    """
+    return text(
+        """
+        COMMENT ON DATABASE disaster_recovery
+            IS 'Operational Recovery Cloud Archive (ORCA) database.'
+"""
     )
 
 
@@ -244,7 +261,7 @@ def schema_versions_data_sql() -> TextClause:
 
         -- Upsert the current version
         INSERT INTO schema_versions
-        VALUES (3, 'Updated recovery schema for ORCA v3.x to include multipart upload settings information.', NOW(), True)
+        VALUES (4, 'Added inventory schema for v4.x of ORCA application', NOW(), True)
         ON CONFLICT (version_id)
         DO UPDATE SET is_latest = True;
     """
@@ -416,9 +433,214 @@ def recovery_file_table_sql() -> TextClause:
     """
     )
 
+# ----------------------------------------------------------------------------
+# ORCA SQL used for creating ORCA inventory metadata tables
+# ----------------------------------------------------------------------------
+
+def providers_table_sql() -> TextClause:
+    """
+    Full SQL for creating the providers table. 
+
+    Returns:
+        (sqlalchemy.sql.element.TextClause): SQL for creating providers table.
+    """
+    return text(
+        """
+        -- Create table
+        CREATE TABLE IF NOT EXISTS providers
+        (
+          provider_id         text NOT NULL
+        , name                text NOT NULL
+        , CONSTRAINT PK_providers PRIMARY KEY (provider_id)
+        );
+
+        -- Comments
+        COMMENT ON TABLE providers
+            IS 'Providers that are in the ORCA holdings.';
+        COMMENT ON COLUMN providers.provider_id
+            IS 'Provider ID supplied by Cumulus.';
+        COMMENT ON COLUMN providers.name
+            IS 'User friendly name of the provider provided by Cumulus.';
+        -- Grants
+        GRANT SELECT, INSERT, UPDATE, DELETE ON providers TO orca_app;
+    """
+    )
+
+
+def collections_table_sql() -> TextClause:
+    """
+    Full SQL for creating the collections table. 
+
+    Returns:
+        (sqlalchemy.sql.element.TextClause): SQL for creating collections table.
+    """
+    return text(
+        """
+        -- Create table
+        CREATE TABLE IF NOT EXISTS collections
+        (
+          collection_id         text NOT NULL
+        , shortname             text NOT NULL
+        , version               text NOT NULL
+        , CONSTRAINT PK_collections PRIMARY KEY (collection_id)
+        );
+
+        -- Comments
+        COMMENT ON TABLE collections
+            IS 'Collections that are in the ORCA archive holdings.';
+        COMMENT ON COLUMN collections.collection_id
+            IS 'Collection ID from Cumulus usually in the format shortname__version.';
+        COMMENT ON COLUMN collections.shortname
+            IS 'Collection short name from Cumulus.';
+        COMMENT ON COLUMN collections.version
+            IS 'Collection version from Cumulus.';       
+        -- Grants
+        GRANT SELECT, INSERT, UPDATE, DELETE ON collections TO orca_app;
+    """
+    )
+
+
+def provider_collection_xref_table_sql() -> TextClause:
+    """
+    Full SQL for creating the cross reference table that ties a collection and provider together and resolves the many to many relationships.
+
+    Returns:
+        (sqlalchemy.sql.element.TextClause): SQL for creating provider_collection_xref table.
+    """
+    return text(
+        """
+        -- Create table
+        CREATE TABLE IF NOT EXISTS provider_collection_xref
+        (
+          provider_id           text NOT NULL
+        , collection_id         text NOT NULL
+        , CONSTRAINT PK_provider_collection_xref PRIMARY KEY (provider_id,collection_id)
+        , CONSTRAINT FK_provider_collection FOREIGN KEY (provider_id) REFERENCES providers (provider_id)
+        , CONSTRAINT FK_collection_provider FOREIGN KEY (collection_id) REFERENCES collections (collection_id)
+        );
+
+        -- Comments
+        COMMENT ON TABLE provider_collection_xref
+            IS 'Cross refrence table that ties a collection and provider together and resolves the many to many relationship.';
+        COMMENT ON COLUMN provider_collection_xref.provider_id
+            IS 'Provider ID from the providers table.';
+        COMMENT ON COLUMN provider_collection_xref.collection_id
+            IS 'Collection ID from the collections table.';     
+        -- Grants
+        GRANT SELECT, INSERT, UPDATE, DELETE ON provider_collection_xref TO orca_app;
+    """
+    )
+
+
+def granules_table_sql() -> TextClause:
+    """
+    Full SQL for creating the catalog granules table.
+
+    Returns:
+        (sqlalchemy.sql.element.TextClause): SQL for creating granules table.
+    """
+    return text(
+        """
+        -- Create table
+        CREATE TABLE IF NOT EXISTS granules
+        (
+          id                    bigserial NOT NULL
+        , collection_id         text NOT NULL
+        , cumulus_granule_id    text NOT NULL
+        , execution_id          text NOT NULL
+        , ingest_time           timestamp with time zone NOT NULL
+        , last_update           timestamp with time zone NOT NULL
+
+        , CONSTRAINT PK_granules PRIMARY KEY (id)
+        , CONSTRAINT FK_collection_granule FOREIGN KEY (collection_id) REFERENCES collections (collection_id)
+        , CONSTRAINT UNIQUE_collection_granule_id UNIQUE (collection_id, cumulus_granule_id)
+        );
+
+        -- Comments
+        COMMENT ON TABLE granules
+            IS 'Granules that are in the ORCA archive holdings.';
+        COMMENT ON COLUMN granules.id
+            IS 'Internal orca granule ID pseudo key';
+        COMMENT ON COLUMN granules.collection_id
+            IS 'Collection ID from Cumulus that refrences the Collections table.';
+         COMMENT ON COLUMN granules.cumulus_granule_id
+            IS 'Granule ID from Cumulus';
+         COMMENT ON COLUMN granules.execution_id
+            IS 'AWS step function execution id';
+        COMMENT ON COLUMN granules.ingest_time
+            IS 'Date and time the granule was originally ingested into ORCA.';
+        COMMENT ON COLUMN granules.last_update
+            IS 'Last time the data for the granule was updated. This generally will coincide with a duplicate or a change to the underlying data file.';                    
+        -- Grants
+        GRANT SELECT, INSERT, UPDATE, DELETE ON granules TO orca_app;
+    """
+    )
+
+def files_table_sql() -> TextClause:
+    """
+    Full SQL for creating the catalog files table.
+
+    Returns:
+        (sqlalchemy.sql.element.TextClause): SQL for creating files table.
+    """
+    return text(
+        """
+        -- Create table
+        CREATE TABLE IF NOT EXISTS files
+        (
+          id                        bigserial NOT NULL
+        , granule_id                bigint NOT NULL      
+        , name                      text NOT NULL
+        , orca_archive_location     text NOT NULL
+        , cumulus_archive_location  text NOT NULL
+        , key_path                  text NOT NULL
+        , ingest_time               timestamp with time zone NOT NULL
+        , etag                      text NOT NULL
+        , version                   text NOT NULL
+        , size_in_bytes             int8 NOT NULL
+        , hash                      text NULL
+        , hash_type                 text NULL
+        , CONSTRAINT PK_files PRIMARY KEY (id)
+        , CONSTRAINT FK_granule_file FOREIGN KEY (granule_id) REFERENCES granules (id)
+        , CONSTRAINT UNIQUE_orca_archive_location_key_path UNIQUE (orca_archive_location, key_path)
+        , CONSTRAINT UNIQUE_cumulus_archive_location_key_path UNIQUE (cumulus_archive_location, key_path)
+        );
+
+        -- Comments
+        COMMENT ON TABLE files
+            IS 'Files that are in the ORCA holdings. (Latest version only)';
+        COMMENT ON COLUMN files.id
+            IS 'Internal ORCA file ID';
+        COMMENT ON COLUMN files.granule_id
+            IS 'Granule that the file belongs to refrences the internal ORCA granule ID.';
+         COMMENT ON COLUMN files.name
+            IS 'Name of the file including extension';
+         COMMENT ON COLUMN files.orca_archive_location
+            IS 'ORCA S3 Glacier bucket that the file object is stored in';
+         COMMENT ON COLUMN files.cumulus_archive_location
+            IS 'Cumulus S3 bucket where the file is thought to be stored.';
+         COMMENT ON COLUMN files.key_path
+            IS 'Full AWS key path including file name of the file (does not include bucket name) where the file resides in ORCA.';
+        COMMENT ON COLUMN files.ingest_time
+            IS 'Date and time the file was ingested into ORCA';              
+        COMMENT ON COLUMN files.etag
+            IS 'etag of the file object in the AWS S3 Glacier bucket.';
+        COMMENT ON COLUMN files.version
+            IS 'Latest version of the file in the S3 Glacier bucket';   
+        COMMENT ON COLUMN files.size_in_bytes
+            IS 'Size of the object in bytes';
+        COMMENT ON COLUMN files.hash
+            IS 'Hash of the object from Cumulus';
+        COMMENT ON COLUMN files.hash_type
+            IS 'Hash type used to hash the object. Supplied by Cumulus.';                 
+        -- Grants
+        GRANT SELECT, INSERT, UPDATE, DELETE ON files TO orca_app;
+    """
+    )
+
 
 # ----------------------------------------------------------------------------
-# ORCA SQL used for migration of schema v1 to schema v2
+# ORCA SQL used for migration of schema
 # ----------------------------------------------------------------------------
 def migrate_recovery_job_data_sql() -> TextClause:
     """

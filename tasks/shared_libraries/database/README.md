@@ -195,11 +195,7 @@ in the environment block. Note that some variables are OPTIONAL.
 | ---------------- | ---------------------------------------------------------------------- | --------------------- | -------------     |
 | PREFIX           | Deployment prefix used to pull the proper AWS secret.                  | var.prefix            | dev               |
 | AWS_REGION       | AWS reserved runtime variable used to set boto3 client region.         | Set by AWS            | us-west-2         |
-| DATABASE_PORT    | The database port. The standard is 5432                                | var.database_port     | 5432              |
-| DATABASE_NAME    | The name of the application database.                                  | var.database_name     | disaster_recovery |
-| APPLICATION_USER | The name of the database application user.                             | var.database_app_user | orcauser          |
-| ADMIN_USER       | *OPTIONAL* The name of the database super user.             | Set to "postgres"     | postgres          |
-| ADMIN_DATABASE   | *OPTIONAL* The name of the admin database for the instance. | Set to "postgres"     | postgres          |
+
 
 The following is an example of the minimum environment variables that must be
 set as part of your terraform lambda environment configuration.
@@ -208,9 +204,6 @@ set as part of your terraform lambda environment configuration.
   environment {
     variables = {
       PREFIX           = var.prefix
-      DATABASE_PORT    = var.database_port
-      DATABASE_NAME    = var.database_name
-      APPLICATION_USER = var.database_app_user
     }
 ```
 
@@ -225,9 +218,7 @@ available. The ORCA terraform deployment should create them for you. Note that
 \<prefix\> is the value of the `var.prefix` variable from the terraform
 configuration.
 
-- \<prefix\>-drdb-user-pass (string): The password for the application user (APPLICATION_USER).
-- \<prefix\>-drdb-host (string): The database host.
-- \<prefix\>-drdb-admin-pass: The password for the admin user
+- \<prefix\>-orca-db-login-secret (string): AWS secret to be used for the Aurora PostgreSQL DB.
 
 
 ## shared_db API Reference
