@@ -104,6 +104,7 @@ resource "aws_lambda_function" "copy_to_glacier" {
     variables = {
       ORCA_DEFAULT_BUCKET            = var.orca_default_bucket
       DEFAULT_MULTIPART_CHUNKSIZE_MB = var.default_multipart_chunksize_mb
+      METADATA_DB_QUEUE_URL          = var.orca_sqs_metadata_queue_url
     }
   }
 }

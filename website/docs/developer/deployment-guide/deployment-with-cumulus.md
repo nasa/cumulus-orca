@@ -78,20 +78,22 @@ module "orca" {
   postgres_user_pw     = var.postgres_user_pw
 
   ## OPTIONAL
-  # database_port                                = 5432
-  # orca_ingest_lambda_memory_size               = 2240
-  # orca_ingest_lambda_timeout                   = 600
-  # orca_recovery_buckets                        = []
-  # orca_recovery_complete_filter_prefix         = ""
-  # orca_recovery_expiration_days                = 5
-  # orca_recovery_lambda_memory_size             = 128
-  # orca_recovery_lambda_timeout                 = 300
-  # orca_recovery_retry_limit                    = 3
-  # orca_recovery_retry_interval                 = 1
-  # sqs_delay_time                               = 0
-  # sqs_maximum_message_size                     = 262144
-  # staged_recovery_queue_message_retention_time = 432000
-  # status_update_queue_message_retention_time   = 777600
+  # database_port                                        = 5432
+  # default_multipart_chunksize_mb                       = 250
+  # metadata_queue_message_retention_time                = 777600
+  # orca_ingest_lambda_memory_size                       = 2240
+  # orca_ingest_lambda_timeout                           = 600
+  # orca_recovery_buckets                                = []
+  # orca_recovery_complete_filter_prefix                 = ""
+  # orca_recovery_expiration_days                        = 5
+  # orca_recovery_lambda_memory_size                     = 128
+  # orca_recovery_lambda_timeout                         = 300
+  # orca_recovery_retry_limit                            = 3
+  # orca_recovery_retry_interval                         = 1
+  # sqs_delay_time                                       = 0
+  # sqs_maximum_message_size                             = 262144
+  # staged_recovery_queue_message_retention_time_seconds = 432000
+  # status_update_queue_message_retention_time_seconds   = 777600
 }
 ```
 
@@ -448,6 +450,7 @@ variables is shown in the table below.
 | -------------------------------------------     | ------------------  | ---------------------------------------------------------------------------------------------------     | ------------- |
 | `database_port`                                       | number        | Database port that PostgreSQL traffic will be allowed on.                                               | 5432 |
 | `default_multipart_chunksize_mb`                      | number        | The default maximum size of chunks to use when copying. Can be overridden by collection config.         | 250 |
+| `metadata_queue_message_retention_time_seconds`       | number        | Number of seconds the metadata-queue fifo SQS retains a message.                                        | 777600 |
 | `orca_ingest_lambda_memory_size`                      | number        | Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime.                              | 2240 |
 | `orca_ingest_lambda_timeout`                          | number        | Timeout in number of seconds for ORCA copy_to_glacier lambda.                                           | 600 |
 | `orca_recovery_buckets`                               | List (string) | List of bucket names that ORCA has permissions to restore data to. Default is all in the `buckets` map. | [] |
@@ -492,6 +495,8 @@ accessed using terraform dot syntax in the format of `module.orca.variable_name`
 | `orca_rds_port`                                      | The database port |
 | `orca_subnet_group_id`                               | The ORCA database subnet group name |
 | `orca_subnet_group_arn`                              | The ARN of the ORCA database subnet group |
+| `orca_sqs_metadata_queue_arn`                        | The ARN of the metadata-queue SQS |
+| `orca_sqs_metadata_queue_id`                         | The URL ID of the metadata-queue SQS |
 | `orca_sqs_staged_recovery_queue_arn`                 | The ARN of the staged-recovery-queue SQS |
 | `orca_sqs_staged_recovery_queue_id`                  | The URL ID of the staged-recovery-queue SQS |
 | `orca_sqs_status_update_queue_arn`                   | The ARN of the status-update-queue SQS |

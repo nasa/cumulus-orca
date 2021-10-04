@@ -159,6 +159,12 @@ variable "sqs_maximum_message_size" {
 }
 
 
+variable "metadata_queue_message_retention_time_seconds" {
+  type        = number
+  description = "The number of seconds metadata-queue fifo SQS retains a message in seconds. Maximum value is 14 days."
+}
+
+
 variable "staged_recovery_queue_message_retention_time_seconds" {
   type        = number
   description = "The number of seconds staged-recovery-queue fifo SQS retains a message in seconds. Maximum value is 14 days."
