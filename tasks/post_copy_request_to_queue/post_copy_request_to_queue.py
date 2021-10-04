@@ -10,8 +10,8 @@ from typing import Dict, Any
 import time
 import random
 
-from orca_shared import shared_recovery
-from orca_shared import shared_db
+from orca_shared.recovery import shared_recovery
+from orca_shared.database import shared_db
 
 from cumulus_logger import CumulusLogger
 from sqlalchemy import text

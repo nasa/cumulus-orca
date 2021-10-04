@@ -10,8 +10,8 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Dict, Any, Optional, List
 
-import boto3
 # Third party libraries
+import boto3
 from cumulus_logger import CumulusLogger
 
 # Set Cumulus LOGGER
@@ -53,7 +53,7 @@ def get_aws_region() -> str:
     if aws_region is None or len(aws_region) == 0:
         message = "Runtime environment variable AWS_REGION is not set."
         LOGGER.critical(message)
-        raise Exception(message)
+        raise ValueError(message)
     LOGGER.debug(f"Got environment variable for AWS_REGION = {aws_region}")
     return aws_region
 
@@ -128,8 +128,8 @@ def update_status_for_file(
     if orca_status == OrcaStatus.SUCCESS or orca_status == OrcaStatus.FAILED:
         new_data["completion_time"] = datetime.now(timezone.utc).isoformat()
         if orca_status == OrcaStatus.FAILED:
-            if len(error_message) == 0 or error_message is None:
-                raise Exception("error message is required.")
+            if error_message is None or len(error_message) == 0:
+                raise ValueError("error message is required.")
             new_data["error_message"] = error_message
 
     message = "Sending the following data to queue: {new_data}"

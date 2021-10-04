@@ -110,8 +110,6 @@ variable "orca_recovery_retry_backoff" {
   description = "The multiplier by which the retry interval increases during each attempt."
 }
 
-
-## OPTIONAL (DO NOT CHANGE!) - Development use only
 variable "orca_sqs_staged_recovery_queue_id" {
   type        = string
   description = "SQS URL of recovery queue."

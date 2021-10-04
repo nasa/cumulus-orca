@@ -17,7 +17,7 @@ from botocore.client import BaseClient
 
 # noinspection PyPackageRequirements
 from botocore.exceptions import ClientError
-from orca_shared import shared_recovery
+from orca_shared.recovery import shared_recovery
 from cumulus_logger import CumulusLogger
 
 

@@ -5,7 +5,7 @@ Description: Migrates the current ORCA schema version to the latest version.
 """
 from typing import Dict
 from orca_sql import *
-from orca_shared.shared_db import get_admin_connection, logger
+from orca_shared.database.shared_db import get_admin_connection, logger
 
 def perform_migration(current_schema_version: int, config: Dict[str, str]) -> None:
     """
