@@ -7,7 +7,7 @@ locals {
 ## ====================================================================================================
 data "aws_iam_policy_document" "metadata_queue_policy" {
   statement {
-    actions   = ["sqs:*"] # todo: Lock down access to specific actions and resources.
+    actions   = ["sqs:*"] # todo: Lock down access to specific actions and resources. https://bugs.earthdata.nasa.gov/browse/ORCA-273
     resources = ["arn:aws:sqs:*"]
     effect    = "Allow"
   }
@@ -17,7 +17,7 @@ data "aws_iam_policy_document" "metadata_queue_policy" {
 ## ====================================================================================================
 data "aws_iam_policy_document" "staged_recovery_queue_policy" {
   statement {
-    actions   = ["sqs:*"] # todo: Lock down access to specific actions and resources.
+    actions   = ["sqs:*"] # todo: Lock down access to specific actions and resources. https://bugs.earthdata.nasa.gov/browse/ORCA-273
     resources = ["arn:aws:sqs:*"]
     effect    = "Allow"
   }
@@ -27,7 +27,7 @@ data "aws_iam_policy_document" "staged_recovery_queue_policy" {
 ## ====================================================================================================
 data "aws_iam_policy_document" "status_update_queue_policy" {
   statement {
-    actions   = ["sqs:*"] # todo: Lock down access to specific actions and resources.
+    actions   = ["sqs:*"] # todo: Lock down access to specific actions and resources. https://bugs.earthdata.nasa.gov/browse/ORCA-273
     resources = ["arn:aws:sqs:*"]
     effect    = "Allow"
   }
