@@ -793,7 +793,7 @@ The refined ORCA inventory catalog build script is available for download <a hre
 
 - What is the proper date to use when receiving a date range from Cumulus for a reconciliation report?
   - After discussion with the Cumulus team, we have decided to use `cumulus_create_time` 
-    which is passed by Cumulus in the CMA Message containing the timestamp that the granule began ingest of the granule into Cumulus.
+    which is passed by Cumulus `createdAt` key in the CMA Message containing the timestamp that the granule began ingest of the granule into Cumulus.
     This timestamp will be used to filter results for Cumulus when asking for ORCA catalog inventory information and will be captured in the Cumulus `granules` table.
 - Should granule acquisition date be a part of the metadata?
   - At this time, we are not going to include granule acquisition date since we cannot get it natively from Cumulus but might add it in the future.

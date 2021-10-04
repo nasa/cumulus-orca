@@ -549,7 +549,7 @@ def granules_table_sql() -> TextClause:
         , cumulus_granule_id    text NOT NULL
         , execution_id          text NOT NULL
         , ingest_time           timestamp with time zone NOT NULL
-        , cumulus_createdAt     timestamp with time zone NOT NULL
+        , cumulus_create_time   timestamp with time zone NOT NULL
         , last_update           timestamp with time zone NOT NULL
 
         , CONSTRAINT PK_granules PRIMARY KEY (id)
@@ -570,8 +570,8 @@ def granules_table_sql() -> TextClause:
             IS 'AWS step function execution id';
         COMMENT ON COLUMN granules.ingest_time
             IS 'Date and time the granule was originally ingested into ORCA.';
-        COMMENT ON COLUMN granules.cumulus_createdAt
-            IS 'Cumulus timestamp as part of the sync granule task output';
+        COMMENT ON COLUMN granules.cumulus_create_time
+            IS 'Date and time data was originally ingested into Cumulus';
         COMMENT ON COLUMN granules.last_update
             IS 'Last time the data for the granule was updated. This generally will coincide with a duplicate or a change to the underlying data file.';                    
         -- Grants
