@@ -4,7 +4,12 @@ Name: db_deploy.py
 Description: Performs database installation and migration for the ORCA schema.
 """
 # Imports
-from orca_shared.shared_db import logger, get_configuration, get_admin_connection, retry_operational_error
+from orca_shared.database.shared_db import (
+    logger,
+    get_configuration,
+    get_admin_connection,
+    retry_operational_error
+)
 from sqlalchemy import text
 from sqlalchemy.future import Connection
 

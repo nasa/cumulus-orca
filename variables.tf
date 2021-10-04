@@ -57,13 +57,6 @@ variable "tags" {
 }
 
 
-variable "default_multipart_chunksize_mb" {
-  type        = number
-  description = "The default maximum size of chunks to use when copying. Can be overridden by collection config."
-  default     = 250
-}
-
-
 ## Variables unique to ORCA
 ## REQUIRED
 
@@ -94,6 +87,13 @@ variable "db_admin_username" {
   type        = string
   default     = "postgres"
 }
+
+variable "default_multipart_chunksize_mb" {
+  type        = number
+  description = "The default maximum size of chunks to use when copying. Can be overridden by collection config."
+  default     = 250
+}
+
 
 variable "orca_ingest_lambda_memory_size" {
   type        = number

@@ -14,7 +14,7 @@ and includes an additional section for migration notes.
 - *Security* - Vulnerabilities fixes and changes.
 
 
-## [Unreleased - SharedDB]
+## [4.0.0]
 ### Removed
 - The `modules/rds` directory is removed since ORCA will utilize the Cumulus DB.
 - *ORCA-233* The `disaster_recovery` database will now be created by db_deploy instead of Terraform.
@@ -95,12 +95,15 @@ variable "db_host_endpoint" {
   status_update_queue_message_retention_time_seconds   = 777600
   }
   ```
-## [Unreleased]
+
+## [3.0.2]
 ### Added
 - *ORCA-244* Added schema files for copy_to_glacier. Errors for improperly formatted requests will look different.
-- *ORCA-246* Added TF variable `default_multipart_chunksize_mb` which adjusts the maximum chunksize when copying files. Defaults to 250. Can be overridden by `multipart_chunksize_mb` within `config['collection']`.
+- *ORCA-246* Added TF variable `default_multipart_chunksize_mb` which adjusts the maximum chunksize when copying files. Defaults to 250. Can be overridden by `multipart_chunksize_mb` within `config['collection']`. `default_multipart_chunksize_mb` can be overridden in your `orca.tf` with the line `default_multipart_chunksize_mb = 500`
 ### Fixed
 - *ORCA-248* `excludeFileTypes` is no longer required, as intended.
+- *ORCA-205* Fixed installation and usage of orca_shared libraries.
+
 
 ## [v3.0.1] 2021-08-31
 ### Migration Notes

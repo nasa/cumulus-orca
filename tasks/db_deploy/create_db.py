@@ -5,7 +5,11 @@ Description: Creates the current version on the ORCA database.
 """
 from typing import Dict
 from sqlalchemy.future import Connection
-from orca_shared.shared_db import get_configuration, get_admin_connection, logger
+from orca_shared.database.shared_db import (
+    get_configuration,
+    get_admin_connection,
+    logger,
+)
 from orca_sql import *
 
 def create_fresh_orca_install(config: Dict[str, str]) -> None:
