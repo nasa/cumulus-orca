@@ -150,6 +150,30 @@ the Cumulus Collection ID (collection_id) is unique in the
 Note that in Cumulus the combination of the bucket (cumulus_archive_location)
 and key (key_path) is unique in the [Cumulus files table](https://github.com/nasa/cumulus/blob/master/lambdas/db-migration/src/migrations/20201014105102_create_files_table.ts).
 
+#### File Version Object
+
+| Attribute Name | Data Type | Description                                               | Notable Items   |
+| -------------- | --------- | --------------------------------------------------------- | --------------- |
+| version        | `string`  | AWS provided version of the file.                         | Must be unique per file name/key_path |
+| is_latest      | `boolean` | AWS provided flag denoting that it is the latest version. | Only one can be latest per file name/key_path. Depending of final table structure this may be optional. |
+| etag           | `string`  | AWS provided etag of the versioned file. Semi unique      | Potentially optional maybe able to be used for internal comparisons and/or data management investigations. |
+| cumulus_etag   | `string`  | Cumulus provided AWS etag of the file in Cumulus.         | Potentially optional. Would need to determine if this information passed along. May be helpful for data management comparisons. |
+| size_in_bytes  | `bigint`  | Size in bytes of the file. From Cumulus ingest.           | Part of object passed to archive from Cumulus. |
+| hash           | `string`  | Checksum hash of the file provided by Cumulus.            | Part of object passed to archive from Cumulus. |
+| hash_type      | `string`  | Hash type used to calculate the hash value of the file.   | Part of object passed to archive from Cumulus. |
+| ingest_time    | `timestamp` | Date and time in UTC that the file was ingested into ORCA | None |
+
+It is possible that we may want to merge the **File Version Object** with the
+**File Object**. If we were to merge the two objects, here are some things to
+consider. By merging the objects we would likely only keep the latest version
+information of the file in the table. By doing this we do simplify reconciliation
+with Cumulus but, then the only catalog of all the versions available for a file
+would reside in the glacier S3 bucket. The implication of this is there is no other
+record of the various versions of the file. Also, we should need to query the S3
+bucket if the data manager wanted to inquire what versions were available for a
+file in order to restore the proper version back or to identify versions that may
+be eligible for deletions based on policy. If we merge the objects, we may want to
+capture the total versions available for the file.
 
 ### Return Metadata Needed by Cumulus
 
