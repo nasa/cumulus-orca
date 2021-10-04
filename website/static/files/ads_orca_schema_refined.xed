@@ -148,7 +148,7 @@
 <Column id="33" name="ingest_time" type="timestamp with time zone" length="25" nulls="false">
 <CP name="COMMENTS">Date and time the granule was originally ingested into ORCA.</CP>
 </Column>
-<Column id="34" name="cumulus_createdAt" type="timestamp with time zone" length="25" nulls="false"/>
+<Column id="34" name="cumulus_create_time" type="timestamp with time zone" length="25" nulls="false"/>
 <Column id="35" name="last_update" type="timestamp with time zone" length="25" nulls="false">
 <CP name="COMMENTS">Last time the data for the granule was updated. This generally will coincide with a duplicate or a change to the underlying data file.</CP>
 </Column>
