@@ -16,7 +16,7 @@ It is recommended to run the tests in the following order.
 ## Initial Setup
 
 The initial setup goes over setting up a python virtual environment to test the
-code and a PostgreSQL database. All testing is done with Docker and it is required
+code and a PostgreSQL database. All testing is done with Docker, and it is required
 to have the latest Docker and Docker Compose application code installed.
 
 It is recommended to have three terminal windows up and available. The windows
@@ -129,51 +129,51 @@ To run the fresh install test, in your **python** window run the command
 ```bash
 (venv) root@cf4b0741a628:/data/test/manual_tests# python manual_test.py
 
-C:\Users\adorn\GitHub\orca\cumulus-orca\tasks\db_deploy\venv\Scripts\python.exe C:/Users/adorn/GitHub/orca/cumulus-orca/tasks/db_deploy/test/manual_tests/manual_test.py
-{"message": "Beginning manual test.", "timestamp": "2021-09-15T15:32:30.320254", "level": "info"}
-{"message": "Creating admin user connection object.", "timestamp": "2021-09-15T15:32:30.320254", "level": "debug"}
-{"message": "Database set to postgres for the connection.", "timestamp": "2021-09-15T15:32:30.320254", "level": "debug"}
-{"message": "Creating URL object to connect to the database.", "timestamp": "2021-09-15T15:32:30.320254", "level": "debug"}
-{"message": "Creating admin user connection object.", "timestamp": "2021-09-15T15:32:30.351539", "level": "debug"}
-{"message": "Database set to disaster_recovery for the connection.", "timestamp": "2021-09-15T15:32:30.351539", "level": "debug"}
-{"message": "Creating URL object to connect to the database.", "timestamp": "2021-09-15T15:32:30.351539", "level": "debug"}
-{"message": "The ORCA database disaster_recovery does not exist.", "timestamp": "2021-09-15T15:32:33.326334", "level": "info"}
-{"message": "Creating admin user connection object.", "timestamp": "2021-09-15T15:32:35.184367", "level": "debug"}
-{"message": "Database set to disaster_recovery for the connection.", "timestamp": "2021-09-15T15:32:35.184367", "level": "debug"}
-{"message": "Creating URL object to connect to the database.", "timestamp": "2021-09-15T15:32:35.184367", "level": "debug"}
-{"message": "Creating the ORCA dbo role ...", "timestamp": "2021-09-15T15:32:38.537891", "level": "debug"}
-{"message": "ORCA dbo role created.", "timestamp": "2021-09-15T15:32:38.968242", "level": "info"}
-{"message": "Creating the ORCA app role ...", "timestamp": "2021-09-15T15:32:38.968242", "level": "debug"}
-{"message": "ORCA app role created.", "timestamp": "2021-09-15T15:32:39.187607", "level": "info"}
-{"message": "Creating the ORCA schema ...", "timestamp": "2021-09-15T15:32:39.187607", "level": "debug"}
-{"message": "ORCA schema created.", "timestamp": "2021-09-15T15:32:40.453552", "level": "info"}
-{"message": "Creating the ORCA application user ...", "timestamp": "2021-09-15T15:32:40.453552", "level": "debug"}
-{"message": "ORCA application user created.", "timestamp": "2021-09-15T15:32:40.679509", "level": "info"}
-{"message": "Changing to the dbo role to create objects ...", "timestamp": "2021-09-15T15:32:40.679509", "level": "debug"}
-{"message": "Setting search path to the ORCA schema to create objects ...", "timestamp": "2021-09-15T15:32:40.804050", "level": "debug"}
-{"message": "Creating schema_versions table ...", "timestamp": "2021-09-15T15:32:41.045785", "level": "debug"}
-{"message": "schema_versions table created.", "timestamp": "2021-09-15T15:32:41.287815", "level": "info"}
-{"message": "Populating the schema_versions table with data ...", "timestamp": "2021-09-15T15:32:41.287815", "level": "debug"}
-{"message": "Data added to the schema_versions table.", "timestamp": "2021-09-15T15:32:41.517232", "level": "info"}
-{"message": "Creating recovery_status table ...", "timestamp": "2021-09-15T15:32:41.517232", "level": "debug"}
-{"message": "recovery_status table created.", "timestamp": "2021-09-15T15:32:41.725347", "level": "info"}
-{"message": "Populating the recovery_status table with data ...", "timestamp": "2021-09-15T15:32:41.725347", "level": "debug"}
-{"message": "Data added to the recovery_status table.", "timestamp": "2021-09-15T15:32:41.960324", "level": "info"}
-{"message": "Creating recovery_job table ...", "timestamp": "2021-09-15T15:32:41.960324", "level": "debug"}
-{"message": "recovery_job table created.", "timestamp": "2021-09-15T15:32:42.180611", "level": "info"}
-{"message": "Creating recovery_file table ...", "timestamp": "2021-09-15T15:32:42.180611", "level": "debug"}
-{"message": "recovery_file table created.", "timestamp": "2021-09-15T15:32:42.404445", "level": "info"}
-{"message": "Creating providers table ...", "timestamp": "2021-09-15T15:32:42.404445", "level": "debug"}
-{"message": "providers table created.", "timestamp": "2021-09-15T15:32:42.612921", "level": "info"}
-{"message": "Creating collections table ...", "timestamp": "2021-09-15T15:32:42.612921", "level": "debug"}
-{"message": "collections table created.", "timestamp": "2021-09-15T15:32:42.927131", "level": "info"}
-{"message": "Creating provider and collection cross reference table ...", "timestamp": "2021-09-15T15:32:42.927131", "level": "debug"}
-{"message": "provider and collection cross reference table created.", "timestamp": "2021-09-15T15:32:43.164561", "level": "info"}
-{"message": "Creating granules table ...", "timestamp": "2021-09-15T15:32:43.164561", "level": "debug"}
-{"message": "granules table created.", "timestamp": "2021-09-15T15:32:43.445441", "level": "info"}
-{"message": "Creating files table ...", "timestamp": "2021-09-15T15:32:43.445441", "level": "debug"}
-{"message": "files table created.", "timestamp": "2021-09-15T15:32:43.710367", "level": "info"}
-{"message": "Manual test complete.", "timestamp": "2021-09-15T15:32:44.145858", "level": "info"}
+{"message": "Beginning manual test.", "timestamp": "2021-09-17T14:45:29.062380", "level": "info"}
+{"message": "Creating admin user connection object.", "timestamp": "2021-09-17T14:45:29.062380", "level": "debug"}
+{"message": "Database set to postgres for the connection.", "timestamp": "2021-09-17T14:45:29.062380", "level": "debug"}
+{"message": "Creating URL object to connect to the database.", "timestamp": "2021-09-17T14:45:29.062380", "level": "debug"}
+{"message": "Creating admin user connection object.", "timestamp": "2021-09-17T14:45:29.124911", "level": "debug"}
+{"message": "Database set to disaster_recovery for the connection.", "timestamp": "2021-09-17T14:45:29.124911", "level": "debug"}
+{"message": "Creating URL object to connect to the database.", "timestamp": "2021-09-17T14:45:29.124911", "level": "debug"}
+{"message": "The ORCA database disaster_recovery does not exist, or the server could not be connected to.", "timestamp": "2021-09-17T14:45:32.896358", "level": "info"}
+{"message": "Database created.", "timestamp": "2021-09-17T14:45:35.071075", "level": "info"}
+{"message": "Creating admin user connection object.", "timestamp": "2021-09-17T14:45:35.071075", "level": "debug"}
+{"message": "Database set to disaster_recovery for the connection.", "timestamp": "2021-09-17T14:45:35.071075", "level": "debug"}
+{"message": "Creating URL object to connect to the database.", "timestamp": "2021-09-17T14:45:35.071075", "level": "debug"}
+{"message": "Creating the ORCA dbo role ...", "timestamp": "2021-09-17T14:45:38.493302", "level": "debug"}
+{"message": "ORCA dbo role created.", "timestamp": "2021-09-17T14:45:38.984447", "level": "info"}
+{"message": "Creating the ORCA app role ...", "timestamp": "2021-09-17T14:45:38.984447", "level": "debug"}
+{"message": "ORCA app role created.", "timestamp": "2021-09-17T14:45:39.178078", "level": "info"}
+{"message": "Creating the ORCA schema ...", "timestamp": "2021-09-17T14:45:39.178078", "level": "debug"}
+{"message": "ORCA schema created.", "timestamp": "2021-09-17T14:45:39.456220", "level": "info"}
+{"message": "Creating the ORCA application user ...", "timestamp": "2021-09-17T14:45:39.456220", "level": "debug"}
+{"message": "ORCA application user created.", "timestamp": "2021-09-17T14:45:39.683274", "level": "info"}
+{"message": "Changing to the dbo role to create objects ...", "timestamp": "2021-09-17T14:45:39.683274", "level": "debug"}
+{"message": "Setting search path to the ORCA schema to create objects ...", "timestamp": "2021-09-17T14:45:39.921230", "level": "debug"}
+{"message": "Creating schema_versions table ...", "timestamp": "2021-09-17T14:45:40.161729", "level": "debug"}
+{"message": "schema_versions table created.", "timestamp": "2021-09-17T14:45:40.444241", "level": "info"}
+{"message": "Populating the schema_versions table with data ...", "timestamp": "2021-09-17T14:45:40.444241", "level": "debug"}
+{"message": "Data added to the schema_versions table.", "timestamp": "2021-09-17T14:45:40.713298", "level": "info"}
+{"message": "Creating recovery_status table ...", "timestamp": "2021-09-17T14:45:40.713298", "level": "debug"}
+{"message": "recovery_status table created.", "timestamp": "2021-09-17T14:45:40.977858", "level": "info"}
+{"message": "Populating the recovery_status table with data ...", "timestamp": "2021-09-17T14:45:40.977858", "level": "debug"}
+{"message": "Data added to the recovery_status table.", "timestamp": "2021-09-17T14:45:41.211584", "level": "info"}
+{"message": "Creating recovery_job table ...", "timestamp": "2021-09-17T14:45:41.211584", "level": "debug"}
+{"message": "recovery_job table created.", "timestamp": "2021-09-17T14:45:41.392572", "level": "info"}
+{"message": "Creating recovery_file table ...", "timestamp": "2021-09-17T14:45:41.392572", "level": "debug"}
+{"message": "recovery_file table created.", "timestamp": "2021-09-17T14:45:41.668928", "level": "info"}
+{"message": "Creating providers table ...", "timestamp": "2021-09-17T14:45:41.668928", "level": "debug"}
+{"message": "providers table created.", "timestamp": "2021-09-17T14:45:41.885556", "level": "info"}
+{"message": "Creating collections table ...", "timestamp": "2021-09-17T14:45:41.885556", "level": "debug"}
+{"message": "collections table created.", "timestamp": "2021-09-17T14:45:42.105752", "level": "info"}
+{"message": "Creating provider and collection cross reference table ...", "timestamp": "2021-09-17T14:45:42.105752", "level": "debug"}
+{"message": "provider and collection cross reference table created.", "timestamp": "2021-09-17T14:45:42.365692", "level": "info"}
+{"message": "Creating granules table ...", "timestamp": "2021-09-17T14:45:42.365692", "level": "debug"}
+{"message": "granules table created.", "timestamp": "2021-09-17T14:45:42.622593", "level": "info"}
+{"message": "Creating files table ...", "timestamp": "2021-09-17T14:45:42.622593", "level": "debug"}
+{"message": "files table created.", "timestamp": "2021-09-17T14:45:42.856679", "level": "info"}
+{"message": "Manual test complete.", "timestamp": "2021-09-17T14:45:43.329754", "level": "info"}
 
 Process finished with exit code 0
 ```
@@ -656,13 +656,13 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    # is set to myglacierarchivebucket
     disaster_recovery=# select * from recovery_job where status_id = 4 LIMIT 5;
 
-                  job_id                |        granule_id        |  archive_destination   | status_id |         request_time          | completion_time
+                  job_id                |        granule_id        |  archive_destination   | multipart_chunksize_mb | status_id |         request_time          | completion_time
    -------------------------------------+--------------------------+------------------------+-----------+-------------------------------+-------------------------------
-   04c9db6d-2d09-4e75-af79-feaf54c7771e | 64e83cc5103965b83fca62ad | myarchiveglacierbucket |         4 | 2021-04-19 08:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   057e1fe7-c561-48c3-b539-65193de99279 | 0a1662031cfecd9c5190bf6d | myarchiveglacierbucket |         4 | 2021-04-18 20:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   0c86fa12-8773-4da6-b0e3-38104230c12e | 7b8be6c8f9076afe64f1aa62 | myarchiveglacierbucket |         4 | 2021-04-16 03:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   0e377a25-e8a6-4de8-86de-42dfad803b75 | cca7d86de488a25864f18095 | myarchiveglacierbucket |         4 | 2021-04-18 02:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   0eefcaf1-5dc5-47eb-a299-a9c206bf58d5 | 11790a3ddcdfcd1cbd6e341b | myarchiveglacierbucket |         4 | 2021-04-19 20:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   04c9db6d-2d09-4e75-af79-feaf54c7771e | 64e83cc5103965b83fca62ad | myarchiveglacierbucket |                        |         4 | 2021-04-19 08:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   057e1fe7-c561-48c3-b539-65193de99279 | 0a1662031cfecd9c5190bf6d | myarchiveglacierbucket |                        |         4 | 2021-04-18 20:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   0c86fa12-8773-4da6-b0e3-38104230c12e | 7b8be6c8f9076afe64f1aa62 | myarchiveglacierbucket |                        |         4 | 2021-04-16 03:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   0e377a25-e8a6-4de8-86de-42dfad803b75 | cca7d86de488a25864f18095 | myarchiveglacierbucket |                        |         4 | 2021-04-18 02:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   0eefcaf1-5dc5-47eb-a299-a9c206bf58d5 | 11790a3ddcdfcd1cbd6e341b | myarchiveglacierbucket |                        |         4 | 2021-04-19 20:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
    (5 rows)
 
    # Check the complete data. Verify completion date is set and arcive_destination
@@ -695,30 +695,30 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    # Check the pending data. Verify completion date is not set and error_message
    # is NULL.
    disaster_recovery=# select * from recovery_file where status_id=1 LIMIT 2;
-                   job_id                |        granule_id        |         filename        |         key_path         |   restore_destination    | status_id | error_message |         request_time          |          last_update          | completion_time
+                   job_id                |        granule_id        |         filename        |         key_path         |   restore_destination    | multipart_chunksize_mb | status_id | error_message |         request_time          |          last_update          | completion_time
    --------------------------------------+--------------------------+-------------------------+--------------------------+--------------------------+-----------+---------------+-------------------------------+-------------------------------+-----------------
-   3efd79f0-f7f5-4109-afd8-a16c36b7f270 | 687687b5b5441c3c3626b39e | 8dbb97f77729cd437a93232e | 8dbb97f77729cd437a93232e | 248f9d70d72f69f9d578966c |         1 |               | 2021-04-24 19:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 |
-   2766e7bd-d1da-4c7d-8161-2f01ae2f8cd1 | 8132aeb56fcd3a56155e6f23 | 6585af9ca8cd765df803c605 | 6585af9ca8cd765df803c605 | 3288d5c9a706237839db94f8 |         1 |               | 2021-04-24 20:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 |
+   3efd79f0-f7f5-4109-afd8-a16c36b7f270 | 687687b5b5441c3c3626b39e | 8dbb97f77729cd437a93232e | 8dbb97f77729cd437a93232e | 248f9d70d72f69f9d578966c |                   NULL |         1 |               | 2021-04-24 19:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 |
+   2766e7bd-d1da-4c7d-8161-2f01ae2f8cd1 | 8132aeb56fcd3a56155e6f23 | 6585af9ca8cd765df803c605 | 6585af9ca8cd765df803c605 | 3288d5c9a706237839db94f8 |                   NULL |         1 |               | 2021-04-24 20:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 |
    (2 rows)
    
    # Check the complete data. Verify completion date is set and error_message
    # is NULL.
    disaster_recovery=# select * from recovery_file where status_id=4 LIMIT 2;
 
-                   job_id                |        granule_id        |         filename        |         key_path         |   restore_destination    | status_id | error_message |         request_time          |          last_update          | completion_time
-   --------------------------------------+--------------------------+-------------------------+--------------------------+--------------------------+-----------+---------------+-------------------------------+-------------------------------+------------------------------
-   5cad5640-ec11-48d0-9edb-a69cc0db99ef | 379f47a2f4b20801422242fa | 677c162d5e01009773a90b4e | 677c162d5e01009773a90b4e | eb9032c408f08350b1544054 |         4 |               | 2021-04-15 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   b4ccf94e-d439-4b71-b9e4-6d3ba6b867a9 | d8420b485a8a2ad194a1fdc4 | bc859b2dec647a32c8a2edc9 | bc859b2dec647a32c8a2edc9 | afd07600908d2c476ccceb72 |         4 |               | 2021-04-15 16:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+                   job_id                |        granule_id        |         filename        |         key_path         |   restore_destination    | multipart_chunksize_mb | status_id | error_message |         request_time          |          last_update          | completion_time
+   --------------------------------------+--------------------------+-------------------------+--------------------------+--------------------------+-----------+------------------------+---------------+-------------------------------+-------------------------------+------------------------------
+   5cad5640-ec11-48d0-9edb-a69cc0db99ef | 379f47a2f4b20801422242fa | 677c162d5e01009773a90b4e | 677c162d5e01009773a90b4e | eb9032c408f08350b1544054 |                   NULL |         4 |               | 2021-04-15 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   b4ccf94e-d439-4b71-b9e4-6d3ba6b867a9 | d8420b485a8a2ad194a1fdc4 | bc859b2dec647a32c8a2edc9 | bc859b2dec647a32c8a2edc9 | afd07600908d2c476ccceb72 |                   NULL |         4 |               | 2021-04-15 16:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
                                          (2 rows)
    
    # Check the error data. Verify completion date is set and error_message
    # is set to "Some error occured here".
    disaster_recovery=# select * from recovery_file where status_id=3 LIMIT 2;
 
-                   job_id                |        granule_id        |         filename        |         key_path         |   restore_destination    | status_id |      error_message      |         request_time          |          last_update          | completion_time
-   --------------------------------------+--------------------------+-------------------------+--------------------------+--------------------------+-----------+-------------------------+-------------------------------+-------------------------------+------------------------------
-   bd325313-e4fb-4c8d-8941-14e27942c081 | 140f54e91f70cdf5c23ceb9f | 7237771bd8e9c8614ebdf1fe | 7237771bd8e9c8614ebdf1fe | 8752510fd8053d01a33dd002 |         3 | Some error occurerd here | 2021-04-20 05:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   f87f219e-b04b-4ca7-abc2-bcdec1809182 | e1f62c411040f269a5aef941 | d4a228869f83a3395c36eaf1 | d4a228869f83a3395c36eaf1 | a27b5b0a2c08a40067c409f0 |         3 | Some error occurred here | 2021-04-20 06:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+                   job_id                |        granule_id        |         filename        |         key_path         |   restore_destination    | multipart_chunksize_mb | status_id |      error_message      |         request_time          |          last_update          | completion_time
+   --------------------------------------+--------------------------+-------------------------+--------------------------+--------------------------+-----------+------------------------+-------------------------+-------------------------------+-------------------------------+------------------------------
+   bd325313-e4fb-4c8d-8941-14e27942c081 | 140f54e91f70cdf5c23ceb9f | 7237771bd8e9c8614ebdf1fe | 7237771bd8e9c8614ebdf1fe | 8752510fd8053d01a33dd002 |                   NULL |         3 | Some error occurerd here | 2021-04-20 05:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   f87f219e-b04b-4ca7-abc2-bcdec1809182 | e1f62c411040f269a5aef941 | d4a228869f83a3395c36eaf1 | d4a228869f83a3395c36eaf1 | a27b5b0a2c08a40067c409f0 |                   NULL |         3 | Some error occurred here | 2021-04-20 06:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
    (2 rows)
 
    ```
@@ -727,11 +727,12 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    status_id information matches in both tables for a given record.
 
 
+
 ### Migration Test Cleanup
 
 No cleanup is necessary if the next test run is the [Database No Migration Test](#database-no-migration-test).
 
-To cleanup from this test you can use one of two scripts. The `sql/cleanup.sql`
+To clean up from this test you can use one of two scripts. The `sql/cleanup.sql`
 script will remove all objects including the *disaster_recovery* database. The
 `sql/orca_schema_v4/remove.sql` script will migrate v4 schema to v3 schema, update the `schema_versions` table with value of 3 and also remove the `providers`, `collections`, `provider_collection_xref`, `granules` and `files` tables. The `sql/orca_schema_v3/remove.sql` script will migrate the schema from v3 to v2, update the `schema_versions` table with value of 2. The `sql/orca_schema_v2/remove.sql` script will migrate the schema from v2 to v1, update the `schema_versions` table with value of 1. The `sql/orca_schema_v1/remove.sql` script will remove all the user and roles created.
 

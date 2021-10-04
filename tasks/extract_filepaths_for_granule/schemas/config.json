@@ -57,6 +57,14 @@
             ]
           }
         ]
+      },
+      "excludeFileTypes": {
+        "type": "array",
+        "description": "A list of file extensions to ignore when copying files.",
+        "items": {
+          "type": "string",
+          "pattern": "\\..+"
+        }
       }
     }
   }

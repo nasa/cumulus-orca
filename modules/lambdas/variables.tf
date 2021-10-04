@@ -29,10 +29,18 @@ variable "vpc_id" {
 }
 
 
+## OPTIONAL
 variable "tags" {
   type        = map(string)
   description = "Tags to be applied to resources that support tags."
 }
+
+
+variable "default_multipart_chunksize_mb" {
+  type        = number
+  description = "The default maximum size of chunks to use when copying. Can be overridden by collection config."
+}
+
 
 ## Variables unique to ORCA
 ## REQUIRED
@@ -102,8 +110,8 @@ variable "orca_recovery_retry_backoff" {
   description = "The multiplier by which the retry interval increases during each attempt."
 }
 
-## OPTIONAL (DO NOT CHANGE!) - Development use only
 
+## OPTIONAL (DO NOT CHANGE!) - Development use only
 variable "orca_sqs_staged_recovery_queue_id" {
   type        = string
   description = "SQS URL of recovery queue."

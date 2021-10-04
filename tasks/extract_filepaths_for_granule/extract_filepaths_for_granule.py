@@ -40,7 +40,9 @@ def task(event, context):  # pylint: disable-msg=unused-argument
     LOGGER.debug("event: {event}", event=event)
     try:
         config = event["config"]
-        exclude_file_types = config.get(EXCLUDE_FILE_TYPES_KEY, [])
+        exclude_file_types = config.get(EXCLUDE_FILE_TYPES_KEY, None)
+        if exclude_file_types is None:
+            exclude_file_types = []
         if len(exclude_file_types) == 0:
             LOGGER.debug(f"The configuration list {EXCLUDE_FILE_TYPES_KEY} is empty.")
         else:

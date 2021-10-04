@@ -41,6 +41,8 @@ CONFIG_GLACIER_BUCKET_KEY = (
     "glacier-bucket"  # todo: Rename. This ONE property uses '-' instead of '_'
 )
 CONFIG_JOB_ID_KEY = "asyncOperationId"
+CONFIG_COLLECTION_KEY = "collection"
+CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = "multipart_chunksize_mb"
 
 GRANULE_GRANULE_ID_KEY = "granuleId"
 GRANULE_KEYS_KEY = "keys"
@@ -51,7 +53,6 @@ FILE_DEST_BUCKET_KEY = "dest_bucket"
 FILE_KEY_KEY = "key"
 FILE_SUCCESS_KEY = "success"
 FILE_ERROR_MESSAGE_KEY = "error_message"
-
 
 LOGGER = shared_recovery.LOGGER
 
@@ -64,7 +65,7 @@ class RestoreRequestError(Exception):
 
 # noinspection PyUnusedLocal
 def task(
-    event: Dict, context: object
+        event: Dict, context: object
 ) -> Dict[str, Any]:  # pylint: disable-msg=unused-argument
     """
     Pulls information from os.environ, utilizing defaults if needed.
@@ -83,6 +84,7 @@ def task(
                             'key' (str): Name of the file within the granule.  # TODO: It actually might be a path.
                             'dest_bucket' (str): The bucket the restored file will be moved
                                 to after the restore completes.
+            context: Passed through from AWS and CMA. Unused.
         Environment Vars:
             RESTORE_EXPIRE_DAYS (int, optional, default = 5): The number of days
                 the restored file will be accessible in the S3 bucket before it expires.
@@ -177,12 +179,12 @@ def task(
 
 
 def inner_task(
-    event: Dict,
-    max_retries: int,
-    retry_sleep_secs: float,
-    retrieval_type: str,
-    restore_expire_days: int,
-    db_queue_url: str,
+        event: Dict,
+        max_retries: int,
+        retry_sleep_secs: float,
+        retrieval_type: str,
+        restore_expire_days: int,
+        db_queue_url: str
 ) -> Dict[str, Any]:  # pylint: disable-msg=unused-argument
     """
     Task called by the handler to perform the work.
@@ -234,6 +236,16 @@ def inner_task(
             f"request: {event} does not contain a config value for glacier-bucket"
         )
 
+    # Get the collection's multipart_chunksize from the event.
+    collection_multipart_chunksize_mb_str = \
+        event[EVENT_CONFIG_KEY].get(CONFIG_MULTIPART_CHUNKSIZE_MB_KEY, None)
+    if collection_multipart_chunksize_mb_str is None:
+        LOGGER.info(
+            f'{CONFIG_MULTIPART_CHUNKSIZE_MB_KEY} is not set for config.')
+        collection_multipart_chunksize_mb = None
+    else:
+        collection_multipart_chunksize_mb = int(collection_multipart_chunksize_mb_str)
+
     # Get the granule array from the event
     granules = event[EVENT_INPUT_KEY][INPUT_GRANULES_KEY]
 
@@ -245,7 +257,6 @@ def inner_task(
     copied_granules = []
     for granule in granules:
         # Initialize the granule copy, file array and timestamp variables
-        copied_granule = {}
         files = []
         time_stamp = datetime.now(timezone.utc).isoformat()
         # Loop through the granule files and find the ones to restore
@@ -261,6 +272,7 @@ def inner_task(
                 "filename": os.path.basename(file_key),
                 "key_path": file_key,
                 "restore_destination": destination_bucket_name,
+                "multipart_chunksize_mb": collection_multipart_chunksize_mb,
                 "status_id": shared_recovery.OrcaStatus.PENDING.value,
                 "request_time": time_stamp,
                 "last_update": time_stamp,
@@ -299,7 +311,7 @@ def inner_task(
                 # todo: Workaround for CumulusLogger bug with dictionaries
                 #       this will need updating when a new CumulusLogger is
                 #       released with bug fix.
-                msg = f"Ran into error posting to SQS {retry+1} time(s) with exception"
+                msg = f"Ran into error posting to SQS {retry + 1} time(s) with exception"
                 msg = msg + " {ex}"
                 LOGGER.error(msg, ex=str(ex))
                 # todo: Use backoff code. ORCA-201
@@ -339,15 +351,15 @@ def inner_task(
 
 
 def process_granule(
-    s3: BaseClient,
-    granule: Dict[str, Union[str, List[Dict]]],
-    glacier_bucket: str,
-    restore_expire_days: int,
-    max_retries: int,
-    retry_sleep_secs: float,
-    retrieval_type: str,
-    job_id: str,
-    db_queue_url: str,
+        s3: BaseClient,
+        granule: Dict[str, Union[str, List[Dict]]],
+        glacier_bucket: str,
+        restore_expire_days: int,
+        max_retries: int,
+        retry_sleep_secs: float,
+        retrieval_type: str,
+        job_id: str,
+        db_queue_url: str,
 ) -> None:  # pylint: disable-msg=unused-argument
     """Call restore_object for the files in the granule_list. Modifies granule for output.
     Args:
@@ -414,8 +426,8 @@ def process_granule(
         if attempt <= max_retries + 1:
             # Check for early completion.
             if all(
-                a_file[FILE_SUCCESS_KEY]
-                for a_file in granule[GRANULE_RECOVER_FILES_KEY]
+                    a_file[FILE_SUCCESS_KEY]
+                    for a_file in granule[GRANULE_RECOVER_FILES_KEY]
             ):
                 break
             # No early completion sleep and try again
@@ -456,7 +468,7 @@ def process_granule(
                     # todo: Workaround for CumulusLogger bug with dictionaries
                     #       this will need updating when a new CumulusLogger is
                     #       released with bug fix.
-                    msg = f"Ran into error posting to SQS {retry+1} time(s) with exception"
+                    msg = f"Ran into error posting to SQS {retry + 1} time(s) with exception"
                     msg = msg + " {ex}"
                     LOGGER.error(msg, ex=str(ex))
                     # todo: Use backoff code. ORCA-201
@@ -501,20 +513,21 @@ def object_exists(s3_cli: BaseClient, glacier_bucket: str, file_key: str) -> boo
         code = err.response["Error"]["Code"]
         message = err.response["Error"]["Message"]
         if (
-            message == "NoSuchKey" or message == "Not Found" or code == "404"
+                message == "NoSuchKey" or message == "Not Found" or code == "404"
         ):  # Unit tests say 'Not Found', some online docs say 'NoSuchKey'
             return False
         raise
         # todo: Online docs suggest we could catch 'S3.Client.exceptions.NoSuchKey instead of deconstructing ClientError
 
+
 def restore_object(
-    s3_cli: BaseClient,
-    key: str,
-    days: int,
-    db_glacier_bucket_key: str,
-    attempt: int,
-    job_id: str,
-    retrieval_type: str = "Standard",
+        s3_cli: BaseClient,
+        key: str,
+        days: int,
+        db_glacier_bucket_key: str,
+        attempt: int,
+        job_id: str,
+        retrieval_type: str = "Standard",
 ) -> None:
     # noinspection SpellCheckingInspection
     """Restore an archived S3 Glacier object in an Amazon S3 bucket.

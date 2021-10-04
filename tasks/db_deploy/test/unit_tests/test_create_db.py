@@ -9,7 +9,7 @@ from unittest.mock import Mock, call, patch, MagicMock
 import create_db
 
 
-class TestCreateDatabseLibraries(unittest.TestCase):
+class TestCreateDatabaseLibraries(unittest.TestCase):
     """
     Test the various functions in the create_db library.
     """
