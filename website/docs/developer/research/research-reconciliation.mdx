@@ -139,7 +139,6 @@ the Cumulus Collection ID (collection_id) is unique in the
 | orca_archive_location    | `string`  | ORCA S3 Glacier bucket the file resides in.                                | None                                                |
 | cumulus_archive_location | `string`  | Cumulus S3 bucket the file is expected to reside in.                       | None                                                |
 | key_path                 | `string`  | Full S3 path to the file including the file name.                          | Must be unique per archive location                 | 
-| multipart_chunksize_mb   | `string`  | The maximum size of chunks to use when copying.                            | None                                                |
 | ingest_time              | `timestamp` | Date and time in UTC that the data was originally ingested into ORCA     | None                                                |
 | etag                     | `string`  | etag of the file object in the AWS S3 Glacier bucket.                      | None                                                |
 | version                  | `string`  | AWS provided version of the file.                                          | Must be unique per file name/key_path               |

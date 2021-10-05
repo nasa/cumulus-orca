@@ -87,7 +87,7 @@ BEGIN
     COMMENT ON COLUMN granules.ingest_time
       IS 'Date and time the granule was originally ingested into ORCA.';
     COMMENT ON COLUMN granules.cumulus_create_time
-      IS 'Cumulus timestamp as part of the sync granule task output';
+      IS 'Date and time data was originally ingested into Cumulus';
     COMMENT ON COLUMN granules.last_update
       IS 'Last time the data for the granule was updated. This generally will coincide with a duplicate or a change to the underlying data file.';
 
@@ -125,9 +125,7 @@ BEGIN
     COMMENT ON COLUMN files.cumulus_archive_location
       IS 'Cumulus S3 bucket where the file is thought to be stored.';
     COMMENT ON COLUMN files.key_path
-      IS 'Full AWS key path including file name of the file (does not include bucket name) where the file resides in ORCA.';
-    COMMENT ON COLUMN files.multipart_chunksize_mb
-      IS 'The maximum size of chunks to use when copying.';    
+      IS 'Full AWS key path including file name of the file (does not include bucket name) where the file resides in ORCA.';    
     COMMENT ON COLUMN files.ingest_time
       IS 'Date and time the file was ingested into ORCA';
     COMMENT ON COLUMN files.etag
