@@ -32,7 +32,18 @@ class TestSharedDatabseLibraries(unittest.TestCase):
         """
         self.mock_sm.start()
         self.test_sm = boto3.client("secretsmanager", region_name="us-west-2")
-        self.secretstring = '{"admin_database":"admin_db", "admin_password":"admin123", "admin_username":"admin", "host":"aws.postgresrds.host", "port":5432, "user_database":"user_db", "user_password":"user123", "user_username":"user"}'
+        self.secretstring = """
+            {
+                "admin_database":"admin_db",
+                "admin_password":"admin123",
+                "admin_username":"admin",
+                "host":"aws.postgresrds.host",
+                "port":5432,
+                "user_database":"user_db",
+                "user_password":"user123",
+                "user_username":"user"
+            }
+        """
         self.test_sm.create_secret(
             Name="orcatest-orca-db-login-secret", SecretString=self.secretstring
         )
@@ -142,10 +153,10 @@ class TestSharedDatabseLibraries(unittest.TestCase):
 
         config = shared_db.get_configuration()
 
-        root_db_creds = shared_db.get_admin_connection(config)
+        _ = shared_db.get_admin_connection(config)
         mock_connection.assert_called_with(**root_db_call)
 
-        user_db_creds = shared_db.get_admin_connection(config, "disaster_recovery")
+        _ = shared_db.get_admin_connection(config, "disaster_recovery")
         mock_connection.assert_called_with(**user_db_call)
 
     @patch.dict(
@@ -171,7 +182,7 @@ class TestSharedDatabseLibraries(unittest.TestCase):
 
         config = shared_db.get_configuration()
 
-        user_db_creds = shared_db.get_user_connection(config)
+        _ = shared_db.get_user_connection(config)
         mock_connection.assert_called_with(**user_db_call)
 
     @patch.dict(
@@ -196,7 +207,7 @@ class TestSharedDatabseLibraries(unittest.TestCase):
         }
 
         user_db_url = URL.create(drivername="postgresql", **user_db_call)
-        user_db_creds = shared_db._create_connection(**user_db_call)
+        _ = shared_db._create_connection(**user_db_call)
         mock_connection.assert_called_once_with(user_db_url, future=True)
 
     @patch("time.sleep")

@@ -37,7 +37,7 @@ def get_configuration() -> Dict[str, str]:
         AWS_REGION (str): AWS reserved runtime variable used to set boto3 client region.
 
     Parameter Store:
-        <prefix>-orca-db-login-secret (string): The json string containing all the admin and user db login info.
+        <prefix>-orca-db-login-secret (string): The json string containing all the db login info.
     ```
 
     Args:
@@ -83,7 +83,7 @@ def get_configuration() -> Dict[str, str]:
         logger.debug(
             "Successfully retrieved db login info for both user and admin as a dictionary."
         )
-    except Exception as e:
+    except Exception:
         logger.critical("Failed to retrieve secret.", exc_info=True)
         raise Exception("Failed to retrieve secret manager value.")
 

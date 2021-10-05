@@ -1,6 +1,7 @@
 """
 Name: shared_recovery.py
-Description: Shared library that combines common functions and classes needed for recovery operations.
+Description: Shared library that combines common functions and classes needed for
+             recovery operations.
 """
 # Standard libraries
 import hashlib
@@ -107,7 +108,9 @@ def update_status_for_file(
 ):
     """
     Creates update information for a file's status entry, and posts to queue.
-    Queue entry will be rejected by post_to_database if status for job_id + granule_id + filename does not exist.
+    Queue entry will be rejected by post_to_database if status for
+    job_id + granule_id + filename does not exist.
+
     Args:
         job_id: The unique identifier used for tracking requests.
         granule_id: The id of the granule being restored.
@@ -147,7 +150,7 @@ def post_entry_to_queue(
     Posts messages to an SQS queue.
     Args:
         new_data: A dictionary representing the column/value pairs to write to the DB table.
-        request_method: The method action for the database lambda to take when posting to the SQS queue.
+        request_method: The action for the database lambda to take when posting to the SQS queue.
         db_queue_url: The SQS queue URL defined by AWS.
     Raises:
         None
