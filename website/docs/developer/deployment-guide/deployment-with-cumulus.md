@@ -81,6 +81,7 @@ module "orca" {
   ## OPTIONAL
   # db_admin_username                                    = "postgres"
   # default_multipart_chunksize_mb                       = 250
+  # metadata_queue_message_retention_time                = 777600
   # orca_ingest_lambda_memory_size                       = 2240
   # orca_ingest_lambda_timeout                           = 600
   # orca_recovery_buckets                                = []
@@ -460,6 +461,7 @@ variables is shown in the table below.
 | ----------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------- | ---------- |
 | `db_admin_username`                                   | string        | Username for RDS database administrator authentication.                                                 | "postgres" |
 | `default_multipart_chunksize_mb`                      | number        | The default maximum size of chunks to use when copying. Can be overridden by collection config.         | 250 |
+| `metadata_queue_message_retention_time_seconds`       | number        | Number of seconds the metadata-queue fifo SQS retains a message.                                        | 777600 |
 | `orca_ingest_lambda_memory_size`                      | number        | Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime.                              | 2240 |
 | `orca_ingest_lambda_timeout`                          | number        | Timeout in number of seconds for ORCA copy_to_glacier lambda.                                           | 600 |
 | `orca_recovery_buckets`                               | List (string) | List of bucket names that ORCA has permissions to restore data to. Default is all in the `buckets` map. | [] |
@@ -492,6 +494,8 @@ accessed using terraform dot syntax in the format of `module.orca.variable_name`
 | `orca_lambda_post_copy_request_to_queue_arn`         | AWS ARN of the ORCA post_copy_request_to_queue lambda. |
 | `orca_lambda_orca_catalog_reporting_arn`             | AWS ARN of the ORCA orca_catalog_reporting lambda. |
 | `orca_secretsmanager_arn`                            | The Amazon Resource Name (ARN) of the AWS secretsmanager |
+| `orca_sqs_metadata_queue_arn`                        | The ARN of the metadata-queue SQS |
+| `orca_sqs_metadata_queue_id`                         | The URL ID of the metadata-queue SQS |
 | `orca_sqs_staged_recovery_queue_arn`                 | The ARN of the staged-recovery-queue SQS |
 | `orca_sqs_staged_recovery_queue_id`                  | The URL ID of the staged-recovery-queue SQS |
 | `orca_sqs_status_update_queue_arn`                   | The ARN of the status-update-queue SQS |

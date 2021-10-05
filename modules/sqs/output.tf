@@ -1,3 +1,13 @@
+output "orca_sqs_metadata_queue_arn" {
+  description = "The ARN of the metadata-queue SQS"
+  value       = aws_sqs_queue.metadata_queue.arn
+}
+
+output "orca_sqs_metadata_queue_id" {
+  description = "The URL of the metadata-queue SQS"
+  value       = aws_sqs_queue.metadata_queue.id
+}
+
 output "orca_sqs_staged_recovery_queue_arn" {
   description = "The ARN of the staged-recovery-queue SQS"
   value       = aws_sqs_queue.staged_recovery_queue.arn

@@ -95,6 +95,13 @@ variable "default_multipart_chunksize_mb" {
 }
 
 
+variable "metadata_queue_message_retention_time_seconds" {
+  type        = number
+  description = "The number of seconds metadata-queue fifo SQS retains a message in seconds. Maximum value is 14 days."
+  default     = 777600 #9 days
+}
+
+
 variable "orca_ingest_lambda_memory_size" {
   type        = number
   description = "Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime."

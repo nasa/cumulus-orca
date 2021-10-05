@@ -29,6 +29,8 @@ module "orca_lambdas" {
   ## --------------------------
   ## REQUIRED
   orca_default_bucket                = var.orca_default_bucket
+  orca_sqs_metadata_queue_arn        = module.orca_sqs.orca_sqs_metadata_queue_arn
+  orca_sqs_metadata_queue_id         = module.orca_sqs.orca_sqs_metadata_queue_id
   orca_sqs_staged_recovery_queue_arn = module.orca_sqs.orca_sqs_staged_recovery_queue_arn
   orca_sqs_status_update_queue_id    = module.orca_sqs.orca_sqs_status_update_queue_id
   orca_sqs_status_update_queue_arn   = module.orca_sqs.orca_sqs_status_update_queue_arn
@@ -114,6 +116,7 @@ module "orca_sqs" {
   ## ORCA Variables
   ## --------------------------
   ## OPTIONAL
+  metadata_queue_message_retention_time_seconds        = var.metadata_queue_message_retention_time_seconds
   sqs_delay_time_seconds                               = var.sqs_delay_time_seconds
   sqs_maximum_message_size                             = var.sqs_maximum_message_size
   staged_recovery_queue_message_retention_time_seconds = var.staged_recovery_queue_message_retention_time_seconds

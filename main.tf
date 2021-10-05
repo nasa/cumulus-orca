@@ -35,6 +35,7 @@ module "orca" {
   ## OPTIONAL
   db_admin_username                                    = var.db_admin_username
   default_multipart_chunksize_mb                       = var.default_multipart_chunksize_mb
+  metadata_queue_message_retention_time_seconds        = var.metadata_queue_message_retention_time_seconds
   orca_ingest_lambda_memory_size                       = var.orca_ingest_lambda_memory_size
   orca_ingest_lambda_timeout                           = var.orca_ingest_lambda_timeout
   orca_recovery_buckets                                = var.orca_recovery_buckets

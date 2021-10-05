@@ -53,6 +53,16 @@ output "orca_lambda_post_copy_request_to_queue_arn" {
 
 ## SQS Module outputs
 ## =============================================================================
+output "orca_sqs_metadata_queue_arn" {
+  description = "The ARN of the metadata-queue SQS"
+  value       = module.orca.orca_sqs_metadata_queue_arn
+}
+
+output "orca_sqs_metadata_queue_id" {
+  description = "The URL ID of the metadata-queue SQS"
+  value       = module.orca.orca_sqs_metadata_queue_arn
+}
+
 output "orca_sqs_staged_recovery_queue_arn" {
   description = "The ARN of the staged-recovery-queue SQS"
   value       = module.orca.orca_sqs_staged_recovery_queue_arn
