@@ -15,7 +15,7 @@
     },
     "multipart_chunksize_mb": {
       "description": "Overrides default_multipart_chunksize from TF.",
-      "type": "number"
+      "type": ["number", "null"]
     }
   }
 }

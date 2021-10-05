@@ -18,7 +18,7 @@ from botocore.client import BaseClient
 # noinspection PyPackageRequirements
 from botocore.exceptions import ClientError
 from run_cumulus_task import run_cumulus_task
-from orca_shared import shared_recovery
+from orca_shared.recovery import shared_recovery
 
 DEFAULT_RESTORE_EXPIRE_DAYS = 5
 DEFAULT_MAX_REQUEST_RETRIES = 2

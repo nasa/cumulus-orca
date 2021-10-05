@@ -12,28 +12,29 @@ module "orca" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  buckets                        = var.buckets
-  lambda_subnet_ids              = var.lambda_subnet_ids
-  permissions_boundary_arn       = var.permissions_boundary_arn
-  prefix                         = var.prefix
-  system_bucket                  = var.system_bucket
-  vpc_id                         = var.vpc_id
-  workflow_config                = var.workflow_config
-  default_multipart_chunksize_mb = var.default_multipart_chunksize_mb
+  buckets                  = var.buckets
+  lambda_subnet_ids        = var.lambda_subnet_ids
+  permissions_boundary_arn = var.permissions_boundary_arn
+  prefix                   = var.prefix
+  system_bucket            = var.system_bucket
+  vpc_id                   = var.vpc_id
+  workflow_config          = var.workflow_config
 
   ## OPTIONAL
-  tags        = local.tags
+  tags = local.tags
 
   ## --------------------------
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  orca_default_bucket = var.orca_default_bucket
   db_admin_password   = var.db_admin_password
-  db_user_password    = var.db_user_password
   db_host_endpoint    = var.db_host_endpoint
+  db_user_password    = var.db_user_password
+  orca_default_bucket = var.orca_default_bucket
+
   ## OPTIONAL
   db_admin_username                                    = var.db_admin_username
+  default_multipart_chunksize_mb                       = var.default_multipart_chunksize_mb
   orca_ingest_lambda_memory_size                       = var.orca_ingest_lambda_memory_size
   orca_ingest_lambda_timeout                           = var.orca_ingest_lambda_timeout
   orca_recovery_buckets                                = var.orca_recovery_buckets

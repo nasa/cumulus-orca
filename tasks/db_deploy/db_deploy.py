@@ -4,7 +4,12 @@ Name: db_deploy.py
 Description: Performs database installation and migration for the ORCA schema.
 """
 # Imports
-from orca_shared.shared_db import logger, get_configuration, get_admin_connection, retry_operational_error
+from orca_shared.database.shared_db import (
+    logger,
+    get_configuration,
+    get_admin_connection,
+    retry_operational_error,
+)
 from sqlalchemy import text
 from sqlalchemy.future import Connection
 
@@ -18,6 +23,7 @@ from typing import Any, Dict
 # Latest version of the ORCA schema.
 LATEST_ORCA_SCHEMA_VERSION = 4
 MAX_RETRIES = 3
+
 
 def handler(
     event: Dict[str, Any], context: object
@@ -44,6 +50,7 @@ def handler(
 
     return task(config)
 
+
 def task(config: Dict[str, str]) -> None:
     """
     Checks for the ORCA database and throws an error if it does not exist.
@@ -64,9 +71,13 @@ def task(config: Dict[str, str]) -> None:
     with postgres_admin_engine.connect() as connection:
         # Check if database exists. If not, start from scratch.
         if not app_db_exists(connection):
-            logger.info("The ORCA database disaster_recovery does not exist, "
-                        "or the server could not be connected to.")
-            connection.execute(orca_sql.commit_sql())  # exit the default transaction to allow database creation.
+            logger.info(
+                "The ORCA database disaster_recovery does not exist, "
+                "or the server could not be connected to."
+            )
+            connection.execute(
+                orca_sql.commit_sql()
+            )  # exit the default transaction to allow database creation.
             connection.execute(orca_sql.app_database_sql())
             connection.execute(orca_sql.app_database_comment_sql())
             logger.info("Database created.")
@@ -135,6 +146,7 @@ def app_db_exists(connection: Connection) -> bool:
 
     return db_exists
 
+
 def app_schema_exists(connection: Connection) -> bool:
     """
     Checks to see if the ORCA application schema exists.
@@ -164,6 +176,7 @@ def app_schema_exists(connection: Connection) -> bool:
         schema_exists = row[0]
 
     return schema_exists
+
 
 def app_version_table_exists(connection: Connection) -> bool:
     """
@@ -198,6 +211,7 @@ def app_version_table_exists(connection: Connection) -> bool:
     logger.debug(f"schema_versions table exists {table_exists}")
 
     return table_exists
+
 
 def get_migration_version(connection: Connection) -> int:
     """

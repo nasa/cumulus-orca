@@ -1,18 +1,18 @@
 #!/bin/bash
 ## =============================================================================
-## NAME: build_doc.sh
+## NAME: build_api.sh
 ##
 ##
 ## DESCRIPTION
 ## -----------------------------------------------------------------------------
-## Builds the lambda (task) API documentation.
+## Builds the shared ORCA libraries API documentation.
 ##
 ##
 ## USAGE
 ## -----------------------------------------------------------------------------
-## bin/build_doc.sh
+## bin/build_api.sh
 ##
-## This must be called from the (root) lambda directory /tasks/shared_libraries/database
+## This must be called from the (root) lambda directory /tasks/shared_libraries
 ## =============================================================================
 
 ## Set this for Debugging only
@@ -61,27 +61,13 @@ source venv/bin/activate
 
 ## Install the requirements
 pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org
-pip install -q pydoc-markdown==3.10.1 --trusted-host pypi.org --trusted-host files.pythonhosted.org
+pip install -q "pydoc-markdown>=4.0.0,<5.0.0" --trusted-host pypi.org --trusted-host files.pythonhosted.org
 let return_code=$?
 
 check_rc $return_code "ERROR: pip install encountered an error."
 
-## Get the modules we want to document
-file_list=""
-first_time="1"
-for file in `ls -1 *.py`
-do
-    module=${file%%".py"}
-    if [ "${first_time}" = "1" ]; then
-        file_list="-m ${module}"
-        first_time="0"
-    else
-        file_list="${file_list} -m ${module}"
-    fi
-done
-
 ## Run the documentation command
-pydoc-markdown -I . ${file_list} --render-toc > API.md
+pydoc-markdown -I . -p orca_shared --render-toc > API.md
 let return_code=$?
 
 check_rc $return_code "ERROR: Failed to create API.md file."

@@ -73,26 +73,28 @@ module "orca" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  orca_default_bucket = var.orca_default_bucket
   db_admin_password   = var.db_admin_password
-  db_user_password    = var.db_user_password
   db_host_endpoint    = var.db_host_endpoint
+  db_user_password    = var.db_user_password
+  orca_default_bucket = var.orca_default_bucket
 
   ## OPTIONAL
-  # database_port                                = 5432
-  # orca_ingest_lambda_memory_size               = 2240
-  # orca_ingest_lambda_timeout                   = 600
-  # orca_recovery_buckets                        = []
-  # orca_recovery_complete_filter_prefix         = ""
-  # orca_recovery_expiration_days                = 5
-  # orca_recovery_lambda_memory_size             = 128
-  # orca_recovery_lambda_timeout                 = 300
-  # orca_recovery_retry_limit                    = 3
-  # orca_recovery_retry_interval                 = 1
-  # sqs_delay_time                               = 0
-  # sqs_maximum_message_size                     = 262144
-  # staged_recovery_queue_message_retention_time = 432000
-  # status_update_queue_message_retention_time   = 777600
+  # db_admin_username                                    = "postgres"
+  # default_multipart_chunksize_mb                       = 250
+  # orca_ingest_lambda_memory_size                       = 2240
+  # orca_ingest_lambda_timeout                           = 600
+  # orca_recovery_buckets                                = []
+  # orca_recovery_complete_filter_prefix                 = ""
+  # orca_recovery_expiration_days                        = 5
+  # orca_recovery_lambda_memory_size                     = 128
+  # orca_recovery_lambda_timeout                         = 300
+  # orca_recovery_retry_limit                            = 3
+  # orca_recovery_retry_interval                         = 1
+  # sqs_delay_time_seconds                               = 0
+  # sqs_maximum_message_size                             = 262144
+  # staged_recovery_queue_message_retention_time_seconds = 432000
+  # status_update_queue_message_retention_time_seconds   = 777600
+
 }
 ```
 
@@ -342,8 +344,8 @@ the ingest workflow.
       "cma":{
          "event.$":"$",
          "task_config":{
-            "collection":"{$.meta.collection}",
-            "multipart_chunksize_mb": "{$.meta.collection.multipart_chunksize_mb"}
+            "multipart_chunksize_mb": "{$.meta.collection.multipart_chunksize_mb"},
+            "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}"
             }
          }
       }
@@ -454,8 +456,10 @@ file. The variables can be set with proper values for your environment in the
 `cumulus-tf/terraform.tfvars` file. The default setting for each of the optional
 variables is shown in the table below.
 
-| -------------------------------------------     | ------------------  | ---------------------------------------------------------------------------------------------------     | ------------- |
+| Variable                                              | Type          | Definition                                                                                              | Default
+| ----------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------- | ---------- |
 | `db_admin_username`                                   | string        | Username for RDS database administrator authentication.                                                 | "postgres" |
+| `default_multipart_chunksize_mb`                      | number        | The default maximum size of chunks to use when copying. Can be overridden by collection config.         | 250 |
 | `orca_ingest_lambda_memory_size`                      | number        | Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime.                              | 2240 |
 | `orca_ingest_lambda_timeout`                          | number        | Timeout in number of seconds for ORCA copy_to_glacier lambda.                                           | 600 |
 | `orca_recovery_buckets`                               | List (string) | List of bucket names that ORCA has permissions to restore data to. Default is all in the `buckets` map. | [] |
@@ -469,7 +473,6 @@ variables is shown in the table below.
 | `sqs_maximum_message_size`                            | number        | The limit of how many bytes a message can contain before Amazon SQS rejects it.                         | 262144 |
 | `staged_recovery_queue_message_retention_time_seconds`| number        | Number of seconds the staged-recovery-queue fifo SQS retains a message.                                 | 432000 |
 | `status_update_queue_message_retention_time_seconds`  | number        | Number of seconds the status_update_queue fifo SQS retains a message.                                   | 777600 |
-| `default_multipart_chunksize_mb`                      | number        | The default maximum size of chunks to use when copying. Can be overridden by collection config.         | 250 |
 
 
 ## ORCA Module Outputs

@@ -12,7 +12,7 @@ from random import randint, uniform
 from unittest import mock
 from unittest.mock import patch, MagicMock, call, Mock
 
-from orca_shared.shared_recovery import OrcaStatus
+from orca_shared.recovery.shared_recovery import OrcaStatus
 from test.request_helpers import LambdaContextMock, create_handler_event
 
 # noinspection PyPackageRequirements
@@ -566,9 +566,8 @@ class TestRequestFiles(unittest.TestCase):
                 "filename": file_key_0,
                 "key_path": file_key_0,
                 "restore_destination": file_dest_bucket_0,
-                'multipart_chunksize_mb': collection_multipart_chunksize_mb,
-                "status_id": OrcaStatus.PENDING.value,
                 "multipart_chunksize_mb": collection_multipart_chunksize_mb,
+                "status_id": OrcaStatus.PENDING.value,
                 "request_time": mock.ANY,
                 "last_update": mock.ANY,
             },
@@ -579,7 +578,6 @@ class TestRequestFiles(unittest.TestCase):
                 "restore_destination": missing_file_dest_bucket,
                 "multipart_chunksize_mb": collection_multipart_chunksize_mb,
                 "status_id": OrcaStatus.FAILED.value,
-                "multipart_chunksize_mb": collection_multipart_chunksize_mb,
                 "request_time": mock.ANY,
                 "last_update": mock.ANY,
                 "error_message": f"{missing_file_key} does not exist in {glacier_bucket} bucket",
@@ -592,7 +590,6 @@ class TestRequestFiles(unittest.TestCase):
                 "restore_destination": file_dest_bucket_1,
                 'multipart_chunksize_mb': collection_multipart_chunksize_mb,
                 "status_id": OrcaStatus.PENDING.value,
-                "multipart_chunksize_mb": collection_multipart_chunksize_mb,
                 "request_time": mock.ANY,
                 "last_update": mock.ANY,
             },

@@ -4,25 +4,26 @@ Name: shared_db.py
 Description: Shared library for database objects needed by the various libraries.
 """
 
-import os
-import boto3
-import json
-import time
-import random
 import functools
+import json
+import os
+import random
+import time
+from typing import Any, Callable, Dict, TypeVar
+
+import boto3
+from cumulus_logger import CumulusLogger
 from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.future import Engine
-from cumulus_logger import CumulusLogger
-from typing import Any, Dict, TypeVar, Callable
 
 # instantiate CumulusLogger
 logger = CumulusLogger(name="orca")
 MAX_RETRIES = 3  # number of times to retry.
 BACKOFF_FACTOR = 2  # Value of the factor used to backoff
 INITIAL_BACKOFF_IN_SECONDS = 1  # Number of seconds to sleep the first time through.
-RT = TypeVar('RT')  # return type
+RT = TypeVar("RT")  # return type
 
 
 def get_configuration() -> Dict[str, str]:
@@ -36,7 +37,7 @@ def get_configuration() -> Dict[str, str]:
         AWS_REGION (str): AWS reserved runtime variable used to set boto3 client region.
 
     Parameter Store:
-        <prefix>-orca-db-login-secret (string): The json string containing all the admin and user db login info.
+        <prefix>-orca-db-login-secret (string): The json string containing all the db login info.
     ```
 
     Args:
@@ -82,7 +83,7 @@ def get_configuration() -> Dict[str, str]:
         logger.debug(
             "Successfully retrieved db login info for both user and admin as a dictionary."
         )
-    except Exception as e:
+    except Exception:
         logger.critical("Failed to retrieve secret.", exc_info=True)
         raise Exception("Failed to retrieve secret manager value.")
 
@@ -164,8 +165,11 @@ def get_user_connection(config: Dict[str, str]) -> Engine:
 
 
 # Retry decorator for functions
-def retry_operational_error(max_retries: int = MAX_RETRIES, backoff_in_seconds: int = INITIAL_BACKOFF_IN_SECONDS,
-                            backoff_factor: int = BACKOFF_FACTOR) -> Callable[[Callable[[], RT]], Callable[[], RT]]:
+def retry_operational_error(
+    max_retries: int = MAX_RETRIES,
+    backoff_in_seconds: int = INITIAL_BACKOFF_IN_SECONDS,
+    backoff_factor: int = BACKOFF_FACTOR,
+) -> Callable[[Callable[[], RT]], Callable[[], RT]]:
     """
     Decorator takes arguments to adjust number of retries and backoff strategy.
     Args:
@@ -197,15 +201,21 @@ def retry_operational_error(max_retries: int = MAX_RETRIES, backoff_in_seconds: 
                         # Log it and re-raise if we maxed our retries + initial attempt
                         logger.error(
                             "Encountered Errors {total_attempts} times. Reached max retry limit.",
-                            total_attempts=total_retries)
+                            total_attempts=total_retries,
+                        )
                         raise
                     else:
                         # perform exponential delay
-                        backoff_time = (backoff_in_seconds * backoff_factor ** total_retries + random.uniform(0, 1))
+                        backoff_time = (
+                            backoff_in_seconds * backoff_factor ** total_retries
+                            + random.uniform(0, 1)  # nosec
+                        )
                         logger.error(
                             "Encountered OperationalError on attempt {total_attempts}. "
                             "Sleeping {backoff_time} seconds.",
-                            total_attempts=total_retries, backoff_time=backoff_time)
+                            total_attempts=total_retries,
+                            backoff_time=backoff_time,
+                        )
                         time.sleep(backoff_time)
                         total_retries += 1
                 except Exception as ex:

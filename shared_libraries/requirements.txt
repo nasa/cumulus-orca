@@ -1,0 +1,41 @@
+## Library used for API documentation
+## ---------------------------------------------------------------------------
+pydoc-markdown>=4.0.0,<5.0.0
+
+
+## Additional validation libraries
+## ---------------------------------------------------------------------------
+bandit==1.7.0
+safety==1.10.3
+flake8==3.9.2
+black==21.9b0
+isort==5.9.3
+
+
+## Libraries needed for unit tests
+## ---------------------------------------------------------------------------
+
+## Libraries used by every package/module
+pytest==6.1.2
+coverage==5.3
+
+## Libraries used by database package
+psycopg2-binary==2.8.6
+
+## Libraries used by recovery package
+moto[sqs]==2.0.6
+
+
+## Libraries needed by packages to run
+## ---------------------------------------------------------------------------
+
+## Libraries used by every package/module
+cumulus-message-adapter==1.3.0
+cumulus-message-adapter-python==1.2.1
+
+## Libraries used by database package
+boto3~=1.12.47
+SQLAlchemy==1.4.11
+
+## Libraries used by recovery package
+# boto3~=1.12.47
