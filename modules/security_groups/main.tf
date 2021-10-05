@@ -16,8 +16,8 @@ resource "aws_security_group" "vpc-postgres-ingress-all-egress" {
   vpc_id      = var.vpc_id
 
   ingress {
-    from_port = var.database_port
-    to_port   = var.database_port
+    from_port = "5432"
+    to_port   = "5432"
     protocol  = "TCP"
     self      = true
   }

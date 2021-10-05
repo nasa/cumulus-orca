@@ -26,14 +26,14 @@ def get_configuration():
     my_app_pass = os.getenv("APPLICATION_PASSWORD")
 
     return {
-        "database": "disaster_recovery",
         "admin_database": "postgres",
-        "port": "5433",
-        "app_user": "orcauser",
-        "admin_user": "postgres",
-        "app_user_password": my_app_pass,
-        "admin_user_password": my_admin_pass,
+        "admin_password": my_admin_pass,
+        "admin_username": "postgres",
         "host": my_host,
+        "port": "5433",
+        "user_database": "disaster_recovery",
+        "user_password": my_app_pass,
+        "user_username": "orcauser",  
     }
 
 
