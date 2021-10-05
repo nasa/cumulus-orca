@@ -4,24 +4,6 @@ set -e
 base=$(pwd)
 failed=0
 
-# runs the test for shared library (OLD)
-# This should be removed once all lambdas are converted to using pip.
-for shared_library in $(ls -d tasks/shared_libraries/*)
-do
-  echo
-  echo "Running tests in $shared_library"
-  echo
-
-  cd $shared_library
-  bin/run_tests.sh
-  return_code=$?
-  cd -
-
-  if [ $return_code -ne 0 ]; then
-    failed=1
-  fi
-done
-
 # run tests for shared libraries
 echo
 echo "Running tests in shared_libraries"

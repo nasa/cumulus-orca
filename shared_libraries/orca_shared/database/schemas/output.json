@@ -9,24 +9,24 @@
             "description": "Admin database name used for URL connection string. Typically postgres for PostgreSQL RDS",
             "type": "string"
         },
-        "admin_user": {
+        "admin_username": {
             "description": "Admin (super user) database user name used for URL connection string. Typically postgres for PostgreSQL RDS",
             "type": "string"
         },
-        "admin_user_password": {
+        "admin_password": {
             "description": "Admin database user password used for URL connection string.",
             "type": "string"
         },
-        "app_user": {
+        "user_username": {
             "description": "Application non-privelaged database user name used for URL connection string.",
             "type": "string"
         },
-        "app_user_password": {
+        "user_password": {
             "description": "Application user database password used for URL connection string.",
             "type": "string"
         },
-        "database": {
-            "description": "Application database name used for URL connection string.",
+        "user_database": {
+            "description": "Application user database name used for URL connection string.",
             "type": "string"
         },
         "host": {
@@ -40,11 +40,11 @@
     },
     "required": [
         "admin_database",
-        "admin_user",
-        "admin_user_password",
-        "app_user",
-        "app_user_password",
-        "database",
+        "admin_username",
+        "admin_password",
+        "user_username",
+        "user_password",
+        "user_database",
         "host",
         "port"
     ]

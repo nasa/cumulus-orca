@@ -6,6 +6,7 @@
   * [get\_configuration](#orca_shared.database.shared_db.get_configuration)
   * [get\_admin\_connection](#orca_shared.database.shared_db.get_admin_connection)
   * [get\_user\_connection](#orca_shared.database.shared_db.get_user_connection)
+  * [retry\_operational\_error](#orca_shared.database.shared_db.retry_operational_error)
 * [orca\_shared.recovery](#orca_shared.recovery)
 * [orca\_shared.recovery.shared\_recovery](#orca_shared.recovery.shared_recovery)
   * [RequestMethod](#orca_shared.recovery.shared_recovery.RequestMethod)
@@ -47,16 +48,9 @@ parameter store information and other items needed to create the database.
 Environment Variables:
     PREFIX (str): Deployment prefix used to pull the proper AWS secret.
     AWS_REGION (str): AWS reserved runtime variable used to set boto3 client region.
-    DATABASE_PORT (str): The database port. The standard is 5432
-    DATABASE_NAME (str): The name of the application database.
-    APPLICATION_USER (str): The name of the database application user.
-    ADMIN_USER (str): *OPTIONAL* The name of the database super user (postgres).
-    ADMIN_DATABASE (str): *OPTIONAL* The name of the admin database for the instance (postgres).
 
 Parameter Store:
-    <prefix>-drdb-user-pass (string): The password for the application user (APPLICATION_USER).
-    <prefix>-drdb-host (string): The database host.
-    <prefix>-drdb-admin-pass: The password for the admin user
+    <prefix>-orca-db-login-secret (string): The json string containing all the admin and user db login info.
 ```
 
 **Arguments**:
@@ -109,6 +103,22 @@ database user.
   
   Returns
 - `Engine` _sqlalchemy.future.Engine_ - engine object for creating database connections.
+
+<a id="orca_shared.database.shared_db.retry_operational_error"></a>
+
+#### retry\_operational\_error
+
+```python
+def retry_operational_error(max_retries: int = MAX_RETRIES, backoff_in_seconds: int = INITIAL_BACKOFF_IN_SECONDS, backoff_factor: int = BACKOFF_FACTOR) -> Callable[[Callable[[], RT]], Callable[[], RT]]
+```
+
+Decorator takes arguments to adjust number of retries and backoff strategy.
+
+**Arguments**:
+
+- `max_retries` _int_ - number of times to retry in case of failure.
+- `backoff_in_seconds` _int_ - Number of seconds to sleep the first time through.
+- `backoff_factor` _int_ - Value of the factor used for backoff.
 
 <a id="orca_shared.recovery"></a>
 
@@ -180,6 +190,7 @@ Creates status information for a new job and its files, and posts to queue.
   'filename' (str)
   'key_path' (str)
   'restore_destination' (str)
+  'multipart_chunksize_mb' (int)
   'status_id' (int)
   'error_message' (str, Optional)
   'request_time' (str)
