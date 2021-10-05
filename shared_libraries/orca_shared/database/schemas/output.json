@@ -46,6 +46,6 @@
         "user_password",
         "user_database",
         "host",
-        "port"        
+        "port"
     ]
 }
