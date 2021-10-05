@@ -29,13 +29,13 @@ patterns.
 The following filters can be applied to a query for determining which files to
 bring back for catalog comparison between the Cumulus inventory and ORCA.
 
-| Name           | Data Type   | Description                                       |
-| -------------- | ----------- | ------------------------------------------------- |
-| providerId     | `List[str]` | The unique ID of the provider making the request. |
-| collectionId   | `List[str]` | The unique ID of collection(s) to compare.        |
-| granuleId      | `List[str]` | The unique ID of granules to compare.             |
-| startTimestamp | `timestamp` | Start time for TBD date range to compare data.    |
-| endTimestamp   | `timestamp` | End time for TBD date range to compare data.      |
+| Name           | Data Type   | Description                                                     |
+| -------------- | ----------- | ----------------------------------------------------------------|
+| providerId     | `List[str]` | The unique ID of the provider making the request.               |
+| collectionId   | `List[str]` | The unique ID of collection(s) to compare.                      |
+| granuleId      | `List[str]` | The unique ID of granules to compare.                           |
+| startTimestamp | `timestamp` | Start time for cumulus_create_time date range to compare data.  |
+| endTimestamp   | `timestamp` | End time for cumulus_create_time date range to compare data.    |
 
 When querying ORCA for the information these filters will be AND together for a
 comparison answer.
@@ -183,15 +183,21 @@ by the end user to perform analysis on discrepencies.
 
 - Provider ID (providerId)
 - Collection ID (collectionId)
+- Shortname
+- collection Version
 - Granule ID (granuleId)
-- Granule Date - TBD dependent on what is used for date range comparison ideally acquisition
+- Cumulus create time
+- Execution ID
 - Granule Ingest Date (ORCA) - may also be referred to as a Create Date.
 - Granule Last Update (ORCA)
 - File Name
 - ORCA Location - archive bucket + archive path
+- Cumulus Archive Location
+- Key Path
+- Etag
 - File Size
-- File Checksum
-- File Checksum Type
+- File Hash (Optional)
+- File Hash Type (Optional)
 - File Version (always send back latest version to compare)
 
 A rough structure may look like the following below. In order to simplify
@@ -206,19 +212,24 @@ database and glacier on a file version when doing a recovery.
     "collections": [
       {
         "collectionId": "MOD14A1__061",
+        "shortname": "AST_L1A",
+        "collection_version": "AST_L1A_1.0",
         "granules": [
           {
             "granuleId": "MOD14A1.061.A23V45.2020235",
-            "date": "TBD",
-            "createDate": "2020-01-01T23:00:00+00:00",
+            "cumulus_create_time": "2020-01-01T23:00:00+00:00",
+            "execution_id": "1234",
+            "ingestDate": "2020-01-01T23:00:00+00:00",
             "lastUpdate": "2020-01-01T23:00:00+00:00",
             "files": [
               {
                 "fileName": "MOD14A1.061.A23V45.2020235.2020240145621.hdf",
+                "cumulus_archive_location": "s3://cumulus-archive/MOD14A1/061/...",
                 "orcaLocation": "s3://orca-archive/MOD14A1/061/...",
+                "key_path": "MOD14A1/061/032/MOD14A1.061.A23V45.2020235.2020240145621.hdf",
                 "fileSizeBytes": 100934568723,
-                "fileChecksum": "ACFH325128030192834127347",
-                "fileChecksumType": "SHA-256",
+                "fileHash": "ACFH325128030192834127347",
+                "fileHashType": "SHA-256",
                 "fileVersion": "VXCDEG902",
                 "orcaEtag": "YXC432BGT789"
               },
