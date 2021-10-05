@@ -456,7 +456,8 @@ file. The variables can be set with proper values for your environment in the
 `cumulus-tf/terraform.tfvars` file. The default setting for each of the optional
 variables is shown in the table below.
 
-| -------------------------------------------     | ------------------  | ---------------------------------------------------------------------------------------------------     | ------------- |
+| Variable                                              | Type          | Definition                                                                                              | Default
+| ----------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------- | ---------- |
 | `db_admin_username`                                   | string        | Username for RDS database administrator authentication.                                                 | "postgres" |
 | `default_multipart_chunksize_mb`                      | number        | The default maximum size of chunks to use when copying. Can be overridden by collection config.         | 250 |
 | `orca_ingest_lambda_memory_size`                      | number        | Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime.                              | 2240 |
