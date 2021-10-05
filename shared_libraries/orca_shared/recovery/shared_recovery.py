@@ -1,7 +1,7 @@
 """
 Name: shared_recovery.py
-Description: Shared library that combines common functions and classes needed
-for recovery operations.
+Description: Shared library that combines common functions and classes needed for
+             recovery operations.
 """
 # Standard libraries
 import hashlib
@@ -11,9 +11,8 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-import boto3
-
 # Third party libraries
+import boto3
 from cumulus_logger import CumulusLogger
 
 # Set Cumulus LOGGER
@@ -55,7 +54,7 @@ def get_aws_region() -> str:
     if aws_region is None or len(aws_region) == 0:
         message = "Runtime environment variable AWS_REGION is not set."
         LOGGER.critical(message)
-        raise Exception(message)
+        raise ValueError(message)
     LOGGER.debug(f"Got environment variable for AWS_REGION = {aws_region}")
     return aws_region
 
@@ -132,8 +131,8 @@ def update_status_for_file(
     if orca_status == OrcaStatus.SUCCESS or orca_status == OrcaStatus.FAILED:
         new_data["completion_time"] = datetime.now(timezone.utc).isoformat()
         if orca_status == OrcaStatus.FAILED:
-            if len(error_message) == 0 or error_message is None:
-                raise Exception("error message is required.")
+            if error_message is None or len(error_message) == 0:
+                raise ValueError("error message is required.")
             new_data["error_message"] = error_message
 
     message = "Sending the following data to queue: {new_data}"
@@ -151,7 +150,7 @@ def post_entry_to_queue(
     Posts messages to an SQS queue.
     Args:
         new_data: A dictionary representing the column/value pairs to write to the DB table.
-        request_method: The action for the database lambda to take.
+        request_method: The action for the database lambda to take when posting to the SQS queue.
         db_queue_url: The SQS queue URL defined by AWS.
     Raises:
         None

@@ -14,15 +14,10 @@ module "lambda_security_group" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  prefix      = var.prefix
-  vpc_id      = var.vpc_id
+  prefix = var.prefix
+  vpc_id = var.vpc_id
   ## OPTIONAL
-  tags   = local.tags
-  ## --------------------------
-  ## ORCA Variables
-  ## --------------------------
-  ## OPTIONAL
-  database_port = var.database_port
+  tags = local.tags
 }
 
 # restore_object_arn - IAM module reference
@@ -37,7 +32,7 @@ module "restore_object_arn" {
   permissions_boundary_arn = var.permissions_boundary_arn
   prefix                   = var.prefix
   # OPTIONAL
-  tags   = local.tags
+  tags = local.tags
   # --------------------------
   # ORCA Variables
   # --------------------------
@@ -165,7 +160,7 @@ resource "aws_lambda_function" "request_files" {
       RESTORE_EXPIRE_DAYS      = var.orca_recovery_expiration_days
       RESTORE_REQUEST_RETRIES  = var.orca_recovery_retry_limit
       RESTORE_RETRY_SLEEP_SECS = var.orca_recovery_retry_interval
-      RESTORE_RETRIEVAL_TYPE   = var.orca_recovery_retrieval_type
+      RESTORE_RETRIEVAL_TYPE   = "Standard"
       DB_QUEUE_URL             = var.orca_sqs_status_update_queue_id
       ORCA_DEFAULT_BUCKET      = var.orca_default_bucket
     }
@@ -248,10 +243,7 @@ resource "aws_lambda_function" "post_to_database" {
 
   environment {
     variables = {
-      PREFIX           = var.prefix
-      DATABASE_PORT    = var.database_port
-      DATABASE_NAME    = var.database_name
-      APPLICATION_USER = var.database_app_user
+      PREFIX = var.prefix
     }
   }
 }
@@ -299,10 +291,7 @@ resource "aws_lambda_function" "request_status_for_granule" {
 
   environment {
     variables = {
-      PREFIX        = var.prefix
-      DATABASE_PORT = var.database_port
-      DATABASE_NAME = var.database_name
-      DATABASE_USER = var.database_app_user
+      PREFIX = var.prefix
     }
   }
 }
@@ -332,10 +321,7 @@ resource "aws_lambda_function" "request_status_for_job" {
 
   environment {
     variables = {
-      PREFIX        = var.prefix
-      DATABASE_PORT = var.database_port
-      DATABASE_NAME = var.database_name
-      DATABASE_USER = var.database_app_user
+      PREFIX = var.prefix
     }
   }
 }
@@ -362,9 +348,6 @@ resource "aws_lambda_function" "post_copy_request_to_queue" {
   environment {
     variables = {
       PREFIX             = var.prefix
-      DATABASE_PORT      = var.database_port
-      DATABASE_NAME      = var.database_name
-      APPLICATION_USER   = var.database_app_user
       DB_QUEUE_URL       = var.orca_sqs_status_update_queue_id
       RECOVERY_QUEUE_URL = var.orca_sqs_staged_recovery_queue_id
       MAX_RETRIES        = var.orca_recovery_retry_limit
@@ -454,12 +437,15 @@ resource "aws_lambda_function" "db_deploy" {
 
   environment {
     variables = {
-      PREFIX           = var.prefix
-      DATABASE_PORT    = var.database_port
-      DATABASE_NAME    = var.database_name
-      APPLICATION_USER = var.database_app_user
-      ADMIN_USER       = "postgres"
-      ADMIN_DATABASE   = "postgres"
+      PREFIX = var.prefix
     }
   }
+}
+
+## =============================================================================
+## NULL RESOURCES - 1x Use
+## =============================================================================
+data "aws_lambda_invocation" "db_migration" {
+  function_name = aws_lambda_function.db_deploy.function_name
+  input = jsonencode({})
 }

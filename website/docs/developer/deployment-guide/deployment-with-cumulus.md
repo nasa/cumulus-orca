@@ -73,12 +73,13 @@ module "orca" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  database_app_user_pw = var.database_app_user_pw
-  orca_default_bucket  = var.orca_default_bucket
-  postgres_user_pw     = var.postgres_user_pw
+  db_admin_password   = var.db_admin_password
+  db_host_endpoint    = var.db_host_endpoint
+  db_user_password    = var.db_user_password
+  orca_default_bucket = var.orca_default_bucket
 
   ## OPTIONAL
-  # database_port                                        = 5432
+  # db_admin_username                                    = "postgres"
   # default_multipart_chunksize_mb                       = 250
   # metadata_queue_message_retention_time                = 777600
   # orca_ingest_lambda_memory_size                       = 2240
@@ -90,10 +91,11 @@ module "orca" {
   # orca_recovery_lambda_timeout                         = 300
   # orca_recovery_retry_limit                            = 3
   # orca_recovery_retry_interval                         = 1
-  # sqs_delay_time                                       = 0
+  # sqs_delay_time_seconds                               = 0
   # sqs_maximum_message_size                             = 262144
   # staged_recovery_queue_message_retention_time_seconds = 432000
   # status_update_queue_message_retention_time_seconds   = 777600
+
 }
 ```
 
@@ -103,10 +105,10 @@ The following variables are unique to the ORCA module and required to be set by
 the user. More information about these required variables, as well as the
 optional variables can be found in the [variables section](#orca-variables).
 
-- database_app_user_pw
+- db_admin_password
 - orca_default_bucket
-- postgres_user_pw
-
+- db_user_password
+- db_host_endpoint
 
 #### Required Values Retrieved from Cumulus Variables
 
@@ -148,21 +150,25 @@ For more information on the variables, see the [variables section](#orca-variabl
 ```terraform
 ## Variables unique to ORCA
 ## REQUIRED
-variable "database_app_user_pw" {
+variable "db_admin_password" {
+  description = "Password for RDS database administrator authentication"
   type        = string
-  description = "ORCA application database user password."
+}
+
+variable "db_user_password" {
+  description = "Password for RDS database user authentication"
+  type        = string
+}
+
+variable "db_host_endpoint" {
+  type        = string
+  description = "Database host endpoint to connect to."
 }
 
 
 variable "orca_default_bucket" {
   type        = string
   description = "Default ORCA S3 Glacier bucket to use."
-}
-
-
-variable "postgres_user_pw" {
-  type        = string
-  description = "postgres database user password."
 }
 
 ```
@@ -191,21 +197,25 @@ provides additional information on variables that can be set for the ORCA applic
 ## -----------------------------------------------------------------------------
 
 ## ORCA application database user password.
-database_app_user_pw = "my-super-secret-orca-application-user-password"
+db_user_password = "my-super-secret-orca-application-user-password"
 
 ## Default ORCA S3 Glacier bucket to use
 orca_default_bucket = "orca-archive-primary"
 
 ## PostgreSQL database (root) user password
-postgres_user_pw = "my-super-secret-database-owner-password"
+db_admin_password = "my-super-secret-database-owner-password"
+
+## PostgreSQL database host endpoint to connect to.
+db_host_endpoint = "aws.postgresrds.host"
 
 ```
 
 Below describes the type of value expected for each variable.
 
-* `database_app_user_pw` (string) - the password for the application user
-* `orca_default_bucket` (string) - default S3 glacier bucket to use for ORCA data
-* `postgres_user_pw` (string) - password for the postgres user
+* `db_user_password` (string) - the password for the application user.
+* `orca_default_bucket` (string) - default S3 glacier bucket to use for ORCA data.
+* `db_admin_password` (string) - password for the postgres user.
+* `db_host_endpoint`(string) - Database host endpoint to connect to.
 
 Additional variable definitions can be found in the [ORCA variables](#orca-variables)
 section of the document.
@@ -415,11 +425,12 @@ The following variables should be present in the `cumulus-tf/orca_variables.tf`
 file. The variables must be set with proper values for your environment in the
 `cumulus-tf/terraform.tfvars` file.
 
-| Variable               | Definition                                    | Example Value                 |
-| ---------------------- | --------------------------------------------- | ----------------------------- |
-| `database_app_user_pw` | ORCA application database user password.      | "My_Sup3rS3cr3t_App_Passw0rd" |
-| `orca_default_bucket`  | Default ORCA S3 Glacier bucket to use.        | "PREFIX-orca-primary"         |
-| `postgres_user_pw`     | PostgreSQL *postgres* database user password. | "My_Sup3rS3cr3t_R00tPassw0rd" |
+| Variable               | Definition                                              | Example Value                 |
+| ---------------------- | --------------------------------------------- ----------| ----------------------------- |
+| `db_admin_password`    | Password for RDS database administrator authentication  | "My_Sup3rS3cr3t_admin_Passw0rd"|
+| `db_host_endpoint`     | Database host endpoint to connect to.                   | "aws.postgresrds.host"        |
+| `db_user_password`     | Password for RDS database user authentication           | "My_Sup3rS3cr3tuserPassw0rd"  |
+| `orca_default_bucket`  | Default ORCA S3 Glacier bucket to use.                  | "PREFIX-orca-primary"         |
 
 
 ### Optional Variables
@@ -446,9 +457,9 @@ file. The variables can be set with proper values for your environment in the
 `cumulus-tf/terraform.tfvars` file. The default setting for each of the optional
 variables is shown in the table below.
 
-| Variable                                        | Type                | Definition                                                                                              | Default Value |
-| -------------------------------------------     | ------------------  | ---------------------------------------------------------------------------------------------------     | ------------- |
-| `database_port`                                       | number        | Database port that PostgreSQL traffic will be allowed on.                                               | 5432 |
+| Variable                                              | Type          | Definition                                                                                              | Default
+| ----------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------- | ---------- |
+| `db_admin_username`                                   | string        | Username for RDS database administrator authentication.                                                 | "postgres" |
 | `default_multipart_chunksize_mb`                      | number        | The default maximum size of chunks to use when copying. Can be overridden by collection config.         | 250 |
 | `metadata_queue_message_retention_time_seconds`       | number        | Number of seconds the metadata-queue fifo SQS retains a message.                                        | 777600 |
 | `orca_ingest_lambda_memory_size`                      | number        | Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime.                              | 2240 |
@@ -482,25 +493,16 @@ accessed using terraform dot syntax in the format of `module.orca.variable_name`
 | `orca_lambda_request_status_for_job_arn`             | AWS ARN of the ORCA request_status_for_job lambda. |
 | `orca_lambda_post_copy_request_to_queue_arn`         | AWS ARN of the ORCA post_copy_request_to_queue lambda. |
 | `orca_lambda_orca_catalog_reporting_arn`             | AWS ARN of the ORCA orca_catalog_reporting lambda. |
-| `orca_rds_address`                                   | The address of the RDS instance |
-| `orca_rds_arn`                                       | The ARN of the RDS instance |
-| `orca_rds_availability_zone`                         | The availability zone of the RDS instance |
-| `orca_rds_endpoint`                                  | The connection endpoint in address:port format |
-| `orca_rds_hosted_zone_id`                            | The canonical hosted zone ID of the DB instance (to be used in a Route 53 Alias record) |
-| `orca_rds_id`                                        | The RDS instance ID |
-| `orca_rds_resource_id`                               | The RDS Resource ID of this instance |
-| `orca_rds_status`                                    | The RDS instance status |
-| `orca_rds_name`                                      | The database name |
-| `orca_rds_username`                                  | The master username for the database |
-| `orca_rds_port`                                      | The database port |
-| `orca_subnet_group_id`                               | The ORCA database subnet group name |
-| `orca_subnet_group_arn`                              | The ARN of the ORCA database subnet group |
+| `orca_secretsmanager_arn`                            | The Amazon Resource Name (ARN) of the AWS secretsmanager |
 | `orca_sqs_metadata_queue_arn`                        | The ARN of the metadata-queue SQS |
 | `orca_sqs_metadata_queue_id`                         | The URL ID of the metadata-queue SQS |
 | `orca_sqs_staged_recovery_queue_arn`                 | The ARN of the staged-recovery-queue SQS |
 | `orca_sqs_staged_recovery_queue_id`                  | The URL ID of the staged-recovery-queue SQS |
 | `orca_sqs_status_update_queue_arn`                   | The ARN of the status-update-queue SQS |
 | `orca_sqs_status_update_queue_id`                    | The URL ID of the status-update-queue SQS |
+| `orca_subnet_group_id`                               | The ORCA database subnet group name |
+| `orca_subnet_group_arn`                              | The ARN of the ORCA database subnet group |
+
 
 
 ## Deploy ORCA with Terraform

@@ -5,8 +5,6 @@ variable "buckets" {
   type        = map(object({ name = string, type = string }))
   description = "S3 bucket locations for the various storage types being used."
 }
-
-
 variable "lambda_subnet_ids" {
   type        = list(string)
   description = "List of subnets the lambda functions have access to."
@@ -53,11 +51,6 @@ variable "orca_default_bucket" {
 
 
 ## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
-variable "database_port" {
-  type        = number
-  description = "Database port that PostgreSQL traffic will be allowed on."
-}
-
 
 variable "orca_ingest_lambda_memory_size" {
   type        = number
@@ -115,21 +108,6 @@ variable "orca_recovery_retry_interval" {
 variable "orca_recovery_retry_backoff" {
   type        = number
   description = "The multiplier by which the retry interval increases during each attempt."
-}
-
-variable "database_app_user" {
-  type        = string
-  description = "Name of the database application user."
-}
-
-variable "database_name" {
-  type        = string
-  description = "Name of the ORCA database in PostgreSQL"
-}
-
-variable "orca_recovery_retrieval_type" {
-  type        = string
-  description = "AWS glacier recovery type to use. One of Bulk, Standard, Express."
 }
 
 variable "orca_sqs_metadata_queue_arn" {

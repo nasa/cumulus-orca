@@ -17,11 +17,3 @@ variable "tags" {
   type        = map(string)
   description = "Tags to be applied to resources that support tags."
 }
-
-
-## Variables unique to ORCA
-## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
-variable "database_port" {
-  type        = number
-  description = "Database port that PostgreSQL traffic will be allowed on."
-}

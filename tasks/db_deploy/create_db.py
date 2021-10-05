@@ -12,7 +12,6 @@ from orca_shared.database.shared_db import (
 )
 from orca_sql import *
 
-
 def create_fresh_orca_install(config: Dict[str, str]) -> None:
     """
     This task will create the ORCA roles, users, schema, and tables needed
@@ -27,11 +26,11 @@ def create_fresh_orca_install(config: Dict[str, str]) -> None:
     # Assume the database has been created at this point. Connect to the ORCA
     # database as a super user and create the roles, users,  schema, and
     # objects.
-    admin_app_connection = get_admin_connection(config, config["database"])
+    admin_app_connection = get_admin_connection(config, config["user_database"])
 
     with admin_app_connection.connect() as conn:
         # Create the roles, schema and user
-        create_app_schema_role_users(conn, config["app_user_password"])
+        create_app_schema_role_users(conn, config["user_password"])
 
         # Change to DBO role and set search path
         set_search_path_and_role(conn)
@@ -39,10 +38,10 @@ def create_fresh_orca_install(config: Dict[str, str]) -> None:
         # Create the database objects
         create_metadata_objects(conn)
         create_recovery_objects(conn)
+        create_inventory_objects(conn)
 
         # If everything is good, commit.
         conn.commit()
-
 
 def create_app_schema_role_users(connection: Connection, app_password: str) -> None:
     """
@@ -73,7 +72,6 @@ def create_app_schema_role_users(connection: Connection, app_password: str) -> N
     connection.execute(app_user_sql(app_password))
     logger.info("ORCA application user created.")
 
-
 def set_search_path_and_role(connection: Connection) -> None:
     """
     Sets the role to the dbo role to create/modify ORCA objects and sets the
@@ -92,7 +90,6 @@ def set_search_path_and_role(connection: Connection) -> None:
 
     logger.debug("Setting search path to the ORCA schema to create objects ...")
     connection.execute(text("SET search_path TO orca, public;"))
-
 
 def create_metadata_objects(connection: Connection) -> None:
     """
@@ -115,7 +112,6 @@ def create_metadata_objects(connection: Connection) -> None:
     logger.debug("Populating the schema_versions table with data ...")
     connection.execute(schema_versions_data_sql())
     logger.info("Data added to the schema_versions table.")
-
 
 def create_recovery_objects(connection: Connection) -> None:
     """
@@ -149,3 +145,44 @@ def create_recovery_objects(connection: Connection) -> None:
     logger.debug("Creating recovery_file table ...")
     connection.execute(recovery_file_table_sql())
     logger.info("recovery_file table created.")
+
+
+def create_inventory_objects(connection: Connection) -> None:
+    """
+    Creates the ORCA catalog metadata tables used for reconciliation with Cumulus in the proper order.
+    - providers
+    - collections
+    - provider_collection_xref
+    - granules
+    - files
+
+    Args:
+        connection (sqlalchemy.future.Connection): Database connection.
+
+    Returns:
+        None
+    """
+    #Create providers table
+    logger.debug("Creating providers table ...")
+    connection.execute(providers_table_sql())
+    logger.info("providers table created.")
+
+    #Create collections table
+    logger.debug("Creating collections table ...")
+    connection.execute(collections_table_sql())
+    logger.info("collections table created.")
+
+    #Create provider and collection cross reference table
+    logger.debug("Creating provider and collection cross reference table ...")
+    connection.execute(provider_collection_xref_table_sql())
+    logger.info("provider and collection cross reference table created.")
+
+    #Create granules table
+    logger.debug("Creating granules table ...")
+    connection.execute(granules_table_sql())
+    logger.info("granules table created.")
+
+    #Create files table
+    logger.debug("Creating files table ...")
+    connection.execute(files_table_sql())
+    logger.info("files table created.")
