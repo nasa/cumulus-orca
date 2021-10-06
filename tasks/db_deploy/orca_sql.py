@@ -473,7 +473,18 @@ def migrate_recovery_file_data_sql() -> TextClause:
     """
     return text(
         """
-        INSERT INTO recovery_file
+        INSERT INTO recovery_file (
+          job_id
+        , granule_id
+        , filename
+        , key_path
+        , restore_destination
+        , status_id
+        , error_message
+        , request_time
+        , last_update
+        , completion_time
+        )
         SELECT
             request_group_id AS job_id,
             granule_id,
