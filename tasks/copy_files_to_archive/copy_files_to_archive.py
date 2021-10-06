@@ -8,15 +8,14 @@ import os
 import time
 from typing import Any, List, Dict, Optional, Union
 
+# noinspection PyPackageRequirements
 import boto3
 import fastjsonschema
-
-# noinspection PyPackageRequirements
 from boto3.s3.transfer import TransferConfig, MB
 from botocore.client import BaseClient
+from botocore.exceptions import ClientError
 
 # noinspection PyPackageRequirements
-from botocore.exceptions import ClientError
 from orca_shared.recovery import shared_recovery
 from cumulus_logger import CumulusLogger
 
@@ -74,6 +73,7 @@ def task(
         for a_file in files:
             # All files from get_files_from_records start with 'success' == False.
             if not a_file[FILE_SUCCESS_KEY]:
+                LOGGER.debug(f"Restoring file {a_file[INPUT_SOURCE_KEY_KEY]}")
                 err_msg = copy_object(
                     s3,
                     a_file[INPUT_SOURCE_BUCKET_KEY],
@@ -100,6 +100,9 @@ def task(
                 a_file[FILE_SUCCESS_KEY] for a_file in files
             ):  # Check for early completion
                 break
+            LOGGER.warn(
+                f"Attempt {attempt +1} of restore failed. Retrying in {retry_sleep_secs} seconds."
+            )
             time.sleep(retry_sleep_secs)
 
     any_error = False
@@ -172,6 +175,9 @@ def copy_object(
 
     # Copy the object
     try:
+        LOGGER.debug(
+            f"Copying {src_object_name} to {dest_bucket_name} with chunk size of {multipart_chunksize_mb}MB."
+        )
         s3_cli.copy(
             copy_source,
             dest_bucket_name,
@@ -185,6 +191,7 @@ def copy_object(
             },
             Config=TransferConfig(multipart_chunksize=multipart_chunksize_mb * MB),
         )
+        LOGGER.debug(f"Object {src_object_name} copied.")
     except ClientError as ex:
         LOGGER.error("Client error: {ex}", ex=ex)
         return ex.__str__()
