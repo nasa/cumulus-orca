@@ -137,7 +137,7 @@ variable "orca_recovery_lambda_memory_size" {
 variable "orca_recovery_lambda_timeout" {
   type        = number
   description = "Timeout in number of seconds for ORCA recovery lambdas."
-  default     = 300
+  default     = 720
 }
 
 
