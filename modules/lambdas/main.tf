@@ -14,10 +14,10 @@ module "lambda_security_group" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  prefix      = var.prefix
-  vpc_id      = var.vpc_id
+  prefix = var.prefix
+  vpc_id = var.vpc_id
   ## OPTIONAL
-  tags   = local.tags
+  tags = local.tags
   ## --------------------------
   ## ORCA Variables
   ## --------------------------
@@ -37,7 +37,7 @@ module "restore_object_arn" {
   permissions_boundary_arn = var.permissions_boundary_arn
   prefix                   = var.prefix
   # OPTIONAL
-  tags   = local.tags
+  tags = local.tags
   # --------------------------
   # ORCA Variables
   # --------------------------
@@ -462,3 +462,16 @@ resource "aws_lambda_function" "db_deploy" {
     }
   }
 }
+
+## =============================================================================
+## NULL RESOURCES - 1x Use
+## =============================================================================
+
+data "aws_lambda_invocation" "db_migration" {
+  depends_on    = [aws_lambda_function.db_deploy]
+  function_name = aws_lambda_function.db_deploy.function_name
+  input         = jsonencode({})
+}
+
+
+## TODO: Should create null resource to handle password changes ORCA-145
