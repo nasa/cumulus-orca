@@ -8,17 +8,12 @@
     "type": "object",
     "required": [
       "id",
-      "name",
       "collections"
     ],
     "properties": {
       "id": {
         "description": "The unique ID of the provider. Provided by Cumulus.",
         "type": "string"
-      },
-      "name": {
-        "description": "Unique name of the provider.",
-        "type": ["string", "null"]
       },
       "collections": {
         "description": "Collections within the provider.",
