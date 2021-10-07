@@ -7,11 +7,11 @@
   "items": {
     "type": "object",
     "required": [
-      "providerId",
+      "id",
       "collections"
     ],
     "properties": {
-      "providerId": {
+      "id": {
         "description": "The unique ID of the provider. Provided by Cumulus.",
         "type": "string"
       },
@@ -19,11 +19,11 @@
         "description": "Collections within the provider.",
         "type": "object",
         "required": [
-          "collectionId",
+          "id",
           "granules"
         ],
         "properties": {
-          "collectionId": {
+          "id": {
             "description": "The unique ID of the collection. Provided by Cumulus.",
             "type": "string"
           },
@@ -32,16 +32,16 @@
             "items": {
               "type": "object",
               "required": [
-                "granuleId",
-                "createdAt",
+                "id",
+                "cumulusCreateTime",
                 "files"
               ],
               "properties": {
-                "granuleId": {
+                "id": {
                   "description": "The unique ID of the granule. Provided by Cumulus.",
                   "type": "string"
                 },
-                "createdAt": {
+                "cumulusCreateTime": {
                   "description": "Date and time in UTC the granule was ingested.",
                   "type": "string",
                   "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?\\+00:00$"
@@ -52,14 +52,14 @@
                   "items": {
                     "type": "object",
                     "required": [
-                      "filename",
+                      "name",
                       "cumulusArchiveLocation",
                       "orcaArchiveLocation",
                       "keyPath",
-                      "fileSizeBytes",
-                      "fileHash",
-                      "fileHashType",
-                      "fileVersion",
+                      "sizeBytes",
+                      "hash",
+                      "hashType",
+                      "version",
                       "orcaEtag"
                     ],
                     "properties": {
@@ -78,19 +78,19 @@
                       "keyPath": {
                         "description": "Full S3 path to the file including the file name and extension."
                       },
-                      "fileSizeBytes": {
+                      "sizeBytes": {
                         "description": "Size in bytes of the file. From Cumulus ingest.",
                         "type": "integer"
                       },
-                      "fileHash": {
+                      "hash": {
                         "description": "Checksum hash of the file provided by Cumulus.",
                         "type": ["string", "null"]
                       },
-                      "fileHashType": {
+                      "hashType": {
                         "description": "Hash type used to calculate the hash value of the file.",
                         "type": ["string", "null"]
                       },
-                      "fileVersion": {
+                      "version": {
                         "description": "AWS provided version of the file.",
                         "type": "string"
                       },
