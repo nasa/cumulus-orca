@@ -18,8 +18,8 @@
       "items": {
         "type": "object",
         "required": [
-          "provider_id",
-          "collection_id",
+          "providerId",
+          "collectionId",
           "id",
           "createdAt",
           "executionId",
@@ -28,11 +28,11 @@
           "files"
         ],
         "properties": {
-          "provider_id": {
+          "providerId": {
             "description": "The unique ID of the provider. Provided by Cumulus.",
             "type": "string"
           },
-          "collection_id": {
+          "collectionId": {
             "description": "The unique ID of the collection. Provided by Cumulus.",
             "type": "string"
           },
@@ -88,7 +88,7 @@
                   "type": "string"
                 },
                 "keyPath": {
-                  "description": "Full S3 path to the file including the file name and extension."
+                  "description": "S3 path to the file including the file name and extension."
                 },
                 "sizeBytes": {
                   "description": "Size in bytes of the file. From Cumulus ingest.",

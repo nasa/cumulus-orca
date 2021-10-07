@@ -137,7 +137,7 @@ the Cumulus Collection ID (collection_id) is unique in the
 | name                     | `string`  | Name of the file. (MOD14A1.061.2020245.hdf)                                | Must be unique per granuleId                        |
 | orca_archive_location    | `string`  | ORCA S3 Glacier bucket the file resides in.                                | None                                                |
 | cumulus_archive_location | `string`  | Cumulus S3 bucket the file is expected to reside in.                       | None                                                |
-| key_path                 | `string`  | Full S3 path to the file including the file name.                          | Must be unique per archive location                 | 
+| key_path                 | `string`  | S3 path to the file including the file name.                               | Must be unique per archive location                 | 
 | ingest_time              | `timestamp` | Date and time in UTC that the data was originally ingested into ORCA     | None                                                |
 | etag                     | `string`  | etag of the file object in the AWS S3 Glacier bucket.                      | None                                                |
 | version                  | `string`  | AWS provided version of the file.                                          | Must be unique per file name/key_path               |
@@ -205,32 +205,34 @@ we will need consider later include items like updating the latest flag in the
 database and glacier on a file version when doing a recovery.
 
 ```json
-"anotherPage": False,
-"granules": [
-  {
-    "provider_id": "lpdaac",
-    "collection_id": "MOD14A1___061",
-    "id": "MOD14A1.061.A23V45.2020235",
-    "createdAt": "2020-01-01T23:00:00Z",
-    "executionId": "u654-123-Yx679",
-    "ingestDate": "2020-01-01T23:00:00Z",
-    "lastUpdate": "2020-01-01T23:00:00Z",
-    "files": [
-      {
-        "name": "MOD14A1.061.A23V45.2020235.2020240145621.hdf",
-        "cumulusArchiveLocation": "cumulus-bucket",
-        "orcaArchiveLocation": "orca-archive",
-        "keyPath": "MOD14A1/061/032/MOD14A1.061.A23V45.2020235.2020240145621.hdf",
-        "sizeBytes": 100934568723,
-        "hash": "ACFH325128030192834127347",
-        "hashType": "SHA-256",
-        "version": "VXCDEG902"
-      },
-      ...
-    ]
-  },
-  ...
-]
+{
+  "anotherPage": false,
+  "granules": [
+    {
+      "providerId": "lpdaac",
+      "collectionId": "MOD14A1___061",
+      "id": "MOD14A1.061.A23V45.2020235",
+      "createdAt": "2020-01-01T23:00:00Z",
+      "executionId": "u654-123-Yx679",
+      "ingestDate": "2020-01-01T23:00:00Z",
+      "lastUpdate": "2020-01-01T23:00:00Z",
+      "files": [
+        {
+          "name": "MOD14A1.061.A23V45.2020235.2020240145621.hdf",
+          "cumulusArchiveLocation": "cumulus-bucket",
+          "orcaArchiveLocation": "orca-archive",
+          "keyPath": "MOD14A1/061/032/MOD14A1.061.A23V45.2020235.2020240145621.hdf",
+          "sizeBytes": 100934568723,
+          "hash": "ACFH325128030192834127347",
+          "hashType": "SHA-256",
+          "version": "VXCDEG902"
+        },
+        ...
+      ]
+    },
+    ...
+  ]
+}
 ```
 
 Some items we will need to think about include managing paging (start/stop) for
