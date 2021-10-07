@@ -305,7 +305,6 @@ An example of a message is shown below:
                 "hashType": "SHA-256",
                 "fileVersion": "VXCDEG902",
                 "etag": "YXC432BGT789",
-                "orcaIngestDate": "2020-01-01T23:00:00+00:00"
             }
         ]
     }
