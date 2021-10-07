@@ -7,7 +7,7 @@ from unittest.mock import Mock, call, patch, MagicMock
 import fastjsonschema as fastjsonschema
 
 import copy_to_glacier
-from library import sqs_library
+import sqs_library
 from copy_to_glacier import *
 from test.helpers import LambdaContextMock
 from test.unit_tests.ConfigCheck import ConfigCheck
@@ -19,6 +19,9 @@ class TestCopyToGlacierHandler(TestCase):
     Test copy to glacier handler
     This will test if the function of test copy to glacier work as expected
     """
+
+    # Create the mock for SQS unit tests
+    mock_sqs = mock_sqs()
 
     excluded_file = "s3://test-bucket/this_file_should_be_exclude.example"
     not_excluded_file = "s3://test-bucket/prefix/this_file_should_not_be_exclude.txt"
@@ -80,8 +83,6 @@ class TestCopyToGlacierHandler(TestCase):
             }
         ]
     }
-    # Create the mock for SQS unit tests
-    mock_sqs = mock_sqs()
 
     def setUp(self):
         """
@@ -384,33 +385,33 @@ class TestCopyToGlacierHandler(TestCase):
     @patch.dict(os.environ, {"AWS_REGION": "us-west-2"}, clear=True)
     def test_post_to_metadata_queue_happy_path(self):
         """
-        SQS library happy path. Checks that the message sent to SQS is same as the message received from SQS. Also validates the body.json schema
+        SQS library happy path. Checks that the message sent to SQS is same as the message received from SQS.
         """
         sqs_body = {
-            "provider": {"id": "1234", "name": "LPCUmumulus"},
+            "provider": {"providerId": "1234", "name": "LPCUmumulus"},
             "collection": {
-                "id": "MOD14A1__061",
+                "collectionId": "MOD14A1__061",
                 "shortname": "MOD14A1",
                 "version": "061",
             },
             "granule": {
-                "granuleId": "MOD14A1.061.A23V45.2020235",
+                "cumulusGranuleId": "MOD14A1.061.A23V45.2020235",
                 "cumulusCreateTime": "2020-01-01T23:00:00+00:00",
                 "executionId": "f2fgh-356-789",
-                "orcaIngestDate": "2020-01-01T23:00:00+00:00",
-                "orcaLastUpdate": "2020-01-01T23:00:00+00:00",
+                "ingestTime": "2020-01-01T23:00:00+00:00",
+                "lastUpdate": "2020-01-01T23:00:00+00:00",
                 "files": [
                     {
-                        "fileName": "MOD14A1.061.A23V45.2020235.2020240145621.hdf",
+                        "name": "MOD14A1.061.A23V45.2020235.2020240145621.hdf",
                         "cumulusArchiveLocation": "cumulus-archive",
                         "orcaArchiveLocation": "orca-archive",
                         "keyPath": "MOD14A1/061/032/MOD14A1.061.A23V45.2020235.2020240145621.hdf",
                         "sizeInBytes": 100934568723,
                         "hash": "ACFH325128030192834127347",
                         "hashType": "SHA-256",
-                        "fileVersion": "VXCDEG902",
+                        "version": "VXCDEG902",
+                        "ingestTime": "2020-01-01T23:00:00+00:00",
                         "etag": "YXC432BGT789",
-                        "orcaIngestDate": "2020-01-01T23:00:00+00:00",
                     }
                 ],
             },
@@ -427,11 +428,53 @@ class TestCopyToGlacierHandler(TestCase):
         # Testing required fields
         self.assertEqual(queue_output_body, sqs_body)
 
-        # validate body.json schema
-        with open("schemas/body.json", "r") as raw_schema:
-            schema = json.loads(raw_schema.read())
-        validate = fastjsonschema.compile(schema)
-        validate(sqs_body)
+    @patch("time.sleep")
+    @patch("sqs_library.retry_error")
+    # @patch("sqs_library.post_to_metadata_queue")
+    @patch.dict(os.environ, {"AWS_REGION": "us-west-2"}, clear=True)
+    def test_post_to_metadata_queue_retry_failures(
+        self, mock_retry_error: MagicMock, mock_sleep: MagicMock
+    ):
+        """
+        Produces a failure in the json schema and checks if retries are performed in the SQS library.
+        """
+        # collectionId is intentionally removed so the schema validation will fail.
+        sqs_body = {
+            "provider": {"providerId": "1234", "name": "LPCUmumulus"},
+            "collection": {
+                "shortname": "MOD14A1",
+                "version": "061",
+            },
+            "granule": {
+                "cumulusGranuleId": "MOD14A1.061.A23V45.2020235",
+                "cumulusCreateTime": "2020-01-01T23:00:00+00:00",
+                "executionId": "f2fgh-356-789",
+                "ingestTime": "2020-01-01T23:00:00+00:00",
+                "lastUpdate": "2020-01-01T23:00:00+00:00",
+                "files": [
+                    {
+                        "name": "MOD14A1.061.A23V45.2020235.2020240145621.hdf",
+                        "cumulusArchiveLocation": "cumulus-archive",
+                        "orcaArchiveLocation": "orca-archive",
+                        "keyPath": "MOD14A1/061/032/MOD14A1.061.A23V45.2020235.2020240145621.hdf",
+                        "sizeInBytes": 100934568723,
+                        "hash": "ACFH325128030192834127347",
+                        "hashType": "SHA-256",
+                        "version": "VXCDEG902",
+                        "ingestTime": "2020-01-01T23:00:00+00:00",
+                        "etag": "YXC432BGT789",
+                    }
+                ],
+            },
+        }
+
+        # Send values to the function
+        with self.assertRaises(Exception) as ex:
+            sqs_library.post_to_metadata_queue(
+                sqs_body,
+                self.metadata_queue_url,
+            )
+        self.assertEqual(MAX_RETRIES, mock_sleep.call_count)
 
 
 ##TODO: Write tests to validate file name regex exclusion

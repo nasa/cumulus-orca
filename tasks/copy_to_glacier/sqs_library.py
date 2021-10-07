@@ -2,9 +2,8 @@
 Name: sqs_library.py
 Description: library for copy_to_glacier lambda function for posting to metadata SQS queue.
 """
-import functools
-
 # Standard libraries
+import functools
 import hashlib
 import json
 import os
@@ -15,6 +14,7 @@ from typing import Any, Callable, Dict, TypeVar
 # Third party libraries
 import boto3
 from cumulus_logger import CumulusLogger
+import fastjsonschema
 
 # Set Cumulus LOGGER
 LOGGER = CumulusLogger(name="ORCA")
@@ -103,7 +103,7 @@ def get_aws_region() -> str:
     return aws_region
 
 
-@retry_error(MAX_RETRIES)
+@retry_error()
 def post_to_metadata_queue(
     sqs_body: Dict[str, Any],
     metadata_queue_url: str,
@@ -116,6 +116,11 @@ def post_to_metadata_queue(
     Raises:
         None
     """
+    # validate body.json schema
+    with open("schemas/body.json", "r") as raw_schema:
+        schema = json.loads(raw_schema.read())
+    validate = fastjsonschema.compile(schema)
+    validate(sqs_body)
     body = json.dumps(sqs_body)
     LOGGER.debug(
         "Creating SQS resource for {metadata_queue_url}",
