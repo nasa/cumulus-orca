@@ -1,0 +1,47 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/inventory_report/schemas/input.json",
+    "title": "inventory_report Lambda Input",
+    "description": "The input for the inventory_report Lambda.",
+    "type": "object",
+    "required": [
+      "page_index"
+    ],
+    "properties": {
+      "providerId": {
+        "description": "The unique ID of the provider(s) making the request.",
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "collectionId": {
+        "description": "The unique ID of collection(s) to compare.",
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "granuleId": {
+        "description": "The unique ID of granule(s) to compare.",
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "startTimestamp": {
+        "description": "Start time for createdAt date range to compare data.",
+        "type": "string",
+        "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?\\+00:00$"
+      },
+      "endTimestamp": {
+        "description": "End time for createdAt date range to compare data.",
+        "type": "string",
+        "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?\\+00:00$"
+      },
+      "page_index": {
+        "description": "The 0-based index of the results page to return.",
+        "type": "integer"
+      }
+    }
+  }

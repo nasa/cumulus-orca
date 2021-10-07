@@ -1,0 +1,109 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/inventory_report/schemas/output.json",
+  "title": "inventory_report Lambda Output",
+  "description": "The output for the inventory_report Lambda.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "providerId",
+      "collections"
+    ],
+    "properties": {
+      "providerId": {
+        "description": "The unique ID of the provider. Provided by Cumulus.",
+        "type": "string"
+      },
+      "collections": {
+        "description": "Collections within the provider.",
+        "type": "object",
+        "required": [
+          "collectionId",
+          "granules"
+        ],
+        "properties": {
+          "collectionId": {
+            "description": "The unique ID of the collection. Provided by Cumulus.",
+            "type": "string"
+          },
+          "granules": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "granuleId",
+                "createdAt",
+                "files"
+              ],
+              "properties": {
+                "granuleId": {
+                  "description": "The unique ID of the granule. Provided by Cumulus.",
+                  "type": "string"
+                },
+                "createdAt": {
+                  "description": "Date and time in UTC the granule was ingested.",
+                  "type": "string",
+                  "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?\\+00:00$"
+                },
+                "files": {
+                  "description": "The files within the granule. Defaults to the latest stored version of each file.",
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "filename",
+                      "orcaLocation",
+                      "fileSizeBytes",
+                      "fileHash",
+                      "fileHashType",
+                      "fileVersion",
+                      "orcaEtag"
+                    ],
+                    "properties": {
+                      "filename": {
+                        "description": "The name and extension of the file.",
+                        "type": "string"
+                      },
+                      "cumulusArchiveLocation": {
+                        "description": "Cumulus bucket the file resides in.",
+                        "type": "string"
+                      },
+                      "orcaArchiveLocation": {
+                        "description": "ORCA S3 Glacier bucket the file resides in.",
+                        "type": "string"
+                      },
+                      "keyPath": {
+                        "description": "Full S3 path to the file including the file name and extension."
+                      },
+                      "fileSizeBytes": {
+                        "description": "Size in bytes of the file. From Cumulus ingest.",
+                        "type": "integer"
+                      },
+                      "fileHash": {
+                        "description": "Checksum hash of the file provided by Cumulus.",
+                        "type": ["string", "null"]
+                      },
+                      "fileHashType": {
+                        "description": "Hash type used to calculate the hash value of the file.",
+                        "type": ["string", "null"]
+                      },
+                      "fileVersion": {
+                        "description": "AWS provided version of the file.",
+                        "type": "string"
+                      },
+                      "orcaEtag": {
+                        "description": "AWS provided etag of the versioned file. Semi unique.",
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

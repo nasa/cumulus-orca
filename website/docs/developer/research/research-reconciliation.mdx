@@ -29,13 +29,13 @@ patterns.
 The following filters can be applied to a query for determining which files to
 bring back for catalog comparison between the Cumulus inventory and ORCA.
 
-| Name           | Data Type   | Description                                       |
-| -------------- | ----------- | ------------------------------------------------- |
-| providerId     | `List[str]` | The unique ID of the provider making the request. |
-| collectionId   | `List[str]` | The unique ID of collection(s) to compare.        |
-| granuleId      | `List[str]` | The unique ID of granules to compare.             |
-| startTimestamp | `timestamp` | Start time for TBD date range to compare data.    |
-| endTimestamp   | `timestamp` | End time for TBD date range to compare data.      |
+| Name           | Data Type   | Description                                          |
+| -------------- | ----------- | ---------------------------------------------------- |
+| providerId     | `List[str]` | The unique ID of the provider(s) making the request. |
+| collectionId   | `List[str]` | The unique ID of collection(s) to compare.           |
+| granuleId      | `List[str]` | The unique ID of granule(s) to compare.              |
+| startTimestamp | `timestamp` | Start time for createdAt date range to compare data. |
+| endTimestamp   | `timestamp` | End time for createdAt date range to compare data.   |
 
 When querying ORCA for the information these filters will be AND together for a
 comparison answer.
@@ -207,7 +207,7 @@ database and glacier on a file version when doing a recovery.
             "files": [
               {
                 "fileName": "MOD14A1.061.A23V45.2020235.2020240145621.hdf",
-                "orcaLocation": "s3://orca-archive/MOD14A1/061/...",
+                "orcaArchiveLocation": "orca-archive",
                 "fileSizeBytes": 100934568723,
                 "fileChecksum": "ACFH325128030192834127347",
                 "fileChecksumType": "SHA-256",
