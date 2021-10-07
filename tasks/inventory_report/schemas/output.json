@@ -3,130 +3,109 @@
   "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/inventory_report/schemas/output.json",
   "title": "inventory_report Lambda Output",
   "description": "The output for the inventory_report Lambda.",
-  "type": "array",
-  "items": {
-    "type": "object",
-    "required": [
-      "id",
-      "collections"
-    ],
-    "properties": {
-      "id": {
-        "description": "The unique ID of the provider. Provided by Cumulus.",
-        "type": "string"
-      },
-      "collections": {
-        "description": "Collections within the provider.",
+  "type": "object",
+  "required": [
+    "anotherPage",
+    "granules"
+  ],
+  "properties": {
+    "anotherPage": {
+      "description": "Indicates if more results can be retrieved on another page.",
+      "type": "boolean"
+    },
+    "granules": {
+      "type": "array",
+      "items": {
         "type": "object",
         "required": [
+          "provider_id",
+          "collection_id",
           "id",
-          "shortname",
-          "version",
-          "granules"
+          "cumulusCreateTime",
+          "executionId",
+          "ingestDate",
+          "lastUpdate",
+          "files"
         ],
         "properties": {
-          "id": {
+          "provider_id": {
+            "description": "The unique ID of the provider. Provided by Cumulus.",
+            "type": "string"
+          },
+          "collection_id": {
             "description": "The unique ID of the collection. Provided by Cumulus.",
             "type": "string"
           },
-          "shortname": {
-            "description": "Short name of the collection (AST_L1A).",
-            "type": ["string", "null"]
+          "id": {
+            "description": "The unique ID of the granule. Provided by Cumulus.",
+            "type": "string"
           },
-          "version": {
-            "description": "Version of the collection (061).",
-            "type": ["string", "null"]
+          "cumulusCreateTime": {
+            "description": "Date and time in UTC the granule was ingested.",
+            "type": "string",
+            "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]*)?Z"
           },
-          "granules": {
+          "executionId": {
+            "description": "Step function execution ID from AWS.",
+            "type": "string"
+          },
+          "ingestDate": {
+            "description": "Date and time in UTC that the data was originally ingested into ORCA.",
+            "type": "string",
+            "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]*)?Z"
+          },
+          "lastUpdate": {
+            "description": "Date and time in UTC that information was updated.",
+            "type": "string",
+            "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]*)?Z"
+          },
+          "files": {
+            "description": "The files within the granule. Defaults to the latest stored version of each file.",
             "type": "array",
             "items": {
               "type": "object",
               "required": [
-                "id",
-                "cumulusCreateTime",
-                "executionId",
-                "ingestDate",
-                "lastUpdate",
-                "files"
+                "name",
+                "cumulusArchiveLocation",
+                "orcaArchiveLocation",
+                "keyPath",
+                "sizeBytes",
+                "hash",
+                "hashType"
               ],
               "properties": {
-                "id": {
-                  "description": "The unique ID of the granule. Provided by Cumulus.",
+                "filename": {
+                  "description": "The name and extension of the file.",
                   "type": "string"
                 },
-                "cumulusCreateTime": {
-                  "description": "Date and time in UTC the granule was ingested.",
-                  "type": "string",
-                  "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?\\+00:00$"
-                },
-                "executionId": {
-                  "description": "Step function execution ID from AWS.",
+                "cumulusArchiveLocation": {
+                  "description": "Cumulus bucket the file resides in.",
                   "type": "string"
                 },
-                "ingestDate": {
-                  "description": "Date and time in UTC that the data was originally ingested into ORCA.",
-                  "type": "string",
-                  "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?\\+00:00$"
+                "orcaArchiveLocation": {
+                  "description": "ORCA S3 Glacier bucket the file resides in.",
+                  "type": "string"
                 },
-                "lastUpdate": {
-                  "description": "Date and time in UTC that information was updated.",
-                  "type": "string",
-                  "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?\\+00:00$"
+                "keyPath": {
+                  "description": "Full S3 path to the file including the file name and extension."
                 },
-                "files": {
-                  "description": "The files within the granule. Defaults to the latest stored version of each file.",
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "required": [
-                      "name",
-                      "cumulusArchiveLocation",
-                      "orcaArchiveLocation",
-                      "keyPath",
-                      "sizeBytes",
-                      "hash",
-                      "hashType",
-                      "version",
-                      "orcaEtag"
-                    ],
-                    "properties": {
-                      "filename": {
-                        "description": "The name and extension of the file.",
-                        "type": "string"
-                      },
-                      "cumulusArchiveLocation": {
-                        "description": "Cumulus bucket the file resides in.",
-                        "type": "string"
-                      },
-                      "orcaArchiveLocation": {
-                        "description": "ORCA S3 Glacier bucket the file resides in.",
-                        "type": "string"
-                      },
-                      "keyPath": {
-                        "description": "Full S3 path to the file including the file name and extension."
-                      },
-                      "sizeBytes": {
-                        "description": "Size in bytes of the file. From Cumulus ingest.",
-                        "type": "integer"
-                      },
-                      "hash": {
-                        "description": "Checksum hash of the file provided by Cumulus.",
-                        "type": ["string", "null"]
-                      },
-                      "hashType": {
-                        "description": "Hash type used to calculate the hash value of the file.",
-                        "type": ["string", "null"]
-                      },
-                      "version": {
-                        "description": "AWS provided version of the file.",
-                        "type": "string"
-                      },
-                      "orcaEtag": {
-                        "description": "AWS provided etag of the versioned file. Semi unique.",
-                        "type": "string"
-                      }
-                    }
-                  }
+                "sizeBytes": {
+                  "description": "Size in bytes of the file. From Cumulus ingest.",
+                  "type": "integer"
+                },
+                "hash": {
+                  "description": "Checksum hash of the file provided by Cumulus.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "hashType": {
+                  "description": "Hash type used to calculate the hash value of the file.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 }
               }
             }

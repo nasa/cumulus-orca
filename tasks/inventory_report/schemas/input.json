@@ -5,7 +5,8 @@
     "description": "The input for the inventory_report Lambda.",
     "type": "object",
     "required": [
-      "page_index"
+      "pageIndex",
+      "endTimestamp"
     ],
     "properties": {
       "providerId": {
@@ -32,14 +33,14 @@
       "startTimestamp": {
         "description": "Start time for cumulusCreateTime date range to compare data.",
         "type": "string",
-        "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?\\+00:00$"
+        "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]*)?Z"
       },
       "endTimestamp": {
         "description": "End time for cumulusCreateTime date range to compare data.",
         "type": "string",
-        "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?\\+00:00$"
+        "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]*)?Z"
       },
-      "page_index": {
+      "pageIndex": {
         "description": "The 0-based index of the results page to return.",
         "type": "integer"
       }

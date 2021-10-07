@@ -205,38 +205,26 @@ we will need consider later include items like updating the latest flag in the
 database and glacier on a file version when doing a recovery.
 
 ```json
-[
+"anotherPage": False,
+"granules": [
   {
-    "id": "lpdaac",
-    "collections": [
+    "provider_id": "lpdaac",
+    "collection_id": "MOD14A1___061",
+    "id": "MOD14A1.061.A23V45.2020235",
+    "cumulusCreatedAt": "2020-01-01T23:00:00Z",
+    "executionId": "u654-123-Yx679",
+    "ingestDate": "2020-01-01T23:00:00Z",
+    "lastUpdate": "2020-01-01T23:00:00Z",
+    "files": [
       {
-        "id": "MOD14A1__061",
-        "shortname": "AST_L1A",
-        "version": "001",
-        "granules": [
-          {
-            "id": "MOD14A1.061.A23V45.2020235",
-            "cumulusCreateTime": "2020-01-01T23:00:00+00:00",
-            "executionId": "u654-123-Yx679",
-            "ingestDate": "2020-01-01T23:00:00+00:00",
-            "lastUpdate": "2020-01-01T23:00:00+00:00",
-            "files": [
-              {
-                "name": "MOD14A1.061.A23V45.2020235.2020240145621.hdf",
-                "cumulusArchiveLocation": "cumulus-bucket",
-                "orcaArchiveLocation": "orca-archive",
-                "keyPath": "MOD14A1/061/032/MOD14A1.061.A23V45.2020235.2020240145621.hdf",
-                "sizeBytes": 100934568723,
-                "hash": "ACFH325128030192834127347",
-                "hashType": "SHA-256",
-                "version": "VXCDEG902",
-                "orcaEtag": "YXC432BGT789"
-              },
-              ...
-            ]
-          },
-          ...
-        ]
+        "name": "MOD14A1.061.A23V45.2020235.2020240145621.hdf",
+        "cumulusArchiveLocation": "cumulus-bucket",
+        "orcaArchiveLocation": "orca-archive",
+        "keyPath": "MOD14A1/061/032/MOD14A1.061.A23V45.2020235.2020240145621.hdf",
+        "sizeBytes": 100934568723,
+        "hash": "ACFH325128030192834127347",
+        "hashType": "SHA-256",
+        "version": "VXCDEG902"
       },
       ...
     ]
@@ -247,6 +235,7 @@ database and glacier on a file version when doing a recovery.
 
 Some items we will need to think about include managing paging (start/stop) for
 large returns and limiting size of the message across the wire.
+Additionaly, results should be ordered by granule_id.
 
 
 ### Potential ORCA Reconciliation Data Reporting Architecture
