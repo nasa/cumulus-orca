@@ -1,20 +1,20 @@
 """
 Name: sqs_library.py
-Description: Shared library for copy_to_glacier lambda function for posting to metadata SQS queue.
+Description: library for copy_to_glacier lambda function for posting to metadata SQS queue.
 """
+import functools
+
 # Standard libraries
 import hashlib
-import functools
 import json
-from typing import Any, Dict, Callable, Dict, TypeVar
 import os
-import time
 import random
+import time
+from typing import Any, Callable, Dict, TypeVar
 
 # Third party libraries
 import boto3
 from cumulus_logger import CumulusLogger
-import fastjsonschema
 
 # Set Cumulus LOGGER
 LOGGER = CumulusLogger(name="ORCA")
@@ -94,9 +94,7 @@ def get_aws_region() -> str:
             Exception: Thrown if AWS region is empty or None.
     """
     LOGGER.debug("Getting environment variable AWS_REGION value.")
-    # aws_region = "os.getenv("AWS_REGION", None)"
-    aws_region = "us-west-2"
-
+    aws_region = os.getenv("AWS_REGION", None)
     if aws_region is None or len(aws_region) == 0:
         message = "Runtime environment variable AWS_REGION is not set."
         LOGGER.critical(message)

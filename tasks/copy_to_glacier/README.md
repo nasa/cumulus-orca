@@ -271,6 +271,48 @@ often be derived from the collection configuration in Cumulus as seen below:
 ```
 See the schema [configuration file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/config.json) for more information.
 
+## Metadata SQS body confuguration
+
+The metadata SQS message body should contain the metadata attributes needed by Cumulus to perform analysis on discrepencies and for reconciliation.
+These information from the queue will then be ingested into a new ORCA lambda function that will update the records for the various objects in the ORCA catalog.
+An example of a message is shown below:
+
+```
+{
+    "provider": {
+        "id": "1234",
+        "name": "LPCUmumulus"
+    },
+    "collection": {
+        "id": "MOD14A1_061",
+        "shortname": "MOD14A1",
+        "version": "061"
+    },
+    "granule": {
+        "granuleId": "MOD14A1.061.A23V45.2020235",
+        "cumulusCreateTime": "2020-01-01T23:00:00+00:00",
+        "executionId": "f2fgh-356-789",
+        "orcaIngestDate": "2020-01-01T23:00:00+00:00",
+        "orcaLastUpdate": "2020-01-01T23:00:00+00:00",
+        "files": [
+            {
+                "fileName": "MOD14A1.061.A23V45.2020235.2020240145621.hdf",
+                "cumulusArchiveLocation": "cumulus-archive",
+                "orcaArchiveLocation": "orca-archive",
+                "keyPath": "MOD14A1/061/032/MOD14A1.061.A23V45.2020235.2020240145621.hdf",
+                "sizeInBytes": 100934568723,
+                "hash": "ACFH325128030192834127347",
+                "hashType": "SHA-256",
+                "fileVersion": "VXCDEG902",
+                "etag": "YXC432BGT789",
+                "orcaIngestDate": "2020-01-01T23:00:00+00:00"
+            }
+        ]
+    }
+}
+```
+Note that the `hash` and `hashType` are optional fields. See the SQS message schema [configuration file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/body.json) for more information.
+
 ## pydoc copy_to_glacier
 
 ```
@@ -335,7 +377,6 @@ FUNCTIONS
         
         Returns:
             A dict representing input and copied files. See schemas/output.json for more information.
-
 DATA
     Any = typing.Any
     CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = 'multipart_chunksize_mb'
@@ -346,3 +387,50 @@ DATA
     Union = typing.Union
 ```
 
+## pydoc sqs_library.py
+
+```
+Help on module sqs_library:
+
+NAME
+    sqs_library
+
+FUNCTIONS
+    post_to_metadata_queue(sqs_body: Dict[str, Any], metadata_queue_url: str,) -> None:
+        Posts metadata information to the metadata SQS queue.
+        Args:
+            sqs_body: A dictionary containing the metadata objects that will be sent to SQS.
+            db_queue_url: The metadata SQS queue URL defined by AWS.
+        Returns:
+            None
+    get_aws_region() -> str:
+        Gets AWS region variable from the runtime environment variable.
+        Args:
+            None
+        Returns:
+            The AWS region variable.
+        Raises:
+            Exception: Thrown if AWS region is empty or None.
+    
+    retry_error(max_retries: int, backoff_in_seconds: int, backoff_factor: int) -> Callable[[Callable[[], RT]], Callable[[], RT]]:
+        Decorator takes arguments to adjust number of retries and backoff strategy.
+        Args:
+            max_retries (int): number of times to retry in case of failure.
+            backoff_in_seconds (int): Number of seconds to sleep the first time through.
+            backoff_factor (int): Value of the factor used for backoff.
+DATA
+    Any = typing.Any
+    Callable = typing.Callable
+    Dict = typing.Dict
+    TypeVar = typing.TypeVar
+    MAX_RETRIES = 3
+    BACKOFF_FACTOR = 2
+    INITIAL_BACKOFF_IN_SECONDS = 1
+```
+
+
+
+
+
+
+    
