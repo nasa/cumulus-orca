@@ -35,7 +35,7 @@ BEGIN
     COMMENT ON TABLE collections
       IS 'Collections that are in the ORCA archive holdings.';
     COMMENT ON COLUMN collections.collection_id
-      IS 'Collection ID from Cumulus usually in the format shortname__version.';
+      IS 'Collection ID from Cumulus usually in the format shortname___version.';
     COMMENT ON COLUMN collections.shortname
       IS 'Collection short name from Cumulus';
     COMMENT ON COLUMN collections.version

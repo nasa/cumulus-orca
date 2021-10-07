@@ -88,7 +88,7 @@
                   "type": "string"
                 },
                 "keyPath": {
-                  "description": "S3 path to the file including the file name and extension."
+                  "description": "S3 path to the file including the file name and extension, but not the bucket."
                 },
                 "sizeBytes": {
                   "description": "Size in bytes of the file. From Cumulus ingest.",
