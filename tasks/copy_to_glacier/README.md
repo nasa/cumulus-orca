@@ -279,36 +279,34 @@ An example of a message is shown below:
 
 ```
 {
-    "provider": {
-        "id": "1234",
-        "name": "LPCUmumulus"
-    },
-    "collection": {
-        "id": "MOD14A1_061",
-        "shortname": "MOD14A1",
-        "version": "061"
-    },
-    "granule": {
-        "granuleId": "MOD14A1.061.A23V45.2020235",
-        "cumulusCreateTime": "2020-01-01T23:00:00+00:00",
-        "executionId": "f2fgh-356-789",
-        "orcaIngestDate": "2020-01-01T23:00:00+00:00",
-        "orcaLastUpdate": "2020-01-01T23:00:00+00:00",
-        "files": [
-            {
-                "fileName": "MOD14A1.061.A23V45.2020235.2020240145621.hdf",
-                "cumulusArchiveLocation": "cumulus-archive",
-                "orcaArchiveLocation": "orca-archive",
-                "keyPath": "MOD14A1/061/032/MOD14A1.061.A23V45.2020235.2020240145621.hdf",
-                "sizeInBytes": 100934568723,
-                "hash": "ACFH325128030192834127347",
-                "hashType": "SHA-256",
-                "fileVersion": "VXCDEG902",
-                "etag": "YXC432BGT789",
-            }
-        ]
-    }
-}
+      "provider": {"providerId": "1234", "name": "LPCUmumulus"},
+      "collection": {
+          "collectionId": "MOD14A1__061",
+          "shortname": "MOD14A1",
+          "version": "061",
+      },
+      "granule": {
+          "cumulusGranuleId": "MOD14A1.061.A23V45.2020235",
+          "cumulusCreateTime": "2020-01-01T23:00:00Z",
+          "executionId": "f2fgh-356-789",
+          "ingestTime": "2020-01-01T23:00:00Z",
+          "lastUpdate": "2020-01-01T23:00:00Z",
+          "files": [
+              {
+                  "name": "MOD14A1.061.A23V45.2020235.2020240145621.hdf",
+                  "cumulusArchiveLocation": "cumulus-archive",
+                  "orcaArchiveLocation": "orca-archive",
+                  "keyPath": "MOD14A1/061/032/MOD14A1.061.A23V45.2020235.2020240145621.hdf",
+                  "sizeInBytes": 100934568723,
+                  "hash": "ACFH325128030192834127347",
+                  "hashType": "SHA-256",
+                  "version": "VXCDEG902",
+                  "ingestTime": "2020-01-01T23:00:00Z",
+                  "etag": "YXC432BGT789",
+              }
+          ],
+      },
+  }
 ```
 Note that the `hash` and `hashType` are optional fields. See the SQS message schema [configuration file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/body.json) for more information.
 
@@ -399,7 +397,7 @@ FUNCTIONS
         Posts metadata information to the metadata SQS queue.
         Args:
             sqs_body: A dictionary containing the metadata objects that will be sent to SQS.
-            db_queue_url: The metadata SQS queue URL defined by AWS.
+            metadata_queue_url: The metadata SQS queue URL defined by AWS.
         Returns:
             None
     get_aws_region() -> str:

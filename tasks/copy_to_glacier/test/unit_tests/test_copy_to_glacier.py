@@ -396,10 +396,10 @@ class TestCopyToGlacierHandler(TestCase):
             },
             "granule": {
                 "cumulusGranuleId": "MOD14A1.061.A23V45.2020235",
-                "cumulusCreateTime": "2020-01-01T23:00:00+00:00",
+                "cumulusCreateTime": "2020-01-01T23:00:00Z",
                 "executionId": "f2fgh-356-789",
-                "ingestTime": "2020-01-01T23:00:00+00:00",
-                "lastUpdate": "2020-01-01T23:00:00+00:00",
+                "ingestTime": "2020-01-01T23:00:00Z",
+                "lastUpdate": "2020-01-01T23:00:00Z",
                 "files": [
                     {
                         "name": "MOD14A1.061.A23V45.2020235.2020240145621.hdf",
@@ -410,7 +410,7 @@ class TestCopyToGlacierHandler(TestCase):
                         "hash": "ACFH325128030192834127347",
                         "hashType": "SHA-256",
                         "version": "VXCDEG902",
-                        "ingestTime": "2020-01-01T23:00:00+00:00",
+                        "ingestTime": "2020-01-01T23:00:00Z",
                         "etag": "YXC432BGT789",
                     }
                 ],
@@ -430,7 +430,6 @@ class TestCopyToGlacierHandler(TestCase):
 
     @patch("time.sleep")
     @patch("sqs_library.retry_error")
-    # @patch("sqs_library.post_to_metadata_queue")
     @patch.dict(os.environ, {"AWS_REGION": "us-west-2"}, clear=True)
     def test_post_to_metadata_queue_retry_failures(
         self, mock_retry_error: MagicMock, mock_sleep: MagicMock
@@ -447,10 +446,10 @@ class TestCopyToGlacierHandler(TestCase):
             },
             "granule": {
                 "cumulusGranuleId": "MOD14A1.061.A23V45.2020235",
-                "cumulusCreateTime": "2020-01-01T23:00:00+00:00",
+                "cumulusCreateTime": "2020-01-01T23:00:00Z",
                 "executionId": "f2fgh-356-789",
-                "ingestTime": "2020-01-01T23:00:00+00:00",
-                "lastUpdate": "2020-01-01T23:00:00+00:00",
+                "ingestTime": "2020-01-01T23:00:00Z",
+                "lastUpdate": "2020-01-01T23:00:00Z",
                 "files": [
                     {
                         "name": "MOD14A1.061.A23V45.2020235.2020240145621.hdf",
@@ -461,7 +460,7 @@ class TestCopyToGlacierHandler(TestCase):
                         "hash": "ACFH325128030192834127347",
                         "hashType": "SHA-256",
                         "version": "VXCDEG902",
-                        "ingestTime": "2020-01-01T23:00:00+00:00",
+                        "ingestTime": "2020-01-01T23:00:00Z",
                         "etag": "YXC432BGT789",
                     }
                 ],
@@ -474,7 +473,7 @@ class TestCopyToGlacierHandler(TestCase):
                 sqs_body,
                 self.metadata_queue_url,
             )
-        self.assertEqual(MAX_RETRIES, mock_sleep.call_count)
+        self.assertEqual(3, mock_sleep.call_count)
 
 
 ##TODO: Write tests to validate file name regex exclusion
