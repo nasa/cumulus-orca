@@ -148,7 +148,8 @@
 <Column id="33" name="ingest_time" type="timestamp with time zone" length="25" nulls="false">
 <CP name="COMMENTS">Date and time the granule was originally ingested into ORCA.</CP>
 </Column>
-<Column id="34" name="last_update" type="timestamp with time zone" length="25" nulls="false">
+<Column id="34" name="cumulus_create_time" type="timestamp with time zone" length="25" nulls="false"/>
+<Column id="35" name="last_update" type="timestamp with time zone" length="25" nulls="false">
 <CP name="COMMENTS">Last time the data for the granule was updated. This generally will coincide with a duplicate or a change to the underlying data file.</CP>
 </Column>
 <Storage name="transferTable" value="false"/>
@@ -162,29 +163,25 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="35" name="files" schema="orca" database="disaster_recovery" background="16777165">
+<Table id="36" name="files" schema="orca" database="disaster_recovery" background="16777165">
 <Text>Files that are in the ORCA holdings. (Latest version only)</Text>
-<Column id="36" name="id" type="int8" length="25" nulls="false">
+<Column id="37" name="id" type="int8" length="25" nulls="false">
 <CP name="COMMENTS">Internal ORCA file ID</CP>
 </Column>
-<Column id="37" name="granule_id" type="int8" length="25" nulls="false">
+<Column id="38" name="granule_id" type="int8" length="25" nulls="false">
 <CP name="COMMENTS">Granule that the file belongs to refrences the internal ORCA granule ID.</CP>
 </Column>
-<Column id="38" name="name" type="text" length="25" nulls="false">
+<Column id="39" name="name" type="text" length="25" nulls="false">
 <CP name="COMMENTS">Name of the file including extension</CP>
 </Column>
-<Column id="39" name="orca_archive_location" type="text" length="25" nulls="false">
+<Column id="40" name="orca_archive_location" type="text" length="25" nulls="false">
 <CP name="COMMENTS">S3 Glacier bucket that the file object is stored in</CP>
 </Column>
-<Column id="40" name="cumulus_archive_location" type="text" length="25" nulls="false">
+<Column id="41" name="cumulus_archive_location" type="text" length="25" nulls="false">
 <CP name="COMMENTS">Cumulus S3 bucket where the file is thought to be stored.</CP>
 </Column>
-<Column id="41" name="key_path" type="text" length="25" nulls="false">
+<Column id="42" name="key_path" type="text" length="25" nulls="false">
 <CP name="COMMENTS">Full AWS key path including file name of the file (does not include bucket name) where the file resides in ORCA.</CP>
-</Column>
-<Column id="42" name="multipart_chunksize_mb" type="integer" length="25" nulls="true">
-<CP name="PRECISION">15</CP>
-<CP name="SCALE">5</CP>
 </Column>
 <Column id="43" name="ingest_time" type="timestamp with time zone" length="25" nulls="false">
 <CP name="COMMENTS">Date and time the file was ingested into ORCA</CP>
@@ -427,7 +424,7 @@
 </Relation>
 <Relation id="98" name="granule_file_fk" cardinality="-2" identifying="false" nulls="false">
 <FK>29</FK>
-<PK>37</PK>
+<PK>38</PK>
 </Relation>
 <Relation id="99" name="provider_collection_fk" cardinality="-2" identifying="true" nulls="false">
 <FK>22</FK>
@@ -501,16 +498,16 @@ Description: ORCA metadata storage</Text>
 <ConstraintColumn id="30"/>
 <ConstraintColumn id="31"/>
 </Constraint>
-<Constraint table="35" name="PK_files_1" type="PrimKey">
-<ConstraintColumn id="36"/>
+<Constraint table="36" name="PK_files_1" type="PrimKey">
+<ConstraintColumn id="37"/>
 </Constraint>
-<Constraint table="35" name="UNIQUE_files_1" type="Unique">
+<Constraint table="36" name="UNIQUE_files_1" type="Unique">
+<ConstraintColumn id="41"/>
+<ConstraintColumn id="42"/>
+</Constraint>
+<Constraint table="36" name="UNIQUE_files_2" type="Unique">
 <ConstraintColumn id="40"/>
-<ConstraintColumn id="41"/>
-</Constraint>
-<Constraint table="35" name="UNIQUE_files_2" type="Unique">
-<ConstraintColumn id="39"/>
-<ConstraintColumn id="41"/>
+<ConstraintColumn id="42"/>
 </Constraint>
 <Constraint table="49" name="PK_provider_collection_xref_1" type="PrimKey">
 <ConstraintColumn id="50"/>
@@ -539,69 +536,69 @@ Description: ORCA metadata storage</Text>
 <ConstraintColumn id="86"/>
 </Constraint>
 <Sheet name="orca schema version" id="107" disp_at="true" disp_ph="true" disp_co="true" disp_rn="true" disp_null="true">
-<Place id="91" visible="true">80,150,331,121</Place>
 <Place id="106" visible="true">10,10,281,101</Place>
+<Place id="91" visible="true">80,150,331,121</Place>
 </Sheet>
 <Sheet name="orca recovery status" id="108" disp_at="true" disp_ph="true" disp_co="true" disp_rn="true" disp_null="true">
-<Place id="7" visible="true">427,460,332,89</Place>
 <Place id="10" visible="true">818,149,339,232</Place>
-<Place id="105" visible="true" options="427.0,460.0,332.0,89.0,20.0,149.0,341.0,162.0,4,427.0,490.0,400.0,490.0,400.0,230.0,361.0,230.0">509,52,0,0</Place>
+<Place id="103" visible="true" options="20.0,149.0,341.0,162.0,818.3367134489793,149.36470111868806,339.0,232.0,2,361.0,180.0,818.0,180.0">508,-11,0,0</Place>
+<Place id="7" visible="true">427,460,332,89</Place>
 <Place id="104" visible="true" options="427.0,460.0,332.0,89.0,818.3367134489793,149.36470111868806,339.0,232.0,4,759.0,490.0,790.0,490.0,790.0,260.0,818.0,260.0">590,-36,0,0</Place>
 <Place id="106" visible="true">20,20,270,90</Place>
-<Place id="103" visible="true" options="20.0,149.0,341.0,162.0,818.3367134489793,149.36470111868806,339.0,232.0,2,361.0,180.0,818.0,180.0">508,-11,0,0</Place>
 <Place id="0" visible="true">20,149,341,162</Place>
+<Place id="105" visible="true" options="427.0,460.0,332.0,89.0,20.0,149.0,341.0,162.0,4,427.0,490.0,400.0,490.0,400.0,230.0,361.0,230.0">509,52,0,0</Place>
 </Sheet>
 <Sheet name="orca inventory" id="109" disp_at="true" disp_ph="true" disp_co="true" disp_rn="true" disp_null="true">
-<Place id="21" visible="true">150,160,351,71</Place>
-<Place id="28" visible="true">149,579,352,161</Place>
-<Place id="49" visible="true">696,241,344,90</Place>
-<Place id="97" visible="true" options="147.33333333333337,350.33333333333337,354.0,91.0,696.0,241.0,344.0,90.0,4,501.33333333333337,380.0,580.0,380.0,580.0,290.0,696.0,290.0">500,0,0,0</Place>
-<Place id="24" visible="true">147,350,354,91</Place>
 <Place id="96" visible="true" options="147.33333333333337,350.33333333333337,354.0,91.0,149.0,579.0,352.0,161.0,4,147.33333333333337,380.0,90.0,380.0,90.0,610.0,149.0,610.0">500,0,0,0</Place>
-<Place id="35" visible="true">708,578,332,242</Place>
-<Place id="106" visible="true">10,10,291,100</Place>
+<Place id="49" visible="true">696,241,344,90</Place>
 <Place id="99" visible="true">500,0,0,0</Place>
+<Place id="36" visible="true">708,578,332,242</Place>
+<Place id="97" visible="true" options="147.33333333333337,350.33333333333337,354.0,91.0,696.0,241.0,344.0,90.0,4,501.33333333333337,380.0,580.0,380.0,580.0,290.0,696.0,290.0">500,0,0,0</Place>
+<Place id="21" visible="true">150,160,351,71</Place>
 <Place id="98" visible="true" options="149.0,579.0,352.0,161.0,708.0,578.0,332.0,242.0,4,501.0,610.0,600.0,610.0,600.0,680.0,708.0,680.0">500,0,0,0</Place>
+<Place id="24" visible="true">147,350,354,91</Place>
+<Place id="106" visible="true">10,10,291,100</Place>
+<Place id="28" visible="true">149,579,352,161</Place>
 </Sheet>
 <Sheet name="reconciliation" id="110" disp_at="true" disp_ph="true" disp_co="true" disp_rn="true" disp_null="true">
+<Place id="36" visible="false">40,149,341,241</Place>
+<Place id="52" visible="true">670,39,341,171</Place>
+<Place id="83" visible="true">670,271,340,190</Place>
+<Place id="102" visible="true" options="49.18999835058045,270.3952515684763,341.0,141.0,670.0,39.0,341.0,171.0,4,390.0,280.0,480.0,280.0,480.0,100.0,670.0,100.0">399,24,0,0</Place>
+<Place id="106" visible="true">10,10,281,100</Place>
+<Place id="67" visible="true">670,499,341,331</Place>
 <Place id="101" visible="true" options="49.18999835058045,270.3952515684763,341.0,141.0,670.3572628324735,271.333265267933,340.0,190.0,2,390.0,300.0,670.0,300.0">572,-1,0,0</Place>
 <Place id="60" visible="true">49,270,341,141</Place>
 <Place id="100" visible="true" options="49.18999835058045,270.3952515684763,341.0,141.0,670.0,499.0,341.0,331.0,4,390.0,320.0,480.0,320.0,480.0,600.0,670.0,600.0">484,-49,0,0</Place>
-<Place id="35" visible="false">40,149,341,241</Place>
-<Place id="67" visible="true">670,499,341,331</Place>
-<Place id="102" visible="true" options="49.18999835058045,270.3952515684763,341.0,141.0,670.0,39.0,341.0,171.0,4,390.0,280.0,480.0,280.0,480.0,100.0,670.0,100.0">399,24,0,0</Place>
-<Place id="106" visible="true">10,10,281,100</Place>
-<Place id="83" visible="true">670,271,340,190</Place>
-<Place id="52" visible="true">670,39,341,171</Place>
 </Sheet>
 <Sheet name="orca full" id="111" disp_at="true" disp_ph="true" disp_co="true" disp_rn="true" disp_null="true">
-<Place id="21" visible="true">441,270,350,81</Place>
-<Place id="91" visible="true">1220,1079,330,130</Place>
-<Place id="28" visible="true">439,619,350,160</Place>
-<Place id="101" visible="true">500,0,0,0</Place>
-<Place id="60" visible="true">1299,441,351,151</Place>
-<Place id="7" visible="true">449,1199,291,91</Place>
-<Place id="100" visible="true">501,-39,0,0</Place>
-<Place id="104" visible="true" options="449.0,1199.3178925810917,291.0,91.0,850.0,899.3178925810892,290.0,230.0,4,740.0,1230.0,800.0,1230.0,800.0,1010.0,850.0,1010.0">418,4,0,0</Place>
-<Place id="96" visible="true">500,0,0,0</Place>
-<Place id="35" visible="true">989,619,330,260</Place>
-<Place id="67" visible="true">2019,712,351,331</Place>
-<Place id="106" visible="true">0,0,261,100</Place>
-<Place id="103" visible="true" options="49.0,899.0,290.0,160.0,850.0,899.3178925810892,290.0,230.0,4,339.0,960.0,510.0,960.0,510.0,930.0,850.0,930.0">500,0,0,0</Place>
-<Place id="0" visible="true">49,899,290,160</Place>
-<Place id="52" visible="true">2019,201,351,171</Place>
+<Place id="99" visible="true">500,0,0,0</Place>
+<Place id="36" visible="true">989,619,330,260</Place>
 <Place id="10" visible="true">850,899,290,230</Place>
-<Place id="105" visible="true" options="449.0,1199.3178925810917,291.0,91.0,49.0,899.0,290.0,160.0,4,449.0,1230.0,390.0,1230.0,390.0,980.0,339.0,980.0">364,20,0,0</Place>
+<Place id="21" visible="true">441,270,350,81</Place>
+<Place id="52" visible="true">2019,201,351,171</Place>
+<Place id="83" visible="true">2019,441,351,190</Place>
+<Place id="98" visible="true">500,0,0,0</Place>
 <Place id="24" visible="true">439,410,351,110</Place>
+<Place id="104" visible="true" options="449.0,1199.3178925810917,291.0,91.0,850.0,899.3178925810892,290.0,230.0,4,740.0,1230.0,800.0,1230.0,800.0,1010.0,850.0,1010.0">418,4,0,0</Place>
+<Place id="0" visible="true">49,899,290,160</Place>
+<Place id="105" visible="true" options="449.0,1199.3178925810917,291.0,91.0,49.0,899.0,290.0,160.0,4,449.0,1230.0,390.0,1230.0,390.0,980.0,339.0,980.0">364,20,0,0</Place>
+<Place id="60" visible="true">1299,441,351,151</Place>
+<Place id="96" visible="true">500,0,0,0</Place>
 <Place id="49" visible="true">971,348,351,91</Place>
 <Place id="97" visible="true">500,0,0,0</Place>
+<Place id="103" visible="true" options="49.0,899.0,290.0,160.0,850.0,899.3178925810892,290.0,230.0,4,339.0,960.0,510.0,960.0,510.0,930.0,850.0,930.0">500,0,0,0</Place>
+<Place id="7" visible="true">449,1199,291,91</Place>
 <Place id="102" visible="true">441,19,0,0</Place>
-<Place id="99" visible="true">500,0,0,0</Place>
-<Place id="98" visible="true">500,0,0,0</Place>
-<Place id="83" visible="true">2019,441,351,190</Place>
+<Place id="106" visible="true">0,0,261,100</Place>
+<Place id="67" visible="true">2019,712,351,331</Place>
+<Place id="101" visible="true">500,0,0,0</Place>
+<Place id="28" visible="true">439,619,350,160</Place>
+<Place id="100" visible="true">501,-39,0,0</Place>
+<Place id="91" visible="true">1220,1079,330,130</Place>
 <Region background="16053503" foreground="0" text="ORCA Recovery Tables">31,829,1139,492</Region>
 <Region background="16119285" foreground="0" text="ORCA Inventory Catalog">230,231,1141,679</Region>
 <Region background="16770019" foreground="0" text="ORCA Internal Reconciliation">1251,149,1172,937</Region>
 </Sheet>
-<Settings sheet="109" zoom="0.7071067811865478"/>
+<Settings sheet="109" zoom="0.8408964152537148"/>
 </Diagram>
