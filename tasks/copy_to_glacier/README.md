@@ -271,7 +271,7 @@ often be derived from the collection configuration in Cumulus as seen below:
 ```
 See the schema [configuration file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/config.json) for more information.
 
-## Metadata SQS body confuguration
+## Metadata SQS body configuration
 
 The metadata SQS message body should contain the metadata attributes needed by Cumulus to perform analysis on discrepencies and for reconciliation.
 These information from the queue will then be ingested into a new ORCA lambda function that will update the records for the various objects in the ORCA catalog.
@@ -390,7 +390,7 @@ DATA
 ## pydoc sqs_library.py
 
 ```
-Help on module sqs_library:
+Help on sqs_library:
 
 NAME
     sqs_library
