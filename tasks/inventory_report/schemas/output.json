@@ -21,7 +21,7 @@
           "provider_id",
           "collection_id",
           "id",
-          "cumulusCreateTime",
+          "createdAt",
           "executionId",
           "ingestDate",
           "lastUpdate",
@@ -40,8 +40,8 @@
             "description": "The unique ID of the granule. Provided by Cumulus.",
             "type": "string"
           },
-          "cumulusCreateTime": {
-            "description": "Date and time in UTC the granule was ingested.",
+          "createdAt": {
+            "description": "Date and time data was originally ingested into cumulus.",
             "type": "string",
             "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]*)?Z"
           },
@@ -71,10 +71,11 @@
                 "keyPath",
                 "sizeBytes",
                 "hash",
-                "hashType"
+                "hashType",
+                "version"
               ],
               "properties": {
-                "filename": {
+                "name": {
                   "description": "The name and extension of the file.",
                   "type": "string"
                 },
@@ -106,6 +107,10 @@
                     "string",
                     "null"
                   ]
+                },
+                "version": {
+                  "description": "AWS provided version of the file.",
+                  "type": "string"
                 }
               }
             }
