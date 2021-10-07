@@ -53,7 +53,9 @@
                     "type": "object",
                     "required": [
                       "filename",
-                      "orcaLocation",
+                      "cumulusArchiveLocation",
+                      "orcaArchiveLocation",
+                      "keyPath",
                       "fileSizeBytes",
                       "fileHash",
                       "fileHashType",
