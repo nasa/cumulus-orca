@@ -18,7 +18,7 @@ fi
 cd ../../
 
 failure=0
-for TASK in $(ls -d tasks/* | egrep -v "package|dr_dbutils|pg_utils|shared_libraries|inventory_report")
+for TASK in $(ls -d tasks/* | egrep -v "package|dr_dbutils|pg_utils|shared_libraries")
 do
   echo "Building ${TASK}"
   cd ${TASK}
