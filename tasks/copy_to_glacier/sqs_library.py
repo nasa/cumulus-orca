@@ -55,6 +55,8 @@ def retry_error(
                 # Try the function and catch the expected error
                 try:
                     return func(*args, **kwargs)
+                except fastjsonschema.JsonSchemaException:
+                    raise
                 except Exception:
                     if total_retries == max_retries:
                         # Log it and re-raise if we maxed our retries + initial attempt
@@ -120,6 +122,7 @@ def post_to_metadata_queue(
     with open("schemas/body.json", "r") as raw_schema:
         schema = json.loads(raw_schema.read())
     validate = fastjsonschema.compile(schema)
+    LOGGER.debug("Validating the SQS message body with the schema.")
     validate(sqs_body)
     body = json.dumps(sqs_body)
     LOGGER.debug(
