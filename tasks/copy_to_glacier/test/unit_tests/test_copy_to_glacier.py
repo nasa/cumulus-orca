@@ -396,10 +396,10 @@ class TestCopyToGlacierHandler(TestCase):
             },
             "granule": {
                 "cumulusGranuleId": "MOD14A1.061.A23V45.2020235",
-                "cumulusCreateTime": "2020-01-01T23:00:00Z",
+                "cumulusCreateTime": "2019-07-17T17:36:38.494918+00:00",
                 "executionId": "f2fgh-356-789",
-                "ingestTime": "2020-01-01T23:00:00Z",
-                "lastUpdate": "2020-01-01T23:00:00Z",
+                "ingestTime": "2019-07-17T17:36:38.494918+00:00",
+                "lastUpdate": "2019-07-17T17:36:38.494918+00:00",
                 "files": [
                     {
                         "name": "MOD14A1.061.A23V45.2020235.2020240145621.hdf",
@@ -410,7 +410,7 @@ class TestCopyToGlacierHandler(TestCase):
                         "hash": "ACFH325128030192834127347",
                         "hashType": "SHA-256",
                         "version": "VXCDEG902",
-                        "ingestTime": "2020-01-01T23:00:00Z",
+                        "ingestTime": "2019-07-17T17:36:38.494918+00:00",
                         "etag": "YXC432BGT789",
                     }
                 ],
@@ -441,15 +441,16 @@ class TestCopyToGlacierHandler(TestCase):
         sqs_body = {
             "provider": {"providerId": "1234", "name": "LPCUmumulus"},
             "collection": {
+                "collectionId": "MOD14A1__061",
                 "shortname": "MOD14A1",
                 "version": "061",
             },
             "granule": {
                 "cumulusGranuleId": "MOD14A1.061.A23V45.2020235",
-                "cumulusCreateTime": "2020-01-01T23:00:00Z",
+                "cumulusCreateTime": "2019-07-17T17:36:38.494918+00:00",
                 "executionId": "f2fgh-356-789",
-                "ingestTime": "2020-01-01T23:00:00Z",
-                "lastUpdate": "2020-01-01T23:00:00Z",
+                "ingestTime": "2019-07-17T17:36:38.494918+00:00",
+                "lastUpdate": "2019-07-17T17:36:38.494918+00:00",
                 "files": [
                     {
                         "name": "MOD14A1.061.A23V45.2020235.2020240145621.hdf",
@@ -460,13 +461,14 @@ class TestCopyToGlacierHandler(TestCase):
                         "hash": "ACFH325128030192834127347",
                         "hashType": "SHA-256",
                         "version": "VXCDEG902",
-                        "ingestTime": "2020-01-01T23:00:00Z",
+                        "ingestTime": "2019-07-17T17:36:38.494918+00:00",
                         "etag": "YXC432BGT789",
                     }
                 ],
             },
         }
-
+        #
+        self.metadata_queue_url = "dummy"
         # Send values to the function
         with self.assertRaises(Exception) as ex:
             sqs_library.post_to_metadata_queue(
