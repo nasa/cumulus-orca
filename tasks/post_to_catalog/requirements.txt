@@ -1,0 +1,4 @@
+cumulus-message-adapter-python==1.2.1
+SQLAlchemy~=1.4.11
+fastjsonschema~=2.15.1
+../../shared_libraries[all] --use-feature=in-tree-build

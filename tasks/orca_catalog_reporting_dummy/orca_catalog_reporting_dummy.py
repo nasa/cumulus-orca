@@ -54,53 +54,32 @@ def handler(event: Dict[str, Any], context: Any) -> List[Dict[str, Any]]:
     validate = fastjsonschema.compile(schema)
     validate(event)
 
-    result = [
+    result = {
+      "anotherPage": False,
+      "granules": [
         {
-            "providerId": "lpdaac",
-            "collections": [
-                {
-                    "collectionId": "MOD14A1__061",
-                    "granules": [
-                        {
-                            "granuleId": "MOD14A1.061.A23V45.2020235",
-                            "date": "TBD",
-                            "createDate": "2020-01-01T23:00:00+00:00",
-                            "lastUpdate": "2020-01-01T23:00:00+00:00",
-                            "files": [
-                                {
-                                    "fileName": "MOD14A1.061.A23V45.2020235.2020240145621.hdf",
-                                    "orcaLocation": "s3://orca-archive/MOD14A1/061/MOD14A1.061.A23V45.2020235.2020240145621.hdf",
-                                    "fileSizeBytes": 100934568723,
-                                    "fileChecksum": "ACFH325128030192834127347",
-                                    "fileChecksumType": "SHA-256",
-                                    "fileVersion": "VXCDEG902",
-                                    "orcaEtag": "YXC432BGT789"
-                                },
-                                {
-                                    "fileName": "MOD14A1.061.A23V45.2020235.2020250215421.jpg",
-                                    "orcaLocation": "s3://orca-archive/MOD14A1/061/MOD14A1.061.A23V45.2020235.2020250215421.jpg",
-                                    "fileSizeBytes": 118219,
-                                    "fileChecksum": "ACFH325128030192834127347",
-                                    "fileChecksumType": "SHA-256",
-                                    "fileVersion": "VXCDEG902",
-                                    "orcaEtag": "YXC432BGT789"
-                                },
-                                {
-                                    "fileName": "MOD14A1.061.A23V45.2020235.2020260334421.xml",
-                                    "orcaLocation": "s3://orca-archive/MOD14A1/061/MOD14A1.061.A23V45.2020235.2020260334421.xml",
-                                    "fileSizeBytes": 12110,
-                                    "fileChecksum": "ACFH325128030192834127347",
-                                    "fileChecksumType": "SHA-256",
-                                    "fileVersion": "VXCDEG902",
-                                    "orcaEtag": "YXC432BGT789"
-                                },
-                            ]
-                        },
-                    ]
-                },
-            ]
-        },
-    ]
+          "providerId": "lpdaac",
+          "collectionId": "MOD14A1___061",
+          "id": "MOD14A1.061.A23V45.2020235",
+          "createdAt": "2020-01-01T23:00:00Z",
+          "executionId": "u654-123-Yx679",
+          "ingestDate": "2020-01-01T23:00:00Z",
+          "lastUpdate": "2020-01-01T23:00:00Z",
+          "files": [
+            {
+              "name": "MOD14A1.061.A23V45.2020235.2020240145621.hdf",
+              "cumulusArchiveLocation": "cumulus-bucket",
+              "orcaArchiveLocation": "orca-archive",
+              "keyPath": "MOD14A1/061/032/MOD14A1.061.A23V45.2020235.2020240145621.hdf",
+              "sizeBytes": 100934568723,
+              "hash": "ACFH325128030192834127347",
+              "hashType": "SHA-256",
+              "version": "VXCDEG902"
+            }
+          ]
+        }
+      ]
+    }
     with open("schemas/output.json", "r") as raw_schema:
         schema = json.loads(raw_schema.read())
 

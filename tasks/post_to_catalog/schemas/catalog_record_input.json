@@ -1,0 +1,10 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/post_to_catalog/schemas/catalog_record_input.json",
+	"title": "post_to_catalog Lambda Input (new_job)",
+	"description": "The input for the post_to_catalog Lambda when posting the ingest record for provider/collection/granule/file to Inventory DB.",
+	"type": "object",
+	"required": [],
+	"properties": {
+	}
+}

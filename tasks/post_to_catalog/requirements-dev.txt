@@ -1,0 +1,12 @@
+## Libraries needed for testing
+coverage==5.3
+pytest==6.1.2
+
+## Application libraries needed for testing
+psycopg2-binary==2.8.6
+
+## Application libraries
+cumulus-message-adapter-python==1.2.1
+fastjsonschema~=2.15.1
+SQLAlchemy~=1.4.11
+../../shared_libraries[all] --use-feature=in-tree-build
