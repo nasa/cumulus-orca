@@ -25,6 +25,7 @@ OS_ENVIRON_DB_QUEUE_URL_KEY = "DB_QUEUE_URL"
 # These will determine what the output looks like.
 FILE_SUCCESS_KEY = "success"
 FILE_ERROR_MESSAGE_KEY = "err_msg"
+FILE_MESSAGE_RECIEPT = "receiptHandle"
 
 # These are tied to the input schema.
 INPUT_JOB_ID_KEY = "job_id"
@@ -51,6 +52,7 @@ def task(
     retry_sleep_secs: float,
     db_queue_url: str,
     default_multipart_chunksize_mb: int,
+    recovery_queue_url: str,
 ) -> None:
     """
     Task called by the handler to perform the work.
@@ -64,11 +66,14 @@ def task(
             to sleep between retry attempts.
         db_queue_url: The URL of the queue that posts status entries.
         default_multipart_chunksize_mb: The multipart_chunksize to use if not set on file.
+        recovery_queue_url: The URL of the queue that this lambda is receiving messages from.
     Raises:
         CopyRequestError: Thrown if there are errors with the input records or the copy failed.
     """
     files = get_files_from_records(records)
     s3 = boto3.client("s3")  # pylint: disable-msg=invalid-name
+    aws_client_sqs = boto3.client("sqs")
+
     for attempt in range(1, max_retries + 1):
         for a_file in files:
             # All files from get_files_from_records start with 'success' == False.
@@ -79,10 +84,14 @@ def task(
                     a_file[INPUT_SOURCE_BUCKET_KEY],
                     a_file[INPUT_SOURCE_KEY_KEY],
                     a_file[INPUT_TARGET_BUCKET_KEY],
-                    a_file.get(INPUT_MULTIPART_CHUNKSIZE_MB, None) or default_multipart_chunksize_mb,
+                    a_file.get(INPUT_MULTIPART_CHUNKSIZE_MB, None)
+                    or default_multipart_chunksize_mb,
                     a_file[INPUT_TARGET_KEY_KEY],
                 )
+
+                # Check to see that our copy for the file was a success
                 if err_msg is None:
+                    # Send updated status to database queue
                     a_file[FILE_SUCCESS_KEY] = True
                     shared_recovery.update_status_for_file(
                         a_file[INPUT_JOB_ID_KEY],
@@ -92,6 +101,14 @@ def task(
                         None,
                         db_queue_url,
                     )
+
+                    # Remove message from the queue we are listening to so we
+                    # don't try to do it again if something else fails.
+                    aws_client_sqs.delete_message(
+                        QueueUrl=recovery_queue_url,
+                        ReceiptHandle=a_file[FILE_MESSAGE_RECIEPT],
+                    )
+
                 else:
                     a_file[FILE_ERROR_MESSAGE_KEY] = err_msg
 
@@ -142,6 +159,7 @@ def get_files_from_records(
         LOGGER.debug("Validating {file}", file=a_file)
         validate(a_file)
         a_file[FILE_SUCCESS_KEY] = False
+        a_file[FILE_MESSAGE_RECIEPT] = record[FILE_MESSAGE_RECIEPT]
         files.append(a_file)
     return files
 
@@ -246,11 +264,29 @@ def handler(
     except KeyError as key_error:
         LOGGER.error(f"{OS_ENVIRON_DB_QUEUE_URL_KEY} environment value not found.")
         raise key_error
+
+    try:
+        default_multipart_chunksize_mb = int(
+            os.environ["DEFAULT_MULTIPART_CHUNKSIZE_MB"]
+        )
+    except KeyError as key_error:
+        LOGGER.error("DEFAULT_MULTIPART_CHUNKSIZE_MB environment value not found.")
+        raise key_error
+
+    try:
+        recovery_queue_url = str(os.environ["RECOVERY_QUEUE_URL"])
+    except KeyError as key_error:
+        LOGGER.error("RECOVERY_QUEUE_URL environment value not found.")
+        raise key_error
+
     LOGGER.debug("event: {event}", event=event)
     records = event["Records"]
 
-    default_multipart_chunksize_mb = int(os.environ["DEFAULT_MULTIPART_CHUNKSIZE_MB"])
-
     task(
-        records, retries, retry_sleep_secs, db_queue_url, default_multipart_chunksize_mb
+        records,
+        retries,
+        retry_sleep_secs,
+        db_queue_url,
+        default_multipart_chunksize_mb,
+        recovery_queue_url,
     )
