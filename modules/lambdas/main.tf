@@ -196,6 +196,7 @@ resource "aws_lambda_function" "copy_files_to_archive" {
       COPY_RETRY_SLEEP_SECS          = var.orca_recovery_retry_interval
       DB_QUEUE_URL                   = var.orca_sqs_status_update_queue_id
       DEFAULT_MULTIPART_CHUNKSIZE_MB = var.default_multipart_chunksize_mb
+      RECOVERY_QUEUE_URL             = var.orca_sqs_staged_recovery_queue_id
     }
   }
 }
@@ -446,6 +447,9 @@ resource "aws_lambda_function" "db_deploy" {
 ## NULL RESOURCES - 1x Use
 ## =============================================================================
 data "aws_lambda_invocation" "db_migration" {
+  depends_on    = [aws_lambda_function.db_deploy]
   function_name = aws_lambda_function.db_deploy.function_name
-  input = jsonencode({})
+  input         = jsonencode({})
 }
+
+## TODO: Should create null resource to handle password changes ORCA-145

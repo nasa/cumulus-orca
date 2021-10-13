@@ -61,7 +61,7 @@ resource "aws_sqs_queue" "staged_recovery_queue" {
   message_retention_seconds   = var.staged_recovery_queue_message_retention_time_seconds
   tags                        = local.tags
   policy                      = data.aws_iam_policy_document.staged_recovery_queue_policy.json
-  visibility_timeout_seconds  = 300
+  visibility_timeout_seconds  = 1800 # Set to double lambda max time
 }
 
 ## status_update_queue - copy_files_to_archive lambda writes to this database status update queue.
@@ -76,5 +76,5 @@ resource "aws_sqs_queue" "status_update_queue" {
   message_retention_seconds   = var.status_update_queue_message_retention_time_seconds
   tags                        = local.tags
   policy                      = data.aws_iam_policy_document.status_update_queue_policy.json
-  visibility_timeout_seconds  = 300
+  visibility_timeout_seconds  = 900 # Set to the lambda max time
 }
