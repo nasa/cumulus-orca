@@ -53,7 +53,7 @@ URL path to the release. In the example below the release being used is v3.0.0.
 ## ORCA Module
 ## =============================================================================
 module "orca" {
-  source = "https://github.com/nasa/cumulus-orca/releases/download/v3.0.0/cumulus-orca-terraform.zip"
+  source = "https://github.com/nasa/cumulus-orca/releases/download/v3.0.2/cumulus-orca-terraform.zip"
   ## --------------------------
   ## Cumulus Variables
   ## --------------------------
@@ -79,15 +79,17 @@ module "orca" {
 
   ## OPTIONAL
   # database_port                                = 5432
+  # default_multipart_chunksize_mb               = 250
   # orca_ingest_lambda_memory_size               = 2240
   # orca_ingest_lambda_timeout                   = 600
   # orca_recovery_buckets                        = []
   # orca_recovery_complete_filter_prefix         = ""
   # orca_recovery_expiration_days                = 5
   # orca_recovery_lambda_memory_size             = 128
-  # orca_recovery_lambda_timeout                 = 300
+  # orca_recovery_lambda_timeout                 = 720
   # orca_recovery_retry_limit                    = 3
   # orca_recovery_retry_interval                 = 1
+  # orca_recovery_retry_backoff                  = 2
   # sqs_delay_time                               = 0
   # sqs_maximum_message_size                     = 262144
   # staged_recovery_queue_message_retention_time = 432000
@@ -333,7 +335,7 @@ the ingest workflow.
       "cma":{
          "event.$":"$",
          "task_config":{
-            "multipart_chunksize_mb": "{$.meta.collection.multipart_chunksize_mb"},
+            "multipart_chunksize_mb": "{$.meta.collection.meta.multipart_chunksize_mb"},
             "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}"
             }
          }
@@ -454,7 +456,7 @@ variables is shown in the table below.
 | `orca_recovery_complete_filter_prefix`                | string        | Specifies object key name prefix by the Glacier Bucket trigger.                                         | "" |
 | `orca_recovery_expiration_days`                       | number        | Number of days a recovered file will remain available for copy.                                         | 5 |
 | `orca_recovery_lambda_memory_size`                    | number        | Amount of memory in MB the ORCA recovery lambda can use at runtime.                                     | 128 |
-| `orca_recovery_lambda_timeout`                        | number        | Timeout in number of seconds for ORCA recovery lambdas.                                                 | 300 |
+| `orca_recovery_lambda_timeout`                        | number        | Timeout in number of seconds for ORCA recovery lambdas.                                                 | 720 |
 | `orca_recovery_retry_limit`                           | number        | Maximum number of retries of a recovery failure before giving up.                                       | 3 |
 | `orca_recovery_retry_interval`                        | number        | Number of seconds to wait between recovery failure retries.                                             | 1 |
 | `sqs_delay_time_seconds`                              | number        | Number of seconds that the delivery of all messages in the queue will be delayed.                       | 0 |
@@ -516,7 +518,9 @@ run `terraform destroy`.
 To configure a collection to enable ORCA, add the line
 `"granuleRecoveryWorkflow": "OrcaRecoveryWorkflow"` to the collection configuration
 as seen below. Optionally, you can exclude files by adding values to an
-`"excludeFileTypes"` variable. For more information, see the documentation on the
+`"excludeFileTypes"` variable as seen below. In addition, when dealing with large
+files, the `"multipart_chunksize_mb"` variable can also be set to override the
+default setting set during ORCA installation. For more information, see the documentation on the
 [`copy_to_glacier` task](https://github.com/nasa/cumulus-orca/tree/master/tasks/copy_to_glacier).
 
 ```json
@@ -532,7 +536,8 @@ as seen below. Optionally, you can exclude files by adding values to an
   "provider_path": "L0A_HR_RAW/",
   "meta": {
     "granuleRecoveryWorkflow": "OrcaRecoveryWorkflow",
-    "excludeFileTypes": [".cmr", ".xml", ".met"]
+    "excludeFileTypes": [".cmr", ".xml", ".met"],
+    "multipart_chunksize_mb": 400
   },
   ...
 }
