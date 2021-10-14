@@ -1,10 +1,154 @@
 {
-	"$schema": "http://json-schema.org/draft-07/schema#",
-	"$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/post_to_catalog/schemas/catalog_record_input.json",
-	"title": "post_to_catalog Lambda Input (new_job)",
-	"description": "The input for the post_to_catalog Lambda when posting the ingest record for provider/collection/granule/file to Inventory DB.",
-	"type": "object",
-	"required": [],
-	"properties": {
-	}
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/post_to_catalog/schemas/catalog_record_input.json",
+  "title": "post_to_catalog Lambda Input (new_job)",
+  "description": "The input for the post_to_catalog Lambda when posting the ingest record for provider/collection/granule/file to Inventory DB.",
+  "type": "object",
+  "required": [
+    "provider",
+    "collection",
+    "granule"
+  ],
+  "properties": {
+    "provider": {
+      "type": "object",
+      "description": "A dictionary containing provider that is in the ORCA holdings",
+      "required": [
+        "providerId",
+        "name"
+      ],
+      "properties": {
+        "providerId": {
+          "type": "string",
+          "description": "Provider ID supplied by Cumulus"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the provider provided by Cumulus."
+        }
+      }
+    },
+    "collection": {
+      "type": "object",
+      "description": "A dictionary containing collection information",
+      "required": [
+        "collectionId",
+        "shortname",
+        "version"
+      ],
+      "properties": {
+        "collectionId": {
+          "type": "string",
+          "description": "Collection ID from Cumulus in the format shortname___version"
+        },
+        "shortname": {
+          "type": "string",
+          "description": "Collection short name from Cumulus."
+        },
+        "version": {
+          "type": "string",
+          "description": "Collection version from Cumulus."
+        }
+      }
+    },
+    "granule": {
+      "type": "object",
+      "description": "A dictionary containing granule information",
+      "required": [
+        "cumulusGranuleId",
+        "cumulusCreateTime",
+        "executionId",
+        "ingestTime",
+        "lastUpdate",
+        "files"
+      ],
+      "properties": {
+        "cumulusGranuleId": {
+          "type": "string",
+          "description": "Granule ID from Cumulus"
+        },
+        "executionId": {
+          "type": "string",
+          "description": "AWS step function execution id"
+        },
+        "cumulusCreateTime": {
+          "type": "string",
+          "description": "Date and time data was originally ingested into Cumulus",
+          "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?\\+00:00$"
+        },
+        "ingestTime": {
+          "type": "string",
+          "description": "Date and time the granule was originally ingested into ORCA.",
+          "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?\\+00:00$"
+        },
+        "lastUpdate": {
+          "type": "string",
+          "description": "Last time the data for the granule was updated",
+          "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?\\+00:00$"
+        },
+        "files": {
+          "type": "array",
+          "description": "A list of dictionary containing file information for latest version",
+          "items": [
+            {
+              "type": "object",
+              "required": [
+                "name",
+                "cumulusArchiveLocation",
+                "orcaArchiveLocation",
+                "keyPath",
+                "sizeInBytes",
+                "version",
+                "ingestTime",
+                "etag"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Name of the file including extension"
+                },
+                "cumulusArchiveLocation": {
+                  "type": "string",
+                  "description": "Cumulus S3 bucket where the file is stored in."
+                },
+                "orcaArchiveLocation": {
+                  "type": "string",
+                  "description": "ORCA S3 Glacier bucket that the file object is stored in"
+                },
+                "keyPath": {
+                  "type": "string",
+                  "description": "Full AWS key path including file name of the file where the file resides in ORCA."
+                },
+                "sizeInBytes": {
+                  "type": "integer",
+                  "description": "Size of the object in bytes"
+                },
+                "hash": {
+                  "type": "string",
+                  "description": "Hash of the object from Cumulus"
+                },
+                "hashType": {
+                  "type": "string",
+                  "description": "Hash type used to hash the object. Supplied by Cumulus."
+                },
+                "version": {
+                  "type": "string",
+                  "description": "Latest version of the file in the S3 Glacier bucket"
+                },
+                "ingestTime": {
+                  "type": "string",
+                  "description": "Date and time the file was originally ingested into ORCA.",
+                  "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?\\+00:00$"
+                },
+                "etag": {
+                  "type": "string",
+                  "description": "etag of the file object in the AWS S3 Glacier bucket."
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
 }

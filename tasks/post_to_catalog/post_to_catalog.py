@@ -3,12 +3,13 @@ Name: post_to_catalog.py
 
 Description:  Pulls entries from a queue and posts them to a DB.
 """
-import datetime
+from datetime import datetime, timezone
 import json
-from typing import Any, List, Dict, Optional
+from typing import Any, List, Dict, Optional, Union
 
 # noinspection SpellCheckingInspection
 import fastjsonschema as fastjsonschema
+from boto3 import Session
 from cumulus_logger import CumulusLogger
 from sqlalchemy import text
 from sqlalchemy.future import Engine
@@ -35,7 +36,7 @@ def task(records: List[Dict[str, Any]], db_connect_info: Dict) -> None:
         db_connect_info: See shared_db.py's get_configuration for further details.
     """
     engine = shared_db.get_user_connection(db_connect_info)
-    for record in records:
+    for record in records:  # todo: https://github.com/nasa/cumulus-orca/pull/167/commits/7ce364b7b83fc741e92c57f63e34aa2e2c55f11e ?
         send_record_to_database(record, engine)
 
 
@@ -52,23 +53,27 @@ def send_record_to_database(record: Dict[str, Any], engine: Engine) -> None:
     """
     values = json.loads(record["body"])
     _CATALOG_RECORD_VALIDATE(values)
-    create_status_for_job_and_files(
-        values["job_id"],
-        values["granule_id"],
-        values["request_time"],
-        values["archive_destination"],
-        values["files"],
+    create_catalog_records(
+        values["provider"],
+        values["collection"],
+        values["granule"],
         engine,
     )
 
 
 def create_catalog_records(
+    provider: Dict[str, str],
+    collection: Dict[str, str],
+    granule: Dict[str, Union[str, Any]],  # list[Dict[str, Union[str, int]]]]]
     engine: Engine,
 ) -> None:
     """
     Posts the information to the catalog database.
 
     Args:
+        provider: See schemas/catalog_record_input.json.
+        collection: See schemas/catalog_record_input.json.
+        granule: See schemas/catalog_record_input.json.
         engine: The sqlalchemy engine to use for contacting the database.
     """
     # todo
@@ -76,29 +81,82 @@ def create_catalog_records(
     try:
         LOGGER.debug(f"Creating catalog records for TODO.")
         with engine.begin() as connection:
+            # session = Session(engine)
             connection.execute(
-                post_to_catalog_sql(),
+                create_provider_sql(),
                 [
                     {
-                        # todo: named params matching sql
+                        "provider_id": provider["providerId"],
+                        "name": provider["name"],
+                    }
+                ],
+            )
+            connection.execute(
+                create_collection_sql(),
+                [
+                    {
+                        "collection_id": collection["collectionId"],
+                        "shortname": collection["shortname"],
+                        "version": collection["version"],
+                    }
+                ],
+            )
+            connection.execute(
+                create_granule_sql(),
+                [
+                    {
+                        "collection_id": collection["collectionId"],
+                        "cumulus_granule_id": granule["cumulusGranuleId"],
+                        "execution_id": granule["executionId"],
+                        "ingest_time": granule["ingestTime"],
+                        "cumulus_create_time": granule["cumulusCreateTime"],
+                        "last_update": granule["lastUpdate"],
                     }
                 ],
             )
     except Exception as sql_ex:
         # Can't use f"" because of '{}' bug in CumulusLogger.
         LOGGER.error(
-            "Error while creating statuses for job '{job_id}': {sql_ex}",
-            job_id=job_id,
+            "Error while posting provider '{provider_id}', collection '{collection_id}', "
+            "granule '{cumulus_granule_id}' to inventory: {sql_ex}",
+            provider_id=provider["providerId"],
+            collection_id=collection["collectionId"],
+            cumulus_granule_id=granule["cumulusGranuleId"],
             sql_ex=sql_ex,
         )
         raise
 
 
-def post_to_catalog_sql():
+def create_provider_sql():
     return text(
         """
-        TODO"""
+        INSERT INTO providers
+            ("provider_id", "name")
+        VALUES
+            (:provider_id, :name)
+        ON CONFLICT DO NOTHING
+        """
     )
+
+
+def create_collection_sql():
+    return text("""
+    INSERT INTO collections
+            ("collection_id", "shortname", "version")
+    VALUES
+        (:collection_id, :shortname, :version)
+    ON CONFLICT DO NOTHING
+    """)
+
+
+def create_granule_sql():
+    return text("""
+    INSERT INTO granules
+        ("id", "collection_id", "cumulus_granule_id", "execution_id", "ingest_time", "cumulus_create_time", "last_update")
+    VALUES
+        (1, :collection_id, :cumulus_granule_id, :execution_id, :ingest_time, :cumulus_create_time, :last_update)
+    ON CONFLICT ("collection_id", "cumulus_granule_id") DO UPDATE
+        SET "execution_id"=:execution_id, "last_update"=:last_update""")
 
 
 def handler(event: Dict[str, List], context) -> None:
@@ -127,3 +185,41 @@ def handler(event: Dict[str, List], context) -> None:
     db_connect_info = shared_db.get_configuration()
 
     task(event["Records"], db_connect_info)
+
+
+time = datetime.now(timezone.utc).isoformat()
+print(time)
+task([
+    {
+        "body": json.dumps({
+            "provider": {
+                "providerId": "providerId0",
+                "name": "providerName0"
+            },
+            "collection": {
+                "collectionId": "collectionId0",
+                "shortname": "collectionName0",
+                "version": "collectionVersion0"
+            },
+            "granule": {
+                "cumulusGranuleId": "cumulusGranuleId0",
+                "cumulusCreateTime": time,
+                "executionId": "granuleExecutionId0",
+                "ingestTime": time,
+                "lastUpdate": time,
+                "files": []
+            }
+        }, indent=4)
+    }
+],
+    {
+        "admin_database": "postgres",
+        "admin_password": "postgres",
+        "admin_username": "postgres",
+        "host": "localhost",
+        "port": "5432",
+        "user_database": "disaster_recovery",
+        "user_password": "An0th3rS3cr3t",
+        "user_username": "orcauser",
+    }
+)

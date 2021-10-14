@@ -21,16 +21,16 @@ def get_configuration():
     Sets a static configuration so testing is easy. Only HOST and PASSWORDS
     are variable per user.
     """
-    my_host = os.getenv("DATABASE_HOST")
-    my_admin_pass = os.getenv("ADMIN_PASSWORD")
-    my_app_pass = os.getenv("APPLICATION_PASSWORD")
+    my_host = 'localhost'  # os.getenv("DATABASE_HOST")
+    my_admin_pass = 'postgres'  # os.getenv("ADMIN_PASSWORD")
+    my_app_pass = 'An0th3rS3cr3t'  # os.getenv("APPLICATION_PASSWORD")
 
     return {
         "admin_database": "postgres",
         "admin_password": my_admin_pass,
         "admin_username": "postgres",
         "host": my_host,
-        "port": "5433",
+        "port": "5432",
         "user_database": "disaster_recovery",
         "user_password": my_app_pass,
         "user_username": "orcauser",  
@@ -40,7 +40,7 @@ def get_configuration():
 if __name__ == "__main__":
     set_search_path()
     from db_deploy import task
-    from orca_shared.shared_db import logger
+    from orca_shared.database.shared_db import logger
 
     logger.info("Beginning manual test.")
     # We skip handle since we do not want to create the secretmanager objects
