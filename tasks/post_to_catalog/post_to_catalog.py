@@ -64,7 +64,7 @@ def send_record_to_database(record: Dict[str, Any], engine: Engine) -> None:
 def create_catalog_records(
     provider: Dict[str, str],
     collection: Dict[str, str],
-    granule: Dict[str, Union[str, Any]],  # list[Dict[str, Union[str, int]]]]]
+    granule: Dict[str, Union[str, List[Dict[str, Union[str, int]]]]],
     engine: Engine,
 ) -> None:
     """
@@ -81,7 +81,6 @@ def create_catalog_records(
     try:
         LOGGER.debug(f"Creating catalog records for TODO.")
         with engine.begin() as connection:
-            # session = Session(engine)
             connection.execute(
                 create_provider_sql(),
                 [
@@ -101,7 +100,7 @@ def create_catalog_records(
                     }
                 ],
             )
-            connection.execute(
+            granule_row = connection.execute(
                 create_granule_sql(),
                 [
                     {
@@ -114,6 +113,29 @@ def create_catalog_records(
                     }
                 ],
             )
+
+            for thing in granule_row:
+                print(thing)
+            file_parameters = []
+            for file in granule["files"]:
+                file_parameters.append({
+                    "granule_id": granule_row["id"],
+                    "name": file["name"],
+                    "cumulus_archive_location": file["cumulusArchiveLocation"],
+                    "orca_archive_location": file["orcaArchiveLocation"],
+                    "key_path": file["keyPath"],
+                    "size_in_bytes": file["sizeInBytes"],
+                    "hash": file.get("hash", None),
+                    "hash_type": file.get("hashType", None),
+                    "version": file["version"],
+                    "ingest_time": file["ingestTime"],
+                    "etag": file["etag"],
+                })
+            if any(file_parameters):
+                connection.execute(
+                    create_file_sql(),
+                    file_parameters
+                )
     except Exception as sql_ex:
         # Can't use f"" because of '{}' bug in CumulusLogger.
         LOGGER.error(
@@ -152,11 +174,24 @@ def create_collection_sql():
 def create_granule_sql():
     return text("""
     INSERT INTO granules
-        ("id", "collection_id", "cumulus_granule_id", "execution_id", "ingest_time", "cumulus_create_time", "last_update")
+        ("collection_id", "cumulus_granule_id", "execution_id", "ingest_time", "cumulus_create_time", "last_update")
     VALUES
-        (1, :collection_id, :cumulus_granule_id, :execution_id, :ingest_time, :cumulus_create_time, :last_update)
+        (:collection_id, :cumulus_granule_id, :execution_id, :ingest_time, :cumulus_create_time, :last_update)
     ON CONFLICT ("collection_id", "cumulus_granule_id") DO UPDATE
         SET "execution_id"=:execution_id, "last_update"=:last_update""")
+    # ON CONFLICT will only trigger if both collection_id and cumulus_granule_id match.
+
+
+def create_file_sql():
+    return text("""
+    INSERT INTO files
+        ("granule_id", "name", "orca_archive_location", "cumulus_archive_location", "key_path", "ingest_time", "etag", "version", "size_in_bytes", "hash", "hash_type")
+    VALUES
+        (:granule_id, :name, :orca_archive_location, :cumulus_archive_location, :key_path, :ingest_time, :etag, :version, :size_in_bytes, :hash, :hash_type)
+    ON CONFLICT ("granule_id", "cumulus_archive_location", "orca_archive_location") DO UPDATE
+        SET "name"=:name, "key_path"=:key_path, "ingest_time"=:ingest_time", "version"=:version, "size_in_bytes"=:size_in_bytes, "hash"=:hash, "hash_type"=:hash_type""")
+    # ON CONFLICT will only trigger if all listed properties match.
+    # TODO: Check with team about what should be immutable. Include key_path? Don't include locations?
 
 
 def handler(event: Dict[str, List], context) -> None:
@@ -202,12 +237,23 @@ task([
                 "version": "collectionVersion0"
             },
             "granule": {
-                "cumulusGranuleId": "cumulusGranuleId0",
+                "cumulusGranuleId": "cumulusGranuleId1",
                 "cumulusCreateTime": time,
                 "executionId": "granuleExecutionId0",
                 "ingestTime": time,
                 "lastUpdate": time,
-                "files": []
+                "files": [
+                    {
+                        "name": "fileName0",
+                        "cumulusArchiveLocation": "cumulusLocation0",
+                        "orcaArchiveLocation": "orcaLocation0",
+                        "keyPath": "keyPath0",
+                        "sizeInBytes": 4,
+                        "version": "version0",
+                        "ingestTime": time,
+                        "etag": "etag0"
+                    }
+                ]
             }
         }, indent=4)
     }
