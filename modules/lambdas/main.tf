@@ -14,10 +14,10 @@ module "lambda_security_group" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  prefix      = var.prefix
-  vpc_id      = var.vpc_id
+  prefix = var.prefix
+  vpc_id = var.vpc_id
   ## OPTIONAL
-  tags   = local.tags
+  tags = local.tags
   ## --------------------------
   ## ORCA Variables
   ## --------------------------
@@ -37,7 +37,7 @@ module "restore_object_arn" {
   permissions_boundary_arn = var.permissions_boundary_arn
   prefix                   = var.prefix
   # OPTIONAL
-  tags   = local.tags
+  tags = local.tags
   # --------------------------
   # ORCA Variables
   # --------------------------
@@ -102,7 +102,8 @@ resource "aws_lambda_function" "copy_to_glacier" {
 
   environment {
     variables = {
-      ORCA_DEFAULT_BUCKET = var.orca_default_bucket
+      ORCA_DEFAULT_BUCKET            = var.orca_default_bucket
+      DEFAULT_MULTIPART_CHUNKSIZE_MB = var.default_multipart_chunksize_mb
     }
   }
 }
@@ -195,9 +196,11 @@ resource "aws_lambda_function" "copy_files_to_archive" {
 
   environment {
     variables = {
-      COPY_RETRIES          = var.orca_recovery_retry_limit
-      COPY_RETRY_SLEEP_SECS = var.orca_recovery_retry_interval
-      DB_QUEUE_URL          = var.orca_sqs_status_update_queue_id
+      COPY_RETRIES                   = var.orca_recovery_retry_limit
+      COPY_RETRY_SLEEP_SECS          = var.orca_recovery_retry_interval
+      DB_QUEUE_URL                   = var.orca_sqs_status_update_queue_id
+      DEFAULT_MULTIPART_CHUNKSIZE_MB = var.default_multipart_chunksize_mb
+      RECOVERY_QUEUE_URL             = var.orca_sqs_staged_recovery_queue_id
     }
   }
 }
@@ -460,3 +463,16 @@ resource "aws_lambda_function" "db_deploy" {
     }
   }
 }
+
+## =============================================================================
+## NULL RESOURCES - 1x Use
+## =============================================================================
+
+data "aws_lambda_invocation" "db_migration" {
+  depends_on    = [aws_lambda_function.db_deploy]
+  function_name = aws_lambda_function.db_deploy.function_name
+  input         = jsonencode({})
+}
+
+
+## TODO: Should create null resource to handle password changes ORCA-145

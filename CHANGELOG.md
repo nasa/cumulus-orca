@@ -14,10 +14,27 @@ and includes an additional section for migration notes.
 - *Security* - Vulnerabilities fixes and changes.
 
 
-## [Unreleased]
+## [3.0.2]
+### Migration Notes
+The configuration schema for `copy_to_glacier` has changed. See the updated schema
+definition [here](https://github.com/nasa/cumulus-orca/blob/develop/tasks/copy_to_glacier/schemas/config.json).
+Additional optional configuration settings like `multipart_chunksize_mb` can be
+found for `copy_to_glacier` and ORCA recovery in the ORCA documentation
+[here](https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/deployment-with-cumulus).
+
+### Added
+- *ORCA-244* Added schema files for copy_to_glacier. Errors for improperly formatted requests will look different.
+- *ORCA-246* Added TF variable `default_multipart_chunksize_mb` which adjusts the maximum chunksize when copying files. Defaults to 250. Can be overridden by `multipart_chunksize_mb` within `config['collection']`. `default_multipart_chunksize_mb` can be overridden in your `orca.tf` with the line `default_multipart_chunksize_mb = 500`
+
+### Fixed
+- *ORCA-248* `excludeFileTypes` is no longer required, as intended.
+- *ORCA-205* Fixed installation and usage of orca_shared libraries.
 
 
 ## [v3.0.1] 2021-08-31
+### Migration Notes
+- `database_app_user`, `database_name`, and `orca_recovery_retrieval_type` are no longer variables. If you have set these values, remove them.
+
 ### Removed
 - *ORCA-240* Removed development-only variables from variables.tf
 - *ORCA-243* Removed aws_profile and region variables from variables.tf
@@ -27,6 +44,10 @@ and includes an additional section for migration notes.
 - ORCA-238 Moved all terraform requirements to a single versions.tf file as part of the deployments.
 - ORCA-239 Removed terraform provider block from all ORCA files and consolidated to main.tf file.
 - Removed technical debt and fixed recovery bug where bucket keys that were not the standard (internal, public, private, etc.) were being ignored.
+
+### Changed
+- *ORCA-237* Updated node requirement versions to fix known security vulnerabilities.
+
 
 ## [v3.0.0] 2021-07-12
 

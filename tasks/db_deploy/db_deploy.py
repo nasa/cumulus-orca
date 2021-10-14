@@ -4,7 +4,11 @@ Name: db_deploy.py
 Description: Performs database installation and migration for the ORCA schema.
 """
 # Imports
-from orca_shared.shared_db import logger, get_configuration, get_admin_connection
+from orca_shared.database.shared_db import (
+    logger,
+    get_configuration,
+    get_admin_connection,
+)
 from sqlalchemy import text
 from sqlalchemy.future import Connection
 from create_db import create_fresh_orca_install
@@ -14,7 +18,7 @@ from typing import Any, Dict
 
 # Globals
 # Latest version of the ORCA schema.
-LATEST_ORCA_SCHEMA_VERSION = 2
+LATEST_ORCA_SCHEMA_VERSION = 3
 
 
 def handler(
@@ -63,7 +67,10 @@ def task(config: Dict[str, str]) -> None:
     with postgres_admin_engine.connect() as connection:
         # Check if database exists, if not throw an error
         if not app_db_exists(connection):
-            logger.critical("The ORCA database disaster_recovery does not exist.")
+            logger.critical(
+                "The ORCA database disaster_recovery does not exist, "
+                "or the server could not be connected to."
+            )
             raise Exception("Missing application database.")
 
     # Connect as admin user to disaster_recovery database.

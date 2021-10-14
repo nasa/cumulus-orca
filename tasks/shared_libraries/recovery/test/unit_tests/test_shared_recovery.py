@@ -47,13 +47,13 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         Perform teardown for the tests
         """
         self.mock_sqs.stop()
-        
+
     @patch.dict(
-    os.environ,
-    {
-        "AWS_REGION": "us-west-2"
-    },
-    clear=True,
+        os.environ,
+        {
+            "AWS_REGION": "us-west-2"
+        },
+        clear=True,
     )
     def test_post_entry_to_queue_no_errors(self):
         """
@@ -97,11 +97,11 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                 self.assertEqual(queue_output_body, new_data)
 
     @patch.dict(
-    os.environ,
-    {
-        "AWS_REGION": "us-west-2"
-    },
-    clear=True,
+        os.environ,
+        {
+            "AWS_REGION": "us-west-2"
+        },
+        clear=True,
     )
     def test_create_status_for_job_no_errors(self):
         """
@@ -123,14 +123,13 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
 
         # Run subtests
         with self.subTest(request_method=shared_recovery.RequestMethod.NEW_JOB):
-
             # Send values to the function
             shared_recovery.create_status_for_job(
                 self.job_id,
                 self.granule_id,
                 archive_destination,
                 [],
-                self.db_queue_url,
+                self.db_queue_url
             )
 
             # grabbing queue contents after the message is sent
@@ -163,12 +162,13 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                 queue_output_body["archive_destination"],
                 archive_destination,
             )
+
     @patch.dict(
-    os.environ,
-    {
-        "AWS_REGION": "us-west-2"
-    },
-    clear=True,
+        os.environ,
+        {
+            "AWS_REGION": "us-west-2"
+        },
+        clear=True,
     )
     def test_update_status_for_file_no_errors(self):
         """
@@ -248,117 +248,25 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                 else:
                     self.assertNotIn("error_message", queue_output_body)
 
-    # Other non-happy tests go here for things that should raise exceptions
-    def test_create_status_for_job_raise_errors(self):
-        """
-        Tests that create_status_for_job will raise an exception if the archive_destination is either None or empty.
-        request_method is set as NEW since the logics only apply for it.
-        """
-        request_method = shared_recovery.RequestMethod.NEW_JOB
-
-        for archive_destination in [None, ""]:
-            for status_id in self.statuses:
-                # Run subtests
-                with self.subTest(
-                        status_id=status_id, archive_destination=archive_destination
-                ):
-                    # will pass if it raises an exception which is expected in this case
-                    self.assertRaises(
-                        Exception,
-                        shared_recovery.create_status_for_job,
-                        self.job_id,
-                        self.granule_id,
-                        status_id,
-                        archive_destination,
-                        request_method.value,
-                        self.db_queue_url,
-                    )
-
-    def test_update_status_for_file_raise_errors_restore_destination(self):
-        """
-        Tests that update_status_for_file will raise an exception if the restore_destination is either None or empty.
-        request_method is set as NEW since the logics only apply for it.
-        """
-        filename = "f1.doc"
-        request_method = shared_recovery.RequestMethod.NEW_JOB
-        error_message = "error"
-        key_path = "path/"
-
-        for restore_destination in [None, ""]:
-            for status_id in self.statuses:
-                # Run subtests
-                with self.subTest(
-                        restore_destination=restore_destination, status_id=status_id
-                ):
-                    # will pass if it raises an exception which is expected in this case
-                    self.assertRaises(
-                        Exception,
-                        shared_recovery.update_status_for_file,
-                        self.job_id,
-                        self.granule_id,
-                        filename,
-                        key_path,
-                        restore_destination,
-                        status_id,
-                        error_message,
-                        request_method.value,
-                        self.db_queue_url,
-                    )
-
-    def test_update_status_for_file_raise_errors_key_path(self):
-        """
-        Tests that the function update_status_for_file will raise an exception if the key_path is either None or empty.
-        request_method is set as NEW since the logics only apply for it.
-        """
-        filename = "f1.doc"
-        request_method = shared_recovery.RequestMethod.NEW_JOB
-        error_message = "error"
-        restore_destination = "s3://restore-bucket"
-
-        for key_path in [None, ""]:
-            for status_id in self.statuses:
-                # Run subtests
-                with self.subTest(key_path=key_path, status_id=status_id):
-                    # will pass if it raises an exception which is expected in this case
-                    self.assertRaises(
-                        Exception,
-                        shared_recovery.update_status_for_file,
-                        self.job_id,
-                        self.granule_id,
-                        filename,
-                        key_path,
-                        restore_destination,
-                        status_id,
-                        error_message,
-                        request_method.value,
-                        self.db_queue_url,
-                    )
-
     def test_update_status_for_file_raise_errors_error_message(self):
         """
-        Tests that update_status_for_file will raise an exception
+        Tests that update_status_for_file will raise a ValueError
         if the error_message is either empty or None in case of status_id as FAILED.
         request_method is set as NEW since the logics only apply for it.
         """
         filename = "f1.doc"
-        request_method = shared_recovery.RequestMethod.NEW_JOB
-        restore_destination = "s3://restore-bucket"
-        key_path = "path/"
         # setting status_id as FAILED since error_message only shows up for failed status.
         status_id = shared_recovery.OrcaStatus.FAILED
 
         for error_message in [None, ""]:
-            # will pass if it raises an exception which is expected in this case
+            # will pass if it raises a ValueError which is expected in this case
             self.assertRaises(
-                Exception,
+                ValueError,
                 shared_recovery.update_status_for_file,
                 self.job_id,
                 self.granule_id,
                 filename,
-                key_path,
-                restore_destination,
                 status_id,
                 error_message,
-                request_method.value,
                 self.db_queue_url,
             )

@@ -8,7 +8,7 @@ section first.
 
 It is recommended to run the tests in the following order.
 - [Database Does Not exist Failure Test](#database-does-not-exist-failure-test)
-- [Database Migration v1 to v2 Test](#database-migration-v1-to-v2-test)
+- [Database Migration v1 to v3 Test](#database-migration-v1-to-v3-test)
 - [Database No Migration Test](#database-no-migration-test)
 - [Database Fresh Install Test](#database-fresh-install-test)
 
@@ -16,7 +16,7 @@ It is recommended to run the tests in the following order.
 ## Initial Setup
 
 The initial setup goes over setting up a python virtual environment to test the
-code and a PostgreSQL database. All testing is done with Docker and it is required
+code and a PostgreSQL database. All testing is done with Docker, and it is required
 to have the latest Docker and Docker Compose application code installed.
 
 It is recommended to have three terminal windows up and available. The windows
@@ -345,7 +345,8 @@ No cleanup is necessary if the next test run is the [Database No Migration Test]
 To cleanup from this test you can use one of two scripts. The `sql/cleanup.sql`
 script will remove all objects including the *disaster_recovery* database. The
 `sql/orca_schema_v2/remove.sql` script will remove only the objects created
-in this test but leave the database in tact. Both scripts must be run as the
+in this test but leave the database intact. Currently, only the `v2` script is required.
+Both scripts must be run as the
 *postgres* user.
 
 ```bash
@@ -375,10 +376,10 @@ COMMIT
 ```
 
 
-## Database Migration v1 to v2 Test
+## Database Migration v1 to v3 Test
 
 This test validates that the db_deploy scripts correctly identify a v1 ORCA
-schema and run the migration of objects and data to an ORCA v2 schema.
+schema and run the migration of objects and data to an ORCA v3 schema.
 
 ### Database Setup Migration Test
 
@@ -397,7 +398,7 @@ schema and run the migration of objects and data to an ORCA v2 schema.
    ```
 3. Run the `sql/orca_schema_v1/create.sql` script as seen below. This will
    populate the database with the users, schema, tables and dummy data used for
-   migrating from v1 of the schema to v2.
+   migrating from v1 of the schema to v3.
    ```bash
    root@26df0390e999:/data/test/manual_tests# psql
    psql (12.6 (Debian 12.6-1.pgdg100+1))
@@ -675,13 +676,13 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    # is set to myglacierarchivebucket
     disaster_recovery=# select * from recovery_job where status_id = 4 LIMIT 5;
 
-                  job_id                |        granule_id        |  archive_destination   | status_id |         request_time          | completion_time
+                  job_id                |        granule_id        |  archive_destination   | multipart_chunksize_mb | status_id |         request_time          | completion_time
    -------------------------------------+--------------------------+------------------------+-----------+-------------------------------+-------------------------------
-   04c9db6d-2d09-4e75-af79-feaf54c7771e | 64e83cc5103965b83fca62ad | myarchiveglacierbucket |         4 | 2021-04-19 08:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   057e1fe7-c561-48c3-b539-65193de99279 | 0a1662031cfecd9c5190bf6d | myarchiveglacierbucket |         4 | 2021-04-18 20:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   0c86fa12-8773-4da6-b0e3-38104230c12e | 7b8be6c8f9076afe64f1aa62 | myarchiveglacierbucket |         4 | 2021-04-16 03:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   0e377a25-e8a6-4de8-86de-42dfad803b75 | cca7d86de488a25864f18095 | myarchiveglacierbucket |         4 | 2021-04-18 02:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   0eefcaf1-5dc5-47eb-a299-a9c206bf58d5 | 11790a3ddcdfcd1cbd6e341b | myarchiveglacierbucket |         4 | 2021-04-19 20:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   04c9db6d-2d09-4e75-af79-feaf54c7771e | 64e83cc5103965b83fca62ad | myarchiveglacierbucket |                   NULL |         4 | 2021-04-19 08:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   057e1fe7-c561-48c3-b539-65193de99279 | 0a1662031cfecd9c5190bf6d | myarchiveglacierbucket |                   NULL |         4 | 2021-04-18 20:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   0c86fa12-8773-4da6-b0e3-38104230c12e | 7b8be6c8f9076afe64f1aa62 | myarchiveglacierbucket |                   NULL |         4 | 2021-04-16 03:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   0e377a25-e8a6-4de8-86de-42dfad803b75 | cca7d86de488a25864f18095 | myarchiveglacierbucket |                   NULL |         4 | 2021-04-18 02:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   0eefcaf1-5dc5-47eb-a299-a9c206bf58d5 | 11790a3ddcdfcd1cbd6e341b | myarchiveglacierbucket |                   NULL |         4 | 2021-04-19 20:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
    (5 rows)
 
    # Check the complete data. Verify completion date is set and arcive_destination
@@ -714,30 +715,30 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    # Check the pending data. Verify completion date is not set and error_message
    # is NULL.
    disaster_recovery=# select * from recovery_file where status_id=1 LIMIT 2;
-                   job_id                |        granule_id        |         filename        |         key_path         |   restore_destination    | status_id | error_message |         request_time          |          last_update          | completion_time
+                   job_id                |        granule_id        |         filename        |         key_path         |   restore_destination    | multipart_chunksize_mb | status_id | error_message |         request_time          |          last_update          | completion_time
    --------------------------------------+--------------------------+-------------------------+--------------------------+--------------------------+-----------+---------------+-------------------------------+-------------------------------+-----------------
-   3efd79f0-f7f5-4109-afd8-a16c36b7f270 | 687687b5b5441c3c3626b39e | 8dbb97f77729cd437a93232e | 8dbb97f77729cd437a93232e | 248f9d70d72f69f9d578966c |         1 |               | 2021-04-24 19:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 |
-   2766e7bd-d1da-4c7d-8161-2f01ae2f8cd1 | 8132aeb56fcd3a56155e6f23 | 6585af9ca8cd765df803c605 | 6585af9ca8cd765df803c605 | 3288d5c9a706237839db94f8 |         1 |               | 2021-04-24 20:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 |
+   3efd79f0-f7f5-4109-afd8-a16c36b7f270 | 687687b5b5441c3c3626b39e | 8dbb97f77729cd437a93232e | 8dbb97f77729cd437a93232e | 248f9d70d72f69f9d578966c |                   NULL |         1 |               | 2021-04-24 19:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 |
+   2766e7bd-d1da-4c7d-8161-2f01ae2f8cd1 | 8132aeb56fcd3a56155e6f23 | 6585af9ca8cd765df803c605 | 6585af9ca8cd765df803c605 | 3288d5c9a706237839db94f8 |                   NULL |         1 |               | 2021-04-24 20:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 |
    (2 rows)
    
    # Check the complete data. Verify completion date is set and error_message
    # is NULL.
    disaster_recovery=# select * from recovery_file where status_id=4 LIMIT 2;
 
-                   job_id                |        granule_id        |         filename        |         key_path         |   restore_destination    | status_id | error_message |         request_time          |          last_update          | completion_time
-   --------------------------------------+--------------------------+-------------------------+--------------------------+--------------------------+-----------+---------------+-------------------------------+-------------------------------+------------------------------
-   5cad5640-ec11-48d0-9edb-a69cc0db99ef | 379f47a2f4b20801422242fa | 677c162d5e01009773a90b4e | 677c162d5e01009773a90b4e | eb9032c408f08350b1544054 |         4 |               | 2021-04-15 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   b4ccf94e-d439-4b71-b9e4-6d3ba6b867a9 | d8420b485a8a2ad194a1fdc4 | bc859b2dec647a32c8a2edc9 | bc859b2dec647a32c8a2edc9 | afd07600908d2c476ccceb72 |         4 |               | 2021-04-15 16:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+                   job_id                |        granule_id        |         filename        |         key_path         |   restore_destination    | multipart_chunksize_mb | status_id | error_message |         request_time          |          last_update          | completion_time
+   --------------------------------------+--------------------------+-------------------------+--------------------------+--------------------------+-----------+------------------------+---------------+-------------------------------+-------------------------------+------------------------------
+   5cad5640-ec11-48d0-9edb-a69cc0db99ef | 379f47a2f4b20801422242fa | 677c162d5e01009773a90b4e | 677c162d5e01009773a90b4e | eb9032c408f08350b1544054 |                   NULL |         4 |               | 2021-04-15 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   b4ccf94e-d439-4b71-b9e4-6d3ba6b867a9 | d8420b485a8a2ad194a1fdc4 | bc859b2dec647a32c8a2edc9 | bc859b2dec647a32c8a2edc9 | afd07600908d2c476ccceb72 |                   NULL |         4 |               | 2021-04-15 16:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
                                          (2 rows)
    
    # Check the error data. Verify completion date is set and error_message
    # is set to "Some error occured here".
    disaster_recovery=# select * from recovery_file where status_id=3 LIMIT 2;
 
-                   job_id                |        granule_id        |         filename        |         key_path         |   restore_destination    | status_id |      error_message      |         request_time          |          last_update          | completion_time
-   --------------------------------------+--------------------------+-------------------------+--------------------------+--------------------------+-----------+-------------------------+-------------------------------+-------------------------------+------------------------------
-   bd325313-e4fb-4c8d-8941-14e27942c081 | 140f54e91f70cdf5c23ceb9f | 7237771bd8e9c8614ebdf1fe | 7237771bd8e9c8614ebdf1fe | 8752510fd8053d01a33dd002 |         3 | Some error occurerd here | 2021-04-20 05:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   f87f219e-b04b-4ca7-abc2-bcdec1809182 | e1f62c411040f269a5aef941 | d4a228869f83a3395c36eaf1 | d4a228869f83a3395c36eaf1 | a27b5b0a2c08a40067c409f0 |         3 | Some error occurred here | 2021-04-20 06:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+                   job_id                |        granule_id        |         filename        |         key_path         |   restore_destination    | multipart_chunksize_mb | status_id |      error_message      |         request_time          |          last_update          | completion_time
+   --------------------------------------+--------------------------+-------------------------+--------------------------+--------------------------+-----------+------------------------+-------------------------+-------------------------------+-------------------------------+------------------------------
+   bd325313-e4fb-4c8d-8941-14e27942c081 | 140f54e91f70cdf5c23ceb9f | 7237771bd8e9c8614ebdf1fe | 7237771bd8e9c8614ebdf1fe | 8752510fd8053d01a33dd002 |                   NULL |         3 | Some error occurerd here | 2021-04-20 05:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+   f87f219e-b04b-4ca7-abc2-bcdec1809182 | e1f62c411040f269a5aef941 | d4a228869f83a3395c36eaf1 | d4a228869f83a3395c36eaf1 | a27b5b0a2c08a40067c409f0 |                   NULL |         3 | Some error occurred here | 2021-04-20 06:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
    (2 rows)
 
    ```
@@ -746,14 +747,16 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    status_id information matches in both tables for a given record.
 
 
+
 ### Migration Test Cleanup
 
 No cleanup is necessary if the next test run is the [Database No Migration Test](#database-no-migration-test).
 
-To cleanup from this test you can use one of two scripts. The `sql/cleanup.sql`
+To clean up from this test you can use one of two scripts. The `sql/cleanup.sql`
 script will remove all objects including the *disaster_recovery* database. The
 `sql/orca_schema_v2/remove.sql` script will remove only the objects created
-in this test but leave the database in tact. Both scripts must be run as the
+in this test but leave the database intact.
+All scripts must be run as the
 *postgres* user.
 
 ```bash
@@ -786,14 +789,14 @@ COMMIT
 
 ## Database No Migration Test
 
-This test validates that the db_deploy scripts correctly identify that a v2 ORCA
-schema is installed and do not perform any additional action.
+This test validates that the db_deploy scripts correctly identify that a v3 ORCA
+schema is installed and do not perform any additional actions.
 
 ### Database Setup No Migration Test
 
-The *disaster_recovery* database should be installed with the ORCA version 2
+The *disaster_recovery* database should be installed with the ORCA version 3
 schema. This test should be ran immediately after the Fresh Install or Migration
-test so that a validated v2 schema is in place.
+test so that a validated v3 schema is in place.
 
 ### Running the No Migration Test
 

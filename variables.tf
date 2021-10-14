@@ -85,6 +85,13 @@ variable "database_port" {
 }
 
 
+variable "default_multipart_chunksize_mb" {
+  type        = number
+  description = "The default maximum size of chunks to use when copying. Can be overridden by collection config."
+  default     = 250
+}
+
+
 variable "orca_ingest_lambda_memory_size" {
   type        = number
   description = "Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime."
@@ -130,7 +137,7 @@ variable "orca_recovery_lambda_memory_size" {
 variable "orca_recovery_lambda_timeout" {
   type        = number
   description = "Timeout in number of seconds for ORCA recovery lambdas."
-  default     = 300
+  default     = 720
 }
 
 

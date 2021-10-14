@@ -8,15 +8,15 @@ import os
 import time
 from typing import Any, List, Dict, Optional, Union
 
+# noinspection PyPackageRequirements
 import boto3
 import fastjsonschema
-
-# noinspection PyPackageRequirements
+from boto3.s3.transfer import TransferConfig, MB
 from botocore.client import BaseClient
+from botocore.exceptions import ClientError
 
 # noinspection PyPackageRequirements
-from botocore.exceptions import ClientError
-from orca_shared import shared_recovery
+from orca_shared.recovery import shared_recovery
 from cumulus_logger import CumulusLogger
 
 
@@ -25,6 +25,7 @@ OS_ENVIRON_DB_QUEUE_URL_KEY = "DB_QUEUE_URL"
 # These will determine what the output looks like.
 FILE_SUCCESS_KEY = "success"
 FILE_ERROR_MESSAGE_KEY = "err_msg"
+FILE_MESSAGE_RECIEPT = "receiptHandle"
 
 # These are tied to the input schema.
 INPUT_JOB_ID_KEY = "job_id"
@@ -34,6 +35,7 @@ INPUT_SOURCE_KEY_KEY = "source_key"
 INPUT_TARGET_KEY_KEY = "target_key"
 INPUT_TARGET_BUCKET_KEY = "restore_destination"
 INPUT_SOURCE_BUCKET_KEY = "source_bucket"
+INPUT_MULTIPART_CHUNKSIZE_MB = "multipart_chunksize_mb"
 
 LOGGER = CumulusLogger()
 
@@ -49,6 +51,8 @@ def task(
     max_retries: int,
     retry_sleep_secs: float,
     db_queue_url: str,
+    default_multipart_chunksize_mb: int,
+    recovery_queue_url: str,
 ) -> None:
     """
     Task called by the handler to perform the work.
@@ -61,23 +65,33 @@ def task(
         retry_sleep_secs: The number of seconds
             to sleep between retry attempts.
         db_queue_url: The URL of the queue that posts status entries.
+        default_multipart_chunksize_mb: The multipart_chunksize to use if not set on file.
+        recovery_queue_url: The URL of the queue that this lambda is receiving messages from.
     Raises:
         CopyRequestError: Thrown if there are errors with the input records or the copy failed.
     """
     files = get_files_from_records(records)
     s3 = boto3.client("s3")  # pylint: disable-msg=invalid-name
+    aws_client_sqs = boto3.client("sqs")
+
     for attempt in range(1, max_retries + 1):
         for a_file in files:
             # All files from get_files_from_records start with 'success' == False.
             if not a_file[FILE_SUCCESS_KEY]:
+                LOGGER.debug(f"Restoring file {a_file[INPUT_SOURCE_KEY_KEY]}")
                 err_msg = copy_object(
                     s3,
                     a_file[INPUT_SOURCE_BUCKET_KEY],
                     a_file[INPUT_SOURCE_KEY_KEY],
                     a_file[INPUT_TARGET_BUCKET_KEY],
+                    a_file.get(INPUT_MULTIPART_CHUNKSIZE_MB, None)
+                    or default_multipart_chunksize_mb,
                     a_file[INPUT_TARGET_KEY_KEY],
                 )
+
+                # Check to see that our copy for the file was a success
                 if err_msg is None:
+                    # Send updated status to database queue
                     a_file[FILE_SUCCESS_KEY] = True
                     shared_recovery.update_status_for_file(
                         a_file[INPUT_JOB_ID_KEY],
@@ -87,6 +101,14 @@ def task(
                         None,
                         db_queue_url,
                     )
+
+                    # Remove message from the queue we are listening to so we
+                    # don't try to do it again if something else fails.
+                    aws_client_sqs.delete_message(
+                        QueueUrl=recovery_queue_url,
+                        ReceiptHandle=a_file[FILE_MESSAGE_RECIEPT],
+                    )
+
                 else:
                     a_file[FILE_ERROR_MESSAGE_KEY] = err_msg
 
@@ -95,6 +117,9 @@ def task(
                 a_file[FILE_SUCCESS_KEY] for a_file in files
             ):  # Check for early completion
                 break
+            LOGGER.warn(
+                f"Attempt {attempt +1} of restore failed. Retrying in {retry_sleep_secs} seconds."
+            )
             time.sleep(retry_sleep_secs)
 
     any_error = False
@@ -134,6 +159,7 @@ def get_files_from_records(
         LOGGER.debug("Validating {file}", file=a_file)
         validate(a_file)
         a_file[FILE_SUCCESS_KEY] = False
+        a_file[FILE_MESSAGE_RECIEPT] = record[FILE_MESSAGE_RECIEPT]
         files.append(a_file)
     return files
 
@@ -143,6 +169,7 @@ def copy_object(
     src_bucket_name: str,
     src_object_name: str,
     dest_bucket_name: str,
+    multipart_chunksize_mb: int,
     dest_object_name: str = None,
 ) -> Optional[str]:
     """Copy an Amazon S3 bucket object
@@ -151,6 +178,7 @@ def copy_object(
         src_bucket_name: The source S3 bucket name.
         src_object_name: The key of the s3 object being copied.
         dest_bucket_name: The target S3 bucket name.
+        multipart_chunksize_mb: The maximum size of chunks to use when copying.
         dest_object_name: Optional; The key of the destination object.
             If an object with the same name exists in the given bucket, the object is overwritten.
             Defaults to {src_object_name}.
@@ -165,10 +193,23 @@ def copy_object(
 
     # Copy the object
     try:
-        response = s3_cli.copy_object(
-            CopySource=copy_source, Bucket=dest_bucket_name, Key=dest_object_name
+        LOGGER.debug(
+            f"Copying {src_object_name} to {dest_bucket_name} with chunk size of {multipart_chunksize_mb}MB."
         )
-        LOGGER.debug("Copy response: {response}", response=response)
+        s3_cli.copy(
+            copy_source,
+            dest_bucket_name,
+            dest_object_name,
+            ExtraArgs={
+                # 'StorageClass': 'GLACIER',
+                # 'MetadataDirective': 'COPY',
+                # 'ContentType': s3_cli.head_object(Bucket=src_bucket_name, Key=src_object_name)['ContentType'],
+                # 'ACL': 'bucket-owner-full-control'
+                # Sets the x-amz-acl URI Request Parameter. Needed for cross-OU copies.
+            },
+            Config=TransferConfig(multipart_chunksize=multipart_chunksize_mb * MB),
+        )
+        LOGGER.debug(f"Object {src_object_name} copied.")
     except ClientError as ex:
         LOGGER.error("Client error: {ex}", ex=ex)
         return ex.__str__()
@@ -199,7 +240,7 @@ def handler(
             A dict from the SQS queue. See schemas/input.json for more information.
         context: An object required by AWS Lambda. Unused.
     Raises:
-        CopyRequestError: An error occurred calling copy_object for one or more files.
+        CopyRequestError: An error occurred calling copy for one or more files.
         The same dict that is returned for a successful copy will be included in the
         message, with 'success' = False for the files for which the copy failed.
     """
@@ -223,7 +264,29 @@ def handler(
     except KeyError as key_error:
         LOGGER.error(f"{OS_ENVIRON_DB_QUEUE_URL_KEY} environment value not found.")
         raise key_error
+
+    try:
+        default_multipart_chunksize_mb = int(
+            os.environ["DEFAULT_MULTIPART_CHUNKSIZE_MB"]
+        )
+    except KeyError as key_error:
+        LOGGER.error("DEFAULT_MULTIPART_CHUNKSIZE_MB environment value not found.")
+        raise key_error
+
+    try:
+        recovery_queue_url = str(os.environ["RECOVERY_QUEUE_URL"])
+    except KeyError as key_error:
+        LOGGER.error("RECOVERY_QUEUE_URL environment value not found.")
+        raise key_error
+
     LOGGER.debug("event: {event}", event=event)
     records = event["Records"]
 
-    task(records, retries, retry_sleep_secs, db_queue_url)
+    task(
+        records,
+        retries,
+        retry_sleep_secs,
+        db_queue_url,
+        default_multipart_chunksize_mb,
+        recovery_queue_url,
+    )

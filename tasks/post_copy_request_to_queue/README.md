@@ -40,29 +40,14 @@ Help on module post_copy_request_to_queue:
 NAME
     post_copy_request_to_queue
 
-FUNCTIONS
-    handler(event: Dict[str, Any], context: None) -> None
-        Lambda handler. Queries the DB and then posts to the recovery queue and DB queue.
-        Args:
-            event: A dictionary coming from the S3 bucket trigger event. See schemas/input.json for more information.
-            context: An object provided by AWS Lambda. Unused.
-        
-          Environment Vars:
-              PREFIX (string): the prefix
-              DATABASE_PORT (string): the database port. The standard is 5432.
-              DATABASE_NAME (string): the name of the database.
-              DATABASE_USER (string): the name of the application user.
-              DB_QUEUE_URL (string): the SQS URL for status-update-queue
-              RECOVERY_QUEUE_URL (string): the SQS URL for staged_recovery_queue
-          Parameter store:
-              {prefix}-drdb-host (string): host name that will be retrieved from secrets manager
-              {prefix}-drdb-user-pass (string):db password that will be retrieved from secrets manager
-        Returns:
-          None
-        Raises:
-          Exception: If unable to retrieve the SQS URLs or exponential retry fields from env variables.
+DESCRIPTION
+    Name: post_copy_request_to_queue.py
+    Description:  lambda function that queries the db for file metadata, updates the status
+    of recovered file to staged,
+    and sends the staged file info to staged_recovery queue for further processing.
 
-    exponential_delay(base_delay: int, exponential_backoff: int) -> int:
+FUNCTIONS
+    exponential_delay(base_delay: int, exponential_backoff: int = 2) -> int
         Exponential delay function. This function is used for retries during failure.
         Args:
             base_delay: Number of seconds to wait between recovery failure retries.
@@ -71,19 +56,61 @@ FUNCTIONS
             An integer which is multiplication of base_delay and exponential_backoff.
         Raises:
             None
-    task(records: List[Dict[str, Any]], db_queue_url: str, recovery_queue_url: str, max_retries: int, retry_sleep_secs: int retry_backoff: int,) -> None:
-        Task called by the handler to perform the work. This task queries all entries from orca_recoverfile table that match the given filename and whose status_id is 'PENDING'. The result is then sent to the staged-recovery-queue SQS and status-update-queue SQS.
+    
+    get_metadata_sql(key_path: str) -> <function text at 0x000001DFBD0B10D0>
+        Query for finding metadata based on key_path and PENDING status.
+        
+        Args:
+            key_path (str): s3 key for the file less the bucket name
+        
+        Returns:
+            (sqlalchemy.text): SQL statement
+    
+    handler(event: Dict[str, Any], context: None) -> None
+        Lambda handler. This lambda calls the task function to perform db queries
+        and send message to SQS.
+        
+            Environment Vars:
+                PREFIX (string): the prefix
+                DATABASE_PORT (string): the database port. The standard is 5432.
+                DATABASE_NAME (string): the name of the database.
+                DATABASE_USER (string): the name of the application user.
+                DB_QUEUE_URL (string): the SQS URL for status-update-queue
+                RECOVERY_QUEUE_URL (string): the SQS URL for staged_recovery_queue
+            Parameter store:
+                {prefix}-drdb-host (string): host name that will be retrieved from secrets manager
+                {prefix}-drdb-user-pass (string):db password that will be retrieved from secrets manager
+        Args:
+            event:
+                A dictionary from the S3 bucket. See schemas/input.json for more information.
+            context: An object required by AWS Lambda. Unused.
+        Returns:
+            None
+        Raises:
+            Exception: If unable to retrieve the SQS URLs or exponential retry fields from env variables.
+    
+    task(record: Dict[str, Any], db_queue_url: str, recovery_queue_url: str, max_retries: int, retry_sleep_secs: int, retry_backoff: int) -> None
+        Task called by the handler to perform the work.
+        
+        This task queries all entries from orca_recoverfile table
+        that match the given filename and whose status_id is 'PENDING'.
+        The result is then sent to the staged-recovery-queue SQS and status-update-queue SQS.
+        
+        Args:
+            record: A dictionary passed through from the handler.
+            db_queue_url: The SQS URL of status_update_queue
+            recovery_queue_url: The SQS URL of staged_recovery_queue
+            max_retries: Number of times the code will retry in case of failure.
+            retry_sleep_secs: Number of seconds to wait between recovery failure retries.
+            retry_backoff: The multiplier by which the retry interval increases during each attempt.
+        Returns:
+            None
+        Raises:
+            Exception: If unable to retrieve key_path or db parameters, convert db result to json,
+            or post to queue.
 
-      Args:
-          records: A list of dictionary passed through from the handler.
-          db_queue_url: The SQS URL of status_update_queue
-          recovery_queue_url: The SQS URL of staged_recovery_queue
-          max_retries: Number of times the code will retry in case of failure.
-          retry_sleep_secs: Number of seconds to wait between recovery failure retries.
-          retry_backoff: The multiplier by which the retry interval increases during each attempt.
-      Returns:
-          None
-      Raises:
-          Exception: If unable to retrieve key_path or db parameters, convert db result to json,
-          or post to queue.
+DATA
+    Any = typing.Any
+    Dict = typing.Dict
+    LOGGER = <cumulus_logger.CumulusLogger object>
 ```

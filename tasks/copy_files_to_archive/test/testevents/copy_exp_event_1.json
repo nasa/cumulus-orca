@@ -10,7 +10,8 @@
         "restore_destination": "fake-restore-destination",
         "source_key": "dr-glacier/MOD09GQ.A0219114.N5aUCG.006.0656338553321.txt",
         "restore_destination": "fake-restore-destination",
-        "source_bucket": "my-dr-fake-glacier-bucket"
+        "source_bucket": "my-dr-fake-glacier-bucket",
+        "multipart_chunksize_mb": null
       }
     }
   ]
