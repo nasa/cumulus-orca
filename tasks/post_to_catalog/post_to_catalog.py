@@ -100,7 +100,7 @@ def create_catalog_records(
                     }
                 ],
             )
-            granule_row = connection.execute(
+            results = connection.execute(
                 create_granule_sql(),
                 [
                     {
@@ -114,12 +114,13 @@ def create_catalog_records(
                 ],
             )
 
-            for thing in granule_row:
-                print(thing)
+            for row in results:
+                granule_id = row["id"]
+
             file_parameters = []
             for file in granule["files"]:
                 file_parameters.append({
-                    "granule_id": granule_row["id"],
+                    "granule_id": granule_id,
                     "name": file["name"],
                     "cumulus_archive_location": file["cumulusArchiveLocation"],
                     "orca_archive_location": file["orcaArchiveLocation"],
@@ -178,7 +179,8 @@ def create_granule_sql():
     VALUES
         (:collection_id, :cumulus_granule_id, :execution_id, :ingest_time, :cumulus_create_time, :last_update)
     ON CONFLICT ("collection_id", "cumulus_granule_id") DO UPDATE
-        SET "execution_id"=:execution_id, "last_update"=:last_update""")
+        SET "execution_id"=:execution_id, "last_update"=:last_update
+    RETURNING id""")
     # ON CONFLICT will only trigger if both collection_id and cumulus_granule_id match.
 
 
@@ -188,8 +190,8 @@ def create_file_sql():
         ("granule_id", "name", "orca_archive_location", "cumulus_archive_location", "key_path", "ingest_time", "etag", "version", "size_in_bytes", "hash", "hash_type")
     VALUES
         (:granule_id, :name, :orca_archive_location, :cumulus_archive_location, :key_path, :ingest_time, :etag, :version, :size_in_bytes, :hash, :hash_type)
-    ON CONFLICT ("granule_id", "cumulus_archive_location", "orca_archive_location") DO UPDATE
-        SET "name"=:name, "key_path"=:key_path, "ingest_time"=:ingest_time", "version"=:version, "size_in_bytes"=:size_in_bytes, "hash"=:hash, "hash_type"=:hash_type""")
+    ON CONFLICT ("cumulus_archive_location", "key_path") DO UPDATE
+        SET "name"=:name, "ingest_time"=:ingest_time, "version"=:version, "size_in_bytes"=:size_in_bytes, "hash"=:hash, "hash_type"=:hash_type""")  # todo: granule_id? orca_archive_location
     # ON CONFLICT will only trigger if all listed properties match.
     # TODO: Check with team about what should be immutable. Include key_path? Don't include locations?
 
@@ -237,7 +239,7 @@ task([
                 "version": "collectionVersion0"
             },
             "granule": {
-                "cumulusGranuleId": "cumulusGranuleId1",
+                "cumulusGranuleId": "cumulusGranuleId2",
                 "cumulusCreateTime": time,
                 "executionId": "granuleExecutionId0",
                 "ingestTime": time,
