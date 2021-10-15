@@ -14,6 +14,7 @@ Fully defined json schemas written in the schema of https://json-schema.org/ can
 ### Example Input
 ```json
 {
+  "pageIndex": 0,
   "providerId": ["lpdaac"],
   "collectionId": ["MOD14A1__061"],
   "granuleId": ["MOD14A1.061.A23V45.2020235"],
@@ -24,39 +25,32 @@ Fully defined json schemas written in the schema of https://json-schema.org/ can
 
 ### Example Output
 ```json
-[
-  {
-    "providerId": "lpdaac",
-    "collections": [
-      {
-        "collectionId": "MOD14A1__061",
-        "granules": [
-          {
-            "granuleId": "MOD14A1.061.A23V45.2020235",
-            "date": "TBD",
-            "createDate": "2020-01-01T23:00:00+00:00",
-            "lastUpdate": "2020-01-01T23:00:00+00:00",
-            "files": [
-              {
-                "fileName": "MOD14A1.061.A23V45.2020235.2020240145621.hdf",
-                "orcaLocation": "s3://orca-archive/MOD14A1/061/...",
-                "fileSizeBytes": 100934568723,
-                "fileChecksum": "ACFH325128030192834127347",
-                "fileChecksumType": "SHA-256",
-                "fileVersion": "VXCDEG902",
-                "orcaEtag": "YXC432BGT789"
-              },
-              ...
-            ]
-          },
-          ...
-        ]
-      },
-      ...
-    ]
-  },
-  ...
-]
+{
+  "anotherPage": false,
+  "granules": [
+    {
+      "providerId": "lpdaac",
+      "collectionId": "MOD14A1___061",
+      "id": "MOD14A1.061.A23V45.2020235",
+      "createdAt": "2020-01-01T23:00:00Z",
+      "executionId": "u654-123-Yx679",
+      "ingestDate": "2020-01-01T23:00:00Z",
+      "lastUpdate": "2020-01-01T23:00:00Z",
+      "files": [
+        {
+          "name": "MOD14A1.061.A23V45.2020235.2020240145621.hdf",
+          "cumulusArchiveLocation": "cumulus-bucket",
+          "orcaArchiveLocation": "orca-archive",
+          "keyPath": "MOD14A1/061/032/MOD14A1.061.A23V45.2020235.2020240145621.hdf",
+          "sizeBytes": 100934568723,
+          "hash": "ACFH325128030192834127347",
+          "hashType": "SHA-256",
+          "version": "VXCDEG902"
+        }
+      ]
+    }
+  ]
+}
 ```
 <a name="pydoc"></a>
 ## pydoc orca_catalog_reporting_dummy
@@ -87,7 +81,7 @@ FUNCTIONS
             event: See schemas/input.json
             context: An object provided by AWS Lambda. Used for context tracking.
         
-        Returns: 
+        Returns:
             See schemas/output.json
             Or, if an error occurs, see create_http_error_dict
 
