@@ -3,18 +3,16 @@ Name: post_to_catalog.py
 
 Description:  Pulls entries from a queue and posts them to a DB.
 """
-from datetime import datetime, timezone
 import json
-from typing import Any, List, Dict, Optional, Union
+from datetime import datetime, timezone
+from typing import Any, List, Dict, Union
 
 # noinspection SpellCheckingInspection
 import fastjsonschema as fastjsonschema
-from boto3 import Session
 from cumulus_logger import CumulusLogger
+from orca_shared.database import shared_db
 from sqlalchemy import text
 from sqlalchemy.future import Engine
-
-from orca_shared.database import shared_db
 
 LOGGER = CumulusLogger()
 # Generating schema validators can take time, so do it once and reuse.
@@ -36,13 +34,17 @@ def task(records: List[Dict[str, Any]], db_connect_info: Dict) -> None:
         db_connect_info: See shared_db.py's get_configuration for further details.
     """
     engine = shared_db.get_user_connection(db_connect_info)
-    for record in records:  # todo: https://github.com/nasa/cumulus-orca/pull/167/commits/7ce364b7b83fc741e92c57f63e34aa2e2c55f11e ?
+    for (
+        record
+    ) in (
+        records
+    ):  # todo: https://github.com/nasa/cumulus-orca/pull/167/commits/7ce364b7b83fc741e92c57f63e34aa2e2c55f11e ?
         send_record_to_database(record, engine)
 
 
 def send_record_to_database(record: Dict[str, Any], engine: Engine) -> None:
     """
-    Deconstructs a record to its components and calls send_values_to_database with the result.
+    Deconstructs a record to its components and calls create_catalog_records with the result.
 
     Args:
         record: Contains the following keys:
@@ -76,8 +78,6 @@ def create_catalog_records(
         granule: See schemas/catalog_record_input.json.
         engine: The sqlalchemy engine to use for contacting the database.
     """
-    # todo
-
     try:
         LOGGER.debug(f"Creating catalog records for TODO.")
         with engine.begin() as connection:
@@ -114,29 +114,32 @@ def create_catalog_records(
                 ],
             )
 
-            for row in results:
+            for (
+                row
+            ) in (
+                results
+            ):  # Need loop due to limitations on the underlying object. Welcome alternatives.
                 granule_id = row["id"]
 
             file_parameters = []
             for file in granule["files"]:
-                file_parameters.append({
-                    "granule_id": granule_id,
-                    "name": file["name"],
-                    "cumulus_archive_location": file["cumulusArchiveLocation"],
-                    "orca_archive_location": file["orcaArchiveLocation"],
-                    "key_path": file["keyPath"],
-                    "size_in_bytes": file["sizeInBytes"],
-                    "hash": file.get("hash", None),
-                    "hash_type": file.get("hashType", None),
-                    "version": file["version"],
-                    "ingest_time": file["ingestTime"],
-                    "etag": file["etag"],
-                })
-            if any(file_parameters):
-                connection.execute(
-                    create_file_sql(),
-                    file_parameters
+                file_parameters.append(
+                    {
+                        "granule_id": granule_id,
+                        "name": file["name"],
+                        "cumulus_archive_location": file["cumulusArchiveLocation"],
+                        "orca_archive_location": file["orcaArchiveLocation"],
+                        "key_path": file["keyPath"],
+                        "size_in_bytes": file["sizeInBytes"],
+                        "hash": file.get("hash", None),
+                        "hash_type": file.get("hashType", None),
+                        "version": file["version"],
+                        "ingest_time": file["ingestTime"],
+                        "etag": file["etag"],
+                    }
                 )
+            if any(file_parameters):
+                connection.execute(create_file_sql(), file_parameters)
     except Exception as sql_ex:
         # Can't use f"" because of '{}' bug in CumulusLogger.
         LOGGER.error(
@@ -163,37 +166,46 @@ def create_provider_sql():
 
 
 def create_collection_sql():
-    return text("""
+    return text(
+        """
     INSERT INTO collections
             ("collection_id", "shortname", "version")
     VALUES
         (:collection_id, :shortname, :version)
     ON CONFLICT DO NOTHING
-    """)
+    """
+    )
 
 
 def create_granule_sql():
-    return text("""
+    return text(
+        """
     INSERT INTO granules
         ("collection_id", "cumulus_granule_id", "execution_id", "ingest_time", "cumulus_create_time", "last_update")
     VALUES
         (:collection_id, :cumulus_granule_id, :execution_id, :ingest_time, :cumulus_create_time, :last_update)
     ON CONFLICT ("collection_id", "cumulus_granule_id") DO UPDATE
         SET "execution_id"=:execution_id, "last_update"=:last_update
-    RETURNING id""")
+    RETURNING id"""
+    )
     # ON CONFLICT will only trigger if both collection_id and cumulus_granule_id match.
 
 
 def create_file_sql():
-    return text("""
+    return text(
+        """
     INSERT INTO files
-        ("granule_id", "name", "orca_archive_location", "cumulus_archive_location", "key_path", "ingest_time", "etag", "version", "size_in_bytes", "hash", "hash_type")
+        ("granule_id", "name", "orca_archive_location", "cumulus_archive_location", "key_path", "ingest_time", "etag", 
+        "version", "size_in_bytes", "hash", "hash_type")
     VALUES
-        (:granule_id, :name, :orca_archive_location, :cumulus_archive_location, :key_path, :ingest_time, :etag, :version, :size_in_bytes, :hash, :hash_type)
+        (:granule_id, :name, :orca_archive_location, :cumulus_archive_location, :key_path, :ingest_time, :etag, 
+        :version, :size_in_bytes, :hash, :hash_type)
     ON CONFLICT ("cumulus_archive_location", "key_path") DO UPDATE
-        SET "name"=:name, "ingest_time"=:ingest_time, "version"=:version, "size_in_bytes"=:size_in_bytes, "hash"=:hash, "hash_type"=:hash_type""")  # todo: granule_id? orca_archive_location
+        SET "granule_id"=:granule_id, "name"=:name, "orca_archive_location"=:orca_archive_location, 
+        "ingest_time"=:ingest_time, "etag"=:etag, "version"=:version, "size_in_bytes"=:size_in_bytes, "hash"=:hash, 
+        "hash_type"=:hash_type"""
+    )
     # ON CONFLICT will only trigger if all listed properties match.
-    # TODO: Check with team about what should be immutable. Include key_path? Don't include locations?
 
 
 def handler(event: Dict[str, List], context) -> None:
@@ -222,52 +234,3 @@ def handler(event: Dict[str, List], context) -> None:
     db_connect_info = shared_db.get_configuration()
 
     task(event["Records"], db_connect_info)
-
-
-time = datetime.now(timezone.utc).isoformat()
-print(time)
-task([
-    {
-        "body": json.dumps({
-            "provider": {
-                "providerId": "providerId0",
-                "name": "providerName0"
-            },
-            "collection": {
-                "collectionId": "collectionId0",
-                "shortname": "collectionName0",
-                "version": "collectionVersion0"
-            },
-            "granule": {
-                "cumulusGranuleId": "cumulusGranuleId2",
-                "cumulusCreateTime": time,
-                "executionId": "granuleExecutionId0",
-                "ingestTime": time,
-                "lastUpdate": time,
-                "files": [
-                    {
-                        "name": "fileName0",
-                        "cumulusArchiveLocation": "cumulusLocation0",
-                        "orcaArchiveLocation": "orcaLocation0",
-                        "keyPath": "keyPath0",
-                        "sizeInBytes": 4,
-                        "version": "version0",
-                        "ingestTime": time,
-                        "etag": "etag0"
-                    }
-                ]
-            }
-        }, indent=4)
-    }
-],
-    {
-        "admin_database": "postgres",
-        "admin_password": "postgres",
-        "admin_username": "postgres",
-        "host": "localhost",
-        "port": "5432",
-        "user_database": "disaster_recovery",
-        "user_password": "An0th3rS3cr3t",
-        "user_username": "orcauser",
-    }
-)
