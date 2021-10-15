@@ -3,3 +3,5 @@ boto3==1.16.9
 pytest==6.1.2
 coverage==5.3
 fastjsonschema==2.15.0
+moto[sqs]==2.0.6
+
