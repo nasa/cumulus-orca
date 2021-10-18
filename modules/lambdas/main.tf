@@ -267,54 +267,6 @@ resource "aws_lambda_permission" "post_to_database_allow_sqs_trigger" {
   source_arn   = var.orca_sqs_status_update_queue_arn
 }
 
-# post_to_catalog - Posts entries from SQS queue to catalog.
-# ==============================================================================
-resource "aws_lambda_function" "post_to_catalog" {
-  ## REQUIRED
-  function_name = "${var.prefix}_post_to_catalog"
-  role          = module.restore_object_arn.restore_object_role_arn
-
-  ## OPTIONAL
-  description      = "Posts entries from SQS queue to catalog."
-  filename         = "${path.module}/../../tasks/post_to_catalog/post_to_catalog.zip"
-  handler          = "post_to_catalog.handler"
-  memory_size      = var.orca_recovery_lambda_memory_size
-  runtime          = "python3.7"
-  source_code_hash = filebase64sha256("${path.module}/../../tasks/post_to_catalog/post_to_catalog.zip")
-  tags             = local.tags
-  timeout          = var.orca_recovery_lambda_timeout
-
-  vpc_config {
-    subnet_ids         = var.lambda_subnet_ids
-    security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
-  }
-
-  environment {
-    variables = {
-      PREFIX = var.prefix
-    }
-  }
-}
-
-resource "aws_lambda_event_source_mapping" "post_to_catalog_event_source_mapping" {
-  event_source_arn = var.orca_sqs_metadata_queue_arn
-  function_name    = aws_lambda_function.post_to_catalog.arn
-}
-
-# Additional resources needed by post_to_catalog
-# ------------------------------------------------------------------------------
-# Permissions to allow SQS trigger to invoke lambda
-resource "aws_lambda_permission" "post_to_catalog_allow_sqs_trigger" {
-  ## REQUIRED
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.post_to_catalog.function_name
-  principal     = "sqs.amazonaws.com"
-
-  ## OPTIONAL
-  statement_id = "AllowExecutionFromSQS"
-  source_arn   = var.orca_sqs_metadata_queue_arn
-}
-
 # request_status_for_granule - Provides recovery status information on a specific granule
 # ==============================================================================
 resource "aws_lambda_function" "request_status_for_granule" {
@@ -487,7 +439,7 @@ resource "aws_lambda_function" "post_to_catalog" {
 }
 
 resource "aws_lambda_event_source_mapping" "post_to_catalog_event_source_mapping" {
-  event_source_arn = var.orca_sqs_status_update_queue_arn
+  event_source_arn = var.orca_sqs_metadata_queue_arn
   function_name    = aws_lambda_function.post_to_catalog.arn
 }
 
