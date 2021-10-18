@@ -8,4 +8,4 @@ psycopg2-binary==2.8.6
 
 ## Libraries needed by the application
 boto3~=1.12.47
-../../shared_libraries[recovery] --use-feature=in-tree-build
+../../shared_libraries[recovery]
