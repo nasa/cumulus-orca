@@ -163,7 +163,7 @@ def create_provider_sql():
     return text(
         """
         INSERT INTO providers
-            ("provider_id", "name")
+            (provider_id, name)
         VALUES
             (:provider_id, :name)
         ON CONFLICT DO NOTHING
@@ -175,7 +175,7 @@ def create_collection_sql():
     return text(
         """
     INSERT INTO collections
-            ("collection_id", "shortname", "version")
+            (collection_id, shortname, version)
     VALUES
         (:collection_id, :shortname, :version)
     ON CONFLICT DO NOTHING
@@ -187,11 +187,12 @@ def create_granule_sql():
     return text(
         """
     INSERT INTO granules
-        ("collection_id", "cumulus_granule_id", "execution_id", "ingest_time", "cumulus_create_time", "last_update")
+        (collection_id, cumulus_granule_id, execution_id, ingest_time, cumulus_create_time, last_update)
     VALUES
         (:collection_id, :cumulus_granule_id, :execution_id, :ingest_time, :cumulus_create_time, :last_update)
     ON CONFLICT ("collection_id", "cumulus_granule_id") DO UPDATE
-        SET "execution_id"=:execution_id, "last_update"=:last_update
+        SET 
+            execution_id=:execution_id, last_update=:last_update
     RETURNING id"""
     )
     # ON CONFLICT will only trigger if both collection_id and cumulus_granule_id match.
@@ -207,9 +208,15 @@ def create_file_sql():
         (:granule_id, :name, :orca_archive_location, :cumulus_archive_location, :key_path, :ingest_time, :etag, 
         :version, :size_in_bytes, :hash, :hash_type)
     ON CONFLICT ("cumulus_archive_location", "key_path") DO UPDATE
-        SET "granule_id"=:granule_id, "name"=:name, "orca_archive_location"=:orca_archive_location, 
-        "ingest_time"=:ingest_time, "etag"=:etag, "version"=:version, "size_in_bytes"=:size_in_bytes, "hash"=:hash, 
-        "hash_type"=:hash_type"""
+        SET
+        name=:name,
+        orca_archive_location=:orca_archive_location, 
+        ingest_time=:ingest_time,
+        etag=:etag,
+        version=:version,
+        size_in_bytes=:size_in_bytes,
+        hash=:hash, 
+        hash_type=:hash_type"""
     )
     # ON CONFLICT will only trigger if all listed properties match.
 
@@ -227,12 +234,6 @@ def handler(event: Dict[str, List], context) -> None:
                     See catalog_record_input in schemas for details.
         context: An object passed through by AWS. Used for tracking.
     Environment Vars: See shared_db.py's get_configuration for further details.
-        'DATABASE_PORT' (int): Defaults to 5432
-        'DATABASE_NAME' (str)
-        'APPLICATION_USER' (str)
-        'PREFIX' (str)
-        '{prefix}-drdb-host' (str, secretsmanager)
-        '{prefix}-drdb-user-pass' (str, secretsmanager)
     """
     LOGGER.setMetadata(event, context)
 
