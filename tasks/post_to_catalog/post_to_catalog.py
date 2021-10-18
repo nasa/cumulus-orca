@@ -79,8 +79,9 @@ def create_catalog_records(
         engine: The sqlalchemy engine to use for contacting the database.
     """
     try:
-        LOGGER.debug(f"Creating catalog records for TODO.")
+        LOGGER.debug("Creating catalog records.")
         with engine.begin() as connection:
+            LOGGER.debug("Creating provider record '{providerId}'", providerId=provider["providerId"])
             connection.execute(
                 create_provider_sql(),
                 [
@@ -90,6 +91,7 @@ def create_catalog_records(
                     }
                 ],
             )
+            LOGGER.debug("Creating collection record '{collectionId}'", collectionId=collection["collectionId"])
             connection.execute(
                 create_collection_sql(),
                 [
@@ -100,6 +102,7 @@ def create_catalog_records(
                     }
                 ],
             )
+            LOGGER.debug("Creating granule record '{cumulusGranuleId}'", cumulusGranuleId=granule["cumulusGranuleId"])
             results = connection.execute(
                 create_granule_sql(),
                 [
@@ -123,6 +126,8 @@ def create_catalog_records(
 
             file_parameters = []
             for file in granule["files"]:
+                LOGGER.debug("Queueing file record '{cumulus_archive_location}'",
+                             cumulus_archive_location=file["cumulusArchiveLocation"])
                 file_parameters.append(
                     {
                         "granule_id": granule_id,
@@ -139,6 +144,7 @@ def create_catalog_records(
                     }
                 )
             if any(file_parameters):
+                LOGGER.debug("Creating file records.")
                 connection.execute(create_file_sql(), file_parameters)
     except Exception as sql_ex:
         # Can't use f"" because of '{}' bug in CumulusLogger.
@@ -230,7 +236,6 @@ def handler(event: Dict[str, List], context) -> None:
     """
     LOGGER.setMetadata(event, context)
 
-    # todo: Make sure this works somehow.
     db_connect_info = shared_db.get_configuration()
 
     task(event["Records"], db_connect_info)
