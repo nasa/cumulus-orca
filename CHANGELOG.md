@@ -80,13 +80,14 @@ variable "db_host_endpoint" {
   db_host_endpoint    = var.db_host_endpoint
   ## OPTIONAL
   db_admin_username                                    = "postgres"
+  default_multipart_chunksize_mb                       = 250
   orca_ingest_lambda_memory_size                       = 2240
-  orca_ingest_lambda_timeout                           = 600
+  orca_ingest_lambda_timeout                           = 720
   orca_recovery_buckets                                = []
   orca_recovery_complete_filter_prefix                 = ""
   orca_recovery_expiration_days                        = 5
   orca_recovery_lambda_memory_size                     = 128
-  orca_recovery_lambda_timeout                         = 300
+  orca_recovery_lambda_timeout                         = 720
   orca_recovery_retry_limit                            = 3
   orca_recovery_retry_interval                         = 1
   orca_recovery_retry_backoff                          = 2
@@ -98,11 +99,18 @@ variable "db_host_endpoint" {
   ```
 
 
-## [v3.0.2]
+## [3.0.2]
+
+### Migration Notes
+The configuration schema for `copy_to_glacier` has changed. See the updated schema
+definition [here](https://github.com/nasa/cumulus-orca/blob/develop/tasks/copy_to_glacier/schemas/config.json).
+Additional optional configuration settings like `multipart_chunksize_mb` can be
+found for `copy_to_glacier` and ORCA recovery in the ORCA documentation
+[here](https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/deployment-with-cumulus).
 
 ### Added
 - *ORCA-244* Added schema files for copy_to_glacier. Errors for improperly formatted requests will look different.
-- *ORCA-246* Added TF variable `default_multipart_chunksize_mb` which adjusts the maximum chunksize when copying files. Defaults to 250. Can be overridden by `multipart_chunksize_mb` within the step function or collection configuration. `default_multipart_chunksize_mb` can be overridden in your `orca.tf` with the line `default_multipart_chunksize_mb = 500`
+- *ORCA-246* Added TF variable `default_multipart_chunksize_mb` which adjusts the maximum chunksize when copying files. Defaults to 250. Can be overridden by `multipart_chunksize_mb` within `config['collection']`. `default_multipart_chunksize_mb` can be overridden in your `orca.tf` with the line `default_multipart_chunksize_mb = 500`
 
 ### Fixed
 - *ORCA-248* `excludeFileTypes` is no longer required, as intended.
