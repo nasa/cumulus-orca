@@ -46,7 +46,7 @@ resource "aws_sqs_queue" "metadata_queue" {
   message_retention_seconds   = var.metadata_queue_message_retention_time_seconds
   tags                        = local.tags
   policy                      = data.aws_iam_policy_document.metadata_queue_policy.json
-  visibility_timeout_seconds  = 300
+  visibility_timeout_seconds  = 900 # Set to the lambda max time
 }
 
 ## staged-recovery-queue - copy_files_to_archive lambda reads from this queue to get what it needs to copy next
@@ -76,5 +76,5 @@ resource "aws_sqs_queue" "status_update_queue" {
   message_retention_seconds   = var.status_update_queue_message_retention_time_seconds
   tags                        = local.tags
   policy                      = data.aws_iam_policy_document.status_update_queue_policy.json
-  visibility_timeout_seconds  = 900 # Set to the lambda max time
+  visibility_timeout_seconds  = 900 # Set arbitrarily large.
 }

@@ -319,12 +319,6 @@ def handler(event: Dict[str, List], context) -> None:
                     'RequestMethod' (str): Matches to a shared_recovery.RequestMethod.
         context: An object passed through by AWS. Used for tracking.
     Environment Vars: See shared_db.py's get_configuration for further details.
-        'DATABASE_PORT' (int): Defaults to 5432
-        'DATABASE_NAME' (str)
-        'APPLICATION_USER' (str)
-        'PREFIX' (str)
-        '{prefix}-drdb-host' (str, secretsmanager)
-        '{prefix}-drdb-user-pass' (str, secretsmanager)
     """
     LOGGER.setMetadata(event, context)
 

@@ -26,6 +26,8 @@ class TestRequestStatusForGranuleUnit(
         """
         result = orca_catalog_reporting_dummy.handler(
             {
+                "pageIndex": 0,
+                "endTimestamp": "2021-10-08T19:24:07.605323Z"
             }, Mock()
         )
 
@@ -41,11 +43,12 @@ class TestRequestStatusForGranuleUnit(
         """
         result = orca_catalog_reporting_dummy.handler(
             {
+                "pageIndex": 0,
                 "providerId": [uuid.uuid4().__str__(), uuid.uuid4().__str__()],
                 "collectionId": [uuid.uuid4().__str__(), uuid.uuid4().__str__()],
                 "granuleId": [uuid.uuid4().__str__(), uuid.uuid4().__str__()],
-                "startTimestamp": datetime.now(timezone.utc).isoformat(),
-                "endTimestamp": datetime.now(timezone.utc).isoformat()
+                "startTimestamp": "2021-10-08T16:24:07.605323Z",
+                "endTimestamp": "2021-10-08T19:24:07.605323Z"
             }, Mock()
         )
 

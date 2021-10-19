@@ -40,7 +40,7 @@ def get_configuration():
 if __name__ == "__main__":
     set_search_path()
     from db_deploy import task
-    from orca_shared.shared_db import logger
+    from orca_shared.database.shared_db import logger
 
     logger.info("Beginning manual test.")
     # We skip handle since we do not want to create the secretmanager objects
