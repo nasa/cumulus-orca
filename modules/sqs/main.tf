@@ -76,5 +76,5 @@ resource "aws_sqs_queue" "status_update_queue" {
   message_retention_seconds   = var.status_update_queue_message_retention_time_seconds
   tags                        = local.tags
   policy                      = data.aws_iam_policy_document.status_update_queue_policy.json
-  visibility_timeout_seconds  = 300
+  visibility_timeout_seconds  = 600 # Set arbitrarily large.
 }

@@ -32,6 +32,9 @@ class TestPostToDatabase(
         mock_get_configuration: MagicMock,
         mock_task: MagicMock,
     ):
+        """
+        Should call Task with records and db info.
+        """
         records = Mock()
         event = {"Records": records}
         context = Mock()
@@ -46,6 +49,9 @@ class TestPostToDatabase(
         mock_send_record_to_database: MagicMock,
         mock_get_user_connection: MagicMock,
     ):
+        """
+        Should split records and call underlying function with each record.
+        """
         record0 = Mock()
         record1 = Mock()
         records = [record0, record1]
@@ -64,6 +70,9 @@ class TestPostToDatabase(
     def test_send_record_to_database_happy_path(
         self, mock_create_catalog_records: MagicMock
     ):
+        """
+        Should accept a valid record and call underlying function with record's contained data.
+        """
         provider = {
             "providerId": uuid.uuid4().__str__(),
             "name": uuid.uuid4().__str__(),
@@ -166,6 +175,9 @@ class TestPostToDatabase(
         mock_create_granule_sql: MagicMock,
         mock_create_file_sql: MagicMock,
     ):
+        """
+        Should perform several SQL operations with separated files.
+        """
         provider = {
             "providerId": uuid.uuid4().__str__(),
             "name": uuid.uuid4().__str__(),

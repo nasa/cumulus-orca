@@ -38,8 +38,9 @@ def task(records: List[Dict[str, Any]], db_connect_info: Dict) -> None:
         record
     ) in (
         records
-    ):  # todo: https://github.com/nasa/cumulus-orca/pull/167/commits/7ce364b7b83fc741e92c57f63e34aa2e2c55f11e ?
+    ):
         send_record_to_database(record, engine)
+        # Not deleting from active queue due to FIFO not requiring it.
 
 
 def send_record_to_database(record: Dict[str, Any], engine: Engine) -> None:
@@ -190,7 +191,7 @@ def create_granule_sql():
         (collection_id, cumulus_granule_id, execution_id, ingest_time, cumulus_create_time, last_update)
     VALUES
         (:collection_id, :cumulus_granule_id, :execution_id, :ingest_time, :cumulus_create_time, :last_update)
-    ON CONFLICT ("collection_id", "cumulus_granule_id") DO UPDATE
+    ON CONFLICT (collection_id, cumulus_granule_id) DO UPDATE
         SET 
             execution_id=:execution_id, last_update=:last_update
     RETURNING id"""
@@ -202,23 +203,24 @@ def create_file_sql():
     return text(
         """
     INSERT INTO files
-        ("granule_id", "name", "orca_archive_location", "cumulus_archive_location", "key_path", "ingest_time", "etag", 
-        "version", "size_in_bytes", "hash", "hash_type")
+        (granule_id, name, orca_archive_location, cumulus_archive_location, key_path, ingest_time, etag, 
+        version, size_in_bytes, hash, hash_type)
     VALUES
         (:granule_id, :name, :orca_archive_location, :cumulus_archive_location, :key_path, :ingest_time, :etag, 
         :version, :size_in_bytes, :hash, :hash_type)
-    ON CONFLICT ("cumulus_archive_location", "key_path") DO UPDATE
+    ON CONFLICT (cumulus_archive_location, key_path) DO UPDATE
         SET
-        name=:name,
-        orca_archive_location=:orca_archive_location, 
-        ingest_time=:ingest_time,
-        etag=:etag,
-        version=:version,
-        size_in_bytes=:size_in_bytes,
-        hash=:hash, 
-        hash_type=:hash_type"""
+        name=EXCLUDED.name,
+        orca_archive_location=EXCLUDED.orca_archive_location, 
+        ingest_time=EXCLUDED.ingest_time,
+        etag=EXCLUDED.etag,
+        version=EXCLUDED.version,
+        size_in_bytes=EXCLUDED.size_in_bytes,
+        hash=EXCLUDED.hash, 
+        hash_type=EXCLUDED.hash_type"""
     )
     # ON CONFLICT will only trigger if all listed properties match.
+    # EXCLUDED refers to the row that would have been inserted.
 
 
 def handler(event: Dict[str, List], context) -> None:

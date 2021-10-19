@@ -424,7 +424,7 @@ resource "aws_lambda_function" "post_to_catalog" {
   runtime          = "python3.7"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/post_to_catalog/post_to_catalog.zip")
   tags             = local.tags
-  timeout          = var.orca_recovery_lambda_timeout
+  timeout          = 300 # Gives plenty of time for Serverless spinup.
 
   vpc_config {
     subnet_ids         = var.lambda_subnet_ids
