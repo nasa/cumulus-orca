@@ -353,7 +353,7 @@ the ingest workflow.
       }
    },
    "Type":"Task",
-   "Resource":"module.orca.copy_to_glacier_lambda_arn",
+   "Resource":"module.orca.orca_lambda_copy_to_glacier_arn",
    "Catch":[
       {
          "ErrorEquals":[
