@@ -5,14 +5,14 @@
 ##
 ## DESCRIPTION
 ## -----------------------------------------------------------------------------
-## Builds the lambda (task) zip file for orca_catalog_reporting_dummy.
+## Builds the lambda (task) zip file for orca_catalog_reporting.
 ##
 ##
 ## USAGE
 ## -----------------------------------------------------------------------------
 ## bin/build.sh
 ##
-## This must be called from the (root) lambda directory /tasks/orca_catalog_reporting_dummy
+## This must be called from the (root) lambda directory /tasks/orca_catalog_reporting
 ## =============================================================================
 
 ## Set this for Debugging only
@@ -119,7 +119,7 @@ check_rc $return_code "ERROR: Failed to copy schema files to build directory."
 
 ## Create the zip archive
 cd build
-zip -qr ../orca_catalog_reporting_dummy.zip .
+zip -qr ../orca_catalog_reporting.zip .
 let return_code=$?
 cd -
 

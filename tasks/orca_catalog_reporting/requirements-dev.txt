@@ -1,4 +1,5 @@
 cumulus-message-adapter-python>=1.1.1
 fastjsonschema==2.15.0
+../../shared_libraries[all]
 pytest==6.1.2
 coverage==5.3

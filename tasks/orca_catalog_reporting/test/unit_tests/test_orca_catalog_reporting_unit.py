@@ -11,20 +11,20 @@ from unittest.mock import Mock
 
 import fastjsonschema
 
-import orca_catalog_reporting_dummy
+import orca_catalog_reporting
 
 
 class TestRequestStatusForGranuleUnit(
     unittest.TestCase
 ):  # pylint: disable-msg=too-many-instance-attributes
     """
-    TestOrcaCatalogReportingDummy.
+    TestOrcaCatalogReporting.
     """
     def test_task_output_json_schema(self):
         """
         Checks a realistic output against the output.json.
         """
-        result = orca_catalog_reporting_dummy.handler(
+        result = orca_catalog_reporting.handler(
             {
                 "pageIndex": 0,
                 "endTimestamp": "2021-10-08T19:24:07.605323Z"
@@ -41,7 +41,7 @@ class TestRequestStatusForGranuleUnit(
         """
         Checks a realistic input against the input.json.
         """
-        result = orca_catalog_reporting_dummy.handler(
+        result = orca_catalog_reporting.handler(
             {
                 "pageIndex": 0,
                 "providerId": [uuid.uuid4().__str__(), uuid.uuid4().__str__()],
