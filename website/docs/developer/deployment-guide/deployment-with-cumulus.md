@@ -45,7 +45,7 @@ ORCA version.
 
 Only change the value of `source` in the code example below to point to the
 proper ORCA version. The ORCA version is specified right after *download* in the
-URL path to the release. In the example below the release being used is v3.0.0.
+URL path to the release. In the example below the release being used is v3.0.2.
 
 :::
 
@@ -346,7 +346,7 @@ the ingest workflow.
       "cma":{
          "event.$":"$",
          "task_config":{
-            "multipart_chunksize_mb": "{$.meta.collection.meta.multipart_chunksize_mb"},
+            "multipart_chunksize_mb": "{$.meta.collection.meta.multipart_chunksize_mb}",
             "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}"
             }
          }
