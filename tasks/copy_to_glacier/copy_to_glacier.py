@@ -163,7 +163,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     sqs_body = {}
     sqs_body["provider"] = {}
     sqs_body["collection"] = {}
-    sqs_body["granule"] = {}
+    sqs_body["granule"] = []
     # Iterate through the input granules (>= 0 granules expected)
     for granule in granules_list:
         # noinspection PyPep8Naming
@@ -213,8 +213,8 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
 
             sqs_body["granule"]["files"].append(result)
 
-    # post to metadata SQS
-    sqs_library.post_to_metadata_queue(sqs_body, metadata_queue_url)
+        # post to metadata SQS for every granule
+        sqs_library.post_to_metadata_queue(sqs_body, metadata_queue_url)
 
     return {"granules": granules_list, "copied_to_glacier": copied_file_urls}
 
