@@ -82,20 +82,17 @@ def copy_granule_between_buckets(
             etag = version["ETag"]
             sizeInBytes = version["Size"]
             version = version["VersionId"]
-
     files_dictionary = {
-                    "name": destination_key.split("/")[2],
-                    "cumulusArchiveLocation": source_bucket_name,
-                    "orcaArchiveLocation": destination_bucket,
-                    "keyPath": destination_key,
-                    "sizeInBytes": sizeInBytes,
-                    "hash": "", #TBD
-                    "hashType": "", #TBD
-                    "version": version,
-                    "ingestTime": datetime.now(timezone.utc).isoformat(),
-                    "etag": etag,
-                }
+        "cumulusArchiveLocation": source_bucket_name,
+        "orcaArchiveLocation": destination_bucket,
+        "keyPath": destination_key,
+        "sizeInBytes": sizeInBytes,
+        "version": version,
+        "ingestTime": datetime.now(timezone.utc).isoformat(),
+        "etag": etag,
+    }
     return files_dictionary
+
 
 # noinspection PyUnusedLocal
 def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str, Any]:
@@ -107,6 +104,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
             ORCA_DEFAULT_BUCKET (string, required): Name of the default ORCA S3 Glacier bucket.
             DEFAULT_MULTIPART_CHUNKSIZE_MB (int, optional): The default maximum size of chunks to use when copying.
                 Can be overridden by collection config.
+            METADATA_DB_QUEUE_URL (string, required): SQS URL of the metadata queue.
 
     Args:
         event: Passed through from {handler}
@@ -159,11 +157,11 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     granule_data = {}
     copied_file_urls = []
 
-    #initiate empty SQS body dict
+    # initiate empty SQS body dict
     sqs_body = {}
     sqs_body["provider"] = {}
     sqs_body["collection"] = {}
-    sqs_body["granule"] = []
+    sqs_body["granule"] = {}
     # Iterate through the input granules (>= 0 granules expected)
     for granule in granules_list:
         # noinspection PyPep8Naming
@@ -171,15 +169,19 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
         shortname = granule["dataType"]
         collection_version = granule["version"]
         if granuleId not in granule_data.keys():
-            granule_data[granuleId] = {"granuleId": granuleId, "files": []} 
-        #populate the SQS body for granules
-        sqs_body["provider"]["providerName"] = config["providerName"]
+            granule_data[granuleId] = {"granuleId": granuleId, "files": []}
+        # populate the SQS body for granules
+        sqs_body["provider"]["providerName"] = "TBD"  # TBD
         sqs_body["provider"]["providerId"] = config["providerId"]
         sqs_body["collection"]["shortname"] = shortname
         sqs_body["collection"]["version"] = collection_version
-        sqs_body["collection"]["collectionId"] = shortname + "__" + collection_version      #TBD is this available?
+        sqs_body["collection"]["collectionId"] = (
+            shortname + "__" + collection_version
+        )
         sqs_body["granule"]["cumulusGranuleId"] = granuleId
-        sqs_body["granule"]["cumulusCreateTime"] = ""   #TBD ask Cumulus team
+        sqs_body["granule"][
+            "cumulusCreateTime"
+        ] = ""  # TBD ask Cumulus team https://bugs.earthdata.nasa.gov/browse/CUMULUS-2718
         sqs_body["granule"]["executionId"] = config["executionId"]
         sqs_body["granule"]["ingestTime"] = datetime.now(timezone.utc).isoformat()
         sqs_body["granule"]["lastUpdate"] = datetime.now(timezone.utc).isoformat()
@@ -197,23 +199,27 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
                 )
                 continue
             result = copy_granule_between_buckets(
-                    source_bucket_name=file["bucket"],
-                    source_key=source_filepath,
-                    destination_bucket=default_bucket,
-                    destination_key=source_filepath,
-                    multipart_chunksize_mb=multipart_chunksize_mb
-                )
+                source_bucket_name=file["bucket"],
+                source_key=source_filepath,
+                destination_bucket=default_bucket,
+                destination_key=source_filepath,
+                multipart_chunksize_mb=multipart_chunksize_mb,
+            )
+            result["name"] = file["name"]
+            result["hash"] = config.get("hash", None)
+            result["hashType"] = config.get("hashType", None)
             copied_file_urls.append(file["filename"])
             LOGGER.info(
                 "Copied {source_filepath} into glacier storage bucket {default_bucket}.",
                 source_filepath=source_filepath,
                 default_bucket=default_bucket,
             )
-            LOGGER.debug("Got the files dictionary {result}", result=result)
-
+            # Add file record to metadata SQS message
+            LOGGER.debug(
+                "Adding the files dictionary to the SQS body {result}.", result=result
+            )
             sqs_body["granule"]["files"].append(result)
-
-        # post to metadata SQS for every granule
+        # post to metadata SQS for each granule
         sqs_library.post_to_metadata_queue(sqs_body, metadata_queue_url)
 
     return {"granules": granules_list, "copied_to_glacier": copied_file_urls}

@@ -155,15 +155,18 @@ class TestCopyToGlacierHandler(TestCase):
         )
         self.assertEqual(not_excluded_flag, False)
 
+    @patch("copy_to_glacier.sqs_library.post_to_metadata_queue")
     @patch.dict(
         os.environ,
         {
             "ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__(),
             "DEFAULT_MULTIPART_CHUNKSIZE_MB": "4",
+            "METADATA_DB_QUEUE_URL": "test",
+            "AWS_REGION": "us-west-2",
         },
         clear=True,
     )
-    def test_task_happy_path(self):
+    def test_task_happy_path(self, mock_post_to_queue: MagicMock):
         """
         Basic path with buckets present.
         """
@@ -184,8 +187,22 @@ class TestCopyToGlacierHandler(TestCase):
         s3_cli.copy = Mock(return_value=None)
         s3_cli.copy.side_effect = config_check.check_multipart_chunksize
         s3_cli.head_object = Mock(return_value={"ContentType": content_type})
-
-        event = {"input": copy.deepcopy(self.event_granules), "config": {}}
+        file_return_value = {
+            "Versions": [
+                {
+                    "ETag": '"8d1ff728a961869c715b458fa5f041f0"',
+                    "Size": 14191,
+                    "Key": "test/test.docx",
+                    "VersionId": "1",
+                    "IsLatest": True,
+                }
+            ]
+        }
+        s3_cli.list_object_versions = Mock(return_value=file_return_value)
+        event = {
+            "input": copy.deepcopy(self.event_granules),
+            "config": {"providerId": "test", "executionId": "test-execution-id"},
+        }
 
         result = task(event, None)
 
@@ -225,9 +242,11 @@ class TestCopyToGlacierHandler(TestCase):
 
         s3_cli.head_object.assert_has_calls(head_object_calls)
         s3_cli.copy.assert_has_calls(copy_calls)
+        mock_post_to_queue.assert_called_once()
 
         self.assertEqual(s3_cli.head_object.call_count, 4)
         self.assertEqual(s3_cli.copy.call_count, 4)
+        self.assertEqual(s3_cli.list_object_versions.call_count, 4)
 
         expected_copied_file_urls = [
             file["filename"] for file in self.event_granules["granules"][0]["files"]
@@ -236,15 +255,18 @@ class TestCopyToGlacierHandler(TestCase):
         self.assertEqual(self.event_granules["granules"], result["granules"])
         self.assertIsNone(config_check.bad_config)
 
+    @patch("copy_to_glacier.sqs_library.post_to_metadata_queue")
     @patch.dict(
         os.environ,
         {
             "ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__(),
             "DEFAULT_MULTIPART_CHUNKSIZE_MB": "4",
+            "METADATA_DB_QUEUE_URL": "test",
+            "AWS_REGION": "us-west-2",
         },
         clear=True,
     )
-    def test_task_overridden_multipart_chunksize(self):
+    def test_task_overridden_multipart_chunksize(self, mock_post_to_queue: MagicMock):
         """
         If the collection has a different multipart chunksize, it should override the default.
         """
@@ -266,13 +288,26 @@ class TestCopyToGlacierHandler(TestCase):
         s3_cli.copy = Mock(return_value=None)
         s3_cli.copy.side_effect = config_check.check_multipart_chunksize
         s3_cli.head_object = Mock(return_value={"ContentType": content_type})
-
+        file_return_value = {
+            "Versions": [
+                {
+                    "ETag": '"8d1ff728a961869c715b458fa5f041f0"',
+                    "Size": 14191,
+                    "Key": "test/test.docx",
+                    "VersionId": "1",
+                    "IsLatest": True,
+                }
+            ]
+        }
+        s3_cli.list_object_versions = Mock(return_value=file_return_value)
         event = {
             "input": copy.deepcopy(self.event_granules),
             "config": {
                 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: str(
                     overridden_multipart_chunksize_mb
-                )
+                ),
+                "providerId": "test",
+                "executionId": "test-execution-id",
             },
         }
 
@@ -314,22 +349,25 @@ class TestCopyToGlacierHandler(TestCase):
 
         s3_cli.head_object.assert_has_calls(head_object_calls)
         s3_cli.copy.assert_has_calls(copy_calls)
+        
 
         self.assertEqual(s3_cli.head_object.call_count, 4)
         self.assertEqual(s3_cli.copy.call_count, 4)
-
+        self.assertEqual(s3_cli.list_object_versions.call_count, 4)
         expected_copied_file_urls = [
             file["filename"] for file in self.event_granules["granules"][0]["files"]
         ]
         self.assertEqual(expected_copied_file_urls, result["copied_to_glacier"])
         self.assertEqual(self.event_granules["granules"], result["granules"])
         self.assertIsNone(config_check.bad_config)
+        mock_post_to_queue.assert_called_once()
 
     @patch.dict(
         os.environ,
         {
             "ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__(),
             "DEFAULT_MULTIPART_CHUNKSIZE_MB": "4",
+            "METADATA_DB_QUEUE_URL": "test",
         },
         clear=True,
     )
