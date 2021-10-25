@@ -116,7 +116,7 @@ SELECT
             FROM
             (SELECT DISTINCT
                 granules.cumulus_granule_id
-            FROM orca.granules
+            FROM granules
             WHERE 
                 (:granule_id is null or cumulus_granule_id=ANY(:granule_id)) and 
                 (:collection_id is null or collection_id=ANY(:collection_id)) and 
@@ -125,14 +125,14 @@ SELECT
             ORDER BY cumulus_granule_id
             ) as granule_ids
             JOIN
-                orca.granules ON granule_ids.cumulus_granule_id = granules.cumulus_granule_id
+                granules ON granule_ids.cumulus_granule_id = granules.cumulus_granule_id
         ) as granules
     JOIN LATERAL
         (SELECT array_agg(provider_collection_xref.provider_id) AS provider_ids
-        FROM orca.provider_collection_xref
+        FROM provider_collection_xref
         WHERE
-            (:provider_id is null or orca.provider_collection_xref.provider_id=ANY(:provider_id)) and
-            granules.collection_id = orca.provider_collection_xref.collection_id
+            (:provider_id is null or provider_collection_xref.provider_id=ANY(:provider_id)) and
+            granules.collection_id = provider_collection_xref.collection_id
     ) as granules_collections_and_providers on TRUE
     OFFSET :page_index*:page_size
     LIMIT :page_size+1
@@ -149,8 +149,8 @@ LEFT JOIN LATERAL
         'hash', files.hash,
         'hashType', files.hash_type,
         'version', files.version) AS files
-    FROM orca.files
-    WHERE granules_collections_and_providers.id = orca.files.granule_id
+    FROM files
+    WHERE granules_collections_and_providers.id = files.granule_id
     ) as files
 ) as grouped on TRUE""")
 
@@ -232,3 +232,4 @@ def handler(event: Dict[str, Any], context: Any) -> Union[List[Dict[str, Any]], 
         )
 
     return result
+
