@@ -2,19 +2,18 @@
 Name: copy_to_glacier.py
 Description: Lambda function that takes a Cumulus message, extracts a list of files, and copies those files from their current storage location into a staging/glacier location.
 """
-import re
 import os
-from typing import Dict, Any, List, Union
-import sqs_library
+import re
 from datetime import datetime, timezone
-
+from typing import Any, Dict, List, Union
 
 # Third party libraries
 import boto3
-from boto3.s3.transfer import TransferConfig, MB
+from boto3.s3.transfer import MB, TransferConfig
 from cumulus_logger import CumulusLogger
 from run_cumulus_task import run_cumulus_task
 
+import sqs_library
 
 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = "multipart_chunksize_mb"
 CONFIG_EXCLUDE_FILE_TYPES_KEY = "excludeFileTypes"
@@ -166,22 +165,18 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     for granule in granules_list:
         # noinspection PyPep8Naming
         granuleId = granule["granuleId"]
-        shortname = granule["dataType"]
-        collection_version = granule["version"]
         if granuleId not in granule_data.keys():
             granule_data[granuleId] = {"granuleId": granuleId, "files": []}
         # populate the SQS body for granules
         sqs_body["provider"]["providerName"] = "TBD"  # TBD
         sqs_body["provider"]["providerId"] = config["providerId"]
-        sqs_body["collection"]["shortname"] = shortname
-        sqs_body["collection"]["version"] = collection_version
+        sqs_body["collection"]["shortname"] = granule["dataType"]
+        sqs_body["collection"]["version"] = granule["version"]
         sqs_body["collection"]["collectionId"] = (
-            shortname + "__" + collection_version
+            granule["dataType"] + "__" + granule["version"]
         )
         sqs_body["granule"]["cumulusGranuleId"] = granuleId
-        sqs_body["granule"][
-            "cumulusCreateTime"
-        ] = ""  # TBD ask Cumulus team https://bugs.earthdata.nasa.gov/browse/CUMULUS-2718
+        sqs_body["granule"]["cumulusCreateTime"] = granule["createdAt"]
         sqs_body["granule"]["executionId"] = config["executionId"]
         sqs_body["granule"]["ingestTime"] = datetime.now(timezone.utc).isoformat()
         sqs_body["granule"]["lastUpdate"] = datetime.now(timezone.utc).isoformat()
@@ -237,6 +232,7 @@ def handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any:
                                                  archived to.
             DEFAULT_MULTIPART_CHUNKSIZE_MB (int, required): The default maximum size of chunks to use when copying.
                                                                  Can be overridden by collection config.
+            METADATA_DB_QUEUE_URL (string, required): SQS URL of the metadata queue.
 
     Args:
         event: Event passed into the step from the aws workflow.

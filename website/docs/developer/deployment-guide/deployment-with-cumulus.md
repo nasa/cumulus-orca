@@ -347,7 +347,11 @@ the ingest workflow.
          "event.$":"$",
          "task_config":{
             "multipart_chunksize_mb": "{$.meta.collection.meta.multipart_chunksize_mb"},
-            "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}"
+            "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
+            "providerId": "{$.meta.provider.id}",
+            "executionId": "{$.cumulus_meta.execution_name}"
+            // "hash": "{$.TBD}",
+            // "hashType": "{$.TBD}"
             }
          }
       }
@@ -427,7 +431,7 @@ file. The variables must be set with proper values for your environment in the
 `cumulus-tf/terraform.tfvars` file.
 
 | Variable               | Definition                                              | Example Value                 |
-| ---------------------- | --------------------------------------------- ----------| ----------------------------- |
+| ---------------------- | --------------------------------------------------------| ----------------------------- |
 | `db_admin_password`    | Password for RDS database administrator authentication  | "My_Sup3rS3cr3t_admin_Passw0rd"|
 | `db_host_endpoint`     | Database host endpoint to connect to.                   | "aws.postgresrds.host"        |
 | `db_user_password`     | Password for RDS database user authentication           | "My_Sup3rS3cr3tuserPassw0rd"  |

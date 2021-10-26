@@ -4,7 +4,7 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
 
 ## Description
 
-The `copy_to_glacier` module is meant to be deployed as a lambda function that takes a Cumulus message, extracts a list of files, and copies those files from their current storage location into a staging/glacier ORCA S3 bucket.
+The `copy_to_glacier` module is meant to be deployed as a lambda function that takes a Cumulus message, extracts a list of files, and copies those files from their current storage location into a staging/glacier ORCA S3 bucket. It also sends additional metadata attributes to metadata SQS queue needed for Cumulus reconciliation.
 
 
 ## Exclude files by extension.
@@ -100,6 +100,7 @@ The `copy_to_glacier` lambda function expects that the input payload has a `gran
         "granuleId": "MOD09GQ.A2017025.h21v00.006.2017034065109",
         "dataType": "MOD09GQ",
         "version": "006",
+        "createdAt": 1608318361000,
         "files": [
           {
             "name": "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
@@ -171,12 +172,13 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_glaci
       "granuleId": "MOD09GQ.A2017025.h21v00.006.2017034065109",
       "dataType": "MOD09GQ",
       "version": "006",
+      "createdAt": 1634578431740,
       "files": [
         {
           "name": "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
           "path": "MOD09GQ/006",
           "size": 6,
-          "time": 1608318361000,
+          "time": 1608318366000,
           "bucket": "orca-sandbox-internal",
           "url_path": "MOD09GQ/006/",
           "type": "",
@@ -221,9 +223,11 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_glaci
 ## Configuration
 
 As part of the [Cumulus Message Adapter configuration](https://nasa.github.io/cumulus/docs/workflows/input_output#cma-configuration) 
-for `copy_to_glacier`, the `excludeFileTypes` and `multipart_chunksize_mb` keys must be present under the 
-`task_config` object as seen below. Per the [config schema](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/config.json), 
-the values of the two keys are used the following ways. The `collection` key value should contain a meta 
+for `copy_to_glacier`, the `excludeFileTypes`, `multipart_chunksize_mb`, `providerId` and `executionId` keys must be present under the 
+`task_config` object as seen below. The `hash` and `hashType` keys are optional. Per the [config schema](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/config.json), 
+the values of the keys are used the following ways. The `provider` key should contain an `id` key that returns the provider id from Cumulus. The `cumulus_meta` key should contain an `execution_name` key that returns the step function execution ID from AWS. 
+<!-- TBD on hash and hashtype -->
+The `collection` key value should contain a meta 
 object with an optional `excludeFileTypes` key that is used to determine file patterns that should not be 
 sent to ORCA. The optional `multipart_chunksize_mb` is used to override the default setting for the lambda 
 s3 copy maximum multipart chunk size value when copying large files to ORCA. Both of these settings can 
@@ -238,7 +242,11 @@ often be derived from the collection configuration in Cumulus as seen below:
           "event.$": "$",
           "task_config": {
             "multipart_chunksize_mb": "{$.meta.collection.multipart_chunksize_mb"},
-            "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}"
+            "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
+            "providerId": "{$.meta.provider.id}",
+            "executionId": "{$.cumulus_meta.execution_name}"
+            // "hash": "{$.TBD}",
+            // "hashType": "{$.TBD}"
           }
         }
       },
@@ -281,7 +289,7 @@ An example of a message is shown below:
 {
       "provider": {"providerId": "1234", "name": "LPCUmumulus"},
       "collection": {
-          "collectionId": "MOD14A1__061",
+          "collectionId": "MOD14A1061",
           "shortname": "MOD14A1",
           "version": "061",
       },
@@ -320,7 +328,7 @@ NAME
 
 FUNCTIONS
     copy_granule_between_buckets(source_bucket_name: str, source_key: str, destination_bucket: str, destination_key: str, multipart_chunksize_mb: int) -> None
-        Copies granule from source bucket to destination.
+        Copies granule from source bucket to destination. Also queries the destination_bucket to get additional metadata file info.
         Args:
             source_bucket_name: The name of the bucket in which the granule is currently located.
             source_key: source Granule path excluding s3://[bucket]/
@@ -328,7 +336,7 @@ FUNCTIONS
             destination_key: Destination granule path excluding s3://[bucket]/
             multipart_chunksize_mb: The maximum size of chunks to use when copying.
         Returns:
-            None
+            A dictionary containing all the file metadata needed for reconciliation with Cumulus.
     
     handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any
         Lambda handler. Runs a cumulus task that
@@ -341,6 +349,7 @@ FUNCTIONS
                                                      archived to.
                 DEFAULT_MULTIPART_CHUNKSIZE_MB (int, required): The default maximum size of chunks to use when copying.
                                                                      Can be overridden by collection config.
+                METADATA_DB_QUEUE_URL (string, required): SQS URL of the metadata queue.
         
         Args:
             event: Event passed into the step from the AWS step function workflow.
@@ -367,6 +376,7 @@ FUNCTIONS
             Environment Variables:
                 ORCA_DEFAULT_BUCKET (string, required): Name of the default ORCA S3 Glacier bucket.
                 DEFAULT_MULTIPART_CHUNKSIZE_MB (int, optional): The default maximum size of chunks to use when copying. Can be overridden by collection config.
+                METADATA_DB_QUEUE_URL (string, required): SQS URL of the metadata queue.
         
         Args:
             event: Passed through from {handler}

@@ -2,16 +2,17 @@ import copy
 import json
 import unittest
 import uuid
+from test.helpers import LambdaContextMock
+from test.unit_tests.ConfigCheck import ConfigCheck
 from unittest import TestCase
-from unittest.mock import Mock, call, patch, MagicMock
+from unittest.mock import MagicMock, Mock, call, patch
+
 import fastjsonschema as fastjsonschema
+from moto import mock_sqs
 
 import copy_to_glacier
 import sqs_library
 from copy_to_glacier import *
-from test.helpers import LambdaContextMock
-from test.unit_tests.ConfigCheck import ConfigCheck
-from moto import mock_sqs
 
 
 class TestCopyToGlacierHandler(TestCase):
@@ -34,6 +35,7 @@ class TestCopyToGlacierHandler(TestCase):
                 "granuleId": "MOD09GQ.A2017025.h21v00.006.2017034065109",
                 "dataType": "MOD09GQ",
                 "version": "006",
+                "createdAt": 1634578431740,
                 "files": [
                     {
                         "name": "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
@@ -349,7 +351,6 @@ class TestCopyToGlacierHandler(TestCase):
 
         s3_cli.head_object.assert_has_calls(head_object_calls)
         s3_cli.copy.assert_has_calls(copy_calls)
-        
 
         self.assertEqual(s3_cli.head_object.call_count, 4)
         self.assertEqual(s3_cli.copy.call_count, 4)
