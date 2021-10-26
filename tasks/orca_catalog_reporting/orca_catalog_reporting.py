@@ -1,5 +1,4 @@
 import json
-from datetime import timezone, datetime
 from http import HTTPStatus
 from typing import Dict, Any, List, Union
 
@@ -37,29 +36,29 @@ def task(
         db_connect_info: See requests_db.py's get_configuration for further details.
     """
     engine = shared_db.get_user_connection(db_connect_info)
-    granules = query_db(engine,
-                        provider_id,
-                        collection_id,
-                        granule_id,
-                        start_timestamp,
-                        end_timestamp,
-                        page_index)
+    granules = query_db(
+        engine,
+        provider_id,
+        collection_id,
+        granule_id,
+        start_timestamp,
+        end_timestamp,
+        page_index,
+    )
 
-    return {
-        "anotherPage": len(granules) > PAGE_SIZE,
-        "granules": granules[0:PAGE_SIZE]
-    }
+    return {"anotherPage": len(granules) > PAGE_SIZE, "granules": granules[0:PAGE_SIZE]}
 
 
 @retry_operational_error()
-def query_db(engine: Engine,
-             provider_id: Union[None, List[str]],
-             collection_id: Union[None, List[str]],
-             granule_id: Union[None, List[str]],
-             start_timestamp: Union[None, str],
-             end_timestamp: str,
-             page_index: int,
-             ) -> Dict[str, Any]:
+def query_db(
+    engine: Engine,
+    provider_id: Union[None, List[str]],
+    collection_id: Union[None, List[str]],
+    granule_id: Union[None, List[str]],
+    start_timestamp: Union[None, str],
+    end_timestamp: str,
+    page_index: int,
+) -> List[Dict[str, Any]]:
     """
 
     Args:
@@ -72,31 +71,47 @@ def query_db(engine: Engine,
         engine: The sqlalchemy engine to use for contacting the database.
     """
     with engine.begin() as connection:
-        sql_results = connection.execute(get_catalog_sql(), [{
-            "provider_id": provider_id,
-            "collection_id": collection_id,
-            "granule_id": granule_id,
-            "start_timestamp": start_timestamp,
-            "end_timestamp": end_timestamp,
-            "page_index": page_index,
-            "page_size": PAGE_SIZE
-        }])
+        sql_results = connection.execute(
+            get_catalog_sql(),
+            [
+                {
+                    "provider_id": provider_id,
+                    "collection_id": collection_id,
+                    "granule_id": granule_id,
+                    "start_timestamp": start_timestamp,
+                    "end_timestamp": end_timestamp,
+                    "page_index": page_index,
+                    "page_size": PAGE_SIZE,
+                }
+            ],
+        )
 
         granules = []
         for sql_result in sql_results:
-            granules.append({"providerId": sql_result["provider_ids"], "collectionId": sql_result["collection_id"],
-                             "id": sql_result["id"],
-                             "createdAt": str(sql_result["cumulus_create_time"]).replace("+00:00", "Z", 1),
-                             "executionId": sql_result["execution_id"],
-                             "ingestDate": str(sql_result["ingest_time"]).replace("+00:00", "Z", 1),
-                             "lastUpdate": str(sql_result["last_update"]).replace("+00:00", "Z", 1),
-                             "files": sql_result["files"]})
-
+            granules.append(
+                {
+                    "providerId": sql_result["provider_ids"],
+                    "collectionId": sql_result["collection_id"],
+                    "id": sql_result["id"],
+                    "createdAt": str(sql_result["cumulus_create_time"]).replace(
+                        "+00:00", "Z", 1
+                    ),
+                    "executionId": sql_result["execution_id"],
+                    "ingestDate": str(sql_result["ingest_time"]).replace(
+                        "+00:00", "Z", 1
+                    ),
+                    "lastUpdate": str(sql_result["last_update"]).replace(
+                        "+00:00", "Z", 1
+                    ),
+                    "files": sql_result["files"],
+                }
+            )
         return granules
 
 
 def get_catalog_sql() -> text:
-    return text("""
+    return text(
+        """
 SELECT
     *
     FROM
@@ -152,7 +167,8 @@ LEFT JOIN LATERAL
     FROM files
     WHERE granules_collections_and_providers.id = files.granule_id
     ) as files
-) as grouped on TRUE""")
+) as grouped on TRUE"""
+    )
 
 
 def create_http_error_dict(
@@ -178,11 +194,13 @@ def create_http_error_dict(
         "httpStatus": http_status_code,
         "requestId": request_id,
         # CumulusLogger will error if a string containing '{' or '}' is passed in without escaping.
-        "message": message.replace("{", "{{").replace("}", "}}")
+        "message": message.replace("{", "{{").replace("}", "}}"),
     }
 
 
-def handler(event: Dict[str, Any], context: Any) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
+def handler(
+    event: Dict[str, Any], context: Any
+) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
     # noinspection SpellCheckingInspection
     """
     Entry point for the orca_catalog_reporting Lambda.
@@ -231,5 +249,18 @@ def handler(event: Dict[str, Any], context: Any) -> Union[List[Dict[str, Any]], 
             db_error.__str__(),
         )
 
-    return result
+    try:
+        with open("schemas/output.json", "r") as raw_schema:
+            schema = json.loads(raw_schema.read())
 
+        validate = fastjsonschema.compile(schema)
+        validate(result)
+    except JsonSchemaException as json_schema_exception:
+        return create_http_error_dict(
+            "InternalServerError",
+            HTTPStatus.INTERNAL_SERVER_ERROR,
+            context.aws_request_id,
+            json_schema_exception.__str__(),
+        )
+
+    return result
