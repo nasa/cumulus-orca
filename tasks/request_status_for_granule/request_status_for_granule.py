@@ -235,6 +235,7 @@ def create_http_error_dict(
         LOGGER.error(message)
     except Exception:
         print(message)
+        LOGGER.error("Error masked by error in CumulusLogger.")
     return {
         "errorType": error_type,
         "httpStatus": http_status_code,
