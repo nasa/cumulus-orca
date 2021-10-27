@@ -18,7 +18,7 @@ import sqs_library
 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = "multipart_chunksize_mb"
 CONFIG_EXCLUDE_FILE_TYPES_KEY = "excludeFileTypes"
 # Set Cumulus LOGGER
-LOGGER = CumulusLogger(name="ORCA")
+LOGGER = CumulusLogger()
 
 
 def should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -> bool:
@@ -83,21 +83,21 @@ def copy_granule_between_buckets(
     file_versions = s3.list_object_versions(
         Bucket=destination_bucket, Prefix=destination_key
     )
-    for version in file_versions["Versions"]:
-        if version["IsLatest"]:
+    for ver in file_versions["Versions"]:
+        if ver["IsLatest"]:
             LOGGER.info("collecting metadata from file version")
-            etag = version["ETag"]
-            sizeInBytes = version["Size"]
-            version = version["VersionId"]
-    files_dictionary = {
-        "cumulusArchiveLocation": source_bucket_name,
-        "orcaArchiveLocation": destination_bucket,
-        "keyPath": destination_key,
-        "sizeInBytes": sizeInBytes,
-        "version": version,
-        "ingestTime": datetime.now(timezone.utc).isoformat(),
-        "etag": etag,
-    }
+            etag = ver["ETag"]
+            sizeInBytes = ver["Size"]
+            version = ver["VersionId"]
+        files_dictionary = {
+            "cumulusArchiveLocation": source_bucket_name,
+            "orcaArchiveLocation": destination_bucket,
+            "keyPath": destination_key,
+            "sizeInBytes": sizeInBytes,
+            "version": version,
+            "ingestTime": datetime.now(timezone.utc).isoformat(),
+            "etag": etag,
+        }
     return files_dictionary
 
 
@@ -209,8 +209,14 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
                 multipart_chunksize_mb=multipart_chunksize_mb,
             )
             result["name"] = file["name"]
-            result["hash"] = config.get("hash", None)
-            result["hashType"] = config.get("hashType", None)
+
+            result["hash"] = file["checksum"]
+            if len(result["hash"]) == 0:
+                result["hash"] = None
+            result["hashType"] = file["checksumType"]
+            if len(result["hashType"]) == 0:
+                result["hashType"] = None
+
             copied_file_urls.append(file["filename"])
             LOGGER.info(
                 "Copied {source_filepath} into glacier storage bucket {default_bucket}.",
