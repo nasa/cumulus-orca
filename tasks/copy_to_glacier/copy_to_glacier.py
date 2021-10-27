@@ -53,7 +53,15 @@ def copy_granule_between_buckets(
         destination_key: Destination granule path excluding s3://[bucket]/
         multipart_chunksize_mb: The maximum size of chunks to use when copying.
     Returns:
-        A dictionary containing all the file metadata needed for reconciliation with Cumulus.
+        A dictionary containing all the file metadata needed for reconciliation with Cumulus:
+           {    "cumulusArchiveLocation": source_bucket_name,
+                "orcaArchiveLocation": destination_bucket,
+                "keyPath": destination_key,
+                "sizeInBytes": sizeInBytes,
+                "version": version,
+                "ingestTime": datetime.now(timezone.utc).isoformat(),
+                "etag": etag
+            }
     """
     s3 = boto3.client("s3")
     copy_source = {"Bucket": source_bucket_name, "Key": source_key}
@@ -168,7 +176,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
         if granuleId not in granule_data.keys():
             granule_data[granuleId] = {"granuleId": granuleId, "files": []}
         # populate the SQS body for granules
-        sqs_body["provider"]["providerName"] = "TBD"  # TBD
+        sqs_body["provider"]["providerName"] = None
         sqs_body["provider"]["providerId"] = config["providerId"]
         sqs_body["collection"]["shortname"] = granule["dataType"]
         sqs_body["collection"]["version"] = granule["version"]

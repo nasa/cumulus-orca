@@ -289,7 +289,7 @@ An example of a message is shown below:
 {
       "provider": {"providerId": "1234", "name": "LPCUmumulus"},
       "collection": {
-          "collectionId": "MOD14A1061",
+          "collectionId": "MOD14A1_061",
           "shortname": "MOD14A1",
           "version": "061",
       },

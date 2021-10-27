@@ -33,6 +33,7 @@ class TestCopyToGlacierHandler(TestCase):
         "granules": [
             {
                 "granuleId": "MOD09GQ.A2017025.h21v00.006.2017034065109",
+                "collectionId": "MOD09GQ_006",
                 "dataType": "MOD09GQ",
                 "version": "006",
                 "createdAt": 1634578431740,
@@ -48,6 +49,8 @@ class TestCopyToGlacierHandler(TestCase):
                         "filename": "s3://orca-sandbox-protected/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
                         "filepath": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
                         "duplicate_found": True,
+                        "checksumType": "md5",
+                        "checksum": "bogus_checksum_value",
                     },
                     {
                         "name": "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf.met",
@@ -60,6 +63,8 @@ class TestCopyToGlacierHandler(TestCase):
                         "filename": "s3://orca-sandbox-private/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf.met",
                         "filepath": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf.met",
                         "duplicate_found": True,
+                        "checksumType": "md5",
+                        "checksum": "bogus_checksum_value",
                     },
                     {
                         "name": "MOD09GQ.A2017025.h21v00.006.2017034065109_ndvi.jpg",
@@ -72,6 +77,8 @@ class TestCopyToGlacierHandler(TestCase):
                         "filename": "s3://orca-sandbox-public/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109_ndvi.jpg",
                         "filepath": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109_ndvi.jpg",
                         "duplicate_found": True,
+                        "checksumType": "md5",
+                        "checksum": "bogus_checksum_value",
                     },
                     {
                         "name": "MOD09GQ.A2017025.h21v00.006.2017034065109.cmr.xml",
@@ -80,6 +87,8 @@ class TestCopyToGlacierHandler(TestCase):
                         "type": "metadata",
                         "filepath": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.cmr.xml",
                         "url_path": "MOD09GQ/006",
+                        "checksumType": "md5",
+                        "checksum": "bogus_checksum_value",
                     },
                 ],
             }
@@ -106,12 +115,18 @@ class TestCopyToGlacierHandler(TestCase):
         granules = [
             {
                 "granuleId": uuid.uuid4().__str__(),
+                "collectionId": uuid.uuid4().__str__(),
+                "dataType": uuid.uuid4().__str__(),
+                "version": uuid.uuid4().__str__(),
+                "createdAt": "2019-07-17T17:36:38.494918+00:00",
                 "files": [
                     {
                         "name": uuid.uuid4().__str__(),
                         "bucket": uuid.uuid4().__str__(),
                         "filepath": uuid.uuid4().__str__(),
                         "filename": uuid.uuid4().__str__(),
+                        "checksum": uuid.uuid4().__str__(),
+                        "checksumType": uuid.uuid4().__str__(),
                     }
                 ],
             }
@@ -256,6 +271,148 @@ class TestCopyToGlacierHandler(TestCase):
         self.assertEqual(expected_copied_file_urls, result["copied_to_glacier"])
         self.assertEqual(self.event_granules["granules"], result["granules"])
         self.assertIsNone(config_check.bad_config)
+
+    @patch("copy_to_glacier.sqs_library.post_to_metadata_queue")
+    @patch.dict(
+        os.environ,
+        {
+            "ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__(),
+            "DEFAULT_MULTIPART_CHUNKSIZE_MB": "4",
+            "METADATA_DB_QUEUE_URL": "test",
+            "AWS_REGION": "us-west-2",
+        },
+        clear=True,
+    )
+    def test_task_happy_path_multiple_granules(self, mock_post_to_queue: MagicMock):
+        """
+        Happy path for multiple granules in input.
+        """
+        multiple_event_granules = {
+            "granules": [
+                {
+                    "granuleId": "MOD09GQ.A2017025.h21v00.006.2017034065109",
+                    "collectionId": "MOD09GQ_006",
+                    "dataType": "MOD09GQ",
+                    "version": "006",
+                    "createdAt": 1634578431740,
+                    "files": [
+                        {
+                            "name": "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+                            "path": "MOD09GQ/006",
+                            "size": 6,
+                            "time": 1608318361000,
+                            "bucket": "orca-sandbox-protected",
+                            "url_path": "MOD09GQ/006/",
+                            "type": "",
+                            "filename": "s3://orca-sandbox-protected/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+                            "filepath": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+                            "duplicate_found": True,
+                            "checksumType": "md5",
+                            "checksum": "bogus_checksum_value",
+                        },
+                    ],
+                },
+                {
+                    "granuleId": "MOD09GQ.A208885.h21v00.006.2017034065108",
+                    "collectionId": "MOD09GQ_008",
+                    "dataType": "MOD09GQ",
+                    "version": "008",
+                    "createdAt": 1634578431740,
+                    "files": [
+                        {
+                            "name": "MOD09GQ.A2017025.h21v00.006.2017034065108.hdf",
+                            "path": "MOD09GQ/006",
+                            "size": 7,
+                            "time": 1608318361000,
+                            "bucket": "orca-sandbox-protected",
+                            "url_path": "MOD09GQ/006/",
+                            "type": "",
+                            "filename": "s3://orca-sandbox-protected/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065108.hdf",
+                            "filepath": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065108.hdf",
+                            "duplicate_found": True,
+                            "checksumType": "md5",
+                            "checksum": "bogus_checksum_value",
+                        },
+                    ],
+                },
+            ]
+        }
+        destination_bucket_name = os.environ["ORCA_DEFAULT_BUCKET"]
+        content_type = uuid.uuid4().__str__()
+        source_bucket_names = [
+            file["bucket"] for file in multiple_event_granules["granules"][0]["files"]
+        ]
+        source_keys = [
+            file["filepath"] for file in multiple_event_granules["granules"][0]["files"]
+        ]
+
+        config_check = ConfigCheck(4 * MB)
+
+        boto3.client = Mock()
+        s3_cli = boto3.client("s3")
+        s3_cli.copy = Mock(return_value=None)
+        s3_cli.copy.side_effect = config_check.check_multipart_chunksize
+        s3_cli.head_object = Mock(return_value={"ContentType": content_type})
+        file_return_value = {
+            "Versions": [
+                {
+                    "ETag": '"8d1ff728a961869c715b458fa5f041f0"',
+                    "Size": 14191,
+                    "Key": "test/test.docx",
+                    "VersionId": "1",
+                    "IsLatest": True,
+                }
+            ]
+        }
+        s3_cli.list_object_versions = Mock(return_value=file_return_value)
+        event = {
+            "input": copy.deepcopy(multiple_event_granules),
+            "config": {"providerId": "test", "executionId": "test-execution-id"},
+        }
+
+        result = task(event, None)
+
+        with open("schemas/output.json", "r") as raw_schema:
+            schema = json.loads(raw_schema.read())
+
+        validate = fastjsonschema.compile(schema)
+        validate(result)
+
+        self.assertEqual(event["input"]["granules"], result["granules"])
+        granules = result["granules"]
+        self.assertIsNotNone(granules)
+        self.assertEqual(2, len(granules))
+        granule = granules[0]
+        self.assertEqual(1, len(granule["files"]))
+
+        head_object_calls = []
+        copy_calls = []
+        for i in range(0, len(source_bucket_names)):
+            head_object_calls.append(
+                call(Bucket=source_bucket_names[i], Key=source_keys[i])
+            )
+            copy_calls.append(
+                call(
+                    {"Bucket": source_bucket_names[i], "Key": source_keys[i]},
+                    destination_bucket_name,
+                    source_keys[i],
+                    ExtraArgs={
+                        "StorageClass": "GLACIER",
+                        "MetadataDirective": "COPY",
+                        "ContentType": content_type,
+                        "ACL": "bucket-owner-full-control",
+                    },
+                    Config=unittest.mock.ANY,  # Checked by ConfigCheck. Equality checkers do not work.
+                )
+            )
+
+        s3_cli.head_object.assert_has_calls(head_object_calls)
+        s3_cli.copy.assert_has_calls(copy_calls)
+        self.assertEqual(mock_post_to_queue.call_count, 2)
+        self.assertEqual(s3_cli.head_object.call_count, 2)
+        self.assertEqual(s3_cli.copy.call_count, 2)
+        self.assertEqual(s3_cli.list_object_versions.call_count, 2)
+        self.assertEqual(multiple_event_granules["granules"], result["granules"])
 
     @patch("copy_to_glacier.sqs_library.post_to_metadata_queue")
     @patch.dict(
