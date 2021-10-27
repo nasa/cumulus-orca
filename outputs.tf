@@ -24,6 +24,12 @@ output "orca_lambda_extract_filepaths_for_granule_arn" {
 }
 
 
+output "orca_lambda_orca_catalog_reporting_arn" {
+  description = "AWS ARN of the ORCA orca_catalog_reporting lambda."
+  value       = module.orca.orca_lambda_orca_catalog_reporting_arn
+}
+
+
 output "orca_lambda_request_files_arn" {
   description = "AWS ARN of the ORCA request_files lambda."
   value       = module.orca.orca_lambda_request_files_arn

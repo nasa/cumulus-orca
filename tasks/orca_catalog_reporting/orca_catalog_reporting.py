@@ -241,12 +241,12 @@ def handler(
             event["pageIndex"],
             db_connect_info,
         )
-    except DatabaseError as db_error:
+    except Exception as error:
         return create_http_error_dict(
             "InternalServerError",
             HTTPStatus.INTERNAL_SERVER_ERROR,
             context.aws_request_id,
-            db_error.__str__(),
+            error.__str__(),
         )
 
     try:

@@ -407,6 +407,12 @@ resource "aws_lambda_function" "orca_catalog_reporting" {
     subnet_ids         = var.lambda_subnet_ids
     security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
   }
+
+  environment {
+    variables = {
+      PREFIX = var.prefix
+    }
+  }
 }
 
 
