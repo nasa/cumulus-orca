@@ -188,7 +188,11 @@ def create_http_error_dict(
             'requestId' (str)
             'message' (str)
     """
-    LOGGER.error(message)
+    # todo: Remove the below try/catch block once CumulusLogger can handle inputs with {}
+    try:
+        LOGGER.error(message)
+    except Exception:
+        print(message)
     return {
         "errorType": error_type,
         "httpStatus": http_status_code,
