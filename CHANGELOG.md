@@ -22,7 +22,7 @@ and includes an additional section for migration notes.
 
 ### Added
 - *ORCA-227* Added modules/secretsmanager directory that contains terraform code for deploying AWS secretsmanager.
-- *ORCA-256* orca_catalog_reporting lambda now returns data from actual catalog.
+- *ORCA-257* orca_catalog_reporting lambda now returns data from actual catalog.
 
 ### Migration Notes
 
