@@ -51,8 +51,6 @@
             "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
             "providerId": "{$.meta.provider.id}",
             "executionId": "{$.cumulus_meta.execution_name}"
-            // "hash": "{$.TBD}",
-            // "hashType": "{$.TBD}"
           }
         }
       },

@@ -337,7 +337,15 @@ FUNCTIONS
             multipart_chunksize_mb: The maximum size of chunks to use when copying.
         Returns:
             A dictionary containing all the file metadata needed for reconciliation with Cumulus.
-    
+              {    "cumulusArchiveLocation": source_bucket_name,
+                    "orcaArchiveLocation": destination_bucket,
+                    "keyPath": destination_key,
+                    "sizeInBytes": sizeInBytes,
+                    "version": version,
+                    "ingestTime": datetime.now(timezone.utc).isoformat(),
+                    "etag": etag
+                }
+        
     handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any
         Lambda handler. Runs a cumulus task that
         Copies the files in {event}['input']

@@ -36,7 +36,7 @@ class TestCopyToGlacierHandler(TestCase):
                 "collectionId": "MOD09GQ_006",
                 "dataType": "MOD09GQ",
                 "version": "006",
-                "createdAt": 1634578431740,
+                "createdAt": "2021-10-08T19:24:07.605323Z",
                 "files": [
                     {
                         "name": "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
@@ -118,7 +118,7 @@ class TestCopyToGlacierHandler(TestCase):
                 "collectionId": uuid.uuid4().__str__(),
                 "dataType": uuid.uuid4().__str__(),
                 "version": uuid.uuid4().__str__(),
-                "createdAt": "2019-07-17T17:36:38.494918+00:00",
+                "createdAt": "2021-10-08T19:24:07.605323Z",
                 "files": [
                     {
                         "name": uuid.uuid4().__str__(),
@@ -294,7 +294,7 @@ class TestCopyToGlacierHandler(TestCase):
                     "collectionId": "MOD09GQ_006",
                     "dataType": "MOD09GQ",
                     "version": "006",
-                    "createdAt": 1634578431740,
+                    "createdAt": "2021-10-08T19:24:07.605323Z",
                     "files": [
                         {
                             "name": "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
@@ -317,7 +317,7 @@ class TestCopyToGlacierHandler(TestCase):
                     "collectionId": "MOD09GQ_008",
                     "dataType": "MOD09GQ",
                     "version": "008",
-                    "createdAt": 1634578431740,
+                    "createdAt": "2021-10-08T19:24:07.605323Z",
                     "files": [
                         {
                             "name": "MOD09GQ.A2017025.h21v00.006.2017034065108.hdf",

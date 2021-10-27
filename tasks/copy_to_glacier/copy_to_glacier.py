@@ -210,13 +210,8 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
             )
             result["name"] = file["name"]
 
-            result["hash"] = file["checksum"]
-            if len(result["hash"]) == 0:
-                result["hash"] = None
-            result["hashType"] = file["checksumType"]
-            if len(result["hashType"]) == 0:
-                result["hashType"] = None
-
+            result["hash"] = file.get("checksum", None)
+            result["hashType"] = file.get("checksumType", None)
             copied_file_urls.append(file["filename"])
             LOGGER.info(
                 "Copied {source_filepath} into glacier storage bucket {default_bucket}.",
