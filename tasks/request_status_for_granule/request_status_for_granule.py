@@ -289,7 +289,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             f"{INPUT_GRANULE_ID_KEY} must be set to a non-empty value.",
         )
 
-    # todo: Should this not be the new shared lib?
     db_connect_info = requests_db.get_dbconnect_info()
     try:
         return task(
