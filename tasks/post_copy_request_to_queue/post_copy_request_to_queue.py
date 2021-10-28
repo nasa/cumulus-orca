@@ -12,14 +12,14 @@ import random
 
 from orca_shared.recovery import shared_recovery
 from orca_shared.database import shared_db
-
+from orca_shared.database.shared_db import retry_operational_error
 from cumulus_logger import CumulusLogger
 from sqlalchemy import text
 
 # instantiate CumulusLogger
 LOGGER = CumulusLogger()
 
-
+@retry_operational_error()
 def task(
     record: Dict[str, Any],
     db_queue_url: str,
