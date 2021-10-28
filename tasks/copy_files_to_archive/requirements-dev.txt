@@ -4,4 +4,4 @@ coverage==5.3
 moto[sqs,s3]==2.2.8
 fastjsonschema==2.15.0
 cumulus-message-adapter-python==1.2.1
-../../shared_libraries[recovery] --use-feature=in-tree-build
+../../shared_libraries[recovery]
