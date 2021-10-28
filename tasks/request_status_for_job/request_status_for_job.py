@@ -149,18 +149,14 @@ def create_http_error_dict(
             'requestId' (str)
             'message' (str)
     """
-    # todo: Remove the below try/catch block once CumulusLogger can handle inputs with {}
-    try:
-        LOGGER.error(message)
-    except Exception:
-        print(message)
-        LOGGER.error("Error masked by error in CumulusLogger.")
+    # CumulusLogger will error if a string containing '{' or '}' is passed in without escaping.
+    message = message.replace("{", "{{").replace("}", "}}")
+    LOGGER.error(message)
     return {
         "errorType": error_type,
         "httpStatus": http_status_code,
         "requestId": request_id,
-        # CumulusLogger will error if a string containing '{' or '}' is passed in without escaping.
-        "message": message.replace("{", "{{").replace("}", "}}")
+        "message": message
     }
 
 
