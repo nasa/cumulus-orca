@@ -53,15 +53,14 @@ def copy_granule_between_buckets(
         destination_key: Destination granule path excluding s3://[bucket]/
         multipart_chunksize_mb: The maximum size of chunks to use when copying.
     Returns:
-        A dictionary containing all the file metadata needed for reconciliation with Cumulus:
-           {    "cumulusArchiveLocation": source_bucket_name,
-                "orcaArchiveLocation": destination_bucket,
-                "keyPath": destination_key,
-                "sizeInBytes": sizeInBytes,
-                "version": version,
-                "ingestTime": datetime.now(timezone.utc).isoformat(),
-                "etag": etag
-            }
+        A dictionary containing all the file metadata needed for reconciliation with Cumulus with the following keys:
+                "cumulusArchiveLocation" (str): Cumulus S3 bucket where the file is stored in.
+                "orcaArchiveLocation" (str): ORCA S3 Glacier bucket that the file object is stored in
+                "keyPath" (str): Full AWS key path including file name of the file where the file resides in ORCA.
+                "sizeInBytes" (str): Size of the object in bytes
+                "version" (str): Latest version of the file in the S3 Glacier bucket
+                "ingestTime" (str): Date and time the file was originally ingested into ORCA.
+                "etag" (str): etag of the file object in the AWS S3 Glacier bucket.
     """
     s3 = boto3.client("s3")
     copy_source = {"Bucket": source_bucket_name, "Key": source_key}
@@ -89,15 +88,16 @@ def copy_granule_between_buckets(
             etag = ver["ETag"]
             sizeInBytes = ver["Size"]
             version = ver["VersionId"]
-        files_dictionary = {
-            "cumulusArchiveLocation": source_bucket_name,
-            "orcaArchiveLocation": destination_bucket,
-            "keyPath": destination_key,
-            "sizeInBytes": sizeInBytes,
-            "version": version,
-            "ingestTime": datetime.now(timezone.utc).isoformat(),
-            "etag": etag,
-        }
+            break
+    files_dictionary = {
+        "cumulusArchiveLocation": source_bucket_name,
+        "orcaArchiveLocation": destination_bucket,
+        "keyPath": destination_key,
+        "sizeInBytes": sizeInBytes,
+        "version": version,
+        "ingestTime": datetime.now(timezone.utc).isoformat(),
+        "etag": etag,
+    }
     return files_dictionary
 
 
