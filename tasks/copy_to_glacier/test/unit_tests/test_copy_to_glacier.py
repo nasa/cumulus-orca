@@ -5,7 +5,7 @@ import uuid
 from test.helpers import LambdaContextMock
 from test.unit_tests.ConfigCheck import ConfigCheck
 from unittest import TestCase
-from unittest.mock import MagicMock, Mock, call, patch
+from unittest.mock import MagicMock, Mock, call, patch, ANY
 
 import fastjsonschema as fastjsonschema
 from moto import mock_sqs
@@ -259,7 +259,104 @@ class TestCopyToGlacierHandler(TestCase):
 
         s3_cli.head_object.assert_has_calls(head_object_calls)
         s3_cli.copy.assert_has_calls(copy_calls)
-        mock_post_to_queue.assert_called_once()
+        sqs_body = {
+            "provider": {
+                "providerName": None,
+                "providerId": event["config"]["providerId"],
+            },
+            "collection": {
+                "shortname": event["input"]["granules"][0]["dataType"],
+                "version": event["input"]["granules"][0]["version"],
+                "collectionId": event["input"]["granules"][0]["dataType"]
+                + "__"
+                + event["input"]["granules"][0]["version"],
+            },
+            "granule": {
+                "cumulusGranuleId": event["input"]["granules"][0]["granuleId"],
+                "cumulusCreateTime": event["input"]["granules"][0]["createdAt"],
+                "executionId": event["config"]["executionId"],
+                "ingestTime": ANY,
+                "lastUpdate": ANY,
+                "files": [
+                    {
+                        "cumulusArchiveLocation": event["input"]["granules"][0][
+                            "files"
+                        ][0]["bucket"],
+                        "orcaArchiveLocation": os.environ["ORCA_DEFAULT_BUCKET"],
+                        "keyPath": event["input"]["granules"][0]["files"][0][
+                            "filepath"
+                        ],
+                        "sizeInBytes": ANY,
+                        "version": ANY,
+                        "ingestTime": ANY,
+                        "etag": ANY,
+                        "name": event["input"]["granules"][0]["files"][0]["name"],
+                        "hash": event["input"]["granules"][0]["files"][0]["checksum"],
+                        "hashType": event["input"]["granules"][0]["files"][0][
+                            "checksumType"
+                        ],
+                    },
+                    {
+                        "cumulusArchiveLocation": event["input"]["granules"][0][
+                            "files"
+                        ][1]["bucket"],
+                        "orcaArchiveLocation": os.environ["ORCA_DEFAULT_BUCKET"],
+                        "keyPath": event["input"]["granules"][0]["files"][1][
+                            "filepath"
+                        ],
+                        "sizeInBytes": ANY,
+                        "version": ANY,
+                        "ingestTime": ANY,
+                        "etag": ANY,
+                        "name": event["input"]["granules"][0]["files"][1]["name"],
+                        "hash": event["input"]["granules"][0]["files"][1]["checksum"],
+                        "hashType": event["input"]["granules"][0]["files"][1][
+                            "checksumType"
+                        ],
+                    },
+                    {
+                        "cumulusArchiveLocation": event["input"]["granules"][0][
+                            "files"
+                        ][2]["bucket"],
+                        "orcaArchiveLocation": os.environ["ORCA_DEFAULT_BUCKET"],
+                        "keyPath": event["input"]["granules"][0]["files"][2][
+                            "filepath"
+                        ],
+                        "sizeInBytes": ANY,
+                        "version": ANY,
+                        "ingestTime": ANY,
+                        "etag": ANY,
+                        "name": event["input"]["granules"][0]["files"][2]["name"],
+                        "hash": event["input"]["granules"][0]["files"][2]["checksum"],
+                        "hashType": event["input"]["granules"][0]["files"][2][
+                            "checksumType"
+                        ],
+                    },
+                    {
+                        "cumulusArchiveLocation": event["input"]["granules"][0][
+                            "files"
+                        ][3]["bucket"],
+                        "orcaArchiveLocation": os.environ["ORCA_DEFAULT_BUCKET"],
+                        "keyPath": event["input"]["granules"][0]["files"][3][
+                            "filepath"
+                        ],
+                        "sizeInBytes": ANY,
+                        "version": ANY,
+                        "ingestTime": ANY,
+                        "etag": ANY,
+                        "name": event["input"]["granules"][0]["files"][3]["name"],
+                        "hash": event["input"]["granules"][0]["files"][3]["checksum"],
+                        "hashType": event["input"]["granules"][0]["files"][3][
+                            "checksumType"
+                        ],
+                    },
+                ],
+            },
+        }
+
+        mock_post_to_queue.assert_called_once_with(
+            sqs_body, os.environ["METADATA_DB_QUEUE_URL"]
+        )
 
         self.assertEqual(s3_cli.head_object.call_count, 4)
         self.assertEqual(s3_cli.copy.call_count, 4)
@@ -518,7 +615,6 @@ class TestCopyToGlacierHandler(TestCase):
         self.assertEqual(expected_copied_file_urls, result["copied_to_glacier"])
         self.assertEqual(self.event_granules["granules"], result["granules"])
         self.assertIsNone(config_check.bad_config)
-        mock_post_to_queue.assert_called_once()
 
     @patch.dict(
         os.environ,
