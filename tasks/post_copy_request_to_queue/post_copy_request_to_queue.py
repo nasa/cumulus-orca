@@ -262,8 +262,7 @@ def query_db(key_path: str, bucket_name: str) -> List[Dict[str, str]]:
         LOGGER.debug("Getting database connection information.")
         db_connect_info = shared_db.get_configuration()
         LOGGER.debug(
-            "Retrieved the following database connection info {info}",
-            info=db_connect_info,
+            "Retrieved the database connection info"
         )
 
         engine = shared_db.get_user_connection(db_connect_info)
