@@ -45,7 +45,7 @@ ORCA version.
 
 Only change the value of `source` in the code example below to point to the
 proper ORCA version. The ORCA version is specified right after *download* in the
-URL path to the release. In the example below the release being used is v3.0.0.
+URL path to the release. In the example below the release being used is v3.0.2.
 
 :::
 
@@ -350,14 +350,12 @@ the ingest workflow.
             "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
             "providerId": "{$.meta.provider.id}",
             "executionId": "{$.cumulus_meta.execution_name}"
-            // "hash": "{$.TBD}",
-            // "hashType": "{$.TBD}"
             }
          }
       }
    },
    "Type":"Task",
-   "Resource":"module.orca.copy_to_glacier_lambda_arn",
+   "Resource":"module.orca.orca_lambda_copy_to_glacier_arn",
    "Catch":[
       {
          "ErrorEquals":[
