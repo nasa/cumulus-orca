@@ -241,7 +241,15 @@ def query_db(key_path: str, bucket_name: str) -> List[Dict[str, str]]:
            Full AWS key path including file name of the file where the file resides.
         bucket_name: Name of the source S3 bucket.
     Returns:
-        A list of dict containing key_path and bucket_name.
+        A list of dict containing the following keys:
+            "job_id" (str):
+            "granule_id"(str):
+            "filename" (str):
+            "restore_destination" (str):
+            "multipart_chunksize_mb" (str):
+            "source_key" (str):
+            "target_key" (str):
+            "source_bucket" (str):
     Raises:
         Exception: If unable to retrieve the metadata by querying the DB.
 
