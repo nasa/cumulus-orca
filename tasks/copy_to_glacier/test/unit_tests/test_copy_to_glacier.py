@@ -137,6 +137,8 @@ class TestCopyToGlacierHandler(TestCase):
                 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: 15,
                 "providerId": uuid.uuid4().__str__(),
                 "executionId": uuid.uuid4().__str__(),
+                "collection_shortname": "MOD09GQ",
+                "collection_version": uuid.uuid4().__str__()
             },
         }
         handler_input_context = LambdaContextMock()
@@ -218,7 +220,7 @@ class TestCopyToGlacierHandler(TestCase):
         s3_cli.list_object_versions = Mock(return_value=file_return_value)
         event = {
             "input": copy.deepcopy(self.event_granules),
-            "config": {"providerId": "test", "executionId": "test-execution-id"},
+            "config": {"providerId": "test", "executionId": "test-execution-id", "collection_shortname": "MOD09GQ", "collection_version": uuid.uuid4().__str__()},
         }
 
         result = task(event, None)
@@ -265,11 +267,11 @@ class TestCopyToGlacierHandler(TestCase):
                 "providerId": event["config"]["providerId"],
             },
             "collection": {
-                "shortname": event["input"]["granules"][0]["dataType"],
-                "version": event["input"]["granules"][0]["version"],
-                "collectionId": event["input"]["granules"][0]["dataType"]
+                "shortname": event["config"]["collection_shortname"],
+                "version": event["config"]["collection_version"],
+                "collectionId": event["config"]["collection_shortname"]
                 + "___"
-                + event["input"]["granules"][0]["version"],
+                + event["config"]["collection_version"],
             },
             "granule": {
                 "cumulusGranuleId": event["input"]["granules"][0]["granuleId"],
@@ -388,7 +390,6 @@ class TestCopyToGlacierHandler(TestCase):
             "granules": [
                 {
                     "granuleId": "MOD09GQ.A2017025.h21v00.006.2017034065109",
-                    "collectionId": "MOD09GQ_006",
                     "dataType": "MOD09GQ",
                     "version": "006",
                     "createdAt": "2021-10-08T19:24:07.605323Z",
@@ -411,7 +412,6 @@ class TestCopyToGlacierHandler(TestCase):
                 },
                 {
                     "granuleId": "MOD09GQ.A208885.h21v00.006.2017034065108",
-                    "collectionId": "MOD09GQ_008",
                     "dataType": "MOD09GQ",
                     "version": "008",
                     "createdAt": "2021-10-08T19:24:07.605323Z",
@@ -464,7 +464,7 @@ class TestCopyToGlacierHandler(TestCase):
         s3_cli.list_object_versions = Mock(return_value=file_return_value)
         event = {
             "input": copy.deepcopy(multiple_event_granules),
-            "config": {"providerId": "test", "executionId": "test-execution-id"},
+            "config": {"providerId": "test", "executionId": "test-execution-id", "collection_shortname": "MOD09GQ", "collection_version": uuid.uuid4().__str__()},
         }
 
         result = task(event, None)
@@ -564,6 +564,8 @@ class TestCopyToGlacierHandler(TestCase):
                 ),
                 "providerId": "test",
                 "executionId": "test-execution-id",
+                "collection_shortname": "MOD09GQ", 
+                "collection_version": uuid.uuid4().__str__()
             },
         }
 
@@ -640,6 +642,8 @@ class TestCopyToGlacierHandler(TestCase):
             "config": {
                 "providerId": "test",
                 "executionId": "test-execution-id",
+                "collection_shortname": "MOD09GQ", 
+                "collection_version": uuid.uuid4().__str__()
             },
         }
 

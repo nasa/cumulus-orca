@@ -10,7 +10,7 @@
       "description": "A list of objects representing individual files to copy.",
       "type": "array",
       "items": {
-        "required": ["granuleId", "createdAt", "dataType", "version", "files"],
+        "required": ["granuleId", "createdAt", "files"],
         "properties": {
           "granuleId": {
             "description": "The granule's ID.",
@@ -20,14 +20,6 @@
             "description": "Date and time data was originally ingested into Cumulus",
             "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]*)?Z",
             "type": "string"
-          },
-          "dataType": {
-            "type": "string",
-            "description": "Granule dataType from Cumulus. Granule dataType is same as the collection shortname"
-          },
-          "version": {
-            "type": "string",
-            "description": "Collection version from Cumulus."
           },
           "files": {
             "description": "The files to copy.",

@@ -349,7 +349,9 @@ the ingest workflow.
             "multipart_chunksize_mb": "{$.meta.collection.meta.multipart_chunksize_mb"},
             "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
             "providerId": "{$.meta.provider.id}",
-            "executionId": "{$.cumulus_meta.execution_name}"
+            "executionId": "{$.cumulus_meta.execution_name}",
+            "collection_shortname": "{$.meta.collection.name}",
+            "collection_version": "{$.meta.collection.version}"
             }
          }
       }

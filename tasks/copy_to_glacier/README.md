@@ -223,11 +223,11 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_glaci
 ## Configuration
 
 As part of the [Cumulus Message Adapter configuration](https://nasa.github.io/cumulus/docs/workflows/input_output#cma-configuration) 
-for `copy_to_glacier`, the `excludeFileTypes`, `multipart_chunksize_mb`, `providerId` and `executionId` keys must be present under the 
+for `copy_to_glacier`, the `excludeFileTypes`, `multipart_chunksize_mb`, `providerId`, `executionId`, `collection_shortname` and `collection_version` keys must be present under the 
 `task_config` object as seen below. Per the [config schema](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/config.json), 
 the values of the keys are used the following ways. The `provider` key should contain an `id` key that returns the provider id from Cumulus. The `cumulus_meta` key should contain an `execution_name` key that returns the step function execution ID from AWS. 
-The `collection` key value should contain a meta 
-object with an optional `excludeFileTypes` key that is used to determine file patterns that should not be 
+The `collection` key value should contain a `name` key and a `version` key that return the required collection shortname and collection version from Cumulus respectively.
+The `collection` key value should also contain a meta object with an optional `excludeFileTypes` key that is used to determine file patterns that should not be 
 sent to ORCA. The optional `multipart_chunksize_mb` is used to override the default setting for the lambda 
 s3 copy maximum multipart chunk size value when copying large files to ORCA. Both of these settings can 
 often be derived from the collection configuration in Cumulus as seen below:
@@ -243,7 +243,9 @@ often be derived from the collection configuration in Cumulus as seen below:
             "multipart_chunksize_mb": "{$.meta.collection.multipart_chunksize_mb"},
             "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
             "providerId": "{$.meta.provider.id}",
-            "executionId": "{$.cumulus_meta.execution_name}"
+            "executionId": "{$.cumulus_meta.execution_name}",
+            "collection_shortname": "{$.meta.collection.name}",
+            "collection_version": "{$.meta.collection.version}"
           }
         }
       },

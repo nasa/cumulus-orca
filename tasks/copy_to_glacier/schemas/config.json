@@ -28,7 +28,15 @@
     "executionId": {
       "type": "string",
       "description": "AWS step function execution id"
+    },
+    "collection_shortname": {
+      "type": "string",
+      "description": "Collection shortname from Cumulus"
+    },
+    "collection_version": {
+      "type": "string",
+      "description": "Collection version from Cumulus."
     }
   },
-  "required": [ "providerId", "executionId"]
+  "required": [ "providerId", "executionId", "collection_shortname", "collection_version"]
 }
