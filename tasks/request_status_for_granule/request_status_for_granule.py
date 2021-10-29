@@ -323,19 +323,3 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             context.aws_request_id,
             error.__str__(),
         )
-
-
-print(task("granuleId0",
-           {
-               "admin_database": "postgres",
-               "admin_password": "An0th3rS3cr3t",
-               "admin_username": "postgres",
-               "host": "localhost",
-               "port": "5432",
-               "user_database": "disaster_recovery",
-               "user_password": "This1sAS3cr3t",
-               "user_username": "orcauser",
-           },
-           "requestId",
-           None  # "jobId0",
-           ))
