@@ -100,7 +100,7 @@ The `copy_to_glacier` lambda function expects that the input payload has a `gran
         "granuleId": "MOD09GQ.A2017025.h21v00.006.2017034065109",
         "dataType": "MOD09GQ",
         "version": "006",
-        "createdAt": 1608318361000,
+        "createdAt": "2021-10-08T19:24:07.605323Z",
         "files": [
           {
             "name": "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
@@ -172,7 +172,7 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_glaci
       "granuleId": "MOD09GQ.A2017025.h21v00.006.2017034065109",
       "dataType": "MOD09GQ",
       "version": "006",
-      "createdAt": 1634578431740,
+      "createdAt": "2021-10-08T19:24:07.605323Z",
       "files": [
         {
           "name": "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
@@ -224,9 +224,8 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_glaci
 
 As part of the [Cumulus Message Adapter configuration](https://nasa.github.io/cumulus/docs/workflows/input_output#cma-configuration) 
 for `copy_to_glacier`, the `excludeFileTypes`, `multipart_chunksize_mb`, `providerId` and `executionId` keys must be present under the 
-`task_config` object as seen below. The `hash` and `hashType` keys are optional. Per the [config schema](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/config.json), 
+`task_config` object as seen below. Per the [config schema](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/config.json), 
 the values of the keys are used the following ways. The `provider` key should contain an `id` key that returns the provider id from Cumulus. The `cumulus_meta` key should contain an `execution_name` key that returns the step function execution ID from AWS. 
-<!-- TBD on hash and hashtype -->
 The `collection` key value should contain a meta 
 object with an optional `excludeFileTypes` key that is used to determine file patterns that should not be 
 sent to ORCA. The optional `multipart_chunksize_mb` is used to override the default setting for the lambda 
@@ -245,8 +244,6 @@ often be derived from the collection configuration in Cumulus as seen below:
             "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
             "providerId": "{$.meta.provider.id}",
             "executionId": "{$.cumulus_meta.execution_name}"
-            // "hash": "{$.TBD}",
-            // "hashType": "{$.TBD}"
           }
         }
       },
@@ -289,7 +286,7 @@ An example of a message is shown below:
 {
       "provider": {"providerId": "1234", "name": "LPCUmumulus"},
       "collection": {
-          "collectionId": "MOD14A1_061",
+          "collectionId": "MOD14A1___061",
           "shortname": "MOD14A1",
           "version": "061",
       },

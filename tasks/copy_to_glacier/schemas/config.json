@@ -29,5 +29,6 @@
       "type": "string",
       "description": "AWS step function execution id"
     }
-  }
+  },
+  "required": [ "providerId", "executionId"]
 }
