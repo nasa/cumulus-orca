@@ -1,4 +1,3 @@
-import json
 from http import HTTPStatus
 from typing import Dict, Any, List, Union
 
@@ -99,19 +98,9 @@ def get_most_recent_job_id_for_granule(
 
     Returns: The job_id for the given granule's restore job.
     """
-    sql = text("""
-            SELECT
-                job_id
-            FROM
-                recovery_job
-            WHERE
-                granule_id = :granule_id
-            ORDER BY
-                 request_time DESC
-            LIMIT 1""")
     try:
         with engine.begin() as connection:
-            results = connection.execute(sql, [{"granule_id": granule_id, }])
+            results = connection.execute(get_most_recent_job_id_for_granule_sql(), [{"granule_id": granule_id, }])
     except Exception as err:
         # Can't use f"" because '{}' of bug in CumulusLogger.
         LOGGER.error("DbError: {err}", err=str(err))
@@ -124,6 +113,19 @@ def get_most_recent_job_id_for_granule(
     if row is None:
         return None
     return row["job_id"]
+
+
+def get_most_recent_job_id_for_granule_sql() -> text:
+    return text("""
+            SELECT
+                job_id
+            FROM
+                recovery_job
+            WHERE
+                granule_id = :granule_id
+            ORDER BY
+                 request_time DESC
+            LIMIT 1""")
 
 
 @shared_db.retry_operational_error()
@@ -147,20 +149,10 @@ def get_job_entry_for_granule(
         'completion_time' (DateTime, Optional):
             The time, in UTC isoformat, when all granule_files were no longer 'pending'/'staged'.
     """
-    sql = text(f"""
-            SELECT
-                granule_id as "{OUTPUT_GRANULE_ID_KEY}",
-                job_id as "{OUTPUT_JOB_ID_KEY}",
-                request_time as "{OUTPUT_REQUEST_TIME_KEY}",
-                completion_time as "{OUTPUT_COMPLETION_TIME_KEY}"
-            FROM
-                recovery_job
-            WHERE
-                granule_id = :granule_id AND job_id = :job_id""")
     try:
         with engine.begin() as connection:
             results = connection.execute(
-                sql,
+                get_job_entry_for_granule_sql(),
                 [{
                     "granule_id": granule_id,
                     "job_id": job_id,
@@ -185,6 +177,19 @@ def get_job_entry_for_granule(
     }
 
 
+def get_job_entry_for_granule_sql() -> text:
+    text(f"""
+                SELECT
+                    granule_id as "{OUTPUT_GRANULE_ID_KEY}",
+                    job_id as "{OUTPUT_JOB_ID_KEY}",
+                    request_time as "{OUTPUT_REQUEST_TIME_KEY}",
+                    completion_time as "{OUTPUT_COMPLETION_TIME_KEY}"
+                FROM
+                    recovery_job
+                WHERE
+                    granule_id = :granule_id AND job_id = :job_id""")
+
+
 @shared_db.retry_operational_error()
 def get_file_entries_for_granule_in_job(
     granule_id: str, job_id: str, engine: Engine
@@ -203,22 +208,10 @@ def get_file_entries_for_granule_in_job(
         'status' (str): The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.
         'error_message' (str): If the restoration of the file errored, the error will be stored here. Otherwise, None.
     """
-    sql = text(f"""
-            SELECT
-                recovery_file.filename AS "{OUTPUT_FILENAME_KEY}",
-                recovery_file.restore_destination AS "{OUTPUT_RESTORE_DESTINATION_KEY}",
-                recovery_status.value AS "{OUTPUT_STATUS_KEY}",
-                recovery_file.error_message as "{OUTPUT_ERROR_MESSAGE_KEY}"
-            FROM
-                recovery_file
-            JOIN recovery_status ON recovery_file.status_id=recovery_status.id
-            WHERE
-                granule_id = :granule_id AND job_id = :job_id
-            ORDER BY filename desc""")
     try:
         with engine.begin() as connection:
             results = connection.execute(
-                sql,
+                get_file_entries_for_granule_in_job_sql(),
                 [{
                     "granule_id": granule_id,
                     "job_id": job_id,
@@ -239,6 +232,21 @@ def get_file_entries_for_granule_in_job(
         })
 
     return rows
+
+
+def get_file_entries_for_granule_in_job_sql() -> text:
+    return text(f"""
+            SELECT
+                recovery_file.filename AS "{OUTPUT_FILENAME_KEY}",
+                recovery_file.restore_destination AS "{OUTPUT_RESTORE_DESTINATION_KEY}",
+                recovery_status.value AS "{OUTPUT_STATUS_KEY}",
+                recovery_file.error_message as "{OUTPUT_ERROR_MESSAGE_KEY}"
+            FROM
+                recovery_file
+            JOIN recovery_status ON recovery_file.status_id=recovery_status.id
+            WHERE
+                granule_id = :granule_id AND job_id = :job_id
+            ORDER BY filename desc""")
 
 
 def create_http_error_dict(
