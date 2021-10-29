@@ -12,9 +12,6 @@ from unittest import mock
 from unittest.mock import MagicMock, patch, Mock
 import fastjsonschema
 
-import database
-import requests_db
-
 import request_status_for_granule
 
 

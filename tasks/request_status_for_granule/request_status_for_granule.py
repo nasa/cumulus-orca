@@ -1,10 +1,11 @@
+import json
 from http import HTTPStatus
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Union
 
-import database
-import requests_db
 from cumulus_logger import CumulusLogger
-from requests_db import DatabaseError
+from orca_shared.database import shared_db
+from sqlalchemy import text
+from sqlalchemy.future import Engine
 
 INPUT_GRANULE_ID_KEY = "granule_id"
 INPUT_JOB_ID_KEY = "asyncOperationId"
@@ -50,8 +51,10 @@ def task(
     if granule_id is None or len(granule_id) == 0:
         raise ValueError("granule_id must be set to a non-empty value.")
 
+    engine = shared_db.get_user_connection(db_connect_info)
+
     if job_id is None or len(job_id) == 0:
-        job_id = get_most_recent_job_id_for_granule(granule_id, db_connect_info)
+        job_id = get_most_recent_job_id_for_granule(granule_id, engine)
         if job_id is None:
             return create_http_error_dict(
                 "NotFound",
@@ -60,7 +63,7 @@ def task(
                 f"No job for granule id '{granule_id}'.",
             )
 
-    job_entry = get_job_entry_for_granule(granule_id, job_id, db_connect_info)
+    job_entry = get_job_entry_for_granule(granule_id, job_id, engine)
     if job_entry is None:
         return create_http_error_dict(
             "NotFound",
@@ -73,7 +76,7 @@ def task(
         del job_entry[OUTPUT_COMPLETION_TIME_KEY]
 
     file_entries = get_file_entries_for_granule_in_job(
-        granule_id, job_id, db_connect_info
+        granule_id, job_id, engine
     )
     for file_entry in file_entries:
         if file_entry[OUTPUT_ERROR_MESSAGE_KEY] is None:
@@ -83,44 +86,50 @@ def task(
     return job_entry
 
 
+@shared_db.retry_operational_error()
 def get_most_recent_job_id_for_granule(
-    granule_id: str, db_connect_info: Dict[str, any]
-) -> str:
+    granule_id: str, engine: Engine
+) -> Union[str, None]:
     """
     Gets the job_id for the most recent job that restores the given granule.
 
     Args:
         granule_id: The unique ID of the granule.
-        db_connect_info: The {database}.py defined db_connect_info.
+        engine: The sqlalchemy engine to use for contacting the database.
 
     Returns: The job_id for the given granule's restore job.
     """
-    sql = """
+    sql = text("""
             SELECT
                 job_id
             FROM
                 recovery_job
             WHERE
-                granule_id = %s
+                granule_id = :granule_id
             ORDER BY
                  request_time DESC
-            LIMIT 1"""
+            LIMIT 1""")
     try:
-        rows = database.single_query(sql, db_connect_info, (granule_id,))
-    except database.DbError as err:
+        with engine.begin() as connection:
+            results = connection.execute(sql, [{"granule_id": granule_id, }])
+    except Exception as err:
         # Can't use f"" because '{}' of bug in CumulusLogger.
         LOGGER.error("DbError: {err}", err=str(err))
-        raise DatabaseError(str(err))
+        raise
 
-    if len(rows) == 0:
+    row = None
+    for row in results:
+        break
+
+    if row is None:
         return None
-    recovery_job = rows[0]
-    return database.result_to_json(recovery_job)["job_id"]
+    return row["job_id"]
 
 
+@shared_db.retry_operational_error()
 def get_job_entry_for_granule(
-    granule_id: str, job_id: str, db_connect_info: Dict
-) -> Dict[str, Any]:
+    granule_id: str, job_id: str, engine: Engine
+) -> Union[Dict[str, Any], None]:
     # noinspection SpellCheckingInspection
     """
     Gets the recovery_file status entries for the associated granule_id.
@@ -130,7 +139,7 @@ def get_job_entry_for_granule(
     Args:
         granule_id: The unique ID of the granule to retrieve status for.
         job_id: An optional additional filter to get a specific job's entry.
-        db_connect_info: The {database}.py defined db_connect_info.
+        engine: The sqlalchemy engine to use for contacting the database.
     Returns: A Dict with the following keys:
         'granule_id' (str): The unique ID of the granule to retrieve status for.
         'job_id' (str): The unique ID of the asyncOperation.
@@ -138,7 +147,7 @@ def get_job_entry_for_granule(
         'completion_time' (DateTime, Optional):
             The time, in UTC isoformat, when all granule_files were no longer 'pending'/'staged'.
     """
-    sql = f"""
+    sql = text(f"""
             SELECT
                 granule_id as "{OUTPUT_GRANULE_ID_KEY}",
                 job_id as "{OUTPUT_JOB_ID_KEY}",
@@ -147,35 +156,46 @@ def get_job_entry_for_granule(
             FROM
                 recovery_job
             WHERE
-                granule_id = %s AND job_id = %s"""
+                granule_id = :granule_id AND job_id = :job_id""")
     try:
-        rows = database.single_query(
-            sql,
-            db_connect_info,
-            (
-                granule_id,
-                job_id,
-            ),
-        )
-    except database.DbError as err:
+        with engine.begin() as connection:
+            results = connection.execute(
+                sql,
+                [{
+                    "granule_id": granule_id,
+                    "job_id": job_id,
+                }],
+            )
+    except Exception as err:
         # Can't use f"" because of '{}' bug in CumulusLogger.
         LOGGER.error("DbError: {err}", err=str(err))
-        raise DatabaseError(str(err))
+        raise
 
-    if len(rows) == 0:
+    row = None
+    for row in results:
+        break
+
+    if row is None:
         return None
-    recovery_job = rows[0]
-    result = database.result_to_json(recovery_job)
-    return result
+    return {
+        OUTPUT_GRANULE_ID_KEY: row[OUTPUT_GRANULE_ID_KEY],
+        OUTPUT_JOB_ID_KEY: row[OUTPUT_JOB_ID_KEY],
+        OUTPUT_REQUEST_TIME_KEY: row[OUTPUT_REQUEST_TIME_KEY],
+        OUTPUT_COMPLETION_TIME_KEY: row[OUTPUT_COMPLETION_TIME_KEY]
+    }
 
 
+@shared_db.retry_operational_error()
 def get_file_entries_for_granule_in_job(
-    granule_id: str, job_id: str, db_connect_info: Dict
+    granule_id: str, job_id: str, engine: Engine
 ) -> List[Dict]:
     """
     Gets the individual status entries for the files for the given job+granule.
 
     Args:
+        granule_id: The id of the granule to get file statuses for.
+        job_id: The id of the job to get file statuses for.
+        engine: The sqlalchemy engine to use for contacting the database.
 
     Returns: A Dict with the following keys:
         'file_name' (str): The name and extension of the file.
@@ -183,7 +203,7 @@ def get_file_entries_for_granule_in_job(
         'status' (str): The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.
         'error_message' (str): If the restoration of the file errored, the error will be stored here. Otherwise, None.
     """
-    sql = f"""
+    sql = text(f"""
             SELECT
                 recovery_file.filename AS "{OUTPUT_FILENAME_KEY}",
                 recovery_file.restore_destination AS "{OUTPUT_RESTORE_DESTINATION_KEY}",
@@ -193,24 +213,32 @@ def get_file_entries_for_granule_in_job(
                 recovery_file
             JOIN recovery_status ON recovery_file.status_id=recovery_status.id
             WHERE
-                granule_id = %s AND job_id = %s
-            ORDER BY filename desc"""
+                granule_id = :granule_id AND job_id = :job_id
+            ORDER BY filename desc""")
     try:
-        rows = database.single_query(
-            sql,
-            db_connect_info,
-            (
-                granule_id,
-                job_id,
-            ),
-        )
-    except database.DbError as err:
+        with engine.begin() as connection:
+            results = connection.execute(
+                sql,
+                [{
+                    "granule_id": granule_id,
+                    "job_id": job_id,
+                }],
+            )
+    except Exception as err:
         # Can't use f"" because of '{}' bug in CumulusLogger.
         LOGGER.error("DbError: {err}", err=str(err))
-        raise DatabaseError(str(err))
+        raise
 
-    result = database.result_to_json(rows)
-    return result
+    rows = []
+    for row in results:
+        rows.append({
+            OUTPUT_FILENAME_KEY: row[OUTPUT_FILENAME_KEY],
+            OUTPUT_RESTORE_DESTINATION_KEY: row[OUTPUT_RESTORE_DESTINATION_KEY],
+            OUTPUT_STATUS_KEY: row[OUTPUT_STATUS_KEY],
+            OUTPUT_ERROR_MESSAGE_KEY: row[OUTPUT_ERROR_MESSAGE_KEY]
+        })
+
+    return rows
 
 
 def create_http_error_dict(
@@ -251,13 +279,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 May apply to a request that covers multiple granules.
         context: An object provided by AWS Lambda. Used for context tracking.
 
-    Environment Vars: See requests_db.py's get_dbconnect_info for further details.
-        'DATABASE_PORT' (int): Defaults to 5432
-        'DATABASE_NAME' (str)
-        'DATABASE_USER' (str)
-        'PREFIX' (str)
-        '{prefix}-drdb-host' (str, secretsmanager)
-        '{prefix}-drdb-user-pass' (str, secretsmanager)
+    Environment Vars: See shared_db.py's get_configuration for further details.
 
     Returns: A Dict with the following keys:
         'granule_id' (str): The unique ID of the granule to retrieve status for.
@@ -265,7 +287,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         'files' (List): Description and status of the files within the given granule. List of Dicts with keys:
             'file_name' (str): The name and extension of the file.
             'restore_destination' (str): The name of the glacier bucket the file is being copied to.
-            'status' (str): The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.
+            'status' (str): The status of the restoration of the file.
+                May be 'pending', 'staged', 'success', or 'failed'.
             'error_message' (str, Optional): If the restoration of the file errored, the error will be stored here.
         'request_time' (DateTime): The time, in UTC isoformat, when the request to restore the granule was initiated.
         'completion_time' (DateTime, Optional):
@@ -285,7 +308,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             f"{INPUT_GRANULE_ID_KEY} must be set to a non-empty value.",
         )
 
-    db_connect_info = requests_db.get_dbconnect_info()
+    db_connect_info = shared_db.get_configuration()
     try:
         return task(
             granule_id,
@@ -293,10 +316,26 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             context.aws_request_id,
             event.get(INPUT_JOB_ID_KEY, None),
         )
-    except DatabaseError as db_error:
+    except Exception as error:
         return create_http_error_dict(
             "InternalServerError",
             HTTPStatus.INTERNAL_SERVER_ERROR,
             context.aws_request_id,
-            db_error.__str__(),
+            error.__str__(),
         )
+
+
+print(task("granuleId0",
+           {
+               "admin_database": "postgres",
+               "admin_password": "An0th3rS3cr3t",
+               "admin_username": "postgres",
+               "host": "localhost",
+               "port": "5432",
+               "user_database": "disaster_recovery",
+               "user_password": "This1sAS3cr3t",
+               "user_username": "orcauser",
+           },
+           "requestId",
+           None  # "jobId0",
+           ))

@@ -10,7 +10,6 @@ from typing import Any, List, Dict, Optional
 # noinspection SpellCheckingInspection
 import fastjsonschema as fastjsonschema
 from cumulus_logger import CumulusLogger
-from orca_shared.database.shared_db import retry_operational_error
 from sqlalchemy import text
 from sqlalchemy.future import Engine
 
@@ -88,7 +87,7 @@ def send_record_to_database(record: Dict[str, Any], engine: Engine) -> None:
         raise error
 
 
-@retry_operational_error()
+@shared_db.retry_operational_error()
 def create_status_for_job_and_files(
     job_id: str,
     granule_id: str,
@@ -188,7 +187,7 @@ def create_status_for_job_and_files(
         raise
 
 
-@retry_operational_error()  # Retry all files due to transactional behavior of engine.begin
+@shared_db.retry_operational_error()  # Retry all files due to transactional behavior of engine.begin
 def update_status_for_file(
     job_id: str,
     granule_id: str,
