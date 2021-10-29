@@ -89,6 +89,17 @@ FUNCTIONS
         Raises:
             Exception: If unable to retrieve the SQS URLs or exponential retry fields from env variables.
     
+    query_db(key_path: str, bucket_name: str) -> List[Dict[str, str]]:
+        Function to connect and query the DB and then return needed metadata for posting to the SQS Queue
+
+        Args:
+            key_path: Full AWS key path including file name of the file where the file resides.
+            bucket_name: Name of the source S3 bucket.
+        Returns:
+            A list of dicts containing key_path and bucket_name.
+        Raises:
+            Exception: If unable to retrieve the metadata by querying the DB.
+
     task(record: Dict[str, Any], db_queue_url: str, recovery_queue_url: str, max_retries: int, retry_sleep_secs: int, retry_backoff: int) -> None
         Task called by the handler to perform the work.
         
