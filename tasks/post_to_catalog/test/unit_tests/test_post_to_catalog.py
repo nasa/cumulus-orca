@@ -296,5 +296,3 @@ class TestPostToDatabase(
                 ),
             ]
         )
-
-        mock_engine.begin.return_value.__exit__.assert_called_once_with()
