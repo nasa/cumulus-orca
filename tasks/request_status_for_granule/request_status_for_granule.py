@@ -305,19 +305,20 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         Or, if an error occurs, see create_http_error_dict
             400 if granule_id is missing. 500 if an error occurs when querying the database, 404 if not found.
     """
-    LOGGER.setMetadata(event, context)
-
-    granule_id = event.get(INPUT_GRANULE_ID_KEY, None)
-    if granule_id is None or len(granule_id) == 0:
-        return create_http_error_dict(
-            "BadRequest",
-            HTTPStatus.BAD_REQUEST,
-            context.aws_request_id,
-            f"{INPUT_GRANULE_ID_KEY} must be set to a non-empty value.",
-        )
-
-    db_connect_info = shared_db.get_configuration()
     try:
+        LOGGER.setMetadata(event, context)
+
+        granule_id = event.get(INPUT_GRANULE_ID_KEY, None)
+        if granule_id is None or len(granule_id) == 0:
+            return create_http_error_dict(
+                "BadRequest",
+                HTTPStatus.BAD_REQUEST,
+                context.aws_request_id,
+                f"{INPUT_GRANULE_ID_KEY} must be set to a non-empty value.",
+            )
+
+        db_connect_info = shared_db.get_configuration()
+
         return task(
             granule_id,
             db_connect_info,
