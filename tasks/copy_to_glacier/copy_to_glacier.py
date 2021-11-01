@@ -169,15 +169,17 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     sqs_body["provider"] = {}
     sqs_body["collection"] = {}
     sqs_body["granule"] = {}
-    sqs_body["provider"][
-        "providerName"
-    ] = None  # set to None because cumulus only returns providerId for now. In case it is available in the future, update orca_copy_to_glacier_workflow.asl.json and config.json as needed
+    # 'providerName' set to None because Cumulus only returns providerId for now.
+    # In case it is available in the future, update orca_copy_to_glacier_workflow.asl.json and config.json as needed
+    sqs_body["provider"]["providerName"] = None
     sqs_body["provider"]["providerId"] = config["providerId"]
-    sqs_body["collection"]["shortname"] = config["collection_shortname"]
-    sqs_body["collection"]["version"] = config["collection_version"]
+    sqs_body["collection"]["shortname"] = config["collectionShortname"]
+    sqs_body["collection"]["version"] = config["collectionVersion"]
+    # Cumulus currently creates collectionId by concating shortname + ___ + version 
+    # See https://github.com/nasa/cumulus-dashboard/blob/18a278ee5a1ac5181ec035b3df0665ef5acadcb0/app/src/js/utils/format.js#L342
     sqs_body["collection"]["collectionId"] = (
-        config["collection_shortname"] + "___" + config["collection_version"]
-    )  # Cumulus currently creates collectionId by concating shortname + ___ + version See https://github.com/nasa/cumulus-dashboard/blob/18a278ee5a1ac5181ec035b3df0665ef5acadcb0/app/src/js/utils/format.js#L342
+        config["collectionShortname"] + "___" + config["collectionVersion"]
+    )
     # Iterate through the input granules (>= 0 granules expected)
     for granule in granules_list:
         # noinspection PyPep8Naming

@@ -350,8 +350,8 @@ the ingest workflow.
             "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
             "providerId": "{$.meta.provider.id}",
             "executionId": "{$.cumulus_meta.execution_name}",
-            "collection_shortname": "{$.meta.collection.name}",
-            "collection_version": "{$.meta.collection.version}"
+            "collectionShortname": "{$.meta.collection.name}",
+            "collectionVersion": "{$.meta.collection.version}"
             }
          }
       }
