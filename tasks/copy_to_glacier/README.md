@@ -294,7 +294,7 @@ An example of a message is shown below:
       },
       "granule": {
           "cumulusGranuleId": "MOD14A1.061.A23V45.2020235",
-          "cumulusCreateTime": "2020-01-01T23:00:00Z",
+          "cumulusCreateTime": "2020-01-01T23:00:00+00:00",
           "executionId": "f2fgh-356-789",
           "ingestTime": "2020-01-01T23:00:00Z",
           "lastUpdate": "2020-01-01T23:00:00Z",

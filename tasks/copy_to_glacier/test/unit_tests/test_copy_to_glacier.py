@@ -35,7 +35,7 @@ class TestCopyToGlacierHandler(TestCase):
                 "granuleId": "MOD09GQ.A2017025.h21v00.006.2017034065109",
                 "dataType": "MOD09GQ",
                 "version": "006",
-                "createdAt": "2021-10-08T19:24:07.605323Z",
+                "createdAt": "2021-10-08T19:24:07.605323Z", 
                 "files": [
                     {
                         "name": "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
@@ -280,7 +280,7 @@ class TestCopyToGlacierHandler(TestCase):
             },
             "granule": {
                 "cumulusGranuleId": event["input"]["granules"][0]["granuleId"],
-                "cumulusCreateTime": event["input"]["granules"][0]["createdAt"],
+                "cumulusCreateTime": event["input"]["granules"][0]["createdAt"].replace("Z", "+00:00"),
                 "executionId": event["config"]["executionId"],
                 "ingestTime": ANY,
                 "lastUpdate": ANY,
