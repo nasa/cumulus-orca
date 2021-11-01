@@ -74,9 +74,7 @@ def task(
     if job_entry[OUTPUT_COMPLETION_TIME_KEY] is None:
         del job_entry[OUTPUT_COMPLETION_TIME_KEY]
 
-    file_entries = get_file_entries_for_granule_in_job(
-        granule_id, job_id, engine
-    )
+    file_entries = get_file_entries_for_granule_in_job(granule_id, job_id, engine)
     for file_entry in file_entries:
         if file_entry[OUTPUT_ERROR_MESSAGE_KEY] is None:
             del file_entry[OUTPUT_ERROR_MESSAGE_KEY]
@@ -100,7 +98,14 @@ def get_most_recent_job_id_for_granule(
     """
     try:
         with engine.begin() as connection:
-            results = connection.execute(get_most_recent_job_id_for_granule_sql(), [{"granule_id": granule_id, }])
+            results = connection.execute(
+                get_most_recent_job_id_for_granule_sql(),
+                [
+                    {
+                        "granule_id": granule_id,
+                    }
+                ],
+            )
     except Exception as err:
         # Can't use f"" because '{}' of bug in CumulusLogger.
         LOGGER.error("DbError: {err}", err=str(err))
@@ -116,7 +121,8 @@ def get_most_recent_job_id_for_granule(
 
 
 def get_most_recent_job_id_for_granule_sql() -> text:
-    return text("""
+    return text(
+        """
             SELECT
                 job_id
             FROM
@@ -125,7 +131,8 @@ def get_most_recent_job_id_for_granule_sql() -> text:
                 granule_id = :granule_id
             ORDER BY
                  request_time DESC
-            LIMIT 1""")
+            LIMIT 1"""
+    )
 
 
 @shared_db.retry_operational_error()
@@ -153,10 +160,12 @@ def get_job_entry_for_granule(
         with engine.begin() as connection:
             results = connection.execute(
                 get_job_entry_for_granule_sql(),
-                [{
-                    "granule_id": granule_id,
-                    "job_id": job_id,
-                }],
+                [
+                    {
+                        "granule_id": granule_id,
+                        "job_id": job_id,
+                    }
+                ],
             )
     except Exception as err:
         # Can't use f"" because of '{}' bug in CumulusLogger.
@@ -173,12 +182,13 @@ def get_job_entry_for_granule(
         OUTPUT_GRANULE_ID_KEY: row[OUTPUT_GRANULE_ID_KEY],
         OUTPUT_JOB_ID_KEY: row[OUTPUT_JOB_ID_KEY],
         OUTPUT_REQUEST_TIME_KEY: row[OUTPUT_REQUEST_TIME_KEY],
-        OUTPUT_COMPLETION_TIME_KEY: row[OUTPUT_COMPLETION_TIME_KEY]
+        OUTPUT_COMPLETION_TIME_KEY: row[OUTPUT_COMPLETION_TIME_KEY],
     }
 
 
 def get_job_entry_for_granule_sql() -> text:
-    text(f"""
+    text(
+        f"""
                 SELECT
                     granule_id as "{OUTPUT_GRANULE_ID_KEY}",
                     job_id as "{OUTPUT_JOB_ID_KEY}",
@@ -187,7 +197,8 @@ def get_job_entry_for_granule_sql() -> text:
                 FROM
                     recovery_job
                 WHERE
-                    granule_id = :granule_id AND job_id = :job_id""")
+                    granule_id = :granule_id AND job_id = :job_id"""
+    )
 
 
 @shared_db.retry_operational_error()
@@ -212,10 +223,12 @@ def get_file_entries_for_granule_in_job(
         with engine.begin() as connection:
             results = connection.execute(
                 get_file_entries_for_granule_in_job_sql(),
-                [{
-                    "granule_id": granule_id,
-                    "job_id": job_id,
-                }],
+                [
+                    {
+                        "granule_id": granule_id,
+                        "job_id": job_id,
+                    }
+                ],
             )
     except Exception as err:
         # Can't use f"" because of '{}' bug in CumulusLogger.
@@ -224,18 +237,21 @@ def get_file_entries_for_granule_in_job(
 
     rows = []
     for row in results:
-        rows.append({
-            OUTPUT_FILENAME_KEY: row[OUTPUT_FILENAME_KEY],
-            OUTPUT_RESTORE_DESTINATION_KEY: row[OUTPUT_RESTORE_DESTINATION_KEY],
-            OUTPUT_STATUS_KEY: row[OUTPUT_STATUS_KEY],
-            OUTPUT_ERROR_MESSAGE_KEY: row[OUTPUT_ERROR_MESSAGE_KEY]
-        })
+        rows.append(
+            {
+                OUTPUT_FILENAME_KEY: row[OUTPUT_FILENAME_KEY],
+                OUTPUT_RESTORE_DESTINATION_KEY: row[OUTPUT_RESTORE_DESTINATION_KEY],
+                OUTPUT_STATUS_KEY: row[OUTPUT_STATUS_KEY],
+                OUTPUT_ERROR_MESSAGE_KEY: row[OUTPUT_ERROR_MESSAGE_KEY],
+            }
+        )
 
     return rows
 
 
 def get_file_entries_for_granule_in_job_sql() -> text:
-    return text(f"""
+    return text(
+        f"""
             SELECT
                 recovery_file.filename AS "{OUTPUT_FILENAME_KEY}",
                 recovery_file.restore_destination AS "{OUTPUT_RESTORE_DESTINATION_KEY}",
@@ -246,7 +262,8 @@ def get_file_entries_for_granule_in_job_sql() -> text:
             JOIN recovery_status ON recovery_file.status_id=recovery_status.id
             WHERE
                 granule_id = :granule_id AND job_id = :job_id
-            ORDER BY filename desc""")
+            ORDER BY filename desc"""
+    )
 
 
 def create_http_error_dict(
@@ -272,7 +289,7 @@ def create_http_error_dict(
         "httpStatus": http_status_code,
         "requestId": request_id,
         # CumulusLogger will error if a string containing '{' or '}' is passed in without escaping.
-        "message": message.replace("{", "{{").replace("}", "}}")
+        "message": message.replace("{", "{{").replace("}", "}}"),
     }
 
 

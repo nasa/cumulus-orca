@@ -144,7 +144,7 @@ class TestRequestStatusForGranuleUnit(
         self,
         mock_get_file_entries_for_granule_in_job: MagicMock,
         mock_get_job_entry_for_granule: MagicMock,
-        mock_get_user_connection: MagicMock
+        mock_get_user_connection: MagicMock,
     ):
         """
         If job_id is given, then it should not take a separate request to get it.
@@ -195,7 +195,7 @@ class TestRequestStatusForGranuleUnit(
         mock_get_file_entries_for_granule_in_job: MagicMock,
         mock_get_job_entry_for_granule: MagicMock,
         mock_get_most_recent_job_id_for_granule: MagicMock,
-        mock_get_user_connection: MagicMock
+        mock_get_user_connection: MagicMock,
     ):
         """
         If job_id is not given, then it should take a separate request to get it.
@@ -248,7 +248,7 @@ class TestRequestStatusForGranuleUnit(
         self,
         mock_get_most_recent_job_id_for_granule: MagicMock,
         mock_create_http_error_dict: MagicMock,
-        mock_get_user_connection: MagicMock
+        mock_get_user_connection: MagicMock,
     ):
         """
         If job_id is not given, and no valid job id is found, return 404.
@@ -281,7 +281,7 @@ class TestRequestStatusForGranuleUnit(
         self,
         mock_get_job_entry_for_granule: MagicMock,
         mock_create_http_error_dict: MagicMock,
-        mock_get_user_connection: MagicMock
+        mock_get_user_connection: MagicMock,
     ):
         """
         If the job_id+granule_id does not point to an entry, return 404.
@@ -309,9 +309,7 @@ class TestRequestStatusForGranuleUnit(
         self.assertEqual(mock_create_http_error_dict.return_value, result)
 
     @patch("request_status_for_granule.get_most_recent_job_id_for_granule_sql")
-    def test_get_most_recent_job_id_for_granule_happy_path(
-        self, mock_sql: MagicMock
-    ):
+    def test_get_most_recent_job_id_for_granule_happy_path(self, mock_sql: MagicMock):
         """
         Basic path with all information present.
         """
@@ -325,7 +323,9 @@ class TestRequestStatusForGranuleUnit(
         mock_connection.execute.return_value = copy.deepcopy(expected_result)
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
-        mock_engine.begin.return_value.__exit__ = Mock()  # required for "with", but untestable.
+        mock_engine.begin.return_value.__exit__ = (
+            Mock()
+        )  # required for "with", but untestable.
 
         row = Mock()
 
@@ -341,9 +341,7 @@ class TestRequestStatusForGranuleUnit(
         self.assertEqual(job_id, result)
 
     @patch("request_status_for_granule.get_job_entry_for_granule_sql")
-    def test_get_job_entry_for_granule_happy_path(
-        self, mock_sql: MagicMock
-    ):
+    def test_get_job_entry_for_granule_happy_path(self, mock_sql: MagicMock):
         """
         Basic path with all information present.
         """
@@ -353,7 +351,7 @@ class TestRequestStatusForGranuleUnit(
             request_status_for_granule.OUTPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(),
             request_status_for_granule.OUTPUT_JOB_ID_KEY: uuid.uuid4().__str__(),
             request_status_for_granule.OUTPUT_REQUEST_TIME_KEY: uuid.uuid4().__str__(),
-            request_status_for_granule.OUTPUT_COMPLETION_TIME_KEY: uuid.uuid4().__str__()
+            request_status_for_granule.OUTPUT_COMPLETION_TIME_KEY: uuid.uuid4().__str__(),
         }
 
         mock_engine = Mock()
@@ -362,7 +360,9 @@ class TestRequestStatusForGranuleUnit(
         mock_connection.execute.return_value = [copy.deepcopy(expected_result)]
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
-        mock_engine.begin.return_value.__exit__ = Mock()  # required for "with", but untestable.
+        mock_engine.begin.return_value.__exit__ = (
+            Mock()
+        )  # required for "with", but untestable.
 
         result = request_status_for_granule.get_job_entry_for_granule(
             granule_id, job_id, mock_engine
@@ -370,19 +370,18 @@ class TestRequestStatusForGranuleUnit(
 
         mock_connection.execute.assert_called_once_with(
             mock_sql.return_value,
-            [{
-                "granule_id": granule_id,
-                "job_id": job_id,
-            }],
+            [
+                {
+                    "granule_id": granule_id,
+                    "job_id": job_id,
+                }
+            ],
         )
 
         self.assertEqual(expected_result, result)
 
     @patch("request_status_for_granule.get_file_entries_for_granule_in_job_sql")
-    def test_get_file_entries_for_granule_in_job_happy_path(
-        self,
-        mock_sql: MagicMock
-    ):
+    def test_get_file_entries_for_granule_in_job_happy_path(self, mock_sql: MagicMock):
         """
         Basic path with all information present.
         """
@@ -394,7 +393,7 @@ class TestRequestStatusForGranuleUnit(
                 request_status_for_granule.OUTPUT_FILENAME_KEY: uuid.uuid4().__str__(),
                 request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY: uuid.uuid4().__str__(),
                 request_status_for_granule.OUTPUT_STATUS_KEY: uuid.uuid4().__str__(),
-                request_status_for_granule.OUTPUT_ERROR_MESSAGE_KEY: uuid.uuid4().__str__()
+                request_status_for_granule.OUTPUT_ERROR_MESSAGE_KEY: uuid.uuid4().__str__(),
             }
         ]
 
@@ -404,7 +403,9 @@ class TestRequestStatusForGranuleUnit(
         mock_connection.execute.return_value = copy.deepcopy(expected_result)
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
-        mock_engine.begin.return_value.__exit__ = Mock()  # required for "with", but untestable.
+        mock_engine.begin.return_value.__exit__ = (
+            Mock()
+        )  # required for "with", but untestable.
 
         result = request_status_for_granule.get_file_entries_for_granule_in_job(
             granule_id, job_id, mock_engine
@@ -412,19 +413,19 @@ class TestRequestStatusForGranuleUnit(
 
         mock_connection.execute.assert_called_once_with(
             mock_sql.return_value,
-            [{
-                "granule_id": granule_id,
-                "job_id": job_id,
-            }],
+            [
+                {
+                    "granule_id": granule_id,
+                    "job_id": job_id,
+                }
+            ],
         )
 
-        self.assertEqual(
-            expected_result, result)
+        self.assertEqual(expected_result, result)
 
     # Multi-Function Tests:
     @patch("orca_shared.database.shared_db.get_user_connection")
-    def test_task_output_json_schema(self,
-                                     mock_get_user_connection: MagicMock):
+    def test_task_output_json_schema(self, mock_get_user_connection: MagicMock):
         """
         Checks a realistic output against the output.json.
         """
@@ -467,7 +468,9 @@ class TestRequestStatusForGranuleUnit(
         ]
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
-        mock_engine.begin.return_value.__exit__ = Mock()  # required for "with", but untestable.
+        mock_engine.begin.return_value.__exit__ = (
+            Mock()
+        )  # required for "with", but untestable.
         mock_get_user_connection.return_value = mock_engine
 
         result = request_status_for_granule.task(
