@@ -6,13 +6,13 @@ and sends the staged file info to staged_recovery queue for further processing.
 
 """
 import os
-from typing import Dict, Any
+from typing import Dict, List, Any
 import time
 import random
 
 from orca_shared.recovery import shared_recovery
 from orca_shared.database import shared_db
-
+from orca_shared.database.shared_db import retry_operational_error
 from cumulus_logger import CumulusLogger
 from sqlalchemy import text
 
@@ -54,51 +54,7 @@ def task(
     key_path = record["s3"]["object"]["key"]
     bucket_name = record["s3"]["bucket"]["name"]
 
-    # Query the database and get the needed metadata to send to the SQS Queue
-    # for the copy_files_to_archive lambda and to update the status in the
-    # database.
-    try:
-        LOGGER.debug("Getting database connection information.")
-        db_connect_info = shared_db.get_configuration()
-        LOGGER.debug(
-            "Retrieved the following database connection info {info}",
-            info=db_connect_info,
-        )
-
-        engine = shared_db.get_user_connection(db_connect_info)
-        LOGGER.debug("Querying database for metadata on {path}", path=key_path)
-
-        # It is possible to have multiple returns so we want to capture all of
-        # them to update status
-        rows = []
-        with engine.begin() as connection:
-            # Query for all rows that contain that key and have a status of
-            # PENDING
-            for row in connection.execute(get_metadata_sql(key_path)):
-                # Create dictionary for with the info needed for the
-                # copy_files_to_archive lambda
-                row_dict = {
-                    "job_id": row[0],
-                    "granule_id": row[1],
-                    "filename": row[2],
-                    "restore_destination": row[3],
-                    "multipart_chunksize_mb": row[4],
-                    "source_key": key_path,
-                    "target_key": key_path,  # todo add a card to configure target_key in the future
-                    "source_bucket": bucket_name,
-                }
-                rows.append(row_dict)
-
-        # Check to make sure we found some metadata
-        if len(rows) == 0:
-            message = f"No metadata found for {key_path}"
-            LOGGER.fatal(message)
-            raise Exception(message)
-
-    except Exception as ex:
-        message = "Unable to retrieve {key_path} metadata. Exception {ex} encountered."
-        LOGGER.error(message, key_path=key_path, ex=ex, exc_info=True)
-        raise Exception(message.format(key_path=key_path, ex=ex))
+    rows = query_db(key_path, bucket_name)
 
     my_base_delay = retry_sleep_secs
 
@@ -273,3 +229,74 @@ def handler(event: Dict[str, Any], context: None) -> None:
     LOGGER.debug("Event passed = {event}", event=event)
     # calling the task function to perform the work
     task(record, *backoff_args)
+
+
+@retry_operational_error()
+def query_db(key_path: str, bucket_name: str) -> List[Dict[str, str]]:
+    """
+    Function to connect and query the DB and then return needed metadata for posting to the SQS Queue
+
+    Args:
+        key_path:
+           Full AWS key path including file name of the file where the file resides.
+        bucket_name: Name of the source S3 bucket.
+    Returns:
+        A list of dict containing the following keys:
+            "job_id" (str):
+            "granule_id"(str):
+            "filename" (str):
+            "restore_destination" (str):
+            "multipart_chunksize_mb" (str):
+            "source_key" (str):
+            "target_key" (str):
+            "source_bucket" (str):
+    Raises:
+        Exception: If unable to retrieve the metadata by querying the DB.
+
+    """
+
+    # Query the database and get the needed metadata to send to the SQS Queue
+    # for the copy_files_to_archive lambda and to update the status in the
+    # database.
+    try:
+        LOGGER.debug("Getting database connection information.")
+        db_connect_info = shared_db.get_configuration()
+        LOGGER.debug(
+            "Retrieved the database connection info"
+        )
+
+        engine = shared_db.get_user_connection(db_connect_info)
+        LOGGER.debug("Querying database for metadata on {path}", path=key_path)
+
+        # It is possible to have multiple returns so we want to capture all of
+        # them to update status
+        rows = []
+        with engine.begin() as connection:
+            # Query for all rows that contain that key and have a status of
+            # PENDING
+            for row in connection.execute(get_metadata_sql(key_path)):
+                # Create dictionary for with the info needed for the
+                # copy_files_to_archive lambda
+                row_dict = {
+                    "job_id": row[0],
+                    "granule_id": row[1],
+                    "filename": row[2],
+                    "restore_destination": row[3],
+                    "multipart_chunksize_mb": row[4],
+                    "source_key": key_path,
+                    "target_key": key_path,  # todo add a card to configure target_key in the future
+                    "source_bucket": bucket_name,
+                }
+                rows.append(row_dict)
+
+        # Check to make sure we found some metadata
+        if len(rows) == 0:
+            message = f"No metadata found for {key_path}"
+            LOGGER.fatal(message)
+            raise Exception(message)
+
+    except Exception as ex:
+        message = "Unable to retrieve {key_path} metadata. Exception {ex} encountered."
+        LOGGER.error(message, key_path=key_path, ex=ex, exc_info=True)
+        raise Exception(message.format(key_path=key_path, ex=ex))
+    return rows
