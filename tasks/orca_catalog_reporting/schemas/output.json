@@ -41,7 +41,7 @@
           },
           "id": {
             "description": "The unique ID of the granule. Provided by Cumulus.",
-            "type": "number"
+            "type": "string"
           },
           "createdAt": {
             "description": "Date and time data was originally ingested into cumulus.",

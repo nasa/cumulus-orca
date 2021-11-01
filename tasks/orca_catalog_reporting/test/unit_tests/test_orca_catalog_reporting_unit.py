@@ -53,7 +53,7 @@ class TestOrcaCatalogReportingUnit(
                 {
                     "providerId": [uuid.uuid4().__str__()],
                     "collectionId": uuid.uuid4().__str__(),
-                    "id": random.randint(0, 999),
+                    "id": uuid.uuid4().__str__(),
                     "createdAt": "2021-10-08T16:24:07.605323Z",
                     "executionId": uuid.uuid4().__str__(),
                     "ingestDate": "2021-10-08T16:24:07.605323Z",
@@ -225,7 +225,7 @@ class TestOrcaCatalogReportingUnit(
                 {
                     "providerId": [uuid.uuid4().__str__()],
                     "collectionId": uuid.uuid4().__str__(),
-                    "id": random.randint(0, 999),
+                    "id": uuid.uuid4().__str__(),
                     "createdAt": "2021-10-08T16:24:07.605323+00:00",
                     "executionId": uuid.uuid4().__str__(),
                     "ingestDate": "2021-10-08T16:24:07.605323Z",
@@ -373,7 +373,7 @@ class TestOrcaCatalogReportingUnit(
         returned_row0 = {
             "provider_ids": returned_provider_id,
             "collection_id": returned_collection_id,
-            "id": returned_granule_id,
+            "cumulus_granule_id": returned_granule_id,
             "cumulus_create_time": returned_created_at,
             "execution_id": returned_execution_id,
             "ingest_time": returned_ingest_time,

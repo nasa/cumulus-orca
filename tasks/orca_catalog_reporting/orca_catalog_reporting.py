@@ -88,12 +88,11 @@ def query_db(
 
         granules = []
         for sql_result in sql_results:
-            temp = sql_result["files"]
             granules.append(
                 {
                     "providerId": sql_result["provider_ids"],
                     "collectionId": sql_result["collection_id"],
-                    "id": sql_result["id"],
+                    "id": sql_result["cumulus_granule_id"],
                     "createdAt": sql_result["cumulus_create_time"].strftime(
                         "%Y-%m-%dT%H:%M:%S.%fZ"
                     ),
