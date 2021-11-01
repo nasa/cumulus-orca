@@ -189,12 +189,10 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
         # populate the SQS body for granules
         sqs_body["granule"]["cumulusGranuleId"] = granuleId
         sqs_body["granule"]["cumulusCreateTime"] = granule["createdAt"].replace("Z", "+00:00")
-        LOGGER.info(sqs_body)
         sqs_body["granule"]["executionId"] = config["executionId"]
         sqs_body["granule"]["ingestTime"] = datetime.now(timezone.utc).isoformat()
         sqs_body["granule"]["lastUpdate"] = datetime.now(timezone.utc).isoformat()
         sqs_body["granule"]["files"] = []
-        LOGGER.info(sqs_body)
 
         # Iterate through the files in a granule object
         for file in granule["files"]:
