@@ -21,7 +21,6 @@
 BASEDIR=$(dirname $0)
 if [ "$BASEDIR" != "bin" ]; then
   >&2 echo "ERROR: This script must be called from the root directory of the task lambda [bin/build.sh]. Was $BASEDIR"
-  sleep 5
   exit 1
 fi
 

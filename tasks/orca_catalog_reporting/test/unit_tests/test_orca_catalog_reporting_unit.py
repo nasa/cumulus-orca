@@ -3,11 +3,14 @@ Name: test_orca_catalog_reporting_unit.py
 
 Description:  Unit tests for orca_catalog_reporting.py.
 """
+import datetime
 import random
 import unittest
 import uuid
 from http import HTTPStatus
 from unittest.mock import Mock, patch, MagicMock
+
+from dateutil.tz import UTC
 
 import orca_catalog_reporting
 
@@ -50,7 +53,7 @@ class TestOrcaCatalogReportingUnit(
                 {
                     "providerId": [uuid.uuid4().__str__()],
                     "collectionId": uuid.uuid4().__str__(),
-                    "id": uuid.uuid4().__str__(),
+                    "id": random.randint(0, 999),
                     "createdAt": "2021-10-08T16:24:07.605323Z",
                     "executionId": uuid.uuid4().__str__(),
                     "ingestDate": "2021-10-08T16:24:07.605323Z",
@@ -222,7 +225,7 @@ class TestOrcaCatalogReportingUnit(
                 {
                     "providerId": [uuid.uuid4().__str__()],
                     "collectionId": uuid.uuid4().__str__(),
-                    "id": uuid.uuid4().__str__(),
+                    "id": random.randint(0, 999),
                     "createdAt": "2021-10-08T16:24:07.605323+00:00",
                     "executionId": uuid.uuid4().__str__(),
                     "ingestDate": "2021-10-08T16:24:07.605323Z",
@@ -361,20 +364,20 @@ class TestOrcaCatalogReportingUnit(
         returned_provider_id = Mock()
         returned_collection_id = Mock()
         returned_granule_id = Mock()
-        returned_created_at = uuid.uuid4().__str__()
+        returned_created_at = datetime.datetime(2020, 1, 3, 4, 6, 1, 1, tzinfo=UTC)
         returned_execution_id = Mock()
-        returned_ingest_time = uuid.uuid4().__str__()
-        returned_last_update = uuid.uuid4().__str__()
+        returned_ingest_time = datetime.datetime(2020, 2, 2, 5, 5, 1, 1, tzinfo=UTC)
+        returned_last_update = datetime.datetime(2020, 3, 1, 6, 4, 1, 1, tzinfo=UTC)
         returned_files = Mock()
 
         returned_row0 = {
             "provider_ids": returned_provider_id,
             "collection_id": returned_collection_id,
             "id": returned_granule_id,
-            "cumulus_create_time": returned_created_at + "+00:00",
+            "cumulus_create_time": returned_created_at,
             "execution_id": returned_execution_id,
-            "ingest_time": returned_ingest_time + "+00:00",
-            "last_update": returned_last_update + "+00:00",
+            "ingest_time": returned_ingest_time,
+            "last_update": returned_last_update,
             "files": returned_files,
         }
         mock_execute = Mock(return_value=[returned_row0])
@@ -420,10 +423,10 @@ class TestOrcaCatalogReportingUnit(
                     "providerId": returned_provider_id,
                     "collectionId": returned_collection_id,
                     "id": returned_granule_id,
-                    "createdAt": returned_created_at + "Z",
+                    "createdAt": "2020-01-03T04:06:01.000001Z",
                     "executionId": returned_execution_id,
-                    "ingestDate": returned_ingest_time + "Z",
-                    "lastUpdate": returned_last_update + "Z",
+                    "ingestDate": "2020-02-02T05:05:01.000001Z",
+                    "lastUpdate": "2020-03-01T06:04:01.000001Z",
                     "files": returned_files,
                 }
             ],

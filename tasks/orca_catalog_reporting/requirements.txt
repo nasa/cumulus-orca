@@ -1,4 +1,4 @@
-cumulus-message-adapter-python>=1.1.1
-SQLAlchemy~=1.4.11
+cumulus-message-adapter-python==1.2.1
+SQLAlchemy==1.4.11
 fastjsonschema==2.15.0
-../../shared_libraries[all]
+../../shared_libraries[database]

@@ -88,20 +88,21 @@ def query_db(
 
         granules = []
         for sql_result in sql_results:
+            temp = sql_result["files"]
             granules.append(
                 {
                     "providerId": sql_result["provider_ids"],
                     "collectionId": sql_result["collection_id"],
                     "id": sql_result["id"],
-                    "createdAt": str(sql_result["cumulus_create_time"]).replace(
-                        "+00:00", "Z", 1
+                    "createdAt": sql_result["cumulus_create_time"].strftime(
+                        "%Y-%m-%dT%H:%M:%S.%fZ"
                     ),
                     "executionId": sql_result["execution_id"],
-                    "ingestDate": str(sql_result["ingest_time"]).replace(
-                        "+00:00", "Z", 1
+                    "ingestDate": sql_result["ingest_time"].strftime(
+                        "%Y-%m-%dT%H:%M:%S.%fZ"
                     ),
-                    "lastUpdate": str(sql_result["last_update"]).replace(
-                        "+00:00", "Z", 1
+                    "lastUpdate": sql_result["last_update"].strftime(
+                        "%Y-%m-%dT%H:%M:%S.%fZ"
                     ),
                     "files": sql_result["files"],
                 }
@@ -111,6 +112,7 @@ def query_db(
 
 def get_catalog_sql() -> text:
     return text(
+        # todo: Optimize for large data sets. https://bugs.earthdata.nasa.gov/browse/ORCA-286
         """
 SELECT
     *
@@ -215,24 +217,25 @@ def handler(
         See schemas/output.json
         Or, if an error occurs, see create_http_error_dict
     """
-    LOGGER.setMetadata(event, context)
-
     try:
-        with open("schemas/input.json", "r") as raw_schema:
-            schema = json.loads(raw_schema.read())
+        LOGGER.setMetadata(event, context)
 
-        validate = fastjsonschema.compile(schema)
-        validate(event)
-    except JsonSchemaException as json_schema_exception:
-        return create_http_error_dict(
-            "BadRequest",
-            HTTPStatus.BAD_REQUEST,
-            context.aws_request_id,
-            json_schema_exception.__str__(),
-        )
+        try:
+            with open("schemas/input.json", "r") as raw_schema:
+                schema = json.loads(raw_schema.read())
 
-    db_connect_info = shared_db.get_configuration()
-    try:
+            validate = fastjsonschema.compile(schema)
+            validate(event)
+        except JsonSchemaException as json_schema_exception:
+            return create_http_error_dict(
+                "BadRequest",
+                HTTPStatus.BAD_REQUEST,
+                context.aws_request_id,
+                json_schema_exception.__str__(),
+            )
+
+        db_connect_info = shared_db.get_configuration()
+
         result = task(
             event.get("providerId", None),
             event.get("collectionId", None),
@@ -242,6 +245,13 @@ def handler(
             event["pageIndex"],
             db_connect_info,
         )
+        with open("schemas/output.json", "r") as raw_schema:
+            schema = json.loads(raw_schema.read())
+
+        validate = fastjsonschema.compile(schema)
+        validate(result)
+
+        return result
     except Exception as error:
         return create_http_error_dict(
             "InternalServerError",
@@ -249,19 +259,3 @@ def handler(
             context.aws_request_id,
             error.__str__(),
         )
-
-    try:
-        with open("schemas/output.json", "r") as raw_schema:
-            schema = json.loads(raw_schema.read())
-
-        validate = fastjsonschema.compile(schema)
-        validate(result)
-    except JsonSchemaException as json_schema_exception:
-        return create_http_error_dict(
-            "InternalServerError",
-            HTTPStatus.INTERNAL_SERVER_ERROR,
-            context.aws_request_id,
-            json_schema_exception.__str__(),
-        )
-
-    return result
