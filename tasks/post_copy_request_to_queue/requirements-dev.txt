@@ -10,4 +10,4 @@ psycopg2-binary==2.8.6
 ## Application libraries
 cumulus-message-adapter-python==1.2.1
 SQLAlchemy==1.4.11
-../../shared_libraries[all] --use-feature=in-tree-build
+../../shared_libraries[all]
