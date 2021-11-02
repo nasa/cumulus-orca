@@ -62,12 +62,6 @@ FUNCTIONS
                         'RequestMethod' (str): Matches to a shared_recovery.RequestMethod.
             context: An object passed through by AWS. Used for tracking.
         Environment Vars: See shared_db.py's get_configuration for further details.
-            'DATABASE_PORT' (int): Defaults to 5432
-            'DATABASE_NAME' (str)
-            'APPLICATION_USER' (str)
-            'PREFIX' (str)
-            '{prefix}-drdb-host' (str, secretsmanager)
-            '{prefix}-drdb-user-pass' (str, secretsmanager)
     
     send_record_to_database(record: Dict[str, Any], engine: sqlalchemy.future.engine.Engine) -> None
         Deconstructs a record to its components and calls send_values_to_database with the result.
