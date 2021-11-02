@@ -22,6 +22,8 @@ and includes an additional section for migration notes.
 
 ### Added
 - *ORCA-227* Added modules/secretsmanager directory that contains terraform code for deploying AWS secretsmanager.
+- *ORCA-184* Added AWS API Gateway in lambdas.tf for the reconciliation lambda.
+- *ORCA-177* Added AWS API Gateway in lambdas.tf for the request_status lambdas.
 
 ### Migration Notes
 
