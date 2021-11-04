@@ -327,8 +327,6 @@ class TestRequestStatusForGranuleUnit(
             Mock()
         )  # required for "with", but untestable.
 
-        row = Mock()
-
         result = request_status_for_granule.get_most_recent_job_id_for_granule(
             granule_id, mock_engine
         )
