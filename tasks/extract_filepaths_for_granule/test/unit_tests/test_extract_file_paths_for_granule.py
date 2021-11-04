@@ -403,7 +403,7 @@ class TestExtractFilePaths(unittest.TestCase):
 
     def test_task_input_schema_return_error(self):
         """
-        Test that having no granules["files"]["key"] and granules["files"]["bucket"] give an error in input schema.
+        Test that having no granules["files"]["fileName"], ["key"], and ["bucket"] give an error in input schema.
         """
         input_event = {
             "granules": [
@@ -427,7 +427,7 @@ class TestExtractFilePaths(unittest.TestCase):
         except Exception as ex:
             self.assertEqual(
                 ex.message,
-                "data.granules[0].files[0] must contain ['key', 'bucket'] properties",
+                "data.granules[0].files[0] must contain ['fileName', 'key', 'bucket'] properties",
             )
 
 
