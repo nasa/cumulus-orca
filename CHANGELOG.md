@@ -21,6 +21,7 @@ and includes an additional section for migration notes.
 - *ORCA-233* The `disaster_recovery` database will now be created by db_deploy instead of Terraform.
 
 ### Added
+- *ORCA-256* Added AWS API Gateway in lambdas.tf for the catalog reporting lambda.
 - *ORCA-227* Added modules/secretsmanager directory that contains terraform code for deploying AWS secretsmanager.
 
 ### Migration Notes
