@@ -21,7 +21,7 @@
                 {
                   "properties": {
                     "key":{
-                      "desription": "The key of the file.",
+                      "desription": "S3 Key for archived file (full path and file name less the bucket name).",
                       "type": "string"
                     },
                     "dest_bucket": {
