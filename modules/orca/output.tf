@@ -52,6 +52,11 @@ output "orca_lambda_post_copy_request_to_queue_arn" {
   value       = module.orca_lambdas.post_copy_request_to_queue_arn
 }
 
+output "orca_catalog_reporting_api_invoke_url" {
+  description = "The URL to invoke the API for catalog reporting lambda"
+  value       = module.orca_lambdas.catalog_reporting_api_invoke_url
+}
+
 ## Workflow Module Outputs (orca_workflows)
 ## =============================================================================
 ## No workflow outputs currently requested/needed

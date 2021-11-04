@@ -68,3 +68,10 @@ output "db_deploy_function_name" {
   description = "AWS Function Name for the db_deploy lambda."
   value       = aws_lambda_function.db_deploy.function_name
 }
+
+# API gateway for catalog reporting lambda
+# ------------------------------------------------------------------------------
+output "catalog_reporting_api_invoke_url" {
+  value       = aws_api_gateway_stage.orca_catalog_reporting_api_stage.invoke_url
+  description = "The URL to invoke the API for catalog reporting lambda"
+}

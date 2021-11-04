@@ -51,6 +51,10 @@ output "orca_lambda_post_copy_request_to_queue_arn" {
   value       = module.orca.orca_lambda_post_copy_request_to_queue_arn
 }
 
+output "orca_catalog_reporting_api_invoke_url" {
+  description = "The URL to invoke the API for catalog reporting lambda"
+  value       = module.orca.orca_catalog_reporting_api_invoke_url
+}
 ## SQS Module outputs
 ## =============================================================================
 output "orca_sqs_metadata_queue_arn" {

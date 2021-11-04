@@ -427,7 +427,7 @@ file. The variables must be set with proper values for your environment in the
 `cumulus-tf/terraform.tfvars` file.
 
 | Variable               | Definition                                              | Example Value                 |
-| ---------------------- | --------------------------------------------- ----------| ----------------------------- |
+| ---------------------- | --------------------------------------------------------| ----------------------------- |
 | `db_admin_password`    | Password for RDS database administrator authentication  | "My_Sup3rS3cr3t_admin_Passw0rd"|
 | `db_host_endpoint`     | Database host endpoint to connect to.                   | "aws.postgresrds.host"        |
 | `db_user_password`     | Password for RDS database user authentication           | "My_Sup3rS3cr3tuserPassw0rd"  |
@@ -483,8 +483,9 @@ variables is shown in the table below.
 The orca module provides the outputs seen below in the table. Outputs are
 accessed using terraform dot syntax in the format of `module.orca.variable_name`.
 
-| Output Variable                               | Description                               |
-| --------------------------------------------- | ----------------------------------------- |
+| Output Variable                                      | Description                               |
+| -----------------------------------------------------|---------------------------------------------------------|
+| `orca_catalog_reporting_api_invoke_url`              |The URL to invoke the API for catalog reporting lambda |
 | `orca_lambda_copy_to_glacier_cumulus_translator_arn` | AWS ARN of the ORCA orca_lambda_copy_to_glacier_cumulus_translator lambda. |
 | `orca_lambda_copy_to_glacier_arn`                    | AWS ARN of the ORCA copy_to_glacier lambda. |
 | `orca_lambda_extract_filepaths_for_granule_arn`      | AWS ARN of the ORCA extract_filepaths_for_granule lambda. |
