@@ -7,12 +7,19 @@ description: ORCA database schema information.
 import MyImage from '@site/docs/templates/pan-zoom-image.mdx';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 
-ORCA utilizes a single PostgreSQL RDBMS instance in AWS in order to track and
-manage the status of a recovery in a typical recover data workflow. The diagram
-below provides details on the access and schema used by ORCA to manage recovery
-job status and tracking. The data within the database is considered transient
+ORCA utilizes a PostgreSQL compatible database instance in AWS. The ORCA database
+is used to order to track and manage the status of a recovery in a typical recover
+data workflow and to maintain a catalog of ORCA data stored in the S3 Glacier
+archive. The diagram below provides details on the tables and the services that
+access them. The data within the ORCA Recovery Status tables is considered transient
 and is typically no longer useful after a recovery has reached completion in a
-successful state.
+successful state. The data within the ORCA Metadata Catalog tables points to the
+latest version of the data stored in ORCA and provides a files association to a
+granule, collection, and provider objects information. The ORCA Metadata Catalog
+tables data are also used by ORCA services to perform vital ORCA data management
+functions like reconciliation. The Schema Version Tracking table is used internally
+by ORCA to know if any schema migrations are needed for the ORCA code to function
+and provides an audit record of the installed ORCA schema.
 
 
 <MyImage

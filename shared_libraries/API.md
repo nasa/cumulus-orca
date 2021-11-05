@@ -50,7 +50,7 @@ Environment Variables:
     AWS_REGION (str): AWS reserved runtime variable used to set boto3 client region.
 
 Parameter Store:
-    <prefix>-orca-db-login-secret (string): The json string containing all the admin and user db login info.
+    <prefix>-orca-db-login-secret (string): The json string containing all the db login info.
 ```
 
 **Arguments**:
@@ -129,7 +129,8 @@ Decorator takes arguments to adjust number of retries and backoff strategy.
 # orca\_shared.recovery.shared\_recovery
 
 Name: shared_recovery.py
-Description: Shared library that combines common functions and classes needed for recovery operations.
+Description: Shared library that combines common functions and classes needed for
+             recovery operations.
 
 <a id="orca_shared.recovery.shared_recovery.RequestMethod"></a>
 
@@ -207,7 +208,8 @@ def update_status_for_file(job_id: str, granule_id: str, filename: str, orca_sta
 ```
 
 Creates update information for a file's status entry, and posts to queue.
-Queue entry will be rejected by post_to_database if status for job_id + granule_id + filename does not exist.
+Queue entry will be rejected by post_to_database if status for
+job_id + granule_id + filename does not exist.
 
 **Arguments**:
 
@@ -231,7 +233,7 @@ Posts messages to an SQS queue.
 **Arguments**:
 
 - `new_data` - A dictionary representing the column/value pairs to write to the DB table.
-- `request_method` - The method action for the database lambda to take when posting to the SQS queue.
+- `request_method` - The action for the database lambda to take when posting to the SQS queue.
 - `db_queue_url` - The SQS queue URL defined by AWS.
 
 **Raises**:

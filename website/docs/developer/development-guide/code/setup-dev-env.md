@@ -51,11 +51,6 @@ Lambdas should be built and tested within individual Virtual Environments.
    pip install boto3
    pip install -r requirements.txt
    ```
-   If requirements.txt references db_dbutils and/or pg_utils, install them with their respective commands.
-   ```commandline
-   pip install ..\dr_dbutils\dist\dr_dbutils-1.0.tar.gz
-   pip install ..\pg_utils\dist\pg_utils-1.0.tar.gz
-   ```
 1. Install additional development requirements.
    ```commandline
    pip install coverage

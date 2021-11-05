@@ -1,5 +1,3 @@
-tasks/dr_dbutils/dr_dbutils.egg-info
-tasks/pg_utils/pg_utils.egg-info
 tasks/request_files/.pytest_cache/
 tasks/request_files/dev_test/test_requests_postgres_lisa.py
 tasks/request_status/.vscode/.ropeproject/config.py

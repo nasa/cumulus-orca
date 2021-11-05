@@ -5,7 +5,6 @@ Description:  Extracts the keys (filepaths) for a granule's files from a Cumulus
 """
 
 import re
-import os
 
 from cumulus_logger import CumulusLogger
 from run_cumulus_task import run_cumulus_task
@@ -65,11 +64,7 @@ def task(event, context):  # pylint: disable-msg=unused-argument
             gran["granuleId"] = ev_granule["granuleId"]
             for afile in ev_granule["files"]:
                 level = "event['input']['granules'][]['files']"
-                file_name = (
-                    os.path.basename(afile["fileName"])
-                    if re.search("^s3://", afile["fileName"])
-                    else afile["fileName"]
-                )
+                file_name = afile["fileName"]
                 LOGGER.debug(f"Validating file {file_name}")
                 # filtering excludedFileTypes
                 if not should_exclude_files_type(file_name, exclude_file_types):
@@ -115,7 +110,7 @@ def get_regex_buckets(event):
         # {'regex': '.*.iso.xml$', 'sampleFileName': 'L0A_0420.iso.xml', 'bucket': 'protected'},
         # {'regex': '.*.h5.mp$', 'sampleFileName': 'L0A_0420.h5.mp', 'bucket': 'public'},
         # {'regex': '.*.cmr.json$', 'sampleFileName': 'L0A_0420.cmr.json', 'bucket': 'public'}]
-        buckets =  event["config"]["buckets"]
+        buckets = event["config"]["buckets"]
         # buckets example:
         # {"protected": {"name": "sndbx-cumulus-protected", "type": "protected"},
         # "internal": {"name": "sndbx-cumulus-internal", "type": "internal"},
@@ -178,9 +173,9 @@ def handler(event, context):  # pylint: disable-msg=unused-argument
                                     "version":"006",
                                     "files":[
                                     {
-                                        "name":"file1",
+                                        "fileName":"file1",
                                         "key":"key1",
-                                        "filename":"s3://dr-test-sandbox-protected/file1",
+                                        "source":"s3://dr-test-sandbox-protected/file1",
                                         "type":"metadata"
                                     }
                                     ]
