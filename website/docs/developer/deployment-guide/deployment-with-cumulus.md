@@ -485,7 +485,6 @@ accessed using terraform dot syntax in the format of `module.orca.variable_name`
 
 | Output Variable                               | Description                               |
 | --------------------------------------------- | ----------------------------------------- |
-| `orca_lambda_copy_to_glacier_cumulus_translator_arn` | AWS ARN of the ORCA orca_lambda_copy_to_glacier_cumulus_translator lambda. |
 | `orca_lambda_copy_to_glacier_arn`                    | AWS ARN of the ORCA copy_to_glacier lambda. |
 | `orca_lambda_extract_filepaths_for_granule_arn`      | AWS ARN of the ORCA extract_filepaths_for_granule lambda. |
 | `orca_lambda_request_files_arn`                      | AWS ARN of the ORCA request_files lambda. |

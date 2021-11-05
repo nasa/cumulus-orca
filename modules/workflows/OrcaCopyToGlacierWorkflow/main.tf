@@ -20,7 +20,6 @@ module "orca_copy_to_glacier_workflow" {
   state_machine_definition = templatefile(
     "${path.module}/orca_copy_to_glacier_workflow.asl.json",
     {
-      orca_lambda_copy_to_glacier_cumulus_translator_arn : var.orca_lambda_copy_to_glacier_cumulus_translator_arn,
       orca_lambda_copy_to_glacier_arn : var.orca_lambda_copy_to_glacier_arn
     }
   )
