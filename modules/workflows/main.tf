@@ -48,6 +48,5 @@ module "orca_copy_to_glacier_workflow" {
   ## --------------------------
   ## REQUIRED
   # Task ARNS needed for workflow template
-  orca_lambda_copy_to_glacier_cumulus_translator_arn = var.orca_lambda_copy_to_glacier_cumulus_translator_arn
   orca_lambda_copy_to_glacier_arn                    = var.orca_lambda_copy_to_glacier_arn
 }

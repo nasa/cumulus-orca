@@ -19,12 +19,14 @@ and includes an additional section for migration notes.
 ### Removed
 - The `modules/rds` directory is removed since ORCA will utilize the Cumulus DB.
 - *ORCA-233* The `disaster_recovery` database will now be created by db_deploy instead of Terraform.
+- *ORCA-288* Removed copy_to_glacier_cumulus_translator due to better consistency in Cumulus's [file dictionary](https://github.com/nasa/cumulus/blob/master/packages/schemas/files.schema.json).
 
 ### Added
 - *ORCA-227* Added modules/secretsmanager directory that contains terraform code for deploying AWS secretsmanager.
 
 ### Migration Notes
 
+- Remove any added references in your setup to copy_to_glacier_cumulus_translator. It is no longer necesarry as a Cumulus intermediary.
 - The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variables. The following two variable names have changed:
   - postgres_user_pw-> db_admin_password (*new)*
   - database_app_user_pw-> db_user_password (*new*)
