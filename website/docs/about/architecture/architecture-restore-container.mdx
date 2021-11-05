@@ -17,8 +17,9 @@ scenarios. Since it is asynchronous, the recovery container relies on a database
 to maintain the status of the request and event driven triggers to restore the
 data once it has been reconstituted from Glacier into an S3 bucket. Currently
 data is copied back to the Cumulus S3 primary data bucket as the final restore
-step. Determining the status of the recovery job is done manually by either
-using the provided request_status lambda or querying the database directly.
+step. Determining the status of the recovery job is done by either checking the
+status on the Cumulus Dashboard or manually by accessing the ORCA API or querying
+the database directly.
 
 
 <MyImage
