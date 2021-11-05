@@ -495,6 +495,8 @@ accessed using terraform dot syntax in the format of `module.orca.variable_name`
 | `orca_lambda_request_status_for_job_arn`             | AWS ARN of the ORCA request_status_for_job lambda. |
 | `orca_lambda_post_copy_request_to_queue_arn`         | AWS ARN of the ORCA post_copy_request_to_queue lambda. |
 | `orca_lambda_orca_catalog_reporting_arn`             | AWS ARN of the ORCA orca_catalog_reporting lambda. |
+| `orca_request_status_for_granule_api_invoke_url`     |The URL to invoke the API for request_status_for_granule lambda |
+| `orca_request_status_for_job_api_invoke_url`         |The URL to invoke the API for request_status_for_job lambda |
 | `orca_secretsmanager_arn`                            | The Amazon Resource Name (ARN) of the AWS secretsmanager |
 | `orca_sqs_metadata_queue_arn`                        | The ARN of the metadata-queue SQS |
 | `orca_sqs_metadata_queue_id`                         | The URL ID of the metadata-queue SQS |

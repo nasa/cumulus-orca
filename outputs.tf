@@ -55,6 +55,16 @@ output "orca_catalog_reporting_api_invoke_url" {
   description = "The URL to invoke the API for catalog reporting lambda"
   value       = module.orca.orca_catalog_reporting_api_invoke_url
 }
+
+output "orca_request_status_for_granule_api_invoke_url" {
+  description = "The URL to invoke the API for request_status_for_granule lambda"
+  value       = module.orca.orca_request_status_for_granule_api_invoke_url
+}
+
+output "orca_request_status_for_job_api_invoke_url" {
+  description = "The URL to invoke the API for request_status_for_job lambda"
+  value       = module.orca.orca_request_status_for_job_api_invoke_url
+}
 ## SQS Module outputs
 ## =============================================================================
 output "orca_sqs_metadata_queue_arn" {

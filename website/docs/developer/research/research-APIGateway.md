@@ -108,6 +108,28 @@ description: Research Notes on API Gateway.
       # source_arn = "${aws_api_gateway_rest_api.[name]_api.execution_arn}/*/${aws_api_gateway_method.[name]_api_method.http_method}${aws_api_gateway_resource.[name]_api_resource.path}"
     }
     ```  
+  - aws_api_gateway_rest_api_policy
+    ```
+    resource "aws_lambda_permission" "[name]_api_resource_policy" {
+
+        rest_api_id = aws_api_gateway_rest_api.[name]_api.id
+        policy = <<EOF
+      {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Principal": {
+              "AWS": "*"
+            },
+            "Action": "execute-api:Invoke",
+            "Resource": "${aws_api_gateway_rest_api.[name]_api.execution_arn}"
+          }
+        ]
+      }
+      EOF
+    }
+    ``` 
 - Proper HTTP error codes can be returned from a Lambda to the gateway via a dictionary, as shown in [Handle Lambda errors in API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/handle-errors-in-lambda-integration.html)
   - For more potential patterns, see https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-integration-settings-integration-response.html and https://aws.amazon.com/blogs/compute/error-handling-patterns-in-amazon-api-gateway-and-aws-lambda/
 - In order to access a private API, a `VPC endpoint` has to be created in VPC. Secondly, a [resource policy](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-resource-policies-create-attach.html) needs to be created and attached to the API.

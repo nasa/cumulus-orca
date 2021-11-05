@@ -57,6 +57,17 @@ output "orca_catalog_reporting_api_invoke_url" {
   value       = module.orca_lambdas.catalog_reporting_api_invoke_url
 }
 
+output "orca_request_status_for_granule_api_invoke_url" {
+  description = "The URL to invoke the API for request_status_for_granule lambda"
+  value       = module.orca_lambdas.request_status_for_granule_api_invoke_url
+}
+
+output "orca_request_status_for_job_api_invoke_url" {
+  description = "The URL to invoke the API for request_status_for_job lambda"
+  value       = module.orca_lambdas.request_status_for_job_api_invoke_url
+}
+
+
 ## Workflow Module Outputs (orca_workflows)
 ## =============================================================================
 ## No workflow outputs currently requested/needed
