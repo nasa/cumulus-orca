@@ -21,7 +21,7 @@ fi
 
 ## Call each task's testing suite
 ## TODO: Add more logging output and possibly make asynchronus
-for task in $(ls -d tasks/* | egrep -v "shared_libraries|package")
+for task in $(ls -d tasks/* | egrep -v "package")
 do
   echo
   echo "Running tests in $task"
