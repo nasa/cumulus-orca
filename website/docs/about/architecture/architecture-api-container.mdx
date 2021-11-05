@@ -1,0 +1,25 @@
+---
+id: architecture-api-container
+title: API Container Architecture
+description: High level overview of ORCA API Interface container architecture.
+---
+
+import MyImage from '@site/docs/templates/pan-zoom-image.mdx';
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
+The API Interface container contains all the components that allow an end user
+to access ORCA data including but not limited to recovery status information and
+ORCA catalog information. The architecture diagram below shows how generally, an
+operator goes through the Cumulus Dashboard to access the information. The dashboard
+makes API calls throuh an AWS API gateway which routes the call to the proper
+lambda to make the request. Currently, the lambdas have read only access to the
+ORCA tables that contain the information needed by the end user.
+
+
+<MyImage
+    imageSource={useBaseUrl('img/ORCA-Architecture-API-Container-Component.svg')}
+    imageAlt="ORCA Archive Data Container Context"
+    zoomInPic={useBaseUrl('img/zoom-in.svg')}
+    zoomOutPic={useBaseUrl('img/zoom-out.svg')}
+    resetPic={useBaseUrl('img/zoom-pan-reset.svg')}
+/>
