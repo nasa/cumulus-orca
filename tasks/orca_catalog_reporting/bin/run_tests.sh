@@ -5,14 +5,14 @@
 ##
 ## DESCRIPTION
 ## -----------------------------------------------------------------------------
-## Tests the lambda (task) for orca_catalog_reporting_dummy using unit tests.
+## Tests the lambda (task) for orca_catalog_reporting using unit tests.
 ##
 ##
 ## USAGE
 ## -----------------------------------------------------------------------------
 ## bin/run_tests.sh
 ##
-## This must be called from the (root) lambda directory /tasks/orca_catalog_reporting_dummy
+## This must be called from the (root) lambda directory /tasks/orca_catalog_reporting
 ## =============================================================================
 
 ## Set this for Debugging only
@@ -71,7 +71,7 @@ check_rc $return_code "ERROR: pip install encountered an error."
 echo "INFO: Running unit and coverage tests ..."
 
 # Currently just running unit tests until we fix/support large tests
-coverage run --source orca_catalog_reporting_dummy -m pytest
+coverage run --source orca_catalog_reporting -m pytest
 let return_code=$?
 check_rc $return_code "ERROR: Unit tests encountered failures."
 
