@@ -17,7 +17,7 @@ output "copy_to_glacier_arn" {
 
 output "orca_catalog_reporting_arn" {
   description = "AWS ARN for the orca_catalog_reporting lambda."
-  value       = aws_lambda_function.orca_catalog_reporting_dummy.arn
+  value       = aws_lambda_function.orca_catalog_reporting.arn
 }
 
 

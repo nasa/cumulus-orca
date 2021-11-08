@@ -23,6 +23,7 @@ and includes an additional section for migration notes.
 
 ### Added
 - *ORCA-227* Added modules/secretsmanager directory that contains terraform code for deploying AWS secretsmanager.
+- *ORCA-257* orca_catalog_reporting lambda now returns data from actual catalog.
 
 ### Changed
 - *ORCA-287* Updated extract_filepaths_for_granule to [new Cumulus file format](https://github.com/nasa/cumulus/blob/master/packages/schemas/files.schema.json). 

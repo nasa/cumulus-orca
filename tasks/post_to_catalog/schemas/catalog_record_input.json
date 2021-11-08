@@ -124,11 +124,11 @@
                   "description": "Size of the object in bytes"
                 },
                 "hash": {
-                  "type": "string",
+                  "type": ["string", "null"],
                   "description": "Hash of the object from Cumulus"
                 },
                 "hashType": {
-                  "type": "string",
+                  "type": ["string", "null"],
                   "description": "Hash type used to hash the object. Supplied by Cumulus."
                 },
                 "version": {

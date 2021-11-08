@@ -357,26 +357,32 @@ resource "aws_s3_bucket_notification" "post_copy_request_to_queue_trigger" {
 
 }
 
-# orca_catalog_reporting_dummy - Returns reconcilliation report sample data
+# orca_catalog_reporting - Returns reconcilliation report data
 # ==============================================================================
-resource "aws_lambda_function" "orca_catalog_reporting_dummy" {
+resource "aws_lambda_function" "orca_catalog_reporting" {
   ## REQUIRED
-  function_name = "${var.prefix}_orca_catalog_reporting_dummy"
+  function_name = "${var.prefix}_orca_catalog_reporting"
   role          = module.restore_object_arn.restore_object_role_arn
 
   ## OPTIONAL
   description      = "Returns reconcilliation report sample data."
-  filename         = "${path.module}/../../tasks/orca_catalog_reporting_dummy/orca_catalog_reporting_dummy.zip"
-  handler          = "orca_catalog_reporting_dummy.handler"
+  filename         = "${path.module}/../../tasks/orca_catalog_reporting/orca_catalog_reporting.zip"
+  handler          = "orca_catalog_reporting.handler"
   memory_size      = var.orca_ingest_lambda_memory_size
   runtime          = "python3.7"
-  source_code_hash = filebase64sha256("${path.module}/../../tasks/orca_catalog_reporting_dummy/orca_catalog_reporting_dummy.zip")
+  source_code_hash = filebase64sha256("${path.module}/../../tasks/orca_catalog_reporting/orca_catalog_reporting.zip")
   tags             = local.tags
   timeout          = var.orca_ingest_lambda_timeout
 
   vpc_config {
     subnet_ids         = var.lambda_subnet_ids
     security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
+  }
+
+  environment {
+    variables = {
+      PREFIX = var.prefix
+    }
   }
 }
 

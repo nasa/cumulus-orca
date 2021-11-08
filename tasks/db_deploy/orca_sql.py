@@ -522,7 +522,7 @@ def provider_collection_xref_table_sql() -> TextClause:
 
         -- Comments
         COMMENT ON TABLE provider_collection_xref
-            IS 'Cross refrence table that ties a collection and provider together and resolves the many to many relationship.';
+            IS 'Cross reference table that ties a collection and provider together and resolves the many to many relationship.';
         COMMENT ON COLUMN provider_collection_xref.provider_id
             IS 'Provider ID from the providers table.';
         COMMENT ON COLUMN provider_collection_xref.collection_id
