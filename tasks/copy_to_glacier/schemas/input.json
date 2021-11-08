@@ -25,23 +25,31 @@
             "description": "The files to copy.",
             "type": "array",
             "items": {
-              "required": ["name", "bucket", "filepath", "filename"],
+              "required": ["fileName", "bucket", "key", "source"],
               "properties": {
-                "name": {
+                "fileName": {
                   "type": "string",
-                  "description": "The name and extension of the file."
+                  "description": "Name of file (e.g. file.txt)."
                 },
                 "bucket": {
                   "type": "string",
-                  "description": "The name of the s3 bucket to copy from."
+                  "description": "Name of the Bucket where file is archived in S3."
                 },
-                "filepath": {
+                "key": {
                   "type": "string",
-                  "description": "The path, name, and extension of the file."
+                  "description": "S3 Key for archived file."
                 },
-                "filename": {
+                "source": {
                   "type": "string",
-                  "description": "The complete s3 key for the file."
+                  "description": "Source URI of the file from origin system (e.g. S3, FTP, HTTP)."
+                },
+                "checksum": {
+                  "description": "Checksum value for file",
+                  "type": "string"
+                },
+                "checksumType": {
+                  "description": "Type of checksum (e.g. md5, sha256, etc)",
+                  "type": "string"
                 }
               }
             }

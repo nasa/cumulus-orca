@@ -103,47 +103,47 @@ The `copy_to_glacier` lambda function expects that the input payload has a `gran
         "createdAt": "2021-10-08T19:24:07.605323Z",
         "files": [
           {
-            "name": "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+            "fileName": "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
             "path": "MOD09GQ/006",
             "size": 6,
             "time": 1608318361000,
             "bucket": "orca-sandbox-protected",
             "url_path": "MOD09GQ/006/",
             "type": "",
-            "filename": "s3://orca-sandbox-protected/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
-            "filepath": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+            "source": "s3://orca-sandbox-protected/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+            "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
             "duplicate_found": true
           },
           {
-            "name": "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf.met",
+            "fileName": "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf.met",
             "path": "MOD09GQ/006",
             "size": 6,
             "time": 1608318366000,
             "bucket": "orca-sandbox-private",
             "url_path": "MOD09GQ/006",
             "type": "",
-            "filename": "s3://orca-sandbox-private/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf.met",
-            "filepath": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf.met",
+            "source": "s3://orca-sandbox-private/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf.met",
+            "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf.met",
             "duplicate_found": true
           },
           {
-            "name": "MOD09GQ.A2017025.h21v00.006.2017034065109_ndvi.jpg",
+            "fileName": "MOD09GQ.A2017025.h21v00.006.2017034065109_ndvi.jpg",
             "path": "MOD09GQ/006",
             "size": 6,
             "time": 1608318372000,
             "bucket": "orca-sandbox-public",
             "url_path": "MOD09GQ/006",
             "type": "",
-            "filename": "s3://orca-sandbox-public/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109_ndvi.jpg",
-            "filepath": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109_ndvi.jpg",
+            "source": "s3://orca-sandbox-public/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109_ndvi.jpg",
+            "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109_ndvi.jpg",
             "duplicate_found": true
           },
           {
-            "name": "MOD09GQ.A2017025.h21v00.006.2017034065109.cmr.xml",
+            "fileName": "MOD09GQ.A2017025.h21v00.006.2017034065109.cmr.xml",
             "bucket": "orca-sandbox-private",
-            "filename": "s3://orca-sandbox-private/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.cmr.xml",
+            "source": "s3://orca-sandbox-private/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.cmr.xml",
             "type": "metadata",
-            "filepath": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.cmr.xml",
+            "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.cmr.xml",
             "url_path": "MOD09GQ/006"
           }
         ],
@@ -280,8 +280,8 @@ See the schema [configuration file](https://github.com/nasa/cumulus-orca/blob/ma
 
 ## Metadata SQS body configuration
 
-The metadata SQS message body should contain the metadata attributes needed by Cumulus to perform analysis on discrepencies and for reconciliation.
-These information from the queue will then be ingested into a new ORCA lambda function that will update the records for the various objects in the ORCA catalog.
+The metadata SQS message body should contain the metadata attributes needed by Cumulus to perform analysis on discrepancies and for reconciliation.
+These entries from the queue will then be ingested into a new ORCA lambda function that will update the records for the various objects in the ORCA catalog.
 An example of a message is shown below:
 
 ```
@@ -325,9 +325,15 @@ Help on module copy_to_glacier:
 NAME
     copy_to_glacier
 
+DESCRIPTION
+    Name: copy_to_glacier.py
+    Description: Lambda function that takes a Cumulus message, extracts a list of files,
+    and copies those files from their current storage location into a staging/glacier location.
+
 FUNCTIONS
-    copy_granule_between_buckets(source_bucket_name: str, source_key: str, destination_bucket: str, destination_key: str, multipart_chunksize_mb: int) -> None
-        Copies granule from source bucket to destination. Also queries the destination_bucket to get additional metadata file info.
+    copy_granule_between_buckets(source_bucket_name: str, source_key: str, destination_bucket: str, destination_key: str, multipart_chunksize_mb: int) -> Dict[str, str]
+        Copies granule from source bucket to destination.
+        Also queries the destination_bucket to get additional metadata file info.
         Args:
             source_bucket_name: The name of the bucket in which the granule is currently located.
             source_key: source Granule path excluding s3://[bucket]/
@@ -335,15 +341,15 @@ FUNCTIONS
             destination_key: Destination granule path excluding s3://[bucket]/
             multipart_chunksize_mb: The maximum size of chunks to use when copying.
         Returns:
-           A dictionary containing all the file metadata needed for reconciliation with Cumulus with the following keys:
-                  "cumulusArchiveLocation" (str): Cumulus S3 bucket where the file is stored in.
-                  "orcaArchiveLocation" (str): ORCA S3 Glacier bucket that the file object is stored in
-                  "keyPath" (str): Full AWS key path including file name of the file where the file resides in ORCA.
-                  "sizeInBytes" (str): Size of the object in bytes
-                  "version" (str): Latest version of the file in the S3 Glacier bucket
-                  "ingestTime" (str): Date and time the file was originally ingested into ORCA.
-                  "etag" (str): etag of the file object in the AWS S3 Glacier bucket.
-        
+            A dictionary containing all the file metadata needed for reconciliation with Cumulus with the following keys:
+                    "cumulusArchiveLocation" (str): Cumulus S3 bucket where the file is stored in.
+                    "orcaArchiveLocation" (str): ORCA S3 Glacier bucket that the file object is stored in
+                    "keyPath" (str): Full AWS key path including file name of the file where the file resides in ORCA.
+                    "sizeInBytes" (str): Size of the object in bytes
+                    "version" (str): Latest version of the file in the S3 Glacier bucket
+                    "ingestTime" (str): Date and time the file was originally ingested into ORCA.
+                    "etag" (str): etag of the file object in the AWS S3 Glacier bucket.
+    
     handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any
         Lambda handler. Runs a cumulus task that
         Copies the files in {event}['input']
@@ -358,7 +364,7 @@ FUNCTIONS
                 METADATA_DB_QUEUE_URL (string, required): SQS URL of the metadata queue.
         
         Args:
-            event: Event passed into the step from the AWS step function workflow.
+            event: Event passed into the step from the aws workflow.
                 See schemas/input.json and schemas/config.json for more information.
         
         
@@ -375,13 +381,17 @@ FUNCTIONS
         Returns:
             True if file should be excluded from copy, False otherwise.
     
+    switch_file_to_output_format(file: Dict[str, Any]) -> None
+        Reformat keys for output schema.
+    
     task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str, Any]
         Copies the files in {event}['input']
         to the ORCA glacier bucket defined in ORCA_DEFAULT_BUCKET.
         
             Environment Variables:
                 ORCA_DEFAULT_BUCKET (string, required): Name of the default ORCA S3 Glacier bucket.
-                DEFAULT_MULTIPART_CHUNKSIZE_MB (int, optional): The default maximum size of chunks to use when copying. Can be overridden by collection config.
+                DEFAULT_MULTIPART_CHUNKSIZE_MB (int, optional): The default maximum size of chunks to use when copying.
+                    Can be overridden by collection config.
                 METADATA_DB_QUEUE_URL (string, required): SQS URL of the metadata queue.
         
         Args:
@@ -390,11 +400,19 @@ FUNCTIONS
         
         Returns:
             A dict representing input and copied files. See schemas/output.json for more information.
+
 DATA
     Any = typing.Any
+    CONFIG_EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
     CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = 'multipart_chunksize_mb'
     Dict = typing.Dict
-    CONFIG_EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
+    FILE_BUCKET_KEY = 'bucket'
+    FILE_FILENAME_KEY = 'fileName'
+    FILE_FILEPATH_KEY = 'key'
+    FILE_HASH_KEY = 'checksum'
+    FILE_HASH_TYPE_KEY = 'checksumType'
+    FILE_SOURCE_URI_KEY = 'source'
+    LOGGER = <cumulus_logger.CumulusLogger object>
     List = typing.List
     MB = 1048576
     Union = typing.Union

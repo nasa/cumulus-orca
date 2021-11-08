@@ -1,6 +1,7 @@
 """
 Name: copy_to_glacier.py
-Description: Lambda function that takes a Cumulus message, extracts a list of files, and copies those files from their current storage location into a staging/glacier location.
+Description: Lambda function that takes a Cumulus message, extracts a list of files,
+and copies those files from their current storage location into a staging/glacier location.
 """
 import os
 import re
@@ -19,6 +20,13 @@ CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = "multipart_chunksize_mb"
 CONFIG_EXCLUDE_FILE_TYPES_KEY = "excludeFileTypes"
 # Set Cumulus LOGGER
 LOGGER = CumulusLogger()
+
+FILE_FILENAME_KEY = "fileName"
+FILE_BUCKET_KEY = "bucket"
+FILE_FILEPATH_KEY = "key"
+FILE_SOURCE_URI_KEY = "source"
+FILE_HASH_KEY = "checksum"
+FILE_HASH_TYPE_KEY = "checksumType"
 
 
 def should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -> bool:
@@ -45,7 +53,8 @@ def copy_granule_between_buckets(
     multipart_chunksize_mb: int,
 ) -> Dict[str, str]:
     """
-    Copies granule from source bucket to destination. Also queries the destination_bucket to get additional metadata file info.
+    Copies granule from source bucket to destination.
+    Also queries the destination_bucket to get additional metadata file info.
     Args:
         source_bucket_name: The name of the bucket in which the granule is currently located.
         source_key: source Granule path excluding s3://[bucket]/
@@ -86,14 +95,14 @@ def copy_granule_between_buckets(
         if ver["IsLatest"]:
             LOGGER.info("collecting metadata from file version")
             etag = ver["ETag"]
-            sizeInBytes = ver["Size"]
+            size_in_bytes = ver["Size"]
             version = ver["VersionId"]
             break
     files_dictionary = {
         "cumulusArchiveLocation": source_bucket_name,
         "orcaArchiveLocation": destination_bucket,
         "keyPath": destination_key,
-        "sizeInBytes": sizeInBytes,
+        "sizeInBytes": size_in_bytes,
         "version": version,
         "ingestTime": datetime.now(timezone.utc).isoformat(),
         "etag": etag,
@@ -146,7 +155,8 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     if multipart_chunksize_mb_str is None:
         multipart_chunksize_mb = int(os.environ["DEFAULT_MULTIPART_CHUNKSIZE_MB"])
         LOGGER.debug(
-            "{CONFIG_MULTIPART_CHUNKSIZE_MB_KEY} is not set for config. Using default value of {multipart_chunksize_mb}.",
+            "{CONFIG_MULTIPART_CHUNKSIZE_MB_KEY} is not set for config. "
+            "Using default value of {multipart_chunksize_mb}.",
             CONFIG_MULTIPART_CHUNKSIZE_MB_KEY=CONFIG_MULTIPART_CHUNKSIZE_MB_KEY,
             multipart_chunksize_mb=multipart_chunksize_mb,
         )
@@ -165,10 +175,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     copied_file_urls = []
 
     # initiate empty SQS body dict
-    sqs_body = {}
-    sqs_body["provider"] = {}
-    sqs_body["collection"] = {}
-    sqs_body["granule"] = {}
+    sqs_body = {"provider": {}, "collection": {}, "granule": {}}
     # 'providerName' set to None because Cumulus only returns providerId for now.
     # In case it is available in the future, update orca_copy_to_glacier_workflow.asl.json and config.json as needed
     sqs_body["provider"]["providerName"] = None
@@ -188,7 +195,8 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
             granule_data[granuleId] = {"granuleId": granuleId, "files": []}
         # populate the SQS body for granules
         sqs_body["granule"]["cumulusGranuleId"] = granuleId
-        granule["createdAt"] = "2021-10-08T19:24:07.605323Z" # remove this line once this card is complete https://bugs.earthdata.nasa.gov/browse/CUMULUS-2718
+        granule[
+            "createdAt"] = "2021-10-08T19:24:07.605323Z"  # remove this line once this card is complete https://bugs.earthdata.nasa.gov/browse/CUMULUS-2718
         sqs_body["granule"]["cumulusCreateTime"] = granule["createdAt"].replace("Z", "+00:00")
         sqs_body["granule"]["executionId"] = config["executionId"]
         sqs_body["granule"]["ingestTime"] = datetime.now(timezone.utc).isoformat()
@@ -197,30 +205,38 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
 
         # Iterate through the files in a granule object
         for file in granule["files"]:
-            source_name = file["name"]
-            source_filepath = file["filepath"]
-            if should_exclude_files_type(source_name, exclude_file_types):
+            file_name = file[FILE_FILENAME_KEY]
+            file_filepath = file[FILE_FILEPATH_KEY]
+            file_bucket = file[FILE_BUCKET_KEY]
+            file_source_uri = file[FILE_SOURCE_URI_KEY]
+            file_hash = file.get(FILE_HASH_KEY, None)
+            file_hash_type = file.get(FILE_HASH_TYPE_KEY, None)
+
+            switch_file_to_output_format(file)
+
+            if should_exclude_files_type(file_name, exclude_file_types):
                 LOGGER.info(
-                    "Excluding {source_name} from glacier backup because of collection configured {CONFIG_EXCLUDE_FILE_TYPES_KEY}.",
-                    source_name=source_name,
+                    "Excluding {source_name} from glacier backup "
+                    "because of collection configured {CONFIG_EXCLUDE_FILE_TYPES_KEY}.",
+                    source_name=file_name,
                     CONFIG_EXCLUDE_FILE_TYPES_KEY=CONFIG_EXCLUDE_FILE_TYPES_KEY,
                 )
                 continue
             result = copy_granule_between_buckets(
-                source_bucket_name=file["bucket"],
-                source_key=source_filepath,
+                source_bucket_name=file_bucket,
+                source_key=file_filepath,
                 destination_bucket=default_bucket,
-                destination_key=source_filepath,
+                destination_key=file_filepath,
                 multipart_chunksize_mb=multipart_chunksize_mb,
             )
-            result["name"] = source_name
+            result["name"] = file_name
 
-            result["hash"] = file.get("checksum", None)
-            result["hashType"] = file.get("checksumType", None)
-            copied_file_urls.append(file["filename"])
+            result["hash"] = file_hash
+            result["hashType"] = file_hash_type
+            copied_file_urls.append(file_source_uri)
             LOGGER.info(
                 "Copied {source_filepath} into glacier storage bucket {default_bucket}.",
-                source_filepath=source_filepath,
+                source_filepath=file_filepath,
                 default_bucket=default_bucket,
             )
             # Add file record to metadata SQS message
@@ -232,6 +248,16 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
         sqs_library.post_to_metadata_queue(sqs_body, metadata_queue_url)
 
     return {"granules": granules_list, "copied_to_glacier": copied_file_urls}
+
+
+def switch_file_to_output_format(file: Dict[str, Any]) -> None:
+    """
+    Reformat keys for output schema.
+    """
+    file["name"] = file.pop(FILE_FILENAME_KEY)
+    file["bucket"] = file.pop(FILE_BUCKET_KEY)
+    file["filepath"] = file.pop(FILE_FILEPATH_KEY)
+    file["filename"] = file.pop(FILE_SOURCE_URI_KEY)
 
 
 # handler that is provided to aws lambda

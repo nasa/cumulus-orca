@@ -23,6 +23,9 @@ and includes an additional section for migration notes.
 ### Added
 - *ORCA-227* Added modules/secretsmanager directory that contains terraform code for deploying AWS secretsmanager.
 
+### Changed
+- *ORCA-287* Updated copy_to_glacier and extract_filepaths_for_granule to [new Cumulus file format](https://github.com/nasa/cumulus/blob/master/packages/schemas/files.schema.json). 
+
 ### Migration Notes
 
 - The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variables. The following two variable names have changed:
