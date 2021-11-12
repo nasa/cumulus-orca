@@ -165,13 +165,10 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     copied_file_urls = []
 
     # initiate empty SQS body dict
-    sqs_body = {}
-    sqs_body["provider"] = {}
-    sqs_body["collection"] = {}
-    sqs_body["granule"] = {}
+    sqs_body = {"provider": {}, "collection": {}, "granule": {}}
     # 'providerName' set to None because Cumulus only returns providerId for now.
     # In case it is available in the future, update orca_copy_to_glacier_workflow.asl.json and config.json as needed
-    sqs_body["provider"]["providerName"] = None
+    sqs_body["provider"]["name"] = None
     sqs_body["provider"]["providerId"] = config["providerId"]
     sqs_body["collection"]["shortname"] = config["collectionShortname"]
     sqs_body["collection"]["version"] = config["collectionVersion"]
