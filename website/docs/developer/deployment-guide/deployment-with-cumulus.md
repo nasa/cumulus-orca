@@ -77,6 +77,7 @@ module "orca" {
   db_host_endpoint    = var.db_host_endpoint
   db_user_password    = var.db_user_password
   orca_default_bucket = var.orca_default_bucket
+  api_gateway_policy_vpc_id = var.api_gateway_policy_vpc_id
 
   ## OPTIONAL
   # db_admin_username                                    = "postgres"
@@ -110,7 +111,7 @@ optional variables can be found in the [variables section](#orca-variables).
 - orca_default_bucket
 - db_user_password
 - db_host_endpoint
-
+- api_gateway_policy_vpc_id
 #### Required Values Retrieved from Cumulus Variables
 
 The following variables are set as part of your Cumulus deployment and are
@@ -172,6 +173,11 @@ variable "orca_default_bucket" {
   description = "Default ORCA S3 Glacier bucket to use."
 }
 
+variable "api_gateway_policy_vpc_id" {
+  type        = string
+  description = "VPC ID that will have access to the API gateways"
+}
+
 ```
 
 
@@ -209,6 +215,9 @@ db_admin_password = "my-super-secret-database-owner-password"
 ## PostgreSQL database host endpoint to connect to.
 db_host_endpoint = "aws.postgresrds.host"
 
+## VPC ID that will have access to the API gateways.
+api_gateway_policy_vpc_id = "vpc-12345678"
+
 ```
 
 Below describes the type of value expected for each variable.
@@ -217,6 +226,7 @@ Below describes the type of value expected for each variable.
 * `orca_default_bucket` (string) - default S3 glacier bucket to use for ORCA data.
 * `db_admin_password` (string) - password for the postgres user.
 * `db_host_endpoint`(string) - Database host endpoint to connect to.
+* `api_gateway_policy_vpc_id` - VPC ID that will have access to the API gateways.
 
 Additional variable definitions can be found in the [ORCA variables](#orca-variables)
 section of the document.
@@ -432,7 +442,7 @@ file. The variables must be set with proper values for your environment in the
 | `db_host_endpoint`     | Database host endpoint to connect to.                   | "aws.postgresrds.host"        |
 | `db_user_password`     | Password for RDS database user authentication           | "My_Sup3rS3cr3tuserPassw0rd"  |
 | `orca_default_bucket`  | Default ORCA S3 Glacier bucket to use.                  | "PREFIX-orca-primary"         |
-
+| `api_gateway_policy_vpc_id`| VPC ID that will have access to the API gateways.   |  "vpc-12345678"               |
 
 ### Optional Variables
 

@@ -20,3 +20,8 @@ variable "orca_catalog_reporting_invoke_arn" {
   type        = string
   description = "Invoke ARN of the orca_catalog_reporting lambda function"
 }
+
+variable "api_gateway_policy_vpc_id" {
+  type        = string
+  description = "VPC ID that will have access to the API gateways"
+}

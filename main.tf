@@ -27,10 +27,11 @@ module "orca" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  db_admin_password   = var.db_admin_password
-  db_host_endpoint    = var.db_host_endpoint
-  db_user_password    = var.db_user_password
-  orca_default_bucket = var.orca_default_bucket
+  db_admin_password         = var.db_admin_password
+  db_host_endpoint          = var.db_host_endpoint
+  db_user_password          = var.db_user_password
+  orca_default_bucket       = var.orca_default_bucket
+  api_gateway_policy_vpc_id = var.api_gateway_policy_vpc_id
 
   ## OPTIONAL
   db_admin_username                                    = var.db_admin_username

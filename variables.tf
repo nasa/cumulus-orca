@@ -80,6 +80,11 @@ variable "orca_default_bucket" {
   description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
 }
 
+variable "api_gateway_policy_vpc_id" {
+  type        = string
+  description = "VPC ID that will have access to the API gateways"
+}
+
 ## OPTIONAL
 
 variable "db_admin_username" {

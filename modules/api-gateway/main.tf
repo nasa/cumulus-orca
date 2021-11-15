@@ -73,12 +73,17 @@ resource "aws_api_gateway_rest_api_policy" "orca_catalog_reporting_api_resource_
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Effect": "Allow",
+      "Effect": "Deny",
       "Principal": {
         "AWS": "*"
       },
       "Action": "execute-api:Invoke",
       "Resource": "${aws_api_gateway_rest_api.orca_catalog_reporting_api.execution_arn}"
+      "Condition" : {
+        "StringNotEquals": {
+          "aws:SourceVpce": "${var.api_gateway_policy_vpc_id}"
+          }
+        }
     }
   ]
 }
@@ -159,12 +164,17 @@ resource "aws_api_gateway_rest_api_policy" "request_status_for_granule_api_resou
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Effect": "Allow",
+      "Effect": "Deny",
       "Principal": {
         "AWS": "*"
       },
       "Action": "execute-api:Invoke",
       "Resource": "${aws_api_gateway_rest_api.request_status_for_granule_api.execution_arn}"
+      "Condition" : {
+        "StringNotEquals": {
+          "aws:SourceVpce": "${var.api_gateway_policy_vpc_id}"
+          }
+        }
     }
   ]
 }
@@ -246,12 +256,17 @@ resource "aws_api_gateway_rest_api_policy" "request_status_for_job_api_resource_
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Effect": "Allow",
+      "Effect": "Deny",
       "Principal": {
         "AWS": "*"
       },
       "Action": "execute-api:Invoke",
       "Resource": "${aws_api_gateway_rest_api.request_status_for_job_api.execution_arn}"
+      "Condition" : {
+        "StringNotEquals": {
+          "aws:SourceVpce": "${var.api_gateway_policy_vpc_id}"
+          }
+        }
     }
   ]
 }
