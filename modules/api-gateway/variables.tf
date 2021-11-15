@@ -23,5 +23,11 @@ variable "orca_catalog_reporting_invoke_arn" {
 
 variable "api_gateway_policy_vpc_id" {
   type        = string
-  description = "VPC ID that will have access to the API gateways"
+  description = "VPC ID that will have access to the API gateway"
+}
+
+variable "api_gateway_stage_name" {
+  type        = string
+  description = "stage name for the ORCA cumulus reconciliation api gateway"
+  default     = "orca"
 }

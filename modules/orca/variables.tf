@@ -86,7 +86,7 @@ variable "orca_default_bucket" {
 
 variable "api_gateway_policy_vpc_id" {
   type        = string
-  description = "VPC ID that will have access to the API gateways"
+  description = "VPC ID that will have access to the API gateway"
 }
 
 ## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.

@@ -22,9 +22,9 @@ and includes an additional section for migration notes.
 - *ORCA-288* Removed copy_to_glacier_cumulus_translator due to better consistency in Cumulus's [file dictionary](https://github.com/nasa/cumulus/blob/master/packages/schemas/files.schema.json).
 
 ### Added
-- *ORCA-256* Added AWS API Gateway in lambdas.tf for the catalog reporting lambda.
+- *ORCA-256* Added AWS API Gateway in modules/api_gateway/main.tf for the catalog reporting lambda.
 - *ORCA-227* Added modules/secretsmanager directory that contains terraform code for deploying AWS secretsmanager.
-- *ORCA-177* Added AWS API Gateway in lambdas.tf for the request_status_for_granule and request_status_for_job lambdas.
+- *ORCA-177* Added AWS API Gateway in modules/api_gateway/main.tf for the request_status_for_granule and request_status_for_job lambdas.
 - *ORCA-257* orca_catalog_reporting lambda now returns data from actual catalog.
 
 ### Changed
@@ -40,6 +40,7 @@ and includes an additional section for migration notes.
 - These are the new variables added:
   - db_admin_username (defaults to "postgres")
   - db_host_endpoint
+  - api_gateway_policy_vpc_id
 - Add the following ORCA required variables definition to your `variables.tf` or `orca_variables.tf` file.
 
 ```terraform
@@ -56,6 +57,11 @@ variable "db_user_password" {
 variable "db_host_endpoint" {
   type        = string
   description = "Database host endpoint to connect to."
+}
+
+variable "api_gateway_policy_vpc_id" {
+  type        = string
+  description = "VPC ID that will have access to the API gateways"
 }
 ```
 - Update the `orca.tf` file to include all of the updated and new variables as seen below. Note the change to source and the commented out optional variables.
@@ -87,6 +93,7 @@ variable "db_host_endpoint" {
   db_admin_password   = var.db_admin_password
   db_user_password    = var.db_user_password
   db_host_endpoint    = var.db_host_endpoint
+  api_gateway_policy_vpc_id = var.api_gateway_policy_vpc_id
   ## OPTIONAL
   db_admin_username                                    = "postgres"
   default_multipart_chunksize_mb                       = 250
