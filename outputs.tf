@@ -52,20 +52,6 @@ output "orca_lambda_post_copy_request_to_queue_arn" {
   value       = module.orca.orca_lambda_post_copy_request_to_queue_arn
 }
 
-output "orca_catalog_reporting_api_invoke_url" {
-  description = "The URL to invoke the API for catalog reporting lambda"
-  value       = module.orca.orca_catalog_reporting_api_invoke_url
-}
-
-output "orca_request_status_for_granule_api_invoke_url" {
-  description = "The URL to invoke the API for request_status_for_granule lambda"
-  value       = module.orca.orca_request_status_for_granule_api_invoke_url
-}
-
-output "orca_request_status_for_job_api_invoke_url" {
-  description = "The URL to invoke the API for request_status_for_job lambda"
-  value       = module.orca.orca_request_status_for_job_api_invoke_url
-}
 ## SQS Module outputs
 ## =============================================================================
 output "orca_sqs_metadata_queue_arn" {
@@ -102,4 +88,21 @@ output "orca_sqs_status_update_queue_id" {
 output "orca_secretsmanager_arn" {
   description = "The Amazon Resource Name (ARN) of the AWS secretsmanager"
   value       = module.orca.orca_secretsmanager_arn
+}
+
+## API gateway Module outputs
+## =============================================================================
+output "orca_catalog_reporting_api_invoke_url" {
+  description = "The URL to invoke the API for catalog reporting lambda"
+  value       = module.orca.orca_catalog_reporting_api_invoke_url
+}
+
+output "orca_request_status_for_granule_api_invoke_url" {
+  description = "The URL to invoke the API for request_status_for_granule lambda"
+  value       = module.orca.orca_request_status_for_granule_api_invoke_url
+}
+
+output "orca_request_status_for_job_api_invoke_url" {
+  description = "The URL to invoke the API for request_status_for_job lambda"
+  value       = module.orca.orca_request_status_for_job_api_invoke_url
 }

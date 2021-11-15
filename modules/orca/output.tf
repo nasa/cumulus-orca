@@ -47,22 +47,6 @@ output "orca_lambda_post_copy_request_to_queue_arn" {
   value       = module.orca_lambdas.post_copy_request_to_queue_arn
 }
 
-output "orca_catalog_reporting_api_invoke_url" {
-  description = "The URL to invoke the API for catalog reporting lambda"
-  value       = module.orca_lambdas.catalog_reporting_api_invoke_url
-}
-
-output "orca_request_status_for_granule_api_invoke_url" {
-  description = "The URL to invoke the API for request_status_for_granule lambda"
-  value       = module.orca_lambdas.request_status_for_granule_api_invoke_url
-}
-
-output "orca_request_status_for_job_api_invoke_url" {
-  description = "The URL to invoke the API for request_status_for_job lambda"
-  value       = module.orca_lambdas.request_status_for_job_api_invoke_url
-}
-
-
 ## Workflow Module Outputs (orca_workflows)
 ## =============================================================================
 ## No workflow outputs currently requested/needed
@@ -77,7 +61,7 @@ output "orca_sqs_metadata_queue_arn" {
 
 output "orca_sqs_metadata_queue_id" {
   description = "The URL of the metadata-queue SQS"
-  value       =  module.orca_sqs.orca_sqs_metadata_queue_id
+  value       = module.orca_sqs.orca_sqs_metadata_queue_id
 }
 
 
@@ -108,4 +92,22 @@ output "orca_sqs_status_update_queue_id" {
 output "orca_secretsmanager_arn" {
   description = "The Amazon Resource Name (ARN) of the AWS secretsmanager"
   value       = module.orca_secretsmanager.secretsmanager_arn
+}
+
+
+## APi gateway Module Outputs (orca_api_gateway)
+## =============================================================================
+output "orca_catalog_reporting_api_invoke_url" {
+  value       = module.orca_api_gateway.catalog_reporting_api_invoke_url
+  description = "The URL to invoke the API for catalog reporting lambda"
+}
+
+output "orca_request_status_for_granule_api_invoke_url" {
+  value       = module.orca_api_gateway.request_status_for_granule_api_invoke_url
+  description = "The URL to invoke the API for request_status_for_granule lambda"
+}
+
+output "orca_request_status_for_job_api_invoke_url" {
+  value       = module.orca_api_gateway.request_status_for_job_api_invoke_url
+  description = "The URL to invoke the API for request_status_for_job lambda"
 }
