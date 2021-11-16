@@ -78,6 +78,18 @@ resource "aws_api_gateway_integration_response" "orca_catalog_reporting_api_resp
   resource_id = aws_api_gateway_resource.orca_catalog_reporting_api_resource.id
   http_method = aws_api_gateway_method.orca_catalog_reporting_api_method.http_method
   status_code = aws_api_gateway_method_response.orca_catalog_reporting_response_200.status_code
+  # Transforms the backend JSON response to XML. Currently being used by create_http_error_dict() function in orca_catalog_reporting.py
+  response_templates = {
+    "application/json" = <<EOF
+    #set($inputRoot = $input.path('$'))
+    $input.json("$")
+    #if($input.path("stackTrace") != '')
+    #set($context.responseOverride.status = 500)
+    #elseif($input.path("httpStatus") != '')
+    #set($context.responseOverride.status = $input.path('httpStatus'))
+    #end
+    EOF
+  }
 }
 
 resource "aws_lambda_permission" "orca_catalog_reporting_api_permission" {
@@ -125,6 +137,18 @@ resource "aws_api_gateway_integration_response" "request_status_for_granule_api_
   resource_id = aws_api_gateway_resource.request_status_for_granule_api_resource.id
   http_method = aws_api_gateway_method.request_status_for_granule_api_method.http_method
   status_code = aws_api_gateway_method_response.request_status_for_granule_response_200.status_code
+  # Transforms the backend JSON response to XML. Currently being used by create_http_error_dict() function in request_status_for_granule.py
+  response_templates = {
+    "application/json" = <<EOF
+    #set($inputRoot = $input.path('$'))
+    $input.json("$")
+    #if($input.path("stackTrace") != '')
+    #set($context.responseOverride.status = 500)
+    #elseif($input.path("httpStatus") != '')
+    #set($context.responseOverride.status = $input.path('httpStatus'))
+    #end
+    EOF
+  }
 }
 
 resource "aws_lambda_permission" "request_status_for_granule_api_permission" {
@@ -172,6 +196,18 @@ resource "aws_api_gateway_integration_response" "request_status_for_job_api_resp
   resource_id = aws_api_gateway_resource.request_status_for_job_api_resource.id
   http_method = aws_api_gateway_method.request_status_for_job_api_method.http_method
   status_code = aws_api_gateway_method_response.request_status_for_job_response_200.status_code
+  # Transforms the backend JSON response to XML. Currently being used by create_http_error_dict() function in request_status_for_job.py
+  response_templates = {
+    "application/json" = <<EOF
+    #set($inputRoot = $input.path('$'))
+    $input.json("$")
+    #if($input.path("stackTrace") != '')
+    #set($context.responseOverride.status = 500)
+    #elseif($input.path("httpStatus") != '')
+    #set($context.responseOverride.status = $input.path('httpStatus'))
+    #end
+    EOF
+  }
 }
 
 resource "aws_lambda_permission" "request_status_for_job_api_permission" {
