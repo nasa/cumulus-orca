@@ -26,7 +26,7 @@ and includes an additional section for migration notes.
 - *ORCA-257* orca_catalog_reporting lambda now returns data from actual catalog.
 
 ### Changed
-- *ORCA-287* Updated extract_filepaths_for_granule to [new Cumulus file format](https://github.com/nasa/cumulus/blob/master/packages/schemas/files.schema.json). 
+- *ORCA-287* Updated copy_to_glacier and extract_filepaths_for_granule to [new Cumulus file format](https://github.com/nasa/cumulus/blob/master/packages/schemas/files.schema.json). 
 
 ### Migration Notes
 
