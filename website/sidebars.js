@@ -11,6 +11,7 @@ module.exports = {
         'about/architecture/architecture-software-system',
         'about/architecture/architecture-archive-container',
         'about/architecture/architecture-recover-container',
+        'about/architecture/architecture-api-container',
         'about/architecture/architecture-database-container',
     ],
     "Helpful Tips": [

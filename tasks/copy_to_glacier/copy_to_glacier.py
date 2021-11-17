@@ -1,6 +1,7 @@
 """
 Name: copy_to_glacier.py
-Description: Lambda function that takes a Cumulus message, extracts a list of files, and copies those files from their current storage location into a staging/glacier location.
+Description: Lambda function that takes a Cumulus message, extracts a list of files,
+and copies those files from their current storage location into a staging/glacier location.
 """
 import os
 import re
@@ -19,6 +20,13 @@ CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = "multipart_chunksize_mb"
 CONFIG_EXCLUDE_FILE_TYPES_KEY = "excludeFileTypes"
 # Set Cumulus LOGGER
 LOGGER = CumulusLogger()
+
+FILE_FILENAME_KEY = "fileName"
+FILE_BUCKET_KEY = "bucket"
+FILE_FILEPATH_KEY = "key"
+FILE_SOURCE_URI_KEY = "source"
+FILE_HASH_KEY = "checksum"
+FILE_HASH_TYPE_KEY = "checksumType"
 
 
 def should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -> bool:
@@ -194,8 +202,12 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
 
         # Iterate through the files in a granule object
         for file in granule["files"]:
-            source_name = file["name"]
-            source_filepath = file["filepath"]
+            file_name = file[FILE_FILENAME_KEY]
+            file_filepath = file[FILE_FILEPATH_KEY]
+            file_bucket = file[FILE_BUCKET_KEY]
+            file_source_uri = file[FILE_SOURCE_URI_KEY]
+            file_hash = file.get(FILE_HASH_KEY, None)
+            file_hash_type = file.get(FILE_HASH_TYPE_KEY, None)
             if should_exclude_files_type(source_name, exclude_file_types):
                 LOGGER.info(
                     "Excluding {source_name} from glacier backup because of collection configured {CONFIG_EXCLUDE_FILE_TYPES_KEY}.",
@@ -203,18 +215,17 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
                     CONFIG_EXCLUDE_FILE_TYPES_KEY=CONFIG_EXCLUDE_FILE_TYPES_KEY,
                 )
                 continue
-            result = copy_granule_between_buckets(
-                source_bucket_name=file["bucket"],
-                source_key=source_filepath,
-                destination_bucket=default_bucket,
-                destination_key=source_filepath,
-                multipart_chunksize_mb=multipart_chunksize_mb,
+            result = copy_granule_between_buckets(source_bucket_name=file_bucket,
+                                                  source_key=file_filepath,
+                                                  destination_bucket=default_bucket,
+                                                  destination_key=file_filepath,
+                                                  multipart_chunksize_mb=multipart_chunksize_mb,
             )
-            result["name"] = source_name
+            result["name"] = file_name
 
-            result["hash"] = file.get("checksum", None)
-            result["hashType"] = file.get("checksumType", None)
-            copied_file_urls.append(file["filename"])
+            result["hash"] = file_hash
+            result["hashType"] = file_hash_type
+            copied_file_urls.append(file_source_uri)
             LOGGER.info(
                 "Copied {source_filepath} into glacier storage bucket {default_bucket}.",
                 source_filepath=source_filepath,

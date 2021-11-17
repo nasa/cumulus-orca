@@ -5,13 +5,14 @@ Description:  Unit tests for extract_file_paths_for_granule.py.
 """
 import unittest
 import json
-from unittest.mock import Mock
 from cumulus_logger import CumulusLogger
 from test.helpers import LambdaContextMock, create_handler_event, create_task_event
 import extract_filepaths_for_granule
+
 # noinspection PyPackageRequirements
 import fastjsonschema as fastjsonschema
 from unittest.mock import patch, MagicMock, Mock
+
 
 class TestExtractFilePaths(unittest.TestCase):
     """
@@ -26,38 +27,61 @@ class TestExtractFilePaths(unittest.TestCase):
     def tearDown(self):
         CumulusLogger.error = self.mock_error
 
-    @patch("extract_filepaths_for_granule.task") 
+    @patch("extract_filepaths_for_granule.task")
     def test_handler_happy_path(self, mock_task: MagicMock):
         """
         Tests that between the lambda handler and CMA, input is translated into what task expects.
         """
         handler_input_event = create_handler_event()
-        handler_input_event["task_config"] =       {
-        "file-buckets": 
-            [
-              {"regex": ".*.h5$", "sampleFileName": "L0A_HR_RAW_product_0010-of-0420.h5", "bucket": "protected"},
-              {"regex": ".*.cmr.xml$", "sampleFileName": "L0A_HR_RAW_product_0010-of-0420.iso.xml", "bucket": "protected"},
-              {"regex": ".*.h5.mp$", "sampleFileName": "L0A_HR_RAW_product_0001-of-0019.h5.mp", "bucket": "public"},
-              {"regex": ".*.cmr.json$", "sampleFileName": "L0A_HR_RAW_product_0001-of-0019.cmr.json", "bucket": "public"
-            }
-          ],
-        "buckets": 
-
-          {"protected": {"name": "sndbx-cumulus-protected", "type": "protected"},
-          "internal": {"name": "sndbx-cumulus-internal", "type": "internal"},
-          "private": {"name": "sndbx-cumulus-private", "type": "private"},
-          "public": {"name": "sndbx-cumulus-public", "type": "public"}}
+        handler_input_event["task_config"] = {
+            "file-buckets": [
+                {
+                    "regex": ".*.h5$",
+                    "sampleFileName": "L0A_HR_RAW_product_0010-of-0420.h5",
+                    "bucket": "protected",
+                },
+                {
+                    "regex": ".*.cmr.xml$",
+                    "sampleFileName": "L0A_HR_RAW_product_0010-of-0420.iso.xml",
+                    "bucket": "protected",
+                },
+                {
+                    "regex": ".*.h5.mp$",
+                    "sampleFileName": "L0A_HR_RAW_product_0001-of-0019.h5.mp",
+                    "bucket": "public",
+                },
+                {
+                    "regex": ".*.cmr.json$",
+                    "sampleFileName": "L0A_HR_RAW_product_0001-of-0019.cmr.json",
+                    "bucket": "public",
+                },
+            ],
+            "buckets": {
+                "protected": {"name": "sndbx-cumulus-protected", "type": "protected"},
+                "internal": {"name": "sndbx-cumulus-internal", "type": "internal"},
+                "private": {"name": "sndbx-cumulus-private", "type": "private"},
+                "public": {"name": "sndbx-cumulus-public", "type": "public"},
+            },
         }
-            
+
         expected_task_input = {
             "input": handler_input_event["payload"],
-            "config": handler_input_event["task_config"]
-        } 
+            "config": handler_input_event["task_config"],
+        }
         mock_task.return_value = {
-            "granules": [{"granuleId": "L0A_HR_RAW_product_0003-of-0420",
-                         "keys": ["L0A_HR_RAW_product_0003-of-0420.h5",
-                                       "L0A_HR_RAW_product_0003-of-0420.cmr.json"]}]}
-        result = extract_filepaths_for_granule.handler(handler_input_event, self.context)
+            "granules": [
+                {
+                    "granuleId": "L0A_HR_RAW_product_0003-of-0420",
+                    "keys": [
+                        "L0A_HR_RAW_product_0003-of-0420.h5",
+                        "L0A_HR_RAW_product_0003-of-0420.cmr.json",
+                    ],
+                }
+            ]
+        }
+        result = extract_filepaths_for_granule.handler(
+            handler_input_event, self.context
+        )
         mock_task.assert_called_once_with(expected_task_input, self.context)
 
         self.assertEqual(mock_task.return_value, result["payload"])
@@ -78,10 +102,6 @@ class TestExtractFilePaths(unittest.TestCase):
         }
         exp_key3 = {
             "key": self.task_input_event["input"]["granules"][0]["files"][2]["key"],
-            "dest_bucket": None,
-        }
-        exp_key4 = {
-            "key": self.task_input_event["input"]["granules"][0]["files"][3]["key"],
             "dest_bucket": "sndbx-cumulus-public",
         }
         exp_gran = {
@@ -110,28 +130,17 @@ class TestExtractFilePaths(unittest.TestCase):
                     "0, 3)}",
                 },
                 {
-                    "bucket": "cumulus-test-sandbox-public",
-                    "duplicate_found": "True",
-                    "fileName": "s3://cumulus-test-sandbox-public/MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321_ndvi.jpg",
-                    "key": "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321_ndvi.jpg",
-                    "path": "jk2-IngestGranuleSuccess-1558420117156-test-data/files",
-                    "size": 9728,
-                    "type": "browse",
-                    "url_path": "{cmrMetadata.Granule.Collection.ShortName}___{cmrMetadata.Granule.Collection.VersionId}/{substring(file.name, "
-                    "0, 3)}",
-                },
-                {
                     "bucket": "cumulus-test-sandbox-protected-2",
-                    "fileName": "s3://cumulus-test-sandbox-protected-2/MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.json",
+                    "source": "s3://cumulus-test-sandbox-protected-2/MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.json",
                     "key": "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.json",
-                    "name": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.json",
+                    "fileName": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.json",
                     "type": "metadata",
                     "url_path": "{cmrMetadata.Granule.Collection.ShortName}___{cmrMetadata.Granule.Collection.VersionId}/{substring(file.name, "
                     "0, 3)}",
                 },
             ],
             "granuleId": self.task_input_event["input"]["granules"][0]["granuleId"],
-            "keys": [exp_key1, exp_key2, exp_key3, exp_key4],
+            "keys": [exp_key1, exp_key2, exp_key3],
             "version": "006",
         }
 
@@ -394,29 +403,33 @@ class TestExtractFilePaths(unittest.TestCase):
 
     def test_task_input_schema_return_error(self):
         """
-        Test that having no granules["files"]["key"] and granules["files"]["bucket"] give an error in input schema.
+        Test that having no granules["files"]["fileName"], ["key"], and ["bucket"] give an error in input schema.
         """
         input_event = {
-                            "granules":[
-                                {
-                                    "granuleId":"MOD09GQ.A0219115.N5aUCG.006.0656338553321",
-                                    "version":"006",
-                                    "files":[
-                                    {
-                                        "filename":"MOD09GQ.A0219115.N5aUCG.006.0656338553321.cmr.xml",
-                                    }
-                                    ]
-                                }
-                            ]
+            "granules": [
+                {
+                    "granuleId": "MOD09GQ.A0219115.N5aUCG.006.0656338553321",
+                    "version": "006",
+                    "files": [
+                        {
+                            "filename": "MOD09GQ.A0219115.N5aUCG.006.0656338553321.cmr.xml",
                         }
-         # Validate the input is correct by matching with the input schema
+                    ],
+                }
+            ]
+        }
+        # Validate the input is correct by matching with the input schema
         with open("schemas/input.json", "r") as input_schema:
             input_schema = json.loads(input_schema.read())
         try:
             validate_input = fastjsonschema.compile(input_schema)
             validate_input(input_event)
         except Exception as ex:
-            self.assertEqual(ex.message, "data.granules[0].files[0] must contain ['key', 'bucket'] properties")
+            self.assertEqual(
+                ex.message,
+                "data.granules[0].files[0] must contain ['fileName', 'key', 'bucket'] properties",
+            )
+
 
 if __name__ == "__main__":
     unittest.main(argv=["start"])

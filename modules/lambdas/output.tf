@@ -10,11 +10,6 @@ output "vpc_postgres_ingress_all_egress_id" {
 ## =============================================================================
 # Ingest Lambdas
 # ------------------------------------------------------------------------------
-output "copy_to_glacier_cumulus_translator_arn" {
-  description = "AWS ARN for the copy_to_glacier_cumulus_translator lambda."
-  value       = aws_lambda_function.copy_to_glacier_cumulus_translator.arn
-}
-
 output "copy_to_glacier_arn" {
   description = "AWS ARN for the copy_to_glacier lambda."
   value       = aws_lambda_function.copy_to_glacier.arn
@@ -22,7 +17,7 @@ output "copy_to_glacier_arn" {
 
 output "orca_catalog_reporting_arn" {
   description = "AWS ARN for the orca_catalog_reporting lambda."
-  value       = aws_lambda_function.orca_catalog_reporting_dummy.arn
+  value       = aws_lambda_function.orca_catalog_reporting.arn
 }
 
 

@@ -45,35 +45,6 @@ module "restore_object_arn" {
 # Ingest Lambdas Definitions and Resources
 # =============================================================================
 
-# copy_to_glacier_cumulus_translator - Transforms input from Cumulus Dashboard to copy_to_glacier format
-# ==============================================================================
-resource "aws_lambda_function" "copy_to_glacier_cumulus_translator" {
-  ## REQUIRED
-  function_name = "${var.prefix}_copy_to_glacier_cumulus_translator"
-  role          = module.restore_object_arn.restore_object_role_arn
-
-  ## OPTIONAL
-  description      = "Transforms input from Cumulus Dashboard to copy_to_glacier format."
-  filename         = "${path.module}/../../tasks/copy_to_glacier_cumulus_translator/copy_to_glacier_cumulus_translator.zip"
-  handler          = "copy_to_glacier_cumulus_translator.handler"
-  memory_size      = var.orca_ingest_lambda_memory_size
-  runtime          = "python3.7"
-  source_code_hash = filebase64sha256("${path.module}/../../tasks/copy_to_glacier_cumulus_translator/copy_to_glacier_cumulus_translator.zip")
-  tags             = local.tags
-  timeout          = var.orca_ingest_lambda_timeout
-
-  vpc_config {
-    subnet_ids         = var.lambda_subnet_ids
-    security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
-  }
-
-  environment {
-    variables = {
-      ORCA_DEFAULT_BUCKET = var.orca_default_bucket
-    }
-  }
-}
-
 # copy_to_glacier - Copies files to the ORCA S3 Glacier bucket
 resource "aws_lambda_function" "copy_to_glacier" {
   ## REQUIRED
@@ -386,26 +357,32 @@ resource "aws_s3_bucket_notification" "post_copy_request_to_queue_trigger" {
 
 }
 
-# orca_catalog_reporting_dummy - Returns reconcilliation report sample data
+# orca_catalog_reporting - Returns reconcilliation report data
 # ==============================================================================
-resource "aws_lambda_function" "orca_catalog_reporting_dummy" {
+resource "aws_lambda_function" "orca_catalog_reporting" {
   ## REQUIRED
-  function_name = "${var.prefix}_orca_catalog_reporting_dummy"
+  function_name = "${var.prefix}_orca_catalog_reporting"
   role          = module.restore_object_arn.restore_object_role_arn
 
   ## OPTIONAL
   description      = "Returns reconcilliation report sample data."
-  filename         = "${path.module}/../../tasks/orca_catalog_reporting_dummy/orca_catalog_reporting_dummy.zip"
-  handler          = "orca_catalog_reporting_dummy.handler"
+  filename         = "${path.module}/../../tasks/orca_catalog_reporting/orca_catalog_reporting.zip"
+  handler          = "orca_catalog_reporting.handler"
   memory_size      = var.orca_ingest_lambda_memory_size
   runtime          = "python3.7"
-  source_code_hash = filebase64sha256("${path.module}/../../tasks/orca_catalog_reporting_dummy/orca_catalog_reporting_dummy.zip")
+  source_code_hash = filebase64sha256("${path.module}/../../tasks/orca_catalog_reporting/orca_catalog_reporting.zip")
   tags             = local.tags
   timeout          = var.orca_ingest_lambda_timeout
 
   vpc_config {
     subnet_ids         = var.lambda_subnet_ids
     security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
+  }
+
+  environment {
+    variables = {
+      PREFIX = var.prefix
+    }
   }
 }
 

@@ -1,47 +1,7 @@
 {
   "Comment": "On-Demand execution of copy_to_glacier.",
-  "StartAt": "CopyToGlacierCumulusTranslator",
+  "StartAt": "CopyToGlacier",
   "States": {
-    "CopyToGlacierCumulusTranslator": {
-      "Parameters": {
-        "cma": {
-          "event.$": "$",
-          "task_config": {
-            "file_mapping":
-            {
-              "name": "fileName",
-              "filepath": "key",
-              "bucket": "bucket",
-              "filename": "source"
-            }
-          }
-        }
-      },
-      "Type": "Task",
-      "Resource": "${orca_lambda_copy_to_glacier_cumulus_translator_arn}",
-      "Retry": [
-        {
-          "ErrorEquals": [
-            "Lambda.ServiceException",
-            "Lambda.AWSLambdaException",
-            "Lambda.SdkClientException"
-          ],
-          "IntervalSeconds": 2,
-          "MaxAttempts": 3,
-          "BackoffRate": 2
-        }
-      ],
-      "Catch": [
-        {
-          "ErrorEquals": [
-            "States.ALL"
-          ],
-          "ResultPath": "$.exception",
-          "Next": "WorkflowFailed"
-        }
-      ],
-      "Next": "CopyToGlacier"
-    },
     "CopyToGlacier": {
       "Parameters": {
         "cma": {

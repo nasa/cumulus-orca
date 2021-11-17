@@ -144,15 +144,21 @@ The lambda handler event excepts a dictionary having a list of granules as input
 }
 ```
 ## Output
-The output of lambda handler returns a dictionary having a list of granules that consist of granuleID and keys. Check the output schema example [here](https://github.com/nasa/cumulus-orca/blob/master/tasks/extract_filepaths_for_granule/schemas/output.json).
+The output of lambda handler returns a dictionary having a list of granules that consist of granuleID and keys with their destination buckets. Check the output schema example [here](https://github.com/nasa/cumulus-orca/blob/master/tasks/extract_filepaths_for_granule/schemas/output.json).
 ```
 {
    "granules":[
       {
          "granuleId":"MOD09GQ.A0219114.N5aUCG.006.0656338553321",
          "keys":[
-            "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5",
-            "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5.mp"
+            {
+                "key": "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5",
+                "dest_bucket": "protected"
+            },
+            {
+                "key": "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5.mp",
+                "dest_bucket": "public"
+            }
          ]
       }
    ]
@@ -161,6 +167,8 @@ The output of lambda handler returns a dictionary having a list of granules that
 ```
 ## pydoc extract_filepaths_for_granule
 ```
+Help on module extract_filepaths_for_granule:
+
 NAME
     extract_filepaths_for_granule - Name: extract_filepaths_for_granule.py
 
@@ -170,50 +178,165 @@ DESCRIPTION
 CLASSES
     builtins.Exception(builtins.BaseException)
         ExtractFilePathsError
-
+    
     class ExtractFilePathsError(builtins.Exception)
      |  Exception to be raised if any errors occur
+     |  
+     |  Method resolution order:
+     |      ExtractFilePathsError
+     |      builtins.Exception
+     |      builtins.BaseException
+     |      builtins.object
+     |  
+     |  Data descriptors defined here:
+     |  
+     |  __weakref__
+     |      list of weak references to the object (if defined)
+     |  
+     |  ----------------------------------------------------------------------
+     |  Methods inherited from builtins.Exception:
+     |  
+     |  __init__(self, /, *args, **kwargs)
+     |      Initialize self.  See help(type(self)) for accurate signature.
+     |  
+     |  ----------------------------------------------------------------------
+     |  Static methods inherited from builtins.Exception:
+     |  
+     |  __new__(*args, **kwargs) from builtins.type
+     |      Create and return a new object.  See help(type) for accurate signature.
+     |  
+     |  ----------------------------------------------------------------------
+     |  Methods inherited from builtins.BaseException:
+     |  
+     |  __delattr__(self, name, /)
+     |      Implement delattr(self, name).
+     |  
+     |  __getattribute__(self, name, /)
+     |      Return getattr(self, name).
+     |  
+     |  __reduce__(...)
+     |      Helper for pickle.
+     |  
+     |  __repr__(self, /)
+     |      Return repr(self).
+     |  
+     |  __setattr__(self, name, value, /)
+     |      Implement setattr(self, name, value).
+     |  
+     |  __setstate__(...)
+     |  
+     |  __str__(self, /)
+     |      Return str(self).
+     |  
+     |  with_traceback(...)
+     |      Exception.with_traceback(tb) --
+     |      set self.__traceback__ to tb and return self.
+     |  
+     |  ----------------------------------------------------------------------
+     |  Data descriptors inherited from builtins.BaseException:
+     |  
+     |  __cause__
+     |      exception cause
+     |  
+     |  __context__
+     |      exception context
+     |  
+     |  __dict__
+     |  
+     |  __suppress_context__
+     |  
+     |  __traceback__
+     |  
+     |  args
 
 FUNCTIONS
+    get_regex_buckets(event)
+        Gets a dict of regular expressions and the corresponding archive bucket for files
+        matching the regex.
+        
+            Args:
+                event (dict): passed through from the handler
+        
+            Returns:
+                dict: dict containing regex and bucket.
+        
+            Raises:
+                ExtractFilePathsError: An error occurred parsing the input.
+    
     handler(event, context)
         Lambda handler. Extracts the key's for a granule from an input dict.
-
+        
         Args:
             event (dict): A dict with the following keys:
-
+        
                 granules (list(dict)): A list of dict with the following keys:
                     granuleId (string): The id of a granule.
                     files (list(dict)): list of dict with the following keys:
                         key (string): The key of the file to be returned.
                         other dictionary keys may be included, but are not used.
                     other dictionary keys may be included, but are not used.
-
-                Example: event: {'granules': [
-                                      {'granuleId': 'granxyz',
-                                       'version": '006',
-                                       'files': [
-                                            {'name': 'file1',
-                                             'key': 'key1',
-                                             'filename': 's3://dr-test-sandbox-protected/file1',
-                                             'type': 'metadata'} ]
-                                       }
-                                    ]
-                                 }
-
+        
+                Example: {
+                            "event":{
+                                "granules":[
+                                    {
+                                        "granuleId":"granxyz",
+                                        "version":"006",
+                                        "files":[
+                                        {
+                                            "fileName":"file1",
+                                            "key":"key1",
+                                            "source":"s3://dr-test-sandbox-protected/file1",
+                                            "type":"metadata"
+                                        }
+                                        ]
+                                    }
+                                ]
+                            }
+                            }
+        
             context (Object): None
-
+        
         Returns:
             dict: A dict with the following keys:
-
+        
                 'granules' (list(dict)): list of dict with the following keys:
                     'granuleId' (string): The id of a granule.
                     'keys' (list(string)): list of keys for the granule.
-
+        
             Example:
                 {"granules": [{"granuleId": "granxyz",
                              "keys": ["key1",
                                            "key2"]}]}
-
+        
         Raises:
             ExtractFilePathsError: An error occurred parsing the input.
+    
+    should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -> bool
+        Tests whether or not file is included in {excludeFileTypes}.
+        Args:
+            granule_url: s3 url of granule.
+            exclude_file_types: List of file extensions to exclude from sending to request_files
+        Returns:
+            True if file should be excluded from copy, False otherwise.
+    
+    task(event, context)
+        Task called by the handler to perform the work.
+        
+        This task will parse the input, removing the granuleId and file keys for a granule.
+        
+            Args:
+                event (dict): passed through from the handler
+                context (Object): passed through from the handler
+        
+            Returns:
+                dict: dict containing granuleId and keys. See handler for detail.
+        
+            Raises:
+                ExtractFilePathsError: An error occurred parsing the input.
+
+DATA
+    EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
+    LOGGER = <cumulus_logger.CumulusLogger object>
+    List = typing.List
 ```

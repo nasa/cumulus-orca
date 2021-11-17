@@ -74,10 +74,13 @@ FUNCTIONS
                 'requestId' (str)
                 'message' (str)
     
-    get_file_entries_for_granule_in_job(granule_id: str, job_id: str, db_connect_info: Dict) -> List[Dict]
+    get_file_entries_for_granule_in_job(granule_id: str, job_id: str, engine: sqlalchemy.future.engine.Engine) -> List[Dict]
         Gets the individual status entries for the files for the given job+granule.
         
         Args:
+            granule_id: The id of the granule to get file statuses for.
+            job_id: The id of the job to get file statuses for.
+            engine: The sqlalchemy engine to use for contacting the database.
         
         Returns: A Dict with the following keys:
             'file_name' (str): The name and extension of the file.
@@ -85,15 +88,17 @@ FUNCTIONS
             'status' (str): The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.
             'error_message' (str): If the restoration of the file errored, the error will be stored here. Otherwise, None.
     
-    get_job_entry_for_granule(granule_id: str, job_id: str, db_connect_info: Dict) -> Dict[str, Any]
-        Gets the orca_recoverfile status entries for the associated granule_id.
+    get_file_entries_for_granule_in_job_sql() -> <function text at 0x000001FD9D276820>
+    
+    get_job_entry_for_granule(granule_id: str, job_id: str, engine: sqlalchemy.future.engine.Engine) -> Union[Dict[str, Any], NoneType]
+        Gets the recovery_file status entries for the associated granule_id.
         If async_operation_id is non-None, then it will be used to filter results.
         Otherwise, only the item with the most recent request_time will be returned.
         
         Args:
             granule_id: The unique ID of the granule to retrieve status for.
             job_id: An optional additional filter to get a specific job's entry.
-            db_connect_info: The {database}.py defined db_connect_info.
+            engine: The sqlalchemy engine to use for contacting the database.
         Returns: A Dict with the following keys:
             'granule_id' (str): The unique ID of the granule to retrieve status for.
             'job_id' (str): The unique ID of the asyncOperation.
@@ -101,14 +106,18 @@ FUNCTIONS
             'completion_time' (DateTime, Optional):
                 The time, in UTC isoformat, when all granule_files were no longer 'pending'/'staged'.
     
-    get_most_recent_job_id_for_granule(granule_id: str, db_connect_info: Dict[str, <built-in function any>]) -> str
+    get_job_entry_for_granule_sql() -> <function text at 0x000001FD9D276820>
+    
+    get_most_recent_job_id_for_granule(granule_id: str, engine: sqlalchemy.future.engine.Engine) -> Union[str, NoneType]
         Gets the job_id for the most recent job that restores the given granule.
         
         Args:
             granule_id: The unique ID of the granule.
-            db_connect_info: The {database}.py defined db_connect_info.
+            engine: The sqlalchemy engine to use for contacting the database.
         
         Returns: The job_id for the given granule's restore job.
+    
+    get_most_recent_job_id_for_granule_sql() -> <function text at 0x000001FD9D276820>
     
     handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]
         Entry point for the request_status_for_granule Lambda.
@@ -119,13 +128,7 @@ FUNCTIONS
                     May apply to a request that covers multiple granules.
             context: An object provided by AWS Lambda. Used for context tracking.
         
-        Environment Vars: See requests_db.py's get_dbconnect_info for further details.
-            'DATABASE_PORT' (int): Defaults to 5432
-            'DATABASE_NAME' (str)
-            'DATABASE_USER' (str)
-            'PREFIX' (str)
-            '{prefix}-drdb-host' (str, secretsmanager)
-            '{prefix}-drdb-user-pass' (str, secretsmanager)
+        Environment Vars: See shared_db.py's get_configuration for further details.
         
         Returns: A Dict with the following keys:
             'granule_id' (str): The unique ID of the granule to retrieve status for.
@@ -133,12 +136,13 @@ FUNCTIONS
             'files' (List): Description and status of the files within the given granule. List of Dicts with keys:
                 'file_name' (str): The name and extension of the file.
                 'restore_destination' (str): The name of the glacier bucket the file is being copied to.
-                'status' (str): The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.
+                'status' (str): The status of the restoration of the file.
+                    May be 'pending', 'staged', 'success', or 'failed'.
                 'error_message' (str, Optional): If the restoration of the file errored, the error will be stored here.
             'request_time' (DateTime): The time, in UTC isoformat, when the request to restore the granule was initiated.
             'completion_time' (DateTime, Optional):
                 The time, in UTC isoformat, when all granule_files were no longer 'pending'/'staged'.
-                
+        
             Or, if an error occurs, see create_http_error_dict
                 400 if granule_id is missing. 500 if an error occurs when querying the database, 404 if not found.
     
@@ -179,4 +183,5 @@ DATA
     OUTPUT_REQUEST_TIME_KEY = 'request_time'
     OUTPUT_RESTORE_DESTINATION_KEY = 'restore_destination'
     OUTPUT_STATUS_KEY = 'status'
+    Union = typing.Union
 ```

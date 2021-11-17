@@ -1,10 +1,10 @@
 from http import HTTPStatus
 from typing import Dict, Any, List
 
-import database
-import requests_db
 from cumulus_logger import CumulusLogger
-from requests_db import DatabaseError
+from orca_shared.database import shared_db
+from sqlalchemy import text
+from sqlalchemy.future import Engine
 
 INPUT_JOB_ID_KEY = "asyncOperationId"
 
@@ -40,7 +40,10 @@ def task(job_id: str, db_connect_info: Dict, request_id: str) -> Dict[str, Any]:
     """
     if job_id is None or len(job_id) == 0:
         raise ValueError(f"job_id must be set to a non-empty value.")
-    status_entries = get_granule_status_entries_for_job(job_id, db_connect_info)
+
+    engine = shared_db.get_user_connection(db_connect_info)
+
+    status_entries = get_granule_status_entries_for_job(job_id, engine)
     if len(status_entries) == 0:
         return create_http_error_dict(
             "NotFound",
@@ -49,7 +52,7 @@ def task(job_id: str, db_connect_info: Dict, request_id: str) -> Dict[str, Any]:
             f"No granules found for job id '{job_id}'.",
         )
 
-    status_totals = get_status_totals_for_job(job_id, db_connect_info)
+    status_totals = get_status_totals_for_job(job_id, engine)
     return {
         OUTPUT_JOB_ID_KEY: job_id,
         OUTPUT_JOB_STATUS_TOTALS_KEY: status_totals,
@@ -57,50 +60,68 @@ def task(job_id: str, db_connect_info: Dict, request_id: str) -> Dict[str, Any]:
     }
 
 
+@shared_db.retry_operational_error()
 def get_granule_status_entries_for_job(
-    job_id: str, db_connect_info: Dict
+    job_id: str, engine: Engine
 ) -> List[Dict[str, Any]]:
     """
     Gets the recovery_job status entry for the associated job_id.
 
     Args:
         job_id: The unique asyncOperationId of the recovery job to retrieve status for.
-        db_connect_info: The {database} defined db_connect_info.
+        engine: The sqlalchemy engine to use for contacting the database.
 
     Returns: A list of dicts with the following keys:
         'granule_id' (str)
         'status' (str): pending|staged|success|failed
 
     """
-    sql = f"""
-            SELECT
-                granule_id as "{OUTPUT_GRANULE_ID_KEY}",
-                recovery_status.value AS "{OUTPUT_STATUS_KEY}"
-            FROM
-                recovery_job
-            JOIN recovery_status ON recovery_job.status_id=recovery_status.id
-            WHERE
-                job_id = %s
-            """
-
     try:
-        rows = database.single_query(sql, db_connect_info, (job_id,))
-    except database.DbError as err:
+        with engine.begin() as connection:
+            results = connection.execute(
+                get_granule_status_entries_for_job_sql(),
+                [{"job_id": job_id}],
+            )
+    except Exception as err:
         # Can't use f"" because of '{}' bug in CumulusLogger.
         LOGGER.error("DbError: {err}", err=str(err))
-        raise DatabaseError(str(err))
-    result = database.result_to_json(rows)
-    return result
+        raise
+
+    rows = []
+    for row in results:
+        rows.append(
+            {
+                OUTPUT_GRANULE_ID_KEY: row[OUTPUT_GRANULE_ID_KEY],
+                OUTPUT_STATUS_KEY: row[OUTPUT_STATUS_KEY],
+            }
+        )
+    return rows
 
 
-def get_status_totals_for_job(job_id: str, db_connect_info: Dict) -> Dict[str, int]:
+def get_granule_status_entries_for_job_sql() -> text:
+    return text(
+        f"""
+                SELECT
+                    granule_id as "{OUTPUT_GRANULE_ID_KEY}",
+                    recovery_status.value AS "{OUTPUT_STATUS_KEY}"
+                FROM
+                    recovery_job
+                JOIN recovery_status ON recovery_job.status_id=recovery_status.id
+                WHERE
+                    job_id = :job_id
+                """
+    )
+
+
+@shared_db.retry_operational_error()
+def get_status_totals_for_job(job_id: str, engine: Engine) -> Dict[str, int]:
     # noinspection SpellCheckingInspection
     """
     Gets the number of recovery_job for the given job_id for each possible status value.
 
     Args:
         job_id: The unique id of the recovery job to retrieve status for.
-        db_connect_info: The database defined db_connect_info.
+        engine: The sqlalchemy engine to use for contacting the database.
 
     Returns: A dictionary with the following keys:
         'pending' (int)
@@ -108,28 +129,36 @@ def get_status_totals_for_job(job_id: str, db_connect_info: Dict) -> Dict[str, i
         'success' (int)
         'failed' (int)
     """
-    # noinspection SpellCheckingInspection
-    sql = f"""
-            with granule_status_count AS (
-                SELECT status_id
-                    , count(*) as total
-                FROM recovery_job
-                WHERE job_id = %s
-                GROUP BY status_id
-            )
-            SELECT value
-                , coalesce(total, 0) as total
-            FROM recovery_status os
-            LEFT JOIN granule_status_count gsc ON (gsc.status_id = os.id)"""
-
     try:
-        rows = database.single_query(sql, db_connect_info, (job_id,))
-    except database.DbError as err:
+        with engine.begin() as connection:
+            results = connection.execute(
+                get_status_totals_for_job_sql(),
+                [{"job_id": job_id}],
+            )
+    except Exception as err:
         # Can't use f"" because of '{}' bug in CumulusLogger.
         LOGGER.error("DbError: {err}", err=str(err))
-        raise DatabaseError(str(err))
-    totals = {row["value"]: row["total"] for row in rows}
+        raise
+
+    totals = {row["value"]: row["total"] for row in results}
     return totals
+
+
+def get_status_totals_for_job_sql() -> text:
+    return text(
+        f"""
+                with granule_status_count AS (
+                    SELECT status_id
+                        , count(*) as total
+                    FROM recovery_job
+                    WHERE job_id = :job_id
+                    GROUP BY status_id
+                )
+                SELECT value
+                    , coalesce(total, 0) as total
+                FROM recovery_status os
+                LEFT JOIN granule_status_count gsc ON (gsc.status_id = os.id)"""
+    )
 
 
 def create_http_error_dict(
@@ -149,13 +178,15 @@ def create_http_error_dict(
             'requestId' (str)
             'message' (str)
     """
+    # CumulusLogger will error if a string containing '{' or '}' is passed in without escaping.
+    message = message.replace("{", "{{").replace("}", "}}")
     LOGGER.error(message)
     return {
         "errorType": error_type,
         "httpStatus": http_status_code,
         "requestId": request_id,
         # CumulusLogger will error if a string containing '{' or '}' is passed in without escaping.
-        "message": message.replace("{", "{{").replace("}", "}}")
+        "message": message.replace("{", "{{").replace("}", "}}"),
     }
 
 
@@ -167,13 +198,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             asyncOperationId: The unique asyncOperationId of the recovery job.
         context: An object provided by AWS Lambda. Used for context tracking.
 
-    Environment Vars: See requests_db.py's get_dbconnect_info for further details.
-        'DATABASE_PORT' (int): Defaults to 5432
-        'DATABASE_NAME' (str)
-        'DATABASE_USER' (str)
-        'PREFIX' (str)
-        '{prefix}-drdb-host' (str, secretsmanager)
-        '{prefix}-drdb-user-pass' (str, secretsmanager)
+    Environment Vars: See shared_db.py's get_configuration for further details.
 
     Returns: A Dict with the following keys:
         asyncOperationId (str): The unique ID of the asyncOperation.
@@ -189,23 +214,23 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         Or, if an error occurs, see create_http_error_dict
             400 if asyncOperationId is missing. 500 if an error occurs when querying the database.
     """
-    LOGGER.setMetadata(event, context)
-
-    job_id = event.get(INPUT_JOB_ID_KEY, None)
-    if job_id is None or len(job_id) == 0:
-        return create_http_error_dict(
-            "BadRequest",
-            HTTPStatus.BAD_REQUEST,
-            context.aws_request_id,
-            f"{INPUT_JOB_ID_KEY} must be set to a non-empty value.",
-        )
-    db_connect_info = requests_db.get_dbconnect_info()
     try:
+        LOGGER.setMetadata(event, context)
+
+        job_id = event.get(INPUT_JOB_ID_KEY, None)
+        if job_id is None or len(job_id) == 0:
+            return create_http_error_dict(
+                "BadRequest",
+                HTTPStatus.BAD_REQUEST,
+                context.aws_request_id,
+                f"{INPUT_JOB_ID_KEY} must be set to a non-empty value.",
+            )
+        db_connect_info = shared_db.get_configuration()
         return task(job_id, db_connect_info, context.aws_request_id)
-    except DatabaseError as db_error:
+    except Exception as error:
         return create_http_error_dict(
             "InternalServerError",
             HTTPStatus.INTERNAL_SERVER_ERROR,
             context.aws_request_id,
-            db_error.__str__(),
+            error.__str__(),
         )

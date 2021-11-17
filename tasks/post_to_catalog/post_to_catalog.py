@@ -11,6 +11,7 @@ from typing import Any, List, Dict, Union
 import fastjsonschema as fastjsonschema
 from cumulus_logger import CumulusLogger
 from orca_shared.database import shared_db
+from orca_shared.database.shared_db import retry_operational_error
 from sqlalchemy import text
 from sqlalchemy.future import Engine
 
@@ -64,6 +65,7 @@ def send_record_to_database(record: Dict[str, Any], engine: Engine) -> None:
     )
 
 
+@retry_operational_error()
 def create_catalog_records(
     provider: Dict[str, str],
     collection: Dict[str, str],
@@ -81,6 +83,8 @@ def create_catalog_records(
     """
     try:
         LOGGER.debug("Creating catalog records.")
+        # Could theoretically use same connection for multiple records.
+        # Would extend connection time. Serverless may throw a fit under specific circumstances.
         with engine.begin() as connection:
             LOGGER.debug("Creating provider record '{providerId}'", providerId=provider["providerId"])
             connection.execute(
@@ -102,6 +106,16 @@ def create_catalog_records(
                         "version": collection["version"],
                     }
                 ],
+            )
+            LOGGER.debug("Creating provider_collection_xref record.")
+            connection.execute(
+                create_provider_collection_xref_sql(),
+                [
+                    {
+                        "provider_id": provider["providerId"],
+                        "collection_id": collection["collectionId"]
+                    }
+                ]
             )
             LOGGER.debug("Creating granule record '{cumulusGranuleId}'", cumulusGranuleId=granule["cumulusGranuleId"])
             results = connection.execute(
@@ -179,6 +193,18 @@ def create_collection_sql():
             (collection_id, shortname, version)
     VALUES
         (:collection_id, :shortname, :version)
+    ON CONFLICT DO NOTHING
+    """
+    )
+
+
+def create_provider_collection_xref_sql():
+    return text(
+        """
+    INSERT INTO provider_collection_xref
+            (provider_id, collection_id)
+    VALUES
+        (:provider_id, :collection_id)
     ON CONFLICT DO NOTHING
     """
     )
