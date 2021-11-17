@@ -92,7 +92,7 @@ output "orca_secretsmanager_arn" {
 
 ## API gateway Module outputs
 ## =============================================================================
-output "orca_cumulus_reconciliation_api_deployment_invoke_url" {
-  value       = module.orca.orca_cumulus_reconciliation_api_deployment_invoke_url
+output "orca_api_deployment_invoke_url" {
+  value       = module.orca.orca_api_deployment_invoke_url
   description = "The URL to invoke the ORCA Cumulus reconciliation API gateway. Excludes the resource path"
 }
