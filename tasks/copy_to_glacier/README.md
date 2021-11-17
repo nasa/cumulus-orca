@@ -102,47 +102,47 @@ The `copy_to_glacier` lambda function expects that the input payload has a `gran
         "version": "006",
         "files": [
           {
-            "name": "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+            "fileName": "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
             "path": "MOD09GQ/006",
             "size": 6,
             "time": 1608318361000,
             "bucket": "orca-sandbox-protected",
             "url_path": "MOD09GQ/006/",
             "type": "",
-            "filename": "s3://orca-sandbox-protected/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
-            "filepath": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+            "source": "s3://orca-sandbox-protected/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+            "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
             "duplicate_found": true
           },
           {
-            "name": "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf.met",
+            "fileName": "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf.met",
             "path": "MOD09GQ/006",
             "size": 6,
             "time": 1608318366000,
             "bucket": "orca-sandbox-private",
             "url_path": "MOD09GQ/006",
             "type": "",
-            "filename": "s3://orca-sandbox-private/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf.met",
-            "filepath": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf.met",
+            "source": "s3://orca-sandbox-private/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf.met",
+            "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf.met",
             "duplicate_found": true
           },
           {
-            "name": "MOD09GQ.A2017025.h21v00.006.2017034065109_ndvi.jpg",
+            "fileName": "MOD09GQ.A2017025.h21v00.006.2017034065109_ndvi.jpg",
             "path": "MOD09GQ/006",
             "size": 6,
             "time": 1608318372000,
             "bucket": "orca-sandbox-public",
             "url_path": "MOD09GQ/006",
             "type": "",
-            "filename": "s3://orca-sandbox-public/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109_ndvi.jpg",
-            "filepath": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109_ndvi.jpg",
+            "source": "s3://orca-sandbox-public/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109_ndvi.jpg",
+            "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109_ndvi.jpg",
             "duplicate_found": true
           },
           {
-            "name": "MOD09GQ.A2017025.h21v00.006.2017034065109.cmr.xml",
+            "fileName": "MOD09GQ.A2017025.h21v00.006.2017034065109.cmr.xml",
             "bucket": "orca-sandbox-private",
-            "filename": "s3://orca-sandbox-private/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.cmr.xml",
+            "source": "s3://orca-sandbox-private/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.cmr.xml",
             "type": "metadata",
-            "filepath": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.cmr.xml",
+            "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.cmr.xml",
             "url_path": "MOD09GQ/006"
           }
         ],
@@ -273,8 +273,8 @@ See the schema [configuration file](https://github.com/nasa/cumulus-orca/blob/ma
 
 ## Metadata SQS body configuration
 
-The metadata SQS message body should contain the metadata attributes needed by Cumulus to perform analysis on discrepencies and for reconciliation.
-These information from the queue will then be ingested into a new ORCA lambda function that will update the records for the various objects in the ORCA catalog.
+The metadata SQS message body should contain the metadata attributes needed by Cumulus to perform analysis on discrepancies and for reconciliation.
+These entries from the queue will then be ingested into a new ORCA lambda function that will update the records for the various objects in the ORCA catalog.
 An example of a message is shown below:
 
 ```
@@ -318,6 +318,11 @@ Help on module copy_to_glacier:
 NAME
     copy_to_glacier
 
+DESCRIPTION
+    Name: copy_to_glacier.py
+    Description: Lambda function that takes a Cumulus message, extracts a list of files,
+    and copies those files from their current storage location into a staging/glacier location.
+
 FUNCTIONS
     copy_granule_between_buckets(source_bucket_name: str, source_key: str, destination_bucket: str, destination_key: str, multipart_chunksize_mb: int) -> None
         Copies granule from source bucket to destination.
@@ -343,7 +348,7 @@ FUNCTIONS
                                                                      Can be overridden by collection config.
         
         Args:
-            event: Event passed into the step from the AWS step function workflow.
+            event: Event passed into the step from the aws workflow.
                 See schemas/input.json and schemas/config.json for more information.
         
         
@@ -366,7 +371,8 @@ FUNCTIONS
         
             Environment Variables:
                 ORCA_DEFAULT_BUCKET (string, required): Name of the default ORCA S3 Glacier bucket.
-                DEFAULT_MULTIPART_CHUNKSIZE_MB (int, optional): The default maximum size of chunks to use when copying. Can be overridden by collection config.
+                DEFAULT_MULTIPART_CHUNKSIZE_MB (int, optional): The default maximum size of chunks to use when copying.
+                    Can be overridden by collection config.
         
         Args:
             event: Passed through from {handler}
@@ -374,11 +380,16 @@ FUNCTIONS
         
         Returns:
             A dict representing input and copied files. See schemas/output.json for more information.
+
 DATA
     Any = typing.Any
+    CONFIG_EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
     CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = 'multipart_chunksize_mb'
     Dict = typing.Dict
-    CONFIG_EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
+    FILE_BUCKET_KEY = 'bucket'
+    FILE_FILENAME_KEY = 'fileName'
+    FILE_FILEPATH_KEY = 'key'
+    FILE_SOURCE_URI_KEY = 'source'
     List = typing.List
     MB = 1048576
     Union = typing.Union
@@ -388,10 +399,8 @@ DATA
 
 ```
 Help on sqs_library:
-
 NAME
     sqs_library
-
 FUNCTIONS
     post_to_metadata_queue(sqs_body: Dict[str, Any], metadata_queue_url: str,) -> None:
         Posts metadata information to the metadata SQS queue.
@@ -424,10 +433,3 @@ DATA
     BACKOFF_FACTOR = 2
     INITIAL_BACKOFF_IN_SECONDS = 1
 ```
-
-
-
-
-
-
-    

@@ -1,6 +1,7 @@
 """
 Name: copy_to_glacier.py
-Description: Lambda function that takes a Cumulus message, extracts a list of files, and copies those files from their current storage location into a staging/glacier location.
+Description: Lambda function that takes a Cumulus message, extracts a list of files,
+and copies those files from their current storage location into a staging/glacier location.
 """
 import re
 import os
@@ -12,6 +13,11 @@ from run_cumulus_task import run_cumulus_task
 
 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = 'multipart_chunksize_mb'
 CONFIG_EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
+
+FILE_FILENAME_KEY = "fileName"
+FILE_BUCKET_KEY = "bucket"
+FILE_FILEPATH_KEY = "key"
+FILE_SOURCE_URI_KEY = "source"
 
 
 def should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -> bool:
@@ -124,20 +130,23 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
 
         # Iterate through the files in a granule object
         for file in granule['files']:
-            source_name = file['name']
-            source_filepath = file['filepath']
-            if should_exclude_files_type(source_name, exclude_file_types):
+            file_name = file[FILE_FILENAME_KEY]
+            file_filepath = file[FILE_FILEPATH_KEY]
+            file_bucket = file[FILE_BUCKET_KEY]
+            file_source_uri = file[FILE_SOURCE_URI_KEY]
+
+            if should_exclude_files_type(file_name, exclude_file_types):
                 print(
-                    f"Excluding {source_name} from glacier backup "
+                    f"Excluding {file_name} from glacier backup "
                     f"because of collection configured {CONFIG_EXCLUDE_FILE_TYPES_KEY}.")
                 continue
-            copy_granule_between_buckets(source_bucket_name=file['bucket'],
-                                         source_key=source_filepath,
+            copy_granule_between_buckets(source_bucket_name=file_bucket,
+                                         source_key=file_filepath,
                                          destination_bucket=default_bucket,
-                                         destination_key=source_filepath,
+                                         destination_key=file_filepath,
                                          multipart_chunksize_mb=multipart_chunksize_mb)
-            copied_file_urls.append(file['filename'])
-            print(f"Copied {source_filepath} into glacier storage bucket {default_bucket}.")
+            copied_file_urls.append(file_source_uri)
+            print(f"Copied {file_filepath} into glacier storage bucket {default_bucket}.")
 
     return {'granules': granules_list, 'copied_to_glacier': copied_file_urls}
 
