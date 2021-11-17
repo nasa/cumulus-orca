@@ -193,7 +193,8 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
             granule_data[granuleId] = {"granuleId": granuleId, "files": []}
         # populate the SQS body for granules
         sqs_body["granule"]["cumulusGranuleId"] = granuleId
-        granule["createdAt"] = "2021-10-08T19:24:07.605323Z" # remove this line once this card is complete https://bugs.earthdata.nasa.gov/browse/CUMULUS-2718
+        granule[
+            "createdAt"] = "2021-10-08T19:24:07.605323Z"  # remove this line once this card is complete https://bugs.earthdata.nasa.gov/browse/CUMULUS-2718
         sqs_body["granule"]["cumulusCreateTime"] = granule["createdAt"].replace("Z", "+00:00")
         sqs_body["granule"]["executionId"] = config["executionId"]
         sqs_body["granule"]["ingestTime"] = datetime.now(timezone.utc).isoformat()
@@ -208,10 +209,10 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
             file_source_uri = file[FILE_SOURCE_URI_KEY]
             file_hash = file.get(FILE_HASH_KEY, None)
             file_hash_type = file.get(FILE_HASH_TYPE_KEY, None)
-            if should_exclude_files_type(source_name, exclude_file_types):
+            if should_exclude_files_type(file_name, exclude_file_types):
                 LOGGER.info(
-                    "Excluding {source_name} from glacier backup because of collection configured {CONFIG_EXCLUDE_FILE_TYPES_KEY}.",
-                    source_name=source_name,
+                    "Excluding {file_name} from glacier backup because of collection configured {CONFIG_EXCLUDE_FILE_TYPES_KEY}.",
+                    file_name=file_name,
                     CONFIG_EXCLUDE_FILE_TYPES_KEY=CONFIG_EXCLUDE_FILE_TYPES_KEY,
                 )
                 continue
@@ -220,15 +221,15 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
                                                   destination_bucket=default_bucket,
                                                   destination_key=file_filepath,
                                                   multipart_chunksize_mb=multipart_chunksize_mb,
-            )
-            result["name"] = file_name
+                                                  )
 
+            result["name"] = file_name
             result["hash"] = file_hash
             result["hashType"] = file_hash_type
             copied_file_urls.append(file_source_uri)
             LOGGER.info(
-                "Copied {source_filepath} into glacier storage bucket {default_bucket}.",
-                source_filepath=source_filepath,
+                "Copied {file_filepath} into glacier storage bucket {default_bucket}.",
+                file_filepath=file_filepath,
                 default_bucket=default_bucket,
             )
             # Add file record to metadata SQS message

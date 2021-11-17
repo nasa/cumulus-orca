@@ -276,7 +276,7 @@ class TestCopyToGlacierHandler(TestCase):
         s3_cli.copy.assert_has_calls(copy_calls)
         sqs_body = {
             "provider": {
-                "providerName": None,
+                "name": None,
                 "providerId": event["config"]["providerId"],
             },
             "collection": {
@@ -299,16 +299,16 @@ class TestCopyToGlacierHandler(TestCase):
                         ][0]["bucket"],
                         "orcaArchiveLocation": os.environ["ORCA_DEFAULT_BUCKET"],
                         "keyPath": event["input"]["granules"][0]["files"][0][
-                            "filepath"
+                            copy_to_glacier.FILE_FILEPATH_KEY
                         ],
                         "sizeInBytes": ANY,
                         "version": ANY,
                         "ingestTime": ANY,
                         "etag": ANY,
-                        "name": event["input"]["granules"][0]["files"][0]["name"],
-                        "hash": event["input"]["granules"][0]["files"][0]["checksum"],
+                        "name": event["input"]["granules"][0]["files"][0][copy_to_glacier.FILE_FILENAME_KEY],
+                        "hash": event["input"]["granules"][0]["files"][0][copy_to_glacier.FILE_HASH_KEY],
                         "hashType": event["input"]["granules"][0]["files"][0][
-                            "checksumType"
+                            copy_to_glacier.FILE_HASH_TYPE_KEY
                         ],
                     },
                     {
@@ -317,16 +317,16 @@ class TestCopyToGlacierHandler(TestCase):
                         ][1]["bucket"],
                         "orcaArchiveLocation": os.environ["ORCA_DEFAULT_BUCKET"],
                         "keyPath": event["input"]["granules"][0]["files"][1][
-                            "filepath"
+                            copy_to_glacier.FILE_FILEPATH_KEY
                         ],
                         "sizeInBytes": ANY,
                         "version": ANY,
                         "ingestTime": ANY,
                         "etag": ANY,
-                        "name": event["input"]["granules"][0]["files"][1]["name"],
-                        "hash": event["input"]["granules"][0]["files"][1]["checksum"],
+                        "name": event["input"]["granules"][0]["files"][1][copy_to_glacier.FILE_FILENAME_KEY],
+                        "hash": event["input"]["granules"][0]["files"][1][copy_to_glacier.FILE_HASH_KEY],
                         "hashType": event["input"]["granules"][0]["files"][1][
-                            "checksumType"
+                            copy_to_glacier.FILE_HASH_TYPE_KEY
                         ],
                     },
                     {
@@ -335,16 +335,16 @@ class TestCopyToGlacierHandler(TestCase):
                         ][2]["bucket"],
                         "orcaArchiveLocation": os.environ["ORCA_DEFAULT_BUCKET"],
                         "keyPath": event["input"]["granules"][0]["files"][2][
-                            "filepath"
+                            copy_to_glacier.FILE_FILEPATH_KEY
                         ],
                         "sizeInBytes": ANY,
                         "version": ANY,
                         "ingestTime": ANY,
                         "etag": ANY,
-                        "name": event["input"]["granules"][0]["files"][2]["name"],
-                        "hash": event["input"]["granules"][0]["files"][2]["checksum"],
+                        "name": event["input"]["granules"][0]["files"][2][copy_to_glacier.FILE_FILENAME_KEY],
+                        "hash": event["input"]["granules"][0]["files"][2][copy_to_glacier.FILE_HASH_KEY],
                         "hashType": event["input"]["granules"][0]["files"][2][
-                            "checksumType"
+                            copy_to_glacier.FILE_HASH_TYPE_KEY
                         ],
                     },
                     {
@@ -353,16 +353,16 @@ class TestCopyToGlacierHandler(TestCase):
                         ][3]["bucket"],
                         "orcaArchiveLocation": os.environ["ORCA_DEFAULT_BUCKET"],
                         "keyPath": event["input"]["granules"][0]["files"][3][
-                            "filepath"
+                            copy_to_glacier.FILE_FILEPATH_KEY
                         ],
                         "sizeInBytes": ANY,
                         "version": ANY,
                         "ingestTime": ANY,
                         "etag": ANY,
-                        "name": event["input"]["granules"][0]["files"][3]["name"],
-                        "hash": event["input"]["granules"][0]["files"][3]["checksum"],
+                        "name": event["input"]["granules"][0]["files"][3][copy_to_glacier.FILE_FILENAME_KEY],
+                        "hash": event["input"]["granules"][0]["files"][3][copy_to_glacier.FILE_HASH_KEY],
                         "hashType": event["input"]["granules"][0]["files"][3][
-                            "checksumType"
+                            copy_to_glacier.FILE_HASH_TYPE_KEY
                         ],
                     },
                 ],
@@ -409,18 +409,18 @@ class TestCopyToGlacierHandler(TestCase):
                     "createdAt": "2021-10-08T19:24:07.605323Z",
                     "files": [
                         {
-                            "name": "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+                            copy_to_glacier.FILE_FILENAME_KEY: "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
                             "path": "MOD09GQ/006",
                             "size": 6,
                             "time": 1608318361000,
-                            "bucket": "orca-sandbox-protected",
+                            copy_to_glacier.FILE_BUCKET_KEY: "orca-sandbox-protected",
                             "url_path": "MOD09GQ/006/",
                             "type": "",
-                            "filename": "s3://orca-sandbox-protected/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
-                            "filepath": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+                            copy_to_glacier.FILE_SOURCE_URI_KEY: "s3://orca-sandbox-protected/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+                            copy_to_glacier.FILE_FILEPATH_KEY: "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
                             "duplicate_found": True,
-                            "checksumType": "md5",
-                            "checksum": "bogus_checksum_value",
+                            copy_to_glacier.FILE_HASH_TYPE_KEY: "md5",
+                            copy_to_glacier.FILE_HASH_KEY: "bogus_checksum_value",
                         },
                     ],
                 },
@@ -431,18 +431,18 @@ class TestCopyToGlacierHandler(TestCase):
                     "createdAt": "2021-10-08T19:24:07.605323Z",
                     "files": [
                         {
-                            "name": "MOD09GQ.A2017025.h21v00.006.2017034065108.hdf",
+                            copy_to_glacier.FILE_FILENAME_KEY: "MOD09GQ.A2017025.h21v00.006.2017034065108.hdf",
                             "path": "MOD09GQ/006",
                             "size": 7,
                             "time": 1608318361000,
-                            "bucket": "orca-sandbox-protected",
+                            copy_to_glacier.FILE_BUCKET_KEY: "orca-sandbox-protected",
                             "url_path": "MOD09GQ/006/",
                             "type": "",
-                            "filename": "s3://orca-sandbox-protected/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065108.hdf",
-                            "filepath": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065108.hdf",
+                            copy_to_glacier.FILE_SOURCE_URI_KEY: "s3://orca-sandbox-protected/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065108.hdf",
+                            copy_to_glacier.FILE_FILEPATH_KEY: "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065108.hdf",
                             "duplicate_found": True,
-                            "checksumType": "md5",
-                            "checksum": "bogus_checksum_value",
+                            copy_to_glacier.FILE_HASH_TYPE_KEY: "md5",
+                            copy_to_glacier.FILE_HASH_KEY: "bogus_checksum_value",
                         },
                     ],
                 },
@@ -451,10 +451,10 @@ class TestCopyToGlacierHandler(TestCase):
         destination_bucket_name = os.environ["ORCA_DEFAULT_BUCKET"]
         content_type = uuid.uuid4().__str__()
         source_bucket_names = [
-            file["bucket"] for file in multiple_event_granules["granules"][0]["files"]
+            file[copy_to_glacier.FILE_BUCKET_KEY] for file in multiple_event_granules["granules"][0]["files"]
         ]
         source_keys = [
-            file["filepath"] for file in multiple_event_granules["granules"][0]["files"]
+            file[copy_to_glacier.FILE_FILEPATH_KEY] for file in multiple_event_granules["granules"][0]["files"]
         ]
 
         config_check = ConfigCheck(4 * MB)
@@ -494,12 +494,8 @@ class TestCopyToGlacierHandler(TestCase):
         validate = fastjsonschema.compile(schema)
         validate(result)
 
-        self.assertEqual(event["input"]["granules"], result["granules"])
-        granules = result["granules"]
-        self.assertIsNotNone(granules)
-        self.assertEqual(2, len(granules))
-        granule = granules[0]
-        self.assertEqual(1, len(granule["files"]))
+        expected_granules = copy.deepcopy(event["input"]["granules"])
+        self.assertEqual(expected_granules, result["granules"])
 
         head_object_calls = []
         copy_calls = []
