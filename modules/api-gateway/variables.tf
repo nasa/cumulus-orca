@@ -10,6 +10,10 @@ variable "request_status_for_granule_invoke_arn" {
   type        = string
   description = "Invoke ARN of the request_status_for_granule lambda function"
 }
+variable "vpc_id" {
+  type        = string
+  description = "Virtual Private Cloud AWS ID"
+}
 
 variable "request_status_for_job_invoke_arn" {
   type        = string
@@ -19,11 +23,6 @@ variable "request_status_for_job_invoke_arn" {
 variable "orca_catalog_reporting_invoke_arn" {
   type        = string
   description = "Invoke ARN of the orca_catalog_reporting lambda function"
-}
-
-variable "api_gateway_policy_vpc_id" {
-  type        = string
-  description = "VPC ID that will have access to the API gateway"
 }
 
 variable "api_gateway_stage_name" {

@@ -132,8 +132,6 @@ First, run a `mv terraform.tfvars.example terraform.tfvars` to get a template `t
 * `db_admin_password` - Password for RDS database administrator authentication
 * `db_user_password` - Password for RDS database user authentication
 * `db_host_endpoint` - Database host endpoint to connect to.
-* `api_gateway_policy_vpc_id` - VPC ID that will have access to the API gateways.
-
 
 **Optional:**
 * `db_admin_username` -  Username for RDS database administrator authentication.
@@ -241,11 +239,6 @@ variable "db_admin_password" {
 variable "db_user_password" {
   type = string
   description = "Password for RDS database user authentication"
-}
-
-variable "api_gateway_policy_vpc_id" {
-  type        = string
-  description = "VPC ID that will have access to the API gateways"
 }
 ```
 

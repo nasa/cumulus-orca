@@ -32,7 +32,7 @@ resource "aws_api_gateway_rest_api_policy" "orca_cumulus_reconciliation_api_reso
       "Resource": "${aws_api_gateway_rest_api.orca_cumulus_reconciliation_api.execution_arn}",
       "Condition": {
         "StringNotEquals": {
-          "aws:SourceVpc": "${var.api_gateway_policy_vpc_id}"
+          "aws:SourceVpc": "${var.vpc_id}"
         }
       }
     }

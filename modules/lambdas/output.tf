@@ -56,6 +56,8 @@ output "post_copy_request_to_queue_arn" {
   value       = aws_lambda_function.post_copy_request_to_queue.arn
 }
 
+# Reporting Lambdas
+# ------------------------------------------------------------------------------
 output "orca_catalog_reporting_invoke_arn" {
   description = "AWS invoke ARN for orca_catalog_reporting lambda."
   value       = aws_lambda_function.orca_catalog_reporting.invoke_arn
