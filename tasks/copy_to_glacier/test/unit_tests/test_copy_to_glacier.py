@@ -134,10 +134,10 @@ class TestCopyToGlacierHandler(TestCase):
                     "granuleId": uuid.uuid4().__str__(),
                     "files": [
                         {
-                            "name": uuid.uuid4().__str__(),
-                            "bucket": uuid.uuid4().__str__(),
-                            "filepath": uuid.uuid4().__str__(),
-                            "filename": uuid.uuid4().__str__(),
+                            copy_to_glacier.FILE_FILENAME_KEY: uuid.uuid4().__str__(),
+                            copy_to_glacier.FILE_BUCKET_KEY: uuid.uuid4().__str__(),
+                            copy_to_glacier.FILE_FILEPATH_KEY: uuid.uuid4().__str__(),
+                            copy_to_glacier.FILE_SOURCE_URI_KEY: uuid.uuid4().__str__(),
                         }
                     ]
                 }
@@ -208,9 +208,6 @@ class TestCopyToGlacierHandler(TestCase):
         validate(result)
 
         expected_granules = copy.deepcopy(event["input"]["granules"])
-        for granule in expected_granules:
-            for file in granule["files"]:
-                copy_to_glacier.switch_file_to_output_format(file)
         self.assertEqual(expected_granules, result["granules"])
 
         head_object_calls = []
@@ -245,9 +242,6 @@ class TestCopyToGlacierHandler(TestCase):
         ]
         self.assertEqual(expected_copied_file_urls, result["copied_to_glacier"])
         expected_granules = copy.deepcopy(event["input"]["granules"])
-        for granule in expected_granules:
-            for file in granule["files"]:
-                copy_to_glacier.switch_file_to_output_format(file)
         self.assertEqual(expected_granules, result["granules"])
         self.assertIsNone(config_check.bad_config)
 
@@ -300,9 +294,6 @@ class TestCopyToGlacierHandler(TestCase):
         validate(result)
 
         expected_granules = copy.deepcopy(event["input"]["granules"])
-        for granule in expected_granules:
-            for file in granule["files"]:
-                copy_to_glacier.switch_file_to_output_format(file)
         self.assertEqual(expected_granules, result["granules"])
 
         head_object_calls = []
@@ -337,9 +328,6 @@ class TestCopyToGlacierHandler(TestCase):
         ]
         self.assertEqual(expected_copied_file_urls, result["copied_to_glacier"])
         expected_granules = copy.deepcopy(event["input"]["granules"])
-        for granule in expected_granules:
-            for file in granule["files"]:
-                copy_to_glacier.switch_file_to_output_format(file)
         self.assertEqual(expected_granules, result["granules"])
         self.assertIsNone(config_check.bad_config)
 

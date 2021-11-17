@@ -365,9 +365,6 @@ FUNCTIONS
         Returns:
             True if file should be excluded from copy, False otherwise.
     
-    switch_file_to_output_format(file: Dict[str, Any]) -> None
-        Reformat keys for output schema.
-    
     task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str, Any]
         Copies the files in {event}['input']
         to the ORCA glacier bucket defined in ORCA_DEFAULT_BUCKET.

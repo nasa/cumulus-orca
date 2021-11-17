@@ -135,8 +135,6 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
             file_bucket = file[FILE_BUCKET_KEY]
             file_source_uri = file[FILE_SOURCE_URI_KEY]
 
-            switch_file_to_output_format(file)
-
             if should_exclude_files_type(file_name, exclude_file_types):
                 print(
                     f"Excluding {file_name} from glacier backup "
@@ -151,16 +149,6 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
             print(f"Copied {file_filepath} into glacier storage bucket {default_bucket}.")
 
     return {'granules': granules_list, 'copied_to_glacier': copied_file_urls}
-
-
-def switch_file_to_output_format(file: Dict[str, Any]) -> None:
-    """
-    Reformat keys for output schema.
-    """
-    file["name"] = file.pop(FILE_FILENAME_KEY)
-    file["bucket"] = file.pop(FILE_BUCKET_KEY)
-    file["filepath"] = file.pop(FILE_FILEPATH_KEY)
-    file["filename"] = file.pop(FILE_SOURCE_URI_KEY)
 
 
 # handler that is provided to aws lambda

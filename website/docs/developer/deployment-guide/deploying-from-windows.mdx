@@ -62,7 +62,10 @@ This application will be used in future steps to authenticate users.
   VPC and Subnets are created by [NGAP](https://wiki.earthdata.nasa.gov/display/ESKB/AWS+Services+Approval+Status+Page#AWSServicesApprovalStatusPage-VPC).
   It is recommended you copy values from an existing deployment setup.
   :::
-- Go to [this repo](https://git.earthdata.nasa.gov/projects/ORCA/repos/cumulus-orca-template-deploy/browse) and clone it to your machine.
+- Go to [this repo](https://git.earthdata.nasa.gov/projects/ORCA/repos/cumulus-orca-deploy-template/browse) and clone it to your machine.
+:::warning
+The master branch is non-functional. These instructions have been tested with v9.4.0-v3.0.1
+:::
 - Unzip.
 - Remove the '.example' on terraform.tf and terraform.tfvars files in data-persistence-tf, cumulus-tf, and rds-cluster-tf.
 - Globally find and replace `postgres_user_pw` to `db_admin_password` and `database_app_user_pw` to `db_user_password`.
