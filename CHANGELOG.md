@@ -14,7 +14,8 @@ and includes an additional section for migration notes.
 - *Security* - Vulnerabilities fixes and changes.
 
 
-## [Unreleased - SharedDB]
+## [Unreleased]
+## [4.0.0]
 
 ### Removed
 - The `modules/rds` directory is removed since ORCA will utilize the Cumulus DB.
