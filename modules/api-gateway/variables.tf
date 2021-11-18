@@ -30,3 +30,9 @@ variable "api_gateway_stage_name" {
   description = "stage name for the ORCA cumulus reconciliation api gateway"
   default     = "orca"
 }
+
+variable "api_vpc_endpoint_id" {
+  type        = string
+  description = "api gateway vpc endpoint id needed to access the api. Defaults to null."
+  default = null
+}

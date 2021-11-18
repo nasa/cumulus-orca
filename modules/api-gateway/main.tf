@@ -1,10 +1,20 @@
+# Local Variables
+locals {
+  api_vpc_endpoint_id = var.api_vpc_endpoint_id != null ? var.api_vpc_endpoint_id : data.aws_vpc_endpoint.api_vpc_endpoint_id.id
+}
+
+data "aws_vpc_endpoint" "api_vpc_endpoint_id" {
+  vpc_id       = var.vpc_id
+  service_name = "com.amazonaws.us-west-2.execute-api"
+}
+
 # API Gateway- API for ORCA cumulus reconciliation
 resource "aws_api_gateway_rest_api" "orca_api" {
   name        = "${var.prefix}_orca_api"
   description = "API for catalog reporting, request_status_for_job and request_status_for_file lambda functions"
   endpoint_configuration {
     types = ["PRIVATE"]
-    # Cumulus might need to create vpc_endpoint_ids which should be added here in the future in order to access this API
+    vpc_endpoint_ids = [local.api_vpc_endpoint_id]
   }
 }
 
@@ -51,7 +61,7 @@ resource "aws_api_gateway_resource" "orca_catalog_reporting_api_resource" {
 resource "aws_api_gateway_method" "orca_catalog_reporting_api_method" {
   rest_api_id = aws_api_gateway_rest_api.orca_api.id
   resource_id = aws_api_gateway_resource.orca_catalog_reporting_api_resource.id
-  http_method = "ANY"
+  http_method = "POST"
   # todo: Make sure this is locked down against external access.
   authorization = "NONE"
 }
@@ -103,6 +113,7 @@ resource "aws_lambda_permission" "orca_catalog_reporting_api_permission" {
 # API details for  for request_status_for_granule lambda function
 resource "aws_api_gateway_resource" "request_status_for_granule_api_resource" {
   path_part   = "recovery_status_granules"
+  # recovery/status/granules
   parent_id   = aws_api_gateway_rest_api.orca_api.root_resource_id
   rest_api_id = aws_api_gateway_rest_api.orca_api.id
 }
@@ -110,7 +121,7 @@ resource "aws_api_gateway_resource" "request_status_for_granule_api_resource" {
 resource "aws_api_gateway_method" "request_status_for_granule_api_method" {
   rest_api_id = aws_api_gateway_rest_api.orca_api.id
   resource_id = aws_api_gateway_resource.request_status_for_granule_api_resource.id
-  http_method = "ANY"
+  http_method = "POST"
   # todo: Make sure this is locked down against external access.
   authorization = "NONE"
 }
@@ -169,7 +180,7 @@ resource "aws_api_gateway_resource" "request_status_for_job_api_resource" {
 resource "aws_api_gateway_method" "request_status_for_job_api_method" {
   rest_api_id = aws_api_gateway_rest_api.orca_api.id
   resource_id = aws_api_gateway_resource.request_status_for_job_api_resource.id
-  http_method = "ANY"
+  http_method = "POST"
   # todo: Make sure this is locked down against external access.
   authorization = "NONE"
 }
