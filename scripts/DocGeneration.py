@@ -18,9 +18,7 @@ tasks = [
     TaskInfo("copy_files_to_archive", "copy_files_to_archive.py"),
     TaskInfo("copy_to_glacier", "handler.py"),
     TaskInfo("db_deploy", "db_deploy.py"),
-    TaskInfo("dr_dbutils", "requests_db.py"),
     TaskInfo("extract_filepaths_for_granule", "extract_filepaths_for_granule.py"),
-    TaskInfo("pg_utils", "database.py"),
     TaskInfo("request_files", "request_files.py"),
     TaskInfo("request_status", "request_status.py")
 ]

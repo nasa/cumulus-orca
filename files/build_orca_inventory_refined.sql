@@ -35,7 +35,7 @@ BEGIN
     COMMENT ON TABLE collections
       IS 'Collections that are in the ORCA archive holdings.';
     COMMENT ON COLUMN collections.collection_id
-      IS 'Collection ID from Cumulus usually in the format shortname__version.';
+      IS 'Collection ID from Cumulus usually in the format shortname___version.';
     COMMENT ON COLUMN collections.shortname
       IS 'Collection short name from Cumulus';
     COMMENT ON COLUMN collections.version
@@ -67,6 +67,7 @@ BEGIN
     , cumulus_granule_id  text NOT NULL
     , execution_id  	  text NOT NULL
     , ingest_time         timestamp with time zone NOT NULL
+    , cumulus_create_time    timestamp with time zone NOT NULL
     , last_update         timestamp with time zone NOT NULL
     , CONSTRAINT PK_granules PRIMARY KEY(id)
     , CONSTRAINT UNIQUE_granules UNIQUE (collection_id, cumulus_granule_id)
@@ -85,6 +86,8 @@ BEGIN
       IS 'Step function execution ID from AWS';
     COMMENT ON COLUMN granules.ingest_time
       IS 'Date and time the granule was originally ingested into ORCA.';
+    COMMENT ON COLUMN granules.cumulus_create_time
+      IS 'Date and time data was originally ingested into Cumulus';
     COMMENT ON COLUMN granules.last_update
       IS 'Last time the data for the granule was updated. This generally will coincide with a duplicate or a change to the underlying data file.';
 
@@ -122,7 +125,7 @@ BEGIN
     COMMENT ON COLUMN files.cumulus_archive_location
       IS 'Cumulus S3 bucket where the file is thought to be stored.';
     COMMENT ON COLUMN files.key_path
-      IS 'Full AWS key path including file name of the file (does not include bucket name) where the file resides in ORCA.';
+      IS 'Full AWS key path including file name of the file (does not include bucket name) where the file resides in ORCA.';    
     COMMENT ON COLUMN files.ingest_time
       IS 'Date and time the file was ingested into ORCA';
     COMMENT ON COLUMN files.etag
@@ -137,4 +140,3 @@ BEGIN
       IS 'Hash type used to hash the object. Supplied by Cumulus.';
 
 COMMIT;
-

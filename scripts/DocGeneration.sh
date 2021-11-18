@@ -4,9 +4,7 @@ repoDir=${PWD}
 tasks=("copy_files_to_archive" "copy_files_to_archive.py"
         #"copy_to_glacier" "handler.py"
         #"db_deploy" "db_deploy.py"
-        #"dr_dbutils" "requests_db.py"
         #"extract_filepaths_for_granule" "extract_filepaths_for_granule.py"
-        #"pg_utils" "database.py"
         #"request_files" "request_files.py"
         #"request_status" "request_status.py"
         )
