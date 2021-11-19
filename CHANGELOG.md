@@ -14,7 +14,8 @@ and includes an additional section for migration notes.
 - *Security* - Vulnerabilities fixes and changes.
 
 
-## [Unreleased - SharedDB]
+## [Unreleased]
+## [4.0.0]
 
 ### Removed
 - The `modules/rds` directory is removed since ORCA will utilize the Cumulus DB.
@@ -33,7 +34,7 @@ and includes an additional section for migration notes.
 - Orca is only compatible with versions of Cumulus that use the [new Cumulus file format](https://github.com/nasa/cumulus/blob/master/packages/schemas/files.schema.json). Any calls to extract_filepaths_for_granule or copy_to_glacier should switch to the new format.
 - Remove any added references in your setup to copy_to_glacier_cumulus_translator. It is no longer necesarry as a Cumulus intermediary.
 - The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variables. The following two variable names have changed:
-  - postgres_user_pw-> db_admin_password (*new)*
+  - postgres_user_pw-> db_admin_password (*new*)
   - database_app_user_pw-> db_user_password (*new*)
 - These are the new variables added:
   - db_admin_username (defaults to "postgres")
