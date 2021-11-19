@@ -142,5 +142,5 @@ module "orca_api_gateway" {
   request_status_for_granule_invoke_arn = module.orca_lambdas.request_status_for_granule_invoke_arn
   request_status_for_job_invoke_arn     = module.orca_lambdas.request_status_for_job_invoke_arn
   ## OPTIONAL
-  api_vpc_endpoint_id                      = var.api_vpc_endpoint_id
+  vpc_endpoint_id                       = var.vpc_endpoint_id
 }

@@ -177,7 +177,7 @@ variable "status_update_queue_message_retention_time_seconds" {
   description = "The number of seconds status_update_queue SQS retains a message in seconds. Maximum value is 14 days."
 }
 
-variable "api_vpc_endpoint_id" {
+variable "vpc_endpoint_id" {
   type        = string
-  description = "api gateway vpc endpoint id needed to access the api. Defaults to null"
+  description = "NGAP vpc endpoint id needed to access the api. Defaults to null"
 }

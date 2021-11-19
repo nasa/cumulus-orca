@@ -1,9 +1,9 @@
 # Local Variables
 locals {
-  api_vpc_endpoint_id = var.api_vpc_endpoint_id != null ? var.api_vpc_endpoint_id : data.aws_vpc_endpoint.api_vpc_endpoint_id.id
+  vpc_endpoint_id = var.vpc_endpoint_id != null ? var.vpc_endpoint_id : data.aws_vpc_endpoint.vpc_endpoint_id.id
 }
 
-data "aws_vpc_endpoint" "api_vpc_endpoint_id" {
+data "aws_vpc_endpoint" "vpc_endpoint_id" {
   vpc_id       = var.vpc_id
   service_name = "com.amazonaws.us-west-2.execute-api"
 }
@@ -14,7 +14,7 @@ resource "aws_api_gateway_rest_api" "orca_api" {
   description = "API for catalog reporting, request_status_for_job and request_status_for_file lambda functions"
   endpoint_configuration {
     types = ["PRIVATE"]
-    vpc_endpoint_ids = [local.api_vpc_endpoint_id]
+    vpc_endpoint_ids = [local.vpc_endpoint_id]
   }
 }
 

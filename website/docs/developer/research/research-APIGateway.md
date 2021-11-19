@@ -85,7 +85,7 @@ description: Research Notes on API Gateway.
   ```
     resource "aws_api_gateway_deployment" "[name]_api_deployment" {
       rest_api_id = aws_api_gateway_rest_api.[name]_api.id
-      stage_name    = "dev" #add your stage name
+      stage_name    = "orca" #add your stage name
     }
     ```
   - aws_lambda_permission

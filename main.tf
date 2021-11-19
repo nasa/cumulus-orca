@@ -33,7 +33,7 @@ module "orca" {
   orca_default_bucket       = var.orca_default_bucket
   
   ## OPTIONAL
-  api_vpc_endpoint_id                                  = var.api_vpc_endpoint_id
+  vpc_endpoint_id                                      = var.vpc_endpoint_id
   db_admin_username                                    = var.db_admin_username
   default_multipart_chunksize_mb                       = var.default_multipart_chunksize_mb
   metadata_queue_message_retention_time_seconds        = var.metadata_queue_message_retention_time_seconds

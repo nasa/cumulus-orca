@@ -31,8 +31,8 @@ variable "api_gateway_stage_name" {
   default     = "orca"
 }
 
-variable "api_vpc_endpoint_id" {
+variable "vpc_endpoint_id" {
   type        = string
-  description = "api gateway vpc endpoint id needed to access the api. Defaults to null."
+  description = "NGAP vpc endpoint id needed to access the api. Defaults to null."
   default = null
 }
