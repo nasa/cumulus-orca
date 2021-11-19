@@ -52,15 +52,21 @@ EOF
 }
 
 #API details for orca_catalog_reporting lambda
-resource "aws_api_gateway_resource" "orca_catalog_reporting_api_resource" {
-  path_part   = "orca_catalog_reporting"
+resource "aws_api_gateway_resource" "orca_catalog_reporting_api_resource_catalog" {
+  path_part   = "catalog"
   parent_id   = aws_api_gateway_rest_api.orca_api.root_resource_id
+  rest_api_id = aws_api_gateway_rest_api.orca_api.id
+}
+
+resource "aws_api_gateway_resource" "orca_catalog_reporting_api_resource_catalog_reconcile" {
+  path_part   = "reconcile"
+  parent_id   = aws_api_gateway_resource.orca_catalog_reporting_api_resource_catalog.id
   rest_api_id = aws_api_gateway_rest_api.orca_api.id
 }
 
 resource "aws_api_gateway_method" "orca_catalog_reporting_api_method" {
   rest_api_id = aws_api_gateway_rest_api.orca_api.id
-  resource_id = aws_api_gateway_resource.orca_catalog_reporting_api_resource.id
+  resource_id = aws_api_gateway_resource.orca_catalog_reporting_api_resource_catalog_reconcile.id
   http_method = "POST"
   # todo: Make sure this is locked down against external access.
   authorization = "NONE"
@@ -68,7 +74,7 @@ resource "aws_api_gateway_method" "orca_catalog_reporting_api_method" {
 
 resource "aws_api_gateway_integration" "orca_catalog_reporting_api_integration" {
   rest_api_id             = aws_api_gateway_rest_api.orca_api.id
-  resource_id             = aws_api_gateway_resource.orca_catalog_reporting_api_resource.id
+  resource_id             = aws_api_gateway_resource.orca_catalog_reporting_api_resource_catalog_reconcile.id
   http_method             = aws_api_gateway_method.orca_catalog_reporting_api_method.http_method
   integration_http_method = "POST"
   type                    = "AWS"
@@ -77,7 +83,7 @@ resource "aws_api_gateway_integration" "orca_catalog_reporting_api_integration" 
 
 resource "aws_api_gateway_method_response" "orca_catalog_reporting_response_200" {
   rest_api_id = aws_api_gateway_rest_api.orca_api.id
-  resource_id = aws_api_gateway_resource.orca_catalog_reporting_api_resource.id
+  resource_id = aws_api_gateway_resource.orca_catalog_reporting_api_resource_catalog_reconcile.id
   http_method = aws_api_gateway_method.orca_catalog_reporting_api_method.http_method
   status_code = "200"
 }
@@ -85,7 +91,7 @@ resource "aws_api_gateway_method_response" "orca_catalog_reporting_response_200"
 resource "aws_api_gateway_integration_response" "orca_catalog_reporting_api_response" {
   depends_on  = [aws_api_gateway_integration.orca_catalog_reporting_api_integration]
   rest_api_id = aws_api_gateway_rest_api.orca_api.id
-  resource_id = aws_api_gateway_resource.orca_catalog_reporting_api_resource.id
+  resource_id = aws_api_gateway_resource.orca_catalog_reporting_api_resource_catalog_reconcile.id
   http_method = aws_api_gateway_method.orca_catalog_reporting_api_method.http_method
   status_code = aws_api_gateway_method_response.orca_catalog_reporting_response_200.status_code
   # Transforms the backend JSON response to XML. Currently being used by create_http_error_dict() function in orca_catalog_reporting.py
@@ -107,20 +113,25 @@ resource "aws_lambda_permission" "orca_catalog_reporting_api_permission" {
   action        = "lambda:InvokeFunction"
   function_name = "${var.prefix}_orca_catalog_reporting"
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.orca_api.execution_arn}/*/${aws_api_gateway_method.orca_catalog_reporting_api_method.http_method}${aws_api_gateway_resource.orca_catalog_reporting_api_resource.path}"
+  source_arn    = "${aws_api_gateway_rest_api.orca_api.execution_arn}/*/${aws_api_gateway_method.orca_catalog_reporting_api_method.http_method}${aws_api_gateway_resource.orca_catalog_reporting_api_resource_catalog_reconcile.path}"
 }
 
 # API details for  for request_status_for_granule lambda function
-resource "aws_api_gateway_resource" "request_status_for_granule_api_resource" {
-  path_part   = "recovery_status_granules"
-  # recovery/status/granules
+resource "aws_api_gateway_resource" "request_status_for_granule_api_resource_recovery" {
+  path_part   = "recovery"
   parent_id   = aws_api_gateway_rest_api.orca_api.root_resource_id
+  rest_api_id = aws_api_gateway_rest_api.orca_api.id
+}
+
+resource "aws_api_gateway_resource" "request_status_for_granule_api_resource_recovery_granules" {
+  path_part   = "granules"
+  parent_id   = aws_api_gateway_resource.request_status_for_granule_api_resource_recovery.id
   rest_api_id = aws_api_gateway_rest_api.orca_api.id
 }
 
 resource "aws_api_gateway_method" "request_status_for_granule_api_method" {
   rest_api_id = aws_api_gateway_rest_api.orca_api.id
-  resource_id = aws_api_gateway_resource.request_status_for_granule_api_resource.id
+  resource_id = aws_api_gateway_resource.request_status_for_granule_api_resource_recovery_granules.id
   http_method = "POST"
   # todo: Make sure this is locked down against external access.
   authorization = "NONE"
@@ -128,7 +139,7 @@ resource "aws_api_gateway_method" "request_status_for_granule_api_method" {
 
 resource "aws_api_gateway_integration" "request_status_for_granule_api_integration" {
   rest_api_id             = aws_api_gateway_rest_api.orca_api.id
-  resource_id             = aws_api_gateway_resource.request_status_for_granule_api_resource.id
+  resource_id             = aws_api_gateway_resource.request_status_for_granule_api_resource_recovery_granules.id
   http_method             = aws_api_gateway_method.request_status_for_granule_api_method.http_method
   integration_http_method = "POST"
   type                    = "AWS"
@@ -137,7 +148,7 @@ resource "aws_api_gateway_integration" "request_status_for_granule_api_integrati
 
 resource "aws_api_gateway_method_response" "request_status_for_granule_response_200" {
   rest_api_id = aws_api_gateway_rest_api.orca_api.id
-  resource_id = aws_api_gateway_resource.request_status_for_granule_api_resource.id
+  resource_id = aws_api_gateway_resource.request_status_for_granule_api_resource_recovery_granules.id
   http_method = aws_api_gateway_method.request_status_for_granule_api_method.http_method
   status_code = "200"
 }
@@ -145,7 +156,7 @@ resource "aws_api_gateway_method_response" "request_status_for_granule_response_
 resource "aws_api_gateway_integration_response" "request_status_for_granule_api_response" {
   depends_on  = [aws_api_gateway_integration.request_status_for_granule_api_integration]
   rest_api_id = aws_api_gateway_rest_api.orca_api.id
-  resource_id = aws_api_gateway_resource.request_status_for_granule_api_resource.id
+  resource_id = aws_api_gateway_resource.request_status_for_granule_api_resource_recovery_granules.id
   http_method = aws_api_gateway_method.request_status_for_granule_api_method.http_method
   status_code = aws_api_gateway_method_response.request_status_for_granule_response_200.status_code
   # Transforms the backend JSON response to XML. Currently being used by create_http_error_dict() function in request_status_for_granule.py
@@ -167,19 +178,19 @@ resource "aws_lambda_permission" "request_status_for_granule_api_permission" {
   action        = "lambda:InvokeFunction"
   function_name = "${var.prefix}_request_status_for_granule"
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.orca_api.execution_arn}/*/${aws_api_gateway_method.request_status_for_granule_api_method.http_method}${aws_api_gateway_resource.request_status_for_granule_api_resource.path}"
+  source_arn    = "${aws_api_gateway_rest_api.orca_api.execution_arn}/*/${aws_api_gateway_method.request_status_for_granule_api_method.http_method}${aws_api_gateway_resource.request_status_for_granule_api_resource_recovery_granules.path}"
 }
 
 # API details for request_status_for_job lambda function
-resource "aws_api_gateway_resource" "request_status_for_job_api_resource" {
-  path_part   = "recovery_status_jobs"
-  parent_id   = aws_api_gateway_rest_api.orca_api.root_resource_id
+resource "aws_api_gateway_resource" "request_status_for_job_api_resource_recovery_jobs" {
+  path_part   = "jobs"
+  parent_id   = aws_api_gateway_resource.request_status_for_granule_api_resource_recovery.id
   rest_api_id = aws_api_gateway_rest_api.orca_api.id
 }
 
 resource "aws_api_gateway_method" "request_status_for_job_api_method" {
   rest_api_id = aws_api_gateway_rest_api.orca_api.id
-  resource_id = aws_api_gateway_resource.request_status_for_job_api_resource.id
+  resource_id = aws_api_gateway_resource.request_status_for_job_api_resource_recovery_jobs.id
   http_method = "POST"
   # todo: Make sure this is locked down against external access.
   authorization = "NONE"
@@ -187,7 +198,7 @@ resource "aws_api_gateway_method" "request_status_for_job_api_method" {
 
 resource "aws_api_gateway_integration" "request_status_for_job_api_integration" {
   rest_api_id             = aws_api_gateway_rest_api.orca_api.id
-  resource_id             = aws_api_gateway_resource.request_status_for_job_api_resource.id
+  resource_id             = aws_api_gateway_resource.request_status_for_job_api_resource_recovery_jobs.id
   http_method             = aws_api_gateway_method.request_status_for_job_api_method.http_method
   integration_http_method = "POST"
   type                    = "AWS"
@@ -196,7 +207,7 @@ resource "aws_api_gateway_integration" "request_status_for_job_api_integration" 
 
 resource "aws_api_gateway_method_response" "request_status_for_job_response_200" {
   rest_api_id = aws_api_gateway_rest_api.orca_api.id
-  resource_id = aws_api_gateway_resource.request_status_for_job_api_resource.id
+  resource_id = aws_api_gateway_resource.request_status_for_job_api_resource_recovery_jobs.id
   http_method = aws_api_gateway_method.request_status_for_job_api_method.http_method
   status_code = "200"
 }
@@ -204,7 +215,7 @@ resource "aws_api_gateway_method_response" "request_status_for_job_response_200"
 resource "aws_api_gateway_integration_response" "request_status_for_job_api_response" {
   depends_on  = [aws_api_gateway_integration.request_status_for_job_api_integration]
   rest_api_id = aws_api_gateway_rest_api.orca_api.id
-  resource_id = aws_api_gateway_resource.request_status_for_job_api_resource.id
+  resource_id = aws_api_gateway_resource.request_status_for_job_api_resource_recovery_jobs.id
   http_method = aws_api_gateway_method.request_status_for_job_api_method.http_method
   status_code = aws_api_gateway_method_response.request_status_for_job_response_200.status_code
   # Transforms the backend JSON response to XML. Currently being used by create_http_error_dict() function in request_status_for_job.py
@@ -226,7 +237,7 @@ resource "aws_lambda_permission" "request_status_for_job_api_permission" {
   action        = "lambda:InvokeFunction"
   function_name = "${var.prefix}_request_status_for_job"
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.orca_api.execution_arn}/*/${aws_api_gateway_method.request_status_for_job_api_method.http_method}${aws_api_gateway_resource.request_status_for_job_api_resource.path}"
+  source_arn    = "${aws_api_gateway_rest_api.orca_api.execution_arn}/*/${aws_api_gateway_method.request_status_for_job_api_method.http_method}${aws_api_gateway_resource.request_status_for_job_api_resource_recovery_jobs.path}"
 }
 
 #deployment for the API
@@ -234,5 +245,4 @@ resource "aws_api_gateway_deployment" "orca_api_deployment" {
   rest_api_id = aws_api_gateway_rest_api.orca_api.id
   stage_name  = var.api_gateway_stage_name
   depends_on  = [aws_api_gateway_integration.orca_catalog_reporting_api_integration, aws_api_gateway_integration.request_status_for_job_api_integration, aws_api_gateway_integration.request_status_for_granule_api_integration]
-
 }
