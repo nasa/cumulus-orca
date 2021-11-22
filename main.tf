@@ -27,12 +27,13 @@ module "orca" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  db_admin_password   = var.db_admin_password
-  db_host_endpoint    = var.db_host_endpoint
-  db_user_password    = var.db_user_password
-  orca_default_bucket = var.orca_default_bucket
-
+  db_admin_password         = var.db_admin_password
+  db_host_endpoint          = var.db_host_endpoint
+  db_user_password          = var.db_user_password
+  orca_default_bucket       = var.orca_default_bucket
+  
   ## OPTIONAL
+  vpc_endpoint_id                                      = var.vpc_endpoint_id
   db_admin_username                                    = var.db_admin_username
   default_multipart_chunksize_mb                       = var.default_multipart_chunksize_mb
   metadata_queue_message_retention_time_seconds        = var.metadata_queue_message_retention_time_seconds

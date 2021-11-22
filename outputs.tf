@@ -89,3 +89,10 @@ output "orca_secretsmanager_arn" {
   description = "The Amazon Resource Name (ARN) of the AWS secretsmanager"
   value       = module.orca.orca_secretsmanager_arn
 }
+
+## API gateway Module outputs
+## =============================================================================
+output "orca_api_deployment_invoke_url" {
+  value       = module.orca.orca_api_deployment_invoke_url
+  description = "The URL to invoke the ORCA Cumulus reconciliation API gateway. Excludes the resource path"
+}

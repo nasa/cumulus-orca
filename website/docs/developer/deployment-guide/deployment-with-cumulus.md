@@ -110,7 +110,6 @@ optional variables can be found in the [variables section](#orca-variables).
 - orca_default_bucket
 - db_user_password
 - db_host_endpoint
-
 #### Required Values Retrieved from Cumulus Variables
 
 The following variables are set as part of your Cumulus deployment and are
@@ -255,7 +254,7 @@ buckets = {
 
 :::
 
-## Define the ORCA Wokflows
+## Define the ORCA Workflows
 
 The ORCA Ingest Workflows follows each step listed below. Adding the Move
 Granule Step and Add the Copy To Glacier Step are detailed in their respective
@@ -427,12 +426,11 @@ file. The variables must be set with proper values for your environment in the
 `cumulus-tf/terraform.tfvars` file.
 
 | Variable               | Definition                                              | Example Value                 |
-| ---------------------- | --------------------------------------------- ----------| ----------------------------- |
+| ---------------------- | --------------------------------------------------------| ----------------------------- |
 | `db_admin_password`    | Password for RDS database administrator authentication  | "My_Sup3rS3cr3t_admin_Passw0rd"|
 | `db_host_endpoint`     | Database host endpoint to connect to.                   | "aws.postgresrds.host"        |
 | `db_user_password`     | Password for RDS database user authentication           | "My_Sup3rS3cr3tuserPassw0rd"  |
 | `orca_default_bucket`  | Default ORCA S3 Glacier bucket to use.                  | "PREFIX-orca-primary"         |
-
 
 ### Optional Variables
 
@@ -483,26 +481,28 @@ variables is shown in the table below.
 The orca module provides the outputs seen below in the table. Outputs are
 accessed using terraform dot syntax in the format of `module.orca.variable_name`.
 
-| Output Variable                               | Description                               |
-| --------------------------------------------- | ----------------------------------------- |
-| `orca_lambda_copy_to_glacier_arn`                    | AWS ARN of the ORCA copy_to_glacier lambda. |
-| `orca_lambda_extract_filepaths_for_granule_arn`      | AWS ARN of the ORCA extract_filepaths_for_granule lambda. |
-| `orca_lambda_orca_catalog_reporting_arn`             | AWS ARN of the ORCA orca_catalog_reporting lambda. |
-| `orca_lambda_request_files_arn`                      | AWS ARN of the ORCA request_files lambda. |
-| `orca_lambda_copy_files_to_archive_arn`              | AWS ARN of the ORCA copy_files_to_archive lambda. |
-| `orca_lambda_request_status_for_granule_arn`         | AWS ARN of the ORCA request_status_for_granule lambda. |
-| `orca_lambda_request_status_for_job_arn`             | AWS ARN of the ORCA request_status_for_job lambda. |
-| `orca_lambda_post_copy_request_to_queue_arn`         | AWS ARN of the ORCA post_copy_request_to_queue lambda. |
-| `orca_lambda_orca_catalog_reporting_arn`             | AWS ARN of the ORCA orca_catalog_reporting lambda. |
-| `orca_secretsmanager_arn`                            | The Amazon Resource Name (ARN) of the AWS secretsmanager |
-| `orca_sqs_metadata_queue_arn`                        | The ARN of the metadata-queue SQS |
-| `orca_sqs_metadata_queue_id`                         | The URL ID of the metadata-queue SQS |
-| `orca_sqs_staged_recovery_queue_arn`                 | The ARN of the staged-recovery-queue SQS |
-| `orca_sqs_staged_recovery_queue_id`                  | The URL ID of the staged-recovery-queue SQS |
-| `orca_sqs_status_update_queue_arn`                   | The ARN of the status-update-queue SQS |
-| `orca_sqs_status_update_queue_id`                    | The URL ID of the status-update-queue SQS |
-| `orca_subnet_group_id`                               | The ORCA database subnet group name |
-| `orca_subnet_group_arn`                              | The ARN of the ORCA database subnet group |
+| Output Variable                                         | Description                                             |
+| --------------------------------------------------------|---------------------------------------------------------|
+| `orca_catalog_reporting_api_invoke_url`                 |The URL to invoke the API for catalog reporting lambda |
+| `orca_cumulus_reconciliation_api_deployment_invoke_url` |The URL to invoke the ORCA Cumulus reconciliation API gateway. Excludes the resource path |
+| `orca_lambda_copy_to_glacier_arn`                       | AWS ARN of the ORCA copy_to_glacier lambda. |
+| `orca_lambda_extract_filepaths_for_granule_arn`         | AWS ARN of the ORCA extract_filepaths_for_granule lambda. |
+| `orca_lambda_orca_catalog_reporting_arn`                | AWS ARN of the ORCA orca_catalog_reporting lambda. |
+| `orca_lambda_request_files_arn`                         | AWS ARN of the ORCA request_files lambda. |
+| `orca_lambda_copy_files_to_archive_arn`                 | AWS ARN of the ORCA copy_files_to_archive lambda. |
+| `orca_lambda_request_status_for_granule_arn`            | AWS ARN of the ORCA request_status_for_granule lambda. |
+| `orca_lambda_request_status_for_job_arn`                | AWS ARN of the ORCA request_status_for_job lambda. |
+| `orca_lambda_post_copy_request_to_queue_arn`            | AWS ARN of the ORCA post_copy_request_to_queue lambda. |
+| `orca_lambda_orca_catalog_reporting_arn`                | AWS ARN of the ORCA orca_catalog_reporting lambda. |
+| `orca_secretsmanager_arn`                               | The Amazon Resource Name (ARN) of the AWS secretsmanager |
+| `orca_sqs_metadata_queue_arn`                           | The ARN of the metadata-queue SQS |
+| `orca_sqs_metadata_queue_id`                            | The URL ID of the metadata-queue SQS |
+| `orca_sqs_staged_recovery_queue_arn`                    | The ARN of the staged-recovery-queue SQS |
+| `orca_sqs_staged_recovery_queue_id`                     | The URL ID of the staged-recovery-queue SQS |
+| `orca_sqs_status_update_queue_arn`                      | The ARN of the status-update-queue SQS |
+| `orca_sqs_status_update_queue_id`                       | The URL ID of the status-update-queue SQS |
+| `orca_subnet_group_id`                                  | The ORCA database subnet group name |
+| `orca_subnet_group_arn`                                 | The ARN of the ORCA database subnet group |
 
 
 

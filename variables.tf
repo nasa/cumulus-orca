@@ -79,7 +79,6 @@ variable "orca_default_bucket" {
   type        = string
   description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
 }
-
 ## OPTIONAL
 
 variable "db_admin_username" {
@@ -195,4 +194,9 @@ variable "status_update_queue_message_retention_time_seconds" {
   type        = number
   description = "The number of seconds status_update_queue SQS retains a message in seconds. Maximum value is 14 days."
   default     = 777600 #9 days
+}
+
+variable "vpc_endpoint_id" {
+  type        = string
+  description = "NGAP vpc endpoint id needed to access the api. Defaults to null"
 }

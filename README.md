@@ -133,7 +133,6 @@ First, run a `mv terraform.tfvars.example terraform.tfvars` to get a template `t
 * `db_user_password` - Password for RDS database user authentication
 * `db_host_endpoint` - Database host endpoint to connect to.
 
-
 **Optional:**
 * `db_admin_username` -  Username for RDS database administrator authentication.
 * `prefix` - Prefix that will be pre-pended to resource names created by terraform. 

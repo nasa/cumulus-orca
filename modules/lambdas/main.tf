@@ -477,5 +477,4 @@ data "aws_lambda_invocation" "db_migration" {
   function_name = aws_lambda_function.db_deploy.function_name
   input         = jsonencode({})
 }
-
 ## TODO: Should create null resource to handle password changes ORCA-145

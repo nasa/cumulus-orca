@@ -56,6 +56,23 @@ output "post_copy_request_to_queue_arn" {
   value       = aws_lambda_function.post_copy_request_to_queue.arn
 }
 
+# Reporting Lambdas
+# ------------------------------------------------------------------------------
+output "orca_catalog_reporting_invoke_arn" {
+  description = "AWS invoke ARN for orca_catalog_reporting lambda."
+  value       = aws_lambda_function.orca_catalog_reporting.invoke_arn
+}
+
+output "request_status_for_granule_invoke_arn" {
+  description = "AWS invoke ARN for request_status_for_granule lambda."
+  value       = aws_lambda_function.request_status_for_granule.invoke_arn
+}
+
+output "request_status_for_job_invoke_arn" {
+  description = "AWS invoke ARN for request_status_for_job lambda."
+  value       = aws_lambda_function.request_status_for_job.invoke_arn
+}
+
 
 # Utility Lambdas
 # ------------------------------------------------------------------------------
