@@ -40,7 +40,7 @@ and includes an additional section for migration notes.
   - database_app_user_pw-> db_user_password (*new*)
 - These are the new variables added:
   - db_admin_username (defaults to "postgres")
-  - db_host_endpoint (Set in variables.tf to your RDS Cluster's endpoint, similar to "PREFIX-cumulus-db.cluster-000000000000.us-west-2.rds.amazonaws.com")
+  - db_host_endpoint (Requires a value. Set in terraform.tfvars to your RDS Cluster's endpoint, similar to "PREFIX-cumulus-db.cluster-000000000000.us-west-2.rds.amazonaws.com")
   - api_gateway_policy_vpc_id
 - Add the following ORCA required variables definition to your `variables.tf` or `orca_variables.tf` file.
 
