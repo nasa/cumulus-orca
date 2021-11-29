@@ -626,12 +626,15 @@ for file in files["Contents"]:
 
 ### Potential Internal Reconciliation Architecture
 
-The following provides a rough architecture of how ORCA internal reconciliation
+The following provides an architecture of how ORCA internal reconciliation
 may work in an AWS environment with Cumulus. The architecture reuses known
 architectural patterns from Cumulus, including AWS Cloudwatch rules, to fire the
 comparison off on a normal schedule. Likely the running of this type of job will
 need to scale and may require configuration parameters to examine pieces of the
 ORCA catalog using bucket and prefix information.
+It is recommended that we use a "path" parameter that filters based on the file's 'Key'.
+This will allow Cumulus to build values such as collection into a filter so long
+as they construct keys using it.
 
 <MyImage
     imageSource={useBaseUrl('img/Research-Reconciliation-Internal-Reconcile.png')}
@@ -645,8 +648,7 @@ ORCA catalog using bucket and prefix information.
 ### Potential Internal Reporting Database Structure
 
 The objects needed for managing ORCA internal reconciliation and reporting are
-provided in detail below. This is just a first design pass and is not the final
-design.
+provided in detail below.
 
 An example schema showing how the objects interact and would be tied together is
 shown below.
@@ -659,23 +661,7 @@ shown below.
     resetPic={useBaseUrl('img/zoom-pan-reset.svg')}
 />
 
-
-#### S3 Inventory Temporary Table
-
-This is a temporary object that would store the listing from the S3 bucket for
-comparison.
-
-| Attribute Name | Data Type | Description                               | Notable Items   |
-| -------------- | --------- | ----------------------------------------- | --------------- |
-| job_id         | `int8`    | Reconcile job the listing is a part of.   | Many to one relationship with the jobs table. |
-| key_path       | `string`  | Key key value from S3 listing.            | Should be able to match to the key_path in the ORCA catalog *File* metadata object. Must be unique. |
-| etag           | `string`  | ETag key value from S3 listing.           | Should be able to match to the orca_etag value in the ORCA catalog *File* metadata object. |
-| last_update    | `timestamptz` | LastModified key value from the S3 listing. | Should be able to match the last_update value in the ORCA catalog *File* metadata object. |
-| size_in_bytes  | `int8`    | Size key value from the S3 listing.       | Should be able to match the size value in the ORCA catalog *File* metadata object. |
-| storage_class  | `string`  | StorageClass key value from the S3 listing. | May be used as a filter to exclude newly added items by excluding those with a value of *STANDARD* |
-
-
-#### Internal Reconciliation Jobs Table
+#### Internal Reconciliation Jobs Table reconcile_jobs
 
 This table would capture internal reconciliation job information. Below is a
 sampling of attributes that may be needed. Based on design and implementation,
@@ -692,43 +678,65 @@ items for managing jobs.
 | error_message  | `string`  | Job error message in cases of failure.    |NULLABLE column  |
 
 
+#### S3 Inventory Temporary Table reconcile_s3_objects
+
+This is a temporary object that would store the listing from the S3 bucket for
+comparison.
+
+| Attribute Name        | Data Type | Description                               | Notable Items   |
+| --------------------- | --------- | ----------------------------------------- | --------------- |
+| job_id                | `int8`    | Reconcile job the listing is a part of.   | Many to one relationship with the jobs table. |
+| orca_archive_location | `string`  | ORCA S3 Glacier bucket the file resides in. | Location in S3. |
+| key_path              | `string`  | Key key value from S3 listing.            | Should be able to match to the key_path in the ORCA catalog *File* metadata object. Must be unique. |
+| etag                  | `string`  | ETag key value from S3 listing.           | Should be able to match to the orca_etag value in the ORCA catalog *File* metadata object. |
+| last_update           | `timestamptz` | LastModified key value from the S3 listing. | Should be able to match the last_update value in the ORCA catalog *File* metadata object. |
+| size_in_bytes         | `int8`    | Size key value from the S3 listing.       | Should be able to match the size value in the ORCA catalog *File* metadata object. |
+| storage_class         | `string`  | StorageClass key value from the S3 listing. | May be used as a filter to exclude newly added items by excluding those with a value of *STANDARD* |
+
+
+#### Internal Reconciliation Reporting Table Orphaned Files reconcile_orphan_report
+
+This table would capture the files that reside in S3 but have no match in the
+ORCA catalog. Generally, these files would be deleted or investigated to see if
+items need to be re-ingested into ORCA. Note that entries with a last_update time
+after or immediately before the job's start_time may not have catalog entries yet
+due to a slight delay in the catalog population. This should be indicated when
+reporting results.
+
+| Attribute Name        | Data Type | Description                               | Notable Items   |
+| --------------------- | --------- | ----------------------------------------- | --------------- |
+| job_id                | `int8`    | Reconcile job the report is a part of.    | FK constraint back to the jobs table with a many to one relationship. |
+| orca_archive_location | `string`  | ORCA S3 Glacier bucket the file resides in. | Location in S3. |
+| key_path              | `string`  | Key key value from S3 listing.            | |
+| etag                  | `string`  | ETag key value from S3 listing.           | |
+| last_update           | `timestamptz` | LastModified key value from the S3 listing. | |
+| size_in_bytes         | `int8`    | Size key value from the S3 listing.       | |
+| storage_class         | `string`  | StorageClass key value from the S3 listing. | |
+
+
 #### Internal Reconciliation Reporting Table Catalog Missing or Mismatches
 
 This table would capture the discrepancies for reporting out to the operators
 about files that are missing from ORCA S3 or have different metadata values than
-what is expected.
+what is expected. Note that any entries with an orca_last_update after the job's
+start_time may show as an error due to race conditions with the catalog update
+process, and should be displayed as such when reporting results.
 
 | Attribute Name   | Data Type | Description                               | Notable Items   |
-| ---------------- | --------- | ----------------------------------------- | --------------- |
-| job_id           | `int8`    | Reconcile job the report is a part of.    | FK constraint back to the jobs table with a many to one relationship. |
-| provider_id      | `string`  | Provider ID from the ORCA Provider object the file belongs to. | |
-| collection_id    | `string`  | Collection ID from the ORCA Collection object the file belongs to. | |
-| granule_id       | `string`  | Granule ID from the ORCA Granule object the file belongs to. | |
-| file_name        | `string`  | File name from the ORCA File object the file belongs to. | |
-| key_path         | `string`  | Key path that includes the file name from the ORCA File object the file belongs to. | |
-| orca_etag        | `string`  | Etag value from the ORCA File object the file belongs to. | |
-| s3_etag          | `string`  | ETag key value from S3 listing.           | NULLABLE column |
-| orca_last_update | `timestamptz` | Last Update value from the ORCA File object the file belongs to. | |
-| s3_last_update   | `timestamptz` | LastModified key value from the S3 listing. | NULLABLE column |
-| orca_size        | `int8`    | Size value from the ORCA File object the file belongs to. | |
-| s3_size          | `int8`    | Size key value from the S3 listing.       | NULLABLE column |
-| discrepancy_type | `string`  | Type of discrepancy encountered like "missing" or "value x mismatch" | |
-
-
-#### Internal Reconciliation Reporting Table Orphaned Files
-
-This table would capture the files that reside in S3 but have no match in the
-ORCA catalog. Generally, these files would be deleted or investigated to see if
-items need to be re-ingested into ORCA.
-
-| Attribute Name   | Data Type | Description                               | Notable Items   |
-| ---------------- | --------- | ----------------------------------------- | --------------- |
-| job_id           | `int8`    | Reconcile job the report is a part of.    | FK constraint back to the jobs table with a many to one relationship. |
-| key_path         | `string`  | Key key value from S3 listing.            | |
-| etag             | `string`  | ETag key value from S3 listing.           | |
-| last_update      | `timestamptz` | LastModified key value from the S3 listing. | |
-| size_in_bytes    | `int8`    | Size key value from the S3 listing.       | |
-| storage_class    | `string`  | StorageClass key value from the S3 listing. | |
+| --------------------- | --------- | ----------------------------------------- | --------------- |
+| job_id                | `int8`    | Reconcile job the report is a part of.    | FK constraint back to the jobs table with a many to one relationship. |
+| orca_archive_location | `string`  | ORCA S3 Glacier bucket the file resides in. | From Catalog. |
+| collection_id         | `string`  | Collection ID from the ORCA Collection object the file belongs to. | From Catalog. |
+| granule_id            | `string`  | Granule ID from the ORCA Granule object the file belongs to. | From Catalog. |
+| file_name             | `string`  | File name from the ORCA File object the file belongs to. | From Catalog. |
+| key_path              | `string`  | Key path that includes the file name from the ORCA File object the file belongs to. | From Catalog. |
+| orca_etag             | `string`  | Etag value from the ORCA File object the file belongs to. | From Catalog. |
+| s3_etag               | `string`  | ETag key value from S3 listing.           | NULLABLE column |
+| orca_last_update      | `timestamptz` | Last Update value from the ORCA File object the file belongs to. | From Catalog. |
+| s3_last_update        | `timestamptz` | LastModified key value from the S3 listing. | NULLABLE column |
+| orca_size             | `int8`    | Size value from the ORCA File object the file belongs to. | From Catalog. |
+| s3_size               | `int8`    | Size key value from the S3 listing.       | NULLABLE column |
+| discrepancy_type      | `string`  | Type of discrepancy encountered like "missing" or "value x mismatch" | |
 
 
 ## Open Questions yet to be answered
