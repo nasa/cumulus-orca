@@ -36,6 +36,7 @@ module "orca_lambdas" {
   orca_sqs_status_update_queue_arn   = module.orca_sqs.orca_sqs_status_update_queue_arn
 
   ## OPTIONAL
+  db_name                              = var.db_name
   orca_ingest_lambda_memory_size       = var.orca_ingest_lambda_memory_size
   orca_ingest_lambda_timeout           = var.orca_ingest_lambda_timeout
   orca_recovery_buckets                = var.orca_recovery_buckets
@@ -97,6 +98,7 @@ module "orca_secretsmanager" {
 
   ## OPTIONAL
   db_admin_username = var.db_admin_username
+  db_name           = var.db_name
 }
 ## orca_sqs - SQS module
 ## =============================================================================

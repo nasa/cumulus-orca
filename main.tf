@@ -1,6 +1,7 @@
 ## Local Variables
 locals {
-  tags = merge(var.tags, { Deployment = var.prefix }, { team = "ORCA", application = "ORCA" })
+  db_name = var.db_name != null ? var.db_name : "${var.prefix}-disaster_recovery"
+  tags    = merge(var.tags, { Deployment = var.prefix }, { team = "ORCA", application = "ORCA" })
 }
 
 
@@ -35,6 +36,7 @@ module "orca" {
   ## OPTIONAL
   vpc_endpoint_id                                      = var.vpc_endpoint_id
   db_admin_username                                    = var.db_admin_username
+  db_name                                              = local.db_name
   default_multipart_chunksize_mb                       = var.default_multipart_chunksize_mb
   metadata_queue_message_retention_time_seconds        = var.metadata_queue_message_retention_time_seconds
   orca_ingest_lambda_memory_size                       = var.orca_ingest_lambda_memory_size
