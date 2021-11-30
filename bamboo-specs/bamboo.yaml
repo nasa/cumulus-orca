@@ -38,7 +38,7 @@ branches:
 ---
 version: 2
 plan:
-  key: ORCA
+  key: ORCA-ORCA
 plan-permissions:
 - users:
   - rizbi.hassan
@@ -48,4 +48,4 @@ plan-permissions:
   - build
   - clone
   - admin
-
+...
