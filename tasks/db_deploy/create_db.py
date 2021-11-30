@@ -4,13 +4,14 @@ Name: create_db.py
 Description: Creates the current version on the ORCA database.
 """
 from typing import Dict
-from sqlalchemy.future import Connection
+
 from orca_shared.database.shared_db import (
-    get_configuration,
     get_admin_connection,
-    logger,
 )
+from sqlalchemy.future import Connection
+
 from orca_sql import *
+
 
 def create_fresh_orca_install(config: Dict[str, str]) -> None:
     """
@@ -30,7 +31,7 @@ def create_fresh_orca_install(config: Dict[str, str]) -> None:
 
     with admin_app_connection.connect() as conn:
         # Create the roles, schema and user
-        create_app_schema_role_users(conn, config["user_password"])
+        create_app_schema_role_users(conn, config["user_password"], config["user_database"])
 
         # Change to DBO role and set search path
         set_search_path_and_role(conn)
@@ -43,23 +44,26 @@ def create_fresh_orca_install(config: Dict[str, str]) -> None:
         # If everything is good, commit.
         conn.commit()
 
-def create_app_schema_role_users(connection: Connection, app_password: str) -> None:
+
+def create_app_schema_role_users(connection: Connection, app_password: str, db_name: str) -> None:
     """
     Creates the ORCA application database schema, users and roles.
 
     Args:
         connection (sqlalchemy.future.Connection): Database connection.
+        app_password
+        db_name: The name of the Orca database within the RDS cluster.
 
     Returns:
         None
     """
     # Create the roles first since they are needed by schema and users
     logger.debug("Creating the ORCA dbo role ...")
-    connection.execute(dbo_role_sql())
+    connection.execute(dbo_role_sql(db_name))
     logger.info("ORCA dbo role created.")
 
     logger.debug("Creating the ORCA app role ...")
-    connection.execute(app_role_sql())
+    connection.execute(app_role_sql(db_name))
     logger.info("ORCA app role created.")
 
     # Create the schema next
@@ -71,6 +75,7 @@ def create_app_schema_role_users(connection: Connection, app_password: str) -> N
     logger.debug("Creating the ORCA application user ...")
     connection.execute(app_user_sql(app_password))
     logger.info("ORCA application user created.")
+
 
 def set_search_path_and_role(connection: Connection) -> None:
     """
@@ -90,6 +95,7 @@ def set_search_path_and_role(connection: Connection) -> None:
 
     logger.debug("Setting search path to the ORCA schema to create objects ...")
     connection.execute(text("SET search_path TO orca, public;"))
+
 
 def create_metadata_objects(connection: Connection) -> None:
     """
@@ -112,6 +118,7 @@ def create_metadata_objects(connection: Connection) -> None:
     logger.debug("Populating the schema_versions table with data ...")
     connection.execute(schema_versions_data_sql())
     logger.info("Data added to the schema_versions table.")
+
 
 def create_recovery_objects(connection: Connection) -> None:
     """
@@ -162,27 +169,27 @@ def create_inventory_objects(connection: Connection) -> None:
     Returns:
         None
     """
-    #Create providers table
+    # Create providers table
     logger.debug("Creating providers table ...")
     connection.execute(providers_table_sql())
     logger.info("providers table created.")
 
-    #Create collections table
+    # Create collections table
     logger.debug("Creating collections table ...")
     connection.execute(collections_table_sql())
     logger.info("collections table created.")
 
-    #Create provider and collection cross reference table
+    # Create provider and collection cross reference table
     logger.debug("Creating provider and collection cross reference table ...")
     connection.execute(provider_collection_xref_table_sql())
     logger.info("provider and collection cross reference table created.")
 
-    #Create granules table
+    # Create granules table
     logger.debug("Creating granules table ...")
     connection.execute(granules_table_sql())
     logger.info("granules table created.")
 
-    #Create files table
+    # Create files table
     logger.debug("Creating files table ...")
     connection.execute(files_table_sql())
     logger.info("files table created.")
