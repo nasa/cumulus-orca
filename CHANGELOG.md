@@ -29,7 +29,7 @@ and includes an additional section for migration notes.
 - *ORCA-257* orca_catalog_reporting lambda now returns data from actual catalog.
 
 ### Changed
-- *ORCA-297* Default database name is now PREFIX-disaster_recovery
+- *ORCA-297* Default database name is now disaster_recovery_PREFIX
 - *ORCA-287* Updated copy_to_glacier and extract_filepaths_for_granule to [new Cumulus file format](https://github.com/nasa/cumulus/blob/master/packages/schemas/files.schema.json). 
 
 ### Migration Notes
@@ -42,8 +42,8 @@ and includes an additional section for migration notes.
 - These are the new variables added:
   - db_admin_username (defaults to "postgres")
   - db_host_endpoint (Requires a value. Set in terraform.tfvars to your RDS Cluster's endpoint, similar to "PREFIX-cumulus-db.cluster-000000000000.us-west-2.rds.amazonaws.com")
-  - db_name (Defaults to PREFIX-disaster_recovery. If preserving a database from a previous version of Orca, set to disaster_recovery.)
-  - api_gateway_policy_vpc_id
+  - db_name (Defaults to disaster_recovery_PREFIX. If preserving a database from a previous version of Orca, set to disaster_recovery.)
+  - vpc_endpoint_id
 - Add the following ORCA required variables definition to your `variables.tf` or `orca_variables.tf` file.
 
 ```terraform
@@ -60,11 +60,6 @@ variable "db_user_password" {
 variable "db_host_endpoint" {
   type        = string
   description = "Database host endpoint to connect to."
-}
-
-variable "api_gateway_policy_vpc_id" {
-  type        = string
-  description = "VPC ID that will have access to the API gateways"
 }
 ```
 - Update the `orca.tf` file to include all of the updated and new variables as seen below. Note the change to source and the commented out optional variables.
@@ -96,7 +91,6 @@ variable "api_gateway_policy_vpc_id" {
   db_admin_password   = var.db_admin_password
   db_user_password    = var.db_user_password
   db_host_endpoint    = var.db_host_endpoint
-  api_gateway_policy_vpc_id = var.api_gateway_policy_vpc_id
   ## OPTIONAL
   db_admin_username                                    = "postgres"
   default_multipart_chunksize_mb                       = 250
