@@ -4,7 +4,6 @@ locals {
 }
 
 
-
 ## Main ORCA module - This is what is called by end users.
 ## =============================================================================
 module "orca" {

@@ -2,8 +2,8 @@
 version: 2
 plan:
   project-key: ORCA #this is fixed
-  key: test
-  name: rhassan-test-bamboo-orca
+  key: ORCA-TS
+  name: test-plan
 stages:
 - Test stage:
     manual: false
