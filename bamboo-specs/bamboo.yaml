@@ -2,7 +2,7 @@
 version: 2
 plan:
   project-key: ORCA #this is fixed
-  key: RHASSAN
+  key: ORCA
   name: rhassan-test-plan
 stages:
 - Test stage:
@@ -38,7 +38,7 @@ branches:
 ---
 version: 2
 plan:
-  key: RHASSAN
+  key: ORCA
 plan-permissions:
 - users:
   - rizbi.hassan
