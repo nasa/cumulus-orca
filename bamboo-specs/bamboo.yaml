@@ -5,17 +5,17 @@ plan:
   key: PROTOTYPE
   name: rhassan-test-plan
 stages:
-- Build:
+- Build stage:
     manual: false
     final: false
     jobs:
     - Build job
-- Test:
+- Test stage:
     manual: false
     final: false
     jobs:
     - Test job
-- Deploy:
+- Deploy stage:
     manual: true
     final: true
     jobs:
