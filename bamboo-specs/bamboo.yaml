@@ -3,7 +3,7 @@ version: 2
 plan:
   project-key: ORCA #this is fixed
   key: PROTOTYPE
-  name: rhassan-test-plan
+  name: prototype-plan
 stages:
 - Build stage:
     manual: false
