@@ -1,8 +1,8 @@
 ---
 version: 2
 plan:
-  project-key: ORCA
-  key: ORCA
+  project-key: TEST
+  key: ORCA_RHASSAN
   name: test-orca
 stages:
 - Test stage:
