@@ -2,7 +2,7 @@
 version: 2
 plan:
   project-key: ORCA #this is fixed
-  key: TEST
+  key: RHASSAN
   name: rhassan-test-plan
 stages:
 - Test stage:
@@ -23,10 +23,10 @@ Test job:
         echo "Hello from bamboo new"
       description: Test script
 repositories:
-- orca branch:
+- orca branch: #the name must match the repo name given in CI website
     type: git
     url: https://github.com/nasa/cumulus-orca
-    branch: feature/ORCA-test-bamboo
+    branch: feature/ORCA-test-bamboo    #this is the branch where the spec file will reside
 triggers:
 - polling:
     period: '60'
@@ -38,7 +38,7 @@ branches:
 ---
 version: 2
 plan:
-  key: TEST
+  key: RHASSAN
 plan-permissions:
 - users:
   - rizbi.hassan
