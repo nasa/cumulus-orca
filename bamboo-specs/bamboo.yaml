@@ -1,0 +1,52 @@
+---
+version: 2
+plan:
+  project-key: ORCA #this is fixed
+  key: RHASSAN
+  name: rhassan-test-bamboo-orca
+stages:
+- Test stage:
+    manual: false
+    final: false
+    jobs:
+    - Test job
+Test job:
+  key: TJ
+  tasks:
+  - checkout:
+      force-clean-build: 'false'
+      description: Checkout Default Repository
+  - script:
+      interpreter: SHELL
+      scripts:
+      - |-
+        echo "Hello from bamboo"
+      description: Test script
+repositories:
+- ORCA repo:
+    type: git
+    url: https://github.com/nasa/cumulus-orca
+    branch: feature/ORCA-test-bamboo
+triggers:
+- polling:
+    period: '60'
+branches:
+  create: for-new-branch
+  delete:
+    after-deleted-days: 7
+    after-inactive-days: 30
+---
+version: 2
+plan:
+  key: RHASSAN
+plan-permissions:
+- users:
+  - rizbi.hassan
+  permissions:
+  - view
+  - edit
+  - build
+  - clone
+  - admin
+...
+
