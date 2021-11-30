@@ -88,7 +88,7 @@ variable "db_admin_username" {
 }
 
 variable "db_name" {
-  description = "The name of the Orca database within the RDS cluster. Default set to disaster_recovery_PREFIX in main.tf."
+  description = "The name of the Orca database within the RDS cluster. Default set to PREFIX_orca in main.tf."
   type        = string
   default     = null
 }
