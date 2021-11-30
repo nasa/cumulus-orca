@@ -2,7 +2,7 @@
 version: 2
 plan:
   project-key: ORCA #this is fixed
-  key: RHASSAN
+  key: test
   name: rhassan-test-bamboo-orca
 stages:
 - Test stage:
@@ -20,7 +20,7 @@ Test job:
       interpreter: SHELL
       scripts:
       - |-
-        echo "Hello from bamboo"
+        echo "Hello from bamboo new"
       description: Test script
 repositories:
 - ORCA repo:
