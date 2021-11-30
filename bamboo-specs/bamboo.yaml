@@ -60,7 +60,7 @@ repositories:
     branch: feature/ORCA-test-bamboo    #this is the branch where the spec file will reside
 triggers:
 - polling:
-    period: '60'
+    period: '10'
 branches:
   create: for-new-branch
   delete:
