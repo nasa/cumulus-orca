@@ -103,7 +103,6 @@ BEGIN
     CREATE TABLE IF NOT EXISTS reconcile_catalog_mismatch_report
     (
       job_id                      int8 NOT NULL
-    , provider_id                 text NOT NULL
     , collection_id               text NOT NULL
     , granule_id                  text NOT NULL
     , orca_archive_location       text NOT NULL
@@ -117,7 +116,7 @@ BEGIN
     , orca_size                   int8 NOT NULL
     , s3_size                     int8 NULL
     , discrepancy_type            text NOT NULL
-    , CONSTRAINT PK_reconcile_catalog_mismatch_report_1 PRIMARY KEY(job_id,provider_id,collection_id,granule_id,orca_archive_location,key_path)
+    , CONSTRAINT PK_reconcile_catalog_mismatch_report_1 PRIMARY KEY(job_id,collection_id,granule_id,orca_archive_location,key_path)
     , CONSTRAINT reconcile_jobs_catalog_mismatch_fk FOREIGN KEY(job_id) REFERENCES reconcile_jobs(id)
     );
 
@@ -125,8 +124,6 @@ BEGIN
       IS 'Table that identifies objects that exist in the ORCA catalog and either do not exist in the ORCA S3 bucket or have mismatched values from the s3 objects table.';
     COMMENT ON COLUMN reconcile_catalog_mismatch_report.job_id
       IS 'Job the mismatch or missing granule was foundin. Refrences the reconcile_job table.';
-    COMMENT ON COLUMN reconcile_catalog_mismatch_report.provider_id
-      IS 'Cumulus provider ID value from the ORCA catalog.';
     COMMENT ON COLUMN reconcile_catalog_mismatch_report.collection_id
       IS 'Cumulus Collection ID value from the ORCA catalog.';
     COMMENT ON COLUMN reconcile_catalog_mismatch_report.granule_id

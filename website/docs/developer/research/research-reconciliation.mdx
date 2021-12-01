@@ -698,7 +698,10 @@ comparison.
 
 This table would capture the files that reside in S3 but have no match in the
 ORCA catalog. Generally, these files would be deleted or investigated to see if
-items need to be re-ingested into ORCA.
+items need to be re-ingested into ORCA. Note that entries with a last_update time
+after or immediately before the job's start_time may not have catalog entries yet
+due to a slight delay in the catalog population. This should be indicated when
+reporting results.
 
 | Attribute Name        | Data Type | Description                               | Notable Items   |
 | --------------------- | --------- | ----------------------------------------- | --------------- |
@@ -715,7 +718,9 @@ items need to be re-ingested into ORCA.
 
 This table would capture the discrepancies for reporting out to the operators
 about files that are missing from ORCA S3 or have different metadata values than
-what is expected.
+what is expected. Note that any entries with an orca_last_update after the job's
+start_time may show as an error due to race conditions with the catalog update
+process, and should be displayed as such when reporting results.
 
 | Attribute Name   | Data Type | Description                               | Notable Items   |
 | --------------------- | --------- | ----------------------------------------- | --------------- |
