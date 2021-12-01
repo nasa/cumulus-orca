@@ -22,6 +22,6 @@ BEGIN
     END IF;
 
     -- Grants
-    GRANT CONNECT ON DATABASE disaster_recovery TO dbo;
+    GRANT CONNECT ON DATABASE orca TO dbo;
 END
 $$;

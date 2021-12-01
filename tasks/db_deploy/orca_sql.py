@@ -7,6 +7,8 @@ Description: All of the SQL used for creating and migrating the ORCA schema.
 from sqlalchemy import text
 from sqlalchemy.sql.elements import TextClause
 from orca_shared.database.shared_db import logger
+
+
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating the Database
 # ----------------------------------------------------------------------------
@@ -19,7 +21,7 @@ def commit_sql() -> TextClause:
     return text("commit")
 
 
-def app_database_sql() -> TextClause:
+def app_database_sql(db_name: str) -> TextClause:
     """
     Full SQL for creating the ORCA application database.
 
@@ -27,8 +29,8 @@ def app_database_sql() -> TextClause:
         (sqlalchemy.sql.element.TextClause): SQL for creating database.
     """
     return text(
-        """
-        CREATE DATABASE disaster_recovery
+        f"""
+        CREATE DATABASE {db_name}
             OWNER postgres
             TEMPLATE template1
             ENCODING 'UTF8';
@@ -36,14 +38,14 @@ def app_database_sql() -> TextClause:
     )
 
 
-def app_database_comment_sql() -> TextClause:
+def app_database_comment_sql(db_name: str) -> TextClause:
     """
     SQL for adding a documentation comment to the database.
     Cannot be merged with DB creation due to SQLAlchemy limitations.
     """
     return text(
-        """
-        COMMENT ON DATABASE disaster_recovery
+        f"""
+        COMMENT ON DATABASE {db_name}
             IS 'Operational Recovery Cloud Archive (ORCA) database.'
 """
     )
@@ -52,7 +54,7 @@ def app_database_comment_sql() -> TextClause:
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA schema, roles, and users
 # ----------------------------------------------------------------------------
-def dbo_role_sql() -> TextClause:
+def dbo_role_sql(db_name: str) -> TextClause:
     """
     Full SQL for creating the ORCA dbo role that owns the ORCA schema and
     objects.
@@ -61,7 +63,7 @@ def dbo_role_sql() -> TextClause:
         (sqlalchemy.sql.element.TextClause): SQL for creating orca_dbo role.
     """
     return text(
-        """
+        f"""
         DO
         $$
           BEGIN
@@ -78,8 +80,8 @@ def dbo_role_sql() -> TextClause:
             END IF;
 
             -- Grants
-            GRANT CONNECT ON DATABASE disaster_recovery TO orca_dbo;
-            GRANT CREATE ON DATABASE disaster_recovery TO orca_dbo;
+            GRANT CONNECT ON DATABASE {db_name} TO orca_dbo;
+            GRANT CREATE ON DATABASE {db_name} TO orca_dbo;
             GRANT orca_dbo TO postgres;
           END
         $$
@@ -87,7 +89,7 @@ def dbo_role_sql() -> TextClause:
     )
 
 
-def app_role_sql() -> TextClause:
+def app_role_sql(db_name: str) -> TextClause:
     """
     Full SQL for creating the ORCA application role that has all the privileges
     to interact with the ORCA schema.
@@ -96,7 +98,7 @@ def app_role_sql() -> TextClause:
         (sqlalchemy.sql.element.TextClause): SQL for creating orca_app role.
     """
     return text(
-        """
+        f"""
         DO
         $$
         BEGIN
@@ -113,7 +115,7 @@ def app_role_sql() -> TextClause:
           END IF;
 
           -- Add Grants
-          GRANT CONNECT ON DATABASE disaster_recovery TO orca_app;
+          GRANT CONNECT ON DATABASE {db_name} TO orca_app;
         END
         $$;
     """
@@ -434,6 +436,7 @@ def recovery_file_table_sql() -> TextClause:
     """
     )
 
+
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA inventory metadata tables
 # ----------------------------------------------------------------------------
@@ -580,6 +583,7 @@ def granules_table_sql() -> TextClause:
     """
     )
 
+
 def files_table_sql() -> TextClause:
     """
     Full SQL for creating the catalog files table.
@@ -616,7 +620,7 @@ def files_table_sql() -> TextClause:
         COMMENT ON COLUMN files.id
             IS 'Internal ORCA file ID';
         COMMENT ON COLUMN files.granule_id
-            IS 'Granule that the file belongs to refrences the internal ORCA granule ID.';
+            IS 'Granule that the file belongs to references the internal ORCA granule ID.';
          COMMENT ON COLUMN files.name
             IS 'Name of the file including extension';
          COMMENT ON COLUMN files.orca_archive_location
@@ -777,7 +781,8 @@ def drop_druser_user_sql() -> TextClause:
     )
 
 
-def drop_dbo_user_sql() -> TextClause:
+# todo: rebuild API.md
+def drop_dbo_user_sql(db_name: str) -> TextClause:
     """
     SQL that removes the dbo user.
 
@@ -785,14 +790,14 @@ def drop_dbo_user_sql() -> TextClause:
         (sqlalchemy.sql.element.TextClause): SQL for dropping dbo user.
     """
     return text(
-        """
-        REVOKE CONNECT ON DATABASE disaster_recovery FROM dbo;
+        f"""
+        REVOKE CONNECT ON DATABASE {db_name} FROM dbo;
         DROP USER IF EXISTS dbo;
     """
     )
 
 
-def drop_dr_role_sql() -> TextClause:
+def drop_dr_role_sql(db_name: str) -> TextClause:
     """
     SQL that removes the dr_role role.
 
@@ -800,24 +805,24 @@ def drop_dr_role_sql() -> TextClause:
         (sqlalchemy.sql.element.TextClause): SQL for dropping dr_role role.
     """
     return text(
-        """
-        REVOKE CONNECT ON DATABASE disaster_recovery FROM GROUP dr_role;
+        f"""
+        REVOKE CONNECT ON DATABASE {db_name} FROM GROUP dr_role;
         DROP ROLE IF EXISTS dr_role;
     """
     )
 
 
-def drop_drdbo_role_sql() -> TextClause:
+def drop_drdbo_role_sql(db_name: str) -> TextClause:
     """
     SQL that removes the drdbo_role role.
 
     Returns:
         (sqlalchemy.sql.element.TextClause): SQL for dropping drdbo_role role.
-    """
+    f"""
     return text(
         """
-        REVOKE CONNECT ON DATABASE disaster_recovery FROM GROUP drdbo_role;
-        REVOKE CREATE ON DATABASE disaster_recovery FROM GROUP drdbo_role;
+        REVOKE CONNECT ON DATABASE {db_name} FROM GROUP drdbo_role;
+        REVOKE CREATE ON DATABASE {db_name} FROM GROUP drdbo_role;
         DROP ROLE IF EXISTS drdbo_role;
     """
     )
