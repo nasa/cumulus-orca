@@ -36,47 +36,42 @@ class TestCopyToGlacierHandler(TestCase):
                 "version": "006",
                 "files": [
                     {
-                        copy_to_glacier.FILE_FILENAME_KEY: "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
                         "path": "MOD09GQ/006",
                         "size": 6,
                         "time": 1608318361000,
                         copy_to_glacier.FILE_BUCKET_KEY: "orca-sandbox-protected",
                         "url_path": "MOD09GQ/006/",
                         "type": "",
-                        copy_to_glacier.FILE_SOURCE_URI_KEY: "s3://orca-sandbox-protected/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
                         copy_to_glacier.FILE_FILEPATH_KEY: "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
                         "duplicate_found": True,
                     },
                     {
-                        copy_to_glacier.FILE_FILENAME_KEY: "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf.met",
                         "path": "MOD09GQ/006",
                         "size": 6,
                         "time": 1608318366000,
                         copy_to_glacier.FILE_BUCKET_KEY: "orca-sandbox-private",
                         "url_path": "MOD09GQ/006",
                         "type": "",
-                        copy_to_glacier.FILE_SOURCE_URI_KEY: "s3://orca-sandbox-private/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf.met",
-                        copy_to_glacier.FILE_FILEPATH_KEY: "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf.met",
+                        copy_to_glacier.FILE_FILEPATH_KEY:
+                            "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf.met",
                         "duplicate_found": True,
                     },
                     {
-                        copy_to_glacier.FILE_FILENAME_KEY: "MOD09GQ.A2017025.h21v00.006.2017034065109_ndvi.jpg",
                         "path": "MOD09GQ/006",
                         "size": 6,
                         "time": 1608318372000,
                         copy_to_glacier.FILE_BUCKET_KEY: "orca-sandbox-public",
                         "url_path": "MOD09GQ/006",
                         "type": "",
-                        copy_to_glacier.FILE_SOURCE_URI_KEY: "s3://orca-sandbox-public/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109_ndvi.jpg",
-                        copy_to_glacier.FILE_FILEPATH_KEY: "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109_ndvi.jpg",
+                        copy_to_glacier.FILE_FILEPATH_KEY:
+                            "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109_ndvi.jpg",
                         "duplicate_found": True,
                     },
                     {
-                        copy_to_glacier.FILE_FILENAME_KEY: "MOD09GQ.A2017025.h21v00.006.2017034065109.cmr.xml",
                         copy_to_glacier.FILE_BUCKET_KEY: "orca-sandbox-private",
-                        copy_to_glacier.FILE_SOURCE_URI_KEY: "s3://orca-sandbox-private/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.cmr.xml",
                         "type": "metadata",
-                        copy_to_glacier.FILE_FILEPATH_KEY: "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.cmr.xml",
+                        copy_to_glacier.FILE_FILEPATH_KEY:
+                            "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.cmr.xml",
                         "url_path": "MOD09GQ/006",
                     },
                 ],
@@ -106,10 +101,8 @@ class TestCopyToGlacierHandler(TestCase):
                 "granuleId": uuid.uuid4().__str__(),
                 "files": [
                     {
-                        copy_to_glacier.FILE_FILENAME_KEY: uuid.uuid4().__str__(),
                         copy_to_glacier.FILE_BUCKET_KEY: uuid.uuid4().__str__(),
                         copy_to_glacier.FILE_FILEPATH_KEY: uuid.uuid4().__str__(),
-                        copy_to_glacier.FILE_SOURCE_URI_KEY: uuid.uuid4().__str__(),
                     }
                 ],
             }
@@ -134,10 +127,8 @@ class TestCopyToGlacierHandler(TestCase):
                     "granuleId": uuid.uuid4().__str__(),
                     "files": [
                         {
-                            copy_to_glacier.FILE_FILENAME_KEY: uuid.uuid4().__str__(),
                             copy_to_glacier.FILE_BUCKET_KEY: uuid.uuid4().__str__(),
                             copy_to_glacier.FILE_FILEPATH_KEY: uuid.uuid4().__str__(),
-                            copy_to_glacier.FILE_SOURCE_URI_KEY: uuid.uuid4().__str__(),
                         }
                     ]
                 }
@@ -238,7 +229,8 @@ class TestCopyToGlacierHandler(TestCase):
         self.assertEqual(s3_cli.copy.call_count, 4)
 
         expected_copied_file_urls = [
-            file[copy_to_glacier.FILE_SOURCE_URI_KEY] for file in self.event_granules["granules"][0]["files"]
+            f"s3://{file[copy_to_glacier.FILE_BUCKET_KEY]}/{file[copy_to_glacier.FILE_FILEPATH_KEY]}"
+            for file in self.event_granules["granules"][0]["files"]
         ]
         self.assertEqual(expected_copied_file_urls, result["copied_to_glacier"])
         expected_granules = copy.deepcopy(event["input"]["granules"])
@@ -324,7 +316,8 @@ class TestCopyToGlacierHandler(TestCase):
         self.assertEqual(s3_cli.copy.call_count, 4)
 
         expected_copied_file_urls = [
-            file[copy_to_glacier.FILE_SOURCE_URI_KEY] for file in self.event_granules["granules"][0]["files"]
+            f"s3://{file[copy_to_glacier.FILE_BUCKET_KEY]}/{file[copy_to_glacier.FILE_FILEPATH_KEY]}"
+            for file in self.event_granules["granules"][0]["files"]
         ]
         self.assertEqual(expected_copied_file_urls, result["copied_to_glacier"])
         expected_granules = copy.deepcopy(event["input"]["granules"])
@@ -388,8 +381,10 @@ class TestCopyToGlacierHandler(TestCase):
                 in context.exception
             )
 
+    @patch("time.sleep")
     @patch.dict(os.environ, {"AWS_REGION": "us-west-2"}, clear=True)
-    def test_post_to_metadata_queue_happy_path(self):
+    def test_post_to_metadata_queue_happy_path(self,
+                                               _):
         """
         SQS library happy path. Checks that the message sent to SQS is same as the message received from SQS.
         """
@@ -423,6 +418,7 @@ class TestCopyToGlacierHandler(TestCase):
             },
         }
         # Send values to the function
+        # noinspection PyArgumentList
         sqs_library.post_to_metadata_queue(
             sqs_body,
             self.metadata_queue_url,
@@ -438,7 +434,7 @@ class TestCopyToGlacierHandler(TestCase):
     @patch("sqs_library.retry_error")
     @patch.dict(os.environ, {"AWS_REGION": "us-west-2"}, clear=True)
     def test_post_to_metadata_queue_retry_failures(
-        self, mock_retry_error: MagicMock, mock_sleep: MagicMock
+            self, mock_retry_error: MagicMock, mock_sleep: MagicMock
     ):
         """
         Produces a failure in the json schema and checks if retries are performed in the SQS library.
@@ -476,13 +472,13 @@ class TestCopyToGlacierHandler(TestCase):
         #
         self.metadata_queue_url = "dummy"
         # Send values to the function
-        with self.assertRaises(Exception) as ex:
+        with self.assertRaises(Exception) as ex:  # todo: Make sure the correct exception is caught
+            # noinspection PyArgumentList
             sqs_library.post_to_metadata_queue(
                 sqs_body,
                 self.metadata_queue_url,
             )
         self.assertEqual(3, mock_sleep.call_count)
-
 
 ##TODO: Write tests to validate file name regex exclusion
 

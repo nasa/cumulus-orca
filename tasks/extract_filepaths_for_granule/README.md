@@ -312,11 +312,11 @@ FUNCTIONS
         Raises:
             ExtractFilePathsError: An error occurred parsing the input.
     
-    should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -> bool
-        Tests whether or not file is included in {excludeFileTypes}.
+    should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> bool
+        Tests whether or not file is included in {excludeFileTypes} from copy to glacier.
         Args:
-            granule_url: s3 url of granule.
-            exclude_file_types: List of file extensions to exclude from sending to request_files
+            file_key: The key of the file within the s3 bucket.
+            exclude_file_types: List of extensions to exclude in the backup.
         Returns:
             True if file should be excluded from copy, False otherwise.
     
