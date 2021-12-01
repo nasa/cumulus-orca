@@ -8,7 +8,7 @@ description: Research Notes on Bamboo CI/CD.
 
 [Bamboo](https://confluence.atlassian.com/bamboo/getting-started-with-bamboo-289277283.html) is a continuous integration (CI) and continuous deployment (CD) server used to automate the release and deployment of software applications. A typical bamboo workflow configuration consists of the following:
 
- - Plan - It consists of single or multiple stages that are run sequentially using the same repository and defines the build is triggered.
+ - Plan - It consists of single or multiple stages that are run sequentially using the same repository and defines the build that is triggered.
  - Stage - It consists of single or multiple jobs that run simultaneously.
  - Job - It processes one or more tasks that run simultaneously in an ordered fashion. 
  - Task - It is the actual work that is being executed as part of the build (e.g., running a shell script).
@@ -20,6 +20,7 @@ Bamboo Specs are used to write Bamboo configuration as code either in Java or YA
 :::note
 A project has to be created manually first in Bamboo since it not possible to create a project with YAML file.
 :::
+
 An example of a bamboo config spec in YAML is shown below. This plan named `test-orca` consists of a manual stage named `orca test stage` which consists of a job named `orca test job`. This `orca test job` has a task that runs a shell script. 
 
 ```yaml
@@ -138,11 +139,21 @@ Make sure the linked repository have permissions to create plans within given pr
 :::
 
 In order to run this YAML definition from github repo, user has to setup `Repository-stored Specs` on Bamboo CI/CD [website](https://ci.earthdata.nasa.gov/build/admin/create/newSpecs.action). From the Bamboo dashboard, Choose `Specs`->`Set up Specs repository` and then select `Build project` as `ORCA` and `Repository host` as `ORCA repo`.
+The next step is to create a `Webhook` on the source repository by going to the settings option so that Bamboo knows about new commits. Webhooks allow Github repositories to communicate with Bamboo. A webhook has been created for ORCA project `https://ci.earthdata.nasa.gov/rest/api/latest/repository/scan?repositoryId=375849190` which needs to be copied to the `webhook` section in cumulus-orca repo. Furthur discussions are needed for this step with the whole team. 
+:::important
+ Webhooks must be triggered by HTTP POST method and the Content-Type header should be set to `application/json`.
+:::
+If Webhook is not created, then user has to `set up Specs repository` as shown above every time the YAML definition is changed. Otherwise, it will not pull the latest changes. Check this [documentation](https://confluence.atlassian.com/bamboo0800/enabling-webhooks-1077778691.html) for details on setting up Webhook.
 
+## Creating a prototype
+
+A prototype using Bamboo has been created [here](https://ci.earthdata.nasa.gov/browse/ORCA-PROTOTYPE). Make sure NASA VPN is connected and that you have access to ORCA project on CI site.
+Code for the prototype resides currently in this [branch](https://github.com/nasa/cumulus-orca/blob/feature/ORCA-test-bamboo/bamboo-specs/bamboo.yaml) since we do not want to merge this into develop.
 
 ## Future directions
 
-- Convert bamboo plans to YAML definition language and store under `cumulus-orca/bamboo-specs/bamboo.yaml`. 
+- Convert bamboo plans to YAML definition language and store under `cumulus-orca/bamboo-specs/bamboo.yaml`.
+- Discuss with team about enabling Webhooks in ORCA github repo. 
 
 
 ##### References
@@ -150,3 +161,4 @@ In order to run this YAML definition from github repo, user has to setup `Reposi
 - https://confluence.atlassian.com/bamboo/bamboo-yaml-specs-938844479.html
 https://docs.atlassian.com/bamboo-specs-docs/7.0.1/specs.html
 - https://ci.earthdata.nasa.gov/
+- https://confluence.atlassian.com/bamboo0800/enabling-webhooks-1077778691.html
