@@ -34,7 +34,6 @@ module "orca" {
   orca_default_bucket       = var.orca_default_bucket
   
   ## OPTIONAL
-  vpc_endpoint_id                                      = var.vpc_endpoint_id
   db_admin_username                                    = var.db_admin_username
   db_name                                              = local.db_name
   default_multipart_chunksize_mb                       = var.default_multipart_chunksize_mb
@@ -53,4 +52,5 @@ module "orca" {
   sqs_maximum_message_size                             = var.sqs_maximum_message_size
   staged_recovery_queue_message_retention_time_seconds = var.staged_recovery_queue_message_retention_time_seconds
   status_update_queue_message_retention_time_seconds   = var.status_update_queue_message_retention_time_seconds
+  vpc_endpoint_id                                      = var.vpc_endpoint_id
 }

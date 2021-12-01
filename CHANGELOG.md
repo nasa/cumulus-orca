@@ -108,6 +108,7 @@ variable "db_host_endpoint" {
   sqs_maximum_message_size                             = 262144
   staged_recovery_queue_message_retention_time_seconds = 432000
   status_update_queue_message_retention_time_seconds   = 777600
+  vpc_endpoint_id                                      = null
   }
   ```
 
