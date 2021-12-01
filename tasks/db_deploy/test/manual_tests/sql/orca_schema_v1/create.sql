@@ -4,7 +4,7 @@
 commit;
 
 -- Create Schema and extensions in the new database
-\c disaster_recovery
+\c orca
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 \ir schema/init.sql;
 commit;

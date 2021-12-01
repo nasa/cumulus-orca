@@ -25,7 +25,7 @@ Test files ending in '_postgres.py' require a postgres database to be accessible
     ```json
     {"DATABASE_HOST": "localhost",
     "DATABASE_PORT": "5432",
-    "DATABASE_NAME": "disaster_recovery",
+    "DATABASE_NAME": "orca",
     "DATABASE_USER": "druser",
     "DATABASE_PW": "[your user password here]",
     "MASTER_USER_PW": "[your db password here]"}

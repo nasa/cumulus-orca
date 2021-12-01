@@ -73,12 +73,12 @@ Once all tests are complete perform the following:
 ## Database Fresh Install Test
 
 This test validates that the db_deploy scripts will perform a fresh install if
-the server exists without the disaster_recovery database.
+the server exists without the orca database.
 
 ### Database Setup Fresh Install Test
 
 In the **pgclient** window use the `psql` client to connect to the database and
-validate that the *disaster_recovery* database does not exist as seen below.
+validate that the *orca* database does not exist as seen below.
 
 ```bash
 root@26df0390e999:/# psql
@@ -134,12 +134,12 @@ To run the fresh install test, in your **python** window run the command
 {"message": "Database set to postgres for the connection.", "timestamp": "2021-09-17T14:45:29.062380", "level": "debug"}
 {"message": "Creating URL object to connect to the database.", "timestamp": "2021-09-17T14:45:29.062380", "level": "debug"}
 {"message": "Creating admin user connection object.", "timestamp": "2021-09-17T14:45:29.124911", "level": "debug"}
-{"message": "Database set to disaster_recovery for the connection.", "timestamp": "2021-09-17T14:45:29.124911", "level": "debug"}
+{"message": "Database set to orca for the connection.", "timestamp": "2021-09-17T14:45:29.124911", "level": "debug"}
 {"message": "Creating URL object to connect to the database.", "timestamp": "2021-09-17T14:45:29.124911", "level": "debug"}
-{"message": "The ORCA database disaster_recovery does not exist, or the server could not be connected to.", "timestamp": "2021-09-17T14:45:32.896358", "level": "info"}
+{"message": "The ORCA database orca does not exist, or the server could not be connected to.", "timestamp": "2021-09-17T14:45:32.896358", "level": "info"}
 {"message": "Database created.", "timestamp": "2021-09-17T14:45:35.071075", "level": "info"}
 {"message": "Creating admin user connection object.", "timestamp": "2021-09-17T14:45:35.071075", "level": "debug"}
-{"message": "Database set to disaster_recovery for the connection.", "timestamp": "2021-09-17T14:45:35.071075", "level": "debug"}
+{"message": "Database set to orca for the connection.", "timestamp": "2021-09-17T14:45:35.071075", "level": "debug"}
 {"message": "Creating URL object to connect to the database.", "timestamp": "2021-09-17T14:45:35.071075", "level": "debug"}
 {"message": "Creating the ORCA dbo role ...", "timestamp": "2021-09-17T14:45:38.493302", "level": "debug"}
 {"message": "ORCA dbo role created.", "timestamp": "2021-09-17T14:45:38.984447", "level": "info"}
@@ -207,8 +207,8 @@ expressed in the logs.
 ```
 
 Next, verify that the objects were actually created with the proper data in the
-PostgreSQL *disaster_recovery* database. Perform the checks below by going to the
-**pgclient** window and logging into the *disaster_recovery* database as the
+PostgreSQL *orca* database. Perform the checks below by going to the
+**pgclient** window and logging into the *orca* database as the
 *postgres* user as seen below.
 
 ```bash
@@ -216,8 +216,8 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    psql (12.6 (Debian 12.6-1.pgdg100+1))
    Type "help" for help
 
-   postgres=# \c disaster_recovery
-   You are now connected to database "disaster_recovery" as user "postgres".
+   postgres=# \c orca
+   You are now connected to database "orca" as user "postgres".
 ```
 
 1. Verify that the roles/users were created and that *orcauser* is a
@@ -234,7 +234,7 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    ```
 2. Verify the ORCA schema was created.
    ```bash
-   disaster_recovery=# \dn
+   orca=# \dn
 
      List of schemas
      Name  |  Owner
@@ -245,7 +245,7 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    ```
 3. Verify the tables were created in the ORCA schema.
    ```bash
-   disaster_recovery=# \dt orca.*
+   orca=# \dt orca.*
 
                  List of relations
     Schema |      Name                 | Type  |  Owner
@@ -263,7 +263,7 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    ```
 4. Verify the static data in the *recovery_status* table.
    ```bash
-   disaster_recovery=# select * from orca.recovery_status;
+   orca=# select * from orca.recovery_status;
 
     id |  value
    ----+----------
@@ -275,7 +275,7 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    ```
 5. Verify the static data in the *schema_versions* table.
    ```bash
-   disaster_recovery=# select * from orca.schema_versions;
+   orca=# select * from orca.schema_versions;
 
     version_id |                     description                      |         install _date         | is_latest
    ------------+------------------------------------------------------+-------------------------------+-----------
@@ -285,9 +285,9 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
 6. Verify the orcauser can login with the password provided in the `.env` files
    `APPLICATION_PASSWORD` environment variable.
    ```bash
-   disaster_recovery=# \c "dbname=disaster_recovery user=orcauser password=<Your Password Here>"
+   orca=# \c "dbname=orca user=orcauser password=<Your Password Here>"
 
-   You are now connected to database "disaster_recovery" as user "orcauser".
+   You are now connected to database "orca" as user "orcauser".
    ```
 
 
@@ -295,7 +295,7 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
 
 No cleanup is necessary if the next test run is the [Database No Migration Test](#database-no-migration-test).
 
-The `sql/cleanup.sql` script will remove all objects including the *disaster_recovery* database. The
+The `sql/cleanup.sql` script will remove all objects including the *orca* database. The
 `sql/orca_schema_v2/remove.sql` script will remove only the objects created
 in this test but leave the database intact. Both scripts must be run as the
 *postgres* user.
@@ -305,10 +305,10 @@ root@26df0390e999:/data/test/manual_tests# psql
 psql (12.6 (Debian 12.6-1.pgdg100+1))
 Type "help" for help.
 
-postgres=# \c disaster_recovery
-You are now connected to database "disaster_recovery" as user "postgres".
+postgres=# \c orca
+You are now connected to database "orca" as user "postgres".
 
-disaster_recovery=# \i sql/orca_schema_v2/remove.sql
+orca=# \i sql/orca_schema_v2/remove.sql
 
 psql:sql/orca_schema_v2/remove.sql:1: NOTICE:  drop cascades to 4 other objects
 DETAIL:  drop cascades to table orca.schema_versions
@@ -364,9 +364,9 @@ schema and run the migration of objects and data to an ORCA v4 schema.
 
 ### Database Setup Migration Test
 
-1. Verify that the *disaster_recovery* database does not exist. If it does, remove
+1. Verify that the *orca* database does not exist. If it does, remove
    it using the `\i sql/cleanup.sql` command as described in the [DNE Test](#database-setup-dne-test).
-2. Create the *disaster_recovery* database by using the `\i sql/create_database.sql`
+2. Create the *orca* database by using the `\i sql/create_database.sql`
    command as seen below.
    ```bash
    root@26df0390e999:/data/test/manual_tests# psql
@@ -397,7 +397,7 @@ schema and run the migration of objects and data to an ORCA v4 schema.
    DO
    psql:sql/orca_schema_v1/create.sql:4: WARNING:  there is no transaction in progress
    COMMIT
-   You are now connected to database "disaster_recovery" as user "postgres".
+   You are now connected to database "orca" as user "postgres".
    CREATE EXTENSION
    CREATE SCHEMA
    COMMENT
@@ -445,7 +445,7 @@ schema and run the migration of objects and data to an ORCA v4 schema.
    COMMIT
    
    # Once complete quit psql. We will login as postgres user during validation.
-   disaster_recovery=> \q
+   orca=> \q
    ```
 
 
@@ -462,11 +462,11 @@ To run the migration test, in your **python** window run the command
 {"message": "Database set to postgres for the connection.", "timestamp": "2021-09-14T13:37:39.791395", "level": "debug"}
 {"message": "Creating URL object to connect to the database.", "timestamp": "2021-09-14T13:37:39.791395", "level": "debug"}
 {"message": "Creating admin user connection object.", "timestamp": "2021-09-14T13:37:39.826098", "level": "debug"}
-{"message": "Database set to disaster_recovery for the connection.", "timestamp": "2021-09-14T13:37:39.826098", "level": "debug"}
+{"message": "Database set to orca for the connection.", "timestamp": "2021-09-14T13:37:39.826098", "level": "debug"}
 {"message": "Creating URL object to connect to the database.", "timestamp": "2021-09-14T13:37:39.826098", "level": "debug"}
 {"message": "Performing full install of ORCA schema.", "timestamp": "2021-09-14T13:37:47.649467", "level": "info"}
 {"message": "Creating admin user connection object.", "timestamp": "2021-09-14T13:37:47.649467", "level": "debug"}
-{"message": "Database set to disaster_recovery for the connection.", "timestamp": "2021-09-14T13:37:47.649467", "level": "debug"}
+{"message": "Database set to orca for the connection.", "timestamp": "2021-09-14T13:37:47.649467", "level": "debug"}
 {"message": "Creating URL object to connect to the database.", "timestamp": "2021-09-14T13:37:47.649467", "level": "debug"}
 {"message": "Creating the ORCA dbo role ...", "timestamp": "2021-09-14T13:37:50.859040", "level": "debug"}
 {"message": "ORCA dbo role created.", "timestamp": "2021-09-14T13:37:51.271456", "level": "info"}
@@ -542,8 +542,8 @@ expressed in the logs.
 ```
 
 Next, verify that the objects were actually created with the proper data in the
-PostgreSQL *disaster_recovery* database. Perform the checks below by going to the
-**pgclient** window and logging into the *disaster_recovery* database as the
+PostgreSQL *orca* database. Perform the checks below by going to the
+**pgclient** window and logging into the *orca* database as the
 *postgres* user as seen below.
 
 ```bash
@@ -551,8 +551,8 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    psql (12.6 (Debian 12.6-1.pgdg100+1))
    Type "help" for help
 
-   postgres=# \c disaster_recovery
-   You are now connected to database "disaster_recovery" as user "postgres".
+   postgres=# \c orca
+   You are now connected to database "orca" as user "postgres".
 ```
 
 1. Verify that the roles/users were created and that *orcauser* is a
@@ -570,7 +570,7 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    ```
 2. Verify the ORCA schema was created and the *dr* schema was removed.
    ```bash
-   disaster_recovery=# \dn
+   orca=# \dn
 
      List of schemas
      Name  |  Owner
@@ -581,7 +581,7 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    ```
 3. Verify the tables were created in the ORCA schema.
    ```bash
-   disaster_recovery=# \dt orca.*
+   orca=# \dt orca.*
 
                  List of relations
     Schema |      Name                 | Type  |  Owner
@@ -599,7 +599,7 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    ```
 4. Verify the static data in the *recovery_status* table.
    ```bash
-   disaster_recovery=# select * from orca.recovery_status;
+   orca=# select * from orca.recovery_status;
 
     id |  value
    ----+----------
@@ -611,7 +611,7 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    ```
 5. Verify the static data in the *schema_versions* table.
    ```bash
-   disaster_recovery=# select * from orca.schema_versions;
+   orca=# select * from orca.schema_versions;
 
     version_id |                     description                      |         install _date         | is_latest
    ------------+------------------------------------------------------+-------------------------------+-----------
@@ -621,16 +621,16 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
 6. Verify the orcauser can login with the password provided in the `.env` files
    `APPLICATION_PASSWORD` environment variable.
    ```bash
-   disaster_recovery=# \c "dbname=disaster_recovery user=orcauser password=<Your Password Here>"
+   orca=# \c "dbname=orca user=orcauser password=<Your Password Here>"
 
-   You are now connected to database "disaster_recovery" as user "orcauser".
+   You are now connected to database "orca" as user "orcauser".
    ```
 7. Validate that the data was properly migrated into the recovery jobs table. The
    dummy data has a 1 job -> 1 granule -> 1 file relation.
    ```bash
    # Check the total numbers based on status value. They should match the values
    # expressed below.
-   disaster_recovery=# select status_id, count(*) from recovery_job group by 1;
+   orca=# select status_id, count(*) from recovery_job group by 1;
    
    status_id | count
    -----------+-------
@@ -641,7 +641,7 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
 
    # Check the pending data. Verify completion date is not set and arcive_destination
    # is set to myglacierarchivebucket
-   disaster_recovery=# select * from recovery_job where status_id = 1 LIMIT 5;
+   orca=# select * from recovery_job where status_id = 1 LIMIT 5;
 
                   job_id                |        granule_id        |  archive_destination   | status_id |         request_time          | completion_time
    -------------------------------------+--------------------------+------------------------+-----------+-------------------------------+-----------------
@@ -654,7 +654,7 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
 
    # Check the complete data. Verify completion date is set and arcive_destination
    # is set to myglacierarchivebucket
-    disaster_recovery=# select * from recovery_job where status_id = 4 LIMIT 5;
+    orca=# select * from recovery_job where status_id = 4 LIMIT 5;
 
                   job_id                |        granule_id        |  archive_destination   | multipart_chunksize_mb | status_id |         request_time          | completion_time
    -------------------------------------+--------------------------+------------------------+-----------+-------------------------------+-------------------------------
@@ -667,7 +667,7 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
 
    # Check the complete data. Verify completion date is set and arcive_destination
    # is set to myglacierarchivebucket
-   disaster_recovery=# select * from recovery_job where status_id = 3 LIMIT 5;
+   orca=# select * from recovery_job where status_id = 3 LIMIT 5;
 
                   job_id                |        granule_id        |  archive_destination   | status_id |         request_time          | completion_time
    -------------------------------------+--------------------------+------------------------+-----------+-------------------------------+-------------------------------
@@ -683,7 +683,7 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    ```bash
    # Check the total numbers based on status value. They should match the values
    # expressed below.
-   disaster_recovery=# select status_id, count(*) from recovery_file group by 1;
+   orca=# select status_id, count(*) from recovery_file group by 1;
    
     status_id | count
    -----------+-------
@@ -694,7 +694,7 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
 
    # Check the pending data. Verify completion date is not set and error_message
    # is NULL.
-   disaster_recovery=# select * from recovery_file where status_id=1 LIMIT 2;
+   orca=# select * from recovery_file where status_id=1 LIMIT 2;
                    job_id                |        granule_id        |         filename        |         key_path         |   restore_destination    | multipart_chunksize_mb | status_id | error_message |         request_time          |          last_update          | completion_time
    --------------------------------------+--------------------------+-------------------------+--------------------------+--------------------------+-----------+---------------+-------------------------------+-------------------------------+-----------------
    3efd79f0-f7f5-4109-afd8-a16c36b7f270 | 687687b5b5441c3c3626b39e | 8dbb97f77729cd437a93232e | 8dbb97f77729cd437a93232e | 248f9d70d72f69f9d578966c |                   NULL |         1 |               | 2021-04-24 19:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 |
@@ -703,7 +703,7 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    
    # Check the complete data. Verify completion date is set and error_message
    # is NULL.
-   disaster_recovery=# select * from recovery_file where status_id=4 LIMIT 2;
+   orca=# select * from recovery_file where status_id=4 LIMIT 2;
 
                    job_id                |        granule_id        |         filename        |         key_path         |   restore_destination    | multipart_chunksize_mb | status_id | error_message |         request_time          |          last_update          | completion_time
    --------------------------------------+--------------------------+-------------------------+--------------------------+--------------------------+-----------+------------------------+---------------+-------------------------------+-------------------------------+------------------------------
@@ -713,7 +713,7 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    
    # Check the error data. Verify completion date is set and error_message
    # is set to "Some error occured here".
-   disaster_recovery=# select * from recovery_file where status_id=3 LIMIT 2;
+   orca=# select * from recovery_file where status_id=3 LIMIT 2;
 
                    job_id                |        granule_id        |         filename        |         key_path         |   restore_destination    | multipart_chunksize_mb | status_id |      error_message      |         request_time          |          last_update          | completion_time
    --------------------------------------+--------------------------+-------------------------+--------------------------+--------------------------+-----------+------------------------+-------------------------+-------------------------------+-------------------------------+------------------------------
@@ -733,7 +733,7 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
 No cleanup is necessary if the next test run is the [Database No Migration Test](#database-no-migration-test).
 
 To clean up from this test you can use one of two scripts. The `sql/cleanup.sql`
-script will remove all objects including the *disaster_recovery* database. The
+script will remove all objects including the *orca* database. The
 `sql/orca_schema_v4/remove.sql` script will migrate v4 schema to v3 schema, update the `schema_versions` table with value of 3 and also remove the `providers`, `collections`, `provider_collection_xref`, `granules` and `files` tables. The `sql/orca_schema_v3/remove.sql` script will migrate the schema from v3 to v2, update the `schema_versions` table with value of 2. The `sql/orca_schema_v2/remove.sql` script will migrate the schema from v2 to v1, update the `schema_versions` table with value of 1. The `sql/orca_schema_v1/remove.sql` script will remove all the user and roles created.
 
 ```bash
@@ -741,10 +741,10 @@ root@26df0390e999:/data/test/manual_tests# psql
 psql (12.6 (Debian 12.6-1.pgdg100+1))
 Type "help" for help.
 
-postgres=# \c disaster_recovery
-You are now connected to database "disaster_recovery" as user "postgres".
+postgres=# \c orca
+You are now connected to database "orca" as user "postgres".
 
-disaster_recovery=# \i sql/orca_schema_v4/remove.sql
+orca=# \i sql/orca_schema_v4/remove.sql
 
 DROP TABLE 
 DROP TABLE 
@@ -762,7 +762,7 @@ schema is installed and do not perform any additional action.
 
 ### Database Setup No Migration Test
 
-The *disaster_recovery* database should be installed with the ORCA version 4
+The *orca* database should be installed with the ORCA version 4
 schema. This test should be ran immediately after the Fresh Install or Migration
 test so that a validated v4 schema is in place.
 
@@ -779,11 +779,11 @@ To run the no migration test, in your **python** window run the command
 {"message": "Database set to postgres for the connection.", "timestamp": "2021-04-29T16:09:07.630696", "level": "debug"}
 {"message": "Creating URL object to connect to the database.", "timestamp": "2021-04-29T16:09:07.630804", "level": "debug"}
 {"message": "Creating root user connection object.", "timestamp": "2021-04-29T16:09:08.452903", "level": "debug"}
-{"message": "Database set to disaster_recovery for the connection.", "timestamp": "2021-04-29T16:09:08.453245", "level": "debug"}
+{"message": "Database set to orca for the connection.", "timestamp": "2021-04-29T16:09:08.453245", "level": "debug"}
 {"message": "Creating URL object to connect to the database.", "timestamp": "2021-04-29T16:09:08.453468", "level": "debug"}
 {"message": "ORCA schema exists. Checking for schema versions ...", "timestamp": "2021-04-29T16:09:08.617406", "level": "debug"}
 {"message": "Creating root user connection object.", "timestamp": "2021-04-29T16:09:08.617941", "level": "debug"}
-{"message": "Database set to disaster_recovery for the connection.", "timestamp": "2021-04-29T16:09:08.618295", "level": "debug"}
+{"message": "Database set to orca for the connection.", "timestamp": "2021-04-29T16:09:08.618295", "level": "debug"}
 {"message": "Creating URL object to connect to the database.", "timestamp": "2021-04-29T16:09:08.618446", "level": "debug"}
 {"message": "Checking for schema_versions table.", "timestamp": "2021-04-29T16:09:08.815223", "level": "debug"}
 {"message": "schema_versions table exists True", "timestamp": "2021-04-29T16:09:08.871903", "level": "debug"}
@@ -814,11 +814,11 @@ root@26df0390e999:/data/test/manual_tests# psql
 psql (12.6 (Debian 12.6-1.pgdg100+1))
 Type "help" for help.
 
-postgres=# \c disaster_recovery
-You are now connected to database "disaster_recovery" as user "postgres".
+postgres=# \c orca
+You are now connected to database "orca" as user "postgres".
 
-disaster_recovery=# \i sql/cleanup.sql
-You are now connected to database "disaster_recovery" as user "postgres".
+orca=# \i sql/cleanup.sql
+You are now connected to database "orca" as user "postgres".
 psql:sql/orca_schema_v1/remove.sql:1: NOTICE:  schema "dr" does not exist, skipping
 DROP SCHEMA
 psql:sql/orca_schema_v1/remove.sql:2: NOTICE:  role "druser" does not exist, skipping

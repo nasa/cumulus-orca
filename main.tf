@@ -1,6 +1,7 @@
 ## Local Variables
 locals {
-  tags = merge(var.tags, { Deployment = var.prefix }, { team = "ORCA", application = "ORCA" })
+  db_name = var.db_name != null ? var.db_name : "${var.prefix}_orca"
+  tags    = merge(var.tags, { Deployment = var.prefix }, { team = "ORCA", application = "ORCA" })
 }
 
 
@@ -27,13 +28,14 @@ module "orca" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  db_admin_password   = var.db_admin_password
-  db_host_endpoint    = var.db_host_endpoint
-  db_user_password    = var.db_user_password
-  orca_default_bucket = var.orca_default_bucket
-
+  db_admin_password         = var.db_admin_password
+  db_host_endpoint          = var.db_host_endpoint
+  db_user_password          = var.db_user_password
+  orca_default_bucket       = var.orca_default_bucket
+  
   ## OPTIONAL
   db_admin_username                                    = var.db_admin_username
+  db_name                                              = local.db_name
   default_multipart_chunksize_mb                       = var.default_multipart_chunksize_mb
   metadata_queue_message_retention_time_seconds        = var.metadata_queue_message_retention_time_seconds
   orca_ingest_lambda_memory_size                       = var.orca_ingest_lambda_memory_size
@@ -50,4 +52,5 @@ module "orca" {
   sqs_maximum_message_size                             = var.sqs_maximum_message_size
   staged_recovery_queue_message_retention_time_seconds = var.staged_recovery_queue_message_retention_time_seconds
   status_update_queue_message_retention_time_seconds   = var.status_update_queue_message_retention_time_seconds
+  vpc_endpoint_id                                      = var.vpc_endpoint_id
 }

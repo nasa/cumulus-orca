@@ -90,6 +90,13 @@ variable "db_admin_username" {
   type        = string
 }
 
+
+variable "db_name" {
+  description = "The name of the Orca database within the RDS cluster."
+  type        = string
+}
+
+
 variable "orca_ingest_lambda_memory_size" {
   type        = number
   description = "Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime."
@@ -175,4 +182,9 @@ variable "staged_recovery_queue_message_retention_time_seconds" {
 variable "status_update_queue_message_retention_time_seconds" {
   type        = number
   description = "The number of seconds status_update_queue SQS retains a message in seconds. Maximum value is 14 days."
+}
+
+variable "vpc_endpoint_id" {
+  type        = string
+  description = "NGAP vpc endpoint id needed to access the api. Defaults to null"
 }

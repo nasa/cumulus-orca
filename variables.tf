@@ -79,13 +79,18 @@ variable "orca_default_bucket" {
   type        = string
   description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
 }
-
 ## OPTIONAL
 
 variable "db_admin_username" {
   description = "Username for RDS database administrator authentication"
   type        = string
   default     = "postgres"
+}
+
+variable "db_name" {
+  description = "The name of the Orca database within the RDS cluster. Default set to PREFIX_orca in main.tf."
+  type        = string
+  default     = null
 }
 
 variable "default_multipart_chunksize_mb" {
@@ -195,4 +200,10 @@ variable "status_update_queue_message_retention_time_seconds" {
   type        = number
   description = "The number of seconds status_update_queue SQS retains a message in seconds. Maximum value is 14 days."
   default     = 777600 #9 days
+}
+
+variable "vpc_endpoint_id" {
+  type        = string
+  description = "NGAP vpc endpoint id needed to access the api. Defaults to null."
+  default     = null
 }

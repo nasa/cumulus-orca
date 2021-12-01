@@ -68,10 +68,10 @@ module "orca_workflows" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  orca_default_bucket                                = var.orca_default_bucket
-  orca_lambda_extract_filepaths_for_granule_arn      = module.orca_lambdas.extract_filepaths_for_granule_arn
-  orca_lambda_request_files_arn                      = module.orca_lambdas.request_files_arn
-  orca_lambda_copy_to_glacier_arn                    = module.orca_lambdas.copy_to_glacier_arn
+  orca_default_bucket                           = var.orca_default_bucket
+  orca_lambda_extract_filepaths_for_granule_arn = module.orca_lambdas.extract_filepaths_for_granule_arn
+  orca_lambda_request_files_arn                 = module.orca_lambdas.request_files_arn
+  orca_lambda_copy_to_glacier_arn               = module.orca_lambdas.copy_to_glacier_arn
 }
 
 
@@ -97,6 +97,7 @@ module "orca_secretsmanager" {
 
   ## OPTIONAL
   db_admin_username = var.db_admin_username
+  db_name           = var.db_name
 }
 ## orca_sqs - SQS module
 ## =============================================================================
@@ -120,4 +121,27 @@ module "orca_sqs" {
   sqs_maximum_message_size                             = var.sqs_maximum_message_size
   staged_recovery_queue_message_retention_time_seconds = var.staged_recovery_queue_message_retention_time_seconds
   status_update_queue_message_retention_time_seconds   = var.status_update_queue_message_retention_time_seconds
+}
+
+
+## orca_api_gateway - api gateway module
+## =============================================================================
+module "orca_api_gateway" {
+  source = "../api-gateway"
+  ## --------------------------
+  ## Cumulus Variables
+  ## --------------------------
+  ## REQUIRED
+  prefix = var.prefix
+  vpc_id = var.vpc_id
+
+  ## --------------------------
+  ## ORCA Variables
+  ## --------------------------
+  ## REQUIRED
+  orca_catalog_reporting_invoke_arn     = module.orca_lambdas.orca_catalog_reporting_invoke_arn
+  request_status_for_granule_invoke_arn = module.orca_lambdas.request_status_for_granule_invoke_arn
+  request_status_for_job_invoke_arn     = module.orca_lambdas.request_status_for_job_invoke_arn
+  ## OPTIONAL
+  vpc_endpoint_id                       = var.vpc_endpoint_id
 }

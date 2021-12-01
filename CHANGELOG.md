@@ -14,18 +14,22 @@ and includes an additional section for migration notes.
 - *Security* - Vulnerabilities fixes and changes.
 
 
-## [Unreleased - SharedDB]
+## [Unreleased]
+## [4.0.0]
 
 ### Removed
 - The `modules/rds` directory is removed since ORCA will utilize the Cumulus DB.
-- *ORCA-233* The `disaster_recovery` database will now be created by db_deploy instead of Terraform.
+- *ORCA-233* The `disaster_recovery` database, now renamed `PREFIX_orca`, will now be created by db_deploy instead of Terraform.
 - *ORCA-288* Removed copy_to_glacier_cumulus_translator due to better consistency in Cumulus's [file dictionary](https://github.com/nasa/cumulus/blob/master/packages/schemas/files.schema.json).
 
 ### Added
+- *ORCA-256* Added AWS API Gateway in modules/api_gateway/main.tf for the catalog reporting lambda.
 - *ORCA-227* Added modules/secretsmanager directory that contains terraform code for deploying AWS secretsmanager.
+- *ORCA-177* Added AWS API Gateway in modules/api_gateway/main.tf for the request_status_for_granule and request_status_for_job lambdas.
 - *ORCA-257* orca_catalog_reporting lambda now returns data from actual catalog.
 
 ### Changed
+- *ORCA-297* Default database name is now PREFIX_orca
 - *ORCA-287* Updated copy_to_glacier and extract_filepaths_for_granule to [new Cumulus file format](https://github.com/nasa/cumulus/blob/master/packages/schemas/files.schema.json). 
 
 ### Migration Notes
@@ -33,11 +37,13 @@ and includes an additional section for migration notes.
 - Orca is only compatible with versions of Cumulus that use the [new Cumulus file format](https://github.com/nasa/cumulus/blob/master/packages/schemas/files.schema.json). Any calls to extract_filepaths_for_granule or copy_to_glacier should switch to the new format.
 - Remove any added references in your setup to copy_to_glacier_cumulus_translator. It is no longer necesarry as a Cumulus intermediary.
 - The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variables. The following two variable names have changed:
-  - postgres_user_pw-> db_admin_password (*new)*
+  - postgres_user_pw-> db_admin_password (*new*)
   - database_app_user_pw-> db_user_password (*new*)
 - These are the new variables added:
   - db_admin_username (defaults to "postgres")
-  - db_host_endpoint
+  - db_host_endpoint (Requires a value. Set in terraform.tfvars to your RDS Cluster's endpoint, similar to "PREFIX-cumulus-db.cluster-000000000000.us-west-2.rds.amazonaws.com")
+  - db_name (Defaults to PREFIX_orca. If preserving a database from a previous version of Orca, set to disaster_recovery.)
+  - vpc_endpoint_id
 - Add the following ORCA required variables definition to your `variables.tf` or `orca_variables.tf` file.
 
 ```terraform
@@ -102,6 +108,7 @@ variable "db_host_endpoint" {
   sqs_maximum_message_size                             = 262144
   staged_recovery_queue_message_retention_time_seconds = 432000
   status_update_queue_message_retention_time_seconds   = 777600
+  vpc_endpoint_id                                      = null
   }
   ```
 

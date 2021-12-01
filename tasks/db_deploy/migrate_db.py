@@ -7,6 +7,7 @@ from typing import Dict
 from orca_sql import *
 from orca_shared.database.shared_db import get_admin_connection, logger
 
+
 def perform_migration(current_schema_version: int, config: Dict[str, str]) -> None:
     """
     Performs a migration of the ORCA database. Determines the order and
@@ -56,11 +57,11 @@ def migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> 
     with admin_app_connection.connect() as connection:
         # Create the roles first since they are needed by schema and users
         logger.debug("Creating the ORCA dbo role ...")
-        connection.execute(dbo_role_sql())
+        connection.execute(dbo_role_sql(config["user_database"]))
         logger.info("ORCA dbo role created.")
 
         logger.debug("Creating the ORCA app role ...")
-        connection.execute(app_role_sql())
+        connection.execute(app_role_sql(config["user_database"]))
         logger.info("ORCA app role created.")
 
         # Create the schema next
@@ -142,15 +143,15 @@ def migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> 
 
         # Remove the users and roles
         logger.debug("Dropping drdbo_role role ...")
-        connection.execute(drop_drdbo_role_sql())
+        connection.execute(drop_drdbo_role_sql(config["user_database"]))
         logger.info("drdbo_role role removed.")
 
         logger.debug("Dropping dr_role role ...")
-        connection.execute(drop_dr_role_sql())
+        connection.execute(drop_dr_role_sql(config["user_database"]))
         logger.info("dr_role role removed.")
 
         logger.debug("Dropping dbo user ...")
-        connection.execute(drop_dbo_user_sql())
+        connection.execute(drop_dbo_user_sql(config["user_database"]))
         logger.info("dbo user removed")
 
         logger.debug("Dropping druser user ...")
@@ -223,28 +224,28 @@ def migrate_versions_3_to_4(config: Dict[str, str], is_latest_version: bool) -> 
         logger.debug("Setting search path to the ORCA schema to create objects ...")
         connection.execute(text("SET search_path TO orca, public;"))
 
-        #Create ORCA inventory tables
-        #Create providers table
+        # Create ORCA inventory tables
+        # Create providers table
         logger.debug("Creating providers table ...")
         connection.execute(providers_table_sql())
         logger.info("providers table created.")
 
-        #Create collections table
+        # Create collections table
         logger.debug("Creating collections table ...")
         connection.execute(collections_table_sql())
         logger.info("collections table created.")
 
-        #Create provider and collection cross reference table
+        # Create provider and collection cross reference table
         logger.debug("Creating provider and collection cross reference table ...")
         connection.execute(provider_collection_xref_table_sql())
         logger.info("provider and collection cross reference table created.")
 
-        #Create granules table
+        # Create granules table
         logger.debug("Creating granules table ...")
         connection.execute(granules_table_sql())
         logger.info("granules table created.")
 
-        #Create files table
+        # Create files table
         logger.debug("Creating files table ...")
         connection.execute(files_table_sql())
         logger.info("files table created.")
