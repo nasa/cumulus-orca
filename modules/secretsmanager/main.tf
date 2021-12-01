@@ -27,7 +27,7 @@ resource "aws_secretsmanager_secret_version" "db_login" {
     admin_database = "postgres"
     user_username  = "orcauser"
     user_password  = var.db_user_password
-    user_database  = "disaster_recovery"
+    user_database  = var.db_name
     host           = var.db_host_endpoint
     port           = "5432"
   })

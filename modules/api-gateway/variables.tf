@@ -34,5 +34,4 @@ variable "api_gateway_stage_name" {
 variable "vpc_endpoint_id" {
   type        = string
   description = "NGAP vpc endpoint id needed to access the api. Defaults to null."
-  default = null
 }
