@@ -209,12 +209,17 @@ class TestPostCopyRequestToQueue(TestCase):
                 with self.subTest(
                     name=name, bad_value=bad_value, good_value=good_value
                 ):
-                    os.environ[name] = bad_value
-                    # run the test
-                    with self.assertRaises(ValueError) as cm:
-                        handler(self.event, context=None)
-                    message = f"{name} must be set to an integer."
-                    self.assertEqual(str(cm.exception), message)
+                    with(patch.dict(
+                        os.environ,
+                        {
+                            name: bad_value,
+                        }
+                    )):
+                        # run the test
+                        with self.assertRaises(ValueError) as cm:
+                            handler(self.event, context=None)
+                        message = f"{name} must be set to an integer."
+                        self.assertEqual(str(cm.exception), message)
 
     @patch("post_copy_request_to_queue.shared_db.get_user_connection")
     @patch("post_copy_request_to_queue.shared_db.get_configuration")
