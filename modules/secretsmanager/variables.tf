@@ -28,6 +28,11 @@ variable "db_host_endpoint" {
   description = "Database host endpoint to connect to."
 }
 
+variable "db_name" {
+  type        = string
+  description = "The name of the Orca database within the RDS cluster."
+}
+
 ## Default variable value is set in ../main.tf to disallow any modification.
 
 variable "db_admin_username" {

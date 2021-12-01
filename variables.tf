@@ -87,6 +87,12 @@ variable "db_admin_username" {
   default     = "postgres"
 }
 
+variable "db_name" {
+  description = "The name of the Orca database within the RDS cluster. Default set to PREFIX_orca in main.tf."
+  type        = string
+  default     = null
+}
+
 variable "default_multipart_chunksize_mb" {
   type        = number
   description = "The default maximum size of chunks to use when copying. Can be overridden by collection config."
@@ -198,5 +204,6 @@ variable "status_update_queue_message_retention_time_seconds" {
 
 variable "vpc_endpoint_id" {
   type        = string
-  description = "NGAP vpc endpoint id needed to access the api. Defaults to null"
+  description = "NGAP vpc endpoint id needed to access the api. Defaults to null."
+  default     = null
 }

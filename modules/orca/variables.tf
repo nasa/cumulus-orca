@@ -90,6 +90,13 @@ variable "db_admin_username" {
   type        = string
 }
 
+
+variable "db_name" {
+  description = "The name of the Orca database within the RDS cluster."
+  type        = string
+}
+
+
 variable "orca_ingest_lambda_memory_size" {
   type        = number
   description = "Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime."

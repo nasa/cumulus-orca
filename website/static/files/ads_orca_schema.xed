@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?><Diagram version="1.0" type="POSTGRES" versionMajor="9" versionMinor="6" groupSchema="false" hide_inv="false">
-<Table id="0" name="recovery_job" schema="orca" database="disaster_recovery" background="16777165">
+<Table id="0" name="recovery_job" schema="orca" database="orca" background="16777165">
 <Text>ORCA Job Recovery table that contains basic information at the granule level.</Text>
 <Column id="1" name="job_id" type="text" length="0" nulls="false">
 <CP name="COMMENTS">This is the Cumulus AsyncOperationId value used to group all recovery executions for granule recovery together.</CP>
@@ -30,7 +30,7 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="7" name="recovery_status" schema="orca" database="disaster_recovery" background="16777165">
+<Table id="7" name="recovery_status" schema="orca" database="orca" background="16777165">
 <Text>Refrence table for valid status values and status order.</Text>
 <Column id="8" name="id" type="int2" length="0" nulls="false">
 <CP name="COMMENTS">Status ID</CP>
@@ -49,7 +49,7 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="10" name="recovery_file" schema="orca" database="disaster_recovery" background="16777165">
+<Table id="10" name="recovery_file" schema="orca" database="orca" background="16777165">
 <Text>ORCA Recovery table that contains basic information at the file level.</Text>
 <Column id="11" name="job_id" type="text" length="0" nulls="false">
 <CP name="COMMENTS">This is the Cumulus AsyncOperationId value used to group all recovery executions for granule recovery together.</CP>
@@ -92,7 +92,7 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="21" name="providers" schema="orca" database="disaster_recovery" background="16777165">
+<Table id="21" name="providers" schema="orca" database="orca" background="16777165">
 <Text>Providers that are in the ORCA holdings.</Text>
 <Column id="22" name="provider_id" type="text" length="25" nulls="false">
 <CP name="COMMENTS">Provider ID supplied by Cumulus</CP>
@@ -111,7 +111,7 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="24" name="collections" schema="orca" database="disaster_recovery" background="16777165">
+<Table id="24" name="collections" schema="orca" database="orca" background="16777165">
 <Text>Collections that are in the ORCA archive holdings.</Text>
 <Column id="25" name="collection_id" type="text" length="25" nulls="false">
 <CP name="COMMENTS">Collection ID from Cumulus usually in the format shortname__version.</CP>
@@ -133,7 +133,7 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="28" name="granules" schema="orca" database="disaster_recovery" background="16777165">
+<Table id="28" name="granules" schema="orca" database="orca" background="16777165">
 <Text>Granules that are in the ORCA archive holdings.</Text>
 <Column id="29" name="id" type="int8" length="25" nulls="false">
 <CP name="COMMENTS">Internal orca granule ID pseudo key</CP>
@@ -167,7 +167,7 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="36" name="files" schema="orca" database="disaster_recovery" background="16777165">
+<Table id="36" name="files" schema="orca" database="orca" background="16777165">
 <Text>Files that are in the ORCA holdings. (Latest version only)</Text>
 <Column id="37" name="id" type="int8" length="25" nulls="false">
 <CP name="COMMENTS">Internal ORCA file ID</CP>
@@ -216,7 +216,7 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="49" name="provider_collection_xref" schema="orca" database="disaster_recovery" background="16777165">
+<Table id="49" name="provider_collection_xref" schema="orca" database="orca" background="16777165">
 <Text>Cross refrence table that ties a collection and provider together and resolves the many to many relationship.</Text>
 <Column id="50" name="provider_id" type="text" length="25" nulls="false">
 <CP name="COMMENTS">Provider ID from the providers table.</CP>
@@ -235,7 +235,7 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="52" name="reconcile_s3_objects" schema="orca" database="disaster_recovery" background="16777165">
+<Table id="52" name="reconcile_s3_objects" schema="orca" database="orca" background="16777165">
 <Text>Temporary table that holds the listing from the ORCA S3 bucket to use for comparisons against the ORCA catalog.</Text>
 <Column id="53" name="job_id" type="int8" length="25" nulls="false">
 <CP name="COMMENTS">Job the S3 listing is a part of for the comparison. Foreign key to the reconcile jobs table.</CP>
@@ -269,7 +269,7 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="60" name="reconcile_jobs" schema="orca" database="disaster_recovery" background="16777165">
+<Table id="60" name="reconcile_jobs" schema="orca" database="orca" background="16777165">
 <Text>Manages internal reconciliation job information.</Text>
 <Column id="61" name="id" type="int8" length="25" nulls="false">
 <CP name="COMMENTS">Job ID unique to each internal reconciliation job.</CP>
@@ -300,7 +300,7 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="67" name="reconcile_catalog_mismatch_report" schema="orca" database="disaster_recovery" background="16777165">
+<Table id="67" name="reconcile_catalog_mismatch_report" schema="orca" database="orca" background="16777165">
 <Text>Table that identifies objects that exist in the ORCA catalog and either do not exist in the ORCA S3 bucket or have mismatched values from the s3 objects table.</Text>
 <Column id="68" name="job_id" type="int8" length="25" nulls="false">
 <CP name="COMMENTS">Job the mismatch or missing granule was foundin. Refrences the reconcile_job table.</CP>
@@ -355,7 +355,7 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="82" name="reconcile_orphan_report" schema="orca" database="disaster_recovery" background="16777165">
+<Table id="82" name="reconcile_orphan_report" schema="orca" database="orca" background="16777165">
 <Text>Table that identifies objects in the ORCA S3 Glacier bucket that are not in the ORCA catalog from the internal reconciliation job.</Text>
 <Column id="83" name="job_id" type="int8" length="25" nulls="false">
 <CP name="COMMENTS">Associates the orphaned file to a internal reconcilation job. Refrences the reconcile jobs table.</CP>
@@ -389,7 +389,7 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="90" name="schema_versions" schema="orca" database="disaster_recovery" background="16777165">
+<Table id="90" name="schema_versions" schema="orca" database="orca" background="16777165">
 <Text>Migration management table that tracks ORCA installed schema versions.</Text>
 <Column id="91" name="version_id" type="int" length="25" nulls="false">
 <CP name="COMMENTS">Version of the ORCA schema that is installed</CP>
@@ -459,7 +459,7 @@
 </Relation>
 <Note id="105">
 <Text>Engine:  PostgreSQL
-Database: disater_recovery
+Database: orca
 Schema: orca
 
 Description: ORCA metadata storage</Text>
