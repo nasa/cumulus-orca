@@ -4,14 +4,15 @@ import unittest
 import uuid
 from unittest import TestCase
 from unittest.mock import Mock, call, patch, MagicMock
+
 import fastjsonschema as fastjsonschema
+from moto import mock_sqs
 
 import copy_to_glacier
 import sqs_library
 from copy_to_glacier import *
 from test.helpers import LambdaContextMock
 from test.unit_tests.ConfigCheck import ConfigCheck
-from moto import mock_sqs
 
 
 class TestCopyToGlacierHandler(TestCase):
@@ -376,10 +377,10 @@ class TestCopyToGlacierHandler(TestCase):
 
         with self.assertRaises(KeyError) as context:
             task(copy.deepcopy(event), None)
-            self.assertTrue(
-                "ORCA_DEFAULT_BUCKET environment variable is not set."
-                in context.exception
-            )
+        self.assertTrue(
+            "ORCA_DEFAULT_BUCKET environment variable is not set."
+            in context.exception
+        )
 
     @patch("time.sleep")
     @patch.dict(os.environ, {"AWS_REGION": "us-west-2"}, clear=True)
@@ -469,15 +470,16 @@ class TestCopyToGlacierHandler(TestCase):
                 ],
             },
         }
-        #
-        self.metadata_queue_url = "dummy"
         # Send values to the function
-        with self.assertRaises(Exception) as ex:  # todo: Make sure the correct exception is caught
+        with self.assertRaises(Exception) as cm:
             # noinspection PyArgumentList
             sqs_library.post_to_metadata_queue(
                 sqs_body,
-                self.metadata_queue_url,
+                "dummy",  # Attempts to contact a non-existent queue url
             )
+
+        # botocore.errorfactory.QueueDoesNotExist cannot be caught for some reason. Please prove me wrong.
+        self.assertEqual(type(cm.exception).__name__, "QueueDoesNotExist")
         self.assertEqual(3, mock_sleep.call_count)
 
 ##TODO: Write tests to validate file name regex exclusion
