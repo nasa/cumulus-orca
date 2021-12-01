@@ -97,6 +97,7 @@ module "orca_secretsmanager" {
 
   ## OPTIONAL
   db_admin_username = var.db_admin_username
+  db_name           = var.db_name
 }
 ## orca_sqs - SQS module
 ## =============================================================================

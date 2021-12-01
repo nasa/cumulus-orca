@@ -31,7 +31,7 @@ def get_configuration():
         "admin_username": "postgres",
         "host": my_host,
         "port": "5433",
-        "user_database": "disaster_recovery",
+        "user_database": "orca",
         "user_password": my_app_pass,
         "user_username": "orcauser",  
     }

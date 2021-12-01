@@ -1,1 +1,1 @@
-DROP DATABASE IF EXISTS disaster_recovery;
+DROP DATABASE IF EXISTS orca;

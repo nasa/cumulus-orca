@@ -67,7 +67,7 @@ class TestPostCopyRequestToQueue(TestCase):
             "RETRY_SLEEP_SECS": "2",
             "RETRY_BACKOFF": "2",
             "DATABASE_PORT": "5432",
-            "DATABASE_NAME": "disaster_recovery",
+            "DATABASE_NAME": "orca",
             "DATABASE_USER": "orcauser",
         },
         clear=True,

@@ -146,7 +146,7 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
         user_db_call = {
             "host": "aws.postgresrds.host",
             "port": 5432,
-            "database": "disaster_recovery",
+            "database": "orca",
             "username": "admin",
             "password": "admin123",
         }
@@ -156,7 +156,7 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
         _ = shared_db.get_admin_connection(config)
         mock_connection.assert_called_with(**root_db_call)
 
-        _ = shared_db.get_admin_connection(config, "disaster_recovery")
+        _ = shared_db.get_admin_connection(config, "orca")
         mock_connection.assert_called_with(**user_db_call)
 
     @patch.dict(
