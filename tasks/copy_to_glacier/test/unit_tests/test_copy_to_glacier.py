@@ -379,7 +379,7 @@ class TestCopyToGlacierHandler(TestCase):
             task(copy.deepcopy(event), None)
         self.assertTrue(
             "ORCA_DEFAULT_BUCKET environment variable is not set."
-            in context.exception
+            in str(context.exception)
         )
 
     @patch("time.sleep")
