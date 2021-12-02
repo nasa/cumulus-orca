@@ -175,7 +175,7 @@ variables:
   # SECRET_GITHUB_TOKEN: BAMSCRT@0@0@fYmUEHQJZvYGyJkc7DZFi+9CuK993a9r0CzyHwfxN1KfkaUdh35mf5Gk2FfV3ZHa
   # SECRET_GITHUB_USER: BAMSCRT@0@0@VkGOQemUQPEvmBYT3dDRgw==
 repositories:
-- ORCA repo:
+- orca-branch-259:
     scope: global
 triggers:
 - polling:
