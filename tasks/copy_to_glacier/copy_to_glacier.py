@@ -29,18 +29,18 @@ FILE_HASH_KEY = "checksum"
 FILE_HASH_TYPE_KEY = "checksumType"
 
 
-def should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -> bool:
+def should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> bool:
     """
     Tests whether or not file is included in {excludeFileTypes} from copy to glacier.
     Args:
-        granule_url: s3 url of granule.
-        exclude_file_types: List of extensions to exclude in the backup
+        file_key: The key of the file within the s3 bucket.
+        exclude_file_types: List of extensions to exclude in the backup.
     Returns:
         True if file should be excluded from copy, False otherwise.
     """
     for file_type in exclude_file_types:
         # Returns the first instance in the string that matches .ext or None if no match was found.
-        if re.search(f"^.*{file_type}$", granule_url) is not None:
+        if re.search(f"^.*{file_type}$", file_key) is not None:
             return True
     return False
 
@@ -204,12 +204,12 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
             file_name = file[FILE_FILENAME_KEY]
             file_filepath = file[FILE_FILEPATH_KEY]
             file_bucket = file[FILE_BUCKET_KEY]
-            file_source_uri = file[FILE_SOURCE_URI_KEY]
+            file_source_uri = f"s3://{file_bucket}/{file_filepath}"
             file_hash = file.get(FILE_HASH_KEY, None)
             file_hash_type = file.get(FILE_HASH_TYPE_KEY, None)
-            if should_exclude_files_type(file_name, exclude_file_types):
+            if should_exclude_files_type(file_filepath, exclude_file_types):
                 LOGGER.info(
-                    "Excluding {file_name} from glacier backup because of collection configured {CONFIG_EXCLUDE_FILE_TYPES_KEY}.",
+                    "Excluding {file_filepath} from glacier backup because of collection configured {CONFIG_EXCLUDE_FILE_TYPES_KEY}.",
                     file_name=file_name,
                     CONFIG_EXCLUDE_FILE_TYPES_KEY=CONFIG_EXCLUDE_FILE_TYPES_KEY,
                 )

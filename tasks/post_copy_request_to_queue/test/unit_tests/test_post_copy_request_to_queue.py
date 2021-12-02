@@ -209,12 +209,17 @@ class TestPostCopyRequestToQueue(TestCase):
                 with self.subTest(
                     name=name, bad_value=bad_value, good_value=good_value
                 ):
-                    os.environ[name] = bad_value
-                    # run the test
-                    with self.assertRaises(ValueError) as ve:
+                     with(patch.dict(
+                        os.environ,
+                        {
+                            name: bad_value,
+                        }
+                    )):
+                        # run the test
+                        with self.assertRaises(ValueError) as cm:
+                            handler(self.event, context=None)
                         message = f"{name} must be set to an integer."
-                        handler(self.event, context=None)
-                        self.assertEqual(ve.message, message)
+                        self.assertEqual(str(cm.exception), message)
 
     @patch("post_copy_request_to_queue.shared_db.get_user_connection")
     @patch("post_copy_request_to_queue.shared_db.get_configuration")
@@ -265,10 +270,10 @@ class TestPostCopyRequestToQueue(TestCase):
         ]
         # calling the task function
         message = "Error sending message to recovery_queue_url for {new_data}"
-        with self.assertRaises(Exception) as ex:
+        with self.assertRaises(Exception) as cm:
             task(record, *backoff_args)
             # Check the message from the exception
-        self.assertEqual(str.format(message, new_data=new_data), ex.exception.args[0])
+        self.assertEqual(str.format(message, new_data=new_data), cm.exception.args[0])
         # verify the logging captured matches the expected message
         mock_LOGGER.critical.assert_called_once_with(message, new_data=str(new_data))
 
@@ -323,10 +328,10 @@ class TestPostCopyRequestToQueue(TestCase):
         # calling the task function
         # calling the task function
         message = "Error sending message to db_queue_url for {record}"
-        with self.assertRaises(Exception) as ex:
+        with self.assertRaises(Exception) as cm:
             task(record, *backoff_args)
         # Check the message from the exception
-        self.assertEqual(str.format(message, record=new_data), ex.exception.args[0])
+        self.assertEqual(str.format(message, record=new_data), cm.exception.args[0])
         # verify the logging captured matches the expected message
         mock_LOGGER.critical.assert_called_once_with(message, new_data=str(new_data))
 
