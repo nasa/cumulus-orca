@@ -193,8 +193,6 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
             granule_data[granuleId] = {"granuleId": granuleId, "files": []}
         # populate the SQS body for granules
         sqs_body["granule"]["cumulusGranuleId"] = granuleId
-        granule[
-            "createdAt"] = "2021-10-08T19:24:07.605323Z"  # remove this line once this card is complete https://bugs.earthdata.nasa.gov/browse/CUMULUS-2718
         sqs_body["granule"]["cumulusCreateTime"] = granule["createdAt"].replace("Z", "+00:00")
         sqs_body["granule"]["executionId"] = config["executionId"]
         sqs_body["granule"]["ingestTime"] = datetime.now(timezone.utc).isoformat()
