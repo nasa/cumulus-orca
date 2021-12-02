@@ -66,7 +66,6 @@ data "aws_iam_policy_document" "restore_object_role_policy_document" {
     actions = [
       "s3:GetBucket",
       "s3:ListBucket",
-      "s3:ListBucketVersions",
       "s3:PutBucket"
     ]
     resources = local.all_bucket_arns

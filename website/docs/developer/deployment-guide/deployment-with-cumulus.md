@@ -345,12 +345,8 @@ the ingest workflow.
       "cma":{
          "event.$":"$",
          "task_config":{
-            "multipart_chunksize_mb": "{$.meta.collection.meta.multipart_chunksize_mb"},
-            "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
-            "providerId": "{$.meta.provider.id}",
-            "executionId": "{$.cumulus_meta.execution_name}",
-            "collectionShortname": "{$.meta.collection.name}",
-            "collectionVersion": "{$.meta.collection.version}"
+            "multipart_chunksize_mb": "{$.meta.collection.meta.multipart_chunksize_mb}",
+            "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}"
             }
          }
       }

@@ -16,27 +16,6 @@
     "multipart_chunksize_mb": {
       "type": ["integer", "null"],
       "description": "The collection's maximum size of chunks to use when copying. Defaults to environment variable."
-    },
-    "providerId": {
-      "type": "string",
-      "description": "Provider ID supplied by Cumulus"
-    },
-    "providerName": {
-      "type": "string",
-      "description": "Provider Name supplied by Cumulus"
-    },
-    "executionId": {
-      "type": "string",
-      "description": "AWS step function execution id"
-    },
-    "collectionShortname": {
-      "type": "string",
-      "description": "Collection shortname from Cumulus"
-    },
-    "collectionVersion": {
-      "type": "string",
-      "description": "Collection version from Cumulus."
     }
-  },
-  "required": [ "providerId", "executionId", "collectionShortname", "collectionVersion"]
+  }
 }

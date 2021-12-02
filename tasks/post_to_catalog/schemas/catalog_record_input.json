@@ -23,7 +23,7 @@
           "description": "Provider ID supplied by Cumulus"
         },
         "name": {
-          "type": ["string", "null"],
+          "type": "string",
           "description": "Name of the provider provided by Cumulus."
         }
       }
@@ -98,8 +98,6 @@
                 "orcaArchiveLocation",
                 "keyPath",
                 "sizeInBytes",
-                "hash",
-                "hashType",
                 "version",
                 "ingestTime",
                 "etag"
