@@ -1,5 +1,6 @@
 import copy
 import json
+import random
 import unittest
 import uuid
 from test.helpers import LambdaContextMock
@@ -35,7 +36,7 @@ class TestCopyToGlacierHandler(TestCase):
                 "granuleId": "MOD09GQ.A2017025.h21v00.006.2017034065109",
                 "dataType": "MOD09GQ",
                 "version": "006",
-                "createdAt": "2021-10-08T19:24:07.605323Z", 
+                "createdAt": 628021800000,
                 "files": [
                     {
                         copy_to_glacier.FILE_FILENAME_KEY: "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
@@ -116,7 +117,7 @@ class TestCopyToGlacierHandler(TestCase):
                 "granuleId": uuid.uuid4().__str__(),
                 "dataType": uuid.uuid4().__str__(),
                 "version": uuid.uuid4().__str__(),
-                "createdAt": "2021-10-08T19:24:07.605323Z",
+                "createdAt": 628021800000,
                 "files": [
                     {
                         copy_to_glacier.FILE_FILENAME_KEY: uuid.uuid4().__str__(),
@@ -288,7 +289,7 @@ class TestCopyToGlacierHandler(TestCase):
             },
             "granule": {
                 "cumulusGranuleId": event["input"]["granules"][0]["granuleId"],
-                "cumulusCreateTime": event["input"]["granules"][0]["createdAt"].replace("Z", "+00:00"),
+                "cumulusCreateTime": "1989-11-25T18:30:00+00:00",
                 "executionId": event["config"]["executionId"],
                 "ingestTime": ANY,
                 "lastUpdate": ANY,
@@ -406,7 +407,7 @@ class TestCopyToGlacierHandler(TestCase):
                     "granuleId": "MOD09GQ.A2017025.h21v00.006.2017034065109",
                     "dataType": "MOD09GQ",
                     "version": "006",
-                    "createdAt": "2021-10-08T19:24:07.605323Z",
+                    "createdAt": 628021800000,
                     "files": [
                         {
                             copy_to_glacier.FILE_FILENAME_KEY: "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
@@ -428,7 +429,7 @@ class TestCopyToGlacierHandler(TestCase):
                     "granuleId": "MOD09GQ.A208885.h21v00.006.2017034065108",
                     "dataType": "MOD09GQ",
                     "version": "008",
-                    "createdAt": "2021-10-08T19:24:07.605323Z",
+                    "createdAt": 628021800000,
                     "files": [
                         {
                             copy_to_glacier.FILE_FILENAME_KEY: "MOD09GQ.A2017025.h21v00.006.2017034065108.hdf",
