@@ -41,8 +41,9 @@ and includes an additional section for migration notes.
   - database_app_user_pw-> db_user_password (*new*)
 - These are the new variables added:
   - db_admin_username (defaults to "postgres")
-  - db_host_endpoint (Requires a value. Set in terraform.tfvars to your RDS Cluster's endpoint, similar to "PREFIX-cumulus-db.cluster-000000000000.us-west-2.rds.amazonaws.com")
+  - db_host_endpoint (Requires a value. Set in terraform.tfvars to your RDS Database's endpoint, similar to "PREFIX-cumulus-db.cluster-000000000000.us-west-2.rds.amazonaws.com")
   - db_name (Defaults to PREFIX_orca. If preserving a database from a previous version of Orca, set to disaster_recovery.)
+  - rds_security_group_id (Requires a value. Set in terraform.tfvars to the Security Group ID of your RDS Database's Security Group. Output from Cumulus' RDS module as `security_group_id`)
   - vpc_endpoint_id
 - Add the following ORCA required variables definition to your `variables.tf` or `orca_variables.tf` file.
 
@@ -60,6 +61,11 @@ variable "db_user_password" {
 variable "db_host_endpoint" {
   type        = string
   description = "Database host endpoint to connect to."
+}
+
+variable "rds_security_group_id" {
+  type        = string
+  description = "Cumulus' RDS Security Group's ID."
 }
 ```
 - Update the `orca.tf` file to include all of the updated and new variables as seen below. Note the change to source and the commented out optional variables.
@@ -91,6 +97,7 @@ variable "db_host_endpoint" {
   db_admin_password   = var.db_admin_password
   db_user_password    = var.db_user_password
   db_host_endpoint    = var.db_host_endpoint
+  rds_security_group_id    = var.rds_security_group_id
   ## OPTIONAL
   db_admin_username                                    = "postgres"
   default_multipart_chunksize_mb                       = 250
