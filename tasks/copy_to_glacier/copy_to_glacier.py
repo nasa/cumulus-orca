@@ -21,10 +21,8 @@ CONFIG_EXCLUDE_FILE_TYPES_KEY = "excludeFileTypes"
 # Set Cumulus LOGGER
 LOGGER = CumulusLogger()
 
-FILE_FILENAME_KEY = "fileName"
 FILE_BUCKET_KEY = "bucket"
 FILE_FILEPATH_KEY = "key"
-FILE_SOURCE_URI_KEY = "source"
 FILE_HASH_KEY = "checksum"
 FILE_HASH_TYPE_KEY = "checksumType"
 
@@ -201,7 +199,6 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
 
         # Iterate through the files in a granule object
         for file in granule["files"]:
-            file_name = file[FILE_FILENAME_KEY]
             file_filepath = file[FILE_FILEPATH_KEY]
             file_bucket = file[FILE_BUCKET_KEY]
             file_source_uri = f"s3://{file_bucket}/{file_filepath}"
@@ -210,7 +207,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
             if should_exclude_files_type(file_filepath, exclude_file_types):
                 LOGGER.info(
                     "Excluding {file_filepath} from glacier backup because of collection configured {CONFIG_EXCLUDE_FILE_TYPES_KEY}.",
-                    file_name=file_name,
+                    file_name=file_filepath,
                     CONFIG_EXCLUDE_FILE_TYPES_KEY=CONFIG_EXCLUDE_FILE_TYPES_KEY,
                 )
                 continue
@@ -221,7 +218,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
                                                   multipart_chunksize_mb=multipart_chunksize_mb,
                                                   )
 
-            result["name"] = file_name
+            result["name"] = file_filepath.split("/")[-1] # since fileName is no longer available in event
             result["hash"] = file_hash
             result["hashType"] = file_hash_type
             copied_file_urls.append(file_source_uri)

@@ -56,7 +56,7 @@ class TestCopyToGlacierHandler(TestCase):
                         copy_to_glacier.FILE_BUCKET_KEY: "orca-sandbox-private",
                         "url_path": "MOD09GQ/006",
                         "type": "",
-                        copy_to_glacier.FILE_FILEPATH_KEY: "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf.met",
+                        copy_to_glacier.FILE_FILEPATH_KEY: "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf", 
                         "duplicate_found": True,
                         "checksumType": "md5",
                         "checksum": "bogus_checksum_value",
@@ -68,7 +68,7 @@ class TestCopyToGlacierHandler(TestCase):
                         copy_to_glacier.FILE_BUCKET_KEY: "orca-sandbox-public",
                         "url_path": "MOD09GQ/006",
                         "type": "",
-                        copy_to_glacier.FILE_FILEPATH_KEY: "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109_ndvi.jpg",
+                        copy_to_glacier.FILE_FILEPATH_KEY: "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
                         "duplicate_found": True,
                         "checksumType": "md5",
                         "checksum": "bogus_checksum_value",
@@ -76,7 +76,7 @@ class TestCopyToGlacierHandler(TestCase):
                     {
                         copy_to_glacier.FILE_BUCKET_KEY: "orca-sandbox-private",
                         "type": "metadata",
-                        copy_to_glacier.FILE_FILEPATH_KEY: "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.cmr.xml",
+                        copy_to_glacier.FILE_FILEPATH_KEY: "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
                         "url_path": "MOD09GQ/006",
                         "checksumType": "md5",
                         "checksum": "bogus_checksum_value",
@@ -113,7 +113,6 @@ class TestCopyToGlacierHandler(TestCase):
                     {
                         copy_to_glacier.FILE_BUCKET_KEY: uuid.uuid4().__str__(),
                         copy_to_glacier.FILE_FILEPATH_KEY: uuid.uuid4().__str__(),
-                        copy_to_glacier.FILE_SOURCE_URI_KEY: uuid.uuid4().__str__(),
                         copy_to_glacier.FILE_HASH_KEY: uuid.uuid4().__str__(),
                         copy_to_glacier.FILE_HASH_TYPE_KEY: uuid.uuid4().__str__(),
                     }
@@ -144,7 +143,6 @@ class TestCopyToGlacierHandler(TestCase):
                     "granuleId": uuid.uuid4().__str__(),
                     "files": [
                         {
-                            copy_to_glacier.FILE_FILENAME_KEY: uuid.uuid4().__str__(),
                             copy_to_glacier.FILE_BUCKET_KEY: uuid.uuid4().__str__(),
                             copy_to_glacier.FILE_FILEPATH_KEY: uuid.uuid4().__str__(),
                         }
@@ -295,7 +293,7 @@ class TestCopyToGlacierHandler(TestCase):
                         "version": ANY,
                         "ingestTime": ANY,
                         "etag": ANY,
-                        "name": event["input"]["granules"][0]["files"][0][copy_to_glacier.FILE_FILENAME_KEY],
+                        "name": event["input"]["granules"][0]["files"][0][copy_to_glacier.FILE_FILEPATH_KEY].split("/")[-1],
                         "hash": event["input"]["granules"][0]["files"][0][copy_to_glacier.FILE_HASH_KEY],
                         "hashType": event["input"]["granules"][0]["files"][0][
                             copy_to_glacier.FILE_HASH_TYPE_KEY
@@ -313,7 +311,6 @@ class TestCopyToGlacierHandler(TestCase):
                         "version": ANY,
                         "ingestTime": ANY,
                         "etag": ANY,
-                        "name": event["input"]["granules"][0]["files"][1][copy_to_glacier.FILE_FILENAME_KEY],
                         "hash": event["input"]["granules"][0]["files"][1][copy_to_glacier.FILE_HASH_KEY],
                         "hashType": event["input"]["granules"][0]["files"][1][
                             copy_to_glacier.FILE_HASH_TYPE_KEY
@@ -331,7 +328,7 @@ class TestCopyToGlacierHandler(TestCase):
                         "version": ANY,
                         "ingestTime": ANY,
                         "etag": ANY,
-                        "name": event["input"]["granules"][0]["files"][2][copy_to_glacier.FILE_FILENAME_KEY],
+                        "name": event["input"]["granules"][0]["files"][0][copy_to_glacier.FILE_FILEPATH_KEY].split("/")[-1],
                         "hash": event["input"]["granules"][0]["files"][2][copy_to_glacier.FILE_HASH_KEY],
                         "hashType": event["input"]["granules"][0]["files"][2][
                             copy_to_glacier.FILE_HASH_TYPE_KEY
@@ -349,7 +346,7 @@ class TestCopyToGlacierHandler(TestCase):
                         "version": ANY,
                         "ingestTime": ANY,
                         "etag": ANY,
-                        "name": event["input"]["granules"][0]["files"][3][copy_to_glacier.FILE_FILENAME_KEY],
+                        "name": event["input"]["granules"][0]["files"][0][copy_to_glacier.FILE_FILEPATH_KEY].split("/")[-1],
                         "hash": event["input"]["granules"][0]["files"][3][copy_to_glacier.FILE_HASH_KEY],
                         "hashType": event["input"]["granules"][0]["files"][3][
                             copy_to_glacier.FILE_HASH_TYPE_KEY
@@ -400,14 +397,12 @@ class TestCopyToGlacierHandler(TestCase):
                     "createdAt": "2021-10-08T19:24:07.605323Z",
                     "files": [
                         {
-                            copy_to_glacier.FILE_FILENAME_KEY: "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
                             "path": "MOD09GQ/006",
                             "size": 6,
                             "time": 1608318361000,
                             copy_to_glacier.FILE_BUCKET_KEY: "orca-sandbox-protected",
                             "url_path": "MOD09GQ/006/",
                             "type": "",
-                            copy_to_glacier.FILE_SOURCE_URI_KEY: "s3://orca-sandbox-protected/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
                             copy_to_glacier.FILE_FILEPATH_KEY: "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
                             "duplicate_found": True,
                             copy_to_glacier.FILE_HASH_TYPE_KEY: "md5",
@@ -422,14 +417,12 @@ class TestCopyToGlacierHandler(TestCase):
                     "createdAt": "2021-10-08T19:24:07.605323Z",
                     "files": [
                         {
-                            copy_to_glacier.FILE_FILENAME_KEY: "MOD09GQ.A2017025.h21v00.006.2017034065108.hdf",
                             "path": "MOD09GQ/006",
                             "size": 7,
                             "time": 1608318361000,
                             copy_to_glacier.FILE_BUCKET_KEY: "orca-sandbox-protected",
                             "url_path": "MOD09GQ/006/",
                             "type": "",
-                            copy_to_glacier.FILE_SOURCE_URI_KEY: "s3://orca-sandbox-protected/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065108.hdf",
                             copy_to_glacier.FILE_FILEPATH_KEY: "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065108.hdf",
                             "duplicate_found": True,
                             copy_to_glacier.FILE_HASH_TYPE_KEY: "md5",
@@ -689,7 +682,7 @@ class TestCopyToGlacierHandler(TestCase):
             )
     @patch("time.sleep")
     @patch.dict(os.environ, {"AWS_REGION": "us-west-2"}, clear=True)
-    def test_post_to_metadata_queue_happy_path(self,_):
+    def test_post_to_metadata_queue_happy_path(self, mock_sleep: MagicMock):
         """
         SQS library happy path. Checks that the message sent to SQS is same as the message received from SQS.
         """
@@ -723,7 +716,6 @@ class TestCopyToGlacierHandler(TestCase):
             },
         }
         # Send values to the function
-        # noinspection PyArgumentList
         sqs_library.post_to_metadata_queue(
             sqs_body,
             self.metadata_queue_url,
@@ -775,17 +767,15 @@ class TestCopyToGlacierHandler(TestCase):
             },
         }
         #
+        self.metadata_queue_url = "dummy"
         # Send values to the function
-        with self.assertRaises(Exception) as cm:
-            # noinspection PyArgumentList
+        with self.assertRaises(Exception) as ex:
             sqs_library.post_to_metadata_queue(
                 sqs_body,
-                "dummy",  # Attempts to contact a non-existent queue url
+                self.metadata_queue_url,
             )
-
-        # botocore.errorfactory.QueueDoesNotExist cannot be caught for some reason. Please prove me wrong.
-        self.assertEqual(type(cm.exception).__name__, "QueueDoesNotExist")
         self.assertEqual(3, mock_sleep.call_count)
+
 
 ##TODO: Write tests to validate file name regex exclusion
 
