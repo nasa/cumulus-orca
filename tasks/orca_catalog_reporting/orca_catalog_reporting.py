@@ -93,16 +93,10 @@ def query_db(
                     "providerId": sql_result["provider_ids"],
                     "collectionId": sql_result["collection_id"],
                     "id": sql_result["cumulus_granule_id"],
-                    "createdAt": sql_result["cumulus_create_time"].strftime(
-                        "%Y-%m-%dT%H:%M:%S.%fZ"
-                    ),
+                    "createdAt": sql_result["cumulus_create_time"],
                     "executionId": sql_result["execution_id"],
-                    "ingestDate": sql_result["ingest_time"].strftime(
-                        "%Y-%m-%dT%H:%M:%S.%fZ"
-                    ),
-                    "lastUpdate": sql_result["last_update"].strftime(
-                        "%Y-%m-%dT%H:%M:%S.%fZ"
-                    ),
+                    "ingestDate": sql_result["ingest_time"],
+                    "lastUpdate": sql_result["last_update"],
                     "files": sql_result["files"],
                 }
             )
@@ -125,10 +119,10 @@ SELECT
                 granules.id,
                 granules.collection_id, 
                 granules.cumulus_granule_id, 
-                granules.cumulus_create_time, 
+                EXTRACT(EPOCH FROM granules.cumulus_create_time AT TIME ZONE 'UTC') * 1000 as cumulus_create_time, 
                 granules.execution_id, 
-                granules.ingest_time, 
-                granules.last_update
+                EXTRACT(EPOCH FROM granules.ingest_time AT TIME ZONE 'UTC') * 1000 as ingest_time, 
+                EXTRACT(EPOCH FROM granules.last_update AT TIME ZONE 'UTC') * 1000 as last_update
             FROM
             (SELECT DISTINCT
                 granules.cumulus_granule_id
