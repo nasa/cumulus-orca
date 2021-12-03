@@ -73,10 +73,11 @@ module "orca" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  db_admin_password   = var.db_admin_password
-  db_host_endpoint    = var.db_host_endpoint
-  db_user_password    = var.db_user_password
-  orca_default_bucket = var.orca_default_bucket
+  db_admin_password     = var.db_admin_password
+  db_host_endpoint      = var.db_host_endpoint
+  db_user_password      = var.db_user_password
+  orca_default_bucket   = var.orca_default_bucket
+  rds_security_group_id = var.rds_security_group_id
 
   ## OPTIONAL
   # db_admin_username                                    = "postgres"
@@ -110,6 +111,7 @@ optional variables can be found in the [variables section](#orca-variables).
 - orca_default_bucket
 - db_user_password
 - db_host_endpoint
+- rds_security_group_id
 #### Required Values Retrieved from Cumulus Variables
 
 The following variables are set as part of your Cumulus deployment and are
@@ -171,6 +173,11 @@ variable "orca_default_bucket" {
   description = "Default ORCA S3 Glacier bucket to use."
 }
 
+variable "rds_security_group_id" {
+  type        = string
+  description = "Cumulus' RDS Security Group's ID."
+}
+
 ```
 
 
@@ -208,6 +215,9 @@ db_admin_password = "my-super-secret-database-owner-password"
 ## PostgreSQL database host endpoint to connect to.
 db_host_endpoint = "aws.postgresrds.host"
 
+## Cumulus' RDS Security Group's ID.
+rds_security_group_id = "sg-01234567890123456"
+
 ```
 
 Below describes the type of value expected for each variable.
@@ -216,6 +226,7 @@ Below describes the type of value expected for each variable.
 * `orca_default_bucket` (string) - default S3 glacier bucket to use for ORCA data.
 * `db_admin_password` (string) - password for the postgres user.
 * `db_host_endpoint`(string) - Database host endpoint to connect to.
+* `rds_security_group_id`(string) - Cumulus' RDS Security Group's ID. Output as `security_group_id` from the rds-cluster deployment.
 
 Additional variable definitions can be found in the [ORCA variables](#orca-variables)
 section of the document.
@@ -425,13 +436,13 @@ The following variables should be present in the `cumulus-tf/orca_variables.tf`
 file. The variables must be set with proper values for your environment in the
 `cumulus-tf/terraform.tfvars` file.
 
-| Variable               | Definition                                              | Example Value                 |
-| ---------------------- | --------------------------------------------------------| ----------------------------- |
-| `db_admin_password`    | Password for RDS database administrator authentication  | "My_Sup3rS3cr3t_admin_Passw0rd"|
-| `db_host_endpoint`     | Database host endpoint to connect to.                   | "aws.postgresrds.host"        |
-| `db_user_password`     | Password for RDS database user authentication           | "My_Sup3rS3cr3tuserPassw0rd"  |
-| `orca_default_bucket`  | Default ORCA S3 Glacier bucket to use.                  | "PREFIX-orca-primary"         |
-
+| Variable                | Definition                                              | Example Value                 |
+| ----------------------  | --------------------------------------------------------| ----------------------------- |
+| `db_admin_password`     | Password for RDS database administrator authentication  | "My_Sup3rS3cr3t_admin_Passw0rd"|
+| `db_host_endpoint`      | Database host endpoint to connect to.                   | "aws.postgresrds.host"        |
+| `db_user_password`      | Password for RDS database user authentication           | "My_Sup3rS3cr3tuserPassw0rd"  |
+| `orca_default_bucket`   | Default ORCA S3 Glacier bucket to use.                  | "PREFIX-orca-primary"         |
+| `rds_security_group_id` | Cumulus' RDS Security Group's ID.                       | "g-01234567890123456"         |
 ### Optional Variables
 
 The following variables are optional for the ORCA module and can be set by the

@@ -38,6 +38,8 @@ db_host_endpoint =
 ## Default ORCA S3 Glacier bucket to use
 orca_default_bucket = 
 
+## Cumulus' RDS Security Group's ID.
+rds_security_group_id
 
 ## OPTIONAL VARIABLES - ORCA default settings shown.
 ## -----------------------------------------------------------------------------
