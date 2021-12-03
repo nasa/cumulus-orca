@@ -311,6 +311,7 @@ class TestCopyToGlacierHandler(TestCase):
                         "version": ANY,
                         "ingestTime": ANY,
                         "etag": ANY,
+                        "name": event["input"]["granules"][0]["files"][1][copy_to_glacier.FILE_FILEPATH_KEY].split("/")[-1],
                         "hash": event["input"]["granules"][0]["files"][1][copy_to_glacier.FILE_HASH_KEY],
                         "hashType": event["input"]["granules"][0]["files"][1][
                             copy_to_glacier.FILE_HASH_TYPE_KEY
@@ -328,7 +329,7 @@ class TestCopyToGlacierHandler(TestCase):
                         "version": ANY,
                         "ingestTime": ANY,
                         "etag": ANY,
-                        "name": event["input"]["granules"][0]["files"][0][copy_to_glacier.FILE_FILEPATH_KEY].split("/")[-1],
+                        "name": event["input"]["granules"][0]["files"][2][copy_to_glacier.FILE_FILEPATH_KEY].split("/")[-1],
                         "hash": event["input"]["granules"][0]["files"][2][copy_to_glacier.FILE_HASH_KEY],
                         "hashType": event["input"]["granules"][0]["files"][2][
                             copy_to_glacier.FILE_HASH_TYPE_KEY
