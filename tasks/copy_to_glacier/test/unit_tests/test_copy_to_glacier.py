@@ -117,7 +117,7 @@ class TestCopyToGlacierHandler(TestCase):
                 "granuleId": uuid.uuid4().__str__(),
                 "dataType": uuid.uuid4().__str__(),
                 "version": uuid.uuid4().__str__(),
-                "createdAt": 628021800000,
+                "createdAt": random.randint(0, 628021800000),
                 "files": [
                     {
                         copy_to_glacier.FILE_FILENAME_KEY: uuid.uuid4().__str__(),
@@ -407,7 +407,7 @@ class TestCopyToGlacierHandler(TestCase):
                     "granuleId": "MOD09GQ.A2017025.h21v00.006.2017034065109",
                     "dataType": "MOD09GQ",
                     "version": "006",
-                    "createdAt": 628021800000,
+                    "createdAt": random.randint(0, 628021800000),
                     "files": [
                         {
                             copy_to_glacier.FILE_FILENAME_KEY: "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
@@ -429,7 +429,7 @@ class TestCopyToGlacierHandler(TestCase):
                     "granuleId": "MOD09GQ.A208885.h21v00.006.2017034065108",
                     "dataType": "MOD09GQ",
                     "version": "008",
-                    "createdAt": 628021800000,
+                    "createdAt": random.randint(0, 628021800000),
                     "files": [
                         {
                             copy_to_glacier.FILE_FILENAME_KEY: "MOD09GQ.A2017025.h21v00.006.2017034065108.hdf",
