@@ -442,7 +442,7 @@ file. The variables must be set with proper values for your environment in the
 | `db_host_endpoint`      | Database host endpoint to connect to.                   | "aws.postgresrds.host"        |
 | `db_user_password`      | Password for RDS database user authentication           | "My_Sup3rS3cr3tuserPassw0rd"  |
 | `orca_default_bucket`   | Default ORCA S3 Glacier bucket to use.                  | "PREFIX-orca-primary"         |
-| `rds_security_group_id` | Cumulus' RDS Security Group's ID.                       | "g-01234567890123456"         |
+| `rds_security_group_id` | Cumulus' RDS Security Group's ID.                       | "sg-01234567890123456"        |
 ### Optional Variables
 
 The following variables are optional for the ORCA module and can be set by the
