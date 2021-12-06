@@ -372,11 +372,11 @@ FUNCTIONS
         Returns:
             The result of the cumulus task. See schemas/output.json for more information.
     
-    should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -> bool
+    should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> bool
         Tests whether or not file is included in {excludeFileTypes} from copy to glacier.
         Args:
-            granule_url: s3 url of granule.
-            exclude_file_types: List of extensions to exclude in the backup
+            file_key: The key of the file within the s3 bucket.
+            exclude_file_types: List of extensions to exclude in the backup.
         Returns:
             True if file should be excluded from copy, False otherwise.
     
@@ -403,9 +403,7 @@ DATA
     CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = 'multipart_chunksize_mb'
     Dict = typing.Dict
     FILE_BUCKET_KEY = 'bucket'
-    FILE_FILENAME_KEY = 'fileName'
     FILE_FILEPATH_KEY = 'key'
-    FILE_SOURCE_URI_KEY = 'source'
     List = typing.List
     MB = 1048576
     Union = typing.Union
