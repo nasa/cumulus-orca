@@ -39,7 +39,7 @@ db_host_endpoint =
 orca_default_bucket = 
 
 ## Cumulus' RDS Security Group's ID.
-rds_security_group_id
+rds_security_group_id = 
 
 ## OPTIONAL VARIABLES - ORCA default settings shown.
 ## -----------------------------------------------------------------------------
