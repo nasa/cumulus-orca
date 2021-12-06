@@ -21,8 +21,6 @@ and includes an additional section for migration notes.
 - The `modules/rds` directory is removed since ORCA will utilize the Cumulus DB.
 - *ORCA-233* The `disaster_recovery` database, now renamed `PREFIX_orca`, will now be created by db_deploy instead of Terraform.
 - *ORCA-288* Removed copy_to_glacier_cumulus_translator due to better consistency in Cumulus's [file dictionary](https://github.com/nasa/cumulus/blob/master/packages/schemas/files.schema.json).
-- *ORCA-311* `copy_to_glacier` no longer accepts/returns file properties other than `bucket` and `key`.
-  `copied_to_glacier` is similarly no longer passed through, but generated.
 
 ### Added
 - *ORCA-256* Added AWS API Gateway in modules/api_gateway/main.tf for the catalog reporting lambda.
@@ -37,7 +35,6 @@ and includes an additional section for migration notes.
 ### Migration Notes
 
 - Orca is only compatible with versions of Cumulus that use the [new Cumulus file format](https://github.com/nasa/cumulus/blob/master/packages/schemas/files.schema.json). Any calls to extract_filepaths_for_granule or copy_to_glacier should switch to the new format.
-- Ensure that anything calling `copy_to_glacier` only relies on properties currently present in `copy_to_glacier/schemas/output.json`
 - Remove any added references in your setup to copy_to_glacier_cumulus_translator. It is no longer necesarry as a Cumulus intermediary.
 - The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variables. The following two variable names have changed:
   - postgres_user_pw-> db_admin_password (*new*)

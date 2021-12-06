@@ -21,24 +21,26 @@ CONFIG_EXCLUDE_FILE_TYPES_KEY = "excludeFileTypes"
 # Set Cumulus LOGGER
 LOGGER = CumulusLogger()
 
+FILE_FILENAME_KEY = "fileName"
 FILE_BUCKET_KEY = "bucket"
 FILE_FILEPATH_KEY = "key"
+FILE_SOURCE_URI_KEY = "source"
 FILE_HASH_KEY = "checksum"
 FILE_HASH_TYPE_KEY = "checksumType"
 
 
-def should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> bool:
+def should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -> bool:
     """
     Tests whether or not file is included in {excludeFileTypes} from copy to glacier.
     Args:
-        file_key: The key of the file within the s3 bucket.
-        exclude_file_types: List of extensions to exclude in the backup.
+        granule_url: s3 url of granule.
+        exclude_file_types: List of extensions to exclude in the backup
     Returns:
         True if file should be excluded from copy, False otherwise.
     """
     for file_type in exclude_file_types:
         # Returns the first instance in the string that matches .ext or None if no match was found.
-        if re.search(f"^.*{file_type}$", file_key) is not None:
+        if re.search(f"^.*{file_type}$", granule_url) is not None:
             return True
     return False
 
@@ -112,14 +114,17 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     """
     Copies the files in {event}['input']
     to the ORCA glacier bucket defined in ORCA_DEFAULT_BUCKET.
+
         Environment Variables:
             ORCA_DEFAULT_BUCKET (string, required): Name of the default ORCA S3 Glacier bucket.
             DEFAULT_MULTIPART_CHUNKSIZE_MB (int, optional): The default maximum size of chunks to use when copying.
                 Can be overridden by collection config.
             METADATA_DB_QUEUE_URL (string, required): SQS URL of the metadata queue.
+
     Args:
         event: Passed through from {handler}
         context: An object required by AWS Lambda. Unused.
+
     Returns:
         A dict representing input and copied files. See schemas/output.json for more information.
     """
@@ -197,15 +202,16 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
 
         # Iterate through the files in a granule object
         for file in granule["files"]:
+            file_name = file[FILE_FILENAME_KEY]
             file_filepath = file[FILE_FILEPATH_KEY]
             file_bucket = file[FILE_BUCKET_KEY]
-            file_source_uri = f"s3://{file_bucket}/{file_filepath}"
+            file_source_uri = file[FILE_SOURCE_URI_KEY]
             file_hash = file.get(FILE_HASH_KEY, None)
             file_hash_type = file.get(FILE_HASH_TYPE_KEY, None)
-            if should_exclude_files_type(file_filepath, exclude_file_types):
+            if should_exclude_files_type(file_name, exclude_file_types):
                 LOGGER.info(
-                    "Excluding {file_filepath} from glacier backup because of collection configured {CONFIG_EXCLUDE_FILE_TYPES_KEY}.",
-                    file_name=file_filepath,
+                    "Excluding {file_name} from glacier backup because of collection configured {CONFIG_EXCLUDE_FILE_TYPES_KEY}.",
+                    file_name=file_name,
                     CONFIG_EXCLUDE_FILE_TYPES_KEY=CONFIG_EXCLUDE_FILE_TYPES_KEY,
                 )
                 continue
@@ -216,7 +222,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
                                                   multipart_chunksize_mb=multipart_chunksize_mb,
                                                   )
 
-            result["name"] = file_filepath.split("/")[-1] # since fileName is no longer available in event
+            result["name"] = file_name
             result["hash"] = file_hash
             result["hashType"] = file_hash_type
             copied_file_urls.append(file_source_uri)
@@ -249,10 +255,14 @@ def handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any:
             DEFAULT_MULTIPART_CHUNKSIZE_MB (int, required): The default maximum size of chunks to use when copying.
                                                                  Can be overridden by collection config.
             METADATA_DB_QUEUE_URL (string, required): SQS URL of the metadata queue.
+
     Args:
         event: Event passed into the step from the aws workflow.
             See schemas/input.json and schemas/config.json for more information.
+
+
         context: An object required by AWS Lambda. Unused.
+
     Returns:
         The result of the cumulus task. See schemas/output.json for more information.
     """

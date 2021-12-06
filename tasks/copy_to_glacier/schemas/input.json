@@ -10,7 +10,7 @@
       "description": "A list of objects representing individual files to copy.",
       "type": "array",
       "items": {
-        "required": ["granuleId", "files"],
+        "required": ["granuleId", "createdAt", "files"],
         "properties": {
           "granuleId": {
             "description": "The granule's ID.",
@@ -24,8 +24,12 @@
             "description": "The files to copy.",
             "type": "array",
             "items": {
-              "required": ["bucket", "key"],
+              "required": ["fileName", "bucket", "key", "source"],
               "properties": {
+                "fileName": {
+                  "type": "string",
+                  "description": "Name of file (e.g. file.txt)."
+                },
                 "bucket": {
                   "type": "string",
                   "description": "Name of the Bucket where file is archived in S3."
@@ -33,6 +37,10 @@
                 "key": {
                   "type": "string",
                   "description": "S3 Key for archived file."
+                },
+                "source": {
+                  "type": "string",
+                  "description": "Source URI of the file from origin system (e.g. S3, FTP, HTTP)."
                 }
               }
             }

@@ -18,7 +18,7 @@ from sqlalchemy.engine import URL
 from orca_shared.database import shared_db
 
 
-class TestSharedDatabaseLibraries(unittest.TestCase):
+class TestSharedDatabseLibraries(unittest.TestCase):
     """
     Runs unit tests for all of the functions in the shared_db library.
     """
@@ -76,9 +76,9 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
         """
         error_message = "Environment variable PREFIX is not set."
 
-        with self.assertRaises(Exception) as cm:
+        with self.assertRaises(Exception) as ex:
             shared_db.get_configuration()
-        self.assertEqual(str(cm.exception), error_message)
+            self.assertEqual(ex.message, error_message)
 
     @patch.dict(
         os.environ,
@@ -89,13 +89,13 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
     )
     def test_get_configuration_no_aws_region(self):
         """
-        Validate an error is thrown if AWS_REGION is not set.
+        Validate an error is thrown if PREFIX is not set.
         """
-        error_message = "Runtime environment variable AWS_REGION is not set."
+        error_message = "Environment variable AWS_REGION is not set."
 
-        with self.assertRaises(Exception) as cm:
+        with self.assertRaises(Exception) as ex:
             shared_db.get_configuration()
-        self.assertEqual(str(cm.exception), error_message)
+            self.assertEqual(ex.message, error_message)
 
     @patch.dict(
         os.environ,
@@ -115,9 +115,9 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
         self.test_sm.delete_secret(SecretId=secret_key, ForceDeleteWithoutRecovery=True)
 
         # Run the test
-        with self.assertRaises(Exception) as cm:
+        with self.assertRaises(Exception) as ex:
             shared_db.get_configuration()
-        self.assertEqual(str(cm.exception), message)
+            self.assertEqual(ex.message, message)
 
         # Recreate the key
         self.test_sm.create_secret(Name=secret_key, SecretString="Some-Value-Here")

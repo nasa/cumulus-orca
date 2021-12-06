@@ -68,9 +68,8 @@ def task(event, context):  # pylint: disable-msg=unused-argument
                 LOGGER.debug(f"Validating file {file_name}")
                 # filtering excludedFileTypes
                 if not should_exclude_files_type(file_name, exclude_file_types):
-                    LOGGER.debug(f"File {file_name} will be restored")
-                    file_key = afile["key"]
-                    LOGGER.debug(f"Retrieving information for {file_key}")
+                    fkey = afile["key"]
+                    LOGGER.debug(f"Retrieving information for {fkey}")
                     dest_bucket = None
                     for key in regex_buckets:
                         pat = re.compile(key)
@@ -81,7 +80,7 @@ def task(event, context):  # pylint: disable-msg=unused-argument
                                 dest_bucket=dest_bucket,
                                 file=file_name,
                             )
-                    files.append({"key": file_key, "dest_bucket": dest_bucket})
+                    files.append({"key": fkey, "dest_bucket": dest_bucket})
             gran["keys"] = files
             grans.append(gran)
         result["granules"] = grans
@@ -133,22 +132,23 @@ def get_regex_buckets(event):
     return regex_buckets
 
 
-def should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> bool:
+def should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -> bool:
     """
-    Tests whether or not file is included in {excludeFileTypes} from copy to glacier.
+    Tests whether or not file is included in {excludeFileTypes}.
     Args:
-        file_key: The key of the file within the s3 bucket.
-        exclude_file_types: List of extensions to exclude in the backup.
+        granule_url: s3 url of granule.
+        exclude_file_types: List of file extensions to exclude from sending to request_files
     Returns:
         True if file should be excluded from copy, False otherwise.
     """
     for file_type in exclude_file_types:
         # Returns the first instance in the string that matches .ext or None if no match was found.
-        if re.search(f"^.*{file_type}$", file_key) is not None:
+        if re.search(f"^.*{file_type}$", granule_url) is not None:
             LOGGER.warn(
-                f"The file {file_key} will not be restored because it matches the excluded file type {file_type}."
+                f"The file {granule_url} will not be restored because it matches the excluded file type {file_type}."
             )
             return True
+    LOGGER.debug(f"File {granule_url} will be restored")
     return False
 
 
