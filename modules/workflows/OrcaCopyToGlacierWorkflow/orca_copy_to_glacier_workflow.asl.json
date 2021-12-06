@@ -9,7 +9,7 @@
           "task_config": {
             "multipart_chunksize_mb": "{$.meta.collection.meta.multipart_chunksize_mb}",
             "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
-            "orcaBucketOverride": "{$.meta.collection.meta.orca_bucket}"
+            "orcaDefaultBucketOverride": "{$.meta.collection.meta.orca_default_bucket}"
           }
         }
       },

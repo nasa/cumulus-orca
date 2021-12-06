@@ -35,7 +35,7 @@ OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY = "ORCA_DEFAULT_BUCKET"
 EVENT_CONFIG_KEY = "config"
 EVENT_INPUT_KEY = "input"
 
-CONFIG_ORCA_BUCKET_OVERRIDE_KEY = "orcaBucketOverride"
+CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY = "orcaDefaultBucketOverride"
 
 INPUT_GRANULES_KEY = "granules"
 
@@ -152,9 +152,9 @@ def task(
 
     # Use the default glacier bucket if none is specified for the collection or otherwise given.
     try:
-        orca_bucket = event[EVENT_CONFIG_KEY][CONFIG_ORCA_BUCKET_OVERRIDE_KEY]
+        orca_bucket = event[EVENT_CONFIG_KEY][CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY]
     except KeyError:
-        LOGGER.warn(f"{CONFIG_ORCA_BUCKET_OVERRIDE_KEY} is not set.")
+        LOGGER.warn(f"{CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY} is not set.")
         orca_bucket = None
     if orca_bucket is None:
         orca_bucket = event[EVENT_CONFIG_KEY].get(

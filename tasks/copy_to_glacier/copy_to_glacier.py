@@ -13,7 +13,7 @@ from run_cumulus_task import run_cumulus_task
 
 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = 'multipart_chunksize_mb'
 CONFIG_EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
-CONFIG_ORCA_BUCKET_OVERRIDE_KEY = "orcaBucketOverride"
+CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY = "orcaDefaultBucketOverride"
 
 FILE_FILENAME_KEY = "fileName"
 FILE_BUCKET_KEY = "bucket"
@@ -76,6 +76,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
 
         Environment Variables:
             ORCA_DEFAULT_BUCKET (string, required): Name of the default ORCA S3 Glacier bucket.
+                Overridden by bucket specified in config.
             DEFAULT_MULTIPART_CHUNKSIZE_MB (int, optional): The default maximum size of chunks to use when copying.
                 Can be overridden by collection config.
 
@@ -102,10 +103,10 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     #      - collection configuration
     #      - default value in buckets
     try:
-        default_bucket = config.get[CONFIG_ORCA_BUCKET_OVERRIDE_KEY]
+        default_bucket = config.get(CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY)
     except KeyError:
         # TODO: Change this to a logging statement
-        print(f"{CONFIG_ORCA_BUCKET_OVERRIDE_KEY} is not set.")
+        print(f"{CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY} is not set.")
         default_bucket = None
     if default_bucket is None:
         try:

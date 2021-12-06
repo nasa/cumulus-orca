@@ -221,13 +221,14 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_glaci
 ## Configuration
 
 As part of the [Cumulus Message Adapter configuration](https://nasa.github.io/cumulus/docs/workflows/input_output#cma-configuration) 
-for `copy_to_glacier`, the `excludeFileTypes` and `multipart_chunksize_mb` keys must be present under the 
+for `copy_to_glacier`, the `excludeFileTypes`, `multipart_chunksize_mb`, and `orcaDefaultBucketOverride` keys must be present under the 
 `task_config` object as seen below. Per the [config schema](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/config.json), 
-the values of the two keys are used the following ways. The `collection` key value should contain a meta 
+the values of the keys are used the following ways. The `collection` key value should contain a meta 
 object with an optional `excludeFileTypes` key that is used to determine file patterns that should not be 
 sent to ORCA. The optional `multipart_chunksize_mb` is used to override the default setting for the lambda 
-s3 copy maximum multipart chunk size value when copying large files to ORCA. Both of these settings can 
-often be derived from the collection configuration in Cumulus as seen below:
+s3 copy maximum multipart chunk size value when copying large files to ORCA.
+The optional `orcaDefaultBucketOverride` overrides the `ORCA_DEFAULT_BUCKET` set on deployment.
+These settings can often be derived from the collection configuration in Cumulus as seen below:
 
 ```
 {
@@ -238,7 +239,8 @@ often be derived from the collection configuration in Cumulus as seen below:
           "event.$": "$",
           "task_config": {
             "multipart_chunksize_mb": "{$.meta.collection.multipart_chunksize_mb"},
-            "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}"
+            "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
+            "orcaDefaultBucketOverride": "{$.meta.collection.meta.orca_default_bucket}"
           }
         }
       },
@@ -371,6 +373,7 @@ FUNCTIONS
         
             Environment Variables:
                 ORCA_DEFAULT_BUCKET (string, required): Name of the default ORCA S3 Glacier bucket.
+                    Overridden by bucket specified in config.
                 DEFAULT_MULTIPART_CHUNKSIZE_MB (int, optional): The default maximum size of chunks to use when copying.
                     Can be overridden by collection config.
         
@@ -385,6 +388,7 @@ DATA
     Any = typing.Any
     CONFIG_EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
     CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = 'multipart_chunksize_mb'
+    CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY = 'orcaDefaultBucketOverride'
     Dict = typing.Dict
     FILE_BUCKET_KEY = 'bucket'
     FILE_FILENAME_KEY = 'fileName'
@@ -393,43 +397,4 @@ DATA
     List = typing.List
     MB = 1048576
     Union = typing.Union
-```
-
-## pydoc sqs_library.py
-
-```
-Help on sqs_library:
-NAME
-    sqs_library
-FUNCTIONS
-    post_to_metadata_queue(sqs_body: Dict[str, Any], metadata_queue_url: str,) -> None:
-        Posts metadata information to the metadata SQS queue.
-        Args:
-            sqs_body: A dictionary containing the metadata objects that will be sent to SQS.
-            metadata_queue_url: The metadata SQS queue URL defined by AWS.
-        Returns:
-            None
-    get_aws_region() -> str:
-        Gets AWS region variable from the runtime environment variable.
-        Args:
-            None
-        Returns:
-            The AWS region variable.
-        Raises:
-            Exception: Thrown if AWS region is empty or None.
-    
-    retry_error(max_retries: int, backoff_in_seconds: int, backoff_factor: int) -> Callable[[Callable[[], RT]], Callable[[], RT]]:
-        Decorator takes arguments to adjust number of retries and backoff strategy.
-        Args:
-            max_retries (int): number of times to retry in case of failure.
-            backoff_in_seconds (int): Number of seconds to sleep the first time through.
-            backoff_factor (int): Value of the factor used for backoff.
-DATA
-    Any = typing.Any
-    Callable = typing.Callable
-    Dict = typing.Dict
-    TypeVar = typing.TypeVar
-    MAX_RETRIES = 3
-    BACKOFF_FACTOR = 2
-    INITIAL_BACKOFF_IN_SECONDS = 1
 ```

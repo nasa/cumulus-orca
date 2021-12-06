@@ -339,6 +339,85 @@ class TestCopyToGlacierHandler(TestCase):
         },
         clear=True,
     )
+    def test_task_overridden_default_bucket(self):
+        """
+        If the default bucket is overridden, the override should be respected.
+        """
+        destination_bucket_name = uuid.uuid4().__str__()
+        content_type = uuid.uuid4().__str__()
+        source_bucket_names = [
+            file[copy_to_glacier.FILE_BUCKET_KEY] for file in self.event_granules["granules"][0]["files"]
+        ]
+        source_keys = [
+            file[copy_to_glacier.FILE_FILEPATH_KEY] for file in self.event_granules["granules"][0]["files"]
+        ]
+
+        config_check = ConfigCheck(4 * MB)
+
+        # todo: use 'side_effect' to verify args. It is safer, as current method does not deep-copy args
+        boto3.client = Mock()
+        s3_cli = boto3.client("s3")
+        s3_cli.copy = Mock(return_value=None)
+        s3_cli.copy.side_effect = config_check.check_multipart_chunksize
+        s3_cli.head_object = Mock(return_value={"ContentType": content_type})
+
+        event = {"input": copy.deepcopy(self.event_granules),
+                 "config": {copy_to_glacier.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: destination_bucket_name}}
+
+        result = task(copy.deepcopy(event), None)
+
+        with open("schemas/output.json", "r") as raw_schema:
+            schema = json.loads(raw_schema.read())
+
+        validate = fastjsonschema.compile(schema)
+        validate(result)
+
+        expected_granules = copy.deepcopy(event["input"]["granules"])
+        self.assertEqual(expected_granules, result["granules"])
+
+        head_object_calls = []
+        copy_calls = []
+        for i in range(0, len(source_bucket_names)):
+            head_object_calls.append(
+                call(Bucket=source_bucket_names[i], Key=source_keys[i])
+            )
+            copy_calls.append(
+                call(
+                    {"Bucket": source_bucket_names[i], "Key": source_keys[i]},
+                    destination_bucket_name,
+                    source_keys[i],
+                    ExtraArgs={
+                        "StorageClass": "GLACIER",
+                        "MetadataDirective": "COPY",
+                        "ContentType": content_type,
+                        "ACL": "bucket-owner-full-control",
+                    },
+                    Config=unittest.mock.ANY,  # Checked by ConfigCheck. Equality checkers do not work.
+                )
+            )
+
+        s3_cli.head_object.assert_has_calls(head_object_calls)
+        s3_cli.copy.assert_has_calls(copy_calls)
+
+        self.assertEqual(s3_cli.head_object.call_count, 4)
+        self.assertEqual(s3_cli.copy.call_count, 4)
+
+        expected_copied_file_urls = [
+            file[copy_to_glacier.FILE_SOURCE_URI_KEY] for file in self.event_granules["granules"][0]["files"]
+        ]
+        self.assertEqual(expected_copied_file_urls, result["copied_to_glacier"])
+        expected_granules = copy.deepcopy(event["input"]["granules"])
+        self.assertEqual(expected_granules, result["granules"])
+        self.assertIsNone(config_check.bad_config)
+
+    @patch.dict(
+        os.environ,
+        {
+            "ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__(),
+            "DEFAULT_MULTIPART_CHUNKSIZE_MB": "4",
+        },
+        clear=True,
+    )
     def test_task_empty_granules_list(self):
         """
         Basic path with buckets present.

@@ -109,6 +109,55 @@ class TestRequestFiles(unittest.TestCase):
         )
 
     @patch("request_files.inner_task")
+    def test_task_overridden_default_orca_bucket(self, mock_inner_task: MagicMock):
+        """
+        If the default bucket is overridden, the override should be respected.
+        """
+        job_id = uuid.uuid4().__str__()
+        glacier_bucket = uuid.uuid4().__str__()
+        mock_event = {
+            request_files.EVENT_CONFIG_KEY: {
+                request_files.CONFIG_GLACIER_BUCKET_KEY: uuid.uuid4().__str__(),
+                request_files.CONFIG_JOB_ID_KEY: job_id,
+                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: glacier_bucket
+            },
+        }
+        max_retries = randint(0, 99)  # nosec
+        retry_sleep_secs = uniform(0, 99)  # nosec
+        retrieval_type = "Bulk"
+        exp_days = randint(0, 99)  # nosec
+        db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
+
+        os.environ["DB_QUEUE_URL"] = db_queue_url
+        os.environ[
+            request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY
+        ] = max_retries.__str__()
+        os.environ[
+            request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
+        ] = retry_sleep_secs.__str__()
+        os.environ[request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY] = retrieval_type
+        os.environ[
+            request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
+        ] = exp_days.__str__()
+
+        request_files.task(mock_event, None)
+
+        mock_inner_task.assert_called_once_with(
+            {
+                request_files.EVENT_CONFIG_KEY: {
+                    request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
+                    request_files.CONFIG_JOB_ID_KEY: job_id,
+                    request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: glacier_bucket  # Unused, but passed through.
+                },
+            },
+            max_retries,
+            retry_sleep_secs,
+            retrieval_type,
+            exp_days,
+            db_queue_url,
+        )
+
+    @patch("request_files.inner_task")
     def test_task_default_for_missing_max_retries(self, mock_inner_task: MagicMock):
         """
         If max_retries missing, use default.

@@ -16,6 +16,10 @@
     "multipart_chunksize_mb": {
       "type": ["integer", "null"],
       "description": "The collection's maximum size of chunks to use when copying. Defaults to environment variable."
+    },
+    "orcaDefaultBucketOverride": {
+      "type": ["string", "null"],
+      "description": "Overrides the default bucket to copy to in os.environ['ORCA_DEFAULT_BUCKET']."
     }
   }
 }
