@@ -35,7 +35,7 @@ OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY = "ORCA_DEFAULT_BUCKET"
 EVENT_CONFIG_KEY = "config"
 EVENT_INPUT_KEY = "input"
 
-CONFIG_COLLECTION_BUCKET_KEY = 'collectionBucket'
+CONFIG_ORCA_BUCKET_OVERRIDE_KEY = "orcaBucketOverride"
 
 INPUT_GRANULES_KEY = "granules"
 
@@ -144,21 +144,24 @@ def task(
             LOGGER.info(msg)
             retrieval_type = DEFAULT_RESTORE_RETRIEVAL_TYPE
     except KeyError:
-        LOGGER.warn(f"Invalid RESTORE_RETRIEVAL_TYPE: 'None' defaulting to 'Standard'")
+        LOGGER.warn("Invalid RESTORE_RETRIEVAL_TYPE: 'None' defaulting to 'Standard'")
         retrieval_type = DEFAULT_RESTORE_RETRIEVAL_TYPE
 
     # Get QUEUE URL
     db_queue_url = str(os.environ[OS_ENVIRON_DB_QUEUE_URL_KEY])
 
     # Use the default glacier bucket if none is specified for the collection or otherwise given.
-    event[EVENT_CONFIG_KEY][CONFIG_GLACIER_BUCKET_KEY] = \
-        event[EVENT_CONFIG_KEY].get(CONFIG_COLLECTION_BUCKET_KEY,
-                                    None)
-    if event[EVENT_CONFIG_KEY][CONFIG_GLACIER_BUCKET_KEY] is None:
-        event[EVENT_CONFIG_KEY][CONFIG_GLACIER_BUCKET_KEY] = event[EVENT_CONFIG_KEY].get(
+    try:
+        orca_bucket = event[EVENT_CONFIG_KEY][CONFIG_ORCA_BUCKET_OVERRIDE_KEY]
+    except KeyError:
+        LOGGER.warn(f"{CONFIG_ORCA_BUCKET_OVERRIDE_KEY} is not set.")
+        orca_bucket = None
+    if orca_bucket is None:
+        orca_bucket = event[EVENT_CONFIG_KEY].get(
             CONFIG_GLACIER_BUCKET_KEY,
             str(os.environ[OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY]),
         )
+    event[EVENT_CONFIG_KEY][CONFIG_GLACIER_BUCKET_KEY] = orca_bucket  # todo: pass this in as parameter instead of adjusting config dictionary.
 
     # Get number of days to keep before it sinks back down into glacier from S3
     try:

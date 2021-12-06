@@ -13,7 +13,7 @@ from run_cumulus_task import run_cumulus_task
 
 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = 'multipart_chunksize_mb'
 CONFIG_EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
-CONFIG_COLLECTION_BUCKET_KEY = 'collectionBucket'
+CONFIG_ORCA_BUCKET_OVERRIDE_KEY = "orcaBucketOverride"
 
 FILE_FILENAME_KEY = "fileName"
 FILE_BUCKET_KEY = "bucket"
@@ -101,7 +101,12 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     #      - task input
     #      - collection configuration
     #      - default value in buckets
-    default_bucket = config.get(CONFIG_COLLECTION_BUCKET_KEY, None)
+    try:
+        default_bucket = config.get[CONFIG_ORCA_BUCKET_OVERRIDE_KEY]
+    except KeyError:
+        # TODO: Change this to a logging statement
+        print(f"{CONFIG_ORCA_BUCKET_OVERRIDE_KEY} is not set.")
+        default_bucket = None
     if default_bucket is None:
         try:
             default_bucket = os.environ.get('ORCA_DEFAULT_BUCKET', None)
