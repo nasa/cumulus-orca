@@ -46,7 +46,7 @@
 			"type": "integer"
 		},
 		"completion_time": {
-			"description": "The time, in milliseconds since 1 January 1970 UTC, when all granule_files were no longer 'pending'.",
+			"description": "The time, in milliseconds since 1 January 1970 UTC, when all granule_files were in an end state.",
 			"type": "integer"
 		}
 	},

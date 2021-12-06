@@ -171,9 +171,8 @@ def get_job_entry_for_granule(
     return {
         OUTPUT_GRANULE_ID_KEY: row[OUTPUT_GRANULE_ID_KEY],
         OUTPUT_JOB_ID_KEY: row[OUTPUT_JOB_ID_KEY],
-        OUTPUT_REQUEST_TIME_KEY: int(row[OUTPUT_REQUEST_TIME_KEY]),
-        OUTPUT_COMPLETION_TIME_KEY: None if row[OUTPUT_COMPLETION_TIME_KEY] is None
-        else int(row[OUTPUT_COMPLETION_TIME_KEY]),
+        OUTPUT_REQUEST_TIME_KEY: row[OUTPUT_REQUEST_TIME_KEY],
+        OUTPUT_COMPLETION_TIME_KEY: row[OUTPUT_COMPLETION_TIME_KEY],
     }
 
 
@@ -183,8 +182,8 @@ def get_job_entry_for_granule_sql() -> text:
                 SELECT
                     granule_id as "{OUTPUT_GRANULE_ID_KEY}",
                     job_id as "{OUTPUT_JOB_ID_KEY}",
-                    EXTRACT(EPOCH FROM request_time AT TIME ZONE 'UTC') * 1000 as "{OUTPUT_REQUEST_TIME_KEY}",
-                    EXTRACT(EPOCH FROM completion_time AT TIME ZONE 'UTC') * 1000 as "{OUTPUT_COMPLETION_TIME_KEY}"
+                    EXTRACT(EPOCH FROM date_trunc('milliseconds', request_time) AT TIME ZONE 'UTC') * 1000 as "{OUTPUT_REQUEST_TIME_KEY}",
+                    EXTRACT(EPOCH FROM date_trunc('milliseconds', completion_time) AT TIME ZONE 'UTC') * 1000 as "{OUTPUT_COMPLETION_TIME_KEY}"
                 FROM
                     recovery_job
                 WHERE

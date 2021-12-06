@@ -92,10 +92,10 @@ def query_db(
                     "providerId": sql_result["provider_ids"],
                     "collectionId": sql_result["collection_id"],
                     "id": sql_result["cumulus_granule_id"],
-                    "createdAt": int(sql_result["cumulus_create_time"]),
+                    "createdAt": sql_result["cumulus_create_time"],
                     "executionId": sql_result["execution_id"],
-                    "ingestDate": int(sql_result["ingest_time"]),
-                    "lastUpdate": int(sql_result["last_update"]),
+                    "ingestDate": sql_result["ingest_time"],
+                    "lastUpdate": sql_result["last_update"],
                     "files": sql_result["files"],
                 }
             )
@@ -118,10 +118,10 @@ SELECT
                 granules.id,
                 granules.collection_id, 
                 granules.cumulus_granule_id, 
-                EXTRACT(EPOCH FROM granules.cumulus_create_time AT TIME ZONE 'UTC') * 1000 as cumulus_create_time, 
+                (EXTRACT(EPOCH FROM date_trunc('milliseconds', granules.cumulus_create_time) AT TIME ZONE 'UTC') * 1000)::bigint as cumulus_create_time, 
                 granules.execution_id, 
-                EXTRACT(EPOCH FROM granules.ingest_time AT TIME ZONE 'UTC') * 1000 as ingest_time, 
-                EXTRACT(EPOCH FROM granules.last_update AT TIME ZONE 'UTC') * 1000 as last_update
+                (EXTRACT(EPOCH FROM date_trunc('milliseconds', granules.ingest_time) AT TIME ZONE 'UTC') * 1000)::bigint as ingest_time, 
+                (EXTRACT(EPOCH FROM date_trunc('milliseconds', granules.last_update) AT TIME ZONE 'UTC') * 1000)::bigint as last_update
             FROM
             (SELECT DISTINCT
                 granules.cumulus_granule_id
@@ -129,8 +129,8 @@ SELECT
             WHERE 
                 (:granule_id is null or cumulus_granule_id=ANY(:granule_id)) and 
                 (:collection_id is null or collection_id=ANY(:collection_id)) and 
-                (:start_timestamp is null or EXTRACT(EPOCH FROM cumulus_create_time AT TIME ZONE 'UTC') * 1000>=:start_timestamp) and 
-                (:end_timestamp is null or EXTRACT(EPOCH FROM cumulus_create_time AT TIME ZONE 'UTC') * 1000<:end_timestamp)
+                (:start_timestamp is null or EXTRACT(EPOCH FROM date_trunc('milliseconds', cumulus_create_time) AT TIME ZONE 'UTC') * 1000>=:start_timestamp) and 
+                (:end_timestamp is null or EXTRACT(EPOCH FROM date_trunc('milliseconds', cumulus_create_time) AT TIME ZONE 'UTC') * 1000<:end_timestamp)
             ORDER BY cumulus_granule_id
             ) as granule_ids
             JOIN
