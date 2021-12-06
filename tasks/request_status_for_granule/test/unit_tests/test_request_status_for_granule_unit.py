@@ -350,7 +350,7 @@ class TestRequestStatusForGranuleUnit(
             request_status_for_granule.OUTPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(),
             request_status_for_granule.OUTPUT_JOB_ID_KEY: uuid.uuid4().__str__(),
             request_status_for_granule.OUTPUT_REQUEST_TIME_KEY: random.randint(0, 628021800000),
-            request_status_for_granule.OUTPUT_COMPLETION_TIME_KEY: uuid.uuid4().__str__(),
+            request_status_for_granule.OUTPUT_COMPLETION_TIME_KEY: random.randint(0, 628021800000),
         }
 
         mock_engine = Mock()
