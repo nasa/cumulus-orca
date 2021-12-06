@@ -100,7 +100,7 @@ The `copy_to_glacier` lambda function expects that the input payload has a `gran
         "granuleId": "MOD09GQ.A2017025.h21v00.006.2017034065109",
         "dataType": "MOD09GQ",
         "version": "006",
-        "createdAt": "2021-10-08T19:24:07.605323Z",
+        "createdAt": 628021800000,
         "files": [
           {
             "fileName": "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
@@ -172,7 +172,7 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_glaci
       "granuleId": "MOD09GQ.A2017025.h21v00.006.2017034065109",
       "dataType": "MOD09GQ",
       "version": "006",
-      "createdAt": "2021-10-08T19:24:07.605323Z",
+      "createdAt": 628021800000,
       "files": [
         {
           "name": "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
