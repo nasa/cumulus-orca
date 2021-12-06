@@ -14,7 +14,7 @@
             "description": "Provider ID supplied by Cumulus"
           },
           "name": {
-            "type": ["string", "null"],
+            "type": "string",
             "description": "Name of the provider provided by Cumulus."
           }
         },
@@ -101,11 +101,11 @@
                     "description": "Size of the object in bytes"
                   },
                   "hash": {
-                    "type": ["string", "null"],
+                    "type": "string",
                     "description": "Hash of the object from Cumulus"
                   },
                   "hashType": {
-                    "type": ["string", "null"],
+                    "type": "string",
                     "description": "Hash type used to hash the object. Supplied by Cumulus."
                   },
                   "version": {
@@ -128,8 +128,6 @@
                   "orcaArchiveLocation",
                   "keyPath",
                   "sizeInBytes",
-                  "hash",
-                  "hashType",
                   "version",
                   "ingestTime",
                   "etag"

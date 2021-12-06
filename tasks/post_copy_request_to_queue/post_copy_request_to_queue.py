@@ -221,8 +221,9 @@ def handler(event: Dict[str, Any], context: None) -> None:
             try:
                 env_var_value = int(env_var_value)
             except ValueError as ve:
-                LOGGER.critical(f"{var} must be set to an integer.")
-                raise ve
+                error = ValueError(f"{var} must be set to an integer.")
+                LOGGER.critical(error)
+                raise error
         backoff_args.append(env_var_value)
 
     record = event["Records"][0]
