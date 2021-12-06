@@ -14,24 +14,22 @@ from run_cumulus_task import run_cumulus_task
 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = 'multipart_chunksize_mb'
 CONFIG_EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
 
-FILE_FILENAME_KEY = "fileName"
 FILE_BUCKET_KEY = "bucket"
 FILE_FILEPATH_KEY = "key"
-FILE_SOURCE_URI_KEY = "source"
 
 
-def should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -> bool:
+def should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> bool:
     """
     Tests whether or not file is included in {excludeFileTypes} from copy to glacier.
     Args:
-        granule_url: s3 url of granule.
-        exclude_file_types: List of extensions to exclude in the backup
+        file_key: The key of the file within the s3 bucket.
+        exclude_file_types: List of extensions to exclude in the backup.
     Returns:
         True if file should be excluded from copy, False otherwise.
     """
     for file_type in exclude_file_types:
         # Returns the first instance in the string that matches .ext or None if no match was found.
-        if re.search(f"^.*{file_type}$", granule_url) is not None:
+        if re.search(f"^.*{file_type}$", file_key) is not None:
             return True
     return False
 
@@ -130,14 +128,13 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
 
         # Iterate through the files in a granule object
         for file in granule['files']:
-            file_name = file[FILE_FILENAME_KEY]
             file_filepath = file[FILE_FILEPATH_KEY]
             file_bucket = file[FILE_BUCKET_KEY]
-            file_source_uri = file[FILE_SOURCE_URI_KEY]
+            file_source_uri = f"s3://{file_bucket}/{file_filepath}"
 
-            if should_exclude_files_type(file_name, exclude_file_types):
+            if should_exclude_files_type(file_filepath, exclude_file_types):
                 print(
-                    f"Excluding {file_name} from glacier backup "
+                    f"Excluding {file_filepath} from glacier backup "
                     f"because of collection configured {CONFIG_EXCLUDE_FILE_TYPES_KEY}.")
                 continue
             copy_granule_between_buckets(source_bucket_name=file_bucket,
