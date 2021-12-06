@@ -14,6 +14,7 @@ from typing import List
 LOGGER = CumulusLogger(name="ORCA")
 
 EXCLUDE_FILE_TYPES_KEY = "excludeFileTypes"
+CONFIG_COLLECTION_BUCKET_KEY = 'collectionBucket'
 
 
 class ExtractFilePathsError(Exception):
@@ -54,7 +55,11 @@ def task(event, context):  # pylint: disable-msg=unused-argument
         raise KeyError(message.format(key=ke, config=config))
     result = {}
     try:
-        regex_buckets = get_regex_buckets(event)
+        default_bucket = config.get(CONFIG_COLLECTION_BUCKET_KEY, None)
+        if default_bucket is None:
+            regex_buckets = get_regex_buckets(event)
+        else:
+            regex_buckets = [{"regex": "*", "sampleFileName": "Overridden bucket applies to all files.", "bucket": default_bucket}]
         level = "event['input']"
         grans = []
         for ev_granule in event["input"]["granules"]:

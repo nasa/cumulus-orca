@@ -35,6 +35,8 @@ OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY = "ORCA_DEFAULT_BUCKET"
 EVENT_CONFIG_KEY = "config"
 EVENT_INPUT_KEY = "input"
 
+CONFIG_COLLECTION_BUCKET_KEY = 'collectionBucket'
+
 INPUT_GRANULES_KEY = "granules"
 
 CONFIG_GLACIER_BUCKET_KEY = (
@@ -148,11 +150,15 @@ def task(
     # Get QUEUE URL
     db_queue_url = str(os.environ[OS_ENVIRON_DB_QUEUE_URL_KEY])
 
-    # Use the default glacier bucket if none is given.
-    event[EVENT_CONFIG_KEY][CONFIG_GLACIER_BUCKET_KEY] = event[EVENT_CONFIG_KEY].get(
-        CONFIG_GLACIER_BUCKET_KEY,
-        str(os.environ[OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY]),
-    )
+    # Use the default glacier bucket if none is specified for the collection or otherwise given.
+    event[EVENT_CONFIG_KEY][CONFIG_GLACIER_BUCKET_KEY] = \
+        event[EVENT_CONFIG_KEY].get(CONFIG_COLLECTION_BUCKET_KEY,
+                                    None)
+    if event[EVENT_CONFIG_KEY][CONFIG_GLACIER_BUCKET_KEY] is None:
+        event[EVENT_CONFIG_KEY][CONFIG_GLACIER_BUCKET_KEY] = event[EVENT_CONFIG_KEY].get(
+            CONFIG_GLACIER_BUCKET_KEY,
+            str(os.environ[OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY]),
+        )
 
     # Get number of days to keep before it sinks back down into glacier from S3
     try:
@@ -173,7 +179,7 @@ def task(
         )
 
     # Call the inner task to perform the work of restoring
-    return inner_task(
+    return inner_task(  # todo: Split 'event' into relevant properties.
         event, max_retries, retry_sleep_secs, retrieval_type, exp_days, db_queue_url
     )
 

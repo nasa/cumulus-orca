@@ -13,7 +13,8 @@
           "task_config": {
             "file-buckets": "{$.meta.collection.files}",
             "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
-            "buckets": "{$.meta.buckets}"
+            "buckets": "{$.meta.buckets}",
+            "collectionBucket": "{$.meta.collection.meta.orca_bucket}"
           }
         }
       },
@@ -52,7 +53,8 @@
           "task_config": {
             "glacier-bucket": "${orca_default_bucket}",
             "asyncOperationId": "{$.cumulus_meta.asyncOperationId}",
-            "multipart_chunksize_mb": "{$.meta.collection.meta.multipart_chunksize_mb}"
+            "multipart_chunksize_mb": "{$.meta.collection.meta.multipart_chunksize_mb}",
+            "collectionBucket": "{$.meta.collection.meta.orca_bucket}"
           }
         }
       },

@@ -13,6 +13,7 @@ from run_cumulus_task import run_cumulus_task
 
 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = 'multipart_chunksize_mb'
 CONFIG_EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
+CONFIG_COLLECTION_BUCKET_KEY = 'collectionBucket'
 
 FILE_FILENAME_KEY = "fileName"
 FILE_BUCKET_KEY = "bucket"
@@ -100,14 +101,16 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     #      - task input
     #      - collection configuration
     #      - default value in buckets
-    try:
-        default_bucket = os.environ.get('ORCA_DEFAULT_BUCKET', None)
-        if default_bucket is None or len(default_bucket) == 0:
-            raise KeyError('ORCA_DEFAULT_BUCKET environment variable is not set.')
-    except KeyError:
-        # TODO: Change this to a logging statement
-        print('ORCA_DEFAULT_BUCKET environment variable is not set.')
-        raise
+    default_bucket = config.get(CONFIG_COLLECTION_BUCKET_KEY, None)
+    if default_bucket is None:
+        try:
+            default_bucket = os.environ.get('ORCA_DEFAULT_BUCKET', None)
+            if default_bucket is None or len(default_bucket) == 0:
+                raise KeyError('ORCA_DEFAULT_BUCKET environment variable is not set.')
+        except KeyError:
+            # TODO: Change this to a logging statement
+            print('ORCA_DEFAULT_BUCKET environment variable is not set.')
+            raise
 
     multipart_chunksize_mb_str = config.get(CONFIG_MULTIPART_CHUNKSIZE_MB_KEY, None)
     if multipart_chunksize_mb_str is None:
