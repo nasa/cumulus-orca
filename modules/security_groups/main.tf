@@ -6,7 +6,7 @@ locals {
 
 ## Security Group Resources
 
-## vpc_postgres_ingress_all_egress - PostgreSQL security Group
+## vpc_postgres_ingress_all_egress - PostgreSQL Security Group
 ## ==============================================================================
 resource "aws_security_group" "vpc-postgres-ingress-all-egress" {
   ## OPTIONAL
@@ -20,6 +20,7 @@ resource "aws_security_group" "vpc-postgres-ingress-all-egress" {
     to_port   = "5432"
     protocol  = "TCP"
     self      = true
+    description = "Allow PostgreSQL ingress for ${var.prefix} Orca lambdas."
   }
 
   ## This is added to allow all egress for lambdas. See Terraform documentation
@@ -32,4 +33,16 @@ resource "aws_security_group" "vpc-postgres-ingress-all-egress" {
     ipv6_cidr_blocks = ["::/0"]
   }
 
+}
+
+## rds_allow_lambda_access - PostgreSQL Security Group Rule
+## ==============================================================================
+resource "aws_security_group_rule" "rds_allow_lambda_access" {
+  type                     = "ingress"
+  from_port                = 5432
+  to_port                  = 5432
+  protocol                 = "TCP"
+  description              = "Allows ${var.prefix} Orca lambda access."
+  source_security_group_id = aws_security_group.vpc-postgres-ingress-all-egress.id
+  security_group_id        = var.rds_security_group_id
 }
