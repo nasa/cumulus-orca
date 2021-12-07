@@ -2,8 +2,8 @@
 version: 2
 plan:
   project-key: ORCA
-  key: OIT
-  name: ORCA Integrator Test
+  key: OIC
+  name: ORCA Integrator Code
 stages:
 - Setup Env:
     manual: false
@@ -38,7 +38,6 @@ Set Pending Github Status:
       scripts:
       - |-
         set -ex
-
         ./bin/set_status.sh pending ${bamboo.resultsUrl} "CI Running"
       description: Set Pending Status
 Build and Test:
@@ -171,29 +170,24 @@ variables:
   ORCA_VERSION: 0.0.1
   RELEASE_FLAG: 'false'
   REPORT_BUILD_STATUS: 'true'
-  # SECRET_GITHUB_EMAIL: BAMSCRT@0@0@w8ZA1at34XmRzY8AZiTs2Btd/wEgI1rehKTfEjSvWxE=
-  # SECRET_GITHUB_TOKEN: BAMSCRT@0@0@fYmUEHQJZvYGyJkc7DZFi+9CuK993a9r0CzyHwfxN1KfkaUdh35mf5Gk2FfV3ZHa
-  # SECRET_GITHUB_USER: BAMSCRT@0@0@VkGOQemUQPEvmBYT3dDRgw==
 repositories:
-- orca-branch-259:
+- orca-develop: #this is created by CICD team from https://ci.earthdata.nasa.gov/. Contact Venku Jayanti with any issues.
     scope: global
 triggers:
 - polling:
-    period: '60'
+    period: '60' #time in seconds
 branches:
   create: for-new-branch
   delete:
     after-deleted-days: 7
     after-inactive-days: 30
   link-to-jira: true
-notifications: []
-labels: []
 other:
   concurrent-build-plugin: '1'
 ---
 version: 2
 plan:
-  key: ORCA-OIT
+  key: ORCA-OIC
 plan-permissions:
 - users:
   - bhazuka
