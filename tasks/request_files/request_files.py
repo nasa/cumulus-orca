@@ -151,17 +151,8 @@ def task(
     db_queue_url = str(os.environ[OS_ENVIRON_DB_QUEUE_URL_KEY])
 
     # Use the default glacier bucket if none is specified for the collection or otherwise given.
-    try:
-        orca_bucket = event[EVENT_CONFIG_KEY][CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY]
-    except KeyError:
-        LOGGER.warn(f"{CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY} is not set. Using {OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY} environment value.")
-        orca_bucket = None
-    if orca_bucket is None:
-        orca_bucket = event[EVENT_CONFIG_KEY].get(
-            CONFIG_GLACIER_BUCKET_KEY,
-            str(os.environ[OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY]),
-        )
-    event[EVENT_CONFIG_KEY][CONFIG_GLACIER_BUCKET_KEY] = orca_bucket  # todo: pass this in as parameter instead of adjusting config dictionary.
+    event[EVENT_CONFIG_KEY][CONFIG_GLACIER_BUCKET_KEY] = get_default_glacier_bucket_name(
+        event[EVENT_CONFIG_KEY])  # todo: pass this in as parameter instead of adjusting config dictionary.
 
     # Get number of days to keep before it sinks back down into glacier from S3
     try:
@@ -357,6 +348,20 @@ def inner_task(
         "granules": copied_granules,
         "asyncOperationId": event[EVENT_CONFIG_KEY][CONFIG_JOB_ID_KEY],
     }
+
+
+def get_default_glacier_bucket_name(config: Dict[str, Any]) -> str:
+    try:
+        default_bucket = config[CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY]
+        if default_bucket is not None:
+            return default_bucket
+    except KeyError:
+        LOGGER.warn(
+            f"{CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY} is not set.")
+    return config.get(
+        CONFIG_GLACIER_BUCKET_KEY,
+        str(os.environ[OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY]),
+    )
 
 
 def process_granule(
