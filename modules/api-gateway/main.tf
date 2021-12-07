@@ -1,11 +1,14 @@
 # Local Variables
 locals {
+  region = data.aws_region.current_region.name
   vpc_endpoint_id = var.vpc_endpoint_id != null ? var.vpc_endpoint_id : data.aws_vpc_endpoint.vpc_endpoint_id.id
 }
 
+data "aws_region" "current_region" {}
+
 data "aws_vpc_endpoint" "vpc_endpoint_id" {
   vpc_id       = var.vpc_id
-  service_name = "com.amazonaws.us-west-2.execute-api"
+  service_name = "com.amazonaws.${local.region}.execute-api"
 }
 
 # API Gateway- API for ORCA cumulus reconciliation
