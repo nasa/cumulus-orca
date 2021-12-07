@@ -139,7 +139,7 @@ Make sure the linked repository have permissions to create plans within given pr
 :::
 
 In order to run this YAML definition from github repo, user has to setup `Repository-stored Specs` on Bamboo CI/CD [website](https://ci.earthdata.nasa.gov/build/admin/create/newSpecs.action). From the Bamboo dashboard, Choose `Specs`->`Set up Specs repository` and then select `Build project` as `ORCA` and `Repository host` as `ORCA repo`.
-The next step is to create a `Webhook` on the source repository by going to the settings option so that Bamboo knows about new commits. Webhooks allow Github repositories to communicate with Bamboo. A webhook has been created for ORCA project `https://ci.earthdata.nasa.gov/rest/api/latest/repository/scan?repositoryId=375849190` which needs to be copied to the `webhook` section in cumulus-orca repo. Without adding webhook, Bamboo was not able to recognize the new Spec file added to the `cumulus-orca` repo. After discussion with team, a NASD ticket will need to be submitted in order for them to add the webhook. 
+The next step is to create a `Webhook` on the source repository by going to the settings option so that Bamboo knows about new commits. Webhooks allow Github repositories to communicate with Bamboo. A webhook has been created for ORCA project `https://ci.earthdata.nasa.gov/rest/api/latest/repository/scan?repositoryId=375849190` which needs to be copied to the `webhook` section in cumulus-orca repo. Without adding webhook, Bamboo was not able to recognize the new Spec file added to the `cumulus-orca` repo. Email `nasa-data@lists.arc.nasa.gov` to NASA Github admin team to make that change. More instructions can be found [here](https://github.com/nasa/instructions/blob/master/docs/INSTRUCTIONS.md#org-owners)
 :::important
  Webhooks must be triggered by HTTP POST method and the Content-Type header should be set to `application/json`.
 :::
@@ -153,7 +153,7 @@ Code for the prototype resides currently in this [branch](https://github.com/nas
 ## Future directions
 
 - Convert bamboo plans to YAML definition language and store under `cumulus-orca/bamboo-specs/bamboo.yaml`.
-- A NASD ticket will need to be submitted in order for them to add the webhook to the `cumulus-orca` repo.
+- In order to add the webhook to the `cumulus-orca` repo, email `nasa-data@lists.arc.nasa.gov` to NASA Github admin team to make that change. More instructions can be found [here](https://github.com/nasa/instructions/blob/master/docs/INSTRUCTIONS.md#org-owners).
 
 
 ##### References
