@@ -240,7 +240,7 @@ These settings can often be derived from the collection configuration in Cumulus
           "task_config": {
             "multipart_chunksize_mb": "{$.meta.collection.multipart_chunksize_mb"},
             "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
-            "orcaDefaultBucketOverride": "{$.meta.collection.meta.orca_default_bucket}"
+            "orcaDefaultBucketOverride": "{$.meta.collection.meta.orcaDefaultBucketOverride}"
           }
         }
       },

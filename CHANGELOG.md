@@ -27,7 +27,7 @@ and includes an additional section for migration notes.
 - *ORCA-227* Added modules/secretsmanager directory that contains terraform code for deploying AWS secretsmanager.
 - *ORCA-177* Added AWS API Gateway in modules/api_gateway/main.tf for the request_status_for_granule and request_status_for_job lambdas.
 - *ORCA-257* orca_catalog_reporting lambda now returns data from actual catalog.
-- *ORCA-151* copy_to_glacier and request_files now accept "orcaDefaultBucketOverride" which can be used on a per-collection basis. If desired, add "orcaDefaultBucketOverride": "{$.meta.collection.meta.orca_default_bucket}" to the workflow's task's task_config.
+- *ORCA-151* copy_to_glacier and request_files now accept "orcaDefaultBucketOverride" which can be used on a per-collection basis. If desired, add "orcaDefaultBucketOverride": "{$.meta.collection.meta.orcaDefaultBucketOverride}" to the workflow's task's task_config.
 
 ### Changed
 - *ORCA-297* Default database name is now PREFIX_orca

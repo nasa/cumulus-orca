@@ -259,7 +259,7 @@ step to anywhere after the MoveGranule step being sure to change the
                   "distribution_endpoint":"{$.meta.distribution_endpoint}",
                   "files_config":"{$.meta.collection.files}",
                   "multipart_chunksize_mb": "{$.meta.collection.multipart_chunksize_mb"},
-                  "orcaDefaultBucketOverride": "{$.meta.collection.meta.orca_default_bucket}"
+                  "orcaDefaultBucketOverride": "{$.meta.collection.meta.orcaDefaultBucketOverride}"
                   "fileStagingDir":"{$.meta.collection.url_path}",
                   "granuleIdExtraction":"{$.meta.collection.granuleIdExtraction}",
                   "collection":"{$.meta.collection}",

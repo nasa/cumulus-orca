@@ -154,7 +154,7 @@ def task(
     try:
         orca_bucket = event[EVENT_CONFIG_KEY][CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY]
     except KeyError:
-        LOGGER.warn(f"{CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY} is not set.")
+        LOGGER.warn(f"{CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY} is not set. Using {OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY} environment value.")
         orca_bucket = None
     if orca_bucket is None:
         orca_bucket = event[EVENT_CONFIG_KEY].get(

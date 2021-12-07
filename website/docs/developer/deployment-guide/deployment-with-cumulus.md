@@ -347,7 +347,7 @@ the ingest workflow.
          "task_config":{
             "multipart_chunksize_mb": "{$.meta.collection.meta.multipart_chunksize_mb}",
             "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
-            "orcaDefaultBucketOverride": "{$.meta.collection.meta.orca_default_bucket}"
+            "orcaDefaultBucketOverride": "{$.meta.collection.meta.orcaDefaultBucketOverride}"
             }
          }
       }
@@ -546,7 +546,7 @@ default setting set during ORCA installation. For more information, see the docu
     "granuleRecoveryWorkflow": "OrcaRecoveryWorkflow",
     "excludeFileTypes": [".cmr", ".xml", ".met"],
     "multipart_chunksize_mb": 400,
-    "orcaDefaultBucketOverride": "glacier"
+    "orcaDefaultBucketOverride": "prod_orca_worm"
   },
   ...
 }

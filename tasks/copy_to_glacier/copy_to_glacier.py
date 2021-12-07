@@ -106,7 +106,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
         default_bucket = config.get(CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY)
     except KeyError:
         # TODO: Change this to a logging statement
-        print(f"{CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY} is not set.")
+        print(f"{CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY} is not set. Using ORCA_DEFAULT_BUCKET environment value.")
         default_bucket = None
     if default_bucket is None:
         try:
