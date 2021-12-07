@@ -139,7 +139,7 @@ Make sure the linked repository have permissions to create plans within given pr
 :::
 
 In order to run this YAML definition from github repo, user has to setup `Repository-stored Specs` on Bamboo CI/CD [website](https://ci.earthdata.nasa.gov/build/admin/create/newSpecs.action). From the Bamboo dashboard, Choose `Specs`->`Set up Specs repository` and then select `Build project` as `ORCA` and `Repository host` as `ORCA repo`.
-The next step is to create a `Webhook` on the source repository by going to the settings option so that Bamboo knows about new commits. Webhooks allow Github repositories to communicate with Bamboo. A webhook has been created for ORCA project `https://ci.earthdata.nasa.gov/rest/api/latest/repository/scan?repositoryId=375849419` which needs to be copied to the `webhook` section in cumulus-orca repo. Without adding webhook, Bamboo was not able to recognize the new Spec file added to the `cumulus-orca` repo. Email `nasa-data@lists.arc.nasa.gov` to NASA Github admin team to make that change. More instructions can be found [here](https://github.com/nasa/instructions/blob/master/docs/INSTRUCTIONS.md#org-owners)
+The next step is to create a `Webhook` on the source repository by going to the settings option so that Bamboo knows about new commits. Webhooks allow Github repositories to communicate with Bamboo. A webhook has been created for [ORCA project](https://ci.earthdata.nasa.gov/browse/ORCA) in Bamboo which needs to be copied to the `webhook` section in cumulus-orca repo. The webhook can be seen under the `Specs` section on Bamboo CI website. Without adding webhook, Bamboo was not able to recognize the new Spec file added to the `cumulus-orca` repo. Email `nasa-data@lists.arc.nasa.gov` to NASA Github admin team to make that change. More instructions can be found [here](https://github.com/nasa/instructions/blob/master/docs/INSTRUCTIONS.md#org-owners)
 :::important
  Webhooks must be triggered by HTTP POST method and the Content-Type header should be set to `application/json`.
 :::
@@ -159,6 +159,6 @@ Code for the prototype resides currently in this [branch](https://github.com/nas
 ##### References
 - https://confluence.atlassian.com/bamboo/understanding-the-bamboo-ci-server-289277285.html
 - https://confluence.atlassian.com/bamboo/bamboo-yaml-specs-938844479.html
-https://docs.atlassian.com/bamboo-specs-docs/7.0.1/specs.html
+- https://docs.atlassian.com/bamboo-specs-docs/7.0.1/specs.html
 - https://ci.earthdata.nasa.gov/
 - https://confluence.atlassian.com/bamboo0800/enabling-webhooks-1077778691.html
