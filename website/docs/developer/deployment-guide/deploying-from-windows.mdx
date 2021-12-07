@@ -193,10 +193,11 @@ terraform apply
       ## ORCA Variables
       ## --------------------------
       ## REQUIRED
-      orca_default_bucket = var.orca_default_bucket
-      db_admin_password   = var.db_admin_password
-      db_user_password    = var.db_user_password
-      db_host_endpoint    = var.db_host_endpoint
+      orca_default_bucket   = var.orca_default_bucket
+      db_admin_password     = var.db_admin_password
+      db_user_password      = var.db_user_password
+      db_host_endpoint      = var.db_host_endpoint
+      rds_security_group_id = var.rds_security_group_id
       ## OPTIONAL
       db_admin_username                                    = "postgres"
       orca_ingest_lambda_memory_size                       = 2240
@@ -215,6 +216,7 @@ terraform apply
       status_update_queue_message_retention_time_seconds   = 777600
       ```
     - Set the value of `db_host_endpoint` to the `rds_endpoint` value output from the rds-cluster deployment.
+    - Set the value of `rds_security_group_id` to the `security_group_id` value output from the rds-cluster deployment.
     - You may change `source` to an alternate release. If local, make sure it is within the scope of the container.
 
 ```bash

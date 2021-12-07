@@ -25,6 +25,12 @@ variable "prefix" {
 }
 
 
+variable "rds_security_group_id" {
+  type        = string
+  description = "Cumulus' RDS Security Group's ID."
+}
+
+
 variable "system_bucket" {
   type        = string
   description = "Cumulus system bucket used to store internal files."
