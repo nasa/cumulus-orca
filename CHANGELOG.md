@@ -48,7 +48,6 @@ and includes an additional section for migration notes.
   - db_name (Defaults to PREFIX_orca.
     - Any `-` in `prefix` are replaced with `_` to follow [SQL Naming Conventions](https://www.postgresql.org/docs/7.0/syntax525.htm#:~:text=Names%20in%20SQL%20must%20begin,but%20they%20will%20be%20truncated.)
     - If preserving a database from a previous version of Orca, set to disaster_recovery.
-    - If the generated `db_name` would violate [SQL Naming Conventions](https://www.postgresql.org/docs/7.0/syntax525.htm#:~:text=Names%20in%20SQL%20must%20begin,but%20they%20will%20be%20truncated.), set `db_name` to PREFIX_orca but modify your prefix to remove forbidden characters.)
   - rds_security_group_id (Requires a value. Set in terraform.tfvars to the Security Group ID of your RDS Database's Security Group. Output from Cumulus' RDS module as `security_group_id`)
   - vpc_endpoint_id
 - Add the following ORCA required variables definition to your `variables.tf` or `orca_variables.tf` file.
