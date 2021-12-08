@@ -208,7 +208,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
             if should_exclude_files_type(file_filepath, exclude_file_types):
                 LOGGER.info(
                     "Excluding {file_filepath} from glacier backup because of collection configured {CONFIG_EXCLUDE_FILE_TYPES_KEY}.",
-                    file_name=file_filepath,
+                    file_filepath=file_filepath,
                     CONFIG_EXCLUDE_FILE_TYPES_KEY=CONFIG_EXCLUDE_FILE_TYPES_KEY,
                 )
                 continue
