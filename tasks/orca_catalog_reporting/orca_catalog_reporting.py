@@ -129,8 +129,8 @@ SELECT
             WHERE 
                 (:granule_id is null or cumulus_granule_id=ANY(:granule_id)) and 
                 (:collection_id is null or collection_id=ANY(:collection_id)) and 
-                (:start_timestamp is null or EXTRACT(EPOCH FROM date_trunc('milliseconds', cumulus_create_time) AT TIME ZONE 'UTC')::bigint * 1000>=:start_timestamp) and 
-                (:end_timestamp is null or EXTRACT(EPOCH FROM date_trunc('milliseconds', cumulus_create_time) AT TIME ZONE 'UTC')::bigint * 1000<:end_timestamp)
+                (:start_timestamp is null or (EXTRACT(EPOCH FROM date_trunc('milliseconds', cumulus_create_time) AT TIME ZONE 'UTC') * 1000)::bigint>=:start_timestamp) and 
+                (:end_timestamp is null or (EXTRACT(EPOCH FROM date_trunc('milliseconds', cumulus_create_time) AT TIME ZONE 'UTC') * 1000)::bigint<:end_timestamp)
             ORDER BY cumulus_granule_id
             ) as granule_ids
             JOIN
