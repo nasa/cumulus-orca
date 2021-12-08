@@ -94,7 +94,7 @@ variable "db_admin_username" {
 }
 
 variable "db_name" {
-  description = "The name of the Orca database within the RDS cluster. Default set to PREFIX_orca in main.tf."
+  description = "The name of the Orca database within the RDS cluster. Default set to PREFIX_orca in main.tf. Any `-` in `prefix` will be replaced with `_`."
   type        = string
   default     = null
 }
