@@ -3,7 +3,7 @@ version: 2
 plan:
   project-key: ORCA
   key: PP
-  name: ptototype plan
+  name: prototype plan
 stages:
 - Setup Env:
     manual: false
@@ -270,7 +270,7 @@ variables:
   RELEASE_FLAG: 'false'
   REPORT_BUILD_STATUS: 'true'
 repositories:
-- orca-branch: #this is created by CICD team from https://ci.earthdata.nasa.gov/. Contact Venku Jayanti with any issues.
+- orca branch: #this is created by CICD team from https://ci.earthdata.nasa.gov/. Contact Venku Jayanti with any issues.
     scope: global
 triggers:
 - polling:
