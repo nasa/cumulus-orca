@@ -56,18 +56,57 @@ Build and Test:
   - script:
       interpreter: SHELL
       scripts:
-      - "#!/bin/bash\n\nexport NODE_VERSION \"12.x\"\nexport TERRAFORM_VERSION \"0.13.6\"\n\n# Add NodeJS and Yarn repos & update package index\ncurl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash - \ncurl -sL https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo\nyum update -y\n\n# CLI utilities\nyum install -y gcc git make openssl unzip wget zip\n\n# Python 3 & NodeJS\nyum install -y python3-devel\nyum install -y nodejs yarn\n\n# AWS & Terraform\nyum install -y awscli\nwget \"https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip\"\nunzip *.zip\nchmod +x terraform\nmv terraform /usr/local/bin\n\n# SSM SessionManager plugin\ncurl \"https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_64bit/session-manager-plugin.rpm\" -o \"session-manager-plugin.rpm\"\nyum install -y session-manager-plugin.rpm\n\nbin/run_tests.sh"
+      - |-
+        #!/bin/bash
+        export NODE_VERSION "12.x"
+        export TERRAFORM_VERSION "0.13.6"
+
+        # Add NodeJS and Yarn repos & update package index
+        curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash - 
+        curl -sL https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo
+        yum update -y
+
+        # CLI utilities
+        yum install -y gcc git make openssl unzip wget zip
+
+        # Python 3 & NodeJS
+        yum install -y python3-devel
+        yum install -y nodejs yarn
+
+        # AWS & Terraform
+        yum install -y awscli
+        wget "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip"
+        unzip *.zip
+        chmod +x terraform
+        mv terraform /usr/local/bin
+
+        # SSM SessionManager plugin
+        curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_64bit/session-manager-plugin.rpm" -o "session-manager-plugin.rpm"
+        yum install -y session-manager-plugin.rpm
+        bin/run_tests.sh
       description: run all tests
   - script:
       interpreter: SHELL
       scripts:
-      - "#!/bin/bash\n## This script creates a file as a method of letting cleanup jobs know if it was reached, this allows github failure notifications to be sent if the job failed. \nset -e \ntouch success.flag"
+      - |-
+        #!/bin/bash
+        ## This script creates a file as a method of letting cleanup jobs know if it was reached, this allows github failure notifications to be sent if the job failed. 
+        set -e
+        touch success.flag
       description: Set Success Flag
   final-tasks:
   - script:
       interpreter: SHELL
       scripts:
-      - "#!/bin/bash\n## This script looks for the output from the \"Set job success flag\" script and reports failure to github if it is not present\nset -e\n\nif [[ ! -f success.flag ]]; then \n  echo \"Job failed, sending failure notice to github\"\n  ./bin/set_status.sh failure ${bamboo.resultsUrl} \"Testing Step Failed\"\nfi"
+      - |-
+        #!/bin/bash
+        ## This script looks for the output from the "Set job success flag" script and reports failure to github if it is not present
+        set -e
+
+        if [[ ! -f success.flag ]]; then 
+          echo "Job failed, sending failure notice to github"
+          ./bin/set_status.sh failure ${bamboo.resultsUrl} "Testing Step Failed"
+        fi
       description: report failure to github
 Python snyk:
   key: PS
@@ -94,7 +133,36 @@ Python snyk:
   - script:
       interpreter: SHELL
       scripts:
-      - "npm install snyk-to-html -g\ncat > scan.sh <<EOF\nsnyk test --json --file=\\$1 --package-manager=pip\nEOF\necho $bamboo_hello\nfind . -name requirement*.txt\nchmod +x scan.sh\nfor pom in $(find . -name requirements.txt);\ndo\n snyk test --json --file=$pom --package-manager=pip > report.json;\n filename=$(dirname $pom |  sed s'/\\.\\///')\n snyk-to-html -i report.json -o \"$filename.html\";\ndone \nchown -R 500:502 .\n\n#cat > scan.sh <<EOF\n#!/bin/bash\n#python3.7 -m venv snyk-test\n#source snyk-test/bin/activate\n#update-alternatives --install /tmp/snyk-test/bin/python  python /usr/local/bin/python3.7 1\n#pip install -r pip_requirements.txt\n#snyk test --json --package-manager=pip --file=data/mask_fill_pip_requirements.txt > pip_report.json\n#snyk-to-html -i pip_report.json -o pip_results.html\n#snyk test --json --file=data/mask_fill_conda_requirements.txt > conda_report.json\n#snyk-to-html -i conda_report.json -o conda_results.html\n#EOF\n#chmod +x scan.sh\n#docker run --rm -v $PWD:/tmp -w /tmp maven.earthdata.nasa.gov/snyk:py ./scan.sh"
+      - |-
+        npm install snyk-to-html -g
+        cat > scan.sh <<EOF
+        snyk test --json --file=\$1 --package-manager=pip
+        EOF
+        echo $bamboo_hello
+        find . -name requirement*.txt
+        chmod +x scan.sh
+        for pom in $(find . -name requirements.txt);
+        do
+        snyk test --json --file=$pom --package-manager=pip > report.json;
+        filename=$(dirname $pom |  sed s'/\.\///')
+        snyk-to-html -i report.json -o "$filename.html";
+        done 
+        chown -R 500:502 .
+
+        #cat > scan.sh <<EOF
+        #!/bin/bash
+        #python3.7 -m venv snyk-test
+        #source snyk-test/bin/activate
+        #update-alternatives --install /tmp/snyk-test/bin/python  python /usr/local/bin/python3.7 1
+        #pip install -r pip_requirements.txt
+        #snyk test --json --package-manager=pip --file=data/mask_fill_pip_requirements.txt > pip_report.json
+        #snyk-to-html -i pip_report.json -o pip_results.html
+        #snyk test --json --file=data/mask_fill_conda_requirements.txt > conda_report.json
+        #snyk-to-html -i conda_report.json -o conda_results.html
+        #EOF
+        #chmod +x scan.sh
+        #docker run --rm -v $PWD:/tmp -w /tmp maven.earthdata.nasa.gov/snyk:py ./scan.sh
+
       description: snyk scan
   artifacts:
   - name: html report
@@ -111,8 +179,12 @@ Report Status:
   - script:
       interpreter: SHELL
       scripts:
-      - "#!/bin/bash \nset -e\n./bin/set_status.sh success ${bamboo.resultsUrl} \"Build Success\""
+      - |-
+        #!/bin/bash 
+        set -e
+        ./bin/set_status.sh success ${bamboo.resultsUrl} "Build Success"
       description: Report Success to GitHub
+
 Release ORCA Documentation:
   key: ROD
   description: Releases ORCA Documentation to nasa.github.io/cumulus-orca
@@ -130,14 +202,11 @@ Release ORCA Documentation:
       scripts:
       - |-
         #!/bin/bash
-
         set -ex
-
         if [ ! -f "bin/create_release_documentation.sh" ]; then
           echo "ERROR: create_release_documentation.sh script does not exist!"
           exit 0
         fi
-
         bin/create_release_documentation.sh
       description: Run documentation release script
 Release ORCA Code:
@@ -152,7 +221,12 @@ Release ORCA Code:
   - script:
       interpreter: SHELL
       scripts:
-      - "## This script removes the \"source\" subdirectory which all jobs in this stage utilize.   This ensures that there's nothing left over from previous runs. \n## This is required as the checkout job does not interface correctly with docker in all instances. \n\nrm -rf ./source\nmkdir source\nrm -rf dist"
+      - |-
+        ## This script removes the "source" subdirectory which all jobs in this stage utilize.   This ensures that there's nothing left over from previous runs. 
+        ## This is required as the checkout job does not interface correctly with docker in all instances. 
+        rm -rf ./source
+        mkdir source
+        rm -rf dist
       description: Clean Working Directory
   - checkout:
       force-clean-build: 'false'
@@ -160,7 +234,36 @@ Release ORCA Code:
   - script:
       interpreter: SHELL
       scripts:
-      - "#!/bin/bash\n\nexport NODE_VERSION \"12.x\"\nexport TERRAFORM_VERSION \"0.13.6\"\n\n# Add NodeJS and Yarn repos & update package index\ncurl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash - \ncurl -sL https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo\nyum update -y\n\n# CLI utilities\nyum install -y gcc git make openssl unzip wget zip\n\n# Python 3 & NodeJS\nyum install -y python3-devel\nyum install -y nodejs yarn\n\n# AWS & Terraform\nyum install -y awscli\n#wget \"https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip\"\n#unzip *.zip\n#chmod +x terraform\n#mv terraform /usr/local/bin\n\n# SSM SessionManager plugin\ncurl \"https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_64bit/session-manager-plugin.rpm\" -o \"session-manager-plugin.rpm\"\nyum install -y session-manager-plugin.rpm\n\nset -ex\nbin/build_release_package.sh"
+      - |-
+        #!/bin/bash
+        export NODE_VERSION "12.x"
+        export TERRAFORM_VERSION "0.13.6"
+
+        # Add NodeJS and Yarn repos & update package index
+        curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash - 
+        curl -sL https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo
+        yum update -y
+
+        # CLI utilities
+        yum install -y gcc git make openssl unzip wget zip
+
+        # Python 3 & NodeJS
+        yum install -y python3-devel
+        yum install -y nodejs yarn
+
+        # AWS & Terraform
+        yum install -y awscli
+        #wget "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip"
+        #unzip *.zip
+        #chmod +x terraform
+        #mv terraform /usr/local/bin
+
+        # SSM SessionManager plugin
+        curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_64bit/session-manager-plugin.rpm" -o "session-manager-plugin.rpm"
+        yum install -y session-manager-plugin.rpm
+
+        set -ex
+        bin/build_release_package.sh
       description: Create Release Files and Release in GitHub
 variables:
   ORCA_VERSION: 0.0.1
@@ -181,7 +284,7 @@ branches:
 ---
 version: 2
 plan:
-  key: ORCA-OI
+  key: ORCA-PP
 plan-permissions:
 - users:
   - bhazuka
