@@ -1,6 +1,6 @@
 ## Local Variables
 locals {
-  db_name = var.db_name != null ? var.db_name : "${var.prefix}_orca"
+  db_name = var.db_name != null ? var.db_name : replace("${var.prefix}_orca", "-", "_")
   tags    = merge(var.tags, { Deployment = var.prefix }, { team = "ORCA", application = "ORCA" })
 }
 
