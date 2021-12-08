@@ -45,7 +45,9 @@ and includes an additional section for migration notes.
 - These are the new variables added:
   - db_admin_username (defaults to "postgres")
   - db_host_endpoint (Requires a value. Set in terraform.tfvars to your RDS Database's endpoint, similar to "PREFIX-cumulus-db.cluster-000000000000.us-west-2.rds.amazonaws.com")
-  - db_name (Defaults to PREFIX_orca. If preserving a database from a previous version of Orca, set to disaster_recovery.)
+  - db_name (Defaults to PREFIX_orca.
+    - Any `-` in `prefix` are replaced with `_` to follow [SQL Naming Conventions](https://www.postgresql.org/docs/7.0/syntax525.htm#:~:text=Names%20in%20SQL%20must%20begin,but%20they%20will%20be%20truncated.)
+    - If preserving a database from a previous version of Orca, set to disaster_recovery.
   - rds_security_group_id (Requires a value. Set in terraform.tfvars to the Security Group ID of your RDS Database's Security Group. Output from Cumulus' RDS module as `security_group_id`)
   - vpc_endpoint_id
 - Add the following ORCA required variables definition to your `variables.tf` or `orca_variables.tf` file.
