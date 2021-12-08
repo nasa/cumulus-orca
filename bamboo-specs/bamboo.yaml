@@ -2,8 +2,8 @@
 version: 2
 plan:
   project-key: ORCA
-  key: OIC
-  name: ORCA Integrator Code
+  key: OI
+  name: ORCA Integrator
 stages:
 - Setup Env:
     manual: false
@@ -181,7 +181,7 @@ branches:
 ---
 version: 2
 plan:
-  key: ORCA-OIC
+  key: ORCA-OI
 plan-permissions:
 - users:
   - bhazuka
