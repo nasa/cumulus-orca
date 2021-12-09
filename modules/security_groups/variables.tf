@@ -17,3 +17,9 @@ variable "tags" {
   type        = map(string)
   description = "Tags to be applied to resources that support tags."
 }
+
+
+variable "rds_security_group_id" {
+  type        = string
+  description = "Cumulus' RDS Security Group's ID."
+}

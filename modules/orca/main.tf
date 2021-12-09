@@ -18,6 +18,7 @@ module "orca_lambdas" {
   lambda_subnet_ids                 = var.lambda_subnet_ids
   permissions_boundary_arn          = var.permissions_boundary_arn
   prefix                            = var.prefix
+  rds_security_group_id             = var.rds_security_group_id
   vpc_id                            = var.vpc_id
   orca_sqs_staged_recovery_queue_id = module.orca_sqs.orca_sqs_staged_recovery_queue_id
   ## OPTIONAL

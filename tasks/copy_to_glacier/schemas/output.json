@@ -20,7 +20,7 @@
             "description": "The files to copy.",
             "type": "array",
             "items": {
-              "required": ["fileName", "bucket", "key", "source"],
+              "required": ["bucket", "key"],
               "properties": {
                 "fileName": {
                   "type": "string",
@@ -45,7 +45,7 @@
       }
     },
     "copied_to_glacier": {
-      "description": "The 'filename' property of each successfully copied file.",
+      "description": "Source URI of the file from origin s3 bucket.",
       "type": "array",
       "items": {
         "type": "string"

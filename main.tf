@@ -1,6 +1,6 @@
 ## Local Variables
 locals {
-  db_name = var.db_name != null ? var.db_name : "${var.prefix}_orca"
+  db_name = var.db_name != null ? var.db_name : replace("${var.prefix}_orca", "-", "_")
   tags    = merge(var.tags, { Deployment = var.prefix }, { team = "ORCA", application = "ORCA" })
 }
 
@@ -17,6 +17,7 @@ module "orca" {
   lambda_subnet_ids        = var.lambda_subnet_ids
   permissions_boundary_arn = var.permissions_boundary_arn
   prefix                   = var.prefix
+  rds_security_group_id    = var.rds_security_group_id
   system_bucket            = var.system_bucket
   vpc_id                   = var.vpc_id
   workflow_config          = var.workflow_config

@@ -4,7 +4,7 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
 
 ## Description
 
-The `copy_to_glacier` module is meant to be deployed as a lambda function that takes a Cumulus message, extracts a list of files, and copies those files from their current storage location into a staging/glacier ORCA S3 bucket.
+The `copy_to_glacier` module is meant to be deployed as a lambda function that takes a Cumulus message, extracts a list of files, and copies those files from their current storage location into a staging/glacier ORCA S3 bucket. It also sends additional metadata attributes to metadata SQS queue needed for Cumulus reconciliation.
 
 
 ## Exclude files by extension.
@@ -100,6 +100,7 @@ The `copy_to_glacier` lambda function expects that the input payload has a `gran
         "granuleId": "MOD09GQ.A2017025.h21v00.006.2017034065109",
         "dataType": "MOD09GQ",
         "version": "006",
+        "createdAt": 628021800000,
         "files": [
           {
             "fileName": "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
@@ -171,12 +172,13 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_glaci
       "granuleId": "MOD09GQ.A2017025.h21v00.006.2017034065109",
       "dataType": "MOD09GQ",
       "version": "006",
+      "createdAt": 628021800000,
       "files": [
         {
           "name": "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
           "path": "MOD09GQ/006",
           "size": 6,
-          "time": 1608318361000,
+          "time": 1608318366000,
           "bucket": "orca-sandbox-internal",
           "url_path": "MOD09GQ/006/",
           "type": "",
@@ -221,10 +223,11 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_glaci
 ## Configuration
 
 As part of the [Cumulus Message Adapter configuration](https://nasa.github.io/cumulus/docs/workflows/input_output#cma-configuration) 
-for `copy_to_glacier`, the `excludeFileTypes`, `multipart_chunksize_mb`, and `orcaDefaultBucketOverride` keys must be present under the 
+for `copy_to_glacier`, the `excludeFileTypes`, `multipart_chunksize_mb`, `providerId`, `executionId`, `collectionShortname`, `collectionVersion` and `orcaDefaultBucketOverride` keys must be present under the 
 `task_config` object as seen below. Per the [config schema](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/config.json), 
-the values of the keys are used the following ways. The `collection` key value should contain a meta 
-object with an optional `excludeFileTypes` key that is used to determine file patterns that should not be 
+the values of the keys are used the following ways. The `provider` key should contain an `id` key that returns the provider id from Cumulus. The `cumulus_meta` key should contain an `execution_name` key that returns the step function execution ID from AWS. 
+The `collection` key value should contain a `name` key and a `version` key that return the required collection shortname and collection version from Cumulus respectively.
+The `collection` key value should also contain a meta object with an optional `excludeFileTypes` key that is used to determine file patterns that should not be 
 sent to ORCA. The optional `multipart_chunksize_mb` is used to override the default setting for the lambda 
 s3 copy maximum multipart chunk size value when copying large files to ORCA.
 The optional `orcaDefaultBucketOverride` overrides the `ORCA_DEFAULT_BUCKET` set on deployment.
@@ -240,6 +243,10 @@ These settings can often be derived from the collection configuration in Cumulus
           "task_config": {
             "multipart_chunksize_mb": "{$.meta.collection.multipart_chunksize_mb"},
             "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
+            "providerId": "{$.meta.provider.id}",
+            "executionId": "{$.cumulus_meta.execution_name}",
+            "collectionShortname": "{$.meta.collection.name}",
+            "collectionVersion": "{$.meta.collection.version}",
             "orcaDefaultBucketOverride": "{$.meta.collection.meta.orcaDefaultBucketOverride}"
           }
         }
@@ -283,13 +290,13 @@ An example of a message is shown below:
 {
       "provider": {"providerId": "1234", "name": "LPCUmumulus"},
       "collection": {
-          "collectionId": "MOD14A1__061",
+          "collectionId": "MOD14A1___061",
           "shortname": "MOD14A1",
           "version": "061",
       },
       "granule": {
           "cumulusGranuleId": "MOD14A1.061.A23V45.2020235",
-          "cumulusCreateTime": "2020-01-01T23:00:00Z",
+          "cumulusCreateTime": "2020-01-01T23:00:00+00:00",
           "executionId": "f2fgh-356-789",
           "ingestTime": "2020-01-01T23:00:00Z",
           "lastUpdate": "2020-01-01T23:00:00Z",
@@ -327,7 +334,7 @@ DESCRIPTION
 
 FUNCTIONS
     copy_granule_between_buckets(source_bucket_name: str, source_key: str, destination_bucket: str, destination_key: str, multipart_chunksize_mb: int) -> None
-        Copies granule from source bucket to destination.
+        Copies granule from source bucket to destination. Also queries the destination_bucket to get additional metadata file info.
         Args:
             source_bucket_name: The name of the bucket in which the granule is currently located.
             source_key: source Granule path excluding s3://[bucket]/
@@ -335,8 +342,15 @@ FUNCTIONS
             destination_key: Destination granule path excluding s3://[bucket]/
             multipart_chunksize_mb: The maximum size of chunks to use when copying.
         Returns:
-            None
-    
+           A dictionary containing all the file metadata needed for reconciliation with Cumulus with the following keys:
+                  "cumulusArchiveLocation" (str): Cumulus S3 bucket where the file is stored in.
+                  "orcaArchiveLocation" (str): ORCA S3 Glacier bucket that the file object is stored in
+                  "keyPath" (str): Full AWS key path including file name of the file where the file resides in ORCA.
+                  "sizeInBytes" (str): Size of the object in bytes
+                  "version" (str): Latest version of the file in the S3 Glacier bucket
+                  "ingestTime" (str): Date and time the file was originally ingested into ORCA.
+                  "etag" (str): etag of the file object in the AWS S3 Glacier bucket.
+        
     handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any
         Lambda handler. Runs a cumulus task that
         Copies the files in {event}['input']
@@ -348,6 +362,7 @@ FUNCTIONS
                                                      archived to.
                 DEFAULT_MULTIPART_CHUNKSIZE_MB (int, required): The default maximum size of chunks to use when copying.
                                                                      Can be overridden by collection config.
+                METADATA_DB_QUEUE_URL (string, required): SQS URL of the metadata queue.
         
         Args:
             event: Event passed into the step from the aws workflow.
@@ -359,11 +374,11 @@ FUNCTIONS
         Returns:
             The result of the cumulus task. See schemas/output.json for more information.
     
-    should_exclude_files_type(granule_url: str, exclude_file_types: List[str]) -> bool
+    should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> bool
         Tests whether or not file is included in {excludeFileTypes} from copy to glacier.
         Args:
-            granule_url: s3 url of granule.
-            exclude_file_types: List of extensions to exclude in the backup
+            file_key: The key of the file within the s3 bucket.
+            exclude_file_types: List of extensions to exclude in the backup.
         Returns:
             True if file should be excluded from copy, False otherwise.
     
@@ -375,7 +390,8 @@ FUNCTIONS
                 ORCA_DEFAULT_BUCKET (string, required): Name of the default ORCA S3 Glacier bucket.
                     Overridden by bucket specified in config.
                 DEFAULT_MULTIPART_CHUNKSIZE_MB (int, optional): The default maximum size of chunks to use when copying.
-                    Can be overridden by collection config.
+                  Can be overridden by collection config.
+                METADATA_DB_QUEUE_URL (string, required): SQS URL of the metadata queue.
         
         Args:
             event: Passed through from {handler}
@@ -391,10 +407,47 @@ DATA
     CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY = 'orcaDefaultBucketOverride'
     Dict = typing.Dict
     FILE_BUCKET_KEY = 'bucket'
-    FILE_FILENAME_KEY = 'fileName'
     FILE_FILEPATH_KEY = 'key'
-    FILE_SOURCE_URI_KEY = 'source'
     List = typing.List
     MB = 1048576
     Union = typing.Union
+```
+
+## pydoc sqs_library.py
+
+```
+Help on sqs_library:
+NAME
+    sqs_library
+FUNCTIONS
+    post_to_metadata_queue(sqs_body: Dict[str, Any], metadata_queue_url: str,) -> None:
+        Posts metadata information to the metadata SQS queue.
+        Args:
+            sqs_body: A dictionary containing the metadata objects that will be sent to SQS.
+            metadata_queue_url: The metadata SQS queue URL defined by AWS.
+        Returns:
+            None
+    get_aws_region() -> str:
+        Gets AWS region variable from the runtime environment variable.
+        Args:
+            None
+        Returns:
+            The AWS region variable.
+        Raises:
+            Exception: Thrown if AWS region is empty or None.
+    
+    retry_error(max_retries: int, backoff_in_seconds: int, backoff_factor: int) -> Callable[[Callable[[], RT]], Callable[[], RT]]:
+        Decorator takes arguments to adjust number of retries and backoff strategy.
+        Args:
+            max_retries (int): number of times to retry in case of failure.
+            backoff_in_seconds (int): Number of seconds to sleep the first time through.
+            backoff_factor (int): Value of the factor used for backoff.
+DATA
+    Any = typing.Any
+    Callable = typing.Callable
+    Dict = typing.Dict
+    TypeVar = typing.TypeVar
+    MAX_RETRIES = 3
+    BACKOFF_FACTOR = 2
+    INITIAL_BACKOFF_IN_SECONDS = 1
 ```

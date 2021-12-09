@@ -132,6 +132,7 @@ First, run a `mv terraform.tfvars.example terraform.tfvars` to get a template `t
 * `db_admin_password` - Password for RDS database administrator authentication
 * `db_user_password` - Password for RDS database user authentication
 * `db_host_endpoint` - Database host endpoint to connect to.
+* `rds_security_group_id` - Cumulus' RDS Security Group's ID. Output as `security_group_id` from the rds-cluster deployment.
 
 **Optional:**
 * `db_admin_username` -  Username for RDS database administrator authentication.

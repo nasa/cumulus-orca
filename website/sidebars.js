@@ -66,7 +66,9 @@ module.exports = {
       'developer/research/research-reconciliation',
       'developer/research/research-AuroraServerless',
       'developer/research/research-graphql',
-      'developer/research/research-multipart-chunksize'
+      'developer/research/research-multipart-chunksize',
+      'developer/research/research-bamboo'
+
     ],
   },
   cookbook: {

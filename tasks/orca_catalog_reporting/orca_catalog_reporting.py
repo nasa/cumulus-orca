@@ -8,7 +8,6 @@ from fastjsonschema import JsonSchemaException
 from orca_shared.database import shared_db
 from orca_shared.database.shared_db import retry_operational_error
 from sqlalchemy import text
-from sqlalchemy.exc import DatabaseError
 from sqlalchemy.future import Engine
 
 LOGGER = CumulusLogger()
@@ -20,8 +19,8 @@ def task(
     provider_id: Union[None, List[str]],
     collection_id: Union[None, List[str]],
     granule_id: Union[None, List[str]],
-    start_timestamp: Union[None, str],
-    end_timestamp: str,
+    start_timestamp: Union[None, int],
+    end_timestamp: int,
     page_index: int,
     db_connect_info: Dict[str, str],
 ) -> Dict[str, Any]:
@@ -55,8 +54,8 @@ def query_db(
     provider_id: Union[None, List[str]],
     collection_id: Union[None, List[str]],
     granule_id: Union[None, List[str]],
-    start_timestamp: Union[None, str],
-    end_timestamp: str,
+    start_timestamp: Union[None, int],
+    end_timestamp: int,
     page_index: int,
 ) -> List[Dict[str, Any]]:
     """
@@ -93,16 +92,10 @@ def query_db(
                     "providerId": sql_result["provider_ids"],
                     "collectionId": sql_result["collection_id"],
                     "id": sql_result["cumulus_granule_id"],
-                    "createdAt": sql_result["cumulus_create_time"].strftime(
-                        "%Y-%m-%dT%H:%M:%S.%fZ"
-                    ),
+                    "createdAt": sql_result["cumulus_create_time"],
                     "executionId": sql_result["execution_id"],
-                    "ingestDate": sql_result["ingest_time"].strftime(
-                        "%Y-%m-%dT%H:%M:%S.%fZ"
-                    ),
-                    "lastUpdate": sql_result["last_update"].strftime(
-                        "%Y-%m-%dT%H:%M:%S.%fZ"
-                    ),
+                    "ingestDate": sql_result["ingest_time"],
+                    "lastUpdate": sql_result["last_update"],
                     "files": sql_result["files"],
                 }
             )
@@ -125,10 +118,10 @@ SELECT
                 granules.id,
                 granules.collection_id, 
                 granules.cumulus_granule_id, 
-                granules.cumulus_create_time, 
+                (EXTRACT(EPOCH FROM date_trunc('milliseconds', granules.cumulus_create_time) AT TIME ZONE 'UTC') * 1000)::bigint as cumulus_create_time, 
                 granules.execution_id, 
-                granules.ingest_time, 
-                granules.last_update
+                (EXTRACT(EPOCH FROM date_trunc('milliseconds', granules.ingest_time) AT TIME ZONE 'UTC') * 1000)::bigint as ingest_time, 
+                (EXTRACT(EPOCH FROM date_trunc('milliseconds', granules.last_update) AT TIME ZONE 'UTC') * 1000)::bigint as last_update
             FROM
             (SELECT DISTINCT
                 granules.cumulus_granule_id
@@ -136,8 +129,8 @@ SELECT
             WHERE 
                 (:granule_id is null or cumulus_granule_id=ANY(:granule_id)) and 
                 (:collection_id is null or collection_id=ANY(:collection_id)) and 
-                (:start_timestamp is null or cumulus_create_time>=:start_timestamp) and 
-                (:end_timestamp is null or cumulus_create_time<:end_timestamp)
+                (:start_timestamp is null or (EXTRACT(EPOCH FROM date_trunc('milliseconds', cumulus_create_time) AT TIME ZONE 'UTC') * 1000)::bigint>=:start_timestamp) and 
+                (:end_timestamp is null or (EXTRACT(EPOCH FROM date_trunc('milliseconds', cumulus_create_time) AT TIME ZONE 'UTC') * 1000)::bigint<:end_timestamp)
             ORDER BY cumulus_granule_id
             ) as granule_ids
             JOIN
@@ -201,7 +194,7 @@ def create_http_error_dict(
 
 
 def handler(
-    event: Dict[str, Any], context: Any
+    event: Dict[str, Union[str, int]], context: Any
 ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
     # noinspection SpellCheckingInspection
     """

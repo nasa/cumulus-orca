@@ -14,8 +14,9 @@ module "lambda_security_group" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  prefix = var.prefix
-  vpc_id = var.vpc_id
+  prefix                = var.prefix
+  rds_security_group_id = var.rds_security_group_id
+  vpc_id                = var.vpc_id
   ## OPTIONAL
   tags = local.tags
 }
