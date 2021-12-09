@@ -42,7 +42,7 @@
 					},
 					"multipart_chunksize_mb": {
 						"description": "The maximum size of chunks to use when copying.",
-						"type": "integer"
+						"type": ["integer", "null"]
 					},
 					"status_id": {
 						"description": "The status_id of the restoration of the file. May be 'pending' or 'failed'.",
