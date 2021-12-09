@@ -3,14 +3,11 @@ Name: test_orca_catalog_reporting_unit.py
 
 Description:  Unit tests for orca_catalog_reporting.py.
 """
-import datetime
 import random
 import unittest
 import uuid
 from http import HTTPStatus
 from unittest.mock import Mock, patch, MagicMock
-
-from dateutil.tz import UTC
 
 import orca_catalog_reporting
 
@@ -35,8 +32,8 @@ class TestOrcaCatalogReportingUnit(
         provider_id = [uuid.uuid4().__str__(), uuid.uuid4().__str__()]
         collection_id = [uuid.uuid4().__str__(), uuid.uuid4().__str__()]
         granule_id = [uuid.uuid4().__str__(), uuid.uuid4().__str__()]
-        start_timestamp = "2021-10-08T16:24:07.605323Z"
-        end_timestamp = "2021-10-08T16:24:07.605323Z"
+        start_timestamp = random.randint(0, 628021800000)
+        end_timestamp = random.randint(0, 628021800000)
 
         event = {
             "pageIndex": page_index,
@@ -54,10 +51,10 @@ class TestOrcaCatalogReportingUnit(
                     "providerId": [uuid.uuid4().__str__()],
                     "collectionId": uuid.uuid4().__str__(),
                     "id": uuid.uuid4().__str__(),
-                    "createdAt": "2021-10-08T16:24:07.605323Z",
+                    "createdAt": random.randint(0, 628021800000),
                     "executionId": uuid.uuid4().__str__(),
-                    "ingestDate": "2021-10-08T16:24:07.605323Z",
-                    "lastUpdate": "2021-10-08T16:24:07.605323Z",
+                    "ingestDate": random.randint(0, 628021800000),
+                    "lastUpdate": random.randint(0, 628021800000),
                     "files": [
                         {
                             "name": uuid.uuid4().__str__(),
@@ -101,7 +98,7 @@ class TestOrcaCatalogReportingUnit(
         Most properties default to null.
         """
         page_index = random.randint(0, 999)
-        end_timestamp = "2021-10-08T16:24:07.605323Z"
+        end_timestamp = random.randint(0, 628021800000)
 
         event = {"pageIndex": page_index, "endTimestamp": end_timestamp}
         context = Mock()
@@ -136,8 +133,8 @@ class TestOrcaCatalogReportingUnit(
         provider_id = [uuid.uuid4().__str__(), uuid.uuid4().__str__()]
         collection_id = [uuid.uuid4().__str__(), uuid.uuid4().__str__()]
         granule_id = [uuid.uuid4().__str__(), uuid.uuid4().__str__()]
-        start_timestamp = "2021-10-08T16:24:07.605323Z"
-        end_timestamp = "2021-10-08T16:24:07.605323Z"
+        start_timestamp = random.randint(0, 628021800000)
+        end_timestamp = random.randint(0, 628021800000)
 
         event = {
             "pageIndex": None,
@@ -175,7 +172,7 @@ class TestOrcaCatalogReportingUnit(
         provider_id = [uuid.uuid4().__str__(), uuid.uuid4().__str__()]
         collection_id = [uuid.uuid4().__str__(), uuid.uuid4().__str__()]
         granule_id = [uuid.uuid4().__str__(), uuid.uuid4().__str__()]
-        start_timestamp = "2021-10-08T16:24:07.605323Z"
+        start_timestamp = random.randint(0, 628021800000)
 
         event = {
             "pageIndex": page_index,
@@ -215,8 +212,8 @@ class TestOrcaCatalogReportingUnit(
             "providerId": [uuid.uuid4().__str__(), uuid.uuid4().__str__()],
             "collectionId": [uuid.uuid4().__str__(), uuid.uuid4().__str__()],
             "granuleId": [uuid.uuid4().__str__(), uuid.uuid4().__str__()],
-            "startTimestamp": "2021-10-08T16:24:07.605323Z",
-            "endTimestamp": "2021-10-08T16:24:07.605323Z",
+            "startTimestamp": random.randint(0, 628021800000),
+            "endTimestamp": random.randint(0, 628021800000),
         }
         context = Mock()
         mock_task.return_value = {
@@ -226,9 +223,9 @@ class TestOrcaCatalogReportingUnit(
                     "providerId": [uuid.uuid4().__str__()],
                     "collectionId": uuid.uuid4().__str__(),
                     "id": uuid.uuid4().__str__(),
-                    "createdAt": "2021-10-08T16:24:07.605323+00:00",
+                    "createdAt": 628021800000,
                     "executionId": uuid.uuid4().__str__(),
-                    "ingestDate": "2021-10-08T16:24:07.605323Z",
+                    "ingestDate": 628021800000,
                     "lastUpdate": "2021-10-08T16:24:07.605323Z",
                     "files": [
                         {
@@ -251,8 +248,7 @@ class TestOrcaCatalogReportingUnit(
             "InternalServerError",
             HTTPStatus.INTERNAL_SERVER_ERROR,
             context.aws_request_id,
-            "data.granules[0].createdAt must match pattern ^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0["
-            "1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]*)?Z",
+            "data.granules[0].lastUpdate must be integer",
         )
         self.assertEqual(mock_create_http_error_dict.return_value, result)
 
@@ -364,10 +360,10 @@ class TestOrcaCatalogReportingUnit(
         returned_provider_id = Mock()
         returned_collection_id = Mock()
         returned_granule_id = Mock()
-        returned_created_at = datetime.datetime(2020, 1, 3, 4, 6, 1, 1, tzinfo=UTC)
+        returned_created_at = random.randint(0, 628021800000)
         returned_execution_id = Mock()
-        returned_ingest_time = datetime.datetime(2020, 2, 2, 5, 5, 1, 1, tzinfo=UTC)
-        returned_last_update = datetime.datetime(2020, 3, 1, 6, 4, 1, 1, tzinfo=UTC)
+        returned_ingest_time = random.randint(0, 628021800000)
+        returned_last_update = random.randint(0, 628021800000)
         returned_files = Mock()
 
         returned_row0 = {
@@ -423,10 +419,10 @@ class TestOrcaCatalogReportingUnit(
                     "providerId": returned_provider_id,
                     "collectionId": returned_collection_id,
                     "id": returned_granule_id,
-                    "createdAt": "2020-01-03T04:06:01.000001Z",
+                    "createdAt": returned_created_at,
                     "executionId": returned_execution_id,
-                    "ingestDate": "2020-02-02T05:05:01.000001Z",
-                    "lastUpdate": "2020-03-01T06:04:01.000001Z",
+                    "ingestDate": returned_ingest_time,
+                    "lastUpdate": returned_last_update,
                     "files": returned_files,
                 }
             ],
