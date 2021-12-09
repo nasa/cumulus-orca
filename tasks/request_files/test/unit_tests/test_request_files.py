@@ -61,18 +61,22 @@ class TestRequestFiles(unittest.TestCase):
         os.environ.pop(request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY, None)
         os.environ.pop(request_files.OS_ENVIRON_DB_QUEUE_URL_KEY, None)
 
+    @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
-    def test_task_happy_path(self, mock_inner_task: MagicMock):
+    def test_task_happy_path(
+        self,
+        mock_inner_task: MagicMock,
+        mock_get_default_glacier_bucket_name: MagicMock,
+    ):
         """
         All variables present and valid.
         """
         job_id = uuid.uuid4().__str__()
-        glacier_bucket = uuid.uuid4().__str__()
+        config = {
+            request_files.CONFIG_JOB_ID_KEY: job_id,
+        }
         mock_event = {
-            request_files.EVENT_CONFIG_KEY: {
-                request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
-                request_files.CONFIG_JOB_ID_KEY: job_id,
-            },
+            request_files.EVENT_CONFIG_KEY: config,
         }
         max_retries = randint(0, 99)  # nosec
         retry_sleep_secs = uniform(0, 99)  # nosec
@@ -94,10 +98,11 @@ class TestRequestFiles(unittest.TestCase):
 
         request_files.task(mock_event, None)
 
+        mock_get_default_glacier_bucket_name.assert_called_once_with(config)
         mock_inner_task.assert_called_once_with(
             {
                 request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
+                    request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: mock_get_default_glacier_bucket_name.return_value,
                     request_files.CONFIG_JOB_ID_KEY: job_id,
                 },
             },
@@ -108,18 +113,23 @@ class TestRequestFiles(unittest.TestCase):
             db_queue_url,
         )
 
+    @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
-    def test_task_default_for_missing_max_retries(self, mock_inner_task: MagicMock):
+    def test_task_default_for_missing_max_retries(
+        self,
+        mock_inner_task: MagicMock,
+        mock_get_default_glacier_bucket_name: MagicMock,
+    ):
         """
         If max_retries missing, use default.
         """
         job_id = uuid.uuid4().__str__()
-        glacier_bucket = uuid.uuid4().__str__()
+        glacier_bucket = Mock()
+        config = {
+            request_files.CONFIG_JOB_ID_KEY: job_id,
+        }
         mock_event = {
-            request_files.EVENT_CONFIG_KEY: {
-                request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
-                request_files.CONFIG_JOB_ID_KEY: job_id,
-            },
+            request_files.EVENT_CONFIG_KEY: config,
         }
         retry_sleep_secs = uniform(0, 99)  # nosec
         retrieval_type = "Bulk"
@@ -137,10 +147,11 @@ class TestRequestFiles(unittest.TestCase):
 
         request_files.task(mock_event, None)
 
+        mock_get_default_glacier_bucket_name.assert_called_once_with(config)
         mock_inner_task.assert_called_once_with(
             {
                 request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
+                    request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: mock_get_default_glacier_bucket_name.return_value,
                     request_files.CONFIG_JOB_ID_KEY: job_id,
                 },
             },
@@ -151,18 +162,22 @@ class TestRequestFiles(unittest.TestCase):
             db_queue_url,
         )
 
+    @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
-    def test_task_default_for_missing_sleep_secs(self, mock_inner_task: MagicMock):
+    def test_task_default_for_missing_sleep_secs(
+        self,
+        mock_inner_task: MagicMock,
+        mock_get_default_glacier_bucket_name: MagicMock,
+    ):
         """
         If sleep_secs missing, use default.
         """
         job_id = uuid.uuid4().__str__()
-        glacier_bucket = uuid.uuid4().__str__()
+        config = {
+            request_files.CONFIG_JOB_ID_KEY: job_id,
+        }
         mock_event = {
-            request_files.EVENT_CONFIG_KEY: {
-                request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
-                request_files.CONFIG_JOB_ID_KEY: job_id,
-            },
+            request_files.EVENT_CONFIG_KEY: config,
         }
         max_retries = randint(0, 99)  # nosec
         retrieval_type = "Bulk"
@@ -180,10 +195,11 @@ class TestRequestFiles(unittest.TestCase):
 
         request_files.task(mock_event, None)
 
+        mock_get_default_glacier_bucket_name.assert_called_once_with(config)
         mock_inner_task.assert_called_once_with(
             {
                 request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
+                    request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: mock_get_default_glacier_bucket_name.return_value,
                     request_files.CONFIG_JOB_ID_KEY: job_id,
                 },
             },
@@ -194,18 +210,22 @@ class TestRequestFiles(unittest.TestCase):
             db_queue_url,
         )
 
+    @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
-    def test_task_default_for_missing_retrieval_type(self, mock_inner_task: MagicMock):
+    def test_task_default_for_missing_retrieval_type(
+        self,
+        mock_inner_task: MagicMock,
+        mock_get_default_glacier_bucket_name: MagicMock,
+    ):
         """
         If retrieval_type is missing, use default.
         """
         job_id = uuid.uuid4().__str__()
-        glacier_bucket = uuid.uuid4().__str__()
+        config = {
+            request_files.CONFIG_JOB_ID_KEY: job_id,
+        }
         mock_event = {
-            request_files.EVENT_CONFIG_KEY: {
-                request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
-                request_files.CONFIG_JOB_ID_KEY: job_id,
-            },
+            request_files.EVENT_CONFIG_KEY: config,
         }
         max_retries = randint(0, 99)  # nosec
         retry_sleep_secs = uniform(0, 99)  # nosec
@@ -225,10 +245,11 @@ class TestRequestFiles(unittest.TestCase):
 
         request_files.task(mock_event, None)
 
+        mock_get_default_glacier_bucket_name.assert_called_once_with(config)
         mock_inner_task.assert_called_once_with(
             {
                 request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
+                    request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: mock_get_default_glacier_bucket_name.return_value,
                     request_files.CONFIG_JOB_ID_KEY: job_id,
                 },
             },
@@ -239,18 +260,22 @@ class TestRequestFiles(unittest.TestCase):
             db_queue_url,
         )
 
+    @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
-    def test_task_default_for_bad_retrieval_type(self, mock_inner_task: MagicMock):
+    def test_task_default_for_bad_retrieval_type(
+        self,
+        mock_inner_task: MagicMock,
+        mock_get_default_glacier_bucket_name: MagicMock,
+    ):
         """
         If retrieval_type is invalid, use default.
         """
         job_id = uuid.uuid4().__str__()
-        glacier_bucket = uuid.uuid4().__str__()
+        config = {
+            request_files.CONFIG_JOB_ID_KEY: job_id,
+        }
         mock_event = {
-            request_files.EVENT_CONFIG_KEY: {
-                request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
-                request_files.CONFIG_JOB_ID_KEY: job_id,
-            },
+            request_files.EVENT_CONFIG_KEY: config,
         }
         max_retries = randint(0, 99)  # nosec
         retry_sleep_secs = uniform(0, 99)  # nosec
@@ -272,10 +297,11 @@ class TestRequestFiles(unittest.TestCase):
 
         request_files.task(mock_event, None)
 
+        mock_get_default_glacier_bucket_name.assert_called_once_with(config)
         mock_inner_task.assert_called_once_with(
             {
                 request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
+                    request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: mock_get_default_glacier_bucket_name.return_value,
                     request_files.CONFIG_JOB_ID_KEY: job_id,
                 },
             },
@@ -286,18 +312,22 @@ class TestRequestFiles(unittest.TestCase):
             db_queue_url,
         )
 
+    @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
-    def test_task_default_for_missing_exp_days(self, mock_inner_task: MagicMock):
+    def test_task_default_for_missing_exp_days(
+        self,
+        mock_inner_task: MagicMock,
+        mock_get_default_glacier_bucket_name: MagicMock,
+    ):
         """
         Uses default missing_exp_days if needed.
         """
         job_id = uuid.uuid4().__str__()
-        glacier_bucket = uuid.uuid4().__str__()
+        config = {
+            request_files.CONFIG_JOB_ID_KEY: job_id,
+        }
         mock_event = {
-            request_files.EVENT_CONFIG_KEY: {
-                request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
-                request_files.CONFIG_JOB_ID_KEY: job_id,
-            },
+            request_files.EVENT_CONFIG_KEY: config,
         }
         max_retries = randint(0, 99)  # nosec
         retry_sleep_secs = uniform(0, 99)  # nosec
@@ -315,10 +345,11 @@ class TestRequestFiles(unittest.TestCase):
 
         request_files.task(mock_event, None)
 
+        mock_get_default_glacier_bucket_name.assert_called_once_with(config)
         mock_inner_task.assert_called_once_with(
             {
                 request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
+                    request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: mock_get_default_glacier_bucket_name.return_value,
                     request_files.CONFIG_JOB_ID_KEY: job_id,
                 },
             },
@@ -329,17 +360,21 @@ class TestRequestFiles(unittest.TestCase):
             db_queue_url,
         )
 
+    @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
-    def test_task_job_id_missing_generates(self, mock_inner_task: MagicMock):
+    def test_task_job_id_missing_generates(
+        self,
+        mock_inner_task: MagicMock,
+        mock_get_default_glacier_bucket_name: MagicMock,
+    ):
         """
         If job_id missing, generates a new one.
         """
-        glacier_bucket = uuid.uuid4().__str__()
+        config = {
+            request_files.CONFIG_JOB_ID_KEY: None,
+        }
         mock_event = {
-            request_files.EVENT_CONFIG_KEY: {
-                request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
-                request_files.CONFIG_JOB_ID_KEY: None,
-            },
+            request_files.EVENT_CONFIG_KEY: config,
         }
         max_retries = randint(0, 99)  # nosec
         retry_sleep_secs = uniform(0, 99)  # nosec
@@ -363,58 +398,11 @@ class TestRequestFiles(unittest.TestCase):
         with patch.object(uuid, "uuid4", return_value=job_id):
             request_files.task(mock_event, None)
 
+        mock_get_default_glacier_bucket_name.assert_called_once_with(config)
         mock_inner_task.assert_called_once_with(
             {
                 request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
-                    request_files.CONFIG_JOB_ID_KEY: job_id.__str__(),
-                },
-            },
-            max_retries,
-            retry_sleep_secs,
-            retrieval_type,
-            exp_days,
-            db_queue_url,
-        )
-
-    @patch("request_files.inner_task")
-    def test_task_glacier_bucket_missing_uses_default(self, mock_inner_task: MagicMock):
-        """
-        If glacier_bucket is missing, use default from env.
-        """
-        job_id = uuid.uuid4().__str__()
-        glacier_bucket = uuid.uuid4().__str__()
-        mock_event = {
-            request_files.EVENT_CONFIG_KEY: {request_files.CONFIG_JOB_ID_KEY: job_id},
-        }
-        os.environ[
-            request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY
-        ] = glacier_bucket
-        max_retries = randint(0, 99)  # nosec
-        retry_sleep_secs = uniform(0, 99)  # nosec
-        retrieval_type = "Bulk"
-        exp_days = randint(0, 99)  # nosec
-        db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
-
-        os.environ["DB_QUEUE_URL"] = db_queue_url
-        os.environ[
-            request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY
-        ] = max_retries.__str__()
-        os.environ[
-            request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
-        ] = retry_sleep_secs.__str__()
-        os.environ[request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY] = retrieval_type
-        os.environ[
-            request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
-        ] = exp_days.__str__()
-
-        with patch.object(uuid, "uuid4", return_value=job_id):
-            request_files.task(mock_event, None)
-
-        mock_inner_task.assert_called_once_with(
-            {
-                request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
+                    request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: mock_get_default_glacier_bucket_name.return_value,
                     request_files.CONFIG_JOB_ID_KEY: job_id.__str__(),
                 },
             },
@@ -446,12 +434,12 @@ class TestRequestFiles(unittest.TestCase):
     @patch("request_files.object_exists")
     @patch("boto3.client")
     def test_inner_task_missing_files_do_not_halt(
-            self,
-            mock_boto3_client: MagicMock,
-            mock_object_exists: MagicMock,
-            mock_process_granule: MagicMock,
-            mock_sleep: MagicMock,
-            mock_create_status_for_job: MagicMock,
+        self,
+        mock_boto3_client: MagicMock,
+        mock_object_exists: MagicMock,
+        mock_process_granule: MagicMock,
+        mock_sleep: MagicMock,
+        mock_create_status_for_job: MagicMock,
     ):
         """
         A return of 'false' from object_exists should ignore the file and continue.
@@ -511,10 +499,14 @@ class TestRequestFiles(unittest.TestCase):
             "request_time": mock.ANY,
             "last_update": mock.ANY,
             "error_message": f"{missing_file_key} does not exist in {glacier_bucket} bucket",
-            "completion_time": mock.ANY
+            "completion_time": mock.ANY,
         }
 
-        expected_input_granule_files = [expected_file0_output, expected_missing_file_output, expected_file1_output]
+        expected_input_granule_files = [
+            expected_file0_output,
+            expected_missing_file_output,
+            expected_file1_output,
+        ]
         granule = {
             request_files.GRANULE_GRANULE_ID_KEY: granule_id,
             request_files.GRANULE_KEYS_KEY: [
@@ -529,9 +521,9 @@ class TestRequestFiles(unittest.TestCase):
         ] = expected_input_granule_files
         event = {
             request_files.EVENT_CONFIG_KEY: {
-                request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
+                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: glacier_bucket,
                 request_files.CONFIG_JOB_ID_KEY: job_id,
-                request_files.CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: collection_multipart_chunksize_mb
+                request_files.CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: collection_multipart_chunksize_mb,
             },
             request_files.EVENT_INPUT_KEY: {
                 request_files.INPUT_GRANULES_KEY: [granule]
@@ -545,7 +537,7 @@ class TestRequestFiles(unittest.TestCase):
 
         # noinspection PyUnusedLocal
         def object_exists_return_func(
-                input_s3_cli, input_glacier_bucket, input_file_key
+            input_s3_cli, input_glacier_bucket, input_file_key
         ):
             return input_file_key in [file_key_0, file_key_1]
 
@@ -581,14 +573,14 @@ class TestRequestFiles(unittest.TestCase):
                 "request_time": mock.ANY,
                 "last_update": mock.ANY,
                 "error_message": f"{missing_file_key} does not exist in {glacier_bucket} bucket",
-                "completion_time": mock.ANY
+                "completion_time": mock.ANY,
             },
             {
                 "success": False,
                 "filename": file_key_1,
                 "key_path": file_key_1,
                 "restore_destination": file_dest_bucket_1,
-                'multipart_chunksize_mb': collection_multipart_chunksize_mb,
+                "multipart_chunksize_mb": collection_multipart_chunksize_mb,
                 "status_id": OrcaStatus.PENDING.value,
                 "request_time": mock.ANY,
                 "last_update": mock.ANY,
@@ -1049,7 +1041,7 @@ class TestRequestFiles(unittest.TestCase):
         input_event = create_handler_event()
         expected_task_input = {
             "input": input_event["payload"],
-            "config": {"glacier-bucket": "podaac-sndbx-cumulus-glacier"},
+            "config": {request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "podaac-sndbx-cumulus-glacier"},
         }
         mock_task.return_value = {
             "granules": [
@@ -1093,7 +1085,7 @@ class TestRequestFiles(unittest.TestCase):
         input_event = {
             "input": {"granules": [{"granuleId": granule_id, "keys": files}]},
             "config": {
-                "glacier-bucket": "my-dr-fake-glacier-bucket",
+                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "my-dr-fake-glacier-bucket",
                 "asyncOperationId": uuid.uuid4().__str__(),
             },
         }
@@ -1231,7 +1223,7 @@ class TestRequestFiles(unittest.TestCase):
         input_event = {
             "input": {"granules": [{"granuleId": granule_id, "keys": [KEY1]}]},
             "config": {
-                "glacier-bucket": "my-dr-fake-glacier-bucket",
+                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "my-dr-fake-glacier-bucket",
                 "asyncOperationId": uuid.uuid4().__str__(),
             },
         }
@@ -1273,7 +1265,7 @@ class TestRequestFiles(unittest.TestCase):
                 ]
             },
             "config": {
-                "glacier-bucket": "my-bucket",
+                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "my-bucket",
                 "asyncOperationId": uuid.uuid4().__str__(),
             },
         }
@@ -1329,7 +1321,7 @@ class TestRequestFiles(unittest.TestCase):
         event = {
             "input": {"granules": [{"granuleId": granule_id, "keys": [KEY1]}]},
             "config": {
-                "glacier-bucket": "some_bucket",
+                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "some_bucket",
                 "asyncOperationId": uuid.uuid4().__str__(),
             },
         }
@@ -1348,7 +1340,7 @@ class TestRequestFiles(unittest.TestCase):
                             "key_path": FILE1,
                             "restore_destination": PROTECTED_BUCKET,
                             "success": True,
-                            'multipart_chunksize_mb': None,
+                            "multipart_chunksize_mb": None,
                             "status_id": 1,
                         },
                     ],
@@ -1397,7 +1389,7 @@ class TestRequestFiles(unittest.TestCase):
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
         event = {
             "config": {
-                "glacier-bucket": "some_bucket",
+                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "some_bucket",
                 "asyncOperationId": uuid.uuid4().__str__(),
             },
             "input": {"granules": [{"granuleId": granule_id, "keys": [KEY1]}]},
@@ -1417,7 +1409,7 @@ class TestRequestFiles(unittest.TestCase):
                             "key_path": FILE1,
                             "restore_destination": PROTECTED_BUCKET,
                             "success": True,
-                            'multipart_chunksize_mb': None,
+                            "multipart_chunksize_mb": None,
                             "status_id": 1,
                         },
                     ],
@@ -1463,7 +1455,7 @@ class TestRequestFiles(unittest.TestCase):
         """
         event = {
             "config": {
-                "glacier-bucket": "some_bucket",
+                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "some_bucket",
                 "asyncOperationId": uuid.uuid4().__str__(),
             },
             "input": {
@@ -1502,7 +1494,7 @@ class TestRequestFiles(unittest.TestCase):
             ],
         }
         exp_err = "One or more files failed to be requested from {bucket}.".format(
-            bucket=event["config"]["glacier-bucket"]
+            bucket=event["config"][request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY]
         )
         try:
             request_files.task(event, self.context)
@@ -1536,7 +1528,7 @@ class TestRequestFiles(unittest.TestCase):
 
         event = {
             "config": {
-                "glacier-bucket": "some_bucket",
+                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY:  "some_bucket",
                 "asyncOperationId": uuid.uuid4().__str__(),
             }
         }
@@ -1558,7 +1550,7 @@ class TestRequestFiles(unittest.TestCase):
             "recover_files": self.get_exp_files_3_errs(),
         }
         exp_err = "One or more files failed to be requested from {bucket}.".format(
-            bucket=event["config"]["glacier-bucket"]
+            bucket=event["config"][request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY]
         )
         try:
             request_files.task(event, self.context)
@@ -1630,7 +1622,7 @@ class TestRequestFiles(unittest.TestCase):
         """
         event = {
             "config": {
-                "glacier-bucket": "some_bucket",
+                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "some_bucket",
                 "asyncOperationId": uuid.uuid4().__str__(),
             }
         }
@@ -1661,7 +1653,7 @@ class TestRequestFiles(unittest.TestCase):
                         {
                             "filename": os.path.basename(FILE1),
                             "key_path": FILE1,
-                            'multipart_chunksize_mb': None,
+                            "multipart_chunksize_mb": None,
                             "restore_destination": PROTECTED_BUCKET,
                             "success": True,
                             "status_id": 1,
@@ -1670,7 +1662,7 @@ class TestRequestFiles(unittest.TestCase):
                             "error_message": "An error occurred (NoSuchBucket) when calling the restore_object operation: Unknown",
                             "filename": os.path.basename(FILE2),
                             "key_path": FILE2,
-                            'multipart_chunksize_mb': None,
+                            "multipart_chunksize_mb": None,
                             "restore_destination": PROTECTED_BUCKET,
                             "success": True,
                             "status_id": 1,
@@ -1717,7 +1709,7 @@ class TestRequestFiles(unittest.TestCase):
         input_event = {
             "input": {"granules": [{"granuleId": granule_id, "keys": files}]},
             "config": {
-                "glacier-bucket": "my-dr-fake-glacier-bucket",
+                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "my-dr-fake-glacier-bucket",
                 "asyncOperationId": uuid.uuid4().__str__(),
             },
         }
@@ -1790,6 +1782,77 @@ class TestRequestFiles(unittest.TestCase):
 
         self.assertEqual(exp_granules, result_value)
         mock_post_entry_to_queue.assert_called_once()
+
+    @patch.dict(
+        os.environ,
+        {
+            request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY: uuid.uuid4().__str__()
+        },
+        clear=True,
+    )
+    def test_get_default_glacier_bucket_name_returns_override_if_present(self):
+        bucket = Mock()
+        result = request_files.get_default_glacier_bucket_name(
+            {
+                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: bucket
+            }
+        )
+        self.assertEqual(bucket, result)
+
+    @patch.dict(
+        os.environ,
+        {
+            request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY: uuid.uuid4().__str__()
+        },
+        clear=True,
+    )
+    def test_get_default_glacier_bucket_name_returns_default_bucket_if_no_override(
+        self,
+    ):
+        bucket = os.environ[request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY]
+        result = request_files.get_default_glacier_bucket_name(
+            {}
+        )
+        self.assertEqual(bucket, result)
+
+    @patch.dict(
+        os.environ,
+        {
+            request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY: uuid.uuid4().__str__()
+        },
+        clear=True,
+    )
+    def test_get_default_glacier_bucket_name_returns_default_bucket_if_none_override(
+        self,
+    ):
+        bucket = os.environ[request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY]
+        result = request_files.get_default_glacier_bucket_name(
+            {
+                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: None,
+            }
+        )
+        self.assertEqual(bucket, result)
+
+    @patch.dict(
+        os.environ,
+        {
+            request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY: uuid.uuid4().__str__()
+        },
+        clear=True,
+    )
+    def test_get_default_glacier_bucket_name_returns_env_bucket_if_no_other(self):
+        bucket = os.environ[request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY]
+        result = request_files.get_default_glacier_bucket_name(
+            {request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: None}
+        )
+        self.assertEqual(bucket, result)
+
+    def test_no_bucket_raises_error(self):
+        os.environ.pop(request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY)
+        with self.assertRaises(KeyError) as cm:
+            request_files.get_default_glacier_bucket_name(
+                {request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: None}
+            )
 
 
 if __name__ == "__main__":

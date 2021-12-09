@@ -361,7 +361,8 @@ the ingest workflow.
             "providerId": "{$.meta.provider.id}",
             "executionId": "{$.cumulus_meta.execution_name}",
             "collectionShortname": "{$.meta.collection.name}",
-            "collectionVersion": "{$.meta.collection.version}"
+            "collectionVersion": "{$.meta.collection.version}",
+            "orcaDefaultBucketOverride": "{$.meta.collection.meta.orcaDefaultBucketOverride}"
             }
          }
       }
@@ -559,7 +560,8 @@ default setting set during ORCA installation. For more information, see the docu
   "meta": {
     "granuleRecoveryWorkflow": "OrcaRecoveryWorkflow",
     "excludeFileTypes": [".cmr", ".xml", ".met"],
-    "multipart_chunksize_mb": 400
+    "multipart_chunksize_mb": 400,
+    "orcaDefaultBucketOverride": "prod_orca_worm"
   },
   ...
 }

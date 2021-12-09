@@ -155,8 +155,8 @@ FUNCTIONS
                 Note that because we are using CumulusMessageAdapter, this may not directly correspond to Lambda input.
                 event: A dict with the following keys:
                     'config' (dict): A dict with the following keys:
-                        'glacier-bucket' (str): The name of the glacier bucket from which the files
-                        will be restored. Defaults to OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY
+                        'orcaDefaultBucketOverride' (str): The name of the glacier bucket from which the files
+                        will be restored.
                         'asyncOperationId' (str): The unique identifier used for tracking requests.
                     'input' (dict): A dict with the following keys:
                         'granules' (list(dict)): A list of dicts with the following keys:
@@ -242,8 +242,8 @@ FUNCTIONS
                 Note that because we are using CumulusMessageAdapter, this may not directly correspond to Lambda input.
                 event: A dict with the following keys:
                     'config' (dict): A dict with the following keys:
-                        'glacier-bucket' (str): The name of the glacier bucket from which the files
-                        will be restored.
+                        'orcaDefaultBucketOverride' (str): The name of the glacier bucket from which the files
+                        will be restored. Defaults to os.environ['ORCA_DEFAULT_BUCKET']
                         'job_id' (str): The unique identifier used for tracking requests. If not present, will be generated.
                     'input' (dict): A dict with the following keys:
                         'granules' (list(dict)): A list of dicts with the following keys:
@@ -281,10 +281,10 @@ FUNCTIONS
 
 DATA
     Any = typing.Any
-    COLLECTION_MULTIPART_CHUNKSIZE_MB_KEY = 'multipart_chunksize_mb'
     CONFIG_COLLECTION_KEY = 'collection'
-    CONFIG_GLACIER_BUCKET_KEY = 'glacier-bucket'
     CONFIG_JOB_ID_KEY = 'asyncOperationId'
+    CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = 'multipart_chunksize_mb'
+    CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY = 'orcaDefaultBucketOverride'
     DEFAULT_MAX_REQUEST_RETRIES = 2
     DEFAULT_RESTORE_EXPIRE_DAYS = 5
     DEFAULT_RESTORE_RETRIEVAL_TYPE = 'Standard'

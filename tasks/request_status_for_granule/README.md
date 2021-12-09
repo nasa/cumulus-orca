@@ -175,3 +175,42 @@ DATA
     OUTPUT_STATUS_KEY = 'status'
     Union = typing.Union
 ```
+
+## pydoc sqs_library.py
+
+```
+Help on sqs_library:
+NAME
+    sqs_library
+FUNCTIONS
+    post_to_metadata_queue(sqs_body: Dict[str, Any], metadata_queue_url: str,) -> None:
+        Posts metadata information to the metadata SQS queue.
+        Args:
+            sqs_body: A dictionary containing the metadata objects that will be sent to SQS.
+            metadata_queue_url: The metadata SQS queue URL defined by AWS.
+        Returns:
+            None
+    get_aws_region() -> str:
+        Gets AWS region variable from the runtime environment variable.
+        Args:
+            None
+        Returns:
+            The AWS region variable.
+        Raises:
+            Exception: Thrown if AWS region is empty or None.
+    
+    retry_error(max_retries: int, backoff_in_seconds: int, backoff_factor: int) -> Callable[[Callable[[], RT]], Callable[[], RT]]:
+        Decorator takes arguments to adjust number of retries and backoff strategy.
+        Args:
+            max_retries (int): number of times to retry in case of failure.
+            backoff_in_seconds (int): Number of seconds to sleep the first time through.
+            backoff_factor (int): Value of the factor used for backoff.
+DATA
+    Any = typing.Any
+    Callable = typing.Callable
+    Dict = typing.Dict
+    TypeVar = typing.TypeVar
+    MAX_RETRIES = 3
+    BACKOFF_FACTOR = 2
+    INITIAL_BACKOFF_IN_SECONDS = 1
+```

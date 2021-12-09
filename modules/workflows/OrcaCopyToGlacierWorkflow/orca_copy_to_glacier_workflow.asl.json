@@ -12,7 +12,8 @@
             "providerId": "{$.meta.provider.id}",
             "executionId": "{$.cumulus_meta.execution_name}",
             "collectionShortname": "{$.meta.collection.name}",
-            "collectionVersion": "{$.meta.collection.version}"
+            "collectionVersion": "{$.meta.collection.version}",
+            "orcaDefaultBucketOverride": "{$.meta.collection.meta.orcaDefaultBucketOverride}"
           }
         }
       },
