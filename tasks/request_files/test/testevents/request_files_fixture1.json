@@ -28,7 +28,7 @@
       "meta": {
         "response-endpoint": "arn:aws:sns:us-west-2:065089468788:providerResponseSNS",
         "granuleRecoveryWorkflow": "DrRecoveryWorkflow",
-        "glacier-bucket": "podaac-sndbx-cumulus-glacier"
+        "orcaDefaultBucketOverride": "podaac-sndbx-cumulus-glacier"
       }
     },
     "stack": "lab-cumulus",
@@ -82,7 +82,7 @@
       }
     },
     "request_files": {
-      "glacier-bucket": "{{$.meta.collection.meta.glacier-bucket}}"
+      "orcaDefaultBucketOverride": "{{$.meta.collection.meta.orcaDefaultBucketOverride}}"
     },
     "WorkflowFailed": {},
     "StopStatus": {

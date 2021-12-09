@@ -72,9 +72,7 @@ class TestRequestFiles(unittest.TestCase):
         All variables present and valid.
         """
         job_id = uuid.uuid4().__str__()
-        glacier_bucket = Mock()
         config = {
-            request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
             request_files.CONFIG_JOB_ID_KEY: job_id,
         }
         mock_event = {
@@ -104,7 +102,7 @@ class TestRequestFiles(unittest.TestCase):
         mock_inner_task.assert_called_once_with(
             {
                 request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_GLACIER_BUCKET_KEY: mock_get_default_glacier_bucket_name.return_value,
+                    request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: mock_get_default_glacier_bucket_name.return_value,
                     request_files.CONFIG_JOB_ID_KEY: job_id,
                 },
             },
@@ -128,7 +126,6 @@ class TestRequestFiles(unittest.TestCase):
         job_id = uuid.uuid4().__str__()
         glacier_bucket = Mock()
         config = {
-            request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
             request_files.CONFIG_JOB_ID_KEY: job_id,
         }
         mock_event = {
@@ -154,7 +151,7 @@ class TestRequestFiles(unittest.TestCase):
         mock_inner_task.assert_called_once_with(
             {
                 request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_GLACIER_BUCKET_KEY: mock_get_default_glacier_bucket_name.return_value,
+                    request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: mock_get_default_glacier_bucket_name.return_value,
                     request_files.CONFIG_JOB_ID_KEY: job_id,
                 },
             },
@@ -176,9 +173,7 @@ class TestRequestFiles(unittest.TestCase):
         If sleep_secs missing, use default.
         """
         job_id = uuid.uuid4().__str__()
-        glacier_bucket = Mock()
         config = {
-            request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
             request_files.CONFIG_JOB_ID_KEY: job_id,
         }
         mock_event = {
@@ -204,7 +199,7 @@ class TestRequestFiles(unittest.TestCase):
         mock_inner_task.assert_called_once_with(
             {
                 request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_GLACIER_BUCKET_KEY: mock_get_default_glacier_bucket_name.return_value,
+                    request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: mock_get_default_glacier_bucket_name.return_value,
                     request_files.CONFIG_JOB_ID_KEY: job_id,
                 },
             },
@@ -226,9 +221,7 @@ class TestRequestFiles(unittest.TestCase):
         If retrieval_type is missing, use default.
         """
         job_id = uuid.uuid4().__str__()
-        glacier_bucket = Mock()
         config = {
-            request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
             request_files.CONFIG_JOB_ID_KEY: job_id,
         }
         mock_event = {
@@ -256,7 +249,7 @@ class TestRequestFiles(unittest.TestCase):
         mock_inner_task.assert_called_once_with(
             {
                 request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_GLACIER_BUCKET_KEY: mock_get_default_glacier_bucket_name.return_value,
+                    request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: mock_get_default_glacier_bucket_name.return_value,
                     request_files.CONFIG_JOB_ID_KEY: job_id,
                 },
             },
@@ -278,9 +271,7 @@ class TestRequestFiles(unittest.TestCase):
         If retrieval_type is invalid, use default.
         """
         job_id = uuid.uuid4().__str__()
-        glacier_bucket = Mock()
         config = {
-            request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
             request_files.CONFIG_JOB_ID_KEY: job_id,
         }
         mock_event = {
@@ -310,7 +301,7 @@ class TestRequestFiles(unittest.TestCase):
         mock_inner_task.assert_called_once_with(
             {
                 request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_GLACIER_BUCKET_KEY: mock_get_default_glacier_bucket_name.return_value,
+                    request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: mock_get_default_glacier_bucket_name.return_value,
                     request_files.CONFIG_JOB_ID_KEY: job_id,
                 },
             },
@@ -332,9 +323,7 @@ class TestRequestFiles(unittest.TestCase):
         Uses default missing_exp_days if needed.
         """
         job_id = uuid.uuid4().__str__()
-        glacier_bucket = Mock()
         config = {
-            request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
             request_files.CONFIG_JOB_ID_KEY: job_id,
         }
         mock_event = {
@@ -360,7 +349,7 @@ class TestRequestFiles(unittest.TestCase):
         mock_inner_task.assert_called_once_with(
             {
                 request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_GLACIER_BUCKET_KEY: mock_get_default_glacier_bucket_name.return_value,
+                    request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: mock_get_default_glacier_bucket_name.return_value,
                     request_files.CONFIG_JOB_ID_KEY: job_id,
                 },
             },
@@ -381,9 +370,7 @@ class TestRequestFiles(unittest.TestCase):
         """
         If job_id missing, generates a new one.
         """
-        glacier_bucket = Mock()
         config = {
-            request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
             request_files.CONFIG_JOB_ID_KEY: None,
         }
         mock_event = {
@@ -415,7 +402,7 @@ class TestRequestFiles(unittest.TestCase):
         mock_inner_task.assert_called_once_with(
             {
                 request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_GLACIER_BUCKET_KEY: mock_get_default_glacier_bucket_name.return_value,
+                    request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: mock_get_default_glacier_bucket_name.return_value,
                     request_files.CONFIG_JOB_ID_KEY: job_id.__str__(),
                 },
             },
@@ -534,7 +521,7 @@ class TestRequestFiles(unittest.TestCase):
         ] = expected_input_granule_files
         event = {
             request_files.EVENT_CONFIG_KEY: {
-                request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
+                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: glacier_bucket,
                 request_files.CONFIG_JOB_ID_KEY: job_id,
                 request_files.CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: collection_multipart_chunksize_mb,
             },
@@ -1054,7 +1041,7 @@ class TestRequestFiles(unittest.TestCase):
         input_event = create_handler_event()
         expected_task_input = {
             "input": input_event["payload"],
-            "config": {"glacier-bucket": "podaac-sndbx-cumulus-glacier"},
+            "config": {request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "podaac-sndbx-cumulus-glacier"},
         }
         mock_task.return_value = {
             "granules": [
@@ -1098,7 +1085,7 @@ class TestRequestFiles(unittest.TestCase):
         input_event = {
             "input": {"granules": [{"granuleId": granule_id, "keys": files}]},
             "config": {
-                "glacier-bucket": "my-dr-fake-glacier-bucket",
+                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "my-dr-fake-glacier-bucket",
                 "asyncOperationId": uuid.uuid4().__str__(),
             },
         }
@@ -1236,7 +1223,7 @@ class TestRequestFiles(unittest.TestCase):
         input_event = {
             "input": {"granules": [{"granuleId": granule_id, "keys": [KEY1]}]},
             "config": {
-                "glacier-bucket": "my-dr-fake-glacier-bucket",
+                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "my-dr-fake-glacier-bucket",
                 "asyncOperationId": uuid.uuid4().__str__(),
             },
         }
@@ -1278,7 +1265,7 @@ class TestRequestFiles(unittest.TestCase):
                 ]
             },
             "config": {
-                "glacier-bucket": "my-bucket",
+                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "my-bucket",
                 "asyncOperationId": uuid.uuid4().__str__(),
             },
         }
@@ -1334,7 +1321,7 @@ class TestRequestFiles(unittest.TestCase):
         event = {
             "input": {"granules": [{"granuleId": granule_id, "keys": [KEY1]}]},
             "config": {
-                "glacier-bucket": "some_bucket",
+                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "some_bucket",
                 "asyncOperationId": uuid.uuid4().__str__(),
             },
         }
@@ -1402,7 +1389,7 @@ class TestRequestFiles(unittest.TestCase):
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
         event = {
             "config": {
-                "glacier-bucket": "some_bucket",
+                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "some_bucket",
                 "asyncOperationId": uuid.uuid4().__str__(),
             },
             "input": {"granules": [{"granuleId": granule_id, "keys": [KEY1]}]},
@@ -1468,7 +1455,7 @@ class TestRequestFiles(unittest.TestCase):
         """
         event = {
             "config": {
-                "glacier-bucket": "some_bucket",
+                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "some_bucket",
                 "asyncOperationId": uuid.uuid4().__str__(),
             },
             "input": {
@@ -1507,7 +1494,7 @@ class TestRequestFiles(unittest.TestCase):
             ],
         }
         exp_err = "One or more files failed to be requested from {bucket}.".format(
-            bucket=event["config"]["glacier-bucket"]
+            bucket=event["config"][request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY]
         )
         try:
             request_files.task(event, self.context)
@@ -1541,7 +1528,7 @@ class TestRequestFiles(unittest.TestCase):
 
         event = {
             "config": {
-                "glacier-bucket": "some_bucket",
+                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY:  "some_bucket",
                 "asyncOperationId": uuid.uuid4().__str__(),
             }
         }
@@ -1563,7 +1550,7 @@ class TestRequestFiles(unittest.TestCase):
             "recover_files": self.get_exp_files_3_errs(),
         }
         exp_err = "One or more files failed to be requested from {bucket}.".format(
-            bucket=event["config"]["glacier-bucket"]
+            bucket=event["config"][request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY]
         )
         try:
             request_files.task(event, self.context)
@@ -1635,7 +1622,7 @@ class TestRequestFiles(unittest.TestCase):
         """
         event = {
             "config": {
-                "glacier-bucket": "some_bucket",
+                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "some_bucket",
                 "asyncOperationId": uuid.uuid4().__str__(),
             }
         }
@@ -1722,7 +1709,7 @@ class TestRequestFiles(unittest.TestCase):
         input_event = {
             "input": {"granules": [{"granuleId": granule_id, "keys": files}]},
             "config": {
-                "glacier-bucket": "my-dr-fake-glacier-bucket",
+                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "my-dr-fake-glacier-bucket",
                 "asyncOperationId": uuid.uuid4().__str__(),
             },
         }
@@ -1807,8 +1794,7 @@ class TestRequestFiles(unittest.TestCase):
         bucket = Mock()
         result = request_files.get_default_glacier_bucket_name(
             {
-                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: bucket,
-                request_files.CONFIG_GLACIER_BUCKET_KEY: Mock(),
+                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: bucket
             }
         )
         self.assertEqual(bucket, result)
@@ -1823,9 +1809,9 @@ class TestRequestFiles(unittest.TestCase):
     def test_get_default_glacier_bucket_name_returns_default_bucket_if_no_override(
         self,
     ):
-        bucket = Mock()
+        bucket = os.environ[request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY]
         result = request_files.get_default_glacier_bucket_name(
-            {request_files.CONFIG_GLACIER_BUCKET_KEY: bucket}
+            {}
         )
         self.assertEqual(bucket, result)
 
@@ -1839,11 +1825,10 @@ class TestRequestFiles(unittest.TestCase):
     def test_get_default_glacier_bucket_name_returns_default_bucket_if_none_override(
         self,
     ):
-        bucket = Mock()
+        bucket = os.environ[request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY]
         result = request_files.get_default_glacier_bucket_name(
             {
                 request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: None,
-                request_files.CONFIG_GLACIER_BUCKET_KEY: bucket,
             }
         )
         self.assertEqual(bucket, result)

@@ -39,9 +39,6 @@ CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY = "orcaDefaultBucketOverride"
 
 INPUT_GRANULES_KEY = "granules"
 
-CONFIG_GLACIER_BUCKET_KEY = (
-    "glacier-bucket"  # todo: Rename. This ONE property uses '-' instead of '_'
-)
 CONFIG_JOB_ID_KEY = "asyncOperationId"
 CONFIG_COLLECTION_KEY = "collection"
 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = "multipart_chunksize_mb"
@@ -76,8 +73,8 @@ def task(
             Note that because we are using CumulusMessageAdapter, this may not directly correspond to Lambda input.
             event: A dict with the following keys:
                 'config' (dict): A dict with the following keys:
-                    'glacier-bucket' (str): The name of the glacier bucket from which the files
-                    will be restored.
+                    'orcaDefaultBucketOverride' (str): The name of the glacier bucket from which the files
+                    will be restored. Defaults to os.environ['ORCA_DEFAULT_BUCKET']
                     'job_id' (str): The unique identifier used for tracking requests. If not present, will be generated.
                 'input' (dict): A dict with the following keys:
                     'granules' (list(dict)): A list of dicts with the following keys:
@@ -152,7 +149,7 @@ def task(
 
     # Use the default glacier bucket if none is specified for the collection or otherwise given.
     event[EVENT_CONFIG_KEY][
-        CONFIG_GLACIER_BUCKET_KEY
+        CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY
     ] = get_default_glacier_bucket_name(
         event[EVENT_CONFIG_KEY]
     )  # todo: pass this in as parameter instead of adjusting config dictionary.
@@ -198,8 +195,8 @@ def inner_task(
             Note that because we are using CumulusMessageAdapter, this may not directly correspond to Lambda input.
             event: A dict with the following keys:
                 'config' (dict): A dict with the following keys:
-                    'glacier-bucket' (str): The name of the glacier bucket from which the files
-                    will be restored. Defaults to OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY
+                    'orcaDefaultBucketOverride' (str): The name of the glacier bucket from which the files
+                    will be restored.
                     'asyncOperationId' (str): The unique identifier used for tracking requests.
                 'input' (dict): A dict with the following keys:
                     'granules' (list(dict)): A list of dicts with the following keys:
@@ -233,10 +230,10 @@ def inner_task(
     """
     # Get the glacier bucket from the event
     try:
-        glacier_bucket = event[EVENT_CONFIG_KEY][CONFIG_GLACIER_BUCKET_KEY]
+        glacier_bucket = event[EVENT_CONFIG_KEY][CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY]
     except KeyError:
         raise RestoreRequestError(
-            f"request: {event} does not contain a config value for glacier-bucket"
+            f"request: {event} does not contain a config value for {CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY}"
         )
 
     # Get the collection's multipart_chunksize from the event.
@@ -362,10 +359,7 @@ def get_default_glacier_bucket_name(config: Dict[str, Any]) -> str:
             return default_bucket
     except KeyError:
         LOGGER.warn(f"{CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY} is not set.")
-    return config.get(
-        CONFIG_GLACIER_BUCKET_KEY,
-        str(os.environ[OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY]),
-    )
+    return str(os.environ[OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY])
 
 
 def process_granule(
