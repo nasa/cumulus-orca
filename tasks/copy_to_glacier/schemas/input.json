@@ -10,11 +10,15 @@
       "description": "A list of objects representing individual files to copy.",
       "type": "array",
       "items": {
-        "required": ["granuleId", "files"],
+        "required": ["granuleId", "createdAt", "files"],
         "properties": {
           "granuleId": {
             "description": "The granule's ID.",
             "type": "string"
+          },
+          "createdAt": {
+            "description": "The time, in milliseconds since 1 January 1970 UTC, data was originally ingested into Cumulus.",
+            "type": "integer"
           },
           "files": {
             "description": "The files to copy.",

@@ -10,7 +10,7 @@ BEGIN
     CREATE TABLE IF NOT EXISTS providers
     (
       provider_id text NOT NULL
-    , name        text NOT NULL
+    , name        text
     , CONSTRAINT PK_providers PRIMARY KEY(provider_id)
     );
 

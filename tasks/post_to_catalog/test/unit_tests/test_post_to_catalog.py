@@ -75,7 +75,7 @@ class TestPostToDatabase(
         """
         provider = {
             "providerId": uuid.uuid4().__str__(),
-            "name": uuid.uuid4().__str__(),
+            "name": None,
         }
         collection = {
             "collectionId": uuid.uuid4().__str__(),
@@ -95,6 +95,8 @@ class TestPostToDatabase(
                     "orcaArchiveLocation": uuid.uuid4().__str__(),
                     "keyPath": uuid.uuid4().__str__(),
                     "sizeInBytes": random.randint(0, 10000),
+                    "hash": uuid.uuid4().__str__(),
+                    "hashType": uuid.uuid4().__str__(),
                     "version": uuid.uuid4().__str__(),
                     "ingestTime": datetime.now(timezone.utc).isoformat(),
                     "etag": uuid.uuid4().__str__(),
@@ -105,6 +107,8 @@ class TestPostToDatabase(
                     "orcaArchiveLocation": uuid.uuid4().__str__(),
                     "keyPath": uuid.uuid4().__str__(),
                     "sizeInBytes": random.randint(0, 10000),
+                    "hash": None,
+                    "hashType": None,
                     "version": uuid.uuid4().__str__(),
                     "ingestTime": datetime.now(timezone.utc).isoformat(),
                     "etag": "etag1",
@@ -207,6 +211,8 @@ class TestPostToDatabase(
             "orcaArchiveLocation": uuid.uuid4().__str__(),
             "keyPath": uuid.uuid4().__str__(),
             "sizeInBytes": random.randint(0, 10000),
+            "hash": None,
+            "hashType": None,
             "version": uuid.uuid4().__str__(),
             "ingestTime": datetime.now(timezone.utc).isoformat(),
             "etag": uuid.uuid4().__str__(),
@@ -297,7 +303,7 @@ class TestPostToDatabase(
                             "orca_archive_location": file1["orcaArchiveLocation"],
                             "key_path": file1["keyPath"],
                             "size_in_bytes": file1["sizeInBytes"],
-                            "hash": None,  # Missing hash info defaults to None
+                            "hash": None,  # None is a valid value.
                             "hash_type": None,
                             "version": file1["version"],
                             "ingest_time": file1["ingestTime"],

@@ -26,9 +26,17 @@
                   "type": "string",
                   "description": "Name of file (e.g. file.txt)."
                 },
+                "bucket": {
+                  "type": "string",
+                  "description": "Name of the Bucket where file is archived in S3."
+                },
                 "key": {
                   "type": "string",
                   "description": "S3 Key for archived file."
+                },
+                "source": {
+                  "type": "string",
+                  "description": "Source URI of the file from origin system (e.g. S3, FTP, HTTP)."
                 }
               }
             }
