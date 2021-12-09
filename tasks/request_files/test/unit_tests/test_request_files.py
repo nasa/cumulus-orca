@@ -63,10 +63,11 @@ class TestRequestFiles(unittest.TestCase):
 
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
-    def test_task_happy_path(self,
-                             mock_inner_task: MagicMock,
-                             mock_get_default_glacier_bucket_name: MagicMock
-                             ):
+    def test_task_happy_path(
+        self,
+        mock_inner_task: MagicMock,
+        mock_get_default_glacier_bucket_name: MagicMock,
+    ):
         """
         All variables present and valid.
         """
@@ -116,10 +117,11 @@ class TestRequestFiles(unittest.TestCase):
 
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
-    def test_task_default_for_missing_max_retries(self,
-                                                  mock_inner_task: MagicMock,
-                                                  mock_get_default_glacier_bucket_name: MagicMock
-                                                  ):
+    def test_task_default_for_missing_max_retries(
+        self,
+        mock_inner_task: MagicMock,
+        mock_get_default_glacier_bucket_name: MagicMock,
+    ):
         """
         If max_retries missing, use default.
         """
@@ -165,10 +167,11 @@ class TestRequestFiles(unittest.TestCase):
 
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
-    def test_task_default_for_missing_sleep_secs(self,
-                                                 mock_inner_task: MagicMock,
-                                                 mock_get_default_glacier_bucket_name: MagicMock
-                                                 ):
+    def test_task_default_for_missing_sleep_secs(
+        self,
+        mock_inner_task: MagicMock,
+        mock_get_default_glacier_bucket_name: MagicMock,
+    ):
         """
         If sleep_secs missing, use default.
         """
@@ -214,10 +217,11 @@ class TestRequestFiles(unittest.TestCase):
 
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
-    def test_task_default_for_missing_retrieval_type(self,
-                                                     mock_inner_task: MagicMock,
-                                                     mock_get_default_glacier_bucket_name: MagicMock
-                                                     ):
+    def test_task_default_for_missing_retrieval_type(
+        self,
+        mock_inner_task: MagicMock,
+        mock_get_default_glacier_bucket_name: MagicMock,
+    ):
         """
         If retrieval_type is missing, use default.
         """
@@ -265,10 +269,11 @@ class TestRequestFiles(unittest.TestCase):
 
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
-    def test_task_default_for_bad_retrieval_type(self,
-                                                 mock_inner_task: MagicMock,
-                                                 mock_get_default_glacier_bucket_name: MagicMock
-                                                 ):
+    def test_task_default_for_bad_retrieval_type(
+        self,
+        mock_inner_task: MagicMock,
+        mock_get_default_glacier_bucket_name: MagicMock,
+    ):
         """
         If retrieval_type is invalid, use default.
         """
@@ -318,10 +323,11 @@ class TestRequestFiles(unittest.TestCase):
 
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
-    def test_task_default_for_missing_exp_days(self,
-                                               mock_inner_task: MagicMock,
-                                               mock_get_default_glacier_bucket_name: MagicMock
-                                               ):
+    def test_task_default_for_missing_exp_days(
+        self,
+        mock_inner_task: MagicMock,
+        mock_get_default_glacier_bucket_name: MagicMock,
+    ):
         """
         Uses default missing_exp_days if needed.
         """
@@ -367,10 +373,11 @@ class TestRequestFiles(unittest.TestCase):
 
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
-    def test_task_job_id_missing_generates(self,
-                                           mock_inner_task: MagicMock,
-                                           mock_get_default_glacier_bucket_name: MagicMock
-                                           ):
+    def test_task_job_id_missing_generates(
+        self,
+        mock_inner_task: MagicMock,
+        mock_get_default_glacier_bucket_name: MagicMock,
+    ):
         """
         If job_id missing, generates a new one.
         """
@@ -440,12 +447,12 @@ class TestRequestFiles(unittest.TestCase):
     @patch("request_files.object_exists")
     @patch("boto3.client")
     def test_inner_task_missing_files_do_not_halt(
-            self,
-            mock_boto3_client: MagicMock,
-            mock_object_exists: MagicMock,
-            mock_process_granule: MagicMock,
-            mock_sleep: MagicMock,
-            mock_create_status_for_job: MagicMock,
+        self,
+        mock_boto3_client: MagicMock,
+        mock_object_exists: MagicMock,
+        mock_process_granule: MagicMock,
+        mock_sleep: MagicMock,
+        mock_create_status_for_job: MagicMock,
     ):
         """
         A return of 'false' from object_exists should ignore the file and continue.
@@ -505,10 +512,14 @@ class TestRequestFiles(unittest.TestCase):
             "request_time": mock.ANY,
             "last_update": mock.ANY,
             "error_message": f"{missing_file_key} does not exist in {glacier_bucket} bucket",
-            "completion_time": mock.ANY
+            "completion_time": mock.ANY,
         }
 
-        expected_input_granule_files = [expected_file0_output, expected_missing_file_output, expected_file1_output]
+        expected_input_granule_files = [
+            expected_file0_output,
+            expected_missing_file_output,
+            expected_file1_output,
+        ]
         granule = {
             request_files.GRANULE_GRANULE_ID_KEY: granule_id,
             request_files.GRANULE_KEYS_KEY: [
@@ -525,7 +536,7 @@ class TestRequestFiles(unittest.TestCase):
             request_files.EVENT_CONFIG_KEY: {
                 request_files.CONFIG_GLACIER_BUCKET_KEY: glacier_bucket,
                 request_files.CONFIG_JOB_ID_KEY: job_id,
-                request_files.CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: collection_multipart_chunksize_mb
+                request_files.CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: collection_multipart_chunksize_mb,
             },
             request_files.EVENT_INPUT_KEY: {
                 request_files.INPUT_GRANULES_KEY: [granule]
@@ -539,7 +550,7 @@ class TestRequestFiles(unittest.TestCase):
 
         # noinspection PyUnusedLocal
         def object_exists_return_func(
-                input_s3_cli, input_glacier_bucket, input_file_key
+            input_s3_cli, input_glacier_bucket, input_file_key
         ):
             return input_file_key in [file_key_0, file_key_1]
 
@@ -575,14 +586,14 @@ class TestRequestFiles(unittest.TestCase):
                 "request_time": mock.ANY,
                 "last_update": mock.ANY,
                 "error_message": f"{missing_file_key} does not exist in {glacier_bucket} bucket",
-                "completion_time": mock.ANY
+                "completion_time": mock.ANY,
             },
             {
                 "success": False,
                 "filename": file_key_1,
                 "key_path": file_key_1,
                 "restore_destination": file_dest_bucket_1,
-                'multipart_chunksize_mb': collection_multipart_chunksize_mb,
+                "multipart_chunksize_mb": collection_multipart_chunksize_mb,
                 "status_id": OrcaStatus.PENDING.value,
                 "request_time": mock.ANY,
                 "last_update": mock.ANY,
@@ -620,7 +631,7 @@ class TestRequestFiles(unittest.TestCase):
     @patch("time.sleep")
     @patch("request_files.restore_object")
     def test_process_granule_minimal_path(
-            self, mock_restore_object: MagicMock, mock_sleep: MagicMock
+        self, mock_restore_object: MagicMock, mock_sleep: MagicMock
     ):
         mock_s3 = Mock()
         max_retries = randint(10, 999)  # nosec
@@ -707,7 +718,7 @@ class TestRequestFiles(unittest.TestCase):
     @patch("time.sleep")
     @patch("request_files.restore_object")
     def test_process_granule_one_client_error_retries(
-            self, mock_restore_object: MagicMock, mock_sleep: MagicMock
+        self, mock_restore_object: MagicMock, mock_sleep: MagicMock
     ):
         mock_s3 = Mock()
         max_retries = 5
@@ -783,10 +794,10 @@ class TestRequestFiles(unittest.TestCase):
     @patch("request_files.restore_object")
     @patch("cumulus_logger.CumulusLogger.error")
     def test_process_granule_client_errors_retries_until_cap(
-            self,
-            mock_logger_error: MagicMock,
-            mock_restore_object: MagicMock,
-            mock_sleep: MagicMock,
+        self,
+        mock_logger_error: MagicMock,
+        mock_restore_object: MagicMock,
+        mock_sleep: MagicMock,
     ):
         mock_s3 = Mock()
         max_retries = randint(3, 20)  # nosec
@@ -971,7 +982,7 @@ class TestRequestFiles(unittest.TestCase):
     @patch("cumulus_logger.CumulusLogger.error")
     @patch("cumulus_logger.CumulusLogger.info")
     def test_restore_object_client_error_last_attempt_logs_and_raises(
-            self, mock_logger_info: MagicMock, mock_logger_error: MagicMock
+        self, mock_logger_info: MagicMock, mock_logger_error: MagicMock
     ):
         glacier_bucket = uuid.uuid4().__str__()
         key = uuid.uuid4().__str__()
@@ -1007,7 +1018,7 @@ class TestRequestFiles(unittest.TestCase):
     @patch("cumulus_logger.CumulusLogger.error")
     @patch("cumulus_logger.CumulusLogger.info")
     def test_restore_object_log_to_db_fails_does_not_halt(
-            self, mock_logger_info: MagicMock, mock_logger_error: MagicMock
+        self, mock_logger_info: MagicMock, mock_logger_error: MagicMock
     ):
         glacier_bucket = uuid.uuid4().__str__()
         key = uuid.uuid4().__str__()
@@ -1074,10 +1085,10 @@ class TestRequestFiles(unittest.TestCase):
     @patch("boto3.client")
     @patch("cumulus_logger.CumulusLogger.info")
     def test_task_one_granule_4_files_success(
-            self,
-            mock_logger_info: MagicMock,
-            mock_boto3_client: MagicMock,
-            mock_post_entry_to_queue: MagicMock,
+        self,
+        mock_logger_info: MagicMock,
+        mock_boto3_client: MagicMock,
+        mock_post_entry_to_queue: MagicMock,
     ):
         """
         Test four files for one granule - successful
@@ -1212,11 +1223,11 @@ class TestRequestFiles(unittest.TestCase):
     @patch("cumulus_logger.CumulusLogger.error")
     @patch("cumulus_logger.CumulusLogger.info")
     def test_task_one_granule_1_file_db_error(
-            self,
-            mock_logger_info: MagicMock,
-            mock_logger_error: MagicMock,
-            mock_boto3_client: MagicMock,
-            mock_post_entry_to_queue: MagicMock,
+        self,
+        mock_logger_info: MagicMock,
+        mock_logger_error: MagicMock,
+        mock_boto3_client: MagicMock,
+        mock_post_entry_to_queue: MagicMock,
     ):
         """
         Test one file for one granule - db error inserting status
@@ -1244,10 +1255,10 @@ class TestRequestFiles(unittest.TestCase):
     @patch("boto3.client")
     @patch("cumulus_logger.CumulusLogger.info")
     def test_task_file_not_in_glacier(
-            self,
-            mock_logger_info: MagicMock,
-            mock_boto3_client: MagicMock,
-            mock_post_entry_to_queue: MagicMock,
+        self,
+        mock_logger_info: MagicMock,
+        mock_boto3_client: MagicMock,
+        mock_post_entry_to_queue: MagicMock,
     ):
         """
         Test a file that is not in glacier.
@@ -1312,7 +1323,7 @@ class TestRequestFiles(unittest.TestCase):
     @patch("request_files.shared_recovery.post_entry_to_queue")
     @patch("boto3.client")
     def test_task_no_retries_env_var(
-            self, mock_boto3_client: MagicMock, mock_post_entry_to_queue: MagicMock
+        self, mock_boto3_client: MagicMock, mock_post_entry_to_queue: MagicMock
     ):
         """
         Test environment var RESTORE_REQUEST_RETRIES not set - use default.
@@ -1342,7 +1353,7 @@ class TestRequestFiles(unittest.TestCase):
                             "key_path": FILE1,
                             "restore_destination": PROTECTED_BUCKET,
                             "success": True,
-                            'multipart_chunksize_mb': None,
+                            "multipart_chunksize_mb": None,
                             "status_id": 1,
                         },
                     ],
@@ -1378,10 +1389,10 @@ class TestRequestFiles(unittest.TestCase):
     @patch("boto3.client")
     @patch("cumulus_logger.CumulusLogger.info")
     def test_task_no_expire_days_env_var(
-            self,
-            mock_logger_info: MagicMock,
-            mock_boto3_client: MagicMock,
-            mock_post_entry_to_queue: MagicMock,
+        self,
+        mock_logger_info: MagicMock,
+        mock_boto3_client: MagicMock,
+        mock_post_entry_to_queue: MagicMock,
     ):
         """
         Test environment var RESTORE_EXPIRE_DAYS not set - use default.
@@ -1411,7 +1422,7 @@ class TestRequestFiles(unittest.TestCase):
                             "key_path": FILE1,
                             "restore_destination": PROTECTED_BUCKET,
                             "success": True,
-                            'multipart_chunksize_mb': None,
+                            "multipart_chunksize_mb": None,
                             "status_id": 1,
                         },
                     ],
@@ -1446,11 +1457,11 @@ class TestRequestFiles(unittest.TestCase):
     @patch("cumulus_logger.CumulusLogger.error")
     @patch("cumulus_logger.CumulusLogger.info")
     def test_task_client_error_one_file(
-            self,
-            mock_logger_info: MagicMock,
-            mock_logger_error: MagicMock,
-            mock_boto3_client: MagicMock,
-            mock_post_entry_to_queue: MagicMock,
+        self,
+        mock_logger_info: MagicMock,
+        mock_logger_error: MagicMock,
+        mock_boto3_client: MagicMock,
+        mock_post_entry_to_queue: MagicMock,
     ):
         """
         Test retries for restore error for one file.
@@ -1517,11 +1528,11 @@ class TestRequestFiles(unittest.TestCase):
     @patch("cumulus_logger.CumulusLogger.error")
     @patch("cumulus_logger.CumulusLogger.info")
     def test_task_client_error_3_times(
-            self,
-            mock_logger_info: MagicMock,
-            mock_logger_error: MagicMock,
-            mock_boto3_client: MagicMock,
-            mock_post_entry_to_queue: MagicMock,
+        self,
+        mock_logger_info: MagicMock,
+        mock_logger_error: MagicMock,
+        mock_boto3_client: MagicMock,
+        mock_post_entry_to_queue: MagicMock,
     ):
         """
         Test three files, two successful, one errors on all retries and fails.
@@ -1586,7 +1597,7 @@ class TestRequestFiles(unittest.TestCase):
                 "dest_bucket": PUBLIC_BUCKET,
                 "success": False,
                 "err_msg": "An error occurred (NoSuchKey) when calling the restore_object "
-                           "operation: Unknown",
+                "operation: Unknown",
             },
             {
                 "key": FILE4,
@@ -1613,11 +1624,11 @@ class TestRequestFiles(unittest.TestCase):
     @patch("cumulus_logger.CumulusLogger.error")
     @patch("cumulus_logger.CumulusLogger.info")
     def test_task_client_error_2_times(
-            self,
-            mock_logger_info: MagicMock,
-            mock_logger_error: MagicMock,
-            mock_boto3_client: MagicMock,
-            mock_post_entry_to_queue: MagicMock,
+        self,
+        mock_logger_info: MagicMock,
+        mock_logger_error: MagicMock,
+        mock_boto3_client: MagicMock,
+        mock_post_entry_to_queue: MagicMock,
     ):
         """
         Test two files, first successful, second has two errors, then success.
@@ -1655,7 +1666,7 @@ class TestRequestFiles(unittest.TestCase):
                         {
                             "filename": os.path.basename(FILE1),
                             "key_path": FILE1,
-                            'multipart_chunksize_mb': None,
+                            "multipart_chunksize_mb": None,
                             "restore_destination": PROTECTED_BUCKET,
                             "success": True,
                             "status_id": 1,
@@ -1664,7 +1675,7 @@ class TestRequestFiles(unittest.TestCase):
                             "error_message": "An error occurred (NoSuchBucket) when calling the restore_object operation: Unknown",
                             "filename": os.path.basename(FILE2),
                             "key_path": FILE2,
-                            'multipart_chunksize_mb': None,
+                            "multipart_chunksize_mb": None,
                             "restore_destination": PROTECTED_BUCKET,
                             "success": True,
                             "status_id": 1,
@@ -1698,10 +1709,10 @@ class TestRequestFiles(unittest.TestCase):
     @patch("boto3.client")
     @patch("cumulus_logger.CumulusLogger.info")
     def test_task_output_json_schema(
-            self,
-            mock_logger_info: MagicMock,
-            mock_boto3_client: MagicMock,
-            mock_post_entry_to_queue: MagicMock,
+        self,
+        mock_logger_info: MagicMock,
+        mock_boto3_client: MagicMock,
+        mock_post_entry_to_queue: MagicMock,
     ):
         """
         Test four files for one granule - successful. Check against output schema.
@@ -1794,10 +1805,12 @@ class TestRequestFiles(unittest.TestCase):
     )
     def test_get_default_glacier_bucket_name_returns_override_if_present(self):
         bucket = Mock()
-        result = request_files.get_default_glacier_bucket_name({
-            request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: bucket,
-            request_files.CONFIG_GLACIER_BUCKET_KEY: Mock()
-        })
+        result = request_files.get_default_glacier_bucket_name(
+            {
+                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: bucket,
+                request_files.CONFIG_GLACIER_BUCKET_KEY: Mock(),
+            }
+        )
         self.assertEqual(bucket, result)
 
     @patch.dict(
@@ -1807,11 +1820,13 @@ class TestRequestFiles(unittest.TestCase):
         },
         clear=True,
     )
-    def test_get_default_glacier_bucket_name_returns_default_bucket_if_no_override(self):
+    def test_get_default_glacier_bucket_name_returns_default_bucket_if_no_override(
+        self,
+    ):
         bucket = Mock()
-        result = request_files.get_default_glacier_bucket_name({
-            request_files.CONFIG_GLACIER_BUCKET_KEY: bucket
-        })
+        result = request_files.get_default_glacier_bucket_name(
+            {request_files.CONFIG_GLACIER_BUCKET_KEY: bucket}
+        )
         self.assertEqual(bucket, result)
 
     @patch.dict(
@@ -1821,12 +1836,16 @@ class TestRequestFiles(unittest.TestCase):
         },
         clear=True,
     )
-    def test_get_default_glacier_bucket_name_returns_default_bucket_if_none_override(self):
+    def test_get_default_glacier_bucket_name_returns_default_bucket_if_none_override(
+        self,
+    ):
         bucket = Mock()
-        result = request_files.get_default_glacier_bucket_name({
-            request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: None,
-            request_files.CONFIG_GLACIER_BUCKET_KEY: bucket
-        })
+        result = request_files.get_default_glacier_bucket_name(
+            {
+                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: None,
+                request_files.CONFIG_GLACIER_BUCKET_KEY: bucket,
+            }
+        )
         self.assertEqual(bucket, result)
 
     @patch.dict(
@@ -1838,10 +1857,17 @@ class TestRequestFiles(unittest.TestCase):
     )
     def test_get_default_glacier_bucket_name_returns_env_bucket_if_no_other(self):
         bucket = os.environ[request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY]
-        result = request_files.get_default_glacier_bucket_name({
-            request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: None
-        })
+        result = request_files.get_default_glacier_bucket_name(
+            {request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: None}
+        )
         self.assertEqual(bucket, result)
+
+    def test_no_bucket_raises_error(self):
+        os.environ.pop(request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY)
+        with self.assertRaises(KeyError) as cm:
+            request_files.get_default_glacier_bucket_name(
+                {request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: None}
+            )
 
 
 if __name__ == "__main__":

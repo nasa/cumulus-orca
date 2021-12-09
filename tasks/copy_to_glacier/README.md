@@ -333,7 +333,7 @@ DESCRIPTION
     and copies those files from their current storage location into a staging/glacier location.
 
 FUNCTIONS
-    copy_granule_between_buckets(source_bucket_name: str, source_key: str, destination_bucket: str, destination_key: str, multipart_chunksize_mb: int) -> None
+    copy_granule_between_buckets(source_bucket_name: str, source_key: str, destination_bucket: str, destination_key: str, multipart_chunksize_mb: int) -> Dict[str, str]
         Copies granule from source bucket to destination. Also queries the destination_bucket to get additional metadata file info.
         Args:
             source_bucket_name: The name of the bucket in which the granule is currently located.
@@ -342,15 +342,17 @@ FUNCTIONS
             destination_key: Destination granule path excluding s3://[bucket]/
             multipart_chunksize_mb: The maximum size of chunks to use when copying.
         Returns:
-           A dictionary containing all the file metadata needed for reconciliation with Cumulus with the following keys:
-                  "cumulusArchiveLocation" (str): Cumulus S3 bucket where the file is stored in.
-                  "orcaArchiveLocation" (str): ORCA S3 Glacier bucket that the file object is stored in
-                  "keyPath" (str): Full AWS key path including file name of the file where the file resides in ORCA.
-                  "sizeInBytes" (str): Size of the object in bytes
-                  "version" (str): Latest version of the file in the S3 Glacier bucket
-                  "ingestTime" (str): Date and time the file was originally ingested into ORCA.
-                  "etag" (str): etag of the file object in the AWS S3 Glacier bucket.
-        
+            A dictionary containing all the file metadata needed for reconciliation with Cumulus with the following keys:
+                    "cumulusArchiveLocation" (str): Cumulus S3 bucket where the file is stored in.
+                    "orcaArchiveLocation" (str): ORCA S3 Glacier bucket that the file object is stored in
+                    "keyPath" (str): Full AWS key path including file name of the file where the file resides in ORCA.
+                    "sizeInBytes" (str): Size of the object in bytes
+                    "version" (str): Latest version of the file in the S3 Glacier bucket
+                    "ingestTime" (str): Date and time the file was originally ingested into ORCA.
+                    "etag" (str): etag of the file object in the AWS S3 Glacier bucket.
+    
+    get_default_glacier_bucket_name(config: Dict[str, Any]) -> str
+    
     handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any
         Lambda handler. Runs a cumulus task that
         Copies the files in {event}['input']
@@ -390,7 +392,7 @@ FUNCTIONS
                 ORCA_DEFAULT_BUCKET (string, required): Name of the default ORCA S3 Glacier bucket.
                     Overridden by bucket specified in config.
                 DEFAULT_MULTIPART_CHUNKSIZE_MB (int, optional): The default maximum size of chunks to use when copying.
-                  Can be overridden by collection config.
+                    Can be overridden by collection config.
                 METADATA_DB_QUEUE_URL (string, required): SQS URL of the metadata queue.
         
         Args:
@@ -408,6 +410,9 @@ DATA
     Dict = typing.Dict
     FILE_BUCKET_KEY = 'bucket'
     FILE_FILEPATH_KEY = 'key'
+    FILE_HASH_KEY = 'checksum'
+    FILE_HASH_TYPE_KEY = 'checksumType'
+    LOGGER = <cumulus_logger.CumulusLogger object>
     List = typing.List
     MB = 1048576
     Union = typing.Union
