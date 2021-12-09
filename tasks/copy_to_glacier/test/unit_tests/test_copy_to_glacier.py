@@ -732,18 +732,17 @@ class TestCopyToGlacierHandler(TestCase):
                 {copy_to_glacier.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: None}
             )
 
-
-@patch.dict(
-    os.environ,
-    {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__()},
-    clear=True,
-)
-def test_get_default_glacier_bucket_name_returns_env_bucket_if_no_other(self):
-    bucket = os.environ["ORCA_DEFAULT_BUCKET"]
-    result = copy_to_glacier.get_default_glacier_bucket_name(
-        {copy_to_glacier.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: None}
+    @patch.dict(
+        os.environ,
+        {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__()},
+        clear=True,
     )
-    self.assertEqual(bucket, result)
+    def test_get_default_glacier_bucket_name_returns_env_bucket_if_no_other(self):
+        bucket = os.environ["ORCA_DEFAULT_BUCKET"]
+        result = copy_to_glacier.get_default_glacier_bucket_name(
+            {copy_to_glacier.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: None}
+        )
+        self.assertEqual(bucket, result)
 
     @patch("time.sleep")
     @patch.dict(os.environ, {"AWS_REGION": "us-west-2"}, clear=True)
