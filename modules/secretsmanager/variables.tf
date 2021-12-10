@@ -33,6 +33,12 @@ variable "db_name" {
   description = "The name of the Orca database within the RDS cluster."
 }
 
+## variables related to iam roles
+variable "restore_object_role_arn" {
+  type        = string
+  description = "AWS ARN of the restore_object_role."
+}
+
 ## Default variable value is set in ../main.tf to disallow any modification.
 
 variable "db_admin_username" {

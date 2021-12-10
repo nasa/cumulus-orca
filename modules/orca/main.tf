@@ -10,6 +10,7 @@ locals {
 ## =============================================================================
 module "orca_lambdas" {
   source = "../lambdas"
+  depends_on = [module.orca_iam, module.orca_secretsmanager]  ## secretsmanager sets up db connection secrets.
   ## --------------------------
   ## Cumulus Variables
   ## --------------------------
@@ -35,6 +36,7 @@ module "orca_lambdas" {
   orca_sqs_staged_recovery_queue_arn = module.orca_sqs.orca_sqs_staged_recovery_queue_arn
   orca_sqs_status_update_queue_id    = module.orca_sqs.orca_sqs_status_update_queue_id
   orca_sqs_status_update_queue_arn   = module.orca_sqs.orca_sqs_status_update_queue_arn
+  restore_object_role_arn            = module.orca_iam.restore_object_role_arn
 
   ## OPTIONAL
   orca_ingest_lambda_memory_size       = var.orca_ingest_lambda_memory_size
@@ -76,11 +78,32 @@ module "orca_workflows" {
 }
 
 
+# restore_object_arn - IAM module reference
+# # ------------------------------------------------------------------------------
+module "orca_iam" {
+  source = "../iam"
+  ## --------------------------
+  ## Cumulus Variables
+  ## --------------------------
+  ## REQUIRED
+  buckets                  = var.buckets
+  permissions_boundary_arn = var.permissions_boundary_arn
+  prefix                   = var.prefix
+  # OPTIONAL
+  tags = local.tags
+  # --------------------------
+  # ORCA Variables
+  # --------------------------
+  # OPTIONAL
+  orca_recovery_buckets = var.orca_recovery_buckets
+}
+
+
 ## orca_secretsmanager - secretsmanager module
 ## =============================================================================
 module "orca_secretsmanager" {
   source = "../secretsmanager"
-  depends_on = [module.orca_lambdas]
+  depends_on = [module.orca_iam]
   ## --------------------------
   ## Cumulus Variables
   ## --------------------------
@@ -96,6 +119,7 @@ module "orca_secretsmanager" {
   db_admin_password = var.db_admin_password
   db_user_password  = var.db_user_password
   db_host_endpoint  = var.db_host_endpoint
+  restore_object_role_arn = module.orca_iam.restore_object_role_arn
 
   ## OPTIONAL
   db_admin_username = var.db_admin_username
