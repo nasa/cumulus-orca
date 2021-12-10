@@ -116,6 +116,7 @@ SELECT
         (
             SELECT 
                 granules.id,
+                granules.provider_id,
                 granules.collection_id, 
                 granules.cumulus_granule_id, 
                 (EXTRACT(EPOCH FROM date_trunc('milliseconds', granules.cumulus_create_time) AT TIME ZONE 'UTC') * 1000)::bigint as cumulus_create_time, 
@@ -136,16 +137,9 @@ SELECT
             JOIN
                 granules ON granule_ids.cumulus_granule_id = granules.cumulus_granule_id
         ) as granules
-    JOIN LATERAL
-        (SELECT array_agg(provider_collection_xref.provider_id) AS provider_ids
-        FROM provider_collection_xref
-        WHERE
-            (:provider_id is null or provider_collection_xref.provider_id=ANY(:provider_id)) and
-            granules.collection_id = provider_collection_xref.collection_id
-    ) as granules_collections_and_providers on TRUE
     OFFSET :page_index*:page_size
     LIMIT :page_size+1
-) as granules_collections_and_providers
+) as granules
 LEFT JOIN LATERAL
     (SELECT json_agg(files) as files
     FROM (
@@ -159,7 +153,7 @@ LEFT JOIN LATERAL
         'hashType', files.hash_type,
         'version', files.version) AS files
     FROM files
-    WHERE granules_collections_and_providers.id = files.granule_id
+    WHERE granules.id = files.granule_id
     ) as files
 ) as grouped on TRUE"""
     )
