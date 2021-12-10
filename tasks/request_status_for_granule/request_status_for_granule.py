@@ -32,18 +32,7 @@ def task(
         db_connect_info: The {database}.py defined db_connect_info.
         request_id: An ID provided by AWS Lambda. Used for context tracking.
         job_id: An optional additional filter to get a specific job's entry.
-    Returns: A Dict with the following keys:
-        'granule_id' (str): The unique ID of the granule to retrieve status for.
-        'asyncOperationId' (str): The unique ID of the asyncOperation.
-        'files' (List): Description and status of the files within the given granule. List of Dicts with keys:
-            'file_name' (str): The name and extension of the file.
-            'restore_destination' (str): The name of the glacier bucket the file is being copied to.
-            'status' (str):
-                The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.
-            'error_message' (str, Optional): If the restoration of the file errored, the error will be stored here.
-        'request_time' (DateTime): The time, in UTC isoformat, when the request to restore the granule was initiated.
-        'completion_time' (DateTime, Optional):
-            The time, in UTC isoformat, when all granule_files were no longer 'pending'/'staged'.
+    Returns: See output.json
 
         Will also return a dict from create_http_error_dict with error NOT_FOUND if job/granule could not be found.
     """
@@ -152,9 +141,10 @@ def get_job_entry_for_granule(
     Returns: A Dict with the following keys:
         'granule_id' (str): The unique ID of the granule to retrieve status for.
         'job_id' (str): The unique ID of the asyncOperation.
-        'request_time' (DateTime): The time, in UTC isoformat, when the request to restore the granule was initiated.
-        'completion_time' (DateTime, Optional):
-            The time, in UTC isoformat, when all granule_files were no longer 'pending'/'staged'.
+        'request_time' (int): The time, in milliseconds since 1 January 1970 UTC,
+            when the request to restore the granule was initiated.
+        'completion_time' (int, Null): The time, in milliseconds since 1 January 1970 UTC,
+            when all granule_files were no longer 'pending'/'staged'.
     """
     try:
         with engine.begin() as connection:
@@ -192,8 +182,8 @@ def get_job_entry_for_granule_sql() -> text:
                 SELECT
                     granule_id as "{OUTPUT_GRANULE_ID_KEY}",
                     job_id as "{OUTPUT_JOB_ID_KEY}",
-                    request_time as "{OUTPUT_REQUEST_TIME_KEY}",
-                    completion_time as "{OUTPUT_COMPLETION_TIME_KEY}"
+                    (EXTRACT(EPOCH FROM date_trunc('milliseconds', request_time) AT TIME ZONE 'UTC') * 1000)::bigint as "{OUTPUT_REQUEST_TIME_KEY}",
+                    (EXTRACT(EPOCH FROM date_trunc('milliseconds', completion_time) AT TIME ZONE 'UTC') * 1000)::bigint as "{OUTPUT_COMPLETION_TIME_KEY}"
                 FROM
                     recovery_job
                 WHERE
