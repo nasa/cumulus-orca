@@ -1,14 +1,3 @@
-## Local Variables
-locals {
-  tags = merge(var.tags, { Deployment = var.prefix })
-  iam_users    = data.aws_iam_users.orca_users.arns
-  account_id   = data.aws_caller_identity.current_account.account_id
-  region       = data.aws_region.current_region.name
-  kms_arn    = "arn:aws:kms:${local.region}:${local.account_id}:key/*"
-  lambda_rolename = "${var.prefix}_restore_object_role"
-}
-
-
 ## Data Lookups
 
 ## =============================================================================
@@ -24,6 +13,17 @@ data "aws_region" "current_region" {}
 # This data lookup pulls back a single iam role arn for use with the secretmanager policy
 data "aws_iam_role" "roles" {
   name = local.lambda_rolename
+}
+
+
+## Local Variables
+locals {
+  tags = merge(var.tags, { Deployment = var.prefix })
+  iam_users    = data.aws_iam_users.orca_users.arns
+  account_id   = data.aws_caller_identity.current_account.account_id
+  region       = data.aws_region.current_region.name
+  kms_arn    = "arn:aws:kms:${local.region}:${local.account_id}:key/*"
+  lambda_rolename = "${var.prefix}_restore_object_role"
 }
 
 
