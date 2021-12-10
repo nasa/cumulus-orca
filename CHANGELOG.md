@@ -35,6 +35,7 @@ and includes an additional section for migration notes.
 - *ORCA-297* Default database name is now PREFIX_orca
 - *ORCA-287* Updated copy_to_glacier and extract_filepaths_for_granule to [new Cumulus file format](https://github.com/nasa/cumulus/blob/master/packages/schemas/files.schema.json). 
 - *ORCA-245* Updated resource policies related to KMS keys to provide better security.
+- *ORCA-318* Updated post_to_catalog lambda to match new Cumulus schema changes.
 
 ### Migration Notes
 
