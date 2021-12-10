@@ -792,7 +792,7 @@ def drop_drdbo_role_sql(db_name: str) -> TextClause:
         (sqlalchemy.sql.element.TextClause): SQL for dropping drdbo_role role.
     f"""
     return text(
-        """
+        f"""
         REVOKE CONNECT ON DATABASE {db_name} FROM GROUP drdbo_role;
         REVOKE CREATE ON DATABASE {db_name} FROM GROUP drdbo_role;
         DROP ROLE IF EXISTS drdbo_role;
