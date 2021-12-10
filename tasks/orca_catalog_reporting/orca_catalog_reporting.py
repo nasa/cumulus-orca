@@ -61,13 +61,13 @@ def query_db(
     """
 
     Args:
+        engine: The sqlalchemy engine to use for contacting the database.
         provider_id: The unique ID of the provider(s) making the request.
         collection_id: The unique ID of collection(s) to compare.
         granule_id: The unique ID of granule(s) to compare.
         start_timestamp: Cumulus createdAt start time for date range to compare data.
         end_timestamp: Cumulus createdAt end-time for date range to compare data.
         page_index: The 0-based index of the results page to return.
-        engine: The sqlalchemy engine to use for contacting the database.
     """
     with engine.begin() as connection:
         sql_results = connection.execute(
@@ -89,7 +89,7 @@ def query_db(
         for sql_result in sql_results:
             granules.append(
                 {
-                    "providerId": sql_result["provider_ids"],
+                    "providerId": sql_result["provider_id"],
                     "collectionId": sql_result["collection_id"],
                     "id": sql_result["cumulus_granule_id"],
                     "createdAt": sql_result["cumulus_create_time"],
@@ -128,8 +128,9 @@ SELECT
                 granules.cumulus_granule_id
             FROM granules
             WHERE 
-                (:granule_id is null or cumulus_granule_id=ANY(:granule_id)) and 
+                (:provider_id is null or provider_id=ANY(:provider_id)) and 
                 (:collection_id is null or collection_id=ANY(:collection_id)) and 
+                (:granule_id is null or cumulus_granule_id=ANY(:granule_id)) and 
                 (:start_timestamp is null or (EXTRACT(EPOCH FROM date_trunc('milliseconds', cumulus_create_time) AT TIME ZONE 'UTC') * 1000)::bigint>=:start_timestamp) and 
                 (:end_timestamp is null or (EXTRACT(EPOCH FROM date_trunc('milliseconds', cumulus_create_time) AT TIME ZONE 'UTC') * 1000)::bigint<:end_timestamp)
             ORDER BY cumulus_granule_id
