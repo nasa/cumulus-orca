@@ -3,14 +3,11 @@ Name: test_orca_catalog_reporting_unit.py
 
 Description:  Unit tests for orca_catalog_reporting.py.
 """
-import datetime
 import random
 import unittest
 import uuid
 from http import HTTPStatus
 from unittest.mock import Mock, patch, MagicMock
-
-from dateutil.tz import UTC
 
 import orca_catalog_reporting
 

@@ -8,7 +8,6 @@ from fastjsonschema import JsonSchemaException
 from orca_shared.database import shared_db
 from orca_shared.database.shared_db import retry_operational_error
 from sqlalchemy import text
-from sqlalchemy.exc import DatabaseError
 from sqlalchemy.future import Engine
 
 LOGGER = CumulusLogger()

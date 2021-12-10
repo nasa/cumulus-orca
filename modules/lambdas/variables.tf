@@ -27,6 +27,12 @@ variable "rds_security_group_id" {
   description = "Cumulus' RDS Security Group's ID."
 }
 
+variable "rds_security_group_id" {
+  type        = string
+  description = "Cumulus' RDS Security Group's ID."
+}
+
+
 variable "vpc_id" {
   type        = string
   description = "Virtual Private Cloud AWS ID"

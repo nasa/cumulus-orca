@@ -29,10 +29,12 @@ and includes an additional section for migration notes.
 - *ORCA-227* Added modules/secretsmanager directory that contains terraform code for deploying AWS secretsmanager.
 - *ORCA-177* Added AWS API Gateway in modules/api_gateway/main.tf for the request_status_for_granule and request_status_for_job lambdas.
 - *ORCA-257* orca_catalog_reporting lambda now returns data from actual catalog.
+- *ORCA-151* copy_to_glacier and request_files now accept "orcaDefaultBucketOverride" which can be used on a per-collection basis. If desired, add "orcaDefaultBucketOverride": "{$.meta.collection.meta.orcaDefaultBucketOverride}" to the workflow's task's task_config.
 
 ### Changed
 - *ORCA-297* Default database name is now PREFIX_orca
 - *ORCA-287* Updated copy_to_glacier and extract_filepaths_for_granule to [new Cumulus file format](https://github.com/nasa/cumulus/blob/master/packages/schemas/files.schema.json). 
+- *ORCA-245* Updated resource policies related to KMS keys to provide better security.
 
 ### Migration Notes
 
@@ -44,8 +46,10 @@ and includes an additional section for migration notes.
   - database_app_user_pw-> db_user_password (*new*)
 - These are the new variables added:
   - db_admin_username (defaults to "postgres")
-- db_host_endpoint (Requires a value. Set in terraform.tfvars to your RDS Database's endpoint, similar to "PREFIX-cumulus-db.cluster-000000000000.us-west-2.rds.amazonaws.com")
-  - db_name (Defaults to PREFIX_orca. If preserving a database from a previous version of Orca, set to disaster_recovery.)
+  - db_host_endpoint (Requires a value. Set in terraform.tfvars to your RDS Database's endpoint, similar to "PREFIX-cumulus-db.cluster-000000000000.us-west-2.rds.amazonaws.com")
+  - db_name (Defaults to PREFIX_orca.)
+    - Any `-` in `prefix` are replaced with `_` to follow [SQL Naming Conventions](https://www.postgresql.org/docs/7.0/syntax525.htm#:~:text=Names%20in%20SQL%20must%20begin,but%20they%20will%20be%20truncated.)
+    - If preserving a database from a previous version of Orca, set to disaster_recovery.
   - rds_security_group_id (Requires a value. Set in terraform.tfvars to the Security Group ID of your RDS Database's Security Group. Output from Cumulus' RDS module as `security_group_id`)
   - vpc_endpoint_id
 - Add the following ORCA required variables definition to your `variables.tf` or `orca_variables.tf` file.

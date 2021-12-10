@@ -209,7 +209,7 @@ class TestPostCopyRequestToQueue(TestCase):
                 with self.subTest(
                     name=name, bad_value=bad_value, good_value=good_value
                 ):
-                     with(patch.dict(
+                    with(patch.dict(
                         os.environ,
                         {
                             name: bad_value,

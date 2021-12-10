@@ -1,7 +1,31 @@
+## Data Lookups
+
+## =============================================================================
+## SECRET MANAGER DATA LOOKUPS
+## =============================================================================
+
+data "aws_iam_users" "orca_users" {}
+
+data "aws_caller_identity" "current_account" {}
+
+data "aws_region" "current_region" {}
+
+# This data lookup pulls back a single iam role arn for use with the secretmanager policy
+data "aws_iam_role" "roles" {
+  name = local.lambda_rolename
+}
+
+
 ## Local Variables
 locals {
   tags = merge(var.tags, { Deployment = var.prefix })
+  iam_users    = data.aws_iam_users.orca_users.arns
+  account_id   = data.aws_caller_identity.current_account.account_id
+  region       = data.aws_region.current_region.name
+  kms_arn    = "arn:aws:kms:${local.region}:${local.account_id}:key/*"
+  lambda_rolename = "${var.prefix}_restore_object_role"
 }
+
 
 ## Resources
 
@@ -32,38 +56,44 @@ resource "aws_secretsmanager_secret_version" "db_login" {
     port           = "5432"
   })
 }
+
+
 ## KMS key policy
 ## ====================================================================================================
 data "aws_iam_policy_document" "orca_kms_key_policy" {
   statement {
-    sid = "orca_kms_policy"
+    sid = "orca_kms_policy_admin"
     # work with NGAP to restrict actions
     actions = [
-      "kms:Encrypt",
-      "kms:Decrypt",
-      "kms:ReEncrypt",
-      "kms:CreateGrant",
-      "kms:PutKeyPolicy",
-      "kms:GenerateDataKey*",
-      "kms:CreateKey",
-      "kms:PutKeyPolicy",
-      "kms:UpdateKeyDescription",
-      "kms:DisableKey",
-      "kms:DisableKeyRotation",
-      "kms:ScheduleKeyDeletion",
-      "kms:CancelKeyDeletion",
-      "kms:DescribeKey",
-      "kms:Get*",
-      "kms:List*"
+      "kms:*"
     ]
+
     resources = ["*"]
     effect    = "Allow"
+
     principals {
       type        = "AWS"
-      identifiers = ["*"]
+      identifiers = local.iam_users
+    }
+  }
+  statement {
+    sid = "orca_kms_policy_readonly"
+    # work with NGAP to restrict actions
+    actions = [
+      "kms:Decrypt",
+    ]
+
+    resources = [local.kms_arn]
+    effect    = "Allow"
+
+    principals {
+      type        = "AWS"
+      identifiers = [data.aws_iam_role.roles.arn]
     }
   }
 }
+
+
 ## KMS key resource
 ## ====================================================================================================
 resource "aws_kms_key" "orca_kms_key" {

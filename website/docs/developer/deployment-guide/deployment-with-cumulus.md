@@ -360,7 +360,8 @@ the ingest workflow.
             "providerId": "{$.meta.provider.id}",
             "executionId": "{$.cumulus_meta.execution_name}",
             "collectionShortname": "{$.meta.collection.name}",
-            "collectionVersion": "{$.meta.collection.version}"
+            "collectionVersion": "{$.meta.collection.version}",
+            "orcaDefaultBucketOverride": "{$.meta.collection.meta.orcaDefaultBucketOverride}"
             }
          }
       }
@@ -476,7 +477,7 @@ variables is shown in the table below.
 | `db_admin_username`                                   | string        | Username for RDS database administrator authentication.                                                 | "postgres" |
 | `default_multipart_chunksize_mb`                      | number        | The default maximum size of chunks to use when copying. Can be overridden by collection config.         | 250 |
 | `metadata_queue_message_retention_time_seconds`       | number        | Number of seconds the metadata-queue fifo SQS retains a message.                                        | 777600 |
-| `db_name`                                             | string        | The name of the Orca database within the RDS cluster.                                                   | PREFIX_orca |
+| `db_name`                                             | string        | The name of the Orca database within the RDS cluster. Any `-` in `prefix` will be replaced with `_`.    | PREFIX_orca |
 | `orca_ingest_lambda_memory_size`                      | number        | Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime.                              | 2240 |
 | `orca_ingest_lambda_timeout`                          | number        | Timeout in number of seconds for ORCA copy_to_glacier lambda.                                           | 600 |
 | `orca_recovery_buckets`                               | List (string) | List of bucket names that ORCA has permissions to restore data to. Default is all in the `buckets` map. | [] |
@@ -559,7 +560,8 @@ default setting set during ORCA installation. For more information, see the docu
   "meta": {
     "granuleRecoveryWorkflow": "OrcaRecoveryWorkflow",
     "excludeFileTypes": [".cmr", ".xml", ".met"],
-    "multipart_chunksize_mb": 400
+    "multipart_chunksize_mb": 400,
+    "orcaDefaultBucketOverride": "prod_orca_worm"
   },
   ...
 }

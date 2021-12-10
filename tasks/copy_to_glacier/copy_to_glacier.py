@@ -18,6 +18,7 @@ import sqs_library
 
 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = "multipart_chunksize_mb"
 CONFIG_EXCLUDE_FILE_TYPES_KEY = "excludeFileTypes"
+CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY = "orcaDefaultBucketOverride"
 # Set Cumulus LOGGER
 LOGGER = CumulusLogger()
 
@@ -115,6 +116,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
 
         Environment Variables:
             ORCA_DEFAULT_BUCKET (string, required): Name of the default ORCA S3 Glacier bucket.
+                Overridden by bucket specified in config.
             DEFAULT_MULTIPART_CHUNKSIZE_MB (int, optional): The default maximum size of chunks to use when copying.
                 Can be overridden by collection config.
             METADATA_DB_QUEUE_URL (string, required): SQS URL of the metadata queue.
@@ -135,18 +137,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     if exclude_file_types is None:
         exclude_file_types = []
 
-    # TODO: Should look at bucket type orca and check for default
-    #      Should also be flexible enough to handle input precedence order of
-    #      - task input
-    #      - collection configuration
-    #      - default value in buckets
-    try:
-        default_bucket = os.environ.get("ORCA_DEFAULT_BUCKET", None)
-        if default_bucket is None or len(default_bucket) == 0:
-            raise KeyError("ORCA_DEFAULT_BUCKET environment variable is not set.")
-    except KeyError:
-        LOGGER.error("ORCA_DEFAULT_BUCKET environment variable is not set.")
-        raise
+    default_bucket = get_default_glacier_bucket_name(config)
 
     multipart_chunksize_mb_str = config.get(CONFIG_MULTIPART_CHUNKSIZE_MB_KEY, None)
     if multipart_chunksize_mb_str is None:
@@ -178,7 +169,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     sqs_body["provider"]["providerId"] = config["providerId"]
     sqs_body["collection"]["shortname"] = config["collectionShortname"]
     sqs_body["collection"]["version"] = config["collectionVersion"]
-    # Cumulus currently creates collectionId by concating shortname + ___ + version 
+    # Cumulus currently creates collectionId by concating shortname + ___ + version
     # See https://github.com/nasa/cumulus-dashboard/blob/18a278ee5a1ac5181ec035b3df0665ef5acadcb0/app/src/js/utils/format.js#L342
     sqs_body["collection"]["collectionId"] = (
         config["collectionShortname"] + "___" + config["collectionVersion"]
@@ -191,8 +182,9 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
             granule_data[granuleId] = {"granuleId": granuleId, "files": []}
         # populate the SQS body for granules
         sqs_body["granule"]["cumulusGranuleId"] = granuleId
-        sqs_body["granule"]["cumulusCreateTime"] = \
-            datetime.fromtimestamp(granule["createdAt"] / 1000, timezone.utc).isoformat()
+        sqs_body["granule"]["cumulusCreateTime"] = datetime.fromtimestamp(
+            granule["createdAt"] / 1000, timezone.utc
+        ).isoformat()
         sqs_body["granule"]["executionId"] = config["executionId"]
         sqs_body["granule"]["ingestTime"] = datetime.now(timezone.utc).isoformat()
         sqs_body["granule"]["lastUpdate"] = datetime.now(timezone.utc).isoformat()
@@ -212,14 +204,17 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
                     CONFIG_EXCLUDE_FILE_TYPES_KEY=CONFIG_EXCLUDE_FILE_TYPES_KEY,
                 )
                 continue
-            result = copy_granule_between_buckets(source_bucket_name=file_bucket,
-                                                  source_key=file_filepath,
-                                                  destination_bucket=default_bucket,
-                                                  destination_key=file_filepath,
-                                                  multipart_chunksize_mb=multipart_chunksize_mb,
-                                                  )
+            result = copy_granule_between_buckets(
+                source_bucket_name=file_bucket,
+                source_key=file_filepath,
+                destination_bucket=default_bucket,
+                destination_key=file_filepath,
+                multipart_chunksize_mb=multipart_chunksize_mb,
+            )
 
-            result["name"] = file_filepath.split("/")[-1] # since fileName is no longer available in event
+            result["name"] = file_filepath.split("/")[
+                -1
+            ]  # since fileName is no longer available in event
             result["hash"] = file_hash
             result["hashType"] = file_hash_type
             copied_file_urls.append(file_source_uri)
@@ -237,6 +232,27 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
         sqs_library.post_to_metadata_queue(sqs_body, metadata_queue_url)
 
     return {"granules": granules_list, "copied_to_glacier": copied_file_urls}
+
+
+def get_default_glacier_bucket_name(config: Dict[str, Any]) -> str:
+    try:
+        default_bucket = config[CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY]
+    except KeyError:
+        LOGGER.warning(
+            f"{CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY} is not set. Using ORCA_DEFAULT_BUCKET environment value."
+        )
+        default_bucket = None
+
+    if default_bucket is None:
+        try:
+            default_bucket = os.environ.get("ORCA_DEFAULT_BUCKET", None)
+            if default_bucket is None or len(default_bucket) == 0:
+                raise KeyError("ORCA_DEFAULT_BUCKET environment variable is not set.")
+        except KeyError:
+            LOGGER.error("ORCA_DEFAULT_BUCKET environment variable is not set.")
+            raise
+
+    return default_bucket
 
 
 # handler that is provided to aws lambda

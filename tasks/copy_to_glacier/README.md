@@ -223,14 +223,15 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_glaci
 ## Configuration
 
 As part of the [Cumulus Message Adapter configuration](https://nasa.github.io/cumulus/docs/workflows/input_output#cma-configuration) 
-for `copy_to_glacier`, the `excludeFileTypes`, `multipart_chunksize_mb`, `providerId`, `executionId`, `collectionShortname` and `collectionVersion` keys must be present under the 
+for `copy_to_glacier`, the `excludeFileTypes`, `multipart_chunksize_mb`, `providerId`, `executionId`, `collectionShortname`, `collectionVersion` and `orcaDefaultBucketOverride` keys must be present under the 
 `task_config` object as seen below. Per the [config schema](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/config.json), 
 the values of the keys are used the following ways. The `provider` key should contain an `id` key that returns the provider id from Cumulus. The `cumulus_meta` key should contain an `execution_name` key that returns the step function execution ID from AWS. 
 The `collection` key value should contain a `name` key and a `version` key that return the required collection shortname and collection version from Cumulus respectively.
 The `collection` key value should also contain a meta object with an optional `excludeFileTypes` key that is used to determine file patterns that should not be 
 sent to ORCA. The optional `multipart_chunksize_mb` is used to override the default setting for the lambda 
-s3 copy maximum multipart chunk size value when copying large files to ORCA. Both of these settings can 
-often be derived from the collection configuration in Cumulus as seen below:
+s3 copy maximum multipart chunk size value when copying large files to ORCA.
+The optional `orcaDefaultBucketOverride` overrides the `ORCA_DEFAULT_BUCKET` set on deployment.
+These settings can often be derived from the collection configuration in Cumulus as seen below:
 
 ```
 {
@@ -245,7 +246,8 @@ often be derived from the collection configuration in Cumulus as seen below:
             "providerId": "{$.meta.provider.id}",
             "executionId": "{$.cumulus_meta.execution_name}",
             "collectionShortname": "{$.meta.collection.name}",
-            "collectionVersion": "{$.meta.collection.version}"
+            "collectionVersion": "{$.meta.collection.version}",
+            "orcaDefaultBucketOverride": "{$.meta.collection.meta.orcaDefaultBucketOverride}"
           }
         }
       },
@@ -331,7 +333,7 @@ DESCRIPTION
     and copies those files from their current storage location into a staging/glacier location.
 
 FUNCTIONS
-    copy_granule_between_buckets(source_bucket_name: str, source_key: str, destination_bucket: str, destination_key: str, multipart_chunksize_mb: int) -> None
+    copy_granule_between_buckets(source_bucket_name: str, source_key: str, destination_bucket: str, destination_key: str, multipart_chunksize_mb: int) -> Dict[str, str]
         Copies granule from source bucket to destination. Also queries the destination_bucket to get additional metadata file info.
         Args:
             source_bucket_name: The name of the bucket in which the granule is currently located.
@@ -340,15 +342,17 @@ FUNCTIONS
             destination_key: Destination granule path excluding s3://[bucket]/
             multipart_chunksize_mb: The maximum size of chunks to use when copying.
         Returns:
-           A dictionary containing all the file metadata needed for reconciliation with Cumulus with the following keys:
-                  "cumulusArchiveLocation" (str): Cumulus S3 bucket where the file is stored in.
-                  "orcaArchiveLocation" (str): ORCA S3 Glacier bucket that the file object is stored in
-                  "keyPath" (str): Full AWS key path including file name of the file where the file resides in ORCA.
-                  "sizeInBytes" (str): Size of the object in bytes
-                  "version" (str): Latest version of the file in the S3 Glacier bucket
-                  "ingestTime" (str): Date and time the file was originally ingested into ORCA.
-                  "etag" (str): etag of the file object in the AWS S3 Glacier bucket.
-        
+            A dictionary containing all the file metadata needed for reconciliation with Cumulus with the following keys:
+                    "cumulusArchiveLocation" (str): Cumulus S3 bucket where the file is stored in.
+                    "orcaArchiveLocation" (str): ORCA S3 Glacier bucket that the file object is stored in
+                    "keyPath" (str): Full AWS key path including file name of the file where the file resides in ORCA.
+                    "sizeInBytes" (str): Size of the object in bytes
+                    "version" (str): Latest version of the file in the S3 Glacier bucket
+                    "ingestTime" (str): Date and time the file was originally ingested into ORCA.
+                    "etag" (str): etag of the file object in the AWS S3 Glacier bucket.
+    
+    get_default_glacier_bucket_name(config: Dict[str, Any]) -> str
+    
     handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any
         Lambda handler. Runs a cumulus task that
         Copies the files in {event}['input']
@@ -386,8 +390,9 @@ FUNCTIONS
         
             Environment Variables:
                 ORCA_DEFAULT_BUCKET (string, required): Name of the default ORCA S3 Glacier bucket.
+                    Overridden by bucket specified in config.
                 DEFAULT_MULTIPART_CHUNKSIZE_MB (int, optional): The default maximum size of chunks to use when copying.
-                  Can be overridden by collection config.
+                    Can be overridden by collection config.
                 METADATA_DB_QUEUE_URL (string, required): SQS URL of the metadata queue.
         
         Args:
@@ -401,9 +406,13 @@ DATA
     Any = typing.Any
     CONFIG_EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
     CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = 'multipart_chunksize_mb'
+    CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY = 'orcaDefaultBucketOverride'
     Dict = typing.Dict
     FILE_BUCKET_KEY = 'bucket'
     FILE_FILEPATH_KEY = 'key'
+    FILE_HASH_KEY = 'checksum'
+    FILE_HASH_TYPE_KEY = 'checksumType'
+    LOGGER = <cumulus_logger.CumulusLogger object>
     List = typing.List
     MB = 1048576
     Union = typing.Union

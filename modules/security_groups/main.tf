@@ -23,7 +23,7 @@ resource "aws_security_group" "vpc-postgres-ingress-all-egress" {
     description = "Allow PostgreSQL ingress for ${var.prefix} Orca lambdas."
   }
 
-  ## This is added to allow all egress for lambdas. See Terraform documentation
+  ## This is added to allow all egress for Orca lambdas. See Terraform documentation
   ## for egress everything notes.
   egress {
     from_port        = 0
@@ -31,6 +31,7 @@ resource "aws_security_group" "vpc-postgres-ingress-all-egress" {
     protocol         = "-1"
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
+    description = "Allow all egress for ${var.prefix} Orca lambdas."
   }
 
 }

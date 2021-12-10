@@ -36,6 +36,10 @@
     "collectionVersion": {
       "type": "string",
       "description": "Collection version from Cumulus."
+    },
+    "orcaDefaultBucketOverride": {
+      "type": ["string", "null"],
+      "description": "Overrides the default bucket to copy to in os.environ['ORCA_DEFAULT_BUCKET']."
     }
   },
   "required": [ "providerId", "executionId", "collectionShortname", "collectionVersion"]
