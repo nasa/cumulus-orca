@@ -80,6 +80,7 @@ module "orca_workflows" {
 ## =============================================================================
 module "orca_secretsmanager" {
   source = "../secretsmanager"
+  depends_on = [module.orca_lambdas]
   ## --------------------------
   ## Cumulus Variables
   ## --------------------------
