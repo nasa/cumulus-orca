@@ -504,38 +504,6 @@ def collections_table_sql() -> TextClause:
     )
 
 
-def provider_collection_xref_table_sql() -> TextClause:
-    """
-    Full SQL for creating the cross reference table that ties a collection and provider together and resolves the many to many relationships.
-
-    Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating provider_collection_xref table.
-    """
-    return text(
-        """
-        -- Create table
-        CREATE TABLE IF NOT EXISTS provider_collection_xref
-        (
-          provider_id           text NOT NULL
-        , collection_id         text NOT NULL
-        , CONSTRAINT PK_provider_collection_xref PRIMARY KEY (provider_id,collection_id)
-        , CONSTRAINT FK_provider_collection FOREIGN KEY (provider_id) REFERENCES providers (provider_id)
-        , CONSTRAINT FK_collection_provider FOREIGN KEY (collection_id) REFERENCES collections (collection_id)
-        );
-
-        -- Comments
-        COMMENT ON TABLE provider_collection_xref
-            IS 'Cross reference table that ties a collection and provider together and resolves the many to many relationship.';
-        COMMENT ON COLUMN provider_collection_xref.provider_id
-            IS 'Provider ID from the providers table.';
-        COMMENT ON COLUMN provider_collection_xref.collection_id
-            IS 'Collection ID from the collections table.';     
-        -- Grants
-        GRANT SELECT, INSERT, UPDATE, DELETE ON provider_collection_xref TO orca_app;
-    """
-    )
-
-
 def granules_table_sql() -> TextClause:
     """
     Full SQL for creating the catalog granules table.
@@ -549,6 +517,7 @@ def granules_table_sql() -> TextClause:
         CREATE TABLE IF NOT EXISTS granules
         (
           id                    bigserial NOT NULL
+        , provider_id           text NOT NULL
         , collection_id         text NOT NULL
         , cumulus_granule_id    text NOT NULL
         , execution_id          text NOT NULL
@@ -557,6 +526,7 @@ def granules_table_sql() -> TextClause:
         , last_update           timestamp with time zone NOT NULL
 
         , CONSTRAINT PK_granules PRIMARY KEY (id)
+        , CONSTRAINT FK_provider_granule FOREIGN KEY (provider_id) REFERENCES providers (provider_id)
         , CONSTRAINT FK_collection_granule FOREIGN KEY (collection_id) REFERENCES collections (collection_id)
         , CONSTRAINT UNIQUE_collection_granule_id UNIQUE (collection_id, cumulus_granule_id)
         );
@@ -566,8 +536,10 @@ def granules_table_sql() -> TextClause:
             IS 'Granules that are in the ORCA archive holdings.';
         COMMENT ON COLUMN granules.id
             IS 'Internal orca granule ID pseudo key';
+        COMMENT ON COLUMN granules.provider_id
+            IS 'Provider ID from Cumulus that references the Providers table.';
         COMMENT ON COLUMN granules.collection_id
-            IS 'Collection ID from Cumulus that refrences the Collections table.';
+            IS 'Collection ID from Cumulus that references the Collections table.';
          COMMENT ON COLUMN granules.cumulus_granule_id
             IS 'Granule ID from Cumulus';
          COMMENT ON COLUMN granules.execution_id
