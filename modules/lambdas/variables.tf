@@ -22,10 +22,6 @@ variable "prefix" {
   description = "Prefix used to prepend to all object names and tags."
 }
 
-variable "rds_security_group_id" {
-  type        = string
-  description = "Cumulus' RDS Security Group's ID."
-}
 
 variable "rds_security_group_id" {
   type        = string
