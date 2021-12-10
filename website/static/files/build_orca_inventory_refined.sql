@@ -4,7 +4,7 @@ SET search_path TO orca, public;
 
 
 -- Create the objects in a transaction.
-BEGIN
+BEGIN;
 
     -- Create the Providers Table
     CREATE TABLE IF NOT EXISTS providers
