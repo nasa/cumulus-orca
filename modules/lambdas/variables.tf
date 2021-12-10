@@ -55,6 +55,11 @@ variable "orca_default_bucket" {
   description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
 }
 
+variable "restore_object_role_arn" {
+  type        = string
+  description = "AWS ARN of the restore_object_role."
+}
+
 
 ## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
 
