@@ -177,7 +177,7 @@ def get_job_entry_for_granule(
 
 
 def get_job_entry_for_granule_sql() -> text:
-    text(
+    return text(
         f"""
                 SELECT
                     granule_id as "{OUTPUT_GRANULE_ID_KEY}",
