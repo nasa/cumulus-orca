@@ -36,7 +36,7 @@ class TestCopyToGlacierHandler(TestCase):
                 "granuleId": "MOD09GQ.A2017025.h21v00.006.2017034065109",
                 "dataType": "MOD09GQ",
                 "version": "006",
-                "createdAt": 628021800000, 
+                "createdAt": 628021800000,
                 "files": [
                     {
                         "path": "MOD09GQ/006",
