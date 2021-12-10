@@ -83,7 +83,7 @@ class TestPostToDatabase(
             "version": uuid.uuid4().__str__(),
         }
         granule = {
-            "providerId": uuid.uuid4().__str__(),
+            "providerId": provider["providerId"],
             "cumulusGranuleId": uuid.uuid4().__str__(),
             "cumulusCreateTime": datetime.now(timezone.utc).isoformat(),
             "executionId": uuid.uuid4().__str__(),
