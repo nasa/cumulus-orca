@@ -10,11 +10,6 @@ data "aws_caller_identity" "current_account" {}
 
 data "aws_region" "current_region" {}
 
-# This data lookup pulls back a single iam role arn for use with the secretmanager policy
-data "aws_iam_role" "roles" {
-  name = local.lambda_rolename
-}
-
 
 ## Local Variables
 locals {
@@ -23,7 +18,6 @@ locals {
   account_id   = data.aws_caller_identity.current_account.account_id
   region       = data.aws_region.current_region.name
   kms_arn    = "arn:aws:kms:${local.region}:${local.account_id}:key/*"
-  lambda_rolename = var.restore_object_role_name
 }
 
 
@@ -88,7 +82,7 @@ data "aws_iam_policy_document" "orca_kms_key_policy" {
 
     principals {
       type        = "AWS"
-      identifiers = [data.aws_iam_role.roles.arn]
+      identifiers = [var.restore_object_role_arn]
     }
   }
 }

@@ -34,9 +34,9 @@ variable "db_name" {
 }
 
 ## variables related to iam roles
-variable "restore_object_role_name" {
+variable "restore_object_role_arn" {
   type        = string
-  description = "Name of the restore_object_role."
+  description = "AWS ARN of the restore_object_role."
 }
 
 ## Default variable value is set in ../main.tf to disallow any modification.
