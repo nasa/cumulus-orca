@@ -195,7 +195,7 @@ def create_granule_sql():
         (provider_id, collection_id, cumulus_granule_id, execution_id, ingest_time, cumulus_create_time, last_update)
     VALUES
         (:provider_id, :collection_id, :cumulus_granule_id, :execution_id, :ingest_time, :cumulus_create_time, :last_update)
-    ON CONFLICT (collection_id, cumulus_granule_id) DO UPDATE
+    ON CONFLICT (provider_id, collection_id, cumulus_granule_id) DO UPDATE
         SET 
             execution_id=:execution_id, last_update=:last_update
     RETURNING id"""
