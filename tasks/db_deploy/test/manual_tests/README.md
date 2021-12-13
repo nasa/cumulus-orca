@@ -167,8 +167,6 @@ To run the fresh install test, in your **python** window run the command
 {"message": "providers table created.", "timestamp": "2021-09-17T14:45:41.885556", "level": "info"}
 {"message": "Creating collections table ...", "timestamp": "2021-09-17T14:45:41.885556", "level": "debug"}
 {"message": "collections table created.", "timestamp": "2021-09-17T14:45:42.105752", "level": "info"}
-{"message": "Creating provider and collection cross reference table ...", "timestamp": "2021-09-17T14:45:42.105752", "level": "debug"}
-{"message": "provider and collection cross reference table created.", "timestamp": "2021-09-17T14:45:42.365692", "level": "info"}
 {"message": "Creating granules table ...", "timestamp": "2021-09-17T14:45:42.365692", "level": "debug"}
 {"message": "granules table created.", "timestamp": "2021-09-17T14:45:42.622593", "level": "info"}
 {"message": "Creating files table ...", "timestamp": "2021-09-17T14:45:42.622593", "level": "debug"}
@@ -200,7 +198,6 @@ expressed in the logs.
 {"message": "recovery_file table created.", "timestamp": "2021-09-14T13:37:53.843190", "level": "info"}
 {"message": "providers table created.", "timestamp": "2021-09-14T13:37:54.056274", "level": "info"}
 {"message": "collections table created.", "timestamp": "2021-09-14T13:37:54.279718", "level": "info"}
-{"message": "provider and collection cross reference table created.", "timestamp": "2021-09-14T13:37:54.494315", "level": "info"}
 {"message": "granules table created.", "timestamp": "2021-09-14T13:37:54.711834", "level": "info"}
 {"message": "files table created.", "timestamp": "2021-09-14T13:37:54.927886", "level": "info"}
 
@@ -254,7 +251,6 @@ PostgreSQL *orca* database. Perform the checks below by going to the
     orca   | files                     | table | orca_dbo
     orca   | granules                  | table | orca_dbo
     orca   | providers                 | table | orca_dbo
-    orca   | provider_collection_xref  | table | orca_dbo
     orca   | recovery_file             | table | orca_dbo
     orca   | recovery_job              | table | orca_dbo
     orca   | recovery_status           | table | orca_dbo
@@ -494,8 +490,6 @@ To run the migration test, in your **python** window run the command
 {"message": "providers table created.", "timestamp": "2021-09-14T13:37:54.056274", "level": "info"}
 {"message": "Creating collections table ...", "timestamp": "2021-09-14T13:37:54.056274", "level": "debug"}
 {"message": "collections table created.", "timestamp": "2021-09-14T13:37:54.279718", "level": "info"}
-{"message": "Creating provider and collection cross reference table ...", "timestamp": "2021-09-14T13:37:54.279718", "level": "debug"}
-{"message": "provider and collection cross reference table created.", "timestamp": "2021-09-14T13:37:54.494315", "level": "info"}
 {"message": "Creating granules table ...", "timestamp": "2021-09-14T13:37:54.494315", "level": "debug"}
 {"message": "granules table created.", "timestamp": "2021-09-14T13:37:54.711834", "level": "info"}
 {"message": "Creating files table ...", "timestamp": "2021-09-14T13:37:54.711834", "level": "debug"}
@@ -534,7 +528,6 @@ expressed in the logs.
 {"message": "druser user removed.", "timestamp": "2021-09-14T15:20:20.199778", "level": "info"}
 {"message": "providers table created.", "timestamp": "2021-09-14T15:20:20.231299", "level": "info"}
 {"message": "collections table created.", "timestamp": "2021-09-14T15:20:20.231299", "level": "info"}
-{"message": "provider and collection cross reference table created.", "timestamp": "2021-09-14T15:20:20.231299", "level": "info"}
 {"message": "granules table created.", "timestamp": "2021-09-14T15:20:20.231299", "level": "info"}
 {"message": "files table created.", "timestamp": "2021-09-14T15:20:20.231299", "level": "info"}
 {"message": "Data added to the schema_versions table.", "timestamp": "2021-09-14T15:20:20.231299", "level": "info"}
@@ -590,7 +583,6 @@ PostgreSQL *orca* database. Perform the checks below by going to the
     orca   | files                     | table | orca_dbo
     orca   | granules                  | table | orca_dbo
     orca   | providers                 | table | orca_dbo
-    orca   | provider_collection_xref  | table | orca_dbo
     orca   | recovery_file             | table | orca_dbo
     orca   | recovery_job              | table | orca_dbo
     orca   | recovery_status           | table | orca_dbo
@@ -843,7 +835,6 @@ drop cascades to table orca.recovery_file
 drop cascades to table orca.schema_versions
 drop cascades to table orca.files
 drop cascades to table orca.granules
-drop cascades to table orca.provider_collections_xref
 drop cascades to table orca.collections
 drop cascades to table orca.providers
 DROP SCHEMA

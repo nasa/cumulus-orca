@@ -109,7 +109,7 @@ let return_code=$?
 check_rc $return_code "ERROR: Failed to copy lambda files to build directory."
 
 ## Copy the schema files
-cp -r schemas/ build/
+cp -r schemas/ build/schemas/
 let return_code=$?
 
 check_rc $return_code "ERROR: Failed to copy schema files to build directory."

@@ -45,7 +45,7 @@ class TestOrcaSqlLogic(unittest.TestCase):
             with self.subTest(bad_password=bad_password):
                 with self.assertRaises(Exception) as cm:
                     orca_sql.app_user_sql(bad_password)
-                self.assertEquals(str(cm.exception), message)
+                self.assertEqual(str(cm.exception), message)
 
     def test_all_functions_return_text(self) -> None:
         """

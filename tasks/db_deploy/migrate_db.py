@@ -235,11 +235,6 @@ def migrate_versions_3_to_4(config: Dict[str, str], is_latest_version: bool) -> 
         connection.execute(collections_table_sql())
         logger.info("collections table created.")
 
-        # Create provider and collection cross reference table
-        logger.debug("Creating provider and collection cross reference table ...")
-        connection.execute(provider_collection_xref_table_sql())
-        logger.info("provider and collection cross reference table created.")
-
         # Create granules table
         logger.debug("Creating granules table ...")
         connection.execute(granules_table_sql())

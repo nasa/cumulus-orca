@@ -36,7 +36,7 @@ and includes an additional section for migration notes.
 - *ORCA-287* Updated copy_to_glacier and extract_filepaths_for_granule to [new Cumulus file format](https://github.com/nasa/cumulus/blob/master/packages/schemas/files.schema.json). 
 - *ORCA-245* Updated resource policies related to KMS keys to provide better security.
 - *ORCA-318* Updated post_to_catalog lambda to match new Cumulus schema changes.
-- *ORCA-317* Updated research pages and SQL to reflect new inventory layout to better align with Cumulus.
+- *ORCA-317* Updated the db_deploy task, unit tests, manual tests, research pages and SQL to reflect new inventory layout to better align with Cumulus.
 
 ### Migration Notes
 
