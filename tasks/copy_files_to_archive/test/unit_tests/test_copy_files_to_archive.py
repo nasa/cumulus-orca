@@ -41,7 +41,7 @@ class TestCopyFilesToArchive(TestCase):
         mock_task: MagicMock,
         mock_logger: MagicMock,
     ):
-        records = Mock()
+        records = [Mock()]
         event = {"Records": records}
 
         copy_files_to_archive.handler(event, Mock())
@@ -67,7 +67,7 @@ class TestCopyFilesToArchive(TestCase):
         """
         If retry settings not in os.environ, uses 2 retries and 30 seconds.
         """
-        records = Mock()
+        records = [Mock()]
         event = {"Records": records}
 
         copy_files_to_archive.handler(event, Mock())
@@ -117,7 +117,7 @@ class TestCopyFilesToArchive(TestCase):
         file1_multipart_chunksize_mb = randint(1, 10000)
         file1_message_reciept = uuid.uuid4().__str__()
 
-        mock_records = Mock()
+        mock_records = [Mock()]
 
         file0 = {
             copy_files_to_archive.INPUT_JOB_ID_KEY: file0_job_id,
@@ -250,7 +250,7 @@ class TestCopyFilesToArchive(TestCase):
         file1_target_key = uuid.uuid4().__str__()
         file1_message_reciept = uuid.uuid4().__str__()
 
-        mock_records = Mock()
+        mock_records = [Mock()]
 
         failed_file = {
             copy_files_to_archive.INPUT_JOB_ID_KEY: file0_job_id,
