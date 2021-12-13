@@ -245,6 +245,13 @@ def handler(
         message, with 'success' = False for the files for which the copy failed.
     """
     LOGGER.setMetadata(event, context)
+
+    with open("schemas/input.json", "r") as raw_schema:
+        schema = json.loads(raw_schema.read())
+
+    validate = fastjsonschema.compile(schema)
+    validate(event)
+
     try:
         str_env_val = os.environ["COPY_RETRIES"]
         retries = int(str_env_val)
