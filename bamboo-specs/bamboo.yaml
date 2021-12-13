@@ -3,7 +3,7 @@ version: 2
 plan:
   project-key: ORCA
   key: PP
-  name: prototype-new
+  name: prototype-test
 stages:
 - Setup Env:
     manual: false
