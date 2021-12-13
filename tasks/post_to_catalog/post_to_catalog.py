@@ -107,21 +107,12 @@ def create_catalog_records(
                     }
                 ],
             )
-            LOGGER.debug("Creating provider_collection_xref record.")
-            connection.execute(
-                create_provider_collection_xref_sql(),
-                [
-                    {
-                        "provider_id": provider["providerId"],
-                        "collection_id": collection["collectionId"]
-                    }
-                ]
-            )
             LOGGER.debug("Creating granule record '{cumulusGranuleId}'", cumulusGranuleId=granule["cumulusGranuleId"])
             results = connection.execute(
                 create_granule_sql(),
                 [
                     {
+                        "provider_id": provider["providerId"],
                         "collection_id": collection["collectionId"],
                         "cumulus_granule_id": granule["cumulusGranuleId"],
                         "execution_id": granule["executionId"],
@@ -197,29 +188,16 @@ def create_collection_sql():
     """
     )
 
-
-def create_provider_collection_xref_sql():
-    return text(
-        """
-    INSERT INTO provider_collection_xref
-            (provider_id, collection_id)
-    VALUES
-        (:provider_id, :collection_id)
-    ON CONFLICT DO NOTHING
-    """
-    )
-
-
 def create_granule_sql():
     return text(
         """
     INSERT INTO granules
-        (collection_id, cumulus_granule_id, execution_id, ingest_time, cumulus_create_time, last_update)
+        (provider_id, collection_id, cumulus_granule_id, execution_id, ingest_time, cumulus_create_time, last_update)
     VALUES
-        (:collection_id, :cumulus_granule_id, :execution_id, :ingest_time, :cumulus_create_time, :last_update)
+        (:provider_id, :collection_id, :cumulus_granule_id, :execution_id, :ingest_time, :cumulus_create_time, :last_update)
     ON CONFLICT (collection_id, cumulus_granule_id) DO UPDATE
         SET 
-            execution_id=:execution_id, last_update=:last_update
+            provider_id=:provider_id, execution_id=:execution_id, last_update=:last_update
     RETURNING id"""
     )
     # ON CONFLICT will only trigger if both collection_id and cumulus_granule_id match.

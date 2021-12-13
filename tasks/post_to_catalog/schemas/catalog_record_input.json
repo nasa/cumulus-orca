@@ -63,6 +63,10 @@
         "files"
       ],
       "properties": {
+        "providerId": {
+          "type": "string",
+          "description": "provider ID from Cumulus"
+        },
         "cumulusGranuleId": {
           "type": "string",
           "description": "Granule ID from Cumulus"
