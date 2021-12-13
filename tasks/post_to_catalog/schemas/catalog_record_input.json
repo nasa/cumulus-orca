@@ -55,7 +55,6 @@
       "type": "object",
       "description": "A dictionary containing granule information",
       "required": [
-        "providerId",
         "cumulusGranuleId",
         "cumulusCreateTime",
         "executionId",
