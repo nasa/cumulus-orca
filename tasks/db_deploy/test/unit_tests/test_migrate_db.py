@@ -322,7 +322,6 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
     @patch("migrate_db.schema_versions_data_sql")
     @patch("migrate_db.providers_table_sql")
     @patch("migrate_db.collections_table_sql")
-    @patch("migrate_db.provider_collection_xref_table_sql")
     @patch("migrate_db.granules_table_sql")
     @patch("migrate_db.files_table_sql")
     @patch("migrate_db.get_admin_connection")
@@ -333,7 +332,6 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
             mock_connection: MagicMock,
             mock_files_table: MagicMock,
             mock_granules_table: MagicMock,
-            mock_provider_collection_xref_table: MagicMock,
             mock_collections_table: MagicMock,
             mock_providers_table: MagicMock,
             mock_schema_versions_data: MagicMock,
@@ -357,7 +355,6 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 )
                 mock_providers_table.assert_called_once()
                 mock_collections_table.assert_called_once()
-                mock_provider_collection_xref_table.assert_called_once()
                 mock_granules_table.assert_called_once()
                 mock_files_table.assert_called_once()
 
@@ -372,7 +369,6 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                     call.execute(mock_text("SET search_path TO orca, public;")),
                     call.execute(mock_providers_table()),
                     call.execute(mock_collections_table()),
-                    call.execute(mock_provider_collection_xref_table()),
                     call.execute(mock_granules_table()),
                     call.execute(mock_files_table()),
                     call.commit(),
@@ -391,7 +387,6 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 mock_connection.reset_mock()
                 mock_providers_table.reset_mock()
                 mock_collections_table.reset_mock()
-                mock_provider_collection_xref_table.reset_mock()
                 mock_granules_table.reset_mock()
                 mock_files_table.reset_mock()
                 mock_schema_versions_data.reset_mock()

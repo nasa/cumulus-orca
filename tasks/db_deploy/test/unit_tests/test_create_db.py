@@ -186,14 +186,12 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
 
     @patch("create_db.providers_table_sql")
     @patch("create_db.collections_table_sql")
-    @patch("create_db.provider_collection_xref_table_sql")
     @patch("create_db.granules_table_sql")
     @patch("create_db.files_table_sql")
     def test_create_inventory_objects(
         self,
         mock_files_table: MagicMock,
         mock_granules_table: MagicMock,
-        mock_provider_collection_xref_table: MagicMock,
         mock_collections_table: MagicMock,
         mock_providers_table: MagicMock,
     ):
@@ -205,7 +203,6 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         # Check that the SQL calls were made
         mock_providers_table.assert_called_once()
         mock_collections_table.assert_called_once()
-        mock_provider_collection_xref_table.assert_called_once()
         mock_granules_table.assert_called_once()
         mock_files_table.assert_called_once()
 
@@ -213,7 +210,6 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         execution_order = [
             call.execute(mock_providers_table()),
             call.execute(mock_collections_table()),
-            call.execute(mock_provider_collection_xref_table()),
             call.execute(mock_granules_table()),
             call.execute(mock_files_table()),
         ]
