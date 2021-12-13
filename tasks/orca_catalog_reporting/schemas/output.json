@@ -29,11 +29,8 @@
         ],
         "properties": {
           "providerId": {
-            "description": "The unique ID of the provider. Provided by Cumulus. May be multiple.",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "description": "The unique ID of the provider. Provided by Cumulus.",
+            "type": "string"
           },
           "collectionId": {
             "description": "The unique ID of the collection. Provided by Cumulus.",
