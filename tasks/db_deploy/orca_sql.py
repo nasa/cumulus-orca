@@ -324,7 +324,7 @@ def recovery_status_data_sql() -> TextClause:
             ON CONFLICT (id) DO NOTHING;
         INSERT INTO recovery_status VALUES (3, 'error')
             ON CONFLICT (id) DO NOTHING;
-        INSERT INTO recovery_status VALUES (4, 'complete')
+        INSERT INTO recovery_status VALUES (4, 'success')
             ON CONFLICT (id) DO NOTHING;
     """
     )
