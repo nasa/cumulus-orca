@@ -16,7 +16,7 @@ This documentation provides details on the paths, input and outputs for the `orc
 ### Inputs and outputs
 The API invoke URL can be found under `Stages` section in API gateway UI. All APIs use the `POST` method.
 
-- Catalog reporting API invoke URL example:
+- Catalog reporting API input invoke URL example:
 `https://example.execute-api.us-west-2.amazonaws.com/orca/catalog/reconcile`
 
 - Catalog reporting API output example:
@@ -50,7 +50,7 @@ The API invoke URL can be found under `Stages` section in API gateway UI. All AP
 
 ```
 
-- Recovery granules invoke URL example: `https://example.execute-api.us-west-2.amazonaws.com/orca/recovery/granules`
+- Recovery granules API input invoke URL example: `https://example.execute-api.us-west-2.amazonaws.com/orca/recovery/granules`
 
 - Recovery granules API output example:
 ```json
@@ -79,7 +79,7 @@ The API invoke URL can be found under `Stages` section in API gateway UI. All AP
 
 ```
 
-- Recovery job API invoke URL example: `https://example.execute-api.us-west-2.amazonaws.com/orca/recovery/jobs`
+- Recovery job API input invoke URL example: `https://example.execute-api.us-west-2.amazonaws.com/orca/recovery/jobs`
 
 - Recovery job API output example:
 ```json
