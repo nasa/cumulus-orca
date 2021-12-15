@@ -189,7 +189,7 @@ Release ORCA Documentation:
   key: ROD
   description: Releases ORCA Documentation to nasa.github.io/cumulus-orca
   docker:
-    image: node:12.15.0
+    image: node:16.13.1
     volumes:
       ${bamboo.working.directory}: ${bamboo.working.directory}
       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
@@ -266,7 +266,7 @@ Release ORCA Code:
         bin/build_release_package.sh
       description: Create Release Files and Release in GitHub
 variables:
-  ORCA_VERSION: 0.0.1
+  ORCA_VERSION: 4.0.0
   RELEASE_FLAG: 'false'
   REPORT_BUILD_STATUS: 'true'
 repositories:
