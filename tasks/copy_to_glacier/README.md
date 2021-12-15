@@ -241,9 +241,10 @@ These settings can often be derived from the collection configuration in Cumulus
         "cma": {
           "event.$": "$",
           "task_config": {
-            "multipart_chunksize_mb": "{$.meta.collection.multipart_chunksize_mb"},
             "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
+            "multipart_chunksize_mb": "{$.meta.collection.meta.multipart_chunksize_mb"},
             "providerId": "{$.meta.provider.id}",
+            "providerName": "{$.meta.provider.name}",
             "executionId": "{$.cumulus_meta.execution_name}",
             "collectionShortname": "{$.meta.collection.name}",
             "collectionVersion": "{$.meta.collection.version}",

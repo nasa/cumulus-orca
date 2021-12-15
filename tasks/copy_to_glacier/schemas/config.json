@@ -22,7 +22,7 @@
       "description": "Provider ID supplied by Cumulus"
     },
     "providerName": {
-      "type": "string",
+      "type": ["string", "null"],
       "description": "Provider Name supplied by Cumulus"
     },
     "executionId": {

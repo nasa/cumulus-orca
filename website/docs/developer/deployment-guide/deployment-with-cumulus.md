@@ -300,6 +300,7 @@ the ingest workflow.
             "distribution_endpoint": "{$.meta.distribution_endpoint}",
             "collection": "{$.meta.collection}",
             "duplicateHandling": "{$.meta.collection.duplicateHandling}",
+            "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
             "cumulus_message": {
               "outputs": [
                 { "source": "{$}", "destination": "{$.payload}" },
@@ -351,43 +352,44 @@ the ingest workflow.
 
 ```json
 "CopyToGlacier":{
-   "Parameters":{
-      "cma":{
-         "event.$":"$",
-         "task_config":{
-            "multipart_chunksize_mb": "{$.meta.collection.meta.multipart_chunksize_mb"},
-            "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
-            "providerId": "{$.meta.provider.id}",
-            "executionId": "{$.cumulus_meta.execution_name}",
-            "collectionShortname": "{$.meta.collection.name}",
-            "collectionVersion": "{$.meta.collection.version}",
-            "orcaDefaultBucketOverride": "{$.meta.collection.meta.orcaDefaultBucketOverride}"
-            }
-         }
+  "Parameters":{
+    "cma":{
+      "event.$":"$",
+      "task_config": {
+        "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
+        "multipart_chunksize_mb": "{$.meta.collection.meta.multipart_chunksize_mb}",
+        "providerId": "{$.meta.provider.id}",
+        "providerName": "{$.meta.provider.name}",
+        "executionId": "{$.cumulus_meta.execution_name}",
+        "collectionShortname": "{$.meta.collection.name}",
+        "collectionVersion": "{$.meta.collection.version}",
+        "orcaDefaultBucketOverride": "{$.meta.collection.meta.orcaDefaultBucketOverride}"
       }
-   },
-   "Type":"Task",
-   "Resource":"module.orca.orca_lambda_copy_to_glacier_arn",
-   "Catch":[
-      {
-         "ErrorEquals":[
-            "States.ALL"
-         ],
-         "ResultPath":"$.exception",
-         "Next":"WorkflowFailed"
-      }
-   ],
-   "Retry": [
-      {
-        "ErrorEquals": [
-           "States.ALL"
-        ],
-        "IntervalSeconds": 2,
-        "MaxAttempts": 3,
-        "BackoffRate": 2
-      }
-   ],
-   "Next":"WorkflowSucceeded"
+    }
+  }
+},
+  "Type":"Task",
+  "Resource":"module.orca.orca_lambda_copy_to_glacier_arn",
+  "Catch":[
+    {
+      "ErrorEquals":[
+        "States.ALL"
+      ],
+      "ResultPath":"$.exception",
+      "Next":"WorkflowFailed"
+    }
+  ],
+  "Retry": [
+    {
+      "ErrorEquals": [
+        "States.ALL"
+      ],
+      "IntervalSeconds": 2,
+      "MaxAttempts": 3,
+      "BackoffRate": 2
+    }
+  ],
+  "Next":"WorkflowSucceeded"
 },
 ```
 See the copy_to_glacier json schema [configuration file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/config.json), [input file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/input.json)  and [output file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/output.json) for more information.
