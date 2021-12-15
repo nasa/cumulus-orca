@@ -430,6 +430,18 @@ def process_granule(
                         err=err,
                     )
                     a_file[FILE_ERROR_MESSAGE_KEY] = str(err)
+                except KeyError as err:
+                    # Indicates that the file has already been restored. Presently non-recoverable. https://bugs.earthdata.nasa.gov/browse/ORCA-336
+                    # Set the message for logging and populate the files error
+                    # message information.
+                    msg = "Failed to restore {file} from {glacier_bucket}. Encountered error [ {err} ]."
+                    LOGGER.error(
+                        msg,
+                        file=a_file["key_path"],
+                        glacier_bucket=glacier_bucket,
+                        err=err,
+                    )
+                    a_file[FILE_ERROR_MESSAGE_KEY] = str(err)
 
         attempt = attempt + 1
 
@@ -557,10 +569,9 @@ def restore_object(
     request = {"Days": days, "GlacierJobParameters": {"Tier": retrieval_type}}
     # Submit the request
     try:
-        s3_cli.restore_object(
+        restore_result = s3_cli.restore_object(
             Bucket=db_glacier_bucket_key, Key=key, RestoreRequest=request
         )
-
     except ClientError as c_err:
         # NoSuchBucket, NoSuchKey, or InvalidObjectState error == the object's
         # storage class was not GLACIER
@@ -568,6 +579,9 @@ def restore_object(
             f"{c_err}. bucket: {db_glacier_bucket_key} file: {key} Job ID: {job_id}"
         )
         raise c_err
+    if restore_result["ResponseMetadata"]["HTTPStatusCode"] == 202:
+        # Will have a non-error path after https://bugs.earthdata.nasa.gov/browse/ORCA-336
+        raise KeyError(f"File with key {key} in bucket {db_glacier_bucket_key} has already been restored.")
 
     LOGGER.info(
         f"Restore {key} from {db_glacier_bucket_key} "
