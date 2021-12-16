@@ -233,7 +233,7 @@ FUNCTIONS
             job_id: The unique id of the job. Used for logging.
             retrieval_type: Glacier Tier. Valid values are 'Standard'|'Bulk'|'Expedited'. Defaults to 'Standard'.
         Raises:
-            ClientError: Raises ClientErrors from restore_object.
+            ClientError: Raises ClientErrors from restore_object, or if the file is already restored.
     
     task(event: Dict, context: object) -> Dict[str, Any]
         Pulls information from os.environ, utilizing defaults if needed.

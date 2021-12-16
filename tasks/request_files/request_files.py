@@ -552,7 +552,7 @@ def restore_object(
         job_id: The unique id of the job. Used for logging.
         retrieval_type: Glacier Tier. Valid values are 'Standard'|'Bulk'|'Expedited'. Defaults to 'Standard'.
     Raises:
-        ClientError: Raises ClientErrors from restore_object.
+        ClientError: Raises ClientErrors from restore_object, or if the file is already restored.
     """
     request = {"Days": days, "GlacierJobParameters": {"Tier": retrieval_type}}
     # Submit the request
