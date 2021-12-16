@@ -37,6 +37,7 @@ and includes an additional section for migration notes.
 - *ORCA-245* Updated resource policies related to KMS keys to provide better security.
 - *ORCA-318* Updated post_to_catalog lambda to match new Cumulus schema changes.
 - *ORCA-317* Updated the db_deploy task, unit tests, manual tests, research pages and SQL to reflect new inventory layout to better align with Cumulus.
+- *ORCA-249* Changed `mutipart_chunksize_mb` in lambda configs to `s3MultipartChunksizeMb`.
 
 ### Migration Notes
 
@@ -109,7 +110,7 @@ variable "rds_security_group_id" {
   rds_security_group_id    = var.rds_security_group_id
   ## OPTIONAL
   db_admin_username                                    = "postgres"
-  default_multipart_chunksize_mb                       = 250
+  s3MultipartChunksizeMb                               = 250
   orca_ingest_lambda_memory_size                       = 2240
   orca_ingest_lambda_timeout                           = 720
   orca_recovery_buckets                                = []
@@ -140,7 +141,7 @@ found for `copy_to_glacier` and ORCA recovery in the ORCA documentation
 
 ### Added
 - *ORCA-244* Added schema files for copy_to_glacier. Errors for improperly formatted requests will look different.
-- *ORCA-246* Added TF variable `default_multipart_chunksize_mb` which adjusts the maximum chunksize when copying files. Defaults to 250. Can be overridden by `s3MultipartChunksizeMb` within `config['collection']`. `default_multipart_chunksize_mb` can be overridden in your `orca.tf` with the line `default_multipart_chunksize_mb = 500`
+- *ORCA-246* Added TF variable `default_multipart_chunksize_mb` which adjusts the maximum chunksize when copying files. Defaults to 250. Can be overridden by `multipart_chunksize_mb` within `config['collection']`. `default_multipart_chunksize_mb` can be overridden in your `orca.tf` with the line `default_multipart_chunksize_mb = 500`
 
 ### Fixed
 - *ORCA-248* `excludeFileTypes` is no longer required, as intended.

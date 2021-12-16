@@ -81,7 +81,7 @@ module "orca" {
 
   ## OPTIONAL
   # db_admin_username                                    = "postgres"
-  # default_s3MultipartChunksizeMb                       = 250
+  # default_multipart_chunksize_mb                       = 250
   # metadata_queue_message_retention_time                = 777600
   # orca_ingest_lambda_memory_size                       = 2240
   # orca_ingest_lambda_timeout                           = 600

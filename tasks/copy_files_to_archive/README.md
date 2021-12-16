@@ -179,7 +179,7 @@ DATA
     INPUT_FILENAME_KEY = 'filename'
     INPUT_GRANULE_ID_KEY = 'granule_id'
     INPUT_JOB_ID_KEY = 'job_id'
-    INPUT_MULTIPART_CHUNKSIZE_MB_KEY = 's3MultipartChunksizeMb'
+    INPUT_MULTIPART_CHUNKSIZE_MB_KEY = 'multipart_chunksize_mb'
     INPUT_SOURCE_BUCKET_KEY = 'source_bucket'
     INPUT_SOURCE_KEY_KEY = 'source_key'
     INPUT_TARGET_BUCKET_KEY = 'restore_destination'
