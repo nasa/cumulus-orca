@@ -993,6 +993,9 @@ class TestRequestFiles(unittest.TestCase):
                 uuid.uuid4().__str__(),
                 retrieval_type,
             )
+        self.assertEqual(f"An error occurred (HTTPStatus: 200) when calling the restore_object operation: "
+                         f"File '{key}' in bucket '{glacier_bucket}' has already been recovered.",
+                         str(context.exception))
 
     # noinspection PyUnusedLocal
     @patch("cumulus_logger.CumulusLogger.error")

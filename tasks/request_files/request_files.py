@@ -230,7 +230,9 @@ def inner_task(
     """
     # Get the glacier bucket from the event
     try:
-        glacier_bucket = event[EVENT_CONFIG_KEY][CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY]
+        glacier_bucket = event[EVENT_CONFIG_KEY][
+            CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY
+        ]
     except KeyError:
         raise RestoreRequestError(
             f"request: {event} does not contain a config value for {CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY}"
@@ -569,8 +571,15 @@ def restore_object(
         raise c_err
     if restore_result["ResponseMetadata"]["HTTPStatusCode"] == 200:
         # Will have a non-error path after https://bugs.earthdata.nasa.gov/browse/ORCA-336
-        raise ClientError({"key": key, "bucket": db_glacier_bucket_key},
-                          f"File '{key}' in bucket '{db_glacier_bucket_key}' has already been restored.")
+        raise ClientError(
+            {
+                "Error": {
+                    "Code": "HTTPStatus: 200",
+                    "Message": f"File '{key}' in bucket '{db_glacier_bucket_key}' has already been recovered.",
+                }
+            },
+            "restore_object",
+        )
 
     LOGGER.info(
         f"Restore {key} from {db_glacier_bucket_key} "
