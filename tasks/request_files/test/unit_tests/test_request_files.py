@@ -997,38 +997,6 @@ class TestRequestFiles(unittest.TestCase):
                          f"File '{key}' in bucket '{glacier_bucket}' has already been recovered.",
                          str(context.exception))
 
-    # noinspection PyUnusedLocal
-    @patch("cumulus_logger.CumulusLogger.error")
-    @patch("cumulus_logger.CumulusLogger.info")
-    def test_restore_object_log_to_db_fails_does_not_halt(
-        self, mock_logger_info: MagicMock, mock_logger_error: MagicMock
-    ):
-        glacier_bucket = uuid.uuid4().__str__()
-        key = uuid.uuid4().__str__()
-        restore_expire_days = randint(0, 99)  # nosec
-        retrieval_type = uuid.uuid4().__str__()
-        mock_s3_cli = Mock()
-        mock_s3_cli.restore_object.return_value = {"ResponseMetadata": {"HTTPStatusCode": 202}}
-
-        request_files.restore_object(
-            mock_s3_cli,
-            key,
-            restore_expire_days,
-            glacier_bucket,
-            randint(0, 99),  # nosec
-            uuid.uuid4().__str__(),
-            retrieval_type,
-        )
-
-        mock_s3_cli.restore_object.assert_called_once_with(
-            Bucket=glacier_bucket,
-            Key=key,
-            RestoreRequest={
-                "Days": restore_expire_days,
-                "GlacierJobParameters": {"Tier": retrieval_type},
-            },
-        )
-
     # The below are legacy tests that don't strictly check request_files.py on its own. Remove/adjust as needed.
     @patch("request_files.task")
     def test_handler_happy_path(self, mock_task: MagicMock):

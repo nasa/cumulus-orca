@@ -558,17 +558,9 @@ def restore_object(
     """
     request = {"Days": days, "GlacierJobParameters": {"Tier": retrieval_type}}
     # Submit the request
-    try:
-        restore_result = s3_cli.restore_object(
-            Bucket=db_glacier_bucket_key, Key=key, RestoreRequest=request
-        )
-    except ClientError as c_err:
-        # NoSuchBucket, NoSuchKey, or InvalidObjectState error == the object's
-        # storage class was not GLACIER
-        LOGGER.error(
-            f"{c_err}. bucket: {db_glacier_bucket_key} file: {key} Job ID: {job_id}"
-        )
-        raise c_err
+    restore_result = s3_cli.restore_object(
+        Bucket=db_glacier_bucket_key, Key=key, RestoreRequest=request
+    )  # Allow ClientErrors to bubble up.
     if restore_result["ResponseMetadata"]["HTTPStatusCode"] == 200:
         # Will have a non-error path after https://bugs.earthdata.nasa.gov/browse/ORCA-336
         raise ClientError(
