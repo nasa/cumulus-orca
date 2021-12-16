@@ -704,7 +704,7 @@ class TestRequestFiles(unittest.TestCase):
 
     @patch("time.sleep")
     @patch("request_files.restore_object")
-    def test_process_granule_one_client_error_retries(
+    def test_process_granule_one_client_or_key_error_retries(
         self, mock_restore_object: MagicMock, mock_sleep: MagicMock
     ):
         mock_s3 = Mock()
@@ -774,7 +774,8 @@ class TestRequestFiles(unittest.TestCase):
             ]
         )
         self.assertEqual(2, mock_restore_object.call_count)
-        mock_sleep.assert_called_once_with(retry_sleep_secs)
+        mock_sleep.assert_has_calls([call(retry_sleep_secs)])
+        self.assertEqual(1, mock_sleep.call_count)
 
     # noinspection PyUnusedLocal
     @patch("time.sleep")
@@ -911,6 +912,7 @@ class TestRequestFiles(unittest.TestCase):
         restore_expire_days = randint(0, 99)  # nosec
         retrieval_type = uuid.uuid4().__str__()
         mock_s3_cli = Mock()
+        mock_s3_cli.restore_object.return_value = {"ResponseMetadata": {"HTTPStatusCode": 202}}
 
         request_files.restore_object(
             mock_s3_cli,
@@ -966,20 +968,22 @@ class TestRequestFiles(unittest.TestCase):
             )
 
     # noinspection PyUnusedLocal
-    @patch("cumulus_logger.CumulusLogger.error")
     @patch("cumulus_logger.CumulusLogger.info")
-    def test_restore_object_client_error_last_attempt_logs_and_raises(
-        self, mock_logger_info: MagicMock, mock_logger_error: MagicMock
+    def test_restore_object_200_returned_raises(
+        self, mock_logger_info: MagicMock
     ):
+        """
+        A 200 indicates that the file is already restored, and thus cannot presently be restored again.
+        Should be raised.
+        """
         glacier_bucket = uuid.uuid4().__str__()
         key = uuid.uuid4().__str__()
         restore_expire_days = randint(0, 99)  # nosec
         retrieval_type = uuid.uuid4().__str__()
-        expected_error = ClientError({}, "")
         mock_s3_cli = Mock()
-        mock_s3_cli.restore_object.side_effect = expected_error
+        mock_s3_cli.restore_object.return_value = {"ResponseMetadata": {"HTTPStatusCode": 200}}
 
-        try:
+        with self.assertRaises(ClientError) as context:
             request_files.restore_object(
                 mock_s3_cli,
                 key,
@@ -989,48 +993,9 @@ class TestRequestFiles(unittest.TestCase):
                 uuid.uuid4().__str__(),
                 retrieval_type,
             )
-            self.fail("Error not Raised.")
-        except ClientError as error:
-            self.assertEqual(expected_error, error)
-            mock_s3_cli.restore_object.assert_called_once_with(
-                Bucket=glacier_bucket,
-                Key=key,
-                RestoreRequest={
-                    "Days": restore_expire_days,
-                    "GlacierJobParameters": {"Tier": retrieval_type},
-                },
-            )
-
-    # noinspection PyUnusedLocal
-    @patch("cumulus_logger.CumulusLogger.error")
-    @patch("cumulus_logger.CumulusLogger.info")
-    def test_restore_object_log_to_db_fails_does_not_halt(
-        self, mock_logger_info: MagicMock, mock_logger_error: MagicMock
-    ):
-        glacier_bucket = uuid.uuid4().__str__()
-        key = uuid.uuid4().__str__()
-        restore_expire_days = randint(0, 99)  # nosec
-        retrieval_type = uuid.uuid4().__str__()
-        mock_s3_cli = Mock()
-
-        request_files.restore_object(
-            mock_s3_cli,
-            key,
-            restore_expire_days,
-            glacier_bucket,
-            randint(0, 99),  # nosec
-            uuid.uuid4().__str__(),
-            retrieval_type,
-        )
-
-        mock_s3_cli.restore_object.assert_called_once_with(
-            Bucket=glacier_bucket,
-            Key=key,
-            RestoreRequest={
-                "Days": restore_expire_days,
-                "GlacierJobParameters": {"Tier": retrieval_type},
-            },
-        )
+        self.assertEqual(f"An error occurred (HTTPStatus: 200) when calling the restore_object operation: "
+                         f"File '{key}' in bucket '{glacier_bucket}' has already been recovered.",
+                         str(context.exception))
 
     # The below are legacy tests that don't strictly check request_files.py on its own. Remove/adjust as needed.
     @patch("request_files.task")
@@ -1091,7 +1056,10 @@ class TestRequestFiles(unittest.TestCase):
         }
 
         mock_s3_cli = mock_boto3_client("s3")
-        mock_s3_cli.restore_object.side_effect = [None, None, None, None]
+        mock_s3_cli.restore_object.side_effect = [{"ResponseMetadata": {"HTTPStatusCode": 202}},
+                                                  {"ResponseMetadata": {"HTTPStatusCode": 202}},
+                                                  {"ResponseMetadata": {"HTTPStatusCode": 202}},
+                                                  {"ResponseMetadata": {"HTTPStatusCode": 202}}]
 
         result = request_files.task(input_event, self.context)
 
@@ -1327,7 +1295,7 @@ class TestRequestFiles(unittest.TestCase):
         }
 
         mock_s3_cli = mock_boto3_client("s3")
-        mock_s3_cli.restore_object.side_effect = [None]
+        mock_s3_cli.restore_object.side_effect = [{"ResponseMetadata": {"HTTPStatusCode": 202}}]
 
         exp_granules = {
             "granules": [
@@ -1397,7 +1365,7 @@ class TestRequestFiles(unittest.TestCase):
 
         mock_s3_cli = mock_boto3_client("s3")
         # mock_s3_cli.head_object = Mock()  # todo: Look into why this line was in so many tests without asserts.
-        mock_s3_cli.restore_object.side_effect = [None]
+        mock_s3_cli.restore_object.side_effect = [{"ResponseMetadata": {"HTTPStatusCode": 202}}]
         exp_granules = {
             "granules": [
                 {
@@ -1536,10 +1504,11 @@ class TestRequestFiles(unittest.TestCase):
 
         event["input"] = {"granules": [gran]}
         mock_s3_cli = mock_boto3_client("s3")
+
         mock_s3_cli.restore_object.side_effect = [
-            None,
+            {"ResponseMetadata": {"HTTPStatusCode": 202}},
             ClientError({"Error": {"Code": "NoSuchBucket"}}, "restore_object"),
-            None,
+            {"ResponseMetadata": {"HTTPStatusCode": 202}},
             ClientError({"Error": {"Code": "NoSuchBucket"}}, "restore_object"),
             ClientError({"Error": {"Code": "NoSuchKey"}}, "restore_object"),
         ]
@@ -1635,10 +1604,10 @@ class TestRequestFiles(unittest.TestCase):
         mock_s3_cli = mock_boto3_client("sqs")
 
         mock_s3_cli.restore_object.side_effect = [
-            None,
+            {"ResponseMetadata": {"HTTPStatusCode": 202}},
             ClientError({"Error": {"Code": "NoSuchBucket"}}, "restore_object"),
             ClientError({"Error": {"Code": "NoSuchBucket"}}, "restore_object"),
-            None,
+            {"ResponseMetadata": {"HTTPStatusCode": 202}},
         ]
 
         exp_granules = {
@@ -1715,7 +1684,10 @@ class TestRequestFiles(unittest.TestCase):
         }
 
         mock_s3_cli = mock_boto3_client("s3")
-        mock_s3_cli.restore_object.side_effect = [None, None, None, None]
+        mock_s3_cli.restore_object.side_effect = [{"ResponseMetadata": {"HTTPStatusCode": 202}},
+                                                  {"ResponseMetadata": {"HTTPStatusCode": 202}},
+                                                  {"ResponseMetadata": {"HTTPStatusCode": 202}},
+                                                  {"ResponseMetadata": {"HTTPStatusCode": 202}}]
 
         result = request_files.task(input_event, self.context)
 

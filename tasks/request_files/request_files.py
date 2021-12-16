@@ -230,7 +230,9 @@ def inner_task(
     """
     # Get the glacier bucket from the event
     try:
-        glacier_bucket = event[EVENT_CONFIG_KEY][CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY]
+        glacier_bucket = event[EVENT_CONFIG_KEY][
+            CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY
+        ]
     except KeyError:
         raise RestoreRequestError(
             f"request: {event} does not contain a config value for {CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY}"
@@ -552,22 +554,24 @@ def restore_object(
         job_id: The unique id of the job. Used for logging.
         retrieval_type: Glacier Tier. Valid values are 'Standard'|'Bulk'|'Expedited'. Defaults to 'Standard'.
     Raises:
-        ClientError: Raises ClientErrors from restore_object.
+        ClientError: Raises ClientErrors from restore_object, or if the file is already restored.
     """
     request = {"Days": days, "GlacierJobParameters": {"Tier": retrieval_type}}
     # Submit the request
-    try:
-        s3_cli.restore_object(
-            Bucket=db_glacier_bucket_key, Key=key, RestoreRequest=request
+    restore_result = s3_cli.restore_object(
+        Bucket=db_glacier_bucket_key, Key=key, RestoreRequest=request
+    )  # Allow ClientErrors to bubble up.
+    if restore_result["ResponseMetadata"]["HTTPStatusCode"] == 200:
+        # Will have a non-error path after https://bugs.earthdata.nasa.gov/browse/ORCA-336
+        raise ClientError(
+            {
+                "Error": {
+                    "Code": "HTTPStatus: 200",
+                    "Message": f"File '{key}' in bucket '{db_glacier_bucket_key}' has already been recovered.",
+                }
+            },
+            "restore_object",
         )
-
-    except ClientError as c_err:
-        # NoSuchBucket, NoSuchKey, or InvalidObjectState error == the object's
-        # storage class was not GLACIER
-        LOGGER.error(
-            f"{c_err}. bucket: {db_glacier_bucket_key} file: {key} Job ID: {job_id}"
-        )
-        raise c_err
 
     LOGGER.info(
         f"Restore {key} from {db_glacier_bucket_key} "
