@@ -81,7 +81,7 @@ module "orca" {
 
   ## OPTIONAL
   # db_admin_username                                    = "postgres"
-  # default_multipart_chunksize_mb                       = 250
+  # default_s3MultipartChunksizeMb                       = 250
   # metadata_queue_message_retention_time                = 777600
   # orca_ingest_lambda_memory_size                       = 2240
   # orca_ingest_lambda_timeout                           = 600
@@ -357,7 +357,7 @@ the ingest workflow.
       "event.$":"$",
       "task_config": {
         "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
-        "multipart_chunksize_mb": "{$.meta.collection.meta.multipart_chunksize_mb}",
+        "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb"},
         "providerId": "{$.meta.provider.id}",
         "providerName": "{$.meta.provider.name}",
         "executionId": "{$.cumulus_meta.execution_name}",
@@ -544,7 +544,7 @@ To configure a collection to enable ORCA, add the line
 `"granuleRecoveryWorkflow": "OrcaRecoveryWorkflow"` to the collection configuration
 as seen below. Optionally, you can exclude files by adding values to an
 `"excludeFileTypes"` variable as seen below. In addition, when dealing with large
-files, the `"multipart_chunksize_mb"` variable can also be set to override the
+files, the `"s3MultipartChunksizeMb"` variable can also be set to override the
 default setting set during ORCA installation. For more information, see the documentation on the
 [`copy_to_glacier` task](https://github.com/nasa/cumulus-orca/tree/master/tasks/copy_to_glacier).
 
@@ -562,7 +562,7 @@ default setting set during ORCA installation. For more information, see the docu
   "meta": {
     "granuleRecoveryWorkflow": "OrcaRecoveryWorkflow",
     "excludeFileTypes": [".cmr", ".xml", ".met"],
-    "multipart_chunksize_mb": 400,
+    "s3MultipartChunksizeMb": 400,
     "orcaDefaultBucketOverride": "prod_orca_worm"
   },
   ...

@@ -283,7 +283,7 @@ DATA
     Any = typing.Any
     CONFIG_COLLECTION_KEY = 'collection'
     CONFIG_JOB_ID_KEY = 'asyncOperationId'
-    CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = 'multipart_chunksize_mb'
+    CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = 's3MultipartChunksizeMb'
     CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY = 'orcaDefaultBucketOverride'
     DEFAULT_MAX_REQUEST_RETRIES = 2
     DEFAULT_RESTORE_EXPIRE_DAYS = 5

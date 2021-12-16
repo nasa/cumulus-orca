@@ -16,7 +16,7 @@ from run_cumulus_task import run_cumulus_task
 
 import sqs_library
 
-CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = "multipart_chunksize_mb"
+CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = "s3MultipartChunksizeMb"
 CONFIG_EXCLUDE_FILE_TYPES_KEY = "excludeFileTypes"
 CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY = "orcaDefaultBucketOverride"
 # Set Cumulus LOGGER

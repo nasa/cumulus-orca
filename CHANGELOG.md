@@ -140,7 +140,7 @@ found for `copy_to_glacier` and ORCA recovery in the ORCA documentation
 
 ### Added
 - *ORCA-244* Added schema files for copy_to_glacier. Errors for improperly formatted requests will look different.
-- *ORCA-246* Added TF variable `default_multipart_chunksize_mb` which adjusts the maximum chunksize when copying files. Defaults to 250. Can be overridden by `multipart_chunksize_mb` within `config['collection']`. `default_multipart_chunksize_mb` can be overridden in your `orca.tf` with the line `default_multipart_chunksize_mb = 500`
+- *ORCA-246* Added TF variable `default_multipart_chunksize_mb` which adjusts the maximum chunksize when copying files. Defaults to 250. Can be overridden by `s3MultipartChunksizeMb` within `config['collection']`. `default_multipart_chunksize_mb` can be overridden in your `orca.tf` with the line `default_multipart_chunksize_mb = 500`
 
 ### Fixed
 - *ORCA-248* `excludeFileTypes` is no longer required, as intended.

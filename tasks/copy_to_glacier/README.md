@@ -223,12 +223,12 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_glaci
 ## Configuration
 
 As part of the [Cumulus Message Adapter configuration](https://nasa.github.io/cumulus/docs/workflows/input_output#cma-configuration) 
-for `copy_to_glacier`, the `excludeFileTypes`, `multipart_chunksize_mb`, `providerId`, `executionId`, `collectionShortname`, `collectionVersion` and `orcaDefaultBucketOverride` keys must be present under the 
+for `copy_to_glacier`, the `excludeFileTypes`, `s3MultipartChunksizeMb`, `providerId`, `executionId`, `collectionShortname`, `collectionVersion` and `orcaDefaultBucketOverride` keys must be present under the 
 `task_config` object as seen below. Per the [config schema](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/config.json), 
 the values of the keys are used the following ways. The `provider` key should contain an `id` key that returns the provider id from Cumulus. The `cumulus_meta` key should contain an `execution_name` key that returns the step function execution ID from AWS. 
 The `collection` key value should contain a `name` key and a `version` key that return the required collection shortname and collection version from Cumulus respectively.
 The `collection` key value should also contain a meta object with an optional `excludeFileTypes` key that is used to determine file patterns that should not be 
-sent to ORCA. The optional `multipart_chunksize_mb` is used to override the default setting for the lambda 
+sent to ORCA. The optional `s3MultipartChunksizeMb` is used to override the default setting for the lambda 
 s3 copy maximum multipart chunk size value when copying large files to ORCA.
 The optional `orcaDefaultBucketOverride` overrides the `ORCA_DEFAULT_BUCKET` set on deployment.
 These settings can often be derived from the collection configuration in Cumulus as seen below:
@@ -241,8 +241,8 @@ These settings can often be derived from the collection configuration in Cumulus
         "cma": {
           "event.$": "$",
           "task_config": {
+            "s3MultipartChunksizeMb": "{$.meta.collection.s3MultipartChunksizeMb"},
             "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
-            "multipart_chunksize_mb": "{$.meta.collection.meta.multipart_chunksize_mb"},
             "providerId": "{$.meta.provider.id}",
             "providerName": "{$.meta.provider.name}",
             "executionId": "{$.cumulus_meta.execution_name}",
@@ -406,7 +406,7 @@ FUNCTIONS
 DATA
     Any = typing.Any
     CONFIG_EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
-    CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = 'multipart_chunksize_mb'
+    CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = 's3MultipartChunksizeMb'
     CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY = 'orcaDefaultBucketOverride'
     Dict = typing.Dict
     FILE_BUCKET_KEY = 'bucket'
