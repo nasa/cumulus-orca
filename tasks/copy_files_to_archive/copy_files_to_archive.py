@@ -35,7 +35,7 @@ INPUT_SOURCE_KEY_KEY = "source_key"
 INPUT_TARGET_KEY_KEY = "target_key"
 INPUT_TARGET_BUCKET_KEY = "restore_destination"
 INPUT_SOURCE_BUCKET_KEY = "source_bucket"
-INPUT_MULTIPART_CHUNKSIZE_MB = "multipart_chunksize_mb"
+INPUT_MULTIPART_CHUNKSIZE_MB_KEY = "multipart_chunksize_mb"
 
 LOGGER = CumulusLogger()
 
@@ -84,7 +84,7 @@ def task(
                     a_file[INPUT_SOURCE_BUCKET_KEY],
                     a_file[INPUT_SOURCE_KEY_KEY],
                     a_file[INPUT_TARGET_BUCKET_KEY],
-                    a_file.get(INPUT_MULTIPART_CHUNKSIZE_MB, None)
+                    a_file.get(INPUT_MULTIPART_CHUNKSIZE_MB_KEY, None)
                     or default_multipart_chunksize_mb,
                     a_file[INPUT_TARGET_KEY_KEY],
                 )

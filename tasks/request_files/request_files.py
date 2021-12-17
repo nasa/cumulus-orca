@@ -41,7 +41,7 @@ INPUT_GRANULES_KEY = "granules"
 
 CONFIG_JOB_ID_KEY = "asyncOperationId"
 CONFIG_COLLECTION_KEY = "collection"
-CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = "multipart_chunksize_mb"
+CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = "s3MultipartChunksizeMb"
 
 GRANULE_GRANULE_ID_KEY = "granuleId"
 GRANULE_KEYS_KEY = "keys"
