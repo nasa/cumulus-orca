@@ -59,7 +59,7 @@ An example of the API output is shown below:
           "orcaArchiveLocation": "orca-archive",
           "keyPath": "MOD14A1/061/032/MOD14A1.061.A23V45.2020235.2020240145621.hdf",
           "sizeBytes": 100934568723,
-          "hash": "ACFH325128030192834127347"
+          "hash": "ACFH325128030192834127347",
           "hashType": "SHA-256",
           "version": "VXCDEG902"
         }
