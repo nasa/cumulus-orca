@@ -357,7 +357,7 @@ the ingest workflow.
       "event.$":"$",
       "task_config": {
         "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
-        "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb"},
+        "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
         "providerId": "{$.meta.provider.id}",
         "providerName": "{$.meta.provider.name}",
         "executionId": "{$.cumulus_meta.execution_name}",
