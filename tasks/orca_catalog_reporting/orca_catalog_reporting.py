@@ -203,6 +203,7 @@ def handler(
     Returns:
         See schemas/output.json
         Or, if an error occurs, see create_http_error_dict
+            400 if input does not match schemas/input.json. 500 if an error occurs when querying the database.
     """
     try:
         LOGGER.setMetadata(event, context)
