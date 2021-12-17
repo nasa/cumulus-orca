@@ -37,7 +37,7 @@ and includes an additional section for migration notes.
 - *ORCA-245* Updated resource policies related to KMS keys to provide better security.
 - *ORCA-318* Updated post_to_catalog lambda to match new Cumulus schema changes.
 - *ORCA-317* Updated the db_deploy task, unit tests, manual tests, research pages and SQL to reflect new inventory layout to better align with Cumulus.
-- *ORCA-249* Changed `mutipart_chunksize_mb` in lambda configs to `s3MultipartChunksizeMb`.
+- *ORCA-249* Changed `mutipart_chunksize_mb` in lambda configs to `s3MultipartChunksizeMb`. Standard workflows now pull from `$.meta.collection.meta.s3MultipartChunksizeMb`
 
 ### Migration Notes
 
@@ -55,6 +55,7 @@ and includes an additional section for migration notes.
     - If preserving a database from a previous version of Orca, set to disaster_recovery.
   - rds_security_group_id (Requires a value. Set in terraform.tfvars to the Security Group ID of your RDS Database's Security Group. Output from Cumulus' RDS module as `security_group_id`)
   - vpc_endpoint_id
+- Adjust workflows/step functions for copy_to_glacier and request_files. `multipart_chunksize_mb` argument in `task_config` is now the Cumulus standard of `s3MultipartChunksizeMb`.
 - Add the following ORCA required variables definition to your `variables.tf` or `orca_variables.tf` file.
 
 ```terraform
@@ -110,7 +111,7 @@ variable "rds_security_group_id" {
   rds_security_group_id    = var.rds_security_group_id
   ## OPTIONAL
   db_admin_username                                    = "postgres"
-  s3MultipartChunksizeMb                               = 250
+  default_multipart_chunksize_mb                       = 250
   orca_ingest_lambda_memory_size                       = 2240
   orca_ingest_lambda_timeout                           = 720
   orca_recovery_buckets                                = []

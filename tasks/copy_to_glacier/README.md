@@ -241,7 +241,7 @@ These settings can often be derived from the collection configuration in Cumulus
         "cma": {
           "event.$": "$",
           "task_config": {
-            "s3MultipartChunksizeMb": "{$.meta.collection.s3MultipartChunksizeMb"},
+            "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
             "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
             "providerId": "{$.meta.provider.id}",
             "providerName": "{$.meta.provider.name}",
