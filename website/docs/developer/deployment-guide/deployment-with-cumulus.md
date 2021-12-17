@@ -117,7 +117,7 @@ optional variables can be found in the [variables section](#orca-variables).
 The following variables are set as part of your Cumulus deployment and are
 required by the ORCA module. More information about setting these variables can
 be found in the [Cumulus variable definitions](https://github.com/nasa/cumulus/blob/master/tf-modules/cumulus/variables.tf).
-The variables must be set with the proper values in the `terraform.tfvavrs` file.
+The variables must be set with the proper values in the `terraform.tfvars` file.
 
 - buckets
 - lambda_subnet_ids
@@ -182,7 +182,7 @@ variable "rds_security_group_id" {
 
 ### Modifying `cumulus-tf/terraform.tfvars`
 
-At the end of the `terrafor.tfvars` file, add the following code. Update the
+At the end of the `terraform.tfvars` file, add the following code. Update the
 required and optional variable values to the values needed for your particular
 environment.
 
@@ -421,7 +421,7 @@ values.
 
 #### Cumulus Required Variables
 
-The following variables should be present already in the `cumulus-tf/terrafor.tfvars`
+The following variables should be present already in the `cumulus-tf/terraform.tfvars`
 file. The variables must be set with proper values for your environment in the
 `cumulus-tf/terraform.tfvars` file.
 
