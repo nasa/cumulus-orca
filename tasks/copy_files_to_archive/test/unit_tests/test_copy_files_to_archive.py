@@ -128,7 +128,7 @@ class TestCopyFilesToArchive(TestCase):
             copy_files_to_archive.INPUT_SOURCE_KEY_KEY: file0_source_key,
             copy_files_to_archive.INPUT_TARGET_BUCKET_KEY: file0_target_bucket,
             copy_files_to_archive.INPUT_TARGET_KEY_KEY: file0_target_key,
-            copy_files_to_archive.INPUT_MULTIPART_CHUNKSIZE_MB: None,
+            copy_files_to_archive.INPUT_MULTIPART_CHUNKSIZE_MB_KEY: None,
             copy_files_to_archive.FILE_MESSAGE_RECIEPT: file0_message_reciept,
         }
         file1 = {
@@ -140,7 +140,7 @@ class TestCopyFilesToArchive(TestCase):
             copy_files_to_archive.INPUT_SOURCE_KEY_KEY: file1_source_key,
             copy_files_to_archive.INPUT_TARGET_BUCKET_KEY: file1_target_bucket,
             copy_files_to_archive.INPUT_TARGET_KEY_KEY: file1_target_key,
-            copy_files_to_archive.INPUT_MULTIPART_CHUNKSIZE_MB: file1_multipart_chunksize_mb,
+            copy_files_to_archive.INPUT_MULTIPART_CHUNKSIZE_MB_KEY: file1_multipart_chunksize_mb,
             copy_files_to_archive.FILE_MESSAGE_RECIEPT: file1_message_reciept,
         }
         mock_get_files_from_records.return_value = [file0, file1]

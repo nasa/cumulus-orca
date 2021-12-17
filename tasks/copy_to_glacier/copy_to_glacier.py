@@ -16,7 +16,7 @@ from run_cumulus_task import run_cumulus_task
 
 import sqs_library
 
-CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = "multipart_chunksize_mb"
+CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = "s3MultipartChunksizeMb"
 CONFIG_EXCLUDE_FILE_TYPES_KEY = "excludeFileTypes"
 CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY = "orcaDefaultBucketOverride"
 # Set Cumulus LOGGER
@@ -163,13 +163,11 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
 
     # initiate empty SQS body dict
     sqs_body = {"provider": {}, "collection": {}, "granule": {}}
-    # 'providerName' set to None because Cumulus only returns providerId for now.
-    # In case it is available in the future, update orca_copy_to_glacier_workflow.asl.json and config.json as needed
-    sqs_body["provider"]["name"] = None
+    sqs_body["provider"]["name"] = config.get("providerName", None)
     sqs_body["provider"]["providerId"] = config["providerId"]
     sqs_body["collection"]["shortname"] = config["collectionShortname"]
     sqs_body["collection"]["version"] = config["collectionVersion"]
-    # Cumulus currently creates collectionId by concating shortname + ___ + version
+    # Cumulus currently creates collectionId by concatenating shortname + ___ + version
     # See https://github.com/nasa/cumulus-dashboard/blob/18a278ee5a1ac5181ec035b3df0665ef5acadcb0/app/src/js/utils/format.js#L342
     sqs_body["collection"]["collectionId"] = (
         config["collectionShortname"] + "___" + config["collectionVersion"]

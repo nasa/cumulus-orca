@@ -13,7 +13,7 @@
         "pattern": "\\..+"
       }
     },
-    "multipart_chunksize_mb": {
+    "s3MultipartChunksizeMb": {
       "type": ["integer", "null"],
       "description": "The collection's maximum size of chunks to use when copying. Defaults to environment variable."
     },
@@ -22,7 +22,7 @@
       "description": "Provider ID supplied by Cumulus"
     },
     "providerName": {
-      "type": "string",
+      "type": ["string", "null"],
       "description": "Provider Name supplied by Cumulus"
     },
     "executionId": {
