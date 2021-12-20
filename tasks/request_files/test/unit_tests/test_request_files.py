@@ -23,20 +23,6 @@ from botocore.exceptions import ClientError
 
 import request_files
 
-# noinspection PyPackageRequirements
-
-# todo: Remove these hardcoded keys
-FILE1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5"
-FILE2 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5.met"
-FILE3 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321_ndvi.jpg"
-FILE4 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml"
-PROTECTED_BUCKET = "sndbx-cumulus-protected"
-PUBLIC_BUCKET = "sndbx-cumulus-public"
-KEY1 = {"key": FILE1, "dest_bucket": PROTECTED_BUCKET}
-KEY2 = {"key": FILE2, "dest_bucket": PROTECTED_BUCKET}
-KEY3 = {"key": FILE3, "dest_bucket": PUBLIC_BUCKET}
-KEY4 = {"key": FILE4, "dest_bucket": PUBLIC_BUCKET}
-
 
 class TestRequestFiles(unittest.TestCase):
     """
@@ -407,6 +393,10 @@ class TestRequestFiles(unittest.TestCase):
             db_queue_url,
         )
 
+    # todo: test_inner_task_happy_path Make sure to include multiple granules
+
+    # todo: test_inner_task_error_posting_status_raises to replicate test_inner_task_one_granule_1_file_db_error_raises with proper scope
+
     def test_inner_task_missing_glacier_bucket_raises(self):
         try:
             request_files.inner_task(
@@ -608,6 +598,74 @@ class TestRequestFiles(unittest.TestCase):
             },
             result,
         )
+
+    @patch.dict(
+        os.environ,
+        {
+            request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY: uuid.uuid4().__str__()
+        },
+        clear=True,
+    )
+    def test_get_default_glacier_bucket_name_returns_override_if_present(self):
+        bucket = Mock()
+        result = request_files.get_default_glacier_bucket_name(
+            {request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: bucket}
+        )
+        self.assertEqual(bucket, result)
+
+    @patch.dict(
+        os.environ,
+        {
+            request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY: uuid.uuid4().__str__()
+        },
+        clear=True,
+    )
+    def test_get_default_glacier_bucket_name_returns_default_bucket_if_no_override(
+        self,
+    ):
+        bucket = os.environ[request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY]
+        result = request_files.get_default_glacier_bucket_name({})
+        self.assertEqual(bucket, result)
+
+    @patch.dict(
+        os.environ,
+        {
+            request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY: uuid.uuid4().__str__()
+        },
+        clear=True,
+    )
+    def test_get_default_glacier_bucket_name_returns_default_bucket_if_none_override(
+        self,
+    ):
+        bucket = os.environ[request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY]
+        result = request_files.get_default_glacier_bucket_name(
+            {
+                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: None,
+            }
+        )
+        self.assertEqual(bucket, result)
+
+    @patch.dict(
+        os.environ,
+        {
+            request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY: uuid.uuid4().__str__()
+        },
+        clear=True,
+    )
+    def test_get_default_glacier_bucket_name_returns_env_bucket_if_no_other(self):
+        bucket = os.environ[request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY]
+        result = request_files.get_default_glacier_bucket_name(
+            {request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: None}
+        )
+        self.assertEqual(bucket, result)
+
+    def test_get_default_glacier_bucket_name_no_bucket_raises_error(self):
+        os.environ.pop(request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY, None)
+        with self.assertRaises(KeyError) as cm:
+            request_files.get_default_glacier_bucket_name(
+                {request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: None}
+            )
+        self.assertEqual("'ORCA_DEFAULT_BUCKET'", str(cm.exception))
 
     @patch("time.sleep")
     @patch("request_files.restore_object")
@@ -825,7 +883,10 @@ class TestRequestFiles(unittest.TestCase):
             self.fail("Error not Raised.")
         # except request_files.RestoreRequestError:
         except request_files.RestoreRequestError as caught_error:
-            self.assertEqual(f"One or more files failed to be requested from {glacier_bucket}.", str(caught_error))
+            self.assertEqual(
+                f"One or more files failed to be requested from {glacier_bucket}.",
+                str(caught_error),
+            )
         self.assertFalse(
             granule[request_files.GRANULE_RECOVER_FILES_KEY][0][
                 request_files.FILE_SUCCESS_KEY
@@ -888,7 +949,7 @@ class TestRequestFiles(unittest.TestCase):
             ]
         )
 
-    # todo: Add checks on retry logic for process_granule retry logic for update_status_for_file
+    # todo: Add checks on process_granule retry logic for update_status_for_file
 
     def test_object_exists_happy_path(self):
         mock_s3_cli = Mock()
@@ -1021,17 +1082,20 @@ class TestRequestFiles(unittest.TestCase):
             str(context.exception),
         )
 
-    # The below are legacy tests that don't strictly check request_files.py on its own. Remove/adjust as needed.
     @patch("request_files.task")
     def test_handler_happy_path(self, mock_task: MagicMock):
         """
         Tests that between the handler and CMA, input is translated into what task expects.
         """
+        # todo: Remove these hardcoded keys
+        file0 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5"
+        bucket_name = uuid.uuid4().__str__()
+
         input_event = create_handler_event()
         expected_task_input = {
             "input": input_event["payload"],
             "config": {
-                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "podaac-sndbx-cumulus-glacier"
+                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "podaac-sndbx-cumulus-glacier"  # todo: tie to a var
             },
         }
         mock_task.return_value = {
@@ -1040,9 +1104,9 @@ class TestRequestFiles(unittest.TestCase):
                     "granuleId": "some_granule_id",
                     "recover_files": [
                         {
-                            "filename": os.path.basename(FILE1),
-                            "key_path": FILE1,
-                            "restore_destination": PROTECTED_BUCKET,
+                            "filename": os.path.basename(file0),
+                            "key_path": file0,
+                            "restore_destination": bucket_name,
                             "success": True,
                             "status_id": 1,
                             "last_update": "2021-01-01T23:53:43.097+00:00",
@@ -1059,168 +1123,6 @@ class TestRequestFiles(unittest.TestCase):
 
         self.assertEqual(mock_task.return_value, result["payload"])
 
-    @staticmethod
-    def get_expected_files():
-        """
-        builds a list of expected files
-        """
-        return [
-            {
-                "filename": os.path.basename(FILE1),
-                "key_path": FILE1,
-                "restore_destination": PROTECTED_BUCKET,
-                "success": True,
-                "multipart_chunksize_mb": None,
-                "status_id": 1,
-            },
-            {
-                "filename": os.path.basename(FILE2),
-                "key_path": FILE2,
-                "restore_destination": PROTECTED_BUCKET,
-                "success": True,
-                "multipart_chunksize_mb": None,
-                "status_id": 1,
-            },
-            {
-                "filename": os.path.basename(FILE3),
-                "key_path": FILE3,
-                "restore_destination": PUBLIC_BUCKET,
-                "success": True,
-                "multipart_chunksize_mb": None,
-                "status_id": 1,
-            },
-            {
-                "filename": os.path.basename(FILE4),
-                "key_path": FILE4,
-                "restore_destination": PUBLIC_BUCKET,
-                "success": True,
-                "multipart_chunksize_mb": None,
-                "status_id": 1,
-            },
-        ]
-
-    @staticmethod
-    def get_expected_keys():
-        """
-        Builds a list of expected keys
-        """
-        return [
-            {"dest_bucket": PROTECTED_BUCKET, "key": FILE1},
-            {"dest_bucket": PROTECTED_BUCKET, "key": FILE2},
-            {"dest_bucket": PUBLIC_BUCKET, "key": FILE3},
-            {"dest_bucket": PUBLIC_BUCKET, "key": FILE4},
-        ]
-
-    @patch("cumulus_logger.CumulusLogger.critical")
-    @patch("time.sleep")
-    @patch("request_files.shared_recovery.create_status_for_job")
-    @patch("boto3.client")
-    @patch("cumulus_logger.CumulusLogger.error")
-    def test_inner_task_one_granule_1_file_db_error_raises(
-        self,
-        mock_logger_error: MagicMock,
-        mock_boto3_client: MagicMock,
-        mock_create_status_for_job: MagicMock,
-        mock_sleep: MagicMock,
-        mock_logger_critical: MagicMock,
-    ):
-        """
-        Test one file for one granule - db error inserting status - Should raise the error.
-        """
-        retry_sleep_secs = randint(0, 100)
-        retrieval_type = Mock()
-        restore_expire_days = Mock()
-        db_queue_url = uuid.uuid4().__str__()
-
-        granule_id = uuid.uuid4().__str__()
-        input_event = {
-            "input": {"granules": [{"granuleId": granule_id, "keys": [KEY1]}]},
-            "config": {
-                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "my-dr-fake-glacier-bucket",
-                "asyncOperationId": uuid.uuid4().__str__(),
-            },
-        }
-
-        mock_s3_cli = mock_boto3_client("s3")
-        mock_s3_cli.restore_object.side_effect = [None]
-        expected_ex0 = Exception(uuid.uuid4().__str__())
-        expected_ex1 = Exception(uuid.uuid4().__str__())
-        mock_create_status_for_job.side_effect = [expected_ex0, expected_ex1]
-        try:
-            _ = request_files.inner_task(
-                input_event,
-                1,
-                retry_sleep_secs,
-                retrieval_type,
-                restore_expire_days,
-                db_queue_url,
-            )
-        except Exception as err:
-            self.assertEqual(
-                f"Unable to send message to QUEUE {db_queue_url}", str(err)
-            )
-            mock_logger_error.assert_has_calls(
-                [
-                    call(
-                        f"Ran into error posting to SQS 1 time(s) with exception {{ex}}",
-                        ex=str(expected_ex0),
-                    ),
-                    call(
-                        f"Ran into error posting to SQS 2 time(s) with exception {{ex}}",
-                        ex=str(expected_ex1),
-                    ),
-                ]
-            )
-            self.assertEqual(2, mock_logger_error.call_count)
-            mock_create_status_for_job.assert_called()
-            mock_sleep.assert_has_calls(
-                [call(retry_sleep_secs), call(retry_sleep_secs)]
-            )
-            self.assertEqual(2, mock_sleep.call_count)
-            mock_logger_critical.assert_called_once_with(
-                f"Unable to send message to QUEUE {db_queue_url}", exec_info=True
-            )
-            return
-        self.fail(f"failed post to status queue should throw exception.")
-
-    @staticmethod
-    def get_exp_files_3_errs():
-        """
-        builds list of expected files for test case
-        """
-        return [
-            {
-                "key": FILE1,
-                "dest_bucket": PROTECTED_BUCKET,
-                "success": True,
-                "err_msg": "",
-            },
-            {
-                "key": FILE3,
-                "dest_bucket": PUBLIC_BUCKET,
-                "success": False,
-                "err_msg": "An error occurred (NoSuchKey) when calling the restore_object "
-                "operation: Unknown",
-            },
-            {
-                "key": FILE4,
-                "dest_bucket": PUBLIC_BUCKET,
-                "success": True,
-                "err_msg": "",
-            },
-        ]
-
-    @staticmethod
-    def get_exp_keys_3_errs():
-        """
-        builds list of expected files for test case
-        """
-        return [
-            {"key": FILE1, "dest_bucket": PROTECTED_BUCKET},
-            {"key": FILE3, "dest_bucket": PUBLIC_BUCKET},
-            {"key": FILE4, "dest_bucket": PUBLIC_BUCKET},
-        ]
-
     # noinspection PyUnusedLocal
     @patch("request_files.shared_recovery.create_status_for_job")
     @patch("boto3.client")
@@ -1233,6 +1135,18 @@ class TestRequestFiles(unittest.TestCase):
         A full run through with multiple files to verify output schema.
         Does NOT presently check side effects. Should not currently count for coverage.
         """
+        # todo: Remove these hardcoded keys
+        FILE1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5"
+        FILE2 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5.met"
+        FILE3 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321_ndvi.jpg"
+        FILE4 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml"
+        PROTECTED_BUCKET = "sndbx-cumulus-protected"
+        PUBLIC_BUCKET = "sndbx-cumulus-public"
+        KEY1 = {"key": FILE1, "dest_bucket": PROTECTED_BUCKET}
+        KEY2 = {"key": FILE2, "dest_bucket": PROTECTED_BUCKET}
+        KEY3 = {"key": FILE3, "dest_bucket": PUBLIC_BUCKET}
+        KEY4 = {"key": FILE4, "dest_bucket": PUBLIC_BUCKET}
+
         os.environ[request_files.OS_ENVIRON_DB_QUEUE_URL_KEY] = "https://db.queue.url"
         job_id = uuid.uuid4().__str__()
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
@@ -1296,8 +1210,46 @@ class TestRequestFiles(unittest.TestCase):
 
         exp_gran = {
             "granuleId": granule_id,
-            "keys": self.get_expected_keys(),
-            "recover_files": self.get_expected_files(),
+            "keys": [
+                {"dest_bucket": PROTECTED_BUCKET, "key": FILE1},
+                {"dest_bucket": PROTECTED_BUCKET, "key": FILE2},
+                {"dest_bucket": PUBLIC_BUCKET, "key": FILE3},
+                {"dest_bucket": PUBLIC_BUCKET, "key": FILE4},
+            ],
+            "recover_files": [
+                {
+                    "filename": os.path.basename(FILE1),
+                    "key_path": FILE1,
+                    "restore_destination": PROTECTED_BUCKET,
+                    "success": True,
+                    "multipart_chunksize_mb": None,
+                    "status_id": 1,
+                },
+                {
+                    "filename": os.path.basename(FILE2),
+                    "key_path": FILE2,
+                    "restore_destination": PROTECTED_BUCKET,
+                    "success": True,
+                    "multipart_chunksize_mb": None,
+                    "status_id": 1,
+                },
+                {
+                    "filename": os.path.basename(FILE3),
+                    "key_path": FILE3,
+                    "restore_destination": PUBLIC_BUCKET,
+                    "success": True,
+                    "multipart_chunksize_mb": None,
+                    "status_id": 1,
+                },
+                {
+                    "filename": os.path.basename(FILE4),
+                    "key_path": FILE4,
+                    "restore_destination": PUBLIC_BUCKET,
+                    "success": True,
+                    "multipart_chunksize_mb": None,
+                    "status_id": 1,
+                },
+            ],
         }
         exp_granules = {
             "granules": [exp_gran],
@@ -1319,74 +1271,6 @@ class TestRequestFiles(unittest.TestCase):
                 file.pop("completion_time", None)
 
         self.assertEqual(exp_granules, result_value)
-
-    @patch.dict(
-        os.environ,
-        {
-            request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY: uuid.uuid4().__str__()
-        },
-        clear=True,
-    )
-    def test_get_default_glacier_bucket_name_returns_override_if_present(self):
-        bucket = Mock()
-        result = request_files.get_default_glacier_bucket_name(
-            {request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: bucket}
-        )
-        self.assertEqual(bucket, result)
-
-    @patch.dict(
-        os.environ,
-        {
-            request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY: uuid.uuid4().__str__()
-        },
-        clear=True,
-    )
-    def test_get_default_glacier_bucket_name_returns_default_bucket_if_no_override(
-        self,
-    ):
-        bucket = os.environ[request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY]
-        result = request_files.get_default_glacier_bucket_name({})
-        self.assertEqual(bucket, result)
-
-    @patch.dict(
-        os.environ,
-        {
-            request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY: uuid.uuid4().__str__()
-        },
-        clear=True,
-    )
-    def test_get_default_glacier_bucket_name_returns_default_bucket_if_none_override(
-        self,
-    ):
-        bucket = os.environ[request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY]
-        result = request_files.get_default_glacier_bucket_name(
-            {
-                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: None,
-            }
-        )
-        self.assertEqual(bucket, result)
-
-    @patch.dict(
-        os.environ,
-        {
-            request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY: uuid.uuid4().__str__()
-        },
-        clear=True,
-    )
-    def test_get_default_glacier_bucket_name_returns_env_bucket_if_no_other(self):
-        bucket = os.environ[request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY]
-        result = request_files.get_default_glacier_bucket_name(
-            {request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: None}
-        )
-        self.assertEqual(bucket, result)
-
-    def test_no_bucket_raises_error(self):
-        os.environ.pop(request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY, None)
-        with self.assertRaises(KeyError) as cm:
-            request_files.get_default_glacier_bucket_name(
-                {request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: None}
-            )
-        self.assertEqual("'ORCA_DEFAULT_BUCKET'", str(cm.exception))
 
 
 if __name__ == "__main__":
