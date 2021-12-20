@@ -44,27 +44,17 @@ class TestRequestFiles(unittest.TestCase):
     """
 
     def setUp(self):
-        # todo: These values should NOT be hard-coded as present for every test.
-        os.environ[request_files.OS_ENVIRON_DB_QUEUE_URL_KEY] = "https://db.queue.url"
-        os.environ[request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY] = "5"
-        os.environ[request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY] = "2"
-        os.environ[
-            request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY
-        ] = "default_glacier_bucket"
-        os.environ["PREFIX"] = uuid.uuid4().__str__()
         os.environ.pop("CUMULUS_MESSAGE_ADAPTER_DISABLED", None)
-        self.context = LambdaContextMock()
         self.maxDiff = None
 
     def tearDown(self):
         os.environ.pop("PREFIX", None)
+        os.environ.pop(request_files.OS_ENVIRON_DB_QUEUE_URL_KEY, None)
         os.environ.pop(request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY, None)
         os.environ.pop(request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY, None)
+        os.environ.pop(request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY, None)
         os.environ.pop(request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY, None)
         os.environ.pop(request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY, None)
-        os.environ.pop(request_files.OS_ENVIRON_DB_QUEUE_URL_KEY, None)
-
-    # todo: remove all reverences to post_entry_to_queue
 
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
@@ -89,7 +79,7 @@ class TestRequestFiles(unittest.TestCase):
         exp_days = randint(0, 99)  # nosec
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
 
-        os.environ["DB_QUEUE_URL"] = db_queue_url
+        os.environ[request_files.OS_ENVIRON_DB_QUEUE_URL_KEY] = db_queue_url
         os.environ[
             request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY
         ] = max_retries.__str__()
@@ -834,68 +824,69 @@ class TestRequestFiles(unittest.TestCase):
             )
             self.fail("Error not Raised.")
         # except request_files.RestoreRequestError:
-        except request_files.RestoreRequestError as ce:
-            self.assertFalse(
-                granule[request_files.GRANULE_RECOVER_FILES_KEY][0][
-                    request_files.FILE_SUCCESS_KEY
-                ]
-            )
+        except request_files.RestoreRequestError as caught_error:
+            self.assertEqual(f"One or more files failed to be requested from {glacier_bucket}.", str(caught_error))
+        self.assertFalse(
+            granule[request_files.GRANULE_RECOVER_FILES_KEY][0][
+                request_files.FILE_SUCCESS_KEY
+            ]
+        )
 
-            mock_restore_object.assert_has_calls(
-                [
-                    call(
-                        mock_s3,
-                        file_name_0,
-                        restore_expire_days,
-                        glacier_bucket,
-                        1,
-                        job_id,
-                        retrieval_type,
-                    ),
-                    call(
-                        mock_s3,
-                        file_name_0,
-                        restore_expire_days,
-                        glacier_bucket,
-                        2,
-                        job_id,
-                        retrieval_type,
-                    ),
-                    call(
-                        mock_s3,
-                        file_name_0,
-                        restore_expire_days,
-                        glacier_bucket,
-                        3,
-                        job_id,
-                        retrieval_type,
-                    ),
-                ]
-            )
-            self.assertEqual(max_retries + 1, mock_restore_object.call_count)
-            mock_sleep.assert_has_calls([call(retry_sleep_secs)] * max_retries)
-            mock_update_status_for_file.assert_called_once_with(
-                job_id,
-                granule_id,
-                file_name_0,
-                OrcaStatus.FAILED,
-                str(expected_error),
-                db_queue_url,
-            )
-            mock_logger_error.assert_has_calls(
-                [
-                    call(
-                        "Failed to restore {file} from {glacier_bucket}. Encountered error [ {err} ].",
-                        file=file_name_0,
-                        glacier_bucket=glacier_bucket,
-                        err=expected_error,
-                    ),
-                    call(
-                        f"One or more files failed to be requested from {glacier_bucket}.  GRANULE: {{granule}}",
-                        granule=json.dumps(granule),
-                    ),
-                ]
-            )
+        mock_restore_object.assert_has_calls(
+            [
+                call(
+                    mock_s3,
+                    file_name_0,
+                    restore_expire_days,
+                    glacier_bucket,
+                    1,
+                    job_id,
+                    retrieval_type,
+                ),
+                call(
+                    mock_s3,
+                    file_name_0,
+                    restore_expire_days,
+                    glacier_bucket,
+                    2,
+                    job_id,
+                    retrieval_type,
+                ),
+                call(
+                    mock_s3,
+                    file_name_0,
+                    restore_expire_days,
+                    glacier_bucket,
+                    3,
+                    job_id,
+                    retrieval_type,
+                ),
+            ]
+        )
+        self.assertEqual(max_retries + 1, mock_restore_object.call_count)
+        mock_sleep.assert_has_calls([call(retry_sleep_secs)] * max_retries)
+        mock_update_status_for_file.assert_called_once_with(
+            job_id,
+            granule_id,
+            file_name_0,
+            OrcaStatus.FAILED,
+            str(expected_error),
+            db_queue_url,
+        )
+        mock_logger_error.assert_has_calls(
+            [
+                call(
+                    "Failed to restore {file} from {glacier_bucket}. Encountered error [ {err} ].",
+                    file=file_name_0,
+                    glacier_bucket=glacier_bucket,
+                    err=expected_error,
+                ),
+                call(
+                    f"One or more files failed to be requested from {glacier_bucket}.  GRANULE: {{granule}}",
+                    granule=json.dumps(granule),
+                ),
+            ]
+        )
 
     # todo: Add checks on retry logic for process_granule retry logic for update_status_for_file
 
@@ -1062,103 +1053,11 @@ class TestRequestFiles(unittest.TestCase):
             ],
             "asyncOperationId": "some_job_id",
         }
-        result = request_files.handler(input_event, self.context)
-        mock_task.assert_called_once_with(expected_task_input, self.context)
+        context = LambdaContextMock()
+        result = request_files.handler(input_event, context)
+        mock_task.assert_called_once_with(expected_task_input, context)
 
         self.assertEqual(mock_task.return_value, result["payload"])
-
-    # todo: replace mock_post_entry_to_queue with higher level calls
-    # todo: Rewrite to run against inner_task
-    # todo: remove references to other functions, such as mock_s3_cli.restore_object.
-    # noinspection PyUnusedLocal
-    @patch("request_files.shared_recovery.post_entry_to_queue")
-    @patch("boto3.client")
-    @patch("cumulus_logger.CumulusLogger.info")
-    def test_task_one_granule_4_files_success(
-        self,
-        mock_logger_info: MagicMock,
-        mock_boto3_client: MagicMock,
-        mock_post_entry_to_queue: MagicMock,
-    ):
-        """
-        Test four files for one granule - successful
-        """
-        granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
-        files = [KEY1, KEY2, KEY3, KEY4]
-        input_event = {
-            "input": {"granules": [{"granuleId": granule_id, "keys": files}]},
-            "config": {
-                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "my-dr-fake-glacier-bucket",
-                "asyncOperationId": uuid.uuid4().__str__(),
-            },
-        }
-
-        mock_s3_cli = mock_boto3_client("s3")
-        mock_s3_cli.restore_object.side_effect = [
-            {"ResponseMetadata": {"HTTPStatusCode": 202}},
-            {"ResponseMetadata": {"HTTPStatusCode": 202}},
-            {"ResponseMetadata": {"HTTPStatusCode": 202}},
-            {"ResponseMetadata": {"HTTPStatusCode": 202}},
-        ]
-
-        result = request_files.task(input_event, self.context)
-
-        mock_boto3_client.assert_has_calls([call("s3")])
-        mock_s3_cli.head_object.assert_any_call(
-            Bucket="my-dr-fake-glacier-bucket", Key=FILE1
-        )
-        mock_s3_cli.head_object.assert_any_call(
-            Bucket="my-dr-fake-glacier-bucket", Key=FILE2
-        )
-        mock_s3_cli.head_object.assert_any_call(
-            Bucket="my-dr-fake-glacier-bucket", Key=FILE3
-        )
-        mock_s3_cli.head_object.assert_any_call(
-            Bucket="my-dr-fake-glacier-bucket", Key=FILE4
-        )
-        restore_req_exp = {"Days": 5, "GlacierJobParameters": {"Tier": "Standard"}}
-
-        mock_s3_cli.restore_object.assert_any_call(
-            Bucket="my-dr-fake-glacier-bucket",
-            Key=FILE1,
-            RestoreRequest=restore_req_exp,
-        )
-        mock_s3_cli.restore_object.assert_any_call(
-            Bucket="my-dr-fake-glacier-bucket",
-            Key=FILE2,
-            RestoreRequest=restore_req_exp,
-        )
-        mock_s3_cli.restore_object.assert_any_call(
-            Bucket="my-dr-fake-glacier-bucket",
-            Key=FILE3,
-            RestoreRequest=restore_req_exp,
-        )
-        mock_s3_cli.restore_object.assert_called_with(
-            Bucket="my-dr-fake-glacier-bucket",
-            Key=FILE4,
-            RestoreRequest=restore_req_exp,
-        )
-
-        exp_gran = {
-            "granuleId": granule_id,
-            "keys": self.get_expected_keys(),
-            "recover_files": self.get_expected_files(),
-        }
-        exp_granules = {
-            "granules": [exp_gran],
-            "asyncOperationId": input_event["config"]["asyncOperationId"],
-        }
-
-        # Check the values of the result less the times since those will never match
-        result_value = result.copy()
-        for granule in result_value["granules"]:
-            for file in granule["recover_files"]:
-                file.pop("request_time", None)
-                file.pop("last_update", None)
-                file.pop("completion_time", None)
-
-        self.assertEqual(exp_granules, result_value)
-        mock_post_entry_to_queue.assert_called_once()  # todo: check args
 
     @staticmethod
     def get_expected_files():
@@ -1284,345 +1183,6 @@ class TestRequestFiles(unittest.TestCase):
             return
         self.fail(f"failed post to status queue should throw exception.")
 
-    # todo: replace mock_post_entry_to_queue with higher level calls
-    # todo: rewrite against inner_task
-    @patch("request_files.shared_recovery.post_entry_to_queue")
-    @patch("boto3.client")
-    def test_task_file_not_in_glacier(
-        self,
-        mock_boto3_client: MagicMock,
-        mock_post_entry_to_queue: MagicMock,
-    ):
-        """
-        Test a file that is not in glacier.
-        # todo: Expand test descriptions.
-        """
-        dest_bucket = uuid.uuid4().__str__()
-        file1 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.xyz"
-        granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
-        filename = "MOD09GQ.A0219114.N5aUCG.006.0656338553321.xyz"
-        event = {
-            "input": {
-                "granules": [
-                    {
-                        "granuleId": granule_id,
-                        "keys": [{"key": file1, "dest_bucket": dest_bucket}],
-                    }
-                ]
-            },
-            "config": {
-                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "my-bucket",
-                "asyncOperationId": uuid.uuid4().__str__(),
-            },
-        }
-        mock_s3_cli = mock_boto3_client("s3")
-        # todo: Verify the below with a real-world db. If not the same, fix request_files.object_exists
-        mock_s3_cli.head_object.side_effect = [
-            ClientError(
-                {"Error": {"Code": "404", "Message": "Not Found"}}, "head_object"
-            )
-        ]
-        result = request_files.task(event, self.context)
-
-        # todo: Kill all of this,
-        #  or at least use the actual bucket values for the individual files instead of copy/paste.
-        expected_granules = {
-            "granules": [
-                {
-                    "granuleId": granule_id,
-                    "keys": [{"dest_bucket": dest_bucket, "key": file1}],
-                    "recover_files": [
-                        {
-                            "success": True,
-                            "filename": filename,
-                            "key_path": file1,
-                            "restore_destination": dest_bucket,
-                            "multipart_chunksize_mb": None,
-                            "status_id": OrcaStatus.FAILED.value,
-                            "error_message": f"{file1} does not exist in my-bucket bucket",
-                            "request_time": mock.ANY,
-                            "last_update": mock.ANY,
-                            "completion_time": mock.ANY,
-                        }
-                    ],
-                }
-            ],
-            "asyncOperationId": event["config"]["asyncOperationId"],
-        }
-        self.assertEqual(expected_granules, result)
-        mock_boto3_client.assert_called_with("s3")
-        mock_s3_cli.head_object.assert_called_with(Bucket="my-bucket", Key=file1)
-
-    # todo: replace mock_post_entry_to_queue with higher level calls
-    # todo: rewrite against inner_task
-    @patch("request_files.shared_recovery.post_entry_to_queue")
-    @patch("boto3.client")
-    def test_task_no_retries_env_var(
-        self, mock_boto3_client: MagicMock, mock_post_entry_to_queue: MagicMock
-    ):
-        """
-        Test environment var RESTORE_REQUEST_RETRIES not set - use default.
-        """
-        del os.environ["RESTORE_REQUEST_RETRIES"]
-        granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
-        # todo: Reduce string copy/paste for test values here and elsewhere.
-        event = {
-            "input": {"granules": [{"granuleId": granule_id, "keys": [KEY1]}]},
-            "config": {
-                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "some_bucket",
-                "asyncOperationId": uuid.uuid4().__str__(),
-            },
-        }
-
-        mock_s3_cli = mock_boto3_client("s3")
-        mock_s3_cli.restore_object.side_effect = [
-            {"ResponseMetadata": {"HTTPStatusCode": 202}}
-        ]
-
-        exp_granules = {
-            "granules": [
-                {
-                    "granuleId": granule_id,
-                    "keys": [{"key": FILE1, "dest_bucket": PROTECTED_BUCKET}],
-                    "recover_files": [
-                        {
-                            "filename": os.path.basename(FILE1),
-                            "key_path": FILE1,
-                            "restore_destination": PROTECTED_BUCKET,
-                            "success": True,
-                            "multipart_chunksize_mb": None,
-                            "status_id": 1,
-                        },
-                    ],
-                }
-            ],
-            "asyncOperationId": event["config"]["asyncOperationId"],
-        }
-        result = request_files.task(event, self.context)
-        os.environ[
-            "RESTORE_REQUEST_RETRIES"
-        ] = "2"  # todo: This test claims 'no_retries'
-
-        # Check the values of the result less the times since those will never match
-        result_value = result.copy()
-        for granule in result_value["granules"]:
-            for file in granule["recover_files"]:
-                file.pop("request_time", None)
-                file.pop("last_update", None)
-                file.pop("completion_time", None)
-
-        self.assertEqual(exp_granules, result_value)
-
-        mock_boto3_client.assert_called_with("s3")
-        mock_s3_cli.head_object.assert_called_with(Bucket="some_bucket", Key=FILE1)
-        restore_req_exp = {"Days": 5, "GlacierJobParameters": {"Tier": "Standard"}}
-        mock_s3_cli.restore_object.assert_called_with(
-            Bucket="some_bucket", Key=FILE1, RestoreRequest=restore_req_exp
-        )
-        mock_post_entry_to_queue.assert_called()
-
-    # todo: replace mock_post_entry_to_queue with higher level calls
-    # todo: rewrite against inner_task
-    @patch("request_files.shared_recovery.post_entry_to_queue")
-    @patch("boto3.client")
-    def test_task_no_expire_days_env_var(
-        self,
-        mock_boto3_client: MagicMock,
-        mock_post_entry_to_queue: MagicMock,
-    ):
-        """
-        Test environment var RESTORE_EXPIRE_DAYS not set - use default.
-        """
-        del os.environ["RESTORE_EXPIRE_DAYS"]
-        os.environ["RESTORE_RETRIEVAL_TYPE"] = "Expedited"
-        granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
-        event = {
-            "config": {
-                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "some_bucket",
-                "asyncOperationId": uuid.uuid4().__str__(),
-            },
-            "input": {"granules": [{"granuleId": granule_id, "keys": [KEY1]}]},
-        }
-
-        mock_s3_cli = mock_boto3_client("s3")
-        # mock_s3_cli.head_object = Mock()  # todo: Look into why this line was in so many tests without asserts.
-        mock_s3_cli.restore_object.side_effect = [
-            {"ResponseMetadata": {"HTTPStatusCode": 202}}
-        ]
-        exp_granules = {
-            "granules": [
-                {
-                    "granuleId": granule_id,
-                    "keys": [{"key": FILE1, "dest_bucket": PROTECTED_BUCKET}],
-                    "recover_files": [
-                        {
-                            "filename": os.path.basename(FILE1),
-                            "key_path": FILE1,
-                            "restore_destination": PROTECTED_BUCKET,
-                            "success": True,
-                            "multipart_chunksize_mb": None,
-                            "status_id": 1,
-                        },
-                    ],
-                }
-            ],
-            "asyncOperationId": event["config"]["asyncOperationId"],
-        }
-
-        result = request_files.task(event, self.context)
-
-        # Check the values of the result less the times since those will never match
-        result_value = result.copy()
-        for granule in result_value["granules"]:
-            for file in granule["recover_files"]:
-                file.pop("request_time", None)
-                file.pop("last_update", None)
-                file.pop("completion_time", None)
-
-        self.assertEqual(exp_granules, result_value)
-        os.environ["RESTORE_EXPIRE_DAYS"] = "3"  # todo: Why is this set here?
-        del os.environ["RESTORE_RETRIEVAL_TYPE"]
-        mock_boto3_client.assert_called_with("s3")
-        mock_s3_cli.head_object.assert_called_with(Bucket="some_bucket", Key=FILE1)
-        restore_req_exp = {"Days": 5, "GlacierJobParameters": {"Tier": "Expedited"}}
-        mock_s3_cli.restore_object.assert_called_with(
-            Bucket="some_bucket", Key=FILE1, RestoreRequest=restore_req_exp
-        )
-        self.assertEqual(1, mock_post_entry_to_queue.call_count)
-
-    # todo: replace mock_post_entry_to_queue with higher level calls
-    # todo: rewrite against inner_task
-    @patch("request_files.shared_recovery.post_entry_to_queue")
-    @patch("boto3.client")
-    @patch("cumulus_logger.CumulusLogger.error")  # todo: check error output
-    def test_task_client_error_one_file(
-        self,
-        mock_logger_error: MagicMock,
-        mock_boto3_client: MagicMock,
-        mock_post_entry_to_queue: MagicMock,
-    ):
-        """
-        Test retries for restore error for one file.
-        """
-        event = {
-            "config": {
-                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "some_bucket",
-                "asyncOperationId": uuid.uuid4().__str__(),
-            },
-            "input": {
-                "granules": [
-                    {
-                        "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
-                        "keys": [KEY1],
-                    }
-                ]
-            },
-        }
-
-        os.environ[
-            "RESTORE_RETRY_SLEEP_SECS"
-        ] = ".5"  # todo: This is not reset between tests
-        mock_s3_cli = mock_boto3_client("s3")
-        mock_s3_cli.restore_object.side_effect = [
-            ClientError({"Error": {"Code": "NoSuchBucket"}}, "restore_object"),
-            ClientError({"Error": {"Code": "NoSuchBucket"}}, "restore_object"),
-            ClientError({"Error": {"Code": "NoSuchBucket"}}, "restore_object"),
-        ]
-        os.environ[
-            "RESTORE_RETRIEVAL_TYPE"
-        ] = "Standard"  # todo: This is not reset between tests
-
-        exp_gran = {
-            "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
-            "keys": [{"key": FILE1, "dest_bucket": PROTECTED_BUCKET}],
-            "recover_files": [
-                {
-                    "key": FILE1,
-                    "dest_bucket": PROTECTED_BUCKET,
-                    "success": False,
-                    "err_msg": "An error occurred (NoSuchBucket) when calling the restore_object operation: Unknown",
-                }
-            ],
-        }
-        exp_err = "One or more files failed to be requested from {bucket}.".format(
-            bucket=event["config"][
-                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY
-            ]
-        )
-        try:
-            request_files.task(event, self.context)
-            self.fail("RestoreRequestError expected")
-        except request_files.RestoreRequestError as err:
-            self.assertEqual(exp_err, str(err))
-        del os.environ["RESTORE_RETRY_SLEEP_SECS"]
-        del os.environ["RESTORE_RETRIEVAL_TYPE"]
-        mock_boto3_client.assert_called_with("s3")
-        mock_s3_cli.head_object.assert_called_with(Bucket="some_bucket", Key=FILE1)
-        restore_req_exp = {"Days": 5, "GlacierJobParameters": {"Tier": "Standard"}}
-        mock_s3_cli.restore_object.assert_any_call(
-            Bucket="some_bucket", Key=FILE1, RestoreRequest=restore_req_exp
-        )
-
-    # todo: replace mock_post_entry_to_queue with higher level calls
-    # todo: rewrite against inner_task
-    @patch("request_files.shared_recovery.post_entry_to_queue")
-    @patch("boto3.client")
-    @patch("cumulus_logger.CumulusLogger.error")  # todo: check error output
-    def test_task_client_error_3_times(
-        self,
-        mock_logger_error: MagicMock,
-        mock_boto3_client: MagicMock,
-        mock_post_entry_to_queue: MagicMock,
-    ):
-        """
-        Test three files, two successful, one errors on all retries and fails.
-        """
-        keys = [KEY1, KEY3, KEY4]
-
-        event = {
-            "config": {
-                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "some_bucket",
-                "asyncOperationId": uuid.uuid4().__str__(),
-            }
-        }
-        gran = {"granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321", "keys": keys}
-
-        event["input"] = {"granules": [gran]}
-        mock_s3_cli = mock_boto3_client("s3")
-
-        mock_s3_cli.restore_object.side_effect = [
-            {"ResponseMetadata": {"HTTPStatusCode": 202}},
-            ClientError({"Error": {"Code": "NoSuchBucket"}}, "restore_object"),
-            {"ResponseMetadata": {"HTTPStatusCode": 202}},
-            ClientError({"Error": {"Code": "NoSuchBucket"}}, "restore_object"),
-            ClientError({"Error": {"Code": "NoSuchKey"}}, "restore_object"),
-        ]
-
-        exp_gran = {
-            "granuleId": gran["granuleId"],
-            "keys": self.get_exp_keys_3_errs(),
-            "recover_files": self.get_exp_files_3_errs(),
-        }
-        exp_err = "One or more files failed to be requested from {bucket}.".format(
-            bucket=event["config"][
-                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY
-            ]
-        )
-        try:
-            request_files.task(event, self.context)
-            self.fail("RestoreRequestError expected")
-        except request_files.RestoreRequestError as err:
-            self.assertEqual(exp_err, str(err))
-
-        mock_boto3_client.assert_called_with("s3")
-        mock_s3_cli.head_object.assert_any_call(Bucket="some_bucket", Key=FILE1)
-        mock_s3_cli.restore_object.assert_any_call(
-            Bucket="some_bucket",
-            Key=FILE1,
-            RestoreRequest={"Days": 5, "GlacierJobParameters": {"Tier": "Standard"}},
-        )
-        mock_post_entry_to_queue.assert_called()  # 5 times # todo: No..?
-
     @staticmethod
     def get_exp_files_3_errs():
         """
@@ -1661,111 +1221,27 @@ class TestRequestFiles(unittest.TestCase):
             {"key": FILE4, "dest_bucket": PUBLIC_BUCKET},
         ]
 
-    # todo: rewrite against inner_task
-    # todo: replace mock_post_entry_to_queue with higher level calls
-    @patch("request_files.shared_recovery.post_entry_to_queue")
+    # noinspection PyUnusedLocal
+    @patch("request_files.shared_recovery.create_status_for_job")
     @patch("boto3.client")
-    @patch("cumulus_logger.CumulusLogger.error")
-    def test_task_client_error_2_times(
-        self,
-        mock_logger_error: MagicMock,  # todo: Check error output
-        mock_boto3_client: MagicMock,
-        mock_post_entry_to_queue: MagicMock,
-    ):
-        """
-        Test two files, first successful, second has two errors, then success.
-        """
-        event = {
-            "config": {
-                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "some_bucket",
-                "asyncOperationId": uuid.uuid4().__str__(),
-            }
-        }
-        gran = {}
-        granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
-        gran["granuleId"] = granule_id
-        keys = [KEY1, KEY2]
-        gran["keys"] = keys
-        event["input"] = {"granules": [gran]}
-        mock_s3_cli = mock_boto3_client("sqs")
-
-        mock_s3_cli.restore_object.side_effect = [
-            {"ResponseMetadata": {"HTTPStatusCode": 202}},
-            ClientError({"Error": {"Code": "NoSuchBucket"}}, "restore_object"),
-            ClientError({"Error": {"Code": "NoSuchBucket"}}, "restore_object"),
-            {"ResponseMetadata": {"HTTPStatusCode": 202}},
-        ]
-
-        exp_granules = {
-            "granules": [
-                {
-                    "granuleId": granule_id,
-                    "keys": [
-                        {"key": FILE1, "dest_bucket": PROTECTED_BUCKET},
-                        {"key": FILE2, "dest_bucket": PROTECTED_BUCKET},
-                    ],
-                    "recover_files": [
-                        {
-                            "filename": os.path.basename(FILE1),
-                            "key_path": FILE1,
-                            "multipart_chunksize_mb": None,
-                            "restore_destination": PROTECTED_BUCKET,
-                            "success": True,
-                            "status_id": 1,
-                        },
-                        {
-                            "error_message": "An error occurred (NoSuchBucket) when calling the restore_object operation: Unknown",
-                            "filename": os.path.basename(FILE2),
-                            "key_path": FILE2,
-                            "multipart_chunksize_mb": None,
-                            "restore_destination": PROTECTED_BUCKET,
-                            "success": True,
-                            "status_id": 1,
-                        },
-                    ],
-                }
-            ],
-            "asyncOperationId": event["config"]["asyncOperationId"],
-        }
-
-        result = request_files.task(event, self.context)
-        # Check the values of the result less the times since those will never match
-        result_value = result.copy()
-        for granule in result_value["granules"]:
-            for file in granule["recover_files"]:
-                file.pop("request_time", None)
-                file.pop("last_update", None)
-                file.pop("completion_time", None)
-
-        self.assertEqual(exp_granules, result_value)
-
-        mock_boto3_client.assert_has_calls([call("sqs")])
-        mock_s3_cli.restore_object.assert_any_call(
-            Bucket="some_bucket",
-            Key=FILE1,
-            RestoreRequest={"Days": 5, "GlacierJobParameters": {"Tier": "Standard"}},
-        )
-        mock_post_entry_to_queue.assert_called()  # 4 times # todo: No..?
-
-    # todo: rewrite against inner_task
-    # todo: replace mock_post_entry_to_queue with higher level calls.
-    @patch("request_files.shared_recovery.post_entry_to_queue")
-    @patch("boto3.client")
-    def test_task_output_json_schema(
+    def test_handler_output_json_schema(
         self,
         mock_boto3_client: MagicMock,
-        mock_post_entry_to_queue: MagicMock,
+        mock_create_status_for_job: MagicMock,
     ):
         """
-        Test four files for one granule - successful. Check against output schema.
+        A full run through with multiple files to verify output schema.
+        Does NOT presently check side effects. Should not currently count for coverage.
         """
+        os.environ[request_files.OS_ENVIRON_DB_QUEUE_URL_KEY] = "https://db.queue.url"
+        job_id = uuid.uuid4().__str__()
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
         files = [KEY1, KEY2, KEY3, KEY4]
         input_event = {
-            "input": {"granules": [{"granuleId": granule_id, "keys": files}]},
-            "config": {
+            "payload": {"granules": [{"granuleId": granule_id, "keys": files}]},
+            "task_config": {
                 request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "my-dr-fake-glacier-bucket",
-                "asyncOperationId": uuid.uuid4().__str__(),
+                "asyncOperationId": job_id,
             },
         }
 
@@ -1777,7 +1253,10 @@ class TestRequestFiles(unittest.TestCase):
             {"ResponseMetadata": {"HTTPStatusCode": 202}},
         ]
 
-        result = request_files.task(input_event, self.context)
+        context = LambdaContextMock()
+        result = request_files.handler(input_event, context)
+
+        result_value = result["payload"]
 
         mock_boto3_client.assert_has_calls([call("s3")])
         mock_s3_cli.head_object.assert_any_call(
@@ -1822,7 +1301,7 @@ class TestRequestFiles(unittest.TestCase):
         }
         exp_granules = {
             "granules": [exp_gran],
-            "asyncOperationId": input_event["config"]["asyncOperationId"],
+            "asyncOperationId": job_id,
         }
 
         # Validate the output is correct
@@ -1830,10 +1309,9 @@ class TestRequestFiles(unittest.TestCase):
             schema = json.loads(raw_schema.read())
 
         validate = fastjsonschema.compile(schema)
-        validate(result)
+        validate(result_value)
 
         # Check the values of the result less the times since those will never match
-        result_value = result.copy()
         for granule in result_value["granules"]:
             for file in granule["recover_files"]:
                 file.pop("request_time", None)
@@ -1841,7 +1319,6 @@ class TestRequestFiles(unittest.TestCase):
                 file.pop("completion_time", None)
 
         self.assertEqual(exp_granules, result_value)
-        mock_post_entry_to_queue.assert_called_once()  # todo: check args
 
     @patch.dict(
         os.environ,
@@ -1904,7 +1381,7 @@ class TestRequestFiles(unittest.TestCase):
         self.assertEqual(bucket, result)
 
     def test_no_bucket_raises_error(self):
-        os.environ.pop(request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY)
+        os.environ.pop(request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY, None)
         with self.assertRaises(KeyError) as cm:
             request_files.get_default_glacier_bucket_name(
                 {request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: None}
