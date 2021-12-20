@@ -1158,7 +1158,7 @@ class TestRequestFiles(unittest.TestCase):
                 file.pop("completion_time", None)
 
         self.assertEqual(exp_granules, result_value)
-        mock_post_entry_to_queue.assert_called_once()
+        mock_post_entry_to_queue.assert_called_once()  # todo: check args
 
     @staticmethod
     def get_expected_files():
@@ -1841,7 +1841,7 @@ class TestRequestFiles(unittest.TestCase):
                 file.pop("completion_time", None)
 
         self.assertEqual(exp_granules, result_value)
-        mock_post_entry_to_queue.assert_called_once()
+        mock_post_entry_to_queue.assert_called_once()  # todo: check args
 
     @patch.dict(
         os.environ,
