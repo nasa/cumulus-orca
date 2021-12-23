@@ -467,7 +467,7 @@ def process_granule(
                 "Sending status update information for {filename} to the QUEUE",
                 filename=a_file["filename"],
             )
-            for retry in range(max_retries + 1):
+            for attempt in range(max_retries + 1):
                 try:
                     shared_recovery.update_status_for_file(
                         job_id,
@@ -482,8 +482,7 @@ def process_granule(
                     # todo: Workaround for CumulusLogger bug with dictionaries
                     #       this will need updating when a new CumulusLogger is
                     #       released with bug fix.
-                    msg = f"Ran into error posting to SQS {retry + 1} time(s) with exception"
-                    msg = msg + " {ex}"
+                    msg = f"Ran into error posting to SQS {attempt + 1} time(s) with exception {{ex}}"
                     LOGGER.error(msg, ex=str(ex))
                     # todo: Use backoff code. ORCA-201
                     time.sleep(retry_sleep_secs)
@@ -501,8 +500,8 @@ def process_granule(
 
     # If this is reached, that means there is no entry in the db for file's status.
     if any_error:
-        msg = f"One or more files failed to be requested from {glacier_bucket}."
-        LOGGER.error(msg + " GRANULE: {granule}", granule=json.dumps(granule))
+        msg = f"One or more files failed to be requested from {glacier_bucket}.  GRANULE: {{granule}}"
+        LOGGER.error(msg, granule=json.dumps(granule))
         raise RestoreRequestError(
             f"One or more files failed to be requested from {glacier_bucket}."
         )

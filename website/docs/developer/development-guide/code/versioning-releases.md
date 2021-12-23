@@ -46,30 +46,21 @@ bamboo deployment plan.
 
 #### Creating a Bamboo deployment plan
 
-1. In the ORCA project (https://ci.earthdata.nasa.gov/browse/ORCA-OI), click
-   `Actions -> Configure Plan` at the top right.
-2. Scroll to the bottom of the branch list in the bottom left and select
-   `Create Plan Branch`.
-3. Add the values in that list. Choose a display name that makes it very clear 
-   this is a deployment branch plan. Release (branch name) seems to work well. 
-   Make sure you enter the correct branch name.
-4. Important Deselect Enable Branch - if you do not do this, it will immediately
-   fire off a build.
-5. Do Immediately On the Branch Details page, enable 'Change Trigger'. Set the 
-   Trigger type to manual, and this will prevent commits to the branch from 
-   triggering the build plan. You should have been redirected to the 'Branch 
-   Details' tab after creating the plan. If not, navigate to the branch from
-   the list where you clicked 'Create Plan Branch' in the previous step.
-6. Go to the Variables tab. Ensure that you are on your branch plan and not the
-   master plan: You should not see a large list of configured variables, but 
-   instead a dropdown allowing you to select variables to override, and the tab 
-   title will be Branch Variables. Set a DEPLOYMENT variable appropriate for the
+1. The deployment plan is already created in Bamboo using [Bamboo Specs](https://github.com/nasa/cumulus-orca/tree/develop/bamboo-specs) 
+   In the ORCA project (https://ci.earthdata.nasa.gov/browse/ORCA-OI), scroll to the top left of the page where it indicates `Plan branch`. From the `Plan branch` dropdown menu, select the release branch you created for the release which should be in the format `release-X.X.X`.
+2. Once inside the release branch page, scroll to the top right of the page and click `Actions`-> `Configure branch`.
+3. On the `Plan branch configuration` page, click on the `Variables` tab. Ensure that you are on your branch plan and not the
+   master plan. Click on the `Choose from inherited variables` dropdown menu. Set a DEPLOYMENT variable appropriate for the
    release (defaults to last committer). This should be cumulus-from-npm-tf 
-   except in special cases such as incompatible backport branches. Then set:
+   except in special cases such as incompatible backport branches. Then add and set the following variables:
      * ORCA_VERSION: `<version number>`
      * RELEASE_FLAG: true
-7. Enable the branch from the 'Branch Details' page.
-8. Run the branch using the 'Run' button in the top right.
+     * SECRET_GITHUB_EMAIL: `<secret github email>`
+     * SECRET_GITHUB_TOKEN: `<secret github token>`
+     * SECRET_GITHUB_USER: `<secret github user>`
+   
+   Contact ORCA team to know values of the last three github variables.
+4. Run the branch using the 'Run' button in the top right.
 
 Bamboo will build and run unit tests against that tagged release.
 
