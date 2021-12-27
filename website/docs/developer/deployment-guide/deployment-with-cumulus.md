@@ -49,6 +49,13 @@ URL path to the release. In the example below the release being used is v3.0.2.
 
 :::
 
+:::tip Deploying a local version
+
+If you wish to deploy code cloned locally from [Github](https://github.com/nasa/cumulus-orca) instead of a release zip, run
+`./bin/build_tasks.sh`. This will crawl the `tasks` directory and build a `.zip` file (currently by just `zipping` all python files and dependencies) in each of it's sub-directories. You may then set `source` to the root folder of your cloned Orca repository.
+
+:::
+
 ```terraform
 ## ORCA Module
 ## =============================================================================
