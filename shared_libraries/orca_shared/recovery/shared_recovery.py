@@ -173,18 +173,30 @@ def post_entry_to_queue(
     md5_body = hashlib.md5(body.encode("utf8")).hexdigest()  # nosec
 
     LOGGER.debug("Sending message to the QUEUE")
-    response = mysqs.send_message(
-        QueueUrl=db_queue_url,
-        MessageDeduplicationId=deduplication_id,
-        MessageGroupId="request_files",
-        MessageAttributes={
-            "RequestMethod": {
-                "DataType": "String",
-                "StringValue": request_method.value,
-            }
-        },
-        MessageBody=body,
-    )
+    if ".fifo" in db_queue_url:
+        response = mysqs.send_message(
+            QueueUrl=db_queue_url,
+            MessageDeduplicationId=deduplication_id,
+            MessageGroupId="request_files",
+            MessageAttributes={
+                "RequestMethod": {
+                    "DataType": "String",
+                    "StringValue": request_method.value,
+                }
+            },
+            MessageBody=body,
+        )
+    else:
+        response = mysqs.send_message(
+            QueueUrl=db_queue_url,
+            MessageAttributes={
+                "RequestMethod": {
+                    "DataType": "String",
+                    "StringValue": request_method.value,
+                }
+            },
+            MessageBody=body,
+        )
     LOGGER.debug("SQS Message Response: {response}", response=json.dumps(response))
 
     # Make sure we didn't have an error sending message

@@ -13,7 +13,7 @@ data "aws_iam_policy_document" "metadata_queue_policy" {
   }
 }
 
-## SQS IAM access policy for staged-recovery-queue.fifo SQS
+## SQS IAM access policy for staged-recovery-queue SQS
 ## ====================================================================================================
 data "aws_iam_policy_document" "staged_recovery_queue_policy" {
   statement {
@@ -53,15 +53,44 @@ resource "aws_sqs_queue" "metadata_queue" {
 ## ====================================================================================================
 resource "aws_sqs_queue" "staged_recovery_queue" {
   ## OPTIONAL
-  name                        = "${var.prefix}-staged-recovery-queue.fifo"
-  fifo_queue                  = true
-  content_based_deduplication = true
+  name                        = "${var.prefix}-staged-recovery-queue"
   delay_seconds               = var.sqs_delay_time_seconds
   max_message_size            = var.sqs_maximum_message_size
   message_retention_seconds   = var.staged_recovery_queue_message_retention_time_seconds
   tags                        = local.tags
   policy                      = data.aws_iam_policy_document.staged_recovery_queue_policy.json
   visibility_timeout_seconds  = 1800 # Set to double lambda max time
+}
+
+resource "aws_sqs_queue" "deadletter_queue" {
+  name                        = "${var.prefix}-staged-recovery-deadletter-queue"
+  delay_seconds               = var.sqs_delay_time_seconds
+  max_message_size            = var.sqs_maximum_message_size
+  message_retention_seconds   = var.staged_recovery_queue_message_retention_time_seconds
+  tags                        = local.tags
+  policy                      = data.aws_iam_policy_document.staged_recovery_queue_policy.json
+  visibility_timeout_seconds  = 1800 # Set to double lambda max time
+}
+
+resource "aws_sqs_queue_policy" "deadletter_queue" {
+  queue_url = aws_sqs_queue.deadletter_queue.id
+  policy    = data.aws_iam_policy_document.deadletter_queue.json
+}
+
+data "aws_iam_policy_document" "deadletter_queue" {
+  statement {
+    effect    = "Allow"
+    resources = [aws_sqs_queue.deadletter_queue.arn]
+    actions = [
+      "sqs:ChangeMessageVisibility",
+      "sqs:DeleteMessage",
+      "sqs:GetQueueAttributes",
+      "sqs:GetQueueUrl",
+      "sqs:ListQueueTags",
+      "sqs:ReceiveMessage",
+      "sqs:SendMessage",
+    ]
+  }
 }
 
 ## status_update_queue - copy_files_to_archive lambda writes to this database status update queue.
