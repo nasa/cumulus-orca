@@ -60,6 +60,10 @@ resource "aws_sqs_queue" "staged_recovery_queue" {
   tags                        = local.tags
   policy                      = data.aws_iam_policy_document.staged_recovery_queue_policy.json
   visibility_timeout_seconds  = 1800 # Set to double lambda max time
+  redrive_policy = jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.deadletter_queue.arn,
+    maxReceiveCount     = 3
+  })
 }
 
 resource "aws_sqs_queue" "deadletter_queue" {
