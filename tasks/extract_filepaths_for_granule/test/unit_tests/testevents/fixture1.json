@@ -231,7 +231,7 @@
       "internal-bucket": "{{$.meta.buckets.internal.name}}",
       "private-bucket": "{{$.meta.buckets.private.name}}",
       "public-bucket": "{{$.meta.buckets.public.name}}",
-      "file-buckets": "{{$.meta.collection.files}}"
+      "fileBuckets": "{{$.meta.collection.files}}"
     },
     "StopStatus": {
       "stateMachine": "{{$.cumulus_meta.state_machine}}",

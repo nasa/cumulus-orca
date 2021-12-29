@@ -115,7 +115,7 @@ The lambda handler event excepts a dictionary having a list of granules as input
          "internal-bucket":"sndbx-cumulus-internal",
          "private-bucket":"sndbx-cumulus-private",
          "public-bucket":"sndbx-cumulus-public",
-         "file-buckets":[
+         "fileBuckets":[
             {
                "regex":".*.h5$",
                "sampleFileName":"L0A_HR_RAW_product_0010-of-0420.h5",

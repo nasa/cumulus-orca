@@ -139,7 +139,7 @@
       "protected-bucket": "{{$.meta.buckets.protected.name}}",
       "public-bucket": "{{$.meta.buckets.public.name}}",
       "internal-bucket": "{{$.meta.buckets.internal.name}}",
-      "file-buckets": "{{$.meta.collection.files}}"
+      "fileBuckets": "{{$.meta.collection.files}}"
     },
     "RequestFiles": {
       "glacier-bucket": "{{$.meta.collection.meta.glacier-bucket}}"

@@ -10,11 +10,13 @@ from typing import Any, List, Dict, Optional
 # noinspection SpellCheckingInspection
 import fastjsonschema as fastjsonschema
 from cumulus_logger import CumulusLogger
+from orca_shared import shared_recovery
 from sqlalchemy import text
 from sqlalchemy.future import Engine
 
 from orca_shared.database import shared_db
 from orca_shared.recovery.shared_recovery import RequestMethod, OrcaStatus
+from orca_shared.recovery import shared_recovery
 
 LOGGER = CumulusLogger()
 # Generating schema validators can take time, so do it once and reuse.
@@ -62,23 +64,23 @@ def send_record_to_database(record: Dict[str, Any], engine: Engine) -> None:
     if request_method == RequestMethod.NEW_JOB:
         _NEW_JOB_VALIDATE(values)
         create_status_for_job_and_files(
-            values["job_id"],
-            values["granule_id"],
-            values["request_time"],
-            values["archive_destination"],
-            values["files"],
+            values[shared_recovery.JOB_ID_KEY],
+            values[shared_recovery.GRANULE_ID_KEY],
+            values[shared_recovery.REQUEST_TIME_KEY],
+            values[shared_recovery.ARCHIVE_DESTINATION_KEY],
+            values[shared_recovery.FILES_KEY],
             engine,
         )
     elif request_method == RequestMethod.UPDATE_FILE:
         _UPDATE_FILE_VALIDATE(values)
         update_status_for_file(
-            values["job_id"],
-            values["granule_id"],
-            values["filename"],
-            values["last_update"],
-            values.get("completion_time", None),
-            values["status_id"],
-            values.get("error_message", None),
+            values[shared_recovery.JOB_ID_KEY],
+            values[shared_recovery.GRANULE_ID_KEY],
+            values[shared_recovery.FILENAME_KEY],
+            values[shared_recovery.LAST_UPDATE_KEY],
+            values.get(shared_recovery.COMPLETION_TIME_KEY, None),
+            values[shared_recovery.STATUS_ID_KEY],
+            values.get(shared_recovery.ERROR_MESSAGE_KEY, None),
             engine,
         )
     else:
@@ -104,26 +106,18 @@ def create_status_for_job_and_files(
         granule_id: The id of the granule being restored.
         archive_destination: The S3 bucket destination of where the data is archived.
         request_time: The time the restore was requested in utc and iso-format.
-        files: A List of Dicts with the following keys:
-            'filename' (str)
-            'key_path' (str)
-            'restore_destination' (str)
-            'status_id' (int)
-            'error_message' (str, Optional)
-            'request_time' (str)
-            'last_update' (str)
-            'completion_time' (str, Optional)
+        files: A List of Dicts. See schemas/new_job_input.json's `files` array for properties.
         engine: The sqlalchemy engine to use for contacting the database.
     """
     found_pending = False
     job_completion_time = None
     file_parameters = []
     for file in files:
-        if file["status_id"] == OrcaStatus.PENDING.value:
+        if file[shared_recovery.STATUS_ID_KEY] == OrcaStatus.PENDING.value:
             found_pending = True
-        elif file["status_id"] == OrcaStatus.FAILED.value:
+        elif file[shared_recovery.STATUS_ID_KEY] == OrcaStatus.FAILED.value:
             file_completion_time = datetime.datetime.fromisoformat(
-                file["completion_time"]
+                file[shared_recovery.COMPLETION_TIME_KEY]
             )
             if job_completion_time is None:
                 job_completion_time = file_completion_time
@@ -131,7 +125,7 @@ def create_status_for_job_and_files(
                 job_completion_time = max(job_completion_time, file_completion_time)
         else:
             error = ValueError(
-                f"Status ID '{file['status_id']}' not allowed for new status."
+                f"Status ID '{file[shared_recovery.STATUS_ID_KEY]}' not allowed for new status."
             )
             LOGGER.critical(error)
             raise error
@@ -139,15 +133,15 @@ def create_status_for_job_and_files(
             {
                 "job_id": job_id,
                 "granule_id": granule_id,
-                "filename": file["filename"],
-                "key_path": file["key_path"],
-                "restore_destination": file["restore_destination"],
-                "multipart_chunksize_mb": file["multipart_chunksize_mb"],
-                "status_id": file["status_id"],
-                "error_message": file.get("error_message", None),
-                "request_time": file["request_time"],
-                "last_update": file["last_update"],
-                "completion_time": file.get("completion_time", None),
+                "filename": file[shared_recovery.FILENAME_KEY],
+                "key_path": file[shared_recovery.KEY_PATH_KEY],
+                "restore_destination": file[shared_recovery.RESTORE_DESTINATION_KEY],
+                "multipart_chunksize_mb": file[shared_recovery.MULTIPART_CHUNKSIZE_KEY],
+                "status_id": file[shared_recovery.STATUS_ID_KEY],
+                "error_message": file.get(shared_recovery.ERROR_MESSAGE_KEY, None),
+                "request_time": file[shared_recovery.REQUEST_TIME_KEY],
+                "last_update": file[shared_recovery.LAST_UPDATE_KEY],
+                "completion_time": file.get(shared_recovery.COMPLETION_TIME_KEY, None),
             }
         )
 

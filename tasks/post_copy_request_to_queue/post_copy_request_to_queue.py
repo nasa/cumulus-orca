@@ -16,6 +16,15 @@ from orca_shared.database.shared_db import retry_operational_error
 from cumulus_logger import CumulusLogger
 from sqlalchemy import text
 
+JOB_ID_KEY = "jobId"
+GRANULE_ID_KEY = "granuleId"
+FILENAME_KEY = "filename"
+RESTORE_DESTINATION_KEY = "restoreDestination"
+MULTIPART_CHUNKSIZE_MB_KEY = "s3MultipartChunksizeMb"
+SOURCE_KEY_KEY = "sourceKey"
+TARGET_KEY_KEY = "targetKey"
+SOURCE_BUCKET_KEY = "sourceBucket"
+
 # instantiate CumulusLogger
 LOGGER = CumulusLogger()
 
@@ -62,9 +71,9 @@ def task(
     # multiple.
     for record in rows:
         # Get the values needed for the call to update the status
-        job_id = record["job_id"]
-        granule_id = record["granule_id"]
-        filename = record["filename"]
+        job_id = record[JOB_ID_KEY]
+        granule_id = record[GRANULE_ID_KEY]
+        filename = record[FILENAME_KEY]
 
         # Make sure we update the status, retry if we fail.
         for retry in range(max_retries + 1):
@@ -243,14 +252,14 @@ def query_db(key_path: str, bucket_name: str) -> List[Dict[str, str]]:
         bucket_name: Name of the source S3 bucket.
     Returns:
         A list of dict containing the following keys:
-            "job_id" (str):
-            "granule_id"(str):
+            "jobId" (str):
+            "granuleId"(str):
             "filename" (str):
-            "restore_destination" (str):
-            "multipart_chunksize_mb" (str):
-            "source_key" (str):
-            "target_key" (str):
-            "source_bucket" (str):
+            "restoreDestination" (str):
+            "s3MultipartChunksizeMb" (str):
+            "sourceKey" (str):
+            "targetKey" (str):
+            "sourceBucket" (str):
     Raises:
         Exception: If unable to retrieve the metadata by querying the DB.
 
@@ -279,14 +288,14 @@ def query_db(key_path: str, bucket_name: str) -> List[Dict[str, str]]:
                 # Create dictionary for with the info needed for the
                 # copy_files_to_archive lambda
                 row_dict = {
-                    "job_id": row[0],
-                    "granule_id": row[1],
-                    "filename": row[2],
-                    "restore_destination": row[3],
-                    "multipart_chunksize_mb": row[4],
-                    "source_key": key_path,
-                    "target_key": key_path,  # todo add a card to configure target_key in the future
-                    "source_bucket": bucket_name,
+                    JOB_ID_KEY: row[0],
+                    GRANULE_ID_KEY: row[1],
+                    FILENAME_KEY: row[2],
+                    RESTORE_DESTINATION_KEY: row[3],
+                    MULTIPART_CHUNKSIZE_MB_KEY: row[4],
+                    SOURCE_KEY_KEY: key_path,
+                    TARGET_KEY_KEY: key_path,  # todo add a card to configure targetKey in the future
+                    SOURCE_BUCKET_KEY: bucket_name,
                 }
                 rows.append(row_dict)
 

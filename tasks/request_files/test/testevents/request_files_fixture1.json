@@ -67,7 +67,7 @@
         "keys": [
           {
             "key": "L0A_LR_RAW_product_0010-of-0092.h5",
-            "dest_bucket": "some_bucket_name"
+            "destBucket": "some_bucket_name"
           }
         ]
       }

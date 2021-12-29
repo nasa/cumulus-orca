@@ -5,7 +5,7 @@
 	"description": "The input for the request_status Lambda when retrieving status for a particular granule.",
 	"type": "object",
 	"properties": {
-		"granule_id": {
+		"granuleId": {
 			"description": "The unique ID of the granule to retrieve status for.",
 			"type": "string"
 		},
@@ -14,5 +14,5 @@
 			"type": "string"
 		}
 	},
-	"required": [ "granule_id" ]
+	"required": [ "granuleId" ]
 }
