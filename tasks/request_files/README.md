@@ -113,6 +113,8 @@ CLASSES
      |  args
 
 FUNCTIONS
+    get_default_glacier_bucket_name(config: Dict[str, Any]) -> str
+    
     handler(event: Dict[str, Any], context)
         Lambda handler. Initiates a restore_object request from glacier for each file of a granule.
         Note that this function is set up to accept a list of granules, (because Cumulus sends a list),
@@ -163,7 +165,7 @@ FUNCTIONS
                             'granuleId' (str): The id of the granule being restored.
                             'keys' (list(dict)): A list of dicts with the following keys:
                                 'key' (str): Name of the file within the granule.  # TODO: It actually might be a path.
-                                'dest_bucket' (str): The bucket the restored file will be moved
+                                'destBucket' (str): The bucket the restored file will be moved
                                     to after the restore completes.
                 max_retries: The maximum number of retries for network operations.
                 retry_sleep_secs: The number of time to sleep between retries.
@@ -177,7 +179,7 @@ FUNCTIONS
                         'granuleId' (string): The id of the granule being restored.
                         'recover_files' (list(dict)): A list of dicts with the following keys:
                             'key' (str): Name of the file within the granule.
-                            'dest_bucket' (str): The bucket the restored file will be moved
+                            'destBucket' (str): The bucket the restored file will be moved
                                 to after the restore completes.
                             'success' (boolean): True, indicating the restore request was submitted successfully.
                                 If any value would be false, RestoreRequestError is raised instead.
@@ -204,11 +206,9 @@ FUNCTIONS
             granule: A dict with the following keys:
                 'granuleId' (str): The id of the granule being restored.
                 'recover_files' (list(dict)): A list of dicts with the following keys:
-                    'key' (str): Name of the file within the granule.
-                    'dest_bucket' (str): The bucket the restored file will be moved
-                        to after the restore completes
+                    'keyPath' (str): Name of the file within the granule.
                     'success' (bool): Should enter this method set to False. Modified to 'True' by method end.
-                    'err_msg' (str): Will be modified if error occurs.
+                    'errorMessage' (str): Will be modified if error occurs.
         
         
             glacier_bucket: The S3 glacier bucket name.
@@ -217,8 +217,8 @@ FUNCTIONS
             max_retries: todo
             retry_sleep_secs: todo
             retrieval_type: todo
-            db_queue_url: todo
             job_id: The unique identifier used for tracking requests.
+            db_queue_url: todo
         
         Raises: RestoreRequestError if any file restore could not be initiated.
     
@@ -250,7 +250,7 @@ FUNCTIONS
                             'granuleId' (str): The id of the granule being restored.
                             'keys' (list(dict)): A list of dicts with the following keys:
                                 'key' (str): Name of the file within the granule.  # TODO: It actually might be a path.
-                                'dest_bucket' (str): The bucket the restored file will be moved
+                                'destBucket' (str): The bucket the restored file will be moved
                                     to after the restore completes.
                 context: Passed through from AWS and CMA. Unused.
             Environment Vars:
@@ -265,15 +265,15 @@ FUNCTIONS
                 DB_QUEUE_URL
                     The URL of the SQS queue to post status to.
                 ORCA_DEFAULT_BUCKET
-                    The bucket to use if dest_bucket is not set.
+                    The bucket to use if destBucket is not set.
             Returns:
                 The value from inner_task.
                 Example Input:
                     {'granules': [
                         {
                             'granuleId': 'granxyz',
-                            'recover_files': [
-                                {'key': 'path1', 'dest_bucket': 'bucket_name', 'success': True}
+                            'recoverFiles': [
+                                {'key': 'path1', 'destBucket': 'bucketName', 'success': True}
                             ]
                         }]}
             Raises:
@@ -292,13 +292,21 @@ DATA
     Dict = typing.Dict
     EVENT_CONFIG_KEY = 'config'
     EVENT_INPUT_KEY = 'input'
-    FILE_DEST_BUCKET_KEY = 'dest_bucket'
-    FILE_ERROR_MESSAGE_KEY = 'error_message'
+    FILE_COMPLETION_TIME_KEY = 'completionTime'
+    FILE_DEST_BUCKET_KEY = 'destBucket'
+    FILE_ERROR_MESSAGE_KEY = 'errorMessage'
+    FILE_FILENAME_KEY = 'filename'
     FILE_KEY_KEY = 'key'
+    FILE_KEY_PATH_KEY = 'keyPath'
+    FILE_LAST_UPDATE_KEY = 'lastUpdate'
+    FILE_MULTIPART_CHUNKSIZE_MB_KEY = 's3MultipartChunksizeMb'
+    FILE_REQUEST_TIME_KEY = 'requestTime'
+    FILE_RESTORE_DESTINATION_KEY = 'restoreDestination'
+    FILE_STATUS_ID_KEY = 'statusId'
     FILE_SUCCESS_KEY = 'success'
     GRANULE_GRANULE_ID_KEY = 'granuleId'
     GRANULE_KEYS_KEY = 'keys'
-    GRANULE_RECOVER_FILES_KEY = 'recover_files'
+    GRANULE_RECOVER_FILES_KEY = 'recoverFiles'
     INPUT_GRANULES_KEY = 'granules'
     LOGGER = <cumulus_logger.CumulusLogger object>
     List = typing.List

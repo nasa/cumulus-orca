@@ -153,11 +153,11 @@ The output of lambda handler returns a dictionary having a list of granules that
          "keys":[
             {
                 "key": "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5",
-                "dest_bucket": "protected"
+                "destBucket": "protected"
             },
             {
                 "key": "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5.mp",
-                "dest_bucket": "public"
+                "destBucket": "public"
             }
          ]
       }
@@ -336,7 +336,8 @@ FUNCTIONS
                 ExtractFilePathsError: An error occurred parsing the input.
 
 DATA
-    EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
+    CONFIG_EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
+    CONFIG_FILE_BUCKETS_KEY = 'fileBuckets'
     LOGGER = <cumulus_logger.CumulusLogger object>
     List = typing.List
 ```

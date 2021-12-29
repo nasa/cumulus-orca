@@ -28,14 +28,14 @@ FILE_ERROR_MESSAGE_KEY = "err_msg"
 FILE_MESSAGE_RECIEPT = "receiptHandle"
 
 # These are tied to the input schema.
-INPUT_JOB_ID_KEY = "job_id"
-INPUT_GRANULE_ID_KEY = "granule_id"
+INPUT_JOB_ID_KEY = "jobId"
+INPUT_GRANULE_ID_KEY = "granuleId"
 INPUT_FILENAME_KEY = "filename"
-INPUT_SOURCE_KEY_KEY = "source_key"
-INPUT_TARGET_KEY_KEY = "target_key"
-INPUT_TARGET_BUCKET_KEY = "restore_destination"
-INPUT_SOURCE_BUCKET_KEY = "source_bucket"
-INPUT_MULTIPART_CHUNKSIZE_MB_KEY = "multipart_chunksize_mb"
+INPUT_SOURCE_KEY_KEY = "sourceKey"
+INPUT_TARGET_KEY_KEY = "targetKey"
+INPUT_TARGET_BUCKET_KEY = "restoreDestination"
+INPUT_SOURCE_BUCKET_KEY = "sourceBucket"
+INPUT_MULTIPART_CHUNKSIZE_MB_KEY = "s3MultipartChunksizeMb"
 
 LOGGER = CumulusLogger()
 
