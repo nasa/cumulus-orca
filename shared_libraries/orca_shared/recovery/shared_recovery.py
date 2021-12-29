@@ -96,7 +96,7 @@ def create_status_for_job(
             'filename' (str)
             'keyPath' (str)
             'restoreDestination' (str)
-            'multipartChunksizeMb' (int)
+            's3MultipartChunksizeMb' (int)
             'statusId' (int)
             'errorMessage' (str, Optional)
             'requestTime' (str)
