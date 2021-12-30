@@ -58,6 +58,7 @@ module.exports = {
         'developer/deployment-guide/recovery-workflow',
         'developer/deployment-guide/testing_deployment',
         'developer/deployment-guide/deploying-from-windows',
+        'developer/deployment-guide/deploying-from-mac',
     ],
     "API Reference": [
       'developer/api/orca-api'
