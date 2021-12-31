@@ -119,7 +119,7 @@ Once the workflow and NAMS request are approved, proceed to the following steps.
 
    `AUTH_METHOD=launchpad ENABLE_RECOVERY=true APIROOT=<YOUR_API_ENDPOINT> npm run serve`
 
-   Replace `<YOUR_API_ENDPOINT_URL>` with yours.
+   Replace `<YOUR_API_ENDPOINT_URL>` with yours. Then complete the rest of the steps in `Setting up tunneling to locally run the dashboard` normally.
 5. Once the website is running, go to Firefox and put in `http://localhost:3000/` to access the dashboard.   
  
    :::warning
