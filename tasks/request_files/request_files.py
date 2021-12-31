@@ -223,7 +223,7 @@ def inner_task(
             A dict with the following keys:
                 'granules' (List): A list of dicts, each with the following keys:
                     'granuleId' (string): The id of the granule being restored.
-                    'recover_files' (list(dict)): A list of dicts with the following keys:
+                    'recoverFiles' (list(dict)): A list of dicts with the following keys:
                         'key' (str): Name of the file within the granule.
                         'destBucket' (str): The bucket the restored file will be moved
                             to after the restore completes.
@@ -231,7 +231,7 @@ def inner_task(
                             If any value would be false, RestoreRequestError is raised instead.
                         'err_msg' (string): when success is False, this will contain
                             the error message from the restore error.
-                    'keys': Same as recover_files, but without 'success' and 'err_msg'.
+                    'keys': Same as recoverFiles, but without 'success' and 'err_msg'.
                 'job_id' (str): The 'job_id' from event if present, otherwise a newly-generated uuid.
         Raises:
             RestoreRequestError: Thrown if there are errors with the input request.
@@ -315,7 +315,7 @@ def inner_task(
             try:
                 shared_recovery.create_status_for_job(
                     job_id, granule_id, glacier_bucket, files, db_queue_url
-                )  # todo: adapt underlying code to new schema for files
+                )
                 break
             except Exception as ex:
                 # todo: Workaround for CumulusLogger bug with dictionaries
