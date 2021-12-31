@@ -16,6 +16,12 @@ from orca_shared.database.shared_db import retry_operational_error
 from cumulus_logger import CumulusLogger
 from sqlalchemy import text
 
+OS_ENVIRON_RECOVERY_QUEUE_URL_KEY = "RECOVERY_QUEUE_URL"
+OS_ENVIRON_DB_QUEUE_URL_KEY = "DB_QUEUE_URL"
+OS_ENVIRON_MAX_RETRIES_KEY = "MAX_RETRIES"
+OS_ENVIRON_RETRY_SLEEP_SECS_KEY = "RETRY_SLEEP_SECS"
+OS_ENVIRON_RETRY_BACKOFF_KEY = "RETRY_BACKOFF"
+
 JOB_ID_KEY = "jobId"
 GRANULE_ID_KEY = "granuleId"
 FILENAME_KEY = "filename"
@@ -171,74 +177,17 @@ def exponential_delay(base_delay: int, exponential_backoff: int = 2) -> int:
         None
     """
     try:
-        _base_delay = int(base_delay)
-        _exponential_backoff = int(exponential_backoff)
-        delay = _base_delay + (random.randint(0, 1000) / 1000.0)  # nosec
-        LOGGER.debug(f"Performing back off retry sleeping {delay} seconds")
-        time.sleep(delay)
-        return _base_delay * _exponential_backoff
+        int(base_delay)
+        int(exponential_backoff)
     except ValueError as ve:
         # Can't use f"" because of '{}' bug in CumulusLogger.
         LOGGER.error("arguments are not integer. Raised ValueError: {ve}", ve=ve)
         raise ve
-
-
-def handler(event: Dict[str, Any], context: None) -> None:
-    """
-    Lambda handler. This lambda calls the task function to perform db queries
-    and send message to SQS.
-
-        Environment Vars:
-            PREFIX (string): the prefix
-            DATABASE_PORT (string): the database port. The standard is 5432.
-            DATABASE_NAME (string): the name of the database.
-            DATABASE_USER (string): the name of the application user.
-            DB_QUEUE_URL (string): the SQS URL for status-update-queue
-            RECOVERY_QUEUE_URL (string): the SQS URL for staged_recovery_queue
-        Parameter store:
-            {prefix}-drdb-host (string): host name that will be retrieved from secrets manager
-            {prefix}-drdb-user-pass (string):db password that will be retrieved from secrets manager
-    Args:
-        event:
-            A dictionary from the S3 bucket. See schemas/input.json for more information.
-        context: An object required by AWS Lambda. Unused.
-    Returns:
-        None
-    Raises:
-        Exception: If unable to retrieve the SQS URLs or exponential retry fields from env variables.
-
-    """
-    LOGGER.setMetadata(event, context)
-
-    # retrieving values from the env variables
-    backoff_env = [
-        "DB_QUEUE_URL",
-        "RECOVERY_QUEUE_URL",
-        "MAX_RETRIES",
-        "RETRY_SLEEP_SECS",
-        "RETRY_BACKOFF",
-    ]
-    backoff_args = []
-    for var in backoff_env:
-        env_var_value = os.getenv(var, None)
-        if env_var_value is None or len(env_var_value) == 0:
-            message = f"{var} is not set and is required"
-            LOGGER.critical(message)
-            raise Exception(message)
-
-        if var in ["MAX_RETRIES", "RETRY_SLEEP_SECS", "RETRY_BACKOFF"]:
-            try:
-                env_var_value = int(env_var_value)
-            except ValueError as ve:
-                error = ValueError(f"{var} must be set to an integer.")
-                LOGGER.critical(error)
-                raise error
-        backoff_args.append(env_var_value)
-
-    record = event["Records"][0]
-    LOGGER.debug("Event passed = {event}", event=event)
-    # calling the task function to perform the work
-    task(record, *backoff_args)
+    random_addition = random.randint(0, 1000) / 1000.0
+    delay = base_delay + random_addition
+    LOGGER.debug(f"Performing back off retry sleeping {delay} seconds")
+    time.sleep(delay)
+    return base_delay * exponential_backoff
 
 
 @retry_operational_error()
@@ -271,9 +220,7 @@ def query_db(key_path: str, bucket_name: str) -> List[Dict[str, str]]:
     try:
         LOGGER.debug("Getting database connection information.")
         db_connect_info = shared_db.get_configuration()
-        LOGGER.debug(
-            "Retrieved the database connection info"
-        )
+        LOGGER.debug("Retrieved the database connection info")
 
         engine = shared_db.get_user_connection(db_connect_info)
         LOGGER.debug("Querying database for metadata on {path}", path=key_path)
@@ -310,3 +257,72 @@ def query_db(key_path: str, bucket_name: str) -> List[Dict[str, str]]:
         LOGGER.error(message, key_path=key_path, ex=ex, exc_info=True)
         raise Exception(message.format(key_path=key_path, ex=ex))
     return rows
+
+
+def handler(event: Dict[str, Any], context) -> None:
+    """
+    Lambda handler. This lambda calls the task function to perform db queries
+    and send message to SQS.
+
+        Environment Vars:
+            RECOVERY_QUEUE_URL (string): the SQS URL for staged_recovery_queue
+            DB_QUEUE_URL (string): the SQS URL for status-update-queue
+            MAX_RETRIES (string): TODO
+            RETRY_SLEEP_SECS (string): TODO
+            RETRY_BACKOFF (string): TODO
+
+            Required by shared_db.get_configuration():
+                PREFIX (string): the prefix
+                DATABASE_PORT (string): the database port. The standard is 5432.
+                DATABASE_NAME (string): the name of the database.
+                DATABASE_USER (string): the name of the application user.
+        Parameter store:
+            {prefix}-drdb-host (string): host name that will be retrieved from secrets manager
+            {prefix}-drdb-user-pass (string):db password that will be retrieved from secrets manager
+    Args:
+        event:
+            A dictionary from the S3 bucket. See schemas/input.json for more information.
+        context: An object required by AWS Lambda. Unused.
+    Returns:
+        None
+    Raises:
+        Exception: If unable to retrieve the SQS URLs or exponential retry fields from env variables.
+
+    """
+    LOGGER.setMetadata(event, context)
+
+    # retrieving values from the env variables
+    backoff_env = [  # This order must exactly match the parameters in task.
+        OS_ENVIRON_DB_QUEUE_URL_KEY,
+        OS_ENVIRON_RECOVERY_QUEUE_URL_KEY,
+        OS_ENVIRON_MAX_RETRIES_KEY,
+        OS_ENVIRON_RETRY_SLEEP_SECS_KEY,
+        OS_ENVIRON_RETRY_BACKOFF_KEY,
+    ]
+    environment_args = []
+    for var in backoff_env:
+        env_var_value = os.getenv(var, None)
+        if env_var_value is None or len(env_var_value) == 0:
+            message = f"{var} is not set and is required"
+            LOGGER.critical(message)
+            raise Exception(message)
+
+        if var in [
+            OS_ENVIRON_MAX_RETRIES_KEY,
+            OS_ENVIRON_RETRY_SLEEP_SECS_KEY,
+            OS_ENVIRON_RETRY_BACKOFF_KEY,
+        ]:
+            try:
+                env_var_value = int(env_var_value)
+            except ValueError as _:
+                error = ValueError(f"{var} must be set to an integer.")
+                LOGGER.critical(error)
+                raise error
+        environment_args.append(env_var_value)
+
+    if len(event["Records"]) != 1:
+        raise ValueError(f"Must be passed a single record. Was {len(event['Records'])}")
+    record = event["Records"][0]
+    LOGGER.debug("Event passed = {event}", event=event)
+    # calling the task function to perform the work
+    task(record, *environment_args)
