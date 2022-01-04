@@ -4,9 +4,7 @@ title: Deploy Cumulus dashboard from Mac
 description: A concrete set of instructions on deploying Cumulus dashboard from Mac to create a test environment for ORCA. Also includes instructions for deploying the dashboard with launchpad authentication.
 ---
 
-import useBaseUrl from '@docusaurus/useBaseUrl';
-
-The goal of this page is to provide a set of additional instructions that will be useful to deploy the dashboard locally from Mac for ORCA project. It is assumed that Cumulus and ORCA are already deployed before following these instructions. Follow instructions on the following link on how to deploy Cumulus and ORCA:
+The goal of this page is to provide a set of additional instructions that will be useful to deploy the dashboard locally from Mac for ORCA project. Note that these instructions are only applicable for sandbox environment. It is assumed that Cumulus and ORCA are already deployed before following these instructions. Follow instructions on the following link on how to deploy Cumulus and ORCA:
 
  - https://nasa.github.io/cumulus/docs/deployment/deployment-readme
  - https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/deployment-with-cumulus
@@ -15,7 +13,7 @@ The goal of this page is to provide a set of additional instructions that will b
 
 There are several steps involved to set up tunneling to use the dashboard locally.
 
-- Create a pac file named `aws-proxy.pac` under your `user/.ssh` directory and add the following function to that file:
+1. Create a pac file named `aws-proxy.pac` under your `/Users/<username>/.ssh` directory and add the following function to that file:
 
 ```bash
 function FindProxyForURL (url, host) {
@@ -30,29 +28,35 @@ return 'DIRECT';
 
   Replace `<YOUR_API_ENDPOINT_URL>` with your Cumulus API endpoint found from terraform output named as `archive_api_uri` under module `cumulus-tf`.
 
-1. Firefox browser is used to view the dashboard. On Firefox browser, go to `Setting`-> `Network Settings`. Under `Automatic proxy configuration URL`, add the path to your `aws-proxy.pac` file in this format `file:///Users/<username>/.ssh/aws-proxy.pac`. Replace `<username>` with yours.
-2. Connect to NASA VPN, then run the following command from your bash terminal:
+2. Firefox browser is used to view the dashboard. On Firefox browser, go to `Setting`-> `Network Settings`. Under `Automatic proxy configuration URL`, add the path to your `aws-proxy.pac` file in this format `file:///Users/<username>/.ssh/aws-proxy.pac`. Replace `<username>` with yours.
+3. Connect to NASA VPN, then run the following command from your bash terminal:
   ```bash
   aws ssm start-session --target i-0edf895d1b2f8447d --document-name AWS-StartPortForwardingSession --parameters portNumber=22,localPortNumber=6868
   ```
 
   Replace instance-id `i-0edf895d1b2f8447d` with your Cumulus deployed EC2 instance ID. You can get this from EC2 dashboard in AWS and should be named `<prefix>-Cumulus-ECSCluster`.
-3. On another bash terminal, run 
+
+  Another way to get the instance-id is via the AWS CLI command below. Replace `<PREFIX>` with your deployment prefix.
+
+  ```bash
+  aws ec2 describe-instances --filters Name=instance-state-name,Values=running Name=tag:Name,Values=<PREFIX>-CumulusECSCluster --query "Reservations[*].Instances[*].InstanceId" --output text
+  ```
+4. On another bash terminal, run 
     ```bash
     ssh -vvv -p 6868 -N -D 1337 -i ~/.ssh/<YOUR_AWS_PRIVATE_KEY.pem> -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" ec2-user@127.0.0.1
     ```
 
-  Replace `<YOUR_AWS_PRIVATE_KEY.pem>` with yours. The pem file should have been created while deploying the `cumulus-tf` module via terraform. If not, go to your EC2 dashboard from AWS console and click `Key Pair` field. Then create a new EC2 key pair with your prefix name and download the `.pem` file to your `user/.ssh` directory.
+  Replace `<YOUR_AWS_PRIVATE_KEY.pem>` with yours. The pem file should have been created while deploying the `cumulus-tf` module via terraform. If not, go to your EC2 dashboard from AWS console and click `Key Pair` field. Then create a new EC2 key pair with your prefix name and download the `.pem` file to your `/Users/<username>/.ssh` directory. Then redeploy your `cumulus-tf` module via terraform.
 
  :::important
-  The key pair name must match the prefix name used in `cumulus-tf/terraform.tfvars` file orelse it will not connect to the instance.
+  The key pair name must match the prefix name under variable `key_name` used in `cumulus-tf/terraform.tfvars` file or else it will not connect to the instance. In addition, key pair name cannot have any spaces. 
  :::
 
  :::note
  Port -p 6868 should match the localPortNumber=6868 port number in your AWS SSM session.
  :::
 
- 4. The next step is to deploy the dashboard. Clone the repository using 
+ 5. The next step is to deploy the dashboard. Clone the repository using 
  
     ```bash
    git clone https://github.com/nasa/cumulus-dashboard.git
@@ -70,10 +74,10 @@ return 'DIRECT';
    ENABLE_RECOVERY=true APIROOT=<YOUR_API_ENDPOINT> npm run serve
    ```
 
- 5. Once the website is running, go to Firefox and put in `http://localhost:3000/` to access the dashboard.   
+ 6. Once the website is running, go to Firefox and put in `http://localhost:3000/` to access the dashboard.   
  
    :::important
-   Make sure the SSM and SSH sessions are both running.
+   Make sure the SSM and SSH sessions are both running since those might time out due to inactivity.
    :::important
 
 
