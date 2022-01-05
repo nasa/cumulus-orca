@@ -229,9 +229,9 @@ def inner_task(
                             to after the restore completes.
                         'success' (boolean): True, indicating the restore request was submitted successfully.
                             If any value would be false, RestoreRequestError is raised instead.
-                        'err_msg' (string): when success is False, this will contain
+                        'errorMessage' (string): when success is False, this will contain
                             the error message from the restore error.
-                    'keys': Same as recoverFiles, but without 'success' and 'err_msg'.
+                    'keys': Same as recoverFiles, but without 'success' and 'errorMessage'.
                 'job_id' (str): The 'job_id' from event if present, otherwise a newly-generated uuid.
         Raises:
             RestoreRequestError: Thrown if there are errors with the input request.
@@ -397,11 +397,11 @@ def process_granule(
         glacier_bucket: The S3 glacier bucket name.
         restore_expire_days:
             The number of days the restored file will be accessible in the S3 bucket before it expires.
-        max_retries: todo
-        retry_sleep_secs: todo
-        retrieval_type: todo
+        max_retries: The number of attempts to retry a restore_request that failed to submit.
+        retry_sleep_secs: The number of seconds to sleep between retry attempts.
+        retrieval_type: The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
         job_id: The unique identifier used for tracking requests.
-        db_queue_url: todo
+        db_queue_url: The URL of the SQS queue to post status to.
 
     Raises: RestoreRequestError if any file restore could not be initiated.
     """

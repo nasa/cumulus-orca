@@ -14,8 +14,10 @@ from typing import List
 LOGGER = CumulusLogger(name="ORCA")
 
 CONFIG_EXCLUDE_FILE_TYPES_KEY = "excludeFileTypes"
-CONFIG_FILE_BUCKETS_KEY = "fileBuckets"
+CONFIG_FILE_BUCKETS_KEY = "fileBucketMaps"
 
+OUTPUT_DESTINATION_BUCKET_KEY = "destBucket"
+OUTPUT_KEY_KEY = "key"
 
 class ExtractFilePathsError(Exception):
     """Exception to be raised if any errors occur"""
@@ -82,7 +84,7 @@ def task(event, context):  # pylint: disable-msg=unused-argument
                                 dest_bucket=dest_bucket,
                                 file=file_name,
                             )
-                    files.append({"key": file_key, "destBucket": dest_bucket})
+                    files.append({OUTPUT_KEY_KEY: file_key, OUTPUT_DESTINATION_BUCKET_KEY: dest_bucket})
             gran["keys"] = files
             grans.append(gran)
         result["granules"] = grans

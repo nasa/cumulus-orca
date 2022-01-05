@@ -110,12 +110,13 @@ The lambda handler event excepts a dictionary having a list of granules as input
          }
       ],
       "config":{
-         "glacier-bucket":"sndbx-cumulus-glacier",
-         "protected-bucket":"sndbx-cumulus-protected",
-         "internal-bucket":"sndbx-cumulus-internal",
-         "private-bucket":"sndbx-cumulus-private",
-         "public-bucket":"sndbx-cumulus-public",
-         "fileBuckets":[
+         "buckets": {
+            "protected": {"name": "sndbx-cumulus-protected", "type": "protected"},
+            "internal": {"name": "sndbx-cumulus-internal", "type": "internal"},
+            "private": {"name": "sndbx-cumulus-private", "type": "private"},
+            "public": {"name": "sndbx-cumulus-public", "type": "public"}
+         },
+         "fileBucketMaps":[
             {
                "regex":".*.h5$",
                "sampleFileName":"L0A_HR_RAW_product_0010-of-0420.h5",
@@ -337,7 +338,9 @@ FUNCTIONS
 
 DATA
     CONFIG_EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
-    CONFIG_FILE_BUCKETS_KEY = 'fileBuckets'
+    CONFIG_FILE_BUCKETS_KEY = 'fileBucketMaps'
     LOGGER = <cumulus_logger.CumulusLogger object>
     List = typing.List
+    OUTPUT_DESTINATION_BUCKET_KEY = 'destBucket'
+    OUTPUT_KEY_KEY = 'key'
 ```

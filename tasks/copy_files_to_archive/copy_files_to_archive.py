@@ -24,7 +24,7 @@ OS_ENVIRON_DB_QUEUE_URL_KEY = "DB_QUEUE_URL"
 
 # These will determine what the output looks like.
 FILE_SUCCESS_KEY = "success"
-FILE_ERROR_MESSAGE_KEY = "err_msg"
+FILE_ERROR_MESSAGE_KEY = "errorMessage"
 FILE_MESSAGE_RECIEPT = "receiptHandle"
 
 # These are tied to the input schema.

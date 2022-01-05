@@ -58,11 +58,10 @@ and includes an additional section for migration notes.
   - rds_security_group_id (Requires a value. Set in terraform.tfvars to the Security Group ID of your RDS Database's Security Group. Output from Cumulus' RDS module as `security_group_id`)
   - vpc_endpoint_id
 - Adjust workflows/step functions for `extract_filepaths`.
-  - `file-buckets` argument in `task_config` is now `fileBuckets`.
+  - `file-buckets` argument in `task_config` is now `fileBucketsMaps`.
 - Adjust workflows/step functions for `copy_to_glacier`. 
   - `multipart_chunksize_mb` argument in `task_config` is now the Cumulus standard of `s3MultipartChunksizeMb`. See example below.
   - `copy_to_glacier` has new requirements for writing to the orca catalog. See example below. Required properties are `providerId`, `executionId`, `collectionShortname`, and `collectionVersion`. See example below.
-- `request_status_for_granule` [input](https://github.com/nasa/cumulus-orca/blob/master/tasks/request_status_for_granule/schemas/input.json)/[output](https://github.com/nasa/cumulus-orca/blob/master/tasks/request_status_for_granule/schemas/output.json) and `request_status_for_job` [input](https://github.com/nasa/cumulus-orca/blob/master/tasks/request_status_for_job/schemas/input.json)/[output](https://github.com/nasa/cumulus-orca/blob/master/tasks/request_status_for_job/schemas/output.json) are now fully camel case.
 - 
 ```
 "task_config": {
@@ -76,6 +75,7 @@ and includes an additional section for migration notes.
   "orcaDefaultBucketOverride": "{$.meta.collection.meta.orcaDefaultBucketOverride}"
 }
 ```
+- `request_status_for_granule` [input](https://github.com/nasa/cumulus-orca/blob/master/tasks/request_status_for_granule/schemas/input.json)/[output](https://github.com/nasa/cumulus-orca/blob/master/tasks/request_status_for_granule/schemas/output.json) and `request_status_for_job` [input](https://github.com/nasa/cumulus-orca/blob/master/tasks/request_status_for_job/schemas/input.json)/[output](https://github.com/nasa/cumulus-orca/blob/master/tasks/request_status_for_job/schemas/output.json) are now fully camel case.
 - Add the following ORCA required variables definition to your `variables.tf` or `orca_variables.tf` file.
 
 ```terraform
