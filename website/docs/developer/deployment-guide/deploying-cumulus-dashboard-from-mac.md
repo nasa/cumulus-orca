@@ -49,7 +49,7 @@ return 'DIRECT';
   Replace `<YOUR_AWS_PRIVATE_KEY.pem>` with yours. The pem file should have been created while deploying the `cumulus-tf` module via terraform. If not, go to your EC2 dashboard from AWS console and click `Key Pair` field. Then create a new EC2 key pair with your prefix name and download the `.pem` file to your `/Users/<username>/.ssh` directory. Then redeploy your `cumulus-tf` module via terraform.
 
  :::important
-  The key pair name must match the prefix name under variable `key_name` used in `cumulus-tf/terraform.tfvars` file or else it will not connect to the instance. In addition, key pair name cannot have any spaces. 
+  Before redeploying via terraform, make sure that the key pair name matches the value under variable `key_name` used in `cumulus-tf/terraform.tfvars` file or else it will not connect to the instance. In addition, key pair name cannot have any spaces. 
  :::
 
  :::note
