@@ -1509,8 +1509,11 @@ class TestRequestFiles(unittest.TestCase):
         input_event = create_handler_event()
         expected_task_input = {
             "input": input_event["payload"],
+            # Values here are based on the event task_config values that are mapped
             "config": {
-                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "podaac-sndbx-cumulus-glacier"  # todo: tie to a var
+                request_files.CONFIG_JOB_ID_KEY: None,
+                request_files.CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: 750,
+                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "lp-sndbx-cumulus-orca"
             },
         }
         mock_task.return_value = {
