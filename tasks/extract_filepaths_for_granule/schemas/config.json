@@ -5,7 +5,7 @@
     "type": "object",
     "required": [
       "buckets",
-      "fileBuckets"
+      "fileBucketMaps"
     ],
     "properties": {
       "buckets": {
@@ -31,7 +31,7 @@
           }
         }
       },
-      "fileBuckets": {
+      "fileBucketMaps": {
         "description": "A list of dictionaries that contains details of the configured storage bucket and file regex.",
         "type": "array",
         "items": [

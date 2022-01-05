@@ -191,7 +191,7 @@ Creates status information for a new job and its files, and posts to queue.
   'filename' (str)
   'keyPath' (str)
   'restoreDestination' (str)
-  'multipartChunksizeMb' (int)
+  's3MultipartChunksizeMb' (int)
   'statusId' (int)
   'errorMessage' (str, Optional)
   'requestTime' (str)

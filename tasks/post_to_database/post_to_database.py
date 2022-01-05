@@ -10,7 +10,6 @@ from typing import Any, List, Dict, Optional
 # noinspection SpellCheckingInspection
 import fastjsonschema as fastjsonschema
 from cumulus_logger import CumulusLogger
-from orca_shared import shared_recovery
 from sqlalchemy import text
 from sqlalchemy.future import Engine
 

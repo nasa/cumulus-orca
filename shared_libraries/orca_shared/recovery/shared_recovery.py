@@ -58,15 +58,12 @@ def get_aws_region() -> str:
     LOGGER.debug(f"Got environment variable for AWS_REGION = {aws_region}")
     return aws_region
 
-
-# todo: Update api doc
+# Keys for input schema. Utilized by calling code.
 JOB_ID_KEY = "jobId"
 GRANULE_ID_KEY = "granuleId"
 ARCHIVE_DESTINATION_KEY = "archiveDestination"
 
-
 FILES_KEY = "files"
-
 
 FILENAME_KEY = "filename"
 KEY_PATH_KEY = "keyPath"

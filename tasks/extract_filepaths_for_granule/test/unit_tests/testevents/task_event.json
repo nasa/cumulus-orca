@@ -40,7 +40,7 @@
   },
     "config": 
       {
-        "fileBuckets":
+        "fileBucketMaps":
             [
               {"regex": ".*.h5$", "sampleFileName": "L0A_HR_RAW_product_0010-of-0420.h5", "bucket": "protected"},
               {"regex": ".*.cmr.xml$", "sampleFileName": "L0A_HR_RAW_product_0010-of-0420.iso.xml", "bucket": "protected"},
