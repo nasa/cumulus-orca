@@ -22,22 +22,22 @@ Fully defined json schemas written in the schema of https://json-schema.org/ can
 ```json
 {
   "asyncOperationId": "43c9751b-9498-4733-90d8-56b1458e0f85",
-  "job_status_totals": {
+  "jobStatusTotals": {
     "pending": 1,
     "success": 1,
     "failed": 1
   },
   "granules": [
     {
-      "granule_id": "6c8d0c8b-4f9a-4d87-ab7c-480b185a0250",
+      "granuleId": "6c8d0c8b-4f9a-4d87-ab7c-480b185a0250",
       "status": "failed"
     },
     {
-      "granule_id": "b5681dc1-48ba-4dc3-877d-1b5ad97e8276",
+      "granuleId": "b5681dc1-48ba-4dc3-877d-1b5ad97e8276",
       "status": "pending"
     },
     {
-      "granule_id": "7a75767d-abe3-4c1d-b55f-9009de1838f8",
+      "granuleId": "7a75767d-abe3-4c1d-b55f-9009de1838f8",
       "status": "success"
     }
   ]
@@ -77,7 +77,7 @@ FUNCTIONS
             'granule_id' (str)
             'status' (str): pending|staged|success|failed
     
-    get_granule_status_entries_for_job_sql() -> <function text at 0x000001AB3E3E5940>
+    get_granule_status_entries_for_job_sql() -> <function text at 0x10a89a710>
     
     get_status_totals_for_job(job_id: str, engine: sqlalchemy.future.engine.Engine) -> Dict[str, int]
         Gets the number of recovery_job for the given job_id for each possible status value.
@@ -92,7 +92,7 @@ FUNCTIONS
             'success' (int)
             'failed' (int)
     
-    get_status_totals_for_job_sql() -> <function text at 0x000001AB3E3E5940>
+    get_status_totals_for_job_sql() -> <function text at 0x10a89a710>
     
     handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]
         Entry point for the request_status_for_job Lambda.
@@ -143,8 +143,8 @@ DATA
     LOGGER = <cumulus_logger.CumulusLogger object>
     List = typing.List
     OUTPUT_GRANULES_KEY = 'granules'
-    OUTPUT_GRANULE_ID_KEY = 'granule_id'
+    OUTPUT_GRANULE_ID_KEY = 'granuleId'
     OUTPUT_JOB_ID_KEY = 'asyncOperationId'
-    OUTPUT_JOB_STATUS_TOTALS_KEY = 'job_status_totals'
+    OUTPUT_JOB_STATUS_TOTALS_KEY = 'jobStatusTotals'
     OUTPUT_STATUS_KEY = 'status'
 ```

@@ -12,7 +12,7 @@
           },
           "task_config": {
             "buckets": "{$.meta.buckets}",
-            "file-buckets": "{$.meta.collection.files}",
+            "fileBucketMaps": "{$.meta.collection.files}",
             "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}"
           }
         }

@@ -33,12 +33,14 @@ and includes an additional section for migration notes.
 - *ORCA-335* request_files now recognizes when a file is already recovered, and posts an error message to status tables.
 
 ### Changed
+- *ORCA-217* Lambda inputs now conform to the Cumulus camel case standard.
 - *ORCA-297* Default database name is now PREFIX_orca
 - *ORCA-287* Updated copy_to_glacier and extract_filepaths_for_granule to [new Cumulus file format](https://github.com/nasa/cumulus/blob/master/packages/schemas/files.schema.json). 
 - *ORCA-245* Updated resource policies related to KMS keys to provide better security.
 - *ORCA-318* Updated post_to_catalog lambda to match new Cumulus schema changes.
 - *ORCA-317* Updated the db_deploy task, unit tests, manual tests, research pages and SQL to reflect new inventory layout to better align with Cumulus.
 - *ORCA-249* Changed `mutipart_chunksize_mb` in lambda configs to `s3MultipartChunksizeMb`. Standard workflows now pull from `$.meta.collection.meta.s3MultipartChunksizeMb`
+- Updated lambdas to use Cumulus Message Adapter Python v2.0.0.
 
 ### Migration Notes
 
@@ -56,9 +58,12 @@ and includes an additional section for migration notes.
     - If preserving a database from a previous version of Orca, set to disaster_recovery.
   - rds_security_group_id (Requires a value. Set in terraform.tfvars to the Security Group ID of your RDS Database's Security Group. Output from Cumulus' RDS module as `security_group_id`)
   - vpc_endpoint_id
+- Adjust workflows/step functions for `extract_filepaths`.
+  - `file-buckets` argument in `task_config` is now `fileBucketsMaps`.
 - Adjust workflows/step functions for `copy_to_glacier`. 
   - `multipart_chunksize_mb` argument in `task_config` is now the Cumulus standard of `s3MultipartChunksizeMb`. See example below.
-  - `copy_to_glacier` has new requirements for writing to the orca catalog. See example below. Required properties are `providerId`, `executionId`, `collectionShortname`, and `collectionVersion`.
+  - `copy_to_glacier` has new requirements for writing to the orca catalog. See example below. Required properties are `providerId`, `executionId`, `collectionShortname`, and `collectionVersion`. See example below.
+- 
 ```
 "task_config": {
   "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
@@ -71,6 +76,7 @@ and includes an additional section for migration notes.
   "orcaDefaultBucketOverride": "{$.meta.collection.meta.orcaDefaultBucketOverride}"
 }
 ```
+- `request_status_for_granule` [input](https://github.com/nasa/cumulus-orca/blob/master/tasks/request_status_for_granule/schemas/input.json)/[output](https://github.com/nasa/cumulus-orca/blob/master/tasks/request_status_for_granule/schemas/output.json) and `request_status_for_job` [input](https://github.com/nasa/cumulus-orca/blob/master/tasks/request_status_for_job/schemas/input.json)/[output](https://github.com/nasa/cumulus-orca/blob/master/tasks/request_status_for_job/schemas/output.json) are now fully camel case.
 - Add the following ORCA required variables definition to your `variables.tf` or `orca_variables.tf` file.
 
 ```terraform

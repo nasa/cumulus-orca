@@ -45,13 +45,21 @@ CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = "s3MultipartChunksizeMb"
 
 GRANULE_GRANULE_ID_KEY = "granuleId"
 GRANULE_KEYS_KEY = "keys"
-GRANULE_RECOVER_FILES_KEY = "recover_files"
+GRANULE_RECOVER_FILES_KEY = "recoverFiles"
 
 # noinspection SpellCheckingInspection
-FILE_DEST_BUCKET_KEY = "dest_bucket"
+FILE_DEST_BUCKET_KEY = "destBucket"
 FILE_KEY_KEY = "key"
 FILE_SUCCESS_KEY = "success"
-FILE_ERROR_MESSAGE_KEY = "error_message"
+FILE_ERROR_MESSAGE_KEY = "errorMessage"
+FILE_COMPLETION_TIME_KEY = "completionTime"
+FILE_KEY_PATH_KEY = "keyPath"
+FILE_REQUEST_TIME_KEY = "requestTime"
+FILE_STATUS_ID_KEY = "statusId"
+FILE_RESTORE_DESTINATION_KEY = "restoreDestination"
+FILE_FILENAME_KEY = "filename"
+FILE_LAST_UPDATE_KEY = "lastUpdate"
+FILE_MULTIPART_CHUNKSIZE_MB_KEY = "s3MultipartChunksizeMb"
 
 LOGGER = shared_recovery.LOGGER
 
@@ -81,7 +89,7 @@ def task(
                         'granuleId' (str): The id of the granule being restored.
                         'keys' (list(dict)): A list of dicts with the following keys:
                             'key' (str): Name of the file within the granule.  # TODO: It actually might be a path.
-                            'dest_bucket' (str): The bucket the restored file will be moved
+                            'destBucket' (str): The bucket the restored file will be moved
                                 to after the restore completes.
             context: Passed through from AWS and CMA. Unused.
         Environment Vars:
@@ -96,15 +104,15 @@ def task(
             DB_QUEUE_URL
                 The URL of the SQS queue to post status to.
             ORCA_DEFAULT_BUCKET
-                The bucket to use if dest_bucket is not set.
+                The bucket to use if destBucket is not set.
         Returns:
             The value from inner_task.
             Example Input:
                 {'granules': [
                     {
                         'granuleId': 'granxyz',
-                        'recover_files': [
-                            {'key': 'path1', 'dest_bucket': 'bucket_name', 'success': True}
+                        'recoverFiles': [
+                            {'key': 'path1', 'destBucket': 'bucketName', 'success': True}
                         ]
                     }]}
         Raises:
@@ -203,7 +211,7 @@ def inner_task(
                         'granuleId' (str): The id of the granule being restored.
                         'keys' (list(dict)): A list of dicts with the following keys:
                             'key' (str): Name of the file within the granule.  # TODO: It actually might be a path.
-                            'dest_bucket' (str): The bucket the restored file will be moved
+                            'destBucket' (str): The bucket the restored file will be moved
                                 to after the restore completes.
             max_retries: The maximum number of retries for network operations.
             retry_sleep_secs: The number of time to sleep between retries.
@@ -215,15 +223,15 @@ def inner_task(
             A dict with the following keys:
                 'granules' (List): A list of dicts, each with the following keys:
                     'granuleId' (string): The id of the granule being restored.
-                    'recover_files' (list(dict)): A list of dicts with the following keys:
+                    'recoverFiles' (list(dict)): A list of dicts with the following keys:
                         'key' (str): Name of the file within the granule.
-                        'dest_bucket' (str): The bucket the restored file will be moved
+                        'destBucket' (str): The bucket the restored file will be moved
                             to after the restore completes.
                         'success' (boolean): True, indicating the restore request was submitted successfully.
                             If any value would be false, RestoreRequestError is raised instead.
-                        'err_msg' (string): when success is False, this will contain
+                        'errorMessage' (string): when success is False, this will contain
                             the error message from the restore error.
-                    'keys': Same as recover_files, but without 'success' and 'err_msg'.
+                    'keys': Same as recoverFiles, but without 'success' and 'errorMessage'.
                 'job_id' (str): The 'job_id' from event if present, otherwise a newly-generated uuid.
         Raises:
             RestoreRequestError: Thrown if there are errors with the input request.
@@ -271,13 +279,13 @@ def inner_task(
             # Set the initial pending state for the file.
             a_file = {
                 FILE_SUCCESS_KEY: False,
-                "filename": os.path.basename(file_key),
-                "key_path": file_key,
-                "restore_destination": destination_bucket_name,
-                "multipart_chunksize_mb": collection_multipart_chunksize_mb,
-                "status_id": shared_recovery.OrcaStatus.PENDING.value,
-                "request_time": time_stamp,
-                "last_update": time_stamp,
+                FILE_FILENAME_KEY: os.path.basename(file_key),
+                FILE_KEY_PATH_KEY: file_key,
+                FILE_RESTORE_DESTINATION_KEY: destination_bucket_name,
+                FILE_MULTIPART_CHUNKSIZE_MB_KEY: collection_multipart_chunksize_mb,
+                FILE_STATUS_ID_KEY: shared_recovery.OrcaStatus.PENDING.value,
+                FILE_REQUEST_TIME_KEY: time_stamp,
+                FILE_LAST_UPDATE_KEY: time_stamp,
             }
             if object_exists(s3, glacier_bucket, file_key):
                 LOGGER.info(
@@ -287,9 +295,9 @@ def inner_task(
                 message = f"{file_key} does not exist in {glacier_bucket} bucket"
                 LOGGER.error(message)
                 a_file[FILE_SUCCESS_KEY] = True
-                a_file["status_id"] = shared_recovery.OrcaStatus.FAILED.value
-                a_file["error_message"] = message
-                a_file["completion_time"] = time_stamp
+                a_file[FILE_STATUS_ID_KEY] = shared_recovery.OrcaStatus.FAILED.value
+                a_file[FILE_ERROR_MESSAGE_KEY] = message
+                a_file[FILE_COMPLETION_TIME_KEY] = time_stamp
             files.append(a_file)
 
         # Create a copy of the granule and add file information in the proper
@@ -381,21 +389,19 @@ def process_granule(
         granule: A dict with the following keys:
             'granuleId' (str): The id of the granule being restored.
             'recover_files' (list(dict)): A list of dicts with the following keys:
-                'key' (str): Name of the file within the granule.
-                'dest_bucket' (str): The bucket the restored file will be moved
-                    to after the restore completes
+                'keyPath' (str): Name of the file within the granule.
                 'success' (bool): Should enter this method set to False. Modified to 'True' by method end.
-                'err_msg' (str): Will be modified if error occurs.
+                'errorMessage' (str): Will be modified if error occurs.
 
 
         glacier_bucket: The S3 glacier bucket name.
         restore_expire_days:
             The number of days the restored file will be accessible in the S3 bucket before it expires.
-        max_retries: todo
-        retry_sleep_secs: todo
-        retrieval_type: todo
-        db_queue_url: todo
+        max_retries: The number of attempts to retry a restore_request that failed to submit.
+        retry_sleep_secs: The number of seconds to sleep between retry attempts.
+        retrieval_type: The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
         job_id: The unique identifier used for tracking requests.
+        db_queue_url: The URL of the SQS queue to post status to.
 
     Raises: RestoreRequestError if any file restore could not be initiated.
     """
@@ -405,12 +411,12 @@ def process_granule(
     # Try to restore objects in S3
     while attempt <= max_retries + 1:
         for a_file in granule[GRANULE_RECOVER_FILES_KEY]:
-            # Only do files we have not done or have not successfully been restored
+            # Only restore files we have not restored or have not successfully been restored
             if not a_file[FILE_SUCCESS_KEY]:
                 try:
                     restore_object(
                         s3,
-                        a_file["key_path"],
+                        a_file[FILE_KEY_PATH_KEY],
                         restore_expire_days,
                         glacier_bucket,
                         attempt,
@@ -427,7 +433,7 @@ def process_granule(
                     msg = "Failed to restore {file} from {glacier_bucket}. Encountered error [ {err} ]."
                     LOGGER.error(
                         msg,
-                        file=a_file["key_path"],
+                        file=a_file[FILE_KEY_PATH_KEY],
                         glacier_bucket=glacier_bucket,
                         err=err,
                     )
@@ -458,23 +464,23 @@ def process_granule(
             any_error = True
 
             # Update the file status information
-            a_file["status_id"] = shared_recovery.OrcaStatus.FAILED.value
-            a_file["completion_time"] = datetime.now(timezone.utc).isoformat()
+            a_file[FILE_STATUS_ID_KEY] = shared_recovery.OrcaStatus.FAILED.value
+            a_file[FILE_COMPLETION_TIME_KEY] = datetime.now(timezone.utc).isoformat()
 
             # send message to DB SQS
             # post to DB-queue. Retry using exponential delay if it fails
             LOGGER.debug(
                 "Sending status update information for {filename} to the QUEUE",
-                filename=a_file["filename"],
+                filename=a_file[FILE_FILENAME_KEY],
             )
-            for retry in range(max_retries + 1):
+            for attempt in range(max_retries + 1):
                 try:
                     shared_recovery.update_status_for_file(
                         job_id,
                         granule_id,
-                        a_file["filename"],
+                        a_file[FILE_FILENAME_KEY],
                         shared_recovery.OrcaStatus.FAILED,
-                        a_file["error_message"],
+                        a_file[FILE_ERROR_MESSAGE_KEY],
                         db_queue_url,
                     )
                     break
@@ -482,8 +488,7 @@ def process_granule(
                     # todo: Workaround for CumulusLogger bug with dictionaries
                     #       this will need updating when a new CumulusLogger is
                     #       released with bug fix.
-                    msg = f"Ran into error posting to SQS {retry + 1} time(s) with exception"
-                    msg = msg + " {ex}"
+                    msg = f"Ran into error posting to SQS {attempt + 1} time(s) with exception {{ex}}"
                     LOGGER.error(msg, ex=str(ex))
                     # todo: Use backoff code. ORCA-201
                     time.sleep(retry_sleep_secs)
@@ -501,8 +506,8 @@ def process_granule(
 
     # If this is reached, that means there is no entry in the db for file's status.
     if any_error:
-        msg = f"One or more files failed to be requested from {glacier_bucket}."
-        LOGGER.error(msg + " GRANULE: {granule}", granule=json.dumps(granule))
+        msg = f"One or more files failed to be requested from {glacier_bucket}.  GRANULE: {{granule}}"
+        LOGGER.error(msg, granule=json.dumps(granule))
         raise RestoreRequestError(
             f"One or more files failed to be requested from {glacier_bucket}."
         )

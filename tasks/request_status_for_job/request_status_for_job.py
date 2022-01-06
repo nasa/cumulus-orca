@@ -9,10 +9,10 @@ from sqlalchemy.future import Engine
 INPUT_JOB_ID_KEY = "asyncOperationId"
 
 OUTPUT_JOB_ID_KEY = "asyncOperationId"
-OUTPUT_JOB_STATUS_TOTALS_KEY = "job_status_totals"
+OUTPUT_JOB_STATUS_TOTALS_KEY = "jobStatusTotals"
 OUTPUT_GRANULES_KEY = "granules"
 OUTPUT_STATUS_KEY = "status"
-OUTPUT_GRANULE_ID_KEY = "granule_id"
+OUTPUT_GRANULE_ID_KEY = "granuleId"
 
 LOGGER = CumulusLogger()
 
