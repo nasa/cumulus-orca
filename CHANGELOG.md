@@ -31,6 +31,7 @@ and includes an additional section for migration notes.
 - *ORCA-257* orca_catalog_reporting lambda now returns data from actual catalog.
 - *ORCA-151* copy_to_glacier and request_files now accept "orcaDefaultBucketOverride" which can be used on a per-collection basis. If desired, add "orcaDefaultBucketOverride": "{$.meta.collection.meta.orcaDefaultBucketOverride}" to the workflow's task's task_config.
 - *ORCA-335* request_files now recognizes when a file is already recovered, and posts an error message to status tables.
+- *ORCA-230* copy_to_glacier now writes metadata to an ORCA catalog for comparisons to cumulus holdings.
 
 ### Changed
 - *ORCA-217* Lambda inputs now conform to the Cumulus camel case standard.
@@ -40,7 +41,8 @@ and includes an additional section for migration notes.
 - *ORCA-318* Updated post_to_catalog lambda to match new Cumulus schema changes.
 - *ORCA-317* Updated the db_deploy task, unit tests, manual tests, research pages and SQL to reflect new inventory layout to better align with Cumulus.
 - *ORCA-249* Changed `mutipart_chunksize_mb` in lambda configs to `s3MultipartChunksizeMb`. Standard workflows now pull from `$.meta.collection.meta.s3MultipartChunksizeMb`
-- Updated lambdas to use Cumulus Message Adapter Python v2.0.0.
+- *ORCA-230* Updated lambdas to use Cumulus Message Adapter Python v2.0.0.
+- *ORCA-132* Updated workflows to use latest Cumulus v10.0.0 workflow code.
 
 ### Migration Notes
 
