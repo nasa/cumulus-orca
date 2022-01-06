@@ -15,40 +15,40 @@ Fully defined json schemas written in the schema of https://json-schema.org/ can
 Input with granule_id and asyncOperationId.
 ```json
 {
-  "granule_id": "6c8d0c8b-4f9a-4d87-ab7c-480b185a0250",
+  "granuleId": "6c8d0c8b-4f9a-4d87-ab7c-480b185a0250",
   "asyncOperationId": "43c9751b-9498-4733-90d8-56b1458e0f85"
 }
 ```
 Input with no asyncOperationId. Only the most recent operation for the granule will be queried.
 ```json
 {
-  "granule_id": "6c8d0c8b-4f9a-4d87-ab7c-480b185a0250"
+  "granuleId": "6c8d0c8b-4f9a-4d87-ab7c-480b185a0250"
 }
 ```
 
 ### Example Output
 ```json
 {
-  "granule_id": "6c8d0c8b-4f9a-4d87-ab7c-480b185a0250",
+  "granuleId": "6c8d0c8b-4f9a-4d87-ab7c-480b185a0250",
   "asyncOperationId": "43c9751b-9498-4733-90d8-56b1458e0f85",
   "files": [
     {
-      "file_name": "f1.doc",
+      "fileName": "f1.doc",
       "status": "pending"
     },
     {
-      "file_name": "f2.pdf",
+      "fileName": "f2.pdf",
       "status": "failed",
-      "error_message": "Access Denied"
+      "errorMessage": "Access Denied"
     },
     {
-      "file_name": "f3.txt",
+      "fileName": "f3.txt",
       "status": "success"
     }
   ],
-  "restore_destination": "bucket_name",
-  "request_time": 628021800000,
-  "completion_time": 628021900000
+  "restoreDestination": "bucket_name",
+  "requestTime": 628021800000,
+  "completionTime": 628021900000
 }
 ```
 <a name="pydoc"></a>
@@ -88,7 +88,7 @@ FUNCTIONS
             'status' (str): The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.
             'error_message' (str): If the restoration of the file errored, the error will be stored here. Otherwise, None.
     
-    get_file_entries_for_granule_in_job_sql() -> <function text at 0x110ff9b00>
+    get_file_entries_for_granule_in_job_sql() -> <function text at 0x1092ed830>
     
     get_job_entry_for_granule(granule_id: str, job_id: str, engine: sqlalchemy.future.engine.Engine) -> Union[Dict[str, Any], NoneType]
         Gets the recovery_file status entries for the associated granule_id.
@@ -107,7 +107,7 @@ FUNCTIONS
             'completion_time' (int, Null): The time, in milliseconds since 1 January 1970 UTC,
                 when all granule_files were no longer 'pending'/'staged'.
     
-    get_job_entry_for_granule_sql() -> <function text at 0x110ff9b00>
+    get_job_entry_for_granule_sql() -> <function text at 0x1092ed830>
     
     get_most_recent_job_id_for_granule(granule_id: str, engine: sqlalchemy.future.engine.Engine) -> Union[str, NoneType]
         Gets the job_id for the most recent job that restores the given granule.
@@ -118,7 +118,7 @@ FUNCTIONS
         
         Returns: The job_id for the given granule's restore job.
     
-    get_most_recent_job_id_for_granule_sql() -> <function text at 0x110ff9b00>
+    get_most_recent_job_id_for_granule_sql() -> <function text at 0x1092ed830>
     
     handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]
         Entry point for the request_status_for_granule Lambda.
@@ -160,57 +160,18 @@ FUNCTIONS
 DATA
     Any = typing.Any
     Dict = typing.Dict
-    INPUT_GRANULE_ID_KEY = 'granule_id'
+    INPUT_GRANULE_ID_KEY = 'granuleId'
     INPUT_JOB_ID_KEY = 'asyncOperationId'
     LOGGER = <cumulus_logger.CumulusLogger object>
     List = typing.List
-    OUTPUT_COMPLETION_TIME_KEY = 'completion_time'
-    OUTPUT_ERROR_MESSAGE_KEY = 'error_message'
-    OUTPUT_FILENAME_KEY = 'file_name'
+    OUTPUT_COMPLETION_TIME_KEY = 'completionTime'
+    OUTPUT_ERROR_MESSAGE_KEY = 'errorMessage'
+    OUTPUT_FILENAME_KEY = 'fileName'
     OUTPUT_FILES_KEY = 'files'
-    OUTPUT_GRANULE_ID_KEY = 'granule_id'
+    OUTPUT_GRANULE_ID_KEY = 'granuleId'
     OUTPUT_JOB_ID_KEY = 'asyncOperationId'
-    OUTPUT_REQUEST_TIME_KEY = 'request_time'
-    OUTPUT_RESTORE_DESTINATION_KEY = 'restore_destination'
+    OUTPUT_REQUEST_TIME_KEY = 'requestTime'
+    OUTPUT_RESTORE_DESTINATION_KEY = 'restoreDestination'
     OUTPUT_STATUS_KEY = 'status'
     Union = typing.Union
-```
-
-## pydoc sqs_library.py
-
-```
-Help on sqs_library:
-NAME
-    sqs_library
-FUNCTIONS
-    post_to_metadata_queue(sqs_body: Dict[str, Any], metadata_queue_url: str,) -> None:
-        Posts metadata information to the metadata SQS queue.
-        Args:
-            sqs_body: A dictionary containing the metadata objects that will be sent to SQS.
-            metadata_queue_url: The metadata SQS queue URL defined by AWS.
-        Returns:
-            None
-    get_aws_region() -> str:
-        Gets AWS region variable from the runtime environment variable.
-        Args:
-            None
-        Returns:
-            The AWS region variable.
-        Raises:
-            Exception: Thrown if AWS region is empty or None.
-    
-    retry_error(max_retries: int, backoff_in_seconds: int, backoff_factor: int) -> Callable[[Callable[[], RT]], Callable[[], RT]]:
-        Decorator takes arguments to adjust number of retries and backoff strategy.
-        Args:
-            max_retries (int): number of times to retry in case of failure.
-            backoff_in_seconds (int): Number of seconds to sleep the first time through.
-            backoff_factor (int): Value of the factor used for backoff.
-DATA
-    Any = typing.Any
-    Callable = typing.Callable
-    Dict = typing.Dict
-    TypeVar = typing.TypeVar
-    MAX_RETRIES = 3
-    BACKOFF_FACTOR = 2
-    INITIAL_BACKOFF_IN_SECONDS = 1
 ```

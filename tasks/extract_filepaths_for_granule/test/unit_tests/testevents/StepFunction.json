@@ -134,12 +134,7 @@
       }
     },
     "ExtractFilepaths": {
-      "glacier-bucket": "{{$.meta.collection.meta.glacier-bucket}}",
-      "private-bucket": "{{$.meta.buckets.private.name}}",
-      "protected-bucket": "{{$.meta.buckets.protected.name}}",
-      "public-bucket": "{{$.meta.buckets.public.name}}",
-      "internal-bucket": "{{$.meta.buckets.internal.name}}",
-      "file-buckets": "{{$.meta.collection.files}}"
+      "fileBucketMaps": "{{$.meta.collection.files}}"
     },
     "RequestFiles": {
       "glacier-bucket": "{{$.meta.collection.meta.glacier-bucket}}"

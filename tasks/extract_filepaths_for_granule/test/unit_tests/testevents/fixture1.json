@@ -226,12 +226,7 @@
     },
     "WorkflowFailed": {},
     "ExtractFilepaths": {
-      "glacier-bucket": "{{$.meta.collection.meta.glacier-bucket}}",
-      "protected-bucket": "{{$.meta.buckets.protected.name}}",
-      "internal-bucket": "{{$.meta.buckets.internal.name}}",
-      "private-bucket": "{{$.meta.buckets.private.name}}",
-      "public-bucket": "{{$.meta.buckets.public.name}}",
-      "file-buckets": "{{$.meta.collection.files}}"
+      "fileBucketMaps": "{{$.meta.collection.files}}"
     },
     "StopStatus": {
       "stateMachine": "{{$.cumulus_meta.state_machine}}",

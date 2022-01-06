@@ -58,6 +58,23 @@ def get_aws_region() -> str:
     LOGGER.debug(f"Got environment variable for AWS_REGION = {aws_region}")
     return aws_region
 
+# Keys for input schema. Utilized by calling code.
+JOB_ID_KEY = "jobId"
+GRANULE_ID_KEY = "granuleId"
+ARCHIVE_DESTINATION_KEY = "archiveDestination"
+
+FILES_KEY = "files"
+
+FILENAME_KEY = "filename"
+KEY_PATH_KEY = "keyPath"
+RESTORE_DESTINATION_KEY = "restoreDestination"
+MULTIPART_CHUNKSIZE_KEY = "s3MultipartChunksizeMb"
+STATUS_ID_KEY = "statusId"
+ERROR_MESSAGE_KEY = "errorMessage"
+REQUEST_TIME_KEY = "requestTime"
+LAST_UPDATE_KEY = "lastUpdate"
+COMPLETION_TIME_KEY = "completionTime"
+
 
 def create_status_for_job(
     job_id: str,
@@ -74,22 +91,22 @@ def create_status_for_job(
         archive_destination: The S3 bucket destination of where the data is archived.
         files: A List of Dicts with the following keys:
             'filename' (str)
-            'key_path' (str)
-            'restore_destination' (str)
-            'multipart_chunksize_mb' (int)
-            'status_id' (int)
-            'error_message' (str, Optional)
-            'request_time' (str)
-            'last_update' (str)
-            'completion_time' (str, Optional)
+            'keyPath' (str)
+            'restoreDestination' (str)
+            's3MultipartChunksizeMb' (int)
+            'statusId' (int)
+            'errorMessage' (str, Optional)
+            'requestTime' (str)
+            'lastUpdate' (str)
+            'completionTime' (str, Optional)
         db_queue_url: The SQS queue URL defined by AWS.
     """
     new_data = {
-        "job_id": job_id,
-        "granule_id": granule_id,
-        "request_time": datetime.now(timezone.utc).isoformat(),
-        "archive_destination": archive_destination,
-        "files": files,
+        JOB_ID_KEY: job_id,
+        GRANULE_ID_KEY: granule_id,
+        REQUEST_TIME_KEY: datetime.now(timezone.utc).isoformat(),
+        ARCHIVE_DESTINATION_KEY: archive_destination,
+        FILES_KEY: files,
     }
 
     message = "Sending the following data to queue: {new_data}"
@@ -121,19 +138,19 @@ def update_status_for_file(
     """
     last_update = datetime.now(timezone.utc).isoformat()
     new_data = {
-        "job_id": job_id,
-        "granule_id": granule_id,
-        "filename": filename,
-        "last_update": last_update,
-        "status_id": orca_status.value,
+        JOB_ID_KEY: job_id,
+        GRANULE_ID_KEY: granule_id,
+        FILENAME_KEY: filename,
+        LAST_UPDATE_KEY: last_update,
+        STATUS_ID_KEY: orca_status.value,
     }
 
     if orca_status == OrcaStatus.SUCCESS or orca_status == OrcaStatus.FAILED:
-        new_data["completion_time"] = datetime.now(timezone.utc).isoformat()
+        new_data[COMPLETION_TIME_KEY] = datetime.now(timezone.utc).isoformat()
         if orca_status == OrcaStatus.FAILED:
             if error_message is None or len(error_message) == 0:
                 raise ValueError("error message is required.")
-            new_data["error_message"] = error_message
+            new_data[ERROR_MESSAGE_KEY] = error_message
 
     message = "Sending the following data to queue: {new_data}"
     LOGGER.debug(message, new_data=new_data)
