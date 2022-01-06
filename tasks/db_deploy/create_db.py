@@ -31,7 +31,7 @@ def create_fresh_orca_install(config: Dict[str, str]) -> None:
 
     with admin_app_connection.connect() as conn:
         # Create the roles, schema and user
-        create_app_schema_role_users(conn, config["user_password"], config["user_database"])
+        create_app_schema_role_users(conn, config["user_username"], config["user_password"], config["user_database"])
 
         # Change to DBO role and set search path
         set_search_path_and_role(conn)
@@ -45,13 +45,14 @@ def create_fresh_orca_install(config: Dict[str, str]) -> None:
         conn.commit()
 
 
-def create_app_schema_role_users(connection: Connection, app_password: str, db_name: str) -> None:
+def create_app_schema_role_users(connection: Connection, app_username: str, app_password: str, db_name: str) -> None:
     """
     Creates the ORCA application database schema, users and roles.
 
     Args:
         connection (sqlalchemy.future.Connection): Database connection.
-        app_password
+        app_username: The name for the created scoped user.
+        app_password: The password for the created scoped user.
         db_name: The name of the Orca database within the RDS cluster.
 
     Returns:
@@ -73,7 +74,7 @@ def create_app_schema_role_users(connection: Connection, app_password: str, db_n
 
     # Create the users last
     logger.debug("Creating the ORCA application user ...")
-    connection.execute(app_user_sql(app_password))
+    connection.execute(app_user_sql(app_username, app_password))
     logger.info("ORCA application user created.")
 
 

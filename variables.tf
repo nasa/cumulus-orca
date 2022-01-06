@@ -98,6 +98,14 @@ variable "db_name" {
   default     = null
 }
 
+
+variable "db_user_name" {
+  description = "The name of the application user for the Orca database. Default set to PREFIX_orca in main.tf. Any `-` in `prefix` will be replaced with `_`."
+  type        = string
+  default     = null
+}
+
+
 variable "default_multipart_chunksize_mb" {
   type        = number
   description = "The default maximum size of chunks to use when copying. Can be overridden by collection config."
