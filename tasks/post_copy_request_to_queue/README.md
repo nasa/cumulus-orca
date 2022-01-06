@@ -57,7 +57,7 @@ FUNCTIONS
         Raises:
             None
     
-    get_metadata_sql(key_path: str) -> <function text at 0x000001DFBD0B10D0>
+    get_metadata_sql(key_path: str) -> <function text at 0x106505d30>
         Query for finding metadata based on key_path and PENDING status.
         
         Args:
@@ -89,27 +89,26 @@ FUNCTIONS
         Raises:
             Exception: If unable to retrieve the SQS URLs or exponential retry fields from env variables.
     
-    query_db(key_path: str, bucket_name: str) -> List[Dict[str, str]]:
+    query_db(key_path: str, bucket_name: str) -> List[Dict[str, str]]
         Function to connect and query the DB and then return needed metadata for posting to the SQS Queue
-
+        
         Args:
-            key_path: Full AWS key path including file name of the file where the file resides.
+            key_path:
+               Full AWS key path including file name of the file where the file resides.
             bucket_name: Name of the source S3 bucket.
         Returns:
             A list of dict containing the following keys:
-                "job_id" (str):
-                "granule_id"(str):
+                "jobId" (str):
+                "granuleId"(str):
                 "filename" (str):
-                "restore_destination" (str):
-                "multipart_chunksize_mb" (str):
-                "source_key" (str):
-                "target_key" (str):
-                "source_bucket" (str):
-    Raises:
-        Exception: If unable to retrieve the metadata by querying the DB.
+                "restoreDestination" (str):
+                "s3MultipartChunksizeMb" (str):
+                "sourceKey" (str):
+                "targetKey" (str):
+                "sourceBucket" (str):
         Raises:
             Exception: If unable to retrieve the metadata by querying the DB.
-
+    
     task(record: Dict[str, Any], db_queue_url: str, recovery_queue_url: str, max_retries: int, retry_sleep_secs: int, retry_backoff: int) -> None
         Task called by the handler to perform the work.
         
@@ -133,5 +132,14 @@ FUNCTIONS
 DATA
     Any = typing.Any
     Dict = typing.Dict
+    FILENAME_KEY = 'filename'
+    GRANULE_ID_KEY = 'granuleId'
+    JOB_ID_KEY = 'jobId'
     LOGGER = <cumulus_logger.CumulusLogger object>
+    List = typing.List
+    MULTIPART_CHUNKSIZE_MB_KEY = 's3MultipartChunksizeMb'
+    RESTORE_DESTINATION_KEY = 'restoreDestination'
+    SOURCE_BUCKET_KEY = 'sourceBucket'
+    SOURCE_KEY_KEY = 'sourceKey'
+    TARGET_KEY_KEY = 'targetKey'
 ```

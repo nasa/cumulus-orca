@@ -13,8 +13,11 @@ from typing import List
 # instantiate Cumulus logger
 LOGGER = CumulusLogger(name="ORCA")
 
-EXCLUDE_FILE_TYPES_KEY = "excludeFileTypes"
+CONFIG_EXCLUDE_FILE_TYPES_KEY = "excludeFileTypes"
+CONFIG_FILE_BUCKETS_KEY = "fileBucketMaps"
 
+OUTPUT_DESTINATION_BUCKET_KEY = "destBucket"
+OUTPUT_KEY_KEY = "key"
 
 class ExtractFilePathsError(Exception):
     """Exception to be raised if any errors occur"""
@@ -39,14 +42,14 @@ def task(event, context):  # pylint: disable-msg=unused-argument
     LOGGER.debug("event: {event}", event=event)
     try:
         config = event["config"]
-        exclude_file_types = config.get(EXCLUDE_FILE_TYPES_KEY, None)
+        exclude_file_types = config.get(CONFIG_EXCLUDE_FILE_TYPES_KEY, None)
         if exclude_file_types is None:
             exclude_file_types = []
         if len(exclude_file_types) == 0:
-            LOGGER.debug(f"The configuration list {EXCLUDE_FILE_TYPES_KEY} is empty.")
+            LOGGER.debug(f"The configuration list {CONFIG_EXCLUDE_FILE_TYPES_KEY} is empty.")
         else:
             LOGGER.debug(
-                f"The configuration {EXCLUDE_FILE_TYPES_KEY} list {exclude_file_types} was found."
+                f"The configuration {CONFIG_EXCLUDE_FILE_TYPES_KEY} list {exclude_file_types} was found."
             )
     except KeyError as ke:
         message = "Key {key} is missing from the event configuration: {config}"
@@ -73,15 +76,15 @@ def task(event, context):  # pylint: disable-msg=unused-argument
                     LOGGER.debug(f"Retrieving information for {file_key}")
                     dest_bucket = None
                     for key in regex_buckets:
-                        pat = re.compile(key)
-                        if pat.match(file_name):
+                        pattern = re.compile(key)
+                        if pattern.match(file_name):
                             dest_bucket = regex_buckets[key]
                             LOGGER.debug(
                                 "Found retrieval destination {dest_bucket} for {file}",
                                 dest_bucket=dest_bucket,
                                 file=file_name,
                             )
-                    files.append({"key": file_key, "dest_bucket": dest_bucket})
+                    files.append({OUTPUT_KEY_KEY: file_key, OUTPUT_DESTINATION_BUCKET_KEY: dest_bucket})
             gran["keys"] = files
             grans.append(gran)
         result["granules"] = grans
@@ -105,7 +108,7 @@ def get_regex_buckets(event):
             ExtractFilePathsError: An error occurred parsing the input.
     """
     try:
-        file_buckets = event["config"]["file-buckets"]
+        file_buckets = event["config"][CONFIG_FILE_BUCKETS_KEY]
         # file_buckets example:
         # [{'regex': '.*.h5$', 'sampleFileName': 'L0A_0420.h5', 'bucket': 'protected'},
         # {'regex': '.*.iso.xml$', 'sampleFileName': 'L0A_0420.iso.xml', 'bucket': 'protected'},
