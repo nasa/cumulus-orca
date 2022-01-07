@@ -36,15 +36,7 @@ FUNCTIONS
             granule_id: The id of the granule being restored.
             archive_destination: The S3 bucket destination of where the data is archived.
             request_time: The time the restore was requested in utc and iso-format.
-            files: A List of Dicts with the following keys:
-                'filename' (str)
-                'key_path' (str)
-                'restore_destination' (str)
-                'status_id' (int)
-                'error_message' (str, Optional)
-                'request_time' (str)
-                'last_update' (str)
-                'completion_time' (str, Optional)
+            files: A List of Dicts. See schemas/new_job_input.json's `files` array for properties.
             engine: The sqlalchemy engine to use for contacting the database.
     
     handler(event: Dict[str, List], context) -> None

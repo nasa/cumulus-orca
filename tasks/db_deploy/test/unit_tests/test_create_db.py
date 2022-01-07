@@ -61,7 +61,7 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         mock_conn_enter = mock_connection().connect().__enter__()
 
         mock_create_app_schema_roles.assert_called_once_with(
-            mock_conn_enter, self.config["user_password"], self.config["user_database"]
+            mock_conn_enter, self.config["user_username"], self.config["user_password"], self.config["user_database"]
         )
         mock_set_search_path_role.assert_called_once_with(mock_conn_enter)
         mock_create_inventory_objects.assert_called_once_with(mock_conn_enter)
@@ -90,14 +90,14 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         Tests happy path of create_app_schema_role_users function.
         """
         create_db.create_app_schema_role_users(
-            self.mock_connection, self.config["user_password"], self.config["user_database"]
+            self.mock_connection, self.config["user_username"], self.config["user_password"], self.config["user_database"]
         )
 
         # Check that SQL called properly
         mock_dbo_role_sql.assert_called_once()
         mock_app_role_sql.assert_called_once()
         mock_schema_sql.assert_called_once()
-        mock_user_sql.assert_called_once_with(self.config["user_password"])
+        mock_user_sql.assert_called_once_with(self.config["user_username"], self.config["user_password"])
 
         # Check SQL called in proper order
         execution_order = [

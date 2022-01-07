@@ -13,7 +13,7 @@ export TASK_DIR=""
 # root password for postgres user. Must be at least 12 characters long.
 export ADMIN_PASSWORD=""
 
-# application password for orcauser user. Must be at least 12 characters long.
+# application password for PREFIX_orcauser user. Must be at least 12 characters long.
 export APPLICATION_PASSWORD=""
 
 

@@ -189,14 +189,14 @@ Creates status information for a new job and its files, and posts to queue.
 - `archive_destination` - The S3 bucket destination of where the data is archived.
 - `files` - A List of Dicts with the following keys:
   'filename' (str)
-  'key_path' (str)
-  'restore_destination' (str)
-  'multipart_chunksize_mb' (int)
-  'status_id' (int)
-  'error_message' (str, Optional)
-  'request_time' (str)
-  'last_update' (str)
-  'completion_time' (str, Optional)
+  'keyPath' (str)
+  'restoreDestination' (str)
+  's3MultipartChunksizeMb' (int)
+  'statusId' (int)
+  'errorMessage' (str, Optional)
+  'requestTime' (str)
+  'lastUpdate' (str)
+  'completionTime' (str, Optional)
 - `db_queue_url` - The SQS queue URL defined by AWS.
 
 <a id="orca_shared.recovery.shared_recovery.update_status_for_file"></a>

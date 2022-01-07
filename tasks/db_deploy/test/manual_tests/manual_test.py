@@ -19,7 +19,7 @@ def set_search_path():
 def get_configuration():
     """
     Sets a static configuration so testing is easy. Only HOST and PASSWORDS
-    are variable per user.
+    are variable per user. Username is variable for the non-admin user.
     """
     my_host = os.getenv("DATABASE_HOST")
     my_admin_pass = os.getenv("ADMIN_PASSWORD")

@@ -49,6 +49,13 @@ URL path to the release. In the example below the release being used is v3.0.2.
 
 :::
 
+:::tip Deploying a local version
+
+If you wish to deploy code cloned locally from [Github](https://github.com/nasa/cumulus-orca) instead of a release zip, run
+`./bin/build_tasks.sh`. This will crawl the `tasks` directory and build a `.zip` file (currently by just `zipping` all python files and dependencies) in each of it's sub-directories. You may then set `source` to the root folder of your cloned Orca repository.
+
+:::
+
 ```terraform
 ## ORCA Module
 ## =============================================================================
@@ -117,7 +124,7 @@ optional variables can be found in the [variables section](#orca-variables).
 The following variables are set as part of your Cumulus deployment and are
 required by the ORCA module. More information about setting these variables can
 be found in the [Cumulus variable definitions](https://github.com/nasa/cumulus/blob/master/tf-modules/cumulus/variables.tf).
-The variables must be set with the proper values in the `terraform.tfvavrs` file.
+The variables must be set with the proper values in the `terraform.tfvars` file.
 
 - buckets
 - lambda_subnet_ids
@@ -182,7 +189,7 @@ variable "rds_security_group_id" {
 
 ### Modifying `cumulus-tf/terraform.tfvars`
 
-At the end of the `terrafor.tfvars` file, add the following code. Update the
+At the end of the `terraform.tfvars` file, add the following code. Update the
 required and optional variable values to the values needed for your particular
 environment.
 
@@ -421,7 +428,7 @@ values.
 
 #### Cumulus Required Variables
 
-The following variables should be present already in the `cumulus-tf/terrafor.tfvars`
+The following variables should be present already in the `cumulus-tf/terraform.tfvars`
 file. The variables must be set with proper values for your environment in the
 `cumulus-tf/terraform.tfvars` file.
 
@@ -480,6 +487,7 @@ variables is shown in the table below.
 | `default_multipart_chunksize_mb`                      | number        | The default maximum size of chunks to use when copying. Can be overridden by collection config.         | 250 |
 | `metadata_queue_message_retention_time_seconds`       | number        | Number of seconds the metadata-queue fifo SQS retains a message.                                        | 777600 |
 | `db_name`                                             | string        | The name of the Orca database within the RDS cluster. Any `-` in `prefix` will be replaced with `_`.    | PREFIX_orca |
+| `db_user_name`                                        | string        | The name of the application user for the Orca database. Any `-` in `prefix` will be replaced with `_`.    | PREFIX_orcauser |
 | `orca_ingest_lambda_memory_size`                      | number        | Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime.                              | 2240 |
 | `orca_ingest_lambda_timeout`                          | number        | Timeout in number of seconds for ORCA copy_to_glacier lambda.                                           | 600 |
 | `orca_recovery_buckets`                               | List (string) | List of bucket names that ORCA has permissions to restore data to. Default is all in the `buckets` map. | [] |

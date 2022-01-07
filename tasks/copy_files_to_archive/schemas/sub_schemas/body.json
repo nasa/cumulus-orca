@@ -5,11 +5,11 @@
   "description": "A dict created by converting a string.",
   "type": "object",
   "properties": {
-    "job_id": {
+    "jobId": {
       "description": "The unique id of the recovery job.",
       "type": "string"
     },
-    "granule_id": {
+    "granuleId": {
       "description": "The unique ID of the granule.",
       "type": "string"
     },
@@ -17,28 +17,28 @@
       "description": "The name of the file being copied.",
       "type": "string"
     },
-    "source_key": {
+    "sourceKey": {
       "description": "The path the file was restored to.",
       "type": "string"
     },
-    "target_key": {
+    "targetKey": {
       "description": "The path to copy to. Defaults to value at 'source_key'.",
       "type": "string"
     },
-    "restore_destination": {
+    "restoreDestination": {
       "description": "The name of the bucket the restored file will be moved to.",
       "type": "string"
     },
-    "source_bucket": {
+    "sourceBucket": {
       "description": "Set by moveGranules. The bucket the restored file can be copied from.",
       "type": "string"
     },
-    "multipart_chunksize_mb": {
+    "s3MultipartChunksizeMb": {
       "description": "Overrides default_multipart_chunksize_mb from TF.",
       "type": ["number", "null"]
     }
   },
   "required": [
-    "job_id", "granule_id", "filename", "source_key", "target_key", "restore_destination", "source_bucket", "multipart_chunksize_mb"
+    "jobId", "granuleId", "filename", "sourceKey", "targetKey", "restoreDestination", "sourceBucket", "s3MultipartChunksizeMb"
   ]
 }

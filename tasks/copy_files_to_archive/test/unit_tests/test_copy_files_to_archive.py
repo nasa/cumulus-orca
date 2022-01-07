@@ -4,7 +4,6 @@ Description:  Unit tests for copy_files_to_archive.py.
 """
 import json
 import os
-import random
 import unittest
 import uuid
 from random import randint
@@ -365,24 +364,24 @@ class TestCopyFilesToArchive(TestCase):
         Function should transform json into file dict, and add 'success' key.
         """
         file0 = {
-            "job_id": uuid.uuid4().__str__(),
-            "granule_id": uuid.uuid4().__str__(),
-            "filename": uuid.uuid4().__str__(),
-            "source_key": uuid.uuid4().__str__(),
-            "target_key": uuid.uuid4().__str__(),
-            "restore_destination": uuid.uuid4().__str__(),
-            "source_bucket": uuid.uuid4().__str__(),
-            "multipart_chunksize_mb": randint(1, 10000),
+            copy_files_to_archive.INPUT_JOB_ID_KEY: uuid.uuid4().__str__(),
+            copy_files_to_archive.INPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(),
+            copy_files_to_archive.INPUT_FILENAME_KEY: uuid.uuid4().__str__(),
+            copy_files_to_archive.INPUT_SOURCE_KEY_KEY: uuid.uuid4().__str__(),
+            copy_files_to_archive.INPUT_TARGET_KEY_KEY: uuid.uuid4().__str__(),
+            copy_files_to_archive.INPUT_TARGET_BUCKET_KEY: uuid.uuid4().__str__(),
+            copy_files_to_archive.INPUT_SOURCE_BUCKET_KEY: uuid.uuid4().__str__(),
+            copy_files_to_archive.INPUT_MULTIPART_CHUNKSIZE_MB_KEY: randint(1, 10000),
         }
         file1 = {
-            "job_id": uuid.uuid4().__str__(),
-            "granule_id": uuid.uuid4().__str__(),
-            "filename": uuid.uuid4().__str__(),
-            "source_key": uuid.uuid4().__str__(),
-            "target_key": uuid.uuid4().__str__(),
-            "restore_destination": uuid.uuid4().__str__(),
-            "source_bucket": uuid.uuid4().__str__(),
-            "multipart_chunksize_mb": None,
+            copy_files_to_archive.INPUT_JOB_ID_KEY: uuid.uuid4().__str__(),
+            copy_files_to_archive.INPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(),
+            copy_files_to_archive.INPUT_FILENAME_KEY: uuid.uuid4().__str__(),
+            copy_files_to_archive.INPUT_SOURCE_KEY_KEY: uuid.uuid4().__str__(),
+            copy_files_to_archive.INPUT_TARGET_KEY_KEY: uuid.uuid4().__str__(),
+            copy_files_to_archive.INPUT_TARGET_BUCKET_KEY: uuid.uuid4().__str__(),
+            copy_files_to_archive.INPUT_SOURCE_BUCKET_KEY: uuid.uuid4().__str__(),
+            copy_files_to_archive.INPUT_MULTIPART_CHUNKSIZE_MB_KEY: None,
         }
 
         return_message_id_0 = uuid.uuid4().__str__()
