@@ -25,12 +25,6 @@ variable "prefix" {
 }
 
 
-variable "rds_security_group_id" {
-  type        = string
-  description = "Cumulus' RDS Security Group's ID."
-}
-
-
 variable "system_bucket" {
   type        = string
   description = "Cumulus system bucket used to store internal files."
@@ -71,24 +65,35 @@ variable "default_multipart_chunksize_mb" {
 ## Variables unique to ORCA
 ## REQUIRED
 
-
 variable "db_admin_password" {
   description = "Password for RDS database administrator authentication"
   type        = string
 }
+
+
 variable "db_user_password" {
   description = "Password for RDS database user authentication"
   type        = string
 }
+
+
 variable "db_host_endpoint" {
   type        = string
   description = "Database host endpoint to connect to."
 }
 
+
 variable "orca_default_bucket" {
   type        = string
   description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
 }
+
+
+variable "rds_security_group_id" {
+  type        = string
+  description = "Cumulus' RDS Security Group's ID."
+}
+
 
 ## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
 variable "db_admin_username" {
@@ -156,10 +161,12 @@ variable "orca_recovery_retry_interval" {
   description = "Number of seconds to wait between recovery failure retries."
 }
 
+
 variable "orca_recovery_retry_backoff" {
   type        = number
   description = "The multiplier by which the retry interval increases during each attempt."
 }
+
 
 variable "sqs_delay_time_seconds" {
   type        = number
@@ -189,6 +196,7 @@ variable "status_update_queue_message_retention_time_seconds" {
   type        = number
   description = "The number of seconds status_update_queue SQS retains a message in seconds. Maximum value is 14 days."
 }
+
 
 variable "vpc_endpoint_id" {
   type        = string
