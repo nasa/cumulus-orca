@@ -42,7 +42,7 @@ class TestOrcaSqlLogic(unittest.TestCase):
         or if user_name is not set or is over 64 characters.
         """
         bad_passwords = [None, "", "abc123", "1234567890", "AbCdEfG1234"]
-        message = "Password not long enough."
+        message = "User password must be at least 12 characters long."
 
         for bad_password in bad_passwords:
             with self.subTest(bad_password=bad_password):
@@ -51,14 +51,14 @@ class TestOrcaSqlLogic(unittest.TestCase):
                 self.assertEqual(str(cm.exception), message)
 
         bad_user_names = [None, ""]
-        message = "Username not long enough."
+        message = "Username must be non-empty."
         for bad_user_name in bad_user_names:
             with self.subTest(bad_user_name=bad_user_name):
                 with self.assertRaises(Exception) as cm:
                     orca_sql.app_user_sql(bad_user_name, "AbCdEfG12345")
                 self.assertEqual(str(cm.exception), message)
 
-        message = "Username too long."
+        message = "Username must be less than 64 characters."
         bad_user_name = "".join("a" * 64)
         with self.subTest(bad_user_name=bad_user_name) as cm:
             with self.assertRaises(Exception) as cm:

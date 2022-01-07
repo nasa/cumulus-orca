@@ -171,15 +171,15 @@ def app_user_sql(user_name: str, user_password: str) -> TextClause:
         (sqlalchemy.sql.element.TextClause): SQL for creating PREFIX_orcauser user.
     """
     if user_name is None or len(user_name) == 0:
-        logger.critical("Username not long enough.")
-        raise Exception("Username not long enough.")
+        logger.critical("Username must be non-empty.")
+        raise Exception("Username must be non-empty.")
     if len(user_name) > 63:
         logger.critical("Username must be less than 64 characters.")
-        raise Exception("Username too long.")
+        raise Exception("Username must be less than 64 characters.")
 
     if user_password is None or len(user_password) < 12:
         logger.critical("User password must be at least 12 characters long.")
-        raise Exception("Password not long enough.")
+        raise Exception("User password must be at least 12 characters long.")
 
     return text(
         f"""
