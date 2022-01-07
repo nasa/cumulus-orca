@@ -110,7 +110,7 @@ resource "aws_cloudwatch_metric_alarm" "staged_recovery_deadletter_alarm" {
   statistic           = "Average"
   threshold           = 1 #alarm will be triggered if number of messages in the DLQ equals to this threshold.
   treat_missing_data  = "notBreaching"
-  alarm_actions       = [aws_sns_topic.dlq_alarm.arn]
+  alarm_actions       = [aws_sns_topic.staged_recovery_dlq_alarm_topic.arn]
   tags                = local.tags
   dimensions = {
     "QueueName" = aws_sqs_queue.staged_recovery_deadletter_queue.name
@@ -118,13 +118,13 @@ resource "aws_cloudwatch_metric_alarm" "staged_recovery_deadletter_alarm" {
 }
 
 # SNS topic needed for cloudwatch alarm
-resource "aws_sns_topic" "dlq_alarm" {
-  name = "dlq-alarm-topic"
+resource "aws_sns_topic" "staged_recovery_dlq_alarm_topic" {
+  name = "staged_recovery_deadletter_queue_alarm_topic"
 }
 
-resource "aws_sns_topic_subscription" "sns-subscription-for-alarm" {
-  depends_on = [aws_sns_topic.dlq_alarm]
-  topic_arn  = aws_sns_topic.dlq_alarm.arn
+resource "aws_sns_topic_subscription" "sns_subscription_for_alarm" {
+  depends_on = [aws_sns_topic.staged_recovery_dlq_alarm_topic]
+  topic_arn  = aws_sns_topic.staged_recovery_dlq_alarm_topic.arn
   protocol   = "email"
   endpoint   = "rhassan@contractor.usgs.gov"
 }
