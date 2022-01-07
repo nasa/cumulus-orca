@@ -171,7 +171,7 @@ def app_user_sql(user_name: str, user_password: str) -> TextClause:
         (sqlalchemy.sql.element.TextClause): SQL for creating PREFIX_orcauser user.
     """
     if user_name is None or len(user_name) == 0:
-        logger.critical("Username must be non-empty.")
+        logger.critical("Username not long enough.")
         raise Exception("Username not long enough.")
     if len(user_name) > 63:
         logger.critical("Username must be less than 64 characters.")
@@ -198,7 +198,7 @@ def app_user_sql(user_name: str, user_password: str) -> TextClause:
                 COMMENT ON ROLE {user_name}
                     IS 'ORCA application user.';
 
-                RAISE NOTICE 'USER CREATED {user_name}. PLEASE UPDATE THE USERS PASSWORD!';
+                RAISE NOTICE 'USER CREATED {user_name}.';
 
             END IF;
 
