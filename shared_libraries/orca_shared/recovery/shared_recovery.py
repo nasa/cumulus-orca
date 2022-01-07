@@ -58,6 +58,7 @@ def get_aws_region() -> str:
     LOGGER.debug(f"Got environment variable for AWS_REGION = {aws_region}")
     return aws_region
 
+
 # Keys for input schema. Utilized by calling code.
 JOB_ID_KEY = "jobId"
 GRANULE_ID_KEY = "granuleId"
