@@ -16,10 +16,13 @@
   * [get\_migration\_version](#db_deploy.get_migration_version)
 * [migrate\_db](#migrate_db)
   * [perform\_migration](#migrate_db.perform_migration)
-  * [migrate\_versions\_2\_to\_3](#migrate_db.migrate_versions_2_to_3)
   * [migrate\_versions\_1\_to\_2](#migrate_db.migrate_versions_1_to_2)
+  * [migrate\_versions\_2\_to\_3](#migrate_db.migrate_versions_2_to_3)
+  * [migrate\_versions\_3\_to\_4](#migrate_db.migrate_versions_3_to_4)
 * [orca\_sql](#orca_sql)
+  * [commit\_sql](#orca_sql.commit_sql)
   * [app\_database\_sql](#orca_sql.app_database_sql)
+  * [app\_database\_comment\_sql](#orca_sql.app_database_comment_sql)
   * [dbo\_role\_sql](#orca_sql.dbo_role_sql)
   * [app\_role\_sql](#orca_sql.app_role_sql)
   * [orca\_schema\_sql](#orca_sql.orca_schema_sql)
@@ -32,7 +35,6 @@
   * [recovery\_file\_table\_sql](#orca_sql.recovery_file_table_sql)
   * [providers\_table\_sql](#orca_sql.providers_table_sql)
   * [collections\_table\_sql](#orca_sql.collections_table_sql)
-  * [provider\_collection\_xref\_table\_sql](#orca_sql.provider_collection_xref_table_sql)
   * [granules\_table\_sql](#orca_sql.granules_table_sql)
   * [files\_table\_sql](#orca_sql.files_table_sql)
   * [migrate\_recovery\_job\_data\_sql](#orca_sql.migrate_recovery_job_data_sql)
@@ -43,6 +45,7 @@
   * [drop\_dbo\_user\_sql](#orca_sql.drop_dbo_user_sql)
   * [drop\_dr\_role\_sql](#orca_sql.drop_dr_role_sql)
   * [drop\_drdbo\_role\_sql](#orca_sql.drop_drdbo_role_sql)
+  * [add\_multipart\_chunksize\_sql](#orca_sql.add_multipart_chunksize_sql)
 
 <a name="create_db"></a>
 # create\_db
@@ -55,7 +58,6 @@ Description: Creates the current version on the ORCA database.
 #### create\_fresh\_orca\_install
 
 ```python
-@retry_operational_error(MAX_RETRIES)
 create_fresh_orca_install(config: Dict[str, str]) -> None
 ```
 
@@ -75,8 +77,7 @@ by the ORCA application as a fresh install.
 #### create\_app\_schema\_role\_users
 
 ```python
-@retry_operational_error(MAX_RETRIES)
-create_app_schema_role_users(connection: Connection, app_password: str) -> None
+create_app_schema_role_users(connection: Connection, app_username: str, app_password: str, db_name: str) -> None
 ```
 
 Creates the ORCA application database schema, users and roles.
@@ -84,6 +85,9 @@ Creates the ORCA application database schema, users and roles.
 **Arguments**:
 
 - `connection` _sqlalchemy.future.Connection_ - Database connection.
+- `app_username` - The name for the created scoped user.
+- `app_password` - The password for the created scoped user.
+- `db_name` - The name of the Orca database within the RDS cluster.
   
 
 **Returns**:
@@ -94,7 +98,6 @@ Creates the ORCA application database schema, users and roles.
 #### set\_search\_path\_and\_role
 
 ```python
-@retry_operational_error(MAX_RETRIES)
 set_search_path_and_role(connection: Connection) -> None
 ```
 
@@ -115,7 +118,6 @@ creations or modifications to ORCA objects in the ORCA schema.
 #### create\_metadata\_objects
 
 ```python
-@retry_operational_error(MAX_RETRIES)
 create_metadata_objects(connection: Connection) -> None
 ```
 
@@ -136,7 +138,6 @@ versions and other ORCA internal information in the proper order.
 #### create\_recovery\_objects
 
 ```python
-@retry_operational_error(MAX_RETRIES)
 create_recovery_objects(connection: Connection) -> None
 ```
 
@@ -158,7 +159,6 @@ Creates the ORCA recovery tables in the proper order.
 #### create\_inventory\_objects
 
 ```python
-@retry_operational_error(MAX_RETRIES)
 create_inventory_objects(connection: Connection) -> None
 ```
 
@@ -212,7 +212,6 @@ required by this Lambda.
 #### task
 
 ```python
-@retry_operational_error(MAX_RETRIES)
 task(config: Dict[str, str]) -> None
 ```
 
@@ -234,7 +233,7 @@ schema.
 
 ```python
 @retry_operational_error(MAX_RETRIES)
-app_db_exists(connection: Connection) -> bool
+app_db_exists(connection: Connection, db_name: str) -> bool
 ```
 
 Checks to see if the ORCA application database exists.
@@ -242,6 +241,7 @@ Checks to see if the ORCA application database exists.
 **Arguments**:
 
 - `connection` _sqlalchemy.future.Connection_ - Database connection object.
+- `db_name` - The name of the Orca database within the RDS cluster.
   
 
 **Returns**:
@@ -252,7 +252,6 @@ Checks to see if the ORCA application database exists.
 #### app\_schema\_exists
 
 ```python
-@retry_operational_error(MAX_RETRIES)
 app_schema_exists(connection: Connection) -> bool
 ```
 
@@ -271,7 +270,6 @@ Checks to see if the ORCA application schema exists.
 #### app\_version\_table\_exists
 
 ```python
-@retry_operational_error(MAX_RETRIES)
 app_version_table_exists(connection: Connection) -> bool
 ```
 
@@ -290,7 +288,6 @@ Checks to see if the orca.schema_version table exists.
 #### get\_migration\_version
 
 ```python
-@retry_operational_error(MAX_RETRIES)
 get_migration_version(connection: Connection) -> int
 ```
 
@@ -332,32 +329,10 @@ migrations to run.
 
   None
 
-<a name="migrate_db.migrate_versions_2_to_3"></a>
-#### migrate\_versions\_2\_to\_3
-
-```python
-@retry_operational_error(MAX_RETRIES)
-migrate_versions_2_to_3(config: Dict[str, str], is_latest_version: bool) -> None
-```
-
-Performs the migration of the ORCA schema from version 2 to version 3 of
-the ORCA schema.
-
-**Arguments**:
-
-- `config` _Dict_ - Connection information for the database.
-- `is_latest_version` _bool_ - Flag to determine if version 3 is the latest schema version.
-  
-
-**Returns**:
-
-  None
-
 <a name="migrate_db.migrate_versions_1_to_2"></a>
 #### migrate\_versions\_1\_to\_2
 
 ```python
-@retry_operational_error(MAX_RETRIES)
 migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> None
 ```
 
@@ -368,6 +343,41 @@ the ORCA schema.
 
 - `config` _Dict_ - Connection information for the database.
 - `is_latest_version` _bool_ - Flag to determine if version 2 is the latest schema version.
+  
+
+**Returns**:
+
+  None
+
+<a name="migrate_db.migrate_versions_2_to_3"></a>
+#### migrate\_versions\_2\_to\_3
+
+```python
+migrate_versions_2_to_3(config: Dict[str, str], is_latest_version: bool) -> None
+```
+
+Performs the migration of the ORCA schema from version 2 to version 3 of
+the ORCA schema.
+
+**Arguments**:
+
+- `config` _Dict_ - Connection information for the database.
+- `is_latest_version` _bool_ - Flag to determine if version 3 is the latest schema version.
+
+<a name="migrate_db.migrate_versions_3_to_4"></a>
+#### migrate\_versions\_3\_to\_4
+
+```python
+migrate_versions_3_to_4(config: Dict[str, str], is_latest_version: bool) -> None
+```
+
+Performs the migration of the ORCA schema from version 3 to version 4 of
+the ORCA schema.
+
+**Arguments**:
+
+- `config` _Dict_ - Connection information for the database.
+- `is_latest_version` _bool_ - Flag to determine if version 4 is the latest schema version.
 
 **Returns**:
 
@@ -380,11 +390,20 @@ Name: orca_sql.py
 
 Description: All of the SQL used for creating and migrating the ORCA schema.
 
+<a name="orca_sql.commit_sql"></a>
+#### commit\_sql
+
+```python
+commit_sql() -> TextClause
+```
+
+SQL for a simple 'commit' to exit the current transaction.
+
 <a name="orca_sql.app_database_sql"></a>
 #### app\_database\_sql
 
 ```python
-app_database_sql() -> TextClause
+app_database_sql(db_name: str) -> TextClause
 ```
 
 Full SQL for creating the ORCA application database.
@@ -393,11 +412,21 @@ Full SQL for creating the ORCA application database.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for creating database.
 
+<a name="orca_sql.app_database_comment_sql"></a>
+#### app\_database\_comment\_sql
+
+```python
+app_database_comment_sql(db_name: str) -> TextClause
+```
+
+SQL for adding a documentation comment to the database.
+Cannot be merged with DB creation due to SQLAlchemy limitations.
+
 <a name="orca_sql.dbo_role_sql"></a>
 #### dbo\_role\_sql
 
 ```python
-dbo_role_sql() -> TextClause
+dbo_role_sql(db_name: str) -> TextClause
 ```
 
 Full SQL for creating the ORCA dbo role that owns the ORCA schema and
@@ -411,7 +440,7 @@ objects.
 #### app\_role\_sql
 
 ```python
-app_role_sql() -> TextClause
+app_role_sql(db_name: str) -> TextClause
 ```
 
 Full SQL for creating the ORCA application role that has all the privileges
@@ -440,7 +469,7 @@ before the app_user_sql and ORCA objects.
 #### app\_user\_sql
 
 ```python
-app_user_sql(user_password: str) -> TextClause
+app_user_sql(user_name: str, user_password: str) -> TextClause
 ```
 
 Full SQL for creating the ORCA application database user. Must be created
@@ -453,7 +482,7 @@ after the app_role_sql and orca_schema_sql.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating orcauser user.
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating PREFIX_orcauser user.
 
 <a name="orca_sql.schema_versions_table_sql"></a>
 #### schema\_versions\_table\_sql
@@ -565,19 +594,6 @@ Full SQL for creating the collections table.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for creating collections table.
 
-<a name="orca_sql.provider_collection_xref_table_sql"></a>
-#### provider\_collection\_xref\_table\_sql
-
-```python
-provider_collection_xref_table_sql() -> TextClause
-```
-
-Full SQL for creating the cross reference table that ties a collection and provider together and resolves the many to many relationships.
-
-**Returns**:
-
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating provider_collection_xref table.
-
 <a name="orca_sql.granules_table_sql"></a>
 #### granules\_table\_sql
 
@@ -675,7 +691,7 @@ SQL that removes the druser user.
 #### drop\_dbo\_user\_sql
 
 ```python
-drop_dbo_user_sql() -> TextClause
+drop_dbo_user_sql(db_name: str) -> TextClause
 ```
 
 SQL that removes the dbo user.
@@ -688,7 +704,7 @@ SQL that removes the dbo user.
 #### drop\_dr\_role\_sql
 
 ```python
-drop_dr_role_sql() -> TextClause
+drop_dr_role_sql(db_name: str) -> TextClause
 ```
 
 SQL that removes the dr_role role.
@@ -701,7 +717,7 @@ SQL that removes the dr_role role.
 #### drop\_drdbo\_role\_sql
 
 ```python
-drop_drdbo_role_sql() -> TextClause
+drop_drdbo_role_sql(db_name: str) -> TextClause
 ```
 
 SQL that removes the drdbo_role role.
@@ -709,4 +725,16 @@ SQL that removes the drdbo_role role.
 **Returns**:
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for dropping drdbo_role role.
+  f
+
+<a name="orca_sql.add_multipart_chunksize_sql"></a>
+#### add\_multipart\_chunksize\_sql
+
+```python
+add_multipart_chunksize_sql() -> TextClause
+```
+
+SQL that adds the multipart_chunksize_mb column to recovery_file.
+
+Returns: SQL for adding multipart_chunksize_mb.
 

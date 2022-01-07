@@ -25,11 +25,6 @@ variable "prefix" {
 }
 
 
-variable "rds_security_group_id" {
-  type        = string
-  description = "Cumulus' RDS Security Group's ID."
-}
-
 variable "system_bucket" {
   type        = string
   description = "Cumulus system bucket used to store internal files."
@@ -70,20 +65,31 @@ variable "db_admin_password" {
   type        = string
 }
 
+
 variable "db_user_password" {
   description = "Password for RDS database user authentication"
   type        = string
 }
+
 
 variable "db_host_endpoint" {
   type        = string
   description = "Database host endpoint to connect to."
 }
 
+
 variable "orca_default_bucket" {
   type        = string
   description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
 }
+
+
+variable "rds_security_group_id" {
+  type        = string
+  description = "Cumulus' RDS Security Group's ID."
+}
+
+
 ## OPTIONAL
 
 variable "db_admin_username" {
@@ -92,11 +98,20 @@ variable "db_admin_username" {
   default     = "postgres"
 }
 
+
 variable "db_name" {
   description = "The name of the Orca database within the RDS cluster. Default set to PREFIX_orca in main.tf. Any `-` in `prefix` will be replaced with `_`."
   type        = string
   default     = null
 }
+
+
+variable "db_user_name" {
+  description = "The name of the application user for the Orca database. Default set to PREFIX_orca in main.tf. Any `-` in `prefix` will be replaced with `_`."
+  type        = string
+  default     = null
+}
+
 
 variable "default_multipart_chunksize_mb" {
   type        = number
@@ -174,6 +189,7 @@ variable "orca_recovery_retry_interval" {
   default     = 1
 }
 
+
 variable "orca_recovery_retry_backoff" {
   type        = number
   description = "The multiplier by which the retry interval increases during each attempt."
@@ -206,6 +222,7 @@ variable "status_update_queue_message_retention_time_seconds" {
   description = "The number of seconds status_update_queue SQS retains a message in seconds. Maximum value is 14 days."
   default     = 777600 #9 days
 }
+
 
 variable "vpc_endpoint_id" {
   type        = string

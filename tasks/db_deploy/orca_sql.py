@@ -159,7 +159,7 @@ def orca_schema_sql() -> TextClause:
     )
 
 
-def app_user_sql(user_password: str) -> TextClause:
+def app_user_sql(user_name: str, user_password: str) -> TextClause:
     """
     Full SQL for creating the ORCA application database user. Must be created
     after the app_role_sql and orca_schema_sql.
@@ -168,35 +168,42 @@ def app_user_sql(user_password: str) -> TextClause:
         user_password (str): Password for the application user
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating orcauser user.
+        (sqlalchemy.sql.element.TextClause): SQL for creating PREFIX_orcauser user.
     """
+    if user_name is None or len(user_name) == 0:
+        logger.critical("Username must be non-empty.")
+        raise Exception("Username must be non-empty.")
+    if len(user_name) > 63:
+        logger.critical("Username must be less than 64 characters.")
+        raise Exception("Username must be less than 64 characters.")
+
     if user_password is None or len(user_password) < 12:
         logger.critical("User password must be at least 12 characters long.")
-        raise Exception("Password not long enough.")
+        raise Exception("User password must be at least 12 characters long.")
 
     return text(
         f"""
         DO
         $$
         BEGIN
-            IF NOT EXISTS (SELECT 1 FROM pg_user WHERE usename = 'orcauser' ) THEN
-                -- Create orcauser
-                CREATE ROLE orcauser
+            IF NOT EXISTS (SELECT 1 FROM pg_user WHERE usename = '{user_name}' ) THEN
+                -- Create {user_name}
+                CREATE ROLE {user_name}
                     LOGIN
                     INHERIT
                     ENCRYPTED PASSWORD '{user_password}'
                     IN ROLE orca_app;
 
                 -- Add comment
-                COMMENT ON ROLE orcauser
+                COMMENT ON ROLE {user_name}
                     IS 'ORCA application user.';
 
-                RAISE NOTICE 'USER CREATED orcauser. PLEASE UPDATE THE USERS PASSWORD!';
+                RAISE NOTICE 'USER CREATED {user_name}.';
 
             END IF;
 
             -- Alter the roles search path so on login it has what it needs for a path
-            ALTER ROLE orcauser SET search_path = orca, public;
+            ALTER ROLE {user_name} SET search_path = orca, public;
         END
         $$;
     """
