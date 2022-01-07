@@ -108,6 +108,12 @@ variable "db_name" {
 }
 
 
+variable "db_user_name" {
+  description = "Username for RDS database user authentication"
+  type        = string
+}
+
+
 variable "orca_ingest_lambda_memory_size" {
   type        = number
   description = "Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime."
