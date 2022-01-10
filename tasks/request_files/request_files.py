@@ -29,7 +29,7 @@ OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY = "RESTORE_EXPIRE_DAYS"
 OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY = "RESTORE_REQUEST_RETRIES"
 OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY = "RESTORE_RETRY_SLEEP_SECS"
 OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY = "RESTORE_RETRIEVAL_TYPE"
-OS_ENVIRON_DB_QUEUE_URL_KEY = "DB_QUEUE_URL"
+OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY = "STATUS_UPDATE_QUEUE_URL"
 OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY = "ORCA_DEFAULT_BUCKET"
 
 EVENT_CONFIG_KEY = "config"
@@ -101,7 +101,7 @@ def task(
                 to sleep between retry attempts.
             RESTORE_RETRIEVAL_TYPE (str, optional, default = 'Standard'): The Tier
                 for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
-            DB_QUEUE_URL
+            STATUS_UPDATE_QUEUE_URL
                 The URL of the SQS queue to post status to.
             ORCA_DEFAULT_BUCKET
                 The bucket to use if destBucket is not set.
@@ -153,7 +153,7 @@ def task(
         retrieval_type = DEFAULT_RESTORE_RETRIEVAL_TYPE
 
     # Get QUEUE URL
-    db_queue_url = str(os.environ[OS_ENVIRON_DB_QUEUE_URL_KEY])
+    status_update_queue_url = str(os.environ[OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY])
 
     # Use the default glacier bucket if none is specified for the collection or otherwise given.
     event[EVENT_CONFIG_KEY][
@@ -182,7 +182,7 @@ def task(
 
     # Call the inner task to perform the work of restoring
     return inner_task(  # todo: Split 'event' into relevant properties.
-        event, max_retries, retry_sleep_secs, retrieval_type, exp_days, db_queue_url
+        event, max_retries, retry_sleep_secs, retrieval_type, exp_days, status_update_queue_url
     )
 
 
@@ -192,7 +192,7 @@ def inner_task(
     retry_sleep_secs: float,
     retrieval_type: str,
     restore_expire_days: int,
-    db_queue_url: str,
+    status_update_queue_url: str,
 ) -> Dict[str, Any]:  # pylint: disable-msg=unused-argument
     """
     Task called by the handler to perform the work.
@@ -218,7 +218,7 @@ def inner_task(
             retrieval_type: The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
             restore_expire_days: The number of days the restored file will be accessible in the S3 bucket before it
                 expires.
-            db_queue_url: The URL of the SQS queue to post status to.
+            status_update_queue_url: The URL of the SQS queue to post status to.
         Returns:
             A dict with the following keys:
                 'granules' (List): A list of dicts, each with the following keys:
@@ -314,7 +314,7 @@ def inner_task(
         for retry in range(max_retries + 1):
             try:
                 shared_recovery.create_status_for_job(
-                    job_id, granule_id, glacier_bucket, files, db_queue_url
+                    job_id, granule_id, glacier_bucket, files, status_update_queue_url
                 )
                 break
             except Exception as ex:
@@ -330,7 +330,7 @@ def inner_task(
                 time.sleep(retry_sleep_secs)
                 continue
         else:
-            message = f"Unable to send message to QUEUE {db_queue_url}"
+            message = f"Unable to send message to QUEUE {status_update_queue_url}"
             LOGGER.critical(message, exec_info=True)
             raise Exception(message)
 
@@ -345,7 +345,7 @@ def inner_task(
             retry_sleep_secs,
             retrieval_type,
             job_id,
-            db_queue_url,
+            status_update_queue_url,
         )
 
         # Add to copied_granules array for output.
@@ -381,7 +381,7 @@ def process_granule(
     retry_sleep_secs: float,
     retrieval_type: str,
     job_id: str,
-    db_queue_url: str,
+    status_update_queue_url: str,
 ) -> None:  # pylint: disable-msg=unused-argument
     """Call restore_object for the files in the granule_list. Modifies granule for output.
     Args:
@@ -401,7 +401,7 @@ def process_granule(
         retry_sleep_secs: The number of seconds to sleep between retry attempts.
         retrieval_type: The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
         job_id: The unique identifier used for tracking requests.
-        db_queue_url: The URL of the SQS queue to post status to.
+        status_update_queue_url: The URL of the SQS queue to post status to.
 
     Raises: RestoreRequestError if any file restore could not be initiated.
     """
@@ -481,7 +481,7 @@ def process_granule(
                         a_file[FILE_FILENAME_KEY],
                         shared_recovery.OrcaStatus.FAILED,
                         a_file[FILE_ERROR_MESSAGE_KEY],
-                        db_queue_url,
+                        status_update_queue_url,
                     )
                     break
                 except Exception as ex:
@@ -494,7 +494,7 @@ def process_granule(
                     time.sleep(retry_sleep_secs)
                     continue
             else:
-                message = f"Unable to send message to QUEUE {db_queue_url}"
+                message = f"Unable to send message to QUEUE {status_update_queue_url}"
                 LOGGER.critical(message, exec_info=True)
                 raise Exception(message)
 
@@ -603,7 +603,7 @@ def handler(event: Dict[str, Any], context):  # pylint: disable-msg=unused-argum
             RESTORE_RETRIEVAL_TYPE (str, optional, default = 'Standard'): the Tier
                 for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
             CUMULUS_MESSAGE_ADAPTER_DISABLED (str): If set to 'true', CumulusMessageAdapter does not modify input.
-            DB_QUEUE_URL
+            STATUS_UPDATE_QUEUE_URL
                 The URL of the SQS queue to post status to.
         Args:
             event: See schemas/input.json and combine with knowledge of CumulusMessageAdapter.

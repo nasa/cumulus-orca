@@ -20,12 +20,12 @@ from orca_shared.recovery import shared_recovery
 from cumulus_logger import CumulusLogger
 
 
-OS_ENVIRON_DB_QUEUE_URL_KEY = "DB_QUEUE_URL"
+OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY = "STATUS_UPDATE_QUEUE_URL"
 
 # These will determine what the output looks like.
 FILE_SUCCESS_KEY = "success"
 FILE_ERROR_MESSAGE_KEY = "errorMessage"
-FILE_MESSAGE_RECIEPT = "receiptHandle"
+FILE_MESSAGE_RECEIPT = "receiptHandle"
 
 # These are tied to the input schema.
 INPUT_JOB_ID_KEY = "jobId"
@@ -50,7 +50,7 @@ def task(
     records: List[Dict[str, Any]],
     max_retries: int,
     retry_sleep_secs: float,
-    db_queue_url: str,
+    status_update_queue_url: str,
     default_multipart_chunksize_mb: int,
     recovery_queue_url: str,
 ) -> None:
@@ -64,7 +64,7 @@ def task(
         max_retries: The number of attempts to retry a failed copy.
         retry_sleep_secs: The number of seconds
             to sleep between retry attempts.
-        db_queue_url: The URL of the queue that posts status entries.
+        status_update_queue_url: The URL of the queue that posts status entries.
         default_multipart_chunksize_mb: The multipart_chunksize to use if not set on file.
         recovery_queue_url: The URL of the queue that this lambda is receiving messages from.
     Raises:
@@ -99,14 +99,14 @@ def task(
                         a_file[INPUT_FILENAME_KEY],
                         shared_recovery.OrcaStatus.SUCCESS,
                         None,
-                        db_queue_url,
+                        status_update_queue_url,
                     )
 
                     # Remove message from the queue we are listening to so we
                     # don't try to do it again if something else fails.
                     aws_client_sqs.delete_message(
                         QueueUrl=recovery_queue_url,
-                        ReceiptHandle=a_file[FILE_MESSAGE_RECIEPT],
+                        ReceiptHandle=a_file[FILE_MESSAGE_RECEIPT],
                     )
 
                 else:
@@ -132,7 +132,7 @@ def task(
                 a_file[INPUT_FILENAME_KEY],
                 shared_recovery.OrcaStatus.FAILED,
                 a_file.get(FILE_ERROR_MESSAGE_KEY, None),
-                db_queue_url,
+                status_update_queue_url,
             )
     if any_error:
         LOGGER.error("File copy failed. {files}", files=files)
@@ -159,7 +159,7 @@ def get_files_from_records(
         LOGGER.debug("Validating {file}", file=a_file)
         validate(a_file)
         a_file[FILE_SUCCESS_KEY] = False
-        a_file[FILE_MESSAGE_RECIEPT] = record[FILE_MESSAGE_RECIEPT]
+        a_file[FILE_MESSAGE_RECEIPT] = record[FILE_MESSAGE_RECEIPT]
         files.append(a_file)
     return files
 
@@ -232,6 +232,7 @@ def handler(
             DATABASE_PORT (string): the database port. The standard is 5432.
             DATABASE_NAME (string): the name of the database.
             DATABASE_USER (string): the name of the application user.
+            STATUS_UPDATE_QUEUE_URL (string): The URL of the SQS queue to post status to.
         Parameter Store:
                 drdb-user-pass (string): the password for the application user (DATABASE_USER).
                 drdb-host (string): the database host
@@ -267,9 +268,9 @@ def handler(
         retry_sleep_secs = 30
 
     try:
-        db_queue_url = str(os.environ[OS_ENVIRON_DB_QUEUE_URL_KEY])
+        status_update_queue_url = str(os.environ[OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY])
     except KeyError as key_error:
-        LOGGER.error(f"{OS_ENVIRON_DB_QUEUE_URL_KEY} environment value not found.")
+        LOGGER.error(f"{OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY} environment value not found.")
         raise key_error
 
     try:
@@ -293,7 +294,7 @@ def handler(
         records,
         retries,
         retry_sleep_secs,
-        db_queue_url,
+        status_update_queue_url,
         default_multipart_chunksize_mb,
         recovery_queue_url,
     )

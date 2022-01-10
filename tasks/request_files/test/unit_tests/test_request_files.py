@@ -36,7 +36,7 @@ class TestRequestFiles(unittest.TestCase):
 
     def tearDown(self):
         os.environ.pop("PREFIX", None)
-        os.environ.pop(request_files.OS_ENVIRON_DB_QUEUE_URL_KEY, None)
+        os.environ.pop(request_files.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY, None)
         os.environ.pop(request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY, None)
         os.environ.pop(request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY, None)
         os.environ.pop(request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY, None)
@@ -66,7 +66,7 @@ class TestRequestFiles(unittest.TestCase):
         exp_days = randint(0, 99)  # nosec
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
 
-        os.environ[request_files.OS_ENVIRON_DB_QUEUE_URL_KEY] = db_queue_url
+        os.environ[request_files.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = db_queue_url
         os.environ[
             request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY
         ] = max_retries.__str__()
@@ -1569,7 +1569,7 @@ class TestRequestFiles(unittest.TestCase):
         key2 = {request_files.FILE_KEY_KEY: file2, request_files.FILE_DEST_BUCKET_KEY: public_bucket_name}
         key3 = {request_files.FILE_KEY_KEY: file3, request_files.FILE_DEST_BUCKET_KEY: public_bucket_name}
 
-        os.environ[request_files.OS_ENVIRON_DB_QUEUE_URL_KEY] = "https://db.queue.url"
+        os.environ[request_files.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = "https://db.queue.url"
         job_id = uuid.uuid4().__str__()
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
         files = [key0, key1, key2, key3]
