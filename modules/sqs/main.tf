@@ -65,7 +65,7 @@ resource "aws_sqs_queue" "staged_recovery_queue" {
   ]
   redrive_policy = jsonencode({
     deadLetterTargetArn = aws_sqs_queue.staged_recovery_deadletter_queue.arn,
-    maxReceiveCount     = 3 #if number of delayed messages in the queue is greater than this number, then the messages will be sent to its DLQ.
+    maxReceiveCount     = 3 #number of times a consumer tries receiving a message from the queue without deleting it before being moved to DLQ.
   })
 }
 
