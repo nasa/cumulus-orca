@@ -117,7 +117,7 @@ class TestRequestFiles(unittest.TestCase):
         exp_days = randint(0, 99)  # nosec
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
 
-        os.environ["DB_QUEUE_URL"] = db_queue_url
+        os.environ[request_files.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = db_queue_url
         os.environ[
             request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
         ] = retry_sleep_secs.__str__()
@@ -164,7 +164,7 @@ class TestRequestFiles(unittest.TestCase):
         retrieval_type = "Bulk"
         exp_days = randint(0, 99)  # nosec
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
-        os.environ["DB_QUEUE_URL"] = db_queue_url
+        os.environ[request_files.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = db_queue_url
 
         os.environ[
             request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY
@@ -212,7 +212,7 @@ class TestRequestFiles(unittest.TestCase):
         retry_sleep_secs = uniform(0, 99)  # nosec
         exp_days = randint(0, 99)  # nosec
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
-        os.environ["DB_QUEUE_URL"] = db_queue_url
+        os.environ[request_files.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = db_queue_url
 
         os.environ[
             request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY
@@ -264,7 +264,7 @@ class TestRequestFiles(unittest.TestCase):
         exp_days = randint(0, 99)  # nosec
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
 
-        os.environ["DB_QUEUE_URL"] = db_queue_url
+        os.environ[request_files.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = db_queue_url
         os.environ[
             request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY
         ] = max_retries.__str__()
@@ -315,7 +315,7 @@ class TestRequestFiles(unittest.TestCase):
         retrieval_type = "Bulk"
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
 
-        os.environ["DB_QUEUE_URL"] = db_queue_url
+        os.environ[request_files.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = db_queue_url
         os.environ[
             request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY
         ] = max_retries.__str__()
@@ -364,7 +364,7 @@ class TestRequestFiles(unittest.TestCase):
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
         job_id = uuid.uuid4()
 
-        os.environ["DB_QUEUE_URL"] = db_queue_url
+        os.environ[request_files.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = db_queue_url
         os.environ[
             request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY
         ] = max_retries.__str__()
