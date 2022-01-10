@@ -17,7 +17,7 @@ from cumulus_logger import CumulusLogger
 from sqlalchemy import text
 
 OS_ENVIRON_RECOVERY_QUEUE_URL_KEY = "RECOVERY_QUEUE_URL"
-OS_ENVIRON_DB_QUEUE_URL_KEY = "DB_QUEUE_URL"
+OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY = "DB_QUEUE_URL"  # todo: Make this more specific here and elsewhere
 OS_ENVIRON_MAX_RETRIES_KEY = "MAX_RETRIES"
 OS_ENVIRON_RETRY_SLEEP_SECS_KEY = "RETRY_SLEEP_SECS"
 OS_ENVIRON_RETRY_BACKOFF_KEY = "RETRY_BACKOFF"
@@ -36,8 +36,9 @@ LOGGER = CumulusLogger()
 
 
 def task(
-    record: Dict[str, Any],
-    db_queue_url: str,
+    key_path: str,
+    bucket_name: str,
+    status_update_queue_url: str,
     recovery_queue_url: str,
     max_retries: int,
     retry_sleep_secs: int,
@@ -51,8 +52,10 @@ def task(
     The result is then sent to the staged-recovery-queue SQS and status-update-queue SQS.
 
     Args:
-        record: A dictionary passed through from the handler.
-        db_queue_url: The SQS URL of status_update_queue
+        key_path:
+           Full AWS key path including file name of the file where the file resides.
+        bucket_name: Name of the source S3 bucket.
+        status_update_queue_url: The SQS URL of status_update_queue
         recovery_queue_url: The SQS URL of staged_recovery_queue
         max_retries: Number of times the code will retry in case of failure.
         retry_sleep_secs: Number of seconds to wait between recovery failure retries.
@@ -64,25 +67,19 @@ def task(
         or post to queue.
 
     """
-    # grab the key_path and bucket name from event
-    # We only expect one record from the event.
-    key_path = record["s3"]["object"]["key"]
-    bucket_name = record["s3"]["bucket"]["name"]
-
     rows = query_db(key_path, bucket_name)
 
     my_base_delay = retry_sleep_secs
 
-    # Iterate through the records. Usually we expect only 1 but we could get
-    # multiple.
-    for record in rows:
+    # Iterate through the records. Usually we expect only 1, but we could get multiple.
+    for row in rows:
         # Get the values needed for the call to update the status
-        job_id = record[JOB_ID_KEY]
-        granule_id = record[GRANULE_ID_KEY]
-        filename = record[FILENAME_KEY]
+        job_id = row[JOB_ID_KEY]
+        granule_id = row[GRANULE_ID_KEY]
+        filename = row[FILENAME_KEY]
 
         # Make sure we update the status, retry if we fail.
-        for retry in range(max_retries + 1):
+        for attempt in range(max_retries + 1):
             try:
                 shared_recovery.update_status_for_file(
                     job_id,
@@ -90,77 +87,56 @@ def task(
                     filename,
                     shared_recovery.OrcaStatus.STAGED,
                     None,
-                    db_queue_url,
+                    status_update_queue_url,
                 )
                 break
             except Exception as ex:
                 # Can't use f"" because of '{}' bug in CumulusLogger.
                 LOGGER.error(
-                    "Ran into error posting to SQS {db_queue_url} {retry} time(s) with exception {ex}",
-                    db_queue_url=db_queue_url,
-                    retry=retry + 1,
+                    "Ran into error posting to SQS {status_update_queue_url} {attempt} time(s) with exception {ex}",
+                    status_update_queue_url=status_update_queue_url,
+                    attempt=attempt + 1,
                     ex=str(ex),
                 )
-                my_base_delay = exponential_delay(my_base_delay, retry_backoff)
+                if attempt < max_retries:
+                    my_base_delay = exponential_delay(my_base_delay, retry_backoff)
                 continue
         else:
-            message = "Error sending message to db_queue_url for {record}"
+            message = "Error sending message to status_update_queue_url for {row}"
             LOGGER.critical(
-                message, new_data=str(record)
+                message, new_data=str(row)
             )  # Cumulus will update this library in the future to be better behaved.
-            raise Exception(message.format(record=str(record)))
+            raise Exception(message.format(row=str(row)))
 
         # resetting my_base_delay
         my_base_delay = retry_sleep_secs
 
         # Post to recovery queue so data is copied back to proper Cumulus
         # primary location. Retry using exponential delay if it fails.
-        for retry in range(max_retries + 1):
+        for attempt in range(max_retries + 1):
             try:
+                # todo: Create another shared function that posts to a queue without requiring a request_method.
                 shared_recovery.post_entry_to_queue(
-                    record, shared_recovery.RequestMethod.NEW_JOB, recovery_queue_url
+                    row, shared_recovery.RequestMethod.NEW_JOB, recovery_queue_url  # RequestMethod unused on this queue.
                 )
                 break
             except Exception as ex:
                 # Can't use f"" because of '{}' bug in CumulusLogger.
                 LOGGER.error(
-                    "Ran into error posting to SQS {recovery_queue_url} {retry} time(s) with exception {ex}",
+                    "Ran into error posting to SQS {recovery_queue_url} {attempt} time(s) with exception {ex}",
                     recovery_queue_url=recovery_queue_url,
-                    retry=retry + 1,
+                    attempt=attempt + 1,
                     ex=str(ex),
                 )
-                my_base_delay = exponential_delay(my_base_delay, retry_backoff)
+                if attempt < max_retries:
+                    my_base_delay = exponential_delay(my_base_delay, retry_backoff)
                 continue
         else:
             message = "Error sending message to recovery_queue_url for {new_data}"
             LOGGER.critical(
-                message, new_data=str(record)
+                message, new_data=str(row)
             )  # Cumulus will update this library in the future to be better behaved.
-            raise Exception(message.format(new_data=str(record)))
-
-
-def get_metadata_sql(key_path: str) -> text:
-    """
-    Query for finding metadata based on key_path and PENDING status.
-
-    Args:
-        key_path (str): s3 key for the file less the bucket name
-
-    Returns:
-        (sqlalchemy.text): SQL statement
-    """
-    return text(
-        f"""
-            SELECT
-                job_id, granule_id, filename, restore_destination, multipart_chunksize_mb
-            FROM
-                recovery_file
-            WHERE
-                key_path = '{key_path}'
-            AND
-                status_id = {shared_recovery.OrcaStatus.PENDING.value}
-        """
-    )
+            raise Exception(message.format(new_data=str(row)))
 
 
 # Define our exponential delay function
@@ -193,14 +169,14 @@ def exponential_delay(base_delay: int, exponential_backoff: int = 2) -> int:
 @retry_operational_error()
 def query_db(key_path: str, bucket_name: str) -> List[Dict[str, str]]:
     """
-    Function to connect and query the DB and then return needed metadata for posting to the SQS Queue
+    Connect and query the recover_file status table return needed metadata for posting to the recovery status SQS Queue.
 
     Args:
         key_path:
            Full AWS key path including file name of the file where the file resides.
         bucket_name: Name of the source S3 bucket.
     Returns:
-        A list of dict containing the following keys:
+        A list of dict containing the following keys, matching the input format from copy_files_to_archive:
             "jobId" (str):
             "granuleId"(str):
             "filename" (str):
@@ -225,7 +201,7 @@ def query_db(key_path: str, bucket_name: str) -> List[Dict[str, str]]:
         engine = shared_db.get_user_connection(db_connect_info)
         LOGGER.debug("Querying database for metadata on {path}", path=key_path)
 
-        # It is possible to have multiple returns so we want to capture all of
+        # It is possible to have multiple returns, so we capture all of
         # them to update status
         rows = []
         with engine.begin() as connection:
@@ -242,7 +218,7 @@ def query_db(key_path: str, bucket_name: str) -> List[Dict[str, str]]:
                     MULTIPART_CHUNKSIZE_MB_KEY: row[4],
                     SOURCE_KEY_KEY: key_path,
                     TARGET_KEY_KEY: key_path,  # todo add a card to configure targetKey in the future
-                    SOURCE_BUCKET_KEY: bucket_name,
+                    SOURCE_BUCKET_KEY: bucket_name,  # todo add to database and retrieve
                 }
                 rows.append(row_dict)
 
@@ -253,10 +229,34 @@ def query_db(key_path: str, bucket_name: str) -> List[Dict[str, str]]:
             raise Exception(message)
 
     except Exception as ex:
-        message = "Unable to retrieve {key_path} metadata. Exception {ex} encountered."
+        message = "Unable to retrieve {key_path} metadata. Exception '{ex}' encountered."
         LOGGER.error(message, key_path=key_path, ex=ex, exc_info=True)
         raise Exception(message.format(key_path=key_path, ex=ex))
     return rows
+
+
+def get_metadata_sql(key_path: str) -> text:
+    """
+    Query for finding metadata based on key_path and PENDING status.
+
+    Args:
+        key_path (str): s3 key for the file less the bucket name
+
+    Returns:
+        (sqlalchemy.text): SQL statement
+    """
+    return text(
+        f"""
+            SELECT
+                job_id, granule_id, filename, restore_destination, multipart_chunksize_mb
+            FROM
+                recovery_file
+            WHERE
+                key_path = '{key_path}'
+            AND
+                status_id = {shared_recovery.OrcaStatus.PENDING.value}
+        """
+    )
 
 
 def handler(event: Dict[str, Any], context) -> None:
@@ -267,9 +267,9 @@ def handler(event: Dict[str, Any], context) -> None:
         Environment Vars:
             RECOVERY_QUEUE_URL (string): the SQS URL for staged_recovery_queue
             DB_QUEUE_URL (string): the SQS URL for status-update-queue
-            MAX_RETRIES (string): TODO
-            RETRY_SLEEP_SECS (string): TODO
-            RETRY_BACKOFF (string): TODO
+            MAX_RETRIES (string): Number of times the code will retry in case of failure.
+            RETRY_SLEEP_SECS (string): Number of seconds to wait between recovery failure retries.
+            RETRY_BACKOFF (string): The multiplier by which the retry interval increases during each attempt.
 
             Required by shared_db.get_configuration():
                 PREFIX (string): the prefix
@@ -293,7 +293,7 @@ def handler(event: Dict[str, Any], context) -> None:
 
     # retrieving values from the env variables
     backoff_env = [  # This order must exactly match the parameters in task.
-        OS_ENVIRON_DB_QUEUE_URL_KEY,
+        OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY,
         OS_ENVIRON_RECOVERY_QUEUE_URL_KEY,
         OS_ENVIRON_MAX_RETRIES_KEY,
         OS_ENVIRON_RETRY_SLEEP_SECS_KEY,
@@ -324,5 +324,8 @@ def handler(event: Dict[str, Any], context) -> None:
         raise ValueError(f"Must be passed a single record. Was {len(event['Records'])}")
     record = event["Records"][0]
     LOGGER.debug("Event passed = {event}", event=event)
+    # grab the key_path and bucket name from record
+    key_path = record["s3"]["object"]["key"]
+    bucket_name = record["s3"]["bucket"]["name"]
     # calling the task function to perform the work
-    task(record, *environment_args)
+    task(key_path, bucket_name, *environment_args)

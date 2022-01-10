@@ -168,7 +168,7 @@ class TestRequestStatusForJobUnit(
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
         mock_engine.begin.return_value.__exit__ = (
-            Mock()
+            Mock(return_value=False)
         )  # required for "with", but untestable.
 
         result = request_status_for_job.get_granule_status_entries_for_job(
@@ -200,7 +200,7 @@ class TestRequestStatusForJobUnit(
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
         mock_engine.begin.return_value.__exit__ = (
-            Mock()
+            Mock(return_value=False)
         )  # required for "with", but untestable.
 
         result = request_status_for_job.get_status_totals_for_job(job_id, mock_engine)
@@ -259,7 +259,7 @@ class TestRequestStatusForJobUnit(
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
         mock_engine.begin.return_value.__exit__ = (
-            Mock()
+            Mock(return_value=False)
         )  # required for "with", but untestable.
         mock_get_user_connection.return_value = mock_engine
 
