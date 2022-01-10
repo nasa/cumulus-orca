@@ -27,7 +27,7 @@ class TestCopyFilesToArchive(TestCase):
         {
             "COPY_RETRIES": "703",
             "COPY_RETRY_SLEEP_SECS": "108.5",
-            "STATUS_UPDATE_QUEUE_URL": "something.blah",
+            copy_files_to_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY: "something.blah",
             "DEFAULT_MULTIPART_CHUNKSIZE_MB": "42",
             "RECOVERY_QUEUE_URL": "something_else.blah",
         },
@@ -52,7 +52,7 @@ class TestCopyFilesToArchive(TestCase):
     @patch.dict(
         os.environ,
         {
-            "STATUS_UPDATE_QUEUE_URL": "something.else",
+            copy_files_to_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY: "something.else",
             "DEFAULT_MULTIPART_CHUNKSIZE_MB": "42",
             "RECOVERY_QUEUE_URL": "someother.queue",
         },
