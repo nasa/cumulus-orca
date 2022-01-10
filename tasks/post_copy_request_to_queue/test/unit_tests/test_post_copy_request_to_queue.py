@@ -65,7 +65,7 @@ class TestPostCopyRequestToQueue(TestCase):
 
         db_queue_url = uuid.uuid4().__str__()
         recovery_queue_url = uuid.uuid4().__str__()
-        max_retries = random.randint(0, 100)
+        max_retries = random.randint(1, 100)
         retry_sleep_secs = random.randint(0, 100)
         retry_backoff = random.randint(0, 100)
 
@@ -281,7 +281,7 @@ class TestPostCopyRequestToQueue(TestCase):
 
         db_queue_url = uuid.uuid4().__str__()
         recovery_queue_url = uuid.uuid4().__str__()
-        max_retries = random.randint(0, 100)
+        max_retries = random.randint(1, 100)
         retry_sleep_secs = random.randint(0, 100)
         retry_backoff = random.randint(0, 100)
 
@@ -421,7 +421,7 @@ class TestPostCopyRequestToQueue(TestCase):
             post_copy_request_to_queue.SOURCE_BUCKET_KEY: bucket_name,
         }
         mock_query_db.return_value = [copy.deepcopy(row)]
-        max_retries = random.randint(2, 2000)
+        max_retries = random.randint(2, 100)
         environment_args = [
             self.status_update_queue_url,
             self.recovery_queue_url,
@@ -511,7 +511,7 @@ class TestPostCopyRequestToQueue(TestCase):
             post_copy_request_to_queue.SOURCE_BUCKET_KEY: bucket_name,
         }
         mock_query_db.return_value = [copy.deepcopy(row)]
-        max_retries = random.randint(2, 2000)
+        max_retries = random.randint(2, 100)
         environment_args = [
             self.status_update_queue_url,
             self.recovery_queue_url,

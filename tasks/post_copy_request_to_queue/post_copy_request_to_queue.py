@@ -153,12 +153,13 @@ def exponential_delay(base_delay: int, exponential_backoff: int = 2) -> int:
         None
     """
     try:
-        int(base_delay)
-        int(exponential_backoff)
+        base_delay = int(base_delay)
+        exponential_backoff = int(exponential_backoff)
     except ValueError as ve:
         # Can't use f"" because of '{}' bug in CumulusLogger.
         LOGGER.error("arguments are not integer. Raised ValueError: {ve}", ve=ve)
         raise ve
+
     random_addition = random.randint(0, 1000) / 1000.0
     delay = base_delay + random_addition
     LOGGER.debug(f"Performing back off retry sleeping {delay} seconds")
