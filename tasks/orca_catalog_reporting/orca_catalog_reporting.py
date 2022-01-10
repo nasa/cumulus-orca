@@ -105,6 +105,7 @@ def query_db(
 def get_catalog_sql() -> text:
     return text(
         # todo: Optimize for large data sets. https://bugs.earthdata.nasa.gov/browse/ORCA-286
+        # todo: Order by collection id and granule id
         """
 SELECT
     *
