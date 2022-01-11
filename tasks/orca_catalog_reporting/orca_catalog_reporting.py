@@ -133,11 +133,11 @@ SELECT
                 (:granule_id is null or cumulus_granule_id=ANY(:granule_id)) and 
                 (:start_timestamp is null or (EXTRACT(EPOCH FROM date_trunc('milliseconds', cumulus_create_time) AT TIME ZONE 'UTC') * 1000)::bigint>=:start_timestamp) and 
                 (:end_timestamp is null or (EXTRACT(EPOCH FROM date_trunc('milliseconds', cumulus_create_time) AT TIME ZONE 'UTC') * 1000)::bigint<:end_timestamp)
-            ORDER BY cumulus_granule_id
             ) as granule_ids
             JOIN
                 granules ON granule_ids.cumulus_granule_id = granules.cumulus_granule_id
         ) as granules
+    ORDER BY cumulus_granule_id, provider_id
     OFFSET :page_index*:page_size
     LIMIT :page_size+1
 ) as granules
