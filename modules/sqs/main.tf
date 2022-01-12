@@ -107,7 +107,7 @@ resource "aws_cloudwatch_metric_alarm" "staged_recovery_deadletter_alarm" {
   metric_name         = "ApproximateNumberOfMessagesVisible"
   namespace           = "AWS/SQS"
   period              = 300 #In seconds. Valid values for period are 1, 5, 10, 30, or any multiple of 60. 
-  statistic           = "Average"
+  statistic           = "Sum"
   threshold           = 1 #alarm will be triggered if number of messages in the DLQ equals to this threshold.
   treat_missing_data  = "notBreaching"
   alarm_actions       = [aws_sns_topic.staged_recovery_dlq_alarm_topic.arn]
@@ -126,7 +126,7 @@ resource "aws_sns_topic_subscription" "sns_subscription_for_alarm" {
   depends_on = [aws_sns_topic.staged_recovery_dlq_alarm_topic]
   topic_arn  = aws_sns_topic.staged_recovery_dlq_alarm_topic.arn
   protocol   = "email"
-  endpoint   = "rhassan@contractor.usgs.gov"
+  endpoint   = var.dead_letter_queue_topic_subscription_email   #todo: ORCA-365
 }
 ## status_update_queue - copy_files_to_archive lambda writes to this database status update queue.
 ## ===============================================================================================================================

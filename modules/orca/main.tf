@@ -134,7 +134,8 @@ module "orca_sqs" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  prefix = var.prefix
+  prefix                                     = var.prefix
+  dead_letter_queue_topic_subscription_email = var.dead_letter_queue_topic_subscription_email
 
   ## OPTIONAL
   tags = local.tags

@@ -85,6 +85,7 @@ module "orca" {
   db_user_password      = var.db_user_password
   orca_default_bucket   = var.orca_default_bucket
   rds_security_group_id = var.rds_security_group_id
+  dead_letter_queue_topic_subscription_email = var.dead_letter_queue_topic_subscription_email
 
   ## OPTIONAL
   # db_admin_username                                    = "postgres"
@@ -119,6 +120,8 @@ optional variables can be found in the [variables section](#orca-variables).
 - db_user_password
 - db_host_endpoint
 - rds_security_group_id
+-  dead_letter_queue_topic_subscription_email
+
 #### Required Values Retrieved from Cumulus Variables
 
 The following variables are set as part of your Cumulus deployment and are
@@ -184,6 +187,11 @@ variable "rds_security_group_id" {
   type        = string
   description = "Cumulus' RDS Security Group's ID."
 }
+
+variable "dead_letter_queue_topic_subscription_email" {
+  type        = string
+  description = "The email to notify users when messages are received in dead letter SQS queue"
+}
 ```
 
 
@@ -223,6 +231,9 @@ db_host_endpoint = "aws.postgresrds.host"
 
 ## Cumulus' RDS Security Group's ID.
 rds_security_group_id = "sg-01234567890123456"
+
+## Dead letter queue SNS topic subscription email.
+dead_letter_queue_topic_subscription_email = "test@email.com"
 ```
 
 Below describes the type of value expected for each variable.
@@ -232,6 +243,7 @@ Below describes the type of value expected for each variable.
 * `db_admin_password` (string) - password for the postgres user.
 * `db_host_endpoint`(string) - Database host endpoint to connect to.
 * `rds_security_group_id`(string) - Cumulus' RDS Security Group's ID. Output as `security_group_id` from the rds-cluster deployment.
+* `dead_letter_queue_topic_subscription_email`(string) - The email to notify users when messages are received in dead letter SQS queue.
 
 Additional variable definitions can be found in the [ORCA variables](#orca-variables)
 section of the document.
@@ -449,13 +461,14 @@ The following variables should be present in the `cumulus-tf/orca_variables.tf`
 file. The variables must be set with proper values for your environment in the
 `cumulus-tf/terraform.tfvars` file.
 
-| Variable               | Definition                                              | Example Value                 |
-| ---------------------- | --------------------------------------------------------| ----------------------------- |
-| `db_admin_password`    | Password for RDS database administrator authentication  | "My_Sup3rS3cr3t_admin_Passw0rd"|
-| `db_host_endpoint`     | Database host endpoint to connect to.                   | "aws.postgresrds.host"        |
-| `db_user_password`     | Password for RDS database user authentication           | "My_Sup3rS3cr3tuserPassw0rd"  |
-| `orca_default_bucket`  | Default ORCA S3 Glacier bucket to use.                  | "PREFIX-orca-primary"         |
-| `rds_security_group_id`| Cumulus' RDS Security Group's ID.                       | "sg-01234567890123456" |
+| Variable               | Definition                                              |              Example Value                                  |
+| ---------------------- | --------------------------------------------------------| ------------------------------------------------------------|
+| `db_admin_password`    | Password for RDS database administrator authentication  | "My_Sup3rS3cr3t_admin_Passw0rd"                             |
+| `db_host_endpoint`     | Database host endpoint to connect to.                   | "aws.postgresrds.host"                                      |
+| `db_user_password`     | Password for RDS database user authentication           | "My_Sup3rS3cr3tuserPassw0rd"                                |
+| `orca_default_bucket`  | Default ORCA S3 Glacier bucket to use.                  | "PREFIX-orca-primary"                                       |
+| `rds_security_group_id`| Cumulus' RDS Security Group's ID.                       | "sg-01234567890123456"                                      |
+| `dead_letter_queue_topic_subscription_email`| The email to notify users when messages are received in dead letter SQS queue | "test@email.com" |
 
 ### Optional Variables
 

@@ -38,3 +38,8 @@ variable "status_update_queue_message_retention_time_seconds" {
   type        = number
   description = "The number of seconds status_update_queue SQS retains a message in seconds. Maximum value is 14 days."
 }
+
+variable "dead_letter_queue_topic_subscription_email" {
+  type        = string
+  description = "The email to notify users when messages are received in dead letter SQS queue"
+}
