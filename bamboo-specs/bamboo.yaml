@@ -58,8 +58,8 @@ Build and Test:
       scripts:
       - |-
         #!/bin/bash
-        export NODE_VERSION "12.x"
-        export TERRAFORM_VERSION "0.13.6"
+        export NODE_VERSION="16.x"
+        export TERRAFORM_VERSION="0.13.6"
 
         # Add NodeJS and Yarn repos & update package index
         curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash - 
@@ -236,8 +236,8 @@ Release ORCA Code:
       scripts:
       - |-
         #!/bin/bash
-        export NODE_VERSION "12.x"
-        export TERRAFORM_VERSION "0.13.6"
+        export NODE_VERSION="16.x"
+        export TERRAFORM_VERSION="0.13.6"
 
         # Add NodeJS and Yarn repos & update package index
         curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash - 
