@@ -219,7 +219,7 @@ def query_db(key_path: str, bucket_name: str) -> List[Dict[str, str]]:
                     MULTIPART_CHUNKSIZE_MB_KEY: row[4],
                     SOURCE_KEY_KEY: key_path,
                     TARGET_KEY_KEY: key_path,  # todo add a card to configure targetKey in the future
-                    SOURCE_BUCKET_KEY: bucket_name,  # todo add to database and retrieve
+                    SOURCE_BUCKET_KEY: bucket_name,  # todo add to database and retrieve. ORCA-351
                 }
                 rows.append(row_dict)
 
