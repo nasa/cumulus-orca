@@ -111,8 +111,8 @@ def task(
         # primary location. Retry using exponential delay if it fails.
         for retry in range(max_retries + 1):
             try:
-                shared_recovery.post_entry_to_queue(
-                    record, shared_recovery.RequestMethod.NEW_JOB, recovery_queue_url
+                shared_recovery.post_entry_to_standard_queue(
+                    record, recovery_queue_url
                 )
                 break
             except Exception as ex:

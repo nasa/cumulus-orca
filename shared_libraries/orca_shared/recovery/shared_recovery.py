@@ -113,7 +113,7 @@ def create_status_for_job(
     message = "Sending the following data to queue: {new_data}"
     LOGGER.debug(message, new_data=new_data)
 
-    post_entry_to_queue(new_data, RequestMethod.NEW_JOB, db_queue_url)
+    post_entry_to_fifo_queue(new_data, RequestMethod.NEW_JOB, db_queue_url)
 
 
 def update_status_for_file(
@@ -156,16 +156,16 @@ def update_status_for_file(
     message = "Sending the following data to queue: {new_data}"
     LOGGER.debug(message, new_data=new_data)
 
-    post_entry_to_queue(new_data, RequestMethod.UPDATE_FILE, db_queue_url)
+    post_entry_to_fifo_queue(new_data, RequestMethod.UPDATE_FILE, db_queue_url)
 
 
-def post_entry_to_queue(
+def post_entry_to_fifo_queue(
     new_data: Dict[str, Any],
     request_method: RequestMethod,
     db_queue_url: str,
 ) -> None:
     """
-    Posts messages to an SQS queue.
+    Posts messages to SQS FIFO queue.
     Args:
         new_data: A dictionary representing the column/value pairs to write to the DB table.
         request_method: The action for the database lambda to take when posting to the SQS queue.
@@ -191,30 +191,65 @@ def post_entry_to_queue(
     md5_body = hashlib.md5(body.encode("utf8")).hexdigest()  # nosec
 
     LOGGER.debug("Sending message to the QUEUE")
-    if ".fifo" in db_queue_url:
-        response = mysqs.send_message(
-            QueueUrl=db_queue_url,
-            MessageDeduplicationId=deduplication_id,
-            MessageGroupId="request_files",
-            MessageAttributes={
-                "RequestMethod": {
-                    "DataType": "String",
-                    "StringValue": request_method.value,
-                }
-            },
-            MessageBody=body,
+    response = mysqs.send_message(
+        QueueUrl=db_queue_url,
+        MessageDeduplicationId=deduplication_id,
+        MessageGroupId="request_files",
+        MessageAttributes={
+            "RequestMethod": {
+                "DataType": "String",
+                "StringValue": request_method.value,
+            }
+        },
+        MessageBody=body,
+    )
+    LOGGER.debug("SQS Message Response: {response}", response=json.dumps(response))
+
+    # Make sure we didn't have an error sending message
+    return_status = response["ResponseMetadata"]["HTTPStatusCode"]
+    if return_status < 200 or return_status > 299:
+        raise Exception(
+            f"Failed to send message to Queue. HTTP Response was {return_status}"
         )
-    else:
-        response = mysqs.send_message(
-            QueueUrl=db_queue_url,
-            MessageAttributes={
-                "RequestMethod": {
-                    "DataType": "String",
-                    "StringValue": request_method.value,
-                }
-            },
-            MessageBody=body,
+
+    sqs_md5 = response.get("MD5OfMessageBody")
+    if md5_body != sqs_md5:
+        raise Exception(
+            f"Calculated MD5 of {md5_body} does not match SQS MD5 of {sqs_md5}"
         )
+
+
+def post_entry_to_standard_queue(
+    new_data: Dict[str, Any],
+    recovery_queue_url: str,
+) -> None:
+    """
+    Posts messages to the recovery standard SQS queue.
+    Args:
+        new_data: A dictionary representing the column/value pairs to write to the DB table.
+        recovery_queue_url: The SQS queue URL defined by AWS.
+    Raises:
+        None
+    """
+    body = json.dumps(new_data)
+
+    # TODO: pass AWS region value to function. SHOULD be gotten from environment
+    # higher up. Setting this to us-west-2 initially since that is where
+    # EOSDIS runs from normally. SEE ORCA-203 https://bugs.earthdata.nasa.ov/browse/ORCA-203
+    LOGGER.debug(
+        "Creating SQS resource for {recovery_queue_url}",
+        recovery_queue_url=recovery_queue_url,
+    )
+    mysqs_resource = boto3.resource("sqs", region_name=get_aws_region())
+    mysqs = mysqs_resource.Queue(recovery_queue_url)
+
+    md5_body = hashlib.md5(body.encode("utf8")).hexdigest()  # nosec
+
+    LOGGER.debug("Sending message to the QUEUE")
+    response = mysqs.send_message(
+        QueueUrl=recovery_queue_url,
+        MessageBody=body,
+    )
     LOGGER.debug("SQS Message Response: {response}", response=json.dumps(response))
 
     # Make sure we didn't have an error sending message

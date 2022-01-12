@@ -77,20 +77,22 @@ class TestPostCopyRequestToQueue(TestCase):
     )
     @patch("post_copy_request_to_queue.shared_db.get_user_connection")
     @patch("post_copy_request_to_queue.shared_db.get_configuration")
-    @patch("post_copy_request_to_queue.shared_recovery.post_entry_to_queue")
+    @patch("post_copy_request_to_queue.shared_recovery.post_entry_to_fifo_queue")
+    @patch("post_copy_request_to_queue.shared_recovery.post_entry_to_standard_queue")
     @patch("post_copy_request_to_queue.shared_recovery.update_status_for_file")
     @patch("post_copy_request_to_queue.get_metadata_sql")
     def test_task_happy_path(
         self,
         mock_get_metadata_sql: MagicMock,
         mock_update_status_for_file: MagicMock,
-        mock_post_entry_to_queue: MagicMock,
+        mock_post_entry_to_standard_queue: MagicMock,
+        mock_post_entry_to_fifo_queue: MagicMock,
         mock_get_configuration: MagicMock,  # todo: Indicates that test goes beyond `task`
         mock_get_user_connection: MagicMock,
     ):
         """
         happy path. Mocks db_connect_info,single_query,
-        post_entry_to_queue and update_status_for_file.
+        post_entry_to_fifo_queue and update_status_for_file.
         """
         multipart_chunksize_mb = random.randint(1, 10000)
         mock_execute = Mock(
@@ -140,9 +142,8 @@ class TestPostCopyRequestToQueue(TestCase):
             None,
             self.db_queue_url,
         )
-        mock_post_entry_to_queue.assert_called_with(
+        mock_post_entry_to_standard_queue.assert_called_with(
             new_data,
-            shared_recovery.RequestMethod.NEW_JOB,
             self.recovery_queue_url,
         )
         mock_exit.assert_called_once()
@@ -226,18 +227,18 @@ class TestPostCopyRequestToQueue(TestCase):
     @patch("post_copy_request_to_queue.shared_db.get_user_connection")
     @patch("post_copy_request_to_queue.shared_db.get_configuration")
     @patch("post_copy_request_to_queue.shared_recovery.update_status_for_file")
-    @patch("post_copy_request_to_queue.shared_recovery.post_entry_to_queue")
+    @patch("post_copy_request_to_queue.shared_recovery.post_entry_to_fifo_queue")
     @patch("post_copy_request_to_queue.LOGGER")
-    def test_task_post_entry_to_queue_exception(
+    def test_task_post_entry_to_fifo_queue_exception(
         self,
         mock_LOGGER: MagicMock,
-        mock_post_entry_to_queue: MagicMock,
+        mock_post_entry_to_fifo_queue: MagicMock,
         mock_update_status_for_file: MagicMock,
         mock_get_configuration: MagicMock,  # todo: Indicates that test goes beyond `task`
         mock_get_user_connection: MagicMock,
     ):
         """
-        mocks post_entry_to_queue to raise an exception.
+        mocks post_entry_to_fifo_queue to raise an exception.
         """
         multipart_chunksize_mb = None
         mock_execute = Mock(return_value=[("1", "3", "f1.doc", "s3://restore", None)])
@@ -250,7 +251,7 @@ class TestPostCopyRequestToQueue(TestCase):
         mock_engine = Mock()
         mock_engine.begin = Mock(return_value=mock_enter)
         mock_get_user_connection.return_value = mock_engine
-        mock_post_entry_to_queue.side_effect = Exception
+        mock_post_entry_to_fifo_queue.side_effect = Exception
 
         record = self.event["Records"][0]
         new_data = {

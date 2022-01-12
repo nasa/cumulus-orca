@@ -5,6 +5,6 @@ from .shared_recovery import (
     RequestMethod,
     create_status_for_job,
     get_aws_region,
-    post_entry_to_queue,
+    post_entry_to_fifo_queue,
     update_status_for_file,
 )
