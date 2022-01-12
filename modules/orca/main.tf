@@ -135,7 +135,6 @@ module "orca_sqs" {
   ## --------------------------
   ## REQUIRED
   prefix                                     = var.prefix
-  dead_letter_queue_topic_subscription_email = var.dead_letter_queue_topic_subscription_email
 
   ## OPTIONAL
   tags = local.tags
@@ -143,6 +142,10 @@ module "orca_sqs" {
   ## --------------------------
   ## ORCA Variables
   ## --------------------------
+
+  ## REQUIRED
+  dead_letter_queue_topic_subscription_email           = var.dead_letter_queue_topic_subscription_email
+
   ## OPTIONAL
   metadata_queue_message_retention_time_seconds        = var.metadata_queue_message_retention_time_seconds
   sqs_delay_time_seconds                               = var.sqs_delay_time_seconds
