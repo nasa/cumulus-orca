@@ -29,7 +29,7 @@ Fully defined json schemas written in the schema of https://json-schema.org/ can
   "anotherPage": false,
   "granules": [
     {
-      "providerId": ["lpdaac"],
+      "providerId": "lpdaac",
       "collectionId": "MOD14A1___061",
       "id": "MOD14A1.061.A23V45.2020235",
       "createdAt": "628021850000",

@@ -14,6 +14,7 @@ from fastjsonschema import JsonSchemaValueException
 
 import post_to_database
 from orca_shared.recovery.shared_recovery import OrcaStatus
+from orca_shared.recovery import shared_recovery
 
 
 class TestPostToDatabase(
@@ -70,24 +71,24 @@ class TestPostToDatabase(
         archive_destination = uuid.uuid4().__str__()
         files = [
             {
-                "filename": uuid.uuid4().__str__(),
-                "key_path": uuid.uuid4().__str__(),
-                "restore_destination": uuid.uuid4().__str__(),
-                "status_id": 1,
-                "request_time": datetime.datetime.now(
+                shared_recovery.FILENAME_KEY: uuid.uuid4().__str__(),
+                shared_recovery.KEY_PATH_KEY: uuid.uuid4().__str__(),
+                shared_recovery.RESTORE_DESTINATION_KEY: uuid.uuid4().__str__(),
+                shared_recovery.STATUS_ID_KEY: 1,
+                shared_recovery.REQUEST_TIME_KEY: datetime.datetime.now(
                     datetime.timezone.utc
                 ).isoformat(),
-                "last_update": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-                "multipart_chunksize_mb": random.randint(1, 10000),
+                shared_recovery.LAST_UPDATE_KEY: datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                shared_recovery.MULTIPART_CHUNKSIZE_KEY: random.randint(1, 10000),
             }
         ]
 
         values = {
-            "job_id": job_id,
-            "granule_id": granule_id,
-            "request_time": request_time,
-            "archive_destination": archive_destination,
-            "files": files,
+            shared_recovery.JOB_ID_KEY: job_id,
+            shared_recovery.GRANULE_ID_KEY: granule_id,
+            shared_recovery.REQUEST_TIME_KEY: request_time,
+            shared_recovery.ARCHIVE_DESTINATION_KEY: archive_destination,
+            shared_recovery.FILES_KEY: files,
         }
         request_method = post_to_database.RequestMethod.NEW_JOB
         mock_engine = Mock()
@@ -116,21 +117,21 @@ class TestPostToDatabase(
         archive_destination = uuid.uuid4().__str__()
         files = [
             {
-                "filename": uuid.uuid4().__str__(),
-                "key_path": uuid.uuid4().__str__(),
-                "restore_destination": uuid.uuid4().__str__(),
-                "status_id": 1,
-                "request_time": datetime.datetime.utcnow().isoformat(),
-                "last_update": datetime.datetime.utcnow().isoformat(),
-                "multipart_chunksize_mb": None,
+                shared_recovery.FILENAME_KEY: uuid.uuid4().__str__(),
+                shared_recovery.KEY_PATH_KEY: uuid.uuid4().__str__(),
+                shared_recovery.RESTORE_DESTINATION_KEY: uuid.uuid4().__str__(),
+                shared_recovery.STATUS_ID_KEY: 1,
+                shared_recovery.REQUEST_TIME_KEY: datetime.datetime.utcnow().isoformat(),
+                shared_recovery.LAST_UPDATE_KEY: datetime.datetime.utcnow().isoformat(),
+                shared_recovery.MULTIPART_CHUNKSIZE_KEY: None,
             }
         ]
         values = {
-            "job_id": job_id,
-            "granule_id": granule_id,
-            "request_time": request_time,
-            "archive_destination": archive_destination,
-            "files": files,
+            shared_recovery.JOB_ID_KEY: job_id,
+            shared_recovery.GRANULE_ID_KEY: granule_id,
+            shared_recovery.REQUEST_TIME_KEY: request_time,
+            shared_recovery.ARCHIVE_DESTINATION_KEY: archive_destination,
+            shared_recovery.FILES_KEY: files,
         }
         request_method = post_to_database.RequestMethod.NEW_JOB
         mock_engine = Mock()
@@ -167,13 +168,13 @@ class TestPostToDatabase(
         status_id = 2
         error_message = uuid.uuid4().__str__()
         values = {
-            "job_id": job_id,
-            "granule_id": granule_id,
-            "filename": filename,
-            "last_update": last_update,
-            "status_id": status_id,
-            "completion_time": completion_time,
-            "error_message": error_message,
+            shared_recovery.JOB_ID_KEY: job_id,
+            shared_recovery.GRANULE_ID_KEY: granule_id,
+            shared_recovery.FILENAME_KEY: filename,
+            shared_recovery.LAST_UPDATE_KEY: last_update,
+            shared_recovery.STATUS_ID_KEY: status_id,
+            shared_recovery.COMPLETION_TIME_KEY: completion_time,
+            shared_recovery.ERROR_MESSAGE_KEY: error_message,
         }
         request_method = post_to_database.RequestMethod.UPDATE_FILE
         mock_engine = Mock()
@@ -204,7 +205,7 @@ class TestPostToDatabase(
         """
         Missing completion time and error_message are fine.
         """
-        expected_defaults = {"completion_time": None, "error_message": None}
+        expected_defaults = {shared_recovery.COMPLETION_TIME_KEY: None, shared_recovery.ERROR_MESSAGE_KEY: None}
 
         job_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
@@ -214,13 +215,13 @@ class TestPostToDatabase(
         completion_time = datetime.datetime.now(datetime.timezone.utc).isoformat()
         error_message = uuid.uuid4().__str__()
         values = {
-            "job_id": job_id,
-            "granule_id": granule_id,
-            "filename": filename,
-            "last_update": last_update,
-            "status_id": status_id,
-            "completion_time": completion_time,
-            "error_message": error_message,
+            shared_recovery.JOB_ID_KEY: job_id,
+            shared_recovery.GRANULE_ID_KEY: granule_id,
+            shared_recovery.FILENAME_KEY: filename,
+            shared_recovery.LAST_UPDATE_KEY: last_update,
+            shared_recovery.STATUS_ID_KEY: status_id,
+            shared_recovery.COMPLETION_TIME_KEY: completion_time,
+            shared_recovery.ERROR_MESSAGE_KEY: error_message,
         }
         request_method = post_to_database.RequestMethod.UPDATE_FILE
         mock_engine = Mock()
@@ -252,13 +253,13 @@ class TestPostToDatabase(
                 mock_update_status_for_file.assert_has_calls(
                     [
                         call(
-                            expected_values["job_id"],
-                            expected_values["granule_id"],
-                            expected_values["filename"],
-                            expected_values["last_update"],
-                            expected_values["completion_time"],
-                            expected_values["status_id"],
-                            expected_values["error_message"],
+                            expected_values[shared_recovery.JOB_ID_KEY],
+                            expected_values[shared_recovery.GRANULE_ID_KEY],
+                            expected_values[shared_recovery.FILENAME_KEY],
+                            expected_values[shared_recovery.LAST_UPDATE_KEY],
+                            expected_values[shared_recovery.COMPLETION_TIME_KEY],
+                            expected_values[shared_recovery.STATUS_ID_KEY],
+                            expected_values[shared_recovery.ERROR_MESSAGE_KEY],
                             mock_engine,
                         )
                     ]
@@ -290,24 +291,24 @@ class TestPostToDatabase(
         completion_time1 = datetime.datetime.utcnow().isoformat()
         files = [
             {
-                "status_id": OrcaStatus.PENDING.value,
-                "filename": filename0,
-                "key_path": key_path0,
-                "restore_destination": restore_destination0,
-                "request_time": request_time0,
-                "last_update": last_update0,
-                "multipart_chunksize_mb": multipart_chunksize_mb0,
+                shared_recovery.STATUS_ID_KEY: OrcaStatus.PENDING.value,
+                shared_recovery.FILENAME_KEY: filename0,
+                shared_recovery.KEY_PATH_KEY: key_path0,
+                shared_recovery.RESTORE_DESTINATION_KEY: restore_destination0,
+                shared_recovery.REQUEST_TIME_KEY: request_time0,
+                shared_recovery.LAST_UPDATE_KEY: last_update0,
+                shared_recovery.MULTIPART_CHUNKSIZE_KEY: multipart_chunksize_mb0,
             },
             {
-                "status_id": OrcaStatus.FAILED.value,
-                "filename": filename1,
-                "key_path": key_path1,
-                "restore_destination": restore_destination1,
-                "request_time": request_time1,
-                "last_update": last_update1,
-                "error_message": error_message1,
-                "completion_time": completion_time1,
-                "multipart_chunksize_mb": multipart_chunksize_mb1,
+                shared_recovery.STATUS_ID_KEY: OrcaStatus.FAILED.value,
+                shared_recovery.FILENAME_KEY: filename1,
+                shared_recovery.KEY_PATH_KEY: key_path1,
+                shared_recovery.RESTORE_DESTINATION_KEY: restore_destination1,
+                shared_recovery.REQUEST_TIME_KEY: request_time1,
+                shared_recovery.LAST_UPDATE_KEY: last_update1,
+                shared_recovery.ERROR_MESSAGE_KEY: error_message1,
+                shared_recovery.COMPLETION_TIME_KEY: completion_time1,
+                shared_recovery.MULTIPART_CHUNKSIZE_KEY: multipart_chunksize_mb1,
             },
         ]
 
@@ -412,37 +413,37 @@ class TestPostToDatabase(
         multipart_chunksize_mb2 = random.randint(1, 10000)
         files = [
             {
-                "status_id": OrcaStatus.FAILED.value,
-                "filename": filename0,
-                "key_path": key_path0,
-                "restore_destination": restore_destination0,
-                "request_time": request_time0,
-                "last_update": last_update0,
-                "error_message": error_message0,
-                "completion_time": completion_time0,
-                "multipart_chunksize_mb": multipart_chunksize_mb0,
+                shared_recovery.STATUS_ID_KEY: OrcaStatus.FAILED.value,
+                shared_recovery.FILENAME_KEY: filename0,
+                shared_recovery.KEY_PATH_KEY: key_path0,
+                shared_recovery.RESTORE_DESTINATION_KEY: restore_destination0,
+                shared_recovery.REQUEST_TIME_KEY: request_time0,
+                shared_recovery.LAST_UPDATE_KEY: last_update0,
+                shared_recovery.ERROR_MESSAGE_KEY: error_message0,
+                shared_recovery.COMPLETION_TIME_KEY: completion_time0,
+                shared_recovery.MULTIPART_CHUNKSIZE_KEY: multipart_chunksize_mb0,
             },
             {
-                "status_id": OrcaStatus.FAILED.value,
-                "filename": filename1,
-                "key_path": key_path1,
-                "restore_destination": restore_destination1,
-                "request_time": request_time1,
-                "last_update": last_update1,
-                "error_message": error_message1,
-                "completion_time": completion_time1,
-                "multipart_chunksize_mb": multipart_chunksize_mb1,
+                shared_recovery.STATUS_ID_KEY: OrcaStatus.FAILED.value,
+                shared_recovery.FILENAME_KEY: filename1,
+                shared_recovery.KEY_PATH_KEY: key_path1,
+                shared_recovery.RESTORE_DESTINATION_KEY: restore_destination1,
+                shared_recovery.REQUEST_TIME_KEY: request_time1,
+                shared_recovery.LAST_UPDATE_KEY: last_update1,
+                shared_recovery.ERROR_MESSAGE_KEY: error_message1,
+                shared_recovery.COMPLETION_TIME_KEY: completion_time1,
+                shared_recovery.MULTIPART_CHUNKSIZE_KEY: multipart_chunksize_mb1,
             },
             {
-                "status_id": OrcaStatus.FAILED.value,
-                "filename": filename2,
-                "key_path": key_path2,
-                "restore_destination": restore_destination2,
-                "request_time": request_time2,
-                "last_update": last_update2,
-                "error_message": error_message2,
-                "completion_time": completion_time2,
-                "multipart_chunksize_mb": multipart_chunksize_mb2,
+                shared_recovery.STATUS_ID_KEY: OrcaStatus.FAILED.value,
+                shared_recovery.FILENAME_KEY: filename2,
+                shared_recovery.KEY_PATH_KEY: key_path2,
+                shared_recovery.RESTORE_DESTINATION_KEY: restore_destination2,
+                shared_recovery.REQUEST_TIME_KEY: request_time2,
+                shared_recovery.LAST_UPDATE_KEY: last_update2,
+                shared_recovery.ERROR_MESSAGE_KEY: error_message2,
+                shared_recovery.COMPLETION_TIME_KEY: completion_time2,
+                shared_recovery.MULTIPART_CHUNKSIZE_KEY: multipart_chunksize_mb2,
             },
         ]
 
@@ -542,22 +543,23 @@ class TestPostToDatabase(
                 continue
             files = [
                 {
-                    "status_id": OrcaStatus.STAGED.value,
-                    "filename": filename0,
-                    "key_path": key_path0,
-                    "restore_destination": restore_destination0,
-                    "request_time": request_time0,
-                    "last_update": last_update0,
-                    "error_message": error_message0,
-                    "completion_time": completion_time0,
-                    "multipart_chunksize_mb": random.randint(1, 10000),
+                    shared_recovery.STATUS_ID_KEY: status.value,
+                    shared_recovery.FILENAME_KEY: filename0,
+                    shared_recovery.KEY_PATH_KEY: key_path0,
+                    shared_recovery.RESTORE_DESTINATION_KEY: restore_destination0,
+                    shared_recovery.REQUEST_TIME_KEY: request_time0,
+                    shared_recovery.LAST_UPDATE_KEY: last_update0,
+                    shared_recovery.ERROR_MESSAGE_KEY: error_message0,
+                    shared_recovery.COMPLETION_TIME_KEY: completion_time0,
+                    shared_recovery.MULTIPART_CHUNKSIZE_KEY: random.randint(1, 10000),
                 }
             ]
 
-            with self.assertRaises(ValueError):
+            with self.assertRaises(ValueError) as cm:
                 post_to_database.create_status_for_job_and_files(
                     job_id, granule_id, request_time, archive_destination, files, Mock()
                 )
+            self.assertEqual(f"Status ID '{status.value}' not allowed for new status.", str(cm.exception))
 
     @patch("post_to_database.update_file_sql")
     @patch("post_to_database.update_job_sql")

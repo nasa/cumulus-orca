@@ -158,8 +158,8 @@ class TestRequestStatusForJobUnit(
         job_id = uuid.uuid4().__str__()
 
         expected_result = [
-            {"granule_id": uuid.uuid4().__str__(), "status": uuid.uuid4().__str__()},
-            {"granule_id": uuid.uuid4().__str__(), "status": uuid.uuid4().__str__()},
+            { request_status_for_job.OUTPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(), request_status_for_job.OUTPUT_STATUS_KEY: uuid.uuid4().__str__()},
+            { request_status_for_job.OUTPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(), request_status_for_job.OUTPUT_STATUS_KEY: uuid.uuid4().__str__()},
         ]
         mock_engine = Mock()
         mock_engine.begin.return_value = Mock()

@@ -20,6 +20,7 @@ class TestPostCopyRequestToQueue(TestCase):
     """
     Unit tests for the post_copy_request_to_queue lambda function.
     """
+    # todo: Rewrite tests for individual functions, rather than full run-throughs.
 
     # Create the mock instance for unit tests
     mock_sqs = mock_sqs()
@@ -28,6 +29,7 @@ class TestPostCopyRequestToQueue(TestCase):
         """
         Perform initial setup for the tests.
         """
+        # todo: Once tests are limited in scope to one-function-per-test, only set up these mocks when needed.
         post_copy_request_to_queue.exponential_delay = Mock()
         self.mock_sqs.start()
         self.test_sqs = boto3.resource("sqs", region_name="us-west-2")
@@ -35,6 +37,7 @@ class TestPostCopyRequestToQueue(TestCase):
         self.recovery_queue = self.test_sqs.create_queue(QueueName="recoveryqueue")
         self.db_queue_url = self.db_queue.url
         self.recovery_queue_url = self.recovery_queue.url
+        # todo: Delete hardcoded values.
         self.event = {
             "Records": [
                 {
@@ -82,7 +85,7 @@ class TestPostCopyRequestToQueue(TestCase):
         mock_get_metadata_sql: MagicMock,
         mock_update_status_for_file: MagicMock,
         mock_post_entry_to_queue: MagicMock,
-        mock_get_configuration: MagicMock,
+        mock_get_configuration: MagicMock,  # todo: Indicates that test goes beyond `task`
         mock_get_user_connection: MagicMock,
     ):
         """
@@ -105,15 +108,15 @@ class TestPostCopyRequestToQueue(TestCase):
 
         record = self.event["Records"][0]
         new_data = {
-            "job_id": "1",
-            "granule_id": "3",
-            "filename": "f1.doc",
+            post_copy_request_to_queue.JOB_ID_KEY: "1",
+            post_copy_request_to_queue.GRANULE_ID_KEY: "3",
+            post_copy_request_to_queue.FILENAME_KEY: "f1.doc",
             # todo: Value incorrect here and elsewhere. As written, must match mock_execute's return value.
-            "restore_destination": "s3://restore",
-            "multipart_chunksize_mb": multipart_chunksize_mb,
-            "target_key": "b21b84d653bb07b05b1e6b33684dc11b",
-            "source_key": "b21b84d653bb07b05b1e6b33684dc11b",
-            "source_bucket": "lambda-artifacts-deafc19498e3f2df",
+            post_copy_request_to_queue.RESTORE_DESTINATION_KEY: "s3://restore",
+            post_copy_request_to_queue.MULTIPART_CHUNKSIZE_MB_KEY: multipart_chunksize_mb,
+            post_copy_request_to_queue.TARGET_KEY_KEY: "b21b84d653bb07b05b1e6b33684dc11b",
+            post_copy_request_to_queue.SOURCE_KEY_KEY: "b21b84d653bb07b05b1e6b33684dc11b",
+            post_copy_request_to_queue.SOURCE_BUCKET_KEY: "lambda-artifacts-deafc19498e3f2df",
         }
         backoff_args = [
             self.db_queue_url,
@@ -124,7 +127,6 @@ class TestPostCopyRequestToQueue(TestCase):
         ]
         # calling the task function
         task(record, *backoff_args)
-        key_path = record["s3"]["object"]["key"]
 
         mock_get_user_connection.assert_called_once_with(
             mock_get_configuration.return_value
@@ -231,7 +233,7 @@ class TestPostCopyRequestToQueue(TestCase):
         mock_LOGGER: MagicMock,
         mock_post_entry_to_queue: MagicMock,
         mock_update_status_for_file: MagicMock,
-        mock_get_configuration: MagicMock,
+        mock_get_configuration: MagicMock,  # todo: Indicates that test goes beyond `task`
         mock_get_user_connection: MagicMock,
     ):
         """
@@ -252,14 +254,14 @@ class TestPostCopyRequestToQueue(TestCase):
 
         record = self.event["Records"][0]
         new_data = {
-            "job_id": "1",
-            "granule_id": "3",
-            "filename": "f1.doc",
-            "restore_destination": "s3://restore",
-            "multipart_chunksize_mb": multipart_chunksize_mb,
-            "source_key": "b21b84d653bb07b05b1e6b33684dc11b",
-            "target_key": "b21b84d653bb07b05b1e6b33684dc11b",
-            "source_bucket": "lambda-artifacts-deafc19498e3f2df",
+            post_copy_request_to_queue.JOB_ID_KEY: "1",
+            post_copy_request_to_queue.GRANULE_ID_KEY: "3",
+            post_copy_request_to_queue.FILENAME_KEY: "f1.doc",
+            post_copy_request_to_queue.RESTORE_DESTINATION_KEY: "s3://restore",
+            post_copy_request_to_queue.MULTIPART_CHUNKSIZE_MB_KEY: multipart_chunksize_mb,
+            post_copy_request_to_queue.SOURCE_KEY_KEY: "b21b84d653bb07b05b1e6b33684dc11b",
+            post_copy_request_to_queue.TARGET_KEY_KEY: "b21b84d653bb07b05b1e6b33684dc11b",
+            post_copy_request_to_queue.SOURCE_BUCKET_KEY: "lambda-artifacts-deafc19498e3f2df",
         }
         backoff_args = [
             self.db_queue_url,
@@ -276,6 +278,14 @@ class TestPostCopyRequestToQueue(TestCase):
         self.assertEqual(str.format(message, new_data=new_data), cm.exception.args[0])
         # verify the logging captured matches the expected message
         mock_LOGGER.critical.assert_called_once_with(message, new_data=str(new_data))
+        mock_update_status_for_file.assert_called_once_with(
+            "1",
+            "3",
+            "f1.doc",
+            shared_recovery.OrcaStatus.STAGED,
+            None,
+            self.db_queue_url,
+        )
 
     @patch("post_copy_request_to_queue.shared_db.get_user_connection")
     @patch("post_copy_request_to_queue.shared_db.get_configuration")
@@ -285,7 +295,7 @@ class TestPostCopyRequestToQueue(TestCase):
         self,
         mock_LOGGER: MagicMock,
         mock_update_status_for_file: MagicMock,
-        mock_get_configuration: MagicMock,
+        mock_get_configuration: MagicMock,  # todo: Indicates that test goes beyond `task`
         mock_get_user_connection: MagicMock,
     ):
         """
@@ -309,14 +319,14 @@ class TestPostCopyRequestToQueue(TestCase):
 
         record = self.event["Records"][0]
         new_data = {
-            "job_id": "1",
-            "granule_id": "3",
-            "filename": "f1.doc",
-            "restore_destination": "s3://restore",
-            "multipart_chunksize_mb": multipart_chunksize_mb,
-            "source_key": "b21b84d653bb07b05b1e6b33684dc11b",
-            "target_key": "b21b84d653bb07b05b1e6b33684dc11b",
-            "source_bucket": "lambda-artifacts-deafc19498e3f2df",
+            post_copy_request_to_queue.JOB_ID_KEY: "1",
+            post_copy_request_to_queue.GRANULE_ID_KEY: "3",
+            post_copy_request_to_queue.FILENAME_KEY: "f1.doc",
+            post_copy_request_to_queue.RESTORE_DESTINATION_KEY: "s3://restore",
+            post_copy_request_to_queue.MULTIPART_CHUNKSIZE_MB_KEY: multipart_chunksize_mb,
+            post_copy_request_to_queue.SOURCE_KEY_KEY: "b21b84d653bb07b05b1e6b33684dc11b",
+            post_copy_request_to_queue.TARGET_KEY_KEY: "b21b84d653bb07b05b1e6b33684dc11b",
+            post_copy_request_to_queue.SOURCE_BUCKET_KEY: "lambda-artifacts-deafc19498e3f2df",
         }
         backoff_args = [
             self.db_queue_url,

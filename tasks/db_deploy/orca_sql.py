@@ -159,7 +159,7 @@ def orca_schema_sql() -> TextClause:
     )
 
 
-def app_user_sql(user_password: str) -> TextClause:
+def app_user_sql(user_name: str, user_password: str) -> TextClause:
     """
     Full SQL for creating the ORCA application database user. Must be created
     after the app_role_sql and orca_schema_sql.
@@ -168,35 +168,42 @@ def app_user_sql(user_password: str) -> TextClause:
         user_password (str): Password for the application user
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating orcauser user.
+        (sqlalchemy.sql.element.TextClause): SQL for creating PREFIX_orcauser user.
     """
+    if user_name is None or len(user_name) == 0:
+        logger.critical("Username must be non-empty.")
+        raise Exception("Username must be non-empty.")
+    if len(user_name) > 63:
+        logger.critical("Username must be less than 64 characters.")
+        raise Exception("Username must be less than 64 characters.")
+
     if user_password is None or len(user_password) < 12:
         logger.critical("User password must be at least 12 characters long.")
-        raise Exception("Password not long enough.")
+        raise Exception("User password must be at least 12 characters long.")
 
     return text(
         f"""
         DO
         $$
         BEGIN
-            IF NOT EXISTS (SELECT 1 FROM pg_user WHERE usename = 'orcauser' ) THEN
-                -- Create orcauser
-                CREATE ROLE orcauser
+            IF NOT EXISTS (SELECT 1 FROM pg_user WHERE usename = '{user_name}' ) THEN
+                -- Create {user_name}
+                CREATE ROLE {user_name}
                     LOGIN
                     INHERIT
                     ENCRYPTED PASSWORD '{user_password}'
                     IN ROLE orca_app;
 
                 -- Add comment
-                COMMENT ON ROLE orcauser
+                COMMENT ON ROLE {user_name}
                     IS 'ORCA application user.';
 
-                RAISE NOTICE 'USER CREATED orcauser. PLEASE UPDATE THE USERS PASSWORD!';
+                RAISE NOTICE 'USER CREATED {user_name}.';
 
             END IF;
 
             -- Alter the roles search path so on login it has what it needs for a path
-            ALTER ROLE orcauser SET search_path = orca, public;
+            ALTER ROLE {user_name} SET search_path = orca, public;
         END
         $$;
     """
@@ -324,7 +331,7 @@ def recovery_status_data_sql() -> TextClause:
             ON CONFLICT (id) DO NOTHING;
         INSERT INTO recovery_status VALUES (3, 'error')
             ON CONFLICT (id) DO NOTHING;
-        INSERT INTO recovery_status VALUES (4, 'complete')
+        INSERT INTO recovery_status VALUES (4, 'success')
             ON CONFLICT (id) DO NOTHING;
     """
     )
@@ -504,38 +511,6 @@ def collections_table_sql() -> TextClause:
     )
 
 
-def provider_collection_xref_table_sql() -> TextClause:
-    """
-    Full SQL for creating the cross reference table that ties a collection and provider together and resolves the many to many relationships.
-
-    Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating provider_collection_xref table.
-    """
-    return text(
-        """
-        -- Create table
-        CREATE TABLE IF NOT EXISTS provider_collection_xref
-        (
-          provider_id           text NOT NULL
-        , collection_id         text NOT NULL
-        , CONSTRAINT PK_provider_collection_xref PRIMARY KEY (provider_id,collection_id)
-        , CONSTRAINT FK_provider_collection FOREIGN KEY (provider_id) REFERENCES providers (provider_id)
-        , CONSTRAINT FK_collection_provider FOREIGN KEY (collection_id) REFERENCES collections (collection_id)
-        );
-
-        -- Comments
-        COMMENT ON TABLE provider_collection_xref
-            IS 'Cross reference table that ties a collection and provider together and resolves the many to many relationship.';
-        COMMENT ON COLUMN provider_collection_xref.provider_id
-            IS 'Provider ID from the providers table.';
-        COMMENT ON COLUMN provider_collection_xref.collection_id
-            IS 'Collection ID from the collections table.';     
-        -- Grants
-        GRANT SELECT, INSERT, UPDATE, DELETE ON provider_collection_xref TO orca_app;
-    """
-    )
-
-
 def granules_table_sql() -> TextClause:
     """
     Full SQL for creating the catalog granules table.
@@ -549,6 +524,7 @@ def granules_table_sql() -> TextClause:
         CREATE TABLE IF NOT EXISTS granules
         (
           id                    bigserial NOT NULL
+        , provider_id           text NOT NULL
         , collection_id         text NOT NULL
         , cumulus_granule_id    text NOT NULL
         , execution_id          text NOT NULL
@@ -557,6 +533,7 @@ def granules_table_sql() -> TextClause:
         , last_update           timestamp with time zone NOT NULL
 
         , CONSTRAINT PK_granules PRIMARY KEY (id)
+        , CONSTRAINT FK_provider_granule FOREIGN KEY (provider_id) REFERENCES providers (provider_id)
         , CONSTRAINT FK_collection_granule FOREIGN KEY (collection_id) REFERENCES collections (collection_id)
         , CONSTRAINT UNIQUE_collection_granule_id UNIQUE (collection_id, cumulus_granule_id)
         );
@@ -566,8 +543,10 @@ def granules_table_sql() -> TextClause:
             IS 'Granules that are in the ORCA archive holdings.';
         COMMENT ON COLUMN granules.id
             IS 'Internal orca granule ID pseudo key';
+        COMMENT ON COLUMN granules.provider_id
+            IS 'Provider ID from Cumulus that references the Providers table.';
         COMMENT ON COLUMN granules.collection_id
-            IS 'Collection ID from Cumulus that refrences the Collections table.';
+            IS 'Collection ID from Cumulus that references the Collections table.';
          COMMENT ON COLUMN granules.cumulus_granule_id
             IS 'Granule ID from Cumulus';
          COMMENT ON COLUMN granules.execution_id
@@ -820,7 +799,7 @@ def drop_drdbo_role_sql(db_name: str) -> TextClause:
         (sqlalchemy.sql.element.TextClause): SQL for dropping drdbo_role role.
     f"""
     return text(
-        """
+        f"""
         REVOKE CONNECT ON DATABASE {db_name} FROM GROUP drdbo_role;
         REVOKE CREATE ON DATABASE {db_name} FROM GROUP drdbo_role;
         DROP ROLE IF EXISTS drdbo_role;

@@ -61,13 +61,13 @@ def query_db(
     """
 
     Args:
+        engine: The sqlalchemy engine to use for contacting the database.
         provider_id: The unique ID of the provider(s) making the request.
         collection_id: The unique ID of collection(s) to compare.
         granule_id: The unique ID of granule(s) to compare.
         start_timestamp: Cumulus createdAt start time for date range to compare data.
         end_timestamp: Cumulus createdAt end-time for date range to compare data.
         page_index: The 0-based index of the results page to return.
-        engine: The sqlalchemy engine to use for contacting the database.
     """
     with engine.begin() as connection:
         sql_results = connection.execute(
@@ -89,7 +89,7 @@ def query_db(
         for sql_result in sql_results:
             granules.append(
                 {
-                    "providerId": sql_result["provider_ids"],
+                    "providerId": sql_result["provider_id"],
                     "collectionId": sql_result["collection_id"],
                     "id": sql_result["cumulus_granule_id"],
                     "createdAt": sql_result["cumulus_create_time"],
@@ -116,6 +116,7 @@ SELECT
         (
             SELECT 
                 granules.id,
+                granules.provider_id,
                 granules.collection_id, 
                 granules.cumulus_granule_id, 
                 (EXTRACT(EPOCH FROM date_trunc('milliseconds', granules.cumulus_create_time) AT TIME ZONE 'UTC') * 1000)::bigint as cumulus_create_time, 
@@ -127,25 +128,19 @@ SELECT
                 granules.cumulus_granule_id
             FROM granules
             WHERE 
-                (:granule_id is null or cumulus_granule_id=ANY(:granule_id)) and 
+                (:provider_id is null or provider_id=ANY(:provider_id)) and 
                 (:collection_id is null or collection_id=ANY(:collection_id)) and 
+                (:granule_id is null or cumulus_granule_id=ANY(:granule_id)) and 
                 (:start_timestamp is null or (EXTRACT(EPOCH FROM date_trunc('milliseconds', cumulus_create_time) AT TIME ZONE 'UTC') * 1000)::bigint>=:start_timestamp) and 
                 (:end_timestamp is null or (EXTRACT(EPOCH FROM date_trunc('milliseconds', cumulus_create_time) AT TIME ZONE 'UTC') * 1000)::bigint<:end_timestamp)
-            ORDER BY cumulus_granule_id
             ) as granule_ids
             JOIN
                 granules ON granule_ids.cumulus_granule_id = granules.cumulus_granule_id
         ) as granules
-    JOIN LATERAL
-        (SELECT array_agg(provider_collection_xref.provider_id) AS provider_ids
-        FROM provider_collection_xref
-        WHERE
-            (:provider_id is null or provider_collection_xref.provider_id=ANY(:provider_id)) and
-            granules.collection_id = provider_collection_xref.collection_id
-    ) as granules_collections_and_providers on TRUE
+    ORDER BY cumulus_granule_id, provider_id
     OFFSET :page_index*:page_size
     LIMIT :page_size+1
-) as granules_collections_and_providers
+) as granules
 LEFT JOIN LATERAL
     (SELECT json_agg(files) as files
     FROM (
@@ -159,7 +154,7 @@ LEFT JOIN LATERAL
         'hashType', files.hash_type,
         'version', files.version) AS files
     FROM files
-    WHERE granules_collections_and_providers.id = files.granule_id
+    WHERE granules.id = files.granule_id
     ) as files
 ) as grouped on TRUE"""
     )
@@ -208,6 +203,7 @@ def handler(
     Returns:
         See schemas/output.json
         Or, if an error occurs, see create_http_error_dict
+            400 if input does not match schemas/input.json. 500 if an error occurs when querying the database.
     """
     try:
         LOGGER.setMetadata(event, context)

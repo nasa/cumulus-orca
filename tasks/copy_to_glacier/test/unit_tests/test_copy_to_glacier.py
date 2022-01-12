@@ -126,6 +126,7 @@ class TestCopyToGlacierHandler(TestCase):
                 CONFIG_EXCLUDE_FILE_TYPES_KEY: [".png"],
                 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: 15,
                 "providerId": uuid.uuid4().__str__(),
+                "providerName": uuid.uuid4().__str__(),
                 "executionId": uuid.uuid4().__str__(),
                 "collectionShortname": "MOD09GQ",
                 "collectionVersion": uuid.uuid4().__str__(),
@@ -223,8 +224,10 @@ class TestCopyToGlacierHandler(TestCase):
             ]
         }
         s3_cli.list_object_versions = Mock(return_value=file_return_value)
+        providerName = uuid.uuid4().__str__()
         config = {
             "providerId": "test",
+            "providerName": providerName,
             "executionId": "test-execution-id",
             "collectionShortname": "MOD09GQ",
             "collectionVersion": uuid.uuid4().__str__(),
@@ -272,7 +275,7 @@ class TestCopyToGlacierHandler(TestCase):
         s3_cli.copy.assert_has_calls(copy_calls)
         sqs_body = {
             "provider": {
-                "name": None,
+                "name": providerName,
                 "providerId": event["config"]["providerId"],
             },
             "collection": {

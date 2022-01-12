@@ -156,7 +156,7 @@ FUNCTIONS
             The same dict that is returned for a successful copy will be included in the
             message, with 'success' = False for the files for which the copy failed.
     
-    task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: float, db_queue_url: str, default_multipart_chunksize_mb: int) -> None
+    task(records: List[Dict[str, Any]], max_retries: int, retry_sleep_secs: float, db_queue_url: str, default_multipart_chunksize_mb: int, recovery_queue_url: str) -> None
         Task called by the handler to perform the work.
         This task will call copy_object for each file. A copy will be tried
         up to {retries} times if it fails, waiting {retry_sleep_secs}
@@ -168,6 +168,7 @@ FUNCTIONS
                 to sleep between retry attempts.
             db_queue_url: The URL of the queue that posts status entries.
             default_multipart_chunksize_mb: The multipart_chunksize to use if not set on file.
+            recovery_queue_url: The URL of the queue that this lambda is receiving messages from.
         Raises:
             CopyRequestError: Thrown if there are errors with the input records or the copy failed.
 
@@ -175,15 +176,16 @@ DATA
     Any = typing.Any
     Dict = typing.Dict
     FILE_ERROR_MESSAGE_KEY = 'err_msg'
+    FILE_MESSAGE_RECIEPT = 'receiptHandle'
     FILE_SUCCESS_KEY = 'success'
     INPUT_FILENAME_KEY = 'filename'
-    INPUT_GRANULE_ID_KEY = 'granule_id'
-    INPUT_JOB_ID_KEY = 'job_id'
-    INPUT_MULTIPART_CHUNKSIZE_MB = 'multipart_chunksize_mb'
-    INPUT_SOURCE_BUCKET_KEY = 'source_bucket'
-    INPUT_SOURCE_KEY_KEY = 'source_key'
-    INPUT_TARGET_BUCKET_KEY = 'restore_destination'
-    INPUT_TARGET_KEY_KEY = 'target_key'
+    INPUT_GRANULE_ID_KEY = 'granuleId'
+    INPUT_JOB_ID_KEY = 'jobId'
+    INPUT_MULTIPART_CHUNKSIZE_MB_KEY = 's3MultipartChunksizeMb'
+    INPUT_SOURCE_BUCKET_KEY = 'sourceBucket'
+    INPUT_SOURCE_KEY_KEY = 'sourceKey'
+    INPUT_TARGET_BUCKET_KEY = 'restoreDestination'
+    INPUT_TARGET_KEY_KEY = 'targetKey'
     LOGGER = <cumulus_logger.CumulusLogger object>
     List = typing.List
     MB = 1048576

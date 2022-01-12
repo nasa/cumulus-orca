@@ -20,6 +20,7 @@ class TestExtractFilePaths(unittest.TestCase):
     """
 
     def setUp(self):
+        # todo: Remove hardcoded and imported values.
         self.context = LambdaContextMock()
         self.mock_error = CumulusLogger.error
         self.task_input_event = create_task_event()
@@ -34,7 +35,7 @@ class TestExtractFilePaths(unittest.TestCase):
         """
         handler_input_event = create_handler_event()
         handler_input_event["task_config"] = {
-            "file-buckets": [
+            extract_filepaths_for_granule.CONFIG_FILE_BUCKETS_KEY: [
                 {
                     "regex": ".*.h5$",
                     "sampleFileName": "L0A_HR_RAW_product_0010-of-0420.h5",
@@ -93,16 +94,16 @@ class TestExtractFilePaths(unittest.TestCase):
         result = extract_filepaths_for_granule.task(self.task_input_event, self.context)
 
         exp_key1 = {
-            "key": self.task_input_event["input"]["granules"][0]["files"][0]["key"],
-            "dest_bucket": "sndbx-cumulus-protected",
+            extract_filepaths_for_granule.OUTPUT_KEY_KEY: self.task_input_event["input"]["granules"][0]["files"][0]["key"],
+            extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY: "sndbx-cumulus-protected",
         }
         exp_key2 = {
-            "key": self.task_input_event["input"]["granules"][0]["files"][1]["key"],
-            "dest_bucket": "sndbx-cumulus-public",
+            extract_filepaths_for_granule.OUTPUT_KEY_KEY: self.task_input_event["input"]["granules"][0]["files"][1]["key"],
+            extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY: "sndbx-cumulus-public",
         }
         exp_key3 = {
-            "key": self.task_input_event["input"]["granules"][0]["files"][2]["key"],
-            "dest_bucket": "sndbx-cumulus-public",
+            extract_filepaths_for_granule.OUTPUT_KEY_KEY: self.task_input_event["input"]["granules"][0]["files"][2]["key"],
+            extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY: "sndbx-cumulus-public",
         }
         exp_gran = {
             "dataType": "MOD09GQ_test-jk2-IngestGranuleSuccess-1558420117156",
@@ -201,7 +202,7 @@ class TestExtractFilePaths(unittest.TestCase):
         self.task_input_event["config"]["internal-bucket"] = "my_internal_bucket"
         self.task_input_event["config"]["private-bucket"] = "my_private_bucket"
         self.task_input_event["config"]["public-bucket"] = "my_public_bucket"
-        self.task_input_event["config"]["file-buckets"] = [
+        self.task_input_event["config"][extract_filepaths_for_granule.CONFIG_FILE_BUCKETS_KEY] = [
             {"regex": ".*.h5$", "sampleFileName": "L_10-420.h5", "bucket": "protected"},
             {
                 "regex": ".*.iso.xml$",
@@ -267,8 +268,8 @@ class TestExtractFilePaths(unittest.TestCase):
                     ],
                     "keys": [
                         {
-                            "key": "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
-                            "dest_bucket": "sndbx-cumulus-protected",
+                            extract_filepaths_for_granule.OUTPUT_KEY_KEY: "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
+                            extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY: "sndbx-cumulus-protected",
                         }
                     ],
                     "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
@@ -346,8 +347,8 @@ class TestExtractFilePaths(unittest.TestCase):
                 {
                     "keys": [
                         {
-                            "key": "MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
-                            "dest_bucket": "sndbx-cumulus-protected",
+                            extract_filepaths_for_granule.OUTPUT_KEY_KEY: "MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
+                            extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY: "sndbx-cumulus-protected",
                         }
                     ],
                     "files": [
@@ -362,8 +363,8 @@ class TestExtractFilePaths(unittest.TestCase):
                 {
                     "keys": [
                         {
-                            "key": "MOD/MOD09GQ.A0219115.N5aUCG.006.0656338553321.cmr.xml",
-                            "dest_bucket": "sndbx-cumulus-protected",
+                            extract_filepaths_for_granule.OUTPUT_KEY_KEY: "MOD/MOD09GQ.A0219115.N5aUCG.006.0656338553321.cmr.xml",
+                            extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY: "sndbx-cumulus-protected",
                         }
                     ],
                     "files": [

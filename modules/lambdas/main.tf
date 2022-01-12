@@ -21,26 +21,6 @@ module "lambda_security_group" {
   tags = local.tags
 }
 
-# restore_object_arn - IAM module reference
-# # ------------------------------------------------------------------------------
-module "restore_object_arn" {
-  source = "../iam"
-  ## --------------------------
-  ## Cumulus Variables
-  ## --------------------------
-  ## REQUIRED
-  buckets                  = var.buckets
-  permissions_boundary_arn = var.permissions_boundary_arn
-  prefix                   = var.prefix
-  # OPTIONAL
-  tags = local.tags
-  # --------------------------
-  # ORCA Variables
-  # --------------------------
-  # OPTIONAL
-  orca_recovery_buckets = var.orca_recovery_buckets
-}
-
 
 # =============================================================================
 # Ingest Lambdas Definitions and Resources
@@ -50,7 +30,7 @@ module "restore_object_arn" {
 resource "aws_lambda_function" "copy_to_glacier" {
   ## REQUIRED
   function_name = "${var.prefix}_copy_to_glacier"
-  role          = module.restore_object_arn.restore_object_role_arn
+  role          = var.restore_object_role_arn
 
   ## OPTIONAL
   description      = "ORCA archiving lambda used to copy data to an ORCA S3 glacier bucket."
@@ -86,7 +66,7 @@ resource "aws_lambda_function" "copy_to_glacier" {
 resource "aws_lambda_function" "extract_filepaths_for_granule" {
   ## REQUIRED
   function_name = "${var.prefix}_extract_filepaths_for_granule"
-  role          = module.restore_object_arn.restore_object_role_arn
+  role          = var.restore_object_role_arn
 
   ## OPTIONAL
   description      = "Extracts bucket info and granules filepath from the CMA for ORCA request_files lambda."
@@ -110,7 +90,7 @@ resource "aws_lambda_function" "extract_filepaths_for_granule" {
 resource "aws_lambda_function" "request_files" {
   ## REQUIRED
   function_name = "${var.prefix}_request_files"
-  role          = module.restore_object_arn.restore_object_role_arn
+  role          = var.restore_object_role_arn
 
   ## OPTIONAL
   description      = "Submits a restore request for all archived files in a granule to the ORCA S3 Glacier bucket."
@@ -145,7 +125,7 @@ resource "aws_lambda_function" "request_files" {
 resource "aws_lambda_function" "copy_files_to_archive" {
   ## REQUIRED
   function_name = "${var.prefix}_copy_files_to_archive"
-  role          = module.restore_object_arn.restore_object_role_arn
+  role          = var.restore_object_role_arn
 
   ## OPTIONAL
   description      = "Copies a restored file to the archive"
@@ -197,7 +177,7 @@ resource "aws_lambda_permission" "copy_files_to_archive_allow_sqs_trigger" {
 resource "aws_lambda_function" "post_to_database" {
   ## REQUIRED
   function_name = "${var.prefix}_post_to_database"
-  role          = module.restore_object_arn.restore_object_role_arn
+  role          = var.restore_object_role_arn
 
   ## OPTIONAL
   description      = "Posts entries from SQS queue to database."
@@ -245,7 +225,7 @@ resource "aws_lambda_permission" "post_to_database_allow_sqs_trigger" {
 resource "aws_lambda_function" "request_status_for_granule" {
   ## REQUIRED
   function_name = "${var.prefix}_request_status_for_granule"
-  role          = module.restore_object_arn.restore_object_role_arn
+  role          = var.restore_object_role_arn
 
   ## OPTIONAL
   description      = "Provides ORCA recover status information on a specific granule and job."
@@ -275,7 +255,7 @@ resource "aws_lambda_function" "request_status_for_granule" {
 resource "aws_lambda_function" "request_status_for_job" {
   ## REQUIRED
   function_name = "${var.prefix}_request_status_for_job"
-  role          = module.restore_object_arn.restore_object_role_arn
+  role          = var.restore_object_role_arn
 
   ## OPTIONAL
   description      = "Provides ORCA recover status information on a specific job."
@@ -304,7 +284,7 @@ resource "aws_lambda_function" "request_status_for_job" {
 resource "aws_lambda_function" "post_copy_request_to_queue" {
   ## REQUIRED
   function_name = "${var.prefix}_post_copy_request_to_queue"
-  role          = module.restore_object_arn.restore_object_role_arn
+  role          = var.restore_object_role_arn
   ## OPTIONAL
   description      = "Posts to two queues for notifying copy_files_to_archive lambda and updating the DB."
   filename         = "${path.module}/../../tasks/post_copy_request_to_queue/post_copy_request_to_queue.zip"
@@ -363,7 +343,7 @@ resource "aws_s3_bucket_notification" "post_copy_request_to_queue_trigger" {
 resource "aws_lambda_function" "orca_catalog_reporting" {
   ## REQUIRED
   function_name = "${var.prefix}_orca_catalog_reporting"
-  role          = module.restore_object_arn.restore_object_role_arn
+  role          = var.restore_object_role_arn
 
   ## OPTIONAL
   description      = "Returns reconcilliation report sample data."
@@ -393,7 +373,7 @@ resource "aws_lambda_function" "orca_catalog_reporting" {
 resource "aws_lambda_function" "post_to_catalog" {
   ## REQUIRED
   function_name = "${var.prefix}_post_to_catalog"
-  role          = module.restore_object_arn.restore_object_role_arn
+  role          = var.restore_object_role_arn
 
   ## OPTIONAL
   description      = "Posts provider/collection/granule/file info from SQS queue to database."
@@ -446,7 +426,7 @@ resource "aws_lambda_permission" "post_to_catalog_allow_sqs_trigger" {
 resource "aws_lambda_function" "db_deploy" {
   ## REQUIRED
   function_name = "${var.prefix}_db_deploy"
-  role          = module.restore_object_arn.restore_object_role_arn
+  role          = var.restore_object_role_arn
 
   ## OPTIONAL
   description      = "ORCA database deployment lambda used to create and bootstrap the ORCA database."

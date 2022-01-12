@@ -48,7 +48,7 @@ class TestOrcaCatalogReportingUnit(
             "anotherPage": False,
             "granules": [
                 {
-                    "providerId": [uuid.uuid4().__str__()],
+                    "providerId": uuid.uuid4().__str__(),
                     "collectionId": uuid.uuid4().__str__(),
                     "id": uuid.uuid4().__str__(),
                     "createdAt": random.randint(0, 628021800000),
@@ -220,7 +220,7 @@ class TestOrcaCatalogReportingUnit(
             "anotherPage": False,
             "granules": [
                 {
-                    "providerId": [uuid.uuid4().__str__()],
+                    "providerId": uuid.uuid4().__str__(),
                     "collectionId": uuid.uuid4().__str__(),
                     "id": uuid.uuid4().__str__(),
                     "createdAt": 628021800000,
@@ -367,7 +367,7 @@ class TestOrcaCatalogReportingUnit(
         returned_files = Mock()
 
         returned_row0 = {
-            "provider_ids": returned_provider_id,
+            "provider_id": returned_provider_id,
             "collection_id": returned_collection_id,
             "cumulus_granule_id": returned_granule_id,
             "cumulus_create_time": returned_created_at,

@@ -61,7 +61,7 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         mock_conn_enter = mock_connection().connect().__enter__()
 
         mock_create_app_schema_roles.assert_called_once_with(
-            mock_conn_enter, self.config["user_password"], self.config["user_database"]
+            mock_conn_enter, self.config["user_username"], self.config["user_password"], self.config["user_database"]
         )
         mock_set_search_path_role.assert_called_once_with(mock_conn_enter)
         mock_create_inventory_objects.assert_called_once_with(mock_conn_enter)
@@ -90,14 +90,14 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         Tests happy path of create_app_schema_role_users function.
         """
         create_db.create_app_schema_role_users(
-            self.mock_connection, self.config["user_password"], self.config["user_database"]
+            self.mock_connection, self.config["user_username"], self.config["user_password"], self.config["user_database"]
         )
 
         # Check that SQL called properly
         mock_dbo_role_sql.assert_called_once()
         mock_app_role_sql.assert_called_once()
         mock_schema_sql.assert_called_once()
-        mock_user_sql.assert_called_once_with(self.config["user_password"])
+        mock_user_sql.assert_called_once_with(self.config["user_username"], self.config["user_password"])
 
         # Check SQL called in proper order
         execution_order = [
@@ -186,14 +186,12 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
 
     @patch("create_db.providers_table_sql")
     @patch("create_db.collections_table_sql")
-    @patch("create_db.provider_collection_xref_table_sql")
     @patch("create_db.granules_table_sql")
     @patch("create_db.files_table_sql")
     def test_create_inventory_objects(
         self,
         mock_files_table: MagicMock,
         mock_granules_table: MagicMock,
-        mock_provider_collection_xref_table: MagicMock,
         mock_collections_table: MagicMock,
         mock_providers_table: MagicMock,
     ):
@@ -205,7 +203,6 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         # Check that the SQL calls were made
         mock_providers_table.assert_called_once()
         mock_collections_table.assert_called_once()
-        mock_provider_collection_xref_table.assert_called_once()
         mock_granules_table.assert_called_once()
         mock_files_table.assert_called_once()
 
@@ -213,7 +210,6 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         execution_order = [
             call.execute(mock_providers_table()),
             call.execute(mock_collections_table()),
-            call.execute(mock_provider_collection_xref_table()),
             call.execute(mock_granules_table()),
             call.execute(mock_files_table()),
         ]

@@ -2,16 +2,16 @@
   "Records": [
     {
       "body": {
-        "job_id": "fake-job-id",
-        "granule_id": "fake-granule-id",
+        "jobId": "fake-job-id",
+        "granuleId": "fake-granule-id",
         "filename": "fake-filename",
-        "source_key": "fake-source-key",
-        "target_key": "fake-target-key",
-        "restore_destination": "fake-restore-destination",
-        "source_key": "dr-glacier/MOD09GQ.A0219114.N5aUCG.006.0656338553321.txt",
-        "restore_destination": "fake-restore-destination",
-        "source_bucket": "my-dr-fake-glacier-bucket",
-        "multipart_chunksize_mb": null
+        "sourceKey": "fake-source-key",
+        "targetKey": "fake-target-key",
+        "restoreDestination": "fake-restore-destination",
+        "sourceKey": "dr-glacier/MOD09GQ.A0219114.N5aUCG.006.0656338553321.txt",
+        "restoreDestination": "fake-restore-destination",
+        "sourceBucket": "my-dr-fake-glacier-bucket",
+        "s3MultipartChunksizeMb": null
       }
     }
   ]

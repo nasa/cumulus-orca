@@ -59,6 +59,9 @@ module.exports = {
         'developer/deployment-guide/testing_deployment',
         'developer/deployment-guide/deploying-from-windows',
     ],
+    "API Reference": [
+      'developer/api/orca-api'
+    ],
     "Research": [
       'developer/research/research-intro',
       'developer/research/research-localstack',

@@ -4,7 +4,6 @@ Description:  Unit tests for copy_files_to_archive.py.
 """
 import json
 import os
-import random
 import unittest
 import uuid
 from random import randint
@@ -41,7 +40,7 @@ class TestCopyFilesToArchive(TestCase):
         mock_task: MagicMock,
         mock_logger: MagicMock,
     ):
-        records = Mock()
+        records = [Mock()]
         event = {"Records": records}
 
         copy_files_to_archive.handler(event, Mock())
@@ -67,7 +66,7 @@ class TestCopyFilesToArchive(TestCase):
         """
         If retry settings not in os.environ, uses 2 retries and 30 seconds.
         """
-        records = Mock()
+        records = [Mock()]
         event = {"Records": records}
 
         copy_files_to_archive.handler(event, Mock())
@@ -117,7 +116,7 @@ class TestCopyFilesToArchive(TestCase):
         file1_multipart_chunksize_mb = randint(1, 10000)
         file1_message_reciept = uuid.uuid4().__str__()
 
-        mock_records = Mock()
+        mock_records = [Mock()]
 
         file0 = {
             copy_files_to_archive.INPUT_JOB_ID_KEY: file0_job_id,
@@ -128,7 +127,7 @@ class TestCopyFilesToArchive(TestCase):
             copy_files_to_archive.INPUT_SOURCE_KEY_KEY: file0_source_key,
             copy_files_to_archive.INPUT_TARGET_BUCKET_KEY: file0_target_bucket,
             copy_files_to_archive.INPUT_TARGET_KEY_KEY: file0_target_key,
-            copy_files_to_archive.INPUT_MULTIPART_CHUNKSIZE_MB: None,
+            copy_files_to_archive.INPUT_MULTIPART_CHUNKSIZE_MB_KEY: None,
             copy_files_to_archive.FILE_MESSAGE_RECIEPT: file0_message_reciept,
         }
         file1 = {
@@ -140,7 +139,7 @@ class TestCopyFilesToArchive(TestCase):
             copy_files_to_archive.INPUT_SOURCE_KEY_KEY: file1_source_key,
             copy_files_to_archive.INPUT_TARGET_BUCKET_KEY: file1_target_bucket,
             copy_files_to_archive.INPUT_TARGET_KEY_KEY: file1_target_key,
-            copy_files_to_archive.INPUT_MULTIPART_CHUNKSIZE_MB: file1_multipart_chunksize_mb,
+            copy_files_to_archive.INPUT_MULTIPART_CHUNKSIZE_MB_KEY: file1_multipart_chunksize_mb,
             copy_files_to_archive.FILE_MESSAGE_RECIEPT: file1_message_reciept,
         }
         mock_get_files_from_records.return_value = [file0, file1]
@@ -250,7 +249,7 @@ class TestCopyFilesToArchive(TestCase):
         file1_target_key = uuid.uuid4().__str__()
         file1_message_reciept = uuid.uuid4().__str__()
 
-        mock_records = Mock()
+        mock_records = [Mock()]
 
         failed_file = {
             copy_files_to_archive.INPUT_JOB_ID_KEY: file0_job_id,
@@ -365,24 +364,24 @@ class TestCopyFilesToArchive(TestCase):
         Function should transform json into file dict, and add 'success' key.
         """
         file0 = {
-            "job_id": uuid.uuid4().__str__(),
-            "granule_id": uuid.uuid4().__str__(),
-            "filename": uuid.uuid4().__str__(),
-            "source_key": uuid.uuid4().__str__(),
-            "target_key": uuid.uuid4().__str__(),
-            "restore_destination": uuid.uuid4().__str__(),
-            "source_bucket": uuid.uuid4().__str__(),
-            "multipart_chunksize_mb": randint(1, 10000),
+            copy_files_to_archive.INPUT_JOB_ID_KEY: uuid.uuid4().__str__(),
+            copy_files_to_archive.INPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(),
+            copy_files_to_archive.INPUT_FILENAME_KEY: uuid.uuid4().__str__(),
+            copy_files_to_archive.INPUT_SOURCE_KEY_KEY: uuid.uuid4().__str__(),
+            copy_files_to_archive.INPUT_TARGET_KEY_KEY: uuid.uuid4().__str__(),
+            copy_files_to_archive.INPUT_TARGET_BUCKET_KEY: uuid.uuid4().__str__(),
+            copy_files_to_archive.INPUT_SOURCE_BUCKET_KEY: uuid.uuid4().__str__(),
+            copy_files_to_archive.INPUT_MULTIPART_CHUNKSIZE_MB_KEY: randint(1, 10000),
         }
         file1 = {
-            "job_id": uuid.uuid4().__str__(),
-            "granule_id": uuid.uuid4().__str__(),
-            "filename": uuid.uuid4().__str__(),
-            "source_key": uuid.uuid4().__str__(),
-            "target_key": uuid.uuid4().__str__(),
-            "restore_destination": uuid.uuid4().__str__(),
-            "source_bucket": uuid.uuid4().__str__(),
-            "multipart_chunksize_mb": None,
+            copy_files_to_archive.INPUT_JOB_ID_KEY: uuid.uuid4().__str__(),
+            copy_files_to_archive.INPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(),
+            copy_files_to_archive.INPUT_FILENAME_KEY: uuid.uuid4().__str__(),
+            copy_files_to_archive.INPUT_SOURCE_KEY_KEY: uuid.uuid4().__str__(),
+            copy_files_to_archive.INPUT_TARGET_KEY_KEY: uuid.uuid4().__str__(),
+            copy_files_to_archive.INPUT_TARGET_BUCKET_KEY: uuid.uuid4().__str__(),
+            copy_files_to_archive.INPUT_SOURCE_BUCKET_KEY: uuid.uuid4().__str__(),
+            copy_files_to_archive.INPUT_MULTIPART_CHUNKSIZE_MB_KEY: None,
         }
 
         return_message_id_0 = uuid.uuid4().__str__()

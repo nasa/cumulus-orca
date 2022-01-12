@@ -170,14 +170,12 @@ class TestPostToDatabase(
 
     @patch("post_to_catalog.create_file_sql")
     @patch("post_to_catalog.create_granule_sql")
-    @patch("post_to_catalog.create_provider_collection_xref_sql")
     @patch("post_to_catalog.create_collection_sql")
     @patch("post_to_catalog.create_provider_sql")
     def test_create_catalog_records_happy_path(
         self,
         mock_create_provider_sql: MagicMock,
         mock_create_collection_sql: MagicMock,
-        mock_create_provider_collection_xref_sql: MagicMock,
         mock_create_granule_sql: MagicMock,
         mock_create_file_sql: MagicMock,
     ):
@@ -259,18 +257,10 @@ class TestPostToDatabase(
                     ],
                 ),
                 call(
-                    mock_create_provider_collection_xref_sql.return_value,
-                    [
-                        {
-                            "provider_id": provider["providerId"],
-                            "collection_id": collection["collectionId"],
-                        }
-                    ],
-                ),
-                call(
                     mock_create_granule_sql.return_value,
                     [
                         {
+                            "provider_id": provider["providerId"],
                             "collection_id": collection["collectionId"],
                             "cumulus_granule_id": granule["cumulusGranuleId"],
                             "execution_id": granule["executionId"],

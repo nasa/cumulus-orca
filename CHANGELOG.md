@@ -30,11 +30,19 @@ and includes an additional section for migration notes.
 - *ORCA-177* Added AWS API Gateway in modules/api_gateway/main.tf for the request_status_for_granule and request_status_for_job lambdas.
 - *ORCA-257* orca_catalog_reporting lambda now returns data from actual catalog.
 - *ORCA-151* copy_to_glacier and request_files now accept "orcaDefaultBucketOverride" which can be used on a per-collection basis. If desired, add "orcaDefaultBucketOverride": "{$.meta.collection.meta.orcaDefaultBucketOverride}" to the workflow's task's task_config.
+- *ORCA-335* request_files now recognizes when a file is already recovered, and posts an error message to status tables.
+- *ORCA-230* copy_to_glacier now writes metadata to an ORCA catalog for comparisons to cumulus holdings.
 
 ### Changed
+- *ORCA-217* Lambda inputs now conform to the Cumulus camel case standard.
 - *ORCA-297* Default database name is now PREFIX_orca
 - *ORCA-287* Updated copy_to_glacier and extract_filepaths_for_granule to [new Cumulus file format](https://github.com/nasa/cumulus/blob/master/packages/schemas/files.schema.json). 
 - *ORCA-245* Updated resource policies related to KMS keys to provide better security.
+- *ORCA-318* Updated post_to_catalog lambda to match new Cumulus schema changes.
+- *ORCA-317* Updated the db_deploy task, unit tests, manual tests, research pages and SQL to reflect new inventory layout to better align with Cumulus.
+- *ORCA-249* Changed `mutipart_chunksize_mb` in lambda configs to `s3MultipartChunksizeMb`. Standard workflows now pull from `$.meta.collection.meta.s3MultipartChunksizeMb`
+- *ORCA-230* Updated lambdas to use Cumulus Message Adapter Python v2.0.0.
+- *ORCA-132* Updated workflows to use latest Cumulus v10.0.0 workflow code.
 
 ### Migration Notes
 
@@ -47,11 +55,33 @@ and includes an additional section for migration notes.
 - These are the new variables added:
   - db_admin_username (defaults to "postgres")
   - db_host_endpoint (Requires a value. Set in terraform.tfvars to your RDS Database's endpoint, similar to "PREFIX-cumulus-db.cluster-000000000000.us-west-2.rds.amazonaws.com")
-  - db_name (Defaults to PREFIX_orca.
+  - db_name (Defaults to PREFIX_orca.)
     - Any `-` in `prefix` are replaced with `_` to follow [SQL Naming Conventions](https://www.postgresql.org/docs/7.0/syntax525.htm#:~:text=Names%20in%20SQL%20must%20begin,but%20they%20will%20be%20truncated.)
     - If preserving a database from a previous version of Orca, set to disaster_recovery.
+  - db_user_name (Defaults to PREFIX_orcauser.)
+    - Any `-` in `prefix` are replaced with `_` to follow [SQL Naming Conventions](https://www.postgresql.org/docs/7.0/syntax525.htm#:~:text=Names%20in%20SQL%20must%20begin,but%20they%20will%20be%20truncated.)
+    - If preserving a database from a previous version of Orca, set to orcauser.
   - rds_security_group_id (Requires a value. Set in terraform.tfvars to the Security Group ID of your RDS Database's Security Group. Output from Cumulus' RDS module as `security_group_id`)
   - vpc_endpoint_id
+- Adjust workflows/step functions for `extract_filepaths`.
+  - `file-buckets` argument in `task_config` is now `fileBucketsMaps`.
+- Adjust workflows/step functions for `copy_to_glacier`. 
+  - `multipart_chunksize_mb` argument in `task_config` is now the Cumulus standard of `s3MultipartChunksizeMb`. See example below.
+  - `copy_to_glacier` has new requirements for writing to the orca catalog. See example below. Required properties are `providerId`, `executionId`, `collectionShortname`, and `collectionVersion`. See example below.
+- 
+```
+"task_config": {
+  "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
+  "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
+  "providerId": "{$.meta.provider.id}",
+  "providerName": "{$.meta.provider.name}",
+  "executionId": "{$.cumulus_meta.execution_name}",
+  "collectionShortname": "{$.meta.collection.name}",
+  "collectionVersion": "{$.meta.collection.version}",
+  "orcaDefaultBucketOverride": "{$.meta.collection.meta.orcaDefaultBucketOverride}"
+}
+```
+- `request_status_for_granule` [input](https://github.com/nasa/cumulus-orca/blob/master/tasks/request_status_for_granule/schemas/input.json)/[output](https://github.com/nasa/cumulus-orca/blob/master/tasks/request_status_for_granule/schemas/output.json) and `request_status_for_job` [input](https://github.com/nasa/cumulus-orca/blob/master/tasks/request_status_for_job/schemas/input.json)/[output](https://github.com/nasa/cumulus-orca/blob/master/tasks/request_status_for_job/schemas/output.json) are now fully camel case.
 - Add the following ORCA required variables definition to your `variables.tf` or `orca_variables.tf` file.
 
 ```terraform

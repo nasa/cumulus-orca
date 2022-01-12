@@ -11,9 +11,9 @@
             "FullMessage": true
           },
           "task_config": {
-            "file-buckets": "{$.meta.collection.files}",
-            "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
-            "buckets": "{$.meta.buckets}"
+            "buckets": "{$.meta.buckets}",
+            "fileBucketMaps": "{$.meta.collection.files}",
+            "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}"
           }
         }
       },
@@ -51,7 +51,7 @@
           },
           "task_config": {
             "asyncOperationId": "{$.cumulus_meta.asyncOperationId}",
-            "multipart_chunksize_mb": "{$.meta.collection.meta.multipart_chunksize_mb}",
+            "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
             "orcaDefaultBucketOverride": "{$.meta.collection.meta.orcaDefaultBucketOverride}"
           }
         }

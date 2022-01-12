@@ -24,14 +24,14 @@
                       "desription": "S3 Key for archived file (full path and file name less the bucket name).",
                       "type": "string"
                     },
-                    "dest_bucket": {
+                    "destBucket": {
                       "description": "The bucket the file will be moved to after it is located.",
                       "type": "string"
                     }
                   },
                   "required": [
                     "key",
-                    "dest_bucket"
+                    "destBucket"
                   ]
                   }
               ]

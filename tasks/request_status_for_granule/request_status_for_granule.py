@@ -6,18 +6,18 @@ from orca_shared.database import shared_db
 from sqlalchemy import text
 from sqlalchemy.future import Engine
 
-INPUT_GRANULE_ID_KEY = "granule_id"
+INPUT_GRANULE_ID_KEY = "granuleId"
 INPUT_JOB_ID_KEY = "asyncOperationId"
 
-OUTPUT_GRANULE_ID_KEY = "granule_id"
+OUTPUT_GRANULE_ID_KEY = "granuleId"
 OUTPUT_JOB_ID_KEY = "asyncOperationId"
 OUTPUT_FILES_KEY = "files"
-OUTPUT_FILENAME_KEY = "file_name"
-OUTPUT_RESTORE_DESTINATION_KEY = "restore_destination"
+OUTPUT_FILENAME_KEY = "fileName"
+OUTPUT_RESTORE_DESTINATION_KEY = "restoreDestination"
 OUTPUT_STATUS_KEY = "status"
-OUTPUT_ERROR_MESSAGE_KEY = "error_message"
-OUTPUT_REQUEST_TIME_KEY = "request_time"
-OUTPUT_COMPLETION_TIME_KEY = "completion_time"
+OUTPUT_ERROR_MESSAGE_KEY = "errorMessage"
+OUTPUT_REQUEST_TIME_KEY = "requestTime"
+OUTPUT_COMPLETION_TIME_KEY = "completionTime"
 
 LOGGER = CumulusLogger()
 

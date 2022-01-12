@@ -7,9 +7,9 @@
   "properties": {
     "asyncOperationId": {
       "description": "The unique identifier used for tracking requests. If not present, will be generated.",
-      "type": "string"
+      "type": ["string", "null"]
     },
-    "multipart_chunksize_mb": {
+    "s3MultipartChunksizeMb": {
       "description": "Overrides default_multipart_chunksize from TF.",
       "type": ["number", "null"]
     },
