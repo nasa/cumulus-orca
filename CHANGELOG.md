@@ -15,6 +15,99 @@ and includes an additional section for migration notes.
 
 
 ## [Unreleased]
+
+
+### Added
+- *ORCA-161* Added dead letter queue and cloudwatch alarm terraform code to recovery SQS queue.
+
+### Changed
+- *ORCA-161* Changed staged recovery SQS queue type from FIFO to standard queue.
+
+### Migration Notes
+
+- The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variable. The following required variable has been added:
+  - db_admin_username (defaults to "postgres")
+  
+- Add the following ORCA required variables definition to your `variables.tf` or `orca_variables.tf` file.
+
+```terraform
+variable "db_admin_password" {
+  description = "Password for RDS database administrator authentication"
+  type        = string
+}
+
+variable "db_user_password" {
+  description = "Password for RDS database user authentication"
+  type        = string
+}
+
+variable "db_host_endpoint" {
+  type        = string
+  description = "Database host endpoint to connect to."
+}
+
+variable "rds_security_group_id" {
+  type        = string
+  description = "Cumulus' RDS Security Group's ID."
+}
+
+variable "dead_letter_queue_topic_subscription_email" {
+  type        = string
+  description = "The email to notify users when messages are received in dead letter SQS queue"
+}
+```
+- Update the `orca.tf` file to include all of the updated and new variables as seen below. Note the change to source and the commented out optional variables.
+  ```terraform
+  ## ORCA Module
+  ## =============================================================================
+  module "orca" {
+    source = "https://github.com/nasa/cumulus-orca/releases/download/v3.0.1/cumulus-orca-terraform.zip//modules"
+  ## --------------------------
+  ## Cumulus Variables
+  ## --------------------------
+  ## REQUIRED
+  buckets                  = var.buckets
+  lambda_subnet_ids        = var.lambda_subnet_ids
+  permissions_boundary_arn = var.permissions_boundary_arn
+  prefix                   = var.prefix
+  system_bucket            = var.system_bucket
+  vpc_id                   = var.vpc_id
+  workflow_config          = module.cumulus.workflow_config
+
+  ## OPTIONAL
+  tags        = local.tags
+
+  ## --------------------------
+  ## ORCA Variables
+  ## --------------------------
+  ## REQUIRED
+  orca_default_bucket = var.orca_default_bucket
+  db_admin_password   = var.db_admin_password
+  db_user_password    = var.db_user_password
+  db_host_endpoint    = var.db_host_endpoint
+  rds_security_group_id    = var.rds_security_group_id
+  dead_letter_queue_topic_subscription_email = var.dead_letter_queue_topic_subscription_email
+  ## OPTIONAL
+  db_admin_username                                    = "postgres"
+  default_multipart_chunksize_mb                       = 250
+  orca_ingest_lambda_memory_size                       = 2240
+  orca_ingest_lambda_timeout                           = 720
+  orca_recovery_buckets                                = []
+  orca_recovery_complete_filter_prefix                 = ""
+  orca_recovery_expiration_days                        = 5
+  orca_recovery_lambda_memory_size                     = 128
+  orca_recovery_lambda_timeout                         = 720
+  orca_recovery_retry_limit                            = 3
+  orca_recovery_retry_interval                         = 1
+  orca_recovery_retry_backoff                          = 2
+  sqs_delay_time_seconds                               = 0
+  sqs_maximum_message_size                             = 262144
+  staged_recovery_queue_message_retention_time_seconds = 432000
+  status_update_queue_message_retention_time_seconds   = 777600
+  vpc_endpoint_id                                      = null
+  }
+  ```
+
 ## [4.0.0]
 
 ### Removed
@@ -32,7 +125,6 @@ and includes an additional section for migration notes.
 - *ORCA-151* copy_to_glacier and request_files now accept "orcaDefaultBucketOverride" which can be used on a per-collection basis. If desired, add "orcaDefaultBucketOverride": "{$.meta.collection.meta.orcaDefaultBucketOverride}" to the workflow's task's task_config.
 - *ORCA-335* request_files now recognizes when a file is already recovered, and posts an error message to status tables.
 - *ORCA-230* copy_to_glacier now writes metadata to an ORCA catalog for comparisons to cumulus holdings.
-- *ORCA-161* Added dead letter queue and cloudwatch alarm terraform code to recovery SQS queue.
 
 ### Changed
 - *ORCA-217* Lambda inputs now conform to the Cumulus camel case standard.
@@ -44,7 +136,6 @@ and includes an additional section for migration notes.
 - *ORCA-249* Changed `mutipart_chunksize_mb` in lambda configs to `s3MultipartChunksizeMb`. Standard workflows now pull from `$.meta.collection.meta.s3MultipartChunksizeMb`
 - *ORCA-230* Updated lambdas to use Cumulus Message Adapter Python v2.0.0.
 - *ORCA-132* Updated workflows to use latest Cumulus v10.0.0 workflow code.
-- *ORCA-161* Changed staged recovery SQS queue type from FIFO to standard queue.
 
 ### Migration Notes
 

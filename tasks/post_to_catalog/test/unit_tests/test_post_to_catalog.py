@@ -231,7 +231,7 @@ class TestPostToDatabase(
         mock_connection.execute.return_value = [{"id": internal_id}]
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
-        mock_engine.begin.return_value.__exit__ = Mock()
+        mock_engine.begin.return_value.__exit__ = Mock(return_value=False)
 
         post_to_catalog.create_catalog_records(
             copy.deepcopy(provider),
