@@ -382,7 +382,7 @@ class TestPostCopyRequestToQueue(TestCase):
         mock_exponential_delay: MagicMock,
     ):
         """
-        mocks post_entry_to_queue to raise an exception.
+        mocks post_entry_to_standard_queue to raise an exception.
         """
         self.setUpQueues()
         job_id = uuid.uuid4().__str__()
