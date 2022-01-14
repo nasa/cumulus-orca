@@ -3,7 +3,6 @@ Name: post_copy_request_to_queue.py
 Description:  lambda function that queries the db for file metadata, updates the status
 of recovered file to staged,
 and sends the staged file info to staged_recovery queue for further processing.
-
 """
 import os
 from typing import Dict, List, Any
@@ -46,11 +45,9 @@ def task(
 ) -> None:
     """
     Task called by the handler to perform the work.
-
     This task queries all entries from orca_recoverfile table
     that match the given filename and whose status_id is 'PENDING'.
     The result is then sent to the staged-recovery-queue SQS and status-update-queue SQS.
-
     Args:
         key_path:
            Full AWS key path including file name of the file where the file resides.
@@ -65,7 +62,6 @@ def task(
     Raises:
         Exception: If unable to retrieve key_path or db parameters, convert db result to json,
         or post to queue.
-
     """
     rows = query_db(key_path, bucket_name)
 
@@ -115,9 +111,8 @@ def task(
         # primary location. Retry using exponential delay if it fails.
         for attempt in range(max_retries + 1):
             try:
-                # todo: Create another shared function that posts to a queue without requiring a request_method.
-                shared_recovery.post_entry_to_queue(
-                    row, shared_recovery.RequestMethod.NEW_JOB, recovery_queue_url  # RequestMethod unused on this queue.
+                shared_recovery.post_entry_to_standard_queue(
+                    row, recovery_queue_url
                 )
                 break
             except Exception as ex:
@@ -188,7 +183,6 @@ def query_db(key_path: str, bucket_name: str) -> List[Dict[str, str]]:
             "sourceBucket" (str):
     Raises:
         Exception: If unable to retrieve the metadata by querying the DB.
-
     """
 
     # Query the database and get the needed metadata to send to the SQS Queue
@@ -242,7 +236,6 @@ def get_metadata_sql(key_path: str) -> text:
 
     Args:
         key_path (str): s3 key for the file less the bucket name
-
     Returns:
         (sqlalchemy.text): SQL statement
     """
@@ -264,14 +257,13 @@ def handler(event: Dict[str, Any], context) -> None:
     """
     Lambda handler. This lambda calls the task function to perform db queries
     and send message to SQS.
-
+    
         Environment Vars:
             RECOVERY_QUEUE_URL (string): the SQS URL for staged_recovery_queue
             DB_QUEUE_URL (string): the SQS URL for status-update-queue
             MAX_RETRIES (string): Number of times the code will retry in case of failure.
             RETRY_SLEEP_SECS (string): Number of seconds to wait between recovery failure retries.
             RETRY_BACKOFF (string): The multiplier by which the retry interval increases during each attempt.
-
             Required by shared_db.get_configuration():
                 PREFIX (string): the prefix
                 DATABASE_PORT (string): the database port. The standard is 5432.
@@ -288,7 +280,6 @@ def handler(event: Dict[str, Any], context) -> None:
         None
     Raises:
         Exception: If unable to retrieve the SQS URLs or exponential retry fields from env variables.
-
     """
     LOGGER.setMetadata(event, context)
 

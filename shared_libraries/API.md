@@ -14,7 +14,8 @@
   * [get\_aws\_region](#orca_shared.recovery.shared_recovery.get_aws_region)
   * [create\_status\_for\_job](#orca_shared.recovery.shared_recovery.create_status_for_job)
   * [update\_status\_for\_file](#orca_shared.recovery.shared_recovery.update_status_for_file)
-  * [post\_entry\_to\_queue](#orca_shared.recovery.shared_recovery.post_entry_to_queue)
+  * [post\_entry\_to\_fifo\_queue](#orca_shared.recovery.shared_recovery.post_entry_to_fifo_queue)
+  * [post\_entry\_to\_standard\_queue](#orca_shared.recovery.shared_recovery.post_entry_to_standard_queue)
 
 <a id="orca_shared"></a>
 
@@ -220,21 +221,40 @@ job_id + granule_id + filename does not exist.
 - `error_message` - message displayed on error.
 - `db_queue_url` - The SQS queue URL defined by AWS.
 
-<a id="orca_shared.recovery.shared_recovery.post_entry_to_queue"></a>
+<a id="orca_shared.recovery.shared_recovery.post_entry_to_fifo_queue"></a>
 
-#### post\_entry\_to\_queue
+#### post\_entry\_to\_fifo\_queue
 
 ```python
-def post_entry_to_queue(new_data: Dict[str, Any], request_method: RequestMethod, db_queue_url: str) -> None
+def post_entry_to_fifo_queue(new_data: Dict[str, Any], request_method: RequestMethod, db_queue_url: str) -> None
 ```
 
-Posts messages to an SQS queue.
+Posts messages to SQS FIFO queue.
 
 **Arguments**:
 
 - `new_data` - A dictionary representing the column/value pairs to write to the DB table.
 - `request_method` - The action for the database lambda to take when posting to the SQS queue.
 - `db_queue_url` - The SQS queue URL defined by AWS.
+
+**Raises**:
+
+  None
+
+<a id="orca_shared.recovery.shared_recovery.post_entry_to_standard_queue"></a>
+
+#### post\_entry\_to\_standard\_queue
+
+```python
+def post_entry_to_standard_queue(new_data: Dict[str, Any], recovery_queue_url: str) -> None
+```
+
+Posts messages to the recovery standard SQS queue.
+
+**Arguments**:
+
+- `new_data` - A dictionary representing the column/value pairs to write to the DB table.
+- `recovery_queue_url` - The SQS queue URL defined by AWS.
 
 **Raises**:
 

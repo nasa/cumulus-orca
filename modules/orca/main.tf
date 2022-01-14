@@ -142,6 +142,10 @@ module "orca_sqs" {
   ## --------------------------
   ## ORCA Variables
   ## --------------------------
+
+  ## REQUIRED
+  dlq_subscription_email = var.dlq_subscription_email
+
   ## OPTIONAL
   metadata_queue_message_retention_time_seconds        = var.metadata_queue_message_retention_time_seconds
   sqs_delay_time_seconds                               = var.sqs_delay_time_seconds

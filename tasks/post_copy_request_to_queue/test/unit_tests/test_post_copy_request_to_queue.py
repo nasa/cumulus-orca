@@ -1,7 +1,6 @@
 """
 Name: test_post_copy_request_to_queue.py
 Description: unit tests for post_copy_request_to_queue.py
-
 """
 import copy
 import random
@@ -308,12 +307,12 @@ class TestPostCopyRequestToQueue(TestCase):
                     mock_task.assert_not_called()
 
     @patch("post_copy_request_to_queue.query_db")
-    @patch("post_copy_request_to_queue.shared_recovery.post_entry_to_queue")
+    @patch("post_copy_request_to_queue.shared_recovery.post_entry_to_standard_queue")
     @patch("post_copy_request_to_queue.shared_recovery.update_status_for_file")
     def test_task_happy_path(
         self,
         mock_update_status_for_file: MagicMock,
-        mock_post_entry_to_queue: MagicMock,
+        mock_post_entry_to_standard_queue: MagicMock,
         mock_query_db: MagicMock,
     ):
         """
@@ -329,8 +328,7 @@ class TestPostCopyRequestToQueue(TestCase):
         key_path = uuid.uuid4().__str__()
         bucket_name = uuid.uuid4().__str__()
 
-        mock_query_db.return_value = [
-            {
+        row =           {
                 post_copy_request_to_queue.JOB_ID_KEY: job_id,
                 post_copy_request_to_queue.GRANULE_ID_KEY: granule_id,
                 post_copy_request_to_queue.FILENAME_KEY: filename,
@@ -342,7 +340,7 @@ class TestPostCopyRequestToQueue(TestCase):
                 post_copy_request_to_queue.TARGET_KEY_KEY: key_path,
                 post_copy_request_to_queue.SOURCE_BUCKET_KEY: bucket_name,
             }
-        ]
+        mock_query_db.return_value = [copy.deepcopy(row)]
 
         environment_args = [
             self.status_update_queue_url,
@@ -364,38 +362,27 @@ class TestPostCopyRequestToQueue(TestCase):
             None,
             self.status_update_queue_url,
         )
-        mock_post_entry_to_queue.assert_called_once_with(
-            {
-                post_copy_request_to_queue.JOB_ID_KEY: job_id,
-                post_copy_request_to_queue.GRANULE_ID_KEY: granule_id,
-                post_copy_request_to_queue.FILENAME_KEY: filename,
-                post_copy_request_to_queue.RESTORE_DESTINATION_KEY: restore_destination,
-                post_copy_request_to_queue.MULTIPART_CHUNKSIZE_MB_KEY: str(
-                    multipart_chunksize_mb
-                ),
-                post_copy_request_to_queue.SOURCE_KEY_KEY: key_path,
-                post_copy_request_to_queue.TARGET_KEY_KEY: key_path,
-                post_copy_request_to_queue.SOURCE_BUCKET_KEY: bucket_name,
-            },
-            mock.ANY,
+        mock_post_entry_to_standard_queue.assert_called_once_with(
+
+            row,
             self.recovery_queue_url,
         )
 
     @patch("post_copy_request_to_queue.exponential_delay")
     @patch("post_copy_request_to_queue.shared_recovery.update_status_for_file")
-    @patch("post_copy_request_to_queue.shared_recovery.post_entry_to_queue")
+    @patch("post_copy_request_to_queue.shared_recovery.post_entry_to_standard_queue")
     @patch("post_copy_request_to_queue.query_db")
     @patch("post_copy_request_to_queue.LOGGER")
     def test_task_post_entry_to_queue_exception(
         self,
         mock_LOGGER: MagicMock,
         mock_query_db: MagicMock,
-        mock_post_entry_to_queue: MagicMock,
+        mock_post_entry_to_standard_queue: MagicMock,
         mock_update_status_for_file: MagicMock,
         mock_exponential_delay: MagicMock,
     ):
         """
-        mocks post_entry_to_queue to raise an exception.
+        mocks post_entry_to_standard_queue to raise an exception.
         """
         self.setUpQueues()
         job_id = uuid.uuid4().__str__()
@@ -406,7 +393,7 @@ class TestPostCopyRequestToQueue(TestCase):
         key_path = uuid.uuid4().__str__()
         bucket_name = uuid.uuid4().__str__()
 
-        mock_post_entry_to_queue.side_effect = Exception
+        mock_post_entry_to_standard_queue.side_effect = Exception
 
         row = {
             post_copy_request_to_queue.JOB_ID_KEY: job_id,
@@ -446,28 +433,16 @@ class TestPostCopyRequestToQueue(TestCase):
             None,
             self.status_update_queue_url,
         )
-        mock_post_entry_to_queue.assert_has_calls(
+        mock_post_entry_to_standard_queue.assert_has_calls(
             [
                 call(
-                    {
-                        post_copy_request_to_queue.JOB_ID_KEY: job_id,
-                        post_copy_request_to_queue.GRANULE_ID_KEY: granule_id,
-                        post_copy_request_to_queue.FILENAME_KEY: filename,
-                        post_copy_request_to_queue.RESTORE_DESTINATION_KEY: restore_destination,
-                        post_copy_request_to_queue.MULTIPART_CHUNKSIZE_MB_KEY: str(
-                            multipart_chunksize_mb
-                        ),
-                        post_copy_request_to_queue.SOURCE_KEY_KEY: key_path,
-                        post_copy_request_to_queue.TARGET_KEY_KEY: key_path,
-                        post_copy_request_to_queue.SOURCE_BUCKET_KEY: bucket_name,
-                    },
-                    mock.ANY,
+                    row,
                     self.recovery_queue_url,
                 )
             ]
             * (max_retries + 1)
         )
-        self.assertEqual(max_retries + 1, mock_post_entry_to_queue.call_count)
+        self.assertEqual(max_retries + 1, mock_post_entry_to_standard_queue.call_count)
         self.assertEqual(
             max_retries, mock_exponential_delay.call_count
         )  # Should not sleep on final attempt.
