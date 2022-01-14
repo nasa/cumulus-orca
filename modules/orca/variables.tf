@@ -94,9 +94,9 @@ variable "rds_security_group_id" {
   description = "Cumulus' RDS Security Group's ID."
 }
 
-variable "dead_letter_queue_topic_subscription_email" {
+variable "dlq_subscription_email" {
   type        = string
-  description = "The email to notify users when messages are received in dead letter SQS queue"
+  description = "The email to notify users when messages are received in dead letter SQS queue due to restore failure. Sends one email until the dead letter queue is emptied."
 }
 
 ## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.

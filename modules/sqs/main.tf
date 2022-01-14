@@ -61,15 +61,15 @@ resource "aws_sqs_queue" "staged_recovery_queue" {
   policy                     = data.aws_iam_policy_document.staged_recovery_queue_policy.json
   visibility_timeout_seconds = 1800 # Set to double lambda max time
   depends_on = [
-    aws_sqs_queue.staged_recovery_deadletter_queue
+    aws_sqs_queue.staged_recovery_dlq
   ]
   redrive_policy = jsonencode({
-    deadLetterTargetArn = aws_sqs_queue.staged_recovery_deadletter_queue.arn,
+    deadLetterTargetArn = aws_sqs_queue.staged_recovery_dlq.arn,
     maxReceiveCount     = 3 #number of times a consumer tries receiving a message from the queue without deleting it before being moved to DLQ.
   })
 }
 
-resource "aws_sqs_queue" "staged_recovery_deadletter_queue" {
+resource "aws_sqs_queue" "staged_recovery_dlq" {
   name                       = "${var.prefix}-staged-recovery-deadletter-queue"
   delay_seconds              = var.sqs_delay_time_seconds
   max_message_size           = var.sqs_maximum_message_size
@@ -79,14 +79,14 @@ resource "aws_sqs_queue" "staged_recovery_deadletter_queue" {
 }
 
 resource "aws_sqs_queue_policy" "deadletter_queue_policy" {
-  queue_url = aws_sqs_queue.staged_recovery_deadletter_queue.id
+  queue_url = aws_sqs_queue.staged_recovery_dlq.id
   policy    = data.aws_iam_policy_document.staged_recovery_deadletter_queue_policy.json
 }
 
 data "aws_iam_policy_document" "staged_recovery_deadletter_queue_policy" {
   statement {
     effect    = "Allow"
-    resources = [aws_sqs_queue.staged_recovery_deadletter_queue.arn]
+    resources = [aws_sqs_queue.staged_recovery_dlq.arn]
     actions = [
       "sqs:ChangeMessageVisibility",
       "sqs:DeleteMessage",
@@ -100,8 +100,8 @@ data "aws_iam_policy_document" "staged_recovery_deadletter_queue_policy" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "staged_recovery_deadletter_alarm" {
-  alarm_name          = "${aws_sqs_queue.staged_recovery_deadletter_queue.name}-not-empty-alarm"
-  alarm_description   = "Items are on the ${aws_sqs_queue.staged_recovery_deadletter_queue.name} queue"
+  alarm_name          = "${aws_sqs_queue.staged_recovery_dlq.name}-not-empty-alarm"
+  alarm_description   = "Items are on the ${aws_sqs_queue.staged_recovery_dlq.name} queue"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "ApproximateNumberOfMessagesVisible"
@@ -110,23 +110,23 @@ resource "aws_cloudwatch_metric_alarm" "staged_recovery_deadletter_alarm" {
   statistic           = "Sum"
   threshold           = 1 #alarm will be triggered if number of messages in the DLQ equals to this threshold.
   treat_missing_data  = "notBreaching"
-  alarm_actions       = [aws_sns_topic.staged_recovery_dlq_alarm_topic.arn]
+  alarm_actions       = [aws_sns_topic.staged_recovery_dlq_alarm.arn]
   tags                = local.tags
   dimensions = {
-    "QueueName" = aws_sqs_queue.staged_recovery_deadletter_queue.name
+    "QueueName" = aws_sqs_queue.staged_recovery_dlq.name
   }
 }
 
 # SNS topic needed for cloudwatch alarm
-resource "aws_sns_topic" "staged_recovery_dlq_alarm_topic" {
-  name = "staged_recovery_deadletter_queue_alarm_topic"
+resource "aws_sns_topic" "staged_recovery_dlq_alarm" {
+  name = "staged_recovery_dlq_alarm_topic"
 }
 
-resource "aws_sns_topic_subscription" "sns_subscription_for_alarm" {
-  depends_on = [aws_sns_topic.staged_recovery_dlq_alarm_topic]
-  topic_arn  = aws_sns_topic.staged_recovery_dlq_alarm_topic.arn
+resource "aws_sns_topic_subscription" "dlq_alarm_email" {
+  depends_on = [aws_sns_topic.staged_recovery_dlq_alarm]
+  topic_arn  = aws_sns_topic.staged_recovery_dlq_alarm.arn
   protocol   = "email"
-  endpoint   = var.dead_letter_queue_topic_subscription_email   #todo: ORCA-365
+  endpoint   = var.dlq_subscription_email   #todo: ORCA-365
 }
 ## status_update_queue - copy_files_to_archive lambda writes to this database status update queue.
 ## ===============================================================================================================================

@@ -166,6 +166,7 @@ def exponential_delay(base_delay: int, exponential_backoff: int = 2) -> int:
 def query_db(key_path: str, bucket_name: str) -> List[Dict[str, str]]:
     """
     Connect and query the recover_file status table return needed metadata for posting to the recovery status SQS Queue.
+
     Args:
         key_path:
            Full AWS key path including file name of the file where the file resides.
@@ -232,6 +233,7 @@ def query_db(key_path: str, bucket_name: str) -> List[Dict[str, str]]:
 def get_metadata_sql(key_path: str) -> text:
     """
     Query for finding metadata based on key_path and PENDING status.
+
     Args:
         key_path (str): s3 key for the file less the bucket name
     Returns:
@@ -255,6 +257,7 @@ def handler(event: Dict[str, Any], context) -> None:
     """
     Lambda handler. This lambda calls the task function to perform db queries
     and send message to SQS.
+    
         Environment Vars:
             RECOVERY_QUEUE_URL (string): the SQS URL for staged_recovery_queue
             DB_QUEUE_URL (string): the SQS URL for status-update-queue

@@ -340,7 +340,7 @@ class TestPostCopyRequestToQueue(TestCase):
                 post_copy_request_to_queue.TARGET_KEY_KEY: key_path,
                 post_copy_request_to_queue.SOURCE_BUCKET_KEY: bucket_name,
             }
-        mock_query_db.return_value = [row]
+        mock_query_db.return_value = [copy.deepcopy(row)]
 
         environment_args = [
             self.status_update_queue_url,

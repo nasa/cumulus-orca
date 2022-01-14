@@ -26,34 +26,14 @@ and includes an additional section for migration notes.
 ### Migration Notes
 
 - The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variable. The following required variable has been added:
-  - db_admin_username (defaults to "postgres")
+  - dlq_subscription_email
   
-- Add the following ORCA required variables definition to your `variables.tf` or `orca_variables.tf` file.
+- Add the following ORCA required variable definition to your `variables.tf` or `orca_variables.tf` file.
 
 ```terraform
-variable "db_admin_password" {
-  description = "Password for RDS database administrator authentication"
+variable "dlq_subscription_email" {
   type        = string
-}
-
-variable "db_user_password" {
-  description = "Password for RDS database user authentication"
-  type        = string
-}
-
-variable "db_host_endpoint" {
-  type        = string
-  description = "Database host endpoint to connect to."
-}
-
-variable "rds_security_group_id" {
-  type        = string
-  description = "Cumulus' RDS Security Group's ID."
-}
-
-variable "dead_letter_queue_topic_subscription_email" {
-  type        = string
-  description = "The email to notify users when messages are received in dead letter SQS queue"
+  description = "The email to notify users when messages are received in dead letter SQS queue due to restore failure. Sends one email until the dead letter queue is emptied."
 }
 ```
 - Update the `orca.tf` file to include all of the updated and new variables as seen below. Note the change to source and the commented out optional variables.
@@ -81,12 +61,13 @@ variable "dead_letter_queue_topic_subscription_email" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  orca_default_bucket = var.orca_default_bucket
-  db_admin_password   = var.db_admin_password
-  db_user_password    = var.db_user_password
-  db_host_endpoint    = var.db_host_endpoint
-  rds_security_group_id    = var.rds_security_group_id
-  dead_letter_queue_topic_subscription_email = var.dead_letter_queue_topic_subscription_email
+  orca_default_bucket     = var.orca_default_bucket
+  db_admin_password       = var.db_admin_password
+  db_user_password        = var.db_user_password
+  db_host_endpoint        = var.db_host_endpoint
+  rds_security_group_id   = var.rds_security_group_id
+  dlq_subscription_email  = var.dlq_subscription_email
+
   ## OPTIONAL
   db_admin_username                                    = "postgres"
   default_multipart_chunksize_mb                       = 250
