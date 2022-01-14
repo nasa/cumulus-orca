@@ -329,7 +329,7 @@ resource "aws_s3_bucket_notification" "post_copy_request_to_queue_trigger" {
   bucket = each.value
   ## OPTIONAL
   lambda_function {
-    ## REQUIRED  
+    ## REQUIRED
     lambda_function_arn = aws_lambda_function.post_copy_request_to_queue.arn
     events              = ["s3:ObjectRestore:Completed"]
     ## OPTIONAL
@@ -424,6 +424,11 @@ resource "aws_lambda_permission" "post_to_catalog_allow_sqs_trigger" {
 # db_deploy - Lambda that deploys database resources
 # ==============================================================================
 resource "aws_lambda_function" "db_deploy" {
+  depends_on = [
+    module.lambda_security_group,
+    var.restore_object_role_arn
+  ]
+
   ## REQUIRED
   function_name = "${var.prefix}_db_deploy"
   role          = var.restore_object_role_arn
@@ -456,6 +461,8 @@ resource "aws_lambda_function" "db_deploy" {
 data "aws_lambda_invocation" "db_migration" {
   depends_on    = [aws_lambda_function.db_deploy]
   function_name = aws_lambda_function.db_deploy.function_name
-  input         = jsonencode({})
+  input         = jsonencode({
+    replacementTrigger = timestamp()
+  })
 }
 ## TODO: Should create null resource to handle password changes ORCA-145
