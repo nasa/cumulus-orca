@@ -115,7 +115,7 @@ module "orca_secretsmanager" {
   ## --------------------------
   ## ORCA Variables
   ## --------------------------
-  ## REQUIRED  
+  ## REQUIRED
   db_admin_password = var.db_admin_password
   db_user_password  = var.db_user_password
   db_host_endpoint  = var.db_host_endpoint
@@ -154,6 +154,9 @@ module "orca_sqs" {
 ## orca_api_gateway - api gateway module
 ## =============================================================================
 module "orca_api_gateway" {
+  depends_on = [
+    module.orca_lambdas
+  ]
   source = "../api-gateway"
   ## --------------------------
   ## Cumulus Variables
