@@ -3,7 +3,7 @@ id: intro-contributing
 title: Contributing to ORCA
 description: Provides high level information on contributing to the ORCA project.
 ---
-# Types of Contributers
+# Types of Contributors
 ## Engagement Levels
 ORCA has several ways to engage with the project and several different
 engagement levels. The various levels are explained below.

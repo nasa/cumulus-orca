@@ -26,7 +26,7 @@ deployment information can be found at the [Docusaurus deployment page](https://
 
 :::important Important
 
-* Users need **Node 12.15.0** installed to perform manaul updates to documentation.
+* Users need **Node 12.15.0** installed to perform manual updates to documentation.
 * The `Deployment_Branch` must = **gh-pages**.
 :::
 

@@ -42,7 +42,7 @@ resources you have in AWS.
 
 For more information, see the [AWS User Guide](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html).
 
-### Cloud Nofification Mechanism (CNM)
+### Cloud Notification Mechanism (CNM)
 An interface mechanism to support cloud-based ingest messaging. For more
 information, see [PO.DAAC's CNM Schema](https://github.com/podaac/cloud-notification-message-schema).
 
