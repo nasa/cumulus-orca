@@ -66,7 +66,6 @@ The metadata objects include the following.
 The following provides the potential metadata attributes that need to be captured
 for each object in order to properly filter and provide information back to Cumulus
 for reconciliation and Operator investigation of discrepancies.
-
 A draft schema for how the objects would interact and be tied together can be
 seen below.
 
@@ -178,7 +177,7 @@ capture the total versions available for the file.
 At a minimum, the following metadata should be returned back to Cumulus upon a
 successful query for reconciliation return from ORCA. The data below is what
 is needed for reconciliation comparison and general metadata that may be needed
-by the end user to perform analysis on discrepencies.
+by the end user to perform analysis on discrepancies.
 
 - Provider ID (providerId)
 - Collection ID (collectionId)
@@ -237,7 +236,7 @@ database and glacier on a file version when doing a recovery.
 
 Some items we will need to think about include managing paging (start/stop) for
 large returns and limiting size of the message across the wire.
-Additionaly, results should be ordered by granule_id.
+Additionally, results should be ordered by granule_id.
 
 
 ### Potential ORCA Reconciliation Data Reporting Architecture
@@ -285,7 +284,7 @@ is used to copy data to the ORCA archive. Based on initial research located
 [here](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.copy),
 the `s3.copy` command does not return any information. See the test performed
 below. Because of this, we will likely need to perform a listing on the object to
-get additional information like the S3 object vversion as seen in the sample below.
+get additional information like the S3 object version as seen in the sample below.
 Some items to consider when looking at the options for retrieving the additional
 metadata include:
 - *speed* - How fast can I get the needed metadata?
@@ -412,7 +411,7 @@ installations that are older than or equal to v3.x, a new workflow will need to
 be created to back populate the ORCA metadata catalog. Ideally, this workflow
 would be kicked off as part of the ORCA installation and/or migration.
 
-As a general breakdown of the flow, the Lambda or Worflow will need to do the
+As a general breakdown of the flow, the Lambda or Workflow will need to do the
 following:
 
 1. Query Cumulus looking for Collections configured for ORCA.
@@ -438,7 +437,7 @@ determine if this is needed.
 
 After discussions with the [ORCA Working Group](https://wiki.earthdata.nasa.gov/display/CUMULUS/ORCA+Working+Group)
 during the [June meeting](https://wiki.earthdata.nasa.gov/display/CUMULUS/2021-06-02+ORCA+Meeting+Notes)
-the concept above was discussed. The general consensus from the group was that repopulation
+the concept above was discussed. The general consensus from the group was that re-population
 of ORCA through a standalone workflow similar to the items laid out in the
 [manual run](#manually-run-orca-ingest-workflows) was the best option. In addition,
 the question of whether the back population method described above was a
@@ -562,7 +561,7 @@ of the archive based on reconciliation results.
 ### Getting a Listing from AWS S3
 
 To get a file listing of an S3 bucket, the [list_objects_v2 method](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.list_objects_v2)
-can be used from the boto3 library. An example of the useage can be seen below.
+can be used from the boto3 library. An example of the usage can be seen below.
 Some notable items if this library is used includes the following.
 - Only a max of 1000 objects are returned per call. Additional logic will be needed to page through and get all of the results.
 - The listing can be filtered by prefix. Possibly some room here to add configuration to look at the collection lever if a collection can be denoted by prefix.
@@ -676,16 +675,16 @@ sampling of attributes that may be needed. Based on design and implementation,
 additional attributes may be required. This table, in particular may need additional
 items for managing jobs.
 
-| Attribute Name          | Data Type    | Description                                 | Notable Items   |
-| ----------------------- | ------------ | ------------------------------------------- | --------------- |
-| id                      | `int2`       | Unique Job ID.                              | Primary Key     |
-| orca_archive_location   | `string`     | ORCA S3 Glacier bucket the file resides in. | Location in S3. |
-| status_id               | `int8`       | Current status of the job.                  | Generally reflect the stages of reconciliation. |
-| inventory_creation_time | `timestampz` | Time from the s3 inventory manifest         | Cannot be NULL  |
-| start_time              | `timestamptz`| Start time of the job.                      | Cannot be NULL  |
-| last_update             | `timestamptz`| Last time the status was updated.           | Cannot be NULL  |
-| end_time                | `timestamptz`| End time of the job.                        | NULLABLE column |
-| error_message           | `string`     | Job error message in cases of failure.      | NULLABLE column |
+| Attribute Name          | Data Type    | Description                                          | Notable Items   |
+| ----------------------- | ------------ | ---------------------------------------------------- | --------------- |
+| id                      | `int2`       | Unique Job ID.                                       | Primary Key     |
+| orca_archive_location   | `string`     | ORCA S3 Glacier bucket the reconciliation targets.   | Location in S3. |
+| status_id               | `int8`       | Current status of the job.                           | Generally reflect the stages of reconciliation. |
+| inventory_creation_time | `timestamptz`| Inventory report creation time from the s3 manifest. | Cannot be NULL  |
+| start_time              | `timestamptz`| Start time of the job.                               | Cannot be NULL  |
+| last_update             | `timestamptz`| Last time the status was updated.                    | Cannot be NULL  |
+| end_time                | `timestamptz`| End time of the job.                                 | NULLABLE column |
+| error_message           | `string`     | Job error message in cases of failure.               | NULLABLE column |
 
 
 #### S3 Inventory Temporary Table reconcile_s3_objects

@@ -426,19 +426,19 @@ Partitions should be placed around orca_archive_location, followed by indexing o
 <Column id="99" name="orca_etag" type="text" length="25" nulls="false">
 <CP name="COMMENTS">etag of the object as reported in the ORCA catalog.</CP>
 </Column>
-<Column id="100" name="s3_etag" type="text" length="25" nulls="true">
+<Column id="100" name="s3_etag" type="text" length="25" nulls="false">
 <CP name="COMMENTS">etag of the object as reported in the S3 bucket.</CP>
 </Column>
 <Column id="101" name="orca_last_update" type="timestamp with time zone" length="25" nulls="false">
 <CP name="COMMENTS">Last update of the object as reported in the ORCA catalog.</CP>
 </Column>
-<Column id="102" name="s3_last_update" type="timestamp with time zone" length="25" nulls="true">
+<Column id="102" name="s3_last_update" type="timestamp with time zone" length="25" nulls="false">
 <CP name="COMMENTS">Last update of the object as reported in the S3 bucket.</CP>
 </Column>
 <Column id="103" name="orca_size" type="int8" length="25" nulls="false">
 <CP name="COMMENTS">Size in bytes of the object as reported in the ORCA catalog.</CP>
 </Column>
-<Column id="104" name="s3_size" type="int8" length="25" nulls="true">
+<Column id="104" name="s3_size" type="int8" length="25" nulls="false">
 <CP name="COMMENTS">Size in bytes of the object as reported in the S3 bucket.</CP>
 </Column>
 <Column id="105" name="discrepancy_type" type="text" length="25" nulls="false">
