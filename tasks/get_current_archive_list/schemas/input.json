@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/get_current_archive_list/schemas/input.json",
+  "title": "get_current_archive_list Lambda Config",
+  "description": "The input for the get_current_archive_list Lambda.",
+  "type": "object",
+  "properties": {
+    "Records": {
+      "type": "array",
+      "description": "A list of dicts from SQS. TODO: Flesh out once we have architecture figured out."
+    }
+  },
+  "required": [
+    "Records"
+  ]
+}
