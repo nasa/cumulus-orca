@@ -520,10 +520,7 @@ Description: ORCA metadata storage</Text>
 <Constraint table="7" name="PK_orca_status" type="PrimKey">
 <ConstraintColumn id="8"/>
 </Constraint>
-<Constraint table="7" name="UNIQUE_orca_status_1" type="Unique">
-<ConstraintColumn id="9"/>
-</Constraint>
-<Constraint table="7" name="UNIQUE_recovery_status_1" type="Unique">
+<Constraint table="7" name="UNIQUE_recovery_status_value" type="Unique">
 <ConstraintColumn id="9"/>
 </Constraint>
 <Constraint table="10" name="PK_recovery_file" type="PrimKey">
@@ -559,30 +556,27 @@ Description: ORCA metadata storage</Text>
 <ConstraintColumn id="41"/>
 <ConstraintColumn id="43"/>
 </Constraint>
-<Constraint table="59" name="PK_reconcile_jobs_1" type="PrimKey">
+<Constraint table="59" name="PK_reconcile_jobs" type="PrimKey">
 <ConstraintColumn id="60"/>
 </Constraint>
 <Constraint table="59" name="CHECK_reconcile_jobs_status" type="Check" condition="status in ('pending', 'getting S3 list', 'finding orphans', 'finding mismatches', 'error', 'complete')"/>
-<Constraint table="68" name="PK_reconcile_catalog_mismatch_report_1" type="PrimKey">
+<Constraint table="68" name="PK_reconcile_catalog_mismatch_report" type="PrimKey">
 <ConstraintColumn id="69"/>
 <ConstraintColumn id="70"/>
 <ConstraintColumn id="71"/>
 <ConstraintColumn id="73"/>
 </Constraint>
-<Constraint table="77" name="PK_reconcile_orphan_report_1" type="PrimKey">
+<Constraint table="77" name="PK_reconcile_orphan_report" type="PrimKey">
 <ConstraintColumn id="78"/>
 <ConstraintColumn id="79"/>
 </Constraint>
 <Constraint table="89" name="PK_orca_status_1" type="PrimKey">
 <ConstraintColumn id="90"/>
 </Constraint>
-<Constraint table="89" name="UNIQUE_orca_status_2" type="Unique">
+<Constraint table="89" name="UNIQUE_reconcile_status_value" type="Unique">
 <ConstraintColumn id="91"/>
 </Constraint>
-<Constraint table="89" name="UNIQUE_reconcile_status_2" type="Unique">
-<ConstraintColumn id="91"/>
-</Constraint>
-<Constraint table="92" name="PK_reconcile_catalog_mismatch_report_2" type="PrimKey">
+<Constraint table="92" name="PK_reconcile_catalog_mismatch_report" type="PrimKey">
 <ConstraintColumn id="93"/>
 <ConstraintColumn id="94"/>
 <ConstraintColumn id="95"/>
