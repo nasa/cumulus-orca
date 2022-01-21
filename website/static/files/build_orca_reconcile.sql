@@ -68,10 +68,10 @@ BEGIN
   COMMENT ON COLUMN reconcile_s3_objects.job_id IS 'Job the S3 listing is a part of for the comparison. Foreign key to the reconcile jobs table.';
   COMMENT ON COLUMN reconcile_s3_objects.orca_archive_location IS 'ORCA S3 Glacier bucket name where the file is stored.';
   COMMENT ON COLUMN reconcile_s3_objects.key_path IS 'Full path and file name of the object in the S3 bucket.';
-  COMMENT ON COLUMN reconcile_s3_objects.etag IS 'AWS etag value from the S3 list command.';
-  COMMENT ON COLUMN reconcile_s3_objects.last_update IS 'AWS Last Update from the S3 list command.';
-  COMMENT ON COLUMN reconcile_s3_objects.size_in_bytes IS 'AWS size of the file in bytes from the S3 list command.';
-  COMMENT ON COLUMN reconcile_s3_objects.storage_class IS 'AWS storage class the object is in from the S3 list command.';
+  COMMENT ON COLUMN reconcile_s3_objects.etag IS 'AWS etag value from the s3 inventory report.';
+  COMMENT ON COLUMN reconcile_s3_objects.last_update IS 'AWS Last Update from the s3 inventory report.';
+  COMMENT ON COLUMN reconcile_s3_objects.size_in_bytes IS 'AWS size of the file in bytes from the s3 inventory report.';
+  COMMENT ON COLUMN reconcile_s3_objects.storage_class IS 'AWS storage class the object is in from the s3 inventory report.';
   COMMENT ON COLUMN reconcile_s3_objects.delete_marker IS 'Set to `True` if object is a delete marker.';
 
 
