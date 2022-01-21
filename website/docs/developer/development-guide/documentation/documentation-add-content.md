@@ -18,7 +18,7 @@ section.
 ```yaml
 ---
 id: doc-unique-id    # Unique id for this document.
-title: Title Of Doc  # This shows up as the title and sidbar refrence.
+title: Title Of Doc  # This shows up as the title and sidebar reference.
 desc: Breif description of the document
 ---
 ```
@@ -62,7 +62,7 @@ builds to break badly.
 ```yaml
 ---
 id: doc-unique-id    # Unique id for this document.
-title: Title Of Doc  # This shows up as the title and sidbar refrence.
+title: Title Of Doc  # This shows up as the title and sidbar reference.
 desc: Breif description of the document
 ---
 ```

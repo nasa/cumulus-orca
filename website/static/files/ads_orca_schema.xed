@@ -31,7 +31,7 @@
 <Storage name="External" value="false"/>
 </Table>
 <Table id="7" name="recovery_status" schema="orca" database="orca" background="16777165">
-<Text>Refrence table for valid status values and status order.</Text>
+<Text>Reference table for valid status values and status order.</Text>
 <Column id="8" name="id" type="int2" length="0" nulls="false">
 <CP name="COMMENTS">Status ID</CP>
 </Column>
@@ -139,7 +139,7 @@
 <CP name="COMMENTS">Internal orca granule ID pseudo key</CP>
 </Column>
 <Column id="30" name="collection_id" type="text" length="25" nulls="false">
-<CP name="COMMENTS">Collection ID from Cumulus that refrences the Collections table.</CP>
+<CP name="COMMENTS">Collection ID from Cumulus that references the Collections table.</CP>
 </Column>
 <Column id="31" name="cumulus_granule_id" type="text" length="25" nulls="false">
 <CP name="COMMENTS">Granule ID from Cumulus</CP>
@@ -173,7 +173,7 @@
 <CP name="COMMENTS">Internal ORCA file ID</CP>
 </Column>
 <Column id="38" name="granule_id" type="int8" length="25" nulls="false">
-<CP name="COMMENTS">Granule that the file belongs to refrences the internal ORCA granule ID.</CP>
+<CP name="COMMENTS">Granule that the file belongs to references the internal ORCA granule ID.</CP>
 </Column>
 <Column id="39" name="name" type="text" length="25" nulls="false">
 <CP name="COMMENTS">Name of the file including extension</CP>
@@ -217,7 +217,7 @@
 <Storage name="External" value="false"/>
 </Table>
 <Table id="49" name="provider_collection_xref" schema="orca" database="orca" background="16777165">
-<Text>Cross refrence table that ties a collection and provider together and resolves the many to many relationship.</Text>
+<Text>Cross reference table that ties a collection and provider together and resolves the many to many relationship.</Text>
 <Column id="50" name="provider_id" type="text" length="25" nulls="false">
 <CP name="COMMENTS">Provider ID from the providers table.</CP>
 </Column>
@@ -303,7 +303,7 @@
 <Table id="67" name="reconcile_catalog_mismatch_report" schema="orca" database="orca" background="16777165">
 <Text>Table that identifies objects that exist in the ORCA catalog and either do not exist in the ORCA S3 bucket or have mismatched values from the s3 objects table.</Text>
 <Column id="68" name="job_id" type="int8" length="25" nulls="false">
-<CP name="COMMENTS">Job the mismatch or missing granule was foundin. Refrences the reconcile_job table.</CP>
+<CP name="COMMENTS">Job the mismatch or missing granule was foundin. References the reconcile_job table.</CP>
 </Column>
 <Column id="69" name="collection_id" type="text" length="25" nulls="false">
 <CP name="COMMENTS">Cumulus Collection ID value from the ORCA catalog.</CP>
@@ -358,7 +358,7 @@
 <Table id="82" name="reconcile_orphan_report" schema="orca" database="orca" background="16777165">
 <Text>Table that identifies objects in the ORCA S3 Glacier bucket that are not in the ORCA catalog from the internal reconciliation job.</Text>
 <Column id="83" name="job_id" type="int8" length="25" nulls="false">
-<CP name="COMMENTS">Associates the orphaned file to a internal reconcilation job. Refrences the reconcile jobs table.</CP>
+<CP name="COMMENTS">Associates the orphaned file to a internal reconcilation job. References the reconcile jobs table.</CP>
 </Column>
 <Column id="84" name="orca_archive_location" type="text" length="25" nulls="false">
 <CP name="COMMENTS">ORCA S3 Glacier bucket the orphan was found in. Value is obtained from the reconcile_s3_objects (orca_archive_location) column.</CP>

@@ -13,7 +13,7 @@ BEGIN
     CONSTRAINT UNIQUE_reconcile_status_value UNIQUE (value),
     CONSTRAINT CHECK_reconcile_jobs_status CHECK status in ('pending', 'getting S3 list', 'finding orphans', 'finding mismatches', 'error', 'complete')
   );
-  COMMENT ON TABLE reconcile_status IS 'Refrence table for valid status values and status order.';
+  COMMENT ON TABLE reconcile_status IS 'Reference table for valid status values and status order.';
   COMMENT ON COLUMN reconcile_status.id IS 'Status ID';
   COMMENT ON COLUMN reconcile_status.value IS 'Human readable status value';
 
@@ -87,7 +87,7 @@ BEGIN
     CONSTRAINT FK_reconcile_jobs_mismatch_report FOREIGN KEY(job_id) REFERENCES reconcile_jobs(id)
   );
   COMMENT ON TABLE reconcile_catalog_mismatch_report IS 'Table that identifies objects that have mismatched values between the Orca catalog and the s3 objects table.';
-  COMMENT ON COLUMN reconcile_catalog_mismatch_report.job_id IS 'Job the mismatch or missing granule was foundin. Refrences the reconcile_job table.';
+  COMMENT ON COLUMN reconcile_catalog_mismatch_report.job_id IS 'Job the mismatch or missing granule was foundin. References the reconcile_job table.';
   COMMENT ON COLUMN reconcile_catalog_mismatch_report.collection_id IS 'Cumulus Collection ID value from the ORCA catalog.';
   COMMENT ON COLUMN reconcile_catalog_mismatch_report.granule_id IS 'Cumulus granuleID value from the ORCA catalog.';
   COMMENT ON COLUMN reconcile_catalog_mismatch_report.filename IS 'Filename of the object from the ORCA catalog.';
@@ -112,7 +112,7 @@ BEGIN
     CONSTRAINT FK_reconcile_jobs_orphan_report FOREIGN KEY(job_id) REFERENCES reconcile_jobs(id)
   );
   COMMENT ON TABLE reconcile_orphan_report IS 'Table that identifies objects in the ORCA S3 Glacier bucket that are not in the ORCA catalog from the internal reconciliation job.';
-  COMMENT ON COLUMN reconcile_orphan_report.job_id IS 'Associates the orphaned file to a internal reconcilation job. Refrences the reconcile jobs table.';
+  COMMENT ON COLUMN reconcile_orphan_report.job_id IS 'Associates the orphaned file to a internal reconcilation job. References the reconcile jobs table.';
   COMMENT ON COLUMN reconcile_orphan_report.key_path IS 'Key that contains the path and file name. Value is obtained from the reconcile_s3_objects (key_path) column.';
   COMMENT ON COLUMN reconcile_orphan_report.etag IS 'AWS Etag of the object. Value is obtained from the reconcile_s3_objects (etag) column.';
   COMMENT ON COLUMN reconcile_orphan_report.last_update IS 'AWS last update of the object. Value is obtained from the reconcile_s3_objects (lst_update) column.';
@@ -133,7 +133,7 @@ BEGIN
     CONSTRAINT FK_reconcile_jobs_zombie_report FOREIGN KEY(job_id) REFERENCES reconcile_jobs(id)
   );
   COMMENT ON TABLE reconcile_zombie_report IS 'Table that identifies objects that exist in the ORCA catalog and do not exist in the ORCA S3 bucket.';
-  COMMENT ON COLUMN reconcile_zombie_report.job_id IS 'Job the mismatch or missing granule was foundin. Refrences the reconcile_job table.';
+  COMMENT ON COLUMN reconcile_zombie_report.job_id IS 'Job the mismatch or missing granule was foundin. References the reconcile_job table.';
   COMMENT ON COLUMN reconcile_zombie_report.collection_id IS 'Cumulus Collection ID value from the ORCA catalog.';
   COMMENT ON COLUMN reconcile_zombie_report.granule_id IS 'Cumulus granuleID value from the ORCA catalog.';
   COMMENT ON COLUMN reconcile_zombie_report.filename IS 'Filename of the object from the ORCA catalog.';
