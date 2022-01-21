@@ -680,7 +680,7 @@ items for managing jobs.
 | ----------------------- | ------------ | ------------------------------------------- | --------------- |
 | id                      | `int2`       | Unique Job ID.                              | Primary Key     |
 | orca_archive_location   | `string`     | ORCA S3 Glacier bucket the file resides in. | Location in S3. |
-| status_id               | `int8`       | Current status of the job.                  | Generally reflect the stages of reconciliation. |  TODO: Switch to int/string pairs
+| status_id               | `int8`       | Current status of the job.                  | Generally reflect the stages of reconciliation. |
 | inventory_creation_time | `timestampz` | Time from the s3 inventory manifest         | Cannot be NULL  |
 | start_time              | `timestamptz`| Start time of the job.                      | Cannot be NULL  |
 | last_update             | `timestamptz`| Last time the status was updated.           | Cannot be NULL  |
@@ -723,7 +723,7 @@ reporting results.
 | size_in_bytes | `int8`    | Size key value from the S3 listing.       | |
 | storage_class | `string`  | StorageClass key value from the S3 listing. | |
 
-#### Internal Reconciliation Reporting Table S3 Missing reconcile_zombie_report
+#### Internal Reconciliation Reporting Table S3 Missing reconcile_phantom_report
 
 This table captures files that have records in the orca catalog, but are missing from S3.
 These files may have been deleted outside or a proper deletion flow, and may need to have their catalog entries manually cleared.

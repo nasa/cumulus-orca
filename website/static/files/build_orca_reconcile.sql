@@ -9,7 +9,7 @@ BEGIN
   CREATE TABLE reconcile_status  ( 
     id   	int2 NOT NULL,
     value	text NOT NULL,
-    CONSTRAINT PK_orca_status PRIMARY KEY(id),
+    CONSTRAINT PK_reconcile_status PRIMARY KEY(id),
     CONSTRAINT UNIQUE_reconcile_status_value UNIQUE (value),
     CONSTRAINT CHECK_reconcile_jobs_status CHECK status in ('pending', 'getting S3 list', 'finding orphans', 'finding mismatches', 'error', 'complete')
   );
@@ -120,7 +120,7 @@ BEGIN
   COMMENT ON COLUMN reconcile_orphan_report.storage_class IS 'ASWS storage class the object is in. Value is obtained from the reconcile_s3_objects (storage_class) column.';
 
 
-  CREATE TABLE reconcile_zombie_report  ( 
+  CREATE TABLE reconcile_phantom_report  ( 
     job_id          	int8 NOT NULL,
     collection_id   	text NOT NULL,
     granule_id      	text NOT NULL,
@@ -130,17 +130,17 @@ BEGIN
     orca_last_update	timestamp with time zone NOT NULL,
     orca_size       	int8 NOT NULL,
     CONSTRAINT PK_reconcile_catalog_mismatch_report PRIMARY KEY(job_id,collection_id,granule_id,key_path),
-    CONSTRAINT FK_reconcile_jobs_zombie_report FOREIGN KEY(job_id) REFERENCES reconcile_jobs(id)
+    CONSTRAINT FK_reconcile_jobs_phantom_report FOREIGN KEY(job_id) REFERENCES reconcile_jobs(id)
   );
-  COMMENT ON TABLE reconcile_zombie_report IS 'Table that identifies objects that exist in the ORCA catalog and do not exist in the ORCA S3 bucket.';
-  COMMENT ON COLUMN reconcile_zombie_report.job_id IS 'Job the mismatch or missing granule was foundin. References the reconcile_job table.';
-  COMMENT ON COLUMN reconcile_zombie_report.collection_id IS 'Cumulus Collection ID value from the ORCA catalog.';
-  COMMENT ON COLUMN reconcile_zombie_report.granule_id IS 'Cumulus granuleID value from the ORCA catalog.';
-  COMMENT ON COLUMN reconcile_zombie_report.filename IS 'Filename of the object from the ORCA catalog.';
-  COMMENT ON COLUMN reconcile_zombie_report.key_path IS 'key path and filename of the object in the ORCA catalog.';
-  COMMENT ON COLUMN reconcile_zombie_report.orca_etag IS 'etag of the object as reported in the ORCA catalog.';
-  COMMENT ON COLUMN reconcile_zombie_report.orca_last_update IS 'Last update of the object as reported in the ORCA catalog.';
-  COMMENT ON COLUMN reconcile_zombie_report.orca_size IS 'Size in bytes of the object as reported in the ORCA catalog.';
+  COMMENT ON TABLE reconcile_phantom_report IS 'Table that identifies objects that exist in the ORCA catalog and do not exist in the ORCA S3 bucket.';
+  COMMENT ON COLUMN reconcile_phantom_report.job_id IS 'Job the mismatch or missing granule was foundin. References the reconcile_job table.';
+  COMMENT ON COLUMN reconcile_phantom_report.collection_id IS 'Cumulus Collection ID value from the ORCA catalog.';
+  COMMENT ON COLUMN reconcile_phantom_report.granule_id IS 'Cumulus granuleID value from the ORCA catalog.';
+  COMMENT ON COLUMN reconcile_phantom_report.filename IS 'Filename of the object from the ORCA catalog.';
+  COMMENT ON COLUMN reconcile_phantom_report.key_path IS 'key path and filename of the object in the ORCA catalog.';
+  COMMENT ON COLUMN reconcile_phantom_report.orca_etag IS 'etag of the object as reported in the ORCA catalog.';
+  COMMENT ON COLUMN reconcile_phantom_report.orca_last_update IS 'Last update of the object as reported in the ORCA catalog.';
+  COMMENT ON COLUMN reconcile_phantom_report.orca_size IS 'Size in bytes of the object as reported in the ORCA catalog.';
 
 COMMIT;
 
