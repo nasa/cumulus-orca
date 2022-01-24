@@ -62,9 +62,10 @@ BEGIN
   , storage_class        	text NOT NULL
   , delete_marker        	bool NOT NULL
   , CONSTRAINT FK_reconcile_jobs_s3_objects FOREIGN KEY(job_id) REFERENCES reconcile_jobs(id)
+  , CONSTRAINT PK_reconcile_s3_objects PRIMARY KEY(orca_archive_location, key_path)
     ) PARTITION BY LIST (orca_archive_location);
   COMMENT ON TABLE reconcile_s3_objects IS 'Temporary table that holds the listing from the ORCA S3 bucket to use for comparisons against the ORCA catalog.
-  Partitions should be placed around orca_archive_location, followed by indexing on key_path once data is ingested.';
+  Partitions should be placed around orca_archive_location.';
   COMMENT ON COLUMN reconcile_s3_objects.job_id IS 'Job the S3 listing is a part of for the comparison. Foreign key to the reconcile jobs table.';
   COMMENT ON COLUMN reconcile_s3_objects.orca_archive_location IS 'ORCA S3 Glacier bucket name where the file is stored.';
   COMMENT ON COLUMN reconcile_s3_objects.key_path IS 'Full path and file name of the object in the S3 bucket.';
