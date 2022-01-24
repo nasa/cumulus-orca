@@ -15,7 +15,7 @@ Lambda functions can now be deployed as container images using Docker instead of
 - you can now package and deploy Lambda functions as container images of up to 10 GB in size compared to only 250MB in case of lambda deployment package size. 
 - preferable for data-heavy or dependency-heavy applications.
 - The Lambda service provides a variety of base image options with pre-installed runtimes that will be patched and maintained by AWS.
-- There is no additional cost to use the container feature but you have to pay for the ECR repository.
+- Once deployed, containerized lambdas have no additional cost compared to zipped lambdas except the cost of using ECR repository.
 
 ### Cons
 - Container support requires your Lambda function code point to an ECR Repo URI which means that repo also has to be maintained. This also includes additional cost to use the ECR service.
@@ -44,10 +44,12 @@ There are a few configuration that needs to be added if the lambda is deployed f
 
 
 ## Creating a prototype
-Creating or updating the function is done by building a Docker image, uploading the new version to ECR and deploying/updating the Lambda function to point to the newly uploaded image using terraform. Docker CLI has been used to perform the task.
+
+AWS Elastic Container Registry(ECR) is used to store container images for lambdas and is fully managed by AWS. It hosts the images in a highly available and scalable architecture, allowing developers to reliably deploy containers for their applications. See this [link](https://aws.amazon.com/ecr/) for additional information on ECR.
+Creating or updating the function is done by building a Docker image, uploading the new version to ECR and deploying/updating the Lambda function to point to the newly uploaded image using terraform. Docker CLI has been used to build, tag and push the container image to ECR.
 
 The steps for prototyping lambda container are as follows:
-- Create or use an existing AWS ECR repository to store the Docker image. 
+- Create or locate an AWS ECR repository for storing the Docker images. 
 - Create the Dockerfile and then build, tag and push the image to the above ECR repository.
 - Update terraform configuration of the lambda function to deploy it as container.
 
@@ -83,7 +85,7 @@ CMD [ "test.hambda_handler" ]
 
 ```
 
-3. The next steps are to build, tag and push the image to the ECR repo. You can build the image which is named  `prototype-lambda-image` in this case using:
+3. The next steps are to build, tag and push the image to the ECR repo. You can build a new image named  `prototype-lambda-image` in this case using:
 
 ```bash
 docker build -t prototype-lambda-image .
@@ -98,7 +100,7 @@ Next, login to the ECR repo using:
 ```bash
 aws ecr get-login-password --region <YOUR_REGION> | docker login --username AWS --password<YOUR_PASSWORD>
 ```
-Password can be seen by logging in to AWS console ECR repo and checking the push comamnds.
+Password can be seen by logging in to AWS console ECR repo and clicking on the `Push commands` button. This will show details of the docker CLI commands needed to build, tag and push the image to ECR. Check this [link](https://docs.aws.amazon.com/AmazonECR/latest/userguide/docker-push-ecr-image.html) for additional information on pushing image to ECR.
 
 Finally, push the image to ECR using:
 
@@ -124,10 +126,10 @@ Using the steps above, a prototype has been created in NGAP AWS sandbox account 
 
 
 ## Future directions
-Currently, the only option to store the Docker iamge for lambda containers is AWS ECR repository. If github is supported in the future, then using that approach will be a good direction to go.
+Currently, the only option to store the Docker image for lambda containers is AWS ECR repository. If github is supported in the future, then using that approach will be a good direction to go.
 
 A few possible discussion items:
-- Disucss with NGAP team if the docker images can be stored in a public ECR repo.
+- Discuss with NGAP team if the docker images can be stored in a public ECR repo.
 - Check if github can be used to store the image (currently I have not seen any example online)
 
 ##### References
