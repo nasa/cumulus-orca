@@ -7,7 +7,37 @@
   "properties": {
     "Records": {
       "type": "array",
-      "description": "A list of dicts from SQS. TODO: Flesh out once we have architecture figured out."
+      "description": "A list of dicts from SQS.",
+      "items": {
+        "required": ["body"],
+        "properties": {
+          "body": {
+            "description": "A n s3 event passed in by SQS.",
+            "type": "object",
+            "required": ["s3"],
+            "properties": {
+              "s3": {
+                "type": "object",
+                "description": "Details regarding the s3 event.",
+                "required": ["object"],
+                "properties": {
+                  "object": {
+                    "type": "object",
+                    "description": "Details about the file that the event occurred on.",
+                    "required": ["key"],
+                    "properties": {
+                      "key": {
+                        "type": "string",
+                        "description": "The full path within the s3 bucket to the file that the event occurred on."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "required": [
