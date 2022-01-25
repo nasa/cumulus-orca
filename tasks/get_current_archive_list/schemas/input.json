@@ -9,28 +9,43 @@
       "type": "array",
       "description": "A list of dicts from SQS.",
       "items": {
-        "required": ["body"],
+        "description": "An s3 event passed in by SQS.",
+        "type": "object",
+        "required": [
+          "s3"
+        ],
         "properties": {
-          "body": {
-            "description": "A n s3 event passed in by SQS.",
+          "s3": {
             "type": "object",
-            "required": ["s3"],
+            "description": "Details regarding the s3 event.",
+            "required": [
+              "bucket",
+              "object"
+            ],
             "properties": {
-              "s3": {
+              "bucket": {
+                "description": "Metadata for the bucket the event occurred in.",
                 "type": "object",
-                "description": "Details regarding the s3 event.",
-                "required": ["object"],
+                "required": [
+                  "name"
+                ],
                 "properties": {
-                  "object": {
-                    "type": "object",
-                    "description": "Details about the file that the event occurred on.",
-                    "required": ["key"],
-                    "properties": {
-                      "key": {
-                        "type": "string",
-                        "description": "The full path within the s3 bucket to the file that the event occurred on."
-                      }
-                    }
+                  "name": {
+                    "type": "string",
+                    "description": "The name of the bucket the event occurred in."
+                  }
+                }
+              },
+              "object": {
+                "type": "object",
+                "description": "Details about the file that the event occurred on.",
+                "required": [
+                  "key"
+                ],
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "description": "The full path within the s3 bucket to the file that the event occurred on."
                   }
                 }
               }
