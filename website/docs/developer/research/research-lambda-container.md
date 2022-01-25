@@ -18,7 +18,7 @@ Lambda functions can now be deployed as container images using Docker instead of
 - Once deployed, containerized lambdas have no additional cost compared to zipped lambdas except the cost of using ECR repository.
 
 ### Cons
-- Container support requires your Lambda function code point to an ECR Repo URI which means that repo also has to be maintained. This also includes additional cost to use the ECR service.
+- Container support requires your Lambda function code point to an ECR Repo URI which means that repo also has to be maintained.
 - need additional work to create the Dockerfile, tag and push the image to ECR repo.
 - Need additional work for deleting older images under the ECR repository.
 
@@ -66,7 +66,7 @@ aws ecr create-repository \
     --repository-name <YOUR_REPOSITORY_NAME>
 ```
 
-2. Create a project directory <MY_DIR>. Under the directory, add  your script (`test.py` in this case) and `requirements.txt`to install any dependencies. Then  create a `Dockerfile` that creates the image. An example of a Dockerfile used for prototying a lambda having `test.py` file is shown.
+2. Create a project directory. Under that directory, add  your script (`test.py` in this case) and `requirements.txt`to install any dependencies. Then  create a `Dockerfile` that creates the image. An example of a Dockerfile used for prototying a lambda having `test.py` file is shown  below.
 
 ```yaml
 FROM public.ecr.aws/lambda/python:3.8
@@ -85,7 +85,7 @@ CMD [ "test.hambda_handler" ]
 
 ```
 
-3. The next steps are to build, tag and push the image to the ECR repo. You can build a new image named  `prototype-lambda-image` in this case using:
+3. The next steps are to build, tag and push the image to the ECR repo. You can build a new image named `prototype-lambda-image` in this case using:
 
 ```bash
 docker build -t prototype-lambda-image .
@@ -93,19 +93,19 @@ docker build -t prototype-lambda-image .
 Once build is successful, tag the image
 
 ```bash
-docker tag prototype-lambda-image:latest <YOUR_ECR_REPO_URI>:latest
+docker tag prototype-lambda-image:<IMAGE_TAG> <YOUR_ECR_REPO_URI>:<IMAGE_TAG>
 ```
 Next, login to the ECR repo using:
 
 ```bash
-aws ecr get-login-password --region <YOUR_REGION> | docker login --username AWS --password<YOUR_PASSWORD>
+aws ecr get-login-password --region <YOUR_REGION> | docker login --username AWS --password-stdin <YOUR_PASSWORD>
 ```
 Password can be seen by logging in to AWS console ECR repo and clicking on the `Push commands` button. This will show details of the docker CLI commands needed to build, tag and push the image to ECR. Check this [link](https://docs.aws.amazon.com/AmazonECR/latest/userguide/docker-push-ecr-image.html) for additional information on pushing image to ECR.
 
 Finally, push the image to ECR using:
 
 ```bash
-docker push <YOUR_ECR_REPO_URI>:latest
+docker push <YOUR_ECR_REPO_URI>:<IMAGE_TAG>
 ```
 
 4. The next step is to deploy the lambda using terraform. Use the following example code to deploy the lambda container:
@@ -113,7 +113,7 @@ docker push <YOUR_ECR_REPO_URI>:latest
 ```terraform
 
 resource "aws_lambda_function" "prototype_lambda" {
-  image_uri     = "<YOUR_ECR_REPO_URI>:latest"  # repo and tag
+  image_uri     = "<YOUR_ECR_REPO_URI>:<IMAGE_TAG>"  # repo and tag
   package_type  = "Image"
   function_name = "prototype-lambda"
   role          = "<YOUR_IAM_ROLE_ARN>"
