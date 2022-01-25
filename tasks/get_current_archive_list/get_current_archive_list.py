@@ -103,7 +103,7 @@ def create_job_sql():
     return text(  # todo: review/create
         # todo: Auto-gen id
         """
-        INSERT INTO reconcile_jobs
+        INSERT INTO reconcile_job
             ("status_id", "start_time", "last_update", "end_time", "orca_archive_location", "error_message")
         VALUES
             (:status_id, :start_time, :last_update, NULL, NULL, NULL)"""
@@ -114,7 +114,7 @@ def update_job_sql():
     return text(  # todo: review
         """
         UPDATE
-            reconcile_jobs
+            reconcile_job
         SET
             status_id = :status_id,
             last_update = :last_update
