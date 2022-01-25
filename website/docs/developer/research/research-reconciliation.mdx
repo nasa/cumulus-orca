@@ -668,7 +668,7 @@ Reference table for valid status values and status order.
 | id             | `int2`    | Status ID.                   | Primary Key     |
 | value          | `string`  | Human readable status value. |  |
 
-#### Internal Reconciliation Jobs Table reconcile_jobs
+#### Internal Reconciliation Jobs Table reconcile_job
 
 This table would capture internal reconciliation job information. Below is a
 sampling of attributes that may be needed. Based on design and implementation,
@@ -687,7 +687,7 @@ items for managing jobs.
 | error_message           | `string`     | Job error message in cases of failure.               | NULLABLE column |
 
 
-#### S3 Inventory Temporary Table reconcile_s3_objects
+#### S3 Inventory Temporary Table reconcile_s3_object
 
 This is a temporary object that would store the listing from the S3 bucket for
 comparison.

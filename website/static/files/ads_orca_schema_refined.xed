@@ -215,7 +215,7 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="50" name="reconcile_s3_objects" schema="orca" database="orca" background="16777165">
+<Table id="50" name="reconcile_s3_object" schema="orca" database="orca" background="16777165">
 <Text>Temporary table that holds the listing from the ORCA S3 bucket to use for comparisons against the ORCA catalog.
 Partitions should be placed around orca_archive_location.</Text>
 <Column id="51" name="job_id" type="int8" length="25" nulls="false">
@@ -253,7 +253,7 @@ Partitions should be placed around orca_archive_location.</Text>
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="59" name="reconcile_jobs" schema="orca" database="orca" background="16777165">
+<Table id="59" name="reconcile_job" schema="orca" database="orca" background="16777165">
 <Text>Manages internal reconciliation job information.</Text>
 <Column id="60" name="id" type="int8" length="25" nulls="false">
 <CP name="COMMENTS">Job ID unique to each internal reconciliation job.</CP>
@@ -333,19 +333,19 @@ Partitions should be placed around orca_archive_location.</Text>
 <CP name="COMMENTS">Associates the orphaned file to a internal reconcilation job. References the reconcile jobs table.</CP>
 </Column>
 <Column id="79" name="key_path" type="text" length="25" nulls="false">
-<CP name="COMMENTS">Key that contains the path and file name. Value is obtained from the reconcile_s3_objects (key_path) column.</CP>
+<CP name="COMMENTS">Key that contains the path and file name. Value is obtained from the reconcile_s3_object (key_path) column.</CP>
 </Column>
 <Column id="80" name="etag" type="text" length="25" nulls="false">
-<CP name="COMMENTS">AWS Etag of the object. Value is obtained from the reconcile_s3_objects (etag) column.</CP>
+<CP name="COMMENTS">AWS Etag of the object. Value is obtained from the reconcile_s3_object (etag) column.</CP>
 </Column>
 <Column id="81" name="last_update" type="timestamp with time zone" length="25" nulls="false">
-<CP name="COMMENTS">AWS last update of the object. Value is obtained from the reconcile_s3_objects (lst_update) column.</CP>
+<CP name="COMMENTS">AWS last update of the object. Value is obtained from the reconcile_s3_object (lst_update) column.</CP>
 </Column>
 <Column id="82" name="size_in_bytes" type="int8" length="25" nulls="false">
-<CP name="COMMENTS">AWS size of the object in bytes. Value is obtained from the reconcile_s3_objects (size) column.</CP>
+<CP name="COMMENTS">AWS size of the object in bytes. Value is obtained from the reconcile_s3_object (size) column.</CP>
 </Column>
 <Column id="83" name="storage_class" type="text" length="25" nulls="false">
-<CP name="COMMENTS">ASWS storage class the object is in. Value is obtained from the reconcile_s3_objects (storage_class) column.</CP>
+<CP name="COMMENTS">ASWS storage class the object is in. Value is obtained from the reconcile_s3_object (storage_class) column.</CP>
 </Column>
 <Storage name="transferTable" value="false"/>
 <Storage name="ValueCompression" value="false"/>
@@ -463,11 +463,11 @@ Partitions should be placed around orca_archive_location.</Text>
 <FK>29</FK>
 <PK>39</PK>
 </Relation>
-<Relation id="108" name="FK_reconcile_jobs_orphan_report" cardinality="-2" identifying="true" nulls="false">
+<Relation id="108" name="FK_reconcile_job_orphan_report" cardinality="-2" identifying="true" nulls="false">
 <FK>60</FK>
 <PK>78</PK>
 </Relation>
-<Relation id="109" name="FK_reconcile_jobs_s3_objects" cardinality="-2" identifying="true" nulls="false">
+<Relation id="109" name="FK_reconcile_job_s3_objects" cardinality="-2" identifying="true" nulls="false">
 <FK>60</FK>
 <PK>51</PK>
 </Relation>
@@ -493,11 +493,11 @@ Partitions should be placed around orca_archive_location.</Text>
 <FK>90</FK>
 <PK>62</PK>
 </Relation>
-<Relation id="115" name="FK_reconcile_jobs_zombie_report" cardinality="-2" identifying="true" nulls="false">
+<Relation id="115" name="FK_reconcile_job_zombie_report" cardinality="-2" identifying="true" nulls="false">
 <FK>60</FK>
 <PK>69</PK>
 </Relation>
-<Relation id="116" name="FK_reconcile_jobs_mismatch_report" cardinality="-2" identifying="true" nulls="false">
+<Relation id="116" name="FK_reconcile_job_mismatch_report" cardinality="-2" identifying="true" nulls="false">
 <FK>60</FK>
 <PK>93</PK>
 </Relation>
@@ -508,7 +508,7 @@ Schema: orca
 
 Description: ORCA metadata storage</Text>
 </Note>
-<Index table="50" name="PK_reconcile_s3_objects" schema="orca" database="orca">
+<Index table="50" name="PK_reconcile_s3_object" schema="orca" database="orca">
 <IndexColumn id="52" sequence="0" ascending="true"/>
 <IndexColumn id="53" sequence="1" ascending="true"/>
 </Index>
@@ -555,10 +555,10 @@ Description: ORCA metadata storage</Text>
 <ConstraintColumn id="41"/>
 <ConstraintColumn id="43"/>
 </Constraint>
-<Constraint table="59" name="PK_reconcile_jobs" type="PrimKey">
+<Constraint table="59" name="PK_reconcile_job" type="PrimKey">
 <ConstraintColumn id="60"/>
 </Constraint>
-<Constraint table="59" name="CHECK_reconcile_jobs_status" type="Check" condition="status in ('pending', 'getting S3 list', 'finding orphans', 'finding mismatches', 'error', 'complete')"/>
+<Constraint table="59" name="CHECK_reconcile_job_status" type="Check" condition="status in ('pending', 'getting S3 list', 'finding orphans', 'finding mismatches', 'error', 'complete')"/>
 <Constraint table="68" name="PK_reconcile_catalog_mismatch_report" type="PrimKey">
 <ConstraintColumn id="69"/>
 <ConstraintColumn id="70"/>
