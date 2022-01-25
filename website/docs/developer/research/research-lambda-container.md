@@ -8,6 +8,10 @@ description: Research Notes on
 
 Lambda functions can now be deployed as container images using Docker instead of zip files. This research webpage discusses how lambda functions can be prototyped as container and its pros and cons.
 
+## Elastic Container Registry (ECR)
+
+AWS Elastic Container Registry(ECR) is used to store container images for lambdas and is fully managed by AWS. It hosts the images in a highly available and scalable architecture, allowing developers to reliably deploy containers for their applications. See this [link](https://aws.amazon.com/ecr/) for additional information on ECR. Currently, you have to use ECR to store container images for lambdas as it does not support other storage options such as Github, Dockerhub, etc.
+
 ## Pros and Cons of using container for lambdas
 
 ### Pros
@@ -45,7 +49,6 @@ There are a few configuration that needs to be added if the lambda is deployed f
 
 ## Creating a prototype
 
-AWS Elastic Container Registry(ECR) is used to store container images for lambdas and is fully managed by AWS. It hosts the images in a highly available and scalable architecture, allowing developers to reliably deploy containers for their applications. See this [link](https://aws.amazon.com/ecr/) for additional information on ECR.
 Creating or updating the function is done by building a Docker image, uploading the new version to ECR and deploying/updating the Lambda function to point to the newly uploaded image using terraform. Docker CLI has been used to build, tag and push the container image to ECR.
 
 The steps for prototyping lambda container are as follows:
@@ -66,7 +69,7 @@ aws ecr create-repository \
     --repository-name <YOUR_REPOSITORY_NAME>
 ```
 
-2. Create a project directory. Under that directory, add  your script (`test.py` in this case) and `requirements.txt`to install any dependencies. Then  create a `Dockerfile` that creates the image. An example of a Dockerfile used for prototying a lambda having `test.py` file is shown  below.
+2. Create a project directory. Under that directory, add  your script (`test.py` in this case) and `requirements.txt`to install any dependencies. Then  create a `Dockerfile` that creates the image. An example of a Dockerfile used for prototying a lambda having `test.py` file is shown below.
 
 ```yaml
 FROM public.ecr.aws/lambda/python:3.8
