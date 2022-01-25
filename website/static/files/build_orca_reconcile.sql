@@ -30,7 +30,7 @@ BEGIN
 
   -- Create reconcile_job table
   CREATE TABLE IF NOT EXISTS reconcile_job  ( 
-    id                     	int8 NOT NULL
+    id                     	BIGSERIAL NOT NULL
   , orca_archive_location  	text NOT NULL
   , status_id              	int2 NOT NULL
   , inventory_creation_time	timestamp with time zone NOT NULL
