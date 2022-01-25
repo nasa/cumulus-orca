@@ -101,9 +101,9 @@ docker tag prototype-lambda-image:<IMAGE_TAG> <YOUR_ECR_REPO_URI>:<IMAGE_TAG>
 Next, login to the ECR repo using:
 
 ```bash
-aws ecr get-login-password --region <YOUR_REGION> | docker login --username AWS --password-stdin <YOUR_PASSWORD>
+aws ecr get-login-password --region <YOUR_REGION> | docker login --username AWS --password-stdin <YOUR_AWS_ACCOUNT_ID>.dkr.ecr.<YOUR_REGION>.amazonaws.com
 ```
-Password can be seen by logging in to AWS console ECR repo and clicking on the `Push commands` button. This will show details of the docker CLI commands needed to build, tag and push the image to ECR. Check this [link](https://docs.aws.amazon.com/AmazonECR/latest/userguide/docker-push-ecr-image.html) for additional information on pushing image to ECR.
+Check this [link](https://docs.aws.amazon.com/AmazonECR/latest/userguide/docker-push-ecr-image.html) for additional information on pushing image to ECR using Docker CLI.
 
 Finally, push the image to ECR using:
 
