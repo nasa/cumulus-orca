@@ -53,20 +53,17 @@ def task(records: List[Dict[str, Any]], db_connect_info: Dict) -> None:
         # todo: On error, set job status
 
 
-def update_job_with_s3_inventory_in_postgres(report_bucket_name, csv_key_path, job_id: int, engine: Engine) -> int:
+def create_job(engine: Engine) -> int:
     """
-    Deconstructs a record to its components and calls send_values_to_database with the result.
+    Creates the initial status entry for a job.
 
     Args:
-        report_bucket_name: The name of the bucket the csv is located in.
-        csv_key_path: The path of the csv within the report bucket.
-        job_id: The id of the job to associate info with.
         engine: The sqlalchemy engine to use for contacting the database.
 
     Returns: The auto-incremented job_id from the database.
     """
     try:
-        LOGGER.debug(f"Creating reconcile records for job.")
+        LOGGER.debug(f"Creating status for job.")
         with engine.begin() as connection:
             # Within this transaction import the csv and update the job status
             connection.execute(
@@ -108,6 +105,50 @@ def create_job_sql():
         VALUES
             (:status_id, :start_time, :last_update, NULL, NULL, NULL)"""
     )
+
+
+def update_job_with_s3_inventory_in_postgres(report_bucket_name, csv_key_path, job_id: int, engine: Engine):
+    """
+    Deconstructs a record to its components and calls send_values_to_database with the result.
+
+    Args:
+        report_bucket_name: The name of the bucket the csv is located in.
+        csv_key_path: The path of the csv within the report bucket.
+        job_id: The id of the job to associate info with.
+        engine: The sqlalchemy engine to use for contacting the database.
+    """
+    try:
+        LOGGER.debug(f"Creating reconcile records for job {job_id}.")
+        with engine.begin() as connection:
+            # Within this transaction import the csv and update the job status
+            connection.execute(
+                update_job_sql(),
+                [
+                    {
+                        "id": job_id,
+                        "status_id": OrcaStatus.STAGED.value,
+                        "last_update": datetime.now(timezone.utc).isoformat(),
+                        "end_time": None,
+                        "error_message": None,
+                    }
+                ],
+            )
+            # todo: Generate uri from bucket, key, and region https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PostgreSQL.S3Import.html
+            connection.execute(trigger_csv_load_from_s3(), [
+                {
+                    "report_bucket_name": report_bucket_name,
+                    "csv_key_path": csv_key_path,
+                    "region": region
+                }
+            ])
+    except Exception as sql_ex:
+        # Can't use f"" because of '{}' bug in CumulusLogger.
+        LOGGER.error(
+            "Error while updating job '{job_id}': {sql_ex}",
+            job_id=job_id,
+            sql_ex=sql_ex,
+        )
+        raise
 
 
 def update_job_sql():
