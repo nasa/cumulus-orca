@@ -1,0 +1,46 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/perform_orca_reconcile/schemas/input.json",
+    "title": "perform_orca_reconcile Lambda input",
+    "description": "The input for the perform_orca_reconcile Lambda.", 
+        "type": "object",
+        "required": [
+          "jobId",
+          "orca_archive_location"
+        ],
+        "properties": {
+          "jobId": {
+            "type": "string",
+            "description": "The unique ID of the reconciliation job."
+          },
+          "orca_archive_location": {
+            "type": "string",
+            "description": "ORCA S3 Glacier bucket the file resides in."
+          },
+          "key_path": {
+            "type": "string",
+            "description": "Key path that includes the file name from the ORCA File object the file belongs to."
+          },
+          "etag": {
+            "type": "string",
+            "description": "ETag key value from S3 listing."
+          },
+          "last_update": {
+            "type": "string",
+            "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?\\+00:00$",
+            "description": "LastModified key value from the S3 listing."
+          },
+          "size_in_bytes": {
+            "type": "number",
+            "description": "Size key value from the S3 listing."
+          },
+          "storage_class": {
+            "type": "string",
+            "description": "StorageClass key value from the S3 listing."
+          },
+          "delete_marker": {
+            "type": "string",
+            "description": "Set to True if object is a delete marker."
+          }
+        }
+      }
