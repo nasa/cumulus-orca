@@ -758,11 +758,11 @@ process, and should be displayed as such when reporting results.
 | file_name             | `string`  | File name from the ORCA File object the file belongs to. | From Catalog. |
 | key_path              | `string`  | Key path that includes the file name from the ORCA File object the file belongs to. | From Catalog. |
 | orca_etag             | `string`  | Etag value from the ORCA File object the file belongs to. | From Catalog. |
-| s3_etag               | `string`  | ETag key value from S3 listing.           | NULLABLE column |
+| s3_etag               | `string`  | ETag key value from S3 listing.           | |
 | orca_last_update      | `timestamptz` | Last Update value from the ORCA File object the file belongs to. | From Catalog. |
-| s3_last_update        | `timestamptz` | LastModified key value from the S3 listing. | NULLABLE column |
-| orca_size             | `int8`    | Size value from the ORCA File object the file belongs to. | From Catalog. |
-| s3_size               | `int8`    | Size key value from the S3 listing.       | NULLABLE column |
+| s3_last_update        | `timestamptz` | LastModified key value from the S3 listing. | |
+| orca_size_in_bytes    | `int8`    | Size value from the ORCA File object the file belongs to. | From Catalog. |
+| s3_size_in_bytes      | `int8`    | Size key value from the S3 listing.       |  |
 | discrepancy_type      | `string`  | Type of discrepancy encountered like "value x mismatch" | |
 
 

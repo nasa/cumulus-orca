@@ -86,8 +86,8 @@ BEGIN
   , s3_etag                 	text NOT NULL
   , orca_last_update        	timestamp with time zone NOT NULL
   , s3_last_update          	timestamp with time zone NOT NULL
-  , orca_size               	int8 NOT NULL
-  , s3_size                 	int8 NOT NULL
+  , orca_size_in_bytes        int8 NOT NULL
+  , s3_size_in_bytes        	int8 NOT NULL
   , discrepancy_type        	text NOT NULL
   , CONSTRAINT PK_reconcile_catalog_mismatch_report PRIMARY KEY(job_id,collection_id,granule_id,key_path)
   , CONSTRAINT FK_reconcile_job_mismatch_report FOREIGN KEY(job_id) REFERENCES reconcile_job(id)
@@ -103,8 +103,8 @@ BEGIN
   COMMENT ON COLUMN reconcile_catalog_mismatch_report.s3_etag IS 'etag of the object as reported in the S3 bucket.';
   COMMENT ON COLUMN reconcile_catalog_mismatch_report.orca_last_update IS 'Last update of the object as reported in the ORCA catalog.';
   COMMENT ON COLUMN reconcile_catalog_mismatch_report.s3_last_update IS 'Last update of the object as reported in the S3 bucket.';
-  COMMENT ON COLUMN reconcile_catalog_mismatch_report.orca_size IS 'Size in bytes of the object as reported in the ORCA catalog.';
-  COMMENT ON COLUMN reconcile_catalog_mismatch_report.s3_size IS 'Size in bytes of the object as reported in the S3 bucket.';
+  COMMENT ON COLUMN reconcile_catalog_mismatch_report.orca_size_in_bytes IS 'Size in bytes of the object as reported in the ORCA catalog.';
+  COMMENT ON COLUMN reconcile_catalog_mismatch_report.s3_size_in_bytes IS 'Size in bytes of the object as reported in the S3 bucket.';
   COMMENT ON COLUMN reconcile_catalog_mismatch_report.discrepancy_type IS 'Type of discrepancy found during reconciliation.';
 
   CREATE TABLE IF NOT EXISTS reconcile_orphan_report  ( 

@@ -434,10 +434,10 @@
 <Column id="102" name="s3_last_update" type="timestamp with time zone" length="25" nulls="false">
 <CP name="COMMENTS">Last update of the object as reported in the S3 bucket.</CP>
 </Column>
-<Column id="103" name="orca_size" type="int8" length="25" nulls="false">
+<Column id="103" name="orca_size_in_bytes" type="int8" length="25" nulls="false">
 <CP name="COMMENTS">Size in bytes of the object as reported in the ORCA catalog.</CP>
 </Column>
-<Column id="104" name="s3_size" type="int8" length="25" nulls="false">
+<Column id="104" name="s3_size_in_bytes" type="int8" length="25" nulls="false">
 <CP name="COMMENTS">Size in bytes of the object as reported in the S3 bucket.</CP>
 </Column>
 <Column id="105" name="discrepancy_type" type="text" length="25" nulls="false">
@@ -585,69 +585,69 @@ Description: ORCA metadata storage</Text>
 <Place id="84" visible="true">80,150,331,121</Place>
 </Sheet>
 <Sheet name="orca recovery status" id="119" disp_at="true" disp_ph="true" disp_co="true" disp_rn="true" disp_null="true">
-<Place id="112" visible="true" options="427.0,460.0,332.0,89.0,20.0,149.0,341.0,162.0,4,427.0,490.0,400.0,490.0,400.0,230.0,361.0,230.0">509,52,0,0</Place>
 <Place id="117" visible="true">20,20,270,90</Place>
-<Place id="7" visible="true">427,460,332,89</Place>
-<Place id="10" visible="true">818,149,339,232</Place>
 <Place id="111" visible="true" options="427.0,460.0,332.0,89.0,818.3367134489793,149.36470111868806,339.0,232.0,4,759.0,490.0,790.0,490.0,790.0,260.0,818.0,260.0">590,-36,0,0</Place>
+<Place id="112" visible="true" options="427.0,460.0,332.0,89.0,20.0,149.0,341.0,162.0,4,427.0,490.0,400.0,490.0,400.0,230.0,361.0,230.0">509,52,0,0</Place>
+<Place id="7" visible="true">427,460,332,89</Place>
 <Place id="0" visible="true">20,149,341,162</Place>
 <Place id="110" visible="true" options="20.0,149.0,341.0,162.0,818.3367134489793,149.36470111868806,339.0,232.0,2,361.0,180.0,818.0,180.0">508,-11,0,0</Place>
+<Place id="10" visible="true">818,149,339,232</Place>
 </Sheet>
 <Sheet name="orca inventory" id="120" disp_at="true" disp_ph="true" disp_co="true" disp_rn="true" disp_null="true">
-<Place id="113" visible="true" options="1252.3949956075217,439.46367202563965,351.0,71.0,660.0,439.0,352.0,182.0,4,1252.3949956075217,470.0,1152.0,470.0,1152.0,500.0,1012.0,500.0">500,0,0,0</Place>
+<Place id="24" visible="true">14,440,354,91</Place>
+<Place id="106" visible="true">500,0,0,0</Place>
 <Place id="117" visible="true">10,10,291,100</Place>
 <Place id="37" visible="true">659,30,332,242</Place>
 <Place id="107" visible="true">500,0,0,0</Place>
-<Place id="21" visible="true">1252,439,351,71</Place>
-<Place id="24" visible="true">14,440,354,91</Place>
 <Place id="28" visible="true">660,439,352,182</Place>
-<Place id="106" visible="true">500,0,0,0</Place>
+<Place id="113" visible="true" options="1252.3949956075217,439.46367202563965,351.0,71.0,660.0,439.0,352.0,182.0,4,1252.3949956075217,470.0,1152.0,470.0,1152.0,500.0,1012.0,500.0">500,0,0,0</Place>
+<Place id="21" visible="true">1252,439,351,71</Place>
 </Sheet>
 <Sheet name="reconciliation" id="121" disp_at="true" disp_ph="true" disp_co="true" disp_rn="true" disp_null="true">
-<Place id="68" visible="true">659,520,341,200</Place>
-<Place id="89" visible="true">170,120,160,110</Place>
-<Place id="116" visible="true">500,0,0,0</Place>
-<Place id="50" visible="true">70,510,341,222</Place>
-<Place id="92" visible="true">659,30,360,280</Place>
+<Place id="59" visible="true">49,270,392,171</Place>
+<Place id="114" visible="true">500,0,0,0</Place>
 <Place id="108" visible="true" options="49.0,270.0,392.0,171.0,659.0,321.0,340.0,190.0,4,441.0,350.0,550.0,350.0,550.0,390.0,659.0,390.0">572,-1,0,0</Place>
-<Place id="109" visible="true">399,24,0,0</Place>
+<Place id="115" visible="true" options="49.0,270.0,392.0,171.0,659.0,520.0,341.0,200.0,4,441.0,390.0,549.0,390.0,549.0,610.0,659.0,610.0">663,2,0,0</Place>
+<Place id="116" visible="true">500,0,0,0</Place>
 <Place id="117" visible="true">10,10,281,100</Place>
 <Place id="37" visible="false">40,149,341,241</Place>
-<Place id="115" visible="true" options="49.0,270.0,392.0,171.0,659.0,520.0,341.0,200.0,4,441.0,390.0,549.0,390.0,549.0,610.0,659.0,610.0">663,2,0,0</Place>
-<Place id="59" visible="true">49,270,392,171</Place>
+<Place id="68" visible="true">659,520,341,200</Place>
 <Place id="77" visible="true">659,321,340,190</Place>
-<Place id="114" visible="true">500,0,0,0</Place>
+<Place id="50" visible="true">70,510,341,222</Place>
+<Place id="89" visible="true">170,120,160,110</Place>
+<Place id="92" visible="true">659,30,360,280</Place>
+<Place id="109" visible="true">399,24,0,0</Place>
 </Sheet>
 <Sheet name="orca full" id="122" disp_at="true" disp_ph="true" disp_co="true" disp_rn="true" disp_null="true">
-<Place id="68" visible="true">2349,681,351,200</Place>
-<Place id="10" visible="true">850,899,290,230</Place>
-<Place id="21" visible="true">1139,158,350,81</Place>
-<Place id="92" visible="true">1857,731,351,280</Place>
-<Place id="109" visible="true">441,19,0,0</Place>
-<Place id="117" visible="true">0,0,261,100</Place>
-<Place id="107" visible="true" options="638.4304827953591,597.2968135758863,350.0,160.0,638.0,156.0,330.0,260.0,4,637.0,630.0,560.0,630.0,560.0,230.0,638.0,230.0">482,13,0,0</Place>
-<Place id="7" visible="true">449,1199,291,91</Place>
-<Place id="115" visible="true">500,0,0,0</Place>
-<Place id="37" visible="true">638,156,330,260</Place>
 <Place id="24" visible="true">169,157,351,110</Place>
-<Place id="59" visible="true">1629,430,352,182</Place>
-<Place id="77" visible="true">2349,440,351,172</Place>
-<Place id="114" visible="true">500,0,0,0</Place>
-<Place id="113" visible="true" options="1139.4798555761695,158.06713247409178,350.0,81.0,638.4304827953591,597.2968135758863,350.0,160.0,4,1139.0,190.0,1060.0,190.0,1060.0,640.0,988.0,640.0">529,-10,0,0</Place>
-<Place id="112" visible="true" options="449.0,1199.3178925810917,291.0,91.0,49.0,899.0,290.0,160.0,4,449.0,1230.0,390.0,1230.0,390.0,980.0,339.0,980.0">364,20,0,0</Place>
-<Place id="111" visible="true" options="449.0,1199.3178925810917,291.0,91.0,850.0,899.3178925810892,290.0,230.0,4,740.0,1230.0,800.0,1230.0,800.0,1010.0,850.0,1010.0">418,4,0,0</Place>
-<Place id="89" visible="true">1699,220,291,91</Place>
-<Place id="116" visible="true">500,0,0,0</Place>
-<Place id="50" visible="true">2349,180,351,230</Place>
-<Place id="108" visible="true">500,0,0,0</Place>
-<Place id="84" visible="true">1200,838,330,130</Place>
-<Place id="0" visible="true">49,899,290,160</Place>
-<Place id="28" visible="true">638,597,350,160</Place>
 <Place id="106" visible="true" options="169.37129043052258,157.34107660973498,351.0,110.0,638.4304827953591,597.2968135758863,350.0,160.0,4,169.0,190.0,109.0,190.0,109.0,660.0,637.0,660.0">280,-16,0,0</Place>
+<Place id="107" visible="true" options="638.4304827953591,597.2968135758863,350.0,160.0,638.0,156.0,330.0,260.0,4,637.0,630.0,560.0,630.0,560.0,230.0,638.0,230.0">482,13,0,0</Place>
+<Place id="114" visible="true">500,0,0,0</Place>
+<Place id="108" visible="true">500,0,0,0</Place>
+<Place id="21" visible="true">1139,158,350,81</Place>
+<Place id="116" visible="true">500,0,0,0</Place>
+<Place id="111" visible="true" options="449.0,1199.3178925810917,291.0,91.0,850.0,899.3178925810892,290.0,230.0,4,740.0,1230.0,800.0,1230.0,800.0,1010.0,850.0,1010.0">418,4,0,0</Place>
+<Place id="68" visible="true">2349,681,351,200</Place>
+<Place id="84" visible="true">1200,838,330,130</Place>
 <Place id="110" visible="true" options="49.0,899.0,290.0,160.0,850.0,899.3178925810892,290.0,230.0,2,339.0,930.0,850.0,930.0">500,0,0,0</Place>
+<Place id="50" visible="true">2349,180,351,230</Place>
+<Place id="109" visible="true">441,19,0,0</Place>
+<Place id="89" visible="true">1699,220,291,91</Place>
+<Place id="59" visible="true">1629,430,352,182</Place>
+<Place id="7" visible="true">449,1199,291,91</Place>
+<Place id="28" visible="true">638,597,350,160</Place>
+<Place id="113" visible="true" options="1139.4798555761695,158.06713247409178,350.0,81.0,638.4304827953591,597.2968135758863,350.0,160.0,4,1139.0,190.0,1060.0,190.0,1060.0,640.0,988.0,640.0">529,-10,0,0</Place>
+<Place id="115" visible="true">500,0,0,0</Place>
+<Place id="117" visible="true">0,0,261,100</Place>
+<Place id="37" visible="true">638,156,330,260</Place>
+<Place id="112" visible="true" options="449.0,1199.3178925810917,291.0,91.0,49.0,899.0,290.0,160.0,4,449.0,1230.0,390.0,1230.0,390.0,980.0,339.0,980.0">364,20,0,0</Place>
+<Place id="0" visible="true">49,899,290,160</Place>
+<Place id="77" visible="true">2349,440,351,172</Place>
+<Place id="10" visible="true">850,899,290,230</Place>
+<Place id="92" visible="true">1857,731,351,280</Place>
 <Region background="16053503" foreground="0" text="ORCA Recovery Tables">31,829,1139,492</Region>
 <Region background="16119285" foreground="0" text="ORCA Inventory Catalog">40,118,1501,680</Region>
 <Region background="16770019" foreground="0" text="ORCA Internal Reconciliation">1578,126,1179,941</Region>
 </Sheet>
-<Settings sheet="121" zoom="0.8408964152537146"/>
+<Settings sheet="121" zoom="1.0"/>
 </Diagram>
