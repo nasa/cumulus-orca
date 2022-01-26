@@ -27,7 +27,7 @@ AWS Elastic Container Registry(ECR) is used to store container images for lambda
 - Need additional work for deleting older images under the ECR repository.
 
 :::warning
-Currently NGAP does not support using ECR repository to store images which could bring possible risk and challenges to using containers for lambdas.
+Currently NGAP only allows `private` ECR repository could bring possible risk and challenges in using a public repository for storing container image for lambdas. More discussion is needed with NGAP on allowing a public repository.
 :::
 
 ## New configuration for lambda container
@@ -69,7 +69,13 @@ aws ecr create-repository \
     --repository-name <YOUR_REPOSITORY_NAME>
 ```
 
-2. Create a project directory. Under that directory, add  your script (`test.py` in this case) and `requirements.txt`to install any dependencies. Then  create a `Dockerfile` that creates the image. An example of a Dockerfile used for prototying a lambda having `test.py` file is shown below.
+2. Create a project directory. Under that directory, add  your script (`test.py` in this case) and `requirements.txt`to install any dependencies. Then create a `Dockerfile` that creates the image. 
+
+:::note
+  You should use the AWS lambda base image specific to the language you are using to write the lambda function.
+:::
+
+An example of a Dockerfile used for prototying a lambda having `test.py` file is shown below.
 
 ```yaml
 FROM public.ecr.aws/lambda/python:3.8
@@ -129,11 +135,18 @@ Using the steps above, a prototype has been created in NGAP AWS sandbox account 
 
 
 ## Future directions
-Currently, the only option to store the Docker image for lambda containers is AWS ECR repository. If github is supported in the future, then using that approach will be a good direction to go.
+Currently, the only option to store the Docker image for lambda containers is AWS ECR repository. Github package could be an option to store the image but in order to deploy the lambda, the image has to be stored into an ECR.
 
 A few possible discussion items:
 - Discuss with NGAP team if the docker images can be stored in a public ECR repo.
-- Check if github can be used to store the image (currently I have not seen any example online)
+- If github packages are supported to store and deploy the lambda, then we have to contact NASA github admins to enable this feature in our repository.
+
+Based on this research, it looks like using lambda as containers is possible when using a private ECR to store the image which is not ideal in our case. There are some concerns which include:
+
+- Discussing with NGAP on allowing to store container images on a public ECR repository. If that is not possible, another option is to have an ECR setup for the end user via terraform and build images. This will require additional work.
+- If github package is used to store the image, deploying lambda as container will be an issue since the terraform only supports deploying the image from ECR. Moreover, this feature for the github repository has to be approved by NASA Github admins.
+
+If the above issues are solved, then implementing lambda as container is recommended.
 
 ##### References
 - https://aws.amazon.com/blogs/aws/new-for-aws-lambda-container-image-support/
