@@ -216,8 +216,7 @@
 <Storage name="External" value="false"/>
 </Table>
 <Table id="50" name="reconcile_s3_object" schema="orca" database="orca" background="16777165">
-<Text>Temporary table that holds the listing from the ORCA S3 bucket to use for comparisons against the ORCA catalog.
-Partitions should be placed around orca_archive_location.</Text>
+<Text>Temporary table that holds the listing from the ORCA S3 bucket to use for comparisons against the ORCA catalog.</Text>
 <Column id="51" name="job_id" type="int8" length="25" nulls="false">
 <CP name="COMMENTS">Job the S3 listing is a part of for the comparison. Foreign key to the reconcile jobs table.</CP>
 </Column>
