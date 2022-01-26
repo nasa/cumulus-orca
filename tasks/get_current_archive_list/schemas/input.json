@@ -7,14 +7,19 @@
   "properties": {
     "Records": {
       "type": "array",
-      "description": "A list of dicts from SQS.",
+      "description": "A list of dicts from SQS. From example: https://www.juniper.net/documentation/us/en/software/jsa7.4.2/jsa-dsm/topics/concept/jsa-dsm-create-sqs-queue-and-configure-s3-objectcreated-notifications.html",
       "items": {
         "description": "An s3 event passed in by SQS.",
         "type": "object",
         "required": [
+          "awsRegion",
           "s3"
         ],
         "properties": {
+          "awsRegion": {
+            "type": "string",
+            "description": "The region containing the bucket the event occurred in."
+          },
           "s3": {
             "type": "object",
             "description": "Details regarding the s3 event.",
