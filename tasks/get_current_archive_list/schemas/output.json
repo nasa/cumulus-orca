@@ -5,17 +5,12 @@
   "description": "The output for the get_current_archive_list Lambda.",
   "type": "object",
   "required": [
-    "jobId",
-    "orcaArchiveLocation"
+    "jobId"
   ],
   "properties": {
     "jobId": {
       "type": "string",
       "description": "The unique ID of the reconciliation job."
-    },
-    "orcaArchiveLocation": {
-      "type": "string",
-      "description": "The name of the s3 bucket that has had its inventory report stored in reconcile_s3_object."
     }
   }
 }
