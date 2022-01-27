@@ -87,7 +87,7 @@ As of 07/18/2021, AWS AppSync is currently yet not approved in NGAP AWS account 
 - Supports GraphQL on Postgres, AWS Aurora, Microsoft SQL server.
 - Can be run in [cloud](https://hasura.io/docs/latest/graphql/cloud/getting-started/index.html#cloud-getting-started) (fastest way) or using [docker locally](https://hasura.io/docs/latest/graphql/core/getting-started/docker-simple.html#docker-simple).
 - comes with its own authentication and authorization features. To prevent GraphQL endpoint from being publicly accessible, developers have to create an [admin secret](https://hasura.io/docs/latest/graphql/core/deployment/deployment-guides/docker.html#docker-secure).
-- [Pricing](https://hasura.io/pricing/)- Fully managed cloud service is $99/month/project and supports upto 20GB data with $2/additional GB data.
+- [Pricing](https://hasura.io/pricing/)- Fully managed cloud service is $99/month/project and supports up to 20GB data with $2/additional GB data.
 - written in Haskell programming language.
 
 #### PostGraphile 
@@ -124,7 +124,7 @@ As of 07/18/2021, AWS AppSync is currently yet not approved in NGAP AWS account 
 
 ### GraphQL in ORCA
 
-Some of the lambdas that might be affected are:
+Some lambdas that might be affected are:
 - post_copy_request_to_queue
 - db_deploy
 - post_to_database
@@ -136,7 +136,7 @@ Some of the lambdas that might be affected are:
 - post_to_database
 
 :::important
-Apart from updating those lambdas, developers need to create the GraphQL endpoint using terraform or AWS SAM, update requirements.txt, requirements-dev.txt or bin/build.sh, bin/run_tests.sh by adding additional dependiencies like `graphene` in case of using graphene, or `npm install apollo-server graphql` in case of using Apollo server.
+Apart from updating those lambdas, developers need to create the GraphQL endpoint using terraform or AWS SAM, update requirements.txt, requirements-dev.txt or bin/build.sh, bin/run_tests.sh by adding additional dependencies like `graphene` in case of using graphene, or `npm install apollo-server graphql` in case of using Apollo server.
 In case of using Javascript libraries like Apollo server, additional files/codes are needed to write the [schema](https://github.com/serverless/serverless-graphql/blob/master/app-backend/dynamodb/schema.js) and [resolver](https://github.com/serverless/serverless-graphql/blob/master/app-backend/dynamodb/resolvers.js).
 In case of using Python library like [Graphene](https://github.com/graphql-python/graphene), developers need to update .py files to import libraries, create class and queries, and to create schema and resolver. 
 :::
@@ -210,7 +210,7 @@ Hasura cloud service is not approved by NGAP, so it cannot be used for now. Howe
 
 - This server has to be built from scratch and developer has to be familiar with Javascript. 
 - It is completely free and has over 108,000 users and 400+ contributors which make it a good candidate to look into further for prototyping.
-- Developer has to write his  own GraphQL schema when using this method which could be time consuming.
+- Developer has to write his  own GraphQL schema when using this method which could be time-consuming.
 - Developers have to work with two libraries that are required by the server:
     - [apollo-server](https://npm.im/apollo-server): library for Apollo Server which defines the shape of the data and how to fetch it.
     - [graphql](https://www.npmjs.com/package/graphql): library used to build a GraphQL schema and execute queries against it.
@@ -243,7 +243,7 @@ Hasura cloud service is not approved by NGAP, so it cannot be used for now. Howe
 
 - Python library with 9000+ users for building GraphQL schemas/types. Since all ORCA lambdas are written in Python, using this library will make it easier for code changes.
 - Instead of writing GraphQL Schema Definition Language, developers will use Python code to describe the data provided by the server.
-- Can be deployed using lambda function with the help of [SAM]https://github.com/ivanchoo/demo-aws-graphql-python/blob/master/template.yml) or cloudformation. So serverless approach will charge when it is only used.
+- Can be deployed using lambda function with the help of [SAM](https://github.com/ivanchoo/demo-aws-graphql-python/blob/master/template.yml) or cloudformation. So serverless approach will charge when it is only used.
 
 ##### Practical Evaluation
 - More flexible than other libraries; Would be much easier to switch DB technology.
