@@ -1,64 +1,16 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/perform_orca_reconcile/schemas/output.json",
-    "title": "perform_orca_reconcile Lambda Output",
-    "description": "The output for the perform_orca_reconcile Lambda.",
-    "type": "object",
-    "required": [
-      "jobId",
-      "collection_id",
-      "granule_id",
-      "file_name"
-    ],
-    "properties": {
-      "jobId": {
-        "type": "string",
-        "description": "The unique ID of the reconciliation job."
-      },
-      "collection_id": {
-        "type": "string",
-        "description": "Collection ID from the ORCA Collection object the file belongs to."
-      },
-      "granule_id": {
-        "type": "string",
-        "description": "Granule ID from the ORCA Granule object the file belongs to."
-      },
-      "file_name": {
-        "type": "string",
-        "description": "File name from the ORCA File object the file belongs to."
-      },
-      "key_path": {
-        "type": "string",
-        "description": "Key path that includes the file name from the ORCA File object the file belongs to."
-      },
-      "orca_etag": {
-        "type": "string",
-        "description": "Etag value from the ORCA File object the file belongs to."
-      },
-      "s3_etag": {
-        "type": "string",
-        "description": "ETag key value from S3 listing."
-      },
-      "orca_last_update": {
-        "type": "string",
-        "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?\\+00:00$",
-        "description": "Last Update value from the ORCA File object the file belongs to."
-      },
-      "s3_last_update": {
-        "type": "string",
-        "description": "LastModified key value from the S3 listing."
-      },
-      "orca_size": {
-        "type": "number",
-        "description": "Size value from the ORCA File object the file belongs to."
-      },
-      "s3_size": {
-        "type": "number",
-        "description": "Size key value from the S3 listing."
-      },
-      "discrepancy_type": {
-        "type": "string",
-        "description": "Type of discrepancy encountered."
-      }
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/perform_orca_reconcile/schemas/output.json",
+  "title": "perform_orca_reconcile Lambda Output",
+  "description": "The output for the perform_orca_reconcile Lambda.",
+  "type": "object",
+  "required": [
+    "jobId"
+  ],
+  "properties": {
+    "jobId": {
+      "type": "string",
+      "description": "The unique ID of the reconciliation job."
     }
   }
+}
