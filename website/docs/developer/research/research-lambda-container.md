@@ -27,7 +27,7 @@ AWS Elastic Container Registry(ECR) is used to store container images for lambda
 - Need additional work for deleting older images under the ECR repository.
 
 :::warning
-Currently NGAP only allows `private` ECR repository could bring possible risk and challenges in using a public repository for storing container image for lambdas. More discussion is needed with NGAP on allowing a public repository.
+Currently NGAP only allows `private` ECR repository which could bring possible risk and challenges in using a public repository for storing container image for lambdas. More discussion is needed with NGAP on allowing a public repository.
 :::
 
 ## New configuration for lambda container
@@ -146,7 +146,7 @@ Based on this research, it looks like using lambda as containers is possible whe
 - Discussing with NGAP on allowing to store container images on a public ECR repository. If that is not possible, another option is to have an ECR setup for the end user via terraform and build images. This will require additional work.
 - If github package is used to store the image, deploying lambda as container will be an issue since the terraform only supports deploying the image from ECR. Moreover, this feature for the github repository has to be approved by NASA Github admins.
 
-If the above issues are solved, then implementing lambda as container is recommended.
+If the above issues are solved, then implementing lambda as container is recommended. One way to use private ECR repo is to use a script or terraform code if possible that will create the ECR repo and then build, tag and push the container image to that repo. One that is done, update the terraform lambda modules and deploy the lambda. An additional [card](https://bugs.earthdata.nasa.gov/browse/ORCA-375) has been created to look into this way.
 
 ##### References
 - https://aws.amazon.com/blogs/aws/new-for-aws-lambda-container-image-support/
