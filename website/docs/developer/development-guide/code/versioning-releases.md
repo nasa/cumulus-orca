@@ -17,7 +17,7 @@ versioning can be found [here](https://semver.org/).
 
 From develop, create a new release branch from develop following the
 `release-MAJOR.MINOR.x`. For example, `release-1.14.1`. Push this branch 
-to github if you created it locally.
+to GitHub if you created it locally.
 
 ### Update CHANGELOG.md
 
@@ -60,25 +60,25 @@ Ensure that you are on your branch plan and not the master plan. Click on the `C
      * SECRET_GITHUB_TOKEN: `<secret github token>`
      * SECRET_GITHUB_USER: `<secret github user>`
    
-   Contact ORCA team to know values of the three github variables.
+   Contact ORCA team to know values of the three GitHub variables.
 5. Run the branch using the 'Run' button in the top right.
 
 Bamboo will build and run unit tests against that tagged release.
 
-## Create a new ORCA release on github
+## Create a new ORCA release on GitHub
 
 The release is automated in Bamboo, but the step must be manually started. If
 you set the `RELEASE_FLAG` to `true` and the build steps passed, you will
 be able to run the manual 'Release' step in Bamboo.
 
 The CI release scripts will create a release based on the release version tag,
-as well as uploading release artifacts to the Github release for the Terraform
+as well as uploading release artifacts to the GitHub release for the Terraform
 modules provided by Cumulus. The Terraform release artifacts include:
 
 * A multi-module Terraform .zip artifact containing filtered copies of the 
   tf-modules, packages, and tasks directories for use as Terraform module sources.
 
-Just make sure to verify the appropriate .zip files are present on Github after
+Just make sure to verify the appropriate .zip files are present on GitHub after
 the release process is complete.
 
 **Merge the base branch back into develop and master**
@@ -89,7 +89,7 @@ master.
 If this is the latest version, create the PRs to merge the release branch 
 into develop and master. 
 
-:::note Note: 
+:::note 
 
 Do not squash this merge. Doing so will make the "compare" view from step 4 
 show an incorrect diff, because the tag is linked to a specific commit on the 
