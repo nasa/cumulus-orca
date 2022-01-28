@@ -5,15 +5,14 @@
 ##
 ## DESCRIPTION
 ## -----------------------------------------------------------------------------
-## Tests the shared library for shared_db using unit tests.
+## Tests the lambda (task) for get_current_archive_list using unit tests.
 ##
 ##
 ## USAGE
 ## -----------------------------------------------------------------------------
 ## bin/run_tests.sh
 ##
-## This must be called from the (root) shared library directory
-## tasks/shared_libraries
+## This must be called from the (root) lambda directory /tasks/get_current_archive_list
 ## =============================================================================
 
 ## Set this for Debugging only
@@ -22,7 +21,7 @@
 ## Make sure we are calling the script the correct way.
 BASEDIR=$(dirname $0)
 if [ "$BASEDIR" != "bin" ]; then
-  >&2 echo "ERROR: This script must be called from the root directory of shared_libraries [bin/run_tests.sh]."
+  >&2 echo "ERROR: This script must be called from the root directory of the task lambda [bin/run_tests.sh]."
   exit 1
 fi
 
@@ -62,7 +61,7 @@ source venv/bin/activate
 
 ## Install the requirements
 pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org
-pip install -q -r requirements.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
+pip install -q -r requirements-dev.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
 let return_code=$?
 
 check_rc $return_code "ERROR: pip install encountered an error."
@@ -70,14 +69,8 @@ check_rc $return_code "ERROR: pip install encountered an error."
 ## Run unit tests and check Coverage
 echo "INFO: Running unit and coverage tests ..."
 
-# Export the AWS_REGION for the boto3 clients. Note that if you clear the
-# environment for unit tests, you will need to add this environment variable back
-# in to avoid a client error "botocore.exceptions.NoRegionError: You must specify
-# a region." In real AWS, the AWS_REGION is set for you per the Lambda developer
-# docs seen here https://docs.aws.amazon.com/lambda/latest/dg/lambda-dg.pdf
-export AWS_REGION="us-west-2"
-
-coverage run --source=orca_shared -m pytest
+# Currently just running unit tests until we fix/support large tests
+coverage run --source=get_current_archive_list -m pytest
 let return_code=$?
 check_rc $return_code "ERROR: Unit tests encountered failures."
 
@@ -89,7 +82,7 @@ check_rc $return_code "ERROR: Unit tests coverage is less than 80%"
 
 ## Run code smell and security tests using bandit
 echo "INFO: Running code smell security tests ..."
-bandit -r orca_shared
+bandit -r get_current_archive_list
 let return_code=$?
 check_rc $return_code "ERROR: Potential security or code issues found."
 
@@ -107,7 +100,7 @@ echo "INFO: Checking lint rules ..."
 flake8 \
     --max-line-length 99 \
     --extend-ignore E203 \
-    orca_shared
+    get_current_archive_list
 check_rc $return_code "ERROR: Linting issues found."
 
 echo "INFO: Sorting imports ..."
@@ -118,10 +111,10 @@ isort \
     --use-parentheses \
     --force-grid-wrap 0 \
     -m 3 \
-    orca_shared
+    get_current_archive_list
 
 echo "INFO: Formatting with black ..."
-black orca_shared
+black get_current_archive_list
 
 
 ## Deactivate and remove the virtual env
