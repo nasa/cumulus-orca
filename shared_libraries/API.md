@@ -1,6 +1,9 @@
 # Table of Contents
 
 * [orca\_shared](#orca_shared)
+* [orca\_shared.reconciliation](#orca_shared.reconciliation)
+* [orca\_shared.reconciliation.shared\_reconciliation](#orca_shared.reconciliation.shared_reconciliation)
+  * [OrcaStatus](#orca_shared.reconciliation.shared_reconciliation.OrcaStatus)
 * [orca\_shared.database](#orca_shared.database)
 * [orca\_shared.database.shared\_db](#orca_shared.database.shared_db)
   * [get\_configuration](#orca_shared.database.shared_db.get_configuration)
@@ -20,6 +23,29 @@
 <a id="orca_shared"></a>
 
 # orca\_shared
+
+<a id="orca_shared.reconciliation"></a>
+
+# orca\_shared.reconciliation
+
+<a id="orca_shared.reconciliation.shared_reconciliation"></a>
+
+# orca\_shared.reconciliation.shared\_reconciliation
+
+Name: shared_reconciliation.py
+Description: Shared library that combines common functions and classes needed for
+             reconciliation operations.
+
+<a id="orca_shared.reconciliation.shared_reconciliation.OrcaStatus"></a>
+
+## OrcaStatus Objects
+
+```python
+class OrcaStatus(Enum)
+```
+
+An enumeration.
+Defines the status value used in the ORCA Reconciliation database for use by the reconciliation functions.
 
 <a id="orca_shared.database"></a>
 
