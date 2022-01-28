@@ -33,6 +33,7 @@ and/or modified to deploy ORCA with Cumulus.
 - orca.tf
 - orca_variables.tf
 - terraform.tfvars
+- main.tf
 
 
 ### Creating `cumulus-tf/orca.tf`
@@ -283,6 +284,22 @@ buckets = {
 
 :::
 
+### Modifying cumulus-tf/main.tf
+
+To use the Orca API, add the following line within the Cumulus module:
+
+```
+module "cumulus" {
+
+  ...
+
+  orca_api_uri = module.orca.orca_api_deployment_invoke_url
+  
+  ...
+  
+}
+```
+
 ## Define the ORCA Workflows
 
 The ORCA Ingest Workflows follows each step listed below. Adding the Move
@@ -523,8 +540,7 @@ accessed using terraform dot syntax in the format of `module.orca.variable_name`
 
 | Output Variable                                         | Description                                             |
 | --------------------------------------------------------|---------------------------------------------------------|
-| `orca_catalog_reporting_api_invoke_url`                 |The URL to invoke the API for catalog reporting lambda |
-| `orca_cumulus_reconciliation_api_deployment_invoke_url` |The URL to invoke the ORCA Cumulus reconciliation API gateway. Excludes the resource path |
+| `orca_api_deployment_invoke_url`                        | The URL to invoke the ORCA Cumulus reconciliation API gateway. Excludes the resource path |
 | `orca_lambda_copy_to_glacier_arn`                       | AWS ARN of the ORCA copy_to_glacier lambda. |
 | `orca_lambda_extract_filepaths_for_granule_arn`         | AWS ARN of the ORCA extract_filepaths_for_granule lambda. |
 | `orca_lambda_orca_catalog_reporting_arn`                | AWS ARN of the ORCA orca_catalog_reporting lambda. |
