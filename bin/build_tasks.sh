@@ -18,7 +18,7 @@ fi
 cd ../../
 
 failure=0
-for TASK in $(ls -d tasks/* | egrep -v "package")
+for TASK in $(ls -d tasks/* | egrep -v "package|get_current_archive_list|perform_orca_reconcile") #todo update once the lambdas are created
 do
   echo "Building ${TASK}"
   cd ${TASK}
