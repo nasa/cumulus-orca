@@ -24,10 +24,10 @@ fi
 for TASK in $(ls -d tasks/* | egrep -v "package|get_current_archive_list|perform_orca_reconcile") #todo update once the lambdas are created
 do
   echo
-  echo "Running tests in $task"
+  echo "Running tests in $TASK"
   echo
 
-  cd $task
+  cd $TASK
   bin/run_tests.sh
   return_code=$?
   cd -
