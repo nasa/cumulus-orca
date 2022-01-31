@@ -6,7 +6,7 @@ Description: Runs unit tests for the migrate_db.py library.
 
 import unittest
 from unittest.mock import Mock, call, patch, MagicMock
-import migrate_db
+import migrate_db, migrate_db_v2, migrate_db_v3, migrate_db_v4
 
 
 class TestMigrateDatabaseLibraries(unittest.TestCase):
@@ -35,9 +35,9 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
         """
         self.config = None
 
-    @patch("migrate_db.migrate_versions_1_to_2")
-    @patch("migrate_db.migrate_versions_2_to_3")
-    @patch("migrate_db.migrate_versions_3_to_4")
+    @patch("migrate_db_v2.migrate_versions_1_to_2")
+    @patch("migrate_db_v3.migrate_versions_2_to_3")
+    @patch("migrate_db_v4.migrate_versions_3_to_4")
     def test_perform_migration_happy_path(
             self,
             mock_migrate_v3_to_v4: MagicMock,
@@ -74,26 +74,26 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 mock_migrate_v2_to_v3.reset_mock()
                 mock_migrate_v3_to_v4.reset_mock()
 
-    @patch("migrate_db.schema_versions_data_sql")
-    @patch("migrate_db.drop_druser_user_sql")
-    @patch("migrate_db.drop_dbo_user_sql")
-    @patch("migrate_db.drop_dr_role_sql")
-    @patch("migrate_db.drop_drdbo_role_sql")
-    @patch("migrate_db.drop_dr_schema_sql")
-    @patch("migrate_db.drop_request_status_table_sql")
-    @patch("migrate_db.migrate_recovery_file_data_sql")
-    @patch("migrate_db.migrate_recovery_job_data_sql")
-    @patch("migrate_db.recovery_status_data_sql")
-    @patch("migrate_db.recovery_file_table_sql")
-    @patch("migrate_db.recovery_job_table_sql")
-    @patch("migrate_db.recovery_status_table_sql")
-    @patch("migrate_db.schema_versions_table_sql")
-    @patch("migrate_db.text")
-    @patch("migrate_db.app_user_sql")
-    @patch("migrate_db.orca_schema_sql")
-    @patch("migrate_db.app_role_sql")
-    @patch("migrate_db.dbo_role_sql")
-    @patch("migrate_db.get_admin_connection")
+    @patch("migrate_db_v2.schema_versions_data_sql")
+    @patch("migrate_db_v2.drop_druser_user_sql")
+    @patch("migrate_db_v2.drop_dbo_user_sql")
+    @patch("migrate_db_v2.drop_dr_role_sql")
+    @patch("migrate_db_v2.drop_drdbo_role_sql")
+    @patch("migrate_db_v2.drop_dr_schema_sql")
+    @patch("migrate_db_v2.drop_request_status_table_sql")
+    @patch("migrate_db_v2.migrate_recovery_file_data_sql")
+    @patch("migrate_db_v2.migrate_recovery_job_data_sql")
+    @patch("migrate_db_v2.recovery_status_data_sql")
+    @patch("migrate_db_v2.recovery_file_table_sql")
+    @patch("migrate_db_v2.recovery_job_table_sql")
+    @patch("migrate_db_v2.recovery_status_table_sql")
+    @patch("migrate_db_v2.schema_versions_table_sql")
+    @patch("migrate_db_v2.text")
+    @patch("migrate_db_v2.app_user_sql")
+    @patch("migrate_db_v2.orca_schema_sql")
+    @patch("migrate_db_v2.app_role_sql")
+    @patch("migrate_db_v2.dbo_role_sql")
+    @patch("migrate_db_v2.get_admin_connection")
     def test_migrate_versions_1_to_2_happy_path(
             self,
             mock_connection: MagicMock,
@@ -127,7 +127,7 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 mock_conn_enter = mock_connection().connect().__enter__()
 
                 # Run the function
-                migrate_db.migrate_versions_1_to_2(self.config, latest_version)
+                migrate_db_v2.migrate_versions_1_to_2(self.config, latest_version)
 
                 # Check that all of the functions were called the correct
                 # number of times with the proper values
@@ -254,10 +254,10 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 mock_schema_versions_data.reset_mock()
                 mock_text.reset_mock()
 
-    @patch("migrate_db.text")
-    @patch("migrate_db.schema_versions_data_sql")
-    @patch("migrate_db.add_multipart_chunksize_sql")
-    @patch("migrate_db.get_admin_connection")
+    @patch("migrate_db_v3.text")
+    @patch("migrate_db_v3.schema_versions_data_sql")
+    @patch("migrate_db_v3.add_multipart_chunksize_sql")
+    @patch("migrate_db_v3.get_admin_connection")
     def test_migrate_versions_2_to_3_happy_path(
             self,
             mock_connection: MagicMock,
@@ -275,7 +275,7 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 mock_conn_enter = mock_connection().connect().__enter__()
 
                 # Run the function
-                migrate_db.migrate_versions_2_to_3(self.config, latest_version)
+                migrate_db_v3.migrate_versions_2_to_3(self.config, latest_version)
 
                 # Check that all of the functions were called the correct
                 # number of times with the proper values
@@ -319,13 +319,13 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 mock_add_multipart_chunksize_sql.reset_mock()
                 mock_schema_versions_data.reset_mock()
 
-    @patch("migrate_db.schema_versions_data_sql")
-    @patch("migrate_db.providers_table_sql")
-    @patch("migrate_db.collections_table_sql")
-    @patch("migrate_db.granules_table_sql")
-    @patch("migrate_db.files_table_sql")
-    @patch("migrate_db.get_admin_connection")
-    @patch("migrate_db.text")
+    @patch("migrate_db_v4.schema_versions_data_sql")
+    @patch("migrate_db_v4.providers_table_sql")
+    @patch("migrate_db_v4.collections_table_sql")
+    @patch("migrate_db_v4.granules_table_sql")
+    @patch("migrate_db_v4.files_table_sql")
+    @patch("migrate_db_v4.get_admin_connection")
+    @patch("migrate_db_v4.text")
     def test_migrate_versions_3_to_4_happy_path(
             self,
             mock_text: MagicMock,
@@ -346,7 +346,7 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 mock_conn_enter = mock_connection().connect().__enter__()
 
                 # Run the function
-                migrate_db.migrate_versions_3_to_4(self.config, latest_version)
+                migrate_db_v4.migrate_versions_3_to_4(self.config, latest_version)
 
                 # Check that all of the functions were called the correct
                 # number of times with the proper values
