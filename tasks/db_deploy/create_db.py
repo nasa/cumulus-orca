@@ -10,7 +10,8 @@ from orca_shared.database.shared_db import (
 )
 from sqlalchemy.future import Connection
 
-from orca_sql import *
+from orca_sql_v2 import *
+from orca_sql_v4 import *
 
 
 def create_fresh_orca_install(config: Dict[str, str]) -> None:

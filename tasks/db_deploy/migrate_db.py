@@ -4,7 +4,6 @@ Name: migrate_db.py
 Description: Migrates the current ORCA schema version to the latest version.
 """
 from typing import Dict
-from orca_sql import *
 from orca_shared.database.shared_db import get_admin_connection, logger
 import migrate_db_v2, migrate_db_v3, migrate_db_v4
 

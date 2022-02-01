@@ -4,28 +4,8 @@ Name: migrate_db_v4.py
 Description: Migrates the ORCA schema from version 3 to version 4.
 """
 from typing import Dict
-from orca_sql import *
+from orca_sql_v4 import *
 from orca_shared.database.shared_db import get_admin_connection, logger
-
-
-def perform_migration(current_schema_version: int, config: Dict[str, str]) -> None:
-    """
-    Performs a migration of the ORCA database. Determines the order and
-    migrations to run.
-
-    Args:
-        current_schema_version (int): Current version of the ORCA schema
-        config (Dict): Dictionary containing database connection information
-
-    Returns:
-        None
-    """
-    # Determine migrations to run based on current_schema_version and
-    # update the versions table based on the latest_schema_version.
-
-    if current_schema_version == 3:
-        # Run migrations from version 3 to version 4
-        migrate_versions_3_to_4(config, False)
 
 def migrate_versions_3_to_4(config: Dict[str, str], is_latest_version: bool) -> None:
     """

@@ -16,36 +16,44 @@
   * [get\_migration\_version](#db_deploy.get_migration_version)
 * [migrate\_db](#migrate_db)
   * [perform\_migration](#migrate_db.perform_migration)
-  * [migrate\_versions\_1\_to\_2](#migrate_db.migrate_versions_1_to_2)
-  * [migrate\_versions\_2\_to\_3](#migrate_db.migrate_versions_2_to_3)
-  * [migrate\_versions\_3\_to\_4](#migrate_db.migrate_versions_3_to_4)
+* [migrate\_db\_v2](#migrate_db_v2)
+  * [migrate\_versions\_1\_to\_2](#migrate_db_v2.migrate_versions_1_to_2)
+* [migrate\_db\_v3](#migrate_db_v3)
+  * [migrate\_versions\_2\_to\_3](#migrate_db_v3.migrate_versions_2_to_3)
+* [migrate\_db\_v4](#migrate_db_v4)
+  * [migrate\_versions\_3\_to\_4](#migrate_db_v4.migrate_versions_3_to_4)
 * [orca\_sql](#orca_sql)
   * [commit\_sql](#orca_sql.commit_sql)
   * [app\_database\_sql](#orca_sql.app_database_sql)
   * [app\_database\_comment\_sql](#orca_sql.app_database_comment_sql)
-  * [dbo\_role\_sql](#orca_sql.dbo_role_sql)
-  * [app\_role\_sql](#orca_sql.app_role_sql)
-  * [orca\_schema\_sql](#orca_sql.orca_schema_sql)
-  * [app\_user\_sql](#orca_sql.app_user_sql)
-  * [schema\_versions\_table\_sql](#orca_sql.schema_versions_table_sql)
-  * [schema\_versions\_data\_sql](#orca_sql.schema_versions_data_sql)
-  * [recovery\_status\_table\_sql](#orca_sql.recovery_status_table_sql)
-  * [recovery\_status\_data\_sql](#orca_sql.recovery_status_data_sql)
-  * [recovery\_job\_table\_sql](#orca_sql.recovery_job_table_sql)
-  * [recovery\_file\_table\_sql](#orca_sql.recovery_file_table_sql)
-  * [providers\_table\_sql](#orca_sql.providers_table_sql)
-  * [collections\_table\_sql](#orca_sql.collections_table_sql)
-  * [granules\_table\_sql](#orca_sql.granules_table_sql)
-  * [files\_table\_sql](#orca_sql.files_table_sql)
-  * [migrate\_recovery\_job\_data\_sql](#orca_sql.migrate_recovery_job_data_sql)
-  * [migrate\_recovery\_file\_data\_sql](#orca_sql.migrate_recovery_file_data_sql)
-  * [drop\_request\_status\_table\_sql](#orca_sql.drop_request_status_table_sql)
-  * [drop\_dr\_schema\_sql](#orca_sql.drop_dr_schema_sql)
-  * [drop\_druser\_user\_sql](#orca_sql.drop_druser_user_sql)
-  * [drop\_dbo\_user\_sql](#orca_sql.drop_dbo_user_sql)
-  * [drop\_dr\_role\_sql](#orca_sql.drop_dr_role_sql)
-  * [drop\_drdbo\_role\_sql](#orca_sql.drop_drdbo_role_sql)
-  * [add\_multipart\_chunksize\_sql](#orca_sql.add_multipart_chunksize_sql)
+* [orca\_sql\_v2](#orca_sql_v2)
+  * [dbo\_role\_sql](#orca_sql_v2.dbo_role_sql)
+  * [app\_role\_sql](#orca_sql_v2.app_role_sql)
+  * [orca\_schema\_sql](#orca_sql_v2.orca_schema_sql)
+  * [app\_user\_sql](#orca_sql_v2.app_user_sql)
+  * [schema\_versions\_table\_sql](#orca_sql_v2.schema_versions_table_sql)
+  * [schema\_versions\_data\_sql](#orca_sql_v2.schema_versions_data_sql)
+  * [recovery\_status\_table\_sql](#orca_sql_v2.recovery_status_table_sql)
+  * [recovery\_status\_data\_sql](#orca_sql_v2.recovery_status_data_sql)
+  * [recovery\_job\_table\_sql](#orca_sql_v2.recovery_job_table_sql)
+  * [recovery\_file\_table\_sql](#orca_sql_v2.recovery_file_table_sql)
+  * [migrate\_recovery\_job\_data\_sql](#orca_sql_v2.migrate_recovery_job_data_sql)
+  * [migrate\_recovery\_file\_data\_sql](#orca_sql_v2.migrate_recovery_file_data_sql)
+  * [drop\_request\_status\_table\_sql](#orca_sql_v2.drop_request_status_table_sql)
+  * [drop\_dr\_schema\_sql](#orca_sql_v2.drop_dr_schema_sql)
+  * [drop\_druser\_user\_sql](#orca_sql_v2.drop_druser_user_sql)
+  * [drop\_dbo\_user\_sql](#orca_sql_v2.drop_dbo_user_sql)
+  * [drop\_dr\_role\_sql](#orca_sql_v2.drop_dr_role_sql)
+  * [drop\_drdbo\_role\_sql](#orca_sql_v2.drop_drdbo_role_sql)
+* [orca\_sql\_v3](#orca_sql_v3)
+  * [add\_multipart\_chunksize\_sql](#orca_sql_v3.add_multipart_chunksize_sql)
+  * [schema\_versions\_data\_sql](#orca_sql_v3.schema_versions_data_sql)
+* [orca\_sql\_v4](#orca_sql_v4)
+  * [providers\_table\_sql](#orca_sql_v4.providers_table_sql)
+  * [collections\_table\_sql](#orca_sql_v4.collections_table_sql)
+  * [granules\_table\_sql](#orca_sql_v4.granules_table_sql)
+  * [files\_table\_sql](#orca_sql_v4.files_table_sql)
+  * [schema\_versions\_data\_sql](#orca_sql_v4.schema_versions_data_sql)
 
 <a name="create_db"></a>
 # create\_db
@@ -329,7 +337,14 @@ migrations to run.
 
   None
 
-<a name="migrate_db.migrate_versions_1_to_2"></a>
+<a name="migrate_db_v2"></a>
+# migrate\_db\_v2
+
+Name: migrate_db_v2.py
+
+Description: Migrates the ORCA schema from version 1 to version 2.
+
+<a name="migrate_db_v2.migrate_versions_1_to_2"></a>
 #### migrate\_versions\_1\_to\_2
 
 ```python
@@ -349,7 +364,14 @@ the ORCA schema.
 
   None
 
-<a name="migrate_db.migrate_versions_2_to_3"></a>
+<a name="migrate_db_v3"></a>
+# migrate\_db\_v3
+
+Name: migrate_db_v3.py
+
+Description: Migrates the ORCA schema from version 2 to version 3.
+
+<a name="migrate_db_v3.migrate_versions_2_to_3"></a>
 #### migrate\_versions\_2\_to\_3
 
 ```python
@@ -364,7 +386,14 @@ the ORCA schema.
 - `config` _Dict_ - Connection information for the database.
 - `is_latest_version` _bool_ - Flag to determine if version 3 is the latest schema version.
 
-<a name="migrate_db.migrate_versions_3_to_4"></a>
+<a name="migrate_db_v4"></a>
+# migrate\_db\_v4
+
+Name: migrate_db_v4.py
+
+Description: Migrates the ORCA schema from version 3 to version 4.
+
+<a name="migrate_db_v4.migrate_versions_3_to_4"></a>
 #### migrate\_versions\_3\_to\_4
 
 ```python
@@ -388,7 +417,7 @@ the ORCA schema.
 
 Name: orca_sql.py
 
-Description: All of the SQL used for creating and migrating the ORCA schema.
+Description: SQL used for creating the ORCA database.
 
 <a name="orca_sql.commit_sql"></a>
 #### commit\_sql
@@ -422,7 +451,14 @@ app_database_comment_sql(db_name: str) -> TextClause
 SQL for adding a documentation comment to the database.
 Cannot be merged with DB creation due to SQLAlchemy limitations.
 
-<a name="orca_sql.dbo_role_sql"></a>
+<a name="orca_sql_v2"></a>
+# orca\_sql\_v2
+
+Name: orca_sql_v2.py
+
+Description: All of the SQL used for creating and migrating the ORCA schema to version 2.
+
+<a name="orca_sql_v2.dbo_role_sql"></a>
 #### dbo\_role\_sql
 
 ```python
@@ -436,7 +472,7 @@ objects.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for creating orca_dbo role.
 
-<a name="orca_sql.app_role_sql"></a>
+<a name="orca_sql_v2.app_role_sql"></a>
 #### app\_role\_sql
 
 ```python
@@ -450,7 +486,7 @@ to interact with the ORCA schema.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for creating orca_app role.
 
-<a name="orca_sql.orca_schema_sql"></a>
+<a name="orca_sql_v2.orca_schema_sql"></a>
 #### orca\_schema\_sql
 
 ```python
@@ -465,7 +501,7 @@ before the app_user_sql and ORCA objects.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for creating orca schema.
 
-<a name="orca_sql.app_user_sql"></a>
+<a name="orca_sql_v2.app_user_sql"></a>
 #### app\_user\_sql
 
 ```python
@@ -484,7 +520,7 @@ after the app_role_sql and orca_schema_sql.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for creating PREFIX_orcauser user.
 
-<a name="orca_sql.schema_versions_table_sql"></a>
+<a name="orca_sql_v2.schema_versions_table_sql"></a>
 #### schema\_versions\_table\_sql
 
 ```python
@@ -497,7 +533,7 @@ Full SQL for creating the schema_versions table.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for creating schema_versions table.
 
-<a name="orca_sql.schema_versions_data_sql"></a>
+<a name="orca_sql_v2.schema_versions_data_sql"></a>
 #### schema\_versions\_data\_sql
 
 ```python
@@ -511,7 +547,7 @@ version into the table.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for populating schema_versions table.
 
-<a name="orca_sql.recovery_status_table_sql"></a>
+<a name="orca_sql_v2.recovery_status_table_sql"></a>
 #### recovery\_status\_table\_sql
 
 ```python
@@ -525,7 +561,7 @@ before any of the other recovery table sql.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for creating recovery_status table.
 
-<a name="orca_sql.recovery_status_data_sql"></a>
+<a name="orca_sql_v2.recovery_status_data_sql"></a>
 #### recovery\_status\_data\_sql
 
 ```python
@@ -539,7 +575,7 @@ the table.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for populating recovery_status table.
 
-<a name="orca_sql.recovery_job_table_sql"></a>
+<a name="orca_sql_v2.recovery_job_table_sql"></a>
 #### recovery\_job\_table\_sql
 
 ```python
@@ -554,7 +590,7 @@ table sql to maintain key dependencies.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for creating recovery_job table.
 
-<a name="orca_sql.recovery_file_table_sql"></a>
+<a name="orca_sql_v2.recovery_file_table_sql"></a>
 #### recovery\_file\_table\_sql
 
 ```python
@@ -568,59 +604,7 @@ after the recovery_job table sql to maintain key dependencies.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for creating recovery_file table.
 
-<a name="orca_sql.providers_table_sql"></a>
-#### providers\_table\_sql
-
-```python
-providers_table_sql() -> TextClause
-```
-
-Full SQL for creating the providers table.
-
-**Returns**:
-
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating providers table.
-
-<a name="orca_sql.collections_table_sql"></a>
-#### collections\_table\_sql
-
-```python
-collections_table_sql() -> TextClause
-```
-
-Full SQL for creating the collections table.
-
-**Returns**:
-
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating collections table.
-
-<a name="orca_sql.granules_table_sql"></a>
-#### granules\_table\_sql
-
-```python
-granules_table_sql() -> TextClause
-```
-
-Full SQL for creating the catalog granules table.
-
-**Returns**:
-
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating granules table.
-
-<a name="orca_sql.files_table_sql"></a>
-#### files\_table\_sql
-
-```python
-files_table_sql() -> TextClause
-```
-
-Full SQL for creating the catalog files table.
-
-**Returns**:
-
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating files table.
-
-<a name="orca_sql.migrate_recovery_job_data_sql"></a>
+<a name="orca_sql_v2.migrate_recovery_job_data_sql"></a>
 #### migrate\_recovery\_job\_data\_sql
 
 ```python
@@ -634,7 +618,7 @@ orca.recovery_job table.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for populating recovery_job table.
 
-<a name="orca_sql.migrate_recovery_file_data_sql"></a>
+<a name="orca_sql_v2.migrate_recovery_file_data_sql"></a>
 #### migrate\_recovery\_file\_data\_sql
 
 ```python
@@ -648,7 +632,7 @@ orca.recovery_file table.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for populating recovery_file table.
 
-<a name="orca_sql.drop_request_status_table_sql"></a>
+<a name="orca_sql_v2.drop_request_status_table_sql"></a>
 #### drop\_request\_status\_table\_sql
 
 ```python
@@ -661,7 +645,7 @@ SQL that removes the dr.request_status table.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for dropping request_status table.
 
-<a name="orca_sql.drop_dr_schema_sql"></a>
+<a name="orca_sql_v2.drop_dr_schema_sql"></a>
 #### drop\_dr\_schema\_sql
 
 ```python
@@ -674,7 +658,7 @@ SQL that removes the dr schema.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for dropping dr schema.
 
-<a name="orca_sql.drop_druser_user_sql"></a>
+<a name="orca_sql_v2.drop_druser_user_sql"></a>
 #### drop\_druser\_user\_sql
 
 ```python
@@ -687,7 +671,7 @@ SQL that removes the druser user.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for dropping druser user.
 
-<a name="orca_sql.drop_dbo_user_sql"></a>
+<a name="orca_sql_v2.drop_dbo_user_sql"></a>
 #### drop\_dbo\_user\_sql
 
 ```python
@@ -700,7 +684,7 @@ SQL that removes the dbo user.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for dropping dbo user.
 
-<a name="orca_sql.drop_dr_role_sql"></a>
+<a name="orca_sql_v2.drop_dr_role_sql"></a>
 #### drop\_dr\_role\_sql
 
 ```python
@@ -713,7 +697,7 @@ SQL that removes the dr_role role.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for dropping dr_role role.
 
-<a name="orca_sql.drop_drdbo_role_sql"></a>
+<a name="orca_sql_v2.drop_drdbo_role_sql"></a>
 #### drop\_drdbo\_role\_sql
 
 ```python
@@ -727,7 +711,14 @@ SQL that removes the drdbo_role role.
 - `(sqlalchemy.sql.element.TextClause)` - SQL for dropping drdbo_role role.
   f
 
-<a name="orca_sql.add_multipart_chunksize_sql"></a>
+<a name="orca_sql_v3"></a>
+# orca\_sql\_v3
+
+Name: orca_sql_v3.py
+
+Description: All of the SQL used for creating and migrating the ORCA schema to version 3.
+
+<a name="orca_sql_v3.add_multipart_chunksize_sql"></a>
 #### add\_multipart\_chunksize\_sql
 
 ```python
@@ -737,4 +728,91 @@ add_multipart_chunksize_sql() -> TextClause
 SQL that adds the multipart_chunksize_mb column to recovery_file.
 
 Returns: SQL for adding multipart_chunksize_mb.
+
+<a name="orca_sql_v3.schema_versions_data_sql"></a>
+#### schema\_versions\_data\_sql
+
+```python
+schema_versions_data_sql() -> TextClause
+```
+
+Data for the schema_versions table. Inserts the current schema
+version into the table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for populating schema_versions table.
+
+<a name="orca_sql_v4"></a>
+# orca\_sql\_v4
+
+Name: orca_sql_v4.py
+
+Description: All of the SQL used for creating and migrating the ORCA schema to version 4.
+
+<a name="orca_sql_v4.providers_table_sql"></a>
+#### providers\_table\_sql
+
+```python
+providers_table_sql() -> TextClause
+```
+
+Full SQL for creating the providers table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating providers table.
+
+<a name="orca_sql_v4.collections_table_sql"></a>
+#### collections\_table\_sql
+
+```python
+collections_table_sql() -> TextClause
+```
+
+Full SQL for creating the collections table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating collections table.
+
+<a name="orca_sql_v4.granules_table_sql"></a>
+#### granules\_table\_sql
+
+```python
+granules_table_sql() -> TextClause
+```
+
+Full SQL for creating the catalog granules table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating granules table.
+
+<a name="orca_sql_v4.files_table_sql"></a>
+#### files\_table\_sql
+
+```python
+files_table_sql() -> TextClause
+```
+
+Full SQL for creating the catalog files table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating files table.
+
+<a name="orca_sql_v4.schema_versions_data_sql"></a>
+#### schema\_versions\_data\_sql
+
+```python
+schema_versions_data_sql() -> TextClause
+```
+
+Data for the schema_versions table. Inserts the current schema
+version into the table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for populating schema_versions table.
 
