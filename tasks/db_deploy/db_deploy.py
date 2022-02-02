@@ -147,7 +147,6 @@ def app_db_exists(connection: Connection, db_name: str) -> bool:
 
     return db_exists
 
-
 def app_schema_exists(connection: Connection) -> bool:
     """
     Checks to see if the ORCA application schema exists.
