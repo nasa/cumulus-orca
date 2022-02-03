@@ -73,9 +73,9 @@ class TestDbDeployFunctions(unittest.TestCase):
         mock_task.assert_called_with(json.loads(self.secretstring))
 
     @patch("db_deploy.create_fresh_orca_install")
-    @patch("orca_sql.app_database_comment_sql")
-    @patch("orca_sql.app_database_sql")
-    @patch("orca_sql.commit_sql")
+    @patch("install.orca_sql.app_database_comment_sql")
+    @patch("install.orca_sql.app_database_sql")
+    @patch("install.orca_sql.commit_sql")
     @patch("db_deploy.get_admin_connection")
     @patch("db_deploy.app_db_exists")
     def test_task_no_database(

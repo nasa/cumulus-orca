@@ -12,10 +12,9 @@ from orca_shared.database.shared_db import (
 )
 from sqlalchemy import text
 from sqlalchemy.future import Connection
-
-import orca_sql
-from create_db import create_fresh_orca_install
-from migrate_db import perform_migration
+from migrations.migrate_db import perform_migration
+from install import orca_sql
+from install.create_db import create_fresh_orca_install
 from typing import Any, Dict
 
 

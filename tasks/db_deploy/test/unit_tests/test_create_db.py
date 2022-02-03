@@ -6,7 +6,7 @@ Description: Runs unit tests for the create_db.py library.
 
 import unittest
 from unittest.mock import Mock, call, patch, MagicMock
-import create_db
+from install import create_db
 
 
 class TestCreateDatabaseLibraries(unittest.TestCase):
@@ -38,12 +38,12 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         self.config = None
         self.mock_connection = None
 
-    @patch("create_db.create_recovery_objects")
-    @patch("create_db.create_metadata_objects")
-    @patch("create_db.create_inventory_objects")
-    @patch("create_db.set_search_path_and_role")
-    @patch("create_db.create_app_schema_role_users")
-    @patch("create_db.get_admin_connection")
+    @patch("install.create_db.create_recovery_objects")
+    @patch("install.create_db.create_metadata_objects")
+    @patch("install.create_db.create_inventory_objects")
+    @patch("install.create_db.set_search_path_and_role")
+    @patch("install.create_db.create_app_schema_role_users")
+    @patch("install.create_db.get_admin_connection")
     def test_create_fresh_orca_install_happy_path(
         self,
         mock_connection: MagicMock,
@@ -75,10 +75,10 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         mock_commit = call().connect().__enter__().commit()
         self.assertEqual(mock_call_commit, mock_commit)
 
-    @patch("create_db.app_user_sql")
-    @patch("create_db.orca_schema_sql")
-    @patch("create_db.app_role_sql")
-    @patch("create_db.dbo_role_sql")
+    @patch("install.create_db.app_user_sql")
+    @patch("install.create_db.orca_schema_sql")
+    @patch("install.create_db.app_role_sql")
+    @patch("install.create_db.dbo_role_sql")
     def test_create_app_schema_user_role_users_happy_path(
         self,
         mock_dbo_role_sql: MagicMock,
@@ -109,7 +109,7 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
 
         self.assertEqual(self.mock_connection.mock_calls, execution_order)
 
-    @patch("create_db.text")
+    @patch("install.create_db.text")
     def test_set_search_path_and_role(self, mock_text: MagicMock):
         """
         Tests happy path of set_search_path_and_role function.
@@ -128,8 +128,8 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
 
         self.assertEqual(self.mock_connection.mock_calls, execution_order)
 
-    @patch("create_db.schema_versions_data_sql")
-    @patch("create_db.schema_versions_table_sql")
+    @patch("install.create_db.schema_versions_data_sql")
+    @patch("install.create_db.schema_versions_table_sql")
     def test_create_metadata_objects(
         self,
         mock_schema_versions_table: MagicMock,
@@ -152,10 +152,10 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
 
         self.assertEqual(self.mock_connection.mock_calls, execution_order)
 
-    @patch("create_db.recovery_file_table_sql")
-    @patch("create_db.recovery_job_table_sql")
-    @patch("create_db.recovery_status_data_sql")
-    @patch("create_db.recovery_status_table_sql")
+    @patch("install.create_db.recovery_file_table_sql")
+    @patch("install.create_db.recovery_job_table_sql")
+    @patch("install.create_db.recovery_status_data_sql")
+    @patch("install.create_db.recovery_status_table_sql")
     def test_create_recovery_objects(
         self,
         mock_recovery_status_table: MagicMock,
@@ -184,10 +184,10 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
 
         self.assertEqual(self.mock_connection.mock_calls, execution_order)
 
-    @patch("create_db.providers_table_sql")
-    @patch("create_db.collections_table_sql")
-    @patch("create_db.granules_table_sql")
-    @patch("create_db.files_table_sql")
+    @patch("install.create_db.providers_table_sql")
+    @patch("install.create_db.collections_table_sql")
+    @patch("install.create_db.granules_table_sql")
+    @patch("install.create_db.files_table_sql")
     def test_create_inventory_objects(
         self,
         mock_files_table: MagicMock,
