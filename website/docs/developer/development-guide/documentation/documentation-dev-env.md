@@ -6,7 +6,7 @@ desc: Provides basic information on setting up an ORCA documentation development
 Editing and updating the website only requires a text editor and git but, in
 order to verify links and the overall website build, a local development environment
 should be created. This pages discusses the setup, running, building, and testing
-of the Docusarus website for the ORCA GitHub pages.
+of the Docusaurus website for the ORCA GitHub pages.
 
 ## Creating the Development Environment
 
@@ -22,7 +22,7 @@ The installation steps below goes into further details.
    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
    ```
 
-2. Install the proper Node.js and npm versions to your machine. Currently Node v14.17.6 should be used.
+2. Install the proper Node.js and npm versions to your machine. Currently, Node v14.17.6 should be used.
    ```sh
    nvm install v16.13.1
    nvm use v16.13.1

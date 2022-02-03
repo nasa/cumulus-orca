@@ -10,7 +10,7 @@ to build html files from markdown documentation, add some organization and navig
 and provide other niceties in the final website (search, easy templating, etc.).
 
 The sections below go into greater detail and provide information on the ORCA
-documentation layout, locations and key Docusarus files to manage.
+documentation layout, locations and key Docusaurus files to manage.
 
 
 ## Docusaurus Documentation Layout

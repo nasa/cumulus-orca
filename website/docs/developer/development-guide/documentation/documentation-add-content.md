@@ -34,7 +34,7 @@ When writing markdown for this project, please reference the
 ### MD or MDX Format
 
 Generally, all documentation should be written in Markdown however, when adding
-templates, images, or dynamic content a MDX format should be used. More information
+templates, images, or dynamic content an MDX format should be used. More information
 on MDX content can be found in the [Docusaurus documentation](https://v2.docusaurus.io/docs/markdown-features/#embedding-react-components-with-mdx)
 and the [MDX website](https://mdxjs.com/).
 
@@ -62,7 +62,7 @@ builds to break badly.
 ```yaml
 ---
 id: doc-unique-id    # Unique id for this document.
-title: Title Of Doc  # This shows up as the title and sidbar refrence.
+title: Title Of Doc  # This shows up as the title and sidebar reference.
 desc: Breif description of the document
 ---
 ```
