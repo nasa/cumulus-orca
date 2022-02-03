@@ -195,7 +195,8 @@ Release ORCA Documentation:
       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
   tasks:
   - checkout:
-      force-clean-build: 'false'
+      force-clean-build: 'true'
+      path: source
       description: Checkout Default Repository
   - script:
       interpreter: SHELL
@@ -229,7 +230,8 @@ Release ORCA Code:
         rm -rf dist
       description: Clean Working Directory
   - checkout:
-      force-clean-build: 'false'
+      force-clean-build: 'true'
+      path: source
       description: Checkout Default Repository
   - script:
       interpreter: SHELL
