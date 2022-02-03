@@ -229,7 +229,7 @@ Release ORCA Code:
         rm -rf dist
       description: Clean Working Directory
   - checkout:
-      force-clean-build: 'false'
+      force-clean-build: 'true'
       description: Checkout Default Repository
   - script:
       interpreter: SHELL
