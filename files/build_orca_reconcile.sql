@@ -36,35 +36,26 @@ BEGIN
 
 
     -- Create reconcile_s3_objects table
-    CREATE TABLE IF NOT EXISTS reconcile_s3_objects
-    (
-      job_id                  int8 NOT NULL
-    , orca_archive_location   text NOT NULL
-    , key_path                text NOT NULL
-    , etag                    text NOT NULL
-    , last_update             timestamp with time zone NOT NULL
-    , size_in_bytes           int8 NOT NULL
-    , storage_class           text NOT NULL
-    , CONSTRAINT PK_reconcile_s3_objects_1 PRIMARY KEY(job_id,orca_archive_location,key_path)
-    , CONSTRAINT reconcile_jobs_s3_objects_fk FOREIGN KEY(job_id) REFERENCES reconcile_jobs(id)
-    );
-
-    COMMENT ON TABLE reconcile_s3_objects
-      IS 'Temporary table that holds the listing from the ORCA S3 bucket to use for comparisons against the ORCA catalog.';
-    COMMENT ON COLUMN reconcile_s3_objects.job_id
-      IS 'Job the S3 listing is a part of for the comparison. Foreign key to the reconcile jobs table.';
-    COMMENT ON COLUMN reconcile_s3_objects.orca_archive_location
-      IS 'ORCA S3 Glacier bucket name where the file is stored.';
-    COMMENT ON COLUMN reconcile_s3_objects.key_path
-      IS 'Full path and file name of the object in the S3 bucket from the S3 list command.';
-    COMMENT ON COLUMN reconcile_s3_objects.etag
-      IS 'AWS etag value from the S3 list command.';
-    COMMENT ON COLUMN reconcile_s3_objects.last_update
-      IS 'AWS Last Update from the S3 list command.';
-    COMMENT ON COLUMN reconcile_s3_objects.size_in_bytes
-      IS 'AWS size of the file in bytes from the S3 list command.';
-    COMMENT ON COLUMN reconcile_s3_objects.storage_class
-      IS 'AWS storage class the object is in from the S3 list command.';
+    CREATE TABLE IF NOT EXISTS reconcile_s3_objects  (
+      job_id               	int8 NOT NULL
+    , orca_archive_location	text NOT NULL
+    , key_path             	text NOT NULL
+    , etag                 	text NOT NULL
+    , last_update          	timestamp with time zone NOT NULL
+    , size_in_bytes        	int8 NOT NULL
+    , storage_class        	text NOT NULL
+    , delete_marker        	bool NOT NULL
+    , CONSTRAINT FK_reconcile_jobs_s3_objects FOREIGN KEY(job_id) REFERENCES reconcile_jobs(id)
+    ) PARTITION BY LIST (orca_archive_location);
+    COMMENT ON TABLE reconcile_s3_objects IS 'Temporary table that holds the listing from the ORCA S3 bucket to use for comparisons against the ORCA catalog. Partitions should be placed around orca_archive_location, followed by indexing on key_path once data is ingested.';
+    COMMENT ON COLUMN reconcile_s3_objects.job_id IS 'Job the S3 listing is a part of for the comparison. Foreign key to the reconcile jobs table.';
+    COMMENT ON COLUMN reconcile_s3_objects.orca_archive_location IS 'ORCA S3 Glacier bucket name where the file is stored.';
+    COMMENT ON COLUMN reconcile_s3_objects.key_path IS 'Full path and file name of the object in the S3 bucket.';
+    COMMENT ON COLUMN reconcile_s3_objects.etag IS 'AWS etag value from the s3 inventory report.';
+    COMMENT ON COLUMN reconcile_s3_objects.last_update IS 'AWS Last Update from the s3 inventory report.';
+    COMMENT ON COLUMN reconcile_s3_objects.size_in_bytes IS 'AWS size of the file in bytes from the s3 inventory report.';
+    COMMENT ON COLUMN reconcile_s3_objects.storage_class IS 'AWS storage class the object is in from the s3 inventory report.';
+    COMMENT ON COLUMN reconcile_s3_objects.delete_marker IS 'Set to `True` if object is a delete marker.';
 
 
     -- Create reconcile_orphan_report table
