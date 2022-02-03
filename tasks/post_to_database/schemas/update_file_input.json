@@ -5,11 +5,11 @@
 	"description": "The input for the post_to_database Lambda when updating the status for a file.",
 	"type": "object",
 	"properties": {
-		"job_id": {
+		"jobId": {
 			"description": "The unique ID of the asyncOperation.",
 			"type": "string"
 		},
-		"granule_id": {
+		"granuleId": {
 			"description": "The unique ID of the granule to retrieve status for.",
 			"type": "string"
 		},
@@ -17,25 +17,25 @@
             "description": "The name and extension of the file.",
             "type": "string"
         },
-        "last_update": {
+        "lastUpdate": {
             "description": "The last time the file's status changed, in UTC and iso-format.",
             "type": "string",
             "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?\\+00:00$"
         },
-        "completion_time": {
+        "completionTime": {
             "description": "The time the restore was completed, in UTC and iso-format.",
             "type": "string",
             "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?\\+00:00$"
         },
-        "status_id": {
+        "statusId": {
             "description": "The status_id of the restoration of the file.",
             "type": "integer",
             "pattern": "^(1|2|3|4)$"
         },
-        "error_message": {
+        "errorMessage": {
             "description": "If the restoration of the file errored, the error will be stored here.",
             "type": "string"
         }
     },
-	"required": [ "job_id", "granule_id", "filename", "last_update", "status_id" ]
+	"required": [ "jobId", "granuleId", "filename", "lastUpdate", "statusId" ]
 }

@@ -25,14 +25,14 @@
                   "description": "Name of the file within the granule.  # TODO: It actually might be a path.",
                   "type": "string"
                 },
-                "dest_bucket": {
+                "destBucket": {
                   "description": "The bucket the restored file will be moved to after the restore completes.",
                   "type": "string"
                 }
               },
               "required": [
                 "key",
-                "dest_bucket"
+                "destBucket"
               ]
             }
           }

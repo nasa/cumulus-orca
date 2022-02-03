@@ -10,6 +10,7 @@ locals {
 ## =============================================================================
 module "orca_lambdas" {
   source = "../lambdas"
+  depends_on = [module.orca_iam, module.orca_secretsmanager]  ## secretsmanager sets up db connection secrets.
   ## --------------------------
   ## Cumulus Variables
   ## --------------------------
@@ -18,23 +19,26 @@ module "orca_lambdas" {
   lambda_subnet_ids                 = var.lambda_subnet_ids
   permissions_boundary_arn          = var.permissions_boundary_arn
   prefix                            = var.prefix
+  rds_security_group_id             = var.rds_security_group_id
   vpc_id                            = var.vpc_id
   orca_sqs_staged_recovery_queue_id = module.orca_sqs.orca_sqs_staged_recovery_queue_id
   ## OPTIONAL
-  tags   = local.tags
-  default_multipart_chunksize_mb  = var.default_multipart_chunksize_mb
+  tags                           = local.tags
+  default_multipart_chunksize_mb = var.default_multipart_chunksize_mb
 
   ## --------------------------
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
   orca_default_bucket                = var.orca_default_bucket
+  orca_sqs_metadata_queue_arn        = module.orca_sqs.orca_sqs_metadata_queue_arn
+  orca_sqs_metadata_queue_id         = module.orca_sqs.orca_sqs_metadata_queue_id
   orca_sqs_staged_recovery_queue_arn = module.orca_sqs.orca_sqs_staged_recovery_queue_arn
   orca_sqs_status_update_queue_id    = module.orca_sqs.orca_sqs_status_update_queue_id
   orca_sqs_status_update_queue_arn   = module.orca_sqs.orca_sqs_status_update_queue_arn
+  restore_object_role_arn            = module.orca_iam.restore_object_role_arn
 
   ## OPTIONAL
-  database_port                        = var.database_port
   orca_ingest_lambda_memory_size       = var.orca_ingest_lambda_memory_size
   orca_ingest_lambda_timeout           = var.orca_ingest_lambda_timeout
   orca_recovery_buckets                = var.orca_recovery_buckets
@@ -45,11 +49,6 @@ module "orca_lambdas" {
   orca_recovery_retry_limit            = var.orca_recovery_retry_limit
   orca_recovery_retry_interval         = var.orca_recovery_retry_interval
   orca_recovery_retry_backoff          = var.orca_recovery_retry_backoff
-
-  ## OPTIONAL (DO NOT CHANGE DEFAULT VALUES!)
-  database_app_user            = var.database_app_user
-  database_name                = var.database_name
-  orca_recovery_retrieval_type = var.orca_recovery_retrieval_type
 }
 
 
@@ -66,51 +65,67 @@ module "orca_workflows" {
   workflow_config = var.workflow_config
 
   ## OPTIONAL
-  tags   = local.tags
+  tags = local.tags
 
   ## --------------------------
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  orca_default_bucket                                = var.orca_default_bucket
-  orca_lambda_extract_filepaths_for_granule_arn      = module.orca_lambdas.extract_filepaths_for_granule_arn
-  orca_lambda_request_files_arn                      = module.orca_lambdas.request_files_arn
-  orca_lambda_copy_to_glacier_arn                    = module.orca_lambdas.copy_to_glacier_arn
-  orca_lambda_copy_to_glacier_cumulus_translator_arn = module.orca_lambdas.copy_to_glacier_cumulus_translator_arn
+  orca_default_bucket                           = var.orca_default_bucket
+  orca_lambda_extract_filepaths_for_granule_arn = module.orca_lambdas.extract_filepaths_for_granule_arn
+  orca_lambda_request_files_arn                 = module.orca_lambdas.request_files_arn
+  orca_lambda_copy_to_glacier_arn               = module.orca_lambdas.copy_to_glacier_arn
 }
 
 
-## orca_rds - rds module
-## =============================================================================
-module "orca_rds" {
-  source = "../rds"
+# restore_object_arn - IAM module reference
+# # ------------------------------------------------------------------------------
+module "orca_iam" {
+  source = "../iam"
   ## --------------------------
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  lambda_subnet_ids = var.lambda_subnet_ids
-  prefix            = var.prefix
+  buckets                  = var.buckets
+  permissions_boundary_arn = var.permissions_boundary_arn
+  prefix                   = var.prefix
+  # OPTIONAL
+  tags = local.tags
+  # --------------------------
+  # ORCA Variables
+  # --------------------------
+  # OPTIONAL
+  orca_recovery_buckets = var.orca_recovery_buckets
+}
+
+
+## orca_secretsmanager - secretsmanager module
+## =============================================================================
+module "orca_secretsmanager" {
+  source = "../secretsmanager"
+  depends_on = [module.orca_iam]
+  ## --------------------------
+  ## Cumulus Variables
+  ## --------------------------
+  ## REQUIRED
+  prefix = var.prefix
 
   ## OPTIONAL
-  tags   = local.tags
-
+  tags = local.tags
   ## --------------------------
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  database_app_user_pw               = var.database_app_user_pw
-  db_deploy_function_name            = module.orca_lambdas.db_deploy_function_name
-  postgres_user_pw                   = var.postgres_user_pw
-  vpc_postgres_ingress_all_egress_id = module.orca_lambdas.vpc_postgres_ingress_all_egress_id
+  db_admin_password = var.db_admin_password
+  db_user_password  = var.db_user_password
+  db_host_endpoint  = var.db_host_endpoint
+  restore_object_role_arn = module.orca_iam.restore_object_role_arn
 
   ## OPTIONAL
-  database_port = var.database_port
-
-  ## OPTIONAL (DO NOT CHANGE DEFAULT VALUES!)
-  database_name = var.database_name
+  db_admin_username = var.db_admin_username
+  db_name           = var.db_name
+  db_user_name      = var.db_user_name
 }
-
-
 ## orca_sqs - SQS module
 ## =============================================================================
 module "orca_sqs" {
@@ -119,17 +134,48 @@ module "orca_sqs" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  prefix      = var.prefix
+  prefix = var.prefix
 
   ## OPTIONAL
-  tags   = local.tags
+  tags = local.tags
 
   ## --------------------------
   ## ORCA Variables
   ## --------------------------
+
+  ## REQUIRED
+  dlq_subscription_email = var.dlq_subscription_email
+
   ## OPTIONAL
+  metadata_queue_message_retention_time_seconds        = var.metadata_queue_message_retention_time_seconds
   sqs_delay_time_seconds                               = var.sqs_delay_time_seconds
   sqs_maximum_message_size                             = var.sqs_maximum_message_size
   staged_recovery_queue_message_retention_time_seconds = var.staged_recovery_queue_message_retention_time_seconds
   status_update_queue_message_retention_time_seconds   = var.status_update_queue_message_retention_time_seconds
+}
+
+
+## orca_api_gateway - api gateway module
+## =============================================================================
+module "orca_api_gateway" {
+  depends_on = [
+    module.orca_lambdas
+  ]
+  source = "../api-gateway"
+  ## --------------------------
+  ## Cumulus Variables
+  ## --------------------------
+  ## REQUIRED
+  prefix = var.prefix
+  vpc_id = var.vpc_id
+
+  ## --------------------------
+  ## ORCA Variables
+  ## --------------------------
+  ## REQUIRED
+  orca_catalog_reporting_invoke_arn     = module.orca_lambdas.orca_catalog_reporting_invoke_arn
+  request_status_for_granule_invoke_arn = module.orca_lambdas.request_status_for_granule_invoke_arn
+  request_status_for_job_invoke_arn     = module.orca_lambdas.request_status_for_job_invoke_arn
+  ## OPTIONAL
+  vpc_endpoint_id                       = var.vpc_endpoint_id
 }

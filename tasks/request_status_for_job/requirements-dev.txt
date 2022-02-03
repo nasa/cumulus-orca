@@ -1,7 +1,6 @@
-../dr_dbutils/dist/dr_dbutils-1.0.tar.gz
-../pg_utils/dist/pg_utils-1.0.tar.gz
-boto3==1.16.9
-cumulus-message-adapter-python>=1.1.1
+cumulus-message-adapter-python==2.0.0
+SQLAlchemy==1.4.11
+../../shared_libraries[database]
 fastjsonschema==2.15.0
 pytest==6.1.2
 coverage==5.3

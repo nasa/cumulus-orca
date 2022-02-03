@@ -7,10 +7,10 @@ To run the tests provided below, run the steps in the [initial setup](#initial-s
 section first.
 
 It is recommended to run the tests in the following order.
-- [Database Does Not exist Failure Test](#database-does-not-exist-failure-test)
-- [Database Migration v1 to v3 Test](#database-migration-v1-to-v3-test)
+- [Database Migration v1 to v4 Test](#database-migration-v1-to-v4-test)
 - [Database No Migration Test](#database-no-migration-test)
 - [Database Fresh Install Test](#database-fresh-install-test)
+- [Database Exists Install Test](#database-exists-install-test)
 
 
 ## Initial Setup
@@ -70,24 +70,21 @@ Once all tests are complete perform the following:
    in the setup window.
 4. Remove the defined `DATA_DIR` directory and data.
 
+## Database Fresh Install Test
 
-## Database Does Not exist Failure Test
+This test validates that the db_deploy scripts will perform a fresh install if
+the server exists without the orca database.
 
-This test validates that the db_deploy scripts fail when the disaster_recovery
-database used by ORCA does not exist in the PostgreSQL instance.
-
-### Database Setup DNE Test
+### Database Setup Fresh Install Test
 
 In the **pgclient** window use the `psql` client to connect to the database and
-validate that the *disaster_recovery* database does not exist as seen below.
+validate that the *orca* database does not exist as seen below.
 
 ```bash
 root@26df0390e999:/# psql
 psql (12.6 (Debian 12.6-1.pgdg100+1))
 Type "help" for help.
-
 postgres=# \l
-
                                  List of databases
    Name    |  Owner   | Encoding |  Collate   |   Ctype    |   Access privileges
 -----------+----------+----------+------------+------------+-----------------------
@@ -102,95 +99,27 @@ postgres=# \l
 If the database exists, remove it with the command `\i sql/cleanup.sql`
 at the psql prompt.
 
-
-### Running the DNE Test
-
-To run the DNE test, in your **python** window run the command
-`python manual_test.py`. The output should look similar to below.
-
-```bash
-{"message": "Beginning manual test.", "timestamp": "2021-04-28T22:19:52.948107", "level": "info"}
-{"message": "Creating root user connection object.", "timestamp": "2021-04-28T22:19:52.948701", "level": "debug"}
-{"message": "Database set to postgres for the connection.", "timestamp": "2021-04-28T22:19:52.949417", "level": "debug"}
-{"message": "Creating URL object to connect to the database.", "timestamp": "2021-04-28T22:19:52.950417", "level": "debug"}
-{"message": "The ORCA database disaster_recovery does not exist.", "timestamp": "2021-04-28T22:19:53.243872", "level": "critical"}
-Traceback (most recent call last):
-  File "manual_test.py", line 49, in <module>
-      task(get_configuration())
-        File "/data/db_deploy.py", line 60, in task
-            raise Exception("Missing application database.")
-            Exception: Missing application database.
-```
-
-### DNE Test Validation
-
-Verify the following message line and exception appear in the output. Note that
-the time stamp value will be different.
-
-```bash
-{"message": "The ORCA database disaster_recovery does not exist.", "timestamp": "2021-04-28T22:19:53.243872", "level": "critical"}
-Traceback (most recent call last):
-  File "manual_test.py", line 49, in <module>
-      task(get_configuration())
-        File "/data/db_deploy.py", line 60, in task
-            raise Exception("Missing application database.")
-            Exception: Missing application database.
-```
-
 Verify that only the default users, groups and schemas are present in the postgres
-database.
+   database.
 
 ```bash
 postgres=# \dn
-
   List of schemas
   Name  |  Owner
 --------+----------
  public | postgres
 (1 row)
-
 postgres=# \dg
                                   List of roles
  Role name |                         Attributes                         | Member of
 -----------+------------------------------------------------------------+-----------
  postgres  | Superuser, Create role, Create DB, Replication, Bypass RLS | {}
-
 postgres=# \du
                                   List of roles
  Role name |                         Attributes                         | Member of
 -----------+------------------------------------------------------------+-----------
  postgres  | Superuser, Create role, Create DB, Replication, Bypass RLS | {}
-
 ```
-
-
-### DNE Test Cleanup
-
-No Cleanup is needed from this test.
-
-
-## Database Fresh Install Test
-
-This test validates that the db_deploy scripts will perform a fresh install if
-the disaster_recovery database exists and no ORCA schemas (dr or orca namespaces)
-exist in the database.
-
-### Database Setup Fresh Install Test
-
-1. Verify that the *disaster_recovery* database does not exist. If it does, remove
-   it using the `\i sql/cleanup.sql` command as described in the [DNE Test](#database-setup-dne-test).
-2. Create the *disaster_recovery* database by using the `\i sql/create_database.sql`
-   command as seen below.
-   ```bash
-   root@26df0390e999:/data/test/manual_tests# psql
-   psql (12.6 (Debian 12.6-1.pgdg100+1))
-   Type "help" for help
-
-   postgres=# \i sql/create_database.sql
-   CREATE DATABASE
-   COMMENT
-   ```
-
 
 ### Running the Fresh Install Test
 
@@ -200,40 +129,51 @@ To run the fresh install test, in your **python** window run the command
 ```bash
 (venv) root@cf4b0741a628:/data/test/manual_tests# python manual_test.py
 
-{"message": "Beginning manual test.", "timestamp": "2021-04-28T23:39:57.909455", "level": "info"}
-{"message": "Creating root user connection object.", "timestamp": "2021-04-28T23:39:57.910179", "level": "debug"}
-{"message": "Database set to postgres for the connection.", "timestamp": "2021-04-28T23:39:57.910943", "level": "debug"}
-{"message": "Creating URL object to connect to the database.", "timestamp": "2021-04-28T23:39:57.911960", "level": "debug"}
-{"message": "Creating root user connection object.", "timestamp": "2021-04-28T23:39:58.184032", "level": "debug"}
-{"message": "Database set to disaster_recovery for the connection.", "timestamp": "2021-04-28T23:39:58.184283", "level": "debug"}
-{"message": "Creating URL object to connect to the database.", "timestamp": "2021-04-28T23:39:58.184429", "level": "debug"}
-{"message": "Performing full install of ORCA schema.", "timestamp": "2021-04-28T23:39:58.552324", "level": "info"}
-{"message": "Creating root user connection object.", "timestamp": "2021-04-28T23:39:58.552562", "level": "debug"}
-{"message": "Database set to disaster_recovery for the connection.", "timestamp": "2021-04-28T23:39:58.552925", "level": "debug"}
-{"message": "Creating URL object to connect to the database.", "timestamp": "2021-04-28T23:39:58.553130", "level": "debug"}
-{"message": "Creating the ORCA dbo role ...", "timestamp": "2021-04-28T23:39:58.632044", "level": "debug"}
-{"message": "ORCA dbo role created.", "timestamp": "2021-04-28T23:39:58.739005", "level": "info"}
-{"message": "Creating the ORCA app role ...", "timestamp": "2021-04-28T23:39:58.739269", "level": "debug"}
-{"message": "ORCA app role created.", "timestamp": "2021-04-28T23:39:58.745035", "level": "info"}
-{"message": "Creating the ORCA schema ...", "timestamp": "2021-04-28T23:39:58.745318", "level": "debug"}
-{"message": "ORCA schema created.", "timestamp": "2021-04-28T23:39:58.841993", "level": "info"}
-{"message": "Creating the ORCA application user ...", "timestamp": "2021-04-28T23:39:58.842295", "level": "debug"}
-{"message": "ORCA application user created.", "timestamp": "2021-04-28T23:39:58.899948", "level": "info"}
-{"message": "Changing to the dbo role to create objects ...", "timestamp": "2021-04-28T23:39:58.900364", "level": "debug"}
-{"message": "Setting search path to the ORCA schema to create objects ...", "timestamp": "2021-04-28T23:39:58.904833", "level": "debug"}
-{"message": "Creating schema_versions table ...", "timestamp": "2021-04-28T23:39:58.908362", "level": "debug"}
-{"message": "schema_versions table created.", "timestamp": "2021-04-28T23:39:59.118944", "level": "info"}
-{"message": "Populating the schema_versions table with data ...", "timestamp": "2021-04-28T23:39:59.119460", "level": "debug"}
-{"message": "Data added to the schema_versions table.", "timestamp": "2021-04-28T23:39:59.146254", "level": "info"}
-{"message": "Creating recovery_status table ...", "timestamp": "2021-04-28T23:39:59.146756", "level": "debug"}
-{"message": "recovery_status table created.", "timestamp": "2021-04-28T23:39:59.248167", "level": "info"}
-{"message": "Populating the recovery_status table with data ...", "timestamp": "2021-04-28T23:39:59.248946", "level": "debug"}
-{"message": "Data added to the recovery_status table.", "timestamp": "2021-04-28T23:39:59.284255", "level": "info"}
-{"message": "Creating recovery_job table ...", "timestamp": "2021-04-28T23:39:59.284779", "level": "debug"}
-{"message": "recovery_job table created.", "timestamp": "2021-04-28T23:39:59.377570", "level": "info"}
-{"message": "Creating recovery_file table ...", "timestamp": "2021-04-28T23:39:59.377898", "level": "debug"}
-{"message": "recovery_file table created.", "timestamp": "2021-04-28T23:39:59.434901", "level": "info"}
-{"message": "Manual test complete.", "timestamp": "2021-04-28T23:39:59.445350", "level": "info"}
+{"message": "Beginning manual test.", "timestamp": "2021-09-17T14:45:29.062380", "level": "info"}
+{"message": "Creating admin user connection object.", "timestamp": "2021-09-17T14:45:29.062380", "level": "debug"}
+{"message": "Database set to postgres for the connection.", "timestamp": "2021-09-17T14:45:29.062380", "level": "debug"}
+{"message": "Creating URL object to connect to the database.", "timestamp": "2021-09-17T14:45:29.062380", "level": "debug"}
+{"message": "Creating admin user connection object.", "timestamp": "2021-09-17T14:45:29.124911", "level": "debug"}
+{"message": "Database set to orca for the connection.", "timestamp": "2021-09-17T14:45:29.124911", "level": "debug"}
+{"message": "Creating URL object to connect to the database.", "timestamp": "2021-09-17T14:45:29.124911", "level": "debug"}
+{"message": "The ORCA database orca does not exist, or the server could not be connected to.", "timestamp": "2021-09-17T14:45:32.896358", "level": "info"}
+{"message": "Database created.", "timestamp": "2021-09-17T14:45:35.071075", "level": "info"}
+{"message": "Creating admin user connection object.", "timestamp": "2021-09-17T14:45:35.071075", "level": "debug"}
+{"message": "Database set to orca for the connection.", "timestamp": "2021-09-17T14:45:35.071075", "level": "debug"}
+{"message": "Creating URL object to connect to the database.", "timestamp": "2021-09-17T14:45:35.071075", "level": "debug"}
+{"message": "Creating the ORCA dbo role ...", "timestamp": "2021-09-17T14:45:38.493302", "level": "debug"}
+{"message": "ORCA dbo role created.", "timestamp": "2021-09-17T14:45:38.984447", "level": "info"}
+{"message": "Creating the ORCA app role ...", "timestamp": "2021-09-17T14:45:38.984447", "level": "debug"}
+{"message": "ORCA app role created.", "timestamp": "2021-09-17T14:45:39.178078", "level": "info"}
+{"message": "Creating the ORCA schema ...", "timestamp": "2021-09-17T14:45:39.178078", "level": "debug"}
+{"message": "ORCA schema created.", "timestamp": "2021-09-17T14:45:39.456220", "level": "info"}
+{"message": "Creating the ORCA application user ...", "timestamp": "2021-09-17T14:45:39.456220", "level": "debug"}
+{"message": "ORCA application user created.", "timestamp": "2021-09-17T14:45:39.683274", "level": "info"}
+{"message": "Changing to the dbo role to create objects ...", "timestamp": "2021-09-17T14:45:39.683274", "level": "debug"}
+{"message": "Setting search path to the ORCA schema to create objects ...", "timestamp": "2021-09-17T14:45:39.921230", "level": "debug"}
+{"message": "Creating schema_versions table ...", "timestamp": "2021-09-17T14:45:40.161729", "level": "debug"}
+{"message": "schema_versions table created.", "timestamp": "2021-09-17T14:45:40.444241", "level": "info"}
+{"message": "Populating the schema_versions table with data ...", "timestamp": "2021-09-17T14:45:40.444241", "level": "debug"}
+{"message": "Data added to the schema_versions table.", "timestamp": "2021-09-17T14:45:40.713298", "level": "info"}
+{"message": "Creating recovery_status table ...", "timestamp": "2021-09-17T14:45:40.713298", "level": "debug"}
+{"message": "recovery_status table created.", "timestamp": "2021-09-17T14:45:40.977858", "level": "info"}
+{"message": "Populating the recovery_status table with data ...", "timestamp": "2021-09-17T14:45:40.977858", "level": "debug"}
+{"message": "Data added to the recovery_status table.", "timestamp": "2021-09-17T14:45:41.211584", "level": "info"}
+{"message": "Creating recovery_job table ...", "timestamp": "2021-09-17T14:45:41.211584", "level": "debug"}
+{"message": "recovery_job table created.", "timestamp": "2021-09-17T14:45:41.392572", "level": "info"}
+{"message": "Creating recovery_file table ...", "timestamp": "2021-09-17T14:45:41.392572", "level": "debug"}
+{"message": "recovery_file table created.", "timestamp": "2021-09-17T14:45:41.668928", "level": "info"}
+{"message": "Creating providers table ...", "timestamp": "2021-09-17T14:45:41.668928", "level": "debug"}
+{"message": "providers table created.", "timestamp": "2021-09-17T14:45:41.885556", "level": "info"}
+{"message": "Creating collections table ...", "timestamp": "2021-09-17T14:45:41.885556", "level": "debug"}
+{"message": "collections table created.", "timestamp": "2021-09-17T14:45:42.105752", "level": "info"}
+{"message": "Creating granules table ...", "timestamp": "2021-09-17T14:45:42.365692", "level": "debug"}
+{"message": "granules table created.", "timestamp": "2021-09-17T14:45:42.622593", "level": "info"}
+{"message": "Creating files table ...", "timestamp": "2021-09-17T14:45:42.622593", "level": "debug"}
+{"message": "files table created.", "timestamp": "2021-09-17T14:45:42.856679", "level": "info"}
+{"message": "Manual test complete.", "timestamp": "2021-09-17T14:45:43.329754", "level": "info"}
+
+Process finished with exit code 0
 ```
 
 
@@ -245,22 +185,27 @@ First, review the logs and verify that the following *info* messages were
 expressed in the logs.
 
 ```bash
-{"message": "Performing full install of ORCA schema.", "timestamp": "2021-04-28T23:39:58.552324", "level": "info"}
-{"message": "ORCA dbo role created.", "timestamp": "2021-04-28T23:39:58.739005", "level": "info"}
-{"message": "ORCA app role created.", "timestamp": "2021-04-28T23:39:58.745035", "level": "info"}
-{"message": "ORCA schema created.", "timestamp": "2021-04-28T23:39:58.841993", "level": "info"}
-{"message": "ORCA application user created.", "timestamp": "2021-04-28T23:39:58.899948", "level": "info"}
-{"message": "schema_versions table created.", "timestamp": "2021-04-28T23:39:59.118944", "level": "info"}
-{"message": "Data added to the schema_versions table.", "timestamp": "2021-04-28T23:39:59.146254", "level": "info"}
-{"message": "recovery_status table created.", "timestamp": "2021-04-28T23:39:59.248167", "level": "info"}
-{"message": "Data added to the recovery_status table.", "timestamp": "2021-04-28T23:39:59.284255", "level": "info"}
-{"message": "recovery_job table created.", "timestamp": "2021-04-28T23:39:59.377570", "level": "info"}
-{"message": "recovery_file table created.", "timestamp": "2021-04-28T23:39:59.434901", "level": "info"}
+{"message": "Performing full install of ORCA schema.", "timestamp": "2021-09-14T13:37:47.649467", "level": "info"}
+{"message": "ORCA dbo role created.", "timestamp": "2021-09-14T13:37:51.271456", "level": "info"}
+{"message": "ORCA app role created.", "timestamp": "2021-09-14T13:37:51.472515", "level": "info"}
+{"message": "ORCA schema created.", "timestamp": "2021-09-14T13:37:51.715371", "level": "info"}
+{"message": "ORCA application user created.", "timestamp": "2021-09-14T13:37:51.912015", "level": "info"}
+{"message": "schema_versions table created.", "timestamp": "2021-09-14T13:37:52.720591", "level": "info"}
+{"message": "Data added to the recovery_status table.", "timestamp": "2021-09-14T13:37:53.398124", "level": "info"}
+{"message": "recovery_status table created.", "timestamp": "2021-09-14T13:37:53.185110", "level": "info"}
+{"message": "Data added to the recovery_status table.", "timestamp": "2021-09-14T13:37:53.398124", "level": "info"}
+{"message": "recovery_job table created.", "timestamp": "2021-09-14T13:37:53.621899", "level": "info"}
+{"message": "recovery_file table created.", "timestamp": "2021-09-14T13:37:53.843190", "level": "info"}
+{"message": "providers table created.", "timestamp": "2021-09-14T13:37:54.056274", "level": "info"}
+{"message": "collections table created.", "timestamp": "2021-09-14T13:37:54.279718", "level": "info"}
+{"message": "granules table created.", "timestamp": "2021-09-14T13:37:54.711834", "level": "info"}
+{"message": "files table created.", "timestamp": "2021-09-14T13:37:54.927886", "level": "info"}
+
 ```
 
 Next, verify that the objects were actually created with the proper data in the
-PostgreSQL *disaster_recovery* database. Perform the checks below by going to the
-**pgclient** window and logging into the *disaster_recovery* database as the
+PostgreSQL *orca* database. Perform the checks below by going to the
+**pgclient** window and logging into the *orca* database as the
 *postgres* user as seen below.
 
 ```bash
@@ -268,8 +213,8 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    psql (12.6 (Debian 12.6-1.pgdg100+1))
    Type "help" for help
 
-   postgres=# \c disaster_recovery
-   You are now connected to database "disaster_recovery" as user "postgres".
+   postgres=# \c orca
+   You are now connected to database "orca" as user "postgres".
 ```
 
 1. Verify that the roles/users were created and that *orcauser* is a
@@ -286,7 +231,7 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    ```
 2. Verify the ORCA schema was created.
    ```bash
-   disaster_recovery=# \dn
+   orca=# \dn
 
      List of schemas
      Name  |  Owner
@@ -297,20 +242,24 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    ```
 3. Verify the tables were created in the ORCA schema.
    ```bash
-   disaster_recovery=# \dt orca.*
+   orca=# \dt orca.*
 
                  List of relations
-    Schema |      Name       | Type  |  Owner
-   --------+-----------------+-------+----------
-    orca   | recovery_file   | table | orca_dbo
-    orca   | recovery_job    | table | orca_dbo
-    orca   | recovery_status | table | orca_dbo
-    orca   | schema_versions | table | orca_dbo
-    (4 rows)
+    Schema |      Name                 | Type  |  Owner
+   --------+---------------------------+-------+----------
+    orca   | collections               | table | orca_dbo
+    orca   | files                     | table | orca_dbo
+    orca   | granules                  | table | orca_dbo
+    orca   | providers                 | table | orca_dbo
+    orca   | recovery_file             | table | orca_dbo
+    orca   | recovery_job              | table | orca_dbo
+    orca   | recovery_status           | table | orca_dbo
+    orca   | schema_versions           | table | orca_dbo
+    (9 rows)
    ```
 4. Verify the static data in the *recovery_status* table.
    ```bash
-   disaster_recovery=# select * from orca.recovery_status;
+   orca=# select * from orca.recovery_status;
 
     id |  value
    ----+----------
@@ -322,19 +271,19 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    ```
 5. Verify the static data in the *schema_versions* table.
    ```bash
-   disaster_recovery=# select * from orca.schema_versions;
+   orca=# select * from orca.schema_versions;
 
     version_id |                     description                      |         install _date         | is_latest
    ------------+------------------------------------------------------+-------------------------------+-----------
-             2 | Updated recovery schema for v3.x of ORCA application | 2021-04-28 23:3 9:58.63444+00 | t
+             4 | Added inventory schema for v4.x of ORCA application  | 2021-04-28 23:3 9:58.63444+00 | t
    (1 row)
    ```
 6. Verify the orcauser can login with the password provided in the `.env` files
    `APPLICATION_PASSWORD` environment variable.
    ```bash
-   disaster_recovery=# \c "dbname=disaster_recovery user=orcauser password=<Your Password Here>"
+   orca=# \c "dbname=orca user=orcauser password=<Your Password Here>"
 
-   You are now connected to database "disaster_recovery" as user "orcauser".
+   You are now connected to database "orca" as user "orcauser".
    ```
 
 
@@ -342,11 +291,9 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
 
 No cleanup is necessary if the next test run is the [Database No Migration Test](#database-no-migration-test).
 
-To cleanup from this test you can use one of two scripts. The `sql/cleanup.sql`
-script will remove all objects including the *disaster_recovery* database. The
+The `sql/cleanup.sql` script will remove all objects including the *orca* database. The
 `sql/orca_schema_v2/remove.sql` script will remove only the objects created
-in this test but leave the database intact. Currently, only the `v2` script is required.
-Both scripts must be run as the
+in this test but leave the database intact. Both scripts must be run as the
 *postgres* user.
 
 ```bash
@@ -354,16 +301,22 @@ root@26df0390e999:/data/test/manual_tests# psql
 psql (12.6 (Debian 12.6-1.pgdg100+1))
 Type "help" for help.
 
-postgres=# \c disaster_recovery
-You are now connected to database "disaster_recovery" as user "postgres".
+postgres=# \c orca
+You are now connected to database "orca" as user "postgres".
 
-disaster_recovery=# \i sql/orca_schema_v2/remove.sql
+orca=# \i sql/orca_schema_v2/remove.sql
 
 psql:sql/orca_schema_v2/remove.sql:1: NOTICE:  drop cascades to 4 other objects
 DETAIL:  drop cascades to table orca.schema_versions
 drop cascades to table orca.recovery_status
 drop cascades to table orca.recovery_job
 drop cascades to table orca.recovery_file
+drop cascades to table orca.schema_versions
+drop cascades to table orca.files
+drop cascades to table orca.granules
+drop cascades to table orca.provider_collections_xref
+drop cascades to table orca.collections
+drop cascades to table orca.providers
 DROP SCHEMA
 DROP ROLE
 REVOKE
@@ -375,17 +328,41 @@ psql:sql/orca_schema_v2/remove.sql:8: WARNING:  there is no transaction in progr
 COMMIT
 ```
 
+## Database Exists Install Test
 
-## Database Migration v1 to v3 Test
+This is a modification of [Database Fresh Install Test](#database-fresh-install-test) 
+where the disaster-recovery database already exists.
+
+### Database Exists Test Setup
+
+1. If the database exists, remove it with the command `\i sql/cleanup.sql`
+   at the psql prompt.
+
+2. Run `\i sql/create_database.sql` at the psql prompt.
+
+### Running the Database Exists Test
+
+Follow [Running the Fresh Install Test](#running-the-fresh-install-test),
+noting that messages regarding database creation should be skipped.
+
+### Database Exists Test Validation
+
+Follow [Fresh Install Test Validation](#fresh-install-test-validation).
+
+### Database Exists Test Cleanup
+
+Follow [Fresh Install Test Cleanup](#fresh-install-test-cleanup).
+
+## Database Migration v1 to v4 Test
 
 This test validates that the db_deploy scripts correctly identify a v1 ORCA
-schema and run the migration of objects and data to an ORCA v3 schema.
+schema and run the migration of objects and data to an ORCA v4 schema.
 
 ### Database Setup Migration Test
 
-1. Verify that the *disaster_recovery* database does not exist. If it does, remove
+1. Verify that the *orca* database does not exist. If it does, remove
    it using the `\i sql/cleanup.sql` command as described in the [DNE Test](#database-setup-dne-test).
-2. Create the *disaster_recovery* database by using the `\i sql/create_database.sql`
+2. Create the *orca* database by using the `\i sql/create_database.sql`
    command as seen below.
    ```bash
    root@26df0390e999:/data/test/manual_tests# psql
@@ -398,7 +375,7 @@ schema and run the migration of objects and data to an ORCA v3 schema.
    ```
 3. Run the `sql/orca_schema_v1/create.sql` script as seen below. This will
    populate the database with the users, schema, tables and dummy data used for
-   migrating from v1 of the schema to v3.
+   migrating from v1 of the schema to v4.
    ```bash
    root@26df0390e999:/data/test/manual_tests# psql
    psql (12.6 (Debian 12.6-1.pgdg100+1))
@@ -416,7 +393,7 @@ schema and run the migration of objects and data to an ORCA v3 schema.
    DO
    psql:sql/orca_schema_v1/create.sql:4: WARNING:  there is no transaction in progress
    COMMIT
-   You are now connected to database "disaster_recovery" as user "postgres".
+   You are now connected to database "orca" as user "postgres".
    CREATE EXTENSION
    CREATE SCHEMA
    COMMENT
@@ -464,7 +441,7 @@ schema and run the migration of objects and data to an ORCA v3 schema.
    COMMIT
    
    # Once complete quit psql. We will login as postgres user during validation.
-   disaster_recovery=> \q
+   orca=> \q
    ```
 
 
@@ -476,64 +453,50 @@ To run the migration test, in your **python** window run the command
 ```bash
 (venv) root@cf4b0741a628:/data/test/manual_tests# python manual_test.py
 
-{"message": "Beginning manual test.", "timestamp": "2021-04-29T15:20:18.389236", "level": "info"}
-{"message": "Creating root user connection object.", "timestamp": "2021-04-29T15:20:18.391264", "level": "debug"}
-{"message": "Database set to postgres for the connection.", "timestamp": "2021-04-29T15:20:18.392844", "level": "debug"}
-{"message": "Creating URL object to connect to the database.", "timestamp": "2021-04-29T15:20:18.393605", "level": "debug"}
-{"message": "Creating root user connection object.", "timestamp": "2021-04-29T15:20:18.722447", "level": "debug"}
-{"message": "Database set to disaster_recovery for the connection.", "timestamp": "2021-04-29T15:20:18.722661", "level": "debug"}
-{"message": "Creating URL object to connect to the database.", "timestamp": "2021-04-29T15:20:18.722783", "level": "debug"}
-{"message": "ORCA schema exists. Checking for schema versions ...", "timestamp": "2021-04-29T15:20:18.831074", "level": "debug"}
-{"message": "Creating root user connection object.", "timestamp": "2021-04-29T15:20:18.831502", "level": "debug"}
-{"message": "Database set to disaster_recovery for the connection.", "timestamp": "2021-04-29T15:20:18.831800", "level": "debug"}
-{"message": "Creating URL object to connect to the database.", "timestamp": "2021-04-29T15:20:18.831972", "level": "debug"}
-{"message": "Checking for schema_versions table.", "timestamp": "2021-04-29T15:20:18.929351", "level": "debug"}
-{"message": "schema_versions table exists False", "timestamp": "2021-04-29T15:20:18.948781", "level": "debug"}
-{"message": "Performing migration of the ORCA schema.", "timestamp": "2021-04-29T15:20:18.952832", "level": "info"}
-{"message": "Creating root user connection object.", "timestamp": "2021-04-29T15:20:18.953054", "level": "debug"}
-{"message": "Database set to disaster_recovery for the connection.", "timestamp": "2021-04-29T15:20:18.953179", "level": "debug"}
-{"message": "Creating URL object to connect to the database.", "timestamp": "2021-04-29T15:20:18.953302", "level": "debug"}
-{"message": "Creating the ORCA dbo role ...", "timestamp": "2021-04-29T15:20:19.052094", "level": "debug"}
-{"message": "ORCA dbo role created.", "timestamp": "2021-04-29T15:20:19.083400", "level": "info"}
-{"message": "Creating the ORCA app role ...", "timestamp": "2021-04-29T15:20:19.083865", "level": "debug"}
-{"message": "ORCA app role created.", "timestamp": "2021-04-29T15:20:19.090386", "level": "info"}
-{"message": "Creating the ORCA schema ...", "timestamp": "2021-04-29T15:20:19.090977", "level": "debug"}
-{"message": "ORCA schema created.", "timestamp": "2021-04-29T15:20:19.122371", "level": "info"}
-{"message": "Creating the ORCA application user ...", "timestamp": "2021-04-29T15:20:19.122914", "level": "debug"}
-{"message": "ORCA application user created.", "timestamp": "2021-04-29T15:20:19.155396", "level": "info"}
-{"message": "Changing to the dbo role to create objects ...", "timestamp": "2021-04-29T15:20:19.155747", "level": "debug"}
-{"message": "Setting search path to the ORCA schema to create objects ...", "timestamp": "2021-04-29T15:20:19.163908", "level": "debug"}
-{"message": "Creating schema_versions table ...", "timestamp": "2021-04-29T15:20:19.168880", "level": "debug"}
-{"message": "schema_versions table created.", "timestamp": "2021-04-29T15:20:19.309066", "level": "info"}
-{"message": "Creating recovery_status table ...", "timestamp": "2021-04-29T15:20:19.309291", "level": "debug"}
-{"message": "recovery_status table created.", "timestamp": "2021-04-29T15:20:19.402883", "level": "info"}
-{"message": "Creating recovery_job table ...", "timestamp": "2021-04-29T15:20:19.403080", "level": "debug"}
-{"message": "recovery_job table created.", "timestamp": "2021-04-29T15:20:19.495748", "level": "info"}
-{"message": "Creating recovery_file table ...", "timestamp": "2021-04-29T15:20:19.495953", "level": "debug"}
-{"message": "recovery_file table created.", "timestamp": "2021-04-29T15:20:19.597165", "level": "info"}
-{"message": "Changing to the postgres role ...", "timestamp": "2021-04-29T15:20:19.608413", "level": "debug"}
-{"message": "Setting search path to the ORCA and dr schema ...", "timestamp": "2021-04-29T15:20:19.620167", "level": "debug"}
-{"message": "Populating the recovery_status table with data ...", "timestamp": "2021-04-29T15:20:19.624223", "level": "debug"}
-{"message": "Data added to the recovery_status table.", "timestamp": "2021-04-29T15:20:19.761836", "level": "info"}
-{"message": "Migrating data from request_status to recovery_job ...", "timestamp": "2021-04-29T15:20:19.762083", "level": "debug"}
-{"message": "Data migrated to recovery_job table.", "timestamp": "2021-04-29T15:20:20.007252", "level": "info"}
-{"message": "Migrating data from request_status to recovery_file ...", "timestamp": "2021-04-29T15:20:20.007652", "level": "debug"}
-{"message": "Data migrated to recovery_file table.", "timestamp": "2021-04-29T15:20:20.129916", "level": "info"}
-{"message": "Dropping dr.request_status table ...", "timestamp": "2021-04-29T15:20:20.130255", "level": "debug"}
-{"message": "dr.request_status table removed.", "timestamp": "2021-04-29T15:20:20.154444", "level": "info"}
-{"message": "Dropping dr schema ...", "timestamp": "2021-04-29T15:20:20.154832", "level": "debug"}
-{"message": "dr schema removed.", "timestamp": "2021-04-29T15:20:20.165126", "level": "info"}
-{"message": "Dropping drdbo_role role ...", "timestamp": "2021-04-29T15:20:20.165899", "level": "debug"}
-{"message": "drdbo_role role removed.", "timestamp": "2021-04-29T15:20:20.172164", "level": "info"}
-{"message": "Dropping dr_role role ...", "timestamp": "2021-04-29T15:20:20.172607", "level": "debug"}
-{"message": "dr_role role removed.", "timestamp": "2021-04-29T15:20:20.181274", "level": "info"}
-{"message": "Dropping dbo user ...", "timestamp": "2021-04-29T15:20:20.181697", "level": "debug"}
-{"message": "dbo user removed", "timestamp": "2021-04-29T15:20:20.188715", "level": "info"}
-{"message": "Dropping druser user ...", "timestamp": "2021-04-29T15:20:20.189129", "level": "debug"}
-{"message": "druser user removed.", "timestamp": "2021-04-29T15:20:20.199778", "level": "info"}
-{"message": "Populating the schema_versions table with data ...", "timestamp": "2021-04-29T15:20:20.199998", "level": "debug"}
-{"message": "Data added to the schema_versions table.", "timestamp": "2021-04-29T15:20:20.231299", "level": "info"}
-{"message": "Manual test complete.", "timestamp": "2021-04-29T15:20:20.363841", "level": "info"}
+{"message": "Beginning manual test.", "timestamp": "2021-09-14T13:37:39.791395", "level": "info"}
+{"message": "Creating admin user connection object.", "timestamp": "2021-09-14T13:37:39.791395", "level": "debug"}
+{"message": "Database set to postgres for the connection.", "timestamp": "2021-09-14T13:37:39.791395", "level": "debug"}
+{"message": "Creating URL object to connect to the database.", "timestamp": "2021-09-14T13:37:39.791395", "level": "debug"}
+{"message": "Creating admin user connection object.", "timestamp": "2021-09-14T13:37:39.826098", "level": "debug"}
+{"message": "Database set to orca for the connection.", "timestamp": "2021-09-14T13:37:39.826098", "level": "debug"}
+{"message": "Creating URL object to connect to the database.", "timestamp": "2021-09-14T13:37:39.826098", "level": "debug"}
+{"message": "Performing full install of ORCA schema.", "timestamp": "2021-09-14T13:37:47.649467", "level": "info"}
+{"message": "Creating admin user connection object.", "timestamp": "2021-09-14T13:37:47.649467", "level": "debug"}
+{"message": "Database set to orca for the connection.", "timestamp": "2021-09-14T13:37:47.649467", "level": "debug"}
+{"message": "Creating URL object to connect to the database.", "timestamp": "2021-09-14T13:37:47.649467", "level": "debug"}
+{"message": "Creating the ORCA dbo role ...", "timestamp": "2021-09-14T13:37:50.859040", "level": "debug"}
+{"message": "ORCA dbo role created.", "timestamp": "2021-09-14T13:37:51.271456", "level": "info"}
+{"message": "Creating the ORCA app role ...", "timestamp": "2021-09-14T13:37:51.271456", "level": "debug"}
+{"message": "ORCA app role created.", "timestamp": "2021-09-14T13:37:51.472515", "level": "info"}
+{"message": "Creating the ORCA schema ...", "timestamp": "2021-09-14T13:37:51.472515", "level": "debug"}
+{"message": "ORCA schema created.", "timestamp": "2021-09-14T13:37:51.715371", "level": "info"}
+{"message": "Creating the ORCA application user ...", "timestamp": "2021-09-14T13:37:51.715892", "level": "debug"}
+{"message": "ORCA application user created.", "timestamp": "2021-09-14T13:37:51.912015", "level": "info"}
+{"message": "Changing to the dbo role to create objects ...", "timestamp": "2021-09-14T13:37:51.912015", "level": "debug"}
+{"message": "Setting search path to the ORCA schema to create objects ...", "timestamp": "2021-09-14T13:37:52.076420", "level": "debug"}
+{"message": "Creating schema_versions table ...", "timestamp": "2021-09-14T13:37:52.359576", "level": "debug"}
+{"message": "schema_versions table created.", "timestamp": "2021-09-14T13:37:52.720591", "level": "info"}
+{"message": "Populating the schema_versions table with data ...", "timestamp": "2021-09-14T13:37:52.720591", "level": "debug"}
+{"message": "Data added to the schema_versions table.", "timestamp": "2021-09-14T13:37:52.967958", "level": "info"}
+{"message": "Creating recovery_status table ...", "timestamp": "2021-09-14T13:37:52.967958", "level": "debug"}
+{"message": "recovery_status table created.", "timestamp": "2021-09-14T13:37:53.185110", "level": "info"}
+{"message": "Populating the recovery_status table with data ...", "timestamp": "2021-09-14T13:37:53.185110", "level": "debug"}
+{"message": "Data added to the recovery_status table.", "timestamp": "2021-09-14T13:37:53.398124", "level": "info"}
+{"message": "Creating recovery_job table ...", "timestamp": "2021-09-14T13:37:53.398714", "level": "debug"}
+{"message": "recovery_job table created.", "timestamp": "2021-09-14T13:37:53.621899", "level": "info"}
+{"message": "Creating recovery_file table ...", "timestamp": "2021-09-14T13:37:53.621899", "level": "debug"}
+{"message": "recovery_file table created.", "timestamp": "2021-09-14T13:37:53.843190", "level": "info"}
+{"message": "Creating providers table ...", "timestamp": "2021-09-14T13:37:53.843190", "level": "debug"}
+{"message": "providers table created.", "timestamp": "2021-09-14T13:37:54.056274", "level": "info"}
+{"message": "Creating collections table ...", "timestamp": "2021-09-14T13:37:54.056274", "level": "debug"}
+{"message": "collections table created.", "timestamp": "2021-09-14T13:37:54.279718", "level": "info"}
+{"message": "Creating granules table ...", "timestamp": "2021-09-14T13:37:54.494315", "level": "debug"}
+{"message": "granules table created.", "timestamp": "2021-09-14T13:37:54.711834", "level": "info"}
+{"message": "Creating files table ...", "timestamp": "2021-09-14T13:37:54.711834", "level": "debug"}
+{"message": "files table created.", "timestamp": "2021-09-14T13:37:54.927886", "level": "info"}
+{"message": "Data added to the schema_versions table.", "timestamp": "2021-09-14T15:20:20.231299", "level": "info"}
+{"message": "Populating the schema_versions table with data ...", "timestamp": "2021-09-14T15:20:20.199998", "level": "debug"}
+{"message": "Manual test complete.", "timestamp": "2021-09-14T15:20:20.363841", "level": "info"}
 ```
 
 
@@ -545,30 +508,35 @@ First, review the logs and verify that the following *info* messages were
 expressed in the logs.
 
 ```bash
-{"message": "Performing migration of the ORCA schema.", "timestamp": "2021-04-29T15:20:18.952832", "level": "info"}
-{"message": "ORCA dbo role created.", "timestamp": "2021-04-29T15:20:19.083400", "level": "info"}
-{"message": "ORCA app role created.", "timestamp": "2021-04-29T15:20:19.090386", "level": "info"}
-{"message": "ORCA schema created.", "timestamp": "2021-04-29T15:20:19.122371", "level": "info"}
-{"message": "ORCA application user created.", "timestamp": "2021-04-29T15:20:19.155396", "level": "info"}
-{"message": "schema_versions table created.", "timestamp": "2021-04-29T15:20:19.309066", "level": "info"}
-{"message": "recovery_status table created.", "timestamp": "2021-04-29T15:20:19.402883", "level": "info"}
-{"message": "recovery_job table created.", "timestamp": "2021-04-29T15:20:19.495748", "level": "info"}
-{"message": "recovery_file table created.", "timestamp": "2021-04-29T15:20:19.597165", "level": "info"}
-{"message": "Data added to the recovery_status table.", "timestamp": "2021-04-29T15:20:19.761836", "level": "info"}
-{"message": "Data migrated to recovery_job table.", "timestamp": "2021-04-29T15:20:20.007252", "level": "info"}
-{"message": "Data migrated to recovery_file table.", "timestamp": "2021-04-29T15:20:20.129916", "level": "info"}
-{"message": "dr.request_status table removed.", "timestamp": "2021-04-29T15:20:20.154444", "level": "info"}
-{"message": "dr schema removed.", "timestamp": "2021-04-29T15:20:20.165126", "level": "info"}
-{"message": "drdbo_role role removed.", "timestamp": "2021-04-29T15:20:20.172164", "level": "info"}
-{"message": "dr_role role removed.", "timestamp": "2021-04-29T15:20:20.181274", "level": "info"}
-{"message": "dbo user removed", "timestamp": "2021-04-29T15:20:20.188715", "level": "info"}
-{"message": "druser user removed.", "timestamp": "2021-04-29T15:20:20.199778", "level": "info"}
-{"message": "Data added to the schema_versions table.", "timestamp": "2021-04-29T15:20:20.231299", "level": "info"}
+{"message": "Performing migration of the ORCA schema.", "timestamp": "2021-09-14T15:20:18.952832", "level": "info"}
+{"message": "ORCA dbo role created.", "timestamp": "2021-09-14T15:20:19.083400", "level": "info"}
+{"message": "ORCA app role created.", "timestamp": "2021-09-14T15:20:19.090386", "level": "info"}
+{"message": "ORCA schema created.", "timestamp": "2021-09-14T15:20:19.122371", "level": "info"}
+{"message": "ORCA application user created.", "timestamp": "2021-09-14T15:20:19.155396", "level": "info"}
+{"message": "schema_versions table created.", "timestamp": "2021-09-14T15:20:19.309066", "level": "info"}
+{"message": "recovery_status table created.", "timestamp": "2021-09-14T15:20:19.402883", "level": "info"}
+{"message": "recovery_job table created.", "timestamp": "2021-09-14T15:20:19.495748", "level": "info"}
+{"message": "recovery_file table created.", "timestamp": "2021-09-14T15:20:19.597165", "level": "info"}
+{"message": "Data added to the recovery_status table.", "timestamp": "2021-09-14T15:20:19.761836", "level": "info"}
+{"message": "Data migrated to recovery_job table.", "timestamp": "2021-09-14T15:20:20.007252", "level": "info"}
+{"message": "Data migrated to recovery_file table.", "timestamp": "2021-09-14T15:20:20.129916", "level": "info"}
+{"message": "dr.request_status table removed.", "timestamp": "2021-09-14T15:20:20.154444", "level": "info"}
+{"message": "dr schema removed.", "timestamp": "2021-09-14T15:20:20.165126", "level": "info"}
+{"message": "drdbo_role role removed.", "timestamp": "2021-09-14T15:20:20.172164", "level": "info"}
+{"message": "dr_role role removed.", "timestamp": "2021-09-14T15:20:20.181274", "level": "info"}
+{"message": "dbo user removed", "timestamp": "2021-09-14T15:20:20.188715", "level": "info"}
+{"message": "druser user removed.", "timestamp": "2021-09-14T15:20:20.199778", "level": "info"}
+{"message": "providers table created.", "timestamp": "2021-09-14T15:20:20.231299", "level": "info"}
+{"message": "collections table created.", "timestamp": "2021-09-14T15:20:20.231299", "level": "info"}
+{"message": "granules table created.", "timestamp": "2021-09-14T15:20:20.231299", "level": "info"}
+{"message": "files table created.", "timestamp": "2021-09-14T15:20:20.231299", "level": "info"}
+{"message": "Data added to the schema_versions table.", "timestamp": "2021-09-14T15:20:20.231299", "level": "info"}
+
 ```
 
 Next, verify that the objects were actually created with the proper data in the
-PostgreSQL *disaster_recovery* database. Perform the checks below by going to the
-**pgclient** window and logging into the *disaster_recovery* database as the
+PostgreSQL *orca* database. Perform the checks below by going to the
+**pgclient** window and logging into the *orca* database as the
 *postgres* user as seen below.
 
 ```bash
@@ -576,8 +544,8 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    psql (12.6 (Debian 12.6-1.pgdg100+1))
    Type "help" for help
 
-   postgres=# \c disaster_recovery
-   You are now connected to database "disaster_recovery" as user "postgres".
+   postgres=# \c orca
+   You are now connected to database "orca" as user "postgres".
 ```
 
 1. Verify that the roles/users were created and that *orcauser* is a
@@ -595,7 +563,7 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    ```
 2. Verify the ORCA schema was created and the *dr* schema was removed.
    ```bash
-   disaster_recovery=# \dn
+   orca=# \dn
 
      List of schemas
      Name  |  Owner
@@ -606,20 +574,24 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    ```
 3. Verify the tables were created in the ORCA schema.
    ```bash
-   disaster_recovery=# \dt orca.*
+   orca=# \dt orca.*
 
                  List of relations
-    Schema |      Name       | Type  |  Owner
-   --------+-----------------+-------+----------
-    orca   | recovery_file   | table | orca_dbo
-    orca   | recovery_job    | table | orca_dbo
-    orca   | recovery_status | table | orca_dbo
-    orca   | schema_versions | table | orca_dbo
-    (4 rows)
+    Schema |      Name                 | Type  |  Owner
+   --------+---------------------------+-------+----------
+    orca   | collections               | table | orca_dbo
+    orca   | files                     | table | orca_dbo
+    orca   | granules                  | table | orca_dbo
+    orca   | providers                 | table | orca_dbo
+    orca   | recovery_file             | table | orca_dbo
+    orca   | recovery_job              | table | orca_dbo
+    orca   | recovery_status           | table | orca_dbo
+    orca   | schema_versions           | table | orca_dbo
+    (9 rows)
    ```
 4. Verify the static data in the *recovery_status* table.
    ```bash
-   disaster_recovery=# select * from orca.recovery_status;
+   orca=# select * from orca.recovery_status;
 
     id |  value
    ----+----------
@@ -631,26 +603,26 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    ```
 5. Verify the static data in the *schema_versions* table.
    ```bash
-   disaster_recovery=# select * from orca.schema_versions;
+   orca=# select * from orca.schema_versions;
 
     version_id |                     description                      |         install _date         | is_latest
    ------------+------------------------------------------------------+-------------------------------+-----------
-             2 | Updated recovery schema for v3.x of ORCA application | 2021-04-28 23:3 9:58.63444+00 | t
+             4 | Added inventory schema for v4.x of ORCA application  | 2021-09-13 23:3 9:58.63444+00 | t
    (1 row)
    ```
 6. Verify the orcauser can login with the password provided in the `.env` files
    `APPLICATION_PASSWORD` environment variable.
    ```bash
-   disaster_recovery=# \c "dbname=disaster_recovery user=orcauser password=<Your Password Here>"
+   orca=# \c "dbname=orca user=orcauser password=<Your Password Here>"
 
-   You are now connected to database "disaster_recovery" as user "orcauser".
+   You are now connected to database "orca" as user "orcauser".
    ```
 7. Validate that the data was properly migrated into the recovery jobs table. The
    dummy data has a 1 job -> 1 granule -> 1 file relation.
    ```bash
    # Check the total numbers based on status value. They should match the values
    # expressed below.
-   disaster_recovery=# select status_id, count(*) from recovery_job group by 1;
+   orca=# select status_id, count(*) from recovery_job group by 1;
    
    status_id | count
    -----------+-------
@@ -661,7 +633,7 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
 
    # Check the pending data. Verify completion date is not set and arcive_destination
    # is set to myglacierarchivebucket
-   disaster_recovery=# select * from recovery_job where status_id = 1 LIMIT 5;
+   orca=# select * from recovery_job where status_id = 1 LIMIT 5;
 
                   job_id                |        granule_id        |  archive_destination   | status_id |         request_time          | completion_time
    -------------------------------------+--------------------------+------------------------+-----------+-------------------------------+-----------------
@@ -674,7 +646,7 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
 
    # Check the complete data. Verify completion date is set and arcive_destination
    # is set to myglacierarchivebucket
-    disaster_recovery=# select * from recovery_job where status_id = 4 LIMIT 5;
+    orca=# select * from recovery_job where status_id = 4 LIMIT 5;
 
                   job_id                |        granule_id        |  archive_destination   | multipart_chunksize_mb | status_id |         request_time          | completion_time
    -------------------------------------+--------------------------+------------------------+-----------+-------------------------------+-------------------------------
@@ -687,7 +659,7 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
 
    # Check the complete data. Verify completion date is set and arcive_destination
    # is set to myglacierarchivebucket
-   disaster_recovery=# select * from recovery_job where status_id = 3 LIMIT 5;
+   orca=# select * from recovery_job where status_id = 3 LIMIT 5;
 
                   job_id                |        granule_id        |  archive_destination   | status_id |         request_time          | completion_time
    -------------------------------------+--------------------------+------------------------+-----------+-------------------------------+-------------------------------
@@ -703,7 +675,7 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    ```bash
    # Check the total numbers based on status value. They should match the values
    # expressed below.
-   disaster_recovery=# select status_id, count(*) from recovery_file group by 1;
+   orca=# select status_id, count(*) from recovery_file group by 1;
    
     status_id | count
    -----------+-------
@@ -714,7 +686,7 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
 
    # Check the pending data. Verify completion date is not set and error_message
    # is NULL.
-   disaster_recovery=# select * from recovery_file where status_id=1 LIMIT 2;
+   orca=# select * from recovery_file where status_id=1 LIMIT 2;
                    job_id                |        granule_id        |         filename        |         key_path         |   restore_destination    | multipart_chunksize_mb | status_id | error_message |         request_time          |          last_update          | completion_time
    --------------------------------------+--------------------------+-------------------------+--------------------------+--------------------------+-----------+---------------+-------------------------------+-------------------------------+-----------------
    3efd79f0-f7f5-4109-afd8-a16c36b7f270 | 687687b5b5441c3c3626b39e | 8dbb97f77729cd437a93232e | 8dbb97f77729cd437a93232e | 248f9d70d72f69f9d578966c |                   NULL |         1 |               | 2021-04-24 19:10:04.855081+00 | 2021-04-29 15:10:04.855081+00 |
@@ -723,7 +695,7 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    
    # Check the complete data. Verify completion date is set and error_message
    # is NULL.
-   disaster_recovery=# select * from recovery_file where status_id=4 LIMIT 2;
+   orca=# select * from recovery_file where status_id=4 LIMIT 2;
 
                    job_id                |        granule_id        |         filename        |         key_path         |   restore_destination    | multipart_chunksize_mb | status_id | error_message |         request_time          |          last_update          | completion_time
    --------------------------------------+--------------------------+-------------------------+--------------------------+--------------------------+-----------+------------------------+---------------+-------------------------------+-------------------------------+------------------------------
@@ -733,7 +705,7 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
    
    # Check the error data. Verify completion date is set and error_message
    # is set to "Some error occured here".
-   disaster_recovery=# select * from recovery_file where status_id=3 LIMIT 2;
+   orca=# select * from recovery_file where status_id=3 LIMIT 2;
 
                    job_id                |        granule_id        |         filename        |         key_path         |   restore_destination    | multipart_chunksize_mb | status_id |      error_message      |         request_time          |          last_update          | completion_time
    --------------------------------------+--------------------------+-------------------------+--------------------------+--------------------------+-----------+------------------------+-------------------------+-------------------------------+-------------------------------+------------------------------
@@ -753,50 +725,38 @@ PostgreSQL *disaster_recovery* database. Perform the checks below by going to th
 No cleanup is necessary if the next test run is the [Database No Migration Test](#database-no-migration-test).
 
 To clean up from this test you can use one of two scripts. The `sql/cleanup.sql`
-script will remove all objects including the *disaster_recovery* database. The
-`sql/orca_schema_v2/remove.sql` script will remove only the objects created
-in this test but leave the database intact.
-All scripts must be run as the
-*postgres* user.
+script will remove all objects including the *orca* database. The
+`sql/orca_schema_v4/remove.sql` script will migrate v4 schema to v3 schema, update the `schema_versions` table with value of 3 and also remove the `providers`, `collections`, `provider_collection_xref`, `granules` and `files` tables. The `sql/orca_schema_v3/remove.sql` script will migrate the schema from v3 to v2, update the `schema_versions` table with value of 2. The `sql/orca_schema_v2/remove.sql` script will migrate the schema from v2 to v1, update the `schema_versions` table with value of 1. The `sql/orca_schema_v1/remove.sql` script will remove all the user and roles created.
 
 ```bash
 root@26df0390e999:/data/test/manual_tests# psql
 psql (12.6 (Debian 12.6-1.pgdg100+1))
 Type "help" for help.
 
-postgres=# \c disaster_recovery
-You are now connected to database "disaster_recovery" as user "postgres".
+postgres=# \c orca
+You are now connected to database "orca" as user "postgres".
 
-disaster_recovery=# \i sql/orca_schema_v2/remove.sql
+orca=# \i sql/orca_schema_v4/remove.sql
 
-psql:sql/orca_schema_v2/remove.sql:1: NOTICE:  drop cascades to 4 other objects
-DETAIL:  drop cascades to table orca.schema_versions
-drop cascades to table orca.recovery_status
-drop cascades to table orca.recovery_job
-drop cascades to table orca.recovery_file
-DROP SCHEMA
-DROP ROLE
-REVOKE
-REVOKE
-DROP ROLE
-REVOKE
-DROP ROLE
-psql:sql/orca_schema_v2/remove.sql:8: WARNING:  there is no transaction in progress
-COMMIT
+DROP TABLE 
+DROP TABLE 
+DROP TABLE 
+DROP TABLE 
+DROP TABLE 
 ```
 
 
 
 ## Database No Migration Test
 
-This test validates that the db_deploy scripts correctly identify that a v3 ORCA
-schema is installed and do not perform any additional actions.
+This test validates that the db_deploy scripts correctly identify that a v4 ORCA
+schema is installed and do not perform any additional action.
 
 ### Database Setup No Migration Test
 
-The *disaster_recovery* database should be installed with the ORCA version 3
+The *orca* database should be installed with the ORCA version 4
 schema. This test should be ran immediately after the Fresh Install or Migration
-test so that a validated v3 schema is in place.
+test so that a validated v4 schema is in place.
 
 ### Running the No Migration Test
 
@@ -811,11 +771,11 @@ To run the no migration test, in your **python** window run the command
 {"message": "Database set to postgres for the connection.", "timestamp": "2021-04-29T16:09:07.630696", "level": "debug"}
 {"message": "Creating URL object to connect to the database.", "timestamp": "2021-04-29T16:09:07.630804", "level": "debug"}
 {"message": "Creating root user connection object.", "timestamp": "2021-04-29T16:09:08.452903", "level": "debug"}
-{"message": "Database set to disaster_recovery for the connection.", "timestamp": "2021-04-29T16:09:08.453245", "level": "debug"}
+{"message": "Database set to orca for the connection.", "timestamp": "2021-04-29T16:09:08.453245", "level": "debug"}
 {"message": "Creating URL object to connect to the database.", "timestamp": "2021-04-29T16:09:08.453468", "level": "debug"}
 {"message": "ORCA schema exists. Checking for schema versions ...", "timestamp": "2021-04-29T16:09:08.617406", "level": "debug"}
 {"message": "Creating root user connection object.", "timestamp": "2021-04-29T16:09:08.617941", "level": "debug"}
-{"message": "Database set to disaster_recovery for the connection.", "timestamp": "2021-04-29T16:09:08.618295", "level": "debug"}
+{"message": "Database set to orca for the connection.", "timestamp": "2021-04-29T16:09:08.618295", "level": "debug"}
 {"message": "Creating URL object to connect to the database.", "timestamp": "2021-04-29T16:09:08.618446", "level": "debug"}
 {"message": "Checking for schema_versions table.", "timestamp": "2021-04-29T16:09:08.815223", "level": "debug"}
 {"message": "schema_versions table exists True", "timestamp": "2021-04-29T16:09:08.871903", "level": "debug"}
@@ -835,7 +795,7 @@ the time stamp value will be different.
 ```
 
 Perform validation tests similar to the Migration or Fresh Install tests to
-verify the v2 schema objects have not changed.
+verify the v4 schema objects have not changed.
 
 ### Cleaning Up the No Migration Test
 
@@ -846,11 +806,11 @@ root@26df0390e999:/data/test/manual_tests# psql
 psql (12.6 (Debian 12.6-1.pgdg100+1))
 Type "help" for help.
 
-postgres=# \c disaster_recovery
-You are now connected to database "disaster_recovery" as user "postgres".
+postgres=# \c orca
+You are now connected to database "orca" as user "postgres".
 
-disaster_recovery=# \i sql/cleanup.sql
-You are now connected to database "disaster_recovery" as user "postgres".
+orca=# \i sql/cleanup.sql
+You are now connected to database "orca" as user "postgres".
 psql:sql/orca_schema_v1/remove.sql:1: NOTICE:  schema "dr" does not exist, skipping
 DROP SCHEMA
 psql:sql/orca_schema_v1/remove.sql:2: NOTICE:  role "druser" does not exist, skipping
@@ -872,6 +832,11 @@ DETAIL:  drop cascades to table orca.schema_versions
 drop cascades to table orca.recovery_status
 drop cascades to table orca.recovery_job
 drop cascades to table orca.recovery_file
+drop cascades to table orca.schema_versions
+drop cascades to table orca.files
+drop cascades to table orca.granules
+drop cascades to table orca.collections
+drop cascades to table orca.providers
 DROP SCHEMA
 DROP ROLE
 REVOKE
@@ -883,8 +848,5 @@ psql:sql/orca_schema_v2/remove.sql:8: WARNING:  there is no transaction in progr
 COMMIT
 You are now connected to database "postgres" as user "postgres".
 DROP DATABASE
-
 postgres=# \q
 ```
-
-

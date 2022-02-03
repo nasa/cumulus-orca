@@ -20,23 +20,23 @@
             "description": "The files to copy.",
             "type": "array",
             "items": {
-              "required": ["name", "bucket", "filepath", "filename"],
+              "required": ["bucket", "key"],
               "properties": {
-                "name": {
+                "fileName": {
                   "type": "string",
-                  "description": "The name and extension of the file."
+                  "description": "Name of file (e.g. file.txt)."
                 },
                 "bucket": {
                   "type": "string",
-                  "description": "The name of the s3 bucket to copy from."
+                  "description": "Name of the Bucket where file is archived in S3."
                 },
-                "filepath": {
+                "key": {
                   "type": "string",
-                  "description": "The path, name, and extension of the file."
+                  "description": "S3 Key for archived file."
                 },
-                "filename": {
+                "source": {
                   "type": "string",
-                  "description": "The complete s3 key for the file."
+                  "description": "Source URI of the file from origin system (e.g. S3, FTP, HTTP)."
                 }
               }
             }
@@ -45,7 +45,7 @@
       }
     },
     "copied_to_glacier": {
-      "description": "The 'filename' property of each successfully copied file.",
+      "description": "Source URI of the file from origin s3 bucket.",
       "type": "array",
       "items": {
         "type": "string"

@@ -11,6 +11,7 @@ module.exports = {
         'about/architecture/architecture-software-system',
         'about/architecture/architecture-archive-container',
         'about/architecture/architecture-recover-container',
+        'about/architecture/architecture-api-container',
         'about/architecture/architecture-database-container',
     ],
     "Helpful Tips": [
@@ -58,6 +59,9 @@ module.exports = {
         'developer/deployment-guide/testing_deployment',
         'developer/deployment-guide/deploying-from-windows',
     ],
+    "API Reference": [
+      'developer/api/orca-api'
+    ],
     "Research": [
       'developer/research/research-intro',
       'developer/research/research-localstack',
@@ -65,7 +69,9 @@ module.exports = {
       'developer/research/research-reconciliation',
       'developer/research/research-AuroraServerless',
       'developer/research/research-graphql',
-      'developer/research/research-multipart-chunksize'
+      'developer/research/research-multipart-chunksize',
+      'developer/research/research-bamboo',
+      'developer/research/research-lambda-container'
     ],
   },
   cookbook: {

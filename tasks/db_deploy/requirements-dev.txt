@@ -4,9 +4,9 @@ coverage==5.3
 
 ## Libraries needed for unit tests
 psycopg2-binary==2.8.6
-boto3==1.12.49
+boto3==1.18.40
 moto==2.0.6
 
 ## Libraries needed by application
 SQLAlchemy==1.4.11
-../../shared_libraries[database] --use-feature=in-tree-build
+../../shared_libraries[database]

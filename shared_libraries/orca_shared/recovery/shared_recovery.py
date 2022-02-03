@@ -1,7 +1,7 @@
 """
 Name: shared_recovery.py
-Description: Shared library that combines common functions and classes needed
-for recovery operations.
+Description: Shared library that combines common functions and classes needed for
+             recovery operations.
 """
 # Standard libraries
 import hashlib
@@ -11,9 +11,8 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-import boto3
-
 # Third party libraries
+import boto3
 from cumulus_logger import CumulusLogger
 
 # Set Cumulus LOGGER
@@ -55,9 +54,27 @@ def get_aws_region() -> str:
     if aws_region is None or len(aws_region) == 0:
         message = "Runtime environment variable AWS_REGION is not set."
         LOGGER.critical(message)
-        raise Exception(message)
+        raise ValueError(message)
     LOGGER.debug(f"Got environment variable for AWS_REGION = {aws_region}")
     return aws_region
+
+
+# Keys for input schema. Utilized by calling code.
+JOB_ID_KEY = "jobId"
+GRANULE_ID_KEY = "granuleId"
+ARCHIVE_DESTINATION_KEY = "archiveDestination"
+
+FILES_KEY = "files"
+
+FILENAME_KEY = "filename"
+KEY_PATH_KEY = "keyPath"
+RESTORE_DESTINATION_KEY = "restoreDestination"
+MULTIPART_CHUNKSIZE_KEY = "s3MultipartChunksizeMb"
+STATUS_ID_KEY = "statusId"
+ERROR_MESSAGE_KEY = "errorMessage"
+REQUEST_TIME_KEY = "requestTime"
+LAST_UPDATE_KEY = "lastUpdate"
+COMPLETION_TIME_KEY = "completionTime"
 
 
 def create_status_for_job(
@@ -75,28 +92,28 @@ def create_status_for_job(
         archive_destination: The S3 bucket destination of where the data is archived.
         files: A List of Dicts with the following keys:
             'filename' (str)
-            'key_path' (str)
-            'restore_destination' (str)
-            'multipart_chunksize_mb' (int)
-            'status_id' (int)
-            'error_message' (str, Optional)
-            'request_time' (str)
-            'last_update' (str)
-            'completion_time' (str, Optional)
+            'keyPath' (str)
+            'restoreDestination' (str)
+            's3MultipartChunksizeMb' (int)
+            'statusId' (int)
+            'errorMessage' (str, Optional)
+            'requestTime' (str)
+            'lastUpdate' (str)
+            'completionTime' (str, Optional)
         db_queue_url: The SQS queue URL defined by AWS.
     """
     new_data = {
-        "job_id": job_id,
-        "granule_id": granule_id,
-        "request_time": datetime.now(timezone.utc).isoformat(),
-        "archive_destination": archive_destination,
-        "files": files,
+        JOB_ID_KEY: job_id,
+        GRANULE_ID_KEY: granule_id,
+        REQUEST_TIME_KEY: datetime.now(timezone.utc).isoformat(),
+        ARCHIVE_DESTINATION_KEY: archive_destination,
+        FILES_KEY: files,
     }
 
     message = "Sending the following data to queue: {new_data}"
     LOGGER.debug(message, new_data=new_data)
 
-    post_entry_to_queue(new_data, RequestMethod.NEW_JOB, db_queue_url)
+    post_entry_to_fifo_queue(new_data, RequestMethod.NEW_JOB, db_queue_url)
 
 
 def update_status_for_file(
@@ -122,36 +139,36 @@ def update_status_for_file(
     """
     last_update = datetime.now(timezone.utc).isoformat()
     new_data = {
-        "job_id": job_id,
-        "granule_id": granule_id,
-        "filename": filename,
-        "last_update": last_update,
-        "status_id": orca_status.value,
+        JOB_ID_KEY: job_id,
+        GRANULE_ID_KEY: granule_id,
+        FILENAME_KEY: filename,
+        LAST_UPDATE_KEY: last_update,
+        STATUS_ID_KEY: orca_status.value,
     }
 
     if orca_status == OrcaStatus.SUCCESS or orca_status == OrcaStatus.FAILED:
-        new_data["completion_time"] = datetime.now(timezone.utc).isoformat()
+        new_data[COMPLETION_TIME_KEY] = datetime.now(timezone.utc).isoformat()
         if orca_status == OrcaStatus.FAILED:
-            if len(error_message) == 0 or error_message is None:
-                raise Exception("error message is required.")
-            new_data["error_message"] = error_message
+            if error_message is None or len(error_message) == 0:
+                raise ValueError("error message is required.")
+            new_data[ERROR_MESSAGE_KEY] = error_message
 
     message = "Sending the following data to queue: {new_data}"
     LOGGER.debug(message, new_data=new_data)
 
-    post_entry_to_queue(new_data, RequestMethod.UPDATE_FILE, db_queue_url)
+    post_entry_to_fifo_queue(new_data, RequestMethod.UPDATE_FILE, db_queue_url)
 
 
-def post_entry_to_queue(
+def post_entry_to_fifo_queue(
     new_data: Dict[str, Any],
     request_method: RequestMethod,
     db_queue_url: str,
 ) -> None:
     """
-    Posts messages to an SQS queue.
+    Posts messages to SQS FIFO queue.
     Args:
         new_data: A dictionary representing the column/value pairs to write to the DB table.
-        request_method: The action for the database lambda to take.
+        request_method: The action for the database lambda to take when posting to the SQS queue.
         db_queue_url: The SQS queue URL defined by AWS.
     Raises:
         None
@@ -184,6 +201,53 @@ def post_entry_to_queue(
                 "StringValue": request_method.value,
             }
         },
+        MessageBody=body,
+    )
+    LOGGER.debug("SQS Message Response: {response}", response=json.dumps(response))
+
+    # Make sure we didn't have an error sending message
+    return_status = response["ResponseMetadata"]["HTTPStatusCode"]
+    if return_status < 200 or return_status > 299:
+        raise Exception(
+            f"Failed to send message to Queue. HTTP Response was {return_status}"
+        )
+
+    sqs_md5 = response.get("MD5OfMessageBody")
+    if md5_body != sqs_md5:
+        raise Exception(
+            f"Calculated MD5 of {md5_body} does not match SQS MD5 of {sqs_md5}"
+        )
+
+
+def post_entry_to_standard_queue(
+    new_data: Dict[str, Any],
+    recovery_queue_url: str,
+) -> None:
+    """
+    Posts messages to the recovery standard SQS queue.
+    Args:
+        new_data: A dictionary representing the column/value pairs to write to the DB table.
+        recovery_queue_url: The SQS queue URL defined by AWS.
+    Raises:
+        None
+    """
+    body = json.dumps(new_data)
+
+    # TODO: pass AWS region value to function. SHOULD be gotten from environment
+    # higher up. Setting this to us-west-2 initially since that is where
+    # EOSDIS runs from normally. SEE ORCA-203 https://bugs.earthdata.nasa.ov/browse/ORCA-203
+    LOGGER.debug(
+        "Creating SQS resource for {recovery_queue_url}",
+        recovery_queue_url=recovery_queue_url,
+    )
+    mysqs_resource = boto3.resource("sqs", region_name=get_aws_region())
+    mysqs = mysqs_resource.Queue(recovery_queue_url)
+
+    md5_body = hashlib.md5(body.encode("utf8")).hexdigest()  # nosec
+
+    LOGGER.debug("Sending message to the QUEUE")
+    response = mysqs.send_message(
+        QueueUrl=recovery_queue_url,
         MessageBody=body,
     )
     LOGGER.debug("SQS Message Response: {response}", response=json.dumps(response))

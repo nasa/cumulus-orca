@@ -6,7 +6,7 @@ locals {
 
 ## Referenced Modules - Workflows
 module "orca_recovery_workflow" {
-  source = "https://github.com/nasa/cumulus/releases/download/v9.7.0/terraform-aws-cumulus-workflow.zip"
+  source = "https://github.com/nasa/cumulus/releases/download/v10.0.0/terraform-aws-cumulus-workflow.zip"
   ## --------------------------
   ## Cumulus Variables
   ## --------------------------

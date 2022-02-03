@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/get_current_archive_list/schemas/output.json",
+  "title": "get_current_archive_list Lambda Output",
+  "description": "The output for the get_current_archive_list Lambda.",
+  "type": "object",
+  "required": [
+    "jobId"
+  ],
+  "properties": {
+    "jobId": {
+      "type": "string",
+      "description": "The unique ID of the reconciliation job."
+    }
+  }
+}

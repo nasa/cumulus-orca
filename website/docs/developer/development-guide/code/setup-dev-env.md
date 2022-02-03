@@ -18,7 +18,7 @@ description: Instructions on creating an environment for working with lambdas.
 
 ## Per-Lambda Setup
 Lambdas should be built and tested within individual Virtual Environments.
-1. Navigate to the task's folder within 'culumus-orca\tasks\[task name]'.
+1. Navigate to the task's folder within 'cumulus-orca\tasks\[task name]'.
 1. Create and activate a new Python [Virtual Environment](https://docs.python.org/3.8/library/venv.html).
    1. Windows Command Line:  
       Create:
@@ -50,11 +50,6 @@ Lambdas should be built and tested within individual Virtual Environments.
    ```commandline
    pip install boto3
    pip install -r requirements.txt
-   ```
-   If requirements.txt references db_dbutils and/or pg_utils, install them with their respective commands.
-   ```commandline
-   pip install ..\dr_dbutils\dist\dr_dbutils-1.0.tar.gz
-   pip install ..\pg_utils\dist\pg_utils-1.0.tar.gz
    ```
 1. Install additional development requirements.
    ```commandline

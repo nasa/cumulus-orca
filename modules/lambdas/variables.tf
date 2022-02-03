@@ -5,8 +5,6 @@ variable "buckets" {
   type        = map(object({ name = string, type = string }))
   description = "S3 bucket locations for the various storage types being used."
 }
-
-
 variable "lambda_subnet_ids" {
   type        = list(string)
   description = "List of subnets the lambda functions have access to."
@@ -22,6 +20,12 @@ variable "permissions_boundary_arn" {
 variable "prefix" {
   type        = string
   description = "Prefix used to prepend to all object names and tags."
+}
+
+
+variable "rds_security_group_id" {
+  type        = string
+  description = "Cumulus' RDS Security Group's ID."
 }
 
 
@@ -51,13 +55,13 @@ variable "orca_default_bucket" {
   description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
 }
 
-
-## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
-variable "database_port" {
-  type        = number
-  description = "Database port that PostgreSQL traffic will be allowed on."
+variable "restore_object_role_arn" {
+  type        = string
+  description = "AWS ARN of the restore_object_role."
 }
 
+
+## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
 
 variable "orca_ingest_lambda_memory_size" {
   type        = number
@@ -117,19 +121,14 @@ variable "orca_recovery_retry_backoff" {
   description = "The multiplier by which the retry interval increases during each attempt."
 }
 
-variable "database_app_user" {
+variable "orca_sqs_metadata_queue_arn" {
   type        = string
-  description = "Name of the database application user."
+  description = "The ARN of the metadata-queue SQS"
 }
 
-variable "database_name" {
+variable "orca_sqs_metadata_queue_id" {
   type        = string
-  description = "Name of the ORCA database in PostgreSQL"
-}
-
-variable "orca_recovery_retrieval_type" {
-  type        = string
-  description = "AWS glacier recovery type to use. One of Bulk, Standard, Express."
+  description = "The URL of the metadata-queue SQS"
 }
 
 variable "orca_sqs_staged_recovery_queue_id" {

@@ -9,7 +9,7 @@
 			"description": "The unique asyncOperationId of the recovery job.",
 			"type": "string"
 		},
-		"job_status_totals": {
+		"jobStatusTotals": {
 			"description": "Sums of how many granules are in each particular restoration status.",
 			"type": "object",
 			"properties": {
@@ -43,7 +43,7 @@
 				"description": "A granule being copied as part of the job.",
 				"type": "object",
 				"properties": {
-					"granule_id": {
+					"granuleId": {
 						"description": "The unique ID of the granule.",
 						"type": "string"
 					},
@@ -53,10 +53,10 @@
 						"pattern": "^(pending|success|failed|staged)$"
 					}
 				},
-				"required": [ "granule_id", "status" ]
+				"required": [ "granuleId", "status" ]
 			},
 			"uniqueItems": true
 		}
 	},
-	"required": [ "asyncOperationId", "job_status_totals", "granules" ]
+	"required": [ "asyncOperationId", "jobStatusTotals", "granules" ]
 }

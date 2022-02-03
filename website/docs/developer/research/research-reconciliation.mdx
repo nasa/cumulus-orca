@@ -29,13 +29,13 @@ patterns.
 The following filters can be applied to a query for determining which files to
 bring back for catalog comparison between the Cumulus inventory and ORCA.
 
-| Name           | Data Type   | Description                                       |
-| -------------- | ----------- | ------------------------------------------------- |
-| providerId     | `List[str]` | The unique ID of the provider making the request. |
-| collectionId   | `List[str]` | The unique ID of collection(s) to compare.        |
-| granuleId      | `List[str]` | The unique ID of granules to compare.             |
-| startTimestamp | `timestamp` | Start time for TBD date range to compare data.    |
-| endTimestamp   | `timestamp` | End time for TBD date range to compare data.      |
+| Name           | Data Type   | Description                                                     |
+| -------------- | ----------- | ----------------------------------------------------------------|
+| providerId     | `List[str]` | The unique ID of the provider(s) making the request.            |
+| collectionId   | `List[str]` | The unique ID of collection(s) to compare.                      |
+| granuleId      | `List[str]` | The unique ID of granule(s) to compare.                         |
+| startTimestamp | `timestamp` | Start time for cumulus_create_time date range to compare data.  |
+| endTimestamp   | `timestamp` | End time for cumulus_create_time date range to compare data.    |
 
 When querying ORCA for the information these filters will be AND together for a
 comparison answer.
@@ -66,7 +66,6 @@ The metadata objects include the following.
 The following provides the potential metadata attributes that need to be captured
 for each object in order to properly filter and provide information back to Cumulus
 for reconciliation and Operator investigation of discrepancies.
-
 A draft schema for how the objects would interact and be tied together can be
 seen below.
 
@@ -87,7 +86,6 @@ to query and filter the data for data management activities.
 
 :::
 
-
 #### Provider Metadata Object
 
 | Attribute Name | Data Type | Description                              | Notable Items   |
@@ -102,7 +100,7 @@ to query and filter the data for data management activities.
 | -------------- | --------- | ----------------------------------------- | --------------- |
 | collection_id  | `string`  | collectionId that is provided by Cumulus. | Must be unique per providerId. |
 | shortname      | `string`  | Short name of the collection (AST_L1A).   | Optional but may provide more value for future items. |
-| version        | `string` | Version of the collection (061).           | Optional but may provide more value for future items. |
+| version        | `string`  | Version of the collection (061).           | Optional but may provide more value for future items. |
 
 I also considered adding attributes for collection configuration information like
 the *excluded file types*, *default archive bucket*, and other ORCA configurations.
@@ -115,13 +113,15 @@ seemed a bit challenging and did not appear to provide a real benefit.
 
 #### Granule Metadata Object
 
-| Attribute Name   | Data Type | Description                                                            | Notable Items   |
-| ---------------- | --------- | ---------------------------------------------------------------------- | --------------- |
-| cumulus_granule_id | `string`  | granuleId that is provided by Cumulus.                                 | Must be unique per collectionId |
-| acquisition_time | `timestamp` | Date and time in UTC that the data was captured.                     | TBD - Not sure if we can get this from Cumulus. Potentially Optional but would like to use as date comparator.|
-| ingest_time      | `timestamp` | Date and time in UTC that the data was originally ingested into ORCA | None |
-| last_update      | `timestamp` | Date and time in UTC that information was updated.                   | Potential time filter for Cumulus reconciliation. |
-| archive_location | `string`  | S3 bucket the data was archived to.                                    | Potentially optional as this could be stored at the file level but would be duplicated. |
+| Attribute Name      | Data Type   | Description                                                                 | Notable Items                            |
+| ------------------- | ----------- | ---------------------------------------------------------------------       | ---------------------------------------- |
+| id                  | `string`    | Internal ORCA granule ID pseudo key.                                        | None                                     |
+| collection_id       | `string`    | Collection ID from Cumulus that references the Collections table.            | None                                     |
+| cumulus_create_time | `timestamp` | Date and time data was originally ingested into cumulus                     | None                                     |
+| cumulus_granule_id  | `string`    | granuleId that is provided by Cumulus.                                      | Must be unique per collectionId          |
+| execution_id        | `string`    | Step function execution ID from AWS.                                        | Unique ID automatically generated by AWS |
+| ingest_time         | `timestamp` | Date and time in UTC that the data was originally ingested into ORCA.       | None                                     |
+| last_update         | `timestamp` | Date and time in UTC that information was updated.                          | None                                     |
 
 Note that the combination of the Cumulus Granule ID (cumulus_granule_id) and
 the Cumulus Collection ID (collection_id) is unique in the
@@ -129,16 +129,23 @@ the Cumulus Collection ID (collection_id) is unique in the
 
 #### File Metadata Object
 
-| Attribute Name           | Data Type | Description                                       | Notable Items   |
-| ------------------------ | --------- | ------------------------------------------------- | --------------- |
-| name                     | `string`  | Name of the file. (MOD14A1.061.2020245.hdf)       | Must be unique per granuleId |
-| orca_archive_location    | `string`  | ORCA S3 Glacier bucket the file resides in.       | |
-| cumulus_archive_location | `string`  | Cumulus S3 bucket the file is expected to reside in. | |
-| key_path                 | `string`  | Full S3 path to the file including the file name. | Must be unique per archive location |
+| Attribute Name           | Data Type | Description                                                                    | Notable Items                                            |
+| ------------------------ | --------- | ------------------------------------------------------------------------------ |--------------------------------------------------------- |
+| id                       | `string`  | Internal ORCA file ID                                                          | None                                                     |
+| granule_id               | `string`  | Granule that the file belongs to references the internal ORCA granule ID.       | None                                                     |
+| name                     | `string`  | Name of the file. (MOD14A1.061.2020245.hdf)                                    | Must be unique per granuleId                             |
+| orca_archive_location    | `string`  | ORCA S3 Glacier bucket the file resides in.                                    | None                                                     |
+| cumulus_archive_location | `string`  | Cumulus S3 bucket the file is expected to reside in.                           | None                                                     |
+| key_path                 | `string`  | S3 path to the file including the file name and extension, but not the bucket. | Must be unique per archive location                      | 
+| ingest_time              | `timestamp` | Date and time in UTC that the data was originally ingested into ORCA         | None                                                     |
+| etag                     | `string`  | etag of the file object in the AWS S3 Glacier bucket.                          | None                                                     |
+| version                  | `string`  | AWS provided version of the file.                                              | Must be unique per file name/key_path                    |
+| size_in_bytes            | `int`     | Size in bytes of the file. From Cumulus ingest.                                | Part of object passed to archive from Cumulus.           |
+| hash                     | `string`  | Checksum hash of the file provided by Cumulus.                                 | Optional. Part of object passed to archive from Cumulus. |
+| hash_type                | `string`  | Hash type used to calculate the hash value of the file.                        | Optional. Part of object passed to archive from Cumulus. |
 
 Note that in Cumulus the combination of the bucket (cumulus_archive_location)
 and key (key_path) is unique in the [Cumulus files table](https://github.com/nasa/cumulus/blob/master/lambdas/db-migration/src/migrations/20201014105102_create_files_table.ts).
-
 
 #### File Version Object
 
@@ -165,25 +172,30 @@ file in order to restore the proper version back or to identify versions that ma
 be eligible for deletions based on policy. If we merge the objects, we may want to
 capture the total versions available for the file.
 
-
 ### Return Metadata Needed by Cumulus
 
 At a minimum, the following metadata should be returned back to Cumulus upon a
 successful query for reconciliation return from ORCA. The data below is what
 is needed for reconciliation comparison and general metadata that may be needed
-by the end user to perform analysis on discrepencies.
+by the end user to perform analysis on discrepancies.
 
 - Provider ID (providerId)
 - Collection ID (collectionId)
+- Shortname
+- collection Version
 - Granule ID (granuleId)
-- Granule Date - TBD dependent on what is used for date range comparison ideally acquisition
+- Cumulus create time
+- Execution ID
 - Granule Ingest Date (ORCA) - may also be referred to as a Create Date.
 - Granule Last Update (ORCA)
 - File Name
 - ORCA Location - archive bucket + archive path
+- Cumulus Archive Location
+- Key Path
+- Etag
 - File Size
-- File Checksum
-- File Checksum Type
+- File Hash (Optional)
+- File Hash Type (Optional)
 - File Version (always send back latest version to compare)
 
 A rough structure may look like the following below. In order to simplify
@@ -192,43 +204,39 @@ we will need consider later include items like updating the latest flag in the
 database and glacier on a file version when doing a recovery.
 
 ```json
-[
-  {
-    "providerId": "lpdaac",
-    "collections": [
-      {
-        "collectionId": "MOD14A1__061",
-        "granules": [
-          {
-            "granuleId": "MOD14A1.061.A23V45.2020235",
-            "date": "TBD",
-            "createDate": "2020-01-01T23:00:00+00:00",
-            "lastUpdate": "2020-01-01T23:00:00+00:00",
-            "files": [
-              {
-                "fileName": "MOD14A1.061.A23V45.2020235.2020240145621.hdf",
-                "orcaLocation": "s3://orca-archive/MOD14A1/061/...",
-                "fileSizeBytes": 100934568723,
-                "fileChecksum": "ACFH325128030192834127347",
-                "fileChecksumType": "SHA-256",
-                "fileVersion": "VXCDEG902",
-                "orcaEtag": "YXC432BGT789"
-              },
-              ...
-            ]
-          },
-          ...
-        ]
-      },
-      ...
-    ]
-  },
-  ...
-]
+{
+  "anotherPage": false,
+  "granules": [
+    {
+      "providerId": "lpdaac",
+      "collectionId": "MOD14A1___061",
+      "id": "MOD14A1.061.A23V45.2020235",
+      "createdAt": "2020-01-01T23:00:00Z",
+      "executionId": "u654-123-Yx679",
+      "ingestDate": "2020-01-01T23:00:00Z",
+      "lastUpdate": "2020-01-01T23:00:00Z",
+      "files": [
+        {
+          "name": "MOD14A1.061.A23V45.2020235.2020240145621.hdf",
+          "cumulusArchiveLocation": "cumulus-bucket",
+          "orcaArchiveLocation": "orca-archive",
+          "keyPath": "MOD14A1/061/032/MOD14A1.061.A23V45.2020235.2020240145621.hdf",
+          "sizeBytes": 100934568723,
+          "hash": "ACFH325128030192834127347",
+          "hashType": "SHA-256",
+          "version": "VXCDEG902"
+        },
+        ...
+      ]
+    },
+    ...
+  ]
+}
 ```
 
 Some items we will need to think about include managing paging (start/stop) for
 large returns and limiting size of the message across the wire.
+Additionally, results should be ordered by granule_id.
 
 
 ### Potential ORCA Reconciliation Data Reporting Architecture
@@ -276,7 +284,7 @@ is used to copy data to the ORCA archive. Based on initial research located
 [here](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.copy),
 the `s3.copy` command does not return any information. See the test performed
 below. Because of this, we will likely need to perform a listing on the object to
-get additional information like the S3 object vversion as seen in the sample below.
+get additional information like the S3 object version as seen in the sample below.
 Some items to consider when looking at the options for retrieving the additional
 metadata include:
 - *speed* - How fast can I get the needed metadata?
@@ -357,7 +365,7 @@ using this functionality which is not small enough for some of the small files
 we may encounter. Reference information on multipart copy is provided below.
 
 - [Boto3 Upload Part Copy Command](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.upload_part_copy)
-- [AWS API Upload Part Copy Refrence](https://docs.aws.amazon.com/AmazonS3/latest/API/API_UploadPartCopy.html)
+- [AWS API Upload Part Copy Reference](https://docs.aws.amazon.com/AmazonS3/latest/API/API_UploadPartCopy.html)
 
 
 ### Manually Run ORCA Ingest Workflows
@@ -403,7 +411,7 @@ installations that are older than or equal to v3.x, a new workflow will need to
 be created to back populate the ORCA metadata catalog. Ideally, this workflow
 would be kicked off as part of the ORCA installation and/or migration.
 
-As a general breakdown of the flow, the Lambda or Worflow will need to do the
+As a general breakdown of the flow, the Lambda or Workflow will need to do the
 following:
 
 1. Query Cumulus looking for Collections configured for ORCA.
@@ -429,7 +437,7 @@ determine if this is needed.
 
 After discussions with the [ORCA Working Group](https://wiki.earthdata.nasa.gov/display/CUMULUS/ORCA+Working+Group)
 during the [June meeting](https://wiki.earthdata.nasa.gov/display/CUMULUS/2021-06-02+ORCA+Meeting+Notes)
-the concept above was discussed. The general consensus from the group was that repopulation
+the concept above was discussed. The general consensus from the group was that re-population
 of ORCA through a standalone workflow similar to the items laid out in the
 [manual run](#manually-run-orca-ingest-workflows) was the best option. In addition,
 the question of whether the back population method described above was a
@@ -553,7 +561,7 @@ of the archive based on reconciliation results.
 ### Getting a Listing from AWS S3
 
 To get a file listing of an S3 bucket, the [list_objects_v2 method](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.list_objects_v2)
-can be used from the boto3 library. An example of the useage can be seen below.
+can be used from the boto3 library. An example of the usage can be seen below.
 Some notable items if this library is used includes the following.
 - Only a max of 1000 objects are returned per call. Additional logic will be needed to page through and get all of the results.
 - The listing can be filtered by prefix. Possibly some room here to add configuration to look at the collection lever if a collection can be denoted by prefix.
@@ -617,12 +625,14 @@ for file in files["Contents"]:
 
 ### Potential Internal Reconciliation Architecture
 
-The following provides a rough architecture of how ORCA internal reconciliation
-may work in an AWS environment with Cumulus. The architecture reuses known
-architectural patterns from Cumulus, including AWS Cloudwatch rules, to fire the
+The following provides an architecture of how ORCA internal reconciliation
+may work in an AWS environment with Cumulus. The architecture uses AWS' S3 Inventory report
+combined with S3 triggering to fire the
 comparison off on a normal schedule. Likely the running of this type of job will
-need to scale and may require configuration parameters to examine pieces of the
-ORCA catalog using bucket and prefix information.
+need to scale.
+When returning results through the API, it is recommended that we use a "path" parameter that filters based on the file's 'Key'.
+This will allow Cumulus to build values such as collection into a filter so long
+as they construct keys using it.
 
 <MyImage
     imageSource={useBaseUrl('img/Research-Reconciliation-Internal-Reconcile.png')}
@@ -636,8 +646,7 @@ ORCA catalog using bucket and prefix information.
 ### Potential Internal Reporting Database Structure
 
 The objects needed for managing ORCA internal reconciliation and reporting are
-provided in detail below. This is just a first design pass and is not the final
-design.
+provided in detail below.
 
 An example schema showing how the objects interact and would be tied together is
 shown below.
@@ -650,76 +659,111 @@ shown below.
     resetPic={useBaseUrl('img/zoom-pan-reset.svg')}
 />
 
+#### Status Table reconcile_status
 
-#### S3 Inventory Temporary Table
+Reference table for valid status values and status order.
 
-This is a temporary object that would store the listing from the S3 bucket for
-comparison.
+| Attribute Name | Data Type | Description                  | Notable Items   |
+| -------------- | --------- | ---------------------------- | --------------- |
+| id             | `int2`    | Status ID.                   | Primary Key     |
+| value          | `string`  | Human readable status value. |  |
 
-| Attribute Name | Data Type | Description                               | Notable Items   |
-| -------------- | --------- | ----------------------------------------- | --------------- |
-| job_id         | `int8`    | Reconcile job the listing is a part of.   | Many to one relationship with the jobs table. |
-| key_path       | `string`  | Key key value from S3 listing.            | Should be able to match to the key_path in the ORCA catalog *File* metadata object. Must be unique. |
-| etag           | `string`  | ETag key value from S3 listing.           | Should be able to match to the orca_etag value in the ORCA catalog *File* metadata object. |
-| last_update    | `timestamptz` | LastModified key value from the S3 listing. | Should be able to match the last_update value in the ORCA catalog *File* metadata object. |
-| size_in_bytes  | `int8`    | Size key value from the S3 listing.       | Should be able to match the size value in the ORCA catalog *File* metadata object. |
-| storage_class  | `string`  | StorageClass key value from the S3 listing. | May be used as a filter to exclude newly added items by excluding those with a value of *STANDARD* |
-
-
-#### Internal Reconciliation Jobs Table
+#### Internal Reconciliation Jobs Table reconcile_job
 
 This table would capture internal reconciliation job information. Below is a
 sampling of attributes that may be needed. Based on design and implementation,
 additional attributes may be required. This table, in particular may need additional
 items for managing jobs.
 
-| Attribute Name | Data Type | Description                               | Notable Items   |
-| -------------- | --------- | ----------------------------------------- | --------------- |
-| id             | `int8`    | Unique Job ID.                            | Primary Key     |
-| status         | `string`  | Current status of the job. An Enumerated string. | Generally reflect the stages of reconciliation. |
-| start_time     | `timestamptz` | Start time of the job.                | Cannot be NULL  |
-| end_time       | `timestamptz` | End time of the job.                  | NULLABLE column |
-| last_update    | `timestamptz` | Last time the status was updated.     | Cannot be NULL  |
-| error_message  | `string`  | Job error message in cases of failure.    |NULLABLE column  |
+| Attribute Name          | Data Type    | Description                                          | Notable Items   |
+| ----------------------- | ------------ | ---------------------------------------------------- | --------------- |
+| id                      | `int2`       | Unique Job ID.                                       | Primary Key     |
+| orca_archive_location   | `string`     | ORCA S3 Glacier bucket the reconciliation targets.   | Location in S3. |
+| status_id               | `int8`       | Current status of the job.                           | Generally reflect the stages of reconciliation. |
+| inventory_creation_time | `timestamptz`| Inventory report creation time from the s3 manifest. | Cannot be NULL  |
+| start_time              | `timestamptz`| Start time of the job.                               | Cannot be NULL  |
+| last_update             | `timestamptz`| Last time the status was updated.                    | Cannot be NULL  |
+| end_time                | `timestamptz`| End time of the job.                                 | NULLABLE column |
+| error_message           | `string`     | Job error message in cases of failure.               | NULLABLE column |
 
 
-#### Internal Reconciliation Reporting Table Catalog Missing or Mismatches
+#### S3 Inventory Temporary Table reconcile_s3_object
 
-This table would capture the discrepancies for reporting out to the operators
-about files that are missing from ORCA S3 or have different metadata values than
-what is expected.
+This is a temporary object that would store the listing from the S3 bucket for
+comparison.
 
-| Attribute Name   | Data Type | Description                               | Notable Items   |
-| ---------------- | --------- | ----------------------------------------- | --------------- |
-| job_id           | `int8`    | Reconcile job the report is a part of.    | FK constraint back to the jobs table with a many to one relationship. |
-| provider_id      | `string`  | Provider ID from the ORCA Provider object the file belongs to. | |
-| collection_id    | `string`  | Collection ID from the ORCA Collection object the file belongs to. | |
-| granule_id       | `string`  | Granule ID from the ORCA Granule object the file belongs to. | |
-| file_name        | `string`  | File name from the ORCA File object the file belongs to. | |
-| key_path         | `string`  | Key path that includes the file name from the ORCA File object the file belongs to. | |
-| orca_etag        | `string`  | Etag value from the ORCA File object the file belongs to. | |
-| s3_etag          | `string`  | ETag key value from S3 listing.           | NULLABLE column |
-| orca_last_update | `timestamptz` | Last Update value from the ORCA File object the file belongs to. | |
-| s3_last_update   | `timestamptz` | LastModified key value from the S3 listing. | NULLABLE column |
-| orca_size        | `int8`    | Size value from the ORCA File object the file belongs to. | |
-| s3_size          | `int8`    | Size key value from the S3 listing.       | NULLABLE column |
-| discrepancy_type | `string`  | Type of discrepancy encountered like "missing" or "value x mismatch" | |
+| Attribute Name        | Data Type | Description                                 | Notable Items   |
+| --------------------- | --------- | ------------------------------------------- | --------------- |
+| job_id                | `int8`    | Reconcile job the listing is a part of.     | Many to one relationship with the jobs table. |
+| orca_archive_location | `string`  | ORCA S3 Glacier bucket the file resides in. | Location in S3. |
+| key_path              | `string`  | Key key value from S3 listing.              | Should be able to match to the key_path in the ORCA catalog *File* metadata object. Must be unique. |
+| etag                  | `string`  | ETag key value from S3 listing.             | Should be able to match to the orca_etag value in the ORCA catalog *File* metadata object. |
+| last_update           | `timestamptz` | LastModified key value from the S3 listing. | Should be able to match the last_update value in the ORCA catalog *File* metadata object. |
+| size_in_bytes         | `int8`    | Size key value from the S3 listing.         | Should be able to match the size value in the ORCA catalog *File* metadata object. |
+| storage_class         | `string`  | StorageClass key value from the S3 listing. | May be used as a filter to exclude newly added items by excluding those with a value of *STANDARD* |
+| delete_marker         | `boolean` | Set to `True` if object is a delete marker. | Items with a value of `True` should be filtered out before generating reports. |
 
-
-#### Internal Reconciliation Reporting Table Orphaned Files
+#### Internal Reconciliation Reporting Table Orphaned Files reconcile_orphan_report
 
 This table would capture the files that reside in S3 but have no match in the
 ORCA catalog. Generally, these files would be deleted or investigated to see if
 items need to be re-ingested into ORCA.
+Note that entries with a last_update time
+after or immediately before the job's start_time may not have catalog entries yet
+due to a slight delay in the catalog population. This should be indicated when
+reporting results.
 
-| Attribute Name   | Data Type | Description                               | Notable Items   |
-| ---------------- | --------- | ----------------------------------------- | --------------- |
-| job_id           | `int8`    | Reconcile job the report is a part of.    | FK constraint back to the jobs table with a many to one relationship. |
-| key_path         | `string`  | Key key value from S3 listing.            | |
-| etag             | `string`  | ETag key value from S3 listing.           | |
-| last_update      | `timestamptz` | LastModified key value from the S3 listing. | |
-| size_in_bytes    | `int8`    | Size key value from the S3 listing.       | |
-| storage_class    | `string`  | StorageClass key value from the S3 listing. | |
+| Attribute Name        | Data Type | Description                               | Notable Items   |
+| ------------- | --------- | ----------------------------------------- | --------------- |
+| job_id        | `int8`    | Reconcile job the report is a part of.    | FK constraint back to the jobs table with a many to one relationship. |
+| key_path      | `string`  | Key key value from S3 listing.            | |
+| etag          | `string`  | ETag key value from S3 listing.           | |
+| last_update   | `timestamptz` | LastModified key value from the S3 listing. | |
+| size_in_bytes | `int8`    | Size key value from the S3 listing.       | |
+| storage_class | `string`  | StorageClass key value from the S3 listing. | |
+
+#### Internal Reconciliation Reporting Table S3 Missing reconcile_phantom_report
+
+This table captures files that have records in the orca catalog, but are missing from S3.
+These files may have been deleted outside or a proper deletion flow, and may need to have their catalog entries manually cleared.
+Note that any entries with an orca_last_update after the job's
+start_time may show as an error due to race conditions with the catalog update
+process, and should be displayed as such when reporting results.
+
+| Attribute Name        | Data Type | Description                               | Notable Items   |
+| --------------------- | --------- | ----------------------------------------- | --------------- |
+| job_id                | `int8`    | Reconcile job the report is a part of.    | FK constraint back to the jobs table with a many to one relationship. |
+| collection_id         | `string`  | Collection ID from the ORCA Collection object the file belongs to. | From Catalog. |
+| granule_id            | `string`  | Granule ID from the ORCA Granule object the file belongs to. | From Catalog. |
+| file_name             | `string`  | File name from the ORCA File object the file belongs to. | From Catalog. |
+| key_path              | `string`  | Key path that includes the file name from the ORCA File object the file belongs to. | From Catalog. |
+| orca_etag             | `string`  | Etag value from the ORCA File object the file belongs to. | From Catalog. |
+| orca_last_update      | `timestamptz` | Last Update value from the ORCA File object the file belongs to. | From Catalog. |
+| orca_size             | `int8`    | Size value from the ORCA File object the file belongs to. | From Catalog. |
+
+#### Internal Reconciliation Reporting Table Catalog Missing or Mismatches reconcile_mismatch_report
+
+This table would capture the discrepancies for reporting out to the operators
+about files that are missing from ORCA S3 or have different metadata values than
+what is expected.
+Note that any entries with an orca_last_update after the job's
+start_time may show as an error due to race conditions with the catalog update
+process, and should be displayed as such when reporting results.
+
+| Attribute Name        | Data Type | Description                               | Notable Items   |
+| --------------------- | --------- | ----------------------------------------- | --------------- |
+| job_id                | `int8`    | Reconcile job the report is a part of.    | FK constraint back to the jobs table with a many to one relationship. |
+| collection_id         | `string`  | Collection ID from the ORCA Collection object the file belongs to. | From Catalog. |
+| granule_id            | `string`  | Granule ID from the ORCA Granule object the file belongs to. | From Catalog. |
+| file_name             | `string`  | File name from the ORCA File object the file belongs to. | From Catalog. |
+| key_path              | `string`  | Key path that includes the file name from the ORCA File object the file belongs to. | From Catalog. |
+| orca_etag             | `string`  | Etag value from the ORCA File object the file belongs to. | From Catalog. |
+| s3_etag               | `string`  | ETag key value from S3 listing.           | |
+| orca_last_update      | `timestamptz` | Last Update value from the ORCA File object the file belongs to. | From Catalog. |
+| s3_last_update        | `timestamptz` | LastModified key value from the S3 listing. | |
+| orca_size_in_bytes    | `int8`    | Size value from the ORCA File object the file belongs to. | From Catalog. |
+| s3_size_in_bytes      | `int8`    | Size key value from the S3 listing.       |  |
+| discrepancy_type      | `string`  | Type of discrepancy encountered like "value x mismatch" | |
 
 
 ## Open Questions yet to be answered
@@ -739,7 +783,7 @@ provided below.
 ### Aqua Data Studio ERD File
 
 An entity relationship diagram (ERD) was created in [Aqua Data Studio (ADS)](https://www.aquafold.com/aquadatastudio).
-The ERD provides table, constraint, and refrence information for the various
+The ERD provides table, constraint, and reference information for the various
 objects in the PostgreSQL database used by ORCA. The ERD diagram can be used
 for development and scripting as well as a way to visualize object interactions.
 The ADS ERD for ORCA can be downloaded <a href={useBaseUrl('files/ads_orca_schema.xed')} target="_blank" download>here</a>.
@@ -752,26 +796,34 @@ install the ORCA inventory catalog and the internal reconciliation tables respec
 The following preconditions are expected before the install scripts are run.
 
 - The latest ORCA schema is installed in PostgreSQL (v3.x)
-- The user is logged into the disaster_recovery database as the postgres user to run the script.
+- The user is logged into the orca database as the postgres user to run the script.
 
 The ORCA inventory catalog build script is available for download <a href={useBaseUrl('files/build_orca_inventory.sql')} target="_blank" download>here</a>.
 
 The ORCA internal reconciliation tables build script is available for download <a href={useBaseUrl('files/build_orca_reconcile.sql')} target="_blank" download>here</a>.
 
-
 ## Notes from ORCA schema refinement research
-As part of the research, some refinements were made to the ORCA inventory catalog schema. Some attribute modifications were made only to the `granules` table:
+As part of the research, some refinements were made to the ORCA inventory catalog
+schema. This includes refinements to the `granules` table and removal of the
+`provider_collection_xref` table and the relationship between provider and
+collection.
+
 - `execution_id` has been added for helping with logging and tracing.
+- `cumulus_create_time` has been added for time based filtering with cumulus. The cumulus `createdAt` time will be a consistent time source between catalogs
+- `provider_id` has been added to create a relationship between granule and provider.
 - `archive_location` has been removed since `orca_archive_location` already exists in the `files` table.
 
 #### Refined Granule Metadata Object
 
-| Attribute Name   | Data Type | Description                                                            | Notable Items   |
-| ---------------- | --------- | ---------------------------------------------------------------------- | --------------- |
-| cumulus_granule_id | `string`  | granuleId that is provided by Cumulus.                                 | Must be unique per collectionId |
-| execution_id       | `string`  | Step function execution ID from AWS.                                  | Unique ID automatically generated by AWS |
-| ingest_time      | `timestamp` | Date and time in UTC that the data was originally ingested into ORCA | None |
-| last_update      | `timestamp` | Date and time in UTC that information was updated.                   | Potential time filter for Cumulus reconciliation. |
+| Attribute Name      | Data Type   | Description                                                          | Notable Items                                                                             |
+| ------------------- | ----------- | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| cumulus_granule_id  | `string`    | granuleId that is provided by Cumulus.                               | Must be unique per collectionId                                                           |
+| provider_id         | `string`    | providerId that is provided by Cumulus                               | Ties a granule to a provider.                                                             |
+| collection_id       | `string`    | collectionId that is provided by Cumulus                             | Ties a granule to a collection. The collectionId and granuleId combination must be unique.|
+| execution_id        | `string`    | Step function execution ID from AWS.                                 | Unique ID automatically generated by AWS                                                  |
+| cumulus_create_time | `timestamp` | createdAt time provided by Cumulus when the granule was ingested.    | This is the Cumulus archive time used for time based comparisons.                         |
+| ingest_time         | `timestamp` | Date and time in UTC that the data was originally ingested into ORCA | None                                                                                      |
+| last_update         | `timestamp` | Date and time in UTC that information was updated.                   | Potential time filter for Cumulus reconciliation.                                         |
 
 :::note
   It is recommended to add tags for `hash` and `hash_type` when the values are available to files that get copied over to S3 bucket.
@@ -784,9 +836,11 @@ The refined ORCA inventory catalog build script is available for download <a hre
 ### Addressing open questions
 
 - What is the proper date to use when receiving a date range from Cumulus for a reconciliation report?
-  - At this time, we are not going to include granule acquisition date since we cannot get it natively from cumulus but might add it in the future.
+  - After discussion with the Cumulus team, we have decided to use `cumulus_create_time` 
+    which is passed by Cumulus `createdAt` key in the CMA Message containing the timestamp that the granule began ingest of the granule into Cumulus.
+    This timestamp will be used to filter results for Cumulus when asking for ORCA catalog inventory information and will be captured in the Cumulus `granules` table.
 - Should granule acquisition date be a part of the metadata?
-  -  At this time, we are not going to include granule acquisition date since we cannot get it natively from Cumulus but might add it in the future.
+  - At this time, we are not going to include granule acquisition date since we cannot get it natively from Cumulus but might add it in the future.
 - Should optional identified attributes be added and populated now or should we start with the minimum needed?
   - Added step function's `execution_id` to the `granules` table. 
 - Is GraphQL a good replacement for the current SQS - Lambda architecture?

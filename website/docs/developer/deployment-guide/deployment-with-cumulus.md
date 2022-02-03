@@ -33,6 +33,7 @@ and/or modified to deploy ORCA with Cumulus.
 - orca.tf
 - orca_variables.tf
 - terraform.tfvars
+- main.tf
 
 
 ### Creating `cumulus-tf/orca.tf`
@@ -45,7 +46,14 @@ ORCA version.
 
 Only change the value of `source` in the code example below to point to the
 proper ORCA version. The ORCA version is specified right after *download* in the
-URL path to the release. In the example below the release being used is v3.0.0.
+URL path to the release. In the example below the release being used is v3.0.2.
+
+:::
+
+:::tip Deploying a local version
+
+If you wish to deploy code cloned locally from [Github](https://github.com/nasa/cumulus-orca) instead of a release zip, run
+`./bin/build_tasks.sh`. This will crawl the `tasks` directory and build a `.zip` file (currently by just `zipping` all python files and dependencies) in each of it's sub-directories. You may then set `source` to the root folder of your cloned Orca repository.
 
 :::
 
@@ -73,27 +81,32 @@ module "orca" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  database_app_user_pw = var.database_app_user_pw
-  orca_default_bucket  = var.orca_default_bucket
-  postgres_user_pw     = var.postgres_user_pw
+  db_admin_password     = var.db_admin_password
+  db_host_endpoint      = var.db_host_endpoint
+  db_user_password      = var.db_user_password
+  orca_default_bucket   = var.orca_default_bucket
+  rds_security_group_id = var.rds_security_group_id
+  dlq_subscription_email = var.dlq_subscription_email
 
   ## OPTIONAL
-  # database_port                                = 5432
-  # default_multipart_chunksize_mb               = 250
-  # orca_ingest_lambda_memory_size               = 2240
-  # orca_ingest_lambda_timeout                   = 600
-  # orca_recovery_buckets                        = []
-  # orca_recovery_complete_filter_prefix         = ""
-  # orca_recovery_expiration_days                = 5
-  # orca_recovery_lambda_memory_size             = 128
-  # orca_recovery_lambda_timeout                 = 720
-  # orca_recovery_retry_limit                    = 3
-  # orca_recovery_retry_interval                 = 1
-  # orca_recovery_retry_backoff                  = 2
-  # sqs_delay_time                               = 0
-  # sqs_maximum_message_size                     = 262144
-  # staged_recovery_queue_message_retention_time = 432000
-  # status_update_queue_message_retention_time   = 777600
+  # db_admin_username                                    = "postgres"
+  # default_multipart_chunksize_mb                       = 250
+  # metadata_queue_message_retention_time                = 777600
+  # orca_ingest_lambda_memory_size                       = 2240
+  # orca_ingest_lambda_timeout                           = 600
+  # orca_recovery_buckets                                = []
+  # orca_recovery_complete_filter_prefix                 = ""
+  # orca_recovery_expiration_days                        = 5
+  # orca_recovery_lambda_memory_size                     = 128
+  # orca_recovery_lambda_timeout                         = 720
+  # orca_recovery_retry_limit                            = 3
+  # orca_recovery_retry_interval                         = 1
+  # orca_recovery_retry_backoff                          = 2
+  # sqs_delay_time_seconds                               = 0
+  # sqs_maximum_message_size                             = 262144
+  # staged_recovery_queue_message_retention_time_seconds = 432000
+  # status_update_queue_message_retention_time_seconds   = 777600
+
 }
 ```
 
@@ -103,17 +116,19 @@ The following variables are unique to the ORCA module and required to be set by
 the user. More information about these required variables, as well as the
 optional variables can be found in the [variables section](#orca-variables).
 
-- database_app_user_pw
+- db_admin_password
 - orca_default_bucket
-- postgres_user_pw
-
+- db_user_password
+- db_host_endpoint
+- rds_security_group_id
+- dlq_subscription_email
 
 #### Required Values Retrieved from Cumulus Variables
 
 The following variables are set as part of your Cumulus deployment and are
 required by the ORCA module. More information about setting these variables can
 be found in the [Cumulus variable definitions](https://github.com/nasa/cumulus/blob/master/tf-modules/cumulus/variables.tf).
-The variables must be set with the proper values in the `terraform.tfvavrs` file.
+The variables must be set with the proper values in the `terraform.tfvars` file.
 
 - buckets
 - lambda_subnet_ids
@@ -148,9 +163,19 @@ For more information on the variables, see the [variables section](#orca-variabl
 ```terraform
 ## Variables unique to ORCA
 ## REQUIRED
-variable "database_app_user_pw" {
+variable "db_admin_password" {
+  description = "Password for RDS database administrator authentication"
   type        = string
-  description = "ORCA application database user password."
+}
+
+variable "db_user_password" {
+  description = "Password for RDS database user authentication"
+  type        = string
+}
+
+variable "db_host_endpoint" {
+  type        = string
+  description = "Database host endpoint to connect to."
 }
 
 
@@ -159,18 +184,21 @@ variable "orca_default_bucket" {
   description = "Default ORCA S3 Glacier bucket to use."
 }
 
-
-variable "postgres_user_pw" {
+variable "rds_security_group_id" {
   type        = string
-  description = "postgres database user password."
+  description = "Cumulus' RDS Security Group's ID."
 }
 
+variable "dlq_subscription_email" {
+  type        = string
+  description = "The email to notify users when messages are received in dead letter SQS queue due to restore failure. Sends one email until the dead letter queue is emptied."
+}
 ```
 
 
 ### Modifying `cumulus-tf/terraform.tfvars`
 
-At the end of the `terrafor.tfvars` file, add the following code. Update the
+At the end of the `terraform.tfvars` file, add the following code. Update the
 required and optional variable values to the values needed for your particular
 environment.
 
@@ -191,24 +219,36 @@ provides additional information on variables that can be set for the ORCA applic
 ## -----------------------------------------------------------------------------
 
 ## ORCA application database user password.
-database_app_user_pw = "my-super-secret-orca-application-user-password"
+db_user_password = "my-super-secret-orca-application-user-password"
 
 ## Default ORCA S3 Glacier bucket to use
 orca_default_bucket = "orca-archive-primary"
 
 ## PostgreSQL database (root) user password
-postgres_user_pw = "my-super-secret-database-owner-password"
+db_admin_password = "my-super-secret-database-owner-password"
 
+## PostgreSQL database host endpoint to connect to.
+db_host_endpoint = "aws.postgresrds.host"
+
+## Cumulus' RDS Security Group's ID.
+rds_security_group_id = "sg-01234567890123456"
+
+## Dead letter queue SNS topic subscription email.
+dlq_subscription_email = "test@email.com"
 ```
 
 Below describes the type of value expected for each variable.
 
-* `database_app_user_pw` (string) - the password for the application user
-* `orca_default_bucket` (string) - default S3 glacier bucket to use for ORCA data
-* `postgres_user_pw` (string) - password for the postgres user
+* `db_user_password` (string) - the password for the application user.
+* `orca_default_bucket` (string) - default S3 glacier bucket to use for ORCA data.
+* `db_admin_password` (string) - password for the postgres user.
+* `db_host_endpoint`(string) - Database host endpoint to connect to.
+* `rds_security_group_id`(string) - Cumulus' RDS Security Group's ID. Output as `security_group_id` from the rds-cluster deployment.
+* `dlq_subscription_email`(string) - "The email to notify users when messages are received in dead letter SQS queue due to restore failure. Sends one email until the dead letter queue is emptied."
 
 Additional variable definitions can be found in the [ORCA variables](#orca-variables)
 section of the document.
+
 
 :::important
 
@@ -244,7 +284,23 @@ buckets = {
 
 :::
 
-## Define the ORCA Wokflows
+### Modifying cumulus-tf/main.tf
+
+To use the Orca API, add the following line within the Cumulus module:
+
+```
+module "cumulus" {
+
+  ...
+
+  orca_api_uri = module.orca.orca_api_deployment_invoke_url
+  
+  ...
+  
+}
+```
+
+## Define the ORCA Workflows
 
 The ORCA Ingest Workflows follows each step listed below. Adding the Move
 Granule Step and Add the Copy To Glacier Step are detailed in their respective
@@ -280,6 +336,7 @@ the ingest workflow.
             "distribution_endpoint": "{$.meta.distribution_endpoint}",
             "collection": "{$.meta.collection}",
             "duplicateHandling": "{$.meta.collection.duplicateHandling}",
+            "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
             "cumulus_message": {
               "outputs": [
                 { "source": "{$}", "destination": "{$.payload}" },
@@ -331,38 +388,44 @@ the ingest workflow.
 
 ```json
 "CopyToGlacier":{
-   "Parameters":{
-      "cma":{
-         "event.$":"$",
-         "task_config":{
-            "multipart_chunksize_mb": "{$.meta.collection.meta.multipart_chunksize_mb"},
-            "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}"
-            }
-         }
+  "Parameters":{
+    "cma":{
+      "event.$":"$",
+      "task_config": {
+        "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
+        "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
+        "providerId": "{$.meta.provider.id}",
+        "providerName": "{$.meta.provider.name}",
+        "executionId": "{$.cumulus_meta.execution_name}",
+        "collectionShortname": "{$.meta.collection.name}",
+        "collectionVersion": "{$.meta.collection.version}",
+        "orcaDefaultBucketOverride": "{$.meta.collection.meta.orcaDefaultBucketOverride}"
       }
-   },
-   "Type":"Task",
-   "Resource":"module.orca.copy_to_glacier_lambda_arn",
-   "Catch":[
-      {
-         "ErrorEquals":[
-            "States.ALL"
-         ],
-         "ResultPath":"$.exception",
-         "Next":"WorkflowFailed"
-      }
-   ],
-   "Retry": [
-      {
-        "ErrorEquals": [
-           "States.ALL"
-        ],
-        "IntervalSeconds": 2,
-        "MaxAttempts": 3,
-        "BackoffRate": 2
-      }
-   ],
-   "Next":"WorkflowSucceeded"
+    }
+  }
+},
+  "Type":"Task",
+  "Resource":"module.orca.orca_lambda_copy_to_glacier_arn",
+  "Catch":[
+    {
+      "ErrorEquals":[
+        "States.ALL"
+      ],
+      "ResultPath":"$.exception",
+      "Next":"WorkflowFailed"
+    }
+  ],
+  "Retry": [
+    {
+      "ErrorEquals": [
+        "States.ALL"
+      ],
+      "IntervalSeconds": 2,
+      "MaxAttempts": 3,
+      "BackoffRate": 2
+    }
+  ],
+  "Next":"WorkflowSucceeded"
 },
 ```
 See the copy_to_glacier json schema [configuration file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/config.json), [input file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/input.json)  and [output file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/output.json) for more information.
@@ -394,7 +457,7 @@ values.
 
 #### Cumulus Required Variables
 
-The following variables should be present already in the `cumulus-tf/terrafor.tfvars`
+The following variables should be present already in the `cumulus-tf/terraform.tfvars`
 file. The variables must be set with proper values for your environment in the
 `cumulus-tf/terraform.tfvars` file.
 
@@ -415,12 +478,14 @@ The following variables should be present in the `cumulus-tf/orca_variables.tf`
 file. The variables must be set with proper values for your environment in the
 `cumulus-tf/terraform.tfvars` file.
 
-| Variable               | Definition                                    | Example Value                 |
-| ---------------------- | --------------------------------------------- | ----------------------------- |
-| `database_app_user_pw` | ORCA application database user password.      | "My_Sup3rS3cr3t_App_Passw0rd" |
-| `orca_default_bucket`  | Default ORCA S3 Glacier bucket to use.        | "PREFIX-orca-primary"         |
-| `postgres_user_pw`     | PostgreSQL *postgres* database user password. | "My_Sup3rS3cr3t_R00tPassw0rd" |
-
+| Variable               | Definition                                              |              Example Value                                  |
+| ---------------------- | --------------------------------------------------------| ------------------------------------------------------------|
+| `db_admin_password`    | Password for RDS database administrator authentication  | "My_Sup3rS3cr3t_admin_Passw0rd"                             |
+| `db_host_endpoint`     | Database host endpoint to connect to.                   | "aws.postgresrds.host"                                      |
+| `db_user_password`     | Password for RDS database user authentication           | "My_Sup3rS3cr3tuserPassw0rd"                                |
+| `orca_default_bucket`  | Default ORCA S3 Glacier bucket to use.                  | "PREFIX-orca-primary"                                       |
+| `rds_security_group_id`| Cumulus' RDS Security Group's ID.                       | "sg-01234567890123456"                                      |
+| `dlq_subscription_email`| The email to notify users when messages are received in dead letter SQS queue | "test@email.com"                     |
 
 ### Optional Variables
 
@@ -446,10 +511,13 @@ file. The variables can be set with proper values for your environment in the
 `cumulus-tf/terraform.tfvars` file. The default setting for each of the optional
 variables is shown in the table below.
 
-| Variable                                        | Type                | Definition                                                                                              | Default Value |
-| -------------------------------------------     | ------------------  | ---------------------------------------------------------------------------------------------------     | ------------- |
-| `database_port`                                       | number        | Database port that PostgreSQL traffic will be allowed on.                                               | 5432 |
+| Variable                                              | Type          | Definition                                                                                              | Default
+| ----------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------- | ---------- |
+| `db_admin_username`                                   | string        | Username for RDS database administrator authentication.                                                 | "postgres" |
 | `default_multipart_chunksize_mb`                      | number        | The default maximum size of chunks to use when copying. Can be overridden by collection config.         | 250 |
+| `metadata_queue_message_retention_time_seconds`       | number        | Number of seconds the metadata-queue fifo SQS retains a message.                                        | 777600 |
+| `db_name`                                             | string        | The name of the Orca database within the RDS cluster. Any `-` in `prefix` will be replaced with `_`.    | PREFIX_orca |
+| `db_user_name`                                        | string        | The name of the application user for the Orca database. Any `-` in `prefix` will be replaced with `_`.    | PREFIX_orcauser |
 | `orca_ingest_lambda_memory_size`                      | number        | Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime.                              | 2240 |
 | `orca_ingest_lambda_timeout`                          | number        | Timeout in number of seconds for ORCA copy_to_glacier lambda.                                           | 600 |
 | `orca_recovery_buckets`                               | List (string) | List of bucket names that ORCA has permissions to restore data to. Default is all in the `buckets` map. | [] |
@@ -470,34 +538,28 @@ variables is shown in the table below.
 The orca module provides the outputs seen below in the table. Outputs are
 accessed using terraform dot syntax in the format of `module.orca.variable_name`.
 
-| Output Variable                               | Description                               |
-| --------------------------------------------- | ----------------------------------------- |
-| `orca_lambda_copy_to_glacier_cumulus_translator_arn` | AWS ARN of the ORCA orca_lambda_copy_to_glacier_cumulus_translator lambda. |
-| `orca_lambda_copy_to_glacier_arn`                    | AWS ARN of the ORCA copy_to_glacier lambda. |
-| `orca_lambda_extract_filepaths_for_granule_arn`      | AWS ARN of the ORCA extract_filepaths_for_granule lambda. |
-| `orca_lambda_request_files_arn`                      | AWS ARN of the ORCA request_files lambda. |
-| `orca_lambda_copy_files_to_archive_arn`              | AWS ARN of the ORCA copy_files_to_archive lambda. |
-| `orca_lambda_request_status_for_granule_arn`         | AWS ARN of the ORCA request_status_for_granule lambda. |
-| `orca_lambda_request_status_for_job_arn`             | AWS ARN of the ORCA request_status_for_job lambda. |
-| `orca_lambda_post_copy_request_to_queue_arn`         | AWS ARN of the ORCA post_copy_request_to_queue lambda. |
-| `orca_lambda_orca_catalog_reporting_arn`             | AWS ARN of the ORCA orca_catalog_reporting lambda. |
-| `orca_rds_address`                                   | The address of the RDS instance |
-| `orca_rds_arn`                                       | The ARN of the RDS instance |
-| `orca_rds_availability_zone`                         | The availability zone of the RDS instance |
-| `orca_rds_endpoint`                                  | The connection endpoint in address:port format |
-| `orca_rds_hosted_zone_id`                            | The canonical hosted zone ID of the DB instance (to be used in a Route 53 Alias record) |
-| `orca_rds_id`                                        | The RDS instance ID |
-| `orca_rds_resource_id`                               | The RDS Resource ID of this instance |
-| `orca_rds_status`                                    | The RDS instance status |
-| `orca_rds_name`                                      | The database name |
-| `orca_rds_username`                                  | The master username for the database |
-| `orca_rds_port`                                      | The database port |
-| `orca_subnet_group_id`                               | The ORCA database subnet group name |
-| `orca_subnet_group_arn`                              | The ARN of the ORCA database subnet group |
-| `orca_sqs_staged_recovery_queue_arn`                 | The ARN of the staged-recovery-queue SQS |
-| `orca_sqs_staged_recovery_queue_id`                  | The URL ID of the staged-recovery-queue SQS |
-| `orca_sqs_status_update_queue_arn`                   | The ARN of the status-update-queue SQS |
-| `orca_sqs_status_update_queue_id`                    | The URL ID of the status-update-queue SQS |
+| Output Variable                                         | Description                                             |
+| --------------------------------------------------------|---------------------------------------------------------|
+| `orca_api_deployment_invoke_url`                        | The URL to invoke the ORCA Cumulus reconciliation API gateway. Excludes the resource path |
+| `orca_lambda_copy_to_glacier_arn`                       | AWS ARN of the ORCA copy_to_glacier lambda. |
+| `orca_lambda_extract_filepaths_for_granule_arn`         | AWS ARN of the ORCA extract_filepaths_for_granule lambda. |
+| `orca_lambda_orca_catalog_reporting_arn`                | AWS ARN of the ORCA orca_catalog_reporting lambda. |
+| `orca_lambda_request_files_arn`                         | AWS ARN of the ORCA request_files lambda. |
+| `orca_lambda_copy_files_to_archive_arn`                 | AWS ARN of the ORCA copy_files_to_archive lambda. |
+| `orca_lambda_request_status_for_granule_arn`            | AWS ARN of the ORCA request_status_for_granule lambda. |
+| `orca_lambda_request_status_for_job_arn`                | AWS ARN of the ORCA request_status_for_job lambda. |
+| `orca_lambda_post_copy_request_to_queue_arn`            | AWS ARN of the ORCA post_copy_request_to_queue lambda. |
+| `orca_lambda_orca_catalog_reporting_arn`                | AWS ARN of the ORCA orca_catalog_reporting lambda. |
+| `orca_secretsmanager_arn`                               | The Amazon Resource Name (ARN) of the AWS secretsmanager |
+| `orca_sqs_metadata_queue_arn`                           | The ARN of the metadata-queue SQS |
+| `orca_sqs_metadata_queue_id`                            | The URL ID of the metadata-queue SQS |
+| `orca_sqs_staged_recovery_queue_arn`                    | The ARN of the staged-recovery-queue SQS |
+| `orca_sqs_staged_recovery_queue_id`                     | The URL ID of the staged-recovery-queue SQS |
+| `orca_sqs_status_update_queue_arn`                      | The ARN of the status-update-queue SQS |
+| `orca_sqs_status_update_queue_id`                       | The URL ID of the status-update-queue SQS |
+| `orca_subnet_group_id`                                  | The ORCA database subnet group name |
+| `orca_subnet_group_arn`                                 | The ARN of the ORCA database subnet group |
+
 
 
 ## Deploy ORCA with Terraform
@@ -519,7 +581,7 @@ To configure a collection to enable ORCA, add the line
 `"granuleRecoveryWorkflow": "OrcaRecoveryWorkflow"` to the collection configuration
 as seen below. Optionally, you can exclude files by adding values to an
 `"excludeFileTypes"` variable as seen below. In addition, when dealing with large
-files, the `"multipart_chunksize_mb"` variable can also be set to override the
+files, the `"s3MultipartChunksizeMb"` variable can also be set to override the
 default setting set during ORCA installation. For more information, see the documentation on the
 [`copy_to_glacier` task](https://github.com/nasa/cumulus-orca/tree/master/tasks/copy_to_glacier).
 
@@ -537,7 +599,8 @@ default setting set during ORCA installation. For more information, see the docu
   "meta": {
     "granuleRecoveryWorkflow": "OrcaRecoveryWorkflow",
     "excludeFileTypes": [".cmr", ".xml", ".met"],
-    "multipart_chunksize_mb": 400
+    "s3MultipartChunksizeMb": 400,
+    "orcaDefaultBucketOverride": "prod_orca_worm"
   },
   ...
 }

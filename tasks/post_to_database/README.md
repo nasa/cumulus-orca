@@ -36,15 +36,7 @@ FUNCTIONS
             granule_id: The id of the granule being restored.
             archive_destination: The S3 bucket destination of where the data is archived.
             request_time: The time the restore was requested in utc and iso-format.
-            files: A List of Dicts with the following keys:
-                'filename' (str)
-                'key_path' (str)
-                'restore_destination' (str)
-                'status_id' (int)
-                'error_message' (str, Optional)
-                'request_time' (str)
-                'last_update' (str)
-                'completion_time' (str, Optional)
+            files: A List of Dicts. See schemas/new_job_input.json's `files` array for properties.
             engine: The sqlalchemy engine to use for contacting the database.
     
     handler(event: Dict[str, List], context) -> None
@@ -62,12 +54,6 @@ FUNCTIONS
                         'RequestMethod' (str): Matches to a shared_recovery.RequestMethod.
             context: An object passed through by AWS. Used for tracking.
         Environment Vars: See shared_db.py's get_configuration for further details.
-            'DATABASE_PORT' (int): Defaults to 5432
-            'DATABASE_NAME' (str)
-            'APPLICATION_USER' (str)
-            'PREFIX' (str)
-            '{prefix}-drdb-host' (str, secretsmanager)
-            '{prefix}-drdb-user-pass' (str, secretsmanager)
     
     send_record_to_database(record: Dict[str, Any], engine: sqlalchemy.future.engine.Engine) -> None
         Deconstructs a record to its components and calls send_values_to_database with the result.

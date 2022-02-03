@@ -59,9 +59,22 @@ variable "tags" {
 
 ## Variables unique to ORCA
 ## REQUIRED
-variable "database_app_user_pw" {
+
+variable "db_admin_password" {
+  description = "Password for RDS database administrator authentication"
   type        = string
-  description = "ORCA application database user password."
+}
+
+
+variable "db_user_password" {
+  description = "Password for RDS database user authentication"
+  type        = string
+}
+
+
+variable "db_host_endpoint" {
+  type        = string
+  description = "Database host endpoint to connect to."
 }
 
 
@@ -71,17 +84,36 @@ variable "orca_default_bucket" {
 }
 
 
-variable "postgres_user_pw" {
+variable "rds_security_group_id" {
   type        = string
-  description = "postgres database user password."
+  description = "Cumulus' RDS Security Group's ID."
+}
+
+variable "dlq_subscription_email" {
+  type        = string
+  description = "The email to notify users when messages are received in dead letter SQS queue due to restore failure. Sends one email until the dead letter queue is emptied."
+}
+
+## OPTIONAL
+
+variable "db_admin_username" {
+  description = "Username for RDS database administrator authentication"
+  type        = string
+  default     = "postgres"
 }
 
 
-## OPTIONAL
-variable "database_port" {
-  type        = number
-  description = "Database port that PostgreSQL traffic will be allowed on."
-  default     = 5432
+variable "db_name" {
+  description = "The name of the Orca database within the RDS cluster. Default set to PREFIX_orca in main.tf. Any `-` in `prefix` will be replaced with `_`."
+  type        = string
+  default     = null
+}
+
+
+variable "db_user_name" {
+  description = "The name of the application user for the Orca database. Default set to PREFIX_orca in main.tf. Any `-` in `prefix` will be replaced with `_`."
+  type        = string
+  default     = null
 }
 
 
@@ -89,6 +121,13 @@ variable "default_multipart_chunksize_mb" {
   type        = number
   description = "The default maximum size of chunks to use when copying. Can be overridden by collection config."
   default     = 250
+}
+
+
+variable "metadata_queue_message_retention_time_seconds" {
+  type        = number
+  description = "The number of seconds metadata-queue fifo SQS retains a message in seconds. Maximum value is 14 days."
+  default     = 777600 #9 days
 }
 
 
@@ -154,6 +193,7 @@ variable "orca_recovery_retry_interval" {
   default     = 1
 }
 
+
 variable "orca_recovery_retry_backoff" {
   type        = number
   description = "The multiplier by which the retry interval increases during each attempt."
@@ -185,4 +225,11 @@ variable "status_update_queue_message_retention_time_seconds" {
   type        = number
   description = "The number of seconds status_update_queue SQS retains a message in seconds. Maximum value is 14 days."
   default     = 777600 #9 days
+}
+
+
+variable "vpc_endpoint_id" {
+  type        = string
+  description = "NGAP vpc endpoint id needed to access the api. Defaults to null."
+  default     = null
 }

@@ -1,11 +1,13 @@
 import copy
 import json
+import random
 import unittest
 import uuid
 from unittest import TestCase
-from unittest.mock import Mock, call, patch, MagicMock
+from unittest.mock import MagicMock, Mock, call, patch, ANY
 
 import fastjsonschema as fastjsonschema
+from moto import mock_sqs
 
 import copy_to_glacier
 from copy_to_glacier import *
@@ -19,98 +21,136 @@ class TestCopyToGlacierHandler(TestCase):
     This will test if the function of test copy to glacier work as expected
     """
 
-    excluded_file = 's3://test-bucket/this_file_should_be_exclude.example'
-    not_excluded_file = 's3://test-bucket/prefix/this_file_should_not_be_exclude.txt'
-    two_prefix_file = 's3://test-bucket/prefix1/prefix2/file.txt'
+    # Create the mock for SQS unit tests
+    mock_sqs = mock_sqs()
+
+    excluded_file = "s3://test-bucket/this_file_should_be_exclude.example"
+    not_excluded_file = "s3://test-bucket/prefix/this_file_should_not_be_exclude.txt"
+    two_prefix_file = "s3://test-bucket/prefix1/prefix2/file.txt"
     path_to_this_file = os.path.abspath(os.path.dirname(__file__))
     event_path = os.path.join(path_to_this_file, "event.json")
     event_granules = {
-        'granules': [
+        "granules": [
             {
                 "granuleId": "MOD09GQ.A2017025.h21v00.006.2017034065109",
                 "dataType": "MOD09GQ",
                 "version": "006",
+                "createdAt": 628021800000,
                 "files": [
                     {
-                        "name": "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
                         "path": "MOD09GQ/006",
                         "size": 6,
                         "time": 1608318361000,
-                        "bucket": "orca-sandbox-protected",
+                        copy_to_glacier.FILE_BUCKET_KEY: "orca-sandbox-protected",
                         "url_path": "MOD09GQ/006/",
                         "type": "",
-                        "filename": "s3://orca-sandbox-protected/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
-                        "filepath": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
-                        "duplicate_found": True
+                        copy_to_glacier.FILE_FILEPATH_KEY: "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+                        "duplicate_found": True,
+                        "checksumType": "md5",
+                        "checksum": "bogus_checksum_value",
                     },
                     {
-                        "name": "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf.met",
                         "path": "MOD09GQ/006",
                         "size": 6,
                         "time": 1608318366000,
-                        "bucket": "orca-sandbox-private",
+                        copy_to_glacier.FILE_BUCKET_KEY: "orca-sandbox-private",
                         "url_path": "MOD09GQ/006",
                         "type": "",
-                        "filename": "s3://orca-sandbox-private/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf.met",
-                        "filepath": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf.met",
-                        "duplicate_found": True
+                        copy_to_glacier.FILE_FILEPATH_KEY: "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+                        "duplicate_found": True,
+                        "checksumType": "md5",
+                        "checksum": "bogus_checksum_value",
                     },
                     {
-                        "name": "MOD09GQ.A2017025.h21v00.006.2017034065109_ndvi.jpg",
                         "path": "MOD09GQ/006",
                         "size": 6,
                         "time": 1608318372000,
-                        "bucket": "orca-sandbox-public",
+                        copy_to_glacier.FILE_BUCKET_KEY: "orca-sandbox-public",
                         "url_path": "MOD09GQ/006",
                         "type": "",
-                        "filename": "s3://orca-sandbox-public/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109_ndvi.jpg",
-                        "filepath": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109_ndvi.jpg",
-                        "duplicate_found": True
+                        copy_to_glacier.FILE_FILEPATH_KEY: "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+                        "duplicate_found": True,
+                        "checksumType": "md5",
+                        "checksum": "bogus_checksum_value",
                     },
                     {
-                        "name": "MOD09GQ.A2017025.h21v00.006.2017034065109.cmr.xml",
-                        "bucket": "orca-sandbox-private",
-                        "filename": "s3://orca-sandbox-private/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.cmr.xml",
+                        copy_to_glacier.FILE_BUCKET_KEY: "orca-sandbox-private",
                         "type": "metadata",
-                        "filepath": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.cmr.xml",
-                        "url_path": "MOD09GQ/006"
-                    }
-                ]
+                        copy_to_glacier.FILE_FILEPATH_KEY: "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+                        "url_path": "MOD09GQ/006",
+                        "checksumType": "md5",
+                        "checksum": "bogus_checksum_value",
+                    },
+                ],
             }
         ]
     }
 
+    def setUp(self):
+        """
+        Perform initial setup for the tests.
+        """
+        self.mock_sqs.start()
+        self.test_sqs = boto3.resource("sqs", region_name="us-west-2")
+        self.queue = self.test_sqs.create_queue(QueueName="test-metadata-queue")
+        self.metadata_queue_url = self.queue.url
+
+    def tearDown(self):
+        """
+        Perform teardown for the tests
+        """
+        self.mock_sqs.stop()
+
     @patch("copy_to_glacier.task")
-    def test_handler_happy_path(self,
-                                mock_task: MagicMock):
+    def test_handler_happy_path(self, mock_task: MagicMock):
         granules = [
             {
                 "granuleId": uuid.uuid4().__str__(),
-                "files": [{"name": uuid.uuid4().__str__(), "bucket": uuid.uuid4().__str__(),
-                           "filepath": uuid.uuid4().__str__(), "filename": uuid.uuid4().__str__()}]
+                "dataType": uuid.uuid4().__str__(),
+                "version": uuid.uuid4().__str__(),
+                "createdAt": random.randint(0, 628021800000),
+                "files": [
+                    {
+                        copy_to_glacier.FILE_BUCKET_KEY: uuid.uuid4().__str__(),
+                        copy_to_glacier.FILE_FILEPATH_KEY: uuid.uuid4().__str__(),
+                        copy_to_glacier.FILE_HASH_KEY: uuid.uuid4().__str__(),
+                        copy_to_glacier.FILE_HASH_TYPE_KEY: uuid.uuid4().__str__(),
+                    }
+                ],
             }
         ]
 
         handler_input_event = {
-            "payload": {
-                "granules": granules
-            },
+            "payload": {"granules": granules},
             "task_config": {
-                CONFIG_EXCLUDE_FILE_TYPES_KEY: [
-                    '.png'
-                ],
-                CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: 15
-            }
+                CONFIG_EXCLUDE_FILE_TYPES_KEY: [".png"],
+                CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: 15,
+                "providerId": uuid.uuid4().__str__(),
+                "providerName": uuid.uuid4().__str__(),
+                "executionId": uuid.uuid4().__str__(),
+                "collectionShortname": "MOD09GQ",
+                "collectionVersion": uuid.uuid4().__str__(),
+            },
         }
         handler_input_context = LambdaContextMock()
 
         expected_task_input = {
             "input": handler_input_event["payload"],
-            "config": handler_input_event["task_config"]
+            "config": handler_input_event["task_config"],
         }
         mock_task.return_value = {
-            "granules": granules,
-            "copied_to_glacier": [uuid.uuid4().__str__()]
+            "granules": [
+                {
+                    "granuleId": uuid.uuid4().__str__(),
+                    "files": [
+                        {
+                            copy_to_glacier.FILE_BUCKET_KEY: uuid.uuid4().__str__(),
+                            copy_to_glacier.FILE_FILEPATH_KEY: uuid.uuid4().__str__(),
+                        }
+                    ],
+                }
+            ],
+            "copied_to_glacier": [uuid.uuid4().__str__()],
         }
 
         result = copy_to_glacier.handler(handler_input_event, handler_input_context)
@@ -122,7 +162,7 @@ class TestCopyToGlacierHandler(TestCase):
         """
         Testing exclude file types to be excluded
         """
-        excluded_flag = should_exclude_files_type(self.excluded_file, ['.example'])
+        excluded_flag = should_exclude_files_type(self.excluded_file, [".example"])
         self.assertEqual(excluded_flag, True)
 
     def test_excluded_file_types_not_excluded(self):
@@ -130,37 +170,76 @@ class TestCopyToGlacierHandler(TestCase):
         Testing exclude file types not to be excluded
         """
 
-        not_excluded_flag = should_exclude_files_type(self.not_excluded_file, ['.example'])
+        not_excluded_flag = should_exclude_files_type(
+            self.not_excluded_file, [".example"]
+        )
         self.assertEqual(not_excluded_flag, False)
 
-    @patch.dict(os.environ,
-                {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__(), "DEFAULT_MULTIPART_CHUNKSIZE_MB": "4"},
-                clear=True)
-    def test_task_happy_path(self):
+    @patch("copy_to_glacier.get_default_glacier_bucket_name")
+    @patch("copy_to_glacier.sqs_library.post_to_metadata_queue")
+    @patch.dict(
+        os.environ,
+        {
+            "DEFAULT_MULTIPART_CHUNKSIZE_MB": "4",
+            "METADATA_DB_QUEUE_URL": "test",
+            "AWS_REGION": "us-west-2",
+        },
+        clear=True,
+    )
+    def test_task_happy_path(
+        self,
+        mock_post_to_queue: MagicMock,
+        mock_get_default_glacier_bucket_name: MagicMock,
+    ):
         """
         Basic path with buckets present.
         """
-        destination_bucket_name = os.environ['ORCA_DEFAULT_BUCKET']
         content_type = uuid.uuid4().__str__()
-        source_bucket_names = [file['bucket'] for file in self.event_granules['granules'][0]['files']]
-        source_keys = [file['filepath'] for file in self.event_granules['granules'][0]['files']]
+        source_bucket_names = [
+            file[copy_to_glacier.FILE_BUCKET_KEY]
+            for file in self.event_granules["granules"][0]["files"]
+        ]
+        source_keys = [
+            file[copy_to_glacier.FILE_FILEPATH_KEY]
+            for file in self.event_granules["granules"][0]["files"]
+        ]
 
         config_check = ConfigCheck(4 * MB)
 
         # todo: use 'side_effect' to verify args. It is safer, as current method does not deep-copy args
         boto3.client = Mock()
-        s3_cli = boto3.client('s3')
+        s3_cli = boto3.client("s3")
         s3_cli.copy = Mock(return_value=None)
         s3_cli.copy.side_effect = config_check.check_multipart_chunksize
-        s3_cli.head_object = Mock(return_value={'ContentType': content_type})
-
+        s3_cli.head_object = Mock(return_value={"ContentType": content_type})
+        file_return_value = {
+            "Versions": [
+                {
+                    "ETag": '"8d1ff728a961869c715b458fa5f041f0"',
+                    "Size": 14191,
+                    "Key": "test/test.docx",
+                    "VersionId": "1",
+                    "IsLatest": True,
+                }
+            ]
+        }
+        s3_cli.list_object_versions = Mock(return_value=file_return_value)
+        providerName = uuid.uuid4().__str__()
+        config = {
+            "providerId": "test",
+            "providerName": providerName,
+            "executionId": "test-execution-id",
+            "collectionShortname": "MOD09GQ",
+            "collectionVersion": uuid.uuid4().__str__(),
+        }
         event = {
-            'input': copy.deepcopy(self.event_granules),
-            'config': {
-            }
+            "input": copy.deepcopy(self.event_granules),
+            "config": config,
         }
 
-        result = task(event, None)
+        result = task(copy.deepcopy(event), None)
+
+        mock_get_default_glacier_bucket_name.assert_called_once_with(config)
 
         with open("schemas/output.json", "r") as raw_schema:
             schema = json.loads(raw_schema.read())
@@ -168,71 +247,370 @@ class TestCopyToGlacierHandler(TestCase):
         validate = fastjsonschema.compile(schema)
         validate(result)
 
-        self.assertEqual(event['input']['granules'], result['granules'])
-        granules = result['granules']
-        self.assertIsNotNone(granules)
-        self.assertEqual(1, len(granules))
-        granule = granules[0]
-        self.assertEqual(4, len(granule['files']))
+        expected_granules = copy.deepcopy(event["input"]["granules"])
+        self.assertEqual(expected_granules, result["granules"])
 
         head_object_calls = []
         copy_calls = []
         for i in range(0, len(source_bucket_names)):
-            head_object_calls.append(call(Bucket=source_bucket_names[i], Key=source_keys[i]))
-            copy_calls.append(call(
-                {'Bucket': source_bucket_names[i], 'Key': source_keys[i]},
-                destination_bucket_name,
-                source_keys[i],
-                ExtraArgs={
-                    'StorageClass': 'GLACIER',
-                    'MetadataDirective': 'COPY',
-                    'ContentType': content_type,
-                    'ACL': 'bucket-owner-full-control'
-                },
-                Config=unittest.mock.ANY  # Checked by ConfigCheck. Equality checkers do not work.
-            ))
+            head_object_calls.append(
+                call(Bucket=source_bucket_names[i], Key=source_keys[i])
+            )
+            copy_calls.append(
+                call(
+                    {"Bucket": source_bucket_names[i], "Key": source_keys[i]},
+                    mock_get_default_glacier_bucket_name.return_value,
+                    source_keys[i],
+                    ExtraArgs={
+                        "StorageClass": "GLACIER",
+                        "MetadataDirective": "COPY",
+                        "ContentType": content_type,
+                        "ACL": "bucket-owner-full-control",
+                    },
+                    Config=unittest.mock.ANY,  # Checked by ConfigCheck. Equality checkers do not work.
+                )
+            )
 
         s3_cli.head_object.assert_has_calls(head_object_calls)
         s3_cli.copy.assert_has_calls(copy_calls)
+        sqs_body = {
+            "provider": {
+                "name": providerName,
+                "providerId": event["config"]["providerId"],
+            },
+            "collection": {
+                "shortname": event["config"]["collectionShortname"],
+                "version": event["config"]["collectionVersion"],
+                "collectionId": event["config"]["collectionShortname"]
+                + "___"
+                + event["config"]["collectionVersion"],
+            },
+            "granule": {
+                "cumulusGranuleId": event["input"]["granules"][0]["granuleId"],
+                "cumulusCreateTime": "1989-11-25T18:30:00+00:00",
+                "executionId": event["config"]["executionId"],
+                "ingestTime": ANY,
+                "lastUpdate": ANY,
+                "files": [
+                    {
+                        "cumulusArchiveLocation": event["input"]["granules"][0][
+                            "files"
+                        ][0]["bucket"],
+                        "orcaArchiveLocation": mock_get_default_glacier_bucket_name.return_value,
+                        "keyPath": event["input"]["granules"][0]["files"][0][
+                            copy_to_glacier.FILE_FILEPATH_KEY
+                        ],
+                        "sizeInBytes": ANY,
+                        "version": ANY,
+                        "ingestTime": ANY,
+                        "etag": ANY,
+                        "name": event["input"]["granules"][0]["files"][0][
+                            copy_to_glacier.FILE_FILEPATH_KEY
+                        ].split("/")[-1],
+                        "hash": event["input"]["granules"][0]["files"][0][
+                            copy_to_glacier.FILE_HASH_KEY
+                        ],
+                        "hashType": event["input"]["granules"][0]["files"][0][
+                            copy_to_glacier.FILE_HASH_TYPE_KEY
+                        ],
+                    },
+                    {
+                        "cumulusArchiveLocation": event["input"]["granules"][0][
+                            "files"
+                        ][1]["bucket"],
+                        "orcaArchiveLocation": mock_get_default_glacier_bucket_name.return_value,
+                        "keyPath": event["input"]["granules"][0]["files"][1][
+                            copy_to_glacier.FILE_FILEPATH_KEY
+                        ],
+                        "sizeInBytes": ANY,
+                        "version": ANY,
+                        "ingestTime": ANY,
+                        "etag": ANY,
+                        "name": event["input"]["granules"][0]["files"][1][
+                            copy_to_glacier.FILE_FILEPATH_KEY
+                        ].split("/")[-1],
+                        "hash": event["input"]["granules"][0]["files"][1][
+                            copy_to_glacier.FILE_HASH_KEY
+                        ],
+                        "hashType": event["input"]["granules"][0]["files"][1][
+                            copy_to_glacier.FILE_HASH_TYPE_KEY
+                        ],
+                    },
+                    {
+                        "cumulusArchiveLocation": event["input"]["granules"][0][
+                            "files"
+                        ][2]["bucket"],
+                        "orcaArchiveLocation": mock_get_default_glacier_bucket_name.return_value,
+                        "keyPath": event["input"]["granules"][0]["files"][2][
+                            copy_to_glacier.FILE_FILEPATH_KEY
+                        ],
+                        "sizeInBytes": ANY,
+                        "version": ANY,
+                        "ingestTime": ANY,
+                        "etag": ANY,
+                        "name": event["input"]["granules"][0]["files"][2][
+                            copy_to_glacier.FILE_FILEPATH_KEY
+                        ].split("/")[-1],
+                        "hash": event["input"]["granules"][0]["files"][2][
+                            copy_to_glacier.FILE_HASH_KEY
+                        ],
+                        "hashType": event["input"]["granules"][0]["files"][2][
+                            copy_to_glacier.FILE_HASH_TYPE_KEY
+                        ],
+                    },
+                    {
+                        "cumulusArchiveLocation": event["input"]["granules"][0][
+                            "files"
+                        ][3]["bucket"],
+                        "orcaArchiveLocation": mock_get_default_glacier_bucket_name.return_value,
+                        "keyPath": event["input"]["granules"][0]["files"][3][
+                            copy_to_glacier.FILE_FILEPATH_KEY
+                        ],
+                        "sizeInBytes": ANY,
+                        "version": ANY,
+                        "ingestTime": ANY,
+                        "etag": ANY,
+                        "name": event["input"]["granules"][0]["files"][0][
+                            copy_to_glacier.FILE_FILEPATH_KEY
+                        ].split("/")[-1],
+                        "hash": event["input"]["granules"][0]["files"][3][
+                            copy_to_glacier.FILE_HASH_KEY
+                        ],
+                        "hashType": event["input"]["granules"][0]["files"][3][
+                            copy_to_glacier.FILE_HASH_TYPE_KEY
+                        ],
+                    },
+                ],
+            },
+        }
+
+        mock_post_to_queue.assert_called_once_with(
+            sqs_body, os.environ["METADATA_DB_QUEUE_URL"]
+        )
 
         self.assertEqual(s3_cli.head_object.call_count, 4)
         self.assertEqual(s3_cli.copy.call_count, 4)
+        self.assertEqual(s3_cli.list_object_versions.call_count, 4)
 
-        expected_copied_file_urls = [file['filename'] for file in self.event_granules['granules'][0]['files']]
-        self.assertEqual(expected_copied_file_urls, result['copied_to_glacier'])
-        self.assertEqual(self.event_granules['granules'], result['granules'])
+        expected_copied_file_urls = [
+            f"s3://{file[copy_to_glacier.FILE_BUCKET_KEY]}/{file[copy_to_glacier.FILE_FILEPATH_KEY]}"
+            for file in self.event_granules["granules"][0]["files"]
+        ]
+        self.assertEqual(expected_copied_file_urls, result["copied_to_glacier"])
+        expected_granules = copy.deepcopy(event["input"]["granules"])
+        self.assertEqual(expected_granules, result["granules"])
         self.assertIsNone(config_check.bad_config)
 
-    @patch.dict(os.environ,
-                {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__(), "DEFAULT_MULTIPART_CHUNKSIZE_MB": "4"},
-                clear=True)
-    def test_task_overridden_multipart_chunksize(self):
+    @patch("copy_to_glacier.get_default_glacier_bucket_name")
+    @patch("copy_to_glacier.sqs_library.post_to_metadata_queue")
+    @patch.dict(
+        os.environ,
+        {
+            "DEFAULT_MULTIPART_CHUNKSIZE_MB": "4",
+            "METADATA_DB_QUEUE_URL": "test",
+            "AWS_REGION": "us-west-2",
+        },
+        clear=True,
+    )
+    def test_task_happy_path_multiple_granules(
+        self,
+        mock_post_to_queue: MagicMock,
+        mock_get_default_glacier_bucket_name: MagicMock,
+    ):
+        """
+        Happy path for multiple granules in input.
+        """
+        multiple_event_granules = {
+            "granules": [
+                {
+                    "granuleId": "MOD09GQ.A2017025.h21v00.006.2017034065109",
+                    "dataType": "MOD09GQ",
+                    "version": "006",
+                    "createdAt": random.randint(0, 628021800000),
+                    "files": [
+                        {
+                            "path": "MOD09GQ/006",
+                            "size": 6,
+                            "time": 1608318361000,
+                            copy_to_glacier.FILE_BUCKET_KEY: "orca-sandbox-protected",
+                            "url_path": "MOD09GQ/006/",
+                            "type": "",
+                            copy_to_glacier.FILE_FILEPATH_KEY: "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+                            "duplicate_found": True,
+                            copy_to_glacier.FILE_HASH_TYPE_KEY: "md5",
+                            copy_to_glacier.FILE_HASH_KEY: "bogus_checksum_value",
+                        },
+                    ],
+                },
+                {
+                    "granuleId": "MOD09GQ.A208885.h21v00.006.2017034065108",
+                    "dataType": "MOD09GQ",
+                    "version": "008",
+                    "createdAt": random.randint(0, 628021800000),
+                    "files": [
+                        {
+                            "path": "MOD09GQ/006",
+                            "size": 7,
+                            "time": 1608318361000,
+                            copy_to_glacier.FILE_BUCKET_KEY: "orca-sandbox-protected",
+                            "url_path": "MOD09GQ/006/",
+                            "type": "",
+                            copy_to_glacier.FILE_FILEPATH_KEY: "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065108.hdf",
+                            "duplicate_found": True,
+                            copy_to_glacier.FILE_HASH_TYPE_KEY: "md5",
+                            copy_to_glacier.FILE_HASH_KEY: "bogus_checksum_value",
+                        },
+                    ],
+                },
+            ]
+        }
+        content_type = uuid.uuid4().__str__()
+        source_bucket_names = [
+            file[copy_to_glacier.FILE_BUCKET_KEY]
+            for file in multiple_event_granules["granules"][0]["files"]
+        ]
+        source_keys = [
+            file[copy_to_glacier.FILE_FILEPATH_KEY]
+            for file in multiple_event_granules["granules"][0]["files"]
+        ]
+
+        config_check = ConfigCheck(4 * MB)
+
+        boto3.client = Mock()
+        s3_cli = boto3.client("s3")
+        s3_cli.copy = Mock(return_value=None)
+        s3_cli.copy.side_effect = config_check.check_multipart_chunksize
+        s3_cli.head_object = Mock(return_value={"ContentType": content_type})
+        file_return_value = {
+            "Versions": [
+                {
+                    "ETag": '"8d1ff728a961869c715b458fa5f041f0"',
+                    "Size": 14191,
+                    "Key": "test/test.docx",
+                    "VersionId": "1",
+                    "IsLatest": True,
+                }
+            ]
+        }
+        s3_cli.list_object_versions = Mock(return_value=file_return_value)
+        config = {
+            "providerId": "test",
+            "executionId": "test-execution-id",
+            "collectionShortname": "MOD09GQ",
+            "collectionVersion": uuid.uuid4().__str__(),
+        }
+        event = {
+            "input": copy.deepcopy(multiple_event_granules),
+            "config": config,
+        }
+
+        result = task(event, None)
+
+        mock_get_default_glacier_bucket_name.assert_called_once_with(config)
+
+        with open("schemas/output.json", "r") as raw_schema:
+            schema = json.loads(raw_schema.read())
+
+        validate = fastjsonschema.compile(schema)
+        validate(result)
+
+        expected_granules = copy.deepcopy(event["input"]["granules"])
+        self.assertEqual(expected_granules, result["granules"])
+
+        head_object_calls = []
+        copy_calls = []
+        for i in range(0, len(source_bucket_names)):
+            head_object_calls.append(
+                call(Bucket=source_bucket_names[i], Key=source_keys[i])
+            )
+            copy_calls.append(
+                call(
+                    {"Bucket": source_bucket_names[i], "Key": source_keys[i]},
+                    mock_get_default_glacier_bucket_name.return_value,
+                    source_keys[i],
+                    ExtraArgs={
+                        "StorageClass": "GLACIER",
+                        "MetadataDirective": "COPY",
+                        "ContentType": content_type,
+                        "ACL": "bucket-owner-full-control",
+                    },
+                    Config=unittest.mock.ANY,  # Checked by ConfigCheck. Equality checkers do not work.
+                )
+            )
+
+        s3_cli.head_object.assert_has_calls(head_object_calls)
+        s3_cli.copy.assert_has_calls(copy_calls)
+        self.assertEqual(mock_post_to_queue.call_count, 2)
+        self.assertEqual(s3_cli.head_object.call_count, 2)
+        self.assertEqual(s3_cli.copy.call_count, 2)
+        self.assertEqual(s3_cli.list_object_versions.call_count, 2)
+        self.assertEqual(multiple_event_granules["granules"], result["granules"])
+
+    @patch("copy_to_glacier.get_default_glacier_bucket_name")
+    @patch("copy_to_glacier.sqs_library.post_to_metadata_queue")
+    @patch.dict(
+        os.environ,
+        {
+            "DEFAULT_MULTIPART_CHUNKSIZE_MB": "4",
+            "METADATA_DB_QUEUE_URL": "test",
+            "AWS_REGION": "us-west-2",
+        },
+        clear=True,
+    )
+    def test_task_overridden_multipart_chunksize(
+        self,
+        mock_post_to_queue: MagicMock,
+        mock_get_default_glacier_bucket_name: MagicMock,
+    ):
         """
         If the collection has a different multipart chunksize, it should override the default.
         """
         overridden_multipart_chunksize_mb = 5
-        destination_bucket_name = os.environ['ORCA_DEFAULT_BUCKET']
         content_type = uuid.uuid4().__str__()
-        source_bucket_names = [file['bucket'] for file in self.event_granules['granules'][0]['files']]
-        source_keys = [file['filepath'] for file in self.event_granules['granules'][0]['files']]
+        source_bucket_names = [
+            file[copy_to_glacier.FILE_BUCKET_KEY]
+            for file in self.event_granules["granules"][0]["files"]
+        ]
+        source_keys = [
+            file[copy_to_glacier.FILE_FILEPATH_KEY]
+            for file in self.event_granules["granules"][0]["files"]
+        ]
 
         config_check = ConfigCheck(overridden_multipart_chunksize_mb * MB)
 
         # todo: use 'side_effect' to verify args. It is safer, as current method does not deep-copy args
         boto3.client = Mock()
-        s3_cli = boto3.client('s3')
+        s3_cli = boto3.client("s3")
         s3_cli.copy = Mock(return_value=None)
         s3_cli.copy.side_effect = config_check.check_multipart_chunksize
-        s3_cli.head_object = Mock(return_value={'ContentType': content_type})
-
+        s3_cli.head_object = Mock(return_value={"ContentType": content_type})
+        file_return_value = {
+            "Versions": [
+                {
+                    "ETag": '"8d1ff728a961869c715b458fa5f041f0"',
+                    "Size": 14191,
+                    "Key": "test/test.docx",
+                    "VersionId": "1",
+                    "IsLatest": True,
+                }
+            ]
+        }
+        s3_cli.list_object_versions = Mock(return_value=file_return_value)
+        config = {
+            CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: str(overridden_multipart_chunksize_mb),
+            "providerId": "test",
+            "executionId": "test-execution-id",
+            "collectionShortname": "MOD09GQ",
+            "collectionVersion": uuid.uuid4().__str__(),
+        }
         event = {
-            'input': copy.deepcopy(self.event_granules),
-            'config': {
-                CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: str(overridden_multipart_chunksize_mb)
-            }
+            "input": copy.deepcopy(self.event_granules),
+            "config": config,
         }
 
-        result = task(event, None)
+        result = task(copy.deepcopy(event), None)
+
+        mock_get_default_glacier_bucket_name.assert_called_once_with(config)
 
         with open("schemas/output.json", "r") as raw_schema:
             schema = json.loads(raw_schema.read())
@@ -240,63 +618,77 @@ class TestCopyToGlacierHandler(TestCase):
         validate = fastjsonschema.compile(schema)
         validate(result)
 
-        self.assertEqual(event['input']['granules'], result['granules'])
-        granules = result['granules']
-        self.assertIsNotNone(granules)
-        self.assertEqual(1, len(granules))
-        granule = granules[0]
-        self.assertEqual(4, len(granule['files']))
+        expected_granules = copy.deepcopy(event["input"]["granules"])
+        self.assertEqual(expected_granules, result["granules"])
 
         head_object_calls = []
         copy_calls = []
         for i in range(0, len(source_bucket_names)):
-            head_object_calls.append(call(Bucket=source_bucket_names[i], Key=source_keys[i]))
-            copy_calls.append(call(
-                {'Bucket': source_bucket_names[i], 'Key': source_keys[i]},
-                destination_bucket_name,
-                source_keys[i],
-                ExtraArgs={
-                    'StorageClass': 'GLACIER',
-                    'MetadataDirective': 'COPY',
-                    'ContentType': content_type,
-                    'ACL': 'bucket-owner-full-control'
-                },
-                Config=unittest.mock.ANY  # Checked by ConfigCheck. Equality checkers do not work.
-            ))
+            head_object_calls.append(
+                call(Bucket=source_bucket_names[i], Key=source_keys[i])
+            )
+            copy_calls.append(
+                call(
+                    {"Bucket": source_bucket_names[i], "Key": source_keys[i]},
+                    mock_get_default_glacier_bucket_name.return_value,
+                    source_keys[i],
+                    ExtraArgs={
+                        "StorageClass": "GLACIER",
+                        "MetadataDirective": "COPY",
+                        "ContentType": content_type,
+                        "ACL": "bucket-owner-full-control",
+                    },
+                    Config=unittest.mock.ANY,  # Checked by ConfigCheck. Equality checkers do not work.
+                )
+            )
 
         s3_cli.head_object.assert_has_calls(head_object_calls)
         s3_cli.copy.assert_has_calls(copy_calls)
 
         self.assertEqual(s3_cli.head_object.call_count, 4)
         self.assertEqual(s3_cli.copy.call_count, 4)
-
-        expected_copied_file_urls = [file['filename'] for file in self.event_granules['granules'][0]['files']]
-        self.assertEqual(expected_copied_file_urls, result['copied_to_glacier'])
-        self.assertEqual(self.event_granules['granules'], result['granules'])
+        self.assertEqual(s3_cli.list_object_versions.call_count, 4)
+        expected_copied_file_urls = [
+            f"s3://{file[copy_to_glacier.FILE_BUCKET_KEY]}/{file[copy_to_glacier.FILE_FILEPATH_KEY]}"
+            for file in self.event_granules["granules"][0]["files"]
+        ]
+        self.assertEqual(expected_copied_file_urls, result["copied_to_glacier"])
+        expected_granules = copy.deepcopy(event["input"]["granules"])
+        self.assertEqual(expected_granules, result["granules"])
         self.assertIsNone(config_check.bad_config)
 
-    @patch.dict(os.environ,
-                {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__(), "DEFAULT_MULTIPART_CHUNKSIZE_MB": "4"},
-                clear=True)
-    def test_task_empty_granules_list(self):
+    @patch("copy_to_glacier.get_default_glacier_bucket_name")
+    @patch.dict(
+        os.environ,
+        {"DEFAULT_MULTIPART_CHUNKSIZE_MB": "4", "METADATA_DB_QUEUE_URL": "test"},
+        clear=True,
+    )
+    def test_task_empty_granules_list(
+        self, mock_get_default_glacier_bucket_name: MagicMock
+    ):
         """
         Basic path with buckets present.
         """
         # todo: use 'side_effect' to verify args. It is safer, as current method does not deep-copy args
         boto3.client = Mock()
-        s3_cli = boto3.client('s3')
+        s3_cli = boto3.client("s3")
         s3_cli.copy = Mock()
         s3_cli.head_object = Mock()
 
+        config = {
+            "providerId": "test",
+            "executionId": "test-execution-id",
+            "collectionShortname": "MOD09GQ",
+            "collectionVersion": uuid.uuid4().__str__(),
+        }
         event = {
-            'input': {
-                "granules": []
-            },
-            'config': {
-            }
+            "input": {"granules": []},
+            "config": config,
         }
 
-        result = task(event, None)
+        result = task(copy.deepcopy(event), None)
+
+        mock_get_default_glacier_bucket_name.assert_called_once_with(config)
 
         with open("schemas/output.json", "r") as raw_schema:
             schema = json.loads(raw_schema.read())
@@ -304,36 +696,153 @@ class TestCopyToGlacierHandler(TestCase):
         validate = fastjsonschema.compile(schema)
         validate(result)
 
-        self.assertEqual([], result['granules'])
-        granules = result['granules']
+        self.assertEqual([], result["granules"])
+        granules = result["granules"]
         self.assertEqual(0, len(granules))
 
         s3_cli.head_object.assert_not_called()
         s3_cli.copy.assert_not_called()
 
-    @patch.dict(os.environ, {"ORCA_DEFAULT_BUCKET": ""}, clear=True)
-    def test_task_invalid_environment_variable(self):
+    @patch.dict(
+        os.environ,
+        {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__()},
+        clear=True,
+    )
+    def test_get_default_glacier_bucket_name_returns_override_if_present(self):
+        bucket = Mock()
+        result = copy_to_glacier.get_default_glacier_bucket_name(
+            {copy_to_glacier.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: bucket}
+        )
+        self.assertEqual(bucket, result)
+
+    @patch.dict(
+        os.environ,
+        {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__()},
+        clear=True,
+    )
+    def test_get_default_glacier_bucket_name_returns_default_bucket_if_none_override(
+        self,
+    ):
+        bucket = os.environ["ORCA_DEFAULT_BUCKET"]
+        result = copy_to_glacier.get_default_glacier_bucket_name(
+            {copy_to_glacier.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: None}
+        )
+        self.assertEqual(bucket, result)
+
+    def test_no_bucket_raises_error(self):
+        with self.assertRaises(KeyError) as cm:
+            copy_to_glacier.get_default_glacier_bucket_name(
+                {copy_to_glacier.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: None}
+            )
+
+    @patch.dict(
+        os.environ,
+        {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__()},
+        clear=True,
+    )
+    def test_get_default_glacier_bucket_name_returns_env_bucket_if_no_other(self):
+        bucket = os.environ["ORCA_DEFAULT_BUCKET"]
+        result = copy_to_glacier.get_default_glacier_bucket_name(
+            {copy_to_glacier.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: None}
+        )
+        self.assertEqual(bucket, result)
+
+    @patch("time.sleep")
+    @patch.dict(os.environ, {"AWS_REGION": "us-west-2"}, clear=True)
+    def test_post_to_metadata_queue_happy_path(self, mock_sleep: MagicMock):
         """
-        Checks to make sure an unset or empty environment variable throws an error
+        SQS library happy path. Checks that the message sent to SQS is same as the message received from SQS.
         """
-        content_type = uuid.uuid4().__str__()
-
-        # todo: use 'side_effect' to verify args. It is safer, as current method does not deep-copy args
-        boto3.client = Mock()
-        s3_cli = boto3.client('s3')
-        s3_cli.copy = Mock(return_value=None)
-        s3_cli.head_object = Mock(return_value={'ContentType': content_type})
-
-        event = {
-            'input': copy.deepcopy(self.event_granules),
-            'config': {
-            }
-
+        sqs_body = {
+            "provider": {"providerId": "1234", "name": "LPCUmumulus"},
+            "collection": {
+                "collectionId": "MOD14A1__061",
+                "shortname": "MOD14A1",
+                "version": "061",
+            },
+            "granule": {
+                "cumulusGranuleId": "MOD14A1.061.A23V45.2020235",
+                "cumulusCreateTime": "2019-07-17T17:36:38.494918+00:00",
+                "executionId": "f2fgh-356-789",
+                "ingestTime": "2019-07-17T17:36:38.494918+00:00",
+                "lastUpdate": "2019-07-17T17:36:38.494918+00:00",
+                "files": [
+                    {
+                        "name": "MOD14A1.061.A23V45.2020235.2020240145621.hdf",
+                        "cumulusArchiveLocation": "cumulus-archive",
+                        "orcaArchiveLocation": "orca-archive",
+                        "keyPath": "MOD14A1/061/032/MOD14A1.061.A23V45.2020235.2020240145621.hdf",
+                        "sizeInBytes": 100934568723,
+                        "hash": "ACFH325128030192834127347",
+                        "hashType": "SHA-256",
+                        "version": "VXCDEG902",
+                        "ingestTime": "2019-07-17T17:36:38.494918+00:00",
+                        "etag": "YXC432BGT789",
+                    }
+                ],
+            },
         }
+        # Send values to the function
+        sqs_library.post_to_metadata_queue(
+            sqs_body,
+            self.metadata_queue_url,
+        )
+        # grabbing queue contents after the message is sent
+        queue_contents = self.queue.receive_messages()
+        queue_output_body = json.loads(queue_contents[0].body)
 
-        with self.assertRaises(KeyError) as context:
-            task(event, None)
-            self.assertTrue('ORCA_DEFAULT_BUCKET environment variable is not set.' in context.exception)
+        # Testing required fields
+        self.assertEqual(queue_output_body, sqs_body)
+
+    @patch("time.sleep")
+    @patch("sqs_library.retry_error")
+    @patch.dict(os.environ, {"AWS_REGION": "us-west-2"}, clear=True)
+    def test_post_to_metadata_queue_retry_failures(
+        self, mock_retry_error: MagicMock, mock_sleep: MagicMock
+    ):
+        """
+        Produces a failure in the json schema and checks if retries are performed in the SQS library.
+        """
+        # collectionId is intentionally removed so the schema validation will fail.
+        sqs_body = {
+            "provider": {"providerId": "1234", "name": "LPCUmumulus"},
+            "collection": {
+                "collectionId": "MOD14A1__061",
+                "shortname": "MOD14A1",
+                "version": "061",
+            },
+            "granule": {
+                "cumulusGranuleId": "MOD14A1.061.A23V45.2020235",
+                "cumulusCreateTime": "2019-07-17T17:36:38.494918+00:00",
+                "executionId": "f2fgh-356-789",
+                "ingestTime": "2019-07-17T17:36:38.494918+00:00",
+                "lastUpdate": "2019-07-17T17:36:38.494918+00:00",
+                "files": [
+                    {
+                        "name": "MOD14A1.061.A23V45.2020235.2020240145621.hdf",
+                        "cumulusArchiveLocation": "cumulus-archive",
+                        "orcaArchiveLocation": "orca-archive",
+                        "keyPath": "MOD14A1/061/032/MOD14A1.061.A23V45.2020235.2020240145621.hdf",
+                        "sizeInBytes": 100934568723,
+                        "hash": "ACFH325128030192834127347",
+                        "hashType": "SHA-256",
+                        "version": "VXCDEG902",
+                        "ingestTime": "2019-07-17T17:36:38.494918+00:00",
+                        "etag": "YXC432BGT789",
+                    }
+                ],
+            },
+        }
+        #
+        self.metadata_queue_url = "dummy"
+        # Send values to the function
+        with self.assertRaises(Exception) as ex:
+            sqs_library.post_to_metadata_queue(
+                sqs_body,
+                self.metadata_queue_url,
+            )
+        self.assertEqual(3, mock_sleep.call_count)
+
 
 ##TODO: Write tests to validate file name regex exclusion
 

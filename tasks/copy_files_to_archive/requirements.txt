@@ -1,4 +1,4 @@
-boto3==1.12.47
+boto3==1.18.40
 fastjsonschema==2.15.0
-cumulus-message-adapter-python==1.2.1
-../../shared_libraries[recovery] --use-feature=in-tree-build
+cumulus-message-adapter-python==2.0.0
+../../shared_libraries[recovery]

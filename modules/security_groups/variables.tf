@@ -19,9 +19,7 @@ variable "tags" {
 }
 
 
-## Variables unique to ORCA
-## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
-variable "database_port" {
-  type        = number
-  description = "Database port that PostgreSQL traffic will be allowed on."
+variable "rds_security_group_id" {
+  type        = string
+  description = "Cumulus' RDS Security Group's ID."
 }

@@ -5,17 +5,17 @@
   "description": "The config for the request_files Lambda.",
   "type": "object",
   "properties": {
-    "glacier-bucket": {
-      "description": "The name of the glacier bucket from which the files will be restored. Defaults to OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY",
-      "type": "string"
-    },
     "asyncOperationId": {
       "description": "The unique identifier used for tracking requests. If not present, will be generated.",
-      "type": "string"
+      "type": ["string", "null"]
     },
-    "multipart_chunksize_mb": {
+    "s3MultipartChunksizeMb": {
       "description": "Overrides default_multipart_chunksize from TF.",
       "type": ["number", "null"]
+    },
+    "orcaDefaultBucketOverride": {
+      "type": ["string", "null"],
+      "description": "Overrides the default bucket to copy to in os.environ['ORCA_DEFAULT_BUCKET']."
     }
   }
 }

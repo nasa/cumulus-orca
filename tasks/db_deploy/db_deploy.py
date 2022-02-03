@@ -8,9 +8,12 @@ from orca_shared.database.shared_db import (
     logger,
     get_configuration,
     get_admin_connection,
+    retry_operational_error,
 )
 from sqlalchemy import text
 from sqlalchemy.future import Connection
+
+import orca_sql
 from create_db import create_fresh_orca_install
 from migrate_db import perform_migration
 from typing import Any, Dict
@@ -18,7 +21,8 @@ from typing import Any, Dict
 
 # Globals
 # Latest version of the ORCA schema.
-LATEST_ORCA_SCHEMA_VERSION = 3
+LATEST_ORCA_SCHEMA_VERSION = 4
+MAX_RETRIES = 3
 
 
 def handler(
@@ -61,19 +65,26 @@ def task(config: Dict[str, str]) -> None:
     """
     # Create the engines
     postgres_admin_engine = get_admin_connection(config)
-    user_admin_engine = get_admin_connection(config, config["database"])
+    user_admin_engine = get_admin_connection(config, config["user_database"])
 
     # Connect as admin user to the postgres database
     with postgres_admin_engine.connect() as connection:
-        # Check if database exists, if not throw an error
-        if not app_db_exists(connection):
-            logger.critical(
-                "The ORCA database disaster_recovery does not exist, "
+        # Check if database exists. If not, start from scratch.
+        if not app_db_exists(connection, config["user_database"]):
+            logger.info(
+                f"The ORCA database {config['user_database']} does not exist, "
                 "or the server could not be connected to."
             )
-            raise Exception("Missing application database.")
+            connection.execute(
+                orca_sql.commit_sql()
+            )  # exit the default transaction to allow database creation.
+            connection.execute(orca_sql.app_database_sql(config["user_database"]))
+            connection.execute(orca_sql.app_database_comment_sql(config["user_database"]))
+            logger.info("Database created.")
+            create_fresh_orca_install(config)
+            return
 
-    # Connect as admin user to disaster_recovery database.
+    # Connect as admin user to config["user_database"] database.
     with user_admin_engine.connect() as connection:
         # Determine if we need a fresh install or need a migration based on if
         # the orca schemas exist or not.
@@ -95,18 +106,21 @@ def task(config: Dict[str, str]) -> None:
                 perform_migration(current_version, config)
 
         else:
+            # If we got here, the DB existed, but was not correctly populated for whatever reason.
             # Run a fresh install
             logger.info("Performing full install of ORCA schema.")
             create_fresh_orca_install(config)
 
 
 # def app_db_exists(config: Dict[str, str]) -> bool:
-def app_db_exists(connection: Connection) -> bool:
+@retry_operational_error(MAX_RETRIES)
+def app_db_exists(connection: Connection, db_name: str) -> bool:
     """
     Checks to see if the ORCA application database exists.
 
     Args:
         connection (sqlalchemy.future.Connection): Database connection object.
+        db_name: The name of the Orca database within the RDS cluster.
 
     Returns:
         True/False (bool): True if database exists.
@@ -114,14 +128,14 @@ def app_db_exists(connection: Connection) -> bool:
 
     # SQL for checking database
     check_db_sql = text(
-        """
+        f"""
         SELECT EXISTS(
             SELECT
                 datname
             FROM
                 pg_catalog.pg_database
             WHERE
-                datname = 'disaster_recovery'
+                datname = '{db_name}'
         );
     """
     )
