@@ -25,6 +25,8 @@ psycopg2-binary==2.9.2
 ## Libraries used by recovery package
 moto[sqs]==2.0.6
 
+## Libraries used by reconciliation package
+# None
 
 ## Libraries needed by packages to run
 ## ---------------------------------------------------------------------------
@@ -38,3 +40,6 @@ SQLAlchemy==1.4.11
 
 ## Libraries used by recovery package
 # boto3~=1.18.40
+
+## Libraries used by reconciliation package
+# None

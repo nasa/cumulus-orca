@@ -1,6 +1,9 @@
 # Table of Contents
 
 * [orca\_shared](#orca_shared)
+* [orca\_shared.reconciliation](#orca_shared.reconciliation)
+* [orca\_shared.reconciliation.shared\_reconciliation](#orca_shared.reconciliation.shared_reconciliation)
+  * [OrcaStatus](#orca_shared.reconciliation.shared_reconciliation.OrcaStatus)
 * [orca\_shared.database](#orca_shared.database)
 * [orca\_shared.database.shared\_db](#orca_shared.database.shared_db)
   * [get\_configuration](#orca_shared.database.shared_db.get_configuration)
@@ -14,11 +17,35 @@
   * [get\_aws\_region](#orca_shared.recovery.shared_recovery.get_aws_region)
   * [create\_status\_for\_job](#orca_shared.recovery.shared_recovery.create_status_for_job)
   * [update\_status\_for\_file](#orca_shared.recovery.shared_recovery.update_status_for_file)
-  * [post\_entry\_to\_queue](#orca_shared.recovery.shared_recovery.post_entry_to_queue)
+  * [post\_entry\_to\_fifo\_queue](#orca_shared.recovery.shared_recovery.post_entry_to_fifo_queue)
+  * [post\_entry\_to\_standard\_queue](#orca_shared.recovery.shared_recovery.post_entry_to_standard_queue)
 
 <a id="orca_shared"></a>
 
 # orca\_shared
+
+<a id="orca_shared.reconciliation"></a>
+
+# orca\_shared.reconciliation
+
+<a id="orca_shared.reconciliation.shared_reconciliation"></a>
+
+# orca\_shared.reconciliation.shared\_reconciliation
+
+Name: shared_reconciliation.py
+Description: Shared library that combines common functions and classes needed for
+             reconciliation operations.
+
+<a id="orca_shared.reconciliation.shared_reconciliation.OrcaStatus"></a>
+
+## OrcaStatus Objects
+
+```python
+class OrcaStatus(Enum)
+```
+
+An enumeration.
+Defines the status value used in the ORCA Reconciliation database for use by the reconciliation functions.
 
 <a id="orca_shared.database"></a>
 
@@ -220,21 +247,40 @@ job_id + granule_id + filename does not exist.
 - `error_message` - message displayed on error.
 - `db_queue_url` - The SQS queue URL defined by AWS.
 
-<a id="orca_shared.recovery.shared_recovery.post_entry_to_queue"></a>
+<a id="orca_shared.recovery.shared_recovery.post_entry_to_fifo_queue"></a>
 
-#### post\_entry\_to\_queue
+#### post\_entry\_to\_fifo\_queue
 
 ```python
-def post_entry_to_queue(new_data: Dict[str, Any], request_method: RequestMethod, db_queue_url: str) -> None
+def post_entry_to_fifo_queue(new_data: Dict[str, Any], request_method: RequestMethod, db_queue_url: str) -> None
 ```
 
-Posts messages to an SQS queue.
+Posts messages to SQS FIFO queue.
 
 **Arguments**:
 
 - `new_data` - A dictionary representing the column/value pairs to write to the DB table.
 - `request_method` - The action for the database lambda to take when posting to the SQS queue.
 - `db_queue_url` - The SQS queue URL defined by AWS.
+
+**Raises**:
+
+  None
+
+<a id="orca_shared.recovery.shared_recovery.post_entry_to_standard_queue"></a>
+
+#### post\_entry\_to\_standard\_queue
+
+```python
+def post_entry_to_standard_queue(new_data: Dict[str, Any], recovery_queue_url: str) -> None
+```
+
+Posts messages to the recovery standard SQS queue.
+
+**Arguments**:
+
+- `new_data` - A dictionary representing the column/value pairs to write to the DB table.
+- `recovery_queue_url` - The SQS queue URL defined by AWS.
 
 **Raises**:
 

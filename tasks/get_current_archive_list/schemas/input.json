@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/get_current_archive_list/schemas/input.json",
+  "title": "get_current_archive_list Lambda Config",
+  "description": "The input for the get_current_archive_list Lambda.",
+  "type": "object",
+  "properties": {
+    "Records": {
+      "type": "array",
+      "description": "A list of dicts from SQS. From example: https://www.juniper.net/documentation/us/en/software/jsa7.4.2/jsa-dsm/topics/concept/jsa-dsm-create-sqs-queue-and-configure-s3-objectcreated-notifications.html",
+      "items": {
+        "description": "An s3 event passed in by SQS.",
+        "type": "object",
+        "required": [
+          "awsRegion",
+          "s3"
+        ],
+        "properties": {
+          "awsRegion": {
+            "type": "string",
+            "description": "The region containing the bucket the event occurred in."
+          },
+          "s3": {
+            "type": "object",
+            "description": "Details regarding the s3 event.",
+            "required": [
+              "bucket",
+              "object"
+            ],
+            "properties": {
+              "bucket": {
+                "description": "Metadata for the bucket the event occurred in.",
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "The name of the bucket the event occurred in."
+                  }
+                }
+              },
+              "object": {
+                "type": "object",
+                "description": "Details about the file that the event occurred on.",
+                "required": [
+                  "key"
+                ],
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "description": "The full path within the s3 bucket to the file that the event occurred on."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "Records"
+  ]
+}

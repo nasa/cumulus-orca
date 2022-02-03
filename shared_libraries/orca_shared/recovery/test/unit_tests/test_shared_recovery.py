@@ -55,10 +55,10 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         {"AWS_REGION": "us-west-2"},
         clear=True,
     )
-    def test_post_entry_to_queue_no_errors(self):
+    def test_post_entry_to_fifo_queue_no_errors(self):
         """
         *Happy Path*
-        Test that sending a message to SQS queue using post_entry_to_queue()
+        Test that sending a message to SQS queue using post_entry_to_fifo_queue()
         function returns the same expected message.
         """
         new_data = {"name": "test"}
@@ -66,7 +66,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
             # Run subtests
             with self.subTest(request_method=request_method):
                 # Send values to the function
-                shared_recovery.post_entry_to_queue(
+                shared_recovery.post_entry_to_fifo_queue(
                     new_data, request_method, self.db_queue_url
                 )
 
@@ -78,6 +78,28 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
 
                 # Testing SQS body
                 self.assertEqual(queue_output_body, new_data)
+
+    @patch.dict(
+        os.environ,
+        {"AWS_REGION": "us-west-2"},
+        clear=True,
+    )
+    def test_post_entry_to_standard_queue_happy_path(self):
+        """
+        *Happy Path*
+        Test that sending a message to SQS queue using post_entry_to_standard_queue()
+        function returns the same expected message.
+        """
+        new_data = {"name": "test"}
+
+        shared_recovery.post_entry_to_standard_queue(new_data, self.db_queue_url)
+
+        # grabbing queue contents after the message is sent
+        queue_contents = self.queue.receive_messages(MessageAttributeNames=["All"])
+        queue_output_body = json.loads(queue_contents[0].body)
+
+        # Testing SQS body
+        self.assertEqual(queue_output_body, new_data)
 
     @patch.dict(
         os.environ,

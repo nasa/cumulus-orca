@@ -113,7 +113,7 @@ resource "aws_lambda_function" "request_files" {
       RESTORE_REQUEST_RETRIES  = var.orca_recovery_retry_limit
       RESTORE_RETRY_SLEEP_SECS = var.orca_recovery_retry_interval
       RESTORE_RETRIEVAL_TYPE   = "Standard"
-      DB_QUEUE_URL             = var.orca_sqs_status_update_queue_id
+      STATUS_UPDATE_QUEUE_URL  = var.orca_sqs_status_update_queue_id
       ORCA_DEFAULT_BUCKET      = var.orca_default_bucket
     }
   }
@@ -146,7 +146,7 @@ resource "aws_lambda_function" "copy_files_to_archive" {
     variables = {
       COPY_RETRIES                   = var.orca_recovery_retry_limit
       COPY_RETRY_SLEEP_SECS          = var.orca_recovery_retry_interval
-      DB_QUEUE_URL                   = var.orca_sqs_status_update_queue_id
+      STATUS_UPDATE_QUEUE_URL        = var.orca_sqs_status_update_queue_id
       DEFAULT_MULTIPART_CHUNKSIZE_MB = var.default_multipart_chunksize_mb
       RECOVERY_QUEUE_URL             = var.orca_sqs_staged_recovery_queue_id
     }
@@ -300,12 +300,12 @@ resource "aws_lambda_function" "post_copy_request_to_queue" {
   }
   environment {
     variables = {
-      PREFIX             = var.prefix
-      DB_QUEUE_URL       = var.orca_sqs_status_update_queue_id
-      RECOVERY_QUEUE_URL = var.orca_sqs_staged_recovery_queue_id
-      MAX_RETRIES        = var.orca_recovery_retry_limit
-      RETRY_SLEEP_SECS   = var.orca_recovery_retry_interval
-      RETRY_BACKOFF      = var.orca_recovery_retry_backoff
+      PREFIX                  = var.prefix
+      STATUS_UPDATE_QUEUE_URL = var.orca_sqs_status_update_queue_id
+      RECOVERY_QUEUE_URL      = var.orca_sqs_staged_recovery_queue_id
+      MAX_RETRIES             = var.orca_recovery_retry_limit
+      RETRY_SLEEP_SECS        = var.orca_recovery_retry_interval
+      RETRY_BACKOFF           = var.orca_recovery_retry_backoff
     }
   }
 }
@@ -329,7 +329,7 @@ resource "aws_s3_bucket_notification" "post_copy_request_to_queue_trigger" {
   bucket = each.value
   ## OPTIONAL
   lambda_function {
-    ## REQUIRED  
+    ## REQUIRED
     lambda_function_arn = aws_lambda_function.post_copy_request_to_queue.arn
     events              = ["s3:ObjectRestore:Completed"]
     ## OPTIONAL
@@ -424,6 +424,11 @@ resource "aws_lambda_permission" "post_to_catalog_allow_sqs_trigger" {
 # db_deploy - Lambda that deploys database resources
 # ==============================================================================
 resource "aws_lambda_function" "db_deploy" {
+  depends_on = [
+    module.lambda_security_group,
+    var.restore_object_role_arn
+  ]
+
   ## REQUIRED
   function_name = "${var.prefix}_db_deploy"
   role          = var.restore_object_role_arn
@@ -456,6 +461,8 @@ resource "aws_lambda_function" "db_deploy" {
 data "aws_lambda_invocation" "db_migration" {
   depends_on    = [aws_lambda_function.db_deploy]
   function_name = aws_lambda_function.db_deploy.function_name
-  input         = jsonencode({})
+  input         = jsonencode({
+    replacementTrigger = timestamp()
+  })
 }
 ## TODO: Should create null resource to handle password changes ORCA-145
