@@ -62,6 +62,9 @@
   * [create\_metadata\_objects](#install/create_db.create_metadata_objects)
   * [create\_recovery\_objects](#install/create_db.create_recovery_objects)
   * [create\_inventory\_objects](#install/create_db.create_inventory_objects)
+* [test/unit\_tests/test\_migrate\_sql\_v3](#test/unit_tests/test_migrate_sql_v3)
+  * [TestOrcaSqlLogic](#test/unit_tests/test_migrate_sql_v3.TestOrcaSqlLogic)
+    * [test\_all\_functions\_return\_text](#test/unit_tests/test_migrate_sql_v3.TestOrcaSqlLogic.test_all_functions_return_text)
 * [test/unit\_tests/test\_db\_deploy](#test/unit_tests/test_db_deploy)
   * [TestDbDeployFunctions](#test/unit_tests/test_db_deploy.TestDbDeployFunctions)
     * [setUp](#test/unit_tests/test_db_deploy.TestDbDeployFunctions.setUp)
@@ -75,6 +78,11 @@
     * [test\_app\_schema\_exists\_happy\_path](#test/unit_tests/test_db_deploy.TestDbDeployFunctions.test_app_schema_exists_happy_path)
     * [test\_app\_versions\_table\_exists\_happy\_path](#test/unit_tests/test_db_deploy.TestDbDeployFunctions.test_app_versions_table_exists_happy_path)
     * [test\_get\_migration\_version\_happy\_path](#test/unit_tests/test_db_deploy.TestDbDeployFunctions.test_get_migration_version_happy_path)
+* [test/unit\_tests/test\_migrate\_sql\_v2](#test/unit_tests/test_migrate_sql_v2)
+  * [TestOrcaSqlLogic](#test/unit_tests/test_migrate_sql_v2.TestOrcaSqlLogic)
+    * [test\_app\_user\_sql\_happy\_path](#test/unit_tests/test_migrate_sql_v2.TestOrcaSqlLogic.test_app_user_sql_happy_path)
+    * [test\_app\_user\_sql\_exceptions](#test/unit_tests/test_migrate_sql_v2.TestOrcaSqlLogic.test_app_user_sql_exceptions)
+    * [test\_all\_functions\_return\_text](#test/unit_tests/test_migrate_sql_v2.TestOrcaSqlLogic.test_all_functions_return_text)
 * [test/unit\_tests/test\_create\_db](#test/unit_tests/test_create_db)
   * [TestCreateDatabaseLibraries](#test/unit_tests/test_create_db.TestCreateDatabaseLibraries)
     * [setUp](#test/unit_tests/test_create_db.TestCreateDatabaseLibraries.setUp)
@@ -111,6 +119,9 @@
     * [test\_app\_user\_sql\_happy\_path](#test/unit_tests/test_orca_sql.TestOrcaSqlLogic.test_app_user_sql_happy_path)
     * [test\_app\_user\_sql\_exceptions](#test/unit_tests/test_orca_sql.TestOrcaSqlLogic.test_app_user_sql_exceptions)
     * [test\_all\_functions\_return\_text](#test/unit_tests/test_orca_sql.TestOrcaSqlLogic.test_all_functions_return_text)
+* [test/unit\_tests/test\_migrate\_sql\_v4](#test/unit_tests/test_migrate_sql_v4)
+  * [TestOrcaSqlLogic](#test/unit_tests/test_migrate_sql_v4.TestOrcaSqlLogic)
+    * [test\_all\_functions\_return\_text](#test/unit_tests/test_migrate_sql_v4.TestOrcaSqlLogic.test_all_functions_return_text)
 * [test/manual\_tests/manual\_test](#test/manual_tests/manual_test)
   * [set\_search\_path](#test/manual_tests/manual_test.set_search_path)
   * [get\_configuration](#test/manual_tests/manual_test.get_configuration)
@@ -966,6 +977,33 @@ Creates the ORCA catalog metadata tables used for reconciliation with Cumulus in
 
   None
 
+<a name="test/unit_tests/test_migrate_sql_v3"></a>
+# test/unit\_tests/test\_migrate\_sql\_v3
+
+Name: test_migrate_sql_v3.py
+
+Description: Testing library for the migrations/migrate_versions_2_to_3/migrate_sql_v3.py.
+
+<a name="test/unit_tests/test_migrate_sql_v3.TestOrcaSqlLogic"></a>
+## TestOrcaSqlLogic Objects
+
+```python
+class TestOrcaSqlLogic(unittest.TestCase)
+```
+
+Note that currently all of the function calls in the migrate_sql_v3.py
+return a SQL text string. The tests below
+validate the logic in the function.
+
+<a name="test/unit_tests/test_migrate_sql_v3.TestOrcaSqlLogic.test_all_functions_return_text"></a>
+#### test\_all\_functions\_return\_text
+
+```python
+ | test_all_functions_return_text() -> None
+```
+
+Validates that all functions return a type TextClause
+
 <a name="test/unit_tests/test_db_deploy"></a>
 # test/unit\_tests/test\_db\_deploy
 
@@ -1113,6 +1151,55 @@ Does a happy path test for the function. No real logic to test.
 ```
 
 Does a happy path test for the function. No real logic to test.
+
+<a name="test/unit_tests/test_migrate_sql_v2"></a>
+# test/unit\_tests/test\_migrate\_sql\_v2
+
+Name: test_migrate_sql_v2.py
+
+Description: Unit tests for the migrations/migrate_versions_1_to_2/migrate_sql_v2.py.
+
+<a name="test/unit_tests/test_migrate_sql_v2.TestOrcaSqlLogic"></a>
+## TestOrcaSqlLogic Objects
+
+```python
+class TestOrcaSqlLogic(unittest.TestCase)
+```
+
+Note that currently all of the function calls in the migrate_sql_v2.py
+return a SQL text string and have no logic except for the app_user_sql
+function that requires a string for the user password. The tests below
+validate the logic in the function.
+
+<a name="test/unit_tests/test_migrate_sql_v2.TestOrcaSqlLogic.test_app_user_sql_happy_path"></a>
+#### test\_app\_user\_sql\_happy\_path
+
+```python
+ | test_app_user_sql_happy_path() -> None
+```
+
+Tests the happy path for the app_user_sql function and validates the
+user password is a part of the SQL.
+
+<a name="test/unit_tests/test_migrate_sql_v2.TestOrcaSqlLogic.test_app_user_sql_exceptions"></a>
+#### test\_app\_user\_sql\_exceptions
+
+```python
+ | test_app_user_sql_exceptions() -> None
+```
+
+Tests that an exception is thrown if the password is not set or is not
+a minimum of 12 characters,
+or if user_name is not set or is over 64 characters.
+
+<a name="test/unit_tests/test_migrate_sql_v2.TestOrcaSqlLogic.test_all_functions_return_text"></a>
+#### test\_all\_functions\_return\_text
+
+```python
+ | test_all_functions_return_text() -> None
+```
+
+Validates that all functions return a type TextClause
 
 <a name="test/unit_tests/test_create_db"></a>
 # test/unit\_tests/test\_create\_db
@@ -1483,6 +1570,33 @@ a minimum of 12 characters,
 or if user_name is not set or is over 64 characters.
 
 <a name="test/unit_tests/test_orca_sql.TestOrcaSqlLogic.test_all_functions_return_text"></a>
+#### test\_all\_functions\_return\_text
+
+```python
+ | test_all_functions_return_text() -> None
+```
+
+Validates that all functions return a type TextClause
+
+<a name="test/unit_tests/test_migrate_sql_v4"></a>
+# test/unit\_tests/test\_migrate\_sql\_v4
+
+Name: test_migrate_sql_v4.py
+
+Description: Testing library for the migrations/migrate_versions_3_to_4/migrate_sql_v4.py.
+
+<a name="test/unit_tests/test_migrate_sql_v4.TestOrcaSqlLogic"></a>
+## TestOrcaSqlLogic Objects
+
+```python
+class TestOrcaSqlLogic(unittest.TestCase)
+```
+
+Note that currently all of the function calls in the migrate_sql_v4.py
+return a SQL text string. The tests below
+validate the logic in the function.
+
+<a name="test/unit_tests/test_migrate_sql_v4.TestOrcaSqlLogic.test_all_functions_return_text"></a>
 #### test\_all\_functions\_return\_text
 
 ```python
