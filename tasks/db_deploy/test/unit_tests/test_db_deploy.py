@@ -74,17 +74,11 @@ class TestDbDeployFunctions(unittest.TestCase):
 
     @patch("db_deploy.create_fresh_orca_install")
     @patch("db_deploy.create_database")
-    # @patch("install.orca_sql.app_database_comment_sql")
-    # @patch("install.orca_sql.app_database_sql")
-    # @patch("install.orca_sql.commit_sql")
     @patch("db_deploy.get_admin_connection")
     @patch("db_deploy.app_db_exists")
     def test_task_no_database(
         self, mock_app_db_exists: MagicMock,
             mock_connection: MagicMock,
-            # mock_commit_sql: MagicMock,
-            # mock_app_database_sql: MagicMock,
-            # mock_app_database_comment_sql: MagicMock,
             mock_create_database: MagicMock,
             mock_create_fresh_orca_install: MagicMock
     ):
@@ -99,12 +93,6 @@ class TestDbDeployFunctions(unittest.TestCase):
 
         mock_create_fresh_orca_install.assert_called_once_with(self.config)
         mock_create_database.assert_called_once_with(self.config)
-        # execute_calls = [
-        #     call(mock_commit_sql.return_value),
-        #     call(mock_app_database_sql.return_value),
-        #     call(mock_app_database_comment_sql.return_value)
-        # ]
-        # mock_connection().connect().__enter__().execute.assert_has_calls(execute_calls, any_order=True)
 
     @patch("db_deploy.get_admin_connection")
     @patch("db_deploy.create_fresh_orca_install")

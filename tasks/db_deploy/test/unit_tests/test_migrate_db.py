@@ -5,11 +5,8 @@ Description: Runs unit tests for the migrations/migrate_db.py library.
 """
 
 import unittest
-from unittest.mock import Mock, call, patch, MagicMock
+from unittest.mock import patch, MagicMock
 from migrations import migrate_db
-from migrations.migrate_versions_1_to_2 import migrate_db_v2
-from migrations.migrate_versions_2_to_3 import migrate_db_v3
-from migrations.migrate_versions_3_to_4 import migrate_db_v4
 
 class TestMigrateDatabaseLibraries(unittest.TestCase):
     """

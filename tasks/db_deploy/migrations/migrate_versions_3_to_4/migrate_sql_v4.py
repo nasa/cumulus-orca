@@ -6,8 +6,6 @@ Description: All of the SQL used for creating and migrating the ORCA schema to v
 # Imports
 from sqlalchemy import text
 from sqlalchemy.sql.elements import TextClause
-from orca_shared.database.shared_db import logger
-
 
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA inventory metadata tables
