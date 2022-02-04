@@ -229,7 +229,7 @@ def schema_versions_data_sql() -> TextClause:
 
         -- Upsert the current version
         INSERT INTO schema_versions
-        VALUES (4, 'Added inventory schema for v4.x of ORCA application', NOW(), True)
+        VALUES (2, 'Added inventory schema for v2.x of ORCA application', NOW(), True)
         ON CONFLICT (version_id)
         DO UPDATE SET is_latest = True;
     """

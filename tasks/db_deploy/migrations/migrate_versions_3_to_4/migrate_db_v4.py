@@ -4,7 +4,7 @@ Name: migrate_db_v4.py
 Description: Migrates the ORCA schema from version 3 to version 4.
 """
 from typing import Dict
-from migrations.migrate_versions_3_to_4.migrate_sql_v4 import *
+import migrations.migrate_versions_3_to_4.migrate_sql_v4 as sql
 from orca_shared.database.shared_db import get_admin_connection, logger
 
 def migrate_versions_3_to_4(config: Dict[str, str], is_latest_version: bool) -> None:
@@ -23,31 +23,31 @@ def migrate_versions_3_to_4(config: Dict[str, str], is_latest_version: bool) -> 
     with admin_app_connection.connect() as connection:
         # Change to DBO role and set search path
         logger.debug("Changing to the dbo role to create objects ...")
-        connection.execute(text("SET ROLE orca_dbo;"))
+        connection.execute(sql.text("SET ROLE orca_dbo;"))
 
         # Set the search path
         logger.debug("Setting search path to the ORCA schema to create objects ...")
-        connection.execute(text("SET search_path TO orca, public;"))
+        connection.execute(sql.text("SET search_path TO orca, public;"))
 
         # Create ORCA inventory tables
         # Create providers table
         logger.debug("Creating providers table ...")
-        connection.execute(providers_table_sql())
+        connection.execute(sql.providers_table_sql())
         logger.info("providers table created.")
 
         # Create collections table
         logger.debug("Creating collections table ...")
-        connection.execute(collections_table_sql())
+        connection.execute(sql.collections_table_sql())
         logger.info("collections table created.")
 
         # Create granules table
         logger.debug("Creating granules table ...")
-        connection.execute(granules_table_sql())
+        connection.execute(sql.granules_table_sql())
         logger.info("granules table created.")
 
         # Create files table
         logger.debug("Creating files table ...")
-        connection.execute(files_table_sql())
+        connection.execute(sql.files_table_sql())
         logger.info("files table created.")
 
         # Commit if there is no issues
@@ -56,7 +56,7 @@ def migrate_versions_3_to_4(config: Dict[str, str], is_latest_version: bool) -> 
         # If v3 is the latest version, update the schema_versions table.
         if is_latest_version:
             logger.debug("Populating the schema_versions table with data ...")
-            connection.execute(schema_versions_data_sql())
+            connection.execute(sql.schema_versions_data_sql())
             logger.info("Data added to the schema_versions table.")
 
         # Commit if there is no issues

@@ -13,8 +13,7 @@ from orca_shared.database.shared_db import (
 from sqlalchemy import text
 from sqlalchemy.future import Connection
 from migrations.migrate_db import perform_migration
-from install import orca_sql
-from install.create_db import create_fresh_orca_install
+from install.create_db import create_fresh_orca_install, create_database
 from typing import Any, Dict
 
 
@@ -74,13 +73,8 @@ def task(config: Dict[str, str]) -> None:
                 f"The ORCA database {config['user_database']} does not exist, "
                 "or the server could not be connected to."
             )
-            connection.execute(
-                orca_sql.commit_sql()
-            )  # exit the default transaction to allow database creation.
-            connection.execute(orca_sql.app_database_sql(config["user_database"]))
-            connection.execute(orca_sql.app_database_comment_sql(config["user_database"]))
-            logger.info("Database created.")
             create_fresh_orca_install(config)
+            create_database(config)
             return
 
     # Connect as admin user to config["user_database"] database.

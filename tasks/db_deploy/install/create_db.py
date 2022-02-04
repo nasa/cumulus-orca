@@ -6,11 +6,10 @@ Description: Creates the current version on the ORCA database.
 from typing import Dict
 
 from orca_shared.database.shared_db import (
-    get_admin_connection,
+    get_admin_connection, logger
 )
 from sqlalchemy.future import Connection
-
-from install.orca_sql import *
+import install.orca_sql as sql
 
 def create_fresh_orca_install(config: Dict[str, str]) -> None:
     """
@@ -44,6 +43,22 @@ def create_fresh_orca_install(config: Dict[str, str]) -> None:
         conn.commit()
 
 
+def create_database(config: Dict[str,str]) -> None:
+    """
+    Creates the orca database
+    """
+    # Create the connection as an admin
+    postgres_admin_engine = get_admin_connection(config)
+    # Connect as admin user to the postgres database
+    with postgres_admin_engine.connect() as connection:
+    # Code to create the database
+        connection.execute(
+            sql.commit_sql()
+        )  # exit the default transaction to allow database creation.
+        connection.execute(sql.app_database_sql(config["user_database"]))
+        connection.execute(sql.app_database_comment_sql(config["user_database"]))
+        logger.info("Database created.")
+
 def create_app_schema_role_users(connection: Connection, app_username: str, app_password: str, db_name: str) -> None:
     """
     Creates the ORCA application database schema, users and roles.
@@ -59,21 +74,21 @@ def create_app_schema_role_users(connection: Connection, app_username: str, app_
     """
     # Create the roles first since they are needed by schema and users
     logger.debug("Creating the ORCA dbo role ...")
-    connection.execute(dbo_role_sql(db_name))
+    connection.execute(sql.dbo_role_sql(db_name))
     logger.info("ORCA dbo role created.")
 
     logger.debug("Creating the ORCA app role ...")
-    connection.execute(app_role_sql(db_name))
+    connection.execute(sql.app_role_sql(db_name))
     logger.info("ORCA app role created.")
 
     # Create the schema next
     logger.debug("Creating the ORCA schema ...")
-    connection.execute(orca_schema_sql())
+    connection.execute(sql.orca_schema_sql())
     logger.info("ORCA schema created.")
 
     # Create the users last
     logger.debug("Creating the ORCA application user ...")
-    connection.execute(app_user_sql(app_username, app_password))
+    connection.execute(sql.app_user_sql(app_username, app_password))
     logger.info("ORCA application user created.")
 
 
@@ -91,10 +106,10 @@ def set_search_path_and_role(connection: Connection) -> None:
     """
     # Set the user and search_path for the install
     logger.debug("Changing to the dbo role to create objects ...")
-    connection.execute(text("SET ROLE orca_dbo;"))
+    connection.execute(sql.text("SET ROLE orca_dbo;"))
 
     logger.debug("Setting search path to the ORCA schema to create objects ...")
-    connection.execute(text("SET search_path TO orca, public;"))
+    connection.execute(sql.text("SET search_path TO orca, public;"))
 
 
 def create_metadata_objects(connection: Connection) -> None:
@@ -111,12 +126,12 @@ def create_metadata_objects(connection: Connection) -> None:
     """
     # Create metadata tables
     logger.debug("Creating schema_versions table ...")
-    connection.execute(schema_versions_table_sql())
+    connection.execute(sql.schema_versions_table_sql())
     logger.info("schema_versions table created.")
 
     # Populate the table with data
     logger.debug("Populating the schema_versions table with data ...")
-    connection.execute(schema_versions_data_sql())
+    connection.execute(sql.schema_versions_data_sql())
     logger.info("Data added to the schema_versions table.")
 
 
@@ -136,21 +151,21 @@ def create_recovery_objects(connection: Connection) -> None:
     # Create recovery table objects
     # Create the recovery_status table
     logger.debug("Creating recovery_status table ...")
-    connection.execute(recovery_status_table_sql())
+    connection.execute(sql.recovery_status_table_sql())
     logger.info("recovery_status table created.")
 
     # Populate the table with data
     logger.debug("Populating the recovery_status table with data ...")
-    connection.execute(recovery_status_data_sql())
+    connection.execute(sql.recovery_status_data_sql())
     logger.info("Data added to the recovery_status table.")
 
     # Create the recovery_job and recovery_file tables
     logger.debug("Creating recovery_job table ...")
-    connection.execute(recovery_job_table_sql())
+    connection.execute(sql.recovery_job_table_sql())
     logger.info("recovery_job table created.")
 
     logger.debug("Creating recovery_file table ...")
-    connection.execute(recovery_file_table_sql())
+    connection.execute(sql.recovery_file_table_sql())
     logger.info("recovery_file table created.")
 
 
@@ -171,20 +186,20 @@ def create_inventory_objects(connection: Connection) -> None:
     """
     # Create providers table
     logger.debug("Creating providers table ...")
-    connection.execute(providers_table_sql())
+    connection.execute(sql.providers_table_sql())
     logger.info("providers table created.")
 
     # Create collections table
     logger.debug("Creating collections table ...")
-    connection.execute(collections_table_sql())
+    connection.execute(sql.collections_table_sql())
     logger.info("collections table created.")
 
     # Create granules table
     logger.debug("Creating granules table ...")
-    connection.execute(granules_table_sql())
+    connection.execute(sql.granules_table_sql())
     logger.info("granules table created.")
 
     # Create files table
     logger.debug("Creating files table ...")
-    connection.execute(files_table_sql())
+    connection.execute(sql.files_table_sql())
     logger.info("files table created.")

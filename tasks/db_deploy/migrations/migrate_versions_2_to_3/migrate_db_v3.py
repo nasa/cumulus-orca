@@ -4,7 +4,7 @@ Name: migrate_db_v3.py
 Description: Migrates the ORCA schema from version 2 to version 3.
 """
 from typing import Dict
-from migrations.migrate_versions_2_to_3.migrate_sql_v3 import *
+import migrations.migrate_versions_2_to_3.migrate_sql_v3 as sql
 from orca_shared.database.shared_db import get_admin_connection, logger
 
 def migrate_versions_2_to_3(config: Dict[str, str], is_latest_version: bool) -> None:
@@ -22,19 +22,19 @@ def migrate_versions_2_to_3(config: Dict[str, str], is_latest_version: bool) -> 
     with admin_app_connection.connect() as connection:
         # Change to DBO role and set search path
         logger.debug("Changing to the dbo role to modify objects ...")
-        connection.execute(text("SET ROLE orca_dbo;"))
+        connection.execute(sql.text("SET ROLE orca_dbo;"))
         logger.debug("Setting search path to the ORCA schema to modify objects ...")
-        connection.execute(text("SET search_path TO orca, public;"))
+        connection.execute(sql.text("SET search_path TO orca, public;"))
 
         # Add column multipart_chunksize_mb to orca_files
         logger.debug("Adding multipart_chunksize_mb column...")
-        connection.execute(add_multipart_chunksize_sql())
+        connection.execute(sql.add_multipart_chunksize_sql())
         logger.info("multipart_chunksize_mb column added.")
 
         # If v3 is the latest version, update the schema_versions table.
         if is_latest_version:
             logger.debug("Populating the schema_versions table with data ...")
-            connection.execute(schema_versions_data_sql())
+            connection.execute(sql.schema_versions_data_sql())
             logger.info("Data added to the schema_versions table.")
 
         # Commit if there is no issues
