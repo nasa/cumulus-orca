@@ -9,8 +9,8 @@
   ],
   "properties": {
     "jobId": {
-      "type": "string",
-      "description": "The unique ID of the reconciliation job."
+      "type": ["integer", "null"],
+      "description": "The unique ID of the reconciliation job. Will be `null` if no job was created."
     }
   }
 }

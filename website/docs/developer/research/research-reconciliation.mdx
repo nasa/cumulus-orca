@@ -675,16 +675,16 @@ sampling of attributes that may be needed. Based on design and implementation,
 additional attributes may be required. This table, in particular may need additional
 items for managing jobs.
 
-| Attribute Name          | Data Type    | Description                                          | Notable Items   |
-| ----------------------- | ------------ | ---------------------------------------------------- | --------------- |
-| id                      | `int2`       | Unique Job ID.                                       | Primary Key     |
-| orca_archive_location   | `string`     | ORCA S3 Glacier bucket the reconciliation targets.   | Location in S3. |
-| status_id               | `int8`       | Current status of the job.                           | Generally reflect the stages of reconciliation. |
-| inventory_creation_time | `timestamptz`| Inventory report creation time from the s3 manifest. | Cannot be NULL  |
-| start_time              | `timestamptz`| Start time of the job.                               | Cannot be NULL  |
-| last_update             | `timestamptz`| Last time the status was updated.                    | Cannot be NULL  |
-| end_time                | `timestamptz`| End time of the job.                                 | NULLABLE column |
-| error_message           | `string`     | Job error message in cases of failure.               | NULLABLE column |
+| Attribute Name          | Data Type    | Description                                            | Notable Items   |
+| ----------------------- | ------------ | ------------------------------------------------------ | --------------- |
+| id                      | `int2`       | Unique Job ID.                                         | Primary Key     |
+| orca_archive_location   | `string`     | ORCA S3 Glacier bucket the reconciliation targets.     | Location in S3. |
+| status_id               | `int8`       | Current status of the job.                             | Generally reflect the stages of reconciliation. |
+| inventory_creation_time | `timestamptz`| Inventory report initiation time from the s3 manifest. | Cannot be NULL  |
+| start_time              | `timestamptz`| Start time of the job.                                 | Cannot be NULL  |
+| last_update             | `timestamptz`| Last time the status was updated.                      | Cannot be NULL  |
+| end_time                | `timestamptz`| End time of the job.                                   | NULLABLE column |
+| error_message           | `string`     | Job error message in cases of failure.                 | NULLABLE column |
 
 
 #### S3 Inventory Temporary Table reconcile_s3_object
@@ -701,7 +701,6 @@ comparison.
 | last_update           | `timestamptz` | LastModified key value from the S3 listing. | Should be able to match the last_update value in the ORCA catalog *File* metadata object. |
 | size_in_bytes         | `int8`    | Size key value from the S3 listing.         | Should be able to match the size value in the ORCA catalog *File* metadata object. |
 | storage_class         | `string`  | StorageClass key value from the S3 listing. | May be used as a filter to exclude newly added items by excluding those with a value of *STANDARD* |
-| delete_marker         | `boolean` | Set to `True` if object is a delete marker. | Items with a value of `True` should be filtered out before generating reports. |
 
 #### Internal Reconciliation Reporting Table Orphaned Files reconcile_orphan_report
 

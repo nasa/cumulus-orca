@@ -17,3 +17,16 @@ class OrcaStatus(Enum):
     GENERATING_REPORTS = 3
     ERROR = 4
     SUCCESS = 5
+
+
+def get_partition_name_from_bucket_name(bucket_name: str):  # todo: add tests
+    """
+    Used for interacting with the reconcile_s3_object table.
+    Provides a valid partition name given an Orca bucket name.
+
+    bucket_name: The name of the Orca bucket in AWS.
+    """
+    partition_name = "s3_partition_" + bucket_name.replace("-", "_")
+    if not partition_name.replace("_", "").isalnum():
+        raise Exception(f"'{partition_name}' is not a valid partition name.")
+    return partition_name

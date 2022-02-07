@@ -17,15 +17,15 @@ BEGIN
   COMMENT ON COLUMN reconcile_status.value IS 'Human readable status value';
 
   -- Upsert the data lookup rows for the table
-  INSERT INTO recovery_status VALUES (1, 'getting S3 list')
+  INSERT INTO reconcile_status VALUES (1, 'getting S3 list')
     ON CONFLICT (id) DO NOTHING;
-  INSERT INTO recovery_status VALUES (2, 'staged')
+  INSERT INTO reconcile_status VALUES (2, 'staged')
     ON CONFLICT (id) DO NOTHING;
-  INSERT INTO recovery_status VALUES (3, 'generating reports')
+  INSERT INTO reconcile_status VALUES (3, 'generating reports')
     ON CONFLICT (id) DO NOTHING;
-  INSERT INTO recovery_status VALUES (4, 'error')
+  INSERT INTO reconcile_status VALUES (4, 'error')
     ON CONFLICT (id) DO NOTHING;
-  INSERT INTO recovery_status VALUES (5, 'success')
+  INSERT INTO reconcile_status VALUES (5, 'success')
     ON CONFLICT (id) DO NOTHING;
 
   -- Create reconcile_job table
@@ -45,7 +45,7 @@ BEGIN
   COMMENT ON COLUMN reconcile_job.id IS 'Job ID unique to each internal reconciliation job.';
   COMMENT ON COLUMN reconcile_job.orca_archive_location IS 'ORCA S3 Glacier bucket the reconciliation targets.';
   COMMENT ON COLUMN reconcile_job.status_id IS 'Current status of the job.';
-  COMMENT ON COLUMN reconcile_job.inventory_creation_time IS 'Inventory report creation time from the s3 manifest.';
+  COMMENT ON COLUMN reconcile_job.inventory_creation_time IS 'Inventory report initiation time from the s3 manifest.';
   COMMENT ON COLUMN reconcile_job.start_time IS 'Date and time the internal reconcile job started.';
   COMMENT ON COLUMN reconcile_job.last_update IS 'Date and time the job status was last updated.';
   COMMENT ON COLUMN reconcile_job.end_time IS 'Time the job completed and wrote the report information.';
@@ -60,9 +60,8 @@ BEGIN
   , last_update          	timestamp with time zone NOT NULL
   , size_in_bytes        	int8 NOT NULL
   , storage_class        	text NOT NULL
-  , delete_marker        	bool NOT NULL
-  , CONSTRAINT FK_reconcile_job_s3_objects FOREIGN KEY(job_id) REFERENCES reconcile_job(id)
-  , CONSTRAINT PK_reconcile_s3_object PRIMARY KEY(orca_archive_location, key_path)
+  -- , CONSTRAINT FK_reconcile_job_s3_objects FOREIGN KEY(job_id) REFERENCES reconcile_job(id) https://stackoverflow.com/questions/53885368/postgresql-11-foreign-key-on-partitioning-tables
+  -- , CONSTRAINT PK_reconcile_s3_object PRIMARY KEY(orca_archive_location, key_path)
     ) PARTITION BY LIST (orca_archive_location);
   COMMENT ON TABLE reconcile_s3_object IS 'Temporary table that holds the listing from the ORCA S3 bucket to use for comparisons against the ORCA catalog.';
   COMMENT ON COLUMN reconcile_s3_object.job_id IS 'Job the S3 listing is a part of for the comparison. Foreign key to the reconcile jobs table.';
@@ -72,7 +71,6 @@ BEGIN
   COMMENT ON COLUMN reconcile_s3_object.last_update IS 'AWS Last Update from the s3 inventory report.';
   COMMENT ON COLUMN reconcile_s3_object.size_in_bytes IS 'AWS size of the file in bytes from the s3 inventory report.';
   COMMENT ON COLUMN reconcile_s3_object.storage_class IS 'AWS storage class the object is in from the s3 inventory report.';
-  COMMENT ON COLUMN reconcile_s3_object.delete_marker IS 'Set to `True` if object is a delete marker.';
 
 
   CREATE TABLE IF NOT EXISTS reconcile_catalog_mismatch_report  ( 
@@ -135,7 +133,7 @@ BEGIN
   , orca_etag       	text NOT NULL
   , orca_last_update	timestamp with time zone NOT NULL
   , orca_size       	int8 NOT NULL
-  , CONSTRAINT PK_reconcile_catalog_mismatch_report PRIMARY KEY(job_id,collection_id,granule_id,key_path)
+  , CONSTRAINT PK_reconcile_catalog_phantom_report PRIMARY KEY(job_id,collection_id,granule_id,key_path)
   , CONSTRAINT FK_reconcile_job_phantom_report FOREIGN KEY(job_id) REFERENCES reconcile_job(id)
   );
   COMMENT ON TABLE reconcile_phantom_report IS 'Table that identifies objects that exist in the ORCA catalog and do not exist in the ORCA S3 bucket.';

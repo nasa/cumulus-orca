@@ -8,4 +8,4 @@ psycopg2-binary==2.8.6
 ## Application libraries
 cumulus-message-adapter-python==2.0.0
 fastjsonschema~=2.15.1
-../../shared_libraries[database, reconcile]
+../../shared_libraries[database, reconciliation]
