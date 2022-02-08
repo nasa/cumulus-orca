@@ -5,7 +5,6 @@ Description:  Pulls entries from a queue and posts them to a DB.
 """
 import json
 import os.path
-import uuid
 from datetime import datetime, timezone
 from typing import Any, List, Dict
 
@@ -51,10 +50,10 @@ except Exception as ex:
 
 
 def task(
-        record: Dict[str, Any],
-        s3_access_key: str,
-        s3_secret_key: str,
-        db_connect_info: Dict,
+    record: Dict[str, Any],
+    s3_access_key: str,
+    s3_secret_key: str,
+    db_connect_info: Dict,
 ) -> Dict[str, Any]:
     """
     Sends each individual record to send_record_to_database.
@@ -82,7 +81,9 @@ def task(
     )
 
     user_engine = shared_db.get_user_connection(db_connect_info)
-    admin_engine = shared_db.get_admin_connection(db_connect_info, db_connect_info["user_database"])
+    admin_engine = shared_db.get_admin_connection(
+        db_connect_info, db_connect_info["user_database"]
+    )
     # Create initial job
     # noinspection PyArgumentList
     job_id = create_job(
@@ -120,7 +121,7 @@ def task(
 
 
 def get_manifest(
-        manifest_key_path: str, report_bucket_name: str, report_bucket_region: str
+    manifest_key_path: str, report_bucket_name: str, report_bucket_region: str
 ) -> Dict[str, Any]:
     """
 
@@ -141,7 +142,7 @@ def get_manifest(
 
 @shared_db.retry_operational_error()
 def create_job(
-        orca_archive_location: str, inventory_creation_time: datetime, engine: Engine
+    orca_archive_location: str, inventory_creation_time: datetime, engine: Engine
 ) -> int:
     """
     Creates the initial status entry for a job.
@@ -265,10 +266,7 @@ def truncate_s3_partition(orca_archive_location: str, engine: Engine) -> None:
         with engine.begin() as connection:
             connection.execute(
                 truncate_s3_partition_sql(partition_name),
-                [
-                    {
-                    }
-                ],
+                [{}],
             )
     except Exception as sql_ex:
         # Can't use f"" because of '{}' bug in CumulusLogger.
@@ -291,15 +289,15 @@ def truncate_s3_partition_sql(partition_name: str):
 
 @shared_db.retry_operational_error()
 def update_job_with_s3_inventory_in_postgres(
-        s3_access_key: str,
-        s3_secret_key: str,
-        orca_archive_location: str,
-        report_bucket_name: str,
-        report_bucket_region: str,
-        csv_key_paths: str,
-        manifest_file_schema: str,
-        job_id: int,
-        engine: Engine,
+    s3_access_key: str,
+    s3_secret_key: str,
+    orca_archive_location: str,
+    report_bucket_name: str,
+    report_bucket_region: str,
+    csv_key_paths: str,
+    manifest_file_schema: str,
+    job_id: int,
+    engine: Engine,
 ) -> None:
     """
     Deconstructs a record to its components and calls send_values_to_database with the result.
@@ -316,7 +314,7 @@ def update_job_with_s3_inventory_in_postgres(
         engine: The sqlalchemy engine to use for contacting the database.
     """
     try:
-        LOGGER.debug(f"Creating reconcile records for job {job_id}.")
+        LOGGER.debug(f"Pulling in s3 inventory records for job {job_id}.")
         with engine.begin() as connection:
             # Within this transaction import the csv and update the job status
             for csv_key_path in csv_key_paths:
@@ -328,9 +326,10 @@ def update_job_with_s3_inventory_in_postgres(
                     create_temporary_table_sql(
                         generate_temporary_s3_column_list(manifest_file_schema)
                     ),
-                    [{}]
+                    [{}],
                 )
                 # Have postgres load the csv
+                LOGGER.debug(f"Loading CSV for job {job_id}.")
                 connection.execute(
                     trigger_csv_load_from_s3_sql(),
                     [
@@ -343,15 +342,19 @@ def update_job_with_s3_inventory_in_postgres(
                         }
                     ],
                 )
+                LOGGER.debug(f"Translating data to Orca format for job {job_id}.")
                 connection.execute(
-                    translate_s3_import_to_partitioned_data_sql(get_partition_name_from_bucket_name(orca_archive_location)),
+                    translate_s3_import_to_partitioned_data_sql(
+                        get_partition_name_from_bucket_name(orca_archive_location)
+                    ),
                     [
                         {
                             "job_id": job_id,
                         }
-                    ]
+                    ],
                 )
             # Update job status
+            LOGGER.debug(f"Posting successful status for job {job_id}.")
             connection.execute(
                 update_job_sql(),
                 [
@@ -390,7 +393,7 @@ def add_metadata_to_gzip(report_bucket_name: str, gzip_key_path: str) -> None:
             CopySource={"Bucket": report_bucket_name, "Key": gzip_key_path},
             Metadata=s3_object.metadata,
             MetadataDirective="REPLACE",
-            ContentEncoding="gzip"
+            ContentEncoding="gzip",
         )
 
 
@@ -412,7 +415,9 @@ def generate_temporary_s3_column_list(manifest_file_schema: str) -> str:
     Args:
         manifest_file_schema: An ordered CSV representing columns in the CSV the manifest points to.
 
-    Returns:
+    Returns: A string representing SQL columns to create.
+        Columns required for import but unused by orca will be filled in with `junk` values.
+        For example, 'orca_archive_location text, key_path text, size_in_bytes bigint, last_update timestamptz, etag text, storage_class text, junk7 text, junk8 text, junk9 text, junk10 text, junk11 text, junk12 text, junk13 text, junk14 text'
 
     """
     column_index = 0
@@ -431,6 +436,12 @@ def generate_temporary_s3_column_list(manifest_file_schema: str) -> str:
 # https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PostgreSQL.S3Import.html
 # To make runnable, run 'CREATE EXTENSION IF NOT EXISTS aws_s3 CASCADE;'
 def create_temporary_table_sql(temporary_s3_column_list: str):
+    """
+    Creates a temporary table to store inventory data.
+    Args:
+        temporary_s3_column_list: The list of columns that need to be created to store csv data.
+            Be very careful to avoid injection.
+    """
     return text(
         f"""
         CREATE TEMPORARY TABLE s3_import(
@@ -441,6 +452,9 @@ def create_temporary_table_sql(temporary_s3_column_list: str):
 
 
 def trigger_csv_load_from_s3_sql():
+    """
+    SQL for telling postgres where/how to copy in the s3 inventory data.
+    """
     return text(
         """
         SELECT aws_s3.table_import_from_s3(
@@ -459,6 +473,9 @@ def trigger_csv_load_from_s3_sql():
 
 
 def translate_s3_import_to_partitioned_data_sql(report_table_name: str):
+    """
+    SQL for translating between the temporary table and Orca table.
+    """
     return text(
         f"""
         INSERT INTO orca.{report_table_name} (job_id, orca_archive_location, key_path, etag, last_update, size_in_bytes, storage_class, delete_marker)
