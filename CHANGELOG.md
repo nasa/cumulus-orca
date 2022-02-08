@@ -21,6 +21,7 @@ and includes an additional section for migration notes.
 - *ORCA-161* Added dead letter queue and cloudwatch alarm terraform code to recovery SQS queue.
 
 ### Changed
+- *ORCA-299* `db_deploy` directory has been updated to deploy ORCA internal reconciliation tables and objects.
 - *ORCA-161* Changed staged recovery SQS queue type from FIFO to standard queue.
 
 ### Migration Notes
