@@ -36,6 +36,16 @@
   * [drop\_dbo\_user\_sql](#migrations/migrate_versions_1_to_2/migrate_sql_v2.drop_dbo_user_sql)
   * [drop\_dr\_role\_sql](#migrations/migrate_versions_1_to_2/migrate_sql_v2.drop_dr_role_sql)
   * [drop\_drdbo\_role\_sql](#migrations/migrate_versions_1_to_2/migrate_sql_v2.drop_drdbo_role_sql)
+* [install/orca\_reconcile\_sql](#install/orca_reconcile_sql)
+  * [reconcile\_status\_table\_sql](#install/orca_reconcile_sql.reconcile_status_table_sql)
+  * [reconcile\_job\_table\_sql](#install/orca_reconcile_sql.reconcile_job_table_sql)
+  * [reconcile\_s3\_object\_table\_sql](#install/orca_reconcile_sql.reconcile_s3_object_table_sql)
+  * [reconcile\_catalog\_mismatch\_report\_table\_sql](#install/orca_reconcile_sql.reconcile_catalog_mismatch_report_table_sql)
+  * [reconcile\_orphan\_report\_table\_sql](#install/orca_reconcile_sql.reconcile_orphan_report_table_sql)
+  * [reconcile\_phantom\_report\_table\_sql](#install/orca_reconcile_sql.reconcile_phantom_report_table_sql)
+  * [orca\_archive\_location\_bucket](#install/orca_reconcile_sql.orca_archive_location_bucket)
+  * [create\_extension](#install/orca_reconcile_sql.create_extension)
+  * [drop\_extension](#install/orca_reconcile_sql.drop_extension)
 * [install/orca\_sql](#install/orca_sql)
   * [commit\_sql](#install/orca_sql.commit_sql)
   * [app\_database\_sql](#install/orca_sql.app_database_sql)
@@ -62,6 +72,7 @@
   * [create\_metadata\_objects](#install/create_db.create_metadata_objects)
   * [create\_recovery\_objects](#install/create_db.create_recovery_objects)
   * [create\_inventory\_objects](#install/create_db.create_inventory_objects)
+  * [create\_internal\_reconciliation\_objects](#install/create_db.create_internal_reconciliation_objects)
 * [test/unit\_tests/test\_migrate\_sql\_v3](#test/unit_tests/test_migrate_sql_v3)
   * [TestOrcaSqlLogic](#test/unit_tests/test_migrate_sql_v3.TestOrcaSqlLogic)
     * [test\_all\_functions\_return\_text](#test/unit_tests/test_migrate_sql_v3.TestOrcaSqlLogic.test_all_functions_return_text)
@@ -114,6 +125,9 @@
     * [setUp](#test/unit_tests/test_migrate_db.TestMigrateDatabaseLibraries.setUp)
     * [tearDown](#test/unit_tests/test_migrate_db.TestMigrateDatabaseLibraries.tearDown)
     * [test\_perform\_migration\_happy\_path](#test/unit_tests/test_migrate_db.TestMigrateDatabaseLibraries.test_perform_migration_happy_path)
+* [test/unit\_tests/test\_orca\_reconcile\_sql](#test/unit_tests/test_orca_reconcile_sql)
+  * [TestOrcaSqlLogic](#test/unit_tests/test_orca_reconcile_sql.TestOrcaSqlLogic)
+    * [test\_all\_functions\_return\_text](#test/unit_tests/test_orca_reconcile_sql.TestOrcaSqlLogic.test_all_functions_return_text)
 * [test/unit\_tests/test\_orca\_sql](#test/unit_tests/test_orca_sql)
   * [TestOrcaSqlLogic](#test/unit_tests/test_orca_sql.TestOrcaSqlLogic)
     * [test\_app\_user\_sql\_happy\_path](#test/unit_tests/test_orca_sql.TestOrcaSqlLogic.test_app_user_sql_happy_path)
@@ -600,6 +614,130 @@ SQL that removes the drdbo_role role.
 - `(sqlalchemy.sql.element.TextClause)` - SQL for dropping drdbo_role role.
   f
 
+<a name="install/orca_reconcile_sql"></a>
+# install/orca\_reconcile\_sql
+
+Name: orca_reconcile_sql.py
+
+Description: All of the SQL used for creating the internal reconciliation tables.
+
+<a name="install/orca_reconcile_sql.reconcile_status_table_sql"></a>
+#### reconcile\_status\_table\_sql
+
+```python
+reconcile_status_table_sql() -> TextClause
+```
+
+Full SQL for creating the reconcile_status table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_status table.
+
+<a name="install/orca_reconcile_sql.reconcile_job_table_sql"></a>
+#### reconcile\_job\_table\_sql
+
+```python
+reconcile_job_table_sql() -> TextClause
+```
+
+Full SQL for creating the reconcile_job table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_job table.
+
+<a name="install/orca_reconcile_sql.reconcile_s3_object_table_sql"></a>
+#### reconcile\_s3\_object\_table\_sql
+
+```python
+reconcile_s3_object_table_sql() -> TextClause
+```
+
+Full SQL for creating the reconcile_s3_object table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_s3_object table.
+
+<a name="install/orca_reconcile_sql.reconcile_catalog_mismatch_report_table_sql"></a>
+#### reconcile\_catalog\_mismatch\_report\_table\_sql
+
+```python
+reconcile_catalog_mismatch_report_table_sql() -> TextClause
+```
+
+Full SQL for creating the reconcile_catalog_mismatch_report table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_catalog_mismatch_report table.
+
+<a name="install/orca_reconcile_sql.reconcile_orphan_report_table_sql"></a>
+#### reconcile\_orphan\_report\_table\_sql
+
+```python
+reconcile_orphan_report_table_sql() -> TextClause
+```
+
+Full SQL for creating the reconcile_orphan_report table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_orphan_report table.
+
+<a name="install/orca_reconcile_sql.reconcile_phantom_report_table_sql"></a>
+#### reconcile\_phantom\_report\_table\_sql
+
+```python
+reconcile_phantom_report_table_sql() -> TextClause
+```
+
+Full SQL for creating the reconcile_phantom_report table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_phantom_report table.
+
+<a name="install/orca_reconcile_sql.orca_archive_location_bucket"></a>
+#### orca\_archive\_location\_bucket
+
+```python
+orca_archive_location_bucket() -> TextClause
+```
+
+Full SQL for creating the orca_archive_location_bucket table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating orca_archive_location_bucket table.
+
+<a name="install/orca_reconcile_sql.create_extension"></a>
+#### create\_extension
+
+```python
+create_extension() -> TextClause
+```
+
+Full SQL for creating the extension.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating extension for the database.
+
+<a name="install/orca_reconcile_sql.drop_extension"></a>
+#### drop\_extension
+
+```python
+drop_extension() -> TextClause
+```
+
+Full SQL for dropping the extension.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for dropping extension for the database.
+
 <a name="install/orca_sql"></a>
 # install/orca\_sql
 
@@ -977,6 +1115,30 @@ Creates the ORCA catalog metadata tables used for reconciliation with Cumulus in
 
   None
 
+<a name="install/create_db.create_internal_reconciliation_objects"></a>
+#### create\_internal\_reconciliation\_objects
+
+```python
+create_internal_reconciliation_objects(connection: Connection) -> None
+```
+
+Creates the ORCA internal reconciliation tables in the proper order.
+- reconcile_status
+- reconcile_job
+- reconcile_s3_object
+- reconcile_catalog_mismatch_report
+- reconcile_orphan_report
+- reconcile_phantom_report
+
+**Arguments**:
+
+- `connection` _sqlalchemy.future.Connection_ - Database connection.
+  
+
+**Returns**:
+
+  None
+
 <a name="test/unit_tests/test_migrate_sql_v3"></a>
 # test/unit\_tests/test\_migrate\_sql\_v3
 
@@ -1242,10 +1404,11 @@ Tear down test
  | @patch("install.create_db.create_recovery_objects")
  | @patch("install.create_db.create_metadata_objects")
  | @patch("install.create_db.create_inventory_objects")
+ | @patch("install.create_db.create_internal_reconciliation_objects")
  | @patch("install.create_db.set_search_path_and_role")
  | @patch("install.create_db.create_app_schema_role_users")
  | @patch("install.create_db.get_admin_connection")
- | test_create_fresh_orca_install_happy_path(mock_connection: MagicMock, mock_create_app_schema_roles: MagicMock, mock_set_search_path_role: MagicMock, mock_create_inventory_objects: MagicMock, mock_create_metadata: MagicMock, mock_create_recovery: MagicMock)
+ | test_create_fresh_orca_install_happy_path(mock_connection: MagicMock, mock_create_app_schema_roles: MagicMock, mock_set_search_path_role: MagicMock, mock_create_internal_reconciliation_objects: MagicMock, mock_create_inventory_objects: MagicMock, mock_create_metadata: MagicMock, mock_create_recovery: MagicMock)
 ```
 
 Tests normal happy path of create_fresh_orca_install function.
@@ -1528,6 +1691,33 @@ Tear down test
 ```
 
 Tests the perform_migration function happy paths
+
+<a name="test/unit_tests/test_orca_reconcile_sql"></a>
+# test/unit\_tests/test\_orca\_reconcile\_sql
+
+Name: test_orca_reconcile_sql.py
+
+Description: Testing library for the orca_reconcile_sql.py.
+
+<a name="test/unit_tests/test_orca_reconcile_sql.TestOrcaSqlLogic"></a>
+## TestOrcaSqlLogic Objects
+
+```python
+class TestOrcaSqlLogic(unittest.TestCase)
+```
+
+Note that currently all of the function calls in the orca_reconcile_sql.py
+return a SQL text string. The tests below
+validate the logic in the function.
+
+<a name="test/unit_tests/test_orca_reconcile_sql.TestOrcaSqlLogic.test_all_functions_return_text"></a>
+#### test\_all\_functions\_return\_text
+
+```python
+ | test_all_functions_return_text() -> None
+```
+
+Validates that all functions return a type TextClause
 
 <a name="test/unit_tests/test_orca_sql"></a>
 # test/unit\_tests/test\_orca\_sql

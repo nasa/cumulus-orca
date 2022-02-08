@@ -41,6 +41,7 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
     @patch("install.create_db.create_recovery_objects")
     @patch("install.create_db.create_metadata_objects")
     @patch("install.create_db.create_inventory_objects")
+    @patch("install.create_db.create_internal_reconciliation_objects")
     @patch("install.create_db.set_search_path_and_role")
     @patch("install.create_db.create_app_schema_role_users")
     @patch("install.create_db.get_admin_connection")
@@ -49,6 +50,7 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         mock_connection: MagicMock,
         mock_create_app_schema_roles: MagicMock,
         mock_set_search_path_role: MagicMock,
+        mock_create_internal_reconciliation_objects: MagicMock,
         mock_create_inventory_objects: MagicMock,
         mock_create_metadata: MagicMock,
         mock_create_recovery: MagicMock,
@@ -67,6 +69,7 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         mock_create_inventory_objects.assert_called_once_with(mock_conn_enter)
         mock_create_metadata.assert_called_once_with(mock_conn_enter)
         mock_create_recovery.assert_called_once_with(mock_conn_enter)
+        mock_create_internal_reconciliation_objects.assert_called_once_with(mock_conn_enter)
 
         # Check that commit was called at the end. In this case it is position
         # 4 of the calls (initial call with config, connection call, enter of
