@@ -51,10 +51,10 @@ except Exception as ex:
 
 
 def task(
-    record: Dict[str, Any],
-    s3_access_key: str,
-    s3_secret_key: str,
-    db_connect_info: Dict,
+        record: Dict[str, Any],
+        s3_access_key: str,
+        s3_secret_key: str,
+        db_connect_info: Dict,
 ) -> Dict[str, Any]:
     """
     Sends each individual record to send_record_to_database.
@@ -82,7 +82,7 @@ def task(
     )
 
     user_engine = shared_db.get_user_connection(db_connect_info)
-    admin_engine = shared_db.get_admin_connection(db_connect_info)
+    admin_engine = shared_db.get_admin_connection(db_connect_info, db_connect_info["user_database"])
     # Create initial job
     # noinspection PyArgumentList
     job_id = create_job(
@@ -107,7 +107,7 @@ def task(
             [file[FILES_KEY_KEY] for file in manifest[MANIFEST_FILES_KEY]],
             manifest[MANIFEST_FILE_SCHEMA_KEY],
             job_id,
-            user_engine,
+            admin_engine,
         )
     except Exception as fatal_exception:
         # On error, set job status to failure.
@@ -120,7 +120,7 @@ def task(
 
 
 def get_manifest(
-    manifest_key_path: str, report_bucket_name: str, report_bucket_region: str
+        manifest_key_path: str, report_bucket_name: str, report_bucket_region: str
 ) -> Dict[str, Any]:
     """
 
@@ -141,7 +141,7 @@ def get_manifest(
 
 @shared_db.retry_operational_error()
 def create_job(
-    orca_archive_location: str, inventory_creation_time: datetime, engine: Engine
+        orca_archive_location: str, inventory_creation_time: datetime, engine: Engine
 ) -> int:
     """
     Creates the initial status entry for a job.
@@ -239,7 +239,7 @@ def update_job_sql():
     return text(
         """
         UPDATE
-            reconcile_job
+            orca.reconcile_job
         SET
             status_id = :status_id,
             last_update = :last_update,
@@ -284,22 +284,22 @@ def truncate_s3_partition_sql(partition_name: str):
     # Quickly removes data from the partition
     return text(
         f"""
-        TRUNCATE TABLE orca.s3_partition_doctest_orca_primary;
+        TRUNCATE TABLE orca.{partition_name}
         """
     )
 
 
 @shared_db.retry_operational_error()
 def update_job_with_s3_inventory_in_postgres(
-    s3_access_key: str,
-    s3_secret_key: str,
-    orca_archive_location: str,
-    report_bucket_name: str,
-    report_bucket_region: str,
-    csv_key_paths: str,
-    manifest_file_schema: str,
-    job_id: int,
-    engine: Engine,
+        s3_access_key: str,
+        s3_secret_key: str,
+        orca_archive_location: str,
+        report_bucket_name: str,
+        report_bucket_region: str,
+        csv_key_paths: str,
+        manifest_file_schema: str,
+        job_id: int,
+        engine: Engine,
 ) -> None:
     """
     Deconstructs a record to its components and calls send_values_to_database with the result.
@@ -324,11 +324,15 @@ def update_job_with_s3_inventory_in_postgres(
                     raise Exception(f"Cannot handle file extension on '{csv_key_path}'")
                 # Set the required metadata
                 add_metadata_to_gzip(report_bucket_name, csv_key_path)
-                # Have postgres load the csv
                 connection.execute(
-                    trigger_csv_load_from_s3_sql(
+                    create_temporary_table_sql(
                         generate_temporary_s3_column_list(manifest_file_schema)
                     ),
+                    [{}]
+                )
+                # Have postgres load the csv
+                connection.execute(
+                    trigger_csv_load_from_s3_sql(),
                     [
                         {
                             "report_bucket_name": report_bucket_name,
@@ -336,12 +340,16 @@ def update_job_with_s3_inventory_in_postgres(
                             "report_bucket_region": report_bucket_region,
                             "s3_access_key": s3_access_key,
                             "s3_secret_key": s3_secret_key,
-                            "report_table_name": get_partition_name_from_bucket_name(
-                                orca_archive_location
-                            ),
-                            "job_id": job_id,
                         }
                     ],
+                )
+                connection.execute(
+                    translate_s3_import_to_partitioned_data_sql(get_partition_name_from_bucket_name(orca_archive_location)),
+                    [
+                        {
+                            "job_id": job_id,
+                        }
+                    ]
                 )
             # Update job status
             connection.execute(
@@ -376,13 +384,14 @@ def add_metadata_to_gzip(report_bucket_name: str, gzip_key_path: str) -> None:
     """
     s3 = boto3.resource("s3")
     s3_object = s3.Object(report_bucket_name, gzip_key_path)
-    # todo: Only add if needed.
-    s3_object.metadata.update({"Content-Encoding": "gzip"})
-    s3_object.copy_from(
-        CopySource={"Bucket": report_bucket_name, "Key": gzip_key_path},
-        Metadata=s3_object.metadata,
-        MetadataDirective="REPLACE",
-    )
+    # Only add if needed.
+    if s3_object.content_encoding is None:
+        s3_object.copy_from(
+            CopySource={"Bucket": report_bucket_name, "Key": gzip_key_path},
+            Metadata=s3_object.metadata,
+            MetadataDirective="REPLACE",
+            ContentEncoding="gzip"
+        )
 
 
 # Keys indicate columns in the s3 inventory csv. Values indicate the corresponding column in orca.reconcile_s3_object
@@ -406,12 +415,14 @@ def generate_temporary_s3_column_list(manifest_file_schema: str) -> str:
     Returns:
 
     """
-    manifest_file_schema.replace(" ", "")
+    column_index = 0
+    manifest_file_schema = manifest_file_schema.replace(" ", "")
     columns_in_csv = manifest_file_schema.split(",")
     columns_in_postgres = []
     for column_in_csv in columns_in_csv:
+        column_index = column_index + 1
         postgres_column_name = column_mappings.get(
-            column_in_csv, uuid.uuid4().__str__() + " text"
+            column_in_csv, "junk" + str(column_index) + " text"
         )
         columns_in_postgres.append(postgres_column_name)
     return ", ".join(columns_in_postgres)
@@ -419,11 +430,19 @@ def generate_temporary_s3_column_list(manifest_file_schema: str) -> str:
 
 # https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PostgreSQL.S3Import.html
 # To make runnable, run 'CREATE EXTENSION IF NOT EXISTS aws_s3 CASCADE;'
-def trigger_csv_load_from_s3_sql(temporary_s3_column_list: str):
+def create_temporary_table_sql(temporary_s3_column_list: str):
     return text(
         f"""
-        CREATE TEMPORARY TABLE s3_import({temporary_s3_column_list}
+        CREATE TEMPORARY TABLE s3_import(
+            {temporary_s3_column_list}
         )
+        """
+    )
+
+
+def trigger_csv_load_from_s3_sql():
+    return text(
+        """
         SELECT aws_s3.table_import_from_s3(
             's3_import',
             '',
@@ -435,9 +454,15 @@ def trigger_csv_load_from_s3_sql(temporary_s3_column_list: str):
             :s3_secret_key,
             ''
         )
-        INSERT INTO :report_table_name (job_id, orca_archive_location, key_path, etag, last_update, size_in_bytes, 
-        storage_class)
-            SELECT :job_id, orca_archive_location, key_path, etag, last_update, size_in_bytes, storage_class 
+        """
+    )
+
+
+def translate_s3_import_to_partitioned_data_sql(report_table_name: str):
+    return text(
+        f"""
+        INSERT INTO orca.{report_table_name} (job_id, orca_archive_location, key_path, etag, last_update, size_in_bytes, storage_class, delete_marker)
+            SELECT :job_id, orca_archive_location, key_path, etag, last_update, size_in_bytes, storage_class, false 
             FROM s3_import
         """
     )
