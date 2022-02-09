@@ -19,7 +19,7 @@ class OrcaStatus(Enum):
     SUCCESS = 5
 
 
-def get_partition_name_from_bucket_name(bucket_name: str):  # todo: add tests
+def get_partition_name_from_bucket_name(bucket_name: str):
     """
     Used for interacting with the reconcile_s3_object table.
     Provides a valid partition name given an Orca bucket name.

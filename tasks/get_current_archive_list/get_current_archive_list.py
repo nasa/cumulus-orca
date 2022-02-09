@@ -20,6 +20,9 @@ from orca_shared.reconciliation.shared_reconciliation import (
 from sqlalchemy import text
 from sqlalchemy.future import Engine
 
+OS_S3_ACCESS_KEY_KEY = "S3_ACCESS_KEY"
+OS_S3_SECRET_KEY_KEY = "S3_SECRET_KEY"
+
 EVENT_RECORDS_KEY = "Records"
 RECORD_AWS_REGION_KEY = "awsRegion"
 RECORD_S3_KEY = "s3"
@@ -508,11 +511,11 @@ def handler(event: Dict[str, List], context) -> Dict[str, Any]:
     if len(event[EVENT_RECORDS_KEY]) != 1:
         raise ValueError(f"Must be passed a single record. Was {len(event['Records'])}")
 
-    s3_access_key = os.environ.get("S3_ACCESS_KEY", None)
+    s3_access_key = os.environ.get(OS_S3_ACCESS_KEY_KEY, None)
     if s3_access_key is None or len(s3_access_key) == 0:
         LOGGER.error("S3_ACCESS_KEY environment variable is not set.")
         raise KeyError("S3_ACCESS_KEY environment variable is not set.")
-    s3_secret_key = os.environ.get("S3_SECRET_KEY", None)
+    s3_secret_key = os.environ.get(OS_S3_SECRET_KEY_KEY, None)
     if s3_secret_key is None or len(s3_secret_key) == 0:
         LOGGER.error("S3_SECRET_KEY environment variable is not set.")
         raise KeyError("S3_SECRET_KEY environment variable is not set.")
