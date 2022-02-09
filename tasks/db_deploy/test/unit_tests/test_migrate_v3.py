@@ -1,12 +1,12 @@
 """
 Name: test_migrate_db_v3.py
 
-Description: Runs unit tests for the migrations/migrate_versions_2_to_3/migrate_db_v3.py
+Description: Runs unit tests for the migrations/migrate_versions_2_to_3/migrate.py
 """
 
 import unittest
 from unittest.mock import call, patch, MagicMock
-from migrations.migrate_versions_2_to_3 import migrate_db_v3
+from migrations.migrate_versions_2_to_3 import migrate
 
 class TestMigrateDatabaseLibraries(unittest.TestCase):
     """
@@ -34,10 +34,10 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
         """
         self.config = None
     
-    @patch("migrations.migrate_versions_2_to_3.migrate_db_v3.sql.text")
-    @patch("migrations.migrate_versions_2_to_3.migrate_db_v3.sql.schema_versions_data_sql")
-    @patch("migrations.migrate_versions_2_to_3.migrate_db_v3.sql.add_multipart_chunksize_sql")
-    @patch("migrations.migrate_versions_2_to_3.migrate_db_v3.get_admin_connection")
+    @patch("migrations.migrate_versions_2_to_3.migrate.sql.text")
+    @patch("migrations.migrate_versions_2_to_3.migrate.sql.schema_versions_data_sql")
+    @patch("migrations.migrate_versions_2_to_3.migrate.sql.add_multipart_chunksize_sql")
+    @patch("migrations.migrate_versions_2_to_3.migrate.get_admin_connection")
     def test_migrate_versions_2_to_3_happy_path(
             self,
             mock_connection: MagicMock,
@@ -55,7 +55,7 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 mock_conn_enter = mock_connection().connect().__enter__()
 
                 # Run the function
-                migrate_db_v3.migrate_versions_2_to_3(self.config, latest_version)
+                migrate.migrate_versions_2_to_3(self.config, latest_version)
 
                 # Check that all of the functions were called the correct
                 # number of times with the proper values

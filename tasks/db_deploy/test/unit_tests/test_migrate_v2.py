@@ -1,12 +1,12 @@
 """
 Name: test_migrate_db_v2.py
 
-Description: Runs unit tests for the migrations/migrate_versions_1_to_2/migrate_db_v2.py
+Description: Runs unit tests for the migrations/migrate_versions_1_to_2/migrate.py
 """
 
 import unittest
 from unittest.mock import Mock, call, patch, MagicMock
-from migrations.migrate_versions_1_to_2 import migrate_db_v2
+from migrations.migrate_versions_1_to_2 import migrate
 
 class TestMigrateDatabaseLibraries(unittest.TestCase):
     """
@@ -34,26 +34,26 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
         """
         self.config = None    
     
-    @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.schema_versions_data_sql")
-    @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.drop_druser_user_sql")
-    @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.drop_dbo_user_sql")
-    @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.drop_dr_role_sql")
-    @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.drop_drdbo_role_sql")
-    @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.drop_dr_schema_sql")
-    @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.drop_request_status_table_sql")
-    @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.migrate_recovery_file_data_sql")
-    @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.migrate_recovery_job_data_sql")
-    @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.recovery_status_data_sql")
-    @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.recovery_file_table_sql")
-    @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.recovery_job_table_sql")
-    @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.recovery_status_table_sql")
-    @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.schema_versions_table_sql")
-    @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.text")
-    @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.app_user_sql")
-    @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.orca_schema_sql")
-    @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.app_role_sql")
-    @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.dbo_role_sql")
-    @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.get_admin_connection")
+    @patch("migrations.migrate_versions_1_to_2.migrate.sql.schema_versions_data_sql")
+    @patch("migrations.migrate_versions_1_to_2.migrate.sql.drop_druser_user_sql")
+    @patch("migrations.migrate_versions_1_to_2.migrate.sql.drop_dbo_user_sql")
+    @patch("migrations.migrate_versions_1_to_2.migrate.sql.drop_dr_role_sql")
+    @patch("migrations.migrate_versions_1_to_2.migrate.sql.drop_drdbo_role_sql")
+    @patch("migrations.migrate_versions_1_to_2.migrate.sql.drop_dr_schema_sql")
+    @patch("migrations.migrate_versions_1_to_2.migrate.sql.drop_request_status_table_sql")
+    @patch("migrations.migrate_versions_1_to_2.migrate.sql.migrate_recovery_file_data_sql")
+    @patch("migrations.migrate_versions_1_to_2.migrate.sql.migrate_recovery_job_data_sql")
+    @patch("migrations.migrate_versions_1_to_2.migrate.sql.recovery_status_data_sql")
+    @patch("migrations.migrate_versions_1_to_2.migrate.sql.recovery_file_table_sql")
+    @patch("migrations.migrate_versions_1_to_2.migrate.sql.recovery_job_table_sql")
+    @patch("migrations.migrate_versions_1_to_2.migrate.sql.recovery_status_table_sql")
+    @patch("migrations.migrate_versions_1_to_2.migrate.sql.schema_versions_table_sql")
+    @patch("migrations.migrate_versions_1_to_2.migrate.sql.text")
+    @patch("migrations.migrate_versions_1_to_2.migrate.sql.app_user_sql")
+    @patch("migrations.migrate_versions_1_to_2.migrate.sql.orca_schema_sql")
+    @patch("migrations.migrate_versions_1_to_2.migrate.sql.app_role_sql")
+    @patch("migrations.migrate_versions_1_to_2.migrate.sql.dbo_role_sql")
+    @patch("migrations.migrate_versions_1_to_2.migrate.get_admin_connection")
     def test_migrate_versions_1_to_2_happy_path(
             self,
             mock_connection: MagicMock,
@@ -87,7 +87,7 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 mock_conn_enter = mock_connection().connect().__enter__()
 
                 # Run the function
-                migrate_db_v2.migrate_versions_1_to_2(self.config, latest_version)
+                migrate.migrate_versions_1_to_2(self.config, latest_version)
 
                 # Check that all of the functions were called the correct
                 # number of times with the proper values

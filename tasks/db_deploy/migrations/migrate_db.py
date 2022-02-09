@@ -5,9 +5,9 @@ Description: Migrates the current ORCA schema version to the latest version.
 """
 from typing import Dict
 
-from migrations.migrate_versions_1_to_2.migrate_db_v2 import migrate_versions_1_to_2
-from migrations.migrate_versions_2_to_3.migrate_db_v3 import migrate_versions_2_to_3
-from migrations.migrate_versions_3_to_4.migrate_db_v4 import migrate_versions_3_to_4
+from migrations.migrate_versions_1_to_2.migrate import migrate_versions_1_to_2
+from migrations.migrate_versions_2_to_3.migrate import migrate_versions_2_to_3
+from migrations.migrate_versions_3_to_4.migrate import migrate_versions_3_to_4
 
 def perform_migration(current_schema_version: int, config: Dict[str, str]) -> None:
     """
