@@ -1,12 +1,12 @@
 """
 Name: test_migrate_db_v4.py
 
-Description: Runs unit tests for the migrations/migrate_versions_3_to_4/migrate_db_v4.py
+Description: Runs unit tests for the migrations/migrate_versions_3_to_4/migrate.py
 """
 
 import unittest
 from unittest.mock import call, patch, MagicMock
-from migrations.migrate_versions_3_to_4 import migrate_db_v4
+from migrations.migrate_versions_3_to_4 import migrate
 
 class TestMigrateDatabaseLibraries(unittest.TestCase):
     """
@@ -35,13 +35,13 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
         self.config = None
     
 
-    @patch("migrations.migrate_versions_3_to_4.migrate_db_v4.sql.schema_versions_data_sql")
-    @patch("migrations.migrate_versions_3_to_4.migrate_db_v4.sql.providers_table_sql")
-    @patch("migrations.migrate_versions_3_to_4.migrate_db_v4.sql.collections_table_sql")
-    @patch("migrations.migrate_versions_3_to_4.migrate_db_v4.sql.granules_table_sql")
-    @patch("migrations.migrate_versions_3_to_4.migrate_db_v4.sql.files_table_sql")
-    @patch("migrations.migrate_versions_3_to_4.migrate_db_v4.get_admin_connection")
-    @patch("migrations.migrate_versions_3_to_4.migrate_db_v4.sql.text")
+    @patch("migrations.migrate_versions_3_to_4.migrate.sql.schema_versions_data_sql")
+    @patch("migrations.migrate_versions_3_to_4.migrate.sql.providers_table_sql")
+    @patch("migrations.migrate_versions_3_to_4.migrate.sql.collections_table_sql")
+    @patch("migrations.migrate_versions_3_to_4.migrate.sql.granules_table_sql")
+    @patch("migrations.migrate_versions_3_to_4.migrate.sql.files_table_sql")
+    @patch("migrations.migrate_versions_3_to_4.migrate.get_admin_connection")
+    @patch("migrations.migrate_versions_3_to_4.migrate.sql.text")
     def test_migrate_versions_3_to_4_happy_path(
             self,
             mock_text: MagicMock,
@@ -62,7 +62,7 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 mock_conn_enter = mock_connection().connect().__enter__()
 
                 # Run the function
-                migrate_db_v4.migrate_versions_3_to_4(self.config, latest_version)
+                migrate.migrate_versions_3_to_4(self.config, latest_version)
 
                 # Check that all of the functions were called the correct
                 # number of times with the proper values

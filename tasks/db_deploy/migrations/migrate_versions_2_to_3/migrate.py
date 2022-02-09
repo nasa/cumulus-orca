@@ -4,7 +4,7 @@ Name: migrate_db_v3.py
 Description: Migrates the ORCA schema from version 2 to version 3.
 """
 from typing import Dict
-import migrations.migrate_versions_2_to_3.migrate_sql_v3 as sql
+import migrations.migrate_versions_2_to_3.migrate_sql as sql
 from orca_shared.database.shared_db import get_admin_connection, logger
 
 def migrate_versions_2_to_3(config: Dict[str, str], is_latest_version: bool) -> None:

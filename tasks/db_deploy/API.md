@@ -1,20 +1,21 @@
 # Table of Contents
 
-* [migrations/migrate\_versions\_2\_to\_3/migrate\_db\_v3](#migrations/migrate_versions_2_to_3/migrate_db_v3)
-  * [migrate\_versions\_2\_to\_3](#migrations/migrate_versions_2_to_3/migrate_db_v3.migrate_versions_2_to_3)
-* [migrations/migrate\_versions\_2\_to\_3/migrate\_sql\_v3](#migrations/migrate_versions_2_to_3/migrate_sql_v3)
-  * [add\_multipart\_chunksize\_sql](#migrations/migrate_versions_2_to_3/migrate_sql_v3.add_multipart_chunksize_sql)
-  * [schema\_versions\_data\_sql](#migrations/migrate_versions_2_to_3/migrate_sql_v3.schema_versions_data_sql)
-* [migrations/migrate\_versions\_3\_to\_4/migrate\_sql\_v4](#migrations/migrate_versions_3_to_4/migrate_sql_v4)
-  * [providers\_table\_sql](#migrations/migrate_versions_3_to_4/migrate_sql_v4.providers_table_sql)
-  * [collections\_table\_sql](#migrations/migrate_versions_3_to_4/migrate_sql_v4.collections_table_sql)
-  * [granules\_table\_sql](#migrations/migrate_versions_3_to_4/migrate_sql_v4.granules_table_sql)
-  * [files\_table\_sql](#migrations/migrate_versions_3_to_4/migrate_sql_v4.files_table_sql)
-  * [schema\_versions\_data\_sql](#migrations/migrate_versions_3_to_4/migrate_sql_v4.schema_versions_data_sql)
-* [migrations/migrate\_versions\_3\_to\_4/migrate\_db\_v4](#migrations/migrate_versions_3_to_4/migrate_db_v4)
-  * [migrate\_versions\_3\_to\_4](#migrations/migrate_versions_3_to_4/migrate_db_v4.migrate_versions_3_to_4)
+* [migrations/migrate\_versions\_2\_to\_3/migrate](#migrations/migrate_versions_2_to_3/migrate)
+  * [migrate\_versions\_2\_to\_3](#migrations/migrate_versions_2_to_3/migrate.migrate_versions_2_to_3)
+* [migrations/migrate\_versions\_2\_to\_3/migrate\_sql](#migrations/migrate_versions_2_to_3/migrate_sql)
+  * [add\_multipart\_chunksize\_sql](#migrations/migrate_versions_2_to_3/migrate_sql.add_multipart_chunksize_sql)
+  * [schema\_versions\_data\_sql](#migrations/migrate_versions_2_to_3/migrate_sql.schema_versions_data_sql)
+* [migrations/migrate\_versions\_3\_to\_4/migrate](#migrations/migrate_versions_3_to_4/migrate)
+  * [migrate\_versions\_3\_to\_4](#migrations/migrate_versions_3_to_4/migrate.migrate_versions_3_to_4)
+* [migrations/migrate\_versions\_3\_to\_4/migrate\_sql](#migrations/migrate_versions_3_to_4/migrate_sql)
+  * [providers\_table\_sql](#migrations/migrate_versions_3_to_4/migrate_sql.providers_table_sql)
+  * [collections\_table\_sql](#migrations/migrate_versions_3_to_4/migrate_sql.collections_table_sql)
+  * [granules\_table\_sql](#migrations/migrate_versions_3_to_4/migrate_sql.granules_table_sql)
+  * [files\_table\_sql](#migrations/migrate_versions_3_to_4/migrate_sql.files_table_sql)
+  * [schema\_versions\_data\_sql](#migrations/migrate_versions_3_to_4/migrate_sql.schema_versions_data_sql)
 * [migrations/migrate\_db](#migrations/migrate_db)
   * [perform\_migration](#migrations/migrate_db.perform_migration)
+<<<<<<< HEAD
 * [migrations/migrate\_versions\_1\_to\_2/migrate\_db\_v2](#migrations/migrate_versions_1_to_2/migrate_db_v2)
   * [migrate\_versions\_1\_to\_2](#migrations/migrate_versions_1_to_2/migrate_db_v2.migrate_versions_1_to_2)
 * [migrations/migrate\_versions\_1\_to\_2/migrate\_sql\_v2](#migrations/migrate_versions_1_to_2/migrate_sql_v2)
@@ -46,6 +47,29 @@
   * [orca\_archive\_location\_bucket](#install/orca_reconcile_sql.orca_archive_location_bucket)
   * [create\_extension](#install/orca_reconcile_sql.create_extension)
   * [drop\_extension](#install/orca_reconcile_sql.drop_extension)
+=======
+* [migrations/migrate\_versions\_1\_to\_2/migrate](#migrations/migrate_versions_1_to_2/migrate)
+  * [migrate\_versions\_1\_to\_2](#migrations/migrate_versions_1_to_2/migrate.migrate_versions_1_to_2)
+* [migrations/migrate\_versions\_1\_to\_2/migrate\_sql](#migrations/migrate_versions_1_to_2/migrate_sql)
+  * [dbo\_role\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.dbo_role_sql)
+  * [app\_role\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.app_role_sql)
+  * [orca\_schema\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.orca_schema_sql)
+  * [app\_user\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.app_user_sql)
+  * [schema\_versions\_table\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.schema_versions_table_sql)
+  * [schema\_versions\_data\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.schema_versions_data_sql)
+  * [recovery\_status\_table\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.recovery_status_table_sql)
+  * [recovery\_status\_data\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.recovery_status_data_sql)
+  * [recovery\_job\_table\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.recovery_job_table_sql)
+  * [recovery\_file\_table\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.recovery_file_table_sql)
+  * [migrate\_recovery\_job\_data\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.migrate_recovery_job_data_sql)
+  * [migrate\_recovery\_file\_data\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.migrate_recovery_file_data_sql)
+  * [drop\_request\_status\_table\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.drop_request_status_table_sql)
+  * [drop\_dr\_schema\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.drop_dr_schema_sql)
+  * [drop\_druser\_user\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.drop_druser_user_sql)
+  * [drop\_dbo\_user\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.drop_dbo_user_sql)
+  * [drop\_dr\_role\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.drop_dr_role_sql)
+  * [drop\_drdbo\_role\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.drop_drdbo_role_sql)
+>>>>>>> feature/ORCA-247
 * [install/orca\_sql](#install/orca_sql)
   * [commit\_sql](#install/orca_sql.commit_sql)
   * [app\_database\_sql](#install/orca_sql.app_database_sql)
@@ -94,6 +118,11 @@
     * [test\_app\_user\_sql\_happy\_path](#test/unit_tests/test_migrate_sql_v2.TestOrcaSqlLogic.test_app_user_sql_happy_path)
     * [test\_app\_user\_sql\_exceptions](#test/unit_tests/test_migrate_sql_v2.TestOrcaSqlLogic.test_app_user_sql_exceptions)
     * [test\_all\_functions\_return\_text](#test/unit_tests/test_migrate_sql_v2.TestOrcaSqlLogic.test_all_functions_return_text)
+* [test/unit\_tests/test\_migrate\_v3](#test/unit_tests/test_migrate_v3)
+  * [TestMigrateDatabaseLibraries](#test/unit_tests/test_migrate_v3.TestMigrateDatabaseLibraries)
+    * [setUp](#test/unit_tests/test_migrate_v3.TestMigrateDatabaseLibraries.setUp)
+    * [tearDown](#test/unit_tests/test_migrate_v3.TestMigrateDatabaseLibraries.tearDown)
+    * [test\_migrate\_versions\_2\_to\_3\_happy\_path](#test/unit_tests/test_migrate_v3.TestMigrateDatabaseLibraries.test_migrate_versions_2_to_3_happy_path)
 * [test/unit\_tests/test\_create\_db](#test/unit_tests/test_create_db)
   * [TestCreateDatabaseLibraries](#test/unit_tests/test_create_db.TestCreateDatabaseLibraries)
     * [setUp](#test/unit_tests/test_create_db.TestCreateDatabaseLibraries.setUp)
@@ -105,21 +134,16 @@
     * [test\_create\_metadata\_objects](#test/unit_tests/test_create_db.TestCreateDatabaseLibraries.test_create_metadata_objects)
     * [test\_create\_recovery\_objects](#test/unit_tests/test_create_db.TestCreateDatabaseLibraries.test_create_recovery_objects)
     * [test\_create\_inventory\_objects](#test/unit_tests/test_create_db.TestCreateDatabaseLibraries.test_create_inventory_objects)
-* [test/unit\_tests/test\_migrate\_db\_v4](#test/unit_tests/test_migrate_db_v4)
-  * [TestMigrateDatabaseLibraries](#test/unit_tests/test_migrate_db_v4.TestMigrateDatabaseLibraries)
-    * [setUp](#test/unit_tests/test_migrate_db_v4.TestMigrateDatabaseLibraries.setUp)
-    * [tearDown](#test/unit_tests/test_migrate_db_v4.TestMigrateDatabaseLibraries.tearDown)
-    * [test\_migrate\_versions\_3\_to\_4\_happy\_path](#test/unit_tests/test_migrate_db_v4.TestMigrateDatabaseLibraries.test_migrate_versions_3_to_4_happy_path)
-* [test/unit\_tests/test\_migrate\_db\_v3](#test/unit_tests/test_migrate_db_v3)
-  * [TestMigrateDatabaseLibraries](#test/unit_tests/test_migrate_db_v3.TestMigrateDatabaseLibraries)
-    * [setUp](#test/unit_tests/test_migrate_db_v3.TestMigrateDatabaseLibraries.setUp)
-    * [tearDown](#test/unit_tests/test_migrate_db_v3.TestMigrateDatabaseLibraries.tearDown)
-    * [test\_migrate\_versions\_2\_to\_3\_happy\_path](#test/unit_tests/test_migrate_db_v3.TestMigrateDatabaseLibraries.test_migrate_versions_2_to_3_happy_path)
-* [test/unit\_tests/test\_migrate\_db\_v2](#test/unit_tests/test_migrate_db_v2)
-  * [TestMigrateDatabaseLibraries](#test/unit_tests/test_migrate_db_v2.TestMigrateDatabaseLibraries)
-    * [setUp](#test/unit_tests/test_migrate_db_v2.TestMigrateDatabaseLibraries.setUp)
-    * [tearDown](#test/unit_tests/test_migrate_db_v2.TestMigrateDatabaseLibraries.tearDown)
-    * [test\_migrate\_versions\_1\_to\_2\_happy\_path](#test/unit_tests/test_migrate_db_v2.TestMigrateDatabaseLibraries.test_migrate_versions_1_to_2_happy_path)
+* [test/unit\_tests/test\_migrate\_v2](#test/unit_tests/test_migrate_v2)
+  * [TestMigrateDatabaseLibraries](#test/unit_tests/test_migrate_v2.TestMigrateDatabaseLibraries)
+    * [setUp](#test/unit_tests/test_migrate_v2.TestMigrateDatabaseLibraries.setUp)
+    * [tearDown](#test/unit_tests/test_migrate_v2.TestMigrateDatabaseLibraries.tearDown)
+    * [test\_migrate\_versions\_1\_to\_2\_happy\_path](#test/unit_tests/test_migrate_v2.TestMigrateDatabaseLibraries.test_migrate_versions_1_to_2_happy_path)
+* [test/unit\_tests/test\_migrate\_v4](#test/unit_tests/test_migrate_v4)
+  * [TestMigrateDatabaseLibraries](#test/unit_tests/test_migrate_v4.TestMigrateDatabaseLibraries)
+    * [setUp](#test/unit_tests/test_migrate_v4.TestMigrateDatabaseLibraries.setUp)
+    * [tearDown](#test/unit_tests/test_migrate_v4.TestMigrateDatabaseLibraries.tearDown)
+    * [test\_migrate\_versions\_3\_to\_4\_happy\_path](#test/unit_tests/test_migrate_v4.TestMigrateDatabaseLibraries.test_migrate_versions_3_to_4_happy_path)
 * [test/unit\_tests/test\_migrate\_db](#test/unit_tests/test_migrate_db)
   * [TestMigrateDatabaseLibraries](#test/unit_tests/test_migrate_db.TestMigrateDatabaseLibraries)
     * [setUp](#test/unit_tests/test_migrate_db.TestMigrateDatabaseLibraries.setUp)
@@ -147,14 +171,14 @@
   * [app\_version\_table\_exists](#db_deploy.app_version_table_exists)
   * [get\_migration\_version](#db_deploy.get_migration_version)
 
-<a name="migrations/migrate_versions_2_to_3/migrate_db_v3"></a>
-# migrations/migrate\_versions\_2\_to\_3/migrate\_db\_v3
+<a name="migrations/migrate_versions_2_to_3/migrate"></a>
+# migrations/migrate\_versions\_2\_to\_3/migrate
 
 Name: migrate_db_v3.py
 
 Description: Migrates the ORCA schema from version 2 to version 3.
 
-<a name="migrations/migrate_versions_2_to_3/migrate_db_v3.migrate_versions_2_to_3"></a>
+<a name="migrations/migrate_versions_2_to_3/migrate.migrate_versions_2_to_3"></a>
 #### migrate\_versions\_2\_to\_3
 
 ```python
@@ -169,14 +193,14 @@ the ORCA schema.
 - `config` _Dict_ - Connection information for the database.
 - `is_latest_version` _bool_ - Flag to determine if version 3 is the latest schema version.
 
-<a name="migrations/migrate_versions_2_to_3/migrate_sql_v3"></a>
-# migrations/migrate\_versions\_2\_to\_3/migrate\_sql\_v3
+<a name="migrations/migrate_versions_2_to_3/migrate_sql"></a>
+# migrations/migrate\_versions\_2\_to\_3/migrate\_sql
 
 Name: orca_sql_v3.py
 
 Description: All of the SQL used for creating and migrating the ORCA schema to version 3.
 
-<a name="migrations/migrate_versions_2_to_3/migrate_sql_v3.add_multipart_chunksize_sql"></a>
+<a name="migrations/migrate_versions_2_to_3/migrate_sql.add_multipart_chunksize_sql"></a>
 #### add\_multipart\_chunksize\_sql
 
 ```python
@@ -187,7 +211,7 @@ SQL that adds the multipart_chunksize_mb column to recovery_file.
 
 Returns: SQL for adding multipart_chunksize_mb.
 
-<a name="migrations/migrate_versions_2_to_3/migrate_sql_v3.schema_versions_data_sql"></a>
+<a name="migrations/migrate_versions_2_to_3/migrate_sql.schema_versions_data_sql"></a>
 #### schema\_versions\_data\_sql
 
 ```python
@@ -201,87 +225,14 @@ version into the table.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for populating schema_versions table.
 
-<a name="migrations/migrate_versions_3_to_4/migrate_sql_v4"></a>
-# migrations/migrate\_versions\_3\_to\_4/migrate\_sql\_v4
-
-Name: orca_sql_v4.py
-
-Description: All of the SQL used for creating and migrating the ORCA schema to version 4.
-
-<a name="migrations/migrate_versions_3_to_4/migrate_sql_v4.providers_table_sql"></a>
-#### providers\_table\_sql
-
-```python
-providers_table_sql() -> TextClause
-```
-
-Full SQL for creating the providers table.
-
-**Returns**:
-
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating providers table.
-
-<a name="migrations/migrate_versions_3_to_4/migrate_sql_v4.collections_table_sql"></a>
-#### collections\_table\_sql
-
-```python
-collections_table_sql() -> TextClause
-```
-
-Full SQL for creating the collections table.
-
-**Returns**:
-
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating collections table.
-
-<a name="migrations/migrate_versions_3_to_4/migrate_sql_v4.granules_table_sql"></a>
-#### granules\_table\_sql
-
-```python
-granules_table_sql() -> TextClause
-```
-
-Full SQL for creating the catalog granules table.
-
-**Returns**:
-
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating granules table.
-
-<a name="migrations/migrate_versions_3_to_4/migrate_sql_v4.files_table_sql"></a>
-#### files\_table\_sql
-
-```python
-files_table_sql() -> TextClause
-```
-
-Full SQL for creating the catalog files table.
-
-**Returns**:
-
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating files table.
-
-<a name="migrations/migrate_versions_3_to_4/migrate_sql_v4.schema_versions_data_sql"></a>
-#### schema\_versions\_data\_sql
-
-```python
-schema_versions_data_sql() -> TextClause
-```
-
-Data for the schema_versions table. Inserts the current schema
-version into the table.
-
-**Returns**:
-
-- `(sqlalchemy.sql.element.TextClause)` - SQL for populating schema_versions table.
-
-<a name="migrations/migrate_versions_3_to_4/migrate_db_v4"></a>
-# migrations/migrate\_versions\_3\_to\_4/migrate\_db\_v4
+<a name="migrations/migrate_versions_3_to_4/migrate"></a>
+# migrations/migrate\_versions\_3\_to\_4/migrate
 
 Name: migrate_db_v4.py
 
 Description: Migrates the ORCA schema from version 3 to version 4.
 
-<a name="migrations/migrate_versions_3_to_4/migrate_db_v4.migrate_versions_3_to_4"></a>
+<a name="migrations/migrate_versions_3_to_4/migrate.migrate_versions_3_to_4"></a>
 #### migrate\_versions\_3\_to\_4
 
 ```python
@@ -299,6 +250,79 @@ the ORCA schema.
 **Returns**:
 
   None
+
+<a name="migrations/migrate_versions_3_to_4/migrate_sql"></a>
+# migrations/migrate\_versions\_3\_to\_4/migrate\_sql
+
+Name: orca_sql_v4.py
+
+Description: All of the SQL used for creating and migrating the ORCA schema to version 4.
+
+<a name="migrations/migrate_versions_3_to_4/migrate_sql.providers_table_sql"></a>
+#### providers\_table\_sql
+
+```python
+providers_table_sql() -> TextClause
+```
+
+Full SQL for creating the providers table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating providers table.
+
+<a name="migrations/migrate_versions_3_to_4/migrate_sql.collections_table_sql"></a>
+#### collections\_table\_sql
+
+```python
+collections_table_sql() -> TextClause
+```
+
+Full SQL for creating the collections table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating collections table.
+
+<a name="migrations/migrate_versions_3_to_4/migrate_sql.granules_table_sql"></a>
+#### granules\_table\_sql
+
+```python
+granules_table_sql() -> TextClause
+```
+
+Full SQL for creating the catalog granules table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating granules table.
+
+<a name="migrations/migrate_versions_3_to_4/migrate_sql.files_table_sql"></a>
+#### files\_table\_sql
+
+```python
+files_table_sql() -> TextClause
+```
+
+Full SQL for creating the catalog files table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating files table.
+
+<a name="migrations/migrate_versions_3_to_4/migrate_sql.schema_versions_data_sql"></a>
+#### schema\_versions\_data\_sql
+
+```python
+schema_versions_data_sql() -> TextClause
+```
+
+Data for the schema_versions table. Inserts the current schema
+version into the table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for populating schema_versions table.
 
 <a name="migrations/migrate_db"></a>
 # migrations/migrate\_db
@@ -327,14 +351,14 @@ migrations to run.
 
   None
 
-<a name="migrations/migrate_versions_1_to_2/migrate_db_v2"></a>
-# migrations/migrate\_versions\_1\_to\_2/migrate\_db\_v2
+<a name="migrations/migrate_versions_1_to_2/migrate"></a>
+# migrations/migrate\_versions\_1\_to\_2/migrate
 
 Name: migrate_db_v2.py
 
 Description: Migrates the ORCA schema from version 1 to version 2.
 
-<a name="migrations/migrate_versions_1_to_2/migrate_db_v2.migrate_versions_1_to_2"></a>
+<a name="migrations/migrate_versions_1_to_2/migrate.migrate_versions_1_to_2"></a>
 #### migrate\_versions\_1\_to\_2
 
 ```python
@@ -354,14 +378,14 @@ the ORCA schema.
 
   None
 
-<a name="migrations/migrate_versions_1_to_2/migrate_sql_v2"></a>
-# migrations/migrate\_versions\_1\_to\_2/migrate\_sql\_v2
+<a name="migrations/migrate_versions_1_to_2/migrate_sql"></a>
+# migrations/migrate\_versions\_1\_to\_2/migrate\_sql
 
 Name: orca_sql_v2.py
 
 Description: All of the SQL used for creating and migrating the ORCA schema to version 2.
 
-<a name="migrations/migrate_versions_1_to_2/migrate_sql_v2.dbo_role_sql"></a>
+<a name="migrations/migrate_versions_1_to_2/migrate_sql.dbo_role_sql"></a>
 #### dbo\_role\_sql
 
 ```python
@@ -375,7 +399,7 @@ objects.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for creating orca_dbo role.
 
-<a name="migrations/migrate_versions_1_to_2/migrate_sql_v2.app_role_sql"></a>
+<a name="migrations/migrate_versions_1_to_2/migrate_sql.app_role_sql"></a>
 #### app\_role\_sql
 
 ```python
@@ -389,7 +413,7 @@ to interact with the ORCA schema.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for creating orca_app role.
 
-<a name="migrations/migrate_versions_1_to_2/migrate_sql_v2.orca_schema_sql"></a>
+<a name="migrations/migrate_versions_1_to_2/migrate_sql.orca_schema_sql"></a>
 #### orca\_schema\_sql
 
 ```python
@@ -404,7 +428,7 @@ before the app_user_sql and ORCA objects.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for creating orca schema.
 
-<a name="migrations/migrate_versions_1_to_2/migrate_sql_v2.app_user_sql"></a>
+<a name="migrations/migrate_versions_1_to_2/migrate_sql.app_user_sql"></a>
 #### app\_user\_sql
 
 ```python
@@ -423,7 +447,7 @@ after the app_role_sql and orca_schema_sql.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for creating PREFIX_orcauser user.
 
-<a name="migrations/migrate_versions_1_to_2/migrate_sql_v2.schema_versions_table_sql"></a>
+<a name="migrations/migrate_versions_1_to_2/migrate_sql.schema_versions_table_sql"></a>
 #### schema\_versions\_table\_sql
 
 ```python
@@ -436,7 +460,7 @@ Full SQL for creating the schema_versions table.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for creating schema_versions table.
 
-<a name="migrations/migrate_versions_1_to_2/migrate_sql_v2.schema_versions_data_sql"></a>
+<a name="migrations/migrate_versions_1_to_2/migrate_sql.schema_versions_data_sql"></a>
 #### schema\_versions\_data\_sql
 
 ```python
@@ -450,7 +474,7 @@ version into the table.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for populating schema_versions table.
 
-<a name="migrations/migrate_versions_1_to_2/migrate_sql_v2.recovery_status_table_sql"></a>
+<a name="migrations/migrate_versions_1_to_2/migrate_sql.recovery_status_table_sql"></a>
 #### recovery\_status\_table\_sql
 
 ```python
@@ -464,7 +488,7 @@ before any of the other recovery table sql.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for creating recovery_status table.
 
-<a name="migrations/migrate_versions_1_to_2/migrate_sql_v2.recovery_status_data_sql"></a>
+<a name="migrations/migrate_versions_1_to_2/migrate_sql.recovery_status_data_sql"></a>
 #### recovery\_status\_data\_sql
 
 ```python
@@ -478,7 +502,7 @@ the table.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for populating recovery_status table.
 
-<a name="migrations/migrate_versions_1_to_2/migrate_sql_v2.recovery_job_table_sql"></a>
+<a name="migrations/migrate_versions_1_to_2/migrate_sql.recovery_job_table_sql"></a>
 #### recovery\_job\_table\_sql
 
 ```python
@@ -493,7 +517,7 @@ table sql to maintain key dependencies.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for creating recovery_job table.
 
-<a name="migrations/migrate_versions_1_to_2/migrate_sql_v2.recovery_file_table_sql"></a>
+<a name="migrations/migrate_versions_1_to_2/migrate_sql.recovery_file_table_sql"></a>
 #### recovery\_file\_table\_sql
 
 ```python
@@ -507,7 +531,7 @@ after the recovery_job table sql to maintain key dependencies.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for creating recovery_file table.
 
-<a name="migrations/migrate_versions_1_to_2/migrate_sql_v2.migrate_recovery_job_data_sql"></a>
+<a name="migrations/migrate_versions_1_to_2/migrate_sql.migrate_recovery_job_data_sql"></a>
 #### migrate\_recovery\_job\_data\_sql
 
 ```python
@@ -521,7 +545,7 @@ orca.recovery_job table.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for populating recovery_job table.
 
-<a name="migrations/migrate_versions_1_to_2/migrate_sql_v2.migrate_recovery_file_data_sql"></a>
+<a name="migrations/migrate_versions_1_to_2/migrate_sql.migrate_recovery_file_data_sql"></a>
 #### migrate\_recovery\_file\_data\_sql
 
 ```python
@@ -535,7 +559,7 @@ orca.recovery_file table.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for populating recovery_file table.
 
-<a name="migrations/migrate_versions_1_to_2/migrate_sql_v2.drop_request_status_table_sql"></a>
+<a name="migrations/migrate_versions_1_to_2/migrate_sql.drop_request_status_table_sql"></a>
 #### drop\_request\_status\_table\_sql
 
 ```python
@@ -548,7 +572,7 @@ SQL that removes the dr.request_status table.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for dropping request_status table.
 
-<a name="migrations/migrate_versions_1_to_2/migrate_sql_v2.drop_dr_schema_sql"></a>
+<a name="migrations/migrate_versions_1_to_2/migrate_sql.drop_dr_schema_sql"></a>
 #### drop\_dr\_schema\_sql
 
 ```python
@@ -561,7 +585,7 @@ SQL that removes the dr schema.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for dropping dr schema.
 
-<a name="migrations/migrate_versions_1_to_2/migrate_sql_v2.drop_druser_user_sql"></a>
+<a name="migrations/migrate_versions_1_to_2/migrate_sql.drop_druser_user_sql"></a>
 #### drop\_druser\_user\_sql
 
 ```python
@@ -574,7 +598,7 @@ SQL that removes the druser user.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for dropping druser user.
 
-<a name="migrations/migrate_versions_1_to_2/migrate_sql_v2.drop_dbo_user_sql"></a>
+<a name="migrations/migrate_versions_1_to_2/migrate_sql.drop_dbo_user_sql"></a>
 #### drop\_dbo\_user\_sql
 
 ```python
@@ -587,7 +611,7 @@ SQL that removes the dbo user.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for dropping dbo user.
 
-<a name="migrations/migrate_versions_1_to_2/migrate_sql_v2.drop_dr_role_sql"></a>
+<a name="migrations/migrate_versions_1_to_2/migrate_sql.drop_dr_role_sql"></a>
 #### drop\_dr\_role\_sql
 
 ```python
@@ -600,7 +624,7 @@ SQL that removes the dr_role role.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for dropping dr_role role.
 
-<a name="migrations/migrate_versions_1_to_2/migrate_sql_v2.drop_drdbo_role_sql"></a>
+<a name="migrations/migrate_versions_1_to_2/migrate_sql.drop_drdbo_role_sql"></a>
 #### drop\_drdbo\_role\_sql
 
 ```python
@@ -1144,7 +1168,7 @@ Creates the ORCA internal reconciliation tables in the proper order.
 
 Name: test_migrate_sql_v3.py
 
-Description: Testing library for the migrations/migrate_versions_2_to_3/migrate_sql_v3.py.
+Description: Testing library for the migrations/migrate_versions_2_to_3/migrate_sql.py.
 
 <a name="test/unit_tests/test_migrate_sql_v3.TestOrcaSqlLogic"></a>
 ## TestOrcaSqlLogic Objects
@@ -1319,7 +1343,7 @@ Does a happy path test for the function. No real logic to test.
 
 Name: test_migrate_sql_v2.py
 
-Description: Unit tests for the migrations/migrate_versions_1_to_2/migrate_sql_v2.py.
+Description: Unit tests for the migrations/migrate_versions_1_to_2/migrate_sql.py.
 
 <a name="test/unit_tests/test_migrate_sql_v2.TestOrcaSqlLogic"></a>
 ## TestOrcaSqlLogic Objects
@@ -1362,6 +1386,53 @@ or if user_name is not set or is over 64 characters.
 ```
 
 Validates that all functions return a type TextClause
+
+<a name="test/unit_tests/test_migrate_v3"></a>
+# test/unit\_tests/test\_migrate\_v3
+
+Name: test_migrate_db_v3.py
+
+Description: Runs unit tests for the migrations/migrate_versions_2_to_3/migrate.py
+
+<a name="test/unit_tests/test_migrate_v3.TestMigrateDatabaseLibraries"></a>
+## TestMigrateDatabaseLibraries Objects
+
+```python
+class TestMigrateDatabaseLibraries(unittest.TestCase)
+```
+
+Runs unit tests on the migrate_db functions.
+
+<a name="test/unit_tests/test_migrate_v3.TestMigrateDatabaseLibraries.setUp"></a>
+#### setUp
+
+```python
+ | setUp()
+```
+
+Set up test.
+
+<a name="test/unit_tests/test_migrate_v3.TestMigrateDatabaseLibraries.tearDown"></a>
+#### tearDown
+
+```python
+ | tearDown()
+```
+
+Tear down test
+
+<a name="test/unit_tests/test_migrate_v3.TestMigrateDatabaseLibraries.test_migrate_versions_2_to_3_happy_path"></a>
+#### test\_migrate\_versions\_2\_to\_3\_happy\_path
+
+```python
+ | @patch("migrations.migrate_versions_2_to_3.migrate.sql.text")
+ | @patch("migrations.migrate_versions_2_to_3.migrate.sql.schema_versions_data_sql")
+ | @patch("migrations.migrate_versions_2_to_3.migrate.sql.add_multipart_chunksize_sql")
+ | @patch("migrations.migrate_versions_2_to_3.migrate.get_admin_connection")
+ | test_migrate_versions_2_to_3_happy_path(mock_connection: MagicMock, mock_add_multipart_chunksize_sql: MagicMock, mock_schema_versions_data: MagicMock, mock_text: MagicMock)
+```
+
+Tests the migrate_versions_2_to_3 function happy path
 
 <a name="test/unit_tests/test_create_db"></a>
 # test/unit\_tests/test\_create\_db
@@ -1486,111 +1557,14 @@ Tests happy path of the create_recovery_objects function
 
 Tests happy path of the create_inventory_objects function
 
-<a name="test/unit_tests/test_migrate_db_v4"></a>
-# test/unit\_tests/test\_migrate\_db\_v4
-
-Name: test_migrate_db_v4.py
-
-Description: Runs unit tests for the migrations/migrate_versions_3_to_4/migrate_db_v4.py
-
-<a name="test/unit_tests/test_migrate_db_v4.TestMigrateDatabaseLibraries"></a>
-## TestMigrateDatabaseLibraries Objects
-
-```python
-class TestMigrateDatabaseLibraries(unittest.TestCase)
-```
-
-Runs unit tests on the migrate_db functions.
-
-<a name="test/unit_tests/test_migrate_db_v4.TestMigrateDatabaseLibraries.setUp"></a>
-#### setUp
-
-```python
- | setUp()
-```
-
-Set up test.
-
-<a name="test/unit_tests/test_migrate_db_v4.TestMigrateDatabaseLibraries.tearDown"></a>
-#### tearDown
-
-```python
- | tearDown()
-```
-
-Tear down test
-
-<a name="test/unit_tests/test_migrate_db_v4.TestMigrateDatabaseLibraries.test_migrate_versions_3_to_4_happy_path"></a>
-#### test\_migrate\_versions\_3\_to\_4\_happy\_path
-
-```python
- | @patch("migrations.migrate_versions_3_to_4.migrate_db_v4.sql.schema_versions_data_sql")
- | @patch("migrations.migrate_versions_3_to_4.migrate_db_v4.sql.providers_table_sql")
- | @patch("migrations.migrate_versions_3_to_4.migrate_db_v4.sql.collections_table_sql")
- | @patch("migrations.migrate_versions_3_to_4.migrate_db_v4.sql.granules_table_sql")
- | @patch("migrations.migrate_versions_3_to_4.migrate_db_v4.sql.files_table_sql")
- | @patch("migrations.migrate_versions_3_to_4.migrate_db_v4.get_admin_connection")
- | @patch("migrations.migrate_versions_3_to_4.migrate_db_v4.sql.text")
- | test_migrate_versions_3_to_4_happy_path(mock_text: MagicMock, mock_connection: MagicMock, mock_files_table: MagicMock, mock_granules_table: MagicMock, mock_collections_table: MagicMock, mock_providers_table: MagicMock, mock_schema_versions_data: MagicMock)
-```
-
-Tests the migrate_versions_3_to_4 function happy path
-
-<a name="test/unit_tests/test_migrate_db_v3"></a>
-# test/unit\_tests/test\_migrate\_db\_v3
-
-Name: test_migrate_db_v3.py
-
-Description: Runs unit tests for the migrations/migrate_versions_2_to_3/migrate_db_v3.py
-
-<a name="test/unit_tests/test_migrate_db_v3.TestMigrateDatabaseLibraries"></a>
-## TestMigrateDatabaseLibraries Objects
-
-```python
-class TestMigrateDatabaseLibraries(unittest.TestCase)
-```
-
-Runs unit tests on the migrate_db functions.
-
-<a name="test/unit_tests/test_migrate_db_v3.TestMigrateDatabaseLibraries.setUp"></a>
-#### setUp
-
-```python
- | setUp()
-```
-
-Set up test.
-
-<a name="test/unit_tests/test_migrate_db_v3.TestMigrateDatabaseLibraries.tearDown"></a>
-#### tearDown
-
-```python
- | tearDown()
-```
-
-Tear down test
-
-<a name="test/unit_tests/test_migrate_db_v3.TestMigrateDatabaseLibraries.test_migrate_versions_2_to_3_happy_path"></a>
-#### test\_migrate\_versions\_2\_to\_3\_happy\_path
-
-```python
- | @patch("migrations.migrate_versions_2_to_3.migrate_db_v3.sql.text")
- | @patch("migrations.migrate_versions_2_to_3.migrate_db_v3.sql.schema_versions_data_sql")
- | @patch("migrations.migrate_versions_2_to_3.migrate_db_v3.sql.add_multipart_chunksize_sql")
- | @patch("migrations.migrate_versions_2_to_3.migrate_db_v3.get_admin_connection")
- | test_migrate_versions_2_to_3_happy_path(mock_connection: MagicMock, mock_add_multipart_chunksize_sql: MagicMock, mock_schema_versions_data: MagicMock, mock_text: MagicMock)
-```
-
-Tests the migrate_versions_2_to_3 function happy path
-
-<a name="test/unit_tests/test_migrate_db_v2"></a>
-# test/unit\_tests/test\_migrate\_db\_v2
+<a name="test/unit_tests/test_migrate_v2"></a>
+# test/unit\_tests/test\_migrate\_v2
 
 Name: test_migrate_db_v2.py
 
-Description: Runs unit tests for the migrations/migrate_versions_1_to_2/migrate_db_v2.py
+Description: Runs unit tests for the migrations/migrate_versions_1_to_2/migrate.py
 
-<a name="test/unit_tests/test_migrate_db_v2.TestMigrateDatabaseLibraries"></a>
+<a name="test/unit_tests/test_migrate_v2.TestMigrateDatabaseLibraries"></a>
 ## TestMigrateDatabaseLibraries Objects
 
 ```python
@@ -1599,7 +1573,7 @@ class TestMigrateDatabaseLibraries(unittest.TestCase)
 
 Runs unit tests on the migrate_db functions.
 
-<a name="test/unit_tests/test_migrate_db_v2.TestMigrateDatabaseLibraries.setUp"></a>
+<a name="test/unit_tests/test_migrate_v2.TestMigrateDatabaseLibraries.setUp"></a>
 #### setUp
 
 ```python
@@ -1608,7 +1582,7 @@ Runs unit tests on the migrate_db functions.
 
 Set up test.
 
-<a name="test/unit_tests/test_migrate_db_v2.TestMigrateDatabaseLibraries.tearDown"></a>
+<a name="test/unit_tests/test_migrate_v2.TestMigrateDatabaseLibraries.tearDown"></a>
 #### tearDown
 
 ```python
@@ -1617,34 +1591,84 @@ Set up test.
 
 Tear down test
 
-<a name="test/unit_tests/test_migrate_db_v2.TestMigrateDatabaseLibraries.test_migrate_versions_1_to_2_happy_path"></a>
+<a name="test/unit_tests/test_migrate_v2.TestMigrateDatabaseLibraries.test_migrate_versions_1_to_2_happy_path"></a>
 #### test\_migrate\_versions\_1\_to\_2\_happy\_path
 
 ```python
- | @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.schema_versions_data_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.drop_druser_user_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.drop_dbo_user_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.drop_dr_role_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.drop_drdbo_role_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.drop_dr_schema_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.drop_request_status_table_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.migrate_recovery_file_data_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.migrate_recovery_job_data_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.recovery_status_data_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.recovery_file_table_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.recovery_job_table_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.recovery_status_table_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.schema_versions_table_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.text")
- | @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.app_user_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.orca_schema_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.app_role_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.sql.dbo_role_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate_db_v2.get_admin_connection")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.schema_versions_data_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.drop_druser_user_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.drop_dbo_user_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.drop_dr_role_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.drop_drdbo_role_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.drop_dr_schema_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.drop_request_status_table_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.migrate_recovery_file_data_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.migrate_recovery_job_data_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.recovery_status_data_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.recovery_file_table_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.recovery_job_table_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.recovery_status_table_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.schema_versions_table_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.text")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.app_user_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.orca_schema_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.app_role_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.dbo_role_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.get_admin_connection")
  | test_migrate_versions_1_to_2_happy_path(mock_connection: MagicMock, mock_dbo_role_sql: MagicMock, mock_app_role_sql: MagicMock, mock_orca_schema_sql: MagicMock, mock_app_user_sql: MagicMock, mock_text: MagicMock, mock_schema_versions_table: MagicMock, mock_recovery_status_table: MagicMock, mock_recovery_job_table: MagicMock, mock_recovery_file_table: MagicMock, mock_recovery_status_data: MagicMock, mock_recovery_job_data: MagicMock, mock_recovery_file_data: MagicMock, mock_drop_request_status_table: MagicMock, mock_drop_dr_schema: MagicMock, mock_drop_drdbo_role: MagicMock, mock_drop_dr_role: MagicMock, mock_drop_dbo_user: MagicMock, mock_drop_druser_user: MagicMock, mock_schema_versions_data: MagicMock)
 ```
 
 Tests the migrate_versions_1_to_2 function happy path
+
+<a name="test/unit_tests/test_migrate_v4"></a>
+# test/unit\_tests/test\_migrate\_v4
+
+Name: test_migrate_db_v4.py
+
+Description: Runs unit tests for the migrations/migrate_versions_3_to_4/migrate.py
+
+<a name="test/unit_tests/test_migrate_v4.TestMigrateDatabaseLibraries"></a>
+## TestMigrateDatabaseLibraries Objects
+
+```python
+class TestMigrateDatabaseLibraries(unittest.TestCase)
+```
+
+Runs unit tests on the migrate_db functions.
+
+<a name="test/unit_tests/test_migrate_v4.TestMigrateDatabaseLibraries.setUp"></a>
+#### setUp
+
+```python
+ | setUp()
+```
+
+Set up test.
+
+<a name="test/unit_tests/test_migrate_v4.TestMigrateDatabaseLibraries.tearDown"></a>
+#### tearDown
+
+```python
+ | tearDown()
+```
+
+Tear down test
+
+<a name="test/unit_tests/test_migrate_v4.TestMigrateDatabaseLibraries.test_migrate_versions_3_to_4_happy_path"></a>
+#### test\_migrate\_versions\_3\_to\_4\_happy\_path
+
+```python
+ | @patch("migrations.migrate_versions_3_to_4.migrate.sql.schema_versions_data_sql")
+ | @patch("migrations.migrate_versions_3_to_4.migrate.sql.providers_table_sql")
+ | @patch("migrations.migrate_versions_3_to_4.migrate.sql.collections_table_sql")
+ | @patch("migrations.migrate_versions_3_to_4.migrate.sql.granules_table_sql")
+ | @patch("migrations.migrate_versions_3_to_4.migrate.sql.files_table_sql")
+ | @patch("migrations.migrate_versions_3_to_4.migrate.get_admin_connection")
+ | @patch("migrations.migrate_versions_3_to_4.migrate.sql.text")
+ | test_migrate_versions_3_to_4_happy_path(mock_text: MagicMock, mock_connection: MagicMock, mock_files_table: MagicMock, mock_granules_table: MagicMock, mock_collections_table: MagicMock, mock_providers_table: MagicMock, mock_schema_versions_data: MagicMock)
+```
+
+Tests the migrate_versions_3_to_4 function happy path
 
 <a name="test/unit_tests/test_migrate_db"></a>
 # test/unit\_tests/test\_migrate\_db
@@ -1773,7 +1797,7 @@ Validates that all functions return a type TextClause
 
 Name: test_migrate_sql_v4.py
 
-Description: Testing library for the migrations/migrate_versions_3_to_4/migrate_sql_v4.py.
+Description: Testing library for the migrations/migrate_versions_3_to_4/migrate_sql.py.
 
 <a name="test/unit_tests/test_migrate_sql_v4.TestOrcaSqlLogic"></a>
 ## TestOrcaSqlLogic Objects

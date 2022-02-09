@@ -1,7 +1,7 @@
 """
 Name: test_migrate_sql_v2.py
 
-Description: Unit tests for the migrations/migrate_versions_1_to_2/migrate_sql_v2.py.
+Description: Unit tests for the migrations/migrate_versions_1_to_2/migrate_sql.py.
 """
 
 import unittest
@@ -10,7 +10,7 @@ from inspect import getmembers, isfunction
 
 from sqlalchemy.sql.elements import TextClause
 
-import migrations.migrate_versions_1_to_2.migrate_sql_v2 as sql
+import migrations.migrate_versions_1_to_2.migrate_sql as sql
 
 
 class TestOrcaSqlLogic(unittest.TestCase):
