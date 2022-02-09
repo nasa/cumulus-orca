@@ -10,7 +10,6 @@ from orca_shared.database.shared_db import (
 )
 from sqlalchemy.future import Connection
 import install.orca_sql as sql
-from install import orca_reconcile_sql
 
 def create_fresh_orca_install(config: Dict[str, str]) -> None:
     """
@@ -227,30 +226,30 @@ def create_internal_reconciliation_objects(connection: Connection) -> None:
     """
     # Create reconcile_status table
     logger.debug("Creating reconcile_status table ...")
-    connection.execute(orca_reconcile_sql.reconcile_status_table_sql())
+    connection.execute(sql.reconcile_status_table_sql())
     logger.info("reconcile_status table created.")
 
     # Create reconcile_job table
     logger.debug("Creating reconcile_job table ...")
-    connection.execute(orca_reconcile_sql.reconcile_job_table_sql())
+    connection.execute(sql.reconcile_job_table_sql())
     logger.info("reconcile_job table created.")
 
     # Create reconcile_s3_object table
     logger.debug("Creating reconcile_s3_object table ...")
-    connection.execute(orca_reconcile_sql.reconcile_s3_object_table_sql())
+    connection.execute(sql.reconcile_s3_object_table_sql())
     logger.info("reconcile_s3_object table created.")
 
     # Create reconcile_catalog_mismatch_report table
     logger.debug("Creating reconcile_catalog_mismatch_report table ...")
-    connection.execute(orca_reconcile_sql.reconcile_catalog_mismatch_report_table_sql())
+    connection.execute(sql.reconcile_catalog_mismatch_report_table_sql())
     logger.info("reconcile_catalog_mismatch_report table created.")
 
     # Create reconcile_orphan_report table
     logger.debug("Creating reconcile_orphan_report table ...")
-    connection.execute(orca_reconcile_sql.reconcile_orphan_report_table_sql())
+    connection.execute(sql.reconcile_orphan_report_table_sql())
     logger.info("reconcile_orphan_report table created.")
 
     # Create reconcile_phantom_report table
     logger.debug("Creating reconcile_phantom_report table ...")
-    connection.execute(orca_reconcile_sql.reconcile_phantom_report_table_sql())
+    connection.execute(sql.reconcile_phantom_report_table_sql())
     logger.info("reconcile_phantom_report table created.")

@@ -1,16 +1,16 @@
 """
-Name: orca_reconcile_sql.py
+Name: migrate_sql.py
 
-Description: All of the SQL used for creating the internal reconciliation tables.
+Description: All of the SQL used for creating and migrating the ORCA schema to version 5.
 """
 # Imports
 from sqlalchemy import text
 from sqlalchemy.sql.elements import TextClause
 
-
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA internal reconciliation tables
 # ----------------------------------------------------------------------------
+
 
 def reconcile_status_table_sql() -> TextClause:
     """
@@ -246,6 +246,29 @@ def reconcile_phantom_report_table_sql() -> TextClause:
         """
     )
 
+def schema_versions_data_sql() -> TextClause:
+    """
+    Data for the schema_versions table. Inserts the current schema
+    version into the table.
+
+    Returns:
+        (sqlalchemy.sql.element.TextClause): SQL for populating schema_versions table.
+    """
+    return text(
+        """
+        -- Populate with the current version
+        -- Update is_latest to false for all records first to prevent error
+        UPDATE schema_versions
+        SET is_latest = False;
+
+        -- Upsert the current version
+        INSERT INTO schema_versions
+        VALUES (5, 'Added internal reconciliation schema for v5.x of ORCA application', NOW(), True)
+        ON CONFLICT (version_id)
+        DO UPDATE SET is_latest = True;
+    """
+    )
+
 #TBD discuss with team on SQL code for list of buckets
 def orca_archive_location_bucket() -> TextClause:
     """
@@ -283,23 +306,5 @@ def create_extension() -> TextClause:
             CASCADE;
             -- Comment
             COMMENT ON EXTENSION aws_s3 IS 'Loads a new extension aws_s3 into the current database.';
-        """
-    )
-
-def drop_extension() -> TextClause:
-    """
-    Full SQL for dropping the extension. 
-
-    Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for dropping extension for the database.
-    """
-
-    return text(
-        """
-            -- Comment on dropping extension
-            DROP EXTENSION IF EXISTS aws_s3 
-            CASCADE;
-            -- Comment
-            COMMENT ON EXTENSION aws_s3 IS 'Removes extension from the database.';
         """
     )

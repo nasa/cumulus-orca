@@ -1,5 +1,5 @@
 """
-Name: orca_sql_v4.py
+Name: migrate_sql.py
 
 Description: All of the SQL used for creating and migrating the ORCA schema to version 4.
 """

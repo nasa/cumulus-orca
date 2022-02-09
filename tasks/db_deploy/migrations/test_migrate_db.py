@@ -37,8 +37,10 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
     @patch("migrations.migrate_db.migrate_versions_1_to_2")
     @patch("migrations.migrate_db.migrate_versions_2_to_3")
     @patch("migrations.migrate_db.migrate_versions_3_to_4")
+    @patch("migrations.migrate_db.migrate_versions_4_to_5")
     def test_perform_migration_happy_path(
             self,
+            mock_migrate_v4_to_v5: MagicMock,
             mock_migrate_v3_to_v4: MagicMock,
             mock_migrate_v2_to_v3: MagicMock,
             mock_migrate_v1_to_v2: MagicMock,
@@ -46,7 +48,7 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
         """
         Tests the perform_migration function happy paths
         """
-        for version in [1, 2, 3, 4, 5]:
+        for version in [1, 2, 3, 4, 5, 6]:
             with self.subTest(version=version):
                 migrate_db.perform_migration(version, self.config)
 
@@ -68,7 +70,13 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 else:
                     mock_migrate_v3_to_v4.assert_not_called()
 
+                if version < 5:
+                    mock_migrate_v4_to_v5.assert_called_once_with(self.config, True)
+                else:
+                    mock_migrate_v4_to_v5.assert_not_called()
+
                 # Reset for next loop
                 mock_migrate_v1_to_v2.reset_mock()
                 mock_migrate_v2_to_v3.reset_mock()
                 mock_migrate_v3_to_v4.reset_mock()
+                mock_migrate_v4_to_v5.reset_mock()

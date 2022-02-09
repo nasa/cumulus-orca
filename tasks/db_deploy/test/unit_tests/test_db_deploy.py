@@ -222,7 +222,7 @@ class TestDbDeployFunctions(unittest.TestCase):
         table_exists_array = [True, False]
         mock_conn.execute.return_value.fetchall.return_value = [
             [
-                4,
+                5,
             ],
         ]
 
@@ -234,6 +234,6 @@ class TestDbDeployFunctions(unittest.TestCase):
                 schema_version = db_deploy.get_migration_version(mock_conn)
 
                 if table_exists:
-                    self.assertEqual(schema_version, 4)
+                    self.assertEqual(schema_version, 5)
                 else:
                     self.assertEqual(schema_version, 1)
