@@ -73,8 +73,9 @@ def task(config: Dict[str, str]) -> None:
                 f"The ORCA database {config['user_database']} does not exist, "
                 "or the server could not be connected to."
             )
-            create_fresh_orca_install(config)
             create_database(config)
+            create_fresh_orca_install(config)
+    
             return
 
     # Connect as admin user to config["user_database"] database.
