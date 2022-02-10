@@ -1,7 +1,7 @@
 """
 Name: get_current_archive_list.py
 
-Description:  Pulls entries from a queue and posts them to a DB.
+Description: Receives a list of s3 events from an SQS queue, and loads the s3 inventory specified into postgres.
 """
 import json
 import os.path
@@ -492,7 +492,7 @@ def translate_s3_import_to_partitioned_data_sql(report_table_name: str):
 
 def handler(event: Dict[str, List], context) -> Dict[str, Any]:
     """
-    Lambda handler. Receives a list of queue entries from an SQS queue, and posts them to a database.
+    Lambda handler. Receives a list of s3 events from an SQS queue, and loads the s3 inventory specified into postgres.
 
     Args:
         event: See input.json for details.

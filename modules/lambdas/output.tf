@@ -20,6 +20,12 @@ output "orca_catalog_reporting_arn" {
   value       = aws_lambda_function.orca_catalog_reporting.arn
 }
 
+# Reconciliation Lambdas
+# ------------------------------------------------------------------------------
+output "get_current_archive_list_arn" {
+  description = "AWS ARN for the get_current_archive_list lambda."
+  value       = aws_lambda_function.get_current_archive_list.arn
+}
 
 # Recovery Lambdas
 # ------------------------------------------------------------------------------

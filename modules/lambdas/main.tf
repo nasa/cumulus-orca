@@ -56,6 +56,39 @@ resource "aws_lambda_function" "copy_to_glacier" {
   }
 }
 
+## =============================================================================
+## Reconciliation Lambdas Definitions and Resources
+## =============================================================================
+
+# get_current_archive_list - From an s3 event for an s3 inventory report's manifest.json, pulls inventory report into postgres.
+# ==============================================================================
+resource "aws_lambda_function" "get_current_archive_list" {
+  ## REQUIRED
+  function_name = "${var.prefix}_get_current_archive_list"
+  role          = var.restore_object_role_arn
+
+  ## OPTIONAL
+  description      = "Receives a list of s3 events from an SQS queue, and loads the s3 inventory specified into postgres."
+  filename         = "${path.module}/../../tasks/get_current_archive_list/get_current_archive_list.zip"
+  handler          = "get_current_archive_list.handler"
+  memory_size      = var.orca_recovery_lambda_memory_size
+  runtime          = "python3.9"
+  source_code_hash = filebase64sha256("${path.module}/../../tasks/get_current_archive_list/get_current_archive_list.zip")
+  tags             = local.tags
+  timeout          = var.orca_recovery_lambda_timeout
+
+  vpc_config {
+    subnet_ids         = var.lambda_subnet_ids
+    security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
+  }
+
+  environment {
+    variables = {
+      S3_ACCESS_KEY = var.orca_s3_access_key
+      S3_SECRET_KEY = var.orca_s3_secret_key
+    }
+  }
+}
 
 ## =============================================================================
 ## Recovery Lambdas Definitions and Resources
