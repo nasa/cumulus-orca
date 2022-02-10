@@ -502,11 +502,9 @@ def handler(event: Dict[str, List], context) -> Dict[str, Any]:
 
     Returns: See output.json for details.
     """
-    _INPUT_VALIDATE(event)
-
     LOGGER.setMetadata(event, context)
 
-    db_connect_info = shared_db.get_configuration()
+    _INPUT_VALIDATE(event)
 
     if len(event[EVENT_RECORDS_KEY]) != 1:
         raise ValueError(f"Must be passed a single record. Was {len(event['Records'])}")
@@ -519,6 +517,8 @@ def handler(event: Dict[str, List], context) -> Dict[str, Any]:
     if s3_secret_key is None or len(s3_secret_key) == 0:
         LOGGER.error("S3_SECRET_KEY environment variable is not set.")
         raise KeyError("S3_SECRET_KEY environment variable is not set.")
+
+    db_connect_info = shared_db.get_configuration()
 
     result = task(
         event[EVENT_RECORDS_KEY][0], s3_access_key, s3_secret_key, db_connect_info

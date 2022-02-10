@@ -16,7 +16,7 @@ class TestSharedReconciliationLibraries(unittest.TestCase):
         Should replace dashes with underscores.
         """
         result = shared_reconciliation.get_partition_name_from_bucket_name("apple-banana_-lemon")
-        self.assertEqual("s3_partition_apple_banana__lemon", result)
+        self.assertEqual("reconcile_s3_object_apple_banana__lemon", result)
 
     def test_get_partition_name_from_bucket_name_rejects_non_alphanumeric(self):
         """
@@ -26,4 +26,4 @@ class TestSharedReconciliationLibraries(unittest.TestCase):
             with self.subTest(error_case=error_case):
                 with self.assertRaises(Exception) as cm:
                     shared_reconciliation.get_partition_name_from_bucket_name(error_case)
-                self.assertEqual(f"'s3_partition_{error_case}' is not a valid partition name.", str(cm.exception))
+                self.assertEqual(f"'reconcile_s3_object_{error_case}' is not a valid partition name.", str(cm.exception))
