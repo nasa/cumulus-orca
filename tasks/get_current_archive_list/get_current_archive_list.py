@@ -297,7 +297,7 @@ def update_job_with_s3_inventory_in_postgres(
     orca_archive_location: str,
     report_bucket_name: str,
     report_bucket_region: str,
-    csv_key_paths: str,
+    csv_key_paths: List[str],
     manifest_file_schema: str,
     job_id: int,
     engine: Engine,
@@ -318,21 +318,22 @@ def update_job_with_s3_inventory_in_postgres(
     """
     try:
         LOGGER.debug(f"Pulling in s3 inventory records for job {job_id}.")
+        temporary_s3_column_list = generate_temporary_s3_column_list(manifest_file_schema)
         with engine.begin() as connection:
             # Within this transaction import the csv and update the job status
+            connection.execute(
+                create_temporary_table_sql(
+                    temporary_s3_column_list
+                ),
+                [{}],
+            )
             for csv_key_path in csv_key_paths:
                 if not csv_key_path.endswith(".csv.gz"):
                     raise Exception(f"Cannot handle file extension on '{csv_key_path}'")
                 # Set the required metadata
                 add_metadata_to_gzip(report_bucket_name, csv_key_path)
-                connection.execute(
-                    create_temporary_table_sql(
-                        generate_temporary_s3_column_list(manifest_file_schema)
-                    ),
-                    [{}],
-                )
                 # Have postgres load the csv
-                LOGGER.debug(f"Loading CSV for job {job_id}.")
+                LOGGER.debug(f"Loading CSV {csv_key_path} for job {job_id}.")
                 connection.execute(
                     trigger_csv_load_from_s3_sql(),
                     [
@@ -345,17 +346,18 @@ def update_job_with_s3_inventory_in_postgres(
                         }
                     ],
                 )
-                LOGGER.debug(f"Translating data to Orca format for job {job_id}.")
-                connection.execute(
-                    translate_s3_import_to_partitioned_data_sql(
-                        get_partition_name_from_bucket_name(orca_archive_location)
-                    ),
-                    [
-                        {
-                            "job_id": job_id,
-                        }
-                    ],
-                )
+            # Now that all csvs are loaded, pull them into main db from temporary table
+            LOGGER.debug(f"Translating data to Orca format for job {job_id}.")
+            connection.execute(
+                translate_s3_import_to_partitioned_data_sql(
+                    get_partition_name_from_bucket_name(orca_archive_location)
+                ),
+                [
+                    {
+                        "job_id": job_id,
+                    }
+                ],
+            )
             # Update job status
             LOGGER.debug(f"Posting successful status for job {job_id}.")
             connection.execute(
