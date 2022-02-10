@@ -1,10 +1,23 @@
 # Table of Contents
 
+* [migrations/migrate\_versions\_2\_to\_3/test\_migrate\_sql\_v3](#migrations/migrate_versions_2_to_3/test_migrate_sql_v3)
+  * [TestOrcaSqlLogic](#migrations/migrate_versions_2_to_3/test_migrate_sql_v3.TestOrcaSqlLogic)
+    * [test\_all\_functions\_return\_text](#migrations/migrate_versions_2_to_3/test_migrate_sql_v3.TestOrcaSqlLogic.test_all_functions_return_text)
+* [migrations/migrate\_versions\_2\_to\_3/test\_migrate\_v3](#migrations/migrate_versions_2_to_3/test_migrate_v3)
+  * [TestMigrateDatabaseLibraries](#migrations/migrate_versions_2_to_3/test_migrate_v3.TestMigrateDatabaseLibraries)
+    * [setUp](#migrations/migrate_versions_2_to_3/test_migrate_v3.TestMigrateDatabaseLibraries.setUp)
+    * [tearDown](#migrations/migrate_versions_2_to_3/test_migrate_v3.TestMigrateDatabaseLibraries.tearDown)
+    * [test\_migrate\_versions\_2\_to\_3\_happy\_path](#migrations/migrate_versions_2_to_3/test_migrate_v3.TestMigrateDatabaseLibraries.test_migrate_versions_2_to_3_happy_path)
 * [migrations/migrate\_versions\_2\_to\_3/migrate](#migrations/migrate_versions_2_to_3/migrate)
   * [migrate\_versions\_2\_to\_3](#migrations/migrate_versions_2_to_3/migrate.migrate_versions_2_to_3)
 * [migrations/migrate\_versions\_2\_to\_3/migrate\_sql](#migrations/migrate_versions_2_to_3/migrate_sql)
   * [add\_multipart\_chunksize\_sql](#migrations/migrate_versions_2_to_3/migrate_sql.add_multipart_chunksize_sql)
   * [schema\_versions\_data\_sql](#migrations/migrate_versions_2_to_3/migrate_sql.schema_versions_data_sql)
+* [migrations/migrate\_versions\_3\_to\_4/test\_migrate\_v4](#migrations/migrate_versions_3_to_4/test_migrate_v4)
+  * [TestMigrateDatabaseLibraries](#migrations/migrate_versions_3_to_4/test_migrate_v4.TestMigrateDatabaseLibraries)
+    * [setUp](#migrations/migrate_versions_3_to_4/test_migrate_v4.TestMigrateDatabaseLibraries.setUp)
+    * [tearDown](#migrations/migrate_versions_3_to_4/test_migrate_v4.TestMigrateDatabaseLibraries.tearDown)
+    * [test\_migrate\_versions\_3\_to\_4\_happy\_path](#migrations/migrate_versions_3_to_4/test_migrate_v4.TestMigrateDatabaseLibraries.test_migrate_versions_3_to_4_happy_path)
 * [migrations/migrate\_versions\_3\_to\_4/migrate](#migrations/migrate_versions_3_to_4/migrate)
   * [migrate\_versions\_3\_to\_4](#migrations/migrate_versions_3_to_4/migrate.migrate_versions_3_to_4)
 * [migrations/migrate\_versions\_3\_to\_4/migrate\_sql](#migrations/migrate_versions_3_to_4/migrate_sql)
@@ -13,41 +26,46 @@
   * [granules\_table\_sql](#migrations/migrate_versions_3_to_4/migrate_sql.granules_table_sql)
   * [files\_table\_sql](#migrations/migrate_versions_3_to_4/migrate_sql.files_table_sql)
   * [schema\_versions\_data\_sql](#migrations/migrate_versions_3_to_4/migrate_sql.schema_versions_data_sql)
+* [migrations/migrate\_versions\_3\_to\_4/test\_migrate\_sql\_v4](#migrations/migrate_versions_3_to_4/test_migrate_sql_v4)
+  * [TestOrcaSqlLogic](#migrations/migrate_versions_3_to_4/test_migrate_sql_v4.TestOrcaSqlLogic)
+    * [test\_all\_functions\_return\_text](#migrations/migrate_versions_3_to_4/test_migrate_sql_v4.TestOrcaSqlLogic.test_all_functions_return_text)
+* [migrations/migrate\_versions\_4\_to\_5/test\_migrate\_v5](#migrations/migrate_versions_4_to_5/test_migrate_v5)
+  * [TestMigrateDatabaseLibraries](#migrations/migrate_versions_4_to_5/test_migrate_v5.TestMigrateDatabaseLibraries)
+    * [setUp](#migrations/migrate_versions_4_to_5/test_migrate_v5.TestMigrateDatabaseLibraries.setUp)
+    * [tearDown](#migrations/migrate_versions_4_to_5/test_migrate_v5.TestMigrateDatabaseLibraries.tearDown)
+    * [test\_migrate\_versions\_4\_to\_5\_happy\_path](#migrations/migrate_versions_4_to_5/test_migrate_v5.TestMigrateDatabaseLibraries.test_migrate_versions_4_to_5_happy_path)
+* [migrations/migrate\_versions\_4\_to\_5/test\_migrate\_sql\_v5](#migrations/migrate_versions_4_to_5/test_migrate_sql_v5)
+  * [TestOrcaSqlLogic](#migrations/migrate_versions_4_to_5/test_migrate_sql_v5.TestOrcaSqlLogic)
+    * [test\_all\_functions\_return\_text](#migrations/migrate_versions_4_to_5/test_migrate_sql_v5.TestOrcaSqlLogic.test_all_functions_return_text)
+* [migrations/migrate\_versions\_4\_to\_5/migrate](#migrations/migrate_versions_4_to_5/migrate)
+  * [migrate\_versions\_4\_to\_5](#migrations/migrate_versions_4_to_5/migrate.migrate_versions_4_to_5)
+* [migrations/migrate\_versions\_4\_to\_5/migrate\_sql](#migrations/migrate_versions_4_to_5/migrate_sql)
+  * [reconcile\_status\_table\_sql](#migrations/migrate_versions_4_to_5/migrate_sql.reconcile_status_table_sql)
+  * [reconcile\_job\_table\_sql](#migrations/migrate_versions_4_to_5/migrate_sql.reconcile_job_table_sql)
+  * [reconcile\_s3\_object\_table\_sql](#migrations/migrate_versions_4_to_5/migrate_sql.reconcile_s3_object_table_sql)
+  * [reconcile\_catalog\_mismatch\_report\_table\_sql](#migrations/migrate_versions_4_to_5/migrate_sql.reconcile_catalog_mismatch_report_table_sql)
+  * [reconcile\_orphan\_report\_table\_sql](#migrations/migrate_versions_4_to_5/migrate_sql.reconcile_orphan_report_table_sql)
+  * [reconcile\_phantom\_report\_table\_sql](#migrations/migrate_versions_4_to_5/migrate_sql.reconcile_phantom_report_table_sql)
+  * [schema\_versions\_data\_sql](#migrations/migrate_versions_4_to_5/migrate_sql.schema_versions_data_sql)
+  * [reconcile\_s3\_object\_partition\_sql](#migrations/migrate_versions_4_to_5/migrate_sql.reconcile_s3_object_partition_sql)
+  * [create\_extension](#migrations/migrate_versions_4_to_5/migrate_sql.create_extension)
 * [migrations/migrate\_db](#migrations/migrate_db)
   * [perform\_migration](#migrations/migrate_db.perform_migration)
-<<<<<<< HEAD
-* [migrations/migrate\_versions\_1\_to\_2/migrate\_db\_v2](#migrations/migrate_versions_1_to_2/migrate_db_v2)
-  * [migrate\_versions\_1\_to\_2](#migrations/migrate_versions_1_to_2/migrate_db_v2.migrate_versions_1_to_2)
-* [migrations/migrate\_versions\_1\_to\_2/migrate\_sql\_v2](#migrations/migrate_versions_1_to_2/migrate_sql_v2)
-  * [dbo\_role\_sql](#migrations/migrate_versions_1_to_2/migrate_sql_v2.dbo_role_sql)
-  * [app\_role\_sql](#migrations/migrate_versions_1_to_2/migrate_sql_v2.app_role_sql)
-  * [orca\_schema\_sql](#migrations/migrate_versions_1_to_2/migrate_sql_v2.orca_schema_sql)
-  * [app\_user\_sql](#migrations/migrate_versions_1_to_2/migrate_sql_v2.app_user_sql)
-  * [schema\_versions\_table\_sql](#migrations/migrate_versions_1_to_2/migrate_sql_v2.schema_versions_table_sql)
-  * [schema\_versions\_data\_sql](#migrations/migrate_versions_1_to_2/migrate_sql_v2.schema_versions_data_sql)
-  * [recovery\_status\_table\_sql](#migrations/migrate_versions_1_to_2/migrate_sql_v2.recovery_status_table_sql)
-  * [recovery\_status\_data\_sql](#migrations/migrate_versions_1_to_2/migrate_sql_v2.recovery_status_data_sql)
-  * [recovery\_job\_table\_sql](#migrations/migrate_versions_1_to_2/migrate_sql_v2.recovery_job_table_sql)
-  * [recovery\_file\_table\_sql](#migrations/migrate_versions_1_to_2/migrate_sql_v2.recovery_file_table_sql)
-  * [migrate\_recovery\_job\_data\_sql](#migrations/migrate_versions_1_to_2/migrate_sql_v2.migrate_recovery_job_data_sql)
-  * [migrate\_recovery\_file\_data\_sql](#migrations/migrate_versions_1_to_2/migrate_sql_v2.migrate_recovery_file_data_sql)
-  * [drop\_request\_status\_table\_sql](#migrations/migrate_versions_1_to_2/migrate_sql_v2.drop_request_status_table_sql)
-  * [drop\_dr\_schema\_sql](#migrations/migrate_versions_1_to_2/migrate_sql_v2.drop_dr_schema_sql)
-  * [drop\_druser\_user\_sql](#migrations/migrate_versions_1_to_2/migrate_sql_v2.drop_druser_user_sql)
-  * [drop\_dbo\_user\_sql](#migrations/migrate_versions_1_to_2/migrate_sql_v2.drop_dbo_user_sql)
-  * [drop\_dr\_role\_sql](#migrations/migrate_versions_1_to_2/migrate_sql_v2.drop_dr_role_sql)
-  * [drop\_drdbo\_role\_sql](#migrations/migrate_versions_1_to_2/migrate_sql_v2.drop_drdbo_role_sql)
-* [install/orca\_reconcile\_sql](#install/orca_reconcile_sql)
-  * [reconcile\_status\_table\_sql](#install/orca_reconcile_sql.reconcile_status_table_sql)
-  * [reconcile\_job\_table\_sql](#install/orca_reconcile_sql.reconcile_job_table_sql)
-  * [reconcile\_s3\_object\_table\_sql](#install/orca_reconcile_sql.reconcile_s3_object_table_sql)
-  * [reconcile\_catalog\_mismatch\_report\_table\_sql](#install/orca_reconcile_sql.reconcile_catalog_mismatch_report_table_sql)
-  * [reconcile\_orphan\_report\_table\_sql](#install/orca_reconcile_sql.reconcile_orphan_report_table_sql)
-  * [reconcile\_phantom\_report\_table\_sql](#install/orca_reconcile_sql.reconcile_phantom_report_table_sql)
-  * [orca\_archive\_location\_bucket](#install/orca_reconcile_sql.orca_archive_location_bucket)
-  * [create\_extension](#install/orca_reconcile_sql.create_extension)
-  * [drop\_extension](#install/orca_reconcile_sql.drop_extension)
-=======
+* [migrations/test\_migrate\_db](#migrations/test_migrate_db)
+  * [TestMigrateDatabaseLibraries](#migrations/test_migrate_db.TestMigrateDatabaseLibraries)
+    * [setUp](#migrations/test_migrate_db.TestMigrateDatabaseLibraries.setUp)
+    * [tearDown](#migrations/test_migrate_db.TestMigrateDatabaseLibraries.tearDown)
+    * [test\_perform\_migration\_happy\_path](#migrations/test_migrate_db.TestMigrateDatabaseLibraries.test_perform_migration_happy_path)
+* [migrations/migrate\_versions\_1\_to\_2/test\_migrate\_sql\_v2](#migrations/migrate_versions_1_to_2/test_migrate_sql_v2)
+  * [TestOrcaSqlLogic](#migrations/migrate_versions_1_to_2/test_migrate_sql_v2.TestOrcaSqlLogic)
+    * [test\_app\_user\_sql\_happy\_path](#migrations/migrate_versions_1_to_2/test_migrate_sql_v2.TestOrcaSqlLogic.test_app_user_sql_happy_path)
+    * [test\_app\_user\_sql\_exceptions](#migrations/migrate_versions_1_to_2/test_migrate_sql_v2.TestOrcaSqlLogic.test_app_user_sql_exceptions)
+    * [test\_all\_functions\_return\_text](#migrations/migrate_versions_1_to_2/test_migrate_sql_v2.TestOrcaSqlLogic.test_all_functions_return_text)
+* [migrations/migrate\_versions\_1\_to\_2/test\_migrate\_v2](#migrations/migrate_versions_1_to_2/test_migrate_v2)
+  * [TestMigrateDatabaseLibraries](#migrations/migrate_versions_1_to_2/test_migrate_v2.TestMigrateDatabaseLibraries)
+    * [setUp](#migrations/migrate_versions_1_to_2/test_migrate_v2.TestMigrateDatabaseLibraries.setUp)
+    * [tearDown](#migrations/migrate_versions_1_to_2/test_migrate_v2.TestMigrateDatabaseLibraries.tearDown)
+    * [test\_migrate\_versions\_1\_to\_2\_happy\_path](#migrations/migrate_versions_1_to_2/test_migrate_v2.TestMigrateDatabaseLibraries.test_migrate_versions_1_to_2_happy_path)
 * [migrations/migrate\_versions\_1\_to\_2/migrate](#migrations/migrate_versions_1_to_2/migrate)
   * [migrate\_versions\_1\_to\_2](#migrations/migrate_versions_1_to_2/migrate.migrate_versions_1_to_2)
 * [migrations/migrate\_versions\_1\_to\_2/migrate\_sql](#migrations/migrate_versions_1_to_2/migrate_sql)
@@ -69,7 +87,18 @@
   * [drop\_dbo\_user\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.drop_dbo_user_sql)
   * [drop\_dr\_role\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.drop_dr_role_sql)
   * [drop\_drdbo\_role\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.drop_drdbo_role_sql)
->>>>>>> feature/ORCA-247
+* [install/test\_create\_db](#install/test_create_db)
+  * [TestCreateDatabaseLibraries](#install/test_create_db.TestCreateDatabaseLibraries)
+    * [setUp](#install/test_create_db.TestCreateDatabaseLibraries.setUp)
+    * [tearDown](#install/test_create_db.TestCreateDatabaseLibraries.tearDown)
+    * [test\_create\_fresh\_orca\_install\_happy\_path](#install/test_create_db.TestCreateDatabaseLibraries.test_create_fresh_orca_install_happy_path)
+    * [test\_create\_database\_happy\_path](#install/test_create_db.TestCreateDatabaseLibraries.test_create_database_happy_path)
+    * [test\_create\_app\_schema\_user\_role\_users\_happy\_path](#install/test_create_db.TestCreateDatabaseLibraries.test_create_app_schema_user_role_users_happy_path)
+    * [test\_set\_search\_path\_and\_role](#install/test_create_db.TestCreateDatabaseLibraries.test_set_search_path_and_role)
+    * [test\_create\_metadata\_objects](#install/test_create_db.TestCreateDatabaseLibraries.test_create_metadata_objects)
+    * [test\_create\_recovery\_objects](#install/test_create_db.TestCreateDatabaseLibraries.test_create_recovery_objects)
+    * [test\_create\_inventory\_objects](#install/test_create_db.TestCreateDatabaseLibraries.test_create_inventory_objects)
+    * [test\_create\_internal\_reconciliation\_objects](#install/test_create_db.TestCreateDatabaseLibraries.test_create_internal_reconciliation_objects)
 * [install/orca\_sql](#install/orca_sql)
   * [commit\_sql](#install/orca_sql.commit_sql)
   * [app\_database\_sql](#install/orca_sql.app_database_sql)
@@ -88,6 +117,20 @@
   * [collections\_table\_sql](#install/orca_sql.collections_table_sql)
   * [granules\_table\_sql](#install/orca_sql.granules_table_sql)
   * [files\_table\_sql](#install/orca_sql.files_table_sql)
+  * [reconcile\_status\_table\_sql](#install/orca_sql.reconcile_status_table_sql)
+  * [reconcile\_job\_table\_sql](#install/orca_sql.reconcile_job_table_sql)
+  * [reconcile\_s3\_object\_table\_sql](#install/orca_sql.reconcile_s3_object_table_sql)
+  * [reconcile\_catalog\_mismatch\_report\_table\_sql](#install/orca_sql.reconcile_catalog_mismatch_report_table_sql)
+  * [reconcile\_orphan\_report\_table\_sql](#install/orca_sql.reconcile_orphan_report_table_sql)
+  * [reconcile\_phantom\_report\_table\_sql](#install/orca_sql.reconcile_phantom_report_table_sql)
+  * [reconcile\_s3\_object\_partition\_sql](#install/orca_sql.reconcile_s3_object_partition_sql)
+  * [create\_extension](#install/orca_sql.create_extension)
+* [install/test\_orca\_sql](#install/test_orca_sql)
+  * [TestOrcaSqlLogic](#install/test_orca_sql.TestOrcaSqlLogic)
+    * [test\_app\_user\_sql\_happy\_path](#install/test_orca_sql.TestOrcaSqlLogic.test_app_user_sql_happy_path)
+    * [test\_app\_user\_sql\_exceptions](#install/test_orca_sql.TestOrcaSqlLogic.test_app_user_sql_exceptions)
+    * [test\_all\_functions\_return\_text](#install/test_orca_sql.TestOrcaSqlLogic.test_all_functions_return_text)
+    * [test\_reconcile\_s3\_object\_partition\_sql\_exception](#install/test_orca_sql.TestOrcaSqlLogic.test_reconcile_s3_object_partition_sql_exception)
 * [install/create\_db](#install/create_db)
   * [create\_fresh\_orca\_install](#install/create_db.create_fresh_orca_install)
   * [create\_database](#install/create_db.create_database)
@@ -97,9 +140,6 @@
   * [create\_recovery\_objects](#install/create_db.create_recovery_objects)
   * [create\_inventory\_objects](#install/create_db.create_inventory_objects)
   * [create\_internal\_reconciliation\_objects](#install/create_db.create_internal_reconciliation_objects)
-* [test/unit\_tests/test\_migrate\_sql\_v3](#test/unit_tests/test_migrate_sql_v3)
-  * [TestOrcaSqlLogic](#test/unit_tests/test_migrate_sql_v3.TestOrcaSqlLogic)
-    * [test\_all\_functions\_return\_text](#test/unit_tests/test_migrate_sql_v3.TestOrcaSqlLogic.test_all_functions_return_text)
 * [test/unit\_tests/test\_db\_deploy](#test/unit_tests/test_db_deploy)
   * [TestDbDeployFunctions](#test/unit_tests/test_db_deploy.TestDbDeployFunctions)
     * [setUp](#test/unit_tests/test_db_deploy.TestDbDeployFunctions.setUp)
@@ -113,53 +153,6 @@
     * [test\_app\_schema\_exists\_happy\_path](#test/unit_tests/test_db_deploy.TestDbDeployFunctions.test_app_schema_exists_happy_path)
     * [test\_app\_versions\_table\_exists\_happy\_path](#test/unit_tests/test_db_deploy.TestDbDeployFunctions.test_app_versions_table_exists_happy_path)
     * [test\_get\_migration\_version\_happy\_path](#test/unit_tests/test_db_deploy.TestDbDeployFunctions.test_get_migration_version_happy_path)
-* [test/unit\_tests/test\_migrate\_sql\_v2](#test/unit_tests/test_migrate_sql_v2)
-  * [TestOrcaSqlLogic](#test/unit_tests/test_migrate_sql_v2.TestOrcaSqlLogic)
-    * [test\_app\_user\_sql\_happy\_path](#test/unit_tests/test_migrate_sql_v2.TestOrcaSqlLogic.test_app_user_sql_happy_path)
-    * [test\_app\_user\_sql\_exceptions](#test/unit_tests/test_migrate_sql_v2.TestOrcaSqlLogic.test_app_user_sql_exceptions)
-    * [test\_all\_functions\_return\_text](#test/unit_tests/test_migrate_sql_v2.TestOrcaSqlLogic.test_all_functions_return_text)
-* [test/unit\_tests/test\_migrate\_v3](#test/unit_tests/test_migrate_v3)
-  * [TestMigrateDatabaseLibraries](#test/unit_tests/test_migrate_v3.TestMigrateDatabaseLibraries)
-    * [setUp](#test/unit_tests/test_migrate_v3.TestMigrateDatabaseLibraries.setUp)
-    * [tearDown](#test/unit_tests/test_migrate_v3.TestMigrateDatabaseLibraries.tearDown)
-    * [test\_migrate\_versions\_2\_to\_3\_happy\_path](#test/unit_tests/test_migrate_v3.TestMigrateDatabaseLibraries.test_migrate_versions_2_to_3_happy_path)
-* [test/unit\_tests/test\_create\_db](#test/unit_tests/test_create_db)
-  * [TestCreateDatabaseLibraries](#test/unit_tests/test_create_db.TestCreateDatabaseLibraries)
-    * [setUp](#test/unit_tests/test_create_db.TestCreateDatabaseLibraries.setUp)
-    * [tearDown](#test/unit_tests/test_create_db.TestCreateDatabaseLibraries.tearDown)
-    * [test\_create\_fresh\_orca\_install\_happy\_path](#test/unit_tests/test_create_db.TestCreateDatabaseLibraries.test_create_fresh_orca_install_happy_path)
-    * [test\_create\_database\_happy\_path](#test/unit_tests/test_create_db.TestCreateDatabaseLibraries.test_create_database_happy_path)
-    * [test\_create\_app\_schema\_user\_role\_users\_happy\_path](#test/unit_tests/test_create_db.TestCreateDatabaseLibraries.test_create_app_schema_user_role_users_happy_path)
-    * [test\_set\_search\_path\_and\_role](#test/unit_tests/test_create_db.TestCreateDatabaseLibraries.test_set_search_path_and_role)
-    * [test\_create\_metadata\_objects](#test/unit_tests/test_create_db.TestCreateDatabaseLibraries.test_create_metadata_objects)
-    * [test\_create\_recovery\_objects](#test/unit_tests/test_create_db.TestCreateDatabaseLibraries.test_create_recovery_objects)
-    * [test\_create\_inventory\_objects](#test/unit_tests/test_create_db.TestCreateDatabaseLibraries.test_create_inventory_objects)
-* [test/unit\_tests/test\_migrate\_v2](#test/unit_tests/test_migrate_v2)
-  * [TestMigrateDatabaseLibraries](#test/unit_tests/test_migrate_v2.TestMigrateDatabaseLibraries)
-    * [setUp](#test/unit_tests/test_migrate_v2.TestMigrateDatabaseLibraries.setUp)
-    * [tearDown](#test/unit_tests/test_migrate_v2.TestMigrateDatabaseLibraries.tearDown)
-    * [test\_migrate\_versions\_1\_to\_2\_happy\_path](#test/unit_tests/test_migrate_v2.TestMigrateDatabaseLibraries.test_migrate_versions_1_to_2_happy_path)
-* [test/unit\_tests/test\_migrate\_v4](#test/unit_tests/test_migrate_v4)
-  * [TestMigrateDatabaseLibraries](#test/unit_tests/test_migrate_v4.TestMigrateDatabaseLibraries)
-    * [setUp](#test/unit_tests/test_migrate_v4.TestMigrateDatabaseLibraries.setUp)
-    * [tearDown](#test/unit_tests/test_migrate_v4.TestMigrateDatabaseLibraries.tearDown)
-    * [test\_migrate\_versions\_3\_to\_4\_happy\_path](#test/unit_tests/test_migrate_v4.TestMigrateDatabaseLibraries.test_migrate_versions_3_to_4_happy_path)
-* [test/unit\_tests/test\_migrate\_db](#test/unit_tests/test_migrate_db)
-  * [TestMigrateDatabaseLibraries](#test/unit_tests/test_migrate_db.TestMigrateDatabaseLibraries)
-    * [setUp](#test/unit_tests/test_migrate_db.TestMigrateDatabaseLibraries.setUp)
-    * [tearDown](#test/unit_tests/test_migrate_db.TestMigrateDatabaseLibraries.tearDown)
-    * [test\_perform\_migration\_happy\_path](#test/unit_tests/test_migrate_db.TestMigrateDatabaseLibraries.test_perform_migration_happy_path)
-* [test/unit\_tests/test\_orca\_reconcile\_sql](#test/unit_tests/test_orca_reconcile_sql)
-  * [TestOrcaSqlLogic](#test/unit_tests/test_orca_reconcile_sql.TestOrcaSqlLogic)
-    * [test\_all\_functions\_return\_text](#test/unit_tests/test_orca_reconcile_sql.TestOrcaSqlLogic.test_all_functions_return_text)
-* [test/unit\_tests/test\_orca\_sql](#test/unit_tests/test_orca_sql)
-  * [TestOrcaSqlLogic](#test/unit_tests/test_orca_sql.TestOrcaSqlLogic)
-    * [test\_app\_user\_sql\_happy\_path](#test/unit_tests/test_orca_sql.TestOrcaSqlLogic.test_app_user_sql_happy_path)
-    * [test\_app\_user\_sql\_exceptions](#test/unit_tests/test_orca_sql.TestOrcaSqlLogic.test_app_user_sql_exceptions)
-    * [test\_all\_functions\_return\_text](#test/unit_tests/test_orca_sql.TestOrcaSqlLogic.test_all_functions_return_text)
-* [test/unit\_tests/test\_migrate\_sql\_v4](#test/unit_tests/test_migrate_sql_v4)
-  * [TestOrcaSqlLogic](#test/unit_tests/test_migrate_sql_v4.TestOrcaSqlLogic)
-    * [test\_all\_functions\_return\_text](#test/unit_tests/test_migrate_sql_v4.TestOrcaSqlLogic.test_all_functions_return_text)
 * [test/manual\_tests/manual\_test](#test/manual_tests/manual_test)
   * [set\_search\_path](#test/manual_tests/manual_test.set_search_path)
   * [get\_configuration](#test/manual_tests/manual_test.get_configuration)
@@ -170,6 +163,80 @@
   * [app\_schema\_exists](#db_deploy.app_schema_exists)
   * [app\_version\_table\_exists](#db_deploy.app_version_table_exists)
   * [get\_migration\_version](#db_deploy.get_migration_version)
+
+<a name="migrations/migrate_versions_2_to_3/test_migrate_sql_v3"></a>
+# migrations/migrate\_versions\_2\_to\_3/test\_migrate\_sql\_v3
+
+Name: test_migrate_sql_v3.py
+
+Description: Testing library for the migrations/migrate_versions_2_to_3/migrate_sql.py.
+
+<a name="migrations/migrate_versions_2_to_3/test_migrate_sql_v3.TestOrcaSqlLogic"></a>
+## TestOrcaSqlLogic Objects
+
+```python
+class TestOrcaSqlLogic(unittest.TestCase)
+```
+
+Note that currently all of the function calls in the migrate_sql_v3.py
+return a SQL text string. The tests below
+validate the logic in the function.
+
+<a name="migrations/migrate_versions_2_to_3/test_migrate_sql_v3.TestOrcaSqlLogic.test_all_functions_return_text"></a>
+#### test\_all\_functions\_return\_text
+
+```python
+ | test_all_functions_return_text() -> None
+```
+
+Validates that all functions return a type TextClause
+
+<a name="migrations/migrate_versions_2_to_3/test_migrate_v3"></a>
+# migrations/migrate\_versions\_2\_to\_3/test\_migrate\_v3
+
+Name: test_migrate_db_v3.py
+
+Description: Runs unit tests for the migrations/migrate_versions_2_to_3/migrate.py
+
+<a name="migrations/migrate_versions_2_to_3/test_migrate_v3.TestMigrateDatabaseLibraries"></a>
+## TestMigrateDatabaseLibraries Objects
+
+```python
+class TestMigrateDatabaseLibraries(unittest.TestCase)
+```
+
+Runs unit tests on the migrate_db functions.
+
+<a name="migrations/migrate_versions_2_to_3/test_migrate_v3.TestMigrateDatabaseLibraries.setUp"></a>
+#### setUp
+
+```python
+ | setUp()
+```
+
+Set up test.
+
+<a name="migrations/migrate_versions_2_to_3/test_migrate_v3.TestMigrateDatabaseLibraries.tearDown"></a>
+#### tearDown
+
+```python
+ | tearDown()
+```
+
+Tear down test
+
+<a name="migrations/migrate_versions_2_to_3/test_migrate_v3.TestMigrateDatabaseLibraries.test_migrate_versions_2_to_3_happy_path"></a>
+#### test\_migrate\_versions\_2\_to\_3\_happy\_path
+
+```python
+ | @patch("migrations.migrate_versions_2_to_3.migrate.sql.text")
+ | @patch("migrations.migrate_versions_2_to_3.migrate.sql.schema_versions_data_sql")
+ | @patch("migrations.migrate_versions_2_to_3.migrate.sql.add_multipart_chunksize_sql")
+ | @patch("migrations.migrate_versions_2_to_3.migrate.get_admin_connection")
+ | test_migrate_versions_2_to_3_happy_path(mock_connection: MagicMock, mock_add_multipart_chunksize_sql: MagicMock, mock_schema_versions_data: MagicMock, mock_text: MagicMock)
+```
+
+Tests the migrate_versions_2_to_3 function happy path
 
 <a name="migrations/migrate_versions_2_to_3/migrate"></a>
 # migrations/migrate\_versions\_2\_to\_3/migrate
@@ -225,10 +292,60 @@ version into the table.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for populating schema_versions table.
 
+<a name="migrations/migrate_versions_3_to_4/test_migrate_v4"></a>
+# migrations/migrate\_versions\_3\_to\_4/test\_migrate\_v4
+
+Name: test_migrate_db_v4.py
+
+Description: Runs unit tests for the migrations/migrate_versions_3_to_4/migrate.py
+
+<a name="migrations/migrate_versions_3_to_4/test_migrate_v4.TestMigrateDatabaseLibraries"></a>
+## TestMigrateDatabaseLibraries Objects
+
+```python
+class TestMigrateDatabaseLibraries(unittest.TestCase)
+```
+
+Runs unit tests on the migrate_db functions.
+
+<a name="migrations/migrate_versions_3_to_4/test_migrate_v4.TestMigrateDatabaseLibraries.setUp"></a>
+#### setUp
+
+```python
+ | setUp()
+```
+
+Set up test.
+
+<a name="migrations/migrate_versions_3_to_4/test_migrate_v4.TestMigrateDatabaseLibraries.tearDown"></a>
+#### tearDown
+
+```python
+ | tearDown()
+```
+
+Tear down test
+
+<a name="migrations/migrate_versions_3_to_4/test_migrate_v4.TestMigrateDatabaseLibraries.test_migrate_versions_3_to_4_happy_path"></a>
+#### test\_migrate\_versions\_3\_to\_4\_happy\_path
+
+```python
+ | @patch("migrations.migrate_versions_3_to_4.migrate.sql.schema_versions_data_sql")
+ | @patch("migrations.migrate_versions_3_to_4.migrate.sql.providers_table_sql")
+ | @patch("migrations.migrate_versions_3_to_4.migrate.sql.collections_table_sql")
+ | @patch("migrations.migrate_versions_3_to_4.migrate.sql.granules_table_sql")
+ | @patch("migrations.migrate_versions_3_to_4.migrate.sql.files_table_sql")
+ | @patch("migrations.migrate_versions_3_to_4.migrate.get_admin_connection")
+ | @patch("migrations.migrate_versions_3_to_4.migrate.sql.text")
+ | test_migrate_versions_3_to_4_happy_path(mock_text: MagicMock, mock_connection: MagicMock, mock_files_table: MagicMock, mock_granules_table: MagicMock, mock_collections_table: MagicMock, mock_providers_table: MagicMock, mock_schema_versions_data: MagicMock)
+```
+
+Tests the migrate_versions_3_to_4 function happy path
+
 <a name="migrations/migrate_versions_3_to_4/migrate"></a>
 # migrations/migrate\_versions\_3\_to\_4/migrate
 
-Name: migrate_db_v4.py
+Name: migrate.py
 
 Description: Migrates the ORCA schema from version 3 to version 4.
 
@@ -254,7 +371,7 @@ the ORCA schema.
 <a name="migrations/migrate_versions_3_to_4/migrate_sql"></a>
 # migrations/migrate\_versions\_3\_to\_4/migrate\_sql
 
-Name: orca_sql_v4.py
+Name: migrate_sql.py
 
 Description: All of the SQL used for creating and migrating the ORCA schema to version 4.
 
@@ -324,6 +441,265 @@ version into the table.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for populating schema_versions table.
 
+<a name="migrations/migrate_versions_3_to_4/test_migrate_sql_v4"></a>
+# migrations/migrate\_versions\_3\_to\_4/test\_migrate\_sql\_v4
+
+Name: test_migrate_sql_v4.py
+
+Description: Testing library for the migrations/migrate_versions_3_to_4/migrate_sql.py.
+
+<a name="migrations/migrate_versions_3_to_4/test_migrate_sql_v4.TestOrcaSqlLogic"></a>
+## TestOrcaSqlLogic Objects
+
+```python
+class TestOrcaSqlLogic(unittest.TestCase)
+```
+
+Note that currently all of the function calls in the migrate_sql_v4.py
+return a SQL text string. The tests below
+validate the logic in the function.
+
+<a name="migrations/migrate_versions_3_to_4/test_migrate_sql_v4.TestOrcaSqlLogic.test_all_functions_return_text"></a>
+#### test\_all\_functions\_return\_text
+
+```python
+ | test_all_functions_return_text() -> None
+```
+
+Validates that all functions return a type TextClause
+
+<a name="migrations/migrate_versions_4_to_5/test_migrate_v5"></a>
+# migrations/migrate\_versions\_4\_to\_5/test\_migrate\_v5
+
+Name: test_migrate.py
+
+Description: Runs unit tests for the migrations/migrate_versions_4_to_5/migrate.py
+
+<a name="migrations/migrate_versions_4_to_5/test_migrate_v5.TestMigrateDatabaseLibraries"></a>
+## TestMigrateDatabaseLibraries Objects
+
+```python
+class TestMigrateDatabaseLibraries(unittest.TestCase)
+```
+
+Runs unit tests on the migrate_db functions.
+
+<a name="migrations/migrate_versions_4_to_5/test_migrate_v5.TestMigrateDatabaseLibraries.setUp"></a>
+#### setUp
+
+```python
+ | setUp()
+```
+
+Set up test.
+
+<a name="migrations/migrate_versions_4_to_5/test_migrate_v5.TestMigrateDatabaseLibraries.tearDown"></a>
+#### tearDown
+
+```python
+ | tearDown()
+```
+
+Tear down test
+
+<a name="migrations/migrate_versions_4_to_5/test_migrate_v5.TestMigrateDatabaseLibraries.test_migrate_versions_4_to_5_happy_path"></a>
+#### test\_migrate\_versions\_4\_to\_5\_happy\_path
+
+```python
+ | @patch("migrations.migrate_versions_4_to_5.migrate.sql.schema_versions_data_sql")
+ | @patch("migrations.migrate_versions_4_to_5.migrate.sql.reconcile_status_table_sql")
+ | @patch("migrations.migrate_versions_4_to_5.migrate.sql.reconcile_job_table_sql")
+ | @patch("migrations.migrate_versions_4_to_5.migrate.sql.reconcile_s3_object_table_sql")
+ | @patch("migrations.migrate_versions_4_to_5.migrate.sql.reconcile_catalog_mismatch_report_table_sql")
+ | @patch("migrations.migrate_versions_4_to_5.migrate.sql.reconcile_orphan_report_table_sql")
+ | @patch("migrations.migrate_versions_4_to_5.migrate.sql.reconcile_phantom_report_table_sql")
+ | @patch("migrations.migrate_versions_4_to_5.migrate.sql.reconcile_s3_object_partition_sql")
+ | @patch("migrations.migrate_versions_4_to_5.migrate.sql.create_extension")
+ | @patch("migrations.migrate_versions_4_to_5.migrate.get_admin_connection")
+ | @patch("migrations.migrate_versions_4_to_5.migrate.sql.text")
+ | test_migrate_versions_4_to_5_happy_path(mock_text: MagicMock, mock_connection: MagicMock, mock_extension: MagicMock, mock_reconcile_s3_object_partition_table: MagicMock, mock_reconcile_phantom_report_table: MagicMock, mock_reconcile_orphan_report_table: MagicMock, mock_reconcile_catalog_mismatch_report_table: MagicMock, mock_reconcile_s3_object_table: MagicMock, mock_reconcile_job_table: MagicMock, mock_reconcile_status_table: MagicMock, mock_schema_versions_data: MagicMock)
+```
+
+Tests the migrate_versions_4_to_5 function happy path
+
+<a name="migrations/migrate_versions_4_to_5/test_migrate_sql_v5"></a>
+# migrations/migrate\_versions\_4\_to\_5/test\_migrate\_sql\_v5
+
+Name: test_migrate_sql_v5.py
+
+Description: Testing library for the migrations/migrate_versions_4_to_5/migrate_sql.py.
+
+<a name="migrations/migrate_versions_4_to_5/test_migrate_sql_v5.TestOrcaSqlLogic"></a>
+## TestOrcaSqlLogic Objects
+
+```python
+class TestOrcaSqlLogic(unittest.TestCase)
+```
+
+Note that currently all of the function calls in the migrate_sql.py
+return a SQL text string. The tests below
+validate the logic in the function.
+
+<a name="migrations/migrate_versions_4_to_5/test_migrate_sql_v5.TestOrcaSqlLogic.test_all_functions_return_text"></a>
+#### test\_all\_functions\_return\_text
+
+```python
+ | test_all_functions_return_text() -> None
+```
+
+Validates that all functions return a type TextClause
+
+<a name="migrations/migrate_versions_4_to_5/migrate"></a>
+# migrations/migrate\_versions\_4\_to\_5/migrate
+
+Name: migrate.py
+
+Description: Migrates the ORCA schema from version 4 to version 5.
+
+<a name="migrations/migrate_versions_4_to_5/migrate.migrate_versions_4_to_5"></a>
+#### migrate\_versions\_4\_to\_5
+
+```python
+migrate_versions_4_to_5(config: Dict[str, str], is_latest_version: bool) -> None
+```
+
+Performs the migration of the ORCA schema from version 4 to version 5 of
+the ORCA schema.
+
+**Arguments**:
+
+- `config` _Dict_ - Connection information for the database.
+- `is_latest_version` _bool_ - Flag to determine if version 5 is the latest schema version.
+
+**Returns**:
+
+  None
+
+<a name="migrations/migrate_versions_4_to_5/migrate_sql"></a>
+# migrations/migrate\_versions\_4\_to\_5/migrate\_sql
+
+Name: migrate_sql.py
+
+Description: All of the SQL used for creating and migrating the ORCA schema to version 5.
+
+<a name="migrations/migrate_versions_4_to_5/migrate_sql.reconcile_status_table_sql"></a>
+#### reconcile\_status\_table\_sql
+
+```python
+reconcile_status_table_sql() -> TextClause
+```
+
+Full SQL for creating the reconcile_status table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_status table.
+
+<a name="migrations/migrate_versions_4_to_5/migrate_sql.reconcile_job_table_sql"></a>
+#### reconcile\_job\_table\_sql
+
+```python
+reconcile_job_table_sql() -> TextClause
+```
+
+Full SQL for creating the reconcile_job table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_job table.
+
+<a name="migrations/migrate_versions_4_to_5/migrate_sql.reconcile_s3_object_table_sql"></a>
+#### reconcile\_s3\_object\_table\_sql
+
+```python
+reconcile_s3_object_table_sql() -> TextClause
+```
+
+Full SQL for creating the reconcile_s3_object table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_s3_object table.
+
+<a name="migrations/migrate_versions_4_to_5/migrate_sql.reconcile_catalog_mismatch_report_table_sql"></a>
+#### reconcile\_catalog\_mismatch\_report\_table\_sql
+
+```python
+reconcile_catalog_mismatch_report_table_sql() -> TextClause
+```
+
+Full SQL for creating the reconcile_catalog_mismatch_report table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_catalog_mismatch_report table.
+
+<a name="migrations/migrate_versions_4_to_5/migrate_sql.reconcile_orphan_report_table_sql"></a>
+#### reconcile\_orphan\_report\_table\_sql
+
+```python
+reconcile_orphan_report_table_sql() -> TextClause
+```
+
+Full SQL for creating the reconcile_orphan_report table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_orphan_report table.
+
+<a name="migrations/migrate_versions_4_to_5/migrate_sql.reconcile_phantom_report_table_sql"></a>
+#### reconcile\_phantom\_report\_table\_sql
+
+```python
+reconcile_phantom_report_table_sql() -> TextClause
+```
+
+Full SQL for creating the reconcile_phantom_report table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_phantom_report table.
+
+<a name="migrations/migrate_versions_4_to_5/migrate_sql.schema_versions_data_sql"></a>
+#### schema\_versions\_data\_sql
+
+```python
+schema_versions_data_sql() -> TextClause
+```
+
+Data for the schema_versions table. Inserts the current schema
+version into the table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for populating schema_versions table.
+
+<a name="migrations/migrate_versions_4_to_5/migrate_sql.reconcile_s3_object_partition_sql"></a>
+#### reconcile\_s3\_object\_partition\_sql
+
+```python
+reconcile_s3_object_partition_sql(partition_name: str) -> TextClause
+```
+
+Full SQL for creating the reconcile_s3_object partition table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_s3_object partition table.
+
+<a name="migrations/migrate_versions_4_to_5/migrate_sql.create_extension"></a>
+#### create\_extension
+
+```python
+create_extension() -> TextClause
+```
+
+Full SQL for creating the extension.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating extension for the database.
+
 <a name="migrations/migrate_db"></a>
 # migrations/migrate\_db
 
@@ -350,6 +726,165 @@ migrations to run.
 **Returns**:
 
   None
+
+<a name="migrations/test_migrate_db"></a>
+# migrations/test\_migrate\_db
+
+Name: test_migrate_db.py
+
+Description: Runs unit tests for the migrations/migrate_db.py library.
+
+<a name="migrations/test_migrate_db.TestMigrateDatabaseLibraries"></a>
+## TestMigrateDatabaseLibraries Objects
+
+```python
+class TestMigrateDatabaseLibraries(unittest.TestCase)
+```
+
+Runs unit tests on the migrate_db functions.
+
+<a name="migrations/test_migrate_db.TestMigrateDatabaseLibraries.setUp"></a>
+#### setUp
+
+```python
+ | setUp()
+```
+
+Set up test.
+
+<a name="migrations/test_migrate_db.TestMigrateDatabaseLibraries.tearDown"></a>
+#### tearDown
+
+```python
+ | tearDown()
+```
+
+Tear down test
+
+<a name="migrations/test_migrate_db.TestMigrateDatabaseLibraries.test_perform_migration_happy_path"></a>
+#### test\_perform\_migration\_happy\_path
+
+```python
+ | @patch("migrations.migrate_db.migrate_versions_1_to_2")
+ | @patch("migrations.migrate_db.migrate_versions_2_to_3")
+ | @patch("migrations.migrate_db.migrate_versions_3_to_4")
+ | @patch("migrations.migrate_db.migrate_versions_4_to_5")
+ | test_perform_migration_happy_path(mock_migrate_v4_to_v5: MagicMock, mock_migrate_v3_to_v4: MagicMock, mock_migrate_v2_to_v3: MagicMock, mock_migrate_v1_to_v2: MagicMock)
+```
+
+Tests the perform_migration function happy paths
+
+<a name="migrations/migrate_versions_1_to_2/test_migrate_sql_v2"></a>
+# migrations/migrate\_versions\_1\_to\_2/test\_migrate\_sql\_v2
+
+Name: test_migrate_sql_v2.py
+
+Description: Unit tests for the migrations/migrate_versions_1_to_2/migrate_sql.py.
+
+<a name="migrations/migrate_versions_1_to_2/test_migrate_sql_v2.TestOrcaSqlLogic"></a>
+## TestOrcaSqlLogic Objects
+
+```python
+class TestOrcaSqlLogic(unittest.TestCase)
+```
+
+Note that currently all of the function calls in the migrate_sql_v2.py
+return a SQL text string and have no logic except for the app_user_sql
+function that requires a string for the user password. The tests below
+validate the logic in the function.
+
+<a name="migrations/migrate_versions_1_to_2/test_migrate_sql_v2.TestOrcaSqlLogic.test_app_user_sql_happy_path"></a>
+#### test\_app\_user\_sql\_happy\_path
+
+```python
+ | test_app_user_sql_happy_path() -> None
+```
+
+Tests the happy path for the app_user_sql function and validates the
+user password is a part of the SQL.
+
+<a name="migrations/migrate_versions_1_to_2/test_migrate_sql_v2.TestOrcaSqlLogic.test_app_user_sql_exceptions"></a>
+#### test\_app\_user\_sql\_exceptions
+
+```python
+ | test_app_user_sql_exceptions() -> None
+```
+
+Tests that an exception is thrown if the password is not set or is not
+a minimum of 12 characters,
+or if user_name is not set or is over 64 characters.
+
+<a name="migrations/migrate_versions_1_to_2/test_migrate_sql_v2.TestOrcaSqlLogic.test_all_functions_return_text"></a>
+#### test\_all\_functions\_return\_text
+
+```python
+ | test_all_functions_return_text() -> None
+```
+
+Validates that all functions return a type TextClause
+
+<a name="migrations/migrate_versions_1_to_2/test_migrate_v2"></a>
+# migrations/migrate\_versions\_1\_to\_2/test\_migrate\_v2
+
+Name: test_migrate_db_v2.py
+
+Description: Runs unit tests for the migrations/migrate_versions_1_to_2/migrate.py
+
+<a name="migrations/migrate_versions_1_to_2/test_migrate_v2.TestMigrateDatabaseLibraries"></a>
+## TestMigrateDatabaseLibraries Objects
+
+```python
+class TestMigrateDatabaseLibraries(unittest.TestCase)
+```
+
+Runs unit tests on the migrate_db functions.
+
+<a name="migrations/migrate_versions_1_to_2/test_migrate_v2.TestMigrateDatabaseLibraries.setUp"></a>
+#### setUp
+
+```python
+ | setUp()
+```
+
+Set up test.
+
+<a name="migrations/migrate_versions_1_to_2/test_migrate_v2.TestMigrateDatabaseLibraries.tearDown"></a>
+#### tearDown
+
+```python
+ | tearDown()
+```
+
+Tear down test
+
+<a name="migrations/migrate_versions_1_to_2/test_migrate_v2.TestMigrateDatabaseLibraries.test_migrate_versions_1_to_2_happy_path"></a>
+#### test\_migrate\_versions\_1\_to\_2\_happy\_path
+
+```python
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.schema_versions_data_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.drop_druser_user_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.drop_dbo_user_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.drop_dr_role_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.drop_drdbo_role_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.drop_dr_schema_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.drop_request_status_table_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.migrate_recovery_file_data_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.migrate_recovery_job_data_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.recovery_status_data_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.recovery_file_table_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.recovery_job_table_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.recovery_status_table_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.schema_versions_table_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.text")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.app_user_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.orca_schema_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.app_role_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.sql.dbo_role_sql")
+ | @patch("migrations.migrate_versions_1_to_2.migrate.get_admin_connection")
+ | test_migrate_versions_1_to_2_happy_path(mock_connection: MagicMock, mock_dbo_role_sql: MagicMock, mock_app_role_sql: MagicMock, mock_orca_schema_sql: MagicMock, mock_app_user_sql: MagicMock, mock_text: MagicMock, mock_schema_versions_table: MagicMock, mock_recovery_status_table: MagicMock, mock_recovery_job_table: MagicMock, mock_recovery_file_table: MagicMock, mock_recovery_status_data: MagicMock, mock_recovery_job_data: MagicMock, mock_recovery_file_data: MagicMock, mock_drop_request_status_table: MagicMock, mock_drop_dr_schema: MagicMock, mock_drop_drdbo_role: MagicMock, mock_drop_dr_role: MagicMock, mock_drop_dbo_user: MagicMock, mock_drop_druser_user: MagicMock, mock_schema_versions_data: MagicMock)
+```
+
+Tests the migrate_versions_1_to_2 function happy path
 
 <a name="migrations/migrate_versions_1_to_2/migrate"></a>
 # migrations/migrate\_versions\_1\_to\_2/migrate
@@ -638,129 +1173,145 @@ SQL that removes the drdbo_role role.
 - `(sqlalchemy.sql.element.TextClause)` - SQL for dropping drdbo_role role.
   f
 
-<a name="install/orca_reconcile_sql"></a>
-# install/orca\_reconcile\_sql
+<a name="install/test_create_db"></a>
+# install/test\_create\_db
 
-Name: orca_reconcile_sql.py
+Name: test_create_db.py
 
-Description: All of the SQL used for creating the internal reconciliation tables.
+Description: Runs unit tests for the create_db.py library.
 
-<a name="install/orca_reconcile_sql.reconcile_status_table_sql"></a>
-#### reconcile\_status\_table\_sql
-
-```python
-reconcile_status_table_sql() -> TextClause
-```
-
-Full SQL for creating the reconcile_status table.
-
-**Returns**:
-
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_status table.
-
-<a name="install/orca_reconcile_sql.reconcile_job_table_sql"></a>
-#### reconcile\_job\_table\_sql
+<a name="install/test_create_db.TestCreateDatabaseLibraries"></a>
+## TestCreateDatabaseLibraries Objects
 
 ```python
-reconcile_job_table_sql() -> TextClause
+class TestCreateDatabaseLibraries(unittest.TestCase)
 ```
 
-Full SQL for creating the reconcile_job table.
+Test the various functions in the create_db library.
 
-**Returns**:
-
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_job table.
-
-<a name="install/orca_reconcile_sql.reconcile_s3_object_table_sql"></a>
-#### reconcile\_s3\_object\_table\_sql
+<a name="install/test_create_db.TestCreateDatabaseLibraries.setUp"></a>
+#### setUp
 
 ```python
-reconcile_s3_object_table_sql() -> TextClause
+ | setUp()
 ```
 
-Full SQL for creating the reconcile_s3_object table.
+Set up test.
 
-**Returns**:
-
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_s3_object table.
-
-<a name="install/orca_reconcile_sql.reconcile_catalog_mismatch_report_table_sql"></a>
-#### reconcile\_catalog\_mismatch\_report\_table\_sql
+<a name="install/test_create_db.TestCreateDatabaseLibraries.tearDown"></a>
+#### tearDown
 
 ```python
-reconcile_catalog_mismatch_report_table_sql() -> TextClause
+ | tearDown()
 ```
 
-Full SQL for creating the reconcile_catalog_mismatch_report table.
+Tear down test
 
-**Returns**:
-
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_catalog_mismatch_report table.
-
-<a name="install/orca_reconcile_sql.reconcile_orphan_report_table_sql"></a>
-#### reconcile\_orphan\_report\_table\_sql
+<a name="install/test_create_db.TestCreateDatabaseLibraries.test_create_fresh_orca_install_happy_path"></a>
+#### test\_create\_fresh\_orca\_install\_happy\_path
 
 ```python
-reconcile_orphan_report_table_sql() -> TextClause
+ | @patch("install.create_db.create_recovery_objects")
+ | @patch("install.create_db.create_metadata_objects")
+ | @patch("install.create_db.create_inventory_objects")
+ | @patch("install.create_db.create_internal_reconciliation_objects")
+ | @patch("install.create_db.set_search_path_and_role")
+ | @patch("install.create_db.create_app_schema_role_users")
+ | @patch("install.create_db.get_admin_connection")
+ | test_create_fresh_orca_install_happy_path(mock_connection: MagicMock, mock_create_app_schema_roles: MagicMock, mock_set_search_path_role: MagicMock, mock_create_internal_reconciliation_objects: MagicMock, mock_create_inventory_objects: MagicMock, mock_create_metadata: MagicMock, mock_create_recovery: MagicMock)
 ```
 
-Full SQL for creating the reconcile_orphan_report table.
+Tests normal happy path of create_fresh_orca_install function.
 
-**Returns**:
-
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_orphan_report table.
-
-<a name="install/orca_reconcile_sql.reconcile_phantom_report_table_sql"></a>
-#### reconcile\_phantom\_report\_table\_sql
+<a name="install/test_create_db.TestCreateDatabaseLibraries.test_create_database_happy_path"></a>
+#### test\_create\_database\_happy\_path
 
 ```python
-reconcile_phantom_report_table_sql() -> TextClause
+ | @patch("install.orca_sql.app_database_comment_sql")
+ | @patch("install.orca_sql.app_database_sql")
+ | @patch("install.orca_sql.commit_sql")
+ | @patch("install.create_db.get_admin_connection")
+ | test_create_database_happy_path(mock_connection: MagicMock, mock_commit_sql: MagicMock, mock_app_database_sql: MagicMock, mock_app_database_comment_sql: MagicMock)
 ```
 
-Full SQL for creating the reconcile_phantom_report table.
+Tests normal happy path of create_database function.
 
-**Returns**:
-
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_phantom_report table.
-
-<a name="install/orca_reconcile_sql.orca_archive_location_bucket"></a>
-#### orca\_archive\_location\_bucket
+<a name="install/test_create_db.TestCreateDatabaseLibraries.test_create_app_schema_user_role_users_happy_path"></a>
+#### test\_create\_app\_schema\_user\_role\_users\_happy\_path
 
 ```python
-orca_archive_location_bucket() -> TextClause
+ | @patch("install.create_db.sql.app_user_sql")
+ | @patch("install.create_db.sql.orca_schema_sql")
+ | @patch("install.create_db.sql.app_role_sql")
+ | @patch("install.create_db.sql.dbo_role_sql")
+ | test_create_app_schema_user_role_users_happy_path(mock_dbo_role_sql: MagicMock, mock_app_role_sql: MagicMock, mock_schema_sql: MagicMock, mock_user_sql: MagicMock)
 ```
 
-Full SQL for creating the orca_archive_location_bucket table.
+Tests happy path of create_app_schema_role_users function.
 
-**Returns**:
-
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating orca_archive_location_bucket table.
-
-<a name="install/orca_reconcile_sql.create_extension"></a>
-#### create\_extension
+<a name="install/test_create_db.TestCreateDatabaseLibraries.test_set_search_path_and_role"></a>
+#### test\_set\_search\_path\_and\_role
 
 ```python
-create_extension() -> TextClause
+ | @patch("install.create_db.sql.text")
+ | test_set_search_path_and_role(mock_text: MagicMock)
 ```
 
-Full SQL for creating the extension.
+Tests happy path of set_search_path_and_role function.
 
-**Returns**:
-
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating extension for the database.
-
-<a name="install/orca_reconcile_sql.drop_extension"></a>
-#### drop\_extension
+<a name="install/test_create_db.TestCreateDatabaseLibraries.test_create_metadata_objects"></a>
+#### test\_create\_metadata\_objects
 
 ```python
-drop_extension() -> TextClause
+ | @patch("install.create_db.sql.schema_versions_data_sql")
+ | @patch("install.create_db.sql.schema_versions_table_sql")
+ | test_create_metadata_objects(mock_schema_versions_table: MagicMock, mock_schema_versions_data: MagicMock)
 ```
 
-Full SQL for dropping the extension.
+Tests happy path of create_metadata_objects function
 
-**Returns**:
+<a name="install/test_create_db.TestCreateDatabaseLibraries.test_create_recovery_objects"></a>
+#### test\_create\_recovery\_objects
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for dropping extension for the database.
+```python
+ | @patch("install.create_db.sql.recovery_file_table_sql")
+ | @patch("install.create_db.sql.recovery_job_table_sql")
+ | @patch("install.create_db.sql.recovery_status_data_sql")
+ | @patch("install.create_db.sql.recovery_status_table_sql")
+ | test_create_recovery_objects(mock_recovery_status_table: MagicMock, mock_recovery_status_data: MagicMock, mock_recovery_job_table: MagicMock, mock_recovery_file_table: MagicMock)
+```
+
+Tests happy path of the create_recovery_objects function
+
+<a name="install/test_create_db.TestCreateDatabaseLibraries.test_create_inventory_objects"></a>
+#### test\_create\_inventory\_objects
+
+```python
+ | @patch("install.create_db.sql.providers_table_sql")
+ | @patch("install.create_db.sql.collections_table_sql")
+ | @patch("install.create_db.sql.granules_table_sql")
+ | @patch("install.create_db.sql.files_table_sql")
+ | test_create_inventory_objects(mock_files_table: MagicMock, mock_granules_table: MagicMock, mock_collections_table: MagicMock, mock_providers_table: MagicMock)
+```
+
+Tests happy path of the create_inventory_objects function
+
+<a name="install/test_create_db.TestCreateDatabaseLibraries.test_create_internal_reconciliation_objects"></a>
+#### test\_create\_internal\_reconciliation\_objects
+
+```python
+ | @patch("install.create_db.sql.reconcile_status_table_sql")
+ | @patch("install.create_db.sql.reconcile_job_table_sql")
+ | @patch("install.create_db.sql.reconcile_s3_object_table_sql")
+ | @patch("install.create_db.sql.reconcile_catalog_mismatch_report_table_sql")
+ | @patch("install.create_db.sql.reconcile_orphan_report_table_sql")
+ | @patch("install.create_db.sql.reconcile_phantom_report_table_sql")
+ | @patch("install.create_db.sql.reconcile_s3_object_partition_sql")
+ | @patch("install.create_db.sql.create_extension")
+ | test_create_internal_reconciliation_objects(mock_extension: MagicMock, mock_reconcile_s3_object_partition_table: MagicMock, mock_reconcile_phantom_report_table: MagicMock, mock_reconcile_orphan_report_table: MagicMock, mock_reconcile_catalog_mismatch_report_table: MagicMock, mock_reconcile_s3_object_table: MagicMock, mock_reconcile_job_table: MagicMock, mock_reconcile_status_table: MagicMock)
+```
+
+Tests happy path of the create_internal_reconciliation_objects function
 
 <a name="install/orca_sql"></a>
 # install/orca\_sql
@@ -999,6 +1550,170 @@ Full SQL for creating the catalog files table.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for creating files table.
 
+<a name="install/orca_sql.reconcile_status_table_sql"></a>
+#### reconcile\_status\_table\_sql
+
+```python
+reconcile_status_table_sql() -> TextClause
+```
+
+Full SQL for creating the reconcile_status table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_status table.
+
+<a name="install/orca_sql.reconcile_job_table_sql"></a>
+#### reconcile\_job\_table\_sql
+
+```python
+reconcile_job_table_sql() -> TextClause
+```
+
+Full SQL for creating the reconcile_job table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_job table.
+
+<a name="install/orca_sql.reconcile_s3_object_table_sql"></a>
+#### reconcile\_s3\_object\_table\_sql
+
+```python
+reconcile_s3_object_table_sql() -> TextClause
+```
+
+Full SQL for creating the reconcile_s3_object table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_s3_object table.
+
+<a name="install/orca_sql.reconcile_catalog_mismatch_report_table_sql"></a>
+#### reconcile\_catalog\_mismatch\_report\_table\_sql
+
+```python
+reconcile_catalog_mismatch_report_table_sql() -> TextClause
+```
+
+Full SQL for creating the reconcile_catalog_mismatch_report table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_catalog_mismatch_report table.
+
+<a name="install/orca_sql.reconcile_orphan_report_table_sql"></a>
+#### reconcile\_orphan\_report\_table\_sql
+
+```python
+reconcile_orphan_report_table_sql() -> TextClause
+```
+
+Full SQL for creating the reconcile_orphan_report table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_orphan_report table.
+
+<a name="install/orca_sql.reconcile_phantom_report_table_sql"></a>
+#### reconcile\_phantom\_report\_table\_sql
+
+```python
+reconcile_phantom_report_table_sql() -> TextClause
+```
+
+Full SQL for creating the reconcile_phantom_report table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_phantom_report table.
+
+<a name="install/orca_sql.reconcile_s3_object_partition_sql"></a>
+#### reconcile\_s3\_object\_partition\_sql
+
+```python
+reconcile_s3_object_partition_sql(partition_name: str) -> TextClause
+```
+
+Full SQL for creating the reconcile_s3_object partition table.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_s3_object partition table.
+
+<a name="install/orca_sql.create_extension"></a>
+#### create\_extension
+
+```python
+create_extension() -> TextClause
+```
+
+Full SQL for creating the extension.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating extension for the database.
+
+<a name="install/test_orca_sql"></a>
+# install/test\_orca\_sql
+
+Name: test_orca_sql.py
+
+Description: Testing library for the orca_sql.py library.
+
+<a name="install/test_orca_sql.TestOrcaSqlLogic"></a>
+## TestOrcaSqlLogic Objects
+
+```python
+class TestOrcaSqlLogic(unittest.TestCase)
+```
+
+Note that currently all of the function calls in the orca_sql library
+return a SQL text string and have no logic except for the app_user_sql
+function that requires a string for the user password. The tests below
+validate the logic in the function.
+
+<a name="install/test_orca_sql.TestOrcaSqlLogic.test_app_user_sql_happy_path"></a>
+#### test\_app\_user\_sql\_happy\_path
+
+```python
+ | test_app_user_sql_happy_path() -> None
+```
+
+Tests the happy path for the app_user_sql function and validates the
+user password is a part of the SQL.
+
+<a name="install/test_orca_sql.TestOrcaSqlLogic.test_app_user_sql_exceptions"></a>
+#### test\_app\_user\_sql\_exceptions
+
+```python
+ | test_app_user_sql_exceptions() -> None
+```
+
+Tests that an exception is thrown if the password is not set or is not
+a minimum of 12 characters,
+or if user_name is not set or is over 64 characters.
+
+<a name="install/test_orca_sql.TestOrcaSqlLogic.test_all_functions_return_text"></a>
+#### test\_all\_functions\_return\_text
+
+```python
+ | test_all_functions_return_text() -> None
+```
+
+Validates that all functions return a type TextClause
+
+<a name="install/test_orca_sql.TestOrcaSqlLogic.test_reconcile_s3_object_partition_sql_exception"></a>
+#### test\_reconcile\_s3\_object\_partition\_sql\_exception
+
+```python
+ | test_reconcile_s3_object_partition_sql_exception() -> None
+```
+
+Tests that an exception is thrown if the password is not set or is not
+a minimum of 12 characters,
+or if user_name is not set or is over 64 characters.
+
 <a name="install/create_db"></a>
 # install/create\_db
 
@@ -1163,33 +1878,6 @@ Creates the ORCA internal reconciliation tables in the proper order.
 
   None
 
-<a name="test/unit_tests/test_migrate_sql_v3"></a>
-# test/unit\_tests/test\_migrate\_sql\_v3
-
-Name: test_migrate_sql_v3.py
-
-Description: Testing library for the migrations/migrate_versions_2_to_3/migrate_sql.py.
-
-<a name="test/unit_tests/test_migrate_sql_v3.TestOrcaSqlLogic"></a>
-## TestOrcaSqlLogic Objects
-
-```python
-class TestOrcaSqlLogic(unittest.TestCase)
-```
-
-Note that currently all of the function calls in the migrate_sql_v3.py
-return a SQL text string. The tests below
-validate the logic in the function.
-
-<a name="test/unit_tests/test_migrate_sql_v3.TestOrcaSqlLogic.test_all_functions_return_text"></a>
-#### test\_all\_functions\_return\_text
-
-```python
- | test_all_functions_return_text() -> None
-```
-
-Validates that all functions return a type TextClause
-
 <a name="test/unit_tests/test_db_deploy"></a>
 # test/unit\_tests/test\_db\_deploy
 
@@ -1337,487 +2025,6 @@ Does a happy path test for the function. No real logic to test.
 ```
 
 Does a happy path test for the function. No real logic to test.
-
-<a name="test/unit_tests/test_migrate_sql_v2"></a>
-# test/unit\_tests/test\_migrate\_sql\_v2
-
-Name: test_migrate_sql_v2.py
-
-Description: Unit tests for the migrations/migrate_versions_1_to_2/migrate_sql.py.
-
-<a name="test/unit_tests/test_migrate_sql_v2.TestOrcaSqlLogic"></a>
-## TestOrcaSqlLogic Objects
-
-```python
-class TestOrcaSqlLogic(unittest.TestCase)
-```
-
-Note that currently all of the function calls in the migrate_sql_v2.py
-return a SQL text string and have no logic except for the app_user_sql
-function that requires a string for the user password. The tests below
-validate the logic in the function.
-
-<a name="test/unit_tests/test_migrate_sql_v2.TestOrcaSqlLogic.test_app_user_sql_happy_path"></a>
-#### test\_app\_user\_sql\_happy\_path
-
-```python
- | test_app_user_sql_happy_path() -> None
-```
-
-Tests the happy path for the app_user_sql function and validates the
-user password is a part of the SQL.
-
-<a name="test/unit_tests/test_migrate_sql_v2.TestOrcaSqlLogic.test_app_user_sql_exceptions"></a>
-#### test\_app\_user\_sql\_exceptions
-
-```python
- | test_app_user_sql_exceptions() -> None
-```
-
-Tests that an exception is thrown if the password is not set or is not
-a minimum of 12 characters,
-or if user_name is not set or is over 64 characters.
-
-<a name="test/unit_tests/test_migrate_sql_v2.TestOrcaSqlLogic.test_all_functions_return_text"></a>
-#### test\_all\_functions\_return\_text
-
-```python
- | test_all_functions_return_text() -> None
-```
-
-Validates that all functions return a type TextClause
-
-<a name="test/unit_tests/test_migrate_v3"></a>
-# test/unit\_tests/test\_migrate\_v3
-
-Name: test_migrate_db_v3.py
-
-Description: Runs unit tests for the migrations/migrate_versions_2_to_3/migrate.py
-
-<a name="test/unit_tests/test_migrate_v3.TestMigrateDatabaseLibraries"></a>
-## TestMigrateDatabaseLibraries Objects
-
-```python
-class TestMigrateDatabaseLibraries(unittest.TestCase)
-```
-
-Runs unit tests on the migrate_db functions.
-
-<a name="test/unit_tests/test_migrate_v3.TestMigrateDatabaseLibraries.setUp"></a>
-#### setUp
-
-```python
- | setUp()
-```
-
-Set up test.
-
-<a name="test/unit_tests/test_migrate_v3.TestMigrateDatabaseLibraries.tearDown"></a>
-#### tearDown
-
-```python
- | tearDown()
-```
-
-Tear down test
-
-<a name="test/unit_tests/test_migrate_v3.TestMigrateDatabaseLibraries.test_migrate_versions_2_to_3_happy_path"></a>
-#### test\_migrate\_versions\_2\_to\_3\_happy\_path
-
-```python
- | @patch("migrations.migrate_versions_2_to_3.migrate.sql.text")
- | @patch("migrations.migrate_versions_2_to_3.migrate.sql.schema_versions_data_sql")
- | @patch("migrations.migrate_versions_2_to_3.migrate.sql.add_multipart_chunksize_sql")
- | @patch("migrations.migrate_versions_2_to_3.migrate.get_admin_connection")
- | test_migrate_versions_2_to_3_happy_path(mock_connection: MagicMock, mock_add_multipart_chunksize_sql: MagicMock, mock_schema_versions_data: MagicMock, mock_text: MagicMock)
-```
-
-Tests the migrate_versions_2_to_3 function happy path
-
-<a name="test/unit_tests/test_create_db"></a>
-# test/unit\_tests/test\_create\_db
-
-Name: test_create_db.py
-
-Description: Runs unit tests for the create_db.py library.
-
-<a name="test/unit_tests/test_create_db.TestCreateDatabaseLibraries"></a>
-## TestCreateDatabaseLibraries Objects
-
-```python
-class TestCreateDatabaseLibraries(unittest.TestCase)
-```
-
-Test the various functions in the create_db library.
-
-<a name="test/unit_tests/test_create_db.TestCreateDatabaseLibraries.setUp"></a>
-#### setUp
-
-```python
- | setUp()
-```
-
-Set up test.
-
-<a name="test/unit_tests/test_create_db.TestCreateDatabaseLibraries.tearDown"></a>
-#### tearDown
-
-```python
- | tearDown()
-```
-
-Tear down test
-
-<a name="test/unit_tests/test_create_db.TestCreateDatabaseLibraries.test_create_fresh_orca_install_happy_path"></a>
-#### test\_create\_fresh\_orca\_install\_happy\_path
-
-```python
- | @patch("install.create_db.create_recovery_objects")
- | @patch("install.create_db.create_metadata_objects")
- | @patch("install.create_db.create_inventory_objects")
- | @patch("install.create_db.create_internal_reconciliation_objects")
- | @patch("install.create_db.set_search_path_and_role")
- | @patch("install.create_db.create_app_schema_role_users")
- | @patch("install.create_db.get_admin_connection")
- | test_create_fresh_orca_install_happy_path(mock_connection: MagicMock, mock_create_app_schema_roles: MagicMock, mock_set_search_path_role: MagicMock, mock_create_internal_reconciliation_objects: MagicMock, mock_create_inventory_objects: MagicMock, mock_create_metadata: MagicMock, mock_create_recovery: MagicMock)
-```
-
-Tests normal happy path of create_fresh_orca_install function.
-
-<a name="test/unit_tests/test_create_db.TestCreateDatabaseLibraries.test_create_database_happy_path"></a>
-#### test\_create\_database\_happy\_path
-
-```python
- | @patch("install.orca_sql.app_database_comment_sql")
- | @patch("install.orca_sql.app_database_sql")
- | @patch("install.orca_sql.commit_sql")
- | @patch("install.create_db.get_admin_connection")
- | test_create_database_happy_path(mock_connection: MagicMock, mock_commit_sql: MagicMock, mock_app_database_sql: MagicMock, mock_app_database_comment_sql: MagicMock)
-```
-
-Tests normal happy path of create_database function.
-
-<a name="test/unit_tests/test_create_db.TestCreateDatabaseLibraries.test_create_app_schema_user_role_users_happy_path"></a>
-#### test\_create\_app\_schema\_user\_role\_users\_happy\_path
-
-```python
- | @patch("install.create_db.sql.app_user_sql")
- | @patch("install.create_db.sql.orca_schema_sql")
- | @patch("install.create_db.sql.app_role_sql")
- | @patch("install.create_db.sql.dbo_role_sql")
- | test_create_app_schema_user_role_users_happy_path(mock_dbo_role_sql: MagicMock, mock_app_role_sql: MagicMock, mock_schema_sql: MagicMock, mock_user_sql: MagicMock)
-```
-
-Tests happy path of create_app_schema_role_users function.
-
-<a name="test/unit_tests/test_create_db.TestCreateDatabaseLibraries.test_set_search_path_and_role"></a>
-#### test\_set\_search\_path\_and\_role
-
-```python
- | @patch("install.create_db.sql.text")
- | test_set_search_path_and_role(mock_text: MagicMock)
-```
-
-Tests happy path of set_search_path_and_role function.
-
-<a name="test/unit_tests/test_create_db.TestCreateDatabaseLibraries.test_create_metadata_objects"></a>
-#### test\_create\_metadata\_objects
-
-```python
- | @patch("install.create_db.sql.schema_versions_data_sql")
- | @patch("install.create_db.sql.schema_versions_table_sql")
- | test_create_metadata_objects(mock_schema_versions_table: MagicMock, mock_schema_versions_data: MagicMock)
-```
-
-Tests happy path of create_metadata_objects function
-
-<a name="test/unit_tests/test_create_db.TestCreateDatabaseLibraries.test_create_recovery_objects"></a>
-#### test\_create\_recovery\_objects
-
-```python
- | @patch("install.create_db.sql.recovery_file_table_sql")
- | @patch("install.create_db.sql.recovery_job_table_sql")
- | @patch("install.create_db.sql.recovery_status_data_sql")
- | @patch("install.create_db.sql.recovery_status_table_sql")
- | test_create_recovery_objects(mock_recovery_status_table: MagicMock, mock_recovery_status_data: MagicMock, mock_recovery_job_table: MagicMock, mock_recovery_file_table: MagicMock)
-```
-
-Tests happy path of the create_recovery_objects function
-
-<a name="test/unit_tests/test_create_db.TestCreateDatabaseLibraries.test_create_inventory_objects"></a>
-#### test\_create\_inventory\_objects
-
-```python
- | @patch("install.create_db.sql.providers_table_sql")
- | @patch("install.create_db.sql.collections_table_sql")
- | @patch("install.create_db.sql.granules_table_sql")
- | @patch("install.create_db.sql.files_table_sql")
- | test_create_inventory_objects(mock_files_table: MagicMock, mock_granules_table: MagicMock, mock_collections_table: MagicMock, mock_providers_table: MagicMock)
-```
-
-Tests happy path of the create_inventory_objects function
-
-<a name="test/unit_tests/test_migrate_v2"></a>
-# test/unit\_tests/test\_migrate\_v2
-
-Name: test_migrate_db_v2.py
-
-Description: Runs unit tests for the migrations/migrate_versions_1_to_2/migrate.py
-
-<a name="test/unit_tests/test_migrate_v2.TestMigrateDatabaseLibraries"></a>
-## TestMigrateDatabaseLibraries Objects
-
-```python
-class TestMigrateDatabaseLibraries(unittest.TestCase)
-```
-
-Runs unit tests on the migrate_db functions.
-
-<a name="test/unit_tests/test_migrate_v2.TestMigrateDatabaseLibraries.setUp"></a>
-#### setUp
-
-```python
- | setUp()
-```
-
-Set up test.
-
-<a name="test/unit_tests/test_migrate_v2.TestMigrateDatabaseLibraries.tearDown"></a>
-#### tearDown
-
-```python
- | tearDown()
-```
-
-Tear down test
-
-<a name="test/unit_tests/test_migrate_v2.TestMigrateDatabaseLibraries.test_migrate_versions_1_to_2_happy_path"></a>
-#### test\_migrate\_versions\_1\_to\_2\_happy\_path
-
-```python
- | @patch("migrations.migrate_versions_1_to_2.migrate.sql.schema_versions_data_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate.sql.drop_druser_user_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate.sql.drop_dbo_user_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate.sql.drop_dr_role_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate.sql.drop_drdbo_role_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate.sql.drop_dr_schema_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate.sql.drop_request_status_table_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate.sql.migrate_recovery_file_data_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate.sql.migrate_recovery_job_data_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate.sql.recovery_status_data_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate.sql.recovery_file_table_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate.sql.recovery_job_table_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate.sql.recovery_status_table_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate.sql.schema_versions_table_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate.sql.text")
- | @patch("migrations.migrate_versions_1_to_2.migrate.sql.app_user_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate.sql.orca_schema_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate.sql.app_role_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate.sql.dbo_role_sql")
- | @patch("migrations.migrate_versions_1_to_2.migrate.get_admin_connection")
- | test_migrate_versions_1_to_2_happy_path(mock_connection: MagicMock, mock_dbo_role_sql: MagicMock, mock_app_role_sql: MagicMock, mock_orca_schema_sql: MagicMock, mock_app_user_sql: MagicMock, mock_text: MagicMock, mock_schema_versions_table: MagicMock, mock_recovery_status_table: MagicMock, mock_recovery_job_table: MagicMock, mock_recovery_file_table: MagicMock, mock_recovery_status_data: MagicMock, mock_recovery_job_data: MagicMock, mock_recovery_file_data: MagicMock, mock_drop_request_status_table: MagicMock, mock_drop_dr_schema: MagicMock, mock_drop_drdbo_role: MagicMock, mock_drop_dr_role: MagicMock, mock_drop_dbo_user: MagicMock, mock_drop_druser_user: MagicMock, mock_schema_versions_data: MagicMock)
-```
-
-Tests the migrate_versions_1_to_2 function happy path
-
-<a name="test/unit_tests/test_migrate_v4"></a>
-# test/unit\_tests/test\_migrate\_v4
-
-Name: test_migrate_db_v4.py
-
-Description: Runs unit tests for the migrations/migrate_versions_3_to_4/migrate.py
-
-<a name="test/unit_tests/test_migrate_v4.TestMigrateDatabaseLibraries"></a>
-## TestMigrateDatabaseLibraries Objects
-
-```python
-class TestMigrateDatabaseLibraries(unittest.TestCase)
-```
-
-Runs unit tests on the migrate_db functions.
-
-<a name="test/unit_tests/test_migrate_v4.TestMigrateDatabaseLibraries.setUp"></a>
-#### setUp
-
-```python
- | setUp()
-```
-
-Set up test.
-
-<a name="test/unit_tests/test_migrate_v4.TestMigrateDatabaseLibraries.tearDown"></a>
-#### tearDown
-
-```python
- | tearDown()
-```
-
-Tear down test
-
-<a name="test/unit_tests/test_migrate_v4.TestMigrateDatabaseLibraries.test_migrate_versions_3_to_4_happy_path"></a>
-#### test\_migrate\_versions\_3\_to\_4\_happy\_path
-
-```python
- | @patch("migrations.migrate_versions_3_to_4.migrate.sql.schema_versions_data_sql")
- | @patch("migrations.migrate_versions_3_to_4.migrate.sql.providers_table_sql")
- | @patch("migrations.migrate_versions_3_to_4.migrate.sql.collections_table_sql")
- | @patch("migrations.migrate_versions_3_to_4.migrate.sql.granules_table_sql")
- | @patch("migrations.migrate_versions_3_to_4.migrate.sql.files_table_sql")
- | @patch("migrations.migrate_versions_3_to_4.migrate.get_admin_connection")
- | @patch("migrations.migrate_versions_3_to_4.migrate.sql.text")
- | test_migrate_versions_3_to_4_happy_path(mock_text: MagicMock, mock_connection: MagicMock, mock_files_table: MagicMock, mock_granules_table: MagicMock, mock_collections_table: MagicMock, mock_providers_table: MagicMock, mock_schema_versions_data: MagicMock)
-```
-
-Tests the migrate_versions_3_to_4 function happy path
-
-<a name="test/unit_tests/test_migrate_db"></a>
-# test/unit\_tests/test\_migrate\_db
-
-Name: test_migrate_db.py
-
-Description: Runs unit tests for the migrations/migrate_db.py library.
-
-<a name="test/unit_tests/test_migrate_db.TestMigrateDatabaseLibraries"></a>
-## TestMigrateDatabaseLibraries Objects
-
-```python
-class TestMigrateDatabaseLibraries(unittest.TestCase)
-```
-
-Runs unit tests on the migrate_db functions.
-
-<a name="test/unit_tests/test_migrate_db.TestMigrateDatabaseLibraries.setUp"></a>
-#### setUp
-
-```python
- | setUp()
-```
-
-Set up test.
-
-<a name="test/unit_tests/test_migrate_db.TestMigrateDatabaseLibraries.tearDown"></a>
-#### tearDown
-
-```python
- | tearDown()
-```
-
-Tear down test
-
-<a name="test/unit_tests/test_migrate_db.TestMigrateDatabaseLibraries.test_perform_migration_happy_path"></a>
-#### test\_perform\_migration\_happy\_path
-
-```python
- | @patch("migrations.migrate_db.migrate_versions_1_to_2")
- | @patch("migrations.migrate_db.migrate_versions_2_to_3")
- | @patch("migrations.migrate_db.migrate_versions_3_to_4")
- | test_perform_migration_happy_path(mock_migrate_v3_to_v4: MagicMock, mock_migrate_v2_to_v3: MagicMock, mock_migrate_v1_to_v2: MagicMock)
-```
-
-Tests the perform_migration function happy paths
-
-<a name="test/unit_tests/test_orca_reconcile_sql"></a>
-# test/unit\_tests/test\_orca\_reconcile\_sql
-
-Name: test_orca_reconcile_sql.py
-
-Description: Testing library for the orca_reconcile_sql.py.
-
-<a name="test/unit_tests/test_orca_reconcile_sql.TestOrcaSqlLogic"></a>
-## TestOrcaSqlLogic Objects
-
-```python
-class TestOrcaSqlLogic(unittest.TestCase)
-```
-
-Note that currently all of the function calls in the orca_reconcile_sql.py
-return a SQL text string. The tests below
-validate the logic in the function.
-
-<a name="test/unit_tests/test_orca_reconcile_sql.TestOrcaSqlLogic.test_all_functions_return_text"></a>
-#### test\_all\_functions\_return\_text
-
-```python
- | test_all_functions_return_text() -> None
-```
-
-Validates that all functions return a type TextClause
-
-<a name="test/unit_tests/test_orca_sql"></a>
-# test/unit\_tests/test\_orca\_sql
-
-Name: test_orca_sql.py
-
-Description: Testing library for the orca_sql.py library.
-
-<a name="test/unit_tests/test_orca_sql.TestOrcaSqlLogic"></a>
-## TestOrcaSqlLogic Objects
-
-```python
-class TestOrcaSqlLogic(unittest.TestCase)
-```
-
-Note that currently all of the function calls in the orca_sql library
-return a SQL text string and have no logic except for the app_user_sql
-function that requires a string for the user password. The tests below
-validate the logic in the function.
-
-<a name="test/unit_tests/test_orca_sql.TestOrcaSqlLogic.test_app_user_sql_happy_path"></a>
-#### test\_app\_user\_sql\_happy\_path
-
-```python
- | test_app_user_sql_happy_path() -> None
-```
-
-Tests the happy path for the app_user_sql function and validates the
-user password is a part of the SQL.
-
-<a name="test/unit_tests/test_orca_sql.TestOrcaSqlLogic.test_app_user_sql_exceptions"></a>
-#### test\_app\_user\_sql\_exceptions
-
-```python
- | test_app_user_sql_exceptions() -> None
-```
-
-Tests that an exception is thrown if the password is not set or is not
-a minimum of 12 characters,
-or if user_name is not set or is over 64 characters.
-
-<a name="test/unit_tests/test_orca_sql.TestOrcaSqlLogic.test_all_functions_return_text"></a>
-#### test\_all\_functions\_return\_text
-
-```python
- | test_all_functions_return_text() -> None
-```
-
-Validates that all functions return a type TextClause
-
-<a name="test/unit_tests/test_migrate_sql_v4"></a>
-# test/unit\_tests/test\_migrate\_sql\_v4
-
-Name: test_migrate_sql_v4.py
-
-Description: Testing library for the migrations/migrate_versions_3_to_4/migrate_sql.py.
-
-<a name="test/unit_tests/test_migrate_sql_v4.TestOrcaSqlLogic"></a>
-## TestOrcaSqlLogic Objects
-
-```python
-class TestOrcaSqlLogic(unittest.TestCase)
-```
-
-Note that currently all of the function calls in the migrate_sql_v4.py
-return a SQL text string. The tests below
-validate the logic in the function.
-
-<a name="test/unit_tests/test_migrate_sql_v4.TestOrcaSqlLogic.test_all_functions_return_text"></a>
-#### test\_all\_functions\_return\_text
-
-```python
- | test_all_functions_return_text() -> None
-```
-
-Validates that all functions return a type TextClause
 
 <a name="test/manual_tests/manual_test"></a>
 # test/manual\_tests/manual\_test

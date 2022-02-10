@@ -4,9 +4,11 @@ Name: orca_sql.py
 Description: All of the SQL used for creating and migrating the ORCA schema.
 """
 # Imports
+from email import message
 from sqlalchemy import text
 from sqlalchemy.sql.elements import TextClause
 from orca_shared.database.shared_db import logger
+
 
 
 # ----------------------------------------------------------------------------
@@ -863,27 +865,28 @@ def reconcile_phantom_report_table_sql() -> TextClause:
         """
     )
 
-#TBD discuss with team on SQL code for list of buckets
-def orca_archive_location_bucket() -> TextClause:
+def reconcile_s3_object_partition_sql(partition_name: str) -> TextClause:
     """
-    Full SQL for creating the orca_archive_location_bucket table. 
+    Full SQL for creating the reconcile_s3_object partition table. 
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating orca_archive_location_bucket table.
+        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_s3_object partition table.
     """
-
-    return text(
-        """
-            -- Create orca_archive_location_:bucket_name
-            CREATE TABLE {orca_archive_location_:bucket_name}
-            (
-            PARTITION OF reconcile_s3_object
-            FOR VALUES IN (:bucket_name)
-            );
-            -- Comment
-            COMMENT ON TABLE orca_archive_location_:bucket_name IS 'Table for partition of S3 bucket.';
-        """
-    )
+    if partition_name is None or len(partition_name) == 0:
+        raise Exception("partition name is not set properly")
+    else:
+        return text(
+            f"""
+                -- Create orca_archive_location_:bucket_name
+                CREATE TABLE {partition_name}
+                (
+                PARTITION OF reconcile_s3_object
+                FOR VALUES IN (:bucket_name)
+                );
+                -- Comment
+                COMMENT ON TABLE {partition_name} IS 'Partition table for reconcile_s3_object based on orca_archive_location.';
+            """
+        )
 
 def create_extension() -> TextClause:
     """

@@ -77,8 +77,23 @@ class TestOrcaSqlLogic(unittest.TestCase):
                         self.assertEqual(type(function(uuid.uuid4().__str__(), uuid.uuid4().__str__())), TextClause)
                         # These functions take in two string parameters.
                     elif name in ["app_database_sql", "app_database_comment_sql", "dbo_role_sql", "app_role_sql",
-                                  "drop_dr_role_sql", "drop_dbo_user_sql", "drop_drdbo_role_sql"]:
+                                  "drop_dr_role_sql", "drop_dbo_user_sql", "drop_drdbo_role_sql", "reconcile_s3_object_partition_sql"]:
                         # These functions take in a string parameter.
                         self.assertEqual(type(function(uuid.uuid4().__str__())), TextClause)
                     else:
                         self.assertEqual(type(function()), TextClause)
+
+
+    def test_reconcile_s3_object_partition_sql_exception(self) -> None:
+        """
+        Tests that an exception is thrown if the password is not set or is not
+        a minimum of 12 characters,
+        or if user_name is not set or is over 64 characters.
+        """
+
+        partition_names = [None, ""]
+        for partition_name in partition_names:
+            with self.subTest(partition_name=partition_name):
+                with self.assertRaises(Exception) as ex:
+                    orca_sql.reconcile_s3_object_partition_sql(partition_name)
+                self.assertEqual("partition name is not set properly", ex.exception.args[0])

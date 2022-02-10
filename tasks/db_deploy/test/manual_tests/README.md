@@ -7,7 +7,7 @@ To run the tests provided below, run the steps in the [initial setup](#initial-s
 section first.
 
 It is recommended to run the tests in the following order.
-- [Database Migration v1 to v4 Test](#database-migration-v1-to-v4-test)
+- [Database Migration v1 to v5 Test](#database-migration-v1-to-v5-test)
 - [Database No Migration Test](#database-no-migration-test)
 - [Database Fresh Install Test](#database-fresh-install-test)
 - [Database Exists Install Test](#database-exists-install-test)
@@ -171,7 +171,22 @@ To run the fresh install test, in your **python** window run the command
 {"message": "granules table created.", "timestamp": "2021-09-17T14:45:42.622593", "level": "info"}
 {"message": "Creating files table ...", "timestamp": "2021-09-17T14:45:42.622593", "level": "debug"}
 {"message": "files table created.", "timestamp": "2021-09-17T14:45:42.856679", "level": "info"}
-{"message": "Manual test complete.", "timestamp": "2021-09-17T14:45:43.329754", "level": "info"}
+{"message": "Creating reconcile_status table ...", "timestamp": "2022-02-10T10:51:07.421373", "level": "debug"}
+{"message": "reconcile_status table created.", "timestamp": "2022-02-10T10:51:07.422447", "level": "info"}
+{"message": "Creating reconcile_job table ...", "timestamp": "2022-02-10T10:51:07.422552", "level": "debug"}
+{"message": "reconcile_job table created.", "timestamp": "2022-02-10T10:51:07.422962", "level": "info"}
+{"message": "Creating reconcile_s3_object table ...", "timestamp": "2022-02-10T10:51:07.423052", "level": "debug"}
+{"message": "reconcile_s3_object table created.", "timestamp": "2022-02-10T10:51:07.423450", "level": "info"}
+{"message": "Creating reconcile_catalog_mismatch_report table ...", "timestamp": "2022-02-10T10:51:07.423539", "level": "debug"}
+{"message": "reconcile_catalog_mismatch_report table created.", "timestamp": "2022-02-10T10:51:07.424753", "level": "info"}
+{"message": "Creating reconcile_orphan_report table ...", "timestamp": "2022-02-10T10:51:07.424846", "level": "debug"}
+{"message": "reconcile_orphan_report table created.", "timestamp": "2022-02-10T10:51:07.425242", "level": "info"}
+{"message": "Creating reconcile_phantom_report table ...", "timestamp": "2022-02-10T10:51:07.425330", "level": "debug"}
+{"message": "reconcile_phantom_report table created.", "timestamp": "2022-02-10T10:51:07.425728", "level": "info"}
+{"message": "Creating partition table for reconcile_s3_object ...", "timestamp": "2022-02-10T10:51:07.425815", "level": "debug"}
+{"message": "partition table for reconcile_s3_object created.", "timestamp": "2022-02-10T10:51:07.426223", "level": "info"}
+{"message": "Creating extension aws_s3 ...", "timestamp": "2022-02-10T10:51:07.426307", "level": "debug"}
+{"message": "Manual test complete.", "timestamp": "2022-02-10T10:51:07.426307", "level": "info"}
 
 Process finished with exit code 0
 ```
@@ -200,7 +215,13 @@ expressed in the logs.
 {"message": "collections table created.", "timestamp": "2021-09-14T13:37:54.279718", "level": "info"}
 {"message": "granules table created.", "timestamp": "2021-09-14T13:37:54.711834", "level": "info"}
 {"message": "files table created.", "timestamp": "2021-09-14T13:37:54.927886", "level": "info"}
-
+{"message": "reconcile_status table created.", "timestamp": "2022-02-10T10:51:07.422447", "level": "info"}
+{"message": "reconcile_job table created.", "timestamp": "2022-02-10T10:51:07.422962", "level": "info"}
+{"message": "reconcile_s3_object table created.", "timestamp": "2022-02-10T10:51:07.423450", "level": "info"}
+{"message": "reconcile_catalog_mismatch_report table created.", "timestamp": "2022-02-10T10:51:07.424753", "level": "info"}
+{"message": "reconcile_orphan_report table created.", "timestamp": "2022-02-10T10:51:07.425242", "level": "info"}
+{"message": "reconcile_phantom_report table created.", "timestamp": "2022-02-10T10:51:07.425728", "level": "info"}
+{"message": "partition table for reconcile_s3_object created.", "timestamp": "2022-02-10T10:51:07.426223", "level": "info"}
 ```
 
 Next, verify that the objects were actually created with the proper data in the
@@ -240,7 +261,7 @@ PostgreSQL *orca* database. Perform the checks below by going to the
     public | postgres
    (2 rows)
    ```
-3. Verify the tables were created in the ORCA schema.
+3. Verify the tables were created in the ORCA schema. It is assumed that the partition table in schema version 5 is named `orca_archive_location_test_bucket`
    ```bash
    orca=# \dt orca.*
 
@@ -251,6 +272,13 @@ PostgreSQL *orca* database. Perform the checks below by going to the
     orca   | files                     | table | orca_dbo
     orca   | granules                  | table | orca_dbo
     orca   | providers                 | table | orca_dbo
+    orca   | reconcile_status          | table | orca_dbo
+    orca   | reconcile_job             | table | orca_dbo
+    orca   | reconcile_s3_object        | table | orca_dbo
+    orca   | reconcile_catalog_mismatch_report | table | orca_dbo
+    orca   | reconcile_orphan_report    | table | orca_dbo
+    orca   | reconcile_phantom_report   | table | orca_dbo
+    orca   | reconcile_s3_object_{bucket_name}| table | orca_dbo
     orca   | recovery_file             | table | orca_dbo
     orca   | recovery_job              | table | orca_dbo
     orca   | recovery_status           | table | orca_dbo
@@ -275,7 +303,7 @@ PostgreSQL *orca* database. Perform the checks below by going to the
 
     version_id |                     description                      |         install _date         | is_latest
    ------------+------------------------------------------------------+-------------------------------+-----------
-             4 | Added inventory schema for v4.x of ORCA application  | 2021-04-28 23:3 9:58.63444+00 | t
+             5 | Added internal reconciliation schema for v5.x of ORCA application  | 2021-04-28 23:3 9:58.63444+00 | t
    (1 row)
    ```
 6. Verify the orcauser can login with the password provided in the `.env` files
@@ -375,7 +403,7 @@ schema and run the migration of objects and data to an ORCA v4 schema.
    ```
 3. Run the `sql/orca_schema_v1/create.sql` script as seen below. This will
    populate the database with the users, schema, tables and dummy data used for
-   migrating from v1 of the schema to v4.
+   migrating from v1 of the schema to v5.
    ```bash
    root@26df0390e999:/data/test/manual_tests# psql
    psql (12.6 (Debian 12.6-1.pgdg100+1))
@@ -494,9 +522,26 @@ To run the migration test, in your **python** window run the command
 {"message": "granules table created.", "timestamp": "2021-09-14T13:37:54.711834", "level": "info"}
 {"message": "Creating files table ...", "timestamp": "2021-09-14T13:37:54.711834", "level": "debug"}
 {"message": "files table created.", "timestamp": "2021-09-14T13:37:54.927886", "level": "info"}
-{"message": "Data added to the schema_versions table.", "timestamp": "2021-09-14T15:20:20.231299", "level": "info"}
 {"message": "Populating the schema_versions table with data ...", "timestamp": "2021-09-14T15:20:20.199998", "level": "debug"}
-{"message": "Manual test complete.", "timestamp": "2021-09-14T15:20:20.363841", "level": "info"}
+{"message": "Data added to the schema_versions table.", "timestamp": "2021-09-14T15:20:20.231299", "level": "info"}
+{"message": "Creating reconcile_status table ...", "timestamp": "2022-02-10T10:51:07.421373", "level": "debug"}
+{"message": "reconcile_status table created.", "timestamp": "2022-02-10T10:51:07.422447", "level": "info"}
+{"message": "Creating reconcile_job table ...", "timestamp": "2022-02-10T10:51:07.422552", "level": "debug"}
+{"message": "reconcile_job table created.", "timestamp": "2022-02-10T10:51:07.422962", "level": "info"}
+{"message": "Creating reconcile_s3_object table ...", "timestamp": "2022-02-10T10:51:07.423052", "level": "debug"}
+{"message": "reconcile_s3_object table created.", "timestamp": "2022-02-10T10:51:07.423450", "level": "info"}
+{"message": "Creating reconcile_catalog_mismatch_report table ...", "timestamp": "2022-02-10T10:51:07.423539", "level": "debug"}
+{"message": "reconcile_catalog_mismatch_report table created.", "timestamp": "2022-02-10T10:51:07.424753", "level": "info"}
+{"message": "Creating reconcile_orphan_report table ...", "timestamp": "2022-02-10T10:51:07.424846", "level": "debug"}
+{"message": "reconcile_orphan_report table created.", "timestamp": "2022-02-10T10:51:07.425242", "level": "info"}
+{"message": "Creating reconcile_phantom_report table ...", "timestamp": "2022-02-10T10:51:07.425330", "level": "debug"}
+{"message": "reconcile_phantom_report table created.", "timestamp": "2022-02-10T10:51:07.425728", "level": "info"}
+{"message": "Creating partition table for reconcile_s3_object ...", "timestamp": "2022-02-10T10:51:07.425815", "level": "debug"}
+{"message": "partition table for reconcile_s3_object created.", "timestamp": "2022-02-10T10:51:07.426223", "level": "info"}
+{"message": "Creating extension aws_s3 ...", "timestamp": "2022-02-10T10:51:07.426307", "level": "debug"}
+{"message": "Populating the schema_versions table with data ...", "timestamp": "2022-02-10T10:51:07.426307", "level": "debug"}
+{"message": "Data added to the schema_versions table.", "timestamp": "2022-02-10T10:51:07.426307", "level": "info"}
+{"message": "Manual test complete.", "timestamp": "2022-02-10T10:51:07.426307", "level": "info"}
 ```
 
 
@@ -531,6 +576,14 @@ expressed in the logs.
 {"message": "granules table created.", "timestamp": "2021-09-14T15:20:20.231299", "level": "info"}
 {"message": "files table created.", "timestamp": "2021-09-14T15:20:20.231299", "level": "info"}
 {"message": "Data added to the schema_versions table.", "timestamp": "2021-09-14T15:20:20.231299", "level": "info"}
+{"message": "reconcile_status table created.", "timestamp": "2022-02-10T10:51:07.422447", "level": "info"}
+{"message": "reconcile_job table created.", "timestamp": "2022-02-10T10:51:07.422962", "level": "info"}
+{"message": "reconcile_s3_object table created.", "timestamp": "2022-02-10T10:51:07.423450", "level": "info"}
+{"message": "reconcile_catalog_mismatch_report table created.", "timestamp": "2022-02-10T10:51:07.424753", "level": "info"}
+{"message": "reconcile_orphan_report table created.", "timestamp": "2022-02-10T10:51:07.425242", "level": "info"}
+{"message": "reconcile_phantom_report table created.", "timestamp": "2022-02-10T10:51:07.425728", "level": "info"}
+{"message": "partition table for reconcile_s3_object created.", "timestamp": "2022-02-10T10:51:07.426223", "level": "info"}
+{"message": "Data added to the schema_versions table.", "timestamp": "2022-02-10T10:51:07.426307", "level": "info"}
 
 ```
 
@@ -587,6 +640,13 @@ PostgreSQL *orca* database. Perform the checks below by going to the
     orca   | recovery_job              | table | orca_dbo
     orca   | recovery_status           | table | orca_dbo
     orca   | schema_versions           | table | orca_dbo
+    orca   | reconcile_status          | table | orca_dbo
+    orca   | reconcile_job             | table | orca_dbo
+    orca   | reconcile_s3_object        | table | orca_dbo
+    orca   | reconcile_catalog_mismatch_report | table | orca_dbo
+    orca   | reconcile_orphan_report    | table | orca_dbo
+    orca   | reconcile_phantom_report   | table | orca_dbo
+    orca   | orca_archive_location_test_bucket| table | orca_dbo
     (9 rows)
    ```
 4. Verify the static data in the *recovery_status* table.
@@ -607,7 +667,7 @@ PostgreSQL *orca* database. Perform the checks below by going to the
 
     version_id |                     description                      |         install _date         | is_latest
    ------------+------------------------------------------------------+-------------------------------+-----------
-             4 | Added inventory schema for v4.x of ORCA application  | 2021-09-13 23:3 9:58.63444+00 | t
+             5 | Added internal reconciliation schema for v5.x of ORCA application  | 2022-02-10 10:3 9:58.63444+00 | t
    (1 row)
    ```
 6. Verify the orcauser can login with the password provided in the `.env` files
@@ -725,8 +785,8 @@ PostgreSQL *orca* database. Perform the checks below by going to the
 No cleanup is necessary if the next test run is the [Database No Migration Test](#database-no-migration-test).
 
 To clean up from this test you can use one of two scripts. The `sql/cleanup.sql`
-script will remove all objects including the *orca* database. The
-`sql/orca_schema_v4/remove.sql` script will migrate v4 schema to v3 schema, update the `schema_versions` table with value of 3 and also remove the `providers`, `collections`, `provider_collection_xref`, `granules` and `files` tables. The `sql/orca_schema_v3/remove.sql` script will migrate the schema from v3 to v2, update the `schema_versions` table with value of 2. The `sql/orca_schema_v2/remove.sql` script will migrate the schema from v2 to v1, update the `schema_versions` table with value of 1. The `sql/orca_schema_v1/remove.sql` script will remove all the user and roles created.
+script will remove all objects including the *orca* database. The `sql/orca_schema_v5/remove.sql` script will migrate v5 schema to v4 schema, update the `schema_versions` table with value of 4 and also remove the `reconcile_status`, `reconcile_job`, `reconcile_s3_object`, `reconcile_catalog_mismatch_report`, `reconcile_orphan_report`, `reconcile_phantom_report` and `orca_archive_location_test_bucket` tables.
+ The `sql/orca_schema_v4/remove.sql` script will migrate v4 schema to v3 schema, update the `schema_versions` table with value of 3 and also remove the `providers`, `collections`, `provider_collection_xref`, `granules` and `files` tables. The `sql/orca_schema_v3/remove.sql` script will migrate the schema from v3 to v2, update the `schema_versions` table with value of 2. The `sql/orca_schema_v2/remove.sql` script will migrate the schema from v2 to v1, update the `schema_versions` table with value of 1. The `sql/orca_schema_v1/remove.sql` script will remove all the user and roles created.
 
 ```bash
 root@26df0390e999:/data/test/manual_tests# psql
@@ -736,11 +796,13 @@ Type "help" for help.
 postgres=# \c orca
 You are now connected to database "orca" as user "postgres".
 
-orca=# \i sql/orca_schema_v4/remove.sql
+orca=# \i sql/orca_schema_v5/remove.sql
 
 DROP TABLE 
 DROP TABLE 
 DROP TABLE 
+DROP TABLE 
+DROP TABLE
 DROP TABLE 
 DROP TABLE 
 ```

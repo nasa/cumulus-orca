@@ -42,12 +42,16 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
     @patch("migrations.migrate_versions_4_to_5.migrate.sql.reconcile_catalog_mismatch_report_table_sql")
     @patch("migrations.migrate_versions_4_to_5.migrate.sql.reconcile_orphan_report_table_sql")
     @patch("migrations.migrate_versions_4_to_5.migrate.sql.reconcile_phantom_report_table_sql")
+    @patch("migrations.migrate_versions_4_to_5.migrate.sql.reconcile_s3_object_partition_sql")
+    @patch("migrations.migrate_versions_4_to_5.migrate.sql.create_extension")
     @patch("migrations.migrate_versions_4_to_5.migrate.get_admin_connection")
     @patch("migrations.migrate_versions_4_to_5.migrate.sql.text")
     def test_migrate_versions_4_to_5_happy_path(
             self,
             mock_text: MagicMock,
             mock_connection: MagicMock,
+            mock_extension: MagicMock,
+            mock_reconcile_s3_object_partition_table: MagicMock,
             mock_reconcile_phantom_report_table: MagicMock,
             mock_reconcile_orphan_report_table: MagicMock,
             mock_reconcile_catalog_mismatch_report_table: MagicMock,
@@ -79,6 +83,8 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 mock_reconcile_catalog_mismatch_report_table.assert_called_once()
                 mock_reconcile_orphan_report_table.assert_called_once()
                 mock_reconcile_phantom_report_table.assert_called_once()
+                mock_reconcile_s3_object_partition_table.assert_called_once()
+                mock_extension.assert_called_once()
 
                 # Check the text calls occur and in the proper order
                 text_calls = [
@@ -95,6 +101,8 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                     call.execute(mock_reconcile_catalog_mismatch_report_table()),
                     call.execute(mock_reconcile_orphan_report_table()),
                     call.execute(mock_reconcile_phantom_report_table()),
+                    call.execute(mock_reconcile_s3_object_partition_table()),
+                    call.execute(mock_extension()),
                     call.commit(),
                 ]
                 # Validate logic switch and set the execution order
@@ -115,5 +123,7 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 mock_reconcile_catalog_mismatch_report_table.reset_mock()
                 mock_reconcile_orphan_report_table.reset_mock()
                 mock_reconcile_phantom_report_table.reset_mock()
+                mock_reconcile_s3_object_partition_table.reset_mock()
+                mock_extension.reset_mock()
                 mock_schema_versions_data.reset_mock()
                 mock_text.reset_mock()

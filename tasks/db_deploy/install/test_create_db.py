@@ -243,3 +243,53 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         ]
 
         self.assertEqual(self.mock_connection.mock_calls, execution_order)
+
+
+    @patch("install.create_db.sql.reconcile_status_table_sql")
+    @patch("install.create_db.sql.reconcile_job_table_sql")
+    @patch("install.create_db.sql.reconcile_s3_object_table_sql")
+    @patch("install.create_db.sql.reconcile_catalog_mismatch_report_table_sql")
+    @patch("install.create_db.sql.reconcile_orphan_report_table_sql")
+    @patch("install.create_db.sql.reconcile_phantom_report_table_sql")
+    @patch("install.create_db.sql.reconcile_s3_object_partition_sql")
+    @patch("install.create_db.sql.create_extension")
+    def test_create_internal_reconciliation_objects(
+        self,
+        mock_extension: MagicMock,
+        mock_reconcile_s3_object_partition_table: MagicMock,
+        mock_reconcile_phantom_report_table: MagicMock,
+        mock_reconcile_orphan_report_table: MagicMock,
+        mock_reconcile_catalog_mismatch_report_table: MagicMock,
+        mock_reconcile_s3_object_table: MagicMock,
+        mock_reconcile_job_table: MagicMock,
+        mock_reconcile_status_table: MagicMock,        
+    ):
+        """
+        Tests happy path of the create_internal_reconciliation_objects function
+        """
+        create_db.create_internal_reconciliation_objects(self.mock_connection)
+
+        # Check that the SQL calls were made
+        mock_reconcile_status_table.assert_called_once()
+        mock_reconcile_job_table.assert_called_once()
+        mock_reconcile_s3_object_table.assert_called_once()
+        mock_reconcile_catalog_mismatch_report_table.assert_called_once()
+        mock_reconcile_orphan_report_table.assert_called_once()
+        mock_reconcile_phantom_report_table.assert_called_once()
+        mock_reconcile_s3_object_partition_table.assert_called_once()
+        mock_extension.assert_called_once()
+
+        # Check that they were called in the proper order
+        execution_order = [
+            call.execute(mock_reconcile_status_table()),
+            call.execute(mock_reconcile_job_table()),
+            call.execute(mock_reconcile_s3_object_table()),
+            call.execute(mock_reconcile_catalog_mismatch_report_table()),
+            call.execute(mock_reconcile_orphan_report_table()),
+            call.execute(mock_reconcile_phantom_report_table()),
+            call.execute(mock_reconcile_s3_object_partition_table()),
+            call.execute(mock_extension())
+
+        ]
+
+        self.assertEqual(self.mock_connection.mock_calls, execution_order)

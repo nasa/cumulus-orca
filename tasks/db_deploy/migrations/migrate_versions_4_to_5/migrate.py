@@ -58,7 +58,17 @@ def migrate_versions_4_to_5(config: Dict[str, str], is_latest_version: bool) -> 
     logger.debug("Creating reconcile_phantom_report table ...")
     connection.execute(sql.reconcile_phantom_report_table_sql())
     logger.info("reconcile_phantom_report table created.")
+    
+    # Create partition table
+    logger.debug("Creating partition table for reconcile_s3_object ...")
+    connection.execute(sql.reconcile_s3_object_partition_sql())
+    logger.info("partition table for reconcile_s3_object created.")
 
+    # Create extension for the database
+    logger.debug("Creating extension aws_s3 ...")
+    connection.execute(sql.create_extension())
+    logger.info("extension aws_s3 created.")
+    
     # Commit if there is no issues
     connection.commit()
 
