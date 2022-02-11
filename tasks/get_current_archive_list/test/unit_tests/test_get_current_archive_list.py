@@ -256,7 +256,7 @@ class TestGetCurrentArchiveList(
         mock_update_job_with_s3_inventory_in_postgres.assert_not_called()
 
         mock_logger.error.assert_called_once_with(
-            "Encountered a fatal error: {ex}", ex=expected_exception
+            f"Encountered a fatal error: {expected_exception}"
         )
         mock_update_job_with_failure.assert_called_once_with(
             mock_job_id, str(expected_exception), mock_get_user_connection.return_value
@@ -388,7 +388,7 @@ class TestGetCurrentArchiveList(
         )
         mock_create_job_sql.assert_called_once_with()
         mock_logger.error.assert_called_once_with(
-            "Error while creating job: {sql_ex}", sql_ex=expected_exception
+            f"Error while creating job: {expected_exception}"
         )
 
     @patch("get_current_archive_list.update_job_sql")
@@ -477,9 +477,7 @@ class TestGetCurrentArchiveList(
         )
         mock_update_job_sql.assert_called_once_with()
         mock_logger.error.assert_called_once_with(
-            "Error while updating job '{job_id}': {sql_ex}",
-            job_id=mock_job_id,
-            sql_ex=expected_exception,
+            f"Error while updating job '{mock_job_id}': {expected_exception}"
         )
 
     @patch("get_current_archive_list.get_partition_name_from_bucket_name")
@@ -566,9 +564,7 @@ class TestGetCurrentArchiveList(
             Exception, expected_exception, unittest.mock.ANY
         )
         mock_logger.error.assert_called_once_with(
-            "Error while truncating bucket '{orca_archive_location}': {sql_ex}",
-            orca_archive_location=mock_orca_archive_location,
-            sql_ex=expected_exception,
+            f"Error while truncating bucket '{mock_orca_archive_location}': {expected_exception}"
         )
 
     @patch("get_current_archive_list.update_job_sql")
@@ -763,9 +759,7 @@ class TestGetCurrentArchiveList(
             Exception, expected_exception, unittest.mock.ANY
         )
         mock_logger.error.assert_called_once_with(
-            "Error while processing job '{job_id}': {sql_ex}",
-            job_id=mock_job_id,
-            sql_ex=expected_exception,
+            f"Error while processing job '{mock_job_id}': {expected_exception}"
         )
 
     @patch("get_current_archive_list.LOGGER")
@@ -835,9 +829,7 @@ class TestGetCurrentArchiveList(
             Exception, unittest.mock.ANY, unittest.mock.ANY
         )
         mock_logger.error.assert_called_once_with(
-            "Error while processing job '{job_id}': {sql_ex}",
-            job_id=mock_job_id,
-            sql_ex=unittest.mock.ANY,
+            f"Error while processing job '{mock_job_id}': {cm.exception}"
         )
 
     @patch("boto3.resource")

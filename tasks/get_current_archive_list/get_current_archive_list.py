@@ -48,8 +48,7 @@ try:
     with open("schemas/output.json", "r") as raw_schema:
         _OUTPUT_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
 except Exception as ex:
-    # Can't use f"" because of '{}' bug in CumulusLogger.
-    LOGGER.error("Could not build schema validator: {ex}", ex=ex)
+    LOGGER.error(f"Could not build schema validator: {ex}")
     raise
 
 
@@ -117,7 +116,7 @@ def task(
         )
     except Exception as fatal_exception:
         # On error, set job status to failure.
-        LOGGER.error("Encountered a fatal error: {ex}", ex=fatal_exception)
+        LOGGER.error(f"Encountered a fatal error: {fatal_exception}")
         # noinspection PyArgumentList
         update_job_with_failure(job_id, str(fatal_exception), user_engine)
         raise
@@ -179,10 +178,8 @@ def create_job(
                 ],
             )
     except Exception as sql_ex:
-        # Can't use f"" because of '{}' bug in CumulusLogger.
         LOGGER.error(
-            "Error while creating job: {sql_ex}",
-            sql_ex=sql_ex,
+            f"Error while creating job: {sql_ex}"
         )
         raise
 
@@ -232,11 +229,8 @@ def update_job_with_failure(job_id: int, error_message: str, engine: Engine) -> 
                 ],
             )
     except Exception as sql_ex:
-        # Can't use f"" because of '{}' bug in CumulusLogger.
         LOGGER.error(
-            "Error while updating job '{job_id}': {sql_ex}",
-            job_id=job_id,
-            sql_ex=sql_ex,
+            f"Error while updating job '{job_id}': {sql_ex}"
         )
         raise
 
@@ -274,11 +268,8 @@ def truncate_s3_partition(orca_archive_location: str, engine: Engine) -> None:
                 [{}],
             )
     except Exception as sql_ex:
-        # Can't use f"" because of '{}' bug in CumulusLogger.
         LOGGER.error(
-            "Error while truncating bucket '{orca_archive_location}': {sql_ex}",
-            orca_archive_location=orca_archive_location,
-            sql_ex=sql_ex,
+            f"Error while truncating bucket '{orca_archive_location}': {sql_ex}"
         )
         raise
 
@@ -376,11 +367,8 @@ def update_job_with_s3_inventory_in_postgres(
                 ],
             )
     except Exception as sql_ex:
-        # Can't use f"" because of '{}' bug in CumulusLogger.
         LOGGER.error(
-            "Error while processing job '{job_id}': {sql_ex}",
-            job_id=job_id,
-            sql_ex=sql_ex,
+            f"Error while processing job '{job_id}': {sql_ex}"
         )
         raise
 
