@@ -9,7 +9,7 @@
   ],
   "properties": {
     "jobId": {
-      "type": ["integer"],
+      "type": "integer",
       "description": "The unique ID of the reconciliation job."
     }
   }

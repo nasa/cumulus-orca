@@ -304,7 +304,8 @@ def update_job_with_s3_inventory_in_postgres(
     engine: Engine,
 ) -> None:
     """
-    Deconstructs a record to its components and calls send_values_to_database with the result.
+    Constructs a temporary table capable of holding full data from s3 inventory report, triggers load into that table,
+        then moves that data into the proper partition.
 
     Args:
         s3_access_key: The access key that, when paired with s3_secret_key, allows postgres to access s3.
@@ -484,8 +485,8 @@ def translate_s3_import_to_partitioned_data_sql(report_table_name: str):
     """
     return text(
         f"""
-        INSERT INTO orca.{report_table_name} (job_id, orca_archive_location, key_path, etag, last_update, size_in_bytes, storage_class, delete_marker)
-            SELECT :job_id, orca_archive_location, key_path, etag, last_update, size_in_bytes, storage_class, false 
+        INSERT INTO orca.{report_table_name} (job_id, orca_archive_location, key_path, etag, last_update, size_in_bytes, storage_class)
+            SELECT :job_id, orca_archive_location, key_path, etag, last_update, size_in_bytes, storage_class
             FROM s3_import
         """
     )
