@@ -81,13 +81,6 @@ resource "aws_lambda_function" "get_current_archive_list" {
     subnet_ids         = var.lambda_subnet_ids
     security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
   }
-
-  environment {
-    variables = {
-      S3_ACCESS_KEY = var.orca_s3_access_key
-      S3_SECRET_KEY = var.orca_s3_secret_key
-    }
-  }
 }
 
 ## =============================================================================

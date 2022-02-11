@@ -121,16 +121,6 @@ variable "orca_recovery_retry_backoff" {
   description = "The multiplier by which the retry interval increases during each attempt."
 }
 
-variable "orca_s3_access_key" {
-  type        = string
-  description = "Access key for communicating with Orca S3 buckets."
-}
-
-variable "orca_s3_secret_key" {
-  type        = string
-  description = "Secret key for communicating with Orca S3 buckets."
-}
-
 variable "orca_sqs_metadata_queue_arn" {
   type        = string
   description = "The ARN of the metadata-queue SQS"

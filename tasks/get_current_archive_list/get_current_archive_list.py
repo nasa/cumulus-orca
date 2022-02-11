@@ -21,8 +21,9 @@ from sqlalchemy import text
 from sqlalchemy.future import Engine
 from sqlalchemy.sql.elements import TextClause
 
-OS_S3_ACCESS_KEY_KEY = "S3_ACCESS_KEY"
-OS_S3_SECRET_KEY_KEY = "S3_SECRET_KEY"
+SECRETSMANAGER_S3_ACCESS_CREDENTIALS_KEY = "s3-access-credentials"
+S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY = "s3_access_key"
+S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY = "s3_secret_key"
 
 EVENT_RECORDS_KEY = "Records"
 RECORD_AWS_REGION_KEY = "awsRegion"
@@ -476,6 +477,27 @@ def translate_s3_import_to_partitioned_data_sql(report_table_name: str) -> TextC
     )
 
 
+def get_s3_credentials_from_secrets_manager() -> tuple:
+    # todo: Move everything from here to get_configuration to shared lib. See shared_db for code origin.
+    prefix = os.getenv("PREFIX", None)
+    secretsmanager = boto3.client("secretsmanager", region_name=os.getenv("AWS_REGION", None))
+    s3_credentials = json.loads(
+        secretsmanager.get_secret_value(SecretId=f"{prefix}-orca-{SECRETSMANAGER_S3_ACCESS_CREDENTIALS_KEY}")[
+            "SecretString"
+        ]
+    )
+    s3_access_key = s3_credentials.get(S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY, None)
+    if s3_access_key is None or len(s3_access_key) == 0:
+        LOGGER.error(f"{S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY} secret is not set.")
+        raise KeyError(f"{S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY} secret is not set.")
+    s3_secret_key = s3_credentials.get(S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY, None)
+    if s3_secret_key is None or len(s3_secret_key) == 0:
+        LOGGER.error(f"{S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY} secret is not set.")
+        raise KeyError(f"{S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY} secret is not set.")
+
+    return s3_access_key, s3_secret_key
+
+
 def handler(event: Dict[str, List], context) -> Dict[str, Any]:
     """
     Lambda handler. Receives a list of s3 events from an SQS queue, and loads the s3 inventory specified into postgres.
@@ -484,8 +506,6 @@ def handler(event: Dict[str, List], context) -> Dict[str, Any]:
         event: See input.json for details.
         context: An object passed through by AWS. Used for tracking.
     Environment Vars:
-        S3_ACCESS_KEY: The access key that, when paired with s3_secret_key, allows postgres to access s3.
-        S3_SECRET_KEY: The secret key that, when paired with s3_access_key, allows postgres to access s3.
         See shared_db.py's get_configuration for further details.
 
     Returns: See output.json for details.
@@ -497,14 +517,7 @@ def handler(event: Dict[str, List], context) -> Dict[str, Any]:
     if len(event[EVENT_RECORDS_KEY]) != 1:
         raise ValueError(f"Must be passed a single record. Was {len(event['Records'])}")
 
-    s3_access_key = os.environ.get(OS_S3_ACCESS_KEY_KEY, None)
-    if s3_access_key is None or len(s3_access_key) == 0:
-        LOGGER.error("S3_ACCESS_KEY environment variable is not set.")
-        raise KeyError("S3_ACCESS_KEY environment variable is not set.")
-    s3_secret_key = os.environ.get(OS_S3_SECRET_KEY_KEY, None)
-    if s3_secret_key is None or len(s3_secret_key) == 0:
-        LOGGER.error("S3_SECRET_KEY environment variable is not set.")
-        raise KeyError("S3_SECRET_KEY environment variable is not set.")
+    s3_access_key, s3_secret_key = get_s3_credentials_from_secrets_manager()
 
     db_connect_info = shared_db.get_configuration()
 

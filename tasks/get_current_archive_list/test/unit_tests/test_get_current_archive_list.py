@@ -5,6 +5,7 @@ Description:  Unit tests for test_get_current_archive_list.py.
 """
 import copy
 import datetime
+import json
 import os
 import random
 import unittest
@@ -128,7 +129,7 @@ class TestGetCurrentArchiveList(
         mock_get_manifest: MagicMock,
         mock_truncate_s3_partition: MagicMock,
         mock_update_job_with_s3_inventory_in_postgres: MagicMock,
-        mock_logger: MagicMock
+        mock_logger: MagicMock,
     ):
         """
         Only manifest.json files should trigger deeper processing. Otherwise, return {job_id: None}
@@ -160,8 +161,12 @@ class TestGetCurrentArchiveList(
                 mock_s3_secret_key,
                 copy.copy(db_connect_info),
             )
-        self.assertEqual("Illegal file 'blah.json'. Must be 'manifest.json'", str(cm.exception))
-        mock_logger.error.assert_called_once_with("Illegal file 'blah.json'. Must be 'manifest.json'")
+        self.assertEqual(
+            "Illegal file 'blah.json'. Must be 'manifest.json'", str(cm.exception)
+        )
+        mock_logger.error.assert_called_once_with(
+            "Illegal file 'blah.json'. Must be 'manifest.json'"
+        )
 
         mock_get_manifest.assert_not_called()
         mock_get_user_connection.assert_not_called()
@@ -891,14 +896,102 @@ class TestGetCurrentArchiveList(
             result,
         )
 
+    @patch("boto3.client")
+    def test_get_s3_credentials_from_secrets_manager_happy_path(
+        self, mock_client: MagicMock
+    ):
+        """
+        Happy path for pulling secret values from secretsmanager
+        """
+        prefix = uuid.uuid4().__str__()
+        region = uuid.uuid4().__str__()
+        s3_access_key = uuid.uuid4().__str__()
+        s3_secret_key = uuid.uuid4().__str__()
+
+        mock_secrets_manager = mock_client.return_value
+        mock_secrets_manager.get_secret_value.return_value = {
+            "SecretString": json.dumps(
+                {
+                    get_current_archive_list.S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY: s3_access_key,
+                    get_current_archive_list.S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY: s3_secret_key,
+                }
+            )
+        }
+
+        with patch.dict(
+            os.environ,
+            {"PREFIX": prefix, "AWS_REGION": region},
+        ):
+            (
+                result_access_key,
+                result_secret_key,
+            ) = get_current_archive_list.get_s3_credentials_from_secrets_manager()
+
+        mock_client.assert_called_once_with("secretsmanager", region_name=region)
+        mock_secrets_manager.get_secret_value.assert_called_once_with(
+            SecretId=f"{prefix}-orca-{get_current_archive_list.SECRETSMANAGER_S3_ACCESS_CREDENTIALS_KEY}"
+        )
+        self.assertEqual(s3_access_key, result_access_key)
+        self.assertEqual(s3_secret_key, result_secret_key)
+
+    @patch("boto3.client")
+    def test_get_s3_credentials_from_secrets_manager_missing_values_raises_error(
+        self, mock_client: MagicMock
+    ):
+        """
+        When returns are unset or empty strings, should raise KeyError.
+        """
+        s3_access_key = uuid.uuid4().__str__()
+        s3_secret_key = uuid.uuid4().__str__()
+        prefix = uuid.uuid4().__str__()
+        region = uuid.uuid4().__str__()
+
+        mock_secrets_manager = mock_client.return_value
+
+        with patch.dict(
+                os.environ,
+                {"PREFIX": prefix, "AWS_REGION": region},
+        ):
+            for secret_key in [
+                get_current_archive_list.S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY,
+                get_current_archive_list.S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY,
+            ]:
+                values = {
+                        get_current_archive_list.S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY: s3_access_key,
+                        get_current_archive_list.S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY: s3_secret_key,
+                    }
+                with self.subTest(secret_key=secret_key):
+                    values[secret_key] = ""
+                    mock_secrets_manager.get_secret_value.return_value = {
+                        "SecretString": json.dumps(values)
+                    }
+                    with self.assertRaises(KeyError) as cm:
+                        get_current_archive_list.get_s3_credentials_from_secrets_manager()
+                    self.assertEqual(
+                        f"'{secret_key} secret is not set.'",
+                        str(cm.exception),
+                    )
+                    values.pop(secret_key)
+                    mock_secrets_manager.get_secret_value.return_value = {
+                        "SecretString": json.dumps(values)
+                    }
+                    with self.assertRaises(KeyError) as cm:
+                        get_current_archive_list.get_s3_credentials_from_secrets_manager()
+                    self.assertEqual(
+                        f"'{secret_key} secret is not set.'",
+                        str(cm.exception),
+                    )
+
     # noinspection PyPep8Naming
     @patch("orca_shared.database.shared_db.get_configuration")
+    @patch("get_current_archive_list.get_s3_credentials_from_secrets_manager")
     @patch("get_current_archive_list.LOGGER")
     @patch("get_current_archive_list.task")
     def test_handler_happy_path(
         self,
         mock_task: MagicMock,
         mock_LOGGER: MagicMock,
+        mock_get_s3_credentials_from_secrets_manager: MagicMock,
         mock_get_configuration: MagicMock,
     ):
         """
@@ -926,16 +1019,14 @@ class TestGetCurrentArchiveList(
         s3_access_key = uuid.uuid4().__str__()
         s3_secret_key = uuid.uuid4().__str__()
 
-        with patch.dict(
-            os.environ,
-            {
-                get_current_archive_list.OS_S3_ACCESS_KEY_KEY: s3_access_key,
-                get_current_archive_list.OS_S3_SECRET_KEY_KEY: s3_secret_key,
-            },
-        ):
-            result = get_current_archive_list.handler(event, mock_context)
+        mock_get_s3_credentials_from_secrets_manager.return_value = (
+            s3_access_key,
+            s3_secret_key,
+        )
+        result = get_current_archive_list.handler(event, mock_context)
 
         mock_LOGGER.setMetadata.assert_called_once_with(event, mock_context)
+        mock_get_s3_credentials_from_secrets_manager.assert_called_once_with()
         mock_get_configuration.assert_called_once_with()
         mock_task.assert_called_once_with(
             record, s3_access_key, s3_secret_key, mock_get_configuration.return_value
@@ -944,12 +1035,14 @@ class TestGetCurrentArchiveList(
 
     # noinspection PyPep8Naming
     @patch("orca_shared.database.shared_db.get_configuration")
+    @patch("get_current_archive_list.get_s3_credentials_from_secrets_manager")
     @patch("get_current_archive_list.LOGGER")
     @patch("get_current_archive_list.task")
     def test_handler_multiple_records_raises_error(
         self,
         mock_task: MagicMock,
         mock_LOGGER: MagicMock,
+        mock_get_s3_credentials_from_secrets_manager: MagicMock,
         mock_get_configuration: MagicMock,
     ):
         """
@@ -977,95 +1070,26 @@ class TestGetCurrentArchiveList(
         s3_access_key = uuid.uuid4().__str__()
         s3_secret_key = uuid.uuid4().__str__()
 
-        with patch.dict(
-            os.environ,
-            {
-                get_current_archive_list.OS_S3_ACCESS_KEY_KEY: s3_access_key,
-                get_current_archive_list.OS_S3_SECRET_KEY_KEY: s3_secret_key,
-            },
-        ):
-            with self.assertRaises(ValueError) as cm:
-                get_current_archive_list.handler(event, mock_context)
+        mock_get_s3_credentials_from_secrets_manager.return_value = (
+            s3_access_key,
+            s3_secret_key,
+        )
+        with self.assertRaises(ValueError) as cm:
+            get_current_archive_list.handler(event, mock_context)
 
         mock_LOGGER.setMetadata.assert_called_once_with(event, mock_context)
         mock_task.assert_not_called()
         self.assertEqual("Must be passed a single record. Was 2", str(cm.exception))
 
     @patch("orca_shared.database.shared_db.get_configuration")
-    @patch("get_current_archive_list.LOGGER")
-    @patch("get_current_archive_list.task")
-    def test_handler_missing_os_environ_raises_error(
-        self,
-        mock_task: MagicMock,
-        mock_LOGGER: MagicMock,
-        mock_get_configuration: MagicMock,
-    ):
-        """
-        When environment variables are unset or empty strings, should raise KeyError.
-        """
-        mock_context = Mock()
-        record = {
-            get_current_archive_list.RECORD_S3_KEY: {
-                get_current_archive_list.S3_BUCKET_KEY: {
-                    get_current_archive_list.BUCKET_NAME_KEY: uuid.uuid4().__str__()
-                },
-                get_current_archive_list.S3_OBJECT_KEY: {
-                    get_current_archive_list.OBJECT_KEY_KEY: uuid.uuid4().__str__()
-                },
-            },
-            get_current_archive_list.RECORD_AWS_REGION_KEY: uuid.uuid4().__str__(),
-        }
-        event = {get_current_archive_list.EVENT_RECORDS_KEY: [record]}
-
-        s3_access_key = uuid.uuid4().__str__()
-        s3_secret_key = uuid.uuid4().__str__()
-
-        for os_environ_key in [
-            get_current_archive_list.OS_S3_ACCESS_KEY_KEY,
-            get_current_archive_list.OS_S3_SECRET_KEY_KEY,
-        ]:
-            with patch.dict(
-                os.environ,
-                {
-                    get_current_archive_list.OS_S3_ACCESS_KEY_KEY: s3_access_key,
-                    get_current_archive_list.OS_S3_SECRET_KEY_KEY: s3_secret_key,
-                },
-            ):
-                with self.subTest(os_environ_key=os_environ_key):
-                    os.environ[os_environ_key] = ""
-                    with self.assertRaises(KeyError) as cm:
-                        get_current_archive_list.handler(event, mock_context)
-
-                        mock_LOGGER.setMetadata.assert_called_once_with(
-                            event, mock_context
-                        )
-                        mock_task.assert_not_called()
-                        self.assertEqual(
-                            f"{os_environ_key} environment variable is not set.",
-                            str(cm.exception),
-                        )
-                        mock_LOGGER.reset_mock()
-                    os.environ.pop(os_environ_key)
-                    with self.assertRaises(KeyError) as cm:
-                        get_current_archive_list.handler(event, mock_context)
-
-                        mock_LOGGER.setMetadata.assert_called_once_with(
-                            event, mock_context
-                        )
-                        mock_task.assert_not_called()
-                        self.assertEqual(
-                            f"{os_environ_key} environment variable is not set.",
-                            str(cm.exception),
-                        )
-                        mock_LOGGER.reset_mock()
-
-    @patch("orca_shared.database.shared_db.get_configuration")
+    @patch("get_current_archive_list.get_s3_credentials_from_secrets_manager")
     @patch("get_current_archive_list.LOGGER")
     @patch("get_current_archive_list.task")
     def test_handler_rejects_bad_input(
         self,
         mock_task: MagicMock,
         mock_LOGGER: MagicMock,
+        mock_get_s3_credentials_from_secrets_manager: MagicMock,
         mock_get_configuration: MagicMock,
     ):
         """
@@ -1090,15 +1114,12 @@ class TestGetCurrentArchiveList(
         s3_access_key = uuid.uuid4().__str__()
         s3_secret_key = uuid.uuid4().__str__()
 
-        with patch.dict(
-            os.environ,
-            {
-                get_current_archive_list.OS_S3_ACCESS_KEY_KEY: s3_access_key,
-                get_current_archive_list.OS_S3_SECRET_KEY_KEY: s3_secret_key,
-            },
-        ):
-            with self.assertRaises(Exception) as cm:
-                get_current_archive_list.handler(event, mock_context)
+        mock_get_s3_credentials_from_secrets_manager.return_value = (
+            s3_access_key,
+            s3_secret_key,
+        )
+        with self.assertRaises(Exception) as cm:
+            get_current_archive_list.handler(event, mock_context)
 
         mock_LOGGER.setMetadata.assert_called_once_with(event, mock_context)
         mock_task.assert_not_called()
@@ -1110,12 +1131,14 @@ class TestGetCurrentArchiveList(
         )
 
     @patch("orca_shared.database.shared_db.get_configuration")
+    @patch("get_current_archive_list.get_s3_credentials_from_secrets_manager")
     @patch("get_current_archive_list.LOGGER")
     @patch("get_current_archive_list.task")
     def test_handler_rejects_bad_output(
         self,
         mock_task: MagicMock,
         mock_LOGGER: MagicMock,
+        mock_get_s3_credentials_from_secrets_manager: MagicMock,
         mock_get_configuration: MagicMock,
     ):
         """
@@ -1141,15 +1164,12 @@ class TestGetCurrentArchiveList(
         s3_access_key = uuid.uuid4().__str__()
         s3_secret_key = uuid.uuid4().__str__()
 
-        with patch.dict(
-            os.environ,
-            {
-                get_current_archive_list.OS_S3_ACCESS_KEY_KEY: s3_access_key,
-                get_current_archive_list.OS_S3_SECRET_KEY_KEY: s3_secret_key,
-            },
-        ):
-            with self.assertRaises(Exception) as cm:
-                get_current_archive_list.handler(event, mock_context)
+        mock_get_s3_credentials_from_secrets_manager.return_value = (
+            s3_access_key,
+            s3_secret_key,
+        )
+        with self.assertRaises(Exception) as cm:
+            get_current_archive_list.handler(event, mock_context)
 
         mock_LOGGER.setMetadata.assert_called_once_with(event, mock_context)
         mock_task.assert_called_once_with(
