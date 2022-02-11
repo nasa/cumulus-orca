@@ -113,6 +113,7 @@ class TestGetCurrentArchiveList(
             {get_current_archive_list.OUTPUT_JOB_ID_KEY: mock_job_id}, result
         )
 
+    @patch("get_current_archive_list.LOGGER")
     @patch("get_current_archive_list.update_job_with_s3_inventory_in_postgres")
     @patch("get_current_archive_list.truncate_s3_partition")
     @patch("get_current_archive_list.get_manifest")
@@ -127,6 +128,7 @@ class TestGetCurrentArchiveList(
         mock_get_manifest: MagicMock,
         mock_truncate_s3_partition: MagicMock,
         mock_update_job_with_s3_inventory_in_postgres: MagicMock,
+        mock_logger: MagicMock
     ):
         """
         Only manifest.json files should trigger deeper processing. Otherwise, return {job_id: None}
@@ -141,22 +143,25 @@ class TestGetCurrentArchiveList(
         mock_report_bucket_aws_region = Mock()
         db_connect_info = {"user_database": mock_user_database}
 
-        result = get_current_archive_list.task(
-            {
-                get_current_archive_list.RECORD_S3_KEY: {
-                    get_current_archive_list.S3_OBJECT_KEY: {
-                        get_current_archive_list.OBJECT_KEY_KEY: manifest_key_path
+        with self.assertRaises(Exception) as cm:
+            get_current_archive_list.task(
+                {
+                    get_current_archive_list.RECORD_S3_KEY: {
+                        get_current_archive_list.S3_OBJECT_KEY: {
+                            get_current_archive_list.OBJECT_KEY_KEY: manifest_key_path
+                        },
+                        get_current_archive_list.S3_BUCKET_KEY: {
+                            get_current_archive_list.BUCKET_NAME_KEY: mock_report_bucket_name
+                        },
                     },
-                    get_current_archive_list.S3_BUCKET_KEY: {
-                        get_current_archive_list.BUCKET_NAME_KEY: mock_report_bucket_name
-                    },
+                    get_current_archive_list.RECORD_AWS_REGION_KEY: mock_report_bucket_aws_region,
                 },
-                get_current_archive_list.RECORD_AWS_REGION_KEY: mock_report_bucket_aws_region,
-            },
-            mock_s3_access_key,
-            mock_s3_secret_key,
-            copy.copy(db_connect_info),
-        )
+                mock_s3_access_key,
+                mock_s3_secret_key,
+                copy.copy(db_connect_info),
+            )
+        self.assertEqual("Illegal file 'blah.json'. Must be 'manifest.json'", str(cm.exception))
+        mock_logger.error.assert_called_once_with("Illegal file 'blah.json'. Must be 'manifest.json'")
 
         mock_get_manifest.assert_not_called()
         mock_get_user_connection.assert_not_called()
@@ -164,8 +169,6 @@ class TestGetCurrentArchiveList(
         mock_create_job.assert_not_called()
         mock_truncate_s3_partition.assert_not_called()
         mock_update_job_with_s3_inventory_in_postgres.assert_not_called()
-
-        self.assertEqual({get_current_archive_list.OUTPUT_JOB_ID_KEY: None}, result)
 
     @patch("get_current_archive_list.LOGGER")
     @patch("get_current_archive_list.update_job_with_failure")

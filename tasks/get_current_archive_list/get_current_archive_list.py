@@ -59,7 +59,8 @@ def task(
     db_connect_info: Dict,
 ) -> Dict[str, Any]:
     """
-    Sends each individual record to send_record_to_database.
+    Reads the record to find the location of manifest.json, then uses that information to spawn of business logic
+    for pulling manifest's data into sql.
 
     Args:
         record: See input.json for details.
@@ -73,8 +74,8 @@ def task(
     filename = os.path.basename(record[RECORD_S3_KEY][S3_OBJECT_KEY][OBJECT_KEY_KEY])
 
     if filename != "manifest.json":
-        LOGGER.info(f"Ignoring file '{filename}'.")
-        return {OUTPUT_JOB_ID_KEY: None}  # todo: Shut down workflow.
+        LOGGER.error(f"Illegal file '{filename}'. Must be 'manifest.json'")
+        raise Exception(f"Illegal file '{filename}'. Must be 'manifest.json'")
 
     # See https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage-inventory-location.html for json example.
     manifest = get_manifest(
