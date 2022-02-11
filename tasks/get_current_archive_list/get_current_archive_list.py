@@ -19,6 +19,7 @@ from orca_shared.reconciliation.shared_reconciliation import (
 )
 from sqlalchemy import text
 from sqlalchemy.future import Engine
+from sqlalchemy.sql.elements import TextClause
 
 OS_S3_ACCESS_KEY_KEY = "S3_ACCESS_KEY"
 OS_S3_SECRET_KEY_KEY = "S3_SECRET_KEY"
@@ -189,7 +190,7 @@ def create_job(
         return row["id"]
 
 
-def create_job_sql():
+def create_job_sql() -> TextClause:
     return text(
         """
         INSERT INTO reconcile_job
@@ -240,7 +241,7 @@ def update_job_with_failure(job_id: int, error_message: str, engine: Engine) -> 
         raise
 
 
-def update_job_sql():
+def update_job_sql() -> TextClause:
     return text(
         """
         UPDATE
@@ -282,7 +283,7 @@ def truncate_s3_partition(orca_archive_location: str, engine: Engine) -> None:
         raise
 
 
-def truncate_s3_partition_sql(partition_name: str):
+def truncate_s3_partition_sql(partition_name: str) -> TextClause:
     # Quickly removes data from the partition
     return text(
         f"""
@@ -442,7 +443,7 @@ def generate_temporary_s3_column_list(manifest_file_schema: str) -> str:
 
 # https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PostgreSQL.S3Import.html
 # To make runnable, run 'CREATE EXTENSION IF NOT EXISTS aws_s3 CASCADE;'
-def create_temporary_table_sql(temporary_s3_column_list: str):
+def create_temporary_table_sql(temporary_s3_column_list: str) -> TextClause:
     """
     Creates a temporary table to store inventory data.
     Args:
@@ -458,7 +459,7 @@ def create_temporary_table_sql(temporary_s3_column_list: str):
     )
 
 
-def trigger_csv_load_from_s3_sql():
+def trigger_csv_load_from_s3_sql() -> TextClause:
     """
     SQL for telling postgres where/how to copy in the s3 inventory data.
     """
@@ -479,7 +480,7 @@ def trigger_csv_load_from_s3_sql():
     )
 
 
-def translate_s3_import_to_partitioned_data_sql(report_table_name: str):
+def translate_s3_import_to_partitioned_data_sql(report_table_name: str) -> TextClause:
     """
     SQL for translating between the temporary table and Orca table.
     """

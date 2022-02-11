@@ -19,6 +19,7 @@ and includes an additional section for migration notes.
 
 ### Added
 - *ORCA-161* Added dead letter queue and cloudwatch alarm terraform code to recovery SQS queue.
+- *ORCA-307* Added lambda get_current_archive_list to pull S3 Inventory reports into Postgres.
 
 ### Changed
 - *ORCA-161* Changed staged recovery SQS queue type from FIFO to standard queue.
