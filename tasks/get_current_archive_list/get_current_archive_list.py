@@ -183,8 +183,7 @@ def create_job(
         )
         raise
 
-    for row in rows:  # Easiest way to get first row.
-        return row["id"]
+    return rows.fetchone()["id"]
 
 
 def create_job_sql() -> TextClause:
@@ -393,17 +392,6 @@ def add_metadata_to_gzip(report_bucket_name: str, gzip_key_path: str) -> None:
         )
 
 
-# Keys indicate columns in the s3 inventory csv. Values indicate the corresponding column in orca.reconcile_s3_object
-column_mappings = {
-    "Bucket": "orca_archive_location text",
-    "Key": "key_path text",
-    "Size": "size_in_bytes bigint",
-    "LastModifiedDate": "last_update timestamptz",
-    "ETag": "etag text",
-    "StorageClass": "storage_class text",
-}
-
-
 def generate_temporary_s3_column_list(manifest_file_schema: str) -> str:
     """
     Creates a list of columns that matches the order of columns in the manifest.
@@ -416,12 +404,19 @@ def generate_temporary_s3_column_list(manifest_file_schema: str) -> str:
         For example, 'orca_archive_location text, key_path text, size_in_bytes bigint, last_update timestamptz, etag text, storage_class text, junk7 text, junk8 text, junk9 text, junk10 text, junk11 text, junk12 text, junk13 text, junk14 text'
 
     """
-    column_index = 0
+    # Keys indicate columns in the s3 inventory csv. Values indicate the corresponding column in orca.reconcile_s3_object
+    column_mappings = {
+        "Bucket": "orca_archive_location text",
+        "Key": "key_path text",
+        "Size": "size_in_bytes bigint",
+        "LastModifiedDate": "last_update timestamptz",
+        "ETag": "etag text",
+        "StorageClass": "storage_class text",
+    }
     manifest_file_schema = manifest_file_schema.replace(" ", "")
     columns_in_csv = manifest_file_schema.split(",")
     columns_in_postgres = []
-    for column_in_csv in columns_in_csv:
-        column_index = column_index + 1
+    for column_index, column_in_csv in enumerate(columns_in_csv):
         postgres_column_name = column_mappings.get(
             column_in_csv, "junk" + str(column_index) + " text"
         )

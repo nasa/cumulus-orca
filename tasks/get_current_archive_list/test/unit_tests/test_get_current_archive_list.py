@@ -303,8 +303,9 @@ class TestGetCurrentArchiveList(
         mock_orca_archive_location = Mock()
         mock_inventory_creation_time = Mock()
         mock_job_id = Mock()
-        returned_row0 = {"id": mock_job_id}
-        mock_execute = Mock(return_value=[returned_row0])
+        returned_rows = Mock()
+        returned_rows.fetchone = Mock(return_value={"id": mock_job_id})
+        mock_execute = Mock(return_value=returned_rows)
         mock_connection = Mock()
         mock_connection.execute = mock_execute
         mock_exit = Mock(return_value=False)
@@ -886,7 +887,7 @@ class TestGetCurrentArchiveList(
             "StorageClass, blah, Size, Key, Extra, Bucket,LastModifiedDate,ETag"
         )
         self.assertEqual(
-            "storage_class text, junk2 text, size_in_bytes bigint, key_path text, junk5 text, orca_archive_location text, last_update timestamptz, etag text",
+            "storage_class text, junk1 text, size_in_bytes bigint, key_path text, junk4 text, orca_archive_location text, last_update timestamptz, etag text",
             result,
         )
 
