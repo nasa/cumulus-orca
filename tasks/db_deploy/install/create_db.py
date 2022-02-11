@@ -3,21 +3,23 @@ Name: create_db.py
 
 Description: Creates the current version on the ORCA database.
 """
-from typing import Dict
+from typing import Dict, List
 
 from orca_shared.database.shared_db import (
     get_admin_connection, logger
 )
+from orca_shared.reconciliation.shared_reconciliation import get_partition_name_from_bucket_name
 from sqlalchemy.future import Connection
 import install.orca_sql as sql
 
-def create_fresh_orca_install(config: Dict[str, str]) -> None:
+def create_fresh_orca_install(config: Dict[str, str], partition_bucket: List[str]) -> None:
     """
     This task will create the ORCA roles, users, schema, and tables needed
     by the ORCA application as a fresh install.
 
     Args:
         config (Dict): Dictionary with database connection information
+        partition_bucket: List[str]): List of partition buckets to create partition tables.
 
     Returns:
         None
@@ -40,7 +42,7 @@ def create_fresh_orca_install(config: Dict[str, str]) -> None:
         create_inventory_objects(conn)
 
         # Create internal reconciliation objects
-        create_internal_reconciliation_objects(conn)
+        create_internal_reconciliation_objects(conn, partition_bucket)
 
         # If everything is good, commit.
         conn.commit()
@@ -94,6 +96,10 @@ def create_app_schema_role_users(connection: Connection, app_username: str, app_
     connection.execute(sql.app_user_sql(app_username, app_password))
     logger.info("ORCA application user created.")
 
+    # Create extension for the database
+    logger.debug("Creating extension aws_s3 ...")
+    connection.execute(sql.create_extension())
+    logger.info("extension aws_s3 created.")
 
 def set_search_path_and_role(connection: Connection) -> None:
     """
@@ -208,7 +214,7 @@ def create_inventory_objects(connection: Connection) -> None:
     logger.info("files table created.")
 
 
-def create_internal_reconciliation_objects(connection: Connection) -> None:
+def create_internal_reconciliation_objects(connection: Connection, partition_bucket: List[str]) -> None:
     """
     Creates the ORCA internal reconciliation tables in the proper order.
     - reconcile_status
@@ -220,6 +226,7 @@ def create_internal_reconciliation_objects(connection: Connection) -> None:
 
     Args:
         connection (sqlalchemy.future.Connection): Database connection.
+        partition_bucket: List[str]): List of partition buckets to create partition tables.
 
     Returns:
         None
@@ -239,6 +246,12 @@ def create_internal_reconciliation_objects(connection: Connection) -> None:
     connection.execute(sql.reconcile_s3_object_table_sql())
     logger.info("reconcile_s3_object table created.")
 
+    # Create partition table
+    logger.debug("Creating partition table for reconcile_s3_object ...")
+    for bucket_name in partition_bucket:
+        connection.execute(sql.reconcile_s3_object_partition_sql(get_partition_name_from_bucket_name(bucket_name)), {"bucket_name": bucket_name})
+        logger.info("partition table for reconcile_s3_object created.")
+
     # Create reconcile_catalog_mismatch_report table
     logger.debug("Creating reconcile_catalog_mismatch_report table ...")
     connection.execute(sql.reconcile_catalog_mismatch_report_table_sql())
@@ -253,13 +266,3 @@ def create_internal_reconciliation_objects(connection: Connection) -> None:
     logger.debug("Creating reconcile_phantom_report table ...")
     connection.execute(sql.reconcile_phantom_report_table_sql())
     logger.info("reconcile_phantom_report table created.")
-
-    # Create partition table
-    logger.debug("Creating partition table for reconcile_s3_object ...")
-    connection.execute(sql.reconcile_s3_object_partition_sql())
-    logger.info("partition table for reconcile_s3_object created.")
-
-    # Create extension for the database
-    logger.debug("Creating extension aws_s3 ...")
-    connection.execute(sql.create_extension())
-    logger.info("extension aws_s3 created.")

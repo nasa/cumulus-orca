@@ -4,11 +4,10 @@ Name: orca_sql.py
 Description: All of the SQL used for creating and migrating the ORCA schema.
 """
 # Imports
-from email import message
+import re
 from sqlalchemy import text
 from sqlalchemy.sql.elements import TextClause
 from orca_shared.database.shared_db import logger
-
 
 
 # ----------------------------------------------------------------------------
@@ -211,6 +210,23 @@ def app_user_sql(user_name: str, user_password: str) -> TextClause:
     """
     )
 
+def create_extension() -> TextClause:
+    """
+    Full SQL for creating the extension. Helpful for testing the DB application.
+
+    Returns:
+        (sqlalchemy.sql.element.TextClause): SQL for creating extension for the database.
+    """
+
+    return text(
+        """
+            -- Create extension
+            CREATE EXTENSION IF NOT EXISTS aws_s3;
+
+            -- Comment
+            COMMENT ON EXTENSION aws_s3 IS 'Loads a new extension aws_s3 into the current database.';
+        """
+    )
 
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA general metadata tables
@@ -273,7 +289,7 @@ def schema_versions_data_sql() -> TextClause:
 
         -- Upsert the current version
         INSERT INTO schema_versions
-        VALUES (4, 'Added inventory schema for v4.x of ORCA application', NOW(), True)
+        VALUES (5, 'Added internal reconciliation schema for v5.x of ORCA application', NOW(), True)
         ON CONFLICT (version_id)
         DO UPDATE SET is_latest = True;
     """
@@ -701,7 +717,7 @@ def reconcile_job_table_sql() -> TextClause:
         COMMENT ON COLUMN reconcile_job.id IS 'Job ID unique to each internal reconciliation job.';
         COMMENT ON COLUMN reconcile_job.orca_archive_location IS 'ORCA S3 Glacier bucket the reconciliation targets.';
         COMMENT ON COLUMN reconcile_job.status_id IS 'Current status of the job.';
-        COMMENT ON COLUMN reconcile_job.inventory_creation_time IS 'Inventory report creation time from the s3 manifest.';
+        COMMENT ON COLUMN reconcile_job.inventory_creation_time IS 'Inventory report initiation time from the s3 manifest.';
         COMMENT ON COLUMN reconcile_job.start_time IS 'Date and time the internal reconcile job started.';
         COMMENT ON COLUMN reconcile_job.last_update IS 'Date and time the job status was last updated.';
         COMMENT ON COLUMN reconcile_job.end_time IS 'Time the job completed and wrote the report information.';
@@ -746,6 +762,30 @@ def reconcile_s3_object_table_sql() -> TextClause:
             COMMENT ON COLUMN reconcile_s3_object.delete_marker IS 'Set to `True` if object is a delete marker.';
         """
     )
+
+def reconcile_s3_object_partition_sql(partition_name: str) -> TextClause:
+    """
+    Full SQL for creating the reconcile_s3_object partition table. 
+    Args:
+        partition_name(str): Name of the partition table.
+
+    Returns:
+        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_s3_object partition table.
+    """
+    if partition_name is None or re.search(" ", partition_name):
+        raise Exception("partition name is not set properly")
+    else:
+        return text(
+            f"""
+                -- Create orca_archive_location_:bucket_name
+                CREATE TABLE {partition_name}
+                (
+                PARTITION OF reconcile_s3_object
+                );
+                -- Comment
+                COMMENT ON TABLE {partition_name} IS 'Partition table for reconcile_s3_object based on orca_archive_location.';
+            """
+        )
 
 def reconcile_catalog_mismatch_report_table_sql() -> TextClause:
     """
@@ -849,7 +889,7 @@ def reconcile_phantom_report_table_sql() -> TextClause:
             , orca_etag       	text NOT NULL
             , orca_last_update	timestamp with time zone NOT NULL
             , orca_size       	int8 NOT NULL
-            , CONSTRAINT PK_reconcile_catalog_mismatch_report PRIMARY KEY(job_id,collection_id,granule_id,key_path)
+            , CONSTRAINT PK_reconcile_phantom_report PRIMARY KEY(job_id,collection_id,granule_id,key_path)
             , CONSTRAINT FK_reconcile_job_phantom_report FOREIGN KEY(job_id) REFERENCES reconcile_job(id)
             );
             -- Comment
@@ -862,46 +902,5 @@ def reconcile_phantom_report_table_sql() -> TextClause:
             COMMENT ON COLUMN reconcile_phantom_report.orca_etag IS 'etag of the object as reported in the ORCA catalog.';
             COMMENT ON COLUMN reconcile_phantom_report.orca_last_update IS 'Last update of the object as reported in the ORCA catalog.';
             COMMENT ON COLUMN reconcile_phantom_report.orca_size IS 'Size in bytes of the object as reported in the ORCA catalog.';
-        """
-    )
-
-def reconcile_s3_object_partition_sql(partition_name: str) -> TextClause:
-    """
-    Full SQL for creating the reconcile_s3_object partition table. 
-
-    Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_s3_object partition table.
-    """
-    if partition_name is None or len(partition_name) == 0:
-        raise Exception("partition name is not set properly")
-    else:
-        return text(
-            f"""
-                -- Create orca_archive_location_:bucket_name
-                CREATE TABLE {partition_name}
-                (
-                PARTITION OF reconcile_s3_object
-                FOR VALUES IN (:bucket_name)
-                );
-                -- Comment
-                COMMENT ON TABLE {partition_name} IS 'Partition table for reconcile_s3_object based on orca_archive_location.';
-            """
-        )
-
-def create_extension() -> TextClause:
-    """
-    Full SQL for creating the extension. 
-
-    Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating extension for the database.
-    """
-
-    return text(
-        """
-            -- Create extension
-            CREATE EXTENSION IF NOT EXISTS aws_s3 
-            CASCADE;
-            -- Comment
-            COMMENT ON EXTENSION aws_s3 IS 'Loads a new extension aws_s3 into the current database.';
         """
     )

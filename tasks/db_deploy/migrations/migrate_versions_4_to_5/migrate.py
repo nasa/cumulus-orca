@@ -21,6 +21,12 @@ def migrate_versions_4_to_5(config: Dict[str, str], is_latest_version: bool) -> 
     admin_app_connection = get_admin_connection(config, config["user_database"])
 
     with admin_app_connection.connect() as connection:
+
+        # Create extension for the database
+        logger.debug("Creating extension aws_s3 ...")
+        connection.execute(sql.create_extension())
+        logger.info("extension aws_s3 created.")
+
         # Change to DBO role and set search path
         logger.debug("Changing to the dbo role to create objects ...")
         connection.execute(sql.text("SET ROLE orca_dbo;"))
@@ -29,54 +35,54 @@ def migrate_versions_4_to_5(config: Dict[str, str], is_latest_version: bool) -> 
         logger.debug("Setting search path to the ORCA schema to create objects ...")
         connection.execute(sql.text("SET search_path TO orca, public;"))
 
-    # Create reconcile_status table
-    logger.debug("Creating reconcile_status table ...")
-    connection.execute(sql.reconcile_status_table_sql())
-    logger.info("reconcile_status table created.")
+        # Create reconcile_status table
+        logger.debug("Creating reconcile_status table ...")
+        connection.execute(sql.reconcile_status_table_sql())
+        logger.info("reconcile_status table created.")
 
-    # Create reconcile_job table
-    logger.debug("Creating reconcile_job table ...")
-    connection.execute(sql.reconcile_job_table_sql())
-    logger.info("reconcile_job table created.")
+        # Create reconcile_job table
+        logger.debug("Creating reconcile_job table ...")
+        connection.execute(sql.reconcile_job_table_sql())
+        logger.info("reconcile_job table created.")
 
-    # Create reconcile_s3_object table
-    logger.debug("Creating reconcile_s3_object table ...")
-    connection.execute(sql.reconcile_s3_object_table_sql())
-    logger.info("reconcile_s3_object table created.")
+        # Create reconcile_s3_object table
+        logger.debug("Creating reconcile_s3_object table ...")
 
-    # Create reconcile_catalog_mismatch_report table
-    logger.debug("Creating reconcile_catalog_mismatch_report table ...")
-    connection.execute(sql.reconcile_catalog_mismatch_report_table_sql())
-    logger.info("reconcile_catalog_mismatch_report table created.")
+        # Create partition table
+        logger.debug("Creating partition table for reconcile_s3_object ...")
+        partition_names =[]
+        for partition_name in partition_names:
+            connection.execute(sql.reconcile_s3_object_partition_sql(partition_name))
+            logger.info("partition table for reconcile_s3_object created.")
 
-    # Create reconcile_orphan_report table
-    logger.debug("Creating reconcile_orphan_report table ...")
-    connection.execute(sql.reconcile_orphan_report_table_sql())
-    logger.info("reconcile_orphan_report table created.")
+        # Create partition table
+        logger.debug("Creating partition table for reconcile_s3_object ...")
+        connection.execute(sql.reconcile_s3_object_partition_sql())
+        logger.info("partition table for reconcile_s3_object created.")
 
-    # Create reconcile_phantom_report table
-    logger.debug("Creating reconcile_phantom_report table ...")
-    connection.execute(sql.reconcile_phantom_report_table_sql())
-    logger.info("reconcile_phantom_report table created.")
-    
-    # Create partition table
-    logger.debug("Creating partition table for reconcile_s3_object ...")
-    connection.execute(sql.reconcile_s3_object_partition_sql())
-    logger.info("partition table for reconcile_s3_object created.")
+        # Create reconcile_catalog_mismatch_report table
+        logger.debug("Creating reconcile_catalog_mismatch_report table ...")
+        connection.execute(sql.reconcile_catalog_mismatch_report_table_sql())
+        logger.info("reconcile_catalog_mismatch_report table created.")
 
-    # Create extension for the database
-    logger.debug("Creating extension aws_s3 ...")
-    connection.execute(sql.create_extension())
-    logger.info("extension aws_s3 created.")
-    
-    # Commit if there is no issues
-    connection.commit()
+        # Create reconcile_orphan_report table
+        logger.debug("Creating reconcile_orphan_report table ...")
+        connection.execute(sql.reconcile_orphan_report_table_sql())
+        logger.info("reconcile_orphan_report table created.")
 
-    # If v5 is the latest version, update the schema_versions table.
-    if is_latest_version:
-        logger.debug("Populating the schema_versions table with data ...")
-        connection.execute(sql.schema_versions_data_sql())
-        logger.info("Data added to the schema_versions table.")
+        # Create reconcile_phantom_report table
+        logger.debug("Creating reconcile_phantom_report table ...")
+        connection.execute(sql.reconcile_phantom_report_table_sql())
+        logger.info("reconcile_phantom_report table created.")
+        
+        # Commit if there is no issues
+        connection.commit()
 
-    # Commit if there is no issues
-    connection.commit()
+        # If v5 is the latest version, update the schema_versions table.
+        if is_latest_version:
+            logger.debug("Populating the schema_versions table with data ...")
+            connection.execute(sql.schema_versions_data_sql())
+            logger.info("Data added to the schema_versions table.")
+
+        # Commit if there is no issues
+        connection.commit()

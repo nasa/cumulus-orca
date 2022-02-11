@@ -3,14 +3,14 @@ Name: migrate_db.py
 
 Description: Migrates the current ORCA schema version to the latest version.
 """
-from typing import Dict
+from typing import Dict, List
 
 from migrations.migrate_versions_1_to_2.migrate import migrate_versions_1_to_2
 from migrations.migrate_versions_2_to_3.migrate import migrate_versions_2_to_3
 from migrations.migrate_versions_3_to_4.migrate import migrate_versions_3_to_4
 from migrations.migrate_versions_4_to_5.migrate import migrate_versions_4_to_5
 
-def perform_migration(current_schema_version: int, config: Dict[str, str]) -> None:
+def perform_migration(current_schema_version: int, config: Dict[str, str], partition_bucket: List[str]) -> None:
     """
     Performs a migration of the ORCA database. Determines the order and
     migrations to run.
@@ -18,6 +18,7 @@ def perform_migration(current_schema_version: int, config: Dict[str, str]) -> No
     Args:
         current_schema_version (int): Current version of the ORCA schema
         config (Dict): Dictionary containing database connection information
+        partition_bucket: List[str]): List of partition buckets to create partition tables.
 
     Returns:
         None
@@ -37,10 +38,10 @@ def perform_migration(current_schema_version: int, config: Dict[str, str]) -> No
 
     if current_schema_version == 3:
         # Run migrations from version 3 to version 4
-        migrate_versions_3_to_4(config, True)
+        migrate_versions_3_to_4(config, False)
         current_schema_version = 4
 
     if current_schema_version == 4:
         # Run migrations from version 4 to version 5
-        migrate_versions_4_to_5(config, True)
+        migrate_versions_4_to_5(config, partition_bucket, True)
         current_schema_version = 5

@@ -14,7 +14,7 @@ from sqlalchemy import text
 from sqlalchemy.future import Connection
 from migrations.migrate_db import perform_migration
 from install.create_db import create_fresh_orca_install, create_database
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 
 # Globals
@@ -46,10 +46,13 @@ def handler(
     # Get the configuration
     config = get_configuration()
 
-    return task(config)
+    #get partition bucket list
+    partition_bucket = event["buckets"]
+
+    return task(config, partition_bucket)
 
 
-def task(config: Dict[str, str]) -> None:
+def task(config: Dict[str, str], partition_bucket: List[str]) -> None:
     """
     Checks for the ORCA database and throws an error if it does not exist.
     Determines if a fresh install or a migration is needed for the ORCA
@@ -57,6 +60,7 @@ def task(config: Dict[str, str]) -> None:
 
     Args:
         config (Dict): Dictionary of connection information.
+        partition_bucket: List[str]): List of partition buckets to create partition tables.
 
     Raises:
         Exception: If database does not exist.
@@ -74,7 +78,7 @@ def task(config: Dict[str, str]) -> None:
                 "or the server could not be connected to."
             )
             create_database(config)
-            create_fresh_orca_install(config)
+            create_fresh_orca_install(config. partition_bucket)
     
             return
 
