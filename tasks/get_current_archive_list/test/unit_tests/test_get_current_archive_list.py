@@ -968,7 +968,7 @@ class TestGetCurrentArchiveList(
                     with self.assertRaises(ValueError) as cm:
                         get_current_archive_list.get_s3_credentials_from_secrets_manager()
                     self.assertEqual(
-                        f"'{secret_key} secret is not set.'",
+                        f"{secret_key} secret is not set.",
                         str(cm.exception),
                     )
                     values.pop(secret_key)
@@ -978,7 +978,7 @@ class TestGetCurrentArchiveList(
                     with self.assertRaises(ValueError) as cm:
                         get_current_archive_list.get_s3_credentials_from_secrets_manager()
                     self.assertEqual(
-                        f"'{secret_key} secret is not set.'",
+                        f"{secret_key} secret is not set.",
                         str(cm.exception),
                     )
 
