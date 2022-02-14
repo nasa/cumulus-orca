@@ -60,6 +60,7 @@ BEGIN
   , last_update          	timestamp with time zone NOT NULL
   , size_in_bytes        	int8 NOT NULL
   , storage_class        	text NOT NULL
+  , delete_marker        	bool NOT NULL
   -- , CONSTRAINT FK_reconcile_job_s3_objects FOREIGN KEY(job_id) REFERENCES reconcile_job(id) https://stackoverflow.com/questions/53885368/postgresql-11-foreign-key-on-partitioning-tables
   -- , CONSTRAINT PK_reconcile_s3_object PRIMARY KEY(orca_archive_location, key_path)
     ) PARTITION BY LIST (orca_archive_location);
@@ -71,7 +72,7 @@ BEGIN
   COMMENT ON COLUMN reconcile_s3_object.last_update IS 'AWS Last Update from the s3 inventory report.';
   COMMENT ON COLUMN reconcile_s3_object.size_in_bytes IS 'AWS size of the file in bytes from the s3 inventory report.';
   COMMENT ON COLUMN reconcile_s3_object.storage_class IS 'AWS storage class the object is in from the s3 inventory report.';
-
+  COMMENT ON COLUMN reconcile_s3_object.delete_marker IS 'Set to `True` if object is a delete marker.';
 
   CREATE TABLE IF NOT EXISTS reconcile_catalog_mismatch_report  ( 
     job_id                  	int8 NOT NULL

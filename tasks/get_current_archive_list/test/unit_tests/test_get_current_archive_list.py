@@ -889,10 +889,10 @@ class TestGetCurrentArchiveList(
         Must add extra columns for extra columns.
         """
         result = get_current_archive_list.generate_temporary_s3_column_list(
-            "StorageClass, blah, Size, Key, Extra, Bucket,LastModifiedDate,ETag"
+            "IsDeleteMarker,StorageClass, blah, Size, Key, Extra, Bucket,LastModifiedDate,ETag"
         )
         self.assertEqual(
-            "storage_class text, junk1 text, size_in_bytes bigint, key_path text, junk4 text, orca_archive_location text, last_update timestamptz, etag text",
+            "delete_flag bool, storage_class text, junk2 text, size_in_bytes bigint, key_path text, junk5 text, orca_archive_location text, last_update timestamptz, etag text",
             result,
         )
 
