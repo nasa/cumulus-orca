@@ -490,11 +490,11 @@ def get_s3_credentials_from_secrets_manager() -> tuple:
     s3_access_key = s3_credentials.get(S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY, None)
     if s3_access_key is None or len(s3_access_key) == 0:
         LOGGER.error(f"{S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY} secret is not set.")
-        raise KeyError(f"{S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY} secret is not set.")
+        raise ValueError(f"{S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY} secret is not set.")
     s3_secret_key = s3_credentials.get(S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY, None)
     if s3_secret_key is None or len(s3_secret_key) == 0:
         LOGGER.error(f"{S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY} secret is not set.")
-        raise KeyError(f"{S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY} secret is not set.")
+        raise ValueError(f"{S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY} secret is not set.")
 
     return s3_access_key, s3_secret_key
 

@@ -155,7 +155,7 @@ variable "orca_reconciliation_lambda_memory_size" {
 variable "orca_reconciliation_lambda_timeout" {
   type        = number
   description = "Timeout in number of seconds for ORCA reconciliation lambdas."
-  default     = "720"
+  default     = 720
 }
 
 

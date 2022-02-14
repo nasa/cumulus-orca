@@ -965,7 +965,7 @@ class TestGetCurrentArchiveList(
                     mock_secrets_manager.get_secret_value.return_value = {
                         "SecretString": json.dumps(values)
                     }
-                    with self.assertRaises(KeyError) as cm:
+                    with self.assertRaises(ValueError) as cm:
                         get_current_archive_list.get_s3_credentials_from_secrets_manager()
                     self.assertEqual(
                         f"'{secret_key} secret is not set.'",
@@ -975,7 +975,7 @@ class TestGetCurrentArchiveList(
                     mock_secrets_manager.get_secret_value.return_value = {
                         "SecretString": json.dumps(values)
                     }
-                    with self.assertRaises(KeyError) as cm:
+                    with self.assertRaises(ValueError) as cm:
                         get_current_archive_list.get_s3_credentials_from_secrets_manager()
                     self.assertEqual(
                         f"'{secret_key} secret is not set.'",
