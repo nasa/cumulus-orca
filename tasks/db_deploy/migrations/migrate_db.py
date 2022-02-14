@@ -10,7 +10,7 @@ from migrations.migrate_versions_2_to_3.migrate import migrate_versions_2_to_3
 from migrations.migrate_versions_3_to_4.migrate import migrate_versions_3_to_4
 from migrations.migrate_versions_4_to_5.migrate import migrate_versions_4_to_5
 
-def perform_migration(current_schema_version: int, config: Dict[str, str], partition_bucket: List[str]) -> None:
+def perform_migration(current_schema_version: int, config: Dict[str, str], orca_buckets: List[str]) -> None:
     """
     Performs a migration of the ORCA database. Determines the order and
     migrations to run.
@@ -18,7 +18,7 @@ def perform_migration(current_schema_version: int, config: Dict[str, str], parti
     Args:
         current_schema_version (int): Current version of the ORCA schema
         config (Dict): Dictionary containing database connection information
-        partition_bucket: List[str]): List of partition buckets to create partition tables.
+        orca_buckets: List[str]): List of ORCA buckets names needed to create partition tables for v5.
 
     Returns:
         None
@@ -43,5 +43,5 @@ def perform_migration(current_schema_version: int, config: Dict[str, str], parti
 
     if current_schema_version == 4:
         # Run migrations from version 4 to version 5
-        migrate_versions_4_to_5(config, partition_bucket, True)
+        migrate_versions_4_to_5(config, True, orca_buckets)
         current_schema_version = 5

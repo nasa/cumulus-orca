@@ -19,7 +19,7 @@ from typing import Any, Dict, List
 
 # Globals
 # Latest version of the ORCA schema.
-LATEST_ORCA_SCHEMA_VERSION = 4
+LATEST_ORCA_SCHEMA_VERSION = 5
 MAX_RETRIES = 3
 
 
@@ -43,16 +43,21 @@ def handler(
     # Set the logging
     logger.setMetadata(event, context)
 
-    # Get the configuration
+    # Get the secrets needed for database connections
     config = get_configuration()
 
-    #get partition bucket list
-    partition_bucket = event["buckets"]
+    # Get the ORCA bucket list
+    orca_buckets = event.get("orcaBuckets", None)
+    if orca_buckets is None or len(orca_buckets) == 0:
+        raise ValueError("orcaBuckets must be a valid list of ORCA S3 bucket names.")
 
-    return task(config, partition_bucket)
+    if type(orca_buckets) == list:
+        raise TypeError("orcaBuckets must be a valid list of ORCA S3 bucket names.")
+
+    return task(config, orca_buckets)
 
 
-def task(config: Dict[str, str], partition_bucket: List[str]) -> None:
+def task(config: Dict[str, str], orca_buckets: List[str]) -> None:
     """
     Checks for the ORCA database and throws an error if it does not exist.
     Determines if a fresh install or a migration is needed for the ORCA
@@ -60,7 +65,7 @@ def task(config: Dict[str, str], partition_bucket: List[str]) -> None:
 
     Args:
         config (Dict): Dictionary of connection information.
-        partition_bucket: List[str]): List of partition buckets to create partition tables.
+        orca_buckets: List[str]): List of ORCA buckets needed to create partitioned tables.
 
     Raises:
         Exception: If database does not exist.
@@ -78,8 +83,8 @@ def task(config: Dict[str, str], partition_bucket: List[str]) -> None:
                 "or the server could not be connected to."
             )
             create_database(config)
-            create_fresh_orca_install(config. partition_bucket)
-    
+            create_fresh_orca_install(config, orca_buckets)
+
             return
 
     # Connect as admin user to config["user_database"] database.
@@ -101,13 +106,13 @@ def task(config: Dict[str, str], partition_bucket: List[str]) -> None:
             else:
                 # Run the migration
                 logger.info("Performing migration of the ORCA schema.")
-                perform_migration(current_version, config)
+                perform_migration(current_version, config, orca_buckets)
 
         else:
             # If we got here, the DB existed, but was not correctly populated for whatever reason.
             # Run a fresh install
             logger.info("Performing full install of ORCA schema.")
-            create_fresh_orca_install(config)
+            create_fresh_orca_install(config, orca_buckets)
 
 
 # def app_db_exists(config: Dict[str, str]) -> bool:
@@ -144,6 +149,7 @@ def app_db_exists(connection: Connection, db_name: str) -> bool:
         db_exists = row[0]
 
     return db_exists
+
 
 def app_schema_exists(connection: Connection) -> bool:
     """
@@ -244,3 +250,4 @@ def get_migration_version(connection: Connection) -> int:
             schema_version = row[0]
 
     return schema_version
+
