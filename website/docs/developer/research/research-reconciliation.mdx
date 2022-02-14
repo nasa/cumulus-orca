@@ -642,6 +642,17 @@ as they construct keys using it.
     resetPic={useBaseUrl('img/zoom-pan-reset.svg')}
 />
 
+### S3 Inventory Report
+
+S3 Inventory reports are created on S3 buckets and post information about that bucket's contents to another bucket.
+For our purposes, the following options must be checked:
+
+- Size
+- Last modified
+- Storage class
+- ETag
+
+Additionally, set `Object versions` to `Include all versions`.
 
 ### Potential Internal Reporting Database Structure
 
