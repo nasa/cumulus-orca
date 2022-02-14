@@ -949,17 +949,17 @@ class TestGetCurrentArchiveList(
         mock_secrets_manager = mock_client.return_value
 
         with patch.dict(
-                os.environ,
-                {"PREFIX": prefix, "AWS_REGION": region},
+            os.environ,
+            {"PREFIX": prefix, "AWS_REGION": region},
         ):
             for secret_key in [
                 get_current_archive_list.S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY,
                 get_current_archive_list.S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY,
             ]:
                 values = {
-                        get_current_archive_list.S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY: s3_access_key,
-                        get_current_archive_list.S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY: s3_secret_key,
-                    }
+                    get_current_archive_list.S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY: s3_access_key,
+                    get_current_archive_list.S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY: s3_secret_key,
+                }
                 with self.subTest(secret_key=secret_key):
                     values[secret_key] = ""
                     mock_secrets_manager.get_secret_value.return_value = {

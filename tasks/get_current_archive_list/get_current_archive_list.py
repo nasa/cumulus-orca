@@ -179,9 +179,7 @@ def create_job(
                 ],
             )
     except Exception as sql_ex:
-        LOGGER.error(
-            f"Error while creating job: {sql_ex}"
-        )
+        LOGGER.error(f"Error while creating job: {sql_ex}")
         raise
 
     return rows.fetchone()["id"]
@@ -229,9 +227,7 @@ def update_job_with_failure(job_id: int, error_message: str, engine: Engine) -> 
                 ],
             )
     except Exception as sql_ex:
-        LOGGER.error(
-            f"Error while updating job '{job_id}': {sql_ex}"
-        )
+        LOGGER.error(f"Error while updating job '{job_id}': {sql_ex}")
         raise
 
 
@@ -312,13 +308,13 @@ def update_job_with_s3_inventory_in_postgres(
     """
     try:
         LOGGER.debug(f"Pulling in s3 inventory records for job {job_id}.")
-        temporary_s3_column_list = generate_temporary_s3_column_list(manifest_file_schema)
+        temporary_s3_column_list = generate_temporary_s3_column_list(
+            manifest_file_schema
+        )
         with engine.begin() as connection:
             # Within this transaction import the csv and update the job status
             connection.execute(
-                create_temporary_table_sql(
-                    temporary_s3_column_list
-                ),
+                create_temporary_table_sql(temporary_s3_column_list),
                 [{}],
             )
             for csv_key_path in csv_key_paths:
@@ -367,9 +363,7 @@ def update_job_with_s3_inventory_in_postgres(
                 ],
             )
     except Exception as sql_ex:
-        LOGGER.error(
-            f"Error while processing job '{job_id}': {sql_ex}"
-        )
+        LOGGER.error(f"Error while processing job '{job_id}': {sql_ex}")
         raise
 
 
@@ -413,7 +407,7 @@ def generate_temporary_s3_column_list(manifest_file_schema: str) -> str:
         "LastModifiedDate": "last_update timestamptz",
         "ETag": "etag text",
         "StorageClass": "storage_class text",
-        "IsDeleteMarker": "delete_flag bool"
+        "IsDeleteMarker": "delete_flag bool",
     }
     manifest_file_schema = manifest_file_schema.replace(" ", "")
     columns_in_csv = manifest_file_schema.split(",")
@@ -481,11 +475,13 @@ def translate_s3_import_to_partitioned_data_sql(report_table_name: str) -> TextC
 def get_s3_credentials_from_secrets_manager() -> tuple:
     # todo: Move everything from here to get_configuration to shared lib. See shared_db for code origin.
     prefix = os.getenv("PREFIX", None)
-    secretsmanager = boto3.client("secretsmanager", region_name=os.getenv("AWS_REGION", None))
+    secretsmanager = boto3.client(
+        "secretsmanager", region_name=os.getenv("AWS_REGION", None)
+    )
     s3_credentials = json.loads(
-        secretsmanager.get_secret_value(SecretId=f"{prefix}-orca-{SECRETSMANAGER_S3_ACCESS_CREDENTIALS_KEY}")[
-            "SecretString"
-        ]
+        secretsmanager.get_secret_value(
+            SecretId=f"{prefix}-orca-{SECRETSMANAGER_S3_ACCESS_CREDENTIALS_KEY}"
+        )["SecretString"]
     )
     s3_access_key = s3_credentials.get(S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY, None)
     if s3_access_key is None or len(s3_access_key) == 0:

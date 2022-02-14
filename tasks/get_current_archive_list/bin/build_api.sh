@@ -67,7 +67,7 @@ let return_code=$?
 check_rc $return_code "ERROR: pip install encountered an error."
 
 ## Run the documentation command
-pydoc-markdown -I . -p get_current_archive_list --render-toc > API.md
+pydoc-markdown -I . -m get_current_archive_list --render-toc > API.md
 let return_code=$?
 
 check_rc $return_code "ERROR: Failed to create API.md file."
