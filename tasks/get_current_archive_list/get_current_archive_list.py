@@ -408,6 +408,7 @@ def generate_temporary_s3_column_list(manifest_file_schema: str) -> str:
         "ETag": "etag text",
         "StorageClass": "storage_class text",
         "IsDeleteMarker": "delete_flag bool",
+        "IsLatest": "is_latest bool",
     }
     manifest_file_schema = manifest_file_schema.replace(" ", "")
     columns_in_csv = manifest_file_schema.split(",")
@@ -468,6 +469,7 @@ def translate_s3_import_to_partitioned_data_sql(report_table_name: str) -> TextC
         INSERT INTO orca.{report_table_name} (job_id, orca_archive_location, key_path, etag, last_update, size_in_bytes, storage_class, delete_flag)
             SELECT :job_id, orca_archive_location, key_path, etag, last_update, size_in_bytes, storage_class, delete_flag
             FROM s3_import
+            WHERE is_latest = TRUE
         """
     )
 
