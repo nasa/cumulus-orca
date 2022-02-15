@@ -161,7 +161,7 @@ def reconcile_s3_object_table_sql() -> TextClause:
             , last_update              timestamp with time zone NOT NULL
             , size_in_bytes            int8 NOT NULL
             , storage_class            text NOT NULL
-            , delete_marker            bool NOT NULL
+            , delete_marker            bool NOT NULL DEFAULT False
             )
             PARTITION BY LIST (orca_archive_location);
 
