@@ -82,8 +82,9 @@ validate that the *orca* database does not exist as seen below.
 
 ```bash
 root@26df0390e999:/# psql
-psql (12.6 (Debian 12.6-1.pgdg100+1))
+psql (10.14 (Debian 10.14-1.pgdg90+1))
 Type "help" for help.
+
 postgres=# \l
                                  List of databases
    Name    |  Owner   | Encoding |  Collate   |   Ctype    |   Access privileges
@@ -104,16 +105,19 @@ Verify that only the default users, groups and schemas are present in the postgr
 
 ```bash
 postgres=# \dn
+
   List of schemas
   Name  |  Owner
 --------+----------
  public | postgres
 (1 row)
+
 postgres=# \dg
                                   List of roles
  Role name |                         Attributes                         | Member of
 -----------+------------------------------------------------------------+-----------
  postgres  | Superuser, Create role, Create DB, Replication, Bypass RLS | {}
+
 postgres=# \du
                                   List of roles
  Role name |                         Attributes                         | Member of
