@@ -18,4 +18,4 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
 ```
 <a name="pydoc"></a>
 ## pydoc get_current_archive_list
-See API.md for documentation.
+[See the API documentation for more details.](API.md)
