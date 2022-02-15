@@ -40,6 +40,13 @@ Set Pending Github Status:
         set -ex
         ./bin/set_status.sh pending ${bamboo.resultsUrl} "CI Running"
       description: Set Pending Status
+  - script:
+      interpreter: SHELL
+      scripts:
+      - |-
+        set -ex
+        ./bin/set_status.sh pending ${bamboo.resultsUrl} "CI Running"
+      description: Set Pending Status but again!
 Build and Test:
   key: JOB1
   other:
