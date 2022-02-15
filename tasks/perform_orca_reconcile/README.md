@@ -2,6 +2,9 @@
 
 **Lambda function perform_orca_reconcile **
 
+Compares entries in reconcile_s3_objects to the Orca catalog,
+writing differences to reconcile_catalog_mismatch_report, reconcile_orphan_report, and reconcile_phantom_report.
+
 Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/development-guide/code/contrib-code-intro) for information on environment setup and testing.
 
 - [Deployment](#deployment)
@@ -14,6 +17,4 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
 ```
 <a name="pydoc"></a>
 ## pydoc perform_orca_reconcile
-```
-TODO
-```
+See API.md for documentation.

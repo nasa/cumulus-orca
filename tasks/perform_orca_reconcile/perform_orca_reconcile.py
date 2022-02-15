@@ -1,0 +1,71 @@
+"""
+Name: perform_orca_reconcile.py
+
+Description: Compares entries in reconcile_s3_objects to the Orca catalog,
+writing differences to reconcile_catalog_mismatch_report, reconcile_orphan_report, and reconcile_phantom_report.
+"""
+import json
+from typing import Dict, List, Any
+
+import fastjsonschema
+from cumulus_logger import CumulusLogger
+from orca_shared.database import shared_db
+from sqlalchemy import text
+from sqlalchemy.future import Engine
+from sqlalchemy.sql.elements import TextClause
+
+
+INPUT_JOB_ID_KEY = "jobId"
+
+
+LOGGER = CumulusLogger()
+# Generating schema validators can take time, so do it once and reuse.
+try:
+    with open("schemas/input.json", "r") as raw_schema:
+        _INPUT_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
+    with open("schemas/output.json", "r") as raw_schema:
+        _OUTPUT_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
+except Exception as ex:
+    LOGGER.error(f"Could not build schema validator: {ex}")
+    raise
+
+
+def task(
+    job_id: int,
+    db_connect_info: Dict,
+) -> Dict[str, Any]:
+    """
+    Reads the record to find the location of manifest.json, then uses that information to spawn of business logic
+    for pulling manifest's data into sql.
+    Args:
+        job_id: The id of the job containing s3 inventory info.
+        db_connect_info: See shared_db.py's get_configuration for further details.
+    Returns: See output.json for details.
+    """
+    # todo
+    pass
+
+
+def handler(event: Dict[str, List], context) -> Dict[str, Any]:
+    """
+    Lambda handler. Receives a list of s3 events from an SQS queue, and loads the s3 inventory specified into postgres.
+    Args:
+        event: See input.json for details.
+        context: An object passed through by AWS. Used for tracking.
+    Environment Vars:
+        See shared_db.py's get_configuration for further details.
+    Returns: See output.json for details.
+    """
+    LOGGER.setMetadata(event, context)
+
+    _INPUT_VALIDATE(event)
+
+    job_id = event[INPUT_JOB_ID_KEY]
+
+    db_connect_info = shared_db.get_configuration()
+
+    result = task(
+        job_id, db_connect_info
+    )
+    _OUTPUT_VALIDATE(result)
+    return result
