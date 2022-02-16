@@ -1,11 +1,13 @@
-DROP TABLE IF EXISTS orca.reconcile_status;
-DROP TABLE IF EXISTS orca.reconcile_job;
-DROP TABLE IF EXISTS orca.reconcile_s3_object;
+DROP EXTENSION IF EXISTS aws_s3 CASCADE;
 DROP TABLE IF EXISTS orca.reconcile_catalog_mismatch_report;
 DROP TABLE IF EXISTS orca.reconcile_orphan_report;
 DROP TABLE IF EXISTS orca.reconcile_phantom_report;
-DROP TABLE IF EXISTS orca.orca_archive_location_bucket;
-DROP EXTENSION IF EXISTS aws_s3;
+DROP TABLE IF EXISTS orca.reconcile_s3_object_orca_worm_backup;
+DROP TABLE IF EXISTS orca.reconcile_s3_object_orca_special_backup;
+DROP TABLE IF EXISTS orca.reconcile_s3_object_orca_versioned_backup;
+DROP TABLE IF EXISTS orca.reconcile_s3_object;
+DROP TABLE IF EXISTS orca.reconcile_job;
+DROP TABLE IF EXISTS orca.reconcile_status;
 DELETE FROM orca.schema_versions
     WHERE version_id=5;
 -- Upsert the current version
