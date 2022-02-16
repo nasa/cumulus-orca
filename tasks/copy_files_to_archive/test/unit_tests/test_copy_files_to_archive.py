@@ -27,7 +27,7 @@ class TestCopyFilesToArchive(TestCase):
         {
             "COPY_RETRIES": "703",
             "COPY_RETRY_SLEEP_SECS": "108.5",
-            "DB_QUEUE_URL": "something.blah",
+            copy_files_to_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY: "something.blah",
             "DEFAULT_MULTIPART_CHUNKSIZE_MB": "42",
             "RECOVERY_QUEUE_URL": "something_else.blah",
         },
@@ -52,7 +52,7 @@ class TestCopyFilesToArchive(TestCase):
     @patch.dict(
         os.environ,
         {
-            "DB_QUEUE_URL": "something.else",
+            copy_files_to_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY: "something.else",
             "DEFAULT_MULTIPART_CHUNKSIZE_MB": "42",
             "RECOVERY_QUEUE_URL": "someother.queue",
         },
@@ -128,7 +128,7 @@ class TestCopyFilesToArchive(TestCase):
             copy_files_to_archive.INPUT_TARGET_BUCKET_KEY: file0_target_bucket,
             copy_files_to_archive.INPUT_TARGET_KEY_KEY: file0_target_key,
             copy_files_to_archive.INPUT_MULTIPART_CHUNKSIZE_MB_KEY: None,
-            copy_files_to_archive.FILE_MESSAGE_RECIEPT: file0_message_reciept,
+            copy_files_to_archive.FILE_MESSAGE_RECEIPT: file0_message_reciept,
         }
         file1 = {
             copy_files_to_archive.INPUT_JOB_ID_KEY: file1_job_id,
@@ -140,7 +140,7 @@ class TestCopyFilesToArchive(TestCase):
             copy_files_to_archive.INPUT_TARGET_BUCKET_KEY: file1_target_bucket,
             copy_files_to_archive.INPUT_TARGET_KEY_KEY: file1_target_key,
             copy_files_to_archive.INPUT_MULTIPART_CHUNKSIZE_MB_KEY: file1_multipart_chunksize_mb,
-            copy_files_to_archive.FILE_MESSAGE_RECIEPT: file1_message_reciept,
+            copy_files_to_archive.FILE_MESSAGE_RECEIPT: file1_message_reciept,
         }
         mock_get_files_from_records.return_value = [file0, file1]
         mock_copy_object.return_value = None
@@ -260,7 +260,7 @@ class TestCopyFilesToArchive(TestCase):
             copy_files_to_archive.INPUT_SOURCE_KEY_KEY: file0_source_key,
             copy_files_to_archive.INPUT_TARGET_BUCKET_KEY: file0_target_bucket,
             copy_files_to_archive.INPUT_TARGET_KEY_KEY: file0_target_key,
-            copy_files_to_archive.FILE_MESSAGE_RECIEPT: file0_message_reciept,
+            copy_files_to_archive.FILE_MESSAGE_RECEIPT: file0_message_reciept,
         }
         successful_file = {
             copy_files_to_archive.INPUT_JOB_ID_KEY: file1_job_id,
@@ -271,7 +271,7 @@ class TestCopyFilesToArchive(TestCase):
             copy_files_to_archive.INPUT_SOURCE_KEY_KEY: file1_source_key,
             copy_files_to_archive.INPUT_TARGET_BUCKET_KEY: file1_target_bucket,
             copy_files_to_archive.INPUT_TARGET_KEY_KEY: file1_target_key,
-            copy_files_to_archive.FILE_MESSAGE_RECIEPT: file1_message_reciept,
+            copy_files_to_archive.FILE_MESSAGE_RECEIPT: file1_message_reciept,
         }
         mock_get_files_from_records.return_value = [failed_file, successful_file]
         mock_copy_object.side_effect = [
@@ -390,20 +390,20 @@ class TestCopyFilesToArchive(TestCase):
         result = copy_files_to_archive.get_files_from_records(
             [
                 {
-                    copy_files_to_archive.FILE_MESSAGE_RECIEPT: return_message_id_0,
+                    copy_files_to_archive.FILE_MESSAGE_RECEIPT: return_message_id_0,
                     "body": json.dumps(file0.copy(), indent=4),
                 },
                 {
-                    copy_files_to_archive.FILE_MESSAGE_RECIEPT: return_message_id_1,
+                    copy_files_to_archive.FILE_MESSAGE_RECEIPT: return_message_id_1,
                     "body": json.dumps(file1.copy(), indent=4),
                 },
             ]
         )
 
         file0[copy_files_to_archive.FILE_SUCCESS_KEY] = False
-        file0[copy_files_to_archive.FILE_MESSAGE_RECIEPT] = return_message_id_0
+        file0[copy_files_to_archive.FILE_MESSAGE_RECEIPT] = return_message_id_0
         file1[copy_files_to_archive.FILE_SUCCESS_KEY] = False
-        file1[copy_files_to_archive.FILE_MESSAGE_RECIEPT] = return_message_id_1
+        file1[copy_files_to_archive.FILE_MESSAGE_RECEIPT] = return_message_id_1
 
         self.assertEqual([file0, file1], result)
 

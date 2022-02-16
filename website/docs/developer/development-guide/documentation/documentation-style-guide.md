@@ -5,12 +5,12 @@ description: Provide markdown guidance for ORCA documentation.
 ---
 
 You can write markdown content using the [GitHub-flavored Markdown syntax](https://github.github.com/gfm/).
-The sections below provide brief highlights on writing key Markdown syntax with
+The sections below provide brief highlights on writing key markdown syntax with
 examples.
 
 ## Markdown Syntax
 
-The following sections detail how to use various Markdown syntax.
+The following sections detail how to use various markdown syntax.
 
 
 ## Headers
@@ -97,15 +97,15 @@ Ordered lists use numbers. It does not matter what the number is.
 ```md
 1. Ordered list with ordered sub-items
    1. Ordered sub-item 1
-   1. Another sub-item
-   1. Another sub-item
+   1. Another subitem
+   1. Another subitem
 2. Another item
 ```
 
 1. Ordered list with ordered sub-items
    1. Ordered sub-item 1
-   1. Another sub-item
-   1. Another sub-item
+   1. Another subitem
+   1. Another subitem
 2. Another item
 
 
@@ -113,15 +113,15 @@ Ordered lists use numbers. It does not matter what the number is.
 ```md
 1. Ordered list with unordered sub-items
    - Un-ordered sub-item 1
-   + Another sub-item
-   * Another sub-item
+   + Another subitem
+   * Another subitem
 2. Another item
 ```
 
 1. Ordered list with unordered sub-items
    - Un-ordered sub-item 1
-   + Another sub-item
-   * Another sub-item
+   + Another subitem
+   * Another subitem
 2. Another item
 
 
@@ -129,21 +129,21 @@ Ordered lists use numbers. It does not matter what the number is.
 ```md
 1. Ordered list with mixed sub-items
    - Un-ordered sub-item 1
-   + Another sub-item
+   + Another subitem
 2. Another item
    1. Ordered sub item
       - Unordered
-      - another
+      - anoterh
    1. another item
 ```
 
 1. Ordered list with mixed sub-items
    - Un-ordered sub-item 1
-   + Another sub-item
+   + Another subitem
 2. Another item
    1. Ordered sub item
       - Unordered
-      - another
+      - anoterh
    1. another item
 
 
@@ -153,19 +153,19 @@ Unordered list can use asterisks `*`, minuses `-`, or pluses `+`.
 
 #### Un-Ordered list example
 ```md
-* An un-ordered list
+* An un-ordred list
 + Another item
 - Another item
 ```
 
-* An un-ordered list
+* An un-ordred list
 + Another item
 - Another item
 
 
-#### Un-Ordered list example with sub-items
+#### Un-Ordred list example with sub-tems
 ```md
-* An un-ordered list with sub-items
+* An un-ordred list with subitems
   - Another item
   - Another item
 * Another item
@@ -176,7 +176,7 @@ Unordered list can use asterisks `*`, minuses `-`, or pluses `+`.
   * something else
 ```
 
-* An un-ordered list with sub-items
+* An un-ordred list with subitems
   - Another item
   - Another item
 * Another item
@@ -200,14 +200,14 @@ can be inline, via a reference, or direct.
 
 [I'm an inline-style link to external site with title](https://www.google.com/ "Google's Homepage")
 
-[I'm an inline-style link to another relative document](documentation-intro.md)
+[I'm an inline-style link to to another relative document](documentation-intro.md)
 ```
 
 [I'm an inline-style link to external site](https://www.google.com/)
 
 [I'm an inline-style link to external site with title](https://www.google.com/ "Google's Homepage")
 
-[I'm an inline-style link to another relative document](documentation-intro.md)
+[I'm an inline-style link to to another relative document](documentation-intro.md)
 
 
 ### Referenced Links Example
@@ -254,12 +254,12 @@ and sometimes example.com (but not on GitHub, for example).
 Images references are similar to links. The syntax for an image is as follows:
 
 ```md
-![Image alternate text](Image location or refrence. 'Image title text')
+![Image alternate text](Image location or reference. 'Image title text')
 ```
 
 Images from any folder can be used by providing path to file. Path should be
 relative to markdown file. It is recommended that when using images that you
-create an **MDX** file and use Docusaurus objects. See the [adding new content](documentation-add-content.md)
+create an **MDX** file and use Docusarus objects. See the [adding new content](documentation-add-content.md)
 and [template](documentaion-templates.md) documentation for more information.
 
 ### Image inline example
@@ -401,7 +401,7 @@ Quotes will break based on page width.
 
 ## Inline HTML
 
-Inline HTML can also be used in Markdown language.
+Inline HTML can also be used in markdown language.
 
 ```html
 <dl>
@@ -436,7 +436,7 @@ a single newline, so it's a separate line in the _same paragraph_.
 
 ## Admonitions
 
-Admonitions provide additional information and can be labeled with a title.
+Admotions provide additional information and can be labeled with a title.
 
 ```md
 :::note My Note
