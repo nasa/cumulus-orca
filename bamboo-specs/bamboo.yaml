@@ -200,10 +200,10 @@ Release ORCA Documentation:
       description: Checkout Default Repository
   - script:
       interpreter: SHELL
-      workingSubdirectory: source
       scripts:
       - |-
         #!/bin/bash
+        cd source
         set -ex
         if [ ! -f "bin/create_release_documentation.sh" ]; then
           echo "ERROR: create_release_documentation.sh script does not exist!"
@@ -236,10 +236,10 @@ Release ORCA Code:
       description: Checkout Default Repository
   - script:
       interpreter: SHELL
-      workingSubdirectory: source
       scripts:
       - |-
         #!/bin/bash
+        cd source
         export NODE_VERSION="16.x"
         export TERRAFORM_VERSION="0.13.6"
 
