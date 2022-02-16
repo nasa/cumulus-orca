@@ -15,6 +15,14 @@ and includes an additional section for migration notes.
 
 
 ## [Unreleased]
+## [4.0.1]
+
+### Fixed
+- Updated release build script to perform cleanup sooner.
+- Updated terraform deployment with additional depends_on parameters and fixes
+  to prevent db_deploy lambda from firing prematurely.
+
+
 ## [4.0.0]
 
 ### Removed
