@@ -130,6 +130,18 @@ variable "orca_ingest_lambda_timeout" {
 }
 
 
+variable "orca_reconciliation_lambda_memory_size" {
+  type        = number
+  description = "Amount of memory in MB the ORCA reconciliation lambda can use at runtime."
+}
+
+
+variable "orca_reconciliation_lambda_timeout" {
+  type        = number
+  description = "Timeout in number of seconds for ORCA reconciliation lambdas."
+}
+
+
 variable "orca_recovery_buckets" {
   type        = list(string)
   description = "List of bucket names that ORCA has permissions to restore data to."

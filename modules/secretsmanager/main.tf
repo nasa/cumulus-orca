@@ -51,6 +51,24 @@ resource "aws_secretsmanager_secret_version" "db_login" {
   })
 }
 
+resource "aws_secretsmanager_secret" "s3_access_credentials" {
+  description             = "Allows postgres to access s3"
+  kms_key_id              = aws_kms_key.orca_kms_key.arn
+  name                    = "${var.prefix}-s3-access-credentials"
+  recovery_window_in_days = 0
+  tags                    = local.tags
+}
+
+#Reference to Cumulus secretsmanager: https://github.com/nasa/cumulus/blob/master/tf-modules/cumulus-rds-tf/main.tf#L33
+resource "aws_secretsmanager_secret_version" "s3_access_credentials" {
+  secret_id  = aws_secretsmanager_secret.s3_access_credentials.id
+  depends_on = [aws_secretsmanager_secret.s3_access_credentials]
+  secret_string = jsonencode({
+    s3_access_key = var.s3_access_key
+    s3_secret_key = var.s3_secret_key
+  })
+}
+
 
 ## KMS key policy
 ## ====================================================================================================
