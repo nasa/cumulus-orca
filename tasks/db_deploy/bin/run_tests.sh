@@ -87,7 +87,7 @@ echo "INFO: Running unit and coverage tests ..."
 # Export the AWS_REGION for the boto3 clients. Note that if you clear the
 # environment for unit tests, you will need to add this environment variable back
 # in to avoid a client error "botocore.exceptions.NoRegionError: You must specify
-# a region." In real AWS, the AWS_REGION is set for you per the Lamda developer
+# a region." In real AWS, the AWS_REGION is set for you per the Lambda developer
 # docs seen here https://docs.aws.amazon.com/lambda/latest/dg/lambda-dg.pdf
 export AWS_REGION="us-west-2"
 

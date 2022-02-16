@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/perform_orca_reconcile/schemas/output.json",
+  "title": "perform_orca_reconcile Lambda Output",
+  "description": "The output for the perform_orca_reconcile Lambda.",
+  "type": "object",
+  "required": [
+    "jobId"
+  ],
+  "properties": {
+    "jobId": {
+      "type": "integer",
+      "description": "The unique ID of the reconciliation job."
+    }
+  }
+}

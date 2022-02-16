@@ -317,7 +317,7 @@ class TestPostToDatabase(
         mock_connection = Mock()
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
-        mock_engine.begin.return_value.__exit__ = Mock()
+        mock_engine.begin.return_value.__exit__ = Mock(return_value=False)
 
         post_to_database.create_status_for_job_and_files(
             job_id, granule_id, request_time, archive_destination, files, mock_engine
@@ -452,7 +452,7 @@ class TestPostToDatabase(
         mock_connection = Mock()
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
-        mock_engine.begin.return_value.__exit__ = Mock()
+        mock_engine.begin.return_value.__exit__ = Mock(return_value=False)
 
         post_to_database.create_status_for_job_and_files(
             job_id, granule_id, request_time, archive_destination, files, mock_engine
@@ -579,7 +579,7 @@ class TestPostToDatabase(
         mock_connection = Mock()
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
-        mock_engine.begin.return_value.__exit__ = Mock()
+        mock_engine.begin.return_value.__exit__ = Mock(return_value=False)
 
         post_to_database.update_status_for_file(
             job_id,

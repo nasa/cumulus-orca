@@ -325,7 +325,7 @@ class TestRequestStatusForGranuleUnit(
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
         mock_engine.begin.return_value.__exit__ = (
-            Mock()
+            Mock(return_value=False)
         )  # required for "with", but untestable.
 
         result = request_status_for_granule.get_most_recent_job_id_for_granule(
@@ -360,7 +360,7 @@ class TestRequestStatusForGranuleUnit(
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
         mock_engine.begin.return_value.__exit__ = (
-            Mock()
+            Mock(return_value=False)
         )  # required for "with", but untestable.
 
         result = request_status_for_granule.get_job_entry_for_granule(
@@ -403,7 +403,7 @@ class TestRequestStatusForGranuleUnit(
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
         mock_engine.begin.return_value.__exit__ = (
-            Mock()
+            Mock(return_value=False)
         )  # required for "with", but untestable.
 
         result = request_status_for_granule.get_file_entries_for_granule_in_job(
@@ -468,7 +468,7 @@ class TestRequestStatusForGranuleUnit(
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
         mock_engine.begin.return_value.__exit__ = (
-            Mock()
+            Mock(return_value=False)
         )  # required for "with", but untestable.
         mock_get_user_connection.return_value = mock_engine
 

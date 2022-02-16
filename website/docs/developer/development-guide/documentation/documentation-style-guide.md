@@ -254,7 +254,7 @@ and sometimes example.com (but not on GitHub, for example).
 Images references are similar to links. The syntax for an image is as follows:
 
 ```md
-![Image alternate text](Image location or refrence. 'Image title text')
+![Image alternate text](Image location or reference. 'Image title text')
 ```
 
 Images from any folder can be used by providing path to file. Path should be
