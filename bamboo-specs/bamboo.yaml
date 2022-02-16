@@ -195,18 +195,19 @@ Release ORCA Documentation:
       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
   tasks:
   - checkout:
-      force-clean-build: 'true'
+      force-clean-build: true
       path: source
       description: Checkout Default Repository
   - script:
       interpreter: SHELL
+      working subdirectory: source
       scripts:
       - |-
         #!/bin/bash
         set -ex
         if [ ! -f "bin/create_release_documentation.sh" ]; then
           echo "ERROR: create_release_documentation.sh script does not exist!"
-          exit 0
+          exit 1
         fi
         bin/create_release_documentation.sh
       description: Run documentation release script
@@ -223,18 +224,19 @@ Release ORCA Code:
       interpreter: SHELL
       scripts:
       - |-
-        ## This script removes the "source" subdirectory which all jobs in this stage utilize.   This ensures that there's nothing left over from previous runs. 
-        ## This is required as the checkout job does not interface correctly with docker in all instances. 
+        ## This script removes the "source" subdirectory which all jobs in this stage utilize. This ensures that there's nothing left over from previous runs.
+        ## This is required as the checkout job does not interface correctly with docker in all instances.
         rm -rf ./source
         mkdir source
         rm -rf dist
       description: Clean Working Directory
   - checkout:
-      force-clean-build: 'true'
+      force-clean-build: true
       path: source
       description: Checkout Default Repository
   - script:
       interpreter: SHELL
+      working subdirectory: source
       scripts:
       - |-
         #!/bin/bash
@@ -279,7 +281,7 @@ repositories:
 - orca-develop: #this is created by CICD team from https://ci.earthdata.nasa.gov/. Contact Venku Jayanti with any issues.
     scope: global
 triggers:
-- polling:
+- polling: # Does not actually poll, as we do not have webhooks enabled.
     period: '60' #time in seconds
 branches:
   create: for-new-branch
