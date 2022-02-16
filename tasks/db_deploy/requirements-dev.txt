@@ -9,4 +9,4 @@ moto==2.0.6
 
 ## Libraries needed by application
 SQLAlchemy==1.4.11
-../../shared_libraries[database]
+../../shared_libraries[database, reconciliation]
