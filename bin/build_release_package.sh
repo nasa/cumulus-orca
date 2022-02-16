@@ -55,11 +55,17 @@ function check_rc () {
 ## MAIN
 ## -----------------------------------------------------------------------------
 
-## Create the build director. Remove it if it exists.
+# Remove the dist directory if it exists.
+if [ -d dist ]; then
+    check_rc "rm -rf dist"
+fi
+
+## Remove the build directory if it exists.
 if [ -d build ]; then
     check_rc "rm -rf build"
 fi
 
+## Create the build directory
 check_rc "mkdir -p build/tasks"
 
 
@@ -91,11 +97,6 @@ done
 
 
 ## Create the distribution package
-# create distribution package directory. Remove it if it already exists.
-if [ -d dist ]; then
-    check_rc "rm -rf dist"
-fi
-
 check_rc "mkdir dist"
 
 # Enter the build directory so the files that are zipped exist at the root level
