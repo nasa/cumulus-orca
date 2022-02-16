@@ -16,7 +16,6 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 
-
 ### Added
 - *ORCA-161* Added dead letter queue and cloudwatch alarm terraform code to recovery SQS queue.
 
@@ -88,6 +87,15 @@ variable "dlq_subscription_email" {
   vpc_endpoint_id                                      = null
   }
   ```
+
+
+## [4.0.1]
+
+### Fixed
+- Updated release build script to perform cleanup sooner.
+- Updated terraform deployment with additional depends_on parameters and fixes
+  to prevent db_deploy lambda from firing prematurely.
+
 
 ## [4.0.0]
 
