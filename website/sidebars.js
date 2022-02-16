@@ -70,8 +70,8 @@ module.exports = {
       'developer/research/research-AuroraServerless',
       'developer/research/research-graphql',
       'developer/research/research-multipart-chunksize',
-      'developer/research/research-bamboo'
-
+      'developer/research/research-bamboo',
+      'developer/research/research-lambda-container'
     ],
   },
   cookbook: {

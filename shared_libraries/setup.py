@@ -46,7 +46,7 @@ for library_name in [
 
 # Update with library specific requirements
 extras_per_library.update(
-    {"database": [_dep_boto3, _dep_sqlalchemy], "recovery": [_dep_boto3]}
+    {"database": [_dep_boto3, _dep_sqlalchemy], "recovery": [_dep_boto3], "reconciliation": []}
 )
 
 

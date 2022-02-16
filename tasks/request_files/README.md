@@ -134,7 +134,7 @@ FUNCTIONS
                 RESTORE_RETRIEVAL_TYPE (str, optional, default = 'Standard'): the Tier
                     for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
                 CUMULUS_MESSAGE_ADAPTER_DISABLED (str): If set to 'true', CumulusMessageAdapter does not modify input.
-                DB_QUEUE_URL
+                STATUS_UPDATE_QUEUE_URL
                     The URL of the SQS queue to post status to.
             Args:
                 event: See schemas/input.json and combine with knowledge of CumulusMessageAdapter.
@@ -148,7 +148,7 @@ FUNCTIONS
                 message, with 'success' = False for the files for which the restore request failed to
                 submit.
     
-    inner_task(event: Dict, max_retries: int, retry_sleep_secs: float, retrieval_type: str, restore_expire_days: int, db_queue_url: str) -> Dict[str, Any]
+    inner_task(event: Dict, max_retries: int, retry_sleep_secs: float, retrieval_type: str, restore_expire_days: int, status_update_queue_url: str) -> Dict[str, Any]
         Task called by the handler to perform the work.
         This task will call the restore_request for each file. Restored files will be kept
         for {exp_days} days before they expire. A restore request will be tried up to {retries} times
@@ -172,7 +172,7 @@ FUNCTIONS
                 retrieval_type: The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
                 restore_expire_days: The number of days the restored file will be accessible in the S3 bucket before it
                     expires.
-                db_queue_url: The URL of the SQS queue to post status to.
+                status_update_queue_url: The URL of the SQS queue to post status to.
             Returns:
                 A dict with the following keys:
                     'granules' (List): A list of dicts, each with the following keys:
@@ -199,7 +199,7 @@ FUNCTIONS
         Returns:
             True if the object exists, otherwise False.
     
-    process_granule(s3: botocore.client.BaseClient, granule: Dict[str, Union[str, List[Dict]]], glacier_bucket: str, restore_expire_days: int, max_retries: int, retry_sleep_secs: float, retrieval_type: str, job_id: str, db_queue_url: str) -> None
+    process_granule(s3: botocore.client.BaseClient, granule: Dict[str, Union[str, List[Dict]]], glacier_bucket: str, restore_expire_days: int, max_retries: int, retry_sleep_secs: float, retrieval_type: str, job_id: str, status_update_queue_url: str) -> None
         Call restore_object for the files in the granule_list. Modifies granule for output.
         Args:
             s3: An instance of boto3 s3 client
@@ -218,7 +218,7 @@ FUNCTIONS
             retry_sleep_secs: The number of seconds to sleep between retry attempts.
             retrieval_type: The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
             job_id: The unique identifier used for tracking requests.
-            db_queue_url: The URL of the SQS queue to post status to.
+            status_update_queue_url: The URL of the SQS queue to post status to.
         
         Raises: RestoreRequestError if any file restore could not be initiated.
     
@@ -262,7 +262,7 @@ FUNCTIONS
                     to sleep between retry attempts.
                 RESTORE_RETRIEVAL_TYPE (str, optional, default = 'Standard'): The Tier
                     for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
-                DB_QUEUE_URL
+                STATUS_UPDATE_QUEUE_URL
                     The URL of the SQS queue to post status to.
                 ORCA_DEFAULT_BUCKET
                     The bucket to use if destBucket is not set.
@@ -310,11 +310,11 @@ DATA
     INPUT_GRANULES_KEY = 'granules'
     LOGGER = <cumulus_logger.CumulusLogger object>
     List = typing.List
-    OS_ENVIRON_DB_QUEUE_URL_KEY = 'DB_QUEUE_URL'
     OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY = 'ORCA_DEFAULT_BUCKET'
     OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY = 'RESTORE_EXPIRE_DAYS'
     OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY = 'RESTORE_REQUEST_RETRIES'
     OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY = 'RESTORE_RETRIEVAL_TYPE'
     OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY = 'RESTORE_RETRY_SLEEP_SECS'
+    OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY = 'STATUS_UPDATE_QUEUE_URL'
     Union = typing.Union
 ```

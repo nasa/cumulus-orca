@@ -69,7 +69,7 @@ check_rc $return_code "ERROR: pip install encountered an error."
 ## Get the modules we want to document
 file_list=""
 first_time="1"
-for file in `ls -1 *.py`
+for file in $(find . -type d \( -path test -o -path ./venv -o -path ./.vscode \) -prune -o -type f -name "*.py" -print | sed 's|^./||')
 do
     module=${file%%".py"}
     if [ "${first_time}" = "1" ]; then

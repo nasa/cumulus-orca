@@ -52,7 +52,7 @@ BEGIN
     );
 
     COMMENT ON TABLE provider_collection_xref
-      IS 'Cross refrence table that ties a collection and provider together and resolves the many to many relationship.';
+      IS 'Cross reference table that ties a collection and provider together and resolves the many to many relationship.';
     COMMENT ON COLUMN provider_collection_xref.provider_id
       IS 'Provider ID from the providers table.';
     COMMENT ON COLUMN provider_collection_xref.collection_id
@@ -79,7 +79,7 @@ BEGIN
     COMMENT ON COLUMN granules.id
       IS 'Internal orca granule ID pseudo key';
     COMMENT ON COLUMN granules.collection_id
-      IS 'Collection ID from Cumulus that refrences the Collections table.';
+      IS 'Collection ID from Cumulus that references the Collections table.';
     COMMENT ON COLUMN granules.cumulus_granule_id
       IS 'Granule ID from Cumulus';
     COMMENT ON COLUMN granules.acquisition_time
@@ -118,7 +118,7 @@ BEGIN
     COMMENT ON COLUMN files.id
       IS 'Internal ORCA file ID';
     COMMENT ON COLUMN files.granule_id
-      IS 'Granule that the file belongs to refrences the internal ORCA granule ID.';
+      IS 'Granule that the file belongs to references the internal ORCA granule ID.';
     COMMENT ON COLUMN files.name
       IS 'Name of the file including extension';
     COMMENT ON COLUMN files.orca_archive_location

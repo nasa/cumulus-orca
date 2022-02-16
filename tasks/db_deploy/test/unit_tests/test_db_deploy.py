@@ -73,17 +73,13 @@ class TestDbDeployFunctions(unittest.TestCase):
         mock_task.assert_called_with(json.loads(self.secretstring))
 
     @patch("db_deploy.create_fresh_orca_install")
-    @patch("orca_sql.app_database_comment_sql")
-    @patch("orca_sql.app_database_sql")
-    @patch("orca_sql.commit_sql")
+    @patch("db_deploy.create_database")
     @patch("db_deploy.get_admin_connection")
     @patch("db_deploy.app_db_exists")
     def test_task_no_database(
         self, mock_app_db_exists: MagicMock,
             mock_connection: MagicMock,
-            mock_commit_sql: MagicMock,
-            mock_app_database_sql: MagicMock,
-            mock_app_database_comment_sql: MagicMock,
+            mock_create_database: MagicMock,
             mock_create_fresh_orca_install: MagicMock
     ):
         """
@@ -94,13 +90,9 @@ class TestDbDeployFunctions(unittest.TestCase):
         db_deploy.task(self.config)
         mock_app_db_exists.assert_called_with(mock_connection().connect().__enter__(), self.config["user_database"])
         # Check the text calls occur and in the proper order
-        execute_calls = [
-            call(mock_commit_sql.return_value),
-            call(mock_app_database_sql.return_value),
-            call(mock_app_database_comment_sql.return_value)
-        ]
-        mock_connection().connect().__enter__().execute.assert_has_calls(execute_calls, any_order=False)
+
         mock_create_fresh_orca_install.assert_called_once_with(self.config)
+        mock_create_database.assert_called_once_with(self.config)
 
     @patch("db_deploy.get_admin_connection")
     @patch("db_deploy.create_fresh_orca_install")

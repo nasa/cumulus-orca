@@ -34,6 +34,7 @@ module "orca" {
   db_host_endpoint          = var.db_host_endpoint
   db_user_password          = var.db_user_password
   orca_default_bucket       = var.orca_default_bucket
+  dlq_subscription_email    = var.dlq_subscription_email
   
   ## OPTIONAL
   db_admin_username                                    = var.db_admin_username

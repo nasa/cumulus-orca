@@ -379,7 +379,7 @@ class TestOrcaCatalogReportingUnit(
         mock_execute = Mock(return_value=[returned_row0])
         mock_connection = Mock()
         mock_connection.execute = mock_execute
-        mock_exit = Mock()
+        mock_exit = Mock(return_value=False)
         mock_enter = Mock()
         mock_enter.__enter__ = Mock(return_value=mock_connection)
         mock_enter.__exit__ = mock_exit
