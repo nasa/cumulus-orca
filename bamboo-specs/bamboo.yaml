@@ -200,7 +200,7 @@ Release ORCA Documentation:
       description: Checkout Default Repository
   - script:
       interpreter: SHELL
-      working subdirectory: source
+      workingSubdirectory: source
       scripts:
       - |-
         #!/bin/bash
@@ -236,7 +236,7 @@ Release ORCA Code:
       description: Checkout Default Repository
   - script:
       interpreter: SHELL
-      working subdirectory: source
+      workingSubdirectory: source
       scripts:
       - |-
         #!/bin/bash
