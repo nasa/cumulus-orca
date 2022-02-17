@@ -5,9 +5,10 @@ Description: All of the SQL used for creating and migrating the ORCA schema.
 """
 # Imports
 import re
+
+from orca_shared.database.shared_db import logger
 from sqlalchemy import text
 from sqlalchemy.sql.elements import TextClause
-from orca_shared.database.shared_db import logger
 
 
 # ----------------------------------------------------------------------------
@@ -784,12 +785,11 @@ def reconcile_s3_object_partition_sql(partition_name: str) -> TextClause:
     return text(
         f"""
             -- Create orca_archive_location_:bucket_name
-            CREATE TABLE {partition_name}
+            CREATE TABLE {partition_name} PARTITION OF reconcile_s3_object
             (
               CONSTRAINT PK_{partition_name} PRIMARY KEY(key_path)
             , CONSTRAINT FK_reconcile_job_{partition_name} FOREIGN KEY(job_id) REFERENCES reconcile_job(id)
             )
-            PARTITION OF reconcile_s3_object
             FOR VALUES IN (:bucket_name);
 
             -- Comment
