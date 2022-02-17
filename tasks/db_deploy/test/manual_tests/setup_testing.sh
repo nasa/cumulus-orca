@@ -72,8 +72,8 @@ case $1 in
         # Destroy the postgres database
         docker-compose down
 
-        # Remove shared library files
-        rm -rf ${DB_DEPLOY_DIR}/orca_shared
+        # Remove the data directory
+        rm -rf ${DATA_DIR}
     ;;
 
     *)
