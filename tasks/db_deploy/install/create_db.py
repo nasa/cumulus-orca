@@ -5,12 +5,14 @@ Description: Creates the current version on the ORCA database.
 """
 from typing import Dict, List
 
-from orca_shared.database.shared_db import (
-    get_admin_connection, logger
+from orca_shared.database.shared_db import get_admin_connection, logger
+from orca_shared.reconciliation.shared_reconciliation import (
+    get_partition_name_from_bucket_name,
 )
-from orca_shared.reconciliation.shared_reconciliation import get_partition_name_from_bucket_name
 from sqlalchemy.future import Connection
+
 import install.orca_sql as sql
+
 
 def create_fresh_orca_install(config: Dict[str, str], orca_buckets: List[str]) -> None:
     """
@@ -19,7 +21,8 @@ def create_fresh_orca_install(config: Dict[str, str], orca_buckets: List[str]) -
 
     Args:
         config (Dict): Dictionary with database connection information
-        orca_buckets: List[str]): List of ORCA buckets needed to create partitioned tables for reporting.
+        orca_buckets: List[str]): List of ORCA buckets needed to create
+                                  partitioned tables for reporting.
 
     Returns:
         None
@@ -31,7 +34,12 @@ def create_fresh_orca_install(config: Dict[str, str], orca_buckets: List[str]) -
 
     with admin_app_connection.connect() as conn:
         # Create the roles, schema and user
-        create_app_schema_role_users(conn, config["user_username"], config["user_password"], config["user_database"])
+        create_app_schema_role_users(
+            conn,
+            config["user_username"],
+            config["user_password"],
+            config["user_database"],
+        )
 
         # Change to DBO role and set search path
         set_search_path_and_role(conn)
@@ -48,7 +56,7 @@ def create_fresh_orca_install(config: Dict[str, str], orca_buckets: List[str]) -
         conn.commit()
 
 
-def create_database(config: Dict[str,str]) -> None:
+def create_database(config: Dict[str, str]) -> None:
     """
     Creates the orca database
     """
@@ -56,7 +64,7 @@ def create_database(config: Dict[str,str]) -> None:
     postgres_admin_engine = get_admin_connection(config)
     # Connect as admin user to the postgres database
     with postgres_admin_engine.connect() as connection:
-    # Code to create the database
+        # Code to create the database
         connection.execute(
             sql.commit_sql()
         )  # exit the default transaction to allow database creation.
@@ -65,7 +73,9 @@ def create_database(config: Dict[str,str]) -> None:
         logger.info("Database created.")
 
 
-def create_app_schema_role_users(connection: Connection, app_username: str, app_password: str, db_name: str) -> None:
+def create_app_schema_role_users(
+    connection: Connection, app_username: str, app_password: str, db_name: str
+) -> None:
     """
     Creates the ORCA application database schema, users and roles.
 
@@ -182,7 +192,8 @@ def create_recovery_objects(connection: Connection) -> None:
 
 def create_inventory_objects(connection: Connection) -> None:
     """
-    Creates the ORCA catalog metadata tables used for reconciliation with Cumulus in the proper order.
+    Creates the ORCA catalog metadata tables used for reconciliation with
+    Cumulus in the proper order.
     - providers
     - collections
     - provider_collection_xref
@@ -216,7 +227,9 @@ def create_inventory_objects(connection: Connection) -> None:
     logger.info("files table created.")
 
 
-def create_internal_reconciliation_objects(connection: Connection, orca_buckets: List[str]) -> None:
+def create_internal_reconciliation_objects(
+    connection: Connection, orca_buckets: List[str]
+) -> None:
     """
     Creates the ORCA internal reconciliation tables in the proper order.
     - reconcile_status
@@ -228,7 +241,8 @@ def create_internal_reconciliation_objects(connection: Connection, orca_buckets:
 
     Args:
         connection (sqlalchemy.future.Connection): Database connection.
-        orca_buckets: List[str]): List of ORCA buckets needed to create partitioned tables for reporting.
+        orca_buckets: List[str]): List of ORCA buckets needed to create
+                                  partitioned tables for reporting.
 
     Returns:
         None
@@ -251,14 +265,16 @@ def create_internal_reconciliation_objects(connection: Connection, orca_buckets:
     # Create partitioned tables for the reconcile_s3_object table
     for bucket_name in orca_buckets:
         _partition_name = get_partition_name_from_bucket_name(bucket_name)
-        logger.debug(f"Creating partition table {_partition_name} for reconcile_s3_object ...")
-        connection.execute(
-            sql.reconcile_s3_object_partition_sql(
-                _partition_name,
-                {"bucket_name": bucket_name}
-            )
+        logger.debug(
+            f"Creating partition table {_partition_name} for reconcile_s3_object ..."
         )
-        logger.info(f"Partition table {_partition_name} for reconcile_s3_object created.")
+        connection.execute(
+            sql.reconcile_s3_object_partition_sql(_partition_name),
+            {"bucket_name": bucket_name},
+        )
+        logger.info(
+            f"Partition table {_partition_name} for reconcile_s3_object created."
+        )
 
     # Create reconcile_catalog_mismatch_report table
     logger.debug("Creating reconcile_catalog_mismatch_report table ...")

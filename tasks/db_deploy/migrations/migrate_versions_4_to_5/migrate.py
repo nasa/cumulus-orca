@@ -3,13 +3,19 @@ Name: migrate.py
 
 Description: Migrates the ORCA schema from version 4 to version 5.
 """
-from typing import Dict
-import migrations.migrate_versions_4_to_5.migrate_sql as sql
+from typing import Dict, List
+
 from orca_shared.database.shared_db import get_admin_connection, logger
-from orca_shared.reconciliation.shared_reconciliation import get_partition_name_from_bucket_name
+from orca_shared.reconciliation.shared_reconciliation import (
+    get_partition_name_from_bucket_name,
+)
+
+import migrations.migrate_versions_4_to_5.migrate_sql as sql
 
 
-def migrate_versions_4_to_5(config: Dict[str, str], is_latest_version: bool, orca_buckets: List[str]) -> None:
+def migrate_versions_4_to_5(
+    config: Dict[str, str], is_latest_version: bool, orca_buckets: List[str]
+) -> None:
     """
     Performs the migration of the ORCA schema from version 4 to version 5 of
     the ORCA schema. This includes adding the aws s3 extension and adding the
@@ -23,8 +29,10 @@ def migrate_versions_4_to_5(config: Dict[str, str], is_latest_version: bool, orc
 
     Args:
         config (Dict): Connection information for the database.
-        is_latest_version (bool): Flag to determine if version 5 is the latest schema version.
-        orca_buckets: List[str]): List of ORCA buckets names needed to create partition tables for v5.
+        is_latest_version (bool): Flag to determine if version 5 is the latest
+                                  schema version.
+        orca_buckets: List[str]): List of ORCA buckets names needed to create
+                                  partition tables for v5.
     Returns:
         None
     """
@@ -64,14 +72,16 @@ def migrate_versions_4_to_5(config: Dict[str, str], is_latest_version: bool, orc
         # Create partitioned tables for the reconcile_s3_object table
         for bucket_name in orca_buckets:
             _partition_name = get_partition_name_from_bucket_name(bucket_name)
-            logger.debug(f"Creating partition table {_partition_name} for reconcile_s3_object ...")
-            connection.execute(
-                sql.reconcile_s3_object_partition_sql(
-                    _partition_name,
-                    {"bucket_name": bucket_name}
-                )
+            logger.debug(
+                f"Creating partition table {_partition_name} for reconcile_s3_object ..."
             )
-            logger.info(f"Partition table {_partition_name} for reconcile_s3_object created.")
+            connection.execute(
+                sql.reconcile_s3_object_partition_sql(_partition_name),
+                {"bucket_name": bucket_name},
+            )
+            logger.info(
+                f"Partition table {_partition_name} for reconcile_s3_object created."
+            )
 
         # Create reconcile_catalog_mismatch_report table
         logger.debug("Creating reconcile_catalog_mismatch_report table ...")
