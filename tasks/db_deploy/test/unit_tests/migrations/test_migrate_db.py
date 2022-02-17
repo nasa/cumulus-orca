@@ -29,12 +29,14 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
             "user_password": "user123456789",
             "user_username": "user",
         }
+        self.orca_buckets = ["orca_worm", "orca_versioned", "orca_special"]
 
     def tearDown(self):
         """
         Tear down test
         """
         self.config = None
+        self.orca_buckets = None
 
     @patch("migrations.migrate_db.migrate_versions_1_to_2")
     @patch("migrations.migrate_db.migrate_versions_2_to_3")
@@ -52,7 +54,7 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
         """
         for version in [1, 2, 3, 4, 5, 6]:
             with self.subTest(version=version):
-                migrate_db.perform_migration(version, self.config)
+                migrate_db.perform_migration(version, self.config, self.orca_buckets)
 
                 # Make sure the proper migrations happens.
                 # Note that for version 2 and 3 the function is not called so
@@ -68,12 +70,14 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                     mock_migrate_v2_to_v3.assert_not_called()
 
                 if version < 4:
-                    mock_migrate_v3_to_v4.assert_called_once_with(self.config, True)
+                    mock_migrate_v3_to_v4.assert_called_once_with(self.config, False)
                 else:
                     mock_migrate_v3_to_v4.assert_not_called()
 
                 if version < 5:
-                    mock_migrate_v4_to_v5.assert_called_once_with(self.config, True)
+                    mock_migrate_v4_to_v5.assert_called_once_with(
+                        self.config, True, self.orca_buckets
+                    )
                 else:
                     mock_migrate_v4_to_v5.assert_not_called()
 

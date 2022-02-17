@@ -49,11 +49,8 @@ def handler(
 
     # Get the ORCA bucket list
     orca_buckets = event.get("orcaBuckets", None)
-    if orca_buckets is None or len(orca_buckets) == 0:
+    if type(orca_buckets) != list or len(orca_buckets) == 0:
         raise ValueError("orcaBuckets must be a valid list of ORCA S3 bucket names.")
-
-    if type(orca_buckets) == list:
-        raise TypeError("orcaBuckets must be a valid list of ORCA S3 bucket names.")
 
     return task(config, orca_buckets)
 

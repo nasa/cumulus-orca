@@ -3,7 +3,8 @@ Name: test_orca_sql.py
 
 Description: Testing library for the orca_sql.py library.
 """
-
+import random
+import string
 import unittest
 import uuid
 from inspect import getmembers, isfunction
@@ -11,6 +12,14 @@ from inspect import getmembers, isfunction
 from sqlalchemy.sql.elements import TextClause
 
 from install import orca_sql
+
+
+def generate_randoms_string(length=50):
+    """
+    Generates a random string consisting of a combination of A-Z,a-z,0-9, and _.
+    """
+    charachters = string.ascii_letters + string.digits + "_"
+    return "".join(random.choice(charachters) for _ in range(length))  # nosec
 
 
 class TestOrcaSqlLogic(unittest.TestCase):
@@ -73,14 +82,18 @@ class TestOrcaSqlLogic(unittest.TestCase):
         for name, function in getmembers(orca_sql, isfunction):
             if name not in ["text"]:
                 with self.subTest(function=function):
-                    if name in ["app_user_sql"]:
+                    # These functions take in two string parameters.
+                    if name in [
+                        "app_user_sql",
+                    ]:
                         self.assertEqual(
                             type(
                                 function(uuid.uuid4().__str__(), uuid.uuid4().__str__())
                             ),
                             TextClause,
                         )
-                        # These functions take in two string parameters.
+
+                    # These functions take in a string parameter.
                     elif name in [
                         "app_database_sql",
                         "app_database_comment_sql",
@@ -91,25 +104,41 @@ class TestOrcaSqlLogic(unittest.TestCase):
                         "drop_drdbo_role_sql",
                         "reconcile_s3_object_partition_sql",
                     ]:
-                        # These functions take in a string parameter.
                         self.assertEqual(
-                            type(function(uuid.uuid4().__str__())), TextClause
+                            type(function(generate_randoms_string())), TextClause
                         )
+
+                    # All other functions have no parameters passed
                     else:
                         self.assertEqual(type(function()), TextClause)
 
+    def test_reconcile_s3_object_partition_sql_happy_path(self) -> None:
+        """
+        Tests that a well formed table name passes checks. The name must be made up of the
+        characters A-Z, a-z, 0-9, or _
+        """
+        partition_name = generate_randoms_string()
+        sql_text = orca_sql.reconcile_s3_object_partition_sql(partition_name)
+        self.assertEqual(type(sql_text), TextClause)
+
     def test_reconcile_s3_object_partition_sql_exception(self) -> None:
         """
-        Tests that an exception is thrown if the password is not set or is not
-        a minimum of 12 characters,
-        or if user_name is not set or is over 64 characters.
+        Tests that an exception is thrown if the table name is not made up of the following
+        characters A-Z, a-z, 0-9, and _. Also the table name cannot be None.
         """
+        # Test for None
+        partition_name = None
+        with self.assertRaises(ValueError) as ve:
+            orca_sql.reconcile_s3_object_partition_sql(partition_name)
+        self.assertEqual(
+            "Table name must be a string and cannot be None.", str(ve.exception)
+        )
 
-        partition_names = [None, ""]
+        partition_names = ["", uuid.uuid4().__str__(), "$!ABadName2"]
         for partition_name in partition_names:
             with self.subTest(partition_name=partition_name):
-                with self.assertRaises(Exception) as ex:
+                with self.assertRaises(ValueError) as ve:
                     orca_sql.reconcile_s3_object_partition_sql(partition_name)
                 self.assertEqual(
-                    "partition name is not set properly", ex.exception.args[0]
+                    f"Table name {partition_name} is invalid.", str(ve.exception)
                 )
