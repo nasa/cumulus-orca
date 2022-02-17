@@ -53,9 +53,10 @@ To setup the testing environment perform the following steps.
    ```bash
    python3 -m venv venv
    . venv/bin/activate
-   cd /data/tasks/db_deploy/test/manual_tests
+   cd /data/tasks/db_deploy
    pip install -U pip --trusted-host pypi.org --trusted-host files.pythonhosted.org
    pip install -r ../../requirements-dev.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
+   cd test/manual_tests
    ```
 
 
@@ -290,7 +291,7 @@ PostgreSQL *orca* database. Perform the checks below by going to the
     public      | postgres
    (4 rows)
    ```
-4. Verify the tables were created in the ORCA schema. It is assumed that the partition table in schema version 5 is named `orca_archive_location_test_bucket`
+4. Verify the tables were created in the ORCA schema.
    ```bash
    orca=# \dt orca.*
 
@@ -316,7 +317,51 @@ PostgreSQL *orca* database. Perform the checks below by going to the
     orca   | schema_versions                           | table | orca_dbo
     (17 rows)
    ```
-5. Verify the static data in the *recovery_status* table.
+5. Check that the partition table was created properly.
+   ```bash
+   ## Check the primary table
+   orca=# \d+ orca.reconcile_s3_object
+
+                                                                                         Table "orca.reconcile_s3_object"
+           Column         |           Type           | Collation | Nullable | Default | Storage  | Stats target |                                         Description
+   -----------------------+--------------------------+-----------+----------+---------+----------+--------------+----------------------------------------------------------------------------------------------
+    job_id                | bigint                   |           | not null |         | plain    |              | Job the S3 listing is a part of for the comparison. Foreign key to the reconcile jobs table.
+    orca_archive_location | text                     |           | not null |         | extended |              | ORCA S3 Glacier bucket name where the file is stored.
+    key_path              | text                     |           | not null |         | extended |              | Full path and file name of the object in the S3 bucket.
+    etag                  | text                     |           | not null |         | extended |              | AWS etag value from the s3 inventory report.
+    last_update           | timestamp with time zone |           | not null |         | plain    |              | AWS Last Update from the s3 inventory report.
+    size_in_bytes         | bigint                   |           | not null |         | plain    |              | AWS size of the file in bytes from the s3 inventory report.
+    storage_class         | text                     |           | not null |         | extended |              | AWS storage class the object is in from the s3 inventory report.
+    delete_marker         | boolean                  |           | not null | false   | plain    |              | Set to True if object is marked as deleted.
+   Partition key: LIST (orca_archive_location)
+   Partitions: orca.reconcile_s3_object_orca_special_backup FOR VALUES IN ('orca_special_backup'),
+               orca.reconcile_s3_object_orca_versioned_backup FOR VALUES IN ('orca_versioned_backup'),
+               orca.reconcile_s3_object_orca_worm_backup FOR VALUES IN ('orca_worm_backup')
+
+
+   ## Check a partition table
+   orca=# \d+ orca.orca.reconcile_s3_object_orca_worm_backup
+
+                                        Table "orca.reconcile_s3_object_orca_worm_backup"
+           Column         |           Type           | Collation | Nullable | Default | Storage  | Stats target | Description
+   -----------------------+--------------------------+-----------+----------+---------+----------+--------------+-------------
+    job_id                | bigint                   |           | not null |         | plain    |              |
+    orca_archive_location | text                     |           | not null |         | extended |              |
+    key_path              | text                     |           | not null |         | extended |              |
+    etag                  | text                     |           | not null |         | extended |              |
+    last_update           | timestamp with time zone |           | not null |         | plain    |              |
+    size_in_bytes         | bigint                   |           | not null |         | plain    |              |
+    storage_class         | text                     |           | not null |         | extended |              |
+    delete_marker         | boolean                  |           | not null | false   | plain    |              |
+   Partition of: orca.reconcile_s3_object FOR VALUES IN ('orca_worm_backup')
+   Partition constraint: ((orca_archive_location IS NOT NULL) AND (orca_archive_location = 'orca_worm_backup'::text))
+   Indexes:
+       "pk_reconcile_s3_object_orca_worm_backup" PRIMARY KEY, btree (key_path)
+   Foreign-key constraints:
+       "fk_reconcile_job_reconcile_s3_object_orca_worm_backup" FOREIGN KEY (job_id) REFERENCES orca.reconcile_job(id)
+   ```
+
+6. Verify the static data in the *recovery_status* table.
    ```bash
    orca=# select * from orca.recovery_status;
 
@@ -328,7 +373,7 @@ PostgreSQL *orca* database. Perform the checks below by going to the
      4 | complete
    (4 rows)
    ```
-6. Verify the static data in the *reconcile_status* table.
+7. Verify the static data in the *reconcile_status* table.
    ```bash
    orca=# select * from orca.reconcile_status;
 
@@ -341,7 +386,7 @@ PostgreSQL *orca* database. Perform the checks below by going to the
      5 | success
    (5 rows)
    ```
-7. Verify the static data in the *schema_versions* table.
+8. Verify the static data in the *schema_versions* table.
    ```bash
    orca=# select * from orca.schema_versions;
 
@@ -350,7 +395,7 @@ PostgreSQL *orca* database. Perform the checks below by going to the
              5 | Added internal reconciliation schema for v5.x of ORCA application  | 2022-02-16 20:56:19.2691+00 | t
    (1 row)
    ```
-8. Verify the orcauser can login with the password provided in the `.env` files
+9. Verify the orcauser can login with the password provided in the `.env` files
    `APPLICATION_PASSWORD` environment variable.
    ```bash
    orca=# \c "dbname=orca user=orcauser password=<Your Password Here>"
@@ -789,7 +834,51 @@ PostgreSQL *orca* database. Perform the checks below by going to the
     orca   | schema_versions                           | table | orca_dbo
     (17 rows)
    ```
-5. Verify the static data in the *recovery_status* table.
+5. Check that the partition table was created properly.
+   ```bash
+   ## Check the primary table
+   orca=# \d+ orca.reconcile_s3_object
+
+                                                                                         Table "orca.reconcile_s3_object"
+           Column         |           Type           | Collation | Nullable | Default | Storage  | Stats target |                                         Description
+   -----------------------+--------------------------+-----------+----------+---------+----------+--------------+----------------------------------------------------------------------------------------------
+    job_id                | bigint                   |           | not null |         | plain    |              | Job the S3 listing is a part of for the comparison. Foreign key to the reconcile jobs table.
+    orca_archive_location | text                     |           | not null |         | extended |              | ORCA S3 Glacier bucket name where the file is stored.
+    key_path              | text                     |           | not null |         | extended |              | Full path and file name of the object in the S3 bucket.
+    etag                  | text                     |           | not null |         | extended |              | AWS etag value from the s3 inventory report.
+    last_update           | timestamp with time zone |           | not null |         | plain    |              | AWS Last Update from the s3 inventory report.
+    size_in_bytes         | bigint                   |           | not null |         | plain    |              | AWS size of the file in bytes from the s3 inventory report.
+    storage_class         | text                     |           | not null |         | extended |              | AWS storage class the object is in from the s3 inventory report.
+    delete_marker         | boolean                  |           | not null | false   | plain    |              | Set to True if object is marked as deleted.
+   Partition key: LIST (orca_archive_location)
+   Partitions: orca.reconcile_s3_object_orca_special_backup FOR VALUES IN ('orca_special_backup'),
+               orca.reconcile_s3_object_orca_versioned_backup FOR VALUES IN ('orca_versioned_backup'),
+               orca.reconcile_s3_object_orca_worm_backup FOR VALUES IN ('orca_worm_backup')
+
+
+   ## Check a partition table
+   orca=# \d+ orca.orca.reconcile_s3_object_orca_worm_backup
+
+                                        Table "orca.reconcile_s3_object_orca_worm_backup"
+           Column         |           Type           | Collation | Nullable | Default | Storage  | Stats target | Description
+   -----------------------+--------------------------+-----------+----------+---------+----------+--------------+-------------
+    job_id                | bigint                   |           | not null |         | plain    |              |
+    orca_archive_location | text                     |           | not null |         | extended |              |
+    key_path              | text                     |           | not null |         | extended |              |
+    etag                  | text                     |           | not null |         | extended |              |
+    last_update           | timestamp with time zone |           | not null |         | plain    |              |
+    size_in_bytes         | bigint                   |           | not null |         | plain    |              |
+    storage_class         | text                     |           | not null |         | extended |              |
+    delete_marker         | boolean                  |           | not null | false   | plain    |              |
+   Partition of: orca.reconcile_s3_object FOR VALUES IN ('orca_worm_backup')
+   Partition constraint: ((orca_archive_location IS NOT NULL) AND (orca_archive_location = 'orca_worm_backup'::text))
+   Indexes:
+       "pk_reconcile_s3_object_orca_worm_backup" PRIMARY KEY, btree (key_path)
+   Foreign-key constraints:
+       "fk_reconcile_job_reconcile_s3_object_orca_worm_backup" FOREIGN KEY (job_id) REFERENCES orca.reconcile_job(id)
+   ```
+
+6. Verify the static data in the *recovery_status* table.
    ```bash
    orca=# select * from orca.recovery_status;
 
@@ -801,7 +890,7 @@ PostgreSQL *orca* database. Perform the checks below by going to the
      4 | complete
    (4 rows)
    ```
-6. Verify the static data in the *reconcile_status* table.
+7. Verify the static data in the *reconcile_status* table.
    ```bash
    orca=# select * from orca.reconcile_status;
 
@@ -814,7 +903,7 @@ PostgreSQL *orca* database. Perform the checks below by going to the
      5 | success
    (5 rows)
    ```
-7. Verify the static data in the *schema_versions* table. #TODO- Need fix scripts 2,3,4 migration to add info to schema_versions;
+8. Verify the static data in the *schema_versions* table. #TODO- Need fix scripts 2,3,4 migration to add info to schema_versions;
    ```bash
    orca=# select * from orca.schema_versions;
 
@@ -823,67 +912,67 @@ PostgreSQL *orca* database. Perform the checks below by going to the
              5 | Added internal reconciliation schema for v5.x of ORCA application  | 2022-02-16 20:56:19.2691+00 | t
    (1 row)
    ```
-8. Verify the orcauser can login with the password provided in the `.env` files
+9. Verify the orcauser can login with the password provided in the `.env` files
    `APPLICATION_PASSWORD` environment variable.
    ```bash
    orca=# \c "dbname=orca user=orcauser password=<Your Password Here>"
 
    You are now connected to database "orca" as user "orcauser".
    ```
-9. Validate that the data was properly migrated into the recovery jobs table. The
-   dummy data has a 1 job -> 1 granule -> 1 file relation.
-   ```bash
-   # Check the total numbers based on status value. They should match the values
-   # expressed below.
-   orca=# select status_id, count(*) from recovery_job group by 1;
+10. Validate that the data was properly migrated into the recovery jobs table. The
+    dummy data has a 1 job -> 1 granule -> 1 file relation.
+    ```bash
+    # Check the total numbers based on status value. They should match the values
+    # expressed below.
+    orca=# select status_id, count(*) from recovery_job group by 1;
 
-   status_id | count
-   -----------+-------
-            1 |   117
-            3 |   110
-            4 |   110
-   (3 rows)
+    status_id | count
+    -----------+-------
+             1 |   117
+             3 |   110
+             4 |   110
+    (3 rows)
 
-   # Check the pending data. Verify completion date is not set and arcive_destination
-   # is set to myglacierarchivebucket
-   orca=# select * from recovery_job where status_id = 1 LIMIT 5;
+    # Check the pending data. Verify completion date is not set and arcive_destination
+    # is set to myglacierarchivebucket
+    orca=# select * from recovery_job where status_id = 1 LIMIT 5;
 
-                  job_id                |        granule_id        |  archive_destination   | status_id |         request_time          | completion_time
-   -------------------------------------+--------------------------+------------------------+-----------+-------------------------------+-----------------
-   01782f43-5431-4a7a-9bdd-14f4462d93b1 | 47da62669dc4fcddfa332308 | myarchiveglacierbucket |         1 | 2021-04-29 08:10:04.855081+00 |
-   01dacee7-d511-4211-b010-07d8caf4318a | db913643165b26063aa3e5c6 | myarchiveglacierbucket |         1 | 2021-04-25 00:10:04.855081+00 |
-   01e20106-3673-412a-ba58-57084b63796a | bcd7c80976d5405aeff27711 | myarchiveglacierbucket |         1 | 2021-04-25 01:10:04.855081+00 |
-   026e568c-41f2-4902-a0b3-f7eaab1e5a91 | 33ddbc2f4682d452031f901e | myarchiveglacierbucket |         1 | 2021-04-27 11:10:04.855081+00 |
-   028717f6-b359-490c-bceb-fc3cab70b82c | fd6ef1dc3804e1f05e550364 | myarchiveglacierbucket |         1 | 2021-04-25 21:10:04.855081+00 |
-   (5 rows)
+                   job_id                |        granule_id        |  archive_destination   | status_id |         request_time          | completion_time
+    -------------------------------------+--------------------------+------------------------+-----------+-------------------------------+-----------------
+    01782f43-5431-4a7a-9bdd-14f4462d93b1 | 47da62669dc4fcddfa332308 | myarchiveglacierbucket |         1 | 2021-04-29 08:10:04.855081+00 |
+    01dacee7-d511-4211-b010-07d8caf4318a | db913643165b26063aa3e5c6 | myarchiveglacierbucket |         1 | 2021-04-25 00:10:04.855081+00 |
+    01e20106-3673-412a-ba58-57084b63796a | bcd7c80976d5405aeff27711 | myarchiveglacierbucket |         1 | 2021-04-25 01:10:04.855081+00 |
+    026e568c-41f2-4902-a0b3-f7eaab1e5a91 | 33ddbc2f4682d452031f901e | myarchiveglacierbucket |         1 | 2021-04-27 11:10:04.855081+00 |
+    028717f6-b359-490c-bceb-fc3cab70b82c | fd6ef1dc3804e1f05e550364 | myarchiveglacierbucket |         1 | 2021-04-25 21:10:04.855081+00 |
+    (5 rows)
 
-   # Check the complete data. Verify completion date is set and arcive_destination
-   # is set to myglacierarchivebucket
+    # Check the complete data. Verify completion date is set and arcive_destination
+    # is set to myglacierarchivebucket
     orca=# select * from recovery_job where status_id = 4 LIMIT 5;
 
-                  job_id                |        granule_id        |  archive_destination   | multipart_chunksize_mb | status_id |         request_time          | completion_time
-   -------------------------------------+--------------------------+------------------------+-----------+-------------------------------+-------------------------------
-   04c9db6d-2d09-4e75-af79-feaf54c7771e | 64e83cc5103965b83fca62ad | myarchiveglacierbucket |                   NULL |         4 | 2021-04-19 08:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   057e1fe7-c561-48c3-b539-65193de99279 | 0a1662031cfecd9c5190bf6d | myarchiveglacierbucket |                   NULL |         4 | 2021-04-18 20:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   0c86fa12-8773-4da6-b0e3-38104230c12e | 7b8be6c8f9076afe64f1aa62 | myarchiveglacierbucket |                   NULL |         4 | 2021-04-16 03:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   0e377a25-e8a6-4de8-86de-42dfad803b75 | cca7d86de488a25864f18095 | myarchiveglacierbucket |                   NULL |         4 | 2021-04-18 02:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   0eefcaf1-5dc5-47eb-a299-a9c206bf58d5 | 11790a3ddcdfcd1cbd6e341b | myarchiveglacierbucket |                   NULL |         4 | 2021-04-19 20:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   (5 rows)
+                   job_id                |        granule_id        |  archive_destination   | multipart_chunksize_mb | status_id |         request_time          | completion_time
+    -------------------------------------+--------------------------+------------------------+-----------+-------------------------------+-------------------------------
+    04c9db6d-2d09-4e75-af79-feaf54c7771e | 64e83cc5103965b83fca62ad | myarchiveglacierbucket |                   NULL |         4 | 2021-04-19 08:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+    057e1fe7-c561-48c3-b539-65193de99279 | 0a1662031cfecd9c5190bf6d | myarchiveglacierbucket |                   NULL |         4 | 2021-04-18 20:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+    0c86fa12-8773-4da6-b0e3-38104230c12e | 7b8be6c8f9076afe64f1aa62 | myarchiveglacierbucket |                   NULL |         4 | 2021-04-16 03:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+    0e377a25-e8a6-4de8-86de-42dfad803b75 | cca7d86de488a25864f18095 | myarchiveglacierbucket |                   NULL |         4 | 2021-04-18 02:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+    0eefcaf1-5dc5-47eb-a299-a9c206bf58d5 | 11790a3ddcdfcd1cbd6e341b | myarchiveglacierbucket |                   NULL |         4 | 2021-04-19 20:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+    (5 rows)
 
-   # Check the complete data. Verify completion date is set and arcive_destination
-   # is set to myglacierarchivebucket
-   orca=# select * from recovery_job where status_id = 3 LIMIT 5;
+    # Check the complete data. Verify completion date is set and arcive_destination
+    # is set to myglacierarchivebucket
+    orca=# select * from recovery_job where status_id = 3 LIMIT 5;
 
-                  job_id                |        granule_id        |  archive_destination   | status_id |         request_time          | completion_time
-   -------------------------------------+--------------------------+------------------------+-----------+-------------------------------+-------------------------------
-   0169a025-1e3e-4a69-ab64-498634cd933b | 865a440a34c319b22ee52419 | myarchiveglacierbucket |         3 | 2021-04-24 10:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   0673403b-6c52-459f-b59a-04ab9b87b93f | 9eda38da05d01ade96a3a3e8 | myarchiveglacierbucket |         3 | 2021-04-23 20:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   072db1cb-0efd-41b7-bc09-03272f0a6ab9 | 1bbf8c9d3b4b52a44220bdfc | myarchiveglacierbucket |         3 | 2021-04-24 08:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   09ccd4bc-7904-47f6-93e3-1f4ec21ff9b6 | 5510126af9eae7e6baab940a | myarchiveglacierbucket |         3 | 2021-04-21 13:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   0b4620bd-07d3-46a7-aa7c-db3c1316b697 | ac40bb34b5d64655daca2f1d | myarchiveglacierbucket |         3 | 2021-04-22 13:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
-   (5 rows)
-   ```
-10. Validate that the data was properly migrated into the recovery files table. The
+                   job_id                |        granule_id        |  archive_destination   | status_id |         request_time          | completion_time
+    -------------------------------------+--------------------------+------------------------+-----------+-------------------------------+-------------------------------
+    0169a025-1e3e-4a69-ab64-498634cd933b | 865a440a34c319b22ee52419 | myarchiveglacierbucket |         3 | 2021-04-24 10:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+    0673403b-6c52-459f-b59a-04ab9b87b93f | 9eda38da05d01ade96a3a3e8 | myarchiveglacierbucket |         3 | 2021-04-23 20:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+    072db1cb-0efd-41b7-bc09-03272f0a6ab9 | 1bbf8c9d3b4b52a44220bdfc | myarchiveglacierbucket |         3 | 2021-04-24 08:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+    09ccd4bc-7904-47f6-93e3-1f4ec21ff9b6 | 5510126af9eae7e6baab940a | myarchiveglacierbucket |         3 | 2021-04-21 13:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+    0b4620bd-07d3-46a7-aa7c-db3c1316b697 | ac40bb34b5d64655daca2f1d | myarchiveglacierbucket |         3 | 2021-04-22 13:10:04.855081+00 | 2021-04-29 15:10:04.855081+00
+    (5 rows)
+    ```
+11. Validate that the data was properly migrated into the recovery files table. The
     dummy data has a 1 job -> 1 granule -> 1 file relation.
     ```bash
     # Check the total numbers based on status value. They should match the values
@@ -927,7 +1016,7 @@ PostgreSQL *orca* database. Perform the checks below by going to the
     (2 rows)
 
     ```
-11. Run additional queries joining the recovery_job and recovery_file tables on
+12. Run additional queries joining the recovery_job and recovery_file tables on
     job_id and granule_id and validate that the request_time,completion_time, and
     status_id information matches in both tables for a given record.
 
@@ -1045,7 +1134,7 @@ You are now connected to database "orca" as user "postgres".
 orca=# \i <SQL script file>;
 ```
 
-Once the schema is rolled back to the proper version, running the 
+Once the schema is rolled back to the proper version, running the
 `python manual_test.py` command in the **python** window will start the migration.
 Validating the migration follows the same steps as the migration test validation
 above with the only diffrence being the amount of information emitted in the log
