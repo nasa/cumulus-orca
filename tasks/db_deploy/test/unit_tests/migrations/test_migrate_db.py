@@ -5,8 +5,10 @@ Description: Runs unit tests for the migrations/migrate_db.py library.
 """
 
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 from migrations import migrate_db
+
 
 class TestMigrateDatabaseLibraries(unittest.TestCase):
     """
@@ -39,11 +41,11 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
     @patch("migrations.migrate_db.migrate_versions_3_to_4")
     @patch("migrations.migrate_db.migrate_versions_4_to_5")
     def test_perform_migration_happy_path(
-            self,
-            mock_migrate_v4_to_v5: MagicMock,
-            mock_migrate_v3_to_v4: MagicMock,
-            mock_migrate_v2_to_v3: MagicMock,
-            mock_migrate_v1_to_v2: MagicMock,
+        self,
+        mock_migrate_v4_to_v5: MagicMock,
+        mock_migrate_v3_to_v4: MagicMock,
+        mock_migrate_v2_to_v3: MagicMock,
+        mock_migrate_v1_to_v2: MagicMock,
     ):
         """
         Tests the perform_migration function happy paths

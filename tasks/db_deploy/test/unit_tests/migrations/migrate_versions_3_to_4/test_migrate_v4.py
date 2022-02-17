@@ -5,8 +5,10 @@ Description: Runs unit tests for the migrations/migrate_versions_3_to_4/migrate.
 """
 
 import unittest
-from unittest.mock import call, patch, MagicMock
+from unittest.mock import MagicMock, call, patch
+
 from migrations.migrate_versions_3_to_4 import migrate
+
 
 class TestMigrateDatabaseLibraries(unittest.TestCase):
     """
@@ -33,7 +35,6 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
         Tear down test
         """
         self.config = None
-    
 
     @patch("migrations.migrate_versions_3_to_4.migrate.sql.schema_versions_data_sql")
     @patch("migrations.migrate_versions_3_to_4.migrate.sql.providers_table_sql")
@@ -43,14 +44,14 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
     @patch("migrations.migrate_versions_3_to_4.migrate.get_admin_connection")
     @patch("migrations.migrate_versions_3_to_4.migrate.sql.text")
     def test_migrate_versions_3_to_4_happy_path(
-            self,
-            mock_text: MagicMock,
-            mock_connection: MagicMock,
-            mock_files_table: MagicMock,
-            mock_granules_table: MagicMock,
-            mock_collections_table: MagicMock,
-            mock_providers_table: MagicMock,
-            mock_schema_versions_data: MagicMock,
+        self,
+        mock_text: MagicMock,
+        mock_connection: MagicMock,
+        mock_files_table: MagicMock,
+        mock_granules_table: MagicMock,
+        mock_collections_table: MagicMock,
+        mock_providers_table: MagicMock,
+        mock_schema_versions_data: MagicMock,
     ):
         """
         Tests the migrate_versions_3_to_4 function happy path

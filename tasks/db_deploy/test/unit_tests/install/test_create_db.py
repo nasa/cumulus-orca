@@ -5,7 +5,8 @@ Description: Runs unit tests for the create_db.py library.
 """
 
 import unittest
-from unittest.mock import Mock, call, patch, MagicMock
+from unittest.mock import MagicMock, call, patch
+
 from install import create_db
 
 
@@ -63,13 +64,18 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         mock_conn_enter = mock_connection().connect().__enter__()
 
         mock_create_app_schema_roles.assert_called_once_with(
-            mock_conn_enter, self.config["user_username"], self.config["user_password"], self.config["user_database"]
+            mock_conn_enter,
+            self.config["user_username"],
+            self.config["user_password"],
+            self.config["user_database"],
         )
         mock_set_search_path_role.assert_called_once_with(mock_conn_enter)
         mock_create_inventory_objects.assert_called_once_with(mock_conn_enter)
         mock_create_metadata.assert_called_once_with(mock_conn_enter)
         mock_create_recovery.assert_called_once_with(mock_conn_enter)
-        mock_create_internal_reconciliation_objects.assert_called_once_with(mock_conn_enter)
+        mock_create_internal_reconciliation_objects.assert_called_once_with(
+            mock_conn_enter
+        )
 
         # Check that commit was called at the end. In this case it is position
         # 4 of the calls (initial call with config, connection call, enter of
@@ -77,7 +83,6 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         mock_call_commit = mock_connection.mock_calls[3]
         mock_commit = call().connect().__enter__().commit()
         self.assertEqual(mock_call_commit, mock_commit)
-
 
     @patch("install.orca_sql.app_database_comment_sql")
     @patch("install.orca_sql.app_database_sql")
@@ -88,7 +93,7 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         mock_connection: MagicMock,
         mock_commit_sql: MagicMock,
         mock_app_database_sql: MagicMock,
-        mock_app_database_comment_sql: MagicMock
+        mock_app_database_comment_sql: MagicMock,
     ):
         """
         Tests normal happy path of create_database function.
@@ -98,10 +103,11 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         execute_calls = [
             call(mock_commit_sql.return_value),
             call(mock_app_database_sql.return_value),
-            call(mock_app_database_comment_sql.return_value)
+            call(mock_app_database_comment_sql.return_value),
         ]
-        mock_connection().connect().__enter__().execute.assert_has_calls(execute_calls, any_order=True)
-
+        mock_connection().connect().__enter__().execute.assert_has_calls(
+            execute_calls, any_order=True
+        )
 
     @patch("install.create_db.sql.app_user_sql")
     @patch("install.create_db.sql.orca_schema_sql")
@@ -118,14 +124,19 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         Tests happy path of create_app_schema_role_users function.
         """
         create_db.create_app_schema_role_users(
-            self.mock_connection, self.config["user_username"], self.config["user_password"], self.config["user_database"]
+            self.mock_connection,
+            self.config["user_username"],
+            self.config["user_password"],
+            self.config["user_database"],
         )
 
         # Check that SQL called properly
         mock_dbo_role_sql.assert_called_once()
         mock_app_role_sql.assert_called_once()
         mock_schema_sql.assert_called_once()
-        mock_user_sql.assert_called_once_with(self.config["user_username"], self.config["user_password"])
+        mock_user_sql.assert_called_once_with(
+            self.config["user_username"], self.config["user_password"]
+        )
 
         # Check SQL called in proper order
         execution_order = [
@@ -244,7 +255,6 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
 
         self.assertEqual(self.mock_connection.mock_calls, execution_order)
 
-
     @patch("install.create_db.sql.reconcile_status_table_sql")
     @patch("install.create_db.sql.reconcile_job_table_sql")
     @patch("install.create_db.sql.reconcile_s3_object_table_sql")
@@ -262,7 +272,7 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         mock_reconcile_catalog_mismatch_report_table: MagicMock,
         mock_reconcile_s3_object_table: MagicMock,
         mock_reconcile_job_table: MagicMock,
-        mock_reconcile_status_table: MagicMock,        
+        mock_reconcile_status_table: MagicMock,
     ):
         """
         Tests happy path of the create_internal_reconciliation_objects function
@@ -288,8 +298,7 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
             call.execute(mock_reconcile_orphan_report_table()),
             call.execute(mock_reconcile_phantom_report_table()),
             call.execute(mock_reconcile_s3_object_partition_table()),
-            call.execute(mock_extension())
-
+            call.execute(mock_extension()),
         ]
 
         self.assertEqual(self.mock_connection.mock_calls, execution_order)

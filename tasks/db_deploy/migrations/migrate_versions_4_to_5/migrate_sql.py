@@ -6,7 +6,6 @@ Description: All of the SQL used for creating and migrating the ORCA schema to v
 # Imports
 import re
 
-from orca_shared.database.shared_db import logger
 from sqlalchemy import text
 from sqlalchemy.sql.elements import TextClause
 
@@ -31,7 +30,8 @@ def schema_versions_data_sql() -> TextClause:
 
         -- Upsert the current version
         INSERT INTO schema_versions
-        VALUES (5, 'Added internal reconciliation schema for v5.x of ORCA application', NOW(), True)
+          VALUES
+            (5, 'Added internal reconciliation schema for v5.x of ORCA application', NOW(), True)
         ON CONFLICT (version_id)
         DO UPDATE SET is_latest = True;
     """
@@ -56,7 +56,8 @@ def create_extension() -> TextClause:
             CREATE EXTENSION IF NOT EXISTS aws_s3 CASCADE;
 
             -- Comment
-            COMMENT ON EXTENSION aws_s3 IS 'Custom AWS extension that allows for data COPY from and to an S3 bucket object.';
+            COMMENT ON EXTENSION aws_s3
+              IS 'Custom AWS extension that allows for data COPY from and to an S3 bucket object.';
         """
     )
 
@@ -130,15 +131,24 @@ def reconcile_job_table_sql() -> TextClause:
         );
 
         -- Comments
-        COMMENT ON TABLE reconcile_job IS 'Manages internal reconciliation job information.';
-        COMMENT ON COLUMN reconcile_job.id IS 'Job ID unique to each internal reconciliation job.';
-        COMMENT ON COLUMN reconcile_job.orca_archive_location IS 'ORCA S3 Glacier bucket the reconciliation targets.';
-        COMMENT ON COLUMN reconcile_job.status_id IS 'Current status of the job.';
-        COMMENT ON COLUMN reconcile_job.inventory_creation_time IS 'Inventory report initiation time from the s3 manifest.';
-        COMMENT ON COLUMN reconcile_job.start_time IS 'Date and time the internal reconcile job started.';
-        COMMENT ON COLUMN reconcile_job.last_update IS 'Date and time the job status was last updated.';
-        COMMENT ON COLUMN reconcile_job.end_time IS 'Time the job completed and wrote the report information.';
-        COMMENT ON COLUMN reconcile_job.error_message IS 'Critical error the job ran into that prevented it from finishing.';
+        COMMENT ON TABLE reconcile_job
+          IS 'Manages internal reconciliation job information.';
+        COMMENT ON COLUMN reconcile_job.id
+          IS 'Job ID unique to each internal reconciliation job.';
+        COMMENT ON COLUMN reconcile_job.orca_archive_location
+          IS 'ORCA S3 Glacier bucket the reconciliation targets.';
+        COMMENT ON COLUMN reconcile_job.status_id IS
+          'Current status of the job.';
+        COMMENT ON COLUMN reconcile_job.inventory_creation_time
+          IS 'Inventory report initiation time from the s3 manifest.';
+        COMMENT ON COLUMN reconcile_job.start_time
+          IS 'Date and time the internal reconcile job started.';
+        COMMENT ON COLUMN reconcile_job.last_update
+          IS 'Date and time the job status was last updated.';
+        COMMENT ON COLUMN reconcile_job.end_time
+          IS 'Time the job completed and wrote the report information.';
+        COMMENT ON COLUMN reconcile_job.error_message
+          IS 'Critical error the job ran into that prevented it from finishing.';
         """
     )
 
@@ -167,15 +177,24 @@ def reconcile_s3_object_table_sql() -> TextClause:
             PARTITION BY LIST (orca_archive_location);
 
             -- Comment
-            COMMENT ON TABLE reconcile_s3_object IS 'Temporary table that holds the listing from the ORCA S3 bucket to use for comparisons against the ORCA catalog.';
-            COMMENT ON COLUMN reconcile_s3_object.job_id IS 'Job the S3 listing is a part of for the comparison. Foreign key to the reconcile jobs table.';
-            COMMENT ON COLUMN reconcile_s3_object.orca_archive_location IS 'ORCA S3 Glacier bucket name where the file is stored.';
-            COMMENT ON COLUMN reconcile_s3_object.key_path IS 'Full path and file name of the object in the S3 bucket.';
-            COMMENT ON COLUMN reconcile_s3_object.etag IS 'AWS etag value from the s3 inventory report.';
-            COMMENT ON COLUMN reconcile_s3_object.last_update IS 'AWS Last Update from the s3 inventory report.';
-            COMMENT ON COLUMN reconcile_s3_object.size_in_bytes IS 'AWS size of the file in bytes from the s3 inventory report.';
-            COMMENT ON COLUMN reconcile_s3_object.storage_class IS 'AWS storage class the object is in from the s3 inventory report.';
-            COMMENT ON COLUMN reconcile_s3_object.delete_marker IS 'Set to True if object is marked as deleted.';
+            COMMENT ON TABLE reconcile_s3_object
+              IS 'Holds the listing from the ORCA S3 buckets to use for internal comparisons.';
+            COMMENT ON COLUMN reconcile_s3_object.job_id
+              IS 'Job the S3 listing is a part of for the comparison.';
+            COMMENT ON COLUMN reconcile_s3_object.orca_archive_location
+              IS 'ORCA S3 Glacier bucket name where the file is stored.';
+            COMMENT ON COLUMN reconcile_s3_object.key_path
+              IS 'Full path and file name of the object in the S3 bucket.';
+            COMMENT ON COLUMN reconcile_s3_object.etag
+              IS 'AWS etag value from the s3 inventory report.';
+            COMMENT ON COLUMN reconcile_s3_object.last_update
+              IS 'AWS Last Update from the s3 inventory report.';
+            COMMENT ON COLUMN reconcile_s3_object.size_in_bytes
+              IS 'AWS size of the file in bytes from the s3 inventory report.';
+            COMMENT ON COLUMN reconcile_s3_object.storage_class
+              IS 'AWS storage class the object is in from the s3 inventory report.';
+            COMMENT ON COLUMN reconcile_s3_object.delete_marker
+              IS 'Set to True if object is marked as deleted.';
         """
     )
 
@@ -193,7 +212,7 @@ def reconcile_s3_object_partition_sql(partition_name: str) -> TextClause:
         (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_s3_object partition table.
     """
     try:
-        if not re.match("^[\w+]+$", partition_name):
+        if not re.match("^[\w+]+$", partition_name):  # noqa: W605
             raise ValueError(f"Table name {partition_name} is invalid.")
     except TypeError:
         raise ValueError("Table name must be a string and cannot be None.")
@@ -203,13 +222,16 @@ def reconcile_s3_object_partition_sql(partition_name: str) -> TextClause:
             -- Create orca_archive_location_:bucket_name
             CREATE TABLE {partition_name} PARTITION OF reconcile_s3_object
             (
-              CONSTRAINT PK_{partition_name} PRIMARY KEY(key_path)
-            , CONSTRAINT FK_reconcile_job_{partition_name} FOREIGN KEY(job_id) REFERENCES reconcile_job(id)
+              CONSTRAINT PK_{partition_name}
+                PRIMARY KEY(key_path)
+            , CONSTRAINT FK_reconcile_job_{partition_name}
+                FOREIGN KEY(job_id) REFERENCES reconcile_job(id)
             )
             FOR VALUES IN (:bucket_name);
 
             -- Comment
-            COMMENT ON TABLE {partition_name} IS 'Partition table for reconcile_s3_object based on orca_archive_location.';
+            COMMENT ON TABLE {partition_name}
+              IS 'Partition table for reconcile_s3_object based on orca_archive_location.';
             """
     )
 
@@ -219,7 +241,7 @@ def reconcile_catalog_mismatch_report_table_sql() -> TextClause:
     Full SQL for creating the reconcile_catalog_mismatch_report table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_catalog_mismatch_report table.
+        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_catalog_mismatch_report.
     """
     return text(
         """
@@ -239,25 +261,41 @@ def reconcile_catalog_mismatch_report_table_sql() -> TextClause:
             , orca_size_in_bytes        int8 NOT NULL
             , s3_size_in_bytes            int8 NOT NULL
             , discrepancy_type            text NOT NULL
-            , CONSTRAINT PK_reconcile_catalog_mismatch_report PRIMARY KEY(job_id,collection_id,granule_id,key_path)
-            , CONSTRAINT FK_reconcile_job_mismatch_report FOREIGN KEY(job_id) REFERENCES reconcile_job(id)
+            , CONSTRAINT PK_reconcile_catalog_mismatch_report
+                PRIMARY KEY(job_id,collection_id,granule_id,key_path)
+            , CONSTRAINT FK_reconcile_job_mismatch_report
+                FOREIGN KEY(job_id) REFERENCES reconcile_job(id)
             );
 
             -- Comment
-            COMMENT ON TABLE reconcile_catalog_mismatch_report IS 'Table that identifies objects that have mismatched values between the Orca catalog and the s3 objects table.';
-            COMMENT ON COLUMN reconcile_catalog_mismatch_report.job_id IS 'Job the mismatch or missing granule was found in. References the reconcile_job table.';
-            COMMENT ON COLUMN reconcile_catalog_mismatch_report.collection_id IS 'Cumulus Collection ID value from the ORCA catalog.';
-            COMMENT ON COLUMN reconcile_catalog_mismatch_report.granule_id IS 'Cumulus granuleID value from the ORCA catalog.';
-            COMMENT ON COLUMN reconcile_catalog_mismatch_report.filename IS 'Filename of the object from the ORCA catalog.';
-            COMMENT ON COLUMN reconcile_catalog_mismatch_report.key_path IS 'key path and filename of the object in the ORCA catalog.';
-            COMMENT ON COLUMN reconcile_catalog_mismatch_report.cumulus_archive_location IS 'Expected S3 bucket the object is located in Cumulus. From the ORCA catalog.';
-            COMMENT ON COLUMN reconcile_catalog_mismatch_report.orca_etag IS 'etag of the object as reported in the ORCA catalog.';
-            COMMENT ON COLUMN reconcile_catalog_mismatch_report.s3_etag IS 'etag of the object as reported in the S3 bucket.';
-            COMMENT ON COLUMN reconcile_catalog_mismatch_report.orca_last_update IS 'Last update of the object as reported in the ORCA catalog.';
-            COMMENT ON COLUMN reconcile_catalog_mismatch_report.s3_last_update IS 'Last update of the object as reported in the S3 bucket.';
-            COMMENT ON COLUMN reconcile_catalog_mismatch_report.orca_size_in_bytes IS 'Size in bytes of the object as reported in the ORCA catalog.';
-            COMMENT ON COLUMN reconcile_catalog_mismatch_report.s3_size_in_bytes IS 'Size in bytes of the object as reported in the S3 bucket.';
-            COMMENT ON COLUMN reconcile_catalog_mismatch_report.discrepancy_type IS 'Type of discrepancy found during reconciliation.';
+            COMMENT ON TABLE reconcile_catalog_mismatch_report
+              IS 'Identifies objects that have mismatched values between the ORCA catalog and s3.';
+            COMMENT ON COLUMN reconcile_catalog_mismatch_report.job_id
+              IS 'Job the mismatch granule was found in. References the reconcile_job table.';
+            COMMENT ON COLUMN reconcile_catalog_mismatch_report.collection_id
+              IS 'Cumulus Collection ID value from the ORCA catalog.';
+            COMMENT ON COLUMN reconcile_catalog_mismatch_report.granule_id
+              IS 'Cumulus granuleID value from the ORCA catalog.';
+            COMMENT ON COLUMN reconcile_catalog_mismatch_report.filename
+              IS 'Filename of the object from the ORCA catalog.';
+            COMMENT ON COLUMN reconcile_catalog_mismatch_report.key_path
+              IS 'key path and filename of the object in the ORCA catalog.';
+            COMMENT ON COLUMN reconcile_catalog_mismatch_report.cumulus_archive_location
+              IS 'Expected S3 bucket the object is located in Cumulus. From the ORCA catalog.';
+            COMMENT ON COLUMN reconcile_catalog_mismatch_report.orca_etag
+              IS 'etag of the object as reported in the ORCA catalog.';
+            COMMENT ON COLUMN reconcile_catalog_mismatch_report.s3_etag
+              IS 'etag of the object as reported in the S3 bucket.';
+            COMMENT ON COLUMN reconcile_catalog_mismatch_report.orca_last_update
+              IS 'Last update of the object as reported in the ORCA catalog.';
+            COMMENT ON COLUMN reconcile_catalog_mismatch_report.s3_last_update
+              IS 'Last update of the object as reported in the S3 bucket.';
+            COMMENT ON COLUMN reconcile_catalog_mismatch_report.orca_size_in_bytes
+              IS 'Size in bytes of the object as reported in the ORCA catalog.';
+            COMMENT ON COLUMN reconcile_catalog_mismatch_report.s3_size_in_bytes
+              IS 'Size in bytes of the object as reported in the S3 bucket.';
+            COMMENT ON COLUMN reconcile_catalog_mismatch_report.discrepancy_type
+              IS 'Type of discrepancy found during reconciliation.';
         """
     )
 
@@ -280,18 +318,27 @@ def reconcile_orphan_report_table_sql() -> TextClause:
             , last_update      timestamp with time zone NOT NULL
             , size_in_bytes    int8 NOT NULL
             , storage_class    text NOT NULL
-            , CONSTRAINT PK_reconcile_orphan_report PRIMARY KEY(job_id,key_path)
-            , CONSTRAINT FK_reconcile_job_orphan_report FOREIGN KEY(job_id) REFERENCES reconcile_job(id)
+            , CONSTRAINT PK_reconcile_orphan_report
+                PRIMARY KEY(job_id,key_path)
+            , CONSTRAINT FK_reconcile_job_orphan_report
+                FOREIGN KEY(job_id) REFERENCES reconcile_job(id)
             );
 
             -- Comment
-            COMMENT ON TABLE reconcile_orphan_report IS 'Table that identifies objects in the ORCA S3 Glacier bucket that are not in the ORCA catalog from the internal reconciliation job.';
-            COMMENT ON COLUMN reconcile_orphan_report.job_id IS 'Associates the orphaned file to a internal reconciliation job. References the reconcile jobs table.';
-            COMMENT ON COLUMN reconcile_orphan_report.key_path IS 'Key that contains the path and file name. Value is obtained from the reconcile_s3_object (key_path) column.';
-            COMMENT ON COLUMN reconcile_orphan_report.etag IS 'AWS Etag of the object. Value is obtained from the reconcile_s3_object (etag) column.';
-            COMMENT ON COLUMN reconcile_orphan_report.last_update IS 'AWS last update of the object. Value is obtained from the reconcile_s3_object (lst_update) column.';
-            COMMENT ON COLUMN reconcile_orphan_report.size_in_bytes IS 'AWS size of the object in bytes. Value is obtained from the reconcile_s3_object (size) column.';
-            COMMENT ON COLUMN reconcile_orphan_report.storage_class IS 'AWS storage class the object is in. Value is obtained from the reconcile_s3_object (storage_class) column.';
+            COMMENT ON TABLE reconcile_orphan_report
+              IS 'Identifies objects in the ORCA S3 Glacier bucket that are not in the catalog.';
+            COMMENT ON COLUMN reconcile_orphan_report.job_id
+              IS 'Associates the orphaned file to a internal reconciliation job.';
+            COMMENT ON COLUMN reconcile_orphan_report.key_path
+              IS 'Contains the path and file name from the reconcile_s3_object (key_path) column.';
+            COMMENT ON COLUMN reconcile_orphan_report.etag
+              IS 'AWS Etag of the object from the reconcile_s3_object (etag) column.';
+            COMMENT ON COLUMN reconcile_orphan_report.last_update
+              IS 'AWS last update of the object from the reconcile_s3_object (lst_update) column.';
+            COMMENT ON COLUMN reconcile_orphan_report.size_in_bytes
+              IS 'AWS size of the object in bytes from the reconcile_s3_object (size) column.';
+            COMMENT ON COLUMN reconcile_orphan_report.storage_class
+              IS 'AWS storage class from the reconcile_s3_object (storage_class) column.';
         """
     )
 
@@ -316,18 +363,29 @@ def reconcile_phantom_report_table_sql() -> TextClause:
             , orca_etag           text NOT NULL
             , orca_last_update    timestamp with time zone NOT NULL
             , orca_size           int8 NOT NULL
-            , CONSTRAINT PK_reconcile_phantom_report PRIMARY KEY(job_id,collection_id,granule_id,key_path)
-            , CONSTRAINT FK_reconcile_job_phantom_report FOREIGN KEY(job_id) REFERENCES reconcile_job(id)
+            , CONSTRAINT PK_reconcile_phantom_report
+                PRIMARY KEY(job_id,collection_id,granule_id,key_path)
+            , CONSTRAINT FK_reconcile_job_phantom_report
+                FOREIGN KEY(job_id) REFERENCES reconcile_job(id)
             );
             -- Comment
-            COMMENT ON TABLE reconcile_phantom_report IS 'Table that identifies objects that exist in the ORCA catalog and do not exist in the ORCA S3 bucket.';
-            COMMENT ON COLUMN reconcile_phantom_report.job_id IS 'Job the mismatch or missing granule was found in. References the reconcile_job table.';
-            COMMENT ON COLUMN reconcile_phantom_report.collection_id IS 'Cumulus Collection ID value from the ORCA catalog.';
-            COMMENT ON COLUMN reconcile_phantom_report.granule_id IS 'Cumulus granuleID value from the ORCA catalog.';
-            COMMENT ON COLUMN reconcile_phantom_report.filename IS 'Filename of the object from the ORCA catalog.';
-            COMMENT ON COLUMN reconcile_phantom_report.key_path IS 'key path and filename of the object in the ORCA catalog.';
-            COMMENT ON COLUMN reconcile_phantom_report.orca_etag IS 'etag of the object as reported in the ORCA catalog.';
-            COMMENT ON COLUMN reconcile_phantom_report.orca_last_update IS 'Last update of the object as reported in the ORCA catalog.';
-            COMMENT ON COLUMN reconcile_phantom_report.orca_size IS 'Size in bytes of the object as reported in the ORCA catalog.';
+            COMMENT ON TABLE reconcile_phantom_report
+              IS 'Identifies objects that exist in the ORCA catalog and do not exist in S3.';
+            COMMENT ON COLUMN reconcile_phantom_report.job_id
+              IS 'Job the missing granule was found in. References the reconcile_job table.';
+            COMMENT ON COLUMN reconcile_phantom_report.collection_id
+              IS 'Cumulus Collection ID value from the ORCA catalog.';
+            COMMENT ON COLUMN reconcile_phantom_report.granule_id
+              IS 'Cumulus granuleID value from the ORCA catalog.';
+            COMMENT ON COLUMN reconcile_phantom_report.filename
+              IS 'Filename of the object from the ORCA catalog.';
+            COMMENT ON COLUMN reconcile_phantom_report.key_path
+              IS 'key path and filename of the object in the ORCA catalog.';
+            COMMENT ON COLUMN reconcile_phantom_report.orca_etag
+              IS 'etag of the object as reported in the ORCA catalog.';
+            COMMENT ON COLUMN reconcile_phantom_report.orca_last_update
+              IS 'Last update of the object as reported in the ORCA catalog.';
+            COMMENT ON COLUMN reconcile_phantom_report.orca_size
+              IS 'Size in bytes of the object as reported in the ORCA catalog.';
         """
     )

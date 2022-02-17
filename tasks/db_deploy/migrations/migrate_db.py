@@ -21,7 +21,7 @@ def perform_migration(
     Args:
         current_schema_version (int): Current version of the ORCA schema
         config (Dict): Dictionary containing database connection information
-        orca_buckets: List[str]): List of ORCA buckets names needed to create partition tables for v5.
+        orca_buckets: List[str]): List of ORCA bucket names used to create partition tables for v5.
 
     Returns:
         None

@@ -132,20 +132,20 @@ def app_db_exists(connection: Connection, db_name: str) -> bool:
 
     # SQL for checking database
     check_db_sql = text(
-        f"""
+        """
         SELECT EXISTS(
             SELECT
                 datname
             FROM
                 pg_catalog.pg_database
             WHERE
-                datname = '{db_name}'
+                datname = :db_name
         );
     """
     )
 
     # Run the query
-    results = connection.execute(check_db_sql)
+    results = connection.execute(check_db_sql, {"db_name": db_name})
     for row in results.fetchall():
         db_exists = row[0]
 

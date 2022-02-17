@@ -5,8 +5,10 @@ Description: Runs unit tests for the migrations/migrate_versions_4_to_5/migrate.
 """
 
 import unittest
-from unittest.mock import call, patch, MagicMock
+from unittest.mock import MagicMock, call, patch
+
 from migrations.migrate_versions_4_to_5 import migrate
+
 
 class TestMigrateDatabaseLibraries(unittest.TestCase):
     """
@@ -33,32 +35,41 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
         Tear down test
         """
         self.config = None
-    
 
     @patch("migrations.migrate_versions_4_to_5.migrate.sql.schema_versions_data_sql")
     @patch("migrations.migrate_versions_4_to_5.migrate.sql.reconcile_status_table_sql")
     @patch("migrations.migrate_versions_4_to_5.migrate.sql.reconcile_job_table_sql")
-    @patch("migrations.migrate_versions_4_to_5.migrate.sql.reconcile_s3_object_table_sql")
-    @patch("migrations.migrate_versions_4_to_5.migrate.sql.reconcile_catalog_mismatch_report_table_sql")
-    @patch("migrations.migrate_versions_4_to_5.migrate.sql.reconcile_orphan_report_table_sql")
-    @patch("migrations.migrate_versions_4_to_5.migrate.sql.reconcile_phantom_report_table_sql")
-    @patch("migrations.migrate_versions_4_to_5.migrate.sql.reconcile_s3_object_partition_sql")
+    @patch(
+        "migrations.migrate_versions_4_to_5.migrate.sql.reconcile_s3_object_table_sql"
+    )
+    @patch(
+        "migrations.migrate_versions_4_to_5.migrate.sql.reconcile_catalog_mismatch_report_table_sql"  # noqa: E501
+    )
+    @patch(
+        "migrations.migrate_versions_4_to_5.migrate.sql.reconcile_orphan_report_table_sql"
+    )
+    @patch(
+        "migrations.migrate_versions_4_to_5.migrate.sql.reconcile_phantom_report_table_sql"
+    )
+    @patch(
+        "migrations.migrate_versions_4_to_5.migrate.sql.reconcile_s3_object_partition_sql"
+    )
     @patch("migrations.migrate_versions_4_to_5.migrate.sql.create_extension")
     @patch("migrations.migrate_versions_4_to_5.migrate.get_admin_connection")
     @patch("migrations.migrate_versions_4_to_5.migrate.sql.text")
     def test_migrate_versions_4_to_5_happy_path(
-            self,
-            mock_text: MagicMock,
-            mock_connection: MagicMock,
-            mock_extension: MagicMock,
-            mock_reconcile_s3_object_partition_table: MagicMock,
-            mock_reconcile_phantom_report_table: MagicMock,
-            mock_reconcile_orphan_report_table: MagicMock,
-            mock_reconcile_catalog_mismatch_report_table: MagicMock,
-            mock_reconcile_s3_object_table: MagicMock,
-            mock_reconcile_job_table: MagicMock,
-            mock_reconcile_status_table: MagicMock,
-            mock_schema_versions_data: MagicMock,
+        self,
+        mock_text: MagicMock,
+        mock_connection: MagicMock,
+        mock_extension: MagicMock,
+        mock_reconcile_s3_object_partition_table: MagicMock,
+        mock_reconcile_phantom_report_table: MagicMock,
+        mock_reconcile_orphan_report_table: MagicMock,
+        mock_reconcile_catalog_mismatch_report_table: MagicMock,
+        mock_reconcile_s3_object_table: MagicMock,
+        mock_reconcile_job_table: MagicMock,
+        mock_reconcile_status_table: MagicMock,
+        mock_schema_versions_data: MagicMock,
     ):
         """
         Tests the migrate_versions_4_to_5 function happy path

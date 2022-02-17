@@ -27,5 +27,8 @@ class TestOrcaSqlLogic(unittest.TestCase):
         for name, function in getmembers(sql, isfunction):
             if name not in ["text"]:
                 with self.subTest(function=function):
-                    if name in ["add_multipart_chunksize_sql", "schema_versions_data_sql"]:
+                    if name in [
+                        "add_multipart_chunksize_sql",
+                        "schema_versions_data_sql",
+                    ]:
                         self.assertEqual(type(function()), TextClause)

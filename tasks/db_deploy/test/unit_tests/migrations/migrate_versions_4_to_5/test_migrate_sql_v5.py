@@ -27,7 +27,14 @@ class TestOrcaSqlLogic(unittest.TestCase):
         for name, function in getmembers(sql, isfunction):
             if name not in ["text"]:
                 with self.subTest(function=function):
-                    if name in ["reconcile_status_table_sql", "reconcile_job_table_sql", "reconcile_s3_object_table_sql", "reconcile_catalog_mismatch_report_table_sql",
-                                  "reconcile_orphan_report_table_sql", "reconcile_phantom_report_table_sql", "orca_archive_location_bucket", "create_extension"]:
+                    if name in [
+                        "reconcile_status_table_sql",
+                        "reconcile_job_table_sql",
+                        "reconcile_s3_object_table_sql",
+                        "reconcile_catalog_mismatch_report_table_sql",
+                        "reconcile_orphan_report_table_sql",
+                        "reconcile_phantom_report_table_sql",
+                        "orca_archive_location_bucket",
+                        "create_extension",
+                    ]:
                         self.assertEqual(type(function()), TextClause)
-
