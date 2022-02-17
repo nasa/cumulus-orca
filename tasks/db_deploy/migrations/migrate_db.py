@@ -10,7 +10,10 @@ from migrations.migrate_versions_2_to_3.migrate import migrate_versions_2_to_3
 from migrations.migrate_versions_3_to_4.migrate import migrate_versions_3_to_4
 from migrations.migrate_versions_4_to_5.migrate import migrate_versions_4_to_5
 
-def perform_migration(current_schema_version: int, config: Dict[str, str], orca_buckets: List[str]) -> None:
+
+def perform_migration(
+    current_schema_version: int, config: Dict[str, str], orca_buckets: List[str]
+) -> None:
     """
     Performs a migration of the ORCA database. Determines the order and
     migrations to run.

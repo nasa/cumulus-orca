@@ -3,10 +3,11 @@ Name: orca_sql_v2.py
 
 Description: All of the SQL used for creating and migrating the ORCA schema to version 2.
 """
+from orca_shared.database.shared_db import logger
+
 # Imports
 from sqlalchemy import text
 from sqlalchemy.sql.elements import TextClause
-from orca_shared.database.shared_db import logger
 
 
 # ----------------------------------------------------------------------------
@@ -400,6 +401,7 @@ def recovery_file_table_sql() -> TextClause:
         GRANT SELECT, INSERT, UPDATE, DELETE ON recovery_file TO orca_app;
     """
     )
+
 
 # ----------------------------------------------------------------------------
 # ORCA SQL used for migration of schema

@@ -3,19 +3,20 @@ Name: db_deploy.py
 
 Description: Performs database installation and migration for the ORCA schema.
 """
+from typing import Any, Dict, List
+
 # Imports
 from orca_shared.database.shared_db import (
-    logger,
-    get_configuration,
     get_admin_connection,
+    get_configuration,
+    logger,
     retry_operational_error,
 )
 from sqlalchemy import text
 from sqlalchemy.future import Connection
-from migrations.migrate_db import perform_migration
-from install.create_db import create_fresh_orca_install, create_database
-from typing import Any, Dict, List
 
+from install.create_db import create_database, create_fresh_orca_install
+from migrations.migrate_db import perform_migration
 
 # Globals
 # Latest version of the ORCA schema.
@@ -250,4 +251,3 @@ def get_migration_version(connection: Connection) -> int:
             schema_version = row[0]
 
     return schema_version
-

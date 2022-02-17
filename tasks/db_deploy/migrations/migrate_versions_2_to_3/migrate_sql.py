@@ -23,6 +23,7 @@ def add_multipart_chunksize_sql() -> TextClause:
     """
     )
 
+
 def schema_versions_data_sql() -> TextClause:
     """
     Data for the schema_versions table. Inserts the current schema

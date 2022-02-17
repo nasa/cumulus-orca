@@ -11,9 +11,10 @@ from sqlalchemy.sql.elements import TextClause
 # ORCA SQL used for creating ORCA inventory metadata tables
 # ----------------------------------------------------------------------------
 
+
 def providers_table_sql() -> TextClause:
     """
-    Full SQL for creating the providers table. 
+    Full SQL for creating the providers table.
 
     Returns:
         (sqlalchemy.sql.element.TextClause): SQL for creating providers table.
@@ -43,7 +44,7 @@ def providers_table_sql() -> TextClause:
 
 def collections_table_sql() -> TextClause:
     """
-    Full SQL for creating the collections table. 
+    Full SQL for creating the collections table.
 
     Returns:
         (sqlalchemy.sql.element.TextClause): SQL for creating collections table.
@@ -187,6 +188,7 @@ def files_table_sql() -> TextClause:
         GRANT SELECT, INSERT, UPDATE, DELETE ON files TO orca_app;
     """
     )
+
 
 def schema_versions_data_sql() -> TextClause:
     """
