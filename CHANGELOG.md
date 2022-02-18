@@ -16,9 +16,10 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 
-
 ### Added
 - *ORCA-161* Added dead letter queue and cloudwatch alarm terraform code to recovery SQS queue.
+- *ORCA-307* Added lambda get_current_archive_list to pull S3 Inventory reports into Postgres. 
+    Adds `orca_reconciliation_lambda_memory_size` and `orca_reconciliation_lambda_timeout` to Terraform variables.
 
 ### Changed
 - *ORCA-161* Changed staged recovery SQS queue type from FIFO to standard queue.
@@ -88,6 +89,15 @@ variable "dlq_subscription_email" {
   vpc_endpoint_id                                      = null
   }
   ```
+
+
+## [4.0.1]
+
+### Fixed
+- Updated release build script to perform cleanup sooner.
+- Updated terraform deployment with additional depends_on parameters and fixes
+  to prevent db_deploy lambda from firing prematurely.
+
 
 ## [4.0.0]
 
