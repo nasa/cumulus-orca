@@ -128,12 +128,12 @@ export AWS_REGION="us-west-2"
 
 coverage run --source ${file_list} -m pytest
 let return_code=$?
-#check_rc $return_code "ERROR: Unit tests encountered failures."
+check_rc $return_code "ERROR: Unit tests encountered failures."
 
 # Unit tests expected to cover minimum of 80%.
 coverage report --fail-under=80
 let return_code=$?
-#check_rc $return_code "ERROR: Unit tests coverage is less than 80%"
+check_rc $return_code "ERROR: Unit tests coverage is less than 80%"
 
 
 ## Deactivate and remove the virtual env
