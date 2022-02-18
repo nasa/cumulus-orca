@@ -67,22 +67,30 @@ let return_code=$?
 check_rc $return_code "ERROR: pip install encountered an error."
 
 ## Get the modules we want to document
-file_list=""
+file_list=$(find . \
+    -type d \
+    \( -path ./test -o -path ./venv -o -path ./.vscode \) -prune \
+    -o -type f \
+    -name "*.py" \
+    -print \
+    | sed 's|^./||' \
+    | sort)
+module_list=""
 first_time="1"
-for file in $(find . -type d \( -path test -o -path ./venv -o -path ./.vscode \) -prune -o -type f -name "*.py" -print | sed 's|^./||')
+for file in $file_list
 do
     module=${file%%".py"}
     if [ "${first_time}" = "1" ]; then
-        file_list="-m ${module}"
+        module_list="-m ${module}"
         first_time="0"
     else
-        file_list="${file_list} -m ${module}"
+        module_list="${module_list} -m ${module}"
     fi
 done
 
 echo "INFO: Creating API markdown file ..."
 ## Run the documentation command
-pydoc-markdown -I . ${file_list} --render-toc > API.md
+pydoc-markdown -I . ${module_list} --render-toc > API.md
 let return_code=$?
 
 check_rc $return_code "ERROR: Failed to create API.md file."
