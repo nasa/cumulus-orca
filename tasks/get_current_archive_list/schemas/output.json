@@ -5,12 +5,17 @@
   "description": "The output for the get_current_archive_list Lambda.",
   "type": "object",
   "required": [
-    "jobId"
+    "jobId",
+    "orcaArchiveLocation"
   ],
   "properties": {
     "jobId": {
       "type": "integer",
       "description": "The unique ID of the reconciliation job."
+    },
+    "orcaArchiveLocation": {
+      "type": "string",
+      "description": "The name of the glacier bucket the job targets."
     }
   }
 }

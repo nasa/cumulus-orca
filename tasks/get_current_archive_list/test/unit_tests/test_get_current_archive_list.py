@@ -111,7 +111,11 @@ class TestGetCurrentArchiveList(
         )
 
         self.assertEqual(
-            {get_current_archive_list.OUTPUT_JOB_ID_KEY: mock_job_id}, result
+            {
+                get_current_archive_list.OUTPUT_JOB_ID_KEY: mock_job_id,
+                get_current_archive_list.OUTPUT_ORCA_ARCHIVE_LOCATION_KEY: mock_orca_archive_location,
+            },
+            result,
         )
 
     @patch("get_current_archive_list.LOGGER")
@@ -909,7 +913,8 @@ class TestGetCurrentArchiveList(
         Happy path for handler assembling information to call Task.
         """
         expected_result = {
-            get_current_archive_list.OUTPUT_JOB_ID_KEY: random.randint(0, 1000)
+            get_current_archive_list.OUTPUT_JOB_ID_KEY: random.randint(0, 1000),
+            get_current_archive_list.OUTPUT_ORCA_ARCHIVE_LOCATION_KEY: uuid.uuid4().__str__(),
         }
         mock_task.return_value = copy.deepcopy(expected_result)
 
@@ -960,7 +965,8 @@ class TestGetCurrentArchiveList(
         Code does not currently support handling multiple events from s3.
         """
         expected_result = {
-            get_current_archive_list.OUTPUT_JOB_ID_KEY: random.randint(0, 1000)
+            get_current_archive_list.OUTPUT_JOB_ID_KEY: random.randint(0, 1000),
+            get_current_archive_list.OUTPUT_ORCA_ARCHIVE_LOCATION_KEY: uuid.uuid4().__str__(),
         }
         mock_task.return_value = copy.deepcopy(expected_result)
 
@@ -1007,7 +1013,8 @@ class TestGetCurrentArchiveList(
         Violating input.json schema should raise an error.
         """
         expected_result = {
-            get_current_archive_list.OUTPUT_JOB_ID_KEY: random.randint(0, 1000)
+            get_current_archive_list.OUTPUT_JOB_ID_KEY: random.randint(0, 1000),
+            get_current_archive_list.OUTPUT_ORCA_ARCHIVE_LOCATION_KEY: uuid.uuid4().__str__(),
         }
         mock_task.return_value = copy.deepcopy(expected_result)
 
@@ -1087,6 +1094,7 @@ class TestGetCurrentArchiveList(
             record, s3_access_key, s3_secret_key, mock_get_configuration.return_value
         )
         self.assertEqual(
-            f"data must contain ['{get_current_archive_list.OUTPUT_JOB_ID_KEY}'] properties",
+            f"data must contain ['{get_current_archive_list.OUTPUT_JOB_ID_KEY}', "
+            f"'{get_current_archive_list.OUTPUT_ORCA_ARCHIVE_LOCATION_KEY}'] properties",
             str(cm.exception),
         )

@@ -4,7 +4,6 @@
   * [task](#get_current_archive_list.task)
   * [get\_manifest](#get_current_archive_list.get_manifest)
   * [create\_job](#get_current_archive_list.create_job)
-  * [update\_job\_with\_failure](#get_current_archive_list.update_job_with_failure)
   * [truncate\_s3\_partition](#get_current_archive_list.truncate_s3_partition)
   * [update\_job\_with\_s3\_inventory\_in\_postgres](#get_current_archive_list.update_job_with_s3_inventory_in_postgres)
   * [add\_metadata\_to\_gzip](#get_current_archive_list.add_metadata_to_gzip)
@@ -76,23 +75,6 @@ Creates the initial status entry for a job.
 - `engine` - The sqlalchemy engine to use for contacting the database.
   
 - `Returns` - The auto-incremented job_id from the database.
-
-<a id="get_current_archive_list.update_job_with_failure"></a>
-
-#### update\_job\_with\_failure
-
-```python
-@shared_db.retry_operational_error()
-def update_job_with_failure(job_id: int, error_message: str, engine: Engine) -> None
-```
-
-Updates the status entry for a job.
-
-**Arguments**:
-
-- `job_id` - The id of the job to associate info with.
-- `error_message` - The error to post to the job.
-- `engine` - The sqlalchemy engine to use for contacting the database.
 
 <a id="get_current_archive_list.truncate_s3_partition"></a>
 

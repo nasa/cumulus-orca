@@ -41,6 +41,7 @@ MANIFEST_FILES_KEY = "files"
 FILES_KEY_KEY = "key"
 
 OUTPUT_JOB_ID_KEY = "jobId"
+OUTPUT_ORCA_ARCHIVE_LOCATION_KEY = "orcaArchiveLocation"
 
 LOGGER = CumulusLogger(name="Orca")
 # Generating schema validators can take time, so do it once and reuse.
@@ -130,7 +131,10 @@ def task(
         )
         raise
 
-    return {OUTPUT_JOB_ID_KEY: job_id}
+    return {
+        OUTPUT_JOB_ID_KEY: job_id,
+        OUTPUT_ORCA_ARCHIVE_LOCATION_KEY: manifest[MANIFEST_SOURCE_BUCKET_KEY],
+    }
 
 
 def get_manifest(
