@@ -32,6 +32,7 @@ def get_partition_name_from_bucket_name(bucket_name: str):
     """
     Used for interacting with the reconcile_s3_object table.
     Provides a valid partition name given an Orca bucket name.
+    Changes to this function may require a DB migration to recreate partitions.
 
     bucket_name: The name of the Orca bucket in AWS.
     """

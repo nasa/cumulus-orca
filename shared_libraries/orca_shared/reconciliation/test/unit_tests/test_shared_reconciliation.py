@@ -17,6 +17,7 @@ class TestSharedReconciliationLibraries(unittest.TestCase):
     def test_get_partition_name_from_bucket_name_happy_path(self):
         """
         Should replace dashes with underscores.
+        Leave this test hardcoded to avoid unintentional deviations from DB.
         """
         result = shared_reconciliation.get_partition_name_from_bucket_name("apple-banana_-lemon")
         self.assertEqual("reconcile_s3_object_apple_banana__lemon", result)
