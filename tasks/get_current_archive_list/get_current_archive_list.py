@@ -11,6 +11,7 @@ from typing import Any, List, Dict
 # noinspection SpellCheckingInspection,PyPackageRequirements
 import boto3
 import fastjsonschema as fastjsonschema
+import orca_shared.reconciliation.shared_reconciliation
 from cumulus_logger import CumulusLogger
 from orca_shared.database import shared_db
 from orca_shared.reconciliation.shared_reconciliation import (
@@ -41,7 +42,7 @@ FILES_KEY_KEY = "key"
 
 OUTPUT_JOB_ID_KEY = "jobId"
 
-LOGGER = CumulusLogger()
+LOGGER = CumulusLogger(name="Orca")
 # Generating schema validators can take time, so do it once and reuse.
 try:
     with open("schemas/input.json", "r") as raw_schema:
@@ -119,7 +120,14 @@ def task(
         # On error, set job status to failure.
         LOGGER.error(f"Encountered a fatal error: {fatal_exception}")
         # noinspection PyArgumentList
-        update_job_with_failure(job_id, str(fatal_exception), user_engine)
+        orca_shared.reconciliation.shared_reconciliation.update_job(
+            job_id,
+            OrcaStatus.ERROR,
+            datetime.now(timezone.utc).isoformat(),
+            str(fatal_exception),
+            user_engine,
+            LOGGER,
+        )
         raise
 
     return {OUTPUT_JOB_ID_KEY: job_id}
@@ -170,7 +178,7 @@ def create_job(
                     {
                         "orca_archive_location": orca_archive_location,
                         "inventory_creation_time": inventory_creation_time,
-                        "status_id": OrcaStatus.STAGED.value,
+                        "status_id": OrcaStatus.GETTING_S3_LIST.value,
                         "start_time": now,
                         "last_update": now,
                         "end_time": None,
@@ -196,53 +204,6 @@ def create_job_sql() -> TextClause:
             :error_message)
         RETURNING
             id"""
-    )
-
-
-@shared_db.retry_operational_error()
-def update_job_with_failure(job_id: int, error_message: str, engine: Engine) -> None:
-    """
-    Updates the status entry for a job.
-
-    Args:
-        job_id: The id of the job to associate info with.
-        error_message: The error to post to the job.
-        engine: The sqlalchemy engine to use for contacting the database.
-
-    """
-    try:
-        LOGGER.debug(f"Creating reconcile records for job {job_id}.")
-        with engine.begin() as connection:
-            now = datetime.now(timezone.utc).isoformat()
-            connection.execute(
-                update_job_sql(),
-                [
-                    {
-                        "id": job_id,
-                        "status_id": OrcaStatus.ERROR.value,
-                        "last_update": now,
-                        "end_time": now,
-                        "error_message": error_message,
-                    }
-                ],
-            )
-    except Exception as sql_ex:
-        LOGGER.error(f"Error while updating job '{job_id}': {sql_ex}")
-        raise
-
-
-def update_job_sql() -> TextClause:
-    return text(
-        """
-        UPDATE
-            orca.reconcile_job
-        SET
-            status_id = :status_id,
-            last_update = :last_update,
-            end_time = :end_time,
-            error_message = :error_message
-        WHERE
-            id = :id"""
     )
 
 
@@ -350,17 +311,13 @@ def update_job_with_s3_inventory_in_postgres(
             )
             # Update job status
             LOGGER.debug(f"Posting successful status for job {job_id}.")
-            connection.execute(
-                update_job_sql(),
-                [
-                    {
-                        "id": job_id,
-                        "status_id": OrcaStatus.STAGED.value,
-                        "last_update": datetime.now(timezone.utc).isoformat(),
-                        "end_time": None,
-                        "error_message": None,
-                    }
-                ],
+            orca_shared.reconciliation.shared_reconciliation.update_job(
+                job_id,
+                OrcaStatus.STAGED,
+                datetime.now(timezone.utc).isoformat(),
+                None,
+                engine,
+                LOGGER,
             )
     except Exception as sql_ex:
         LOGGER.error(f"Error while processing job '{job_id}': {sql_ex}")
