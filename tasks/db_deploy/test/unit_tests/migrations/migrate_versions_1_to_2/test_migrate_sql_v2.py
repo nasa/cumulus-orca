@@ -26,7 +26,7 @@ class TestOrcaSqlLogic(unittest.TestCase):
         Tests the happy path for the app_user_sql function and validates the
         user password is a part of the SQL.
         """
-        user_pass = "MySup3rL0ngPassForAUser"
+        user_pass = "MySup3rL0ngPassForAUser"  # nosec
         user_name = uuid.uuid4().__str__()
         user_sql = sql.app_user_sql(user_pass, user_name)
 
@@ -74,11 +74,25 @@ class TestOrcaSqlLogic(unittest.TestCase):
             if name not in ["text"]:
                 with self.subTest(function=function):
                     if name in ["app_user_sql"]:
-                        self.assertEqual(type(function(uuid.uuid4().__str__(), uuid.uuid4().__str__())), TextClause)
+                        self.assertEqual(
+                            type(
+                                function(uuid.uuid4().__str__(), uuid.uuid4().__str__())
+                            ),
+                            TextClause,
+                        )
                         # These functions take in two string parameters.
-                    elif name in ["app_database_sql", "app_database_comment_sql", "dbo_role_sql", "app_role_sql",
-                                  "drop_dr_role_sql", "drop_dbo_user_sql", "drop_drdbo_role_sql"]:
+                    elif name in [
+                        "app_database_sql",
+                        "app_database_comment_sql",
+                        "dbo_role_sql",
+                        "app_role_sql",
+                        "drop_dr_role_sql",
+                        "drop_dbo_user_sql",
+                        "drop_drdbo_role_sql",
+                    ]:
                         # These functions take in a string parameter.
-                        self.assertEqual(type(function(uuid.uuid4().__str__())), TextClause)
+                        self.assertEqual(
+                            type(function(uuid.uuid4().__str__())), TextClause
+                        )
                     else:
                         self.assertEqual(type(function()), TextClause)

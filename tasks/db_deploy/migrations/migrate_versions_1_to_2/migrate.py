@@ -4,8 +4,11 @@ Name: migrate_db_v2.py
 Description: Migrates the ORCA schema from version 1 to version 2.
 """
 from typing import Dict
-import migrations.migrate_versions_1_to_2.migrate_sql as sql
+
 from orca_shared.database.shared_db import get_admin_connection, logger
+
+import migrations.migrate_versions_1_to_2.migrate_sql as sql
+
 
 def migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> None:
     """
@@ -39,7 +42,9 @@ def migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> 
 
         # Create the users last
         logger.debug("Creating the ORCA application user ...")
-        connection.execute(sql.app_user_sql(config["user_username"],config["user_password"]))
+        connection.execute(
+            sql.app_user_sql(config["user_username"], config["user_password"])
+        )
         logger.info("ORCA application user created.")
 
         # Change to DBO role and set search path

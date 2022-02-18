@@ -63,8 +63,43 @@ source venv/bin/activate
 pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org
 pip install -q -r requirements-dev.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
 let return_code=$?
-
 check_rc $return_code "ERROR: pip install encountered an error."
+
+
+## Check code formatting and styling
+echo "INFO: Checking formatting and style of code ..."
+echo "INFO: Checking lint rules ..."
+flake8 \
+    --max-line-length 99 \
+    db_deploy.py install migrations test
+check_rc $return_code "ERROR: Linting issues found."
+
+echo "INFO: Sorting imports ..."
+isort \
+    --trailing-comma \
+    --ensure-newline-before-comments \
+    --line-length 88 \
+    --use-parentheses \
+    --force-grid-wrap 0 \
+    -m 3 \
+    db_deploy.py install migrations test
+
+echo "INFO: Formatting with black ..."
+black db_deploy.py install migrations test
+
+## Run code smell and security tests
+echo "INFO: Checking code smell and security of code ..."
+echo "INFO: Checking code smell ..."
+bandit -r db_deploy.py install migrations test
+let return_code=$?
+check_rc $return_code "ERROR: Potential security or code issues found."
+
+
+## Check code third party libraries for CVE issues
+echo "INFO: Running security checks on third party libraries ..."
+safety check -r requirements.txt -r requirements-dev.txt
+let return_code=$?
+check_rc $return_code "ERROR: Potential security issues third party libraries."
 
 
 ## Get the modules we want to test
@@ -99,6 +134,7 @@ check_rc $return_code "ERROR: Unit tests encountered failures."
 coverage report --fail-under=80
 let return_code=$?
 check_rc $return_code "ERROR: Unit tests coverage is less than 80%"
+
 
 ## Deactivate and remove the virtual env
 echo "INFO: Cleaning up the environment ..."

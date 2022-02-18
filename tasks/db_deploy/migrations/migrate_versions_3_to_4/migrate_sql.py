@@ -1,5 +1,5 @@
 """
-Name: orca_sql_v4.py
+Name: migrate_sql.py
 
 Description: All of the SQL used for creating and migrating the ORCA schema to version 4.
 """
@@ -11,9 +11,10 @@ from sqlalchemy.sql.elements import TextClause
 # ORCA SQL used for creating ORCA inventory metadata tables
 # ----------------------------------------------------------------------------
 
+
 def providers_table_sql() -> TextClause:
     """
-    Full SQL for creating the providers table. 
+    Full SQL for creating the providers table.
 
     Returns:
         (sqlalchemy.sql.element.TextClause): SQL for creating providers table.
@@ -43,7 +44,7 @@ def providers_table_sql() -> TextClause:
 
 def collections_table_sql() -> TextClause:
     """
-    Full SQL for creating the collections table. 
+    Full SQL for creating the collections table.
 
     Returns:
         (sqlalchemy.sql.element.TextClause): SQL for creating collections table.
@@ -67,7 +68,7 @@ def collections_table_sql() -> TextClause:
         COMMENT ON COLUMN collections.shortname
             IS 'Collection short name from Cumulus.';
         COMMENT ON COLUMN collections.version
-            IS 'Collection version from Cumulus.';       
+            IS 'Collection version from Cumulus.';
         -- Grants
         GRANT SELECT, INSERT, UPDATE, DELETE ON collections TO orca_app;
     """
@@ -95,10 +96,14 @@ def granules_table_sql() -> TextClause:
         , cumulus_create_time   timestamp with time zone NOT NULL
         , last_update           timestamp with time zone NOT NULL
 
-        , CONSTRAINT PK_granules PRIMARY KEY (id)
-        , CONSTRAINT FK_provider_granule FOREIGN KEY (provider_id) REFERENCES providers (provider_id)
-        , CONSTRAINT FK_collection_granule FOREIGN KEY (collection_id) REFERENCES collections (collection_id)
-        , CONSTRAINT UNIQUE_collection_granule_id UNIQUE (collection_id, cumulus_granule_id)
+        , CONSTRAINT PK_granules
+            PRIMARY KEY (id)
+        , CONSTRAINT FK_provider_granule
+            FOREIGN KEY (provider_id) REFERENCES providers (provider_id)
+        , CONSTRAINT FK_collection_granule
+            FOREIGN KEY (collection_id) REFERENCES collections (collection_id)
+        , CONSTRAINT UNIQUE_collection_granule_id
+            UNIQUE (collection_id, cumulus_granule_id)
         );
 
         -- Comments
@@ -119,7 +124,7 @@ def granules_table_sql() -> TextClause:
         COMMENT ON COLUMN granules.cumulus_create_time
             IS 'Date and time data was originally ingested into Cumulus';
         COMMENT ON COLUMN granules.last_update
-            IS 'Last time the data for the granule was updated. This generally will coincide with a duplicate or a change to the underlying data file.';                    
+            IS 'Last time the data for the granule was updated.';
         -- Grants
         GRANT SELECT, INSERT, UPDATE, DELETE ON granules TO orca_app;
     """
@@ -139,7 +144,7 @@ def files_table_sql() -> TextClause:
         CREATE TABLE IF NOT EXISTS files
         (
           id                        bigserial NOT NULL
-        , granule_id                bigint NOT NULL      
+        , granule_id                bigint NOT NULL
         , name                      text NOT NULL
         , orca_archive_location     text NOT NULL
         , cumulus_archive_location  text NOT NULL
@@ -150,10 +155,14 @@ def files_table_sql() -> TextClause:
         , size_in_bytes             int8 NOT NULL
         , hash                      text NULL
         , hash_type                 text NULL
-        , CONSTRAINT PK_files PRIMARY KEY (id)
-        , CONSTRAINT FK_granule_file FOREIGN KEY (granule_id) REFERENCES granules (id)
-        , CONSTRAINT UNIQUE_orca_archive_location_key_path UNIQUE (orca_archive_location, key_path)
-        , CONSTRAINT UNIQUE_cumulus_archive_location_key_path UNIQUE (cumulus_archive_location, key_path)
+        , CONSTRAINT PK_files
+            PRIMARY KEY (id)
+        , CONSTRAINT FK_granule_file
+            FOREIGN KEY (granule_id) REFERENCES granules (id)
+        , CONSTRAINT UNIQUE_orca_archive_location_key_path
+            UNIQUE (orca_archive_location, key_path)
+        , CONSTRAINT UNIQUE_cumulus_archive_location_key_path
+            UNIQUE (cumulus_archive_location, key_path)
         );
 
         -- Comments
@@ -170,23 +179,24 @@ def files_table_sql() -> TextClause:
          COMMENT ON COLUMN files.cumulus_archive_location
             IS 'Cumulus S3 bucket where the file is thought to be stored.';
          COMMENT ON COLUMN files.key_path
-            IS 'Full AWS key path including file name of the file (does not include bucket name) where the file resides in ORCA.';
+            IS 'Full AWS key path including file name.';
         COMMENT ON COLUMN files.ingest_time
-            IS 'Date and time the file was ingested into ORCA';              
+            IS 'Date and time the file was ingested into ORCA';
         COMMENT ON COLUMN files.etag
             IS 'etag of the file object in the AWS S3 Glacier bucket.';
         COMMENT ON COLUMN files.version
-            IS 'Latest version of the file in the S3 Glacier bucket';   
+            IS 'Latest version of the file in the S3 Glacier bucket';
         COMMENT ON COLUMN files.size_in_bytes
             IS 'Size of the object in bytes';
         COMMENT ON COLUMN files.hash
             IS 'Hash of the object from Cumulus';
         COMMENT ON COLUMN files.hash_type
-            IS 'Hash type used to hash the object. Supplied by Cumulus.';                 
+            IS 'Hash type used to hash the object. Supplied by Cumulus.';
         -- Grants
         GRANT SELECT, INSERT, UPDATE, DELETE ON files TO orca_app;
     """
     )
+
 
 def schema_versions_data_sql() -> TextClause:
     """

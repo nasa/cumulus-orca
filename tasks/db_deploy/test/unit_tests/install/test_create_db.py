@@ -5,7 +5,8 @@ Description: Runs unit tests for the create_db.py library.
 """
 
 import unittest
-from unittest.mock import Mock, call, patch, MagicMock
+from unittest.mock import MagicMock, call, patch
+
 from install import create_db
 
 
@@ -30,6 +31,7 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         }
 
         self.mock_connection = MagicMock()
+        self.orca_buckets = ["orca_worm", "orca_versioned", "orca_special"]
 
     def tearDown(self):
         """
@@ -37,10 +39,12 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         """
         self.config = None
         self.mock_connection = None
+        self.orca_buckets = None
 
     @patch("install.create_db.create_recovery_objects")
     @patch("install.create_db.create_metadata_objects")
     @patch("install.create_db.create_inventory_objects")
+    @patch("install.create_db.create_internal_reconciliation_objects")
     @patch("install.create_db.set_search_path_and_role")
     @patch("install.create_db.create_app_schema_role_users")
     @patch("install.create_db.get_admin_connection")
@@ -49,6 +53,7 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         mock_connection: MagicMock,
         mock_create_app_schema_roles: MagicMock,
         mock_set_search_path_role: MagicMock,
+        mock_create_internal_reconciliation_objects: MagicMock,
         mock_create_inventory_objects: MagicMock,
         mock_create_metadata: MagicMock,
         mock_create_recovery: MagicMock,
@@ -56,17 +61,25 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         """
         Tests normal happy path of create_fresh_orca_install function.
         """
-        create_db.create_fresh_orca_install(self.config)
+        # Call
+        create_db.create_fresh_orca_install(self.config, self.orca_buckets)
 
         mock_conn_enter = mock_connection().connect().__enter__()
 
+        # Check
         mock_create_app_schema_roles.assert_called_once_with(
-            mock_conn_enter, self.config["user_username"], self.config["user_password"], self.config["user_database"]
+            mock_conn_enter,
+            self.config["user_username"],
+            self.config["user_password"],
+            self.config["user_database"],
         )
         mock_set_search_path_role.assert_called_once_with(mock_conn_enter)
         mock_create_inventory_objects.assert_called_once_with(mock_conn_enter)
         mock_create_metadata.assert_called_once_with(mock_conn_enter)
         mock_create_recovery.assert_called_once_with(mock_conn_enter)
+        mock_create_internal_reconciliation_objects.assert_called_once_with(
+            mock_conn_enter, self.orca_buckets
+        )
 
         # Check that commit was called at the end. In this case it is position
         # 4 of the calls (initial call with config, connection call, enter of
@@ -74,7 +87,6 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         mock_call_commit = mock_connection.mock_calls[3]
         mock_commit = call().connect().__enter__().commit()
         self.assertEqual(mock_call_commit, mock_commit)
-
 
     @patch("install.orca_sql.app_database_comment_sql")
     @patch("install.orca_sql.app_database_sql")
@@ -85,7 +97,7 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         mock_connection: MagicMock,
         mock_commit_sql: MagicMock,
         mock_app_database_sql: MagicMock,
-        mock_app_database_comment_sql: MagicMock
+        mock_app_database_comment_sql: MagicMock,
     ):
         """
         Tests normal happy path of create_database function.
@@ -95,11 +107,13 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         execute_calls = [
             call(mock_commit_sql.return_value),
             call(mock_app_database_sql.return_value),
-            call(mock_app_database_comment_sql.return_value)
+            call(mock_app_database_comment_sql.return_value),
         ]
-        mock_connection().connect().__enter__().execute.assert_has_calls(execute_calls, any_order=True)
+        mock_connection().connect().__enter__().execute.assert_has_calls(
+            execute_calls, any_order=True
+        )
 
-
+    @patch("install.create_db.sql.create_extension")
     @patch("install.create_db.sql.app_user_sql")
     @patch("install.create_db.sql.orca_schema_sql")
     @patch("install.create_db.sql.app_role_sql")
@@ -110,19 +124,26 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         mock_app_role_sql: MagicMock,
         mock_schema_sql: MagicMock,
         mock_user_sql: MagicMock,
+        mock_extension_sql: MagicMock,
     ):
         """
         Tests happy path of create_app_schema_role_users function.
         """
         create_db.create_app_schema_role_users(
-            self.mock_connection, self.config["user_username"], self.config["user_password"], self.config["user_database"]
+            self.mock_connection,
+            self.config["user_username"],
+            self.config["user_password"],
+            self.config["user_database"],
         )
 
         # Check that SQL called properly
         mock_dbo_role_sql.assert_called_once()
         mock_app_role_sql.assert_called_once()
         mock_schema_sql.assert_called_once()
-        mock_user_sql.assert_called_once_with(self.config["user_username"], self.config["user_password"])
+        mock_user_sql.assert_called_once_with(
+            self.config["user_username"], self.config["user_password"]
+        )
+        mock_extension_sql.assert_called_once()
 
         # Check SQL called in proper order
         execution_order = [
@@ -130,6 +151,7 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
             call.execute(mock_app_role_sql()),
             call.execute(mock_schema_sql()),
             call.execute(mock_user_sql(self.config["user_password"])),
+            call.execute(mock_extension_sql()),
         ]
 
         self.assertEqual(self.mock_connection.mock_calls, execution_order)
@@ -240,3 +262,75 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         ]
 
         self.assertEqual(self.mock_connection.mock_calls, execution_order)
+
+    @patch("install.create_db.sql.reconcile_status_table_sql")
+    @patch("install.create_db.sql.reconcile_job_table_sql")
+    @patch("install.create_db.sql.reconcile_s3_object_table_sql")
+    @patch("install.create_db.sql.reconcile_catalog_mismatch_report_table_sql")
+    @patch("install.create_db.sql.reconcile_orphan_report_table_sql")
+    @patch("install.create_db.sql.reconcile_phantom_report_table_sql")
+    @patch("install.create_db.sql.reconcile_s3_object_partition_sql")
+    @patch("install.create_db.sql.create_extension")
+    def test_create_internal_reconciliation_objects(
+        self,
+        mock_extension: MagicMock,
+        mock_reconcile_s3_object_partition_table: MagicMock,
+        mock_reconcile_phantom_report_table: MagicMock,
+        mock_reconcile_orphan_report_table: MagicMock,
+        mock_reconcile_catalog_mismatch_report_table: MagicMock,
+        mock_reconcile_s3_object_table: MagicMock,
+        mock_reconcile_job_table: MagicMock,
+        mock_reconcile_status_table: MagicMock,
+    ):
+        """
+        Tests happy path of the create_internal_reconciliation_objects function
+        """
+        create_db.create_internal_reconciliation_objects(
+            self.mock_connection, self.orca_buckets
+        )
+        mock_reconcile_s3_object_partition_table_calls = [
+            call(f"reconcile_s3_object_{self.orca_buckets[0]}"),
+            call(f"reconcile_s3_object_{self.orca_buckets[1]}"),
+            call(f"reconcile_s3_object_{self.orca_buckets[2]}"),
+        ]
+
+        # Check that the SQL calls were made
+        mock_reconcile_status_table.assert_called_once()
+        mock_reconcile_job_table.assert_called_once()
+        mock_reconcile_s3_object_table.assert_called_once()
+        mock_reconcile_s3_object_partition_table.assert_has_calls(
+            mock_reconcile_s3_object_partition_table_calls
+        )
+        mock_reconcile_catalog_mismatch_report_table.assert_called_once()
+        mock_reconcile_orphan_report_table.assert_called_once()
+        mock_reconcile_phantom_report_table.assert_called_once()
+
+        # Check that they were called in the proper order
+        execution_order = [
+            call.execute(mock_reconcile_status_table()),
+            call.execute(mock_reconcile_job_table()),
+            call.execute(mock_reconcile_s3_object_table()),
+            call.execute(
+                mock_reconcile_s3_object_partition_table(
+                    f"reconcile_s3_object_{self.orca_buckets[0]}"
+                ),
+                {"bucket_name": self.orca_buckets[0]},
+            ),
+            call.execute(
+                mock_reconcile_s3_object_partition_table(
+                    f"reconcile_s3_object_{self.orca_buckets[1]}"
+                ),
+                {"bucket_name": self.orca_buckets[1]},
+            ),
+            call.execute(
+                mock_reconcile_s3_object_partition_table(
+                    f"reconcile_s3_object_{self.orca_buckets[2]}"
+                ),
+                {"bucket_name": self.orca_buckets[2]},
+            ),
+            call.execute(mock_reconcile_catalog_mismatch_report_table()),
+            call.execute(mock_reconcile_orphan_report_table()),
+            call.execute(mock_reconcile_phantom_report_table()),
+        ]
+
+        self.assertListEqual(self.mock_connection.mock_calls, execution_order)

@@ -3,23 +3,24 @@ Name: db_deploy.py
 
 Description: Performs database installation and migration for the ORCA schema.
 """
+from typing import Any, Dict, List
+
 # Imports
 from orca_shared.database.shared_db import (
-    logger,
-    get_configuration,
     get_admin_connection,
+    get_configuration,
+    logger,
     retry_operational_error,
 )
 from sqlalchemy import text
 from sqlalchemy.future import Connection
-from migrations.migrate_db import perform_migration
-from install.create_db import create_fresh_orca_install, create_database
-from typing import Any, Dict
 
+from install.create_db import create_database, create_fresh_orca_install
+from migrations.migrate_db import perform_migration
 
 # Globals
 # Latest version of the ORCA schema.
-LATEST_ORCA_SCHEMA_VERSION = 4
+LATEST_ORCA_SCHEMA_VERSION = 5
 MAX_RETRIES = 3
 
 
@@ -43,13 +44,18 @@ def handler(
     # Set the logging
     logger.setMetadata(event, context)
 
-    # Get the configuration
+    # Get the secrets needed for database connections
     config = get_configuration()
 
-    return task(config)
+    # Get the ORCA bucket list
+    orca_buckets = event.get("orcaBuckets", None)
+    if type(orca_buckets) != list or len(orca_buckets) == 0:
+        raise ValueError("orcaBuckets must be a valid list of ORCA S3 bucket names.")
+
+    return task(config, orca_buckets)
 
 
-def task(config: Dict[str, str]) -> None:
+def task(config: Dict[str, str], orca_buckets: List[str]) -> None:
     """
     Checks for the ORCA database and throws an error if it does not exist.
     Determines if a fresh install or a migration is needed for the ORCA
@@ -57,6 +63,7 @@ def task(config: Dict[str, str]) -> None:
 
     Args:
         config (Dict): Dictionary of connection information.
+        orca_buckets: List[str]): List of ORCA buckets needed to create partitioned tables.
 
     Raises:
         Exception: If database does not exist.
@@ -74,8 +81,8 @@ def task(config: Dict[str, str]) -> None:
                 "or the server could not be connected to."
             )
             create_database(config)
-            create_fresh_orca_install(config)
-    
+            create_fresh_orca_install(config, orca_buckets)
+
             return
 
     # Connect as admin user to config["user_database"] database.
@@ -97,13 +104,13 @@ def task(config: Dict[str, str]) -> None:
             else:
                 # Run the migration
                 logger.info("Performing migration of the ORCA schema.")
-                perform_migration(current_version, config)
+                perform_migration(current_version, config, orca_buckets)
 
         else:
             # If we got here, the DB existed, but was not correctly populated for whatever reason.
             # Run a fresh install
             logger.info("Performing full install of ORCA schema.")
-            create_fresh_orca_install(config)
+            create_fresh_orca_install(config, orca_buckets)
 
 
 # def app_db_exists(config: Dict[str, str]) -> bool:
@@ -122,24 +129,25 @@ def app_db_exists(connection: Connection, db_name: str) -> bool:
 
     # SQL for checking database
     check_db_sql = text(
-        f"""
+        """
         SELECT EXISTS(
             SELECT
                 datname
             FROM
                 pg_catalog.pg_database
             WHERE
-                datname = '{db_name}'
+                datname = :db_name
         );
     """
     )
 
     # Run the query
-    results = connection.execute(check_db_sql)
+    results = connection.execute(check_db_sql, {"db_name": db_name})
     for row in results.fetchall():
         db_exists = row[0]
 
     return db_exists
+
 
 def app_schema_exists(connection: Connection) -> bool:
     """
