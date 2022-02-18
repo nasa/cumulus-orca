@@ -13,6 +13,10 @@ import orca_shared
 import orca_shared.reconciliation.shared_reconciliation
 from cumulus_logger import CumulusLogger
 from orca_shared.database import shared_db
+from orca_shared.reconciliation.shared_reconciliation import (
+    OrcaStatus,
+    get_partition_name_from_bucket_name,
+)
 from sqlalchemy import text
 from sqlalchemy.future import Engine
 from sqlalchemy.sql.elements import TextClause
@@ -46,13 +50,27 @@ def task(
     """
 
     user_engine = shared_db.get_user_connection(db_connect_info)
+    orca_shared.reconciliation.shared_reconciliation.update_job(
+        job_id,
+        orca_shared.reconciliation.OrcaStatus.GETTING_S3_LIST,
+        datetime.now(timezone.utc).isoformat(),
+        None,
+        user_engine,
+        LOGGER
+    )
 
     try:
-        pass
         # todo: populate reconcile_orphan_report with files in reconcile_s3_object but NOT orca.files
         # todo: populate reconcile_phantom_report with files in orca.files but NOT reconcile_s3_object
         # todo: populate reconcile_mismatch_report with files in both, but with a difference
-        # todo: Update status
+        orca_shared.reconciliation.shared_reconciliation.update_job(
+            job_id,
+            orca_shared.reconciliation.OrcaStatus.SUCCESS,
+            datetime.now(timezone.utc).isoformat(),
+            None,
+            user_engine,
+            LOGGER
+        )
     except Exception as fatal_exception:
         # On error, set job status to failure.
         LOGGER.error(f"Encountered a fatal error: {fatal_exception}")
@@ -67,6 +85,46 @@ def task(
         )
         raise
     return {OUTPUT_JOB_ID_KEY: job_id}
+
+
+@shared_db.retry_operational_error()
+def generate_reports(job_id: int, orca_archive_location: str, engine: Engine) -> None:
+    """
+    todo
+
+    Args:
+        job_id: The id of the job containing s3 inventory info.
+        orca_archive_location: The name of the bucket to generate the reports for.
+        engine: The sqlalchemy engine to use for contacting the database.
+    """
+    try:
+        LOGGER.debug(f"Generating reports for job id {job_id}.")
+        partition_name = get_partition_name_from_bucket_name(orca_archive_location)
+        with engine.begin() as connection:
+            connection.execute(
+                generate_reports_sql(),
+                [{}],
+            )
+    except Exception as sql_ex:
+        LOGGER.error(
+            f"Error while generating reports for job {job_id}: {sql_ex}"
+        )
+        raise
+
+
+def generate_reports_sql(report_table_name: str) -> TextClause:
+    """
+    SQL for generating reports on differences between s3 and Orca catalog.
+    """
+    return text(
+        # todo
+        f"""
+        INSERT INTO orca.{report_table_name} (job_id, orca_archive_location, key_path, etag, last_update, size_in_bytes, storage_class, delete_flag)
+            SELECT :job_id, orca_archive_location, key_path, etag, last_update, size_in_bytes, storage_class, delete_flag
+            FROM s3_import
+            WHERE is_latest = TRUE
+        """
+    )
 
 
 def handler(event: Dict[str, int], context) -> Dict[str, Any]:
