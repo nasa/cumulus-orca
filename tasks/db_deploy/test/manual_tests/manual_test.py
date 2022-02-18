@@ -51,7 +51,7 @@ if __name__ == "__main__":
     ]
 
     logger.info("Beginning manual test.")
-    # We skip handle since we do not want to create the secretmanager objects
+    # We skip handle since we do not want to create the secretsmanager objects
     # and logging setup so we do not have to pass an event and context. This is
     # for pure functionality testing of the SQL and the call order.
     task(get_configuration(), orca_buckets)

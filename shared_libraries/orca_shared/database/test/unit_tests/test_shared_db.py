@@ -107,7 +107,7 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
     )
     def test_get_configuration_bad_secret(self):
         """
-        Validates a secret is thrown if a secretmanager ID is invalid.
+        Validates a secret is thrown if a secretsmanager ID is invalid.
         """
         secret_key = "orcatest-orca-db-login-secret"  # nosec
         message = "Failed to retrieve secret manager value."

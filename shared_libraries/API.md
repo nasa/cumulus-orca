@@ -4,6 +4,7 @@
 * [orca\_shared.reconciliation](#orca_shared.reconciliation)
 * [orca\_shared.reconciliation.shared\_reconciliation](#orca_shared.reconciliation.shared_reconciliation)
   * [OrcaStatus](#orca_shared.reconciliation.shared_reconciliation.OrcaStatus)
+  * [get\_partition\_name\_from\_bucket\_name](#orca_shared.reconciliation.shared_reconciliation.get_partition_name_from_bucket_name)
 * [orca\_shared.database](#orca_shared.database)
 * [orca\_shared.database.shared\_db](#orca_shared.database.shared_db)
   * [get\_configuration](#orca_shared.database.shared_db.get_configuration)
@@ -46,6 +47,19 @@ class OrcaStatus(Enum)
 
 An enumeration.
 Defines the status value used in the ORCA Reconciliation database for use by the reconciliation functions.
+
+<a id="orca_shared.reconciliation.shared_reconciliation.get_partition_name_from_bucket_name"></a>
+
+#### get\_partition\_name\_from\_bucket\_name
+
+```python
+def get_partition_name_from_bucket_name(bucket_name: str)
+```
+
+Used for interacting with the reconcile_s3_object table.
+Provides a valid partition name given an Orca bucket name.
+
+bucket_name: The name of the Orca bucket in AWS.
 
 <a id="orca_shared.database"></a>
 
