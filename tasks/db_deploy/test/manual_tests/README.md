@@ -55,7 +55,7 @@ To setup the testing environment perform the following steps.
    . venv/bin/activate
    cd /data/tasks/db_deploy
    pip install -U pip --trusted-host pypi.org --trusted-host files.pythonhosted.org
-   pip install -r ../../requirements-dev.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
+   pip install -r requirements-dev.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
    cd test/manual_tests
    ```
 
@@ -276,7 +276,7 @@ PostgreSQL *orca* database. Perform the checks below by going to the
     orca_app  | Cannot login                                               | {}
     orca_dbo  | Cannot login                                               | {}
     orcauser  |                                                            | {orca_app}
-    postgres  | Superuser, Create role, Create DB, Replication, Bypass RLS | {}
+    postgres  | Superuser, Create role, Create DB, Replication, Bypass RLS | {orca_dbo}
    ```
 3. Verify the ORCA schema was created.
    ```bash
@@ -325,7 +325,7 @@ PostgreSQL *orca* database. Perform the checks below by going to the
                                                                                          Table "orca.reconcile_s3_object"
            Column         |           Type           | Collation | Nullable | Default | Storage  | Stats target |                                         Description
    -----------------------+--------------------------+-----------+----------+---------+----------+--------------+----------------------------------------------------------------------------------------------
-    job_id                | bigint                   |           | not null |         | plain    |              | Job the S3 listing is a part of for the comparison. Foreign key to the reconcile jobs table.
+    job_id                | bigint                   |           | not null |         | plain    |              | Job the S3 listing is a part of for the comparison.
     orca_archive_location | text                     |           | not null |         | extended |              | ORCA S3 Glacier bucket name where the file is stored.
     key_path              | text                     |           | not null |         | extended |              | Full path and file name of the object in the S3 bucket.
     etag                  | text                     |           | not null |         | extended |              | AWS etag value from the s3 inventory report.
@@ -793,7 +793,7 @@ PostgreSQL *orca* database. Perform the checks below by going to the
     orca_app  | Cannot login                                               | {}
     orca_dbo  | Cannot login                                               | {}
     orcauser  |                                                            | {orca_app}
-    postgres  | Superuser, Create role, Create DB, Replication, Bypass RLS | {}
+    postgres  | Superuser, Create role, Create DB, Replication, Bypass RLS | {orca_dbo}
    ```
 3. Verify the *orca* schema was created and the *dr* schema was removed.
    ```bash
@@ -842,7 +842,7 @@ PostgreSQL *orca* database. Perform the checks below by going to the
                                                                                          Table "orca.reconcile_s3_object"
            Column         |           Type           | Collation | Nullable | Default | Storage  | Stats target |                                         Description
    -----------------------+--------------------------+-----------+----------+---------+----------+--------------+----------------------------------------------------------------------------------------------
-    job_id                | bigint                   |           | not null |         | plain    |              | Job the S3 listing is a part of for the comparison. Foreign key to the reconcile jobs table.
+    job_id                | bigint                   |           | not null |         | plain    |              | Job the S3 listing is a part of for the comparison.
     orca_archive_location | text                     |           | not null |         | extended |              | ORCA S3 Glacier bucket name where the file is stored.
     key_path              | text                     |           | not null |         | extended |              | Full path and file name of the object in the S3 bucket.
     etag                  | text                     |           | not null |         | extended |              | AWS etag value from the s3 inventory report.
@@ -903,7 +903,7 @@ PostgreSQL *orca* database. Perform the checks below by going to the
      5 | success
    (5 rows)
    ```
-8. Verify the static data in the *schema_versions* table. #TODO- Need fix scripts 2,3,4 migration to add info to schema_versions;
+8. Verify the static data in the *schema_versions* table.
    ```bash
    orca=# select * from orca.schema_versions;
 
