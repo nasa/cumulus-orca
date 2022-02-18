@@ -3,21 +3,26 @@ Name: create_db.py
 
 Description: Creates the current version on the ORCA database.
 """
-from typing import Dict
+from typing import Dict, List
 
-from orca_shared.database.shared_db import (
-    get_admin_connection, logger
+from orca_shared.database.shared_db import get_admin_connection, logger
+from orca_shared.reconciliation.shared_reconciliation import (
+    get_partition_name_from_bucket_name,
 )
 from sqlalchemy.future import Connection
+
 import install.orca_sql as sql
 
-def create_fresh_orca_install(config: Dict[str, str]) -> None:
+
+def create_fresh_orca_install(config: Dict[str, str], orca_buckets: List[str]) -> None:
     """
     This task will create the ORCA roles, users, schema, and tables needed
     by the ORCA application as a fresh install.
 
     Args:
         config (Dict): Dictionary with database connection information
+        orca_buckets: List[str]): List of ORCA buckets needed to create
+                                  partitioned tables for reporting.
 
     Returns:
         None
@@ -29,7 +34,12 @@ def create_fresh_orca_install(config: Dict[str, str]) -> None:
 
     with admin_app_connection.connect() as conn:
         # Create the roles, schema and user
-        create_app_schema_role_users(conn, config["user_username"], config["user_password"], config["user_database"])
+        create_app_schema_role_users(
+            conn,
+            config["user_username"],
+            config["user_password"],
+            config["user_database"],
+        )
 
         # Change to DBO role and set search path
         set_search_path_and_role(conn)
@@ -39,11 +49,14 @@ def create_fresh_orca_install(config: Dict[str, str]) -> None:
         create_recovery_objects(conn)
         create_inventory_objects(conn)
 
+        # Create internal reconciliation objects
+        create_internal_reconciliation_objects(conn, orca_buckets)
+
         # If everything is good, commit.
         conn.commit()
 
 
-def create_database(config: Dict[str,str]) -> None:
+def create_database(config: Dict[str, str]) -> None:
     """
     Creates the orca database
     """
@@ -51,7 +64,7 @@ def create_database(config: Dict[str,str]) -> None:
     postgres_admin_engine = get_admin_connection(config)
     # Connect as admin user to the postgres database
     with postgres_admin_engine.connect() as connection:
-    # Code to create the database
+        # Code to create the database
         connection.execute(
             sql.commit_sql()
         )  # exit the default transaction to allow database creation.
@@ -59,7 +72,10 @@ def create_database(config: Dict[str,str]) -> None:
         connection.execute(sql.app_database_comment_sql(config["user_database"]))
         logger.info("Database created.")
 
-def create_app_schema_role_users(connection: Connection, app_username: str, app_password: str, db_name: str) -> None:
+
+def create_app_schema_role_users(
+    connection: Connection, app_username: str, app_password: str, db_name: str
+) -> None:
     """
     Creates the ORCA application database schema, users and roles.
 
@@ -90,6 +106,11 @@ def create_app_schema_role_users(connection: Connection, app_username: str, app_
     logger.debug("Creating the ORCA application user ...")
     connection.execute(sql.app_user_sql(app_username, app_password))
     logger.info("ORCA application user created.")
+
+    # Create extension for the database
+    logger.debug("Creating extension aws_s3 ...")
+    connection.execute(sql.create_extension())
+    logger.info("extension aws_s3 created.")
 
 
 def set_search_path_and_role(connection: Connection) -> None:
@@ -171,7 +192,8 @@ def create_recovery_objects(connection: Connection) -> None:
 
 def create_inventory_objects(connection: Connection) -> None:
     """
-    Creates the ORCA catalog metadata tables used for reconciliation with Cumulus in the proper order.
+    Creates the ORCA catalog metadata tables used for reconciliation with
+    Cumulus in the proper order.
     - providers
     - collections
     - provider_collection_xref
@@ -203,3 +225,68 @@ def create_inventory_objects(connection: Connection) -> None:
     logger.debug("Creating files table ...")
     connection.execute(sql.files_table_sql())
     logger.info("files table created.")
+
+
+def create_internal_reconciliation_objects(
+    connection: Connection, orca_buckets: List[str]
+) -> None:
+    """
+    Creates the ORCA internal reconciliation tables in the proper order.
+    - reconcile_status
+    - reconcile_job
+    - reconcile_s3_object
+    - reconcile_catalog_mismatch_report
+    - reconcile_orphan_report
+    - reconcile_phantom_report
+
+    Args:
+        connection (sqlalchemy.future.Connection): Database connection.
+        orca_buckets: List[str]): List of ORCA buckets needed to create
+                                  partitioned tables for reporting.
+
+    Returns:
+        None
+    """
+    # Create reconcile_status table
+    logger.debug("Creating reconcile_status table ...")
+    connection.execute(sql.reconcile_status_table_sql())
+    logger.info("reconcile_status table created.")
+
+    # Create reconcile_job table
+    logger.debug("Creating reconcile_job table ...")
+    connection.execute(sql.reconcile_job_table_sql())
+    logger.info("reconcile_job table created.")
+
+    # Create reconcile_s3_object table
+    logger.debug("Creating reconcile_s3_object table ...")
+    connection.execute(sql.reconcile_s3_object_table_sql())
+    logger.info("reconcile_s3_object table created.")
+
+    # Create partitioned tables for the reconcile_s3_object table
+    for bucket_name in orca_buckets:
+        _partition_name = get_partition_name_from_bucket_name(bucket_name)
+        logger.debug(
+            f"Creating partition table {_partition_name} for reconcile_s3_object ..."
+        )
+        connection.execute(
+            sql.reconcile_s3_object_partition_sql(_partition_name),
+            {"bucket_name": bucket_name},
+        )
+        logger.info(
+            f"Partition table {_partition_name} for reconcile_s3_object created."
+        )
+
+    # Create reconcile_catalog_mismatch_report table
+    logger.debug("Creating reconcile_catalog_mismatch_report table ...")
+    connection.execute(sql.reconcile_catalog_mismatch_report_table_sql())
+    logger.info("reconcile_catalog_mismatch_report table created.")
+
+    # Create reconcile_orphan_report table
+    logger.debug("Creating reconcile_orphan_report table ...")
+    connection.execute(sql.reconcile_orphan_report_table_sql())
+    logger.info("reconcile_orphan_report table created.")
+
+    # Create reconcile_phantom_report table
+    logger.debug("Creating reconcile_phantom_report table ...")
+    connection.execute(sql.reconcile_phantom_report_table_sql())
+    logger.info("reconcile_phantom_report table created.")

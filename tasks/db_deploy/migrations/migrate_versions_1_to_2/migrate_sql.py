@@ -3,10 +3,9 @@ Name: orca_sql_v2.py
 
 Description: All of the SQL used for creating and migrating the ORCA schema to version 2.
 """
-# Imports
+from orca_shared.database.shared_db import logger
 from sqlalchemy import text
 from sqlalchemy.sql.elements import TextClause
-from orca_shared.database.shared_db import logger
 
 
 # ----------------------------------------------------------------------------
@@ -33,7 +32,7 @@ def dbo_role_sql(db_name: str) -> TextClause:
 
               -- Add role comment
               COMMENT ON ROLE orca_dbo
-                IS 'Group that contains all the permissions necessary for the ORCA application owner.';
+                IS 'Group that contains the permissions needed for the ORCA application owner.';
 
             END IF;
 
@@ -43,7 +42,7 @@ def dbo_role_sql(db_name: str) -> TextClause:
             GRANT orca_dbo TO postgres;
           END
         $$
-    """
+    """  # nosec
     )
 
 
@@ -68,7 +67,7 @@ def app_role_sql(db_name: str) -> TextClause:
 
             -- Add role comment
             COMMENT ON ROLE orca_app
-              IS 'Group that contains all the permissions necessary for the ORCA application user.';
+              IS 'Group that contains the permissions needed for the ORCA application user.';
 
           END IF;
 
@@ -76,7 +75,7 @@ def app_role_sql(db_name: str) -> TextClause:
           GRANT CONNECT ON DATABASE {db_name} TO orca_app;
         END
         $$;
-    """
+    """  # nosec
     )
 
 
@@ -102,17 +101,28 @@ def orca_schema_sql() -> TextClause:
         GRANT USAGE ON SCHEMA orca TO orca_app;
 
         -- Setup Default Privelages for application user as a catch all
-        ALTER DEFAULT PRIVILEGES FOR USER orca_dbo IN SCHEMA orca GRANT SELECT ON TABLES TO orca_app;
-        ALTER DEFAULT PRIVILEGES FOR USER orca_dbo IN SCHEMA orca GRANT INSERT ON TABLES TO orca_app;
-        ALTER DEFAULT PRIVILEGES FOR USER orca_dbo IN SCHEMA orca GRANT UPDATE ON TABLES TO orca_app;
-        ALTER DEFAULT PRIVILEGES FOR USER orca_dbo IN SCHEMA orca GRANT DELETE ON TABLES TO orca_app;
-        ALTER DEFAULT PRIVILEGES FOR USER orca_dbo IN SCHEMA orca GRANT EXECUTE ON FUNCTIONS TO orca_app;
-        ALTER DEFAULT PRIVILEGES FOR USER orca_dbo IN SCHEMA orca GRANT USAGE ON SEQUENCES TO orca_app;
-        ALTER DEFAULT PRIVILEGES FOR USER orca_dbo IN SCHEMA orca GRANT SELECT ON SEQUENCES TO orca_app;
-        ALTER DEFAULT PRIVILEGES FOR USER orca_dbo IN SCHEMA orca GRANT UPDATE ON SEQUENCES TO orca_app;
-        ALTER DEFAULT PRIVILEGES FOR USER orca_dbo IN SCHEMA orca GRANT USAGE ON TYPES TO orca_app;
-        ALTER DEFAULT PRIVILEGES FOR USER orca_dbo IN SCHEMA orca GRANT REFERENCES ON TABLES TO orca_app;
-        ALTER DEFAULT PRIVILEGES FOR USER orca_dbo IN SCHEMA orca GRANT TRIGGER ON TABLES TO orca_app;
+        ALTER DEFAULT PRIVILEGES FOR USER orca_dbo IN SCHEMA orca
+          GRANT SELECT ON TABLES TO orca_app;
+        ALTER DEFAULT PRIVILEGES FOR USER orca_dbo IN SCHEMA orca
+          GRANT INSERT ON TABLES TO orca_app;
+        ALTER DEFAULT PRIVILEGES FOR USER orca_dbo IN SCHEMA orca
+          GRANT UPDATE ON TABLES TO orca_app;
+        ALTER DEFAULT PRIVILEGES FOR USER orca_dbo IN SCHEMA orca
+          GRANT DELETE ON TABLES TO orca_app;
+        ALTER DEFAULT PRIVILEGES FOR USER orca_dbo IN SCHEMA orca
+          GRANT EXECUTE ON FUNCTIONS TO orca_app;
+        ALTER DEFAULT PRIVILEGES FOR USER orca_dbo IN SCHEMA orca
+          GRANT USAGE ON SEQUENCES TO orca_app;
+        ALTER DEFAULT PRIVILEGES FOR USER orca_dbo IN SCHEMA orca
+          GRANT SELECT ON SEQUENCES TO orca_app;
+        ALTER DEFAULT PRIVILEGES FOR USER orca_dbo IN SCHEMA orca
+          GRANT UPDATE ON SEQUENCES TO orca_app;
+        ALTER DEFAULT PRIVILEGES FOR USER orca_dbo IN SCHEMA orca
+          GRANT USAGE ON TYPES TO orca_app;
+        ALTER DEFAULT PRIVILEGES FOR USER orca_dbo IN SCHEMA orca
+          GRANT REFERENCES ON TABLES TO orca_app;
+        ALTER DEFAULT PRIVILEGES FOR USER orca_dbo IN SCHEMA orca
+          GRANT TRIGGER ON TABLES TO orca_app;
     """
     )
 
@@ -164,7 +174,7 @@ def app_user_sql(user_name: str, user_password: str) -> TextClause:
             ALTER ROLE {user_name} SET search_path = orca, public;
         END
         $$;
-    """
+    """  # nosec
     )
 
 
@@ -323,7 +333,7 @@ def recovery_job_table_sql() -> TextClause:
         COMMENT ON TABLE recovery_job
             IS 'ORCA Job Recovery table that contains basic information at the granule level.';
         COMMENT ON COLUMN recovery_job.job_id
-            IS 'This is the Cumulus AsyncOperationId value used to group all recovery executions for granule recovery together.';
+            IS 'This is the Cumulus AsyncOperationId value or a generated id value.';
         COMMENT ON COLUMN recovery_job.granule_id
             IS 'This is the granule id for the granule to be recovered.';
         COMMENT ON COLUMN recovery_job.archive_destination
@@ -365,16 +375,19 @@ def recovery_file_table_sql() -> TextClause:
         , request_time           timestamp with time zone NOT NULL
         , last_update            timestamp with time zone NOT NULL
         , completion_time        timestamp with time zone NULL
-        , CONSTRAINT PK_recovery_file PRIMARY KEY (job_id, granule_id, filename)
-        , CONSTRAINT FK_recovery_file_status FOREIGN KEY (status_id) REFERENCES recovery_status (id)
-        , CONSTRAINT FK_recovery_file_recoverjob FOREIGN KEY (job_id, granule_id) REFERENCES recovery_job (job_id, granule_id)
+        , CONSTRAINT PK_recovery_file
+            PRIMARY KEY (job_id, granule_id, filename)
+        , CONSTRAINT FK_recovery_file_status
+            FOREIGN KEY (status_id) REFERENCES recovery_status (id)
+        , CONSTRAINT FK_recovery_file_recoverjob
+            FOREIGN KEY (job_id, granule_id) REFERENCES recovery_job (job_id, granule_id)
         );
 
         -- Comments
         COMMENT ON TABLE recovery_file
             IS 'ORCA Recovery table that contains basic information at the file level.';
         COMMENT ON COLUMN recovery_file.job_id
-            IS 'This is the Cumulus AsyncOperationId value used to group all recovery executions for granule recovery together.';
+            IS 'Job the recovered file is a part of that references recovery_job.';
         COMMENT ON COLUMN recovery_file.granule_id
             IS 'This is the granule id for the granule to be recovered.';
         COMMENT ON COLUMN recovery_file.filename
@@ -400,6 +413,7 @@ def recovery_file_table_sql() -> TextClause:
         GRANT SELECT, INSERT, UPDATE, DELETE ON recovery_file TO orca_app;
     """
     )
+
 
 # ----------------------------------------------------------------------------
 # ORCA SQL used for migration of schema

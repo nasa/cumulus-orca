@@ -27,5 +27,11 @@ class TestOrcaSqlLogic(unittest.TestCase):
         for name, function in getmembers(sql, isfunction):
             if name not in ["text"]:
                 with self.subTest(function=function):
-                    if name in ["providers_table_sql", "collections_table_sql", "granules_table_sql", "files_table_sql", "schema_versions_data_sql"]:
+                    if name in [
+                        "providers_table_sql",
+                        "collections_table_sql",
+                        "granules_table_sql",
+                        "files_table_sql",
+                        "schema_versions_data_sql",
+                    ]:
                         self.assertEqual(type(function()), TextClause)

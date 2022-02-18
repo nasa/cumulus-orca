@@ -2,7 +2,8 @@
 version: "3.6"
 services:
   postgres:
-    image: postgres:12
+    build: .
+    #image: postgres:10.14 # Current PG Engine of Aurora Serverless
     container_name: orca-test-pg2
     ports:
        - "5433:5432"

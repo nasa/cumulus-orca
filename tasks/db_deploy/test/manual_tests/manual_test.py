@@ -33,18 +33,26 @@ def get_configuration():
         "port": "5433",
         "user_database": "orca",
         "user_password": my_app_pass,
-        "user_username": "orcauser",  
+        "user_username": "orcauser",
     }
 
 
 if __name__ == "__main__":
     set_search_path()
-    from db_deploy import task
     from orca_shared.database.shared_db import logger
+
+    from db_deploy import task
+
+    # Create a list of fake orca_bucket names
+    orca_buckets = [
+        "orca_versioned_backup",
+        "orca_worm_backup",
+        "orca_special_backup",
+    ]
 
     logger.info("Beginning manual test.")
     # We skip handle since we do not want to create the secretsmanager objects
     # and logging setup so we do not have to pass an event and context. This is
     # for pure functionality testing of the SQL and the call order.
-    task(get_configuration())
+    task(get_configuration(), orca_buckets)
     logger.info("Manual test complete.")

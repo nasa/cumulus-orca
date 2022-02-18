@@ -5,8 +5,10 @@ Description: Runs unit tests for the migrations/migrate_versions_2_to_3/migrate.
 """
 
 import unittest
-from unittest.mock import call, patch, MagicMock
+from unittest.mock import MagicMock, call, patch
+
 from migrations.migrate_versions_2_to_3 import migrate
+
 
 class TestMigrateDatabaseLibraries(unittest.TestCase):
     """
@@ -33,17 +35,17 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
         Tear down test
         """
         self.config = None
-    
+
     @patch("migrations.migrate_versions_2_to_3.migrate.sql.text")
     @patch("migrations.migrate_versions_2_to_3.migrate.sql.schema_versions_data_sql")
     @patch("migrations.migrate_versions_2_to_3.migrate.sql.add_multipart_chunksize_sql")
     @patch("migrations.migrate_versions_2_to_3.migrate.get_admin_connection")
     def test_migrate_versions_2_to_3_happy_path(
-            self,
-            mock_connection: MagicMock,
-            mock_add_multipart_chunksize_sql: MagicMock,
-            mock_schema_versions_data: MagicMock,
-            mock_text: MagicMock
+        self,
+        mock_connection: MagicMock,
+        mock_add_multipart_chunksize_sql: MagicMock,
+        mock_schema_versions_data: MagicMock,
+        mock_text: MagicMock,
     ):
         """
         Tests the migrate_versions_2_to_3 function happy path
@@ -59,7 +61,9 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
 
                 # Check that all of the functions were called the correct
                 # number of times with the proper values
-                mock_connection.assert_any_call(self.config, self.config["user_database"])
+                mock_connection.assert_any_call(
+                    self.config, self.config["user_database"]
+                )
 
                 # commit block
                 mock_add_multipart_chunksize_sql.assert_called_once()

@@ -5,8 +5,10 @@ Description: Runs unit tests for the migrations/migrate_versions_1_to_2/migrate.
 """
 
 import unittest
-from unittest.mock import Mock, call, patch, MagicMock
+from unittest.mock import MagicMock, call, patch
+
 from migrations.migrate_versions_1_to_2 import migrate
+
 
 class TestMigrateDatabaseLibraries(unittest.TestCase):
     """
@@ -32,17 +34,23 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
         """
         Tear down test
         """
-        self.config = None    
-    
+        self.config = None
+
     @patch("migrations.migrate_versions_1_to_2.migrate.sql.schema_versions_data_sql")
     @patch("migrations.migrate_versions_1_to_2.migrate.sql.drop_druser_user_sql")
     @patch("migrations.migrate_versions_1_to_2.migrate.sql.drop_dbo_user_sql")
     @patch("migrations.migrate_versions_1_to_2.migrate.sql.drop_dr_role_sql")
     @patch("migrations.migrate_versions_1_to_2.migrate.sql.drop_drdbo_role_sql")
     @patch("migrations.migrate_versions_1_to_2.migrate.sql.drop_dr_schema_sql")
-    @patch("migrations.migrate_versions_1_to_2.migrate.sql.drop_request_status_table_sql")
-    @patch("migrations.migrate_versions_1_to_2.migrate.sql.migrate_recovery_file_data_sql")
-    @patch("migrations.migrate_versions_1_to_2.migrate.sql.migrate_recovery_job_data_sql")
+    @patch(
+        "migrations.migrate_versions_1_to_2.migrate.sql.drop_request_status_table_sql"
+    )
+    @patch(
+        "migrations.migrate_versions_1_to_2.migrate.sql.migrate_recovery_file_data_sql"
+    )
+    @patch(
+        "migrations.migrate_versions_1_to_2.migrate.sql.migrate_recovery_job_data_sql"
+    )
     @patch("migrations.migrate_versions_1_to_2.migrate.sql.recovery_status_data_sql")
     @patch("migrations.migrate_versions_1_to_2.migrate.sql.recovery_file_table_sql")
     @patch("migrations.migrate_versions_1_to_2.migrate.sql.recovery_job_table_sql")
@@ -55,27 +63,27 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
     @patch("migrations.migrate_versions_1_to_2.migrate.sql.dbo_role_sql")
     @patch("migrations.migrate_versions_1_to_2.migrate.get_admin_connection")
     def test_migrate_versions_1_to_2_happy_path(
-            self,
-            mock_connection: MagicMock,
-            mock_dbo_role_sql: MagicMock,
-            mock_app_role_sql: MagicMock,
-            mock_orca_schema_sql: MagicMock,
-            mock_app_user_sql: MagicMock,
-            mock_text: MagicMock,
-            mock_schema_versions_table: MagicMock,
-            mock_recovery_status_table: MagicMock,
-            mock_recovery_job_table: MagicMock,
-            mock_recovery_file_table: MagicMock,
-            mock_recovery_status_data: MagicMock,
-            mock_recovery_job_data: MagicMock,
-            mock_recovery_file_data: MagicMock,
-            mock_drop_request_status_table: MagicMock,
-            mock_drop_dr_schema: MagicMock,
-            mock_drop_drdbo_role: MagicMock,
-            mock_drop_dr_role: MagicMock,
-            mock_drop_dbo_user: MagicMock,
-            mock_drop_druser_user: MagicMock,
-            mock_schema_versions_data: MagicMock,
+        self,
+        mock_connection: MagicMock,
+        mock_dbo_role_sql: MagicMock,
+        mock_app_role_sql: MagicMock,
+        mock_orca_schema_sql: MagicMock,
+        mock_app_user_sql: MagicMock,
+        mock_text: MagicMock,
+        mock_schema_versions_table: MagicMock,
+        mock_recovery_status_table: MagicMock,
+        mock_recovery_job_table: MagicMock,
+        mock_recovery_file_table: MagicMock,
+        mock_recovery_status_data: MagicMock,
+        mock_recovery_job_data: MagicMock,
+        mock_recovery_file_data: MagicMock,
+        mock_drop_request_status_table: MagicMock,
+        mock_drop_dr_schema: MagicMock,
+        mock_drop_drdbo_role: MagicMock,
+        mock_drop_dr_role: MagicMock,
+        mock_drop_dbo_user: MagicMock,
+        mock_drop_druser_user: MagicMock,
+        mock_schema_versions_data: MagicMock,
     ):
         """
         Tests the migrate_versions_1_to_2 function happy path
@@ -99,7 +107,9 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 mock_dbo_role_sql.assert_called_once()
                 mock_app_role_sql.assert_called_once()
                 mock_orca_schema_sql.assert_called_once()
-                mock_app_user_sql.assert_called_once_with(self.config["user_username"], self.config["user_password"])
+                mock_app_user_sql.assert_called_once_with(
+                    self.config["user_username"], self.config["user_password"]
+                )
                 mock_schema_versions_table.assert_called_once()
                 mock_recovery_status_table.assert_called_once()
                 mock_recovery_job_table.assert_called_once()

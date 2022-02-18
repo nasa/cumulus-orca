@@ -23,6 +23,7 @@ def add_multipart_chunksize_sql() -> TextClause:
     """
     )
 
+
 def schema_versions_data_sql() -> TextClause:
     """
     Data for the schema_versions table. Inserts the current schema
@@ -40,7 +41,13 @@ def schema_versions_data_sql() -> TextClause:
 
         -- Upsert the current version
         INSERT INTO schema_versions
-        VALUES (3, 'Added multipart_chunksize_mb column to recovery_file for v3.x of ORCA application', NOW(), True)
+          VALUES
+            (
+              3,
+              'Added multipart_chunksize_mb column to recovery_file for v3.x of ORCA application',
+              NOW(),
+              True
+            )
         ON CONFLICT (version_id)
         DO UPDATE SET is_latest = True;
     """
