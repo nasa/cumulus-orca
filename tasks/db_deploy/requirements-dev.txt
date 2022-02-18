@@ -21,8 +21,6 @@ coverage==5.3
 ## Libraries needed for unit tests
 ## ---------------------------------------------------------------------------
 psycopg2-binary==2.8.6
-boto3==1.18.40
-moto==2.0.6
 
 
 ## Libraries needed by application
