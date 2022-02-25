@@ -3,17 +3,14 @@ Name: test_perform_orca_reconcile.py
 Description:  Unit tests for test_perform_orca_reconcile.py.
 """
 import copy
-import datetime
-import json
 import random
 import unittest
 import uuid
-from unittest.mock import Mock, call, patch, MagicMock
+from unittest.mock import MagicMock, Mock, call, patch
 
-from fastjsonschema import JsonSchemaValueException
+from orca_shared.reconciliation import OrcaStatus
 
 import perform_orca_reconcile
-from orca_shared.reconciliation import OrcaStatus
 
 
 class TestPerformOrcaReconcile(
@@ -278,7 +275,8 @@ class TestPerformOrcaReconcile(
         mock_partition_name = Mock()
         mock_connection = Mock()
         mismatch_rows = []
-        mismatch_insert_call_args = []
+        mismatch_insert_call_args0 = []
+        mismatch_insert_call_args1 = []
         for discrepancy_check in perform_orca_reconcile.discrepancy_checks:
             mock_etag = Mock()
             mock_last_update = Mock()
@@ -295,14 +293,39 @@ class TestPerformOrcaReconcile(
                 "s3_last_update": mock_last_update,
                 "orca_size_in_bytes": mock_size_in_bytes,
                 "s3_size_in_bytes": mock_size_in_bytes,
-                f"s3_{discrepancy_check}": Mock(),  # todo: does this work?
+                f"s3_{discrepancy_check}": Mock(),
             }
             mismatch_rows.append(mismatch.copy())
             mismatch["job_id"] = mock_job_id
             mismatch["discrepancy_type"] = discrepancy_check
-            mismatch_insert_call_args.append(mismatch)
-        # todo: Add a mismatch of multiple types
-        mock_connection.execute.return_value = mismatch_rows
+            mismatch_insert_call_args0.append(mismatch)
+        # Add a mismatch of multiple types. Will exist on its own page to check paging.
+        mismatch = {
+            "collection_id": Mock(),
+            "granule_id": Mock(),
+            "filename": Mock(),
+            "key_path": Mock(),
+            "cumulus_archive_location": Mock(),
+            "orca_etag": mock_etag,
+            "s3_etag": mock_etag,
+            "orca_last_update": mock_last_update,
+            "s3_last_update": mock_last_update,
+            "orca_size_in_bytes": mock_size_in_bytes,
+            "s3_size_in_bytes": mock_size_in_bytes,
+        }
+        for discrepancy_check in perform_orca_reconcile.discrepancy_checks:
+            mismatch[f"s3_{discrepancy_check}"] = Mock()
+        mock_connection.execute.side_effect = [
+            mismatch_rows,
+            None,
+            [mismatch.copy()],
+            None,
+        ]
+        mismatch["job_id"] = mock_job_id
+        mismatch["discrepancy_type"] = ", ".join(
+            perform_orca_reconcile.discrepancy_checks
+        )
+        mismatch_insert_call_args1.append(mismatch)
 
         perform_orca_reconcile.generate_mismatch_reports(
             mock_job_id,
@@ -311,16 +334,32 @@ class TestPerformOrcaReconcile(
             mock_connection,
         )
 
-        mock_get_mismatches_sql.assert_called_once_with(mock_partition_name)
-        mock_connection.execute.assert_called_once_with(
-            mock_get_mismatches_sql.return_value,
+        mock_get_mismatches_sql.assert_called_with(mock_partition_name)
+        mock_connection.execute.assert_has_calls(
             [
-                {
-                    "orca_archive_location": mock_orca_archive_location,
-                    "page_index": 0,
-                    "page_size": perform_orca_reconcile.PAGE_SIZE,
-                }
-            ],
+                call(
+                    mock_get_mismatches_sql.return_value,
+                    [
+                        {
+                            "orca_archive_location": mock_orca_archive_location,
+                            "page_index": 0,
+                            "page_size": perform_orca_reconcile.PAGE_SIZE,
+                        }
+                    ],
+                ),
+                call(mock_insert_mismatch_sql.return_value, mismatch_insert_call_args0),
+                call(
+                    mock_get_mismatches_sql.return_value,
+                    [
+                        {
+                            "orca_archive_location": mock_orca_archive_location,
+                            "page_index": 1,
+                            "page_size": perform_orca_reconcile.PAGE_SIZE,
+                        }
+                    ],
+                ),
+                call(mock_insert_mismatch_sql.return_value, mismatch_insert_call_args1),
+            ]
         )
 
     @patch("perform_orca_reconcile.get_mismatches_sql")
@@ -369,11 +408,11 @@ class TestPerformOrcaReconcile(
         """
         Happy path for handler assembling information to call Task.
         """
-        job_id = random.randint(0, 1000)
+        job_id = random.randint(0, 1000)  # nosec
         orca_archive_location = uuid.uuid4().__str__()
 
         expected_result = {
-            perform_orca_reconcile.OUTPUT_JOB_ID_KEY: random.randint(0, 1000),
+            perform_orca_reconcile.OUTPUT_JOB_ID_KEY: random.randint(0, 1000),  # nosec
         }
         mock_task.return_value = copy.deepcopy(expected_result)
 
@@ -405,10 +444,10 @@ class TestPerformOrcaReconcile(
         """
         Violating input.json schema should raise an error.
         """
-        job_id = random.randint(0, 1000)
+        job_id = random.randint(0, 1000)  # nosec
 
         expected_result = {
-            perform_orca_reconcile.OUTPUT_JOB_ID_KEY: random.randint(0, 1000),
+            perform_orca_reconcile.OUTPUT_JOB_ID_KEY: random.randint(0, 1000),  # nosec
         }
         mock_task.return_value = copy.deepcopy(expected_result)
 
@@ -438,11 +477,13 @@ class TestPerformOrcaReconcile(
         """
         Violating output.json schema should raise an error.
         """
-        job_id = random.randint(0, 1000)
+        job_id = random.randint(0, 1000)  # nosec
         orca_archive_location = uuid.uuid4().__str__()
 
         expected_result = {
-            perform_orca_reconcile.OUTPUT_JOB_ID_KEY: str(random.randint(0, 1000)),
+            perform_orca_reconcile.OUTPUT_JOB_ID_KEY: str(
+                random.randint(0, 1000)
+            ),  # nosec
         }
         mock_task.return_value = copy.deepcopy(expected_result)
 

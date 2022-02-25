@@ -32,7 +32,7 @@ moto[sqs]==2.0.6
 ## ---------------------------------------------------------------------------
 
 ## Libraries used by every package/module
-cumulus-message-adapter-python==2.0.0
+cumulus-message-adapter-python==2.0.1
 
 ## Libraries used by database package
 boto3~=1.18.40

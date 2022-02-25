@@ -6,7 +6,7 @@ writing differences to reconcile_catalog_mismatch_report, reconcile_orphan_repor
 """
 import json
 from datetime import datetime, timezone
-from typing import Dict, Any, Union
+from typing import Any, Dict, Union
 
 import fastjsonschema
 import orca_shared
@@ -114,7 +114,9 @@ def generate_reports(job_id: int, orca_archive_location: str, engine: Engine) ->
                 [{"job_id": job_id, "orca_archive_location": orca_archive_location}],
             )
             # populate reconcile_mismatch_report with files in both, but with a difference
-            generate_mismatch_reports(job_id, orca_archive_location, partition_name, connection)
+            generate_mismatch_reports(
+                job_id, orca_archive_location, partition_name, connection
+            )
     except Exception as sql_ex:
         LOGGER.error(f"Error while generating reports for job {job_id}: {sql_ex}")
         raise
@@ -166,9 +168,13 @@ def generate_orphan_reports_sql(partition_name: str) -> TextClause:
     )
 
 
-PAGE_SIZE = 500
+PAGE_SIZE = 100
 discrepancy_checks = ["etag", "last_update", "size_in_bytes"]
-def generate_mismatch_reports(job_id: int, orca_archive_location: str, partition_name: str, connection):
+
+
+def generate_mismatch_reports(
+    job_id: int, orca_archive_location: str, partition_name: str, connection
+):
     """
     Generates and posts phantom, orphan, and mismatch reports within the same transaction.
 
@@ -200,8 +206,8 @@ def generate_mismatch_reports(job_id: int, orca_archive_location: str, partition
             discrepancies = []
             for discrepancy_check in discrepancy_checks:
                 if (
-                        mismatch[f"s3_{discrepancy_check}"]
-                        != mismatch[f"orca_{discrepancy_check}"]
+                    mismatch[f"s3_{discrepancy_check}"]
+                    != mismatch[f"orca_{discrepancy_check}"]
                 ):
                     discrepancies.append(discrepancy_check)
             params = {
@@ -210,9 +216,7 @@ def generate_mismatch_reports(job_id: int, orca_archive_location: str, partition
                 "granule_id": mismatch["granule_id"],
                 "filename": mismatch["filename"],
                 "key_path": mismatch["key_path"],
-                "cumulus_archive_location": mismatch[
-                    "cumulus_archive_location"
-                ],
+                "cumulus_archive_location": mismatch["cumulus_archive_location"],
                 "orca_etag": mismatch["orca_etag"],
                 "s3_etag": mismatch["s3_etag"],
                 "orca_last_update": mismatch["orca_last_update"],
