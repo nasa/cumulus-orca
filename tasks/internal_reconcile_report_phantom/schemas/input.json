@@ -1,0 +1,20 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/internal_reconcile_report_phantom/schemas/input.json",
+    "title": "internal_reconcile_report_phantom Lambda input",
+    "description": "The input for the internal_reconcile_report_phantom Lambda.", 
+    "type": "object",
+    "required": [
+      "jobId", "pageIndex"
+    ],
+    "properties": {
+      "jobId": {
+        "type": "integer",
+        "description": "The unique job ID of the reconciliation job."
+      },
+      "pageIndex": {
+        "description": "The 0-based index of the results page to return.",
+        "type": "integer"
+      }
+    }
+  }
