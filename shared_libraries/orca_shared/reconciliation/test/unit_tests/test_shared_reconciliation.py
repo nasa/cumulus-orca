@@ -4,9 +4,9 @@ Description: Unit tests for shared_reconciliation.py shared library.
 """
 import unittest
 import uuid
-from unittest.mock import patch, MagicMock, Mock
+from unittest.mock import MagicMock, Mock, patch
 
-from orca_shared.reconciliation import shared_reconciliation, OrcaStatus
+from orca_shared.reconciliation import OrcaStatus, shared_reconciliation
 
 
 class TestSharedReconciliationLibraries(unittest.TestCase):
@@ -19,7 +19,9 @@ class TestSharedReconciliationLibraries(unittest.TestCase):
         Should replace dashes with underscores.
         Leave this test hardcoded to avoid unintentional deviations from DB.
         """
-        result = shared_reconciliation.get_partition_name_from_bucket_name("apple-banana_-lemon")
+        result = shared_reconciliation.get_partition_name_from_bucket_name(
+            "apple-banana_-lemon"
+        )
         self.assertEqual("reconcile_s3_object_apple_banana__lemon", result)
 
     def test_get_partition_name_from_bucket_name_rejects_non_alphanumeric(self):
@@ -29,8 +31,13 @@ class TestSharedReconciliationLibraries(unittest.TestCase):
         for error_case in ["a a", "a!a"]:
             with self.subTest(error_case=error_case):
                 with self.assertRaises(Exception) as cm:
-                    shared_reconciliation.get_partition_name_from_bucket_name(error_case)
-                self.assertEqual(f"'reconcile_s3_object_{error_case}' is not a valid partition name.", str(cm.exception))
+                    shared_reconciliation.get_partition_name_from_bucket_name(
+                        error_case
+                    )
+                self.assertEqual(
+                    f"'reconcile_s3_object_{error_case}' is not a valid partition name.",
+                    str(cm.exception),
+                )
 
     @patch("orca_shared.reconciliation.shared_reconciliation.update_job_sql")
     def test_update_job_happy_path(
@@ -52,10 +59,7 @@ class TestSharedReconciliationLibraries(unittest.TestCase):
         mock_engine = Mock()
         mock_engine.begin = Mock(return_value=mock_enter)
 
-        end_time_present = [
-            OrcaStatus.SUCCESS,
-            OrcaStatus.ERROR
-        ]
+        end_time_present = [OrcaStatus.SUCCESS, OrcaStatus.ERROR]
         for status in OrcaStatus:
             with self.subTest(status=status):
                 now = uuid.uuid4().__str__()
@@ -71,7 +75,9 @@ class TestSharedReconciliationLibraries(unittest.TestCase):
                         "id": mock_job_id,
                         "status_id": status.value,
                         "last_update": now,
-                        "end_time": now if end_time_present.__contains__(status) else None,
+                        "end_time": now
+                        if end_time_present.__contains__(status)
+                        else None,
                         "error_message": mock_error_message,
                     }
                 ],
@@ -84,9 +90,7 @@ class TestSharedReconciliationLibraries(unittest.TestCase):
             mock_update_job_sql.reset_mock()
 
     @patch("orca_shared.reconciliation.shared_reconciliation.update_job_sql")
-    def test_update_job_error_logged_and_raised(
-        self, mock_update_job_sql: MagicMock
-    ):
+    def test_update_job_error_logged_and_raised(self, mock_update_job_sql: MagicMock):
         """
         Exceptions from Postgres should bubble up.
         """
@@ -108,7 +112,12 @@ class TestSharedReconciliationLibraries(unittest.TestCase):
 
         with self.assertRaises(Exception) as cm:
             shared_reconciliation.update_job(
-                mock_job_id, OrcaStatus.SUCCESS, now, mock_error_message, mock_engine, mock_logger
+                mock_job_id,
+                OrcaStatus.SUCCESS,
+                now,
+                mock_error_message,
+                mock_engine,
+                mock_logger,
             )
         self.assertEqual(expected_exception, cm.exception)
 

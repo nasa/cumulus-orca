@@ -3,17 +3,18 @@ Name: shared_reconciliation.py
 Description: Shared library that combines common functions and classes needed for
              reconciliation operations.
 """
-from typing import Optional
+from datetime import datetime, timezone
 
-from orca_shared.database import shared_db
 # Standard libraries
 from enum import Enum
-from datetime import datetime, timezone
+from typing import Optional
 
 # Third party libraries
 from sqlalchemy import text
 from sqlalchemy.future import Engine
 from sqlalchemy.sql.elements import TextClause
+
+from orca_shared.database import shared_db
 
 
 class OrcaStatus(Enum):
@@ -21,6 +22,7 @@ class OrcaStatus(Enum):
     An enumeration.
     Defines the status value used in the ORCA Reconciliation database for use by the reconciliation functions.
     """
+
     GETTING_S3_LIST = 1
     STAGED = 2
     GENERATING_REPORTS = 3
@@ -43,7 +45,14 @@ def get_partition_name_from_bucket_name(bucket_name: str):
 
 
 @shared_db.retry_operational_error()
-def update_job(job_id: int, status: OrcaStatus, now: str, error_message: Optional[str], engine: Engine, logger) -> None:
+def update_job(
+    job_id: int,
+    status: OrcaStatus,
+    now: str,
+    error_message: Optional[str],
+    engine: Engine,
+    logger,
+) -> None:
     """
     Updates the status entry for a job.
 
