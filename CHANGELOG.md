@@ -20,6 +20,7 @@ and includes an additional section for migration notes.
 - *ORCA-161* Added dead letter queue and cloudwatch alarm terraform code to recovery SQS queue.
 - *ORCA-307* Added lambda get_current_archive_list to pull S3 Inventory reports into Postgres. 
     Adds `orca_reconciliation_lambda_memory_size` and `orca_reconciliation_lambda_timeout` to Terraform variables.
+- *ORCA-308* Added lambda perform_orca_reconcile to find differences between S3 Inventory reports and Orca catalog.
 
 ### Changed
 - *ORCA-299* `db_deploy` task has been updated to deploy ORCA internal reconciliation tables and objects.
