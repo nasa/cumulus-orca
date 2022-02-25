@@ -12,7 +12,7 @@ def lazy_load(module_name, element):
 
 
 __title__ = "orca_shared"
-__version__ = "1.2.0"
+__version__ = "1.1.0"
 
 
 # Libraries
