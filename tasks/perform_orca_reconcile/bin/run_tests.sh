@@ -69,7 +69,7 @@ check_rc $return_code "ERROR: pip install encountered an error."
 
 ## Run code smell and security tests using bandit
 echo "INFO: Running code smell security tests ..."
-bandit -r perform_orca_reconcile test
+bandit -r perform_orca_reconcile.py test
 let return_code=$?
 check_rc $return_code "ERROR: Potential security or code issues found."
 

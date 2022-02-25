@@ -10,7 +10,7 @@ import os
 import random
 import unittest
 import uuid
-from unittest.mock import Mock, patch, MagicMock, call
+from unittest.mock import MagicMock, Mock, call, patch
 
 from orca_shared.reconciliation import OrcaStatus
 
@@ -913,8 +913,10 @@ class TestGetCurrentArchiveList(
         Happy path for handler assembling information to call Task.
         """
         expected_result = {
-            get_current_archive_list.OUTPUT_JOB_ID_KEY: random.randint(0, 1000),
-            get_current_archive_list.OUTPUT_ORCA_ARCHIVE_LOCATION_KEY: uuid.uuid4().__str__(),
+            get_current_archive_list.OUTPUT_JOB_ID_KEY: random.randint(  # nosec
+                0, 1000
+            ),
+            get_current_archive_list.OUTPUT_ORCA_ARCHIVE_LOCATION_KEY: uuid.uuid4().__str__(),  # nosec
         }
         mock_task.return_value = copy.deepcopy(expected_result)
 
@@ -965,8 +967,10 @@ class TestGetCurrentArchiveList(
         Code does not currently support handling multiple events from s3.
         """
         expected_result = {
-            get_current_archive_list.OUTPUT_JOB_ID_KEY: random.randint(0, 1000),
-            get_current_archive_list.OUTPUT_ORCA_ARCHIVE_LOCATION_KEY: uuid.uuid4().__str__(),
+            get_current_archive_list.OUTPUT_JOB_ID_KEY: random.randint(  # nosec
+                0, 1000
+            ),
+            get_current_archive_list.OUTPUT_ORCA_ARCHIVE_LOCATION_KEY: uuid.uuid4().__str__(),  # nosec
         }
         mock_task.return_value = copy.deepcopy(expected_result)
 
@@ -1013,8 +1017,10 @@ class TestGetCurrentArchiveList(
         Violating input.json schema should raise an error.
         """
         expected_result = {
-            get_current_archive_list.OUTPUT_JOB_ID_KEY: random.randint(0, 1000),
-            get_current_archive_list.OUTPUT_ORCA_ARCHIVE_LOCATION_KEY: uuid.uuid4().__str__(),
+            get_current_archive_list.OUTPUT_JOB_ID_KEY: random.randint(  # nosec
+                0, 1000
+            ),
+            get_current_archive_list.OUTPUT_ORCA_ARCHIVE_LOCATION_KEY: uuid.uuid4().__str__(),  # nosec
         }
         mock_task.return_value = copy.deepcopy(expected_result)
 

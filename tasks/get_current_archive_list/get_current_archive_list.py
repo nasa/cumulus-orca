@@ -6,7 +6,7 @@ Description: Receives a list of s3 events from an SQS queue, and loads the s3 in
 import json
 import os.path
 from datetime import datetime, timezone
-from typing import Any, List, Dict
+from typing import Any, Dict, List
 
 # noinspection SpellCheckingInspection,PyPackageRequirements
 import boto3
@@ -24,7 +24,7 @@ from sqlalchemy.sql.elements import TextClause
 
 SECRETSMANAGER_S3_ACCESS_CREDENTIALS_KEY = "s3-access-credentials"
 S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY = "s3_access_key"
-S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY = "s3_secret_key"
+S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY = "s3_secret_key"  # nosec
 
 EVENT_RECORDS_KEY = "Records"
 RECORD_AWS_REGION_KEY = "awsRegion"
@@ -431,7 +431,7 @@ def translate_s3_import_to_partitioned_data_sql(report_table_name: str) -> TextC
             SELECT :job_id, orca_archive_location, key_path, etag, last_update, size_in_bytes, storage_class, delete_flag
             FROM s3_import
             WHERE is_latest = TRUE
-        """
+        """  # nosec
     )
 
 
