@@ -5,16 +5,16 @@
     "description": "The input for the internal_reconcile_report_phantom Lambda.", 
     "type": "object",
     "required": [
-      "jobId", "pageNumber"
+      "jobId", "pageIndex"
     ],
     "properties": {
       "jobId": {
         "type": "integer",
         "description": "The unique job ID of the reconciliation job."
       },
-      "pageNumber": {
-        "type": "integer",
-        "description": "The page number of the report to return that has been requested by user."
+      "pageIndex": {
+        "description": "The 0-based index of the results page to return.",
+        "type": "integer"
       }
     }
   }

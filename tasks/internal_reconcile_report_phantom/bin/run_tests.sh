@@ -66,29 +66,16 @@ let return_code=$?
 
 check_rc $return_code "ERROR: pip install encountered an error."
 
-## Run unit tests and check Coverage
-echo "INFO: Running unit and coverage tests ..."
-
-# Currently just running unit tests until we fix/support large tests
-coverage run --source internal_reconcile_report_phantom -m pytest
-let return_code=$?
-check_rc $return_code "ERROR: Unit tests encountered failures."
-
-# Unit tests expected to cover minimum of 80%.
-coverage report --fail-under=80
-let return_code=$?
-check_rc $return_code "ERROR: Unit tests coverage is less than 80%"
-
 ## Run code smell and security tests using bandit
 echo "INFO: Running code smell security tests ..."
-bandit -r internal_reconcile_report_phantom
+bandit -r internal_reconcile_report_phantom.py test
 let return_code=$?
 check_rc $return_code "ERROR: Potential security or code issues found."
 
 
 ## Check code third party libraries for CVE issues
 echo "INFO: Running checks on third party libraries ..."
-safety check -r requirements.txt
+safety check -r requirements.txt -r requirements-dev.txt
 let return_code=$?
 check_rc $return_code "ERROR: Potential security issues third party libraries."
 
@@ -98,8 +85,7 @@ echo "INFO: Checking formatting and style of code ..."
 echo "INFO: Checking lint rules ..."
 flake8 \
     --max-line-length 99 \
-    --extend-ignore E203 \
-    internal_reconcile_report_phantom
+    internal_reconcile_report_phantom.py test
 check_rc $return_code "ERROR: Linting issues found."
 
 echo "INFO: Sorting imports ..."
@@ -110,11 +96,24 @@ isort \
     --use-parentheses \
     --force-grid-wrap 0 \
     -m 3 \
-    internal_reconcile_report_phantom
+    internal_reconcile_report_phantom.py test
 
 echo "INFO: Formatting with black ..."
-black internal_reconcile_report_phantom
+black internal_reconcile_report_phantom.py test
 
+
+## Run unit tests and check Coverage
+echo "INFO: Running unit and coverage tests ..."
+
+# Currently just running unit tests until we fix/support large tests
+coverage run --source internal_reconcile_report_phantom -m pytest
+let return_code=$?
+check_rc $return_code "ERROR: Unit tests encountered failures."
+
+# Unit tests expected to cover minimum of 80%.
+coverage report 
+let return_code=$?
+check_rc $return_code "ERROR: Unit tests coverage is less than 80%"
 
 ## Deactivate and remove the virtual env
 echo "INFO: Cleaning up the environment ..."

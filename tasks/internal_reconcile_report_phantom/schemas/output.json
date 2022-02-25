@@ -3,54 +3,66 @@
     "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/internal_reconcile_report_phantom/schemas/output.json",
     "title": "internal_reconcile_report_phantom Lambda Output",
     "description": "The output for the internal_reconcile_report_phantom Lambda.",
-    "type": "array",
-    "items": [
-      {    
-        "required": [
-          "jobId",
-          "collectionId",
-          "granuleId",
-          "filename",
-          "key_path",
-          "orcaEtag",
-          "orcaLastUpdate",
-          "orcaSize"
-        ],
-        "properties": {
-          "jobId": {
-              "type": "integer",
-              "description": "The unique ID of the reconciliation job."
-            },
-          "collectionId": {
+    "type": "object",
+    "required": [
+      "jobId",
+      "anotherPage",
+      "phantoms"
+    ],
+    "properties": {
+        "jobId": {
+            "type": "integer",
+            "description": "The unique ID of the reconciliation job."
+          },
+        "anotherPage": {
+          "description": "Indicates if more results can be retrieved on another page.",
+          "type": "boolean"
+        },
+        "phantoms": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "collectionId",
+              "granuleId",
+              "filename",
+              "key_path",
+              "orcaEtag",
+              "orcaLastUpdate",
+              "orcaSize"
+            ],
+          "properties": {
+            "collectionId": {
               "type": "string",
               "description": "Cumulus Collection ID value from the ORCA catalog."
             },
-          "granuleId": {
+            "granuleId": {
+                "type": "string",
+                "description": "Cumulus granuleID value from the ORCA catalog."
+              }, 
+            "filename": {
+                "type": "string",
+                "description": "Filename of the object from the ORCA catalog."
+              },
+            "key_path": {
+                "type": "string",
+                "description": "key path and filename of the object in the ORCA catalog."
+              },
+            "orcaEtag": {
+                "type": "string",
+                "description": "etag of the object as reported in the ORCA catalog."
+              },
+            "orcaLastUpdate": {
               "type": "string",
-              "description": "Cumulus granuleID value from the ORCA catalog."
-            }, 
-          "filename": {
-              "type": "string",
-              "description": "Filename of the object from the ORCA catalog."
+              "description": "Last update of the object as reported in the ORCA catalog.",
+              "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?\\+00:00$"
             },
-          "key_path": {
-              "type": "string",
-              "description": "key path and filename of the object in the ORCA catalog."
-            },
-          "orcaEtag": {
-              "type": "string",
-              "description": "etag of the object as reported in the ORCA catalog."
-            },
-          "orcaLastUpdate": {
-            "type": "string",
-            "description": "Last update of the object as reported in the ORCA catalog.",
-            "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?\\+00:00$"
-          },
-          "orcaSize": {
-            "type": "integer",
-            "description": "Size in bytes of the object as reported in the ORCA catalog."
+            "orcaSize": {
+              "type": "integer",
+              "description": "Size in bytes of the object as reported in the ORCA catalog."
           }
         }
       }
-    ]
+    }
+  }
 }
