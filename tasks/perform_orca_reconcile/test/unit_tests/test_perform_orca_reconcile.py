@@ -135,16 +135,14 @@ class TestPerformOrcaReconcile(
             f"Encountered a fatal error: {expected_exception}"
         )
 
-    @patch("perform_orca_reconcile.generate_mismatch_reports")
+    @patch("perform_orca_reconcile.generate_mismatch_reports_sql")
     @patch("perform_orca_reconcile.generate_orphan_reports_sql")
     @patch("perform_orca_reconcile.generate_phantom_reports_sql")
-    @patch("perform_orca_reconcile.get_partition_name_from_bucket_name")
     def test_generate_reports_happy_path(
         self,
-        mock_get_partition_name_from_bucket_name: MagicMock,
         mock_generate_phantom_reports_sql: MagicMock,
         mock_generate_orphan_reports_sql: MagicMock,
-        mock_generate_mismatch_reports: MagicMock,
+        mock_generate_mismatch_reports_sql: MagicMock,
     ):
         """
         Happy path for generating reports in postgres
@@ -165,14 +163,9 @@ class TestPerformOrcaReconcile(
             mock_job_id, mock_orca_archive_location, mock_engine
         )
 
-        mock_get_partition_name_from_bucket_name.assert_called_once_with(
-            mock_orca_archive_location
-        )
         mock_enter.__enter__.assert_called_once_with()
 
-        mock_generate_phantom_reports_sql.assert_called_once_with(
-            mock_get_partition_name_from_bucket_name.return_value
-        )
+        mock_generate_phantom_reports_sql.assert_called_once_with()
         mock_execute.assert_has_calls(
             [
                 call(
@@ -193,34 +186,34 @@ class TestPerformOrcaReconcile(
                         }
                     ],
                 ),
+                call(
+                    mock_generate_mismatch_reports_sql.return_value,
+                    [
+                        {
+                            "job_id": mock_job_id,
+                            "orca_archive_location": mock_orca_archive_location,
+                        }
+                    ],
+                ),
             ]
         )
-        self.assertEqual(2, mock_execute.call_count)
+        self.assertEqual(3, mock_execute.call_count)
 
-        mock_generate_orphan_reports_sql.assert_called_once_with(
-            mock_get_partition_name_from_bucket_name.return_value
-        )
+        mock_generate_orphan_reports_sql.assert_called_once_with()
 
-        mock_generate_mismatch_reports.assert_called_once_with(
-            mock_job_id,
-            mock_orca_archive_location,
-            mock_get_partition_name_from_bucket_name.return_value,
-            mock_connection,
-        )
+        mock_generate_mismatch_reports_sql.assert_called_once_with()
 
         mock_exit.assert_called_once_with(None, None, None)
 
     @patch("perform_orca_reconcile.LOGGER")
-    @patch("perform_orca_reconcile.generate_mismatch_reports")
+    @patch("perform_orca_reconcile.generate_mismatch_reports_sql")
     @patch("perform_orca_reconcile.generate_orphan_reports_sql")
     @patch("perform_orca_reconcile.generate_phantom_reports_sql")
-    @patch("perform_orca_reconcile.get_partition_name_from_bucket_name")
     def test_generate_reports_error_logged_and_raised(
         self,
-        mock_get_partition_name_from_bucket_name: MagicMock,
         mock_generate_phantom_reports_sql: MagicMock,
         mock_generate_orphan_reports_sql: MagicMock,
-        mock_generate_mismatch_reports: MagicMock,
+        mock_generate_mismatch_reports_sql: MagicMock,
         mock_logger: MagicMock,
     ):
         """
@@ -244,10 +237,6 @@ class TestPerformOrcaReconcile(
                 mock_job_id, mock_orca_archive_location, mock_engine
             )
         self.assertEqual(expected_exception, cm.exception)
-
-        mock_get_partition_name_from_bucket_name.assert_called_once_with(
-            mock_orca_archive_location
-        )
         mock_enter.__enter__.assert_called_once_with()
 
         mock_exit.assert_called_once_with(
@@ -255,144 +244,6 @@ class TestPerformOrcaReconcile(
         )
         mock_logger.error.assert_called_once_with(
             f"Error while generating reports for job {mock_job_id}: {expected_exception}"
-        )
-
-    @patch("perform_orca_reconcile.insert_mismatch_sql")
-    @patch("perform_orca_reconcile.get_mismatches_sql")
-    def test_generate_mismatch_reports_happy_path(
-        self,
-        mock_get_mismatches_sql: MagicMock,
-        mock_insert_mismatch_sql: MagicMock,
-    ):
-        """
-        Happy path for retrieving and writing mismatches to DB.
-        """
-        perform_orca_reconcile.PAGE_SIZE = len(
-            perform_orca_reconcile.discrepancy_checks
-        )
-        mock_job_id = Mock()
-        mock_orca_archive_location = Mock()
-        mock_partition_name = Mock()
-        mock_connection = Mock()
-        mismatch_rows = []
-        mismatch_insert_call_args0 = []
-        mismatch_insert_call_args1 = []
-        for discrepancy_check in perform_orca_reconcile.discrepancy_checks:
-            mock_etag = Mock()
-            mock_last_update = Mock()
-            mock_size_in_bytes = Mock()
-            mismatch = {
-                "collection_id": Mock(),
-                "granule_id": Mock(),
-                "filename": Mock(),
-                "key_path": Mock(),
-                "cumulus_archive_location": Mock(),
-                "orca_etag": mock_etag,
-                "s3_etag": mock_etag,
-                "orca_last_update": mock_last_update,
-                "s3_last_update": mock_last_update,
-                "orca_size_in_bytes": mock_size_in_bytes,
-                "s3_size_in_bytes": mock_size_in_bytes,
-                f"s3_{discrepancy_check}": Mock(),
-            }
-            mismatch_rows.append(mismatch.copy())
-            mismatch["job_id"] = mock_job_id
-            mismatch["discrepancy_type"] = discrepancy_check
-            mismatch_insert_call_args0.append(mismatch)
-        # Add a mismatch of multiple types. Will exist on its own page to check paging.
-        mismatch = {
-            "collection_id": Mock(),
-            "granule_id": Mock(),
-            "filename": Mock(),
-            "key_path": Mock(),
-            "cumulus_archive_location": Mock(),
-            "orca_etag": mock_etag,
-            "s3_etag": mock_etag,
-            "orca_last_update": mock_last_update,
-            "s3_last_update": mock_last_update,
-            "orca_size_in_bytes": mock_size_in_bytes,
-            "s3_size_in_bytes": mock_size_in_bytes,
-        }
-        for discrepancy_check in perform_orca_reconcile.discrepancy_checks:
-            mismatch[f"s3_{discrepancy_check}"] = Mock()
-        mock_connection.execute.side_effect = [
-            mismatch_rows,
-            None,
-            [mismatch.copy()],
-            None,
-        ]
-        mismatch["job_id"] = mock_job_id
-        mismatch["discrepancy_type"] = ", ".join(
-            perform_orca_reconcile.discrepancy_checks
-        )
-        mismatch_insert_call_args1.append(mismatch)
-
-        perform_orca_reconcile.generate_mismatch_reports(
-            mock_job_id,
-            mock_orca_archive_location,
-            mock_partition_name,
-            mock_connection,
-        )
-
-        mock_get_mismatches_sql.assert_called_with(mock_partition_name)
-        mock_connection.execute.assert_has_calls(
-            [
-                call(
-                    mock_get_mismatches_sql.return_value,
-                    [
-                        {
-                            "orca_archive_location": mock_orca_archive_location,
-                            "page_index": 0,
-                            "page_size": perform_orca_reconcile.PAGE_SIZE,
-                        }
-                    ],
-                ),
-                call(mock_insert_mismatch_sql.return_value, mismatch_insert_call_args0),
-                call(
-                    mock_get_mismatches_sql.return_value,
-                    [
-                        {
-                            "orca_archive_location": mock_orca_archive_location,
-                            "page_index": 1,
-                            "page_size": perform_orca_reconcile.PAGE_SIZE,
-                        }
-                    ],
-                ),
-                call(mock_insert_mismatch_sql.return_value, mismatch_insert_call_args1),
-            ]
-        )
-
-    @patch("perform_orca_reconcile.get_mismatches_sql")
-    def test_generate_mismatch_reports_no_mismatches(
-        self,
-        mock_get_mismatches_sql: MagicMock,
-    ):
-        """
-        If no mismatches are found, do not write to DB.
-        """
-        mock_job_id = Mock()
-        mock_orca_archive_location = Mock()
-        mock_partition_name = Mock()
-        mock_connection = Mock()
-        mock_connection.execute.return_value = []
-
-        perform_orca_reconcile.generate_mismatch_reports(
-            mock_job_id,
-            mock_orca_archive_location,
-            mock_partition_name,
-            mock_connection,
-        )
-
-        mock_get_mismatches_sql.assert_called_once_with(mock_partition_name)
-        mock_connection.execute.assert_called_once_with(
-            mock_get_mismatches_sql.return_value,
-            [
-                {
-                    "orca_archive_location": mock_orca_archive_location,
-                    "page_index": 0,
-                    "page_size": perform_orca_reconcile.PAGE_SIZE,
-                }
-            ],
         )
 
     # noinspection PyPep8Naming

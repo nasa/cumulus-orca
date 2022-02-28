@@ -59,6 +59,7 @@ def get_partition_name_from_bucket_name(bucket_name: str)
 
 Used for interacting with the reconcile_s3_object table.
 Provides a valid partition name given an Orca bucket name.
+Changes to this function may require a DB migration to recreate partitions.
 
 bucket_name: The name of the Orca bucket in AWS.
 
@@ -68,7 +69,7 @@ bucket_name: The name of the Orca bucket in AWS.
 
 ```python
 @shared_db.retry_operational_error()
-def update_job(job_id: int, status: OrcaStatus, error_message: Optional[str], engine: Engine, logger) -> None
+def update_job(job_id: int, status: OrcaStatus, last_update: datetime, error_message: Optional[str], engine: Engine, logger) -> None
 ```
 
 Updates the status entry for a job.
@@ -77,6 +78,7 @@ Updates the status entry for a job.
 
 - `job_id` - The id of the job to associate info with.
 - `status` - The status to update the job with.
+- `last_update` - Datetime returned by datetime.now(timezone.utc)
 - `error_message` - The error to post to the job, if any.
 - `engine` - The sqlalchemy engine to use for contacting the database.
 - `logger` - Logger.

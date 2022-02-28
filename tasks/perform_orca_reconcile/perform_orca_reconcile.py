@@ -13,9 +13,6 @@ import orca_shared
 import orca_shared.reconciliation.shared_reconciliation
 from cumulus_logger import CumulusLogger
 from orca_shared.database import shared_db
-from orca_shared.reconciliation.shared_reconciliation import (
-    get_partition_name_from_bucket_name,
-)
 from sqlalchemy import text
 from sqlalchemy.future import Engine
 from sqlalchemy.sql.elements import TextClause
@@ -55,7 +52,7 @@ def task(
     orca_shared.reconciliation.shared_reconciliation.update_job(
         job_id,
         orca_shared.reconciliation.OrcaStatus.GENERATING_REPORTS,
-        datetime.now(timezone.utc).isoformat(),
+        datetime.now(timezone.utc),
         None,
         user_engine,
         LOGGER,
@@ -66,7 +63,7 @@ def task(
         orca_shared.reconciliation.shared_reconciliation.update_job(
             job_id,
             orca_shared.reconciliation.OrcaStatus.SUCCESS,
-            datetime.now(timezone.utc).isoformat(),
+            datetime.now(timezone.utc),
             None,
             user_engine,
             LOGGER,
@@ -78,7 +75,7 @@ def task(
         orca_shared.reconciliation.shared_reconciliation.update_job(
             job_id,
             orca_shared.reconciliation.OrcaStatus.ERROR,
-            datetime.now(timezone.utc).isoformat(),
+            datetime.now(timezone.utc),
             str(fatal_exception),
             user_engine,
             LOGGER,
@@ -99,46 +96,47 @@ def generate_reports(job_id: int, orca_archive_location: str, engine: Engine) ->
     """
     try:
         LOGGER.debug(f"Generating phantom reports for job id {job_id}.")
-        partition_name = get_partition_name_from_bucket_name(orca_archive_location)
         with engine.begin() as connection:
             LOGGER.debug(f"Generating phantom reports for job id {job_id}.")
             connection.execute(
                 # populate reconcile_phantom_report with files in orca.files but NOT reconcile_s3_object
-                generate_phantom_reports_sql(partition_name),
+                generate_phantom_reports_sql(),
                 [{"job_id": job_id, "orca_archive_location": orca_archive_location}],
             )
             LOGGER.debug(f"Generating orphan reports for job id {job_id}.")
             connection.execute(
                 # populate reconcile_orphan_report with files in reconcile_s3_object but NOT orca.files
-                generate_orphan_reports_sql(partition_name),
+                generate_orphan_reports_sql(),
                 [{"job_id": job_id, "orca_archive_location": orca_archive_location}],
             )
-            # populate reconcile_mismatch_report with files in both, but with a difference
-            generate_mismatch_reports(
-                job_id, orca_archive_location, partition_name, connection
+            LOGGER.debug(f"Generating mismatch reports for job id {job_id}.")
+            connection.execute(
+                # populate reconcile_orphan_report with files in reconcile_s3_object and orca.files but with differences.
+                generate_mismatch_reports_sql(),
+                [{"job_id": job_id, "orca_archive_location": orca_archive_location}],
             )
     except Exception as sql_ex:
         LOGGER.error(f"Error while generating reports for job {job_id}: {sql_ex}")
         raise
 
 
-def generate_phantom_reports_sql(partition_name: str) -> TextClause:
+def generate_phantom_reports_sql() -> TextClause:
     """
     SQL for generating reports on files in the Orca catalog, but not S3.
     """
     return text(
-        f"""
+        """
         WITH 
             phantom_files AS (
-                SELECT files.*
+                SELECT files.granule_id, files.name, files.key_path, files.etag, files.size_in_bytes
                 FROM
                     files
-                LEFT OUTER JOIN {partition_name} USING (key_path)
+                LEFT OUTER JOIN reconcile_s3_object USING (orca_archive_location, key_path)
                 WHERE
                     files.orca_archive_location = :orca_archive_location AND
-                    {partition_name}.key_path IS NULL
+                    reconcile_s3_object.key_path IS NULL
             ),
-            phantom_reports AS (SELECT * FROM phantom_files
+            phantom_reports AS (SELECT granule_id, collection_id, name, key_path, etag, last_update, size_in_bytes, cumulus_granule_id FROM phantom_files
             INNER JOIN granules ON (phantom_files.granule_id=granules.id))
         INSERT INTO reconcile_phantom_report (job_id, collection_id, granule_id, filename, key_path, orca_etag, orca_last_update, orca_size)
             SELECT :job_id, collection_id, cumulus_granule_id, name, key_path, etag, last_update, size_in_bytes
@@ -146,7 +144,7 @@ def generate_phantom_reports_sql(partition_name: str) -> TextClause:
     )
 
 
-def generate_orphan_reports_sql(partition_name: str) -> TextClause:
+def generate_orphan_reports_sql() -> TextClause:
     """
     SQL for generating reports on files in S3, but not the Orca catalog.
     """
@@ -154,12 +152,13 @@ def generate_orphan_reports_sql(partition_name: str) -> TextClause:
         f"""
         WITH 
             orphan_reports AS (
-                SELECT {partition_name}.*
+                SELECT reconcile_s3_object.key_path, reconcile_s3_object.etag, reconcile_s3_object.last_update,
+                    reconcile_s3_object.size_in_bytes, reconcile_s3_object.storage_class
                 FROM
-                    {partition_name}
-                LEFT OUTER JOIN files USING (key_path)
+                    reconcile_s3_object
+                LEFT OUTER JOIN files USING (orca_archive_location, key_path)
                 WHERE
-                    files.orca_archive_location = :orca_archive_location AND
+                    reconcile_s3_object.orca_archive_location = :orca_archive_location AND
                     files.key_path IS NULL
             )
         INSERT INTO reconcile_orphan_report (job_id, key_path, etag, last_update, size_in_bytes, storage_class)
@@ -168,119 +167,48 @@ def generate_orphan_reports_sql(partition_name: str) -> TextClause:
     )
 
 
-PAGE_SIZE = 100
-discrepancy_checks = ["etag", "last_update", "size_in_bytes"]
-
-
-def generate_mismatch_reports(
-    job_id: int, orca_archive_location: str, partition_name: str, connection
-):
-    """
-    Generates and posts phantom, orphan, and mismatch reports within the same transaction.
-
-    Args:
-        job_id: The id of the job containing s3 inventory info.
-        orca_archive_location: The name of the bucket to generate the reports for.
-        partition_name: The name of the partition to retrieve s3 information from.
-        connection: The sqlalchemy connection to use for contacting the database.
-    """
-    another_page = True  # Indicates if there may be another page in Postgres
-    page_index = 0
-    while another_page:
-        LOGGER.debug(
-            f"Generating mismatch reports for job id {job_id}, page {page_index}."
-        )
-        mismatches = connection.execute(
-            get_mismatches_sql(partition_name),
-            [
-                {
-                    "orca_archive_location": orca_archive_location,
-                    "page_index": page_index,
-                    "page_size": PAGE_SIZE,
-                }
-            ],
-        )
-        another_page = False
-        mismatch_insert_params = []
-        for mismatch in mismatches:
-            discrepancies = []
-            for discrepancy_check in discrepancy_checks:
-                if (
-                    mismatch[f"s3_{discrepancy_check}"]
-                    != mismatch[f"orca_{discrepancy_check}"]
-                ):
-                    discrepancies.append(discrepancy_check)
-            params = {
-                "job_id": job_id,
-                "collection_id": mismatch["collection_id"],
-                "granule_id": mismatch["granule_id"],
-                "filename": mismatch["filename"],
-                "key_path": mismatch["key_path"],
-                "cumulus_archive_location": mismatch["cumulus_archive_location"],
-                "orca_etag": mismatch["orca_etag"],
-                "s3_etag": mismatch["s3_etag"],
-                "orca_last_update": mismatch["orca_last_update"],
-                "s3_last_update": mismatch["s3_last_update"],
-                "orca_size_in_bytes": mismatch["orca_size_in_bytes"],
-                "s3_size_in_bytes": mismatch["s3_size_in_bytes"],
-                "discrepancy_type": ", ".join(discrepancies),
-            }
-            mismatch_insert_params.append(params)
-
-        if any(mismatch_insert_params):
-            if len(mismatch_insert_params) == PAGE_SIZE:
-                another_page = True
-            LOGGER.debug(
-                f"Inserting mismatch reports for job id {job_id}, page {page_index}."
-            )
-            connection.execute(insert_mismatch_sql(), mismatch_insert_params)
-        page_index = page_index + 1
-
-
-def get_mismatches_sql(partition_name: str) -> TextClause:
+def generate_mismatch_reports_sql() -> TextClause:
     """
     SQL for retrieving mismatches between entries in S3 and the Orca catalog.
     """
     return text(
         f"""
+        INSERT INTO orca.reconcile_catalog_mismatch_report (job_id, collection_id, granule_id, filename, key_path, cumulus_archive_location, orca_etag, s3_etag,
+            orca_last_update, s3_last_update, orca_size_in_bytes, s3_size_in_bytes, discrepancy_type)
         SELECT
+            :job_id,
             granules.collection_id, 
             granules.cumulus_granule_id as granule_id, 
             files.name as filename, 
             files.key_path,
-             files.cumulus_archive_location, 
+            files.cumulus_archive_location, 
             files.etag as orca_etag, 
-            {partition_name}.etag as s3_etag,
+            reconcile_s3_object.etag as s3_etag,
             granules.last_update as orca_last_update,
-            {partition_name}.last_update as s3_last_update,
+            reconcile_s3_object.last_update as s3_last_update,
             files.size_in_bytes as orca_size_in_bytes, 
-            {partition_name}.size_in_bytes as s3_size_in_bytes
-        FROM {partition_name}
-        INNER JOIN files USING (key_path)
+            reconcile_s3_object.size_in_bytes as s3_size_in_bytes,
+            CASE 
+                WHEN (files.etag != reconcile_s3_object.etag AND files.size_in_bytes != reconcile_s3_object.size_in_bytes AND files.ingest_time !=  reconcile_s3_object.last_update) THEN 'etag, size_in_bytes, last_update'
+                WHEN (files.etag != reconcile_s3_object.etag AND files.size_in_bytes != reconcile_s3_object.size_in_bytes) THEN 'etag, size_in_bytes'
+                WHEN (files.etag != reconcile_s3_object.etag AND files.ingest_time !=  reconcile_s3_object.last_update) THEN 'etag, last_update'
+                WHEN (files.size_in_bytes != reconcile_s3_object.size_in_bytes AND files.ingest_time !=  reconcile_s3_object.last_update) THEN 'size_in_bytes, last_update'
+                WHEN files.etag != reconcile_s3_object.etag THEN 'etag'
+                WHEN files.size_in_bytes != reconcile_s3_object.size_in_bytes THEN 'size_in_bytes'
+                WHEN files.ingest_time !=  reconcile_s3_object.last_update THEN 'last_update'
+                ELSE 'UNKNOWN'
+            END AS discrepancy_type
+        FROM reconcile_s3_object
+        INNER JOIN files USING (orca_archive_location, key_path)
         INNER JOIN granules ON (files.granule_id=granules.id)
         WHERE
-            files.orca_archive_location = :orca_archive_location
+            reconcile_s3_object.orca_archive_location = :orca_archive_location
             AND
             (
-                files.etag != {partition_name}.etag OR
-                granules.last_update != {partition_name}.last_update OR
-                files.size_in_bytes != {partition_name}.size_in_bytes
-            )
-        LIMIT :page_size
-        OFFSET :page_index*:page_size"""
-    )
-
-
-def insert_mismatch_sql() -> TextClause:
-    """
-    SQL for posting a mismatch to reconcile_catalog_mismatch_report.
-    """
-    return text(
-        """
-        INSERT INTO reconcile_catalog_mismatch_report
-        VALUES(:job_id, :collection_id, :granule_id, :filename, :key_path, :cumulus_archive_location, :orca_etag, :s3_etag,
-            :orca_last_update, :s3_last_update, :orca_size_in_bytes, :s3_size_in_bytes, :discrepancy_type)
-        """
+                files.etag != reconcile_s3_object.etag OR
+                files.ingest_time != reconcile_s3_object.last_update OR
+                files.size_in_bytes != reconcile_s3_object.size_in_bytes
+            )"""
     )
 
 

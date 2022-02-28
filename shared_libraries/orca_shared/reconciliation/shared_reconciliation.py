@@ -48,7 +48,7 @@ def get_partition_name_from_bucket_name(bucket_name: str):
 def update_job(
     job_id: int,
     status: OrcaStatus,
-    now: str,
+    last_update: datetime,
     error_message: Optional[str],
     engine: Engine,
     logger,
@@ -59,7 +59,7 @@ def update_job(
     Args:
         job_id: The id of the job to associate info with.
         status: The status to update the job with.
-        now: Datetime returned by datetime.now(timezone.utc).isoformat()
+        last_update: Datetime returned by datetime.now(timezone.utc)
         error_message: The error to post to the job, if any.
         engine: The sqlalchemy engine to use for contacting the database.
         logger: Logger.
@@ -69,14 +69,14 @@ def update_job(
         with engine.begin() as connection:
             end_time = None
             if status == OrcaStatus.ERROR or status == OrcaStatus.SUCCESS:
-                end_time = now
+                end_time = last_update
             connection.execute(
                 update_job_sql(),
                 [
                     {
                         "id": job_id,
                         "status_id": status.value,
-                        "last_update": now,
+                        "last_update": last_update,
                         "end_time": end_time,
                         "error_message": error_message,
                     }

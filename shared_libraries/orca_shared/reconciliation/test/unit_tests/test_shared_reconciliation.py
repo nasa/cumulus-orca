@@ -2,6 +2,7 @@
 Name: test_shared_reconciliation.py
 Description: Unit tests for shared_reconciliation.py shared library.
 """
+import datetime
 import unittest
 import uuid
 from unittest.mock import MagicMock, Mock, patch
@@ -62,7 +63,7 @@ class TestSharedReconciliationLibraries(unittest.TestCase):
         end_time_present = [OrcaStatus.SUCCESS, OrcaStatus.ERROR]
         for status in OrcaStatus:
             with self.subTest(status=status):
-                now = uuid.uuid4().__str__()
+                now = datetime.datetime.utcnow()
                 shared_reconciliation.update_job(
                     mock_job_id, status, now, mock_error_message, mock_engine, Mock()
                 )
@@ -108,7 +109,7 @@ class TestSharedReconciliationLibraries(unittest.TestCase):
         mock_engine = Mock()
         mock_engine.begin = Mock(return_value=mock_enter)
         mock_logger = Mock()
-        now = uuid.uuid4().__str__()
+        now = datetime.datetime.utcnow()
 
         with self.assertRaises(Exception) as cm:
             shared_reconciliation.update_job(
