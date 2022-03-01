@@ -31,7 +31,7 @@ git config --global user.name "$GIT_USER"
 
 
 #clone cumulus orca template
-git clone https://git.earthdata.nasa.gov/scm/orca/cumulus-orca-deploy-template.git
+git clone ssh://git@git.earthdata.nasa.gov:7999/orca/cumulus-orca-deploy-template.git
 cd cumulus-orca-deploy-template
 git checkout release/v9.7.0-v3.0.2
 git branch
