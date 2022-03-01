@@ -20,7 +20,7 @@ class TestPerformOrcaReconcile(
     TestPerformOrcaReconcile.
     """
 
-    @patch("orca_shared.reconciliation.shared_reconciliation.update_job")
+    @patch("perform_orca_reconcile.update_job")
     @patch("perform_orca_reconcile.generate_reports")
     @patch("orca_shared.database.shared_db.get_user_connection")
     def test_task_happy_path(
@@ -55,14 +55,12 @@ class TestPerformOrcaReconcile(
                     OrcaStatus.GENERATING_REPORTS,
                     None,
                     mock_get_user_connection.return_value,
-                    perform_orca_reconcile.LOGGER,
                 ),
                 call(
                     mock_job_id,
                     OrcaStatus.SUCCESS,
                     None,
                     mock_get_user_connection.return_value,
-                    perform_orca_reconcile.LOGGER,
                 ),
             ]
         )
@@ -75,7 +73,7 @@ class TestPerformOrcaReconcile(
         )
 
     @patch("perform_orca_reconcile.LOGGER")
-    @patch("orca_shared.reconciliation.shared_reconciliation.update_job")
+    @patch("perform_orca_reconcile.update_job")
     @patch("perform_orca_reconcile.generate_reports")
     @patch("orca_shared.database.shared_db.get_user_connection")
     def test_task_error_posted_as_status_update(
@@ -116,14 +114,12 @@ class TestPerformOrcaReconcile(
                     OrcaStatus.GENERATING_REPORTS,
                     None,
                     mock_get_user_connection.return_value,
-                    perform_orca_reconcile.LOGGER,
                 ),
                 call(
                     mock_job_id,
                     OrcaStatus.ERROR,
                     str(expected_exception),
                     mock_get_user_connection.return_value,
-                    mock_logger,
                 ),
             ]
         )

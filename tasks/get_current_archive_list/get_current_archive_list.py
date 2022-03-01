@@ -14,9 +14,10 @@ import fastjsonschema as fastjsonschema
 import orca_shared.reconciliation.shared_reconciliation
 from cumulus_logger import CumulusLogger
 from orca_shared.database import shared_db
-from orca_shared.reconciliation.shared_reconciliation import (
+from orca_shared.reconciliation import (
     OrcaStatus,
     get_partition_name_from_bucket_name,
+    update_job
 )
 from sqlalchemy import text
 from sqlalchemy.future import Engine
@@ -43,7 +44,7 @@ FILES_KEY_KEY = "key"
 OUTPUT_JOB_ID_KEY = "jobId"
 OUTPUT_ORCA_ARCHIVE_LOCATION_KEY = "orcaArchiveLocation"
 
-LOGGER = CumulusLogger(name="Orca")
+LOGGER = CumulusLogger(name="ORCA")
 # Generating schema validators can take time, so do it once and reuse.
 try:
     with open("schemas/input.json", "r") as raw_schema:
@@ -108,7 +109,6 @@ def task(
         update_job_with_s3_inventory_in_postgres(
             s3_access_key,
             s3_secret_key,
-            manifest[MANIFEST_SOURCE_BUCKET_KEY],
             record[RECORD_S3_KEY][S3_BUCKET_KEY][BUCKET_NAME_KEY],
             record[RECORD_AWS_REGION_KEY],
             # There will probably only be one file, but AWS leaves the option open.
@@ -121,13 +121,11 @@ def task(
         # On error, set job status to failure.
         LOGGER.error(f"Encountered a fatal error: {fatal_exception}")
         # noinspection PyArgumentList
-        orca_shared.reconciliation.shared_reconciliation.update_job(
+        update_job(
             job_id,
             OrcaStatus.ERROR,
-            datetime.now(timezone.utc).isoformat(),
             str(fatal_exception),
             user_engine,
-            LOGGER,
         )
         raise
 
@@ -175,7 +173,7 @@ def create_job(
         LOGGER.debug(f"Creating status for job.")
         with engine.begin() as connection:
             # Within this transaction import the csv and update the job status
-            now = datetime.now(timezone.utc).isoformat()
+            now = datetime.now(timezone.utc)
             rows = connection.execute(
                 create_job_sql(),
                 [
@@ -248,7 +246,6 @@ def truncate_s3_partition_sql(partition_name: str) -> TextClause:
 def update_job_with_s3_inventory_in_postgres(
     s3_access_key: str,
     s3_secret_key: str,
-    orca_archive_location: str,
     report_bucket_name: str,
     report_bucket_region: str,
     csv_key_paths: List[str],
@@ -263,7 +260,6 @@ def update_job_with_s3_inventory_in_postgres(
     Args:
         s3_access_key: The access key that, when paired with s3_secret_key, allows postgres to access s3.
         s3_secret_key: The secret key that, when paired with s3_access_key, allows postgres to access s3.
-        orca_archive_location: The name of the bucket to generate the reports for.
         report_bucket_name: The name of the bucket the csv is located in.
         report_bucket_region: The name of the region the report bucket resides in.
         csv_key_paths: The paths of the csvs within the report bucket.
@@ -304,9 +300,7 @@ def update_job_with_s3_inventory_in_postgres(
             # Now that all csvs are loaded, pull them into main db from temporary table
             LOGGER.debug(f"Translating data to Orca format for job {job_id}.")
             connection.execute(
-                translate_s3_import_to_partitioned_data_sql(
-                    get_partition_name_from_bucket_name(orca_archive_location)
-                ),
+                translate_s3_import_to_partitioned_data_sql(),
                 [
                     {
                         "job_id": job_id,
@@ -318,10 +312,8 @@ def update_job_with_s3_inventory_in_postgres(
             orca_shared.reconciliation.shared_reconciliation.update_job(
                 job_id,
                 OrcaStatus.STAGED,
-                datetime.now(timezone.utc).isoformat(),
                 None,
                 engine,
-                LOGGER,
             )
     except Exception as sql_ex:
         LOGGER.error(f"Error while processing job '{job_id}': {sql_ex}")
@@ -421,17 +413,17 @@ def trigger_csv_load_from_s3_sql() -> TextClause:
     )
 
 
-def translate_s3_import_to_partitioned_data_sql(report_table_name: str) -> TextClause:
+def translate_s3_import_to_partitioned_data_sql() -> TextClause:
     """
     SQL for translating between the temporary table and Orca table.
     """
     return text(
         f"""
-        INSERT INTO orca.{report_table_name} (job_id, orca_archive_location, key_path, etag, last_update, size_in_bytes, storage_class, delete_flag)
+        INSERT INTO orca.reconcile_s3_object (job_id, orca_archive_location, key_path, etag, last_update, size_in_bytes, storage_class, delete_flag)
             SELECT :job_id, orca_archive_location, key_path, etag, last_update, size_in_bytes, storage_class, delete_flag
             FROM s3_import
             WHERE is_latest = TRUE
-        """  # nosec
+        """
     )
 
 

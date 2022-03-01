@@ -101,7 +101,6 @@ class TestGetCurrentArchiveList(
         mock_update_job_with_s3_inventory_in_postgres.assert_called_once_with(
             mock_s3_access_key,
             mock_s3_secret_key,
-            mock_orca_archive_location,
             mock_report_bucket_name,
             mock_report_bucket_aws_region,
             manifest_file_keys,
@@ -180,7 +179,7 @@ class TestGetCurrentArchiveList(
         mock_update_job_with_s3_inventory_in_postgres.assert_not_called()
 
     @patch("get_current_archive_list.LOGGER")
-    @patch("orca_shared.reconciliation.shared_reconciliation.update_job")
+    @patch("get_current_archive_list.update_job")
     @patch("get_current_archive_list.update_job_with_s3_inventory_in_postgres")
     @patch("get_current_archive_list.truncate_s3_partition")
     @patch("get_current_archive_list.get_manifest")
@@ -270,10 +269,8 @@ class TestGetCurrentArchiveList(
         mock_update_job.assert_called_once_with(
             mock_job_id,
             OrcaStatus.ERROR,
-            unittest.mock.ANY,
             str(expected_exception),
             mock_get_user_connection.return_value,
-            mock_logger,
         )
 
     @patch("json.loads")
@@ -494,7 +491,6 @@ class TestGetCurrentArchiveList(
         )
 
     @patch("orca_shared.reconciliation.shared_reconciliation.update_job")
-    @patch("get_current_archive_list.get_partition_name_from_bucket_name")
     @patch("get_current_archive_list.translate_s3_import_to_partitioned_data_sql")
     @patch("get_current_archive_list.trigger_csv_load_from_s3_sql")
     @patch("get_current_archive_list.add_metadata_to_gzip")
@@ -507,7 +503,6 @@ class TestGetCurrentArchiveList(
         mock_add_metadata_to_gzip: MagicMock,
         mock_trigger_csv_load_from_s3_sql: MagicMock,
         mock_translate_s3_import_to_partitioned_data_sql: MagicMock,
-        mock_get_partition_name_from_bucket_name: MagicMock,
         mock_update_job: MagicMock,
     ):
         """
@@ -516,7 +511,6 @@ class TestGetCurrentArchiveList(
         """
         mock_s3_access_key = Mock()
         mock_s3_secret_key = Mock()
-        mock_orca_archive_location = Mock()
         mock_report_bucket_name = Mock()
         mock_report_bucket_region = Mock()
         mock_csv_key_paths = [
@@ -538,7 +532,6 @@ class TestGetCurrentArchiveList(
         get_current_archive_list.update_job_with_s3_inventory_in_postgres(
             mock_s3_access_key,
             mock_s3_secret_key,
-            mock_orca_archive_location,
             mock_report_bucket_name,
             mock_report_bucket_region,
             mock_csv_key_paths,
@@ -564,19 +557,12 @@ class TestGetCurrentArchiveList(
         self.assertEqual(
             len(mock_csv_key_paths), mock_trigger_csv_load_from_s3_sql.call_count
         )
-        mock_translate_s3_import_to_partitioned_data_sql.assert_called_once_with(
-            mock_get_partition_name_from_bucket_name.return_value
-        )
-        mock_get_partition_name_from_bucket_name.assert_called_once_with(
-            mock_orca_archive_location
-        )
+        mock_translate_s3_import_to_partitioned_data_sql.assert_called_once_with()
         mock_update_job.assert_called_once_with(
             mock_job_id,
             OrcaStatus.STAGED,
-            unittest.mock.ANY,
             None,
             mock_engine,
-            get_current_archive_list.LOGGER,
         )
         mock_execute.assert_has_calls(
             [
@@ -659,7 +645,6 @@ class TestGetCurrentArchiveList(
             get_current_archive_list.update_job_with_s3_inventory_in_postgres(
                 mock_s3_access_key,
                 mock_s3_secret_key,
-                mock_orca_archive_location,
                 mock_report_bucket_name,
                 mock_report_bucket_region,
                 mock_csv_key_paths,
@@ -728,7 +713,6 @@ class TestGetCurrentArchiveList(
             get_current_archive_list.update_job_with_s3_inventory_in_postgres(
                 mock_s3_access_key,
                 mock_s3_secret_key,
-                mock_orca_archive_location,
                 mock_report_bucket_name,
                 mock_report_bucket_region,
                 mock_csv_key_paths,
