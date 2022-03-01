@@ -18,7 +18,7 @@ stages:
     - Python snyk
 #deploy orca and cumulus for integration test
 - Deploy Dev Integration Stack:
-    manual: false
+    manual: true
     final: false
     jobs:
     - Deploy cumulus and orca

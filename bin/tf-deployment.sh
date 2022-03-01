@@ -3,23 +3,23 @@ set -ex
 export NODE_VERSION="16.x"
 export TERRAFORM_VERSION="0.13.6"
 # Add NodeJS and Yarn repos & update package index
-curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash - 
-curl -sL https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo
+# curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash - 
+# curl -sL https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo
 yum update -y
 # CLI utilities
 yum install -y gcc git make openssl unzip wget zip
 # Python 3 & NodeJS
 yum install -y python3-devel
-yum install -y nodejs yarn
+# yum install -y nodejs yarn
 # AWS & Terraform
 yum install -y awscli
 wget "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip"
 unzip *.zip
 chmod +x terraform
 mv terraform /usr/local/bin
-# SSM SessionManager plugin
-curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_64bit/session-manager-plugin.rpm" -o "session-manager-plugin.rpm"
-yum install -y session-manager-plugin.rpm
+# # SSM SessionManager plugin
+# curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_64bit/session-manager-plugin.rpm" -o "session-manager-plugin.rpm"
+# yum install -y session-manager-plugin.rpm
 
 #clone cumulus orca template
 git clone https://git.earthdata.nasa.gov/scm/orca/cumulus-orca-deploy-template.git
