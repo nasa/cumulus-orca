@@ -14,7 +14,7 @@ stages:
     manual: false
     final: false
     jobs:
-    - Build and Test
+    # - Build and Test
     - Python snyk
 #deploy orca and cumulus for integration test
 - Deploy Dev Integration Stack:
