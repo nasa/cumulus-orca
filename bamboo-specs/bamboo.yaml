@@ -247,7 +247,7 @@ Deploy cumulus and orca:
   #     - "#!/bin/bash\n## This script creates a file as a method of letting cleanup jobs know if it was reached, this allows github failure notifications to be sent if the job failed. \nset -e \ntouch success.flag"
   #     working-dir: source/cumulus
   #     description: Set job success flag
-  final-tasks:
+  # final-tasks:
   # - script:
   #     interpreter: SHELL
   #     scripts:
