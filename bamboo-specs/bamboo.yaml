@@ -207,6 +207,7 @@ Deploy cumulus and orca:
       scripts:
       - |-
         #!/bin/bash
+        chmod +x bin/tf-deployment.sh
         bin/tf-deployment.sh
         
 
