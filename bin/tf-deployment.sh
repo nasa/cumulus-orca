@@ -31,7 +31,7 @@ git config --global user.name "$GIT_USER"
 
 
 #clone cumulus orca template
-git clone ssh://git@git.earthdata.nasa.gov:7999/orca/cumulus-orca-deploy-template.git
+git clone https://git.earthdata.nasa.gov/scm/orca/cumulus-orca-deploy-template.git
 cd cumulus-orca-deploy-template
 git checkout release/v9.7.0-v3.0.2
 git branch
@@ -40,38 +40,17 @@ echo "pass"
 
 
 
-
-
-
-
-
-
-
-
-
-
-# TF_VERSION=$(cat .tfversion)
-# # Fetch terraform binary
-# if ! curl -o terraform_${TF_VERSION}_linux_amd64.zip https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip ; then
-#   echo "ERROR: coudn't download terraform script" >&2
-#   exit 1
-# else
-#   unzip -u ./terraform_${TF_VERSION}_linux_amd64.zip
-#   chmod a+x ./terraform
-#   rm ./terraform_${TF_VERSION}_linux_amd64.zip
-# fi
-
-# DATA_PERSISTENCE_KEY="$DEPLOYMENT/data-persistence/terraform.tfstate"
-# cd data-persistence-tf
-# # Ensure remote state is configured for the deployment
-# echo "terraform {
-#   backend \"s3\" {
-#     bucket = \"$TFSTATE_BUCKET\"
-#     key    = \"$DATA_PERSISTENCE_KEY\"
-#     region = \"$AWS_REGION\"
-#     dynamodb_table = \"$TFSTATE_LOCK_TABLE\"
-#   }
-# }" >> ci_backend.tf
+DATA_PERSISTENCE_KEY="$DEPLOYMENT/data-persistence/terraform.tfstate"
+cd data-persistence-tf
+# Ensure remote state is configured for the deployment
+echo "terraform {
+  backend \"s3\" {
+    bucket = \"$TFSTATE_BUCKET\"
+    key    = \"$DATA_PERSISTENCE_KEY\"
+    region = \"$AWS_REGION\"
+    dynamodb_table = \"$TFSTATE_LOCK_TABLE\"
+  }
+}" >> ci_backend.tf
 
 # # Initialize deployment
 # ../terraform init \
