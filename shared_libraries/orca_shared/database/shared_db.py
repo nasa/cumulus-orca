@@ -19,7 +19,7 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy.future import Engine
 
 # instantiate CumulusLogger
-logger = CumulusLogger(name="Orca")
+logger = CumulusLogger(name="ORCA")
 MAX_RETRIES = 3  # number of times to retry.
 BACKOFF_FACTOR = 2  # Value of the factor used to backoff
 INITIAL_BACKOFF_IN_SECONDS = 1  # Number of seconds to sleep the first time through.

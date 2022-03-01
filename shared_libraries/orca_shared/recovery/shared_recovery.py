@@ -150,7 +150,7 @@ def update_status_for_file(
         new_data[COMPLETION_TIME_KEY] = datetime.now(timezone.utc).isoformat()
         if orca_status == OrcaStatus.FAILED:
             if error_message is None or len(error_message) == 0:
-                raise ValueError("error message is required.")
+                raise ValueError("Error message is required.")
             new_data[ERROR_MESSAGE_KEY] = error_message
 
     message = "Sending the following data to queue: {new_data}"

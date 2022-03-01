@@ -40,15 +40,93 @@ class TestSharedReconciliationLibraries(unittest.TestCase):
                     str(cm.exception),
                 )
 
+    @patch("orca_shared.reconciliation.shared_reconciliation.internal_update_job")
+    def test_update_job_happy_path(self, mock_internal_update_job: MagicMock):
+        """
+        Happy path for updating job entry with status.
+        """
+        mock_error_message = uuid.uuid4().__str__()
+        mock_job_id = Mock()
+        mock_engine = Mock()
+
+        end_time_present = [OrcaStatus.SUCCESS, OrcaStatus.ERROR]
+        for status in OrcaStatus:
+            with self.subTest(status=status):
+                shared_reconciliation.update_job(
+                    mock_job_id,
+                    status,
+                    mock_error_message if status == OrcaStatus.ERROR else None,
+                    mock_engine,
+                )
+
+            mock_internal_update_job.assert_called_once_with(
+                mock_job_id,
+                status,
+                unittest.mock.ANY,
+                unittest.mock.ANY if end_time_present.__contains__(status) else None,
+                mock_error_message if status == OrcaStatus.ERROR else None,
+                mock_engine,
+            )
+            mock_internal_update_job.reset_mock()
+
+    @patch("orca_shared.reconciliation.shared_reconciliation.internal_update_job")
+    def test_update_job_error_message_required_on_error_status(
+        self, mock_internal_update_job: MagicMock
+    ):
+        """
+        Happy path for updating job entry with status.
+        """
+        mock_job_id = Mock()
+        mock_engine = Mock()
+        with self.assertRaises(ValueError) as cm:
+            shared_reconciliation.update_job(
+                mock_job_id,
+                OrcaStatus.ERROR,
+                None,
+                mock_engine,
+            )
+        self.assertEqual(
+            "Error message is required.",
+            str(cm.exception),
+        )
+
+        mock_internal_update_job.assert_not_called()
+
+    @patch("orca_shared.reconciliation.shared_reconciliation.internal_update_job")
+    def test_update_job_error_message_only_valid_on_error_status(
+        self, mock_internal_update_job: MagicMock
+    ):
+        """
+        Error message can only be applied on error statuses. Otherwise, raise an error.
+        """
+        mock_error_message = uuid.uuid4().__str__()
+        mock_job_id = Mock()
+        mock_engine = Mock()
+
+        for status in OrcaStatus:
+            if status == OrcaStatus.ERROR:
+                continue
+            with self.subTest(status=status):
+                with self.assertRaises(ValueError) as cm:
+                    shared_reconciliation.update_job(
+                        mock_job_id,
+                        status,
+                        mock_error_message,
+                        mock_engine,
+                    )
+                self.assertEqual(
+                    "Cannot set error message outside of error status entries.",
+                    str(cm.exception),
+                )
+
+            mock_internal_update_job.assert_not_called()
+
     @patch("orca_shared.reconciliation.shared_reconciliation.update_job_sql")
-    def test_update_job_happy_path(
+    def test_internal_update_job_happy_path(
         self,
         mock_update_job_sql: MagicMock,
     ):
-        """
-        Happy path for updating job entry with failure status and error message.
-        """
-        mock_error_message = Mock()
+        mock_error_message = uuid.uuid4().__str__()
         mock_job_id = Mock()
         mock_execute = Mock()
         mock_connection = Mock()
@@ -59,45 +137,45 @@ class TestSharedReconciliationLibraries(unittest.TestCase):
         mock_enter.__exit__ = mock_exit
         mock_engine = Mock()
         mock_engine.begin = Mock(return_value=mock_enter)
+        status = OrcaStatus.SUCCESS
 
-        end_time_present = [OrcaStatus.SUCCESS, OrcaStatus.ERROR]
-        for status in OrcaStatus:
-            with self.subTest(status=status):
-                now = datetime.datetime.utcnow()
-                shared_reconciliation.update_job(
-                    mock_job_id, status, now, mock_error_message, mock_engine, Mock()
-                )
+        last_update = datetime.datetime.utcnow()
+        end_time = datetime.datetime.utcnow()
+        shared_reconciliation.internal_update_job(
+            mock_job_id,
+            status,
+            last_update,
+            end_time,
+            mock_error_message,
+            mock_engine,
+        )
 
-            mock_enter.__enter__.assert_called_once_with()
-            mock_execute.assert_called_once_with(
-                mock_update_job_sql.return_value,
-                [
-                    {
-                        "id": mock_job_id,
-                        "status_id": status.value,
-                        "last_update": now,
-                        "end_time": now
-                        if end_time_present.__contains__(status)
-                        else None,
-                        "error_message": mock_error_message,
-                    }
-                ],
-            )
-            mock_exit.assert_called_once_with(None, None, None)
-            mock_update_job_sql.assert_called_once_with()
-            mock_execute.reset_mock()
-            mock_exit.reset_mock()
-            mock_enter.reset_mock()
-            mock_update_job_sql.reset_mock()
+        mock_enter.__enter__.assert_called_once_with()
+        mock_execute.assert_called_once_with(
+            mock_update_job_sql.return_value,
+            [
+                {
+                    "id": mock_job_id,
+                    "status_id": status.value,
+                    "last_update": last_update,
+                    "end_time": end_time,
+                    "error_message": mock_error_message,
+                }
+            ],
+        )
+        mock_exit.assert_called_once_with(None, None, None)
+        mock_update_job_sql.assert_called_once_with()
 
+    @patch("orca_shared.reconciliation.shared_reconciliation.LOGGER")
     @patch("orca_shared.reconciliation.shared_reconciliation.update_job_sql")
-    def test_update_job_error_logged_and_raised(self, mock_update_job_sql: MagicMock):
+    def test_internal_update_job_error_logged_and_raised(
+        self, mock_update_job_sql: MagicMock, mock_logger: MagicMock
+    ):
         """
         Exceptions from Postgres should bubble up.
         """
         expected_exception = Exception(uuid.uuid4().__str__())
 
-        mock_error_message = Mock()
         mock_job_id = Mock()
         mock_execute = Mock(side_effect=expected_exception)
         mock_connection = Mock()
@@ -108,17 +186,18 @@ class TestSharedReconciliationLibraries(unittest.TestCase):
         mock_enter.__exit__ = mock_exit
         mock_engine = Mock()
         mock_engine.begin = Mock(return_value=mock_enter)
-        mock_logger = Mock()
-        now = datetime.datetime.utcnow()
+        last_update = datetime.datetime.utcnow()
+        end_time = datetime.datetime.utcnow()
+        error_message = Mock()
 
         with self.assertRaises(Exception) as cm:
-            shared_reconciliation.update_job(
+            shared_reconciliation.internal_update_job(
                 mock_job_id,
                 OrcaStatus.SUCCESS,
-                now,
-                mock_error_message,
+                last_update,
+                end_time,
+                error_message,
                 mock_engine,
-                mock_logger,
             )
         self.assertEqual(expected_exception, cm.exception)
 
@@ -129,9 +208,9 @@ class TestSharedReconciliationLibraries(unittest.TestCase):
                 {
                     "id": mock_job_id,
                     "status_id": shared_reconciliation.OrcaStatus.SUCCESS.value,
-                    "last_update": now,
-                    "end_time": now,
-                    "error_message": mock_error_message,
+                    "last_update": last_update,
+                    "end_time": end_time,
+                    "error_message": error_message,
                 }
             ],
         )

@@ -6,6 +6,7 @@
   * [OrcaStatus](#orca_shared.reconciliation.shared_reconciliation.OrcaStatus)
   * [get\_partition\_name\_from\_bucket\_name](#orca_shared.reconciliation.shared_reconciliation.get_partition_name_from_bucket_name)
   * [update\_job](#orca_shared.reconciliation.shared_reconciliation.update_job)
+  * [internal\_update\_job](#orca_shared.reconciliation.shared_reconciliation.internal_update_job)
 * [orca\_shared.database](#orca_shared.database)
 * [orca\_shared.database.shared\_db](#orca_shared.database.shared_db)
   * [get\_configuration](#orca_shared.database.shared_db.get_configuration)
@@ -68,8 +69,25 @@ bucket_name: The name of the Orca bucket in AWS.
 #### update\_job
 
 ```python
+def update_job(job_id: int, status: OrcaStatus, error_message: Optional[str], engine: Engine) -> None
+```
+
+Updates the status entry for a job.
+
+**Arguments**:
+
+- `job_id` - The id of the job to associate info with.
+- `status` - The status to update the job with.
+- `error_message` - The error to post to the job, if any.
+- `engine` - The sqlalchemy engine to use for contacting the database.
+
+<a id="orca_shared.reconciliation.shared_reconciliation.internal_update_job"></a>
+
+#### internal\_update\_job
+
+```python
 @shared_db.retry_operational_error()
-def update_job(job_id: int, status: OrcaStatus, last_update: datetime, error_message: Optional[str], engine: Engine, logger) -> None
+def internal_update_job(job_id: int, status: OrcaStatus, last_update: datetime, end_time: Optional[datetime], error_message: Optional[str], engine: Engine) -> None
 ```
 
 Updates the status entry for a job.
@@ -79,9 +97,9 @@ Updates the status entry for a job.
 - `job_id` - The id of the job to associate info with.
 - `status` - The status to update the job with.
 - `last_update` - Datetime returned by datetime.now(timezone.utc)
+- `end_time` - Datetime the job ended, if applicable
 - `error_message` - The error to post to the job, if any.
 - `engine` - The sqlalchemy engine to use for contacting the database.
-- `logger` - Logger.
 
 <a id="orca_shared.database"></a>
 

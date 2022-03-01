@@ -53,7 +53,6 @@ class TestPerformOrcaReconcile(
                 call(
                     mock_job_id,
                     OrcaStatus.GENERATING_REPORTS,
-                    unittest.mock.ANY,
                     None,
                     mock_get_user_connection.return_value,
                     perform_orca_reconcile.LOGGER,
@@ -61,7 +60,6 @@ class TestPerformOrcaReconcile(
                 call(
                     mock_job_id,
                     OrcaStatus.SUCCESS,
-                    unittest.mock.ANY,
                     None,
                     mock_get_user_connection.return_value,
                     perform_orca_reconcile.LOGGER,
@@ -116,7 +114,6 @@ class TestPerformOrcaReconcile(
                 call(
                     mock_job_id,
                     OrcaStatus.GENERATING_REPORTS,
-                    unittest.mock.ANY,
                     None,
                     mock_get_user_connection.return_value,
                     perform_orca_reconcile.LOGGER,
@@ -124,7 +121,6 @@ class TestPerformOrcaReconcile(
                 call(
                     mock_job_id,
                     OrcaStatus.ERROR,
-                    unittest.mock.ANY,
                     str(expected_exception),
                     mock_get_user_connection.return_value,
                     mock_logger,

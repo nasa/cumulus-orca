@@ -21,7 +21,7 @@ INPUT_JOB_ID_KEY = "jobId"
 INPUT_ORCA_ARCHIVE_LOCATION_KEY = "orcaArchiveLocation"
 OUTPUT_JOB_ID_KEY = "jobId"
 
-LOGGER = CumulusLogger()
+LOGGER = CumulusLogger(name="ORCA")
 # Generating schema validators can take time, so do it once and reuse.
 try:
     with open("schemas/input.json", "r") as raw_schema:
@@ -52,7 +52,6 @@ def task(
     orca_shared.reconciliation.shared_reconciliation.update_job(
         job_id,
         orca_shared.reconciliation.OrcaStatus.GENERATING_REPORTS,
-        datetime.now(timezone.utc),
         None,
         user_engine,
         LOGGER,
@@ -63,7 +62,6 @@ def task(
         orca_shared.reconciliation.shared_reconciliation.update_job(
             job_id,
             orca_shared.reconciliation.OrcaStatus.SUCCESS,
-            datetime.now(timezone.utc),
             None,
             user_engine,
             LOGGER,
@@ -75,7 +73,6 @@ def task(
         orca_shared.reconciliation.shared_reconciliation.update_job(
             job_id,
             orca_shared.reconciliation.OrcaStatus.ERROR,
-            datetime.now(timezone.utc),
             str(fatal_exception),
             user_engine,
             LOGGER,

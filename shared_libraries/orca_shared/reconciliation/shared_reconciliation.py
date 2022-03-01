@@ -3,6 +3,7 @@ Name: shared_reconciliation.py
 Description: Shared library that combines common functions and classes needed for
              reconciliation operations.
 """
+import logging
 from datetime import datetime, timezone
 
 # Standard libraries
@@ -15,6 +16,8 @@ from sqlalchemy.future import Engine
 from sqlalchemy.sql.elements import TextClause
 
 from orca_shared.database import shared_db
+
+LOGGER = logging.Logger("ORCA")
 
 
 class OrcaStatus(Enum):
@@ -44,14 +47,42 @@ def get_partition_name_from_bucket_name(bucket_name: str):
     return partition_name
 
 
-@shared_db.retry_operational_error()
 def update_job(
-    job_id: int,
-    status: OrcaStatus,
-    last_update: datetime,
-    error_message: Optional[str],
-    engine: Engine,
-    logger,
+        job_id: int,
+        status: OrcaStatus,
+        error_message: Optional[str],
+        engine: Engine,
+) -> None:
+    """
+    Updates the status entry for a job.
+
+    Args:
+        job_id: The id of the job to associate info with.
+        status: The status to update the job with.
+        error_message: The error to post to the job, if any.
+        engine: The sqlalchemy engine to use for contacting the database.
+    """
+    if status == OrcaStatus.ERROR:
+        if error_message is None or len(error_message) == 0:
+            raise ValueError("Error message is required.")
+    elif error_message is not None:
+        raise ValueError("Cannot set error message outside of error status entries.")
+
+    last_update = datetime.now(timezone.utc)
+    end_time = None
+    if status == OrcaStatus.ERROR or status == OrcaStatus.SUCCESS:
+        end_time = last_update
+    internal_update_job(job_id, status, last_update, end_time, error_message, engine)
+
+
+@shared_db.retry_operational_error()
+def internal_update_job(
+        job_id: int,
+        status: OrcaStatus,
+        last_update: datetime,
+        end_time: Optional[datetime],
+        error_message: Optional[str],
+        engine: Engine,
 ) -> None:
     """
     Updates the status entry for a job.
@@ -60,16 +91,13 @@ def update_job(
         job_id: The id of the job to associate info with.
         status: The status to update the job with.
         last_update: Datetime returned by datetime.now(timezone.utc)
+        end_time: Datetime the job ended, if applicable
         error_message: The error to post to the job, if any.
         engine: The sqlalchemy engine to use for contacting the database.
-        logger: Logger.
     """
     try:
-        logger.debug(f"Creating reconcile records for job {job_id}.")
+        LOGGER.debug(f"Creating reconcile records for job {job_id}.")
         with engine.begin() as connection:
-            end_time = None
-            if status == OrcaStatus.ERROR or status == OrcaStatus.SUCCESS:
-                end_time = last_update
             connection.execute(
                 update_job_sql(),
                 [
@@ -83,7 +111,7 @@ def update_job(
                 ],
             )
     except Exception as sql_ex:
-        logger.error(f"Error while updating job '{job_id}': {sql_ex}")
+        LOGGER.error(f"Error while updating job '{job_id}': {sql_ex}")
         raise
 
 
