@@ -18,7 +18,7 @@ stages:
     - Python snyk
 #deploy orca and cumulus for integration test
 - Deploy Dev Integration Stack:
-    manual: true
+    manual: false
     final: false
     jobs:
     - Deploy cumulus and orca
@@ -188,20 +188,84 @@ Python snyk:
 #job for deploying cumulus and orca
 Deploy cumulus and orca:
   key: DCO
+  other:
+    clean-working-dir: true
   tasks:
   - checkout:
-      force-clean-build: 'false'
+      force-clean-build: 'true'
       description: Checkout Default Repository
-  final-tasks:
+
+# Some plugin configurations are not supported by YAML Specs
+  docker:
+    # image: maven.earthdata.nasa.gov/cumulus:latest
+    image: amazonlinux:2
+    volumes:
+      ${bamboo.working.directory}: ${bamboo.working.directory}
+      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+    # docker-run-arguments:
+    # - --net=host
+  tasks:
   - script:
       interpreter: SHELL
       scripts:
       - |-
         #!/bin/bash
-        rm -rf ./source
-        mkdir source
-        cd source
-        echo "pass"
+        export NODE_VERSION="16.x"
+        export TERRAFORM_VERSION="0.13.6"
+        # Add NodeJS and Yarn repos & update package index
+        curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash - 
+        curl -sL https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo
+        yum update -y
+        # CLI utilities
+        yum install -y gcc git make openssl unzip wget zip
+        # Python 3 & NodeJS
+        yum install -y python3-devel
+        yum install -y nodejs yarn
+        # AWS & Terraform
+        yum install -y awscli
+        wget "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip"
+        unzip *.zip
+        chmod +x terraform
+        mv terraform /usr/local/bin
+        # SSM SessionManager plugin
+        curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_64bit/session-manager-plugin.rpm" -o "session-manager-plugin.rpm"
+        yum install -y session-manager-plugin.rpm
+
+
+
+      
+  # - checkout:
+  #     path: source/cumulus
+  #     force-clean-build: 'true'
+  #     description: Checkout Default Repository
+  # - script:
+  #     interpreter: SHELL
+  #     scripts:
+  #     - "#!/bin/bash\n## This script moves  the incoming environment artifact to the source/work directory \nset -e\ncp -f .bamboo_env_vars ./source/cumulus/.bamboo_env_vars\ncp -f .bamboo_env_vars /cumulus/"
+  #     description: Move bamboo_env_vars into project
+
+  # - script:
+  #     interpreter: SHELL
+  #     scripts:
+  #     - "#!/bin/bash\n## This script creates a file as a method of letting cleanup jobs know if it was reached, this allows github failure notifications to be sent if the job failed. \nset -e \ntouch success.flag"
+  #     working-dir: source/cumulus
+  #     description: Set job success flag
+  final-tasks:
+  # - script:
+  #     interpreter: SHELL
+  #     scripts:
+  #     - "#!/bin/bash\n## This script looks for the output from the \"Set job success flag\" script and reports failure to github if it is not present\n## This script sets a default test output so that the Junit parser task doesn't fail if there's no test output (due to test skips, etc)\nset -e\nif [[ ! -f success.flag ]]; then \n  echo \"Job failed, sending failure notice to github\"\n  ./bamboo/set-status.sh failure ${bamboo.resultsUrl} \"Deploy Dev Integration Stack Step Failed\"\nelse\n  echo '<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<testsuites disabled=\"0\" errors=\"0\" failures=\"0\" tests=\"1\" time=\"0.014\">\n <testsuite name=\"Disabled Build\" hostname=\"localhost\" time=\"0.009\" errors=\"0\" tests=\"1\" skipped=\"1\" disabled=\"0\" failures=\"0\">\n  <testcase classname=\"Disabled Test\" name=\"is disabled\" time=\"0.001\">\n   <skipped message=\"Disabled due to bamboo flags\" />\n  </testcase>\n </testsuite>\n</testsuites>' >> ../../junit-DisabledBuild.xml\nfi"
+  #     working-dir: source/cumulus
+  #     description: Report Build Failure to Github
+  # - script:
+  #     interpreter: SHELL
+  #     scripts:
+  #     - "#!/bin/bash\n\n## This script removes the \"source\" subdirectory which all jobs in this stage utilize.   This ensures that there's nothing left over from previous runs. \n## This is required as the checkout job does not interface correctly with docker in all instances. \n\nrm -Rf ../../*.xml\nrm -Rf ../cumulus"
+  #     working-dir: source/cumulus
+  #     description: Cleanup
+  # artifact-subscriptions:
+  # - artifact: cross_job_build_envs
+  # - artifact: ts_build_cache
 
 
 
