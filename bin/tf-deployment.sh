@@ -53,7 +53,7 @@ echo "terraform {
 
 
 # Initialize deployment
-../terraform init \
+terraform init \
   -input=false
 
 
