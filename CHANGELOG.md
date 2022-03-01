@@ -80,8 +80,10 @@ variable "s3_secret_key" {
   db_admin_password       = var.db_admin_password
   db_user_password        = var.db_user_password
   db_host_endpoint        = var.db_host_endpoint
-  rds_security_group_id   = var.rds_security_group_id
   dlq_subscription_email  = var.dlq_subscription_email
+  rds_security_group_id   = var.rds_security_group_id
+  s3_access_key                                        = "*********"
+  s3_secret_key                                        = "*********"
 
   ## OPTIONAL
   db_admin_username                                    = "postgres"
@@ -96,8 +98,6 @@ variable "s3_secret_key" {
   orca_recovery_retry_limit                            = 3
   orca_recovery_retry_interval                         = 1
   orca_recovery_retry_backoff                          = 2
-  s3_access_key                                        = "*********"
-  s3_secret_key                                        = "*********"
   sqs_delay_time_seconds                               = 0
   sqs_maximum_message_size                             = 262144
   staged_recovery_queue_message_retention_time_seconds = 432000
