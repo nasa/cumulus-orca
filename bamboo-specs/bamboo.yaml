@@ -197,6 +197,7 @@ Deploy cumulus and orca:
       interpreter: SHELL
       scripts:
       - |-
+        #!/bin/bash
         rm -rf ./source
         mkdir source
         cd source
