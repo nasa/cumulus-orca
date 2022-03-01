@@ -10,12 +10,12 @@ stages:
     final: false
     jobs:
     - Set Pending Github Status
-- Default Stage:
-    manual: false
-    final: false
-    jobs:
-    # - Build and Test
-    - Python snyk
+# - Default Stage:
+#     manual: false
+#     final: false
+#     jobs:
+#     # - Build and Test
+#     - Python snyk
 #deploy orca and cumulus for integration test
 - Deploy Dev Integration Stack:
     manual: true
@@ -123,67 +123,67 @@ Set Pending Github Status:
 #           ./bin/set_status.sh failure ${bamboo.resultsUrl} "Testing Step Failed"
 #         fi
 #       description: report failure to github
-Python snyk:
-  key: PS
-  other:
-    clean-working-dir: true
-  docker:
-    image: maven.earthdata.nasa.gov/node:snyk
-    volumes:
-      ${bamboo.working.directory}: ${bamboo.working.directory}
-      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
-    docker-run-arguments:
-    - --net=host
-  tasks:
-  - script:
-      interpreter: SHELL
-      scripts:
-      - chown -R 500:502 .
-      description: change owner
-  - clean:
-      description: clean up working dir
-  - checkout:
-      force-clean-build: 'false'
-      description: checkout source
-  - script:
-      interpreter: SHELL
-      scripts:
-      - |-
-        npm install snyk-to-html -g
-        cat > scan.sh <<EOF
-        snyk test --json --file=\$1 --package-manager=pip
-        EOF
-        echo $bamboo_hello
-        find . -name requirement*.txt
-        chmod +x scan.sh
-        for pom in $(find . -name requirements.txt);
-        do
-        snyk test --json --file=$pom --package-manager=pip > report.json;
-        filename=$(dirname $pom |  sed s'/\.\///')
-        snyk-to-html -i report.json -o "$filename.html";
-        done 
-        chown -R 500:502 .
+# Python snyk:
+#   key: PS
+#   other:
+#     clean-working-dir: true
+#   docker:
+#     image: maven.earthdata.nasa.gov/node:snyk
+#     volumes:
+#       ${bamboo.working.directory}: ${bamboo.working.directory}
+#       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+#     docker-run-arguments:
+#     - --net=host
+#   tasks:
+#   - script:
+#       interpreter: SHELL
+#       scripts:
+#       - chown -R 500:502 .
+#       description: change owner
+#   - clean:
+#       description: clean up working dir
+#   - checkout:
+#       force-clean-build: 'false'
+#       description: checkout source
+#   - script:
+#       interpreter: SHELL
+#       scripts:
+#       - |-
+#         npm install snyk-to-html -g
+#         cat > scan.sh <<EOF
+#         snyk test --json --file=\$1 --package-manager=pip
+#         EOF
+#         echo $bamboo_hello
+#         find . -name requirement*.txt
+#         chmod +x scan.sh
+#         for pom in $(find . -name requirements.txt);
+#         do
+#         snyk test --json --file=$pom --package-manager=pip > report.json;
+#         filename=$(dirname $pom |  sed s'/\.\///')
+#         snyk-to-html -i report.json -o "$filename.html";
+#         done 
+#         chown -R 500:502 .
 
-        #cat > scan.sh <<EOF
-        #!/bin/bash
-        #python3.7 -m venv snyk-test
-        #source snyk-test/bin/activate
-        #update-alternatives --install /tmp/snyk-test/bin/python  python /usr/local/bin/python3.7 1
-        #pip install -r pip_requirements.txt
-        #snyk test --json --package-manager=pip --file=data/mask_fill_pip_requirements.txt > pip_report.json
-        #snyk-to-html -i pip_report.json -o pip_results.html
-        #snyk test --json --file=data/mask_fill_conda_requirements.txt > conda_report.json
-        #snyk-to-html -i conda_report.json -o conda_results.html
-        #EOF
-        #chmod +x scan.sh
-        #docker run --rm -v $PWD:/tmp -w /tmp maven.earthdata.nasa.gov/snyk:py ./scan.sh
+#         #cat > scan.sh <<EOF
+#         #!/bin/bash
+#         #python3.7 -m venv snyk-test
+#         #source snyk-test/bin/activate
+#         #update-alternatives --install /tmp/snyk-test/bin/python  python /usr/local/bin/python3.7 1
+#         #pip install -r pip_requirements.txt
+#         #snyk test --json --package-manager=pip --file=data/mask_fill_pip_requirements.txt > pip_report.json
+#         #snyk-to-html -i pip_report.json -o pip_results.html
+#         #snyk test --json --file=data/mask_fill_conda_requirements.txt > conda_report.json
+#         #snyk-to-html -i conda_report.json -o conda_results.html
+#         #EOF
+#         #chmod +x scan.sh
+#         #docker run --rm -v $PWD:/tmp -w /tmp maven.earthdata.nasa.gov/snyk:py ./scan.sh
 
-      description: snyk scan
-  artifacts:
-  - name: html report
-    pattern: '**/*.html'
-    shared: false
-    required: true
+#       description: snyk scan
+#   artifacts:
+#   - name: html report
+#     pattern: '**/*.html'
+#     shared: false
+#     required: true
 
 #job for deploying cumulus and orca
 Deploy cumulus and orca:
@@ -356,7 +356,7 @@ variables:
   SECRET_GITHUB_USER: BAMSCRT@0@0@fFtitNITDsAjJqK2ZXjhnBZ96z2775QLzGR1Xz557gSl8HxxBaTD3Fbmp+HUbpfx  #encrypted
   AWS_DEFAULT_REGION: us-west-2
   TFSTATE_LOCK_TABLE: riz-bamboo-tf-locks
-  TFSTATE_BUCKET: riz-bamboo-bucket
+  TFSTATE_BUCKET: riz-bamboo-tfstate
 
 repositories:
 - orca test branch: #this is created by CICD team from https://ci.earthdata.nasa.gov/. Contact Venku Jayanti with any issues.
