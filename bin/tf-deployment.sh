@@ -36,11 +36,11 @@ cd cumulus-orca-deploy-template
 git checkout release/v9.7.0-v3.0.2
 git branch
 cd data-persistence-tf
-echo "pass"
+echo "inside data persistence tf"
 
 
 
-DATA_PERSISTENCE_KEY="$DEPLOYMENT/data-persistence/terraform.tfstate"
+DATA_PERSISTENCE_KEY="$DEPLOYMENT/data-persistence-tf/terraform.tfstate"
 # Ensure remote state is configured for the deployment
 echo "terraform {
   backend \"s3\" {
@@ -49,23 +49,15 @@ echo "terraform {
     region = \"$AWS_REGION\"
     dynamodb_table = \"$TFSTATE_LOCK_TABLE\"
   }
-}" >> ci_backend.tf
+}" >> terraform.tf
 
-# # Initialize deployment
-# ../terraform init \
-#   -input=false
 
-# if [[ $NGAP_ENV = "SIT" ]]; then
-#   BASE_VAR_FILE="sit.tfvars"
-#   CMA_LAYER_VERSION=17
-#   ROLE_BOUNDARY=NGAPShRoleBoundary
-# else
-#   BASE_VAR_FILE="sandbox.tfvars"
-#   CMA_LAYER_VERSION=20
-#   ROLE_BOUNDARY=NGAPShNonProdRoleBoundary
-# fi
+# Initialize deployment
+../terraform init \
+  -input=false
 
-# # Deploy data-persistence-tf via terraform
+
+# # Deploy data-persistence via terraform
 # echo "Deploying Cumulus data-persistence module to $DEPLOYMENT"
 # ../terraform apply \
 #   -auto-approve \
