@@ -122,8 +122,8 @@ module "orca_secretsmanager" {
   db_user_password  = var.db_user_password
   db_host_endpoint  = var.db_host_endpoint
   restore_object_role_arn = module.orca_iam.restore_object_role_arn
-  s3_access_key = ""
-  s3_secret_key = ""
+  s3_access_key = var.s3_access_key
+  s3_secret_key = var.s3_secret_key
 
   ## OPTIONAL
   db_admin_username = var.db_admin_username

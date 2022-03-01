@@ -33,8 +33,10 @@ module "orca" {
   db_admin_password         = var.db_admin_password
   db_host_endpoint          = var.db_host_endpoint
   db_user_password          = var.db_user_password
-  orca_default_bucket       = var.orca_default_bucket
   dlq_subscription_email    = var.dlq_subscription_email
+  orca_default_bucket       = var.orca_default_bucket
+  s3_access_key             = var.s3_access_key
+  s3_secret_key             = var.s3_secret_key
   
   ## OPTIONAL
   db_admin_username                                    = var.db_admin_username

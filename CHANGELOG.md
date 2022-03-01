@@ -28,8 +28,9 @@ and includes an additional section for migration notes.
 
 ### Migration Notes
 
-- The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variable. The following required variable has been added:
+- The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variables. The following required variables have been added:
   - dlq_subscription_email
+  - 
   
 - Add the following ORCA required variable definition to your `variables.tf` or `orca_variables.tf` file.
 
@@ -37,6 +38,16 @@ and includes an additional section for migration notes.
 variable "dlq_subscription_email" {
   type        = string
   description = "The email to notify users when messages are received in dead letter SQS queue due to restore failure. Sends one email until the dead letter queue is emptied."
+}
+
+variable "s3_access_key" {
+  type        = string
+  description = "Access key for communicating with Orca S3 buckets."
+}
+
+variable "s3_secret_key" {
+  type        = string
+  description = "Secret key for communicating with Orca S3 buckets."
 }
 ```
 - Update the `orca.tf` file to include all of the updated and new variables as seen below. Note the change to source and the commented out optional variables.
@@ -84,6 +95,8 @@ variable "dlq_subscription_email" {
   orca_recovery_retry_limit                            = 3
   orca_recovery_retry_interval                         = 1
   orca_recovery_retry_backoff                          = 2
+  s3_access_key                                        = "*********"
+  s3_secret_key                                        = "*********"
   sqs_delay_time_seconds                               = 0
   sqs_maximum_message_size                             = 262144
   staged_recovery_queue_message_retention_time_seconds = 432000
