@@ -30,7 +30,8 @@ and includes an additional section for migration notes.
 
 - The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variables. The following required variables have been added:
   - dlq_subscription_email
-  - 
+  - s3_access_key
+  - s3_secret_key
   
 - Add the following ORCA required variable definition to your `variables.tf` or `orca_variables.tf` file.
 
