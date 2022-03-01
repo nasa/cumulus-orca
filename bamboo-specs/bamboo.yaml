@@ -190,21 +190,18 @@ Deploy cumulus and orca:
   key: DCO
   other:
     clean-working-dir: true
-  tasks:
-  - checkout:
-      force-clean-build: 'true'
-      description: Checkout Default Repository
-
-# Some plugin configurations are not supported by YAML Specs
+    # Some plugin configurations are not supported by YAML Specs
   docker:
     # image: maven.earthdata.nasa.gov/cumulus:latest
     image: amazonlinux:2
     volumes:
       ${bamboo.working.directory}: ${bamboo.working.directory}
       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
-    # docker-run-arguments:
-    # - --net=host
   tasks:
+  - checkout:
+      force-clean-build: 'true'
+      description: Checkout Default Repository
+
   - script:
       interpreter: SHELL
       scripts:
