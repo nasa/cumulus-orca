@@ -124,19 +124,36 @@ def generate_phantom_reports_sql() -> TextClause:
     return text(
         """
         WITH 
-            phantom_files AS (
-                SELECT files.granule_id, files.name, files.key_path, files.etag, files.size_in_bytes
+            phantom_files AS 
+            (
+                SELECT 
+                    files.granule_id, files.name, files.key_path, files.etag, files.size_in_bytes
                 FROM
                     files
-                LEFT OUTER JOIN reconcile_s3_object USING (orca_archive_location, key_path)
+                LEFT OUTER JOIN reconcile_s3_object USING 
+                (
+                    orca_archive_location, key_path
+                )
                 WHERE
                     files.orca_archive_location = :orca_archive_location AND
                     reconcile_s3_object.key_path IS NULL
             ),
-            phantom_reports AS (SELECT granule_id, collection_id, name, key_path, etag, last_update, size_in_bytes, cumulus_granule_id FROM phantom_files
-            INNER JOIN granules ON (phantom_files.granule_id=granules.id))
-        INSERT INTO reconcile_phantom_report (job_id, collection_id, granule_id, filename, key_path, orca_etag, orca_last_update, orca_size)
-            SELECT :job_id, collection_id, cumulus_granule_id, name, key_path, etag, last_update, size_in_bytes
+            phantom_reports AS 
+            (
+                SELECT 
+                    granule_id, collection_id, name, key_path, etag, 
+                    last_update, size_in_bytes, cumulus_granule_id FROM phantom_files
+                INNER JOIN granules ON 
+                (
+                    phantom_files.granule_id=granules.id
+                )
+            )
+        INSERT INTO reconcile_phantom_report 
+        (
+            job_id, collection_id, granule_id, filename, key_path, orca_etag, orca_last_update, orca_size
+        )
+        SELECT 
+            :job_id, collection_id, cumulus_granule_id, name, key_path, etag, last_update, size_in_bytes
             FROM phantom_reports"""
     )
 
@@ -148,18 +165,27 @@ def generate_orphan_reports_sql() -> TextClause:
     return text(
         f"""
         WITH 
-            orphan_reports AS (
-                SELECT reconcile_s3_object.key_path, reconcile_s3_object.etag, reconcile_s3_object.last_update,
+            orphan_reports AS 
+            (
+                SELECT 
+                    reconcile_s3_object.key_path, reconcile_s3_object.etag, reconcile_s3_object.last_update,
                     reconcile_s3_object.size_in_bytes, reconcile_s3_object.storage_class
                 FROM
                     reconcile_s3_object
-                LEFT OUTER JOIN files USING (orca_archive_location, key_path)
+                LEFT OUTER JOIN files USING 
+                (
+                    orca_archive_location, key_path
+                )
                 WHERE
                     reconcile_s3_object.orca_archive_location = :orca_archive_location AND
                     files.key_path IS NULL
             )
-        INSERT INTO reconcile_orphan_report (job_id, key_path, etag, last_update, size_in_bytes, storage_class)
-            SELECT :job_id, key_path, etag, last_update, size_in_bytes, storage_class
+        INSERT INTO reconcile_orphan_report 
+        (
+            job_id, key_path, etag, last_update, size_in_bytes, storage_class
+        )
+            SELECT 
+                :job_id, key_path, etag, last_update, size_in_bytes, storage_class
             FROM orphan_reports"""
     )
 
@@ -170,8 +196,11 @@ def generate_mismatch_reports_sql() -> TextClause:
     """
     return text(
         f"""
-        INSERT INTO orca.reconcile_catalog_mismatch_report (job_id, collection_id, granule_id, filename, key_path, cumulus_archive_location, orca_etag, s3_etag,
-            orca_last_update, s3_last_update, orca_size_in_bytes, s3_size_in_bytes, discrepancy_type)
+        INSERT INTO orca.reconcile_catalog_mismatch_report 
+        (
+            job_id, collection_id, granule_id, filename, key_path, cumulus_archive_location, orca_etag, s3_etag,
+            orca_last_update, s3_last_update, orca_size_in_bytes, s3_size_in_bytes, discrepancy_type
+        )
         SELECT
             :job_id,
             granules.collection_id, 
@@ -186,18 +215,31 @@ def generate_mismatch_reports_sql() -> TextClause:
             files.size_in_bytes as orca_size_in_bytes, 
             reconcile_s3_object.size_in_bytes as s3_size_in_bytes,
             CASE 
-                WHEN (files.etag != reconcile_s3_object.etag AND files.size_in_bytes != reconcile_s3_object.size_in_bytes AND files.ingest_time !=  reconcile_s3_object.last_update) THEN 'etag, size_in_bytes, last_update'
-                WHEN (files.etag != reconcile_s3_object.etag AND files.size_in_bytes != reconcile_s3_object.size_in_bytes) THEN 'etag, size_in_bytes'
-                WHEN (files.etag != reconcile_s3_object.etag AND files.ingest_time !=  reconcile_s3_object.last_update) THEN 'etag, last_update'
-                WHEN (files.size_in_bytes != reconcile_s3_object.size_in_bytes AND files.ingest_time !=  reconcile_s3_object.last_update) THEN 'size_in_bytes, last_update'
-                WHEN files.etag != reconcile_s3_object.etag THEN 'etag'
-                WHEN files.size_in_bytes != reconcile_s3_object.size_in_bytes THEN 'size_in_bytes'
-                WHEN files.ingest_time !=  reconcile_s3_object.last_update THEN 'last_update'
+                WHEN (files.etag != reconcile_s3_object.etag AND files.size_in_bytes != reconcile_s3_object.size_in_bytes AND files.ingest_time !=  reconcile_s3_object.last_update) 
+                    THEN 'etag, size_in_bytes, last_update'
+                WHEN (files.etag != reconcile_s3_object.etag AND files.size_in_bytes != reconcile_s3_object.size_in_bytes) 
+                    THEN 'etag, size_in_bytes'
+                WHEN (files.etag != reconcile_s3_object.etag AND files.ingest_time !=  reconcile_s3_object.last_update) 
+                    THEN 'etag, last_update'
+                WHEN (files.size_in_bytes != reconcile_s3_object.size_in_bytes AND files.ingest_time !=  reconcile_s3_object.last_update) 
+                    THEN 'size_in_bytes, last_update'
+                WHEN files.etag != reconcile_s3_object.etag 
+                    THEN 'etag'
+                WHEN files.size_in_bytes != reconcile_s3_object.size_in_bytes 
+                    THEN 'size_in_bytes'
+                WHEN files.ingest_time !=  reconcile_s3_object.last_update 
+                    THEN 'last_update'
                 ELSE 'UNKNOWN'
             END AS discrepancy_type
         FROM reconcile_s3_object
-        INNER JOIN files USING (orca_archive_location, key_path)
-        INNER JOIN granules ON (files.granule_id=granules.id)
+        INNER JOIN files USING 
+        (
+            orca_archive_location, key_path
+        )
+        INNER JOIN granules ON 
+        (
+            files.granule_id=granules.id
+        )
         WHERE
             reconcile_s3_object.orca_archive_location = :orca_archive_location
             AND
