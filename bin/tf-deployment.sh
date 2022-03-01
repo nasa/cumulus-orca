@@ -52,8 +52,8 @@ DATA_PERSISTENCE_KEY="$DEPLOYMENT/data-persistence-tf/terraform.tfstate"
 # }" >> ci_backend.tf
 
 
-# export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-# export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
 
 #configure aws 
 aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
