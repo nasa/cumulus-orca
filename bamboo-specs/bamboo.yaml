@@ -357,6 +357,8 @@ variables:
   AWS_DEFAULT_REGION: us-west-2
   TFSTATE_LOCK_TABLE: riz-bamboo-tf-locks
   TFSTATE_BUCKET: riz-bamboo-tfstate
+  AWS_ACCESS_KEY_ID: test
+  AWS_SECRET_ACCESS_KEY: test
 
 repositories:
 - orca test branch: #this is created by CICD team from https://ci.earthdata.nasa.gov/. Contact Venku Jayanti with any issues.
