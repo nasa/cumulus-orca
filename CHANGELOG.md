@@ -82,8 +82,8 @@ variable "s3_secret_key" {
   db_host_endpoint        = var.db_host_endpoint
   dlq_subscription_email  = var.dlq_subscription_email
   rds_security_group_id   = var.rds_security_group_id
-  s3_access_key                                        = "*********"
-  s3_secret_key                                        = "*********"
+  s3_access_key           = var.s3_access_key
+  s3_secret_key           = var.s3_secret_key
 
   ## OPTIONAL
   db_admin_username                                    = "postgres"
