@@ -42,14 +42,14 @@ echo "inside data persistence tf"
 
 DATA_PERSISTENCE_KEY="$DEPLOYMENT/data-persistence-tf/terraform.tfstate"
 # Ensure remote state is configured for the deployment
-# echo "terraform {
-#         backend \"s3\" {
-#             bucket = \"$TFSTATE_BUCKET\"
-#             key    = \"$DATA_PERSISTENCE_KEY\"
-#             region = \"$AWS_REGION\"
-#             dynamodb_table = \"$TFSTATE_LOCK_TABLE\"
-#     }
-# }" >> terraform.tf
+echo "terraform {
+        backend \"s3\" {
+            bucket = \"$TFSTATE_BUCKET\"
+            key    = \"$DATA_PERSISTENCE_KEY\"
+            region = \"$AWS_REGION\"
+            dynamodb_table = \"$TFSTATE_LOCK_TABLE\"
+    }
+}" >> ci_backend.tf
 
 
 # Initialize deployment
