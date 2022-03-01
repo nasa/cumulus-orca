@@ -16,6 +16,21 @@ stages:
     jobs:
     - Build and Test
     - Python snyk
+#deploy orca and cumulus for integration test
+- Deploy Dev Integration Stack:
+    manual: true
+    final: false
+    jobs:
+    - Deploy cumulus and orca
+
+
+
+
+
+
+
+
+
 - Clean Up and Report:
     manual: false
     final: false
@@ -169,6 +184,28 @@ Python snyk:
     pattern: '**/*.html'
     shared: false
     required: true
+
+#job for deploying cumulus and orca
+Deploy cumulus and orca:
+  key: DCO
+  tasks:
+  - checkout:
+      force-clean-build: 'false'
+      description: Checkout Default Repository
+  final-tasks:
+  - script:
+      interpreter: SHELL
+      scripts:
+      - |-
+        rm -rf ./source
+        mkdir source
+        cd source
+        echo "pass"
+
+
+
+
+
 Report Status:
   key: RS
   tasks:
