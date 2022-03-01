@@ -41,7 +41,6 @@ echo "pass"
 
 
 DATA_PERSISTENCE_KEY="$DEPLOYMENT/data-persistence/terraform.tfstate"
-cd data-persistence-tf
 # Ensure remote state is configured for the deployment
 echo "terraform {
   backend \"s3\" {
