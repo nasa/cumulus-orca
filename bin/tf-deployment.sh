@@ -53,9 +53,9 @@ DATA_PERSISTENCE_KEY="$DEPLOYMENT/data-persistence-tf/terraform.tfstate"
 
 
 #configure aws 
-aws configure set aws_access_key_id ${bamboo.AWS_ACCESS_KEY_ID}
-aws configure set aws_secret_access_key ${bamboo.AWS_SECRET_ACCESS_KEY}
-aws configure set default.region ${bamboo.AWS_DEFAULT_REGION}
+aws configure set aws_access_key_id test
+aws configure set aws_secret_access_key test
+aws configure set default.region us-west-2
 #verify aws configure works
 aws s3 ls
 
