@@ -50,12 +50,13 @@ DATA_PERSISTENCE_KEY="$DEPLOYMENT/data-persistence-tf/terraform.tfstate"
 #             dynamodb_table = \"$TFSTATE_LOCK_TABLE\"
 #     }
 # }" >> ci_backend.tf
-export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-export AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION
+
 
 #configure aws 
-aws configure
+aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+echo "aws configure set default.region $AWS_DEFAULT_REGION"
+aws configure set default.region $AWS_DEFAULT_REGION
 #verify aws configure works
 aws s3 ls
 

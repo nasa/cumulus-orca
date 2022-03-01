@@ -357,9 +357,8 @@ variables:
   AWS_DEFAULT_REGION: us-west-2
   TFSTATE_LOCK_TABLE: riz-bamboo-tf-locks
   TFSTATE_BUCKET: riz-bamboo-tfstate
-  AWS_ACCESS_KEY_ID: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==
-  AWS_SECRET_ACCESS_KEY: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==
-
+  AWS_ACCESS_KEY_ID: BAMSCRT@0@0@kGZXFxP372YNHoX+IOMW5aJ0UqNRcVn23p3pdd1N2cE=
+  AWS_SECRET_ACCESS_KEY: BAMSCRT@0@0@L81dje5pniBmplVLwbMq7rFxJVHTSMyK1+fDzKitigInHekJyDfRHMJ3W/o+0WWn
 repositories:
 - orca test branch: #this is created by CICD team from https://ci.earthdata.nasa.gov/. Contact Venku Jayanti with any issues.
     scope: global
