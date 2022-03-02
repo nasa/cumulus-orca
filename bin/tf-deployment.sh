@@ -65,7 +65,7 @@ terraform apply \
   -var-file="terraform.tfvars" \
   -var "prefix=$bamboo_PREFIX" \
   -var "aws_region=$bamboo_AWS_DEFAULT_REGION" \
-  -var "subnet_ids=["$bamboo_AWS_SUBNET_ID1"]" \
+  -var "subnet_ids=[$bamboo_AWS_SUBNET_ID1]" \
   -var "vpc_id=$bamboo_VPC_ID" \
   -var "rds_user_access_secret_arn=$bamboo_RDS_USER_ACCESS_SECRET_ARN" \
   -var "rds_security_group=$bamboo_RDS_SECURITY_GROUP"\
