@@ -53,8 +53,7 @@ mv terraform.tf.example terraform.tf
 
 DATA_PERSISTENCE_KEY="$bamboo_PREFIX/data-persistence-tf/terraform.tfstate"
 # Ensure remote state is configured for the deployment
-echo 
-"terraform {
+echo "terraform {
         backend \"s3\" {
             bucket = \"$bamboo_TFSTATE_BUCKET\"
             key    = \"$DATA_PERSISTENCE_KEY\"
