@@ -64,7 +64,8 @@ echo "terraform {
 echo "listing the dir"
 ls
 less terraform.tf
-
+terraform fmt
+less terraform.tf
 # Initialize deployment
 terraform init \
   -input=false
