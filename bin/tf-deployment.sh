@@ -7,7 +7,7 @@ export TERRAFORM_VERSION="0.13.6"
 # curl -sL https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo
 # yum update -y
 # CLI utilities
-yum install -y gcc git make openssl unzip wget zip
+yum install -y git unzip wget zip
 # Python 3 & NodeJS
 # yum install -y python3-devel
 # yum install -y nodejs yarn
@@ -35,9 +35,6 @@ aws configure set aws_access_key_id $bamboo_AWS_ACCESS_KEY_ID
 aws configure set aws_secret_access_key $bamboo_AWS_SECRET_ACCESS_KEY
 aws configure set default.region $bamboo_AWS_DEFAULT_REGION
 
-#verify aws works
-aws s3 ls
-
 #clone cumulus orca template for deploying cumulus and orca
 git clone https://git.earthdata.nasa.gov/scm/orca/cumulus-orca-deploy-template.git
 cd cumulus-orca-deploy-template
@@ -64,7 +61,8 @@ echo "terraform {
             dynamodb_table = \"$bamboo_TFSTATE_LOCK_TABLE\"
     }
 }" >> terraform.tf
-
+ecjo "listing the dir"
+ls
 
 
 # Initialize deployment
@@ -78,7 +76,6 @@ terraform apply \
   -input=false \
   -var-file="terraform.tfvars" \
   -var-file="terraform.tf" \
-#   -var-file="../deployments/data-persistence/$DEPLOYMENT.tfvars" \
   -var "aws_region=$bamboo_AWS_DEFAULT_REGION" \
   -var "subnet_ids=["$bamboo_AWS_SUBNET"]" \
   -var "vpc_id=$bamboo_VPC_ID" \
