@@ -44,86 +44,61 @@ cd cumulus-orca-deploy-template
 git checkout $bamboo_ORCA_RELEASE_BRANCH
 echo "checked out to $bamboo_ORCA_RELEASE_BRANCH branch"
 
-# Steps for deploying RDS cluster
-cd rds-cluster-tf
-
-# Initialize deployment
-terraform init \
-  -input=false
-
-# Deploy rds-cluster via terraform
-# echo "Deploying RDS cluster module to $DEPLOYMENT"
-# ../terraform apply \
-#   -auto-approve \
-#   -input=false \
-#   -var-file="../deployments/data-persistence/$BASE_VAR_FILE" \
-#   -var-file="../deployments/data-persistence/$DEPLOYMENT.tfvars" \
-#   -var "aws_region=$AWS_DEFAULT_REGION" \
-#   -var "subnet_ids=[\"$AWS_SUBNET\"]" \
-#   -var "vpc_id=$VPC_ID" \
-#   -var "rds_admin_access_secret_arn=$RDS_ADMIN_ACCESS_SECRET_ARN" \
-#   -var "rds_security_group=$RDS_SECURITY_GROUP"\
-#   -var "permissions_boundary_arn=arn:aws:iam::$AWS_ACCOUNT_ID:policy/$ROLE_BOUNDARY"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #deploy data persistence tf module
 
-# cd data-persistence-tf
-# echo "inside data persistence tf"
+cd data-persistence-tf
+echo "inside data persistence tf"
+mv terraform.tfvars.example terraform.tfvars
+mv terraform.tf.example terraform.tf
 
 
 
-# DATA_PERSISTENCE_KEY="$DEPLOYMENT/data-persistence-tf/terraform.tfstate"
-# # Ensure remote state is configured for the deployment
-# echo "terraform {
-#         backend \"s3\" {
-#             bucket = \"$TFSTATE_BUCKET\"
-#             key    = \"$DATA_PERSISTENCE_KEY\"
-#             region = \"$AWS_REGION\"
-#             dynamodb_table = \"$TFSTATE_LOCK_TABLE\"
-#     }
-# }" >> ci_backend.tf
+DATA_PERSISTENCE_KEY="$DEPLOYMENT/data-persistence-tf/terraform.tfstate"
+# Ensure remote state is configured for the deployment
+echo "terraform {
+        backend "s3" {
+            bucket = "$bamboo_TFSTATE_BUCKET"
+            key    = "$bamboo_DATA_PERSISTENCE_KEY"
+            region = "$bamboo_AWS_DEFAULT_REGION"
+            dynamodb_table = "$bamboo_TFSTATE_LOCK_TABLE"
+    }
+}" >> terraform.tf
 
 
-# Initialize deployment
-# terraform init \
-#   -input=false
+Initialize deployment
+terraform init \
+  -input=false
 
 # Deploy data-persistence via terraform
-# echo "Deploying Cumulus data-persistence module to $DEPLOYMENT"
-# ../terraform apply \
-#   -auto-approve \
-#   -input=false \
-#   -var-file="../deployments/data-persistence/$BASE_VAR_FILE" \
+echo "Deploying Cumulus data-persistence module to $bamboo_DEPLOYMENT"
+terraform apply \
+  -auto-approve \
+  -input=false \
+  -var-file="terraform.tfvars" \
+  -var-file="terraform.tf" \
 #   -var-file="../deployments/data-persistence/$DEPLOYMENT.tfvars" \
-#   -var "aws_region=$AWS_DEFAULT_REGION" \
-#   -var "subnet_ids=[\"$AWS_SUBNET\"]" \
-#   -var "vpc_id=$VPC_ID" \
-#   -var "rds_admin_access_secret_arn=$RDS_ADMIN_ACCESS_SECRET_ARN" \
-#   -var "rds_security_group=$RDS_SECURITY_GROUP"\
-#   -var "permissions_boundary_arn=arn:aws:iam::$AWS_ACCOUNT_ID:policy/$ROLE_BOUNDARY"
+  -var "aws_region=$bamboo_AWS_DEFAULT_REGION" \
+  -var "subnet_ids=["$bamboo_AWS_SUBNET"]" \
+  -var "vpc_id=$bamboo_VPC_ID" \
+  -var "rds_admin_access_secret_arn=$bamboo_RDS_ADMIN_ACCESS_SECRET_ARN" \
+  -var "rds_security_group=$bamboo_RDS_SECURITY_GROUP"\
+  -var "permissions_boundary_arn=arn:aws:iam::$bamboo_AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Steps for deploying cumulus
 # cd ../cumulus-tf
 # # Ensure remote state is configured for the deployment
 # echo "terraform {
