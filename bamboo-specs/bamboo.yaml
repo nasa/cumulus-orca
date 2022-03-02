@@ -348,6 +348,7 @@ Release ORCA Code:
         bin/build_release_package.sh
       description: Create Release Files and Release in GitHub
 variables:
+  DEPLOYMENT: sandbox
   ORCA_VERSION: 0.0.1
   RELEASE_FLAG: 'false'
   REPORT_BUILD_STATUS: 'true'
@@ -359,6 +360,14 @@ variables:
   TFSTATE_BUCKET: riz-bamboo-tfstate
   AWS_ACCESS_KEY_ID: BAMSCRT@0@0@kGZXFxP372YNHoX+IOMW5aJ0UqNRcVn23p3pdd1N2cE=
   AWS_SECRET_ACCESS_KEY: BAMSCRT@0@0@L81dje5pniBmplVLwbMq7rFxJVHTSMyK1+fDzKitigInHekJyDfRHMJ3W/o+0WWn
+  RDS_SECURITY_GROUP: BAMSCRT@0@0@N+vreoRrbgQpFlOVOAuXiensQ1aZgJkTmgJx6Tozl9w=
+  RDS_ADMIN_ACCESS_SECRET_ARN: BAMSCRT@0@0@oyGx+9yliRZRK603kejPFjG05yRMm4k1OWkLOz8GGN2+VhBV4FbYWz2jXlx+a35L0JHB7jahUDFmvZBp49YZ8PiqetddMHTQwbeNT0ckuUNLjFYrjAfhEaDz2Ei+/zpynFGRBLb8x6kMPDXcHnTsxQ==
+  AWS_SUBNET: BAMSCRT@0@0@TPXqRjoKzmQobNLAsXgFK75msjBb04SwEWK9P7LdboM=
+  VPC_ID: BAMSCRT@0@0@eL5nPySMPJNSdEauw0vw8JPPwLNX/xQvqMIgjUZjRLs=
+  AWS_ACCOUNT_ID: BAMSCRT@0@0@hw27f4bhw3Vigoylo/fmeQ==
+  ROLE_BOUNDARY: NGAPShRoleBoundary
+  ORCA_RELEASE_BRANCH: release/v9.7.0-v3.0.2
+  
 repositories:
 - orca test branch: #this is created by CICD team from https://ci.earthdata.nasa.gov/. Contact Venku Jayanti with any issues.
     scope: global
