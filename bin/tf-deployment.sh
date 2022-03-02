@@ -66,6 +66,7 @@ echo "terraform {
 }" >> terraform.tf
 
 
+
 # Initialize deployment
 terraform init \
   -input=false
