@@ -78,7 +78,7 @@ terraform apply \
   -var "aws_region=$bamboo_AWS_DEFAULT_REGION" \
   -var "subnet_ids=["$bamboo_AWS_SUBNET"]" \
   -var "vpc_id=$bamboo_VPC_ID" \
-  -var "rds_admin_access_secret_arn=$bamboo_RDS_ADMIN_ACCESS_SECRET_ARN" \
+  -var "rds_user_access_secret_arn=$bamboo_RDS_USER_ACCESS_SECRET_ARN" \
   -var "rds_security_group=$bamboo_RDS_SECURITY_GROUP"\
   -var "permissions_boundary_arn=arn:aws:iam::$bamboo_AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
 
