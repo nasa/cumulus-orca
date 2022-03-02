@@ -17,7 +17,7 @@ from orca_shared.database import shared_db
 from orca_shared.reconciliation import (
     OrcaStatus,
     get_partition_name_from_bucket_name,
-    update_job
+    update_job,
 )
 from sqlalchemy import text
 from sqlalchemy.future import Engine
@@ -423,7 +423,7 @@ def translate_s3_import_to_partitioned_data_sql() -> TextClause:
             SELECT :job_id, orca_archive_location, key_path, etag, last_update, size_in_bytes, storage_class, delete_flag
             FROM s3_import
             WHERE is_latest = TRUE
-        """
+        """  # nosec
     )
 
 
