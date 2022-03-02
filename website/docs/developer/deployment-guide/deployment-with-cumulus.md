@@ -485,9 +485,11 @@ file. The variables must be set with proper values for your environment in the
 | `db_admin_password`    | Password for RDS database administrator authentication  | "My_Sup3rS3cr3t_admin_Passw0rd"                             |
 | `db_host_endpoint`     | Database host endpoint to connect to.                   | "aws.postgresrds.host"                                      |
 | `db_user_password`     | Password for RDS database user authentication           | "My_Sup3rS3cr3tuserPassw0rd"                                |
+| `dlq_subscription_email`| The email to notify users when messages are received in dead letter SQS queue | "test@email.com"                     |
 | `orca_default_bucket`  | Default ORCA S3 Glacier bucket to use.                  | "PREFIX-orca-primary"                                       |
 | `rds_security_group_id`| Cumulus' RDS Security Group's ID.                       | "sg-01234567890123456"                                      |
-| `dlq_subscription_email`| The email to notify users when messages are received in dead letter SQS queue | "test@email.com"                     |
+| `s3_access_key`        | Access key for communicating with Orca S3 buckets.      |                                                             |
+| `s3_secret_key`        | Secret key for communicating with Orca S3 buckets.      |                                                             |
 
 ### Optional Variables
 

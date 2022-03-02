@@ -190,6 +190,18 @@ variable "orca_recovery_retry_backoff" {
 }
 
 
+variable "s3_access_key" {
+  type        = string
+  description = "Access key for communicating with Orca S3 buckets."
+}
+
+
+variable "s3_secret_key" {
+  type        = string
+  description = "Secret key for communicating with Orca S3 buckets."
+}
+
+
 variable "sqs_delay_time_seconds" {
   type        = number
   description = "The time in seconds that the delivery of all messages in the queue will be delayed."

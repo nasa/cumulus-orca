@@ -66,19 +66,6 @@ let return_code=$?
 
 check_rc $return_code "ERROR: pip install encountered an error."
 
-## Run code smell and security tests using bandit
-echo "INFO: Running code smell security tests ..."
-bandit -r internal_reconcile_report_phantom.py test
-let return_code=$?
-check_rc $return_code "ERROR: Potential security or code issues found."
-
-
-## Check code third party libraries for CVE issues
-echo "INFO: Running checks on third party libraries ..."
-safety check -r requirements.txt -r requirements-dev.txt
-let return_code=$?
-check_rc $return_code "ERROR: Potential security issues third party libraries."
-
 
 ## Check code formatting and styling
 echo "INFO: Checking formatting and style of code ..."
@@ -100,6 +87,20 @@ isort \
 
 echo "INFO: Formatting with black ..."
 black internal_reconcile_report_phantom.py test
+
+
+## Run code smell and security tests using bandit
+echo "INFO: Running code smell security tests ..."
+bandit -r internal_reconcile_report_phantom.py test
+let return_code=$?
+check_rc $return_code "ERROR: Potential security or code issues found."
+
+
+## Check code third party libraries for CVE issues
+echo "INFO: Running checks on third party libraries ..."
+safety check -r requirements.txt -r requirements-dev.txt
+let return_code=$?
+check_rc $return_code "ERROR: Potential security issues third party libraries."
 
 
 ## Run unit tests and check Coverage

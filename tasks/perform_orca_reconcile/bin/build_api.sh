@@ -67,7 +67,7 @@ let return_code=$?
 check_rc $return_code "ERROR: pip install encountered an error."
 
 ## Run the documentation command
-pydoc-markdown -I . -p perform_orca_reconcile --render-toc > API.md
+pydoc-markdown -I . -m perform_orca_reconcile --render-toc > API.md
 let return_code=$?
 
 check_rc $return_code "ERROR: Failed to create API.md file."

@@ -20,6 +20,7 @@ and includes an additional section for migration notes.
 - *ORCA-161* Added dead letter queue and cloudwatch alarm terraform code to recovery SQS queue.
 - *ORCA-307* Added lambda get_current_archive_list to pull S3 Inventory reports into Postgres. 
     Adds `orca_reconciliation_lambda_memory_size` and `orca_reconciliation_lambda_timeout` to Terraform variables.
+- *ORCA-308* Added lambda perform_orca_reconcile to find differences between S3 Inventory reports and Orca catalog.
 
 ### Changed
 - *ORCA-299* `db_deploy` task has been updated to deploy ORCA internal reconciliation tables and objects.
@@ -27,8 +28,10 @@ and includes an additional section for migration notes.
 
 ### Migration Notes
 
-- The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variable. The following required variable has been added:
+- The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variables. The following required variables have been added:
   - dlq_subscription_email
+  - s3_access_key
+  - s3_secret_key
   
 - Add the following ORCA required variable definition to your `variables.tf` or `orca_variables.tf` file.
 
@@ -36,6 +39,16 @@ and includes an additional section for migration notes.
 variable "dlq_subscription_email" {
   type        = string
   description = "The email to notify users when messages are received in dead letter SQS queue due to restore failure. Sends one email until the dead letter queue is emptied."
+}
+
+variable "s3_access_key" {
+  type        = string
+  description = "Access key for communicating with Orca S3 buckets."
+}
+
+variable "s3_secret_key" {
+  type        = string
+  description = "Secret key for communicating with Orca S3 buckets."
 }
 ```
 - Update the `orca.tf` file to include all of the updated and new variables as seen below. Note the change to source and the commented out optional variables.
@@ -67,8 +80,10 @@ variable "dlq_subscription_email" {
   db_admin_password       = var.db_admin_password
   db_user_password        = var.db_user_password
   db_host_endpoint        = var.db_host_endpoint
-  rds_security_group_id   = var.rds_security_group_id
   dlq_subscription_email  = var.dlq_subscription_email
+  rds_security_group_id   = var.rds_security_group_id
+  s3_access_key           = var.s3_access_key
+  s3_secret_key           = var.s3_secret_key
 
   ## OPTIONAL
   db_admin_username                                    = "postgres"

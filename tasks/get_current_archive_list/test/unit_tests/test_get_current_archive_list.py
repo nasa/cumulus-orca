@@ -10,7 +10,7 @@ import os
 import random
 import unittest
 import uuid
-from unittest.mock import Mock, patch, MagicMock, call
+from unittest.mock import MagicMock, Mock, call, patch
 
 from orca_shared.reconciliation import OrcaStatus
 
@@ -101,7 +101,6 @@ class TestGetCurrentArchiveList(
         mock_update_job_with_s3_inventory_in_postgres.assert_called_once_with(
             mock_s3_access_key,
             mock_s3_secret_key,
-            mock_orca_archive_location,
             mock_report_bucket_name,
             mock_report_bucket_aws_region,
             manifest_file_keys,
@@ -111,7 +110,11 @@ class TestGetCurrentArchiveList(
         )
 
         self.assertEqual(
-            {get_current_archive_list.OUTPUT_JOB_ID_KEY: mock_job_id}, result
+            {
+                get_current_archive_list.OUTPUT_JOB_ID_KEY: mock_job_id,
+                get_current_archive_list.OUTPUT_ORCA_ARCHIVE_LOCATION_KEY: mock_orca_archive_location,
+            },
+            result,
         )
 
     @patch("get_current_archive_list.LOGGER")
@@ -176,7 +179,7 @@ class TestGetCurrentArchiveList(
         mock_update_job_with_s3_inventory_in_postgres.assert_not_called()
 
     @patch("get_current_archive_list.LOGGER")
-    @patch("get_current_archive_list.update_job_with_failure")
+    @patch("get_current_archive_list.update_job")
     @patch("get_current_archive_list.update_job_with_s3_inventory_in_postgres")
     @patch("get_current_archive_list.truncate_s3_partition")
     @patch("get_current_archive_list.get_manifest")
@@ -191,7 +194,7 @@ class TestGetCurrentArchiveList(
         mock_get_manifest: MagicMock,
         mock_truncate_s3_partition: MagicMock,
         mock_update_job_with_s3_inventory_in_postgres: MagicMock,
-        mock_update_job_with_failure: MagicMock,
+        mock_update_job: MagicMock,
         mock_logger: MagicMock,
     ):
         """
@@ -263,8 +266,11 @@ class TestGetCurrentArchiveList(
         mock_logger.error.assert_called_once_with(
             f"Encountered a fatal error: {expected_exception}"
         )
-        mock_update_job_with_failure.assert_called_once_with(
-            mock_job_id, str(expected_exception), mock_get_user_connection.return_value
+        mock_update_job.assert_called_once_with(
+            mock_job_id,
+            OrcaStatus.ERROR,
+            str(expected_exception),
+            mock_get_user_connection.return_value,
         )
 
     @patch("json.loads")
@@ -331,7 +337,7 @@ class TestGetCurrentArchiveList(
                 {
                     "orca_archive_location": mock_orca_archive_location,
                     "inventory_creation_time": mock_inventory_creation_time,
-                    "status_id": OrcaStatus.STAGED.value,
+                    "status_id": OrcaStatus.GETTING_S3_LIST.value,
                     "start_time": unittest.mock.ANY,
                     "last_update": unittest.mock.ANY,
                     "end_time": None,
@@ -381,7 +387,7 @@ class TestGetCurrentArchiveList(
                 {
                     "orca_archive_location": mock_orca_archive_location,
                     "inventory_creation_time": mock_inventory_creation_time,
-                    "status_id": OrcaStatus.STAGED.value,
+                    "status_id": OrcaStatus.GETTING_S3_LIST.value,
                     "start_time": unittest.mock.ANY,
                     "last_update": unittest.mock.ANY,
                     "end_time": None,
@@ -395,95 +401,6 @@ class TestGetCurrentArchiveList(
         mock_create_job_sql.assert_called_once_with()
         mock_logger.error.assert_called_once_with(
             f"Error while creating job: {expected_exception}"
-        )
-
-    @patch("get_current_archive_list.update_job_sql")
-    def test_update_job_with_failure_happy_path(
-        self,
-        mock_update_job_sql: MagicMock,
-    ):
-        """
-        Happy path for updating job entry with failure status and error message.
-        """
-        mock_error_message = Mock()
-        mock_job_id = Mock()
-        mock_execute = Mock()
-        mock_connection = Mock()
-        mock_connection.execute = mock_execute
-        mock_exit = Mock(return_value=False)
-        mock_enter = Mock()
-        mock_enter.__enter__ = Mock(return_value=mock_connection)
-        mock_enter.__exit__ = mock_exit
-        mock_engine = Mock()
-        mock_engine.begin = Mock(return_value=mock_enter)
-
-        get_current_archive_list.update_job_with_failure(
-            mock_job_id, mock_error_message, mock_engine
-        )
-
-        mock_enter.__enter__.assert_called_once_with()
-        mock_execute.assert_called_once_with(
-            mock_update_job_sql.return_value,
-            [
-                {
-                    "id": mock_job_id,
-                    "status_id": OrcaStatus.ERROR.value,
-                    "last_update": unittest.mock.ANY,
-                    "end_time": unittest.mock.ANY,
-                    "error_message": mock_error_message,
-                }
-            ],
-        )
-        mock_exit.assert_called_once_with(None, None, None)
-        mock_update_job_sql.assert_called_once_with()
-
-    @patch("get_current_archive_list.LOGGER")
-    @patch("get_current_archive_list.update_job_sql")
-    def test_update_job_with_failure_error_logged_and_raised(
-        self, mock_update_job_sql: MagicMock, mock_logger: MagicMock
-    ):
-        """
-        Exceptions from Postgres should bubble up.
-        """
-        expected_exception = Exception(uuid.uuid4().__str__())
-
-        mock_error_message = Mock()
-        mock_job_id = Mock()
-        mock_execute = Mock(side_effect=expected_exception)
-        mock_connection = Mock()
-        mock_connection.execute = mock_execute
-        mock_exit = Mock(return_value=False)
-        mock_enter = Mock()
-        mock_enter.__enter__ = Mock(return_value=mock_connection)
-        mock_enter.__exit__ = mock_exit
-        mock_engine = Mock()
-        mock_engine.begin = Mock(return_value=mock_enter)
-
-        with self.assertRaises(Exception) as cm:
-            get_current_archive_list.update_job_with_failure(
-                mock_job_id, mock_error_message, mock_engine
-            )
-        self.assertEqual(expected_exception, cm.exception)
-
-        mock_enter.__enter__.assert_called_once_with()
-        mock_execute.assert_called_once_with(
-            mock_update_job_sql.return_value,
-            [
-                {
-                    "id": mock_job_id,
-                    "status_id": OrcaStatus.ERROR.value,
-                    "last_update": unittest.mock.ANY,
-                    "end_time": unittest.mock.ANY,
-                    "error_message": mock_error_message,
-                }
-            ],
-        )
-        mock_exit.assert_called_once_with(
-            Exception, expected_exception, unittest.mock.ANY
-        )
-        mock_update_job_sql.assert_called_once_with()
-        mock_logger.error.assert_called_once_with(
-            f"Error while updating job '{mock_job_id}': {expected_exception}"
         )
 
     @patch("get_current_archive_list.get_partition_name_from_bucket_name")
@@ -573,8 +490,7 @@ class TestGetCurrentArchiveList(
             f"Error while truncating bucket '{mock_orca_archive_location}': {expected_exception}"
         )
 
-    @patch("get_current_archive_list.update_job_sql")
-    @patch("get_current_archive_list.get_partition_name_from_bucket_name")
+    @patch("orca_shared.reconciliation.shared_reconciliation.update_job")
     @patch("get_current_archive_list.translate_s3_import_to_partitioned_data_sql")
     @patch("get_current_archive_list.trigger_csv_load_from_s3_sql")
     @patch("get_current_archive_list.add_metadata_to_gzip")
@@ -587,8 +503,7 @@ class TestGetCurrentArchiveList(
         mock_add_metadata_to_gzip: MagicMock,
         mock_trigger_csv_load_from_s3_sql: MagicMock,
         mock_translate_s3_import_to_partitioned_data_sql: MagicMock,
-        mock_get_partition_name_from_bucket_name: MagicMock,
-        mock_update_job_sql: MagicMock,
+        mock_update_job: MagicMock,
     ):
         """
         Happy path for pulling s3 inventory csv into postgres.
@@ -596,7 +511,6 @@ class TestGetCurrentArchiveList(
         """
         mock_s3_access_key = Mock()
         mock_s3_secret_key = Mock()
-        mock_orca_archive_location = Mock()
         mock_report_bucket_name = Mock()
         mock_report_bucket_region = Mock()
         mock_csv_key_paths = [
@@ -618,7 +532,6 @@ class TestGetCurrentArchiveList(
         get_current_archive_list.update_job_with_s3_inventory_in_postgres(
             mock_s3_access_key,
             mock_s3_secret_key,
-            mock_orca_archive_location,
             mock_report_bucket_name,
             mock_report_bucket_region,
             mock_csv_key_paths,
@@ -644,13 +557,13 @@ class TestGetCurrentArchiveList(
         self.assertEqual(
             len(mock_csv_key_paths), mock_trigger_csv_load_from_s3_sql.call_count
         )
-        mock_translate_s3_import_to_partitioned_data_sql.assert_called_once_with(
-            mock_get_partition_name_from_bucket_name.return_value
+        mock_translate_s3_import_to_partitioned_data_sql.assert_called_once_with()
+        mock_update_job.assert_called_once_with(
+            mock_job_id,
+            OrcaStatus.STAGED,
+            None,
+            mock_engine,
         )
-        mock_get_partition_name_from_bucket_name.assert_called_once_with(
-            mock_orca_archive_location
-        )
-        mock_update_job_sql.assert_called_once_with()
         mock_execute.assert_has_calls(
             [
                 call(mock_create_temporary_table_sql.return_value, [{}]),
@@ -678,26 +591,14 @@ class TestGetCurrentArchiveList(
                 call(
                     mock_translate_s3_import_to_partitioned_data_sql.return_value,
                     [{"job_id": mock_job_id}],
-                ),
-                call(
-                    mock_update_job_sql.return_value,
-                    [
-                        {
-                            "id": mock_job_id,
-                            "status_id": OrcaStatus.STAGED.value,
-                            "last_update": unittest.mock.ANY,
-                            "end_time": None,
-                            "error_message": None,
-                        }
-                    ],
-                ),
+                )
             ]
         )
-        self.assertEqual(len(mock_csv_key_paths) + 3, mock_execute.call_count)
+        self.assertEqual(len(mock_csv_key_paths) + 2, mock_execute.call_count)
         mock_exit.assert_called_once_with(None, None, None)
 
     @patch("get_current_archive_list.LOGGER")
-    @patch("get_current_archive_list.update_job_sql")
+    @patch("orca_shared.reconciliation.shared_reconciliation.update_job")
     @patch("get_current_archive_list.get_partition_name_from_bucket_name")
     @patch("get_current_archive_list.translate_s3_import_to_partitioned_data_sql")
     @patch("get_current_archive_list.trigger_csv_load_from_s3_sql")
@@ -712,7 +613,7 @@ class TestGetCurrentArchiveList(
         mock_trigger_csv_load_from_s3_sql: MagicMock,
         mock_translate_s3_import_to_partitioned_data_sql: MagicMock,
         mock_get_partition_name_from_bucket_name: MagicMock,
-        mock_update_job_sql: MagicMock,
+        mock_update_job: MagicMock,
         mock_logger: MagicMock,
     ):
         """
@@ -744,7 +645,6 @@ class TestGetCurrentArchiveList(
             get_current_archive_list.update_job_with_s3_inventory_in_postgres(
                 mock_s3_access_key,
                 mock_s3_secret_key,
-                mock_orca_archive_location,
                 mock_report_bucket_name,
                 mock_report_bucket_region,
                 mock_csv_key_paths,
@@ -769,7 +669,7 @@ class TestGetCurrentArchiveList(
         )
 
     @patch("get_current_archive_list.LOGGER")
-    @patch("get_current_archive_list.update_job_sql")
+    @patch("orca_shared.reconciliation.shared_reconciliation.update_job")
     @patch("get_current_archive_list.get_partition_name_from_bucket_name")
     @patch("get_current_archive_list.translate_s3_import_to_partitioned_data_sql")
     @patch("get_current_archive_list.trigger_csv_load_from_s3_sql")
@@ -784,7 +684,7 @@ class TestGetCurrentArchiveList(
         mock_trigger_csv_load_from_s3_sql: MagicMock,
         mock_translate_s3_import_to_partitioned_data_sql: MagicMock,
         mock_get_partition_name_from_bucket_name: MagicMock,
-        mock_update_job_sql: MagicMock,
+        mock_update_job: MagicMock,
         mock_logger: MagicMock,
     ):
         """
@@ -813,7 +713,6 @@ class TestGetCurrentArchiveList(
             get_current_archive_list.update_job_with_s3_inventory_in_postgres(
                 mock_s3_access_key,
                 mock_s3_secret_key,
-                mock_orca_archive_location,
                 mock_report_bucket_name,
                 mock_report_bucket_region,
                 mock_csv_key_paths,
@@ -998,7 +897,10 @@ class TestGetCurrentArchiveList(
         Happy path for handler assembling information to call Task.
         """
         expected_result = {
-            get_current_archive_list.OUTPUT_JOB_ID_KEY: random.randint(0, 1000)
+            get_current_archive_list.OUTPUT_JOB_ID_KEY: random.randint(  # nosec
+                0, 1000
+            ),
+            get_current_archive_list.OUTPUT_ORCA_ARCHIVE_LOCATION_KEY: uuid.uuid4().__str__(),  # nosec
         }
         mock_task.return_value = copy.deepcopy(expected_result)
 
@@ -1049,7 +951,10 @@ class TestGetCurrentArchiveList(
         Code does not currently support handling multiple events from s3.
         """
         expected_result = {
-            get_current_archive_list.OUTPUT_JOB_ID_KEY: random.randint(0, 1000)
+            get_current_archive_list.OUTPUT_JOB_ID_KEY: random.randint(  # nosec
+                0, 1000
+            ),
+            get_current_archive_list.OUTPUT_ORCA_ARCHIVE_LOCATION_KEY: uuid.uuid4().__str__(),  # nosec
         }
         mock_task.return_value = copy.deepcopy(expected_result)
 
@@ -1096,7 +1001,10 @@ class TestGetCurrentArchiveList(
         Violating input.json schema should raise an error.
         """
         expected_result = {
-            get_current_archive_list.OUTPUT_JOB_ID_KEY: random.randint(0, 1000)
+            get_current_archive_list.OUTPUT_JOB_ID_KEY: random.randint(  # nosec
+                0, 1000
+            ),
+            get_current_archive_list.OUTPUT_ORCA_ARCHIVE_LOCATION_KEY: uuid.uuid4().__str__(),  # nosec
         }
         mock_task.return_value = copy.deepcopy(expected_result)
 
@@ -1176,6 +1084,7 @@ class TestGetCurrentArchiveList(
             record, s3_access_key, s3_secret_key, mock_get_configuration.return_value
         )
         self.assertEqual(
-            f"data must contain ['{get_current_archive_list.OUTPUT_JOB_ID_KEY}'] properties",
+            f"data must contain ['{get_current_archive_list.OUTPUT_JOB_ID_KEY}', "
+            f"'{get_current_archive_list.OUTPUT_ORCA_ARCHIVE_LOCATION_KEY}'] properties",
             str(cm.exception),
         )

@@ -6,16 +6,18 @@ Description: Receives a list of s3 events from an SQS queue, and loads the s3 in
 import json
 import os.path
 from datetime import datetime, timezone
-from typing import Any, List, Dict
+from typing import Any, Dict, List
 
 # noinspection SpellCheckingInspection,PyPackageRequirements
 import boto3
 import fastjsonschema as fastjsonschema
+import orca_shared.reconciliation.shared_reconciliation
 from cumulus_logger import CumulusLogger
 from orca_shared.database import shared_db
-from orca_shared.reconciliation.shared_reconciliation import (
+from orca_shared.reconciliation import (
     OrcaStatus,
     get_partition_name_from_bucket_name,
+    update_job,
 )
 from sqlalchemy import text
 from sqlalchemy.future import Engine
@@ -23,7 +25,7 @@ from sqlalchemy.sql.elements import TextClause
 
 SECRETSMANAGER_S3_ACCESS_CREDENTIALS_KEY = "s3-access-credentials"
 S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY = "s3_access_key"
-S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY = "s3_secret_key"
+S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY = "s3_secret_key"  # nosec
 
 EVENT_RECORDS_KEY = "Records"
 RECORD_AWS_REGION_KEY = "awsRegion"
@@ -40,8 +42,9 @@ MANIFEST_FILES_KEY = "files"
 FILES_KEY_KEY = "key"
 
 OUTPUT_JOB_ID_KEY = "jobId"
+OUTPUT_ORCA_ARCHIVE_LOCATION_KEY = "orcaArchiveLocation"
 
-LOGGER = CumulusLogger()
+LOGGER = CumulusLogger(name="ORCA")
 # Generating schema validators can take time, so do it once and reuse.
 try:
     with open("schemas/input.json", "r") as raw_schema:
@@ -106,7 +109,6 @@ def task(
         update_job_with_s3_inventory_in_postgres(
             s3_access_key,
             s3_secret_key,
-            manifest[MANIFEST_SOURCE_BUCKET_KEY],
             record[RECORD_S3_KEY][S3_BUCKET_KEY][BUCKET_NAME_KEY],
             record[RECORD_AWS_REGION_KEY],
             # There will probably only be one file, but AWS leaves the option open.
@@ -119,10 +121,18 @@ def task(
         # On error, set job status to failure.
         LOGGER.error(f"Encountered a fatal error: {fatal_exception}")
         # noinspection PyArgumentList
-        update_job_with_failure(job_id, str(fatal_exception), user_engine)
+        update_job(
+            job_id,
+            OrcaStatus.ERROR,
+            str(fatal_exception),
+            user_engine,
+        )
         raise
 
-    return {OUTPUT_JOB_ID_KEY: job_id}
+    return {
+        OUTPUT_JOB_ID_KEY: job_id,
+        OUTPUT_ORCA_ARCHIVE_LOCATION_KEY: manifest[MANIFEST_SOURCE_BUCKET_KEY],
+    }
 
 
 def get_manifest(
@@ -163,14 +173,14 @@ def create_job(
         LOGGER.debug(f"Creating status for job.")
         with engine.begin() as connection:
             # Within this transaction import the csv and update the job status
-            now = datetime.now(timezone.utc).isoformat()
+            now = datetime.now(timezone.utc)
             rows = connection.execute(
                 create_job_sql(),
                 [
                     {
                         "orca_archive_location": orca_archive_location,
                         "inventory_creation_time": inventory_creation_time,
-                        "status_id": OrcaStatus.STAGED.value,
+                        "status_id": OrcaStatus.GETTING_S3_LIST.value,
                         "start_time": now,
                         "last_update": now,
                         "end_time": None,
@@ -196,53 +206,6 @@ def create_job_sql() -> TextClause:
             :error_message)
         RETURNING
             id"""
-    )
-
-
-@shared_db.retry_operational_error()
-def update_job_with_failure(job_id: int, error_message: str, engine: Engine) -> None:
-    """
-    Updates the status entry for a job.
-
-    Args:
-        job_id: The id of the job to associate info with.
-        error_message: The error to post to the job.
-        engine: The sqlalchemy engine to use for contacting the database.
-
-    """
-    try:
-        LOGGER.debug(f"Creating reconcile records for job {job_id}.")
-        with engine.begin() as connection:
-            now = datetime.now(timezone.utc).isoformat()
-            connection.execute(
-                update_job_sql(),
-                [
-                    {
-                        "id": job_id,
-                        "status_id": OrcaStatus.ERROR.value,
-                        "last_update": now,
-                        "end_time": now,
-                        "error_message": error_message,
-                    }
-                ],
-            )
-    except Exception as sql_ex:
-        LOGGER.error(f"Error while updating job '{job_id}': {sql_ex}")
-        raise
-
-
-def update_job_sql() -> TextClause:
-    return text(
-        """
-        UPDATE
-            orca.reconcile_job
-        SET
-            status_id = :status_id,
-            last_update = :last_update,
-            end_time = :end_time,
-            error_message = :error_message
-        WHERE
-            id = :id"""
     )
 
 
@@ -283,7 +246,6 @@ def truncate_s3_partition_sql(partition_name: str) -> TextClause:
 def update_job_with_s3_inventory_in_postgres(
     s3_access_key: str,
     s3_secret_key: str,
-    orca_archive_location: str,
     report_bucket_name: str,
     report_bucket_region: str,
     csv_key_paths: List[str],
@@ -298,7 +260,6 @@ def update_job_with_s3_inventory_in_postgres(
     Args:
         s3_access_key: The access key that, when paired with s3_secret_key, allows postgres to access s3.
         s3_secret_key: The secret key that, when paired with s3_access_key, allows postgres to access s3.
-        orca_archive_location: The name of the bucket to generate the reports for.
         report_bucket_name: The name of the bucket the csv is located in.
         report_bucket_region: The name of the region the report bucket resides in.
         csv_key_paths: The paths of the csvs within the report bucket.
@@ -339,9 +300,7 @@ def update_job_with_s3_inventory_in_postgres(
             # Now that all csvs are loaded, pull them into main db from temporary table
             LOGGER.debug(f"Translating data to Orca format for job {job_id}.")
             connection.execute(
-                translate_s3_import_to_partitioned_data_sql(
-                    get_partition_name_from_bucket_name(orca_archive_location)
-                ),
+                translate_s3_import_to_partitioned_data_sql(),
                 [
                     {
                         "job_id": job_id,
@@ -350,17 +309,11 @@ def update_job_with_s3_inventory_in_postgres(
             )
             # Update job status
             LOGGER.debug(f"Posting successful status for job {job_id}.")
-            connection.execute(
-                update_job_sql(),
-                [
-                    {
-                        "id": job_id,
-                        "status_id": OrcaStatus.STAGED.value,
-                        "last_update": datetime.now(timezone.utc).isoformat(),
-                        "end_time": None,
-                        "error_message": None,
-                    }
-                ],
+            orca_shared.reconciliation.shared_reconciliation.update_job(
+                job_id,
+                OrcaStatus.STAGED,
+                None,
+                engine,
             )
     except Exception as sql_ex:
         LOGGER.error(f"Error while processing job '{job_id}': {sql_ex}")
@@ -460,17 +413,17 @@ def trigger_csv_load_from_s3_sql() -> TextClause:
     )
 
 
-def translate_s3_import_to_partitioned_data_sql(report_table_name: str) -> TextClause:
+def translate_s3_import_to_partitioned_data_sql() -> TextClause:
     """
     SQL for translating between the temporary table and Orca table.
     """
     return text(
         f"""
-        INSERT INTO orca.{report_table_name} (job_id, orca_archive_location, key_path, etag, last_update, size_in_bytes, storage_class, delete_flag)
+        INSERT INTO orca.reconcile_s3_object (job_id, orca_archive_location, key_path, etag, last_update, size_in_bytes, storage_class, delete_flag)
             SELECT :job_id, orca_archive_location, key_path, etag, last_update, size_in_bytes, storage_class, delete_flag
             FROM s3_import
             WHERE is_latest = TRUE
-        """
+        """  # nosec
     )
 
 
