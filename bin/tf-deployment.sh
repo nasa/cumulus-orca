@@ -51,7 +51,7 @@ mv terraform.tf.example terraform.tf
 
 
 
-DATA_PERSISTENCE_KEY="$DEPLOYMENT/data-persistence-tf/terraform.tfstate"
+DATA_PERSISTENCE_KEY="$bamboo_PREFIX/data-persistence-tf/terraform.tfstate"
 # Ensure remote state is configured for the deployment
 echo "terraform {
         backend \"s3\" {
@@ -60,7 +60,7 @@ echo "terraform {
             region = \"$bamboo_AWS_DEFAULT_REGION\"
             dynamodb_table = \"$bamboo_TFSTATE_LOCK_TABLE\"
     }
-}" >> terraform.tf
+}" > terraform.tf
 echo "listing the dir"
 ls
 less terraform.tf
