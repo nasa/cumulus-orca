@@ -59,14 +59,14 @@ DATA_PERSISTENCE_KEY="$DEPLOYMENT/data-persistence-tf/terraform.tfstate"
 echo "terraform {
         backend \"s3\" {
             bucket = \"$bamboo_TFSTATE_BUCKET\"
-            key    = \"$bamboo_DATA_PERSISTENCE_KEY\"
+            key    = \"$DATA_PERSISTENCE_KEY\"
             region = \"$bamboo_AWS_DEFAULT_REGION\"
             dynamodb_table = \"$bamboo_TFSTATE_LOCK_TABLE\"
     }
 }" >> terraform.tf
 
 
-Initialize deployment
+# Initialize deployment
 terraform init \
   -input=false
 
