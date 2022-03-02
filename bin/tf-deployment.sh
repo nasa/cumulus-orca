@@ -60,6 +60,7 @@ terraform validate
 echo "Deploying Cumulus data-persistence module to $bamboo_DEPLOYMENT"
 terraform apply \
   -auto-approve \
+  -lock=false \
   -input=false \
   -var-file="terraform.tfvars" \
   -var "prefix=$bamboo_PREFIX" \
