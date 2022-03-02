@@ -55,10 +55,9 @@ DATA_PERSISTENCE_KEY="$DEPLOYMENT/data-persistence-tf/terraform.tfstate"
 #configure aws 
 aws configure set aws_access_key_id \$AWS_ACCESS_KEY_ID\
 aws configure set aws_secret_access_key \$AWS_SECRET_ACCESS_KEY\
-echo "aws configure set default.region \$AWS_DEFAULT_REGION\
 aws configure set default.region \$AWS_DEFAULT_REGION\
 #verify aws configure works
-aws s3 ls
+echo aws s3 ls
 
 # Initialize deployment
 terraform init \
