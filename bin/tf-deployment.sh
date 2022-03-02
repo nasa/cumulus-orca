@@ -63,7 +63,7 @@ echo "terraform {
 }" >> terraform.tf
 echo "listing the dir"
 ls
-
+less terraform.tf
 
 # Initialize deployment
 terraform init \
