@@ -53,9 +53,9 @@ DATA_PERSISTENCE_KEY="$DEPLOYMENT/data-persistence-tf/terraform.tfstate"
 
 
 #configure aws 
-aws configure set aws_access_key_id \$AWS_ACCESS_KEY_ID\
-aws configure set aws_secret_access_key \$AWS_SECRET_ACCESS_KEY\
-aws configure set default.region \$AWS_DEFAULT_REGION\
+aws configure set aws_access_key_id $bamboo_AWS_ACCESS_KEY_ID
+aws configure set aws_secret_access_key $bamboo_AWS_SECRET_ACCESS_KEY
+aws configure set default.region $bamboo_AWS_DEFAULT_REGION
 #verify aws configure works
 aws s3 ls
 aws configservice describe-delivery-channels
