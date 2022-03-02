@@ -1,26 +1,15 @@
 #!/bin/bash
 set -ex
-export NODE_VERSION="16.x"
 export TERRAFORM_VERSION="0.13.6"
-# Add NodeJS and Yarn repos & update package index
-# curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash - 
-# curl -sL https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo
-# yum update -y
 # CLI utilities
 yum install -y git unzip wget zip
-# Python 3 & NodeJS
-# yum install -y python3-devel
-# yum install -y nodejs yarn
+
 # AWS & Terraform
 yum install -y awscli
 wget "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip"
 unzip *.zip
 chmod +x terraform
 mv terraform /usr/local/bin
-# # SSM SessionManager plugin
-# curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_64bit/session-manager-plugin.rpm" -o "session-manager-plugin.rpm"
-# yum install -y session-manager-plugin.rpm
-
 
 export GIT_USER=$bamboo_SECRET_GITHUB_USER
 export GIT_PASS=$bamboo_SECRET_GITHUB_TOKEN
@@ -49,8 +38,6 @@ echo "inside data persistence tf"
 mv terraform.tfvars.example terraform.tfvars
 mv terraform.tf.example terraform.tf
 
-
-
 DATA_PERSISTENCE_KEY="$bamboo_PREFIX/data-persistence-tf/terraform.tfstate"
 # Ensure remote state is configured for the deployment
 echo "terraform {
@@ -63,11 +50,11 @@ echo "terraform {
 }" > terraform.tf
 
 terraform fmt
-less terraform.tf
 # Initialize deployment
 terraform init \
   -input=false
 
+#validate the terraform files
 terraform validate
 # Deploy data-persistence via terraform
 echo "Deploying Cumulus data-persistence module to $bamboo_DEPLOYMENT"
