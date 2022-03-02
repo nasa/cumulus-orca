@@ -61,15 +61,14 @@ echo "terraform {
             dynamodb_table = \"$bamboo_TFSTATE_LOCK_TABLE\"
     }
 }" > terraform.tf
-echo "listing the dir"
-ls
-less terraform.tf
+
 terraform fmt
 less terraform.tf
 # Initialize deployment
 terraform init \
   -input=false
 
+terraform validate
 # Deploy data-persistence via terraform
 echo "Deploying Cumulus data-persistence module to $bamboo_DEPLOYMENT"
 terraform apply \
