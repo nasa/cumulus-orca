@@ -61,7 +61,7 @@ echo "terraform {
             dynamodb_table = \"$bamboo_TFSTATE_LOCK_TABLE\"
     }
 }" >> terraform.tf
-ecjo "listing the dir"
+echo "listing the dir"
 ls
 
 
