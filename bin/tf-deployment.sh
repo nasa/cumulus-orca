@@ -56,14 +56,15 @@ DATA_PERSISTENCE_KEY="$DEPLOYMENT/data-persistence-tf/terraform.tfstate"
 aws configure set aws_access_key_id $bamboo_AWS_ACCESS_KEY_ID
 aws configure set aws_secret_access_key $bamboo_AWS_SECRET_ACCESS_KEY
 aws configure set default.region $bamboo_AWS_DEFAULT_REGION
-#verify aws configure works
+
+#verify aws works
 aws s3 ls
-aws configservice describe-delivery-channels
 
 # Initialize deployment
 terraform init \
   -input=false
 
+echo $BASE_VAR_FILE
 
 # Deploy data-persistence via terraform
 echo "Deploying Cumulus data-persistence module to $DEPLOYMENT"
@@ -72,7 +73,7 @@ echo "Deploying Cumulus data-persistence module to $DEPLOYMENT"
   -input=false \
   -var-file="../deployments/data-persistence/$BASE_VAR_FILE" \
   -var-file="../deployments/data-persistence/$DEPLOYMENT.tfvars" \
-  -var "aws_region=$AWS_REGION" \
+  -var "aws_region=$AWS_DEFAULT_REGION" \
   -var "subnet_ids=[\"$AWS_SUBNET\"]" \
   -var "vpc_id=$VPC_ID" \
   -var "rds_admin_access_secret_arn=$RDS_ADMIN_ACCESS_SECRET_ARN" \
