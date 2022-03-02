@@ -36,7 +36,6 @@ echo "checked out to $bamboo_ORCA_RELEASE_BRANCH branch"
 cd data-persistence-tf
 echo "inside data persistence tf"
 mv terraform.tfvars.example terraform.tfvars
-mv terraform.tf.example terraform.tf
 
 DATA_PERSISTENCE_KEY="$bamboo_PREFIX/data-persistence-tf/terraform.tfstate"
 # Ensure remote state is configured for the deployment
@@ -65,7 +64,7 @@ terraform apply \
   -var-file="terraform.tfvars" \
   -var "prefix=$bamboo_PREFIX" \
   -var "aws_region=$bamboo_AWS_DEFAULT_REGION" \
-  -var "subnet_ids=["$bamboo_AWS_SUBNET_ID1"]" \
+  -var "subnet_ids=[\"$bamboo_AWS_SUBNET_ID1\"]" \
   -var "vpc_id=$bamboo_VPC_ID" \
   -var "rds_user_access_secret_arn=$bamboo_RDS_USER_ACCESS_SECRET_ARN" \
   -var "rds_security_group=$bamboo_RDS_SECURITY_GROUP"\
