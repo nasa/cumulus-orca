@@ -391,6 +391,7 @@ variables:
   AWS_ACCOUNT_ID: BAMSCRT@0@0@hw27f4bhw3Vigoylo/fmeQ==
   ROLE_BOUNDARY: NGAPShRoleBoundary
   ORCA_RELEASE_BRANCH: release/v10.0.0-v4.0.1
+  ORCA_TEST_BRANCH: develop
   PREFIX: rizbi-bamboo-new
   DB_ADMIN_USERNAME: postgres
   DB_ADMIN_PASSWORD: BAMSCRT@0@0@AuBwYN809zPGzk1MH5DRPQ==

@@ -5,19 +5,11 @@ export TERRAFORM_VERSION="0.13.6"
 yum install -y git unzip wget zip
 
 # AWS & Terraform
-yum install -y awscli
+yum install -y python3-devel awscli
 wget "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip"
 unzip *.zip
 chmod +x terraform
 mv terraform /usr/local/bin
-
-# export GIT_USER=$bamboo_SECRET_GITHUB_USER
-# export GIT_PASS=$bamboo_SECRET_GITHUB_TOKEN
-
-# # We need to set some git config here so deploy doesn't complain when the commit occurs.
-# git config --global user.email "$bamboo_SECRET_GITHUB_EMAIL"
-# git config --global user.name "$GIT_USER"
-
 
 #configure aws 
 aws configure set aws_access_key_id $bamboo_AWS_ACCESS_KEY_ID
@@ -75,7 +67,7 @@ cd ..
 cd ..
 git clone https://github.com/nasa/cumulus-orca.git
 cd cumulus-orca
-git checkout develop
+git checkout $bamboo_ORCA_TEST_BRANCH
 ./bin/build_tasks.sh
 cd ..
 cd cumulus-orca-deploy-template/cumulus-tf
