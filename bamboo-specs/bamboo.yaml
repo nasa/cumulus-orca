@@ -16,20 +16,21 @@ stages:
 #     jobs:
 #     # - Build and Test
 #     - Python snyk
+
+
+#deploy RDS cluster for integration test
+- Deploy Dev RDS Stack:
+    manual: true
+    final: false
+    jobs:
+    - Deploy RDS cluster
+
 #deploy orca and cumulus for integration test
 - Deploy Dev Integration Stack:
     manual: true
     final: false
     jobs:
     - Deploy cumulus and orca
-
-
-
-
-
-
-
-
 
 - Clean Up and Report:
     manual: false
@@ -184,6 +185,29 @@ Set Pending Github Status:
 #     pattern: '**/*.html'
 #     shared: false
 #     required: true
+#job for deploying cumulus and orca
+Deploy RDS cluster:
+  key: DRC
+  other:
+    clean-working-dir: true
+    # Some plugin configurations are not supported by YAML Specs
+  docker:
+    image: amazonlinux:2
+    volumes:
+      ${bamboo.working.directory}: ${bamboo.working.directory}
+      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+  tasks:
+  - checkout:
+      force-clean-build: 'true'
+      description: Checkout Default Repository
+
+  - script:
+      interpreter: SHELL
+      scripts:
+      - |-
+        #!/bin/bash
+        chmod +x bin/tf-deployment-rds.sh
+        bin/tf-deployment-rds.sh
 
 #job for deploying cumulus and orca
 Deploy cumulus and orca:
@@ -192,7 +216,6 @@ Deploy cumulus and orca:
     clean-working-dir: true
     # Some plugin configurations are not supported by YAML Specs
   docker:
-    # image: maven.earthdata.nasa.gov/cumulus:latest
     image: amazonlinux:2
     volumes:
       ${bamboo.working.directory}: ${bamboo.working.directory}
@@ -356,8 +379,8 @@ variables:
   SECRET_GITHUB_TOKEN: BAMSCRT@0@0@nPxyXQXMyE6zm3B1oI8Goma78s0H1fJD4vHy6+dpBQJpjDI2ekbcvCAOI8AyjYiILPhqi2w4fT0fx9MFVXxz2JPTp5uPNzG3GM/8XSUgvYo= #encrypted
   SECRET_GITHUB_USER: BAMSCRT@0@0@fFtitNITDsAjJqK2ZXjhnBZ96z2775QLzGR1Xz557gSl8HxxBaTD3Fbmp+HUbpfx  #encrypted
   AWS_DEFAULT_REGION: us-west-2
-  TFSTATE_LOCK_TABLE: rizbi-bamboo-tf-locks
-  TFSTATE_BUCKET: rizbi-bamboo-tfstate
+  TFSTATE_LOCK_TABLE: rizbi-bamboo-new-tf-locks
+  TFSTATE_BUCKET: rizbi-bamboo-new-tfstate
   AWS_ACCESS_KEY_ID: BAMSCRT@0@0@kGZXFxP372YNHoX+IOMW5aJ0UqNRcVn23p3pdd1N2cE=
   AWS_SECRET_ACCESS_KEY: BAMSCRT@0@0@L81dje5pniBmplVLwbMq7rFxJVHTSMyK1+fDzKitigInHekJyDfRHMJ3W/o+0WWn
   RDS_SECURITY_GROUP: sg-0e7ab4264ee7a4efb
@@ -368,9 +391,10 @@ variables:
   AWS_ACCOUNT_ID: BAMSCRT@0@0@hw27f4bhw3Vigoylo/fmeQ==
   ROLE_BOUNDARY: NGAPShRoleBoundary
   ORCA_RELEASE_BRANCH: release/v9.7.0-v3.0.2
-  PREFIX: rizbi-bamboo
+  PREFIX: rizbi-bamboo-new
   DB_ADMIN_USERNAME: BAMSCRT@0@0@XicosPniFZKnymbeX34D6A==
   DB_ADMIN_PASSWORD: BAMSCRT@0@0@AuBwYN809zPGzk1MH5DRPQ==
+  RDS_CLUSTER_ID: rizbi-bamboo-new-cumulus-rds-serverless-default-cluster
   
 repositories:
 - orca test branch: #this is created by CICD team from https://ci.earthdata.nasa.gov/. Contact Venku Jayanti with any issues.
