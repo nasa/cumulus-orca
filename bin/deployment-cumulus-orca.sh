@@ -71,8 +71,14 @@ terraform apply \
   -var "permissions_boundary_arn=arn:aws:iam::$bamboo_AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
 
 # script for deploying cumulus-tf module
-
-cd ../cumulus-tf
+cd ..
+cd ..
+git clone https://github.com/nasa/cumulus-orca.git
+cd cumulus-orca
+git checkout develop
+bin/build_tasks.sh
+cd ..
+cd cumulus-orca-deploy-template/cumulus-tf
 echo "inside cumulus-tf module"
 mv terraform.tfvars.example terraform.tfvars
 
@@ -102,7 +108,6 @@ terraform apply \
   -input=false \
   -var-file="terraform.tfvars" \
   -var "cumulus_message_adapter_version=$bamboo_CMA_LAYER_VERSION" \
-  -var "cumulus_message_adapter_lambda_layer_version_arn=arn:aws:lambda:$bamboo_AWS_DEFAULT_REGION:$bamboo_AWS_ACCOUNT_ID:layer:Cumulus_Message_Adapter:$bamboo_CMA_LAYER_VERSION" \
   -var "cmr_username=$bamboo_CMR_USERNAME" \
   -var "cmr_password=$bamboo_CMR_PASSWORD" \
   -var "cmr_client_id=cumulus-core-$bamboo_DEPLOYMENT" \
@@ -121,6 +126,7 @@ terraform apply \
   -var "prefix=$bamboo_PREFIX" \
   -var "permissions_boundary_arn=arn:aws:iam::$bamboo_AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
   -var "db_user_password=$bamboo_PREFIX" \
-  -var "orca_default_bucket= rizbi-bamboo-new-orca-primary" \ #replace this
+  -var "orca_default_bucket=rizbi-bamboo-new-orca-primary" \ #replace this
   -var "db_admin_password=$bamboo_DB_ADMIN_PASSWORD" \
   -var "db_host_endpoint=$bamboo_RDS_ENDPOINT"
+  -var "rds_security_group_id=$bamboo_RDS_SECURITY_GROUP"
