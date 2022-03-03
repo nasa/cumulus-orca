@@ -395,6 +395,11 @@ variables:
   DB_ADMIN_USERNAME: postgres
   DB_ADMIN_PASSWORD: BAMSCRT@0@0@AuBwYN809zPGzk1MH5DRPQ==
   RDS_CLUSTER_ID: rizbi-bamboo-new-cumulus-rds-serverless-default-cluster
+  CMA_LAYER_VERSION: 1.3.0
+  CMR_PASSWORD: BAMSCRT@0@0@OUkgyKDboRA/V/4Qhgpz/A==
+  CMR_USERNAME: username
+  EARTHDATA_CLIENT_ID: WclQnSRCE7MrSS9MtXifNA
+  EARTHDATA_CLIENT_PASSWORD: BAMSCRT@0@0@0kgw7HCINxNxv1DrtMHK6A==
 
 repositories:
 - orca test branch: #this is created by CICD team from https://ci.earthdata.nasa.gov/. Contact Venku Jayanti with any issues.

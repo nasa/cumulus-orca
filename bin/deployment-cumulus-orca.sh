@@ -11,12 +11,12 @@ unzip *.zip
 chmod +x terraform
 mv terraform /usr/local/bin
 
-export GIT_USER=$bamboo_SECRET_GITHUB_USER
-export GIT_PASS=$bamboo_SECRET_GITHUB_TOKEN
+# export GIT_USER=$bamboo_SECRET_GITHUB_USER
+# export GIT_PASS=$bamboo_SECRET_GITHUB_TOKEN
 
-# We need to set some git config here so deploy doesn't complain when the commit occurs.
-git config --global user.email "$bamboo_SECRET_GITHUB_EMAIL"
-git config --global user.name "$GIT_USER"
+# # We need to set some git config here so deploy doesn't complain when the commit occurs.
+# git config --global user.email "$bamboo_SECRET_GITHUB_EMAIL"
+# git config --global user.name "$GIT_USER"
 
 
 #configure aws 
@@ -70,4 +70,56 @@ terraform apply \
   -var "rds_security_group=$bamboo_RDS_SECURITY_GROUP"\
   -var "permissions_boundary_arn=arn:aws:iam::$bamboo_AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
 
-  #todo add scripts for cumulus-tf module
+#todo add scripts for cumulus-tf module
+
+cd ../cumulus-tf
+echo "inside cumulus-tf module"
+mv terraform.tfvars.example terraform.tfvars
+
+CUMULUS_KEY="$bamboo_PREFIX/cumulus/terraform.tfstate"
+# Ensure remote state is configured for the deployment
+echo "terraform {
+        backend \"s3\" {
+            bucket = \"$bamboo_TFSTATE_BUCKET\"
+            key    = \"$CUMULUS_KEY\"
+            region = \"$bamboo_AWS_DEFAULT_REGION\"
+            dynamodb_table = \"$bamboo_TFSTATE_LOCK_TABLE\"
+    }
+}" > terraform.tf
+
+terraform fmt
+# Initialize deployment
+terraform init \
+  -input=false
+
+#validate the terraform files
+terraform validate
+# Deploy data-persistence via terraform
+echo "Deploying Cumulus data-persistence module to $bamboo_DEPLOYMENT"
+terraform apply \
+  -auto-approve \
+  -lock=false \
+  -input=false \
+  -var-file="terraform.tfvars" \
+  -var "cumulus_message_adapter_lambda_layer_version_arn=arn:aws:lambda:$bamboo_AWS_DEFAULT_REGION:$bamboo_AWS_ACCOUNT_ID:layer:Cumulus_Message_Adapter:$bamboo_CMA_LAYER_VERSION" \
+  -var "cmr_username=$bamboo_CMR_USERNAME" \
+  -var "cmr_password=$bamboo_CMR_PASSWORD" \
+  -var "cmr_client_id=cumulus-core-$bamboo_DEPLOYMENT" \
+  -var "cmr_provider=CUMULUS" \
+  -var "cmr_environment=UAT" \
+  -var "data_persistence_remote_state_config={ region: \"$bamboo_AWS_DEFAULT_REGION\", bucket: \"$TFSTATE_BUCKET\", key: \"$DATA_PERSISTENCE_KEY\" }" \
+  -var "region=$bamboo_AWS_DEFAULT_REGION" \
+  -var "vpc_id=$bamboo_VPC_ID" \
+  -var "lambda_subnet_ids=[\"$bamboo_AWS_SUBNET_ID1\", \"$bamboo_AWS_SUBNET_ID2\"]" \
+  -var "urs_client_id=$bamboo_EARTHDATA_CLIENT_ID" \
+  -var "urs_client_password=$bamboo_EARTHDATA_CLIENT_PASSWORD" \
+  -var "urs_url=https://uat.urs.earthdata.nasa.gov" \
+  -var "api_users=[\"bhazuka\", \"andrew.dorn\", \"rizbi.hassan\", \"scott.saxon\"]" \
+  -var "cmr_oauth_provider=$bamboo_CMR_OAUTH_PROVIDER" \
+  -var "key_name=$bamboo_PREFIX" \
+  -var "prefix=$bamboo_PREFIX" \
+  -var "permissions_boundary_arn=arn:aws:iam::$bamboo_AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
+  -var "db_user_password=$bamboo_PREFIX" \
+  -var "orca_default_bucket= rizbi-bamboo-new-orca-primary" \ #replace this
+  -var "db_admin_password=$bamboo_DB_ADMIN_PASSWORD" \
+  -var "db_host_endpoint=$bamboo_RDS_ENDPOINT"
