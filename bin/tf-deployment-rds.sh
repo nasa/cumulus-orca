@@ -63,5 +63,5 @@ terraform apply \
   -var "cluster_identifier=$bamboo_RDS_CLUSTER_ID" \
   -var "deletion_protection=false"\
   -var "provision_user_database=false"\
-  -var "engine_version=10.12"\
+  -var "engine_version=10.serverless_14"\
   -var "permissions_boundary_arn=arn:aws:iam::$bamboo_AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
