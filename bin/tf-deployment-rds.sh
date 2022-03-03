@@ -11,14 +11,6 @@ unzip *.zip
 chmod +x terraform
 mv terraform /usr/local/bin
 
-export GIT_USER=$bamboo_SECRET_GITHUB_USER
-export GIT_PASS=$bamboo_SECRET_GITHUB_TOKEN
-
-# We need to set some git config here so deploy doesn't complain when the commit occurs.
-git config --global user.email "$bamboo_SECRET_GITHUB_EMAIL"
-git config --global user.name "$GIT_USER"
-
-
 #configure aws 
 aws configure set aws_access_key_id $bamboo_AWS_ACCESS_KEY_ID
 aws configure set aws_secret_access_key $bamboo_AWS_SECRET_ACCESS_KEY
