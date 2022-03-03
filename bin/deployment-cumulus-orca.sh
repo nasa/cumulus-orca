@@ -63,19 +63,26 @@ terraform apply \
   -var "permissions_boundary_arn=arn:aws:iam::$bamboo_AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
 
 # script for deploying cumulus-tf module
-cd ..
-cd ..
+# clone cumulus-orca repo and run build_tasks.sh to create the lambda zip files first
+cd ../..
 git clone https://github.com/nasa/cumulus-orca.git
 cd cumulus-orca
 git checkout $bamboo_ORCA_TEST_BRANCH
 ./bin/build_tasks.sh
-cd ..
-cd cumulus-orca-deploy-template/cumulus-tf
+cd ../cumulus-orca-deploy-template/cumulus-tf
 echo "inside cumulus-tf module"
 mv terraform.tfvars.example terraform.tfvars
 
 CUMULUS_KEY="$bamboo_PREFIX/cumulus/terraform.tfstate"
 # Ensure remote state is configured for the deployment
+echo "db_host_endpoint = \"$bamboo_RDS_ENDPOINT\"
+      orca_default_bucket    = \"rizbi-bamboo-new-orca-primary\"
+      rds_security_group_id = \"$bamboo_RDS_SECURITY_GROUP\"
+      db_user_password = \"$bamboo_DB_USER_PASSWORD\"
+      db_admin_password = \"$bamboo_DB_ADMIN_PASSWORD\"
+ " > var.tfvars
+terraform fmt
+
 echo "terraform {
         backend \"s3\" {
             bucket = \"$bamboo_TFSTATE_BUCKET\"
@@ -92,13 +99,14 @@ terraform init \
 
 #validate the terraform files
 terraform validate
-# Deploy data-persistence via terraform
-echo "Deploying Cumulus data-persistence module to $bamboo_DEPLOYMENT"
+# Deploy cumulus-tf via terraform
+echo "Deploying Cumulus tf module to $bamboo_DEPLOYMENT"
 terraform apply \
   -auto-approve \
   -lock=false \
   -input=false \
   -var-file="terraform.tfvars" \
+  -var-file="var.tfvars" \
   -var "cumulus_message_adapter_version=$bamboo_CMA_LAYER_VERSION" \
   -var "cmr_username=$bamboo_CMR_USERNAME" \
   -var "cmr_password=$bamboo_CMR_PASSWORD" \

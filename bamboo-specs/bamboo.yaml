@@ -395,6 +395,7 @@ variables:
   PREFIX: rizbi-bamboo-new
   DB_ADMIN_USERNAME: postgres
   DB_ADMIN_PASSWORD: BAMSCRT@0@0@AuBwYN809zPGzk1MH5DRPQ==
+  DB_USER_PASSWORD: BAMSCRT@0@0@AuBwYN809zPGzk1MH5DRPQ==
   RDS_CLUSTER_ID: rizbi-bamboo-new-cumulus-rds-serverless-default-cluster
   CMA_LAYER_VERSION: 1.3.0
   CMR_PASSWORD: BAMSCRT@0@0@OUkgyKDboRA/V/4Qhgpz/A==
