@@ -21,7 +21,7 @@ fi
 
 ## Call each task's testing suite
 ## TODO: Add more logging output and possibly make asynchronus
-for TASK in $(ls -d tasks/* | egrep -v "package|perform_orca_reconcile|internal_reconcile_report_phantom") #todo update once the lambdas are created
+for TASK in $(ls -d tasks/* | egrep -v "package|internal_reconcile_report_phantom") #todo update once the lambdas are created
 do
   echo
   echo "Running tests in $TASK"

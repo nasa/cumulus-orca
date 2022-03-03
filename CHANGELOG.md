@@ -17,6 +17,8 @@ and includes an additional section for migration notes.
 ## [Unreleased]
 
 ### Added
+- *ORCA-300* Added `OrcaInternalReconciliation` workflow allong with an accompanying input queue and dead-letter queue.
+    Retention time can be changed by setting `internal_report_queue_message_retention_time_seconds` in your `variables.tf` or `orca_variables.tf` file. Defaults to 777600.
 - *ORCA-161* Added dead letter queue and cloudwatch alarm terraform code to recovery SQS queue.
 - *ORCA-307* Added lambda get_current_archive_list to pull S3 Inventory reports into Postgres. 
     Adds `orca_reconciliation_lambda_memory_size` and `orca_reconciliation_lambda_timeout` to Terraform variables.
@@ -88,6 +90,7 @@ variable "s3_secret_key" {
   ## OPTIONAL
   db_admin_username                                    = "postgres"
   default_multipart_chunksize_mb                       = 250
+  internal_report_queue_message_retention_time_seconds = 777600
   orca_ingest_lambda_memory_size                       = 2240
   orca_ingest_lambda_timeout                           = 720
   orca_recovery_buckets                                = []

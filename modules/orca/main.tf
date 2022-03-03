@@ -74,9 +74,12 @@ module "orca_workflows" {
   ## --------------------------
   ## REQUIRED
   orca_default_bucket                           = var.orca_default_bucket
-  orca_lambda_extract_filepaths_for_granule_arn = module.orca_lambdas.extract_filepaths_for_granule_arn
-  orca_lambda_request_files_arn                 = module.orca_lambdas.request_files_arn
   orca_lambda_copy_to_glacier_arn               = module.orca_lambdas.copy_to_glacier_arn
+  orca_lambda_extract_filepaths_for_granule_arn = module.orca_lambdas.extract_filepaths_for_granule_arn
+  orca_lambda_get_current_archive_list_arn      = module.orca_lambdas.get_current_archive_list_arn
+  orca_lambda_perform_orca_reconcile_arn        = module.orca_lambdas.perform_orca_reconcile_arn
+  orca_lambda_request_files_arn                 = module.orca_lambdas.request_files_arn
+  orca_sqs_internal_report_queue_id             = module.orca_sqs.orca_sqs_internal_report_queue_id
 }
 
 
@@ -151,6 +154,7 @@ module "orca_sqs" {
   dlq_subscription_email = var.dlq_subscription_email
 
   ## OPTIONAL
+  internal_report_queue_message_retention_time_seconds = var.internal_report_queue_message_retention_time_seconds
   metadata_queue_message_retention_time_seconds        = var.metadata_queue_message_retention_time_seconds
   sqs_delay_time_seconds                               = var.sqs_delay_time_seconds
   sqs_maximum_message_size                             = var.sqs_maximum_message_size

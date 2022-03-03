@@ -118,6 +118,12 @@ variable "db_user_name" {
 }
 
 
+variable "internal_report_queue_message_retention_time_seconds" {
+  type        = number
+  description = "The number of seconds internal-report-queue SQS retains a message in seconds. Maximum value is 14 days."
+}
+
+
 variable "orca_ingest_lambda_memory_size" {
   type        = number
   description = "Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime."
