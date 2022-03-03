@@ -64,14 +64,11 @@ terraform apply \
   -var-file="terraform.tfvars" \
   -var "prefix=$bamboo_PREFIX" \
   -var "region=$bamboo_AWS_DEFAULT_REGION" \
-  -var "subnet_ids=[\"$bamboo_AWS_SUBNET_ID1\", \"$bamboo_AWS_SUBNET_ID2\"]" \
-  -var "aws_region=$bamboo_AWS_DEFAULT_REGION" \
+  -var "subnets=[\"$bamboo_AWS_SUBNET_ID1\", \"$bamboo_AWS_SUBNET_ID2\"]" \
   -var "db_admin_username=$bamboo_DB_ADMIN_USERNAME" \
   -var "db_admin_password=$bamboo_DB_ADMIN_PASSWORD" \
   -var "vpc_id=$bamboo_VPC_ID" \
   -var "cluster_identifier=$bamboo_RDS_CLUSTER_ID" \
-  -var "rds_user_access_secret_arn=$bamboo_RDS_USER_ACCESS_SECRET_ARN" \
-  -var "rds_security_group=$bamboo_RDS_SECURITY_GROUP"\
   -var "deletion_protection=false"\
   -var "provision_user_database=false"\
   -var "permissions_boundary_arn=arn:aws:iam::$bamboo_AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
