@@ -70,7 +70,10 @@ terraform apply \
   -var "rds_security_group=$bamboo_RDS_SECURITY_GROUP"\
   -var "permissions_boundary_arn=arn:aws:iam::$bamboo_AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
 
-#todo add scripts for cumulus-tf module
+# this part of the script is currently failing due to using the old version of https://git.earthdata.nasa.gov/projects/ORCA/repos/cumulus-orca-deploy-template/browse
+#The repo needs to be updated by including the latest release of ORCA version so that orca.tf and orca_variables.tf are updated. 
+# Currently, the terraform apply is giving error on unrecognized variables in orca.tf
+#scripts for cumulus-tf module
 
 cd ../cumulus-tf
 echo "inside cumulus-tf module"
@@ -101,6 +104,7 @@ terraform apply \
   -lock=false \
   -input=false \
   -var-file="terraform.tfvars" \
+  -var "cumulus_message_adapter_version=$bamboo_CMA_LAYER_VERSION" \
   -var "cumulus_message_adapter_lambda_layer_version_arn=arn:aws:lambda:$bamboo_AWS_DEFAULT_REGION:$bamboo_AWS_ACCOUNT_ID:layer:Cumulus_Message_Adapter:$bamboo_CMA_LAYER_VERSION" \
   -var "cmr_username=$bamboo_CMR_USERNAME" \
   -var "cmr_password=$bamboo_CMR_PASSWORD" \
