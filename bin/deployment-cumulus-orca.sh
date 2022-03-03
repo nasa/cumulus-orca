@@ -69,3 +69,5 @@ terraform apply \
   -var "rds_user_access_secret_arn=$bamboo_RDS_USER_ACCESS_SECRET_ARN" \
   -var "rds_security_group=$bamboo_RDS_SECURITY_GROUP"\
   -var "permissions_boundary_arn=arn:aws:iam::$bamboo_AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
+
+  #todo add scripts for cumulus-tf module

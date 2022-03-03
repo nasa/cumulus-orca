@@ -26,7 +26,7 @@ stages:
     - Deploy RDS cluster
 
 #deploy orca and cumulus for integration test
-- Deploy Dev Integration Stack:
+- Deploy Dev Cumulus and ORCA Stack:
     manual: true
     final: false
     jobs:
@@ -206,8 +206,8 @@ Deploy RDS cluster:
       scripts:
       - |-
         #!/bin/bash
-        chmod +x bin/tf-deployment-rds.sh
-        bin/tf-deployment-rds.sh
+        chmod +x bin/deployment-rds.sh
+        bin/deployment-rds.sh
 
 #job for deploying cumulus and orca
 Deploy cumulus and orca:
@@ -230,8 +230,8 @@ Deploy cumulus and orca:
       scripts:
       - |-
         #!/bin/bash
-        chmod +x bin/tf-deployment.sh
-        bin/tf-deployment.sh
+        chmod +x bin/deployment-cumulus-orca.sh
+        bin/deployment-cumulus-orca.sh
         
 
 
@@ -392,10 +392,10 @@ variables:
   ROLE_BOUNDARY: NGAPShRoleBoundary
   ORCA_RELEASE_BRANCH: release/v9.7.0-v3.0.2
   PREFIX: rizbi-bamboo-new
-  DB_ADMIN_USERNAME: BAMSCRT@0@0@XicosPniFZKnymbeX34D6A==
+  DB_ADMIN_USERNAME: postgres
   DB_ADMIN_PASSWORD: BAMSCRT@0@0@AuBwYN809zPGzk1MH5DRPQ==
   RDS_CLUSTER_ID: rizbi-bamboo-new-cumulus-rds-serverless-default-cluster
-  
+
 repositories:
 - orca test branch: #this is created by CICD team from https://ci.earthdata.nasa.gov/. Contact Venku Jayanti with any issues.
     scope: global
