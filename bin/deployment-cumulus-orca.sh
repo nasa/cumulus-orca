@@ -76,7 +76,7 @@ cd ..
 git clone https://github.com/nasa/cumulus-orca.git
 cd cumulus-orca
 git checkout develop
-bin/build_tasks.sh
+./bin/build_tasks.sh
 cd ..
 cd cumulus-orca-deploy-template/cumulus-tf
 echo "inside cumulus-tf module"
