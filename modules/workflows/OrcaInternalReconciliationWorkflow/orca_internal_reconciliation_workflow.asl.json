@@ -2,14 +2,6 @@
     "Comment": "Triggers off of s3 events releated to s3 Inventory. Creates reconciliation reports between s3 and Orca catalog.",
     "StartAt": "ReceiveMessage",
     "States": {
-      "ReceiveMessage": {
-        "Type": "Task",
-        "Parameters": {
-          "QueueUrl": "${orca_sqs_internal_report_queue_id}"
-        },
-        "Resource": "arn:aws:states:::aws-sdk:sqs:receiveMessage",
-        "Next": "GetCurrentArchiveList"
-      },
       "GetCurrentArchiveList": {
         "Parameters": {
           "cma": {
@@ -74,6 +66,15 @@
             "Next": "WorkflowFailed"
           }
         ],
+        "Next": "DeleteMessage"
+      },
+      "DeleteMessage": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::aws-sdk:sqs:deleteMessage",
+        "Parameters": {
+          "QueueUrl": "${orca_sqs_internal_report_queue_id}",
+          "ReceiptHandle": "$.ReceiptHandle"
+        },
         "Next": "WorkflowSucceeded"
       },
       "WorkflowFailed": {

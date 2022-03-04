@@ -53,7 +53,7 @@ resource "aws_sqs_queue" "internal_report_queue" {
   message_retention_seconds  = var.internal_report_queue_message_retention_time_seconds
   tags                       = local.tags
   policy                     = data.aws_iam_policy_document.internal_report_queue_policy.json
-  visibility_timeout_seconds = 1800 # Set to double lambda max time
+  visibility_timeout_seconds = 10800 # Set to 12 times lambda max time  # todo: Pass in the variable.
   depends_on = [
     aws_sqs_queue.internal_report_dlq
   ]

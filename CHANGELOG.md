@@ -90,7 +90,7 @@ variable "s3_secret_key" {
   ## OPTIONAL
   db_admin_username                                    = "postgres"
   default_multipart_chunksize_mb                       = 250
-  internal_report_queue_message_retention_time_seconds = 777600
+  internal_report_queue_message_retention_time_seconds = 432000
   orca_ingest_lambda_memory_size                       = 2240
   orca_ingest_lambda_timeout                           = 720
   orca_recovery_buckets                                = []

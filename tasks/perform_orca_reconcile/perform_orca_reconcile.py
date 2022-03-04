@@ -17,6 +17,7 @@ from sqlalchemy.sql.elements import TextClause
 
 INPUT_JOB_ID_KEY = "jobId"
 INPUT_ORCA_ARCHIVE_LOCATION_KEY = "orcaArchiveLocation"
+
 OUTPUT_JOB_ID_KEY = "jobId"
 
 LOGGER = CumulusLogger(name="ORCA")
