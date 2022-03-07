@@ -81,6 +81,10 @@ resource "aws_lambda_function" "get_current_archive_list" {
     subnet_ids         = var.lambda_subnet_ids
     security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
   }
+
+  environment {
+    INTERNAL_REPORT_QUEUE_URL  = var.orca_sqs_reconciliation_queue_id
+  }
 }
 
 resource "aws_lambda_function" "perform_orca_reconcile" {
@@ -101,6 +105,10 @@ resource "aws_lambda_function" "perform_orca_reconcile" {
   vpc_config {
     subnet_ids         = var.lambda_subnet_ids
     security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
+  }
+
+  environment {
+    INTERNAL_REPORT_QUEUE_URL  = var.orca_sqs_reconciliation_queue_id
   }
 }
 

@@ -1,88 +1,79 @@
 {
-    "Comment": "Triggers off of s3 events releated to s3 Inventory. Creates reconciliation reports between s3 and Orca catalog.",
-    "StartAt": "ReceiveMessage",
-    "States": {
-      "GetCurrentArchiveList": {
-        "Parameters": {
-          "cma": {
-            "event.$": "$",
-            "task_config": {
-            }
+  "Comment": "Triggers off of sqs events releated to s3 Inventory. Creates reconciliation reports between s3 and Orca catalog.",
+  "StartAt": "GetCurrentArchiveList",
+  "States": {
+    "GetCurrentArchiveList": {
+      "Parameters": {
+        "cma": {
+          "event.$": "$",
+          "task_config": {
           }
-        },
-        "Type": "Task",
-        "Resource": "${orca_lambda_get_current_archive_list_arn}",
-        "Retry": [
-          {
-            "ErrorEquals": [
-              "Lambda.ServiceException",
-              "Lambda.AWSLambdaException",
-              "Lambda.SdkClientException"
-            ],
-            "IntervalSeconds": 2,
-            "MaxAttempts": 6,
-            "BackoffRate": 2
-          }
-        ],
-        "Catch": [
-          {
-            "ErrorEquals": [
-              "States.ALL"
-            ],
-            "ResultPath": "$.exception",
-            "Next": "WorkflowFailed"
-          }
-        ],
-        "Next": "PerformOrcaReconcile"
+        }
       },
-      "PerformOrcaReconcile": {
-        "Parameters": {
-          "cma": {
-            "event.$": "$",
-            "task_config": {
-            }
+      "Type": "Task",
+      "Resource": "${orca_lambda_get_current_archive_list_arn}",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "ResultPath": "$.exception",
+          "Next": "WorkflowFailed"
+        }
+      ],
+      "Next": "PerformOrcaReconcile"
+    },
+    "PerformOrcaReconcile": {
+      "Parameters": {
+        "cma": {
+          "event.$": "$",
+          "task_config": {
           }
-        },
-        "Type": "Task",
-        "Resource": "${orca_lambda_perform_orca_reconcile_arn}",
-        "Retry": [
-          {
-            "ErrorEquals": [
-              "Lambda.ServiceException",
-              "Lambda.AWSLambdaException",
-              "Lambda.SdkClientException"
-            ],
-            "IntervalSeconds": 2,
-            "MaxAttempts": 6,
-            "BackoffRate": 2
-          }
-        ],
-        "Catch": [
-          {
-            "ErrorEquals": [
-              "States.ALL"
-            ],
-            "ResultPath": "$.exception",
-            "Next": "WorkflowFailed"
-          }
-        ],
-        "Next": "DeleteMessage"
+        }
       },
-      "DeleteMessage": {
-        "Type": "Task",
-        "Resource": "arn:aws:states:::aws-sdk:sqs:deleteMessage",
-        "Parameters": {
-          "QueueUrl": "${orca_sqs_internal_report_queue_id}",
-          "ReceiptHandle": "$.ReceiptHandle"
-        },
-        "Next": "WorkflowSucceeded"
-      },
-      "WorkflowFailed": {
-        "Type": "Fail",
-        "Cause": "Workflow failed"
-      },
-      "WorkflowSucceeded": {
-        "Type": "Succeed"
-      }
+      "Type": "Task",
+      "Resource": "${orca_lambda_perform_orca_reconcile_arn}",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "ResultPath": "$.exception",
+          "Next": "WorkflowFailed"
+        }
+      ],
+      "Next": "WorkflowSucceeded"
+    },
+    "WorkflowFailed": {
+      "Type": "Fail",
+      "Cause": "Workflow failed"
+    },
+    "WorkflowSucceeded": {
+      "Type": "Succeed"
     }
   }
+}

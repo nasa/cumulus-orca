@@ -5,8 +5,10 @@ Description: Compares entries in reconcile_s3_objects to the Orca catalog,
 writing differences to reconcile_catalog_mismatch_report, reconcile_orphan_report, and reconcile_phantom_report.
 """
 import json
+import os
 from typing import Any, Dict, Union
 
+import boto3
 import fastjsonschema
 from cumulus_logger import CumulusLogger
 from orca_shared.database import shared_db
@@ -15,8 +17,11 @@ from sqlalchemy import text
 from sqlalchemy.future import Engine
 from sqlalchemy.sql.elements import TextClause
 
+OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY = "INTERNAL_REPORT_QUEUE_URL"
+
 INPUT_JOB_ID_KEY = "jobId"
 INPUT_ORCA_ARCHIVE_LOCATION_KEY = "orcaArchiveLocation"
+INPUT_MESSAGE_RECEIPT_HANDLE_KEY = "messageReceiptHandle"
 
 OUTPUT_JOB_ID_KEY = "jobId"
 
@@ -35,6 +40,8 @@ except Exception as ex:
 def task(
     job_id: int,
     orca_archive_location: str,
+    internal_report_queue_url: str,
+    message_receipt_handle: str,
     db_connect_info: Dict,
 ) -> Dict[str, Any]:
     """
@@ -43,6 +50,8 @@ def task(
     Args:
         job_id: The id of the job containing s3 inventory info.
         orca_archive_location: The name of the glacier bucket the job targets.
+        internal_report_queue_url: The url of the queue containing the message.
+        message_receipt_handle: The ReceiptHandle for the event in the queue.
         db_connect_info: See shared_db.py's get_configuration for further details.
     Returns: See output.json for details.
     """
@@ -63,6 +72,7 @@ def task(
             None,
             user_engine,
         )
+        remove_job_from_queue(internal_report_queue_url, message_receipt_handle)
     except Exception as fatal_exception:
         # On error, set job status to failure.
         LOGGER.error(f"Encountered a fatal error: {fatal_exception}")
@@ -300,6 +310,23 @@ def generate_mismatch_reports_sql() -> TextClause:
     )
 
 
+def remove_job_from_queue(internal_report_queue_url: str, message_receipt_handle: str):
+    """
+    Removes the completed job from the queue, preventing it from going to the dead-letter queue.
+
+    Args:
+        internal_report_queue_url: The url of the queue containing the message.
+        message_receipt_handle: message_receipt_handle: The ReceiptHandle for the event in the queue.
+    """
+    aws_client_sqs = boto3.client("sqs")
+    # Remove message from the queue we are listening to.
+    # todo: retries?
+    aws_client_sqs.delete_message(
+        QueueUrl=internal_report_queue_url,
+        ReceiptHandle=message_receipt_handle,
+    )
+
+
 def handler(event: Dict[str, Union[str, int]], context) -> Dict[str, Any]:
     """
     Lambda handler. Receives a list of s3 events from an SQS queue, and loads the s3 inventory specified into postgres.
@@ -307,6 +334,7 @@ def handler(event: Dict[str, Union[str, int]], context) -> Dict[str, Any]:
         event: See input.json for details.
         context: An object passed through by AWS. Used for tracking.
     Environment Vars:
+        INTERNAL_REPORT_QUEUE_URL (string): The URL of the SQS queue the job came from.
         See shared_db.py's get_configuration for further details.
     Returns: See output.json for details.
     """
@@ -314,11 +342,18 @@ def handler(event: Dict[str, Union[str, int]], context) -> Dict[str, Any]:
 
     _INPUT_VALIDATE(event)
 
+    try:
+        internal_report_queue_url = str(os.environ[OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY])
+    except KeyError as key_error:
+        LOGGER.error(f"{OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY} environment value not found.")
+        raise key_error
+
     job_id = event[INPUT_JOB_ID_KEY]
     orca_archive_location = event[INPUT_ORCA_ARCHIVE_LOCATION_KEY]
+    message_receipt_handle = event[INPUT_MESSAGE_RECEIPT_HANDLE_KEY]
 
     db_connect_info = shared_db.get_configuration()
 
-    result = task(job_id, orca_archive_location, db_connect_info)
+    result = task(job_id, orca_archive_location, internal_report_queue_url, message_receipt_handle, db_connect_info)
     _OUTPUT_VALIDATE(result)
     return result

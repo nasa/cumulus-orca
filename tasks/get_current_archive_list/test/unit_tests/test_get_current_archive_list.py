@@ -881,7 +881,87 @@ class TestGetCurrentArchiveList(
                         str(cm.exception),
                     )
 
+    @patch("boto3.client")
+    def test_get_message_from_queue_happy_path(self, mock_client: MagicMock):
+        """
+        Happy path for pulling a message from the internal report queue.
+        """
+        expected_record = {
+            get_current_archive_list.RECORD_S3_KEY: {
+                get_current_archive_list.S3_OBJECT_KEY: {
+                    get_current_archive_list.OBJECT_KEY_KEY: uuid.uuid4().__str__()
+                },
+                get_current_archive_list.S3_BUCKET_KEY: {
+                    get_current_archive_list.BUCKET_NAME_KEY: uuid.uuid4().__str__()
+                },
+            },
+            get_current_archive_list.RECORD_AWS_REGION_KEY: uuid.uuid4().__str__(),
+        }
+        expected_receipt_handle = uuid.uuid4().__str__()
+
+        mock_client.return_value.receive_message.return_value = {
+            get_current_archive_list.MESSAGES_KEY: [
+                {
+                    "body": json.dumps(expected_record),
+                    "ReceiptHandle": expected_receipt_handle,
+                }
+            ]
+        }
+
+        mock_internal_report_queue_url = Mock()
+
+        record, receipt_handle = get_current_archive_list.get_message_from_queue(
+            mock_internal_report_queue_url
+        )
+
+        self.assertEqual(expected_receipt_handle, receipt_handle)
+        self.assertEqual(expected_record, record)
+
+        mock_client.assert_called_once_with("sqs")
+        mock_client.return_value.receive_message.assert_called_once_with(
+            QueueUrl=mock_internal_report_queue_url,
+            MaxNumberOfMessages=1,
+        )
+
+    @patch("boto3.client")
+    def test_get_message_from_queue_rejects_bad_json_format(self, mock_client: MagicMock):
+        """
+        If the body is not in the correct format, should raise an error.
+        """
+        expected_record = {
+            get_current_archive_list.RECORD_S3_KEY: {
+                get_current_archive_list.S3_OBJECT_KEY: {
+                    get_current_archive_list.OBJECT_KEY_KEY: uuid.uuid4().__str__()
+                },
+            },
+            get_current_archive_list.RECORD_AWS_REGION_KEY: uuid.uuid4().__str__(),
+        }
+        expected_receipt_handle = uuid.uuid4().__str__()
+
+        mock_client.return_value.receive_message.return_value = {
+            get_current_archive_list.MESSAGES_KEY: [
+                {
+                    "body": json.dumps(expected_record),
+                    "ReceiptHandle": expected_receipt_handle,
+                }
+            ]
+        }
+
+        mock_internal_report_queue_url = Mock()
+
+        with self.assertRaises(ValueError) as cm:
+            get_current_archive_list.get_message_from_queue(
+                mock_internal_report_queue_url
+            )
+        self.assertEqual(
+            f"data.{get_current_archive_list.RECORD_S3_KEY} must contain ['{get_current_archive_list.S3_BUCKET_KEY}', "
+            f"'{get_current_archive_list.S3_OBJECT_KEY}'] properties",
+            str(cm.exception),
+        )
+
+
     # noinspection PyPep8Naming
+    @patch("get_current_archive_list.get_message_from_queue")
     @patch("orca_shared.database.shared_db.get_configuration")
     @patch("get_current_archive_list.get_s3_credentials_from_secrets_manager")
     @patch("get_current_archive_list.LOGGER")
@@ -892,6 +972,7 @@ class TestGetCurrentArchiveList(
         mock_LOGGER: MagicMock,
         mock_get_s3_credentials_from_secrets_manager: MagicMock,
         mock_get_configuration: MagicMock,
+        mock_get_message_from_queue: MagicMock,
     ):
         """
         Happy path for handler assembling information to call Task.
@@ -903,6 +984,10 @@ class TestGetCurrentArchiveList(
             get_current_archive_list.OUTPUT_ORCA_ARCHIVE_LOCATION_KEY: uuid.uuid4().__str__(),  # nosec
         }
         mock_task.return_value = copy.deepcopy(expected_result)
+        receipt_handle = uuid.uuid4().__str__()
+        expected_result[
+            get_current_archive_list.OUTPUT_RECEIPT_HANDLE_KEY
+        ] = receipt_handle
 
         mock_context = Mock()
         record = {
@@ -916,7 +1001,7 @@ class TestGetCurrentArchiveList(
             },
             get_current_archive_list.RECORD_AWS_REGION_KEY: uuid.uuid4().__str__(),
         }
-        event = {get_current_archive_list.EVENT_RECORDS_KEY: [record]}
+        mock_get_message_from_queue.return_value = record, receipt_handle
 
         s3_access_key = uuid.uuid4().__str__()
         s3_secret_key = uuid.uuid4().__str__()
@@ -925,119 +1010,27 @@ class TestGetCurrentArchiveList(
             s3_access_key,
             s3_secret_key,
         )
-        result = get_current_archive_list.handler(event, mock_context)
+        event = Mock()
+
+        report_queue_url = uuid.uuid4().__str__()
+        with patch.dict(
+            os.environ,
+            {
+                get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY: report_queue_url
+            },
+        ):
+            result = get_current_archive_list.handler(event, mock_context)
 
         mock_LOGGER.setMetadata.assert_called_once_with(event, mock_context)
         mock_get_s3_credentials_from_secrets_manager.assert_called_once_with()
         mock_get_configuration.assert_called_once_with()
+        mock_get_message_from_queue.assert_called_once_with(report_queue_url)
         mock_task.assert_called_once_with(
             record, s3_access_key, s3_secret_key, mock_get_configuration.return_value
         )
         self.assertEqual(expected_result, result)
 
-    # noinspection PyPep8Naming
-    @patch("orca_shared.database.shared_db.get_configuration")
-    @patch("get_current_archive_list.get_s3_credentials_from_secrets_manager")
-    @patch("get_current_archive_list.LOGGER")
-    @patch("get_current_archive_list.task")
-    def test_handler_multiple_records_raises_error(
-        self,
-        mock_task: MagicMock,
-        mock_LOGGER: MagicMock,
-        mock_get_s3_credentials_from_secrets_manager: MagicMock,
-        mock_get_configuration: MagicMock,
-    ):
-        """
-        Code does not currently support handling multiple events from s3.
-        """
-        expected_result = {
-            get_current_archive_list.OUTPUT_JOB_ID_KEY: random.randint(  # nosec
-                0, 1000
-            ),
-            get_current_archive_list.OUTPUT_ORCA_ARCHIVE_LOCATION_KEY: uuid.uuid4().__str__(),  # nosec
-        }
-        mock_task.return_value = copy.deepcopy(expected_result)
-
-        mock_context = Mock()
-        record = {
-            get_current_archive_list.RECORD_S3_KEY: {
-                get_current_archive_list.S3_BUCKET_KEY: {
-                    get_current_archive_list.BUCKET_NAME_KEY: uuid.uuid4().__str__()
-                },
-                get_current_archive_list.S3_OBJECT_KEY: {
-                    get_current_archive_list.OBJECT_KEY_KEY: uuid.uuid4().__str__()
-                },
-            },
-            get_current_archive_list.RECORD_AWS_REGION_KEY: uuid.uuid4().__str__(),
-        }
-        event = {get_current_archive_list.EVENT_RECORDS_KEY: [record, record]}
-
-        s3_access_key = uuid.uuid4().__str__()
-        s3_secret_key = uuid.uuid4().__str__()
-
-        mock_get_s3_credentials_from_secrets_manager.return_value = (
-            s3_access_key,
-            s3_secret_key,
-        )
-        with self.assertRaises(ValueError) as cm:
-            get_current_archive_list.handler(event, mock_context)
-
-        mock_LOGGER.setMetadata.assert_called_once_with(event, mock_context)
-        mock_task.assert_not_called()
-        self.assertEqual("Must be passed a single record. Was 2", str(cm.exception))
-
-    @patch("orca_shared.database.shared_db.get_configuration")
-    @patch("get_current_archive_list.get_s3_credentials_from_secrets_manager")
-    @patch("get_current_archive_list.LOGGER")
-    @patch("get_current_archive_list.task")
-    def test_handler_rejects_bad_input(
-        self,
-        mock_task: MagicMock,
-        mock_LOGGER: MagicMock,
-        mock_get_s3_credentials_from_secrets_manager: MagicMock,
-        mock_get_configuration: MagicMock,
-    ):
-        """
-        Violating input.json schema should raise an error.
-        """
-        expected_result = {
-            get_current_archive_list.OUTPUT_JOB_ID_KEY: random.randint(  # nosec
-                0, 1000
-            ),
-            get_current_archive_list.OUTPUT_ORCA_ARCHIVE_LOCATION_KEY: uuid.uuid4().__str__(),  # nosec
-        }
-        mock_task.return_value = copy.deepcopy(expected_result)
-
-        mock_context = Mock()
-        record = {
-            get_current_archive_list.RECORD_S3_KEY: {
-                get_current_archive_list.S3_OBJECT_KEY: {
-                    get_current_archive_list.OBJECT_KEY_KEY: uuid.uuid4().__str__()
-                }
-            },
-            get_current_archive_list.RECORD_AWS_REGION_KEY: uuid.uuid4().__str__(),
-        }
-        event = {get_current_archive_list.EVENT_RECORDS_KEY: [record]}
-
-        s3_access_key = uuid.uuid4().__str__()
-        s3_secret_key = uuid.uuid4().__str__()
-
-        mock_get_s3_credentials_from_secrets_manager.return_value = (
-            s3_access_key,
-            s3_secret_key,
-        )
-        with self.assertRaises(Exception) as cm:
-            get_current_archive_list.handler(event, mock_context)
-
-        mock_LOGGER.setMetadata.assert_called_once_with(event, mock_context)
-        mock_task.assert_not_called()
-        self.assertEqual(
-            f"data.{get_current_archive_list.EVENT_RECORDS_KEY}[0].{get_current_archive_list.RECORD_S3_KEY} "
-            f"must contain ['{get_current_archive_list.S3_BUCKET_KEY}', "
-            f"'{get_current_archive_list.S3_OBJECT_KEY}'] properties",
-            str(cm.exception),
-        )
-
+    @patch("get_current_archive_list.get_message_from_queue")
     @patch("orca_shared.database.shared_db.get_configuration")
     @patch("get_current_archive_list.get_s3_credentials_from_secrets_manager")
     @patch("get_current_archive_list.LOGGER")
@@ -1048,12 +1041,14 @@ class TestGetCurrentArchiveList(
         mock_LOGGER: MagicMock,
         mock_get_s3_credentials_from_secrets_manager: MagicMock,
         mock_get_configuration: MagicMock,
+        mock_get_message_from_queue: MagicMock,
     ):
         """
         Violating output.json schema should raise an error.
         """
         expected_result = {}
         mock_task.return_value = copy.deepcopy(expected_result)
+        receipt_handle = uuid.uuid4().__str__()
 
         mock_context = Mock()
         record = {
@@ -1067,7 +1062,7 @@ class TestGetCurrentArchiveList(
             },
             get_current_archive_list.RECORD_AWS_REGION_KEY: uuid.uuid4().__str__(),
         }
-        event = {get_current_archive_list.EVENT_RECORDS_KEY: [record]}
+        mock_get_message_from_queue.return_value = record, receipt_handle
 
         s3_access_key = uuid.uuid4().__str__()
         s3_secret_key = uuid.uuid4().__str__()
@@ -1077,9 +1072,19 @@ class TestGetCurrentArchiveList(
             s3_secret_key,
         )
         with self.assertRaises(Exception) as cm:
-            get_current_archive_list.handler(event, mock_context)
+            event = Mock()
+
+            report_queue_url = uuid.uuid4().__str__()
+            with patch.dict(
+                os.environ,
+                {
+                    get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY: report_queue_url
+                },
+            ):
+                get_current_archive_list.handler(event, mock_context)
 
         mock_LOGGER.setMetadata.assert_called_once_with(event, mock_context)
+        mock_get_message_from_queue.assert_called_once_with(report_queue_url)
         mock_task.assert_called_once_with(
             record, s3_access_key, s3_secret_key, mock_get_configuration.return_value
         )

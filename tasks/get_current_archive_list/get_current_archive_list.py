@@ -4,9 +4,10 @@ Name: get_current_archive_list.py
 Description: Receives a list of s3 events from an SQS queue, and loads the s3 inventory specified into postgres.
 """
 import json
+import os
 import os.path
 from datetime import datetime, timezone
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 # noinspection SpellCheckingInspection,PyPackageRequirements
 import boto3
@@ -23,11 +24,13 @@ from sqlalchemy import text
 from sqlalchemy.future import Engine
 from sqlalchemy.sql.elements import TextClause
 
+OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY = "INTERNAL_REPORT_QUEUE_URL"
+
 SECRETSMANAGER_S3_ACCESS_CREDENTIALS_KEY = "s3-access-credentials"
 S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY = "s3_access_key"
 S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY = "s3_secret_key"  # nosec
 
-EVENT_RECORDS_KEY = "Records"
+MESSAGES_KEY = "Messages"
 RECORD_AWS_REGION_KEY = "awsRegion"
 RECORD_S3_KEY = "s3"
 S3_BUCKET_KEY = "bucket"
@@ -43,6 +46,7 @@ FILES_KEY_KEY = "key"
 
 OUTPUT_JOB_ID_KEY = "jobId"
 OUTPUT_ORCA_ARCHIVE_LOCATION_KEY = "orcaArchiveLocation"
+OUTPUT_RECEIPT_HANDLE_KEY = "messageReceiptHandle"
 
 LOGGER = CumulusLogger(name="ORCA")
 # Generating schema validators can take time, so do it once and reuse.
@@ -450,31 +454,60 @@ def get_s3_credentials_from_secrets_manager() -> tuple:
     return s3_access_key, s3_secret_key
 
 
+def get_message_from_queue(internal_report_queue_url: str) -> Tuple[Dict[str, Any], str]:
+    """
+    Gets a message from the queue and formats it into input.json schema.
+    Args:
+        internal_report_queue_url: The url of the queue containing the message.
+
+    Returns:
+        A dictionary with the following keys:
+            ReceiptHandle (str): The ReceiptHandle for the event in the queue.
+            Body (str): A json string that, when converted to an object, matches input.json.
+    """
+    aws_client_sqs = boto3.client("sqs")
+    # todo: retries?
+    sqs_response = aws_client_sqs.receive_message(
+        QueueUrl=internal_report_queue_url,
+        MaxNumberOfMessages=1,
+    )
+    message = sqs_response[MESSAGES_KEY][0]
+    record = json.loads(message["body"])
+    _INPUT_VALIDATE(record)
+    return record, message["ReceiptHandle"]
+    # todo: May return empty array if race happens.
+
+
 def handler(event: Dict[str, List], context) -> Dict[str, Any]:
     """
     Lambda handler. Receives a list of s3 events from an SQS queue, and loads the s3 inventory specified into postgres.
 
     Args:
-        event: See input.json for details.
+        event: Unused. Data is pulled in by contacting INTERNAL_REPORT_QUEUE_URL
         context: An object passed through by AWS. Used for tracking.
     Environment Vars:
+        INTERNAL_REPORT_QUEUE_URL (string): The URL of the SQS queue the job came from.
         See shared_db.py's get_configuration for further details.
 
     Returns: See output.json for details.
     """
     LOGGER.setMetadata(event, context)
 
-    _INPUT_VALIDATE(event)
-
-    if len(event[EVENT_RECORDS_KEY]) != 1:
-        raise ValueError(f"Must be passed a single record. Was {len(event['Records'])}")
+    try:
+        internal_report_queue_url = str(os.environ[OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY])
+    except KeyError as key_error:
+        LOGGER.error(f"{OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY} environment value not found.")
+        raise key_error
 
     s3_access_key, s3_secret_key = get_s3_credentials_from_secrets_manager()
 
     db_connect_info = shared_db.get_configuration()
 
+    record, receipt_handle = get_message_from_queue(internal_report_queue_url)
+
     result = task(
-        event[EVENT_RECORDS_KEY][0], s3_access_key, s3_secret_key, db_connect_info
+        record, s3_access_key, s3_secret_key, db_connect_info
     )
+    result[OUTPUT_RECEIPT_HANDLE_KEY] = receipt_handle
     _OUTPUT_VALIDATE(result)
     return result
