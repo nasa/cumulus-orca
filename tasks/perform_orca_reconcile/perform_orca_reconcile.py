@@ -12,7 +12,7 @@ import boto3
 import fastjsonschema
 from cumulus_logger import CumulusLogger
 from orca_shared.database import shared_db
-from orca_shared.reconciliation import update_job, OrcaStatus
+from orca_shared.reconciliation import OrcaStatus, update_job
 from sqlalchemy import text
 from sqlalchemy.future import Engine
 from sqlalchemy.sql.elements import TextClause
@@ -233,7 +233,7 @@ def generate_orphan_reports_sql() -> TextClause:
                 size_in_bytes, 
                 storage_class
             FROM 
-                orphan_reports"""
+                orphan_reports"""  # nosec
     )
 
 
@@ -306,7 +306,7 @@ def generate_mismatch_reports_sql() -> TextClause:
                 files.etag != reconcile_s3_object.etag OR
                 files.ingest_time != reconcile_s3_object.last_update OR
                 files.size_in_bytes != reconcile_s3_object.size_in_bytes
-            )"""
+            )"""  # nosec
     )
 
 
@@ -343,9 +343,13 @@ def handler(event: Dict[str, Union[str, int]], context) -> Dict[str, Any]:
     _INPUT_VALIDATE(event)
 
     try:
-        internal_report_queue_url = str(os.environ[OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY])
+        internal_report_queue_url = str(
+            os.environ[OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY]
+        )
     except KeyError as key_error:
-        LOGGER.error(f"{OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY} environment value not found.")
+        LOGGER.error(
+            f"{OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY} environment value not found."
+        )
         raise key_error
 
     job_id = event[INPUT_JOB_ID_KEY]
@@ -354,6 +358,12 @@ def handler(event: Dict[str, Union[str, int]], context) -> Dict[str, Any]:
 
     db_connect_info = shared_db.get_configuration()
 
-    result = task(job_id, orca_archive_location, internal_report_queue_url, message_receipt_handle, db_connect_info)
+    result = task(
+        job_id,
+        orca_archive_location,
+        internal_report_queue_url,
+        message_receipt_handle,
+        db_connect_info,
+    )
     _OUTPUT_VALIDATE(result)
     return result

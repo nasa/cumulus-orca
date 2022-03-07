@@ -71,7 +71,9 @@ class TestPerformOrcaReconcile(
                 ),
             ]
         )
-        mock_remove_job_from_queue.assert_called_once_with(internal_report_queue_url, message_receipt_handle)
+        mock_remove_job_from_queue.assert_called_once_with(
+            internal_report_queue_url, message_receipt_handle
+        )
 
         self.assertEqual(
             {
@@ -254,17 +256,16 @@ class TestPerformOrcaReconcile(
         )
 
     @patch("boto3.client")
-    def test_remove_job_from_queue_happy_path(
-            self,
-            mock_client: MagicMock
-    ):
+    def test_remove_job_from_queue_happy_path(self, mock_client: MagicMock):
         """
         Happy path for removing the completed item from the queue.
         """
         internal_report_queue_url = Mock()
         message_receipt_handle = Mock()
 
-        perform_orca_reconcile.remove_job_from_queue(internal_report_queue_url, message_receipt_handle)
+        perform_orca_reconcile.remove_job_from_queue(
+            internal_report_queue_url, message_receipt_handle
+        )
 
         mock_client.assert_called_once_with("sqs")
         mock_client.return_value.delete_message.assert_called_once_with(
@@ -386,8 +387,8 @@ class TestPerformOrcaReconcile(
 
         expected_result = {
             perform_orca_reconcile.OUTPUT_JOB_ID_KEY: str(
-                random.randint(0, 1000)
-            ),  # nosec
+                random.randint(0, 1000)  # nosec
+            ),
         }
         mock_task.return_value = copy.deepcopy(expected_result)
 
