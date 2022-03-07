@@ -924,7 +924,9 @@ class TestGetCurrentArchiveList(
         )
 
     @patch("boto3.client")
-    def test_get_message_from_queue_rejects_bad_json_format(self, mock_client: MagicMock):
+    def test_get_message_from_queue_rejects_bad_json_format(
+        self, mock_client: MagicMock
+    ):
         """
         If the body is not in the correct format, should raise an error.
         """
@@ -958,7 +960,6 @@ class TestGetCurrentArchiveList(
             f"'{get_current_archive_list.S3_OBJECT_KEY}'] properties",
             str(cm.exception),
         )
-
 
     # noinspection PyPep8Naming
     @patch("get_current_archive_list.get_message_from_queue")

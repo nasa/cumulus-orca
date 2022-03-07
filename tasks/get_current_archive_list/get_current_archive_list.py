@@ -454,7 +454,9 @@ def get_s3_credentials_from_secrets_manager() -> tuple:
     return s3_access_key, s3_secret_key
 
 
-def get_message_from_queue(internal_report_queue_url: str) -> Tuple[Dict[str, Any], str]:
+def get_message_from_queue(
+    internal_report_queue_url: str,
+) -> Tuple[Dict[str, Any], str]:
     """
     Gets a message from the queue and formats it into input.json schema.
     Args:
@@ -494,9 +496,13 @@ def handler(event: Dict[str, List], context) -> Dict[str, Any]:
     LOGGER.setMetadata(event, context)
 
     try:
-        internal_report_queue_url = str(os.environ[OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY])
+        internal_report_queue_url = str(
+            os.environ[OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY]
+        )
     except KeyError as key_error:
-        LOGGER.error(f"{OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY} environment value not found.")
+        LOGGER.error(
+            f"{OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY} environment value not found."
+        )
         raise key_error
 
     s3_access_key, s3_secret_key = get_s3_credentials_from_secrets_manager()
@@ -505,9 +511,7 @@ def handler(event: Dict[str, List], context) -> Dict[str, Any]:
 
     record, receipt_handle = get_message_from_queue(internal_report_queue_url)
 
-    result = task(
-        record, s3_access_key, s3_secret_key, db_connect_info
-    )
+    result = task(record, s3_access_key, s3_secret_key, db_connect_info)
     result[OUTPUT_RECEIPT_HANDLE_KEY] = receipt_handle
     _OUTPUT_VALIDATE(result)
     return result
