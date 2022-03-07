@@ -48,10 +48,10 @@ def get_partition_name_from_bucket_name(bucket_name: str):
 
 
 def update_job(
-        job_id: int,
-        status: OrcaStatus,
-        error_message: Optional[str],
-        engine: Engine,
+    job_id: int,
+    status: OrcaStatus,
+    error_message: Optional[str],
+    engine: Engine,
 ) -> None:
     """
     Updates the status entry for a job.
@@ -77,12 +77,12 @@ def update_job(
 
 @shared_db.retry_operational_error()
 def internal_update_job(
-        job_id: int,
-        status: OrcaStatus,
-        last_update: datetime,
-        end_time: Optional[datetime],
-        error_message: Optional[str],
-        engine: Engine,
+    job_id: int,
+    status: OrcaStatus,
+    last_update: datetime,
+    end_time: Optional[datetime],
+    error_message: Optional[str],
+    engine: Engine,
 ) -> None:
     """
     Updates the status entry for a job.
