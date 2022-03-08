@@ -126,4 +126,6 @@ Some of the cards created to finish the task include:
 
 ##### References
 - https://github.com/nasa/cumulus/tree/master/bamboo
-- Slack communication in cumulus-internal channel
+- https://github.com/nasa/cumulus/blob/master/bamboo/bootstrap-tf-deployment.sh
+- https://github.com/ghrcdaac/GHRC-TF-CICD
+- https://eosdis.slack.com/archives/C76M787MZ/p1646247174655179
