@@ -320,7 +320,6 @@ def remove_job_from_queue(internal_report_queue_url: str, message_receipt_handle
     """
     aws_client_sqs = boto3.client("sqs")
     # Remove message from the queue we are listening to.
-    # todo: retries?
     aws_client_sqs.delete_message(
         QueueUrl=internal_report_queue_url,
         ReceiptHandle=message_receipt_handle,
