@@ -115,6 +115,10 @@ Deploy cumulus and orca:
 ## Future directions
 
 The first step will be to finish deploying all cumulus tf modules via Bamboo into sandbox account. Once that is completed, automation scripts for running the integrations tests need to be created. The original plan `ORCA Integrator` in bamboo will need to be updated with the same changes made in `prototype-demo` plan's `feature/ORCA-test-bamboo` branch so that the `develop` branch is updated. In addition, older resources should be deleted from AWS once tests are validated. 
+
+The details of the DockerFile as well as the scripts currently used by GHRC to deploy their repository to Bamboo CI/CD can be found [here](https://github.com/ghrcdaac/GHRC-TF-CICD) which will be useful to look into later on. Moreover, the environment variables in bamboo can be exported using env files to better manage terraform variables needed for deployment. See [ORCA-393](https://bugs.earthdata.nasa.gov/browse/ORCA-393) for more information on this.
+
+
 Some of the cards created to finish the task include:
 - https://bugs.earthdata.nasa.gov/browse/ORCA-388
 - https://bugs.earthdata.nasa.gov/browse/ORCA-389
@@ -128,4 +132,4 @@ Some of the cards created to finish the task include:
 - https://github.com/nasa/cumulus/tree/master/bamboo
 - https://github.com/nasa/cumulus/blob/master/bamboo/bootstrap-tf-deployment.sh
 - https://github.com/ghrcdaac/GHRC-TF-CICD
-- https://eosdis.slack.com/archives/C76M787MZ/p1646247174655179
+- https://eosdis.slack.com/archives/C76M787MZ/p1646247174655179 (chat history with cumulus on some of the issues faced during deployment)
