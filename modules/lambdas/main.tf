@@ -83,7 +83,10 @@ resource "aws_lambda_function" "get_current_archive_list" {
   }
 
   environment {
-    INTERNAL_REPORT_QUEUE_URL  = var.orca_sqs_reconciliation_queue_id
+    variables = {
+      PREFIX = var.prefix
+      INTERNAL_REPORT_QUEUE_URL  = var.orca_sqs_internal_report_queue_id
+    }
   }
 }
 
@@ -108,7 +111,10 @@ resource "aws_lambda_function" "perform_orca_reconcile" {
   }
 
   environment {
-    INTERNAL_REPORT_QUEUE_URL  = var.orca_sqs_reconciliation_queue_id
+    variables = {
+      PREFIX = var.prefix
+      INTERNAL_REPORT_QUEUE_URL  = var.orca_sqs_internal_report_queue_id
+    }
   }
 }
 

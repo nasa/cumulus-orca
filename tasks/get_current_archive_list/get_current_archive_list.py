@@ -433,13 +433,15 @@ def translate_s3_import_to_partitioned_data_sql() -> TextClause:
 
 def get_s3_credentials_from_secrets_manager() -> tuple:
     # todo: Move everything from here to get_configuration to shared lib. See shared_db for code origin.
-    prefix = os.getenv("PREFIX", None)
+    prefix = os.environ["PREFIX"]
     secretsmanager = boto3.client(
-        "secretsmanager", region_name=os.getenv("AWS_REGION", None)
+        "secretsmanager", region_name=os.environ["AWS_REGION"]
     )
+    secret_id = f"{prefix}-orca-{SECRETSMANAGER_S3_ACCESS_CREDENTIALS_KEY}"
+    LOGGER.debug(f"Getting secret '{secret_id}'")
     s3_credentials = json.loads(
         secretsmanager.get_secret_value(
-            SecretId=f"{prefix}-orca-{SECRETSMANAGER_S3_ACCESS_CREDENTIALS_KEY}"
+            SecretId=secret_id
         )["SecretString"]
     )
     s3_access_key = s3_credentials.get(S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY, None)

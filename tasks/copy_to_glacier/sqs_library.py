@@ -114,7 +114,7 @@ def post_to_metadata_queue(
     Posts metadata information to the metadata SQS queue.
     Args:
         sqs_body: A dictionary containing the metadata objects that will be sent to SQS.
-        db_queue_url: The metadata SQS queue URL defined by AWS.
+        metadata_queue_url: The metadata SQS queue URL defined by AWS.
     Raises:
         None
     """

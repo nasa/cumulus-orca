@@ -132,6 +132,11 @@ variable "orca_recovery_retry_backoff" {
   description = "The multiplier by which the retry interval increases during each attempt."
 }
 
+variable "orca_sqs_internal_report_queue_id" {
+  type        = string
+  description = "The URL of the internal-report-queue SQS"
+}
+
 variable "orca_sqs_metadata_queue_arn" {
   type        = string
   description = "The ARN of the metadata-queue SQS"
