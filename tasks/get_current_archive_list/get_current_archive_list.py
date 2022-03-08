@@ -475,11 +475,13 @@ def get_message_from_queue(
         QueueUrl=internal_report_queue_url,
         MaxNumberOfMessages=1,
     )
+    if MESSAGES_KEY not in sqs_response.keys():
+        raise Exception("No messages in queue.")
     message = sqs_response[MESSAGES_KEY][0]
-    record = json.loads(message["body"])
+    record = json.loads(message["Body"])
     _INPUT_VALIDATE(record)
     return record, message["ReceiptHandle"]
-    # todo: May return empty array if race happens.
+    # todo: May return error dictionary if race happens.
 
 
 def handler(event: Dict[str, List], context) -> Dict[str, Any]:

@@ -902,7 +902,7 @@ class TestGetCurrentArchiveList(
         mock_client.return_value.receive_message.return_value = {
             get_current_archive_list.MESSAGES_KEY: [
                 {
-                    "body": json.dumps(expected_record),
+                    "Body": json.dumps(expected_record),
                     "ReceiptHandle": expected_receipt_handle,
                 }
             ]
@@ -943,7 +943,7 @@ class TestGetCurrentArchiveList(
         mock_client.return_value.receive_message.return_value = {
             get_current_archive_list.MESSAGES_KEY: [
                 {
-                    "body": json.dumps(expected_record),
+                    "Body": json.dumps(expected_record),
                     "ReceiptHandle": expected_receipt_handle,
                 }
             ]
