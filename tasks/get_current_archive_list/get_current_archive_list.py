@@ -470,7 +470,6 @@ def get_message_from_queue(
             Body (str): A json string that, when converted to an object, matches input.json.
     """
     aws_client_sqs = boto3.client("sqs")
-    # todo: retries?
     sqs_response = aws_client_sqs.receive_message(
         QueueUrl=internal_report_queue_url,
         MaxNumberOfMessages=1,
