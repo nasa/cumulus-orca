@@ -480,7 +480,6 @@ def get_message_from_queue(
     record = json.loads(message["Body"])
     _INPUT_VALIDATE(record)
     return record, message["ReceiptHandle"]
-    # todo: May return error dictionary if race happens.
 
 
 def handler(event: Dict[str, List], context) -> Dict[str, Any]:
