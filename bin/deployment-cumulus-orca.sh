@@ -11,10 +11,9 @@ unzip *.zip
 chmod +x terraform
 mv terraform /usr/local/bin
 
-#configure aws 
-aws configure set aws_access_key_id $bamboo_AWS_ACCESS_KEY_ID
-aws configure set aws_secret_access_key $bamboo_AWS_SECRET_ACCESS_KEY
-aws configure set default.region $bamboo_AWS_DEFAULT_REGION
+export AWS_ACCESS_KEY_ID=$bamboo_AWS_ACCESS_KEY_ID
+export AWS_SECRET_ACCESS_KEY=$bamboo_AWS_SECRET_ACCESS_KEY
+export AWS_DEFAULT_REGION=$bamboo_AWS_DEFAULT_REGION
 
 #clone cumulus orca template for deploying cumulus and orca
 git clone https://git.earthdata.nasa.gov/scm/orca/cumulus-orca-deploy-template.git
