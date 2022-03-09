@@ -8,10 +8,10 @@ description: Research Notes on deploying Cumulus and ORCA in bamboo CI/CD and ru
 AWS resources can be deployed via Bamboo pipeline by first adding the following to a script and running that in a Bamboo task.
 
 ```bash
-#configure aws 
-aws configure set aws_access_key_id $bamboo_AWS_ACCESS_KEY_ID
-aws configure set aws_secret_access_key $bamboo_AWS_SECRET_ACCESS_KEY
-aws configure set default.region $bamboo_AWS_DEFAULT_REGION
+#configure aws
+export AWS_ACCESS_KEY_ID=$bamboo_AWS_ACCESS_KEY_ID
+export AWS_SECRET_ACCESS_KEY=$bamboo_AWS_SECRET_ACCESS_KEY
+export AWS_DEFAULT_REGION=$bamboo_AWS_DEFAULT_REGION
 ```
 
 :::note
