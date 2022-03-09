@@ -5,7 +5,7 @@ locals {
 
 
 ## Referenced Modules - Workflows
-module "orca_internal_reocnciliation_workflow" {
+module "orca_internal_reconciliation_workflow" {
   source = "https://github.com/nasa/cumulus/releases/download/v10.0.0/terraform-aws-cumulus-workflow.zip"
   ## --------------------------
   ## Cumulus Variables
