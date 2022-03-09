@@ -120,12 +120,12 @@ The details of the DockerFile as well as the scripts currently used by GHRC to d
 
 
 Some of the cards created to finish the task include:
-- https://bugs.earthdata.nasa.gov/browse/ORCA-388
-- https://bugs.earthdata.nasa.gov/browse/ORCA-389
-- https://bugs.earthdata.nasa.gov/browse/ORCA-390
-- https://bugs.earthdata.nasa.gov/browse/ORCA-391
-- https://bugs.earthdata.nasa.gov/browse/ORCA-392
-- https://bugs.earthdata.nasa.gov/browse/ORCA-393
+- https://bugs.earthdata.nasa.gov/browse/ORCA-388- Create Docker image for running ORCA integration tests
+- https://bugs.earthdata.nasa.gov/browse/ORCA-389- Finish up the remaining work on deploying cumulus-tf module in bamboo. Update ORCA-integrator plan in bamboo.
+- https://bugs.earthdata.nasa.gov/browse/ORCA-390- Cleanup deployment of old integration test files/resources from bamboo
+- https://bugs.earthdata.nasa.gov/browse/ORCA-391- Research and create a list of integration tests needed for ORCA once all tf modules are deployed and successful
+- https://bugs.earthdata.nasa.gov/browse/ORCA-392- Create the actual integration test scripts for bamboo.
+- https://bugs.earthdata.nasa.gov/browse/ORCA-393- Convert bamboo env variables to a script.
 
 
 ##### References
