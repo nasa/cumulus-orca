@@ -80,7 +80,6 @@ module "orca_workflows" {
   orca_lambda_get_current_archive_list_arn      = module.orca_lambdas.get_current_archive_list_arn
   orca_lambda_perform_orca_reconcile_arn        = module.orca_lambdas.perform_orca_reconcile_arn
   orca_lambda_request_files_arn                 = module.orca_lambdas.request_files_arn
-  orca_sqs_internal_report_queue_id             = module.orca_sqs.orca_sqs_internal_report_queue_id
 }
 
 

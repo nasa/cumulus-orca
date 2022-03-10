@@ -6,7 +6,7 @@ locals {
 
 ## Referenced Modules - Workflows
 module "orca_internal_reconciliation_workflow" {
-  source = "https://github.com/nasa/cumulus/releases/download/v10.0.0/terraform-aws-cumulus-workflow.zip"
+  source = "https://github.com/nasa/cumulus/releases/download/v10.1.0/terraform-aws-cumulus-workflow.zip"
   ## --------------------------
   ## Cumulus Variables
   ## --------------------------
@@ -21,8 +21,7 @@ module "orca_internal_reconciliation_workflow" {
     "${path.module}/orca_internal_reconciliation_workflow.asl.json",
     {
       orca_lambda_get_current_archive_list_arn : var.orca_lambda_get_current_archive_list_arn,
-      orca_lambda_perform_orca_reconcile_arn : var.orca_lambda_perform_orca_reconcile_arn,
-      orca_sqs_internal_report_queue_id: var.orca_sqs_internal_report_queue_id
+      orca_lambda_perform_orca_reconcile_arn : var.orca_lambda_perform_orca_reconcile_arn
     }
   )
 }

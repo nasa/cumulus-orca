@@ -440,9 +440,7 @@ def get_s3_credentials_from_secrets_manager() -> tuple:
     secret_id = f"{prefix}-orca-{SECRETSMANAGER_S3_ACCESS_CREDENTIALS_KEY}"
     LOGGER.debug(f"Getting secret '{secret_id}'")
     s3_credentials = json.loads(
-        secretsmanager.get_secret_value(
-            SecretId=secret_id
-        )["SecretString"]
+        secretsmanager.get_secret_value(SecretId=secret_id)["SecretString"]
     )
     s3_access_key = s3_credentials.get(S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY, None)
     if s3_access_key is None or len(s3_access_key) == 0:

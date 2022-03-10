@@ -63,17 +63,6 @@ resource "aws_sqs_queue" "internal_report_queue" {
   })
 }
 
-# s3 Trigger
-# resource "aws_s3_bucket_notification" "internal_report_bucket_notification" {
-#   bucket = var.report_bucket_id
-
-#   queue {
-#     queue_arn     = aws_sqs_queue.internal_report_queue.arn
-#     events        = ["s3:ObjectCreated:*"]
-#     filter_suffix = "manifest.json"
-#   }
-# }
-
 # Dead-letter queue
 resource "aws_sqs_queue" "internal_report_dlq" {
   name                       = "${var.prefix}-internal-report-deadletter-queue"
@@ -81,7 +70,7 @@ resource "aws_sqs_queue" "internal_report_dlq" {
   max_message_size           = var.sqs_maximum_message_size
   message_retention_seconds  = var.internal_report_queue_message_retention_time_seconds
   tags                       = local.tags
-  visibility_timeout_seconds = 1800 # Set to same time as the internal report queue.
+  visibility_timeout_seconds = 10800 # Set to same time as the internal report queue.
 }
 
 resource "aws_sqs_queue_policy" "internal_report_deadletter_queue_policy" {

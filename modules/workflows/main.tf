@@ -23,7 +23,6 @@ module "orca_internal_reconciliation_workflow" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  orca_sqs_internal_report_queue_id        = var.orca_sqs_internal_report_queue_id
 
   # Task ARNS needed for workflow template
   orca_lambda_get_current_archive_list_arn = var.orca_lambda_get_current_archive_list_arn

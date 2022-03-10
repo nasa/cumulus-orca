@@ -43,8 +43,3 @@ variable "orca_lambda_perform_orca_reconcile_arn" {
   type        = string
   description = "AWS ARN of the ORCA perform_orca_reconcile lambda."
 }
-
-variable "orca_sqs_internal_report_queue_id" {
-  type        = string
-  description = "The URL of the internal-report-queue SQS"
-}

@@ -6,6 +6,8 @@ writing differences to reconcile_catalog_mismatch_report, reconcile_orphan_repor
 """
 import json
 import os
+import random
+import time
 from typing import Any, Dict, Union
 
 import boto3
@@ -72,7 +74,6 @@ def task(
             None,
             user_engine,
         )
-        remove_job_from_queue(internal_report_queue_url, message_receipt_handle)
     except Exception as fatal_exception:
         # On error, set job status to failure.
         LOGGER.error(f"Encountered a fatal error: {fatal_exception}")
@@ -84,6 +85,7 @@ def task(
             user_engine,
         )
         raise
+    remove_job_from_queue(internal_report_queue_url, message_receipt_handle)
     return {OUTPUT_JOB_ID_KEY: job_id}
 
 
@@ -310,6 +312,19 @@ def generate_mismatch_reports_sql() -> TextClause:
     )
 
 
+# Define our delay function
+def exponential_delay(base_delay: int, exponential_backoff: int = 2) -> int:
+    delay = base_delay + (random.randint(0, 1000) / 1000.0)  # nosec
+    time.sleep(delay)
+    print(f"Slept for {delay} seconds.")
+    return base_delay * exponential_backoff
+
+
+max_retries = 3
+interval_seconds = 1
+backoff_rate = 2
+
+
 def remove_job_from_queue(internal_report_queue_url: str, message_receipt_handle: str):
     """
     Removes the completed job from the queue, preventing it from going to the dead-letter queue.
@@ -318,12 +333,19 @@ def remove_job_from_queue(internal_report_queue_url: str, message_receipt_handle
         internal_report_queue_url: The url of the queue containing the message.
         message_receipt_handle: message_receipt_handle: The ReceiptHandle for the event in the queue.
     """
-    aws_client_sqs = boto3.client("sqs")
-    # Remove message from the queue we are listening to.
-    aws_client_sqs.delete_message(
-        QueueUrl=internal_report_queue_url,
-        ReceiptHandle=message_receipt_handle,
-    )
+    for i in range(3):
+        try:
+            aws_client_sqs = boto3.client("sqs")
+            # Remove message from the queue we are listening to.
+            aws_client_sqs.delete_message(
+                QueueUrl=internal_report_queue_url,
+                ReceiptHandle=message_receipt_handle,
+            )
+            return
+        except Exception as queue_ex:  # nosec
+            pass
+    else:
+        raise queue_ex
 
 
 def handler(event: Dict[str, Union[str, int]], context) -> Dict[str, Any]:
