@@ -8,7 +8,9 @@ description: Research Notes on implementing delete functionality for ORCA.
 
 Some use cases for delete functionality are as follows:
 
-- As a DAAC, I would like remove data from ORCA that is invalid or expired in order to maintain a clean data archive.
+- As a DAAC, I would like to remove data from ORCA that is invalid or expired in order to maintain a clean data archive.
+    This can be achieved by a two-step process- an initial soft delete initiated by user, and a physical delete to permanently delete the data from S3 and database.
+    It is assumed that the process is not automated and must be initiated by the user with an API call for both steps.
 
 - As a DAAC, I would like to remove data from ORCA only if it has been in glacier for more than 90 days from initial ingest to keep from incurring additional cost for early removal.
 
@@ -17,14 +19,24 @@ Some use cases for delete functionality are as follows:
 
 - As a DAAC, I would like to configure the amount of time data remains in ORCA after being signaled to be deleted.	
 
-    This should be configurable by each DAAC that is using ORCA. Even after the data is deleted from Cumulus, it should stay in ORCA for x number of days for safety reasons.
+    This should be configurable by each DAAC that is using ORCA. Even after the data is deleted from Cumulus, it should stay in ORCA for x number of days for safety reasons. The configuration should be done using an environment variable during deployment. It is assumed that the configuration cannot be overridden except with a new deployment.
+    This is applicable for physical deletes. Note that it should also prevent deletion of certain data such as Level 0. One way to implement that would be to look into the data naming format and then probably avoid those prefix or names from deletion.
 
 
 - As a DAAC, I would like only authorized personnel to be able to remove data from ORCA in a controlled way to minimize risk of accidental or malicious deletions.
 
     This could be implemented with the use of NASA launchpad authentication. This [link](https://idmax.nasa.gov/nams/asset/255115) is used to submit a new GSFC workflow request and most probably will be used to only allow specific users to perform the deletes. Contact `robert.a.meredith@nasa.gov` and `tadd.buffington@nasa.gov` with any issues regarding launchpad integration.
+    The api gateway resource policy can be used to restrict certain users from accessing the api endpoint. For more information, see [Controlling access to an API with API Gateway resource policies](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-resource-policies.html).
+    Another technology to look into would be AWS Cognito which can be used to create customizable authentication and authorization solutions for the REST API. Amazon Cognito user pools are used to control who can invoke REST API methods. For more information, see [Control access to a REST API using Amazon Cognito user pools as authorizer](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-integrate-with-cognito.html).
+    :::note
+    Authentication and authorization piece of this functionality needs further research to make sure only authorized users can perform deletes.
+    :::
 
 - As a DAAC, I would like duplicate data to be versioned in ORCA in order to recover the proper version of the data based on the type of failure.	
+
+    Versioning can be enabled at the bucket level by configuring the bucket properties via terraform or AWS console. After versioning is enabled in a bucket, it can never return to an unversioned state but can only be suspended on that bucket. Versioning can help recover objects from accidental deletion or overwrite. For example, if an object is deleted, Amazon S3 inserts a delete marker instead of removing the object permanently. The delete marker becomes the current object version. If the object is overwritten, it results in a new object version in the bucket. The previous version can always be restored. For more information, see [Deleting object versions from a versioning-enabled bucket](https://docs.aws.amazon.com/AmazonS3/latest/userguide/DeletingObjectVersions.html).
+    The drawback of using versioning is the additional cost of storage for that versioned object. This can be solved by using object versioning with S3 Lifecycle policy. After a certain period of time defined, the versioned object will be marked as expired and automatically deleted from S3 bucket. This can be configured in bucket management via terraform. For more information, see [S3 lifecycle policy](https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lifecycle-mgmt.html)
+    
 
 
 - Perform a check with CMR and/or Cumulus to verify that the granule has been deleted from those locations prior to allowing the delete to proceed in ORCA.
@@ -120,3 +132,5 @@ Some of the cards created to finish the task include:
 - https://wiki.earthdata.nasa.gov/display/CUMULUS/2022-03-02+ORCA+Meeting+notes
 - https://docs.aws.amazon.com/AmazonS3/latest/userguide/ServerLogs.html
 - https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.delete_objects
+- https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-control-access-to-api.html
+- https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lifecycle-mgmt.html
