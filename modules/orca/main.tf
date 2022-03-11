@@ -15,13 +15,14 @@ module "orca_lambdas" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  buckets                           = var.buckets
-  lambda_subnet_ids                 = var.lambda_subnet_ids
-  permissions_boundary_arn          = var.permissions_boundary_arn
-  prefix                            = var.prefix
-  rds_security_group_id             = var.rds_security_group_id
-  vpc_id                            = var.vpc_id
-  orca_sqs_staged_recovery_queue_id = module.orca_sqs.orca_sqs_staged_recovery_queue_id
+  buckets                                              = var.buckets
+  lambda_subnet_ids                                    = var.lambda_subnet_ids
+  permissions_boundary_arn                             = var.permissions_boundary_arn
+  prefix                                               = var.prefix
+  rds_security_group_id                                = var.rds_security_group_id
+  vpc_id                                               = var.vpc_id
+  orca_secretsmanager_s3_access_credentials_secret_arn = module.orca_secretsmanager.s3_access_credentials_secret_arn
+  orca_sqs_staged_recovery_queue_id                    = module.orca_sqs.orca_sqs_staged_recovery_queue_id
   ## OPTIONAL
   tags                           = local.tags
   default_multipart_chunksize_mb = var.default_multipart_chunksize_mb

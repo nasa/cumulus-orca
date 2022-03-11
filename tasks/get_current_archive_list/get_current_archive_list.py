@@ -25,18 +25,15 @@ from sqlalchemy.future import Engine
 from sqlalchemy.sql.elements import TextClause
 
 OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY = "INTERNAL_REPORT_QUEUE_URL"
+OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY = "S3_CREDENTIALS_SECRET_ARN"  # nosec
 
-SECRETSMANAGER_S3_ACCESS_CREDENTIALS_KEY = "s3-access-credentials"
 S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY = "s3_access_key"
 S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY = "s3_secret_key"  # nosec
 
 MESSAGES_KEY = "Messages"
-RECORD_AWS_REGION_KEY = "awsRegion"
-RECORD_S3_KEY = "s3"
-S3_BUCKET_KEY = "bucket"
-BUCKET_NAME_KEY = "name"
-S3_OBJECT_KEY = "object"
-OBJECT_KEY_KEY = "key"
+RECORD_REPORT_BUCKET_REGION_KEY = "reportBucketRegion"
+RECORD_REPORT_BUCKET_NAME_KEY = "reportBucketName"
+RECORD_MANIFEST_KEY_KEY = "manifestKey"
 
 MANIFEST_SOURCE_BUCKET_KEY = "sourceBucket"
 MANIFEST_FILE_SCHEMA_KEY = "fileSchema"
@@ -61,7 +58,9 @@ except Exception as ex:
 
 
 def task(
-    record: Dict[str, Any],
+    report_bucket_region: str,
+    report_bucket_name: str,
+    manifest_key: str,
     s3_access_key: str,
     s3_secret_key: str,
     db_connect_info: Dict,
@@ -71,7 +70,9 @@ def task(
     for pulling manifest's data into sql.
 
     Args:
-        record: See input.json for details.
+        report_bucket_region: The region the report bucket resides in.
+        report_bucket_name: The name of the report bucket.
+        manifest_key: The key/path to the manifest within the report bucket.
         s3_access_key: The access key that, when paired with s3_secret_key, allows postgres to access s3.
         s3_secret_key: The secret key that, when paired with s3_access_key, allows postgres to access s3.
         db_connect_info: See shared_db.py's get_configuration for further details.
@@ -79,7 +80,7 @@ def task(
     Returns: See output.json for details.
     """
     # Filter out non-manifest files. Should be done prior to this.
-    filename = os.path.basename(record[RECORD_S3_KEY][S3_OBJECT_KEY][OBJECT_KEY_KEY])
+    filename = os.path.basename(manifest_key)
 
     if filename != "manifest.json":
         LOGGER.error(f"Illegal file '{filename}'. Must be 'manifest.json'")
@@ -87,9 +88,9 @@ def task(
 
     # See https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage-inventory-location.html for json example.
     manifest = get_manifest(
-        record[RECORD_S3_KEY][S3_OBJECT_KEY][OBJECT_KEY_KEY],
-        record[RECORD_S3_KEY][S3_BUCKET_KEY][BUCKET_NAME_KEY],
-        record[RECORD_AWS_REGION_KEY],
+        manifest_key,
+        report_bucket_name,
+        report_bucket_region,
     )
 
     user_engine = shared_db.get_user_connection(db_connect_info)
@@ -113,8 +114,8 @@ def task(
         update_job_with_s3_inventory_in_postgres(
             s3_access_key,
             s3_secret_key,
-            record[RECORD_S3_KEY][S3_BUCKET_KEY][BUCKET_NAME_KEY],
-            record[RECORD_AWS_REGION_KEY],
+            report_bucket_name,
+            report_bucket_region,
             # There will probably only be one file, but AWS leaves the option open.
             [file[FILES_KEY_KEY] for file in manifest[MANIFEST_FILES_KEY]],
             manifest[MANIFEST_FILE_SCHEMA_KEY],
@@ -431,16 +432,23 @@ def translate_s3_import_to_partitioned_data_sql() -> TextClause:
     )
 
 
-def get_s3_credentials_from_secrets_manager() -> tuple:
-    # todo: Move everything from here to get_configuration to shared lib. See shared_db for code origin.
-    prefix = os.environ["PREFIX"]
+def get_s3_credentials_from_secrets_manager(secret_arn: str) -> tuple:
+    """
+    Gets the s3 secret from the given arn and decompiles into two strings.
+    Args:
+        secret_arn: The arn of the secret containing s3 credentials.
+
+    Returns:
+        A tuple consisting of
+            (str) An access key
+            (str) A secret key
+    """
     secretsmanager = boto3.client(
         "secretsmanager", region_name=os.environ["AWS_REGION"]
     )
-    secret_id = f"{prefix}-orca-{SECRETSMANAGER_S3_ACCESS_CREDENTIALS_KEY}"
-    LOGGER.debug(f"Getting secret '{secret_id}'")
+    LOGGER.debug(f"Getting secret '{secret_arn}'")
     s3_credentials = json.loads(
-        secretsmanager.get_secret_value(SecretId=secret_id)["SecretString"]
+        secretsmanager.get_secret_value(SecretId=secret_arn)["SecretString"]
     )
     s3_access_key = s3_credentials.get(S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY, None)
     if s3_access_key is None or len(s3_access_key) == 0:
@@ -456,16 +464,18 @@ def get_s3_credentials_from_secrets_manager() -> tuple:
 
 def get_message_from_queue(
     internal_report_queue_url: str,
-) -> Tuple[Dict[str, Any], str]:
+) -> Tuple[str, str, str, str]:
     """
     Gets a message from the queue and formats it into input.json schema.
     Args:
         internal_report_queue_url: The url of the queue containing the message.
 
     Returns:
-        A dictionary with the following keys:
-            ReceiptHandle (str): The ReceiptHandle for the event in the queue.
-            Body (str): A json string that, when converted to an object, matches input.json.
+        A tuple consisting of
+            (str) The region the report bucket resides in
+            (str) The name of the report bucket
+            (str) The key/path to the manifest within the report bucket
+            (str) The receipt handle of the message in the queue
     """
     aws_client_sqs = boto3.client("sqs")
     sqs_response = aws_client_sqs.receive_message(
@@ -477,7 +487,12 @@ def get_message_from_queue(
     message = sqs_response[MESSAGES_KEY][0]
     record = json.loads(message["Body"])
     _INPUT_VALIDATE(record)
-    return record, message["ReceiptHandle"]
+    return (
+        record[RECORD_REPORT_BUCKET_REGION_KEY],
+        record[RECORD_REPORT_BUCKET_NAME_KEY],
+        record[RECORD_MANIFEST_KEY_KEY],
+        message["ReceiptHandle"],
+    )
 
 
 def handler(event: Dict[str, List], context) -> Dict[str, Any]:
@@ -489,6 +504,7 @@ def handler(event: Dict[str, List], context) -> Dict[str, Any]:
         context: An object passed through by AWS. Used for tracking.
     Environment Vars:
         INTERNAL_REPORT_QUEUE_URL (string): The URL of the SQS queue the job came from.
+        S3_CREDENTIALS_SECRET_ARN (string): The ARN of the secret containing s3 credentials.
         See shared_db.py's get_configuration for further details.
 
     Returns: See output.json for details.
@@ -505,13 +521,37 @@ def handler(event: Dict[str, List], context) -> Dict[str, Any]:
         )
         raise key_error
 
-    s3_access_key, s3_secret_key = get_s3_credentials_from_secrets_manager()
+    try:
+        s3_credentials_secret_arn = str(
+            os.environ[OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY]
+        )
+    except KeyError as key_error:
+        LOGGER.error(
+            f"{OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY} environment value not found."
+        )
+        raise key_error
+
+    s3_access_key, s3_secret_key = get_s3_credentials_from_secrets_manager(
+        s3_credentials_secret_arn
+    )
 
     db_connect_info = shared_db.get_configuration()
 
-    record, receipt_handle = get_message_from_queue(internal_report_queue_url)
+    (
+        report_bucket_region,
+        report_bucket_name,
+        manifest_key,
+        receipt_handle,
+    ) = get_message_from_queue(internal_report_queue_url)
 
-    result = task(record, s3_access_key, s3_secret_key, db_connect_info)
+    result = task(
+        report_bucket_region,
+        report_bucket_name,
+        manifest_key,
+        s3_access_key,
+        s3_secret_key,
+        db_connect_info,
+    )
     result[OUTPUT_RECEIPT_HANDLE_KEY] = receipt_handle
     _OUTPUT_VALIDATE(result)
     return result

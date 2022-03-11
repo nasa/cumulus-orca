@@ -9,7 +9,11 @@ output "kms_key_arn" {
 }
 
 output "secretsmanager_arn" {
-  description = "The Amazon Resource Name (ARN) of the AWS secretsmanager"
+  description = "The Amazon Resource Name (ARN) of the AWS secretsmanager"  # todo: It isn't. Just of one individual secret. What is consuming this? Can we safely change it?
   value       = aws_secretsmanager_secret.db_login.arn
 }
 
+output "s3_access_credentials_secret_arn" {
+  description = "The Amazon Resource Name (ARN) of the s3 credentials secret."
+  value       = aws_secretsmanager_secret.s3_access_credentials.arn
+}

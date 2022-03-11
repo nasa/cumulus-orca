@@ -4,16 +4,18 @@ Name: perform_orca_reconcile.py
 Description: Compares entries in reconcile_s3_objects to the Orca catalog,
 writing differences to reconcile_catalog_mismatch_report, reconcile_orphan_report, and reconcile_phantom_report.
 """
+import functools
 import json
 import os
 import random
 import time
-from typing import Any, Dict, Union
+from typing import Any, Callable, Dict, Union
 
 import boto3
 import fastjsonschema
 from cumulus_logger import CumulusLogger
 from orca_shared.database import shared_db
+from orca_shared.database.shared_db import RT
 from orca_shared.reconciliation import OrcaStatus, update_job
 from sqlalchemy import text
 from sqlalchemy.future import Engine
@@ -312,19 +314,68 @@ def generate_mismatch_reports_sql() -> TextClause:
     )
 
 
-# Define our delay function
-def exponential_delay(base_delay: int, exponential_backoff: int = 2) -> int:
-    delay = base_delay + (random.randint(0, 1000) / 1000.0)  # nosec
-    time.sleep(delay)
-    print(f"Slept for {delay} seconds.")
-    return base_delay * exponential_backoff
+# copied from shared_db.py
+# Retry decorator for functions
+def retry_error(
+    max_retries: int = 3,
+    backoff_in_seconds: int = 1,
+    backoff_factor: int = 2,
+) -> Callable[[Callable[[], RT]], Callable[[], RT]]:
+    """
+    Decorator takes arguments to adjust number of retries and backoff strategy.
+    Args:
+        max_retries (int): number of times to retry in case of failure.
+        backoff_in_seconds (int): Number of seconds to sleep the first time through.
+        backoff_factor (int): Value of the factor used for backoff.
+    """
+
+    def decorator_retry_error(func: Callable[[], RT]) -> Callable[[], RT]:
+        """
+        Main Decorator that takes our function as an argument
+        """
+
+        @functools.wraps(func)  # Use built in for decorators
+        def wrapper_retry_error(*args, **kwargs) -> RT:
+            """
+            Wrapper that performs our extra tasks on the function
+            """
+            # Initialize the retry loop
+            total_retries = 0
+
+            # Enter loop
+            while True:
+                # Try the function and catch the expected error
+                try:
+                    return func(*args, **kwargs)
+                except Exception:
+                    if total_retries == max_retries:
+                        # Log it and re-raise if we maxed our retries + initial attempt
+                        LOGGER.error(
+                            "Encountered Errors {total_attempts} times. Reached max retry limit.",
+                            total_attempts=total_retries,
+                        )
+                        raise
+                    else:
+                        # perform exponential delay
+                        backoff_time = (
+                            backoff_in_seconds * backoff_factor ** total_retries
+                            + random.uniform(0, 1)  # nosec
+                        )
+                        LOGGER.error(
+                            f"Encountered Error on attempt {total_retries}. "
+                            f"Sleeping {backoff_time} seconds."
+                        )
+                        time.sleep(backoff_time)
+                        total_retries += 1
+
+        # Return our wrapper
+        return wrapper_retry_error
+
+    # Return our decorator
+    return decorator_retry_error
 
 
-max_retries = 3
-interval_seconds = 1
-backoff_rate = 2
-
-
+@retry_error()
 def remove_job_from_queue(internal_report_queue_url: str, message_receipt_handle: str):
     """
     Removes the completed job from the queue, preventing it from going to the dead-letter queue.
