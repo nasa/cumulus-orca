@@ -3,6 +3,8 @@ id: research-orca-delete-functionality
 title: Research Notes on ORCA delete functionality.
 description: Research Notes on implementing delete functionality for ORCA.
 ---
+import MyImage from '@site/docs/templates/pan-zoom-image.mdx';
+import useBaseUrl from '@docusaurus/useBaseUrl';
 
 ## Delete functionality use cases
 
@@ -120,6 +122,18 @@ print(response)
 Additional logging should be collected during the deletion process to keep records for safety and security purposes. Some logging to capture might include who deleted the data, when how many granules were deleted over a particular timespan, from which collections was it deleted, and what workflow was used to delete them.
 
 Cloudwatch logs and cloudtrail can be used to collect logging information. In addition, S3 server access logging can be used at the bucket level which would provide detailed records for the requests that are made to a bucket. The log information can be useful in security and access audits. AWS will collect access log records, add the records in log files, and then upload log files to the target bucket as log objects. There is no extra charge for using the service except the cost for storing the log files in S3.
+
+### Initial ORCA Delete Functionality Architecture
+
+The following is a potential architecture for ORCA delete functionality. Note that this could possibly change after discussing open questions with other teams.
+
+<MyImage
+    imageSource={useBaseUrl('img/ORCA-Delete-Functionality-Architecture-Initial.png')}
+    imageAlt="System Context"
+    zoomInPic={useBaseUrl('img/zoom-in.png')}
+    zoomOutPic={useBaseUrl('img/zoom-out.png')}
+    resetPic={useBaseUrl('img/zoom-pan-reset.png')}
+/>
 
 ### Open Questions yet to be answered
 The following questions should be discussed with the broader team before implementing the work.
