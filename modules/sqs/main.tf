@@ -53,7 +53,7 @@ resource "aws_sqs_queue" "internal_report_queue" {
   message_retention_seconds  = var.internal_report_queue_message_retention_time_seconds
   tags                       = local.tags
   policy                     = data.aws_iam_policy_document.internal_report_queue_policy.json
-  visibility_timeout_seconds = 10800 # Set to 12 times lambda max time  # todo: Pass in the variable.
+  visibility_timeout_seconds = 30 # Does not cover maximum processing time. Reconsider when multiple consumers becomes possible.
   depends_on = [
     aws_sqs_queue.internal_report_dlq
   ]
@@ -70,7 +70,6 @@ resource "aws_sqs_queue" "internal_report_dlq" {
   max_message_size           = var.sqs_maximum_message_size
   message_retention_seconds  = var.internal_report_queue_message_retention_time_seconds
   tags                       = local.tags
-  visibility_timeout_seconds = 10800 # Set to same time as the internal report queue.
 }
 
 resource "aws_sqs_queue_policy" "internal_report_deadletter_queue_policy" {
@@ -167,7 +166,6 @@ resource "aws_sqs_queue" "staged_recovery_dlq" {
   max_message_size           = var.sqs_maximum_message_size
   message_retention_seconds  = var.staged_recovery_queue_message_retention_time_seconds
   tags                       = local.tags
-  visibility_timeout_seconds = 1800 # Set to same time as the staged recovery queue.
 }
 
 resource "aws_sqs_queue_policy" "staged_recovery_deadletter_queue_policy" {

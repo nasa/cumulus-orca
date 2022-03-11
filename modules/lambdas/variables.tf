@@ -132,6 +132,11 @@ variable "orca_recovery_retry_backoff" {
   description = "The multiplier by which the retry interval increases during each attempt."
 }
 
+variable "orca_secretsmanager_s3_access_credentials_secret_arn" {
+  type        = string
+  description = "The Amazon Resource Name (ARN) of the s3 credentials secret."
+}
+
 variable "orca_sqs_internal_report_queue_id" {
   type        = string
   description = "The URL of the internal-report-queue SQS"

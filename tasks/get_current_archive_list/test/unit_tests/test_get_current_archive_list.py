@@ -67,17 +67,9 @@ class TestGetCurrentArchiveList(
         mock_create_job.return_value = mock_job_id
 
         result = get_current_archive_list.task(
-            {
-                get_current_archive_list.RECORD_S3_KEY: {
-                    get_current_archive_list.S3_OBJECT_KEY: {
-                        get_current_archive_list.OBJECT_KEY_KEY: manifest_key_path
-                    },
-                    get_current_archive_list.S3_BUCKET_KEY: {
-                        get_current_archive_list.BUCKET_NAME_KEY: mock_report_bucket_name
-                    },
-                },
-                get_current_archive_list.RECORD_AWS_REGION_KEY: mock_report_bucket_aws_region,
-            },
+            mock_report_bucket_aws_region,
+            mock_report_bucket_name,
+            manifest_key_path,
             mock_s3_access_key,
             mock_s3_secret_key,
             copy.copy(db_connect_info),
@@ -149,17 +141,9 @@ class TestGetCurrentArchiveList(
 
         with self.assertRaises(Exception) as cm:
             get_current_archive_list.task(
-                {
-                    get_current_archive_list.RECORD_S3_KEY: {
-                        get_current_archive_list.S3_OBJECT_KEY: {
-                            get_current_archive_list.OBJECT_KEY_KEY: manifest_key_path
-                        },
-                        get_current_archive_list.S3_BUCKET_KEY: {
-                            get_current_archive_list.BUCKET_NAME_KEY: mock_report_bucket_name
-                        },
-                    },
-                    get_current_archive_list.RECORD_AWS_REGION_KEY: mock_report_bucket_aws_region,
-                },
+                mock_report_bucket_aws_region,
+                mock_report_bucket_name,
+                manifest_key_path,
                 mock_s3_access_key,
                 mock_s3_secret_key,
                 copy.copy(db_connect_info),
@@ -229,17 +213,9 @@ class TestGetCurrentArchiveList(
 
         with self.assertRaises(Exception) as cm:
             get_current_archive_list.task(
-                {
-                    get_current_archive_list.RECORD_S3_KEY: {
-                        get_current_archive_list.S3_OBJECT_KEY: {
-                            get_current_archive_list.OBJECT_KEY_KEY: manifest_key_path
-                        },
-                        get_current_archive_list.S3_BUCKET_KEY: {
-                            get_current_archive_list.BUCKET_NAME_KEY: mock_report_bucket_name
-                        },
-                    },
-                    get_current_archive_list.RECORD_AWS_REGION_KEY: mock_report_bucket_aws_region,
-                },
+                mock_report_bucket_aws_region,
+                mock_report_bucket_name,
+                manifest_key_path,
                 mock_s3_access_key,
                 mock_s3_secret_key,
                 copy.copy(db_connect_info),
@@ -622,7 +598,6 @@ class TestGetCurrentArchiveList(
         expected_exception = Exception(uuid.uuid4().__str__())
         mock_s3_access_key = Mock()
         mock_s3_secret_key = Mock()
-        mock_orca_archive_location = Mock()
         mock_report_bucket_name = Mock()
         mock_report_bucket_region = Mock()
         mock_csv_key_paths = [
@@ -692,7 +667,6 @@ class TestGetCurrentArchiveList(
         """
         mock_s3_access_key = Mock()
         mock_s3_secret_key = Mock()
-        mock_orca_archive_location = Mock()
         mock_report_bucket_name = Mock()
         mock_report_bucket_region = Mock()
         bad_csv_key_path = uuid.uuid4().__str__() + ".csv"
@@ -791,7 +765,8 @@ class TestGetCurrentArchiveList(
             "IsDeleteMarker,StorageClass, blah, Size, Key, IsLatest,Extra, Bucket,LastModifiedDate,ETag"
         )
         self.assertEqual(
-            "delete_flag bool, storage_class text, junk2 text, size_in_bytes bigint, key_path text, is_latest bool, junk6 text, orca_archive_location text, last_update timestamptz, etag text",
+            "delete_flag bool, storage_class text, junk2 text, size_in_bytes bigint, key_path text, is_latest bool, "
+            "junk6 text, orca_archive_location text, last_update timestamptz, etag text",
             result,
         )
 
@@ -802,7 +777,7 @@ class TestGetCurrentArchiveList(
         """
         Happy path for pulling secret values from secretsmanager
         """
-        prefix = uuid.uuid4().__str__()
+        mock_secret_arn = Mock()
         region = uuid.uuid4().__str__()
         s3_access_key = uuid.uuid4().__str__()
         s3_secret_key = uuid.uuid4().__str__()
@@ -819,16 +794,18 @@ class TestGetCurrentArchiveList(
 
         with patch.dict(
             os.environ,
-            {"PREFIX": prefix, "AWS_REGION": region},
+            {"AWS_REGION": region},
         ):
             (
                 result_access_key,
                 result_secret_key,
-            ) = get_current_archive_list.get_s3_credentials_from_secrets_manager()
+            ) = get_current_archive_list.get_s3_credentials_from_secrets_manager(
+                mock_secret_arn
+            )
 
         mock_client.assert_called_once_with("secretsmanager", region_name=region)
         mock_secrets_manager.get_secret_value.assert_called_once_with(
-            SecretId=f"{prefix}-orca-{get_current_archive_list.SECRETSMANAGER_S3_ACCESS_CREDENTIALS_KEY}"
+            SecretId=mock_secret_arn
         )
         self.assertEqual(s3_access_key, result_access_key)
         self.assertEqual(s3_secret_key, result_secret_key)
@@ -840,16 +817,16 @@ class TestGetCurrentArchiveList(
         """
         When returns are unset or empty strings, should raise KeyError.
         """
+        mock_secret_arn = Mock()
         s3_access_key = uuid.uuid4().__str__()
         s3_secret_key = uuid.uuid4().__str__()
-        prefix = uuid.uuid4().__str__()
         region = uuid.uuid4().__str__()
 
         mock_secrets_manager = mock_client.return_value
 
         with patch.dict(
             os.environ,
-            {"PREFIX": prefix, "AWS_REGION": region},
+            {"AWS_REGION": region},
         ):
             for secret_key in [
                 get_current_archive_list.S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY,
@@ -865,7 +842,9 @@ class TestGetCurrentArchiveList(
                         "SecretString": json.dumps(values)
                     }
                     with self.assertRaises(ValueError) as cm:
-                        get_current_archive_list.get_s3_credentials_from_secrets_manager()
+                        get_current_archive_list.get_s3_credentials_from_secrets_manager(
+                            mock_secret_arn
+                        )
                     self.assertEqual(
                         f"{secret_key} secret is not set.",
                         str(cm.exception),
@@ -875,7 +854,9 @@ class TestGetCurrentArchiveList(
                         "SecretString": json.dumps(values)
                     }
                     with self.assertRaises(ValueError) as cm:
-                        get_current_archive_list.get_s3_credentials_from_secrets_manager()
+                        get_current_archive_list.get_s3_credentials_from_secrets_manager(
+                            mock_secret_arn
+                        )
                     self.assertEqual(
                         f"{secret_key} secret is not set.",
                         str(cm.exception),
@@ -886,16 +867,13 @@ class TestGetCurrentArchiveList(
         """
         Happy path for pulling a message from the internal report queue.
         """
+        report_bucket_aws_region = uuid.uuid4().__str__()
+        report_bucket_name = uuid.uuid4().__str__()
+        manifest_key_path = uuid.uuid4().__str__()
         expected_record = {
-            get_current_archive_list.RECORD_S3_KEY: {
-                get_current_archive_list.S3_OBJECT_KEY: {
-                    get_current_archive_list.OBJECT_KEY_KEY: uuid.uuid4().__str__()
-                },
-                get_current_archive_list.S3_BUCKET_KEY: {
-                    get_current_archive_list.BUCKET_NAME_KEY: uuid.uuid4().__str__()
-                },
-            },
-            get_current_archive_list.RECORD_AWS_REGION_KEY: uuid.uuid4().__str__(),
+            get_current_archive_list.RECORD_REPORT_BUCKET_REGION_KEY: report_bucket_aws_region,
+            get_current_archive_list.RECORD_MANIFEST_KEY_KEY: manifest_key_path,
+            get_current_archive_list.RECORD_REPORT_BUCKET_NAME_KEY: report_bucket_name,
         }
         expected_receipt_handle = uuid.uuid4().__str__()
 
@@ -910,12 +888,19 @@ class TestGetCurrentArchiveList(
 
         mock_internal_report_queue_url = Mock()
 
-        record, receipt_handle = get_current_archive_list.get_message_from_queue(
+        (
+            result_region,
+            result_bucket_name,
+            result_key,
+            result_receipt_handle,
+        ) = get_current_archive_list.get_message_from_queue(
             mock_internal_report_queue_url
         )
 
-        self.assertEqual(expected_receipt_handle, receipt_handle)
-        self.assertEqual(expected_record, record)
+        self.assertEqual(report_bucket_aws_region, result_region)
+        self.assertEqual(report_bucket_name, result_bucket_name)
+        self.assertEqual(manifest_key_path, result_key)
+        self.assertEqual(expected_receipt_handle, result_receipt_handle)
 
         mock_client.assert_called_once_with("sqs")
         mock_client.return_value.receive_message.assert_called_once_with(
@@ -930,13 +915,11 @@ class TestGetCurrentArchiveList(
         """
         If the body is not in the correct format, should raise an error.
         """
+        report_bucket_aws_region = uuid.uuid4().__str__()
+        report_bucket_name = uuid.uuid4().__str__()
         expected_record = {
-            get_current_archive_list.RECORD_S3_KEY: {
-                get_current_archive_list.S3_OBJECT_KEY: {
-                    get_current_archive_list.OBJECT_KEY_KEY: uuid.uuid4().__str__()
-                },
-            },
-            get_current_archive_list.RECORD_AWS_REGION_KEY: uuid.uuid4().__str__(),
+            get_current_archive_list.RECORD_REPORT_BUCKET_REGION_KEY: report_bucket_aws_region,
+            get_current_archive_list.RECORD_REPORT_BUCKET_NAME_KEY: report_bucket_name,
         }
         expected_receipt_handle = uuid.uuid4().__str__()
 
@@ -956,8 +939,9 @@ class TestGetCurrentArchiveList(
                 mock_internal_report_queue_url
             )
         self.assertEqual(
-            f"data.{get_current_archive_list.RECORD_S3_KEY} must contain ['{get_current_archive_list.S3_BUCKET_KEY}', "
-            f"'{get_current_archive_list.S3_OBJECT_KEY}'] properties",
+            f"data must contain ['{get_current_archive_list.RECORD_REPORT_BUCKET_REGION_KEY}', "
+            f"'{get_current_archive_list.RECORD_REPORT_BUCKET_NAME_KEY}', "
+            f"'{get_current_archive_list.RECORD_MANIFEST_KEY_KEY}'] properties",
             str(cm.exception),
         )
 
@@ -978,6 +962,10 @@ class TestGetCurrentArchiveList(
         """
         Happy path for handler assembling information to call Task.
         """
+        secret_arn = uuid.uuid4().__str__()
+        mock_report_bucket_aws_region = Mock()
+        mock_report_bucket_name = Mock()
+        mock_manifest_key_path = Mock()
         expected_result = {
             get_current_archive_list.OUTPUT_JOB_ID_KEY: random.randint(  # nosec
                 0, 1000
@@ -991,18 +979,12 @@ class TestGetCurrentArchiveList(
         ] = receipt_handle
 
         mock_context = Mock()
-        record = {
-            get_current_archive_list.RECORD_S3_KEY: {
-                get_current_archive_list.S3_BUCKET_KEY: {
-                    get_current_archive_list.BUCKET_NAME_KEY: uuid.uuid4().__str__()
-                },
-                get_current_archive_list.S3_OBJECT_KEY: {
-                    get_current_archive_list.OBJECT_KEY_KEY: uuid.uuid4().__str__()
-                },
-            },
-            get_current_archive_list.RECORD_AWS_REGION_KEY: uuid.uuid4().__str__(),
-        }
-        mock_get_message_from_queue.return_value = record, receipt_handle
+        mock_get_message_from_queue.return_value = (
+            mock_report_bucket_aws_region,
+            mock_report_bucket_name,
+            mock_manifest_key_path,
+            receipt_handle,
+        )
 
         s3_access_key = uuid.uuid4().__str__()
         s3_secret_key = uuid.uuid4().__str__()
@@ -1017,17 +999,23 @@ class TestGetCurrentArchiveList(
         with patch.dict(
             os.environ,
             {
-                get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY: report_queue_url
+                get_current_archive_list.OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY: secret_arn,
+                get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY: report_queue_url,
             },
         ):
             result = get_current_archive_list.handler(event, mock_context)
 
         mock_LOGGER.setMetadata.assert_called_once_with(event, mock_context)
-        mock_get_s3_credentials_from_secrets_manager.assert_called_once_with()
+        mock_get_s3_credentials_from_secrets_manager.assert_called_once_with(secret_arn)
         mock_get_configuration.assert_called_once_with()
         mock_get_message_from_queue.assert_called_once_with(report_queue_url)
         mock_task.assert_called_once_with(
-            record, s3_access_key, s3_secret_key, mock_get_configuration.return_value
+            mock_report_bucket_aws_region,
+            mock_report_bucket_name,
+            mock_manifest_key_path,
+            s3_access_key,
+            s3_secret_key,
+            mock_get_configuration.return_value,
         )
         self.assertEqual(expected_result, result)
 
@@ -1047,23 +1035,21 @@ class TestGetCurrentArchiveList(
         """
         Violating output.json schema should raise an error.
         """
+        secret_arn = uuid.uuid4().__str__()
+        mock_report_bucket_aws_region = Mock()
+        mock_report_bucket_name = Mock()
+        mock_manifest_key_path = Mock()
         expected_result = {}
         mock_task.return_value = copy.deepcopy(expected_result)
         receipt_handle = uuid.uuid4().__str__()
 
         mock_context = Mock()
-        record = {
-            get_current_archive_list.RECORD_S3_KEY: {
-                get_current_archive_list.S3_BUCKET_KEY: {
-                    get_current_archive_list.BUCKET_NAME_KEY: uuid.uuid4().__str__()
-                },
-                get_current_archive_list.S3_OBJECT_KEY: {
-                    get_current_archive_list.OBJECT_KEY_KEY: uuid.uuid4().__str__()
-                },
-            },
-            get_current_archive_list.RECORD_AWS_REGION_KEY: uuid.uuid4().__str__(),
-        }
-        mock_get_message_from_queue.return_value = record, receipt_handle
+        mock_get_message_from_queue.return_value = (
+            mock_report_bucket_aws_region,
+            mock_report_bucket_name,
+            mock_manifest_key_path,
+            receipt_handle,
+        )
 
         s3_access_key = uuid.uuid4().__str__()
         s3_secret_key = uuid.uuid4().__str__()
@@ -1079,7 +1065,8 @@ class TestGetCurrentArchiveList(
             with patch.dict(
                 os.environ,
                 {
-                    get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY: report_queue_url
+                    get_current_archive_list.OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY: secret_arn,
+                    get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY: report_queue_url,
                 },
             ):
                 get_current_archive_list.handler(event, mock_context)
@@ -1087,7 +1074,12 @@ class TestGetCurrentArchiveList(
         mock_LOGGER.setMetadata.assert_called_once_with(event, mock_context)
         mock_get_message_from_queue.assert_called_once_with(report_queue_url)
         mock_task.assert_called_once_with(
-            record, s3_access_key, s3_secret_key, mock_get_configuration.return_value
+            mock_report_bucket_aws_region,
+            mock_report_bucket_name,
+            mock_manifest_key_path,
+            s3_access_key,
+            s3_secret_key,
+            mock_get_configuration.return_value,
         )
         self.assertEqual(
             f"data must contain ['{get_current_archive_list.OUTPUT_JOB_ID_KEY}', "
