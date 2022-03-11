@@ -2,7 +2,8 @@
 
 **Lambda function post_to_queue_and_trigger_step_function **
 
-Receives an events from an SQS queue, sends it to another queue, then triggers an AWS step function.
+Receives an events from an SQS queue, translates to get_current_archive_list's input format,
+sends it to another queue, then triggers the internal report step function.
 
 Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/development-guide/code/contrib-code-intro) for information on environment setup and testing.
 
