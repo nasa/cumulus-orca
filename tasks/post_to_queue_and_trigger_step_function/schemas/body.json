@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/post_to_queue_and_trigger_step_function/schemas/body.json",
+  "title": "post_to_queue_and_trigger_step_function Lambda Config",
+  "description": "The body of SQS messages posted to the post_to_queue_and_trigger_step_function Lambda.",
+  "type": "object",
+  "required": [
+    "awsRegion",
+    "s3"
+  ],
+  "properties": {
+    "awsRegion": {
+      "type": "string",
+      "description": "The region containing the bucket the event occurred in."
+    },
+    "s3": {
+      "type": "object",
+      "description": "Details regarding the s3 event.",
+      "required": [
+        "bucket",
+        "object"
+      ],
+      "properties": {
+        "bucket": {
+          "description": "Metadata for the bucket the event occurred in.",
+          "type": "object",
+          "required": [
+            "name"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "The name of the bucket the event occurred in."
+            }
+          }
+        },
+        "object": {
+          "type": "object",
+          "description": "Details about the file that the event occurred on.",
+          "required": [
+            "key"
+          ],
+          "properties": {
+            "key": {
+              "type": "string",
+              "description": "The full path within the s3 bucket to the file that the event occurred on."
+            }
+          }
+        }
+      }
+    }
+  }
+}

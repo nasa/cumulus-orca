@@ -1,0 +1,5 @@
+cumulus-message-adapter-python==2.0.1
+SQLAlchemy==1.4.11
+fastjsonschema~=2.15.1
+../../shared_libraries[database, reconciliation]
+boto3==1.18.40
