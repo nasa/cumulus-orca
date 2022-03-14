@@ -888,19 +888,14 @@ class TestGetCurrentArchiveList(
 
         mock_internal_report_queue_url = Mock()
 
-        (
-            result_region,
-            result_bucket_name,
-            result_key,
-            result_receipt_handle,
-        ) = get_current_archive_list.get_message_from_queue(
+        result = get_current_archive_list.get_message_from_queue(
             mock_internal_report_queue_url
         )
 
-        self.assertEqual(report_bucket_aws_region, result_region)
-        self.assertEqual(report_bucket_name, result_bucket_name)
-        self.assertEqual(manifest_key_path, result_key)
-        self.assertEqual(expected_receipt_handle, result_receipt_handle)
+        self.assertEqual(report_bucket_aws_region, result.report_bucket_region)
+        self.assertEqual(report_bucket_name, result.report_bucket_name)
+        self.assertEqual(manifest_key_path, result.manifest_key)
+        self.assertEqual(expected_receipt_handle, result.message_receipt_handle)
 
         mock_client.assert_called_once_with("sqs")
         mock_client.return_value.receive_message.assert_called_once_with(
@@ -966,6 +961,7 @@ class TestGetCurrentArchiveList(
         mock_report_bucket_aws_region = Mock()
         mock_report_bucket_name = Mock()
         mock_manifest_key_path = Mock()
+        receipt_handle = uuid.uuid4().__str__()
         expected_result = {
             get_current_archive_list.OUTPUT_JOB_ID_KEY: random.randint(  # nosec
                 0, 1000
@@ -973,13 +969,12 @@ class TestGetCurrentArchiveList(
             get_current_archive_list.OUTPUT_ORCA_ARCHIVE_LOCATION_KEY: uuid.uuid4().__str__(),  # nosec
         }
         mock_task.return_value = copy.deepcopy(expected_result)
-        receipt_handle = uuid.uuid4().__str__()
         expected_result[
             get_current_archive_list.OUTPUT_RECEIPT_HANDLE_KEY
         ] = receipt_handle
 
         mock_context = Mock()
-        mock_get_message_from_queue.return_value = (
+        mock_get_message_from_queue.return_value = get_current_archive_list.MessageData(
             mock_report_bucket_aws_region,
             mock_report_bucket_name,
             mock_manifest_key_path,
@@ -1044,7 +1039,7 @@ class TestGetCurrentArchiveList(
         receipt_handle = uuid.uuid4().__str__()
 
         mock_context = Mock()
-        mock_get_message_from_queue.return_value = (
+        mock_get_message_from_queue.return_value = get_current_archive_list.MessageData(
             mock_report_bucket_aws_region,
             mock_report_bucket_name,
             mock_manifest_key_path,

@@ -6,8 +6,9 @@ Description: Receives a list of s3 events from an SQS queue, and loads the s3 in
 import json
 import os
 import os.path
+from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List
 
 # noinspection SpellCheckingInspection,PyPackageRequirements
 import boto3
@@ -462,20 +463,30 @@ def get_s3_credentials_from_secrets_manager(secret_arn: str) -> tuple:
     return s3_access_key, s3_secret_key
 
 
+@dataclass(frozen=True)
+class MessageData:
+    """
+    aws_region: (str) The region the report bucket resides in
+    report_bucket_name: (str) The name of the report bucket
+    manifest_key: (str) The key/path to the manifest within the report bucket
+    message_receipt: (str) The receipt handle of the message in the queue
+    """
+    report_bucket_region: str
+    report_bucket_name: str
+    manifest_key: str
+    message_receipt_handle: str
+
+
 def get_message_from_queue(
     internal_report_queue_url: str,
-) -> Tuple[str, str, str, str]:
+) -> MessageData:
     """
     Gets a message from the queue and formats it into input.json schema.
     Args:
         internal_report_queue_url: The url of the queue containing the message.
 
     Returns:
-        A tuple consisting of
-            (str) The region the report bucket resides in
-            (str) The name of the report bucket
-            (str) The key/path to the manifest within the report bucket
-            (str) The receipt handle of the message in the queue
+        A MessageData consisting of the relevant data.
     """
     aws_client_sqs = boto3.client("sqs")
     sqs_response = aws_client_sqs.receive_message(
@@ -487,7 +498,7 @@ def get_message_from_queue(
     message = sqs_response[MESSAGES_KEY][0]
     record = json.loads(message["Body"])
     _INPUT_VALIDATE(record)
-    return (
+    return MessageData(
         record[RECORD_REPORT_BUCKET_REGION_KEY],
         record[RECORD_REPORT_BUCKET_NAME_KEY],
         record[RECORD_MANIFEST_KEY_KEY],
@@ -537,21 +548,16 @@ def handler(event: Dict[str, List], context) -> Dict[str, Any]:
 
     db_connect_info = shared_db.get_configuration()
 
-    (
-        report_bucket_region,
-        report_bucket_name,
-        manifest_key,
-        receipt_handle,
-    ) = get_message_from_queue(internal_report_queue_url)
+    message_data = get_message_from_queue(internal_report_queue_url)
 
     result = task(
-        report_bucket_region,
-        report_bucket_name,
-        manifest_key,
+        message_data.report_bucket_region,
+        message_data.report_bucket_name,
+        message_data.manifest_key,
         s3_access_key,
         s3_secret_key,
         db_connect_info,
     )
-    result[OUTPUT_RECEIPT_HANDLE_KEY] = receipt_handle
+    result[OUTPUT_RECEIPT_HANDLE_KEY] = message_data.message_receipt_handle
     _OUTPUT_VALIDATE(result)
     return result
