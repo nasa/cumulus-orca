@@ -31,14 +31,16 @@ module "orca_lambdas" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  orca_default_bucket                = var.orca_default_bucket
-  orca_sqs_internal_report_queue_id  = module.orca_sqs.orca_sqs_internal_report_queue_id
-  orca_sqs_metadata_queue_arn        = module.orca_sqs.orca_sqs_metadata_queue_arn
-  orca_sqs_metadata_queue_id         = module.orca_sqs.orca_sqs_metadata_queue_id
-  orca_sqs_staged_recovery_queue_arn = module.orca_sqs.orca_sqs_staged_recovery_queue_arn
-  orca_sqs_status_update_queue_id    = module.orca_sqs.orca_sqs_status_update_queue_id
-  orca_sqs_status_update_queue_arn   = module.orca_sqs.orca_sqs_status_update_queue_arn
-  restore_object_role_arn            = module.orca_iam.restore_object_role_arn
+  orca_default_bucket                           = var.orca_default_bucket
+  orca_sfn_internal_reconciliation_workflow_arn = module.orca_workflows.orca_sfn_internal_reconciliation_workflow_arn  # todo: Circular dependency. Need to split out resources so we aren't locked down to pre-defined priorities on resource type.
+  orca_sqs_internal_report_queue_id             = module.orca_sqs.orca_sqs_internal_report_queue_id
+  orca_sqs_metadata_queue_arn                   = module.orca_sqs.orca_sqs_metadata_queue_arn
+  orca_sqs_metadata_queue_id                    = module.orca_sqs.orca_sqs_metadata_queue_id
+  orca_sqs_s3_inventory_queue_id                = module.orca_sqs.orca_sqs_s3_inventory_queue_id
+  orca_sqs_staged_recovery_queue_arn            = module.orca_sqs.orca_sqs_staged_recovery_queue_arn
+  orca_sqs_status_update_queue_id               = module.orca_sqs.orca_sqs_status_update_queue_id
+  orca_sqs_status_update_queue_arn              = module.orca_sqs.orca_sqs_status_update_queue_arn
+  restore_object_role_arn                       = module.orca_iam.restore_object_role_arn
 
   ## OPTIONAL
   orca_ingest_lambda_memory_size         = var.orca_ingest_lambda_memory_size

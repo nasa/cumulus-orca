@@ -312,9 +312,10 @@ def handler(event: Dict[str, Any], context) -> None:
                 raise error
         environment_args.append(env_var_value)
 
-    if len(event["Records"]) != 1:
-        raise ValueError(f"Must be passed a single record. Was {len(event['Records'])}")
-    record = event["Records"][0]
+    records = event["Records"]
+    if len(records) != 1:
+        raise ValueError(f"Must be passed a single record. Was {len(records)}")
+    record = records[0]
     LOGGER.debug("Event passed = {event}", event=event)
     # grab the key_path and bucket name from record
     key_path = record["s3"]["object"]["key"]

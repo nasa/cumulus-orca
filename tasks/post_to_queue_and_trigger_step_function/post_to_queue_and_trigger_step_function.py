@@ -4,18 +4,17 @@ Name: post_to_queue_and_trigger_step_function.py
 Description: Receives an events from an SQS queue, translates to get_current_archive_list's input format,
 sends it to another queue, then triggers the internal report step function.
 """
-import functools
 import json
 import os
-import random
-import time
-from typing import Any, Dict, List, Callable, TypeVar
+from typing import Any, Dict, List, TypeVar
 
 import boto3
 import fastjsonschema
 # noinspection PyPackageRequirements
-from botocore.client import BaseClient
 from cumulus_logger import CumulusLogger
+
+import sqs_library
+from sqs_library import retry_error
 
 OS_ENVIRON_TARGET_QUEUE_URL_KEY = "TARGET_QUEUE_URL"
 OS_ENVIRON_STEP_FUNCTION_ARN_KEY = "STEP_FUNCTION_ARN"
@@ -43,7 +42,7 @@ except Exception as ex:
     raise
 
 
-def task(
+def process_records(
     records: List[Dict[str, Any]],
     target_queue_url: str,
     step_function_arn: str,
@@ -56,37 +55,30 @@ def task(
         step_function_arn: The arn of the step function to trigger.
     Returns: See output.json for details.
     """
-    aws_client_sqs = boto3.client("sqs")
-    aws_client_sfn = boto3.client("stepfunctions")
     for record in records:
         # noinspection PyBroadException
         try:
-            process_record(aws_client_sqs, aws_client_sfn, target_queue_url, step_function_arn, record)
+            process_record(record, target_queue_url, step_function_arn)
         except Exception as _:
             # Do not halt on errors. Logging will be handled internally.
+            # todo: post_to_catalog doesn't mask errors. How does this line up?
             pass
 
 
 def process_record(
-    aws_client_sqs: BaseClient,
-    aws_client_sfn: BaseClient,
+    record: Dict[str, Any],
     target_queue_url: str,
     step_function_arn: str,
-    record: Dict[str, Any],
 ) -> None:
     """
 
     Args:
-        aws_client_sqs: Client for communicating with SQS.
-        aws_client_sfn: Client for communicating with Step Functions.
+        record: The record to post.
         target_queue_url: The url of the queue to post the records to.
         step_function_arn: The arn of the step function to trigger.
-        record: The record to post.
     """
     new_body = translate_record_body(record["body"])
     send_body_to_queue_and_trigger_workflow(
-        aws_client_sqs,
-        aws_client_sfn,
         target_queue_url,
         step_function_arn,
         new_body,
@@ -114,8 +106,6 @@ def translate_record_body(body: str) -> str:
 
 
 def send_body_to_queue_and_trigger_workflow(
-    aws_client_sqs: BaseClient,
-    aws_client_sfn: BaseClient,
     target_queue_url: str,
     step_function_arn: str,
     body: str,
@@ -123,82 +113,16 @@ def send_body_to_queue_and_trigger_workflow(
     """
     Posts the records to the target_queue_url, triggering state machine after each one.
     Args:
-        aws_client_sqs: Client for communicating with SQS.
-        aws_client_sfn: Client for communicating with Step Functions.
         target_queue_url: The url of the queue to post the records to.
         step_function_arn: The arn of the step function to trigger.
         body: The body to post.
     Returns: See output.json for details.
     """
 
-    with retry_error():
-        aws_client_sqs.send_message(target_queue_url, body)
+    sqs_library.post_to_fifo_queue(target_queue_url, body)
 
     with retry_error():
-        aws_client_sfn.start_execution(step_function_arn)
-
-
-# copied from shared_db.py
-# Retry decorator for functions
-def retry_error(
-    max_retries: int = 3,
-    backoff_in_seconds: int = 1,
-    backoff_factor: int = 2,
-) -> Callable[[Callable[[], RT]], Callable[[], RT]]:
-    """
-    Decorator takes arguments to adjust number of retries and backoff strategy.
-    Args:
-        max_retries (int): number of times to retry in case of failure.
-        backoff_in_seconds (int): Number of seconds to sleep the first time through.
-        backoff_factor (int): Value of the factor used for backoff.
-    """
-
-    def decorator_retry_error(func: Callable[[], RT]) -> Callable[[], RT]:
-        """
-        Main Decorator that takes our function as an argument
-        """
-
-        @functools.wraps(func)  # Use built in for decorators
-        def wrapper_retry_error(*args, **kwargs) -> RT:
-            """
-            Wrapper that performs our extra tasks on the function
-            """
-            # Initialize the retry loop
-            total_retries = 0
-
-            # Enter loop
-            while True:
-                # Try the function and catch the expected error
-                # noinspection PyBroadException
-                try:
-                    # noinspection PyArgumentList
-                    return func(*args, **kwargs)
-                except Exception:
-                    if total_retries == max_retries:
-                        # Log it and re-raise if we maxed our retries + initial attempt
-                        LOGGER.error(
-                            "Encountered Errors {total_attempts} times. Reached max retry limit.",
-                            total_attempts=total_retries,
-                        )
-                        raise
-                    else:
-                        # perform exponential delay
-                        backoff_time = (
-                            backoff_in_seconds * backoff_factor ** total_retries
-                            + random.uniform(0, 1)  # nosec
-                        )
-                        LOGGER.error(
-                            f"Encountered Error on attempt {total_retries}. "
-                            f"Sleeping {backoff_time} seconds."
-                        )
-                        time.sleep(backoff_time)
-                        total_retries += 1
-
-        # Return our wrapper
-        return wrapper_retry_error
-
-    # Return our decorator
-    return decorator_retry_error
+        boto3.client("stepfunctions").start_execution(step_function_arn)
 
 
 def handler(event: Dict[str, Any], context) -> None:
@@ -210,8 +134,7 @@ def handler(event: Dict[str, Any], context) -> None:
         event: See input.json for details.
         context: An object passed through by AWS. Used for tracking.
     Environment Vars:
-        INTERNAL_REPORT_QUEUE_URL (string): The URL of the SQS queue the job came from.
-        See shared_db.py's get_configuration for further details.
+        TARGET_QUEUE_URL (string): The URL of the SQS queue the job came from.
     Returns: See output.json for details.
     """
     LOGGER.setMetadata(event, context)
@@ -229,4 +152,10 @@ def handler(event: Dict[str, Any], context) -> None:
         LOGGER.error(f"{OS_ENVIRON_STEP_FUNCTION_ARN_KEY} environment value not found.")
         raise key_error
 
-    task(event["Records"], target_queue_url, state_machine_arn)
+    # todo: add to tests
+    records = event["Records"]
+    if len(records) != 1:
+        raise ValueError(f"Must be passed a single record. Was {len(records)}")
+    record = records[0]
+
+    process_record(record, target_queue_url, state_machine_arn)

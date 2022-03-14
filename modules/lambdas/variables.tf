@@ -137,6 +137,11 @@ variable "orca_secretsmanager_s3_access_credentials_secret_arn" {
   description = "The Amazon Resource Name (ARN) of the s3 credentials secret."
 }
 
+output "orca_sfn_internal_reconciliation_workflow_arn" {
+  type        = string
+  description = "The ARN of the nternal_reconciliation step function."
+}
+
 variable "orca_sqs_internal_report_queue_id" {
   type        = string
   description = "The URL of the internal-report-queue SQS"
@@ -150,6 +155,11 @@ variable "orca_sqs_metadata_queue_arn" {
 variable "orca_sqs_metadata_queue_id" {
   type        = string
   description = "The URL of the metadata-queue SQS"
+}
+
+variable "orca_sqs_s3_inventory_queue_id" {
+  type        = string
+  description = "The URL of the s3-inventory-queue SQS"
 }
 
 variable "orca_sqs_staged_recovery_queue_id" {

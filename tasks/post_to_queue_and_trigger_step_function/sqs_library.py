@@ -1,21 +1,21 @@
 """
 Name: sqs_library.py
-Description: library for copy_to_glacier lambda function for posting to metadata SQS queue.
+Description: library for copy_to_glacier lambda function for posting to fifo SQS queue.
 """
 # todo: Move to shared lib
+# todo: Include tests from copy_to_glacier
 # Standard libraries
 import functools
 import hashlib
 import json
-import os
 import random
 import time
 from typing import Any, Callable, Dict, TypeVar
 
 # Third party libraries
 import boto3
-from cumulus_logger import CumulusLogger
 import fastjsonschema
+from cumulus_logger import CumulusLogger
 
 # Set Cumulus LOGGER
 LOGGER = CumulusLogger(name="ORCA")
@@ -23,6 +23,7 @@ MAX_RETRIES = 3  # number of times to retry.
 BACKOFF_FACTOR = 2  # Value of the factor used to backoff
 INITIAL_BACKOFF_IN_SECONDS = 1  # Number of seconds to sleep the first time through.
 RT = TypeVar("RT")  # return type
+
 
 # Retry decorator for function
 def retry_error(
@@ -54,7 +55,9 @@ def retry_error(
             # Enter loop
             while True:
                 # Try the function and catch the expected error
+                # noinspection PyBroadException
                 try:
+                    # noinspection PyArgumentList
                     return func(*args, **kwargs)
                 except fastjsonschema.JsonSchemaException:
                     raise
@@ -88,34 +91,16 @@ def retry_error(
     return decorator_retry_error
 
 
-def get_aws_region() -> str:
-    """
-    Gets AWS region variable from the runtime environment variable.
-        Returns:
-            The AWS region variable.
-        Raises:
-            Exception: Thrown if AWS region is empty or None.
-    """
-    LOGGER.debug("Getting environment variable AWS_REGION value.")
-    aws_region = os.getenv("AWS_REGION", None)
-    if aws_region is None or len(aws_region) == 0:
-        message = "Runtime environment variable AWS_REGION is not set."
-        LOGGER.critical(message)
-        raise ValueError(message)
-    LOGGER.debug(f"Got environment variable for AWS_REGION = {aws_region}")
-    return aws_region
-
-
 @retry_error()
-def post_to_metadata_queue(
+def post_to_fifo_queue(
+    queue_url: str,
     sqs_body: Dict[str, Any],
-    metadata_queue_url: str,
 ) -> None:
     """
-    Posts metadata information to the metadata SQS queue.
+    Posts information to the given SQS queue.
     Args:
-        sqs_body: A dictionary containing the metadata objects that will be sent to SQS.
-        metadata_queue_url: The metadata SQS queue URL defined by AWS.
+        sqs_body: A dictionary containing the objects that will be sent to SQS.
+        queue_url: The SQS queue URL defined by AWS.
     Raises:
         None
     """
@@ -127,22 +112,19 @@ def post_to_metadata_queue(
     validate(sqs_body)
     body = json.dumps(sqs_body)
     LOGGER.debug(
-        "Creating SQS resource for {metadata_queue_url}",
-        metadata_queue_url=metadata_queue_url,
+        f"Creating SQS resource for {queue_url}",
     )
-    mysqs_resource = boto3.resource("sqs", region_name=get_aws_region())
-    mysqs = mysqs_resource.Queue(metadata_queue_url)
     deduplication_id = hashlib.sha256(body.encode("utf8")).hexdigest()
 
     md5_body = hashlib.md5(body.encode("utf8")).hexdigest()  # nosec
 
-    LOGGER.debug("Sending the following data to metadata queue: {body}", body=body)
-    response = mysqs.send_message(
-        QueueUrl=metadata_queue_url,
+    LOGGER.debug("Sending the following data to queue: {body}", body=body)
+    response = boto3.client("sqs").send_message(  # todo: Make sure the changes I made here work.
+        QueueUrl=queue_url,
         MessageDeduplicationId=deduplication_id,
-        MessageGroupId="metadata_message",
+        MessageGroupId="general_group",
         MessageBody=body,
-    )  # todo: Look at changes in post_to_queue_and_trigger_step_function
+    )
     LOGGER.debug("SQS Message Response: {response}", response=json.dumps(response))
     return_status = response["ResponseMetadata"]["HTTPStatusCode"]
     if return_status < 200 or return_status > 299:
