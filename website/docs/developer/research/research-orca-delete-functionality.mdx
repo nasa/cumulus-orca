@@ -23,10 +23,15 @@ Some use cases for delete functionality are as follows:
 
 - As a DAAC, I would like to configure the amount of time data remains in ORCA after being signaled to be deleted.	
 
-    This should be configurable by each DAAC that is using ORCA. The number of days it would stay in ORCA would be based off of the soft delete date. Once the data stays in ORCA for greater than 90/180 days based on the glacier storage type used, that data would be eligible for a physical delete.
+    This should be configurable by each DAAC that is using ORCA. The number of days it would stay in ORCA would be based off of the soft delete date. Once the data stays in ORCA for greater than 90/180 days based on the glacier storage type used, that data would be eligible for a soft delete. 
+    The data would be eligible for a physical delete after the configured x days after the soft delete date.
     The data should stay in ORCA for x number of days for safety reasons. The configuration should be done using an environment variable during deployment. It is assumed that the configuration cannot be overridden except with a new deployment.
-    This is applicable for physical deletes. Note that it should also prevent deletion of certain data such as Level 0. 
-    Some ways to implement this would be to have a configuration parameter we capture that says we are not able to delete from this collection or use an S3 bucket having bucket policies that prevents any deletes from happening.
+    Additionally, ORCA should prevent deletion of any kind from certain data like Level 0 or base data sets that 
+    are static. Some ways to implement this would be to have a configuration parameter we capture that says 
+    we are not able to delete from this collection or use an S3 bucket having bucket policies that prevents any 
+    deletes from happening.
+
+
 
 - As a DAAC, I would like only authorized personnel to be able to remove data from ORCA in a controlled way to minimize risk of accidental or malicious deletions.
 
@@ -54,7 +59,7 @@ Currently AWS Cognito has some restrictions from use in production environments 
 
     
     This can be implemented in the existing lambda function that will be used to delete the data from ORCA.
-    Before deleting from CMR and Cumulus, The UI should show a warning message to the user for additional confirmation.
+    Before deleting from CMR and Cumulus, the UI should show a warning message to the user for additional confirmation. Additional items need to be discussed on this rule to determine when and how it would be implemented and to address corner cases like versioned file removal.
 
 ## Initial ORCA Delete Functionality Architecture
 
@@ -84,9 +89,10 @@ If lambda function is used with the API, a lambda permission resource should be 
 
 ### Lambda function
 
-The delete functionality can be performed by two lambda functions based on initial research. One of the lambda functions will be used to perform soft delete- only flag the granule in the database for deletion after 90 days. The lambda should also verify with CMR and/or Cumulus that the granule has been deleted from those locations prior to allowing the delete to proceed in ORCA. The lambda will be triggered by an API call made by the user once the user is authenticated with Launchpad.
+The delete functionality can be performed by two lambda functions based on initial research. One of the lambda functions will be used to perform soft delete- only flag the granule in the database for deletion after 90 days in case of standard glacier or 180 days in case of deep glacier. The lambda should also verify with CMR and/or Cumulus that the granule has been deleted from those locations prior to allowing the delete to proceed in ORCA. The lambda will be triggered by an API call made by the user once the user is authenticated with Launchpad.
 
-The other lambda function can be used to perform a physical delete- delete from S3 glacier as well as from the database. Similar to soft delete, it should first verify with CMR and/or Cumulus that the granule has been deleted from those locations before deleting from ORCA. This will require further discussions with ORCA team and ORCA Working group before performing the actual work.
+The other lambda function can be used to perform a physical delete- delete from S3 glacier as well as from the database. 
+The lambda code should addresses the rule that the data cannot be physically deleted until the DAAC configured x number of days. This will require further discussions with ORCA team and ORCA Working group before performing the actual work.
 
 ### Deleting objects from AWS S3
 
@@ -94,7 +100,7 @@ To delete an object from an S3 bucket, the [delete_objects](https://boto3.amazon
 can be used from the boto3 library. An example of the usage can be seen below.
 Some notable items if this library is used includes the following.
 - It can be used to delete up to 1000 objects from a bucket using a single API call.
-- When performing this action on an MFA Delete enabled bucket that attempts to delete any versioned objects, an MFA token must be included orelse it will fail.
+- When performing this action on an MFA Delete enabled bucket that attempts to delete any versioned objects, an MFA token must be included or else it will fail.
 - If the object specified in the request is not found, Amazon S3 returns the result as deleted.
 - Each DeleteObjects API incurs a little cost of $0.05/10000 requests.
 
