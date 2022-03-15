@@ -81,7 +81,6 @@ resource "aws_sqs_queue" "internal_report_dlq" {
   name                       = "${var.prefix}-orca-internal-report-deadletter-queue"
   delay_seconds              = var.sqs_delay_time_seconds
   max_message_size           = var.sqs_maximum_message_size
-  message_retention_seconds  = var.internal_report_queue_message_retention_time_seconds
   tags                       = local.tags
 }
 
@@ -179,7 +178,6 @@ resource "aws_sqs_queue" "s3_inventory_dlq" {
   name                       = "${var.prefix}-orca-s3-inventory-deadletter-queue"
   delay_seconds              = var.sqs_delay_time_seconds
   max_message_size           = var.sqs_maximum_message_size
-  message_retention_seconds  = var.s3_inventory_queue_message_retention_time_seconds
   tags                       = local.tags
 }
 

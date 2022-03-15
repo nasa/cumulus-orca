@@ -1,26 +1,7 @@
 # Local Variables
 locals {
-  tags         = merge(var.tags, { Deployment = var.prefix })
   orca_buckets = [for k, v in var.buckets : v.name if v.type == "orca"]
 }
-
-
-# # Referenced Modules
-# lambda_security_group - Security Groups module reference
-# ------------------------------------------------------------------------------
-module "lambda_security_group" {
-  source = "../security_groups"
-  ## --------------------------
-  ## Cumulus Variables
-  ## --------------------------
-  ## REQUIRED
-  prefix                = var.prefix
-  rds_security_group_id = var.rds_security_group_id
-  vpc_id                = var.vpc_id
-  ## OPTIONAL
-  tags = local.tags
-}
-
 
 # =============================================================================
 # Ingest Lambdas Definitions and Resources
@@ -39,12 +20,12 @@ resource "aws_lambda_function" "copy_to_glacier" {
   memory_size      = var.orca_ingest_lambda_memory_size
   runtime          = "python3.7"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/copy_to_glacier/copy_to_glacier.zip")
-  tags             = local.tags
+  tags             = var.tags
   timeout          = var.orca_ingest_lambda_timeout
 
   vpc_config {
     subnet_ids         = var.lambda_subnet_ids
-    security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
+    security_group_ids = [var.vpc_postgres_ingress_all_egress_id]
   }
 
   environment {
@@ -74,12 +55,12 @@ resource "aws_lambda_function" "get_current_archive_list" {
   memory_size      = var.orca_reconciliation_lambda_memory_size
   runtime          = "python3.9"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/get_current_archive_list/get_current_archive_list.zip")
-  tags             = local.tags
+  tags             = var.tags
   timeout          = var.orca_reconciliation_lambda_timeout
 
   vpc_config {
     subnet_ids         = var.lambda_subnet_ids
-    security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
+    security_group_ids = [var.vpc_postgres_ingress_all_egress_id]
   }
 
   environment {
@@ -103,47 +84,18 @@ resource "aws_lambda_function" "perform_orca_reconcile" {
   memory_size      = var.orca_reconciliation_lambda_memory_size
   runtime          = "python3.9"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/perform_orca_reconcile/perform_orca_reconcile.zip")
-  tags             = local.tags
+  tags             = var.tags
   timeout          = var.orca_reconciliation_lambda_timeout
 
   vpc_config {
     subnet_ids         = var.lambda_subnet_ids
-    security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
+    security_group_ids = [var.vpc_postgres_ingress_all_egress_id]
   }
 
   environment {
     variables = {
       PREFIX = var.prefix
       INTERNAL_REPORT_QUEUE_URL = var.orca_sqs_internal_report_queue_id
-    }
-  }
-}
-
-resource "aws_lambda_function" "post_to_queue_and_trigger_step_function" {
-  ## REQUIRED
-  function_name = "${var.prefix}_post_to_queue_and_trigger_step_function"
-  role          = var.restore_object_role_arn
-
-  ## OPTIONAL
-  description      = "todo"
-  filename         = "${path.module}/../../tasks/post_to_queue_and_trigger_step_function/post_to_queue_and_trigger_step_function.zip"
-  handler          = "post_to_queue_and_trigger_step_function.handler"
-  memory_size      = var.orca_reconciliation_lambda_memory_size
-  runtime          = "python3.9"
-  source_code_hash = filebase64sha256("${path.module}/../../tasks/post_to_queue_and_trigger_step_function/post_to_queue_and_trigger_step_function.zip")
-  tags             = local.tags
-  timeout          = var.orca_reconciliation_lambda_timeout
-
-  vpc_config {
-    subnet_ids         = var.lambda_subnet_ids
-    security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
-  }
-
-  environment {
-    variables = {
-      PREFIX = var.prefix
-      STEP_FUNCTION_ARN = var.orca_sfn_internal_reconciliation_workflow_arn,
-      TARGET_QUEUE_URL  = var.orca_sqs_internal_report_queue_id,
     }
   }
 }
@@ -166,12 +118,12 @@ resource "aws_lambda_function" "extract_filepaths_for_granule" {
   memory_size      = var.orca_recovery_lambda_memory_size
   runtime          = "python3.7"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/extract_filepaths_for_granule/extract_filepaths_for_granule.zip")
-  tags             = local.tags
+  tags             = var.tags
   timeout          = var.orca_recovery_lambda_timeout
 
   vpc_config {
     subnet_ids         = var.lambda_subnet_ids
-    security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
+    security_group_ids = [var.vpc_postgres_ingress_all_egress_id]
   }
 }
 
@@ -190,12 +142,12 @@ resource "aws_lambda_function" "request_files" {
   memory_size      = var.orca_recovery_lambda_memory_size
   runtime          = "python3.7"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/request_files/request_files.zip")
-  tags             = local.tags
+  tags             = var.tags
   timeout          = var.orca_recovery_lambda_timeout
 
   vpc_config {
     subnet_ids         = var.lambda_subnet_ids
-    security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
+    security_group_ids = [var.vpc_postgres_ingress_all_egress_id]
   }
 
   environment {
@@ -225,12 +177,12 @@ resource "aws_lambda_function" "copy_files_to_archive" {
   memory_size      = var.orca_recovery_lambda_memory_size
   runtime          = "python3.7"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/copy_files_to_archive/copy_files_to_archive.zip")
-  tags             = local.tags
+  tags             = var.tags
   timeout          = var.orca_recovery_lambda_timeout
 
   vpc_config {
     subnet_ids         = var.lambda_subnet_ids
-    security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
+    security_group_ids = [var.vpc_postgres_ingress_all_egress_id]
   }
 
   environment {
@@ -277,12 +229,12 @@ resource "aws_lambda_function" "post_to_database" {
   memory_size      = var.orca_recovery_lambda_memory_size
   runtime          = "python3.7"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/post_to_database/post_to_database.zip")
-  tags             = local.tags
+  tags             = var.tags
   timeout          = var.orca_recovery_lambda_timeout
 
   vpc_config {
     subnet_ids         = var.lambda_subnet_ids
-    security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
+    security_group_ids = [var.vpc_postgres_ingress_all_egress_id]
   }
 
   environment {
@@ -325,12 +277,12 @@ resource "aws_lambda_function" "request_status_for_granule" {
   memory_size      = var.orca_recovery_lambda_memory_size
   runtime          = "python3.7"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/request_status_for_granule/request_status_for_granule.zip")
-  tags             = local.tags
+  tags             = var.tags
   timeout          = var.orca_recovery_lambda_timeout
 
   vpc_config {
     subnet_ids         = var.lambda_subnet_ids
-    security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
+    security_group_ids = [var.vpc_postgres_ingress_all_egress_id]
   }
 
   environment {
@@ -355,12 +307,12 @@ resource "aws_lambda_function" "request_status_for_job" {
   memory_size      = var.orca_recovery_lambda_memory_size
   runtime          = "python3.7"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/request_status_for_job/request_status_for_job.zip")
-  tags             = local.tags
+  tags             = var.tags
   timeout          = var.orca_recovery_lambda_timeout
 
   vpc_config {
     subnet_ids         = var.lambda_subnet_ids
-    security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
+    security_group_ids = [var.vpc_postgres_ingress_all_egress_id]
   }
 
   environment {
@@ -383,11 +335,11 @@ resource "aws_lambda_function" "post_copy_request_to_queue" {
   memory_size      = var.orca_recovery_lambda_memory_size
   runtime          = "python3.7"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/post_copy_request_to_queue/post_copy_request_to_queue.zip")
-  tags             = local.tags
+  tags             = var.tags
   timeout          = var.orca_recovery_lambda_timeout
   vpc_config {
     subnet_ids         = var.lambda_subnet_ids
-    security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
+    security_group_ids = [var.vpc_postgres_ingress_all_egress_id]
   }
   environment {
     variables = {
@@ -443,12 +395,12 @@ resource "aws_lambda_function" "orca_catalog_reporting" {
   memory_size      = var.orca_ingest_lambda_memory_size
   runtime          = "python3.7"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/orca_catalog_reporting/orca_catalog_reporting.zip")
-  tags             = local.tags
+  tags             = var.tags
   timeout          = var.orca_ingest_lambda_timeout
 
   vpc_config {
     subnet_ids         = var.lambda_subnet_ids
-    security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
+    security_group_ids = [var.vpc_postgres_ingress_all_egress_id]
   }
 
   environment {
@@ -473,12 +425,12 @@ resource "aws_lambda_function" "post_to_catalog" {
   memory_size      = var.orca_recovery_lambda_memory_size
   runtime          = "python3.7"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/post_to_catalog/post_to_catalog.zip")
-  tags             = local.tags
+  tags             = var.tags
   timeout          = 300 # Gives plenty of time for Serverless spinup.
 
   vpc_config {
     subnet_ids         = var.lambda_subnet_ids
-    security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
+    security_group_ids = [var.vpc_postgres_ingress_all_egress_id]
   }
 
   environment {
@@ -516,7 +468,6 @@ resource "aws_lambda_permission" "post_to_catalog_allow_sqs_trigger" {
 # ==============================================================================
 resource "aws_lambda_function" "db_deploy" {
   depends_on = [
-    module.lambda_security_group,
     var.restore_object_role_arn
   ]
 
@@ -531,12 +482,12 @@ resource "aws_lambda_function" "db_deploy" {
   memory_size      = var.orca_recovery_lambda_memory_size
   runtime          = "python3.7"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/db_deploy/db_deploy.zip")
-  tags             = local.tags
+  tags             = var.tags
   timeout          = var.orca_recovery_lambda_timeout
 
   vpc_config {
     subnet_ids         = var.lambda_subnet_ids
-    security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
+    security_group_ids = [var.vpc_postgres_ingress_all_egress_id]
   }
 
   environment {
