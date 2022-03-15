@@ -466,10 +466,13 @@ def get_s3_credentials_from_secrets_manager(secret_arn: str) -> tuple:
 @dataclass(frozen=True)
 class MessageData:
     """
-    aws_region: (str) The region the report bucket resides in
-    report_bucket_name: (str) The name of the report bucket
-    manifest_key: (str) The key/path to the manifest within the report bucket
-    message_receipt: (str) The receipt handle of the message in the queue
+    Data class that manages the message information needed to perform the task.
+
+    Contains:
+        report_bucket_region: (str) The region the report bucket resides in
+        report_bucket_name: (str) The name of the report bucket
+        manifest_key: (str) The key/path to the manifest within the report bucket
+        message_receipt: (str) The receipt handle of the message in the queue
     """
     report_bucket_region: str
     report_bucket_name: str
