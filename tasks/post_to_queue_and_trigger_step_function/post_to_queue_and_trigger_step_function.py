@@ -10,6 +10,7 @@ from typing import Any, Dict, List, TypeVar
 
 import boto3
 import fastjsonschema
+
 # noinspection PyPackageRequirements
 from cumulus_logger import CumulusLogger
 
@@ -78,14 +79,11 @@ def process_record(
         step_function_arn: The arn of the step function to trigger.
     """
     new_body = translate_record_body(record["body"])
-    send_body_to_queue_and_trigger_workflow(
-        target_queue_url,
-        step_function_arn,
-        new_body,
-    )
+    sqs_library.post_to_fifo_queue(target_queue_url, new_body)
+    trigger_step_function(step_function_arn)
 
 
-def translate_record_body(body: str) -> str:
+def translate_record_body(body: str) -> Dict[str, Any]:
     """
     Translates the SQS body into the format expected by the get_current_archive_list queue.
     Args:
@@ -102,27 +100,19 @@ def translate_record_body(body: str) -> str:
         OUTPUT_REPORT_BUCKET_NAME_KEY: body["s3"]["bucket"]["name"],
         OUTPUT_MANIFEST_KEY_KEY: body["s3"]["object"]["key"],
     }
-    return json.dumps(new_body)
+    return new_body
 
 
-def send_body_to_queue_and_trigger_workflow(
-    target_queue_url: str,
+@retry_error()
+def trigger_step_function(
     step_function_arn: str,
-    body: str,
 ) -> None:
     """
-    Posts the records to the target_queue_url, triggering state machine after each one.
+    Triggers state machine with retries.
     Args:
-        target_queue_url: The url of the queue to post the records to.
         step_function_arn: The arn of the step function to trigger.
-        body: The body to post.
-    Returns: See output.json for details.
     """
-
-    sqs_library.post_to_fifo_queue(target_queue_url, body)
-
-    with retry_error():
-        boto3.client("stepfunctions").start_execution(step_function_arn)
+    boto3.client("stepfunctions").start_execution(step_function_arn)
 
 
 def handler(event: Dict[str, Any], context) -> None:
@@ -147,15 +137,14 @@ def handler(event: Dict[str, Any], context) -> None:
         LOGGER.error(f"{OS_ENVIRON_TARGET_QUEUE_URL_KEY} environment value not found.")
         raise key_error
     try:
-        state_machine_arn = str(os.environ[OS_ENVIRON_STEP_FUNCTION_ARN_KEY])
+        step_function_arn = str(os.environ[OS_ENVIRON_STEP_FUNCTION_ARN_KEY])
     except KeyError as key_error:
         LOGGER.error(f"{OS_ENVIRON_STEP_FUNCTION_ARN_KEY} environment value not found.")
         raise key_error
 
-    # todo: add to tests
     records = event["Records"]
     if len(records) != 1:
         raise ValueError(f"Must be passed a single record. Was {len(records)}")
     record = records[0]
 
-    process_record(record, target_queue_url, state_machine_arn)
+    process_record(record, target_queue_url, step_function_arn)

@@ -2,10 +2,8 @@
 Name: test_post_to_queue_and_trigger_step_function.py
 Description:  Unit tests for test_post_to_queue_and_trigger_step_function.py.
 """
-import copy
 import json
 import os
-import random
 import unittest
 import uuid
 from unittest.mock import MagicMock, Mock, call, patch
@@ -24,9 +22,7 @@ class TestPostToQueueAndTriggerStepFunction(
     """
 
     @patch("post_to_queue_and_trigger_step_function.process_record")
-    def test_process_records_happy_path(
-        self, mock_process_record: MagicMock
-    ):
+    def test_process_records_happy_path(self, mock_process_record: MagicMock):
         """
         process_records should iterate over records and call appropriate functions.
         """
@@ -91,14 +87,14 @@ class TestPostToQueueAndTriggerStepFunction(
             ]
         )
 
-    @patch(
-        "post_to_queue_and_trigger_step_function.send_body_to_queue_and_trigger_workflow"
-    )
+    @patch("post_to_queue_and_trigger_step_function.trigger_step_function")
+    @patch("sqs_library.post_to_fifo_queue")
     @patch("post_to_queue_and_trigger_step_function.translate_record_body")
     def test_process_record_happy_path(
         self,
         mock_translate_record_body: MagicMock,
-        mock_send_body_to_queue_and_trigger_workflow: MagicMock,
+        mock_post_to_fifo_queue: MagicMock,
+        mock_trigger_step_function: MagicMock,
     ):
         mock_target_queue_url = Mock()
         mock_step_function_arn = Mock()
@@ -111,10 +107,11 @@ class TestPostToQueueAndTriggerStepFunction(
         )
 
         mock_translate_record_body.assert_called_once_with(mock_record_body)
-        mock_send_body_to_queue_and_trigger_workflow.assert_called_once_with(
-            mock_target_queue_url,
+        mock_post_to_fifo_queue.assert_called_once_with(
+            mock_target_queue_url, mock_translate_record_body.return_value
+        )
+        mock_trigger_step_function.assert_called_once_with(
             mock_step_function_arn,
-            mock_translate_record_body.return_value,
         )
 
     def test_translate_record_body_happy_path(self):
@@ -135,11 +132,11 @@ class TestPostToQueueAndTriggerStepFunction(
         )
 
         self.assertEqual(
-            f'{{'
-            f'"{post_to_queue_and_trigger_step_function.OUTPUT_REPORT_BUCKET_REGION_KEY}": "{aws_region}", '
-            f'"{post_to_queue_and_trigger_step_function.OUTPUT_REPORT_BUCKET_NAME_KEY}": "{bucket_name}", '
-            f'"{post_to_queue_and_trigger_step_function.OUTPUT_MANIFEST_KEY_KEY}": "{object_key}"'
-            f'}}',
+            {
+                post_to_queue_and_trigger_step_function.OUTPUT_REPORT_BUCKET_REGION_KEY: aws_region,
+                post_to_queue_and_trigger_step_function.OUTPUT_REPORT_BUCKET_NAME_KEY: bucket_name,
+                post_to_queue_and_trigger_step_function.OUTPUT_MANIFEST_KEY_KEY: object_key,
+            },
             result,
         )
 
@@ -162,17 +159,96 @@ class TestPostToQueueAndTriggerStepFunction(
             f"data.s3 must contain ['bucket', 'object'] properties", str(cm.exception)
         )
 
-    def test_send_body_to_queue_and_trigger_workflow_happy_path(self):
-        pass
+    @patch("boto3.client")
+    def test_trigger_step_function_happy_path(
+        self,
+        mock_client: MagicMock,
+    ):
+        mock_step_function_arn = Mock()
 
-    def test_handler_happy_path(self):
-        pass
+        post_to_queue_and_trigger_step_function.trigger_step_function(
+            mock_step_function_arn
+        )
 
-    def test_handler_rejects_bad_input(self):
-        pass
+        mock_client.assert_called_once_with("stepfunctions")
+        mock_client.return_value.start_execution.assert_called_once_with(
+            mock_step_function_arn
+        )
 
-    def test_handler_rejects_multiple_records(self):
-        pass
+    @patch("post_to_queue_and_trigger_step_function.process_record")
+    def test_handler_happy_path(
+        self,
+        mock_process_record: MagicMock,
+    ):
+        target_queue_url = uuid.uuid4().__str__()
+        step_function_arn = uuid.uuid4().__str__()
+        record = {
+            "body": uuid.uuid4().__str__()
+        }
+
+        with patch.dict(
+            os.environ,
+            {
+                post_to_queue_and_trigger_step_function.OS_ENVIRON_TARGET_QUEUE_URL_KEY: target_queue_url,
+                post_to_queue_and_trigger_step_function.OS_ENVIRON_STEP_FUNCTION_ARN_KEY: step_function_arn,
+            },
+        ):
+            post_to_queue_and_trigger_step_function.handler({
+                "Records": [record]
+            }, Mock())
+
+        mock_process_record.assert_called_once_with(
+            record, target_queue_url, step_function_arn
+        )
+
+    @patch("post_to_queue_and_trigger_step_function.process_record")
+    def test_handler_rejects_bad_input(
+        self,
+        mock_process_record: MagicMock,
+    ):
+        target_queue_url = uuid.uuid4().__str__()
+        step_function_arn = uuid.uuid4().__str__()
+        record = {
+            "body": 1
+        }
+
+        with self.assertRaises(JsonSchemaValueException) as cm:
+            with patch.dict(
+                os.environ,
+                {
+                    post_to_queue_and_trigger_step_function.OS_ENVIRON_TARGET_QUEUE_URL_KEY: target_queue_url,
+                    post_to_queue_and_trigger_step_function.OS_ENVIRON_STEP_FUNCTION_ARN_KEY: step_function_arn,
+                },
+            ):
+                post_to_queue_and_trigger_step_function.handler({
+                    "Records": [record]
+                }, Mock())
+        self.assertEqual("data.Records[0].body must be string", str(cm.exception))
+
+        mock_process_record.assert_not_called()
+
+    @patch("post_to_queue_and_trigger_step_function.process_record")
+    def test_handler_rejects_multiple_records(
+        self,
+        mock_process_record: MagicMock,
+    ):
+        target_queue_url = uuid.uuid4().__str__()
+        step_function_arn = uuid.uuid4().__str__()
+
+        with self.assertRaises(ValueError) as cm:
+            with patch.dict(
+                os.environ,
+                {
+                    post_to_queue_and_trigger_step_function.OS_ENVIRON_TARGET_QUEUE_URL_KEY: target_queue_url,
+                    post_to_queue_and_trigger_step_function.OS_ENVIRON_STEP_FUNCTION_ARN_KEY: step_function_arn,
+                },
+            ):
+                post_to_queue_and_trigger_step_function.handler({
+                    "Records": [{"body": uuid.uuid4().__str__()}, {"body": uuid.uuid4().__str__()}]
+                }, Mock())
+        self.assertEqual("Must be passed a single record. Was 2", str(cm.exception))
+
+        mock_process_record.assert_not_called()
 
     # copied from shared_db.py
     @patch("time.sleep")
