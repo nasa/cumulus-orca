@@ -9,6 +9,7 @@ psycopg2-binary==2.8.6
 cumulus-message-adapter-python==2.0.1
 fastjsonschema~=2.15.1
 ../../shared_libraries[database, reconciliation]
+boto3==1.18.40
 
 ## Additional validation libraries
 ## ---------------------------------------------------------------------------

@@ -81,6 +81,14 @@ resource "aws_lambda_function" "get_current_archive_list" {
     subnet_ids         = var.lambda_subnet_ids
     security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
   }
+
+  environment {
+    variables = {
+      PREFIX = var.prefix
+      INTERNAL_REPORT_QUEUE_URL = var.orca_sqs_internal_report_queue_id,
+      S3_CREDENTIALS_SECRET_ARN = var.orca_secretsmanager_s3_access_credentials_secret_arn
+    }
+  }
 }
 
 resource "aws_lambda_function" "perform_orca_reconcile" {
@@ -101,6 +109,13 @@ resource "aws_lambda_function" "perform_orca_reconcile" {
   vpc_config {
     subnet_ids         = var.lambda_subnet_ids
     security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
+  }
+
+  environment {
+    variables = {
+      PREFIX = var.prefix
+      INTERNAL_REPORT_QUEUE_URL  = var.orca_sqs_internal_report_queue_id
+    }
   }
 }
 

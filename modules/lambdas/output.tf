@@ -27,7 +27,7 @@ output "get_current_archive_list_arn" {
   value       = aws_lambda_function.get_current_archive_list.arn
 }
 
-output "perform_orca_reconcile_list_arn" {
+output "perform_orca_reconcile_arn" {
   description = "AWS ARN for the perform_orca_reconcile lambda."
   value       = aws_lambda_function.perform_orca_reconcile.arn
 }

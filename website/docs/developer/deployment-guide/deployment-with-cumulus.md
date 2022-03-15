@@ -519,6 +519,7 @@ variables is shown in the table below.
 | ----------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------- | ---------- |
 | `db_admin_username`                                   | string        | Username for RDS database administrator authentication.                                                 | "postgres" |
 | `default_multipart_chunksize_mb`                      | number        | The default maximum size of chunks to use when copying. Can be overridden by collection config.         | 250 |
+| `internal_report_queue_message_retention_time_seconds`| number        | Number of seconds the internal-report-queue SQS retains a message.                                      | 432000 |
 | `metadata_queue_message_retention_time_seconds`       | number        | Number of seconds the metadata-queue fifo SQS retains a message.                                        | 777600 |
 | `db_name`                                             | string        | The name of the Orca database within the RDS cluster. Any `-` in `prefix` will be replaced with `_`.    | PREFIX_orca |
 | `db_user_name`                                        | string        | The name of the application user for the Orca database. Any `-` in `prefix` will be replaced with `_`.    | PREFIX_orcauser |

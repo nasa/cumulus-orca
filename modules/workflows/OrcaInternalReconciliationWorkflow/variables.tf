@@ -24,30 +24,16 @@ variable "workflow_config" {
 }
 
 
-## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
+## OPTIONAL
 variable "tags" {
   type        = map(string)
   description = "Tags to be applied to resources that support tags."
+  default     = {}
 }
 
 
 ## Variables unique to ORCA
 ## REQUIRED
-variable "orca_default_bucket" {
-  type        = string
-  description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
-}
-
-variable "orca_lambda_copy_to_glacier_arn" {
-  type        = string
-  description = "AWS ARN for the copy_to_glacier lambda."
-}
-
-variable "orca_lambda_extract_filepaths_for_granule_arn" {
-  type        = string
-  description = "AWS ARN of the ORCA extract_filepaths_for_granule lambda"
-}
-
 variable "orca_lambda_get_current_archive_list_arn" {
   type        = string
   description = "AWS ARN of the ORCA get_current_archive_list lambda"
@@ -55,10 +41,5 @@ variable "orca_lambda_get_current_archive_list_arn" {
 
 variable "orca_lambda_perform_orca_reconcile_arn" {
   type        = string
-  description = "AWS ARN of the ORCA orca_perform_orca_reconcile lambda"
-}
-
-variable "orca_lambda_request_files_arn" {
-  type        = string
-  description = "AWS ARN of the ORCA request_files lambda."
+  description = "AWS ARN of the ORCA perform_orca_reconcile lambda."
 }

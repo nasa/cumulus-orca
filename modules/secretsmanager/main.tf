@@ -54,7 +54,7 @@ resource "aws_secretsmanager_secret_version" "db_login" {
 resource "aws_secretsmanager_secret" "s3_access_credentials" {
   description             = "Allows postgres to access s3"
   kms_key_id              = aws_kms_key.orca_kms_key.arn
-  name                    = "${var.prefix}-s3-access-credentials"
+  name                    = "${var.prefix}-orca-s3-access-credentials"
   recovery_window_in_days = 0
   tags                    = local.tags
 }
