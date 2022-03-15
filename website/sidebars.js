@@ -71,6 +71,9 @@ module.exports = {
       'developer/research/research-graphql',
       'developer/research/research-multipart-chunksize',
       'developer/research/research-bamboo',
+      'developer/research/research-lambda-container',
+      'developer/research/research-orca-delete-functionality',
+      'developer/research/research-bamboo-integration-tests',
       'developer/research/research-lambda-container'
     ],
   },
