@@ -27,8 +27,7 @@ data "aws_iam_policy_document" "metadata_queue_policy" {
 ## ====================================================================================================
 data "aws_iam_policy_document" "s3_inventory_queue_policy" {
   statement {
-    # todo: create task
-    actions   = ["sqs:*"] # todo: Lock down access to specific actions and resources. https://bugs.earthdata.nasa.gov/browse/ORCA-todo
+    actions   = ["sqs:*"] # todo: Lock down access to specific actions and resources. https://bugs.earthdata.nasa.gov/browse/ORCA-273
     resources = ["arn:aws:sqs:*"]
     effect    = "Allow"
   }

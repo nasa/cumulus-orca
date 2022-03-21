@@ -24,7 +24,9 @@ BACKOFF_FACTOR = 2  # Value of the factor used to backoff
 INITIAL_BACKOFF_IN_SECONDS = 1  # Number of seconds to sleep the first time through.
 RT = TypeVar("RT")  # return type
 
+
 # Retry decorator for function
+# todo: Untested. Will likely eventually be part of shared lib.
 def retry_error(
     max_retries: int = MAX_RETRIES,
     backoff_in_seconds: int = INITIAL_BACKOFF_IN_SECONDS,

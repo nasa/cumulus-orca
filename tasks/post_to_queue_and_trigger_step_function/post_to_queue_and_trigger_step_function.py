@@ -43,29 +43,6 @@ except Exception as ex:
     raise
 
 
-def process_records(
-    records: List[Dict[str, Any]],
-    target_queue_url: str,
-    step_function_arn: str,
-) -> None:
-    """
-    Posts the records to the target_queue_url, triggering state machine after each one.
-    Args:
-        records: The records to post.
-        target_queue_url: The url of the queue to post the records to.
-        step_function_arn: The arn of the step function to trigger.
-    Returns: See output.json for details.
-    """
-    for record in records:
-        # noinspection PyBroadException
-        try:
-            process_record(record, target_queue_url, step_function_arn)
-        except Exception as _:
-            # Do not halt on errors. Logging will be handled internally.
-            # todo: post_to_catalog doesn't mask errors. How does this line up?
-            pass
-
-
 def process_record(
     record: Dict[str, Any],
     target_queue_url: str,

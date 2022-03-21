@@ -8,7 +8,9 @@ import unittest
 import uuid
 from unittest.mock import MagicMock, Mock, call, patch
 
+import boto3
 from fastjsonschema import JsonSchemaValueException
+from moto import mock_sqs
 
 import post_to_queue_and_trigger_step_function
 import sqs_library
@@ -21,71 +23,23 @@ class TestPostToQueueAndTriggerStepFunction(
     TestPostToQueueAndTriggerStepFunction.
     """
 
-    @patch("post_to_queue_and_trigger_step_function.process_record")
-    def test_process_records_happy_path(self, mock_process_record: MagicMock):
+    # Create the mock for SQS unit tests
+    mock_sqs = mock_sqs()
+
+    def setUp(self):
         """
-        process_records should iterate over records and call appropriate functions.
+        Perform initial setup for the tests.
         """
-        mock_record0 = Mock()
-        mock_record1 = Mock()
-        mock_target_queue_url = Mock()
-        mock_step_function_arn = Mock()
+        self.mock_sqs.start()
+        self.test_sqs = boto3.resource("sqs", region_name="us-west-2")
+        self.queue = self.test_sqs.create_queue(QueueName="test-queue")
+        self.queue_url = self.queue.url
 
-        post_to_queue_and_trigger_step_function.process_records(
-            [mock_record0, mock_record1],
-            mock_target_queue_url,
-            mock_step_function_arn,
-        )
-
-        mock_process_record.assert_has_calls(
-            [
-                call(
-                    mock_record0,
-                    mock_target_queue_url,
-                    mock_step_function_arn,
-                ),
-                call(
-                    mock_record1,
-                    mock_target_queue_url,
-                    mock_step_function_arn,
-                ),
-            ]
-        )
-
-    @patch("post_to_queue_and_trigger_step_function.process_record")
-    def test_process_records_error_does_not_halt_loop(
-        self, mock_process_record: MagicMock
-    ):
+    def tearDown(self):
         """
-        If we process multiple records, then an exception should not cause a halt.
+        Perform teardown for the tests
         """
-        mock_process_record.side_effect = [Exception(), None]
-
-        mock_record0 = Mock()
-        mock_record1 = Mock()
-        mock_target_queue_url = Mock()
-        mock_step_function_arn = Mock()
-
-        post_to_queue_and_trigger_step_function.process_records(
-            [mock_record0, mock_record1],
-            mock_target_queue_url,
-            mock_step_function_arn,
-        )
-
-        mock_process_record.assert_has_calls(
-            [
-                call(
-                    mock_record0,
-                    mock_target_queue_url,
-                    mock_step_function_arn,
-                ),
-                call(
-                    mock_record1,
-                    mock_target_queue_url,
-                    mock_step_function_arn,
-                ),
-            ]
-        )
+        self.mock_sqs.stop()
 
     @patch("post_to_queue_and_trigger_step_function.trigger_step_function")
     @patch("sqs_library.post_to_fifo_queue")
@@ -285,3 +239,53 @@ class TestPostToQueueAndTriggerStepFunction(
             self.assertEqual(max_retries, mock_sleep.call_count)
             return
         self.fail("Error not raised.")
+
+    @patch("time.sleep")
+    @patch.dict(os.environ, {"AWS_REGION": "us-west-2"}, clear=True)
+    def test_post_to_fifo_queue_happy_path(self, mock_sleep: MagicMock):
+        """
+        SQS library happy path. Checks that the message sent to SQS is same as the message received from SQS.
+        """
+        sqs_body = {
+            post_to_queue_and_trigger_step_function.OUTPUT_REPORT_BUCKET_REGION_KEY: uuid.uuid4().__str__(),
+            post_to_queue_and_trigger_step_function.OUTPUT_MANIFEST_KEY_KEY: uuid.uuid4().__str__(),
+            post_to_queue_and_trigger_step_function.OUTPUT_REPORT_BUCKET_NAME_KEY: uuid.uuid4().__str__()
+        }
+        # Send values to the function
+        sqs_library.post_to_fifo_queue(
+            self.queue_url,
+            sqs_body,
+        )
+        # grabbing queue contents after the message is sent
+        queue_contents = self.queue.receive_messages()
+        queue_output_body = json.loads(queue_contents[0].body)
+
+        # Testing required fields
+        self.assertEqual(queue_output_body, sqs_body)
+
+    # todo: since sleep is not called in function under test, this violates good unit test practices.
+    @patch("time.sleep")
+    @patch.dict(os.environ, {"AWS_REGION": "us-west-2"}, clear=True)
+    def test_post_to_fifo_queue_retry_failures(
+        self, mock_sleep: MagicMock
+    ):
+        """
+        Produces a failure and checks if retries are performed in the SQS library.
+        """
+        sqs_body = {
+            post_to_queue_and_trigger_step_function.OUTPUT_REPORT_BUCKET_REGION_KEY: uuid.uuid4().__str__(),
+            post_to_queue_and_trigger_step_function.OUTPUT_MANIFEST_KEY_KEY: uuid.uuid4().__str__(),
+            post_to_queue_and_trigger_step_function.OUTPUT_REPORT_BUCKET_NAME_KEY: uuid.uuid4().__str__()
+        }
+        # url is intentionally set wrong so send_message will fail.
+        # Send values to the function
+        with self.assertRaises(Exception) as cm:
+            sqs_library.post_to_fifo_queue(
+                "dummy",
+                sqs_body,
+            )
+        self.assertEqual(
+            "An error occurred (AWS.SimpleQueueService.NonExistentQueue) when calling the SendMessage operation: The "
+            "specified queue does not exist for this wsdl version.",
+            str(cm.exception))
+        self.assertEqual(3, mock_sleep.call_count)

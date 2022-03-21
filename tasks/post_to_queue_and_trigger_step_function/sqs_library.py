@@ -26,6 +26,7 @@ RT = TypeVar("RT")  # return type
 
 
 # Retry decorator for function
+# todo: Untested. Will likely eventually be part of shared lib.
 def retry_error(
     max_retries: int = MAX_RETRIES,
     backoff_in_seconds: int = INITIAL_BACKOFF_IN_SECONDS,
@@ -119,7 +120,7 @@ def post_to_fifo_queue(
     md5_body = hashlib.md5(body.encode("utf8")).hexdigest()  # nosec
 
     LOGGER.debug("Sending the following data to queue: {body}", body=body)
-    response = boto3.client("sqs").send_message(  # todo: Make sure the changes I made here work.
+    response = boto3.client("sqs").send_message(
         QueueUrl=queue_url,
         MessageDeduplicationId=deduplication_id,
         MessageGroupId="general_group",
