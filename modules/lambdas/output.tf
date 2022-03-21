@@ -1,3 +1,10 @@
+## Secutiry Group Outputs
+## =============================================================================
+output "vpc_postgres_ingress_all_egress_id" {
+  description = "PostgreSQL security group id"
+  value       = module.lambda_security_group.vpc_postgres_ingress_all_egress_id
+}
+
 ## Lambda Outputs
 ## =============================================================================
 # Ingest Lambdas

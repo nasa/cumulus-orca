@@ -99,11 +99,6 @@ variable "restore_object_role_arn" {
   description = "AWS ARN of the restore_object_role."
 }
 
-variable "vpc_postgres_ingress_all_egress_id" {
-  type        = string
-  description = "PostgreSQL security group id"
-}
-
 
 ## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
 

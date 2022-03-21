@@ -78,7 +78,8 @@ resource "aws_sqs_queue" "internal_report_queue" {
 
 # Dead-letter queue
 resource "aws_sqs_queue" "internal_report_dlq" {
-  name                       = "${var.prefix}-orca-internal-report-deadletter-queue"
+  name                       = "${var.prefix}-orca-internal-report-deadletter-queue.fifo"
+  fifo_queue                 = true
   delay_seconds              = var.sqs_delay_time_seconds
   max_message_size           = var.sqs_maximum_message_size
   tags                       = local.tags
@@ -175,7 +176,8 @@ resource "aws_sqs_queue" "s3_inventory_queue" {
 
 # Dead-letter queue
 resource "aws_sqs_queue" "s3_inventory_dlq" {
-  name                       = "${var.prefix}-orca-s3-inventory-deadletter-queue"
+  name                       = "${var.prefix}-orca-s3-inventory-deadletter-queue.fifo"
+  fifo_queue                  = true
   delay_seconds              = var.sqs_delay_time_seconds
   max_message_size           = var.sqs_maximum_message_size
   tags                       = local.tags
