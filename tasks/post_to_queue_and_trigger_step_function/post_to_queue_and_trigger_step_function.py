@@ -112,7 +112,7 @@ def trigger_step_function(
     Args:
         step_function_arn: The arn of the step function to trigger.
     """
-    boto3.client("stepfunctions").start_execution(step_function_arn)
+    boto3.client("stepfunctions").start_execution(stateMachineArn=step_function_arn)
 
 
 def handler(event: Dict[str, Any], context) -> None:

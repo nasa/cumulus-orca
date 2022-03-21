@@ -172,7 +172,7 @@ class TestPostToQueueAndTriggerStepFunction(
 
         mock_client.assert_called_once_with("stepfunctions")
         mock_client.return_value.start_execution.assert_called_once_with(
-            mock_step_function_arn
+            stateMachineArn=mock_step_function_arn
         )
 
     @patch("post_to_queue_and_trigger_step_function.process_record")

@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/post_to_queue_and_trigger_step_function/schemas/output_body.json",
+  "title": "post_to_queue_and_trigger_step_function Lambda output body",
+  "description": "The body of SQS messages posted to the queue for get_current_archive_list.",
+  "type": "object",
+  "required": [
+    "reportBucketRegion",
+    "reportBucketName",
+    "manifestKey"
+  ],
+  "properties": {
+    "reportBucketRegion": {
+      "type": "string",
+      "description": "The region containing the bucket the event occurred in."
+    },
+    "reportBucketName": {
+      "type": "string",
+      "description": "The name of the bucket the event occurred in."
+    },
+    "manifestKey": {
+      "type": "string",
+      "description": "The full path within the s3 bucket to the file that the event occurred on."
+    }
+  }
+}

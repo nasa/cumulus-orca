@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/post_to_queue_and_trigger_step_function/schemas/body.json",
-  "title": "post_to_queue_and_trigger_step_function Lambda Config",
+  "title": "post_to_queue_and_trigger_step_function Lambda input body",
   "description": "The body of SQS messages posted to the post_to_queue_and_trigger_step_function Lambda.",
   "type": "object",
   "required": [

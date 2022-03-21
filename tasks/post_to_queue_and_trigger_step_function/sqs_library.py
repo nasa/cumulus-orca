@@ -105,7 +105,7 @@ def post_to_fifo_queue(
         None
     """
     # validate body.json schema
-    with open("schemas/body.json", "r") as raw_schema:
+    with open("schemas/output_body.json", "r") as raw_schema:
         schema = json.loads(raw_schema.read())
     validate = fastjsonschema.compile(schema)
     LOGGER.debug("Validating the SQS message body with the schema.")
