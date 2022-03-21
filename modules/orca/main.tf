@@ -76,6 +76,7 @@ module "orca_lambdas_secondary" {
   ## REQUIRED
   orca_sfn_internal_reconciliation_workflow_arn = module.orca_workflows.orca_sfn_internal_reconciliation_workflow_arn
   orca_sqs_internal_report_queue_id             = module.orca_sqs.orca_sqs_internal_report_queue_id
+  orca_sqs_s3_inventory_queue_arn               = module.orca_sqs.orca_sqs_s3_inventory_queue_arn
   restore_object_role_arn                       = module.orca_iam.restore_object_role_arn
   vpc_postgres_ingress_all_egress_id            = module.orca_lambdas.vpc_postgres_ingress_all_egress_id
 
@@ -186,6 +187,7 @@ module "orca_sqs" {
   ## OPTIONAL
   internal_report_queue_message_retention_time_seconds = var.internal_report_queue_message_retention_time_seconds
   metadata_queue_message_retention_time_seconds        = var.metadata_queue_message_retention_time_seconds
+  orca_reconciliation_lambda_timeout                   = var.orca_reconciliation_lambda_timeout
   s3_inventory_queue_message_retention_time_seconds    = var.s3_inventory_queue_message_retention_time_seconds
   sqs_delay_time_seconds                               = var.sqs_delay_time_seconds
   sqs_maximum_message_size                             = var.sqs_maximum_message_size

@@ -13,6 +13,11 @@ output "orca_sqs_metadata_queue_id" {
   value       = aws_sqs_queue.metadata_queue.id
 }
 
+output "orca_sqs_s3_inventory_queue_arn" {
+  description = "The ARN of the internal-report-queue SQS"
+  value       = aws_sqs_queue.s3_inventory_queue.arn
+}
+
 output "orca_sqs_s3_inventory_queue_id" {
   description = "The URL of the internal-report-queue SQS"
   value       = aws_sqs_queue.s3_inventory_queue.id

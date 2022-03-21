@@ -214,13 +214,13 @@ resource "aws_lambda_function" "copy_files_to_archive" {
   }
 }
 
+# Additional resources needed by copy_files_to_archive
+# ------------------------------------------------------------------------------
 resource "aws_lambda_event_source_mapping" "copy_files_to_archive_event_source_mapping" {
   event_source_arn = var.orca_sqs_staged_recovery_queue_arn
   function_name    = aws_lambda_function.copy_files_to_archive.arn
 }
 
-# Additional resources needed by copy_files_to_archive
-# ------------------------------------------------------------------------------
 # Permissions to allow SQS trigger to invoke lambda
 resource "aws_lambda_permission" "copy_files_to_archive_allow_sqs_trigger" {
   ## REQUIRED
@@ -262,13 +262,13 @@ resource "aws_lambda_function" "post_to_database" {
   }
 }
 
+# Additional resources needed by post_to_database
+# ------------------------------------------------------------------------------
 resource "aws_lambda_event_source_mapping" "post_to_database_event_source_mapping" {
   event_source_arn = var.orca_sqs_status_update_queue_arn
   function_name    = aws_lambda_function.post_to_database.arn
 }
 
-# Additional resources needed by post_to_database
-# ------------------------------------------------------------------------------
 # Permissions to allow SQS trigger to invoke lambda
 resource "aws_lambda_permission" "post_to_database_allow_sqs_trigger" {
   ## REQUIRED
@@ -371,8 +371,10 @@ resource "aws_lambda_function" "post_copy_request_to_queue" {
   }
 }
 
+# Additional resources needed by post_copy_request_to_queue
+# ------------------------------------------------------------------------------
 # Permissions to allow S3 trigger to invoke lambda
-resource "aws_lambda_permission" "allow_s3_trigger" {
+resource "aws_lambda_permission" "allow_s3_trigger" {  # todo: consider dlq, similar to internal reconciliation
   ## REQUIRED
   for_each      = toset(local.orca_buckets)
   source_arn    = "arn:aws:s3:::${each.value}"
@@ -458,13 +460,13 @@ resource "aws_lambda_function" "post_to_catalog" {
   }
 }
 
+# Additional resources needed by post_to_catalog
+# ------------------------------------------------------------------------------
 resource "aws_lambda_event_source_mapping" "post_to_catalog_event_source_mapping" {
   event_source_arn = var.orca_sqs_metadata_queue_arn
   function_name    = aws_lambda_function.post_to_catalog.arn
 }
 
-# Additional resources needed by post_to_catalog
-# ------------------------------------------------------------------------------
 # Permissions to allow SQS trigger to invoke lambda
 resource "aws_lambda_permission" "post_to_catalog_allow_sqs_trigger" {
   ## REQUIRED

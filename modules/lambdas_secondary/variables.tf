@@ -36,6 +36,11 @@ variable "orca_sfn_internal_reconciliation_workflow_arn" {
   description = "The ARN of the nternal_reconciliation step function."
 }
 
+variable "orca_sqs_s3_inventory_queue_arn" {
+  type        = string
+  description = "The ARN of the internal-report-queue SQS"
+}
+
 variable "orca_sqs_internal_report_queue_id" {
   type        = string
   description = "The URL of the internal-report-queue SQS"

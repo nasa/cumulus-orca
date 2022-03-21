@@ -163,7 +163,7 @@ resource "aws_sqs_queue" "s3_inventory_queue" {
   message_retention_seconds   = var.s3_inventory_queue_message_retention_time_seconds
   tags                        = local.tags
   policy                      = data.aws_iam_policy_document.s3_inventory_queue_policy.json
-  visibility_timeout_seconds  = 30 # Does not cover maximum processing time. Reconsider when multiple consumers becomes possible.
+  visibility_timeout_seconds  = var.orca_reconciliation_lambda_timeout
   depends_on = [
     aws_sqs_queue.s3_inventory_dlq
   ]
