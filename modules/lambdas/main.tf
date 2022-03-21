@@ -486,6 +486,7 @@ resource "aws_lambda_permission" "post_to_catalog_allow_sqs_trigger" {
 # ==============================================================================
 resource "aws_lambda_function" "db_deploy" {
   depends_on = [
+    module.lambda_security_group,
     var.restore_object_role_arn
   ]
 
