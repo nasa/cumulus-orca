@@ -7,7 +7,7 @@
 resource "aws_lambda_function" "post_to_queue_and_trigger_step_function" {
   ## REQUIRED
   function_name = "${var.prefix}_post_to_queue_and_trigger_step_function"
-  role          = var.restore_object_role_arn
+  role          = var.restore_object_role_arn  # todo: Specialized roles. ORCA-316
 
   ## OPTIONAL
   description      = "Receives an events from an SQS queue, translates to get_current_archive_list's input format, sends it to another queue, then triggers the internal report step function."
