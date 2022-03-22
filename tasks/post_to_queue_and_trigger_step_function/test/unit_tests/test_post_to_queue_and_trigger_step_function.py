@@ -50,6 +50,9 @@ class TestPostToQueueAndTriggerStepFunction(
         mock_post_to_fifo_queue: MagicMock,
         mock_trigger_step_function: MagicMock,
     ):
+        """
+        process_record calls other functions for more detailed tasks.
+        """
         mock_target_queue_url = Mock()
         mock_step_function_arn = Mock()
         mock_record_body = Mock()
@@ -69,6 +72,9 @@ class TestPostToQueueAndTriggerStepFunction(
         )
 
     def test_translate_record_body_happy_path(self):
+        """
+        Translates the input SQS record body to a simplified format accepted by get_current_archive_list
+        """
         aws_region = uuid.uuid4().__str__()
         bucket_name = uuid.uuid4().__str__()
         object_key = uuid.uuid4().__str__()
@@ -95,6 +101,9 @@ class TestPostToQueueAndTriggerStepFunction(
         )
 
     def test_translate_record_body_rejects_bad_input(self):
+        """
+        If the input record is in a bad format, raise an error.
+        """
         aws_region = uuid.uuid4().__str__()
         object_key = uuid.uuid4().__str__()
 
@@ -118,6 +127,9 @@ class TestPostToQueueAndTriggerStepFunction(
         self,
         mock_client: MagicMock,
     ):
+        """
+        Test for basic wrapper.
+        """
         mock_step_function_arn = Mock()
 
         post_to_queue_and_trigger_step_function.trigger_step_function(
@@ -134,6 +146,9 @@ class TestPostToQueueAndTriggerStepFunction(
         self,
         mock_process_record: MagicMock,
     ):
+        """
+        If given proper input, handler should assemble variables and pass along to process_record
+        """
         target_queue_url = uuid.uuid4().__str__()
         step_function_arn = uuid.uuid4().__str__()
         record = {"body": uuid.uuid4().__str__()}
@@ -158,6 +173,9 @@ class TestPostToQueueAndTriggerStepFunction(
         self,
         mock_process_record: MagicMock,
     ):
+        """
+        If input is in wrong format, raise error and halt.
+        """
         target_queue_url = uuid.uuid4().__str__()
         step_function_arn = uuid.uuid4().__str__()
         record = {"body": 1}
@@ -216,6 +234,9 @@ class TestPostToQueueAndTriggerStepFunction(
         self,
         mock_process_record: MagicMock,
     ):
+        """
+        We presently only handle one record at a time to make DLQ links possible.
+        """
         target_queue_url = uuid.uuid4().__str__()
         step_function_arn = uuid.uuid4().__str__()
 

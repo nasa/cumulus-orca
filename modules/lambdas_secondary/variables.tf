@@ -33,7 +33,7 @@ variable "restore_object_role_arn" {
 
 variable "orca_sfn_internal_reconciliation_workflow_arn" {
   type        = string
-  description = "The ARN of the nternal_reconciliation step function."
+  description = "The ARN of the internal_reconciliation step function."
 }
 
 variable "orca_sqs_s3_inventory_queue_arn" {

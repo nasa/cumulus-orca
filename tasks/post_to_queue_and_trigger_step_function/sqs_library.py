@@ -1,9 +1,9 @@
 """
 Name: sqs_library.py
-Description: library for copy_to_glacier lambda function for posting to fifo SQS queue.
+Description: library for post_to_queue_and_trigger_step_function lambda function for posting to fifo SQS queue.
+Largely copied from copy_to_glacier
 """
 # todo: Move to shared lib
-# todo: Include tests from copy_to_glacier
 # Standard libraries
 import functools
 import hashlib

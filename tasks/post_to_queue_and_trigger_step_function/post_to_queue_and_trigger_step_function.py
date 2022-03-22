@@ -49,6 +49,7 @@ def process_record(
     step_function_arn: str,
 ) -> None:
     """
+    Central method for translating record to pass along and triggering step function.
 
     Args:
         record: The record to post.
