@@ -177,6 +177,40 @@ class TestPostToQueueAndTriggerStepFunction(
 
         mock_process_record.assert_not_called()
 
+    @patch("post_to_queue_and_trigger_step_function.LOGGER")
+    @patch("post_to_queue_and_trigger_step_function.process_record")
+    def test_handler_missing_env_variables_raises_error(
+        self,
+        mock_process_record: MagicMock,
+        mock_logger: MagicMock,
+    ):
+        """
+        If environment variables are missing, raise error and halt.
+        """
+        target_queue_url = uuid.uuid4().__str__()
+        step_function_arn = uuid.uuid4().__str__()
+        record = {"body": uuid.uuid4().__str__()}
+
+        for key in [
+            post_to_queue_and_trigger_step_function.OS_ENVIRON_TARGET_QUEUE_URL_KEY,
+            post_to_queue_and_trigger_step_function.OS_ENVIRON_STEP_FUNCTION_ARN_KEY,
+        ]:
+            with patch.dict(
+                os.environ,
+                {
+                    post_to_queue_and_trigger_step_function.OS_ENVIRON_TARGET_QUEUE_URL_KEY: target_queue_url,
+                    post_to_queue_and_trigger_step_function.OS_ENVIRON_STEP_FUNCTION_ARN_KEY: step_function_arn,
+                },
+            ):
+                with self.subTest(key):
+                    os.environ.pop(key)
+                    with self.assertRaises(KeyError) as cm:
+                        post_to_queue_and_trigger_step_function.handler(
+                            {"Records": [record]}, Mock()
+                        )
+                    self.assertEqual(f"'{key}'", str(cm.exception))
+                    mock_process_record.assert_not_called()
+
     @patch("post_to_queue_and_trigger_step_function.process_record")
     def test_handler_rejects_multiple_records(
         self,

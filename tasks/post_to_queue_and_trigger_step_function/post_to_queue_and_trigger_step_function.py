@@ -6,7 +6,7 @@ sends it to another queue, then triggers the internal report step function.
 """
 import json
 import os
-from typing import Any, Dict, List, TypeVar
+from typing import Any, Dict, TypeVar
 
 import boto3
 import fastjsonschema
