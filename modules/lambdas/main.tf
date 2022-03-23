@@ -374,7 +374,7 @@ resource "aws_lambda_function" "post_copy_request_to_queue" {
 # Additional resources needed by post_copy_request_to_queue
 # ------------------------------------------------------------------------------
 # Permissions to allow S3 trigger to invoke lambda
-resource "aws_lambda_permission" "allow_s3_trigger" {  # todo: consider dlq, similar to internal reconciliation
+resource "aws_lambda_permission" "allow_s3_trigger" {
   ## REQUIRED
   for_each      = toset(local.orca_buckets)
   source_arn    = "arn:aws:s3:::${each.value}"
