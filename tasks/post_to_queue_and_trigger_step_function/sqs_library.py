@@ -3,7 +3,7 @@ Name: sqs_library.py
 Description: library for post_to_queue_and_trigger_step_function lambda function for posting to fifo SQS queue.
 Largely copied from copy_to_glacier
 """
-# todo: Move to shared lib
+# todo: Move to shared lib ORCA-406
 # Standard libraries
 import functools
 import hashlib
@@ -26,7 +26,7 @@ RT = TypeVar("RT")  # return type
 
 
 # Retry decorator for function
-# todo: Untested. Will likely eventually be part of shared lib.
+# todo: Untested. Will likely eventually be part of shared lib ORCA-148.
 def retry_error(
     max_retries: int = MAX_RETRIES,
     backoff_in_seconds: int = INITIAL_BACKOFF_IN_SECONDS,
