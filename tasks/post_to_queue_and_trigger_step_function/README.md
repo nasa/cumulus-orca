@@ -23,4 +23,4 @@ Fully defined json schemas written in the schema of https://json-schema.org/ can
 
 <a name="pydoc"></a>
 ## pydoc post_to_queue_and_trigger_step_function
-See API.md for documentation.
+[See the API documentation for more details.](API.md)
