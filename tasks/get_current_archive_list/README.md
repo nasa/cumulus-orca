@@ -14,7 +14,7 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
 <a name="deployment"></a>
 ## Deployment
 ```
-    see /bin/build_tasks.sh to build the zip file. Upload the zip file to AWS.
+    see bin/build_tasks.sh to build the zip file. Upload the zip file to AWS.
 ```
 <a name="pydoc"></a>
 ## pydoc get_current_archive_list
