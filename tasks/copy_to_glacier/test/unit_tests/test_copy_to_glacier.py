@@ -794,7 +794,7 @@ class TestCopyToGlacierHandler(TestCase):
         # Testing required fields
         self.assertEqual(queue_output_body, sqs_body)
 
-    # todo: since sleep is not called in function under test, this violates good unit test practices.
+    # todo: since sleep is not called in function under test, this violates good unit test practices. Fix in ORCA-406
     @patch("time.sleep")
     @patch.dict(os.environ, {"AWS_REGION": "us-west-2"}, clear=True)
     def test_post_to_metadata_queue_retry_failures(

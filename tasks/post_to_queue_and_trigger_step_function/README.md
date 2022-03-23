@@ -21,6 +21,18 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
 ## Input/Output Schemas and Examples
 Fully defined json schemas written in the schema of https://json-schema.org/ can be found in the [schemas folder](schemas).
 
+### Example Input
+```json
+{
+    "Records": 
+    [
+        {
+            "body": "{\"awsRegion\": \"us-west-2\", \"s3\": {\"bucket\": {\"name\": \"PREFIX-orca-reports\"}, \"object\": {\"key\": \"PREFIX-orca-primary/deleteme/2022-02-13T00-00Z/manifest.json\"}}}"
+        }
+    ]
+}
+```
+
 <a name="pydoc"></a>
 ## pydoc post_to_queue_and_trigger_step_function
 [See the API documentation for more details.](API.md)
