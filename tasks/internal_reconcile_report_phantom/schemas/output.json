@@ -26,7 +26,7 @@
               "collectionId",
               "granuleId",
               "filename",
-              "key_path",
+              "keyPath",
               "orcaEtag",
               "orcaLastUpdate",
               "orcaSize"
@@ -44,7 +44,7 @@
                 "type": "string",
                 "description": "Filename of the object from the ORCA catalog."
               },
-            "key_path": {
+            "keyPath": {
                 "type": "string",
                 "description": "key path and filename of the object in the ORCA catalog."
               },
