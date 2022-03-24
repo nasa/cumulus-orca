@@ -89,6 +89,12 @@ variable "orca_default_bucket" {
 }
 
 
+variable "orca_reports_bucket" {
+  type        = string
+  description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
+}
+
+
 variable "rds_security_group_id" {
   type        = string
   description = "Cumulus' RDS Security Group's ID."

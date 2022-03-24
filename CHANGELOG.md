@@ -23,6 +23,7 @@ and includes an additional section for migration notes.
 - *ORCA-307* Added lambda get_current_archive_list to pull S3 Inventory reports into Postgres. 
     Adds `orca_reconciliation_lambda_memory_size` and `orca_reconciliation_lambda_timeout` to Terraform variables.
 - *ORCA-308* Added lambda perform_orca_reconcile to find differences between S3 Inventory reports and Orca catalog.
+- *ORCA-373* Added input variable for `orca_reports_bucket`. Set in your `variables.tf` or `orca_variables.tf` file as shown below.
 
 ### Changed
 - *ORCA-299* `db_deploy` task has been updated to deploy ORCA internal reconciliation tables and objects.
@@ -31,8 +32,10 @@ and includes an additional section for migration notes.
 
 ### Migration Notes
 
+- Create a new bucket `PREFIX-orca-reports` TODO!!!
 - The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variables. The following required variables have been added:
   - dlq_subscription_email
+  - orca_reports_bucket
   - s3_access_key
   - s3_secret_key
   
@@ -79,14 +82,15 @@ variable "s3_secret_key" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  orca_default_bucket     = var.orca_default_bucket
-  db_admin_password       = var.db_admin_password
-  db_user_password        = var.db_user_password
-  db_host_endpoint        = var.db_host_endpoint
-  dlq_subscription_email  = var.dlq_subscription_email
-  rds_security_group_id   = var.rds_security_group_id
-  s3_access_key           = var.s3_access_key
-  s3_secret_key           = var.s3_secret_key
+  orca_default_bucket    = var.orca_default_bucket
+  orca_reports_bucket    = var.orca_reports_bucket
+  db_admin_password      = var.db_admin_password
+  db_user_password       = var.db_user_password
+  db_host_endpoint       = var.db_host_endpoint
+  dlq_subscription_email = var.dlq_subscription_email
+  rds_security_group_id  = var.rds_security_group_id
+  s3_access_key          = var.s3_access_key
+  s3_secret_key          = var.s3_secret_key
 
   ## OPTIONAL
   db_admin_username                                    = "postgres"
@@ -107,6 +111,17 @@ variable "s3_secret_key" {
   staged_recovery_queue_message_retention_time_seconds = 432000
   status_update_queue_message_retention_time_seconds   = 777600
   vpc_endpoint_id                                      = null
+  }
+  ```
+- Update the `buckets` variable in your `tfvars` file by adding the following bucket.
+  ```
+  buckets = {
+    ...
+    orca_reports = {
+      name = "PREFIX-orca-reports"
+      type = "orca-reports"
+    },
+    ...
   }
   ```
 

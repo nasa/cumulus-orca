@@ -41,7 +41,7 @@ This application will be used in future steps to authenticate users.
     - Naming convention is PREFIX-key-pair.pem
 - Create buckets in the same OU and region as the other installations.
     - Same OU and region would not be ideal for a real backup system, but is generally sufficient for testing.
-    - Required buckets are PREFIX-tf-state, PREFIX-orca-primary, PREFIX-internal, PREFIX-private, PREFIX-protected, and PREFIX-public
+    - Required buckets are PREFIX-tf-state, PREFIX-orca-primary, PREFIX-orca-reports, PREFIX-internal, PREFIX-private, PREFIX-protected, and PREFIX-public
     :::tip
     An example command for creating a bucket in us-west-2. Remember to run `aws configure` first.
     ```commandline
@@ -126,13 +126,13 @@ terraform apply
     - Replace 12345 in permissions_boundary_arn with the Account Id.
     - Add to the buckets:
       ```
-      default_orca = {
-         name = "PREFIX-orca-primary"
-         type = "orca"
-        },
-        provider = {
-          name = "orca-sandbox-s3-provider"
-          type = "provider"
+      orca_default = {
+        name = "PREFIX-orca-primary"
+        type = "orca"
+      },
+      provider = {
+        name = "orca-sandbox-s3-provider"
+        type = "provider"
       }
       ```
       :::tip
