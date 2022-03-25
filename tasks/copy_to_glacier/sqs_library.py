@@ -26,7 +26,7 @@ RT = TypeVar("RT")  # return type
 
 
 # Retry decorator for function
-# todo: Untested. Will likely eventually be part of shared lib ORCA-148.
+# todo: Lacks unit tests. Will likely eventually be part of shared lib ORCA-148.
 def retry_error(
     max_retries: int = MAX_RETRIES,
     backoff_in_seconds: int = INITIAL_BACKOFF_IN_SECONDS,
