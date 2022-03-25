@@ -1,8 +1,3 @@
-output "orca_sqs_internal_report_queue_arn" {
-  description = "The ARN of the internal-report-queue SQS"
-  value       = aws_sqs_queue.status_update_queue.arn
-}
-
 output "orca_sqs_internal_report_queue_id" {
   description = "The URL of the internal-report-queue SQS"
   value       = aws_sqs_queue.internal_report_queue.id
@@ -16,6 +11,16 @@ output "orca_sqs_metadata_queue_arn" {
 output "orca_sqs_metadata_queue_id" {
   description = "The URL of the metadata-queue SQS"
   value       = aws_sqs_queue.metadata_queue.id
+}
+
+output "orca_sqs_s3_inventory_queue_arn" {
+  description = "The ARN of the internal-report-queue SQS"
+  value       = aws_sqs_queue.s3_inventory_queue.arn
+}
+
+output "orca_sqs_s3_inventory_queue_id" {
+  description = "The URL of the internal-report-queue SQS"
+  value       = aws_sqs_queue.s3_inventory_queue.id
 }
 
 output "orca_sqs_staged_recovery_queue_arn" {

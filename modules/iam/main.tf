@@ -112,6 +112,12 @@ data "aws_iam_policy_document" "restore_object_role_policy_document" {
     ]
     resources = ["*"]
   }
+  statement {
+    actions = [
+      "states:StartExecution",
+    ]
+    resources = ["*"]
+  }
 }
 
 

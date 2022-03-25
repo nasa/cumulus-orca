@@ -24,6 +24,7 @@ and includes an additional section for migration notes.
     Adds `orca_reconciliation_lambda_memory_size` and `orca_reconciliation_lambda_timeout` to Terraform variables.
 - *ORCA-308* Added lambda perform_orca_reconcile to find differences between S3 Inventory reports and Orca catalog.
 - *ORCA-373* Added input variable for `orca_reports_bucket`. Set in your `variables.tf` or `orca_variables.tf` file as shown below.
+- *ORCA-403* Added lambda post_to_queue_and_trigger_step_function to trigger step function for internal reconciliation.
 
 ### Changed
 - *ORCA-299* `db_deploy` task has been updated to deploy ORCA internal reconciliation tables and objects.
@@ -106,6 +107,7 @@ variable "s3_secret_key" {
   orca_recovery_retry_limit                            = 3
   orca_recovery_retry_interval                         = 1
   orca_recovery_retry_backoff                          = 2
+  s3_inventory_queue_message_retention_time_seconds    = 432000
   sqs_delay_time_seconds                               = 0
   sqs_maximum_message_size                             = 262144
   staged_recovery_queue_message_retention_time_seconds = 432000

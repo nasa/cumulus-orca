@@ -150,6 +150,15 @@ If Webhook is not created, then user has to `set up Specs repository` as shown a
 A prototype using Bamboo has been created [here](https://ci.earthdata.nasa.gov/browse/ORCA-PROTOTYPE). Make sure NASA VPN is connected and that you have access to ORCA project on CI site.
 Code for the prototype resides currently in this [branch](https://github.com/nasa/cumulus-orca/blob/feature/ORCA-test-bamboo/bamboo-specs/bamboo.yaml) since we do not want to merge this into develop.
 
+## Testing/Prototyping a Bamboo plan from a branch
+
+
+In order to test a bamboo plan from a branch that will not affect the current deployment plan, you will need to create a `Linked repository` in bamboo that will integrate with your test branch. Currently, only CI/CD team can create that. Contact the CI/CD for creating the repo in bamboo. Once that is created, you can create/update your `bamboo.yaml` config file in your branch, push the changes to the ORCA repo, and then import the change from `Set up Bamboo specs` section in Bamboo UI. 
+
+:::note
+Every time the bamboo spec yaml file is updated, it needs to be imported in bamboo via `Bamboo specs` from the UI or else it will not be updated.
+:::
+
 ## Future directions
 
 - Convert bamboo plans to YAML definition language and store under `cumulus-orca/bamboo-specs/bamboo.yaml`.

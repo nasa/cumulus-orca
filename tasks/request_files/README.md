@@ -12,7 +12,7 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
 
 ## Deployment
 ```
-    see /bin/build_tasks.sh to build the zip file. Upload the zip file to AWS.
+    see bin/build_tasks.sh to build the zip file. Upload the zip file to AWS.
 ```
 <a name="deployment-validation"></a>
 ### Deployment Validation

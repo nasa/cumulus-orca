@@ -24,6 +24,16 @@ variable "metadata_queue_message_retention_time_seconds" {
   description = "The number of seconds metadata-queue fifo SQS retains a message in seconds. Maximum value is 14 days."
 }
 
+variable "orca_reconciliation_lambda_timeout" {
+  type        = number
+  description = "Timeout in number of seconds for ORCA reconciliation lambdas."
+}
+
+variable "s3_inventory_queue_message_retention_time_seconds" {
+  type        = number
+  description = "The number of seconds s3-inventory-queue fifo SQS retains a message in seconds. Maximum value is 14 days."
+}
+
 variable "sqs_delay_time_seconds" {
   type        = number
   description = "The time in seconds that the delivery of all messages in the queue will be delayed."
