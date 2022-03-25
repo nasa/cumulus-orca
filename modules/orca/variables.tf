@@ -202,6 +202,12 @@ variable "s3_access_key" {
 }
 
 
+variable "s3_inventory_queue_message_retention_time_seconds" {
+  type        = number
+  description = "The number of seconds s3-inventory-queue fifo SQS retains a message in seconds. Maximum value is 14 days."
+}
+
+
 variable "s3_secret_key" {
   type        = string
   description = "Secret key for communicating with Orca S3 buckets."

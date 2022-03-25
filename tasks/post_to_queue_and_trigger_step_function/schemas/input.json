@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/post_to_queue_and_trigger_step_function/schemas/input.json",
+  "title": "post_to_queue_and_trigger_step_function Lambda input",
+  "description": "The input for the post_to_queue_and_trigger_step_function Lambda.",
+  "type": "object",
+  "required": [
+    "Records"
+  ],
+  "properties": {
+    "Records": {
+      "type": "array",
+      "description": "The messages to post to the queue.",
+      "items": {
+        "required": ["body"],
+        "type": "object",
+        "properties": {
+          "body": {
+            "description": "The body to transfer to the outgoing queue.",
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

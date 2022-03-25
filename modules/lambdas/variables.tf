@@ -11,12 +11,6 @@ variable "lambda_subnet_ids" {
 }
 
 
-variable "permissions_boundary_arn" {
-  type        = string
-  description = "AWS ARN value for the permission boundary."
-}
-
-
 variable "prefix" {
   type        = string
   description = "Prefix used to prepend to all object names and tags."
@@ -53,6 +47,51 @@ variable "default_multipart_chunksize_mb" {
 variable "orca_default_bucket" {
   type        = string
   description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
+}
+
+variable "orca_secretsmanager_s3_access_credentials_secret_arn" {
+  type        = string
+  description = "The Amazon Resource Name (ARN) of the s3 credentials secret."
+}
+
+variable "orca_sqs_internal_report_queue_id" {
+  type        = string
+  description = "The URL of the internal-report-queue SQS"
+}
+
+variable "orca_sqs_metadata_queue_arn" {
+  type        = string
+  description = "The ARN of the metadata-queue SQS"
+}
+
+variable "orca_sqs_metadata_queue_id" {
+  type        = string
+  description = "The URL of the metadata-queue SQS"
+}
+
+variable "orca_sqs_s3_inventory_queue_id" {
+  type        = string
+  description = "The URL of the s3-inventory-queue SQS"
+}
+
+variable "orca_sqs_staged_recovery_queue_id" {
+  type        = string
+  description = "SQS URL of recovery queue."
+}
+
+variable "orca_sqs_staged_recovery_queue_arn" {
+  type        = string
+  description = "The ARN of the staged-recovery-queue SQS"
+}
+
+variable "orca_sqs_status_update_queue_arn" {
+  type        = string
+  description = "The ARN of the status-update-queue SQS"
+}
+
+variable "orca_sqs_status_update_queue_id" {
+  type        = string
+  description = "The URL of the SQS queue that recoery status updates are read from/posted to."
 }
 
 variable "restore_object_role_arn" {
@@ -130,44 +169,4 @@ variable "orca_recovery_retry_interval" {
 variable "orca_recovery_retry_backoff" {
   type        = number
   description = "The multiplier by which the retry interval increases during each attempt."
-}
-
-variable "orca_secretsmanager_s3_access_credentials_secret_arn" {
-  type        = string
-  description = "The Amazon Resource Name (ARN) of the s3 credentials secret."
-}
-
-variable "orca_sqs_internal_report_queue_id" {
-  type        = string
-  description = "The URL of the internal-report-queue SQS"
-}
-
-variable "orca_sqs_metadata_queue_arn" {
-  type        = string
-  description = "The ARN of the metadata-queue SQS"
-}
-
-variable "orca_sqs_metadata_queue_id" {
-  type        = string
-  description = "The URL of the metadata-queue SQS"
-}
-
-variable "orca_sqs_staged_recovery_queue_id" {
-  type        = string
-  description = "SQS URL of recovery queue."
-}
-
-variable "orca_sqs_staged_recovery_queue_arn" {
-  type        = string
-  description = "The ARN of the staged-recovery-queue SQS"
-}
-
-variable "orca_sqs_status_update_queue_arn" {
-  type        = string
-  description = "The ARN of the status-update-queue SQS"
-}
-
-variable "orca_sqs_status_update_queue_id" {
-  type        = string
-  description = "The URL of the SQS queue that recoery status updates are read from/posted to."
 }
