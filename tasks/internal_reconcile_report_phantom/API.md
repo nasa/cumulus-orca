@@ -3,6 +3,7 @@
 * [internal\_reconcile\_report\_phantom](#internal_reconcile_report_phantom)
   * [task](#internal_reconcile_report_phantom.task)
   * [query\_db](#internal_reconcile_report_phantom.query_db)
+  * [get\_phantoms\_sql](#internal_reconcile_report_phantom.get_phantoms_sql)
   * [create\_http\_error\_dict](#internal_reconcile_report_phantom.create_http_error_dict)
   * [handler](#internal_reconcile_report_phantom.handler)
 
@@ -35,11 +36,29 @@ def query_db(engine: Engine, job_id: str,
              page_index: int) -> List[Dict[str, Any]]
 ```
 
+Gets phantoms for the given job/page, up to PAGE_SIZE + 1 results.
+
 **Arguments**:
 
 - `engine` - The sqlalchemy engine to use for contacting the database.
 - `job_id` - The unique ID of job/report.
 - `page_index` - The 0-based index of the results page to return.
+  
+
+**Returns**:
+
+  A list containing dicts matching the format of "phantoms" in output.json.
+
+<a id="internal_reconcile_report_phantom.get_phantoms_sql"></a>
+
+#### get\_phantoms\_sql
+
+```python
+def get_phantoms_sql() -> text
+```
+
+SQL for getting phantom report entries for a given job_id, page_size, and page_index.
+Formats datetimes in milliseconds since 1 January 1970 UTC.
 
 <a id="internal_reconcile_report_phantom.create_http_error_dict"></a>
 

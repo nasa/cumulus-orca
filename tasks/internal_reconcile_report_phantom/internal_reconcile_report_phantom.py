@@ -58,11 +58,15 @@ def query_db(
     page_index: int,
 ) -> List[Dict[str, Any]]:
     """
+    Gets phantoms for the given job/page, up to PAGE_SIZE + 1 results.
 
     Args:
         engine: The sqlalchemy engine to use for contacting the database.
         job_id: The unique ID of job/report.
         page_index: The 0-based index of the results page to return.
+
+    Returns:
+        A list containing dicts matching the format of "phantoms" in output.json.
     """
     LOGGER.info(f"Retrieving page '{page_index}' of reports for job '{job_id}'")
     with engine.begin() as connection:
@@ -94,6 +98,10 @@ def query_db(
 
 
 def get_phantoms_sql() -> text:
+    """
+    SQL for getting phantom report entries for a given job_id, page_size, and page_index.
+    Formats datetimes in milliseconds since 1 January 1970 UTC.
+    """
     return text(
         """
 SELECT

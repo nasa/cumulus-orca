@@ -130,7 +130,7 @@ resource "aws_lambda_function" "internal_reconcile_report_phantom" {
   filename         = "${path.module}/../../tasks/internal_reconcile_report_phantom/internal_reconcile_report_phantom.zip"
   handler          = "internal_reconcile_report_phantom.handler"
   memory_size      = var.orca_reconciliation_lambda_memory_size
-  runtime          = "python3.7"
+  runtime          = "python3.9"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/internal_reconcile_report_phantom/internal_reconcile_report_phantom.zip")
   tags             = local.tags
   timeout          = var.orca_reconciliation_lambda_timeout
