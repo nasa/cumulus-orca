@@ -1,6 +1,5 @@
 # Local Variables
 locals {
-  tags         = merge(var.tags, { Deployment = var.prefix })
   orca_buckets = [for k, v in var.buckets : v.name if v.type == "orca"]
 }
 
@@ -18,7 +17,7 @@ module "lambda_security_group" {
   rds_security_group_id = var.rds_security_group_id
   vpc_id                = var.vpc_id
   ## OPTIONAL
-  tags = local.tags
+  tags = var.tags
 }
 
 
@@ -39,7 +38,7 @@ resource "aws_lambda_function" "copy_to_glacier" {
   memory_size      = var.orca_ingest_lambda_memory_size
   runtime          = "python3.7"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/copy_to_glacier/copy_to_glacier.zip")
-  tags             = local.tags
+  tags             = var.tags
   timeout          = var.orca_ingest_lambda_timeout
 
   vpc_config {
@@ -74,7 +73,7 @@ resource "aws_lambda_function" "get_current_archive_list" {
   memory_size      = var.orca_reconciliation_lambda_memory_size
   runtime          = "python3.9"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/get_current_archive_list/get_current_archive_list.zip")
-  tags             = local.tags
+  tags             = var.tags
   timeout          = var.orca_reconciliation_lambda_timeout
 
   vpc_config {
@@ -103,7 +102,7 @@ resource "aws_lambda_function" "perform_orca_reconcile" {
   memory_size      = var.orca_reconciliation_lambda_memory_size
   runtime          = "python3.9"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/perform_orca_reconcile/perform_orca_reconcile.zip")
-  tags             = local.tags
+  tags             = var.tags
   timeout          = var.orca_reconciliation_lambda_timeout
 
   vpc_config {
@@ -114,7 +113,7 @@ resource "aws_lambda_function" "perform_orca_reconcile" {
   environment {
     variables = {
       PREFIX = var.prefix
-      INTERNAL_REPORT_QUEUE_URL  = var.orca_sqs_internal_report_queue_id
+      INTERNAL_REPORT_QUEUE_URL = var.orca_sqs_internal_report_queue_id
     }
   }
 }
@@ -166,7 +165,7 @@ resource "aws_lambda_function" "extract_filepaths_for_granule" {
   memory_size      = var.orca_recovery_lambda_memory_size
   runtime          = "python3.7"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/extract_filepaths_for_granule/extract_filepaths_for_granule.zip")
-  tags             = local.tags
+  tags             = var.tags
   timeout          = var.orca_recovery_lambda_timeout
 
   vpc_config {
@@ -190,7 +189,7 @@ resource "aws_lambda_function" "request_files" {
   memory_size      = var.orca_recovery_lambda_memory_size
   runtime          = "python3.7"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/request_files/request_files.zip")
-  tags             = local.tags
+  tags             = var.tags
   timeout          = var.orca_recovery_lambda_timeout
 
   vpc_config {
@@ -225,7 +224,7 @@ resource "aws_lambda_function" "copy_files_to_archive" {
   memory_size      = var.orca_recovery_lambda_memory_size
   runtime          = "python3.7"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/copy_files_to_archive/copy_files_to_archive.zip")
-  tags             = local.tags
+  tags             = var.tags
   timeout          = var.orca_recovery_lambda_timeout
 
   vpc_config {
@@ -244,13 +243,13 @@ resource "aws_lambda_function" "copy_files_to_archive" {
   }
 }
 
+# Additional resources needed by copy_files_to_archive
+# ------------------------------------------------------------------------------
 resource "aws_lambda_event_source_mapping" "copy_files_to_archive_event_source_mapping" {
   event_source_arn = var.orca_sqs_staged_recovery_queue_arn
   function_name    = aws_lambda_function.copy_files_to_archive.arn
 }
 
-# Additional resources needed by copy_files_to_archive
-# ------------------------------------------------------------------------------
 # Permissions to allow SQS trigger to invoke lambda
 resource "aws_lambda_permission" "copy_files_to_archive_allow_sqs_trigger" {
   ## REQUIRED
@@ -277,7 +276,7 @@ resource "aws_lambda_function" "post_to_database" {
   memory_size      = var.orca_recovery_lambda_memory_size
   runtime          = "python3.7"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/post_to_database/post_to_database.zip")
-  tags             = local.tags
+  tags             = var.tags
   timeout          = var.orca_recovery_lambda_timeout
 
   vpc_config {
@@ -292,13 +291,13 @@ resource "aws_lambda_function" "post_to_database" {
   }
 }
 
+# Additional resources needed by post_to_database
+# ------------------------------------------------------------------------------
 resource "aws_lambda_event_source_mapping" "post_to_database_event_source_mapping" {
   event_source_arn = var.orca_sqs_status_update_queue_arn
   function_name    = aws_lambda_function.post_to_database.arn
 }
 
-# Additional resources needed by post_to_database
-# ------------------------------------------------------------------------------
 # Permissions to allow SQS trigger to invoke lambda
 resource "aws_lambda_permission" "post_to_database_allow_sqs_trigger" {
   ## REQUIRED
@@ -325,7 +324,7 @@ resource "aws_lambda_function" "request_status_for_granule" {
   memory_size      = var.orca_recovery_lambda_memory_size
   runtime          = "python3.7"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/request_status_for_granule/request_status_for_granule.zip")
-  tags             = local.tags
+  tags             = var.tags
   timeout          = var.orca_recovery_lambda_timeout
 
   vpc_config {
@@ -355,7 +354,7 @@ resource "aws_lambda_function" "request_status_for_job" {
   memory_size      = var.orca_recovery_lambda_memory_size
   runtime          = "python3.7"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/request_status_for_job/request_status_for_job.zip")
-  tags             = local.tags
+  tags             = var.tags
   timeout          = var.orca_recovery_lambda_timeout
 
   vpc_config {
@@ -383,7 +382,7 @@ resource "aws_lambda_function" "post_copy_request_to_queue" {
   memory_size      = var.orca_recovery_lambda_memory_size
   runtime          = "python3.7"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/post_copy_request_to_queue/post_copy_request_to_queue.zip")
-  tags             = local.tags
+  tags             = var.tags
   timeout          = var.orca_recovery_lambda_timeout
   vpc_config {
     subnet_ids         = var.lambda_subnet_ids
@@ -401,6 +400,8 @@ resource "aws_lambda_function" "post_copy_request_to_queue" {
   }
 }
 
+# Additional resources needed by post_copy_request_to_queue
+# ------------------------------------------------------------------------------
 # Permissions to allow S3 trigger to invoke lambda
 resource "aws_lambda_permission" "allow_s3_trigger" {
   ## REQUIRED
@@ -443,7 +444,7 @@ resource "aws_lambda_function" "orca_catalog_reporting" {
   memory_size      = var.orca_ingest_lambda_memory_size
   runtime          = "python3.7"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/orca_catalog_reporting/orca_catalog_reporting.zip")
-  tags             = local.tags
+  tags             = var.tags
   timeout          = var.orca_ingest_lambda_timeout
 
   vpc_config {
@@ -473,7 +474,7 @@ resource "aws_lambda_function" "post_to_catalog" {
   memory_size      = var.orca_recovery_lambda_memory_size
   runtime          = "python3.7"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/post_to_catalog/post_to_catalog.zip")
-  tags             = local.tags
+  tags             = var.tags
   timeout          = 300 # Gives plenty of time for Serverless spinup.
 
   vpc_config {
@@ -488,13 +489,13 @@ resource "aws_lambda_function" "post_to_catalog" {
   }
 }
 
+# Additional resources needed by post_to_catalog
+# ------------------------------------------------------------------------------
 resource "aws_lambda_event_source_mapping" "post_to_catalog_event_source_mapping" {
   event_source_arn = var.orca_sqs_metadata_queue_arn
   function_name    = aws_lambda_function.post_to_catalog.arn
 }
 
-# Additional resources needed by post_to_catalog
-# ------------------------------------------------------------------------------
 # Permissions to allow SQS trigger to invoke lambda
 resource "aws_lambda_permission" "post_to_catalog_allow_sqs_trigger" {
   ## REQUIRED
@@ -531,7 +532,7 @@ resource "aws_lambda_function" "db_deploy" {
   memory_size      = var.orca_recovery_lambda_memory_size
   runtime          = "python3.7"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/db_deploy/db_deploy.zip")
-  tags             = local.tags
+  tags             = var.tags
   timeout          = var.orca_recovery_lambda_timeout
 
   vpc_config {

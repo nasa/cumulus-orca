@@ -14,7 +14,7 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
 <a name="deployment"></a>
 ## Deployment
 ```
-    see /bin/build_tasks.sh to build the zip file. Upload the zip file to AWS.
+    see bin/build_tasks.sh to build the zip file. Upload the zip file to AWS.
 ```
 
 <a name="input-output-schemas"></a>
@@ -37,4 +37,4 @@ Fully defined json schemas written in the schema of https://json-schema.org/ can
 
 <a name="pydoc"></a>
 ## pydoc perform_orca_reconcile
-See API.md for documentation.
+[See the API documentation for more details.](API.md)
