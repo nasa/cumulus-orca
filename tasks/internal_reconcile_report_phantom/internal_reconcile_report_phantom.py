@@ -1,7 +1,6 @@
 import json
-
 from http import HTTPStatus
-from typing import Dict, Any, List, Union
+from typing import Any, Dict, List, Union
 
 import fastjsonschema as fastjsonschema
 from cumulus_logger import CumulusLogger
@@ -10,6 +9,17 @@ from orca_shared.database import shared_db
 from orca_shared.database.shared_db import retry_operational_error
 from sqlalchemy import text
 from sqlalchemy.future import Engine
+
+OUTPUT_JOB_ID_KEY = "jobId"
+OUTPUT_ANOTHER_PAGE_KEY = "anotherPage"
+OUTPUT_PHANTOMS_KEY = "phantoms"
+PHANTOMS_COLLECTION_ID_KEY = "collectionId"
+PHANTOMS_GRANULE_ID_KEY = "granuleId"
+PHANTOMS_FILENAME_KEY = "filename"
+PHANTOMS_KEY_PATH_KEY = "keyPath"
+PHANTOMS_ORCA_ETAG_KEY = "orcaEtag"
+PHANTOMS_ORCA_LAST_UPDATE_KEY = "orcaLastUpdate"
+PHANTOMS_ORCA_SIZE_KEY = "orcaSize"
 
 LOGGER = CumulusLogger()
 
@@ -35,9 +45,9 @@ def task(
     )
 
     return {
-        "jobId": job_id,
-        "anotherPage": len(granules) > PAGE_SIZE,
-        "phantoms": granules[0:PAGE_SIZE],  # we get one extra for anotherPage calculation.
+        OUTPUT_JOB_ID_KEY: job_id,
+        OUTPUT_ANOTHER_PAGE_KEY: len(granules) > PAGE_SIZE,
+        OUTPUT_PHANTOMS_KEY: granules[0:PAGE_SIZE],  # we get one extra for anotherPage calculation.
     }
 
 
@@ -54,6 +64,7 @@ def query_db(
         job_id: The unique ID of job/report.
         page_index: The 0-based index of the results page to return.
     """
+    LOGGER.info(f"Retrieving page '{page_index}' of reports for job '{job_id}'")
     with engine.begin() as connection:
         sql_results = connection.execute(
             get_phantoms_sql(),
@@ -70,13 +81,13 @@ def query_db(
         for sql_result in sql_results:
             phantoms.append(
                 {
-                    "collectionId": sql_result["collection_id"],
-                    "granuleId": sql_result["granule_id"],
-                    "filename": sql_result["filename"],
-                    "keyPath": sql_result["key_path"],
-                    "orcaEtag": sql_result["orca_etag"],
-                    "orcaLastUpdate": sql_result["orca_last_update"],
-                    "orcaSize": sql_result["orca_size"],
+                    PHANTOMS_COLLECTION_ID_KEY: sql_result["collection_id"],
+                    PHANTOMS_GRANULE_ID_KEY: sql_result["granule_id"],
+                    PHANTOMS_FILENAME_KEY: sql_result["filename"],
+                    PHANTOMS_KEY_PATH_KEY: sql_result["key_path"],
+                    PHANTOMS_ORCA_ETAG_KEY: sql_result["orca_etag"],
+                    PHANTOMS_ORCA_LAST_UPDATE_KEY: sql_result["orca_last_update"],
+                    PHANTOMS_ORCA_SIZE_KEY: sql_result["orca_size"],
                 }
             )
         return phantoms
@@ -86,7 +97,13 @@ def get_phantoms_sql() -> text:
     return text(
         """
 SELECT
-    collection_id, granule_id, filename, key_path, orca_etag, orca_last_update, orca_size
+    collection_id, 
+    granule_id, 
+    filename, 
+    key_path, 
+    orca_etag, 
+    (EXTRACT(EPOCH FROM date_trunc('milliseconds', orca_last_update) AT TIME ZONE 'UTC') * 1000)::bigint as orca_last_update,
+    orca_size
     FROM reconcile_phantom_report
     WHERE job_id = :job_id
     ORDER BY collection_id, granule_id, filename

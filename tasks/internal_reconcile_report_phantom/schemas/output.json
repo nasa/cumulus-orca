@@ -53,9 +53,8 @@
                 "description": "etag of the object as reported in the ORCA catalog."
               },
             "orcaLastUpdate": {
-              "type": "string",
-              "description": "Last update of the object as reported in the ORCA catalog.",
-              "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?\\+00:00$"
+              "type": "integer",
+              "description": "The time, in milliseconds since 1 January 1970 UTC, of last update of the object as reported in the ORCA catalog."
             },
             "orcaSize": {
               "type": "integer",

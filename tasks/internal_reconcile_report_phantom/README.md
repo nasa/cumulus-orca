@@ -39,7 +39,7 @@ Fully defined json schemas written in the schema of https://json-schema.org/ can
       "filename": "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
       "key_path": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
       "orcaEtag": "d41d8cd98f00b204e9800998ecf8427",
-      "orcaLastUpdate": "2020-01-01T23:00:00Z",
+      "orcaLastUpdate": 628021970000,
       "orcaSize": 6543277389
     }
   ]
