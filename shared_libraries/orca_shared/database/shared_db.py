@@ -26,22 +26,19 @@ INITIAL_BACKOFF_IN_SECONDS = 1  # Number of seconds to sleep the first time thro
 RT = TypeVar("RT")  # return type
 
 
-def get_configuration() -> Dict[str, str]:
+def get_configuration(secret_arn: str) -> Dict[str, str]:
     """
     Create a dictionary of configuration values based on environment variables
-    parameter store information and other items needed to create the database.
+    information and other items needed to create the database.
 
     ```
     Environment Variables:
         PREFIX (str): Deployment prefix used to pull the proper AWS secret.
         AWS_REGION (str): AWS reserved runtime variable used to set boto3 client region.
-
-    Parameter Store:
-        <prefix>-orca-db-login-secret (string): The json string containing all the db login info.
     ```
 
     Args:
-        None
+        secret_arn (str): The secret ARN of the secret in AWS secretsmanager.
 
     Returns:
         Configuration (Dict): Dictionary with all of the configuration information.
@@ -76,7 +73,7 @@ def get_configuration() -> Dict[str, str]:
             "Retrieving db login info for both user and admin as a dictionary."
         )
         config = json.loads(
-            secretsmanager.get_secret_value(SecretId=f"{prefix}-orca-db-login-secret")[
+            secretsmanager.get_secret_value(SecretId=secret_arn)[
                 "SecretString"
             ]
         )
