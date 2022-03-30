@@ -71,7 +71,7 @@ resource "aws_lambda_function" "get_current_archive_list" {
   filename         = "${path.module}/../../tasks/get_current_archive_list/get_current_archive_list.zip"
   handler          = "get_current_archive_list.handler"
   memory_size      = var.orca_reconciliation_lambda_memory_size
-  runtime          = "python3.9"
+  runtime          = "python3.7"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/get_current_archive_list/get_current_archive_list.zip")
   tags             = var.tags
   timeout          = var.orca_reconciliation_lambda_timeout
@@ -100,7 +100,7 @@ resource "aws_lambda_function" "perform_orca_reconcile" {
   filename         = "${path.module}/../../tasks/perform_orca_reconcile/perform_orca_reconcile.zip"
   handler          = "perform_orca_reconcile.handler"
   memory_size      = var.orca_reconciliation_lambda_memory_size
-  runtime          = "python3.9"
+  runtime          = "python3.7"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/perform_orca_reconcile/perform_orca_reconcile.zip")
   tags             = var.tags
   timeout          = var.orca_reconciliation_lambda_timeout

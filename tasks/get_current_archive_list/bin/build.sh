@@ -97,7 +97,7 @@ if [ ! -d "../package/awslambda-psycopg2" ]; then
     check_rc $return_code "ERROR: Unable to retrieve awslambda-psycopg2 code."
 fi
 
-cp ../package/awslambda-psycopg2/psycopg2-3.8/* build/psycopg2/
+cp ../package/awslambda-psycopg2/psycopg2-3.7/* build/psycopg2/
 let return_code=$?
 check_rc $return_code "ERROR: Unable to install psycopg2."
 
