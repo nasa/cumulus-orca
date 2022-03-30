@@ -1,5 +1,6 @@
 # Local Variables
 locals {
+  tags         = merge(var.tags, { Deployment = var.prefix })
   orca_buckets = [for k, v in var.buckets : v.name if v.type == "orca"]
 }
 
@@ -127,7 +128,7 @@ resource "aws_lambda_function" "perform_orca_reconcile" {
 resource "aws_lambda_function" "extract_filepaths_for_granule" {
   ## REQUIRED
   function_name = "${var.prefix}_extract_filepaths_for_granule"
-  role          = var.restore_object_role_arn
+  role		= aws_iam_role.extract_filepaths_for_granule_iam_role.arn
 
   ## OPTIONAL
   description      = "Extracts bucket info and granules filepath from the CMA for ORCA request_files lambda."
@@ -144,6 +145,55 @@ resource "aws_lambda_function" "extract_filepaths_for_granule" {
     security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
   }
 }
+
+
+data "aws_iam_policy_document" "assume_lambda_role_extract" {
+  statement {
+    principals {
+      type = "AWS"
+      identifiers = ["*"]
+    }
+    actions = ["sts:AssumeRole"]
+
+  }
+}
+
+# Permissions needed to run the function successfully
+data "aws_iam_policy_document" "extract_filepaths_for_granule_policy_document" {
+  statement {
+    actions = [
+      "lambda:Invoke*",
+      "s3:PutObject*"
+    ]
+    resources = [
+      "arn:aws:s3:::*",
+      "arn:aws:lambda:*:*:*extract_filepaths_for_granule"
+    ]
+    effect = "Allow"
+  }
+}
+
+resource "aws_iam_role" "extract_filepaths_for_granule_iam_role" {
+  name                 = "${var.prefix}_extract_filepaths_for_granule_role"
+  assume_role_policy   = data.aws_iam_policy_document.assume_lambda_role_extract.json
+  permissions_boundary = var.permissions_boundary_arn
+  tags                 = local.tags
+}
+
+
+resource "aws_iam_role_policy" "extract_filepaths_for_granule_policy" {
+  name   = "${var.prefix}_extract_filepaths_for_granule_policy"
+  role   = aws_iam_role.extract_filepaths_for_granule_iam_role.id
+  policy = data.aws_iam_policy_document.extract_filepaths_for_granule_policy_document.json
+}
+
+
+# Attaches permissions needed to deploy the Lambda
+resource "aws_iam_role_policy_attachment" "extract_filepaths_for_granule_iam_policy_attachment" {
+  role	     = aws_iam_role.extract_filepaths_for_granule_iam_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+}
+
 
 
 # request_files - Requests files from ORCA S3 Glacier
