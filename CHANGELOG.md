@@ -33,7 +33,7 @@ and includes an additional section for migration notes.
 
 ### Migration Notes
 
-- Create a new bucket `PREFIX-orca-reports` TODO!!!
+- Create a new bucket `PREFIX-orca-reports` in the same region as your primary Orca bucket.
 - The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variables. The following required variables have been added:
   - dlq_subscription_email
   - orca_reports_bucket
