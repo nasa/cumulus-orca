@@ -1,10 +1,18 @@
-## Local Variables
-locals {
-  tags = merge(var.tags, { Deployment = var.prefix })
-}
-
-
 ## Referenced Modules
+
+## s3 - Automated bucket/inventory report creation
+## =============================
+module "orca_s3" {
+  source = "../s3"
+  ## --------------------------
+  ## Cumulus Variables
+  ## --------------------------
+  ## REQUIRED
+  buckets                                              = var.buckets
+  prefix                                               = var.prefix
+  ## OPTIONAL
+  tags                                                 = var.tags
+}
 
 ## orca_lambdas - lambdas module that calls iam and security_groups module
 ## =============================
@@ -15,13 +23,13 @@ module "orca_lambdas" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  buckets                                              = var.buckets
+  buckets                                              = module.orca_s3.buckets
   lambda_subnet_ids                                    = var.lambda_subnet_ids
   prefix                                               = var.prefix
   rds_security_group_id                                = var.rds_security_group_id
   vpc_id                                               = var.vpc_id
   ## OPTIONAL
-  tags                           = local.tags
+  tags                           = var.tags
   default_multipart_chunksize_mb = var.default_multipart_chunksize_mb
 
   ## --------------------------
@@ -67,7 +75,7 @@ module "orca_lambdas_secondary" {
   lambda_subnet_ids                                    = var.lambda_subnet_ids
   prefix                                               = var.prefix
   ## OPTIONAL
-  tags                           = local.tags
+  tags                           = var.tags
   default_multipart_chunksize_mb = var.default_multipart_chunksize_mb
 
   ## --------------------------
@@ -99,7 +107,7 @@ module "orca_workflows" {
   workflow_config = var.workflow_config
 
   ## OPTIONAL
-  tags = local.tags
+  tags = var.tags
 
   ## --------------------------
   ## ORCA Variables
@@ -122,11 +130,11 @@ module "orca_iam" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  buckets                  = var.buckets
+  buckets                  = module.orca_s3.buckets
   permissions_boundary_arn = var.permissions_boundary_arn
   prefix                   = var.prefix
   # OPTIONAL
-  tags = local.tags
+  tags = var.tags
   # --------------------------
   # ORCA Variables
   # --------------------------
@@ -147,7 +155,7 @@ module "orca_secretsmanager" {
   prefix = var.prefix
 
   ## OPTIONAL
-  tags = local.tags
+  tags = var.tags
   ## --------------------------
   ## ORCA Variables
   ## --------------------------
@@ -175,7 +183,7 @@ module "orca_sqs" {
   prefix = var.prefix
 
   ## OPTIONAL
-  tags = local.tags
+  tags = var.tags
 
   ## --------------------------
   ## ORCA Variables

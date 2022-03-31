@@ -23,7 +23,8 @@ and includes an additional section for migration notes.
 - *ORCA-307* Added lambda get_current_archive_list to pull S3 Inventory reports into Postgres. 
     Adds `orca_reconciliation_lambda_memory_size` and `orca_reconciliation_lambda_timeout` to Terraform variables.
 - *ORCA-308* Added lambda perform_orca_reconcile to find differences between S3 Inventory reports and Orca catalog.
-- *ORCA-373* Added input variable for `orca_reports_bucket`. Set in your `variables.tf` or `orca_variables.tf` file as shown below.
+- *ORCA-373* Added bucket `PREFIX-orca-reports` for S3 Inventory Reports.
+    S3 Inventory Reports will automatically be deleted after 30 days.
 - *ORCA-403* Added lambda post_to_queue_and_trigger_step_function to trigger step function for internal reconciliation.
 
 ### Changed
@@ -33,12 +34,14 @@ and includes an additional section for migration notes.
 
 ### Migration Notes
 
-- Create a new bucket `PREFIX-orca-reports` in the same region as your primary Orca bucket.
 - The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variables. The following required variables have been added:
   - dlq_subscription_email
-  - orca_reports_bucket
   - s3_access_key
+      One half of credentials allowing Postgres to pull in s3 data.
+      Generate in cloud.earthdata.nasa.gov under `Projects -> Your project -> CLOUD MANAGEMENT -> AWS Long-Term Access Keys`.
   - s3_secret_key
+      One half of credentials allowing Postgres to pull in s3 data.
+      Will be generated when you generate `s3_access_key`.
   
 - Add the following ORCA required variable definition to your `variables.tf` or `orca_variables.tf` file.
 
@@ -84,7 +87,6 @@ variable "s3_secret_key" {
   ## --------------------------
   ## REQUIRED
   orca_default_bucket    = var.orca_default_bucket
-  orca_reports_bucket    = var.orca_reports_bucket
   db_admin_password      = var.db_admin_password
   db_user_password       = var.db_user_password
   db_host_endpoint       = var.db_host_endpoint

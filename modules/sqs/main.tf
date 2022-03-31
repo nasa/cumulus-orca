@@ -1,8 +1,3 @@
-## Local Variables
-locals {
-  tags = merge(var.tags, { Deployment = var.prefix })
-}
-
 ## SQS IAM access policy for internal-report-queue.fifo SQS
 ## ====================================================================================================
 data "aws_iam_policy_document" "internal_report_queue_policy" {
@@ -63,7 +58,7 @@ resource "aws_sqs_queue" "internal_report_queue" {
   delay_seconds               = var.sqs_delay_time_seconds
   max_message_size            = var.sqs_maximum_message_size
   message_retention_seconds   = var.internal_report_queue_message_retention_time_seconds
-  tags                        = local.tags
+  tags                        = var.tags
   policy                      = data.aws_iam_policy_document.internal_report_queue_policy.json
   visibility_timeout_seconds  = 30 # Does not cover maximum processing time. Reconsider when multiple consumers becomes possible.
   depends_on = [
@@ -81,7 +76,7 @@ resource "aws_sqs_queue" "internal_report_dlq" {
   fifo_queue                 = true
   delay_seconds              = var.sqs_delay_time_seconds
   max_message_size           = var.sqs_maximum_message_size
-  tags                       = local.tags
+  tags                       = var.tags
 }
 
 resource "aws_sqs_queue_policy" "internal_report_deadletter_queue_policy" {
@@ -117,7 +112,7 @@ resource "aws_cloudwatch_metric_alarm" "internal_report_deadletter_alarm" {
   threshold           = 1 #alarm will be triggered if number of messages in the DLQ equals to this threshold.
   treat_missing_data  = "notBreaching"
   alarm_actions       = [aws_sns_topic.internal_report_dlq_alarm.arn]
-  tags                = local.tags
+  tags                = var.tags
   dimensions = {
     "QueueName" = aws_sqs_queue.internal_report_dlq.name
   }
@@ -146,7 +141,7 @@ resource "aws_sqs_queue" "metadata_queue" {
   delay_seconds               = var.sqs_delay_time_seconds
   max_message_size            = var.sqs_maximum_message_size
   message_retention_seconds   = var.metadata_queue_message_retention_time_seconds
-  tags                        = local.tags
+  tags                        = var.tags
   policy                      = data.aws_iam_policy_document.metadata_queue_policy.json
   visibility_timeout_seconds  = 900 # Set to the lambda max time
 }
@@ -161,7 +156,7 @@ resource "aws_sqs_queue" "s3_inventory_queue" {
   delay_seconds               = var.sqs_delay_time_seconds
   max_message_size            = var.sqs_maximum_message_size
   message_retention_seconds   = var.s3_inventory_queue_message_retention_time_seconds
-  tags                        = local.tags
+  tags                        = var.tags
   policy                      = data.aws_iam_policy_document.s3_inventory_queue_policy.json
   visibility_timeout_seconds  = var.orca_reconciliation_lambda_timeout
   depends_on = [
@@ -179,7 +174,7 @@ resource "aws_sqs_queue" "s3_inventory_dlq" {
   fifo_queue                  = true
   delay_seconds              = var.sqs_delay_time_seconds
   max_message_size           = var.sqs_maximum_message_size
-  tags                       = local.tags
+  tags                       = var.tags
 }
 
 resource "aws_sqs_queue_policy" "s3_inventory_deadletter_queue_policy" {
@@ -215,7 +210,7 @@ resource "aws_cloudwatch_metric_alarm" "s3_inventory_deadletter_alarm" {
   threshold           = 1 #alarm will be triggered if number of messages in the DLQ equals to this threshold.
   treat_missing_data  = "notBreaching"
   alarm_actions       = [aws_sns_topic.s3_inventory_dlq_alarm.arn]
-  tags                = local.tags
+  tags                = var.tags
   dimensions = {
     "QueueName" = aws_sqs_queue.s3_inventory_dlq.name
   }
@@ -241,7 +236,7 @@ resource "aws_sqs_queue" "staged_recovery_queue" {
   delay_seconds              = var.sqs_delay_time_seconds
   max_message_size           = var.sqs_maximum_message_size
   message_retention_seconds  = var.staged_recovery_queue_message_retention_time_seconds
-  tags                       = local.tags
+  tags                       = var.tags
   policy                     = data.aws_iam_policy_document.staged_recovery_queue_policy.json
   visibility_timeout_seconds = 1800 # Set to double lambda max time
   depends_on = [
@@ -259,7 +254,7 @@ resource "aws_sqs_queue" "staged_recovery_dlq" {
   delay_seconds              = var.sqs_delay_time_seconds
   max_message_size           = var.sqs_maximum_message_size
   message_retention_seconds  = var.staged_recovery_queue_message_retention_time_seconds
-  tags                       = local.tags
+  tags                       = var.tags
 }
 
 resource "aws_sqs_queue_policy" "staged_recovery_deadletter_queue_policy" {
@@ -295,7 +290,7 @@ resource "aws_cloudwatch_metric_alarm" "staged_recovery_deadletter_alarm" {
   threshold           = 1 #alarm will be triggered if number of messages in the DLQ equals to this threshold.
   treat_missing_data  = "notBreaching"
   alarm_actions       = [aws_sns_topic.staged_recovery_dlq_alarm.arn]
-  tags                = local.tags
+  tags                = var.tags
   dimensions = {
     "QueueName" = aws_sqs_queue.staged_recovery_dlq.name
   }
@@ -323,7 +318,7 @@ resource "aws_sqs_queue" "status_update_queue" {
   delay_seconds               = var.sqs_delay_time_seconds
   max_message_size            = var.sqs_maximum_message_size
   message_retention_seconds   = var.status_update_queue_message_retention_time_seconds
-  tags                        = local.tags
+  tags                        = var.tags
   policy                      = data.aws_iam_policy_document.status_update_queue_policy.json
   visibility_timeout_seconds  = 900 # Set arbitrarily large.
 }
