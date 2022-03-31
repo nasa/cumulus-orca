@@ -946,6 +946,13 @@ class TestGetCurrentArchiveList(
     @patch("get_current_archive_list.get_s3_credentials_from_secrets_manager")
     @patch("get_current_archive_list.LOGGER")
     @patch("get_current_archive_list.task")
+    @patch.dict(
+        os.environ,
+        {
+            "SECRET_ARN": "dummy_secret_arn"
+        },
+        clear=True,
+     )
     def test_handler_happy_path(
         self,
         mock_task: MagicMock,
@@ -1002,7 +1009,7 @@ class TestGetCurrentArchiveList(
 
         mock_LOGGER.setMetadata.assert_called_once_with(event, mock_context)
         mock_get_s3_credentials_from_secrets_manager.assert_called_once_with(secret_arn)
-        mock_get_configuration.assert_called_once_with()
+        mock_get_configuration.assert_called_once_with(os.environ["SECRET_ARN"])
         mock_get_message_from_queue.assert_called_once_with(report_queue_url)
         mock_task.assert_called_once_with(
             mock_report_bucket_aws_region,
@@ -1019,6 +1026,13 @@ class TestGetCurrentArchiveList(
     @patch("get_current_archive_list.get_s3_credentials_from_secrets_manager")
     @patch("get_current_archive_list.LOGGER")
     @patch("get_current_archive_list.task")
+    @patch.dict(
+        os.environ,
+        {
+            "SECRET_ARN": "test"
+        },
+        clear=True,
+     )
     def test_handler_rejects_bad_output(
         self,
         mock_task: MagicMock,

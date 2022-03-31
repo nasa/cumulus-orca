@@ -1,3 +1,4 @@
+import os
 from http import HTTPStatus
 from typing import Dict, Any, List, Union
 
@@ -314,6 +315,18 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         Or, if an error occurs, see create_http_error_dict
             400 if granule_id is missing. 500 if an error occurs when querying the database, 404 if not found.
     """
+
+    # get the secret ARN from the env variable
+    try:
+        secret_arn = os.environ["SECRET_ARN"]
+    except KeyError as key_error:
+        LOGGER.error(
+            "SECRET_ARN environment value not found."
+        )
+        raise key_error
+
+    db_connect_info = shared_db.get_configuration(secret_arn)
+
     try:
         LOGGER.setMetadata(event, context)
 
@@ -325,8 +338,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 context.aws_request_id,
                 f"{INPUT_GRANULE_ID_KEY} must be set to a non-empty value.",
             )
-
-        db_connect_info = shared_db.get_configuration()
 
         return task(
             granule_id,

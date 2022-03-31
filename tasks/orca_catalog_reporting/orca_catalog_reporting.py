@@ -1,7 +1,7 @@
 import json
 from http import HTTPStatus
 from typing import Dict, Any, List, Union
-
+import os
 import fastjsonschema as fastjsonschema
 from cumulus_logger import CumulusLogger
 from fastjsonschema import JsonSchemaException
@@ -221,8 +221,16 @@ def handler(
                 context.aws_request_id,
                 json_schema_exception.__str__(),
             )
+        # get the secret ARN from the env variable
+        try:
+            secret_arn = os.environ["SECRET_ARN"]
+        except KeyError as key_error:
+            LOGGER.error(
+                "SECRET_ARN environment value not found."
+            )
+            raise key_error
 
-        db_connect_info = shared_db.get_configuration()
+        db_connect_info = shared_db.get_configuration(secret_arn)
 
         result = task(
             event.get("providerId", None),

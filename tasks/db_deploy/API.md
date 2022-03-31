@@ -107,7 +107,7 @@ handler(event: Dict[str, Any], context: object) -> None
 
 Lambda handler for db_deploy. The handler generates the database connection
 configuration information, sets logging handler information and calls the
-Lambda task function. See the `shared_db.get_configuration()` function for
+Lambda task function. See the `shared_db.get_configuration(secret_arn)` function for
 information on the needed environment variables and parameter store names
 required by this Lambda.
 

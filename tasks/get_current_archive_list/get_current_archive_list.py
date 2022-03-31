@@ -545,11 +545,19 @@ def handler(event: Dict[str, List], context) -> Dict[str, Any]:
         )
         raise key_error
 
+    try:
+        secret_arn = os.environ["SECRET_ARN"]
+    except KeyError as key_error:
+        LOGGER.error(
+            "SECRET_ARN environment value not found."
+        )
+        raise key_error
+
     s3_access_key, s3_secret_key = get_s3_credentials_from_secrets_manager(
         s3_credentials_secret_arn
     )
 
-    db_connect_info = shared_db.get_configuration()
+    db_connect_info = shared_db.get_configuration(secret_arn)
 
     message_data = get_message_from_queue(internal_report_queue_url)
 

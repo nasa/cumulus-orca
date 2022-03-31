@@ -44,11 +44,12 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
                 "user_username":"user"
             }
         """
+        secret_name = "orcatest-orca-db-login-secret" #nosec
         self.test_sm.create_secret(
-            Name="orcatest-orca-db-login-secret", SecretString=self.secretstring
+            Name=secret_name, SecretString=self.secretstring
         )
         self.secret_arn = self.test_sm.describe_secret(
-                    SecretId="orcatest-orca-db-login-secret"
+                    SecretId=secret_name
                     )["ARN"]
 
     def tearDown(self):

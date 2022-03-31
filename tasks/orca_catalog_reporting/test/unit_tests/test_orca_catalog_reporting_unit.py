@@ -3,6 +3,7 @@ Name: test_orca_catalog_reporting_unit.py
 
 Description:  Unit tests for orca_catalog_reporting.py.
 """
+import os
 import random
 import unittest
 import uuid
@@ -18,6 +19,13 @@ class TestOrcaCatalogReportingUnit(
     @patch("orca_catalog_reporting.task")
     @patch("orca_shared.database.shared_db.get_configuration")
     @patch("cumulus_logger.CumulusLogger.setMetadata")
+    @patch.dict(
+        os.environ,
+        {
+            "SECRET_ARN": "test"
+        },
+        clear=True,
+     )
     def test_handler_happy_path(
         self,
         mock_setMetadata: MagicMock,
@@ -88,6 +96,13 @@ class TestOrcaCatalogReportingUnit(
     @patch("orca_catalog_reporting.task")
     @patch("orca_shared.database.shared_db.get_configuration")
     @patch("cumulus_logger.CumulusLogger.setMetadata")
+    @patch.dict(
+        os.environ,
+        {
+            "SECRET_ARN": "test"
+        },
+        clear=True,
+     )
     def test_handler_missing_properties_uses_default(
         self,
         mock_setMetadata: MagicMock,
@@ -121,6 +136,13 @@ class TestOrcaCatalogReportingUnit(
     @patch("orca_catalog_reporting.create_http_error_dict")
     @patch("orca_shared.database.shared_db.get_configuration")
     @patch("cumulus_logger.CumulusLogger.setMetadata")
+    @patch.dict(
+        os.environ,
+        {
+            "SECRET_ARN": "test"
+        },
+        clear=True,
+     )
     def test_handler_missing_page_index_returns_error(
         self,
         mock_setMetadata: MagicMock,
@@ -197,6 +219,13 @@ class TestOrcaCatalogReportingUnit(
     @patch("orca_catalog_reporting.task")
     @patch("orca_shared.database.shared_db.get_configuration")
     @patch("cumulus_logger.CumulusLogger.setMetadata")
+    @patch.dict(
+        os.environ,
+        {
+            "SECRET_ARN": "test"
+        },
+        clear=True,
+     )
     def test_handler_bad_output_raises_error(
         self,
         mock_setMetadata: MagicMock,

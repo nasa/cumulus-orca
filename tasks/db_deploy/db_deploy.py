@@ -3,9 +3,10 @@ Name: db_deploy.py
 
 Description: Performs database installation and migration for the ORCA schema.
 """
+# Imports
+import os
 from typing import Any, Dict, List
 
-# Imports
 from orca_shared.database.shared_db import (
     get_admin_connection,
     get_configuration,
@@ -30,7 +31,7 @@ def handler(
     """
     Lambda handler for db_deploy. The handler generates the database connection
     configuration information, sets logging handler information and calls the
-    Lambda task function. See the `shared_db.get_configuration()` function for
+    Lambda task function. See the `shared_db.get_configuration(secret_arn)` function for
     information on the needed environment variables and parameter store names
     required by this Lambda.
 
@@ -44,8 +45,17 @@ def handler(
     # Set the logging
     logger.setMetadata(event, context)
 
+    # get the secret ARN from the env variable
+    try:
+        secret_arn = os.environ["SECRET_ARN"]
+    except KeyError as key_error:
+        logger.error(
+            "SECRET_ARN environment value not found."
+        )
+        raise key_error
+
     # Get the secrets needed for database connections
-    config = get_configuration()
+    config = get_configuration(secret_arn)
 
     # Get the ORCA bucket list
     orca_buckets = event.get("orcaBuckets", None)

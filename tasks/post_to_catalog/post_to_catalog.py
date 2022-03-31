@@ -4,6 +4,7 @@ Name: post_to_catalog.py
 Description:  Pulls entries from a queue and posts them to a DB.
 """
 import json
+import os
 from datetime import datetime, timezone
 from typing import Any, List, Dict, Union
 
@@ -243,6 +244,14 @@ def handler(event: Dict[str, List], context) -> None:
     """
     LOGGER.setMetadata(event, context)
 
-    db_connect_info = shared_db.get_configuration()
+    # get the secret ARN from the env variable
+    try:
+        secret_arn = os.environ["SECRET_ARN"]
+    except KeyError as key_error:
+        LOGGER.error(
+            "SECRET_ARN environment value not found."
+        )
+        raise key_error
+    db_connect_info = shared_db.get_configuration(secret_arn)
 
     task(event["Records"], db_connect_info)
