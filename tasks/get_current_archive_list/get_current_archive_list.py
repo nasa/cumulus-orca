@@ -519,6 +519,7 @@ def handler(event: Dict[str, List], context) -> Dict[str, Any]:
     Environment Vars:
         INTERNAL_REPORT_QUEUE_URL (string): The URL of the SQS queue the job came from.
         S3_CREDENTIALS_SECRET_ARN (string): The ARN of the secret containing s3 credentials.
+        SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
         See shared_db.py's get_configuration for further details.
 
     Returns: See output.json for details.
@@ -551,7 +552,7 @@ def handler(event: Dict[str, List], context) -> Dict[str, Any]:
         LOGGER.error(
             "SECRET_ARN environment value not found."
         )
-        raise key_error
+        raise
 
     s3_access_key, s3_secret_key = get_s3_credentials_from_secrets_manager(
         s3_credentials_secret_arn

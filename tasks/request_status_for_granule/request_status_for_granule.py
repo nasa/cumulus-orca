@@ -297,7 +297,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 May apply to a request that covers multiple granules.
         context: An object provided by AWS Lambda. Used for context tracking.
 
-    Environment Vars: See shared_db.py's get_configuration for further details.
+    Environment Vars:
+        SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
+        See shared_db.py's get_configuration for further details.
 
     Returns: A Dict with the following keys:
         'granule_id' (str): The unique ID of the granule to retrieve status for.
@@ -323,7 +325,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         LOGGER.error(
             "SECRET_ARN environment value not found."
         )
-        raise key_error
+        raise
 
     db_connect_info = shared_db.get_configuration(db_connect_info_secret_arn)
 

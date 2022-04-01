@@ -38,6 +38,9 @@ def handler(
     Args:
         event (Dict): Event dictionary passed by AWS.
         context (object): An object required by AWS Lambda.
+    Environment Vars:
+        SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
+        See shared_db.py's get_configuration for further details.
 
     Raises:
         Exception: If environment or secrets are unavailable.
@@ -52,7 +55,7 @@ def handler(
         logger.error(
             "SECRET_ARN environment value not found."
         )
-        raise key_error
+        raise
 
     # Get the secrets needed for database connections
     config = get_configuration(db_connect_info_secret_arn)

@@ -199,7 +199,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             asyncOperationId: The unique asyncOperationId of the recovery job.
         context: An object provided by AWS Lambda. Used for context tracking.
 
-    Environment Vars: See shared_db.py's get_configuration for further details.
+    Environment Vars: 
+        SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
+        See shared_db.py's get_configuration for further details.
 
     Returns: A Dict with the following keys:
         asyncOperationId (str): The unique ID of the asyncOperation.
@@ -222,7 +224,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         LOGGER.error(
             "SECRET_ARN environment value not found."
         )
-        raise key_error
+        raise
     try:
         LOGGER.setMetadata(event, context)
 

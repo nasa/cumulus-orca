@@ -141,6 +141,7 @@ Lambda handler. Receives a list of s3 events from an SQS queue, and loads the s3
 - `context` - An object passed through by AWS. Used for tracking.
   Environment Vars:
 - `INTERNAL_REPORT_QUEUE_URL` _string_ - The URL of the SQS queue the job came from.
+- `SECRET_ARN` _string_ - Secret ARN of the AWS secretsmanager secret for connecting to the database.
   See shared_db.py's get_configuration for further details.
 - `Returns` - See output.json for details.
 

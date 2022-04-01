@@ -198,7 +198,9 @@ def handler(
         event: See schemas/input.json
         context: An object provided by AWS Lambda. Used for context tracking.
 
-    Environment Vars: See requests_db.py's get_configuration for further details.
+    Environment Vars:
+        SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
+        See shared_db.py's get_configuration for further details.
 
     Returns:
         See schemas/output.json
@@ -228,7 +230,7 @@ def handler(
             LOGGER.error(
                 "SECRET_ARN environment value not found."
             )
-            raise key_error
+            raise
 
         db_connect_info = shared_db.get_configuration(db_connect_info_secret_arn)
 

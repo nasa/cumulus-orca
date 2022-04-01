@@ -314,7 +314,9 @@ def handler(event: Dict[str, List], context) -> None:
                 'messageAttributes' (Dict): A dict with the following keys defined in the functions that write to queue.
                     'RequestMethod' (str): Matches to a shared_recovery.RequestMethod.
         context: An object passed through by AWS. Used for tracking.
-    Environment Vars: See shared_db.py's get_configuration for further details.
+    Environment Vars: 
+        SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
+        See shared_db.py's get_configuration for further details.
     """
     LOGGER.setMetadata(event, context)
 
@@ -325,7 +327,7 @@ def handler(event: Dict[str, List], context) -> None:
         LOGGER.error(
             "SECRET_ARN environment value not found."
         )
-        raise key_error
+        raise
     db_connect_info = shared_db.get_configuration(db_connect_info_secret_arn)
 
     task(event["Records"], db_connect_info)

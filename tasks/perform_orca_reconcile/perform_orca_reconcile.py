@@ -407,6 +407,7 @@ def handler(event: Dict[str, Union[str, int]], context) -> Dict[str, Any]:
         context: An object passed through by AWS. Used for tracking.
     Environment Vars:
         INTERNAL_REPORT_QUEUE_URL (string): The URL of the SQS queue the job came from.
+        SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
         See shared_db.py's get_configuration for further details.
     Returns: See output.json for details.
     """
@@ -430,7 +431,7 @@ def handler(event: Dict[str, Union[str, int]], context) -> Dict[str, Any]:
         LOGGER.error(
             "SECRET_ARN environment value not found."
         )
-        raise key_error
+        raise
 
     job_id = event[INPUT_JOB_ID_KEY]
     orca_archive_location = event[INPUT_ORCA_ARCHIVE_LOCATION_KEY]

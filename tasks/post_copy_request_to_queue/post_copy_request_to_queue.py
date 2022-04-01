@@ -262,20 +262,13 @@ def handler(event: Dict[str, Any], context) -> None:
     Lambda handler. This lambda calls the task function to perform db queries
     and send message to SQS.
     
-        Environment Vars:
-            RECOVERY_QUEUE_URL (string): the SQS URL for staged_recovery_queue
-            DB_QUEUE_URL (string): the SQS URL for status-update-queue
-            MAX_RETRIES (string): Number of times the code will retry in case of failure.
-            RETRY_SLEEP_SECS (string): Number of seconds to wait between recovery failure retries.
-            RETRY_BACKOFF (string): The multiplier by which the retry interval increases during each attempt.
-            Required by shared_db.get_configuration():
-                PREFIX (string): the prefix
-                DATABASE_PORT (string): the database port. The standard is 5432.
-                DATABASE_NAME (string): the name of the database.
-                DATABASE_USER (string): the name of the application user.
-        Parameter store:
-            {prefix}-drdb-host (string): host name that will be retrieved from secrets manager
-            {prefix}-drdb-user-pass (string):db password that will be retrieved from secrets manager
+    Environment Vars:
+        RECOVERY_QUEUE_URL (string): the SQS URL for staged_recovery_queue
+        DB_QUEUE_URL (string): the SQS URL for status-update-queue
+        MAX_RETRIES (string): Number of times the code will retry in case of failure.
+        RETRY_SLEEP_SECS (string): Number of seconds to wait between recovery failure retries.
+        RETRY_BACKOFF (string): The multiplier by which the retry interval increases during each attempt.
+        SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
     Args:
         event:
             A dictionary from the S3 bucket. See schemas/input.json for more information.
