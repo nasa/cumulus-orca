@@ -5,35 +5,29 @@
   "description": "The input for the perform_orca_reconcile Lambda. This will be similar to the output of get_current_archive_list lambda",
   "type": "object",
   "required": [
-    "cma"
+    "event"
   ],
   "properties": {
-    "type": "object",
-    "required": [
-      "event"
-    ],
-    "properties": {
-      "event": {
-        "type": "object",
-        "description": "The event passed in by the step function.",
-        "required": [
-          "jobId",
-          "orcaArchiveLocation",
-          "messageReceiptHandle"
-        ],
-        "properties": {
-          "jobId": {
-            "type": "integer",
-            "description": "The unique ID of the reconciliation job."
-          },
-          "orcaArchiveLocation": {
-            "type": "string",
-            "description": "The name of the glacier bucket the job targets."
-          },
-          "messageReceiptHandle": {
-            "type": "string",
-            "description": "The ReceiptHandle for the event in the queue."
-          }
+    "event": {
+      "type": "object",
+      "description": "The event passed in by the step function.",
+      "required": [
+        "jobId",
+        "orcaArchiveLocation",
+        "messageReceiptHandle"
+      ],
+      "properties": {
+        "jobId": {
+          "type": "integer",
+          "description": "The unique ID of the reconciliation job."
+        },
+        "orcaArchiveLocation": {
+          "type": "string",
+          "description": "The name of the glacier bucket the job targets."
+        },
+        "messageReceiptHandle": {
+          "type": "string",
+          "description": "The ReceiptHandle for the event in the queue."
         }
       }
     }
