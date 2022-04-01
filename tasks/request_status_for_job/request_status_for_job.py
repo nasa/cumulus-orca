@@ -217,7 +217,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """
     # get the secret ARN from the env variable
     try:
-        secret_arn = os.environ["SECRET_ARN"]
+        db_connect_info_secret_arn = os.environ["SECRET_ARN"]
     except KeyError as key_error:
         LOGGER.error(
             "SECRET_ARN environment value not found."
@@ -234,7 +234,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 context.aws_request_id,
                 f"{INPUT_JOB_ID_KEY} must be set to a non-empty value.",
             )
-        db_connect_info = shared_db.get_configuration(secret_arn)
+        db_connect_info = shared_db.get_configuration(db_connect_info_secret_arn)
         return task(job_id, db_connect_info, context.aws_request_id)
     except Exception as error:
         return create_http_error_dict(

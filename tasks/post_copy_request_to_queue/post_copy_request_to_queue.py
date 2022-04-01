@@ -43,7 +43,7 @@ def task(
     max_retries: int,
     retry_sleep_secs: int,
     retry_backoff: int,
-    secret_arn: str
+    db_connect_info_secret_arn: str
 ) -> None:
     """
     Task called by the handler to perform the work.
@@ -59,14 +59,14 @@ def task(
         max_retries: Number of times the code will retry in case of failure.
         retry_sleep_secs: Number of seconds to wait between recovery failure retries.
         retry_backoff: The multiplier by which the retry interval increases during each attempt.
-        secret_arn: Secret ARN of the secretsmanager secret to connect to the DB.
+        db_connect_info_secret_arn: Secret ARN of the secretsmanager secret to connect to the DB.
     Returns:
         None
     Raises:
         Exception: If unable to retrieve key_path or db parameters, convert db result to json,
         or post to queue.
     """
-    rows = query_db(key_path, bucket_name, secret_arn)
+    rows = query_db(key_path, bucket_name, db_connect_info_secret_arn)
 
     my_base_delay = retry_sleep_secs
 
@@ -166,7 +166,7 @@ def exponential_delay(base_delay: int, exponential_backoff: int = 2) -> int:
 
 
 @retry_operational_error()
-def query_db(key_path: str, bucket_name: str, secret_arn: str) -> List[Dict[str, str]]:
+def query_db(key_path: str, bucket_name: str, db_connect_info_secret_arn: str) -> List[Dict[str, str]]:
     """
     Connect and query the recover_file status table return needed metadata for posting to the recovery status SQS Queue.
 
@@ -174,7 +174,7 @@ def query_db(key_path: str, bucket_name: str, secret_arn: str) -> List[Dict[str,
         key_path:
            Full AWS key path including file name of the file where the file resides.
         bucket_name: Name of the source S3 bucket.
-        secret_arn: Secret ARN of the secretsmanager secret to connect to the DB.
+        db_connect_info_secret_arn: Secret ARN of the secretsmanager secret to connect to the DB.
     Returns:
         A list of dict containing the following keys, matching the input format from copy_files_to_archive:
             "jobId" (str):
@@ -194,7 +194,7 @@ def query_db(key_path: str, bucket_name: str, secret_arn: str) -> List[Dict[str,
     # database.
     try:
         LOGGER.debug("Getting database connection information.")
-        db_connect_info = shared_db.get_configuration(secret_arn)
+        db_connect_info = shared_db.get_configuration(db_connect_info_secret_arn)
         LOGGER.debug("Retrieved the database connection info")
 
         engine = shared_db.get_user_connection(db_connect_info)

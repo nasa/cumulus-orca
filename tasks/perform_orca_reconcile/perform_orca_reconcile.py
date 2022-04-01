@@ -425,7 +425,7 @@ def handler(event: Dict[str, Union[str, int]], context) -> Dict[str, Any]:
         raise key_error
     # get the secret ARN from the env variable
     try:
-        secret_arn = os.environ["SECRET_ARN"]
+        db_connect_info_secret_arn = os.environ["SECRET_ARN"]
     except KeyError as key_error:
         LOGGER.error(
             "SECRET_ARN environment value not found."
@@ -436,7 +436,7 @@ def handler(event: Dict[str, Union[str, int]], context) -> Dict[str, Any]:
     orca_archive_location = event[INPUT_ORCA_ARCHIVE_LOCATION_KEY]
     message_receipt_handle = event[INPUT_MESSAGE_RECEIPT_HANDLE_KEY]
 
-    db_connect_info = shared_db.get_configuration(secret_arn)
+    db_connect_info = shared_db.get_configuration(db_connect_info_secret_arn)
 
     result = task(
         job_id,

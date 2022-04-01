@@ -31,7 +31,7 @@ def handler(
     """
     Lambda handler for db_deploy. The handler generates the database connection
     configuration information, sets logging handler information and calls the
-    Lambda task function. See the `shared_db.get_configuration(secret_arn)` function for
+    Lambda task function. See the `shared_db.get_configuration(db_connect_info_secret_arn)` function for
     information on the needed environment variables and parameter store names
     required by this Lambda.
 
@@ -47,7 +47,7 @@ def handler(
 
     # get the secret ARN from the env variable
     try:
-        secret_arn = os.environ["SECRET_ARN"]
+        db_connect_info_secret_arn = os.environ["SECRET_ARN"]
     except KeyError as key_error:
         logger.error(
             "SECRET_ARN environment value not found."
@@ -55,7 +55,7 @@ def handler(
         raise key_error
 
     # Get the secrets needed for database connections
-    config = get_configuration(secret_arn)
+    config = get_configuration(db_connect_info_secret_arn)
 
     # Get the ORCA bucket list
     orca_buckets = event.get("orcaBuckets", None)

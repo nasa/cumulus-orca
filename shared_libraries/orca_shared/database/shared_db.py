@@ -26,7 +26,7 @@ INITIAL_BACKOFF_IN_SECONDS = 1  # Number of seconds to sleep the first time thro
 RT = TypeVar("RT")  # return type
 
 
-def get_configuration(secret_arn: str) -> Dict[str, str]:
+def get_configuration(db_connect_info_secret_arn: str) -> Dict[str, str]:
     """
     Create a dictionary of configuration values based on environment variables
     information and other items needed to create the database.
@@ -38,7 +38,7 @@ def get_configuration(secret_arn: str) -> Dict[str, str]:
     ```
 
     Args:
-        secret_arn (str): The secret ARN of the secret in AWS secretsmanager.
+        db_connect_info_secret_arn (str): The secret ARN of the secret in AWS secretsmanager.
 
     Returns:
         Configuration (Dict): Dictionary with all of the configuration information.
@@ -73,7 +73,7 @@ def get_configuration(secret_arn: str) -> Dict[str, str]:
             "Retrieving db login info for both user and admin as a dictionary."
         )
         config = json.loads(
-            secretsmanager.get_secret_value(SecretId=secret_arn)[
+            secretsmanager.get_secret_value(SecretId=db_connect_info_secret_arn)[
                 "SecretString"
             ]
         )

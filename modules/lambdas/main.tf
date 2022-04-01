@@ -83,7 +83,7 @@ resource "aws_lambda_function" "get_current_archive_list" {
 
   environment {
     variables = {
-      SECRET_ARN = var.secret_arn
+      SECRET_ARN = var.db_connect_info_secret_arn
       PREFIX = var.prefix
       INTERNAL_REPORT_QUEUE_URL = var.orca_sqs_internal_report_queue_id,
       S3_CREDENTIALS_SECRET_ARN = var.orca_secretsmanager_s3_access_credentials_secret_arn
@@ -113,7 +113,7 @@ resource "aws_lambda_function" "perform_orca_reconcile" {
 
   environment {
     variables = {
-      SECRET_ARN = var.secret_arn
+      SECRET_ARN = var.db_connect_info_secret_arn
       PREFIX = var.prefix
       INTERNAL_REPORT_QUEUE_URL = var.orca_sqs_internal_report_queue_id
     }
@@ -259,7 +259,7 @@ resource "aws_lambda_function" "post_to_database" {
 
   environment {
     variables = {
-      SECRET_ARN = var.secret_arn
+      SECRET_ARN = var.db_connect_info_secret_arn
       PREFIX = var.prefix
     }
   }
@@ -308,7 +308,7 @@ resource "aws_lambda_function" "request_status_for_granule" {
 
   environment {
     variables = {
-      SECRET_ARN = var.secret_arn
+      SECRET_ARN = var.db_connect_info_secret_arn
       PREFIX = var.prefix
     }
   }
@@ -339,7 +339,7 @@ resource "aws_lambda_function" "request_status_for_job" {
 
   environment {
     variables = {
-      SECRET_ARN = var.secret_arn
+      SECRET_ARN = var.db_connect_info_secret_arn
       PREFIX = var.prefix
     }
   }
@@ -366,7 +366,7 @@ resource "aws_lambda_function" "post_copy_request_to_queue" {
   }
   environment {
     variables = {
-      SECRET_ARN              = var.secret_arn
+      SECRET_ARN              = var.db_connect_info_secret_arn
       PREFIX                  = var.prefix
       STATUS_UPDATE_QUEUE_URL = var.orca_sqs_status_update_queue_id
       RECOVERY_QUEUE_URL      = var.orca_sqs_staged_recovery_queue_id
@@ -431,7 +431,7 @@ resource "aws_lambda_function" "orca_catalog_reporting" {
 
   environment {
     variables = {
-      SECRET_ARN = var.secret_arn
+      SECRET_ARN = var.db_connect_info_secret_arn
       PREFIX = var.prefix
     }
   }
@@ -462,7 +462,7 @@ resource "aws_lambda_function" "post_to_catalog" {
 
   environment {
     variables = {
-      SECRET_ARN = var.secret_arn
+      SECRET_ARN = var.db_connect_info_secret_arn
       PREFIX = var.prefix
     }
   }
@@ -522,7 +522,7 @@ resource "aws_lambda_function" "db_deploy" {
   environment {
     variables = {
       PREFIX = var.prefix
-      SECRET_ARN = var.secret_arn
+      SECRET_ARN = var.db_connect_info_secret_arn
     }
   }
 }

@@ -416,7 +416,7 @@ Description: Shared library for database objects needed by the various libraries
 #### get\_configuration
 
 ```python
-def get_configuration(secret_arn: str) -> Dict[str, str]
+def get_configuration(db_connect_info_secret_arn: str) -> Dict[str, str]
 ```
 
 Create a dictionary of configuration values based on environment variables
@@ -431,7 +431,7 @@ Environment Variables:
 
 **Arguments**:
 
-- `secret_arn` _str_ - The secret ARN of the secret in AWS secretsmanager.
+- `db_connect_info_secret_arn` _str_ - The secret ARN of the secret in AWS secretsmanager.
   
 
 **Returns**:

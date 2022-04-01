@@ -48,7 +48,7 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
         self.test_sm.create_secret(
             Name=secret_name, SecretString=self.secretstring
         )
-        self.secret_arn = self.test_sm.describe_secret(
+        self.db_connect_info_secret_arn = self.test_sm.describe_secret(
                     SecretId=secret_name
                     )["ARN"]
 
@@ -70,7 +70,7 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
         """
         Testing the rainbows and bunnies path of this call.
         """
-        testing_config = shared_db.get_configuration(self.secret_arn)
+        testing_config = shared_db.get_configuration(self.db_connect_info_secret_arn)
 
         self.assertEqual(json.loads(self.secretstring), testing_config)
 
@@ -81,7 +81,7 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
         error_message = "Environment variable PREFIX is not set."
 
         with self.assertRaises(Exception) as cm:
-            shared_db.get_configuration(self.secret_arn)
+            shared_db.get_configuration(self.db_connect_info_secret_arn)
         self.assertEqual(str(cm.exception), error_message)
 
     @patch.dict(
@@ -98,7 +98,7 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
         error_message = "Runtime environment variable AWS_REGION is not set."
 
         with self.assertRaises(Exception) as cm:
-            shared_db.get_configuration(self.secret_arn)
+            shared_db.get_configuration(self.db_connect_info_secret_arn)
         self.assertEqual(str(cm.exception), error_message)
 
     @patch.dict(
@@ -120,7 +120,7 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
 
         # Run the test
         with self.assertRaises(Exception) as cm:
-            shared_db.get_configuration(self.secret_arn)
+            shared_db.get_configuration(self.db_connect_info_secret_arn)
         self.assertEqual(str(cm.exception), message)
 
         # Recreate the key
@@ -155,7 +155,7 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
             "password": "admin123",
         }
 
-        config = shared_db.get_configuration(self.secret_arn)
+        config = shared_db.get_configuration(self.db_connect_info_secret_arn)
 
         _ = shared_db.get_admin_connection(config)
         mock_connection.assert_called_with(**root_db_call)
@@ -184,7 +184,7 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
             "password": "user123",
         }
 
-        config = shared_db.get_configuration(self.secret_arn)
+        config = shared_db.get_configuration(self.db_connect_info_secret_arn)
 
         _ = shared_db.get_user_connection(config)
         mock_connection.assert_called_with(**user_db_call)

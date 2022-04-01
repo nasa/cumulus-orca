@@ -49,7 +49,7 @@ variable "orca_default_bucket" {
   description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
 }
 
-variable "secret_arn" {
+variable "db_connect_info_secret_arn" {
   type        = string
   description = "Secret ARN of the AWS secretsmanager secret for connecting to the database."
 }

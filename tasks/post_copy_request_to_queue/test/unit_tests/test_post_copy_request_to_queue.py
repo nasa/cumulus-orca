@@ -67,7 +67,7 @@ class TestPostCopyRequestToQueue(TestCase):
         max_retries = random.randint(1, 100)
         retry_sleep_secs = random.randint(0, 100)
         retry_backoff = random.randint(0, 100)
-        secret_arn = uuid.uuid4().__str__()
+        db_connect_info_secret_arn = uuid.uuid4().__str__()
 
         with patch.dict(
             os.environ,
@@ -81,7 +81,7 @@ class TestPostCopyRequestToQueue(TestCase):
                 post_copy_request_to_queue.OS_ENVIRON_RETRY_BACKOFF_KEY: str(
                     retry_backoff
                 ),
-                post_copy_request_to_queue.OS_ENVIRON_SECRET_ARN_KEY: str(secret_arn)
+                post_copy_request_to_queue.OS_ENVIRON_SECRET_ARN_KEY: str(db_connect_info_secret_arn)
             },
             clear=True,
         ):
@@ -94,7 +94,7 @@ class TestPostCopyRequestToQueue(TestCase):
             max_retries,
             retry_sleep_secs,
             retry_backoff,
-            secret_arn
+            db_connect_info_secret_arn
         )
 
     @patch("post_copy_request_to_queue.task")
@@ -287,7 +287,7 @@ class TestPostCopyRequestToQueue(TestCase):
         max_retries = random.randint(1, 100)
         retry_sleep_secs = random.randint(0, 100)
         retry_backoff = random.randint(0, 100)
-        secret_arn = uuid.uuid4().__str__()
+        db_connect_info_secret_arn = uuid.uuid4().__str__()
 
         with patch.dict(
             os.environ,
@@ -302,7 +302,7 @@ class TestPostCopyRequestToQueue(TestCase):
                     retry_backoff
                 ),
                 post_copy_request_to_queue.OS_ENVIRON_SECRET_ARN_KEY:
-                    secret_arn
+                    db_connect_info_secret_arn
             },
             clear=True,
         ):
@@ -334,7 +334,7 @@ class TestPostCopyRequestToQueue(TestCase):
         multipart_chunksize_mb = random.randint(1, 10000)
         key_path = uuid.uuid4().__str__()
         bucket_name = uuid.uuid4().__str__()
-        secret_arn = uuid.uuid4().__str__()
+        db_connect_info_secret_arn = uuid.uuid4().__str__()
 
         row =           {
                 post_copy_request_to_queue.JOB_ID_KEY: job_id,
@@ -356,13 +356,13 @@ class TestPostCopyRequestToQueue(TestCase):
             1,
             2,
             3,
-            secret_arn
+            db_connect_info_secret_arn
         ]
 
         # calling the task function
         task(key_path, bucket_name, *environment_args)
 
-        mock_query_db.assert_called_once_with(key_path, bucket_name, secret_arn)
+        mock_query_db.assert_called_once_with(key_path, bucket_name, db_connect_info_secret_arn)
         mock_update_status_for_file.assert_called_once_with(
             job_id,
             granule_id,
@@ -401,7 +401,7 @@ class TestPostCopyRequestToQueue(TestCase):
         multipart_chunksize_mb = random.randint(1, 10000)
         key_path = uuid.uuid4().__str__()
         bucket_name = uuid.uuid4().__str__()
-        secret_arn = uuid.uuid4().__str__()
+        db_connect_info_secret_arn = uuid.uuid4().__str__()
 
         mock_post_entry_to_standard_queue.side_effect = Exception
 
@@ -425,7 +425,7 @@ class TestPostCopyRequestToQueue(TestCase):
             max_retries,
             2,
             3,
-            secret_arn
+            db_connect_info_secret_arn
         ]
         # calling the task function
         message = "Error sending message to recovery_queue_url for {new_data}"
@@ -433,7 +433,7 @@ class TestPostCopyRequestToQueue(TestCase):
             task(key_path, bucket_name, *environment_args)
             # Check the message from the exception
         self.assertEqual(str.format(message, new_data=row), cm.exception.args[0])
-        mock_query_db.assert_called_once_with(key_path, bucket_name, secret_arn)
+        mock_query_db.assert_called_once_with(key_path, bucket_name, db_connect_info_secret_arn)
         # verify the logging captured matches the expected message
         mock_LOGGER.critical.assert_called_once_with(message, new_data=str(row))
         mock_update_status_for_file.assert_called_once_with(
@@ -480,7 +480,7 @@ class TestPostCopyRequestToQueue(TestCase):
         multipart_chunksize_mb = random.randint(1, 10000)
         key_path = uuid.uuid4().__str__()
         bucket_name = uuid.uuid4().__str__()
-        secret_arn = uuid.uuid4().__str__()
+        db_connect_info_secret_arn = uuid.uuid4().__str__()
 
         # set the mock_update_status_for_file to Exception
         mock_update_status_for_file.side_effect = Exception
@@ -505,7 +505,7 @@ class TestPostCopyRequestToQueue(TestCase):
             max_retries,
             2,
             3,
-            secret_arn
+            db_connect_info_secret_arn
         ]
         # calling the task function
         # calling the task function
@@ -579,7 +579,7 @@ class TestPostCopyRequestToQueue(TestCase):
         """
         key_path = uuid.uuid4().__str__()
         bucket_name = uuid.uuid4().__str__()
-        secret_arn = uuid.uuid4().__str__()
+        db_connect_info_secret_arn = uuid.uuid4().__str__()
 
         job_id0 = uuid.uuid4().__str__()
         granule_id0 = uuid.uuid4().__str__()
@@ -620,9 +620,9 @@ class TestPostCopyRequestToQueue(TestCase):
         mock_engine.begin = Mock(return_value=mock_enter)
         mock_get_user_connection.return_value = mock_engine
 
-        result = post_copy_request_to_queue.query_db(key_path, bucket_name, secret_arn)
+        result = post_copy_request_to_queue.query_db(key_path, bucket_name, db_connect_info_secret_arn)
 
-        mock_get_configuration.assert_called_once_with(secret_arn)
+        mock_get_configuration.assert_called_once_with(db_connect_info_secret_arn)
         mock_get_user_connection.assert_called_once_with(
             mock_get_configuration.return_value
         )
@@ -672,7 +672,7 @@ class TestPostCopyRequestToQueue(TestCase):
         """
         key_path = uuid.uuid4().__str__()
         bucket_name = uuid.uuid4().__str__()
-        secret_arn = uuid.uuid4().__str__()
+        db_connect_info_secret_arn = uuid.uuid4().__str__()
 
         mock_execute = Mock(return_value=[])
         mock_connection = Mock()
@@ -686,13 +686,13 @@ class TestPostCopyRequestToQueue(TestCase):
         mock_get_user_connection.return_value = mock_engine
 
         with self.assertRaises(Exception) as cm:
-            post_copy_request_to_queue.query_db(key_path, bucket_name, secret_arn)
+            post_copy_request_to_queue.query_db(key_path, bucket_name, db_connect_info_secret_arn)
 
         self.assertEqual(
             f"Unable to retrieve {key_path} metadata. Exception 'No metadata found for {key_path}' encountered.",
             str(cm.exception),
         )
-        mock_get_configuration.assert_called_once_with(secret_arn)
+        mock_get_configuration.assert_called_once_with(db_connect_info_secret_arn)
         mock_get_user_connection.assert_called_once_with(
             mock_get_configuration.return_value
         )
@@ -713,7 +713,7 @@ class TestPostCopyRequestToQueue(TestCase):
         """
         key_path = uuid.uuid4().__str__()
         bucket_name = uuid.uuid4().__str__()
-        secret_arn = uuid.uuid4().__str__()
+        db_connect_info_secret_arn = uuid.uuid4().__str__()
 
         error_string = "blah"
         mock_execute = Mock(side_effect=Exception(error_string))
@@ -728,13 +728,13 @@ class TestPostCopyRequestToQueue(TestCase):
         mock_get_user_connection.return_value = mock_engine
 
         with self.assertRaises(Exception) as cm:
-            post_copy_request_to_queue.query_db(key_path, bucket_name, secret_arn)
+            post_copy_request_to_queue.query_db(key_path, bucket_name, db_connect_info_secret_arn)
 
         self.assertEqual(
             f"Unable to retrieve {key_path} metadata. Exception '{error_string}' encountered.",
             str(cm.exception),
         )
-        mock_get_configuration.assert_called_once_with(secret_arn)
+        mock_get_configuration.assert_called_once_with(db_connect_info_secret_arn)
         mock_get_user_connection.assert_called_once_with(
             mock_get_configuration.return_value
         )
