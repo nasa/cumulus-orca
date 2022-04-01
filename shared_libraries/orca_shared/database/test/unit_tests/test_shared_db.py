@@ -61,7 +61,6 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
     @patch.dict(
         os.environ,
         {
-            "PREFIX": "orcatest",
             "AWS_REGION": "us-west-2",
         },
         clear=True,
@@ -74,20 +73,10 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
 
         self.assertEqual(json.loads(self.secretstring), testing_config)
 
-    def test_get_configuration_no_prefix(self):
-        """
-        Validate an error is thrown if PREFIX is not set.
-        """
-        error_message = "Environment variable PREFIX is not set."
-
-        with self.assertRaises(Exception) as cm:
-            shared_db.get_configuration(self.db_connect_info_secret_arn)
-        self.assertEqual(str(cm.exception), error_message)
-
     @patch.dict(
         os.environ,
         {
-            "PREFIX": "orcatest",
+            "AWS_REGION": ""
         },
         clear=True,
     )
@@ -95,8 +84,8 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
         """
         Validate an error is thrown if AWS_REGION is not set.
         """
+        
         error_message = "Runtime environment variable AWS_REGION is not set."
-
         with self.assertRaises(Exception) as cm:
             shared_db.get_configuration(self.db_connect_info_secret_arn)
         self.assertEqual(str(cm.exception), error_message)
@@ -104,7 +93,6 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
     @patch.dict(
         os.environ,
         {
-            "PREFIX": "orcatest",
             "AWS_REGION": "us-west-2",
         },
         clear=True,
@@ -129,7 +117,6 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
     @patch.dict(
         os.environ,
         {
-            "PREFIX": "orcatest",
             "AWS_REGION": "us-west-2",
         },
         clear=True,
@@ -166,7 +153,6 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
     @patch.dict(
         os.environ,
         {
-            "PREFIX": "orcatest",
             "AWS_REGION": "us-west-2",
         },
         clear=True,
@@ -192,7 +178,6 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
     @patch.dict(
         os.environ,
         {
-            "PREFIX": "orcatest",
             "AWS_REGION": "us-west-2",
         },
         clear=True,

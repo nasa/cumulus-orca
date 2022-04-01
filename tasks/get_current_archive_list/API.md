@@ -206,14 +206,14 @@ SQL for translating between the temporary table and Orca table.
 #### get\_s3\_credentials\_from\_secrets\_manager
 
 ```python
-def get_s3_credentials_from_secrets_manager(secret_arn: str) -> tuple
+def get_s3_credentials_from_secrets_manager(db_connect_info_secret_arn: str) -> tuple
 ```
 
 Gets the s3 secret from the given arn and decompiles into two strings.
 
 **Arguments**:
 
-- `secret_arn` - The arn of the secret containing s3 credentials.
+- `db_connect_info_secret_arn` - The arn of the secret containing s3 credentials.
   
 
 **Returns**:

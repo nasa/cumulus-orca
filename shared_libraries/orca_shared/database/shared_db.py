@@ -33,7 +33,6 @@ def get_configuration(db_connect_info_secret_arn: str) -> Dict[str, str]:
 
     ```
     Environment Variables:
-        PREFIX (str): Deployment prefix used to pull the proper AWS secret.
         AWS_REGION (str): AWS reserved runtime variable used to set boto3 client region.
     ```
 
@@ -47,14 +46,6 @@ def get_configuration(db_connect_info_secret_arn: str) -> Dict[str, str]:
     Raises:
         Exception (Exception): When variables or secrets are not available.
     """
-    # Get the PREFIX
-    logger.debug("Getting environment variable PREFIX value.")
-    prefix = os.getenv("PREFIX", None)
-
-    if prefix is None or len(prefix) == 0:
-        message = "Environment variable PREFIX is not set."
-        logger.critical(message)
-        raise Exception(message)
 
     # Get the AWS_REGION defined runtime environment reserved variable
     logger.debug("Getting environment variable AWS_REGION value.")

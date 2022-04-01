@@ -433,11 +433,11 @@ def translate_s3_import_to_partitioned_data_sql() -> TextClause:
     )
 
 
-def get_s3_credentials_from_secrets_manager(secret_arn: str) -> tuple:
+def get_s3_credentials_from_secrets_manager(db_connect_info_secret_arn: str) -> tuple:
     """
     Gets the s3 secret from the given arn and decompiles into two strings.
     Args:
-        secret_arn: The arn of the secret containing s3 credentials.
+        db_connect_info_secret_arn: The arn of the secret containing s3 credentials.
 
     Returns:
         A tuple consisting of
@@ -447,9 +447,9 @@ def get_s3_credentials_from_secrets_manager(secret_arn: str) -> tuple:
     secretsmanager = boto3.client(
         "secretsmanager", region_name=os.environ["AWS_REGION"]
     )
-    LOGGER.debug(f"Getting secret '{secret_arn}'")
+    LOGGER.debug(f"Getting secret '{db_connect_info_secret_arn}'")
     s3_credentials = json.loads(
-        secretsmanager.get_secret_value(SecretId=secret_arn)["SecretString"]
+        secretsmanager.get_secret_value(SecretId=db_connect_info_secret_arn)["SecretString"]
     )
     s3_access_key = s3_credentials.get(S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY, None)
     if s3_access_key is None or len(s3_access_key) == 0:
