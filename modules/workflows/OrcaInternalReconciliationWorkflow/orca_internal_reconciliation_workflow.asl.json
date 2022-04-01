@@ -4,10 +4,8 @@
   "States": {
     "GetCurrentArchiveList": {
       "Parameters": {
-        "cma": {
-          "event.$": "$",
-          "task_config": {
-          }
+        "event.$": "$",
+        "task_config": {
         }
       },
       "Type": "Task",
@@ -37,10 +35,8 @@
     },
     "PerformOrcaReconcile": {
       "Parameters": {
-        "cma": {
-          "event.$": "$",
-          "task_config": {
-          }
+        "event.$": "$",
+        "task_config": {
         }
       },
       "Type": "Task",

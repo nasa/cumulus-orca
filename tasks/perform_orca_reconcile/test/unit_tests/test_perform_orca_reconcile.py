@@ -297,9 +297,11 @@ class TestPerformOrcaReconcile(
 
         mock_context = Mock()
         event = {
-            perform_orca_reconcile.INPUT_JOB_ID_KEY: job_id,
-            perform_orca_reconcile.INPUT_ORCA_ARCHIVE_LOCATION_KEY: orca_archive_location,
-            perform_orca_reconcile.INPUT_MESSAGE_RECEIPT_HANDLE_KEY: message_receipt_handle,
+            perform_orca_reconcile.INPUT_EVENT_KEY: {
+                perform_orca_reconcile.EVENT_JOB_ID_KEY: job_id,
+                perform_orca_reconcile.EVENT_ORCA_ARCHIVE_LOCATION_KEY: orca_archive_location,
+                perform_orca_reconcile.EVENT_MESSAGE_RECEIPT_HANDLE_KEY: message_receipt_handle,
+            }
         }
 
         internal_report_queue_url = uuid.uuid4().__str__()
@@ -345,8 +347,10 @@ class TestPerformOrcaReconcile(
 
         mock_context = Mock()
         event = {
-            perform_orca_reconcile.INPUT_JOB_ID_KEY: job_id,
-            perform_orca_reconcile.INPUT_MESSAGE_RECEIPT_HANDLE_KEY: message_receipt_handle,
+            perform_orca_reconcile.INPUT_EVENT_KEY: {
+                perform_orca_reconcile.EVENT_JOB_ID_KEY: job_id,
+                perform_orca_reconcile.EVENT_MESSAGE_RECEIPT_HANDLE_KEY: message_receipt_handle,
+            }
         }
 
         internal_report_queue_url = uuid.uuid4().__str__()
@@ -362,9 +366,9 @@ class TestPerformOrcaReconcile(
         mock_LOGGER.setMetadata.assert_called_once_with(event, mock_context)
         mock_task.assert_not_called()
         self.assertEqual(
-            f"data must contain ['{perform_orca_reconcile.INPUT_JOB_ID_KEY}', "
-            f"'{perform_orca_reconcile.INPUT_ORCA_ARCHIVE_LOCATION_KEY}', "
-            f"'{perform_orca_reconcile.INPUT_MESSAGE_RECEIPT_HANDLE_KEY}'] properties",
+            f"data.event must contain ['{perform_orca_reconcile.EVENT_JOB_ID_KEY}', "
+            f"'{perform_orca_reconcile.EVENT_ORCA_ARCHIVE_LOCATION_KEY}', "
+            f"'{perform_orca_reconcile.EVENT_MESSAGE_RECEIPT_HANDLE_KEY}'] properties",
             str(cm.exception),
         )
 
@@ -394,9 +398,11 @@ class TestPerformOrcaReconcile(
 
         mock_context = Mock()
         event = {
-            perform_orca_reconcile.INPUT_JOB_ID_KEY: job_id,
-            perform_orca_reconcile.INPUT_ORCA_ARCHIVE_LOCATION_KEY: orca_archive_location,
-            perform_orca_reconcile.INPUT_MESSAGE_RECEIPT_HANDLE_KEY: message_receipt_handle,
+            perform_orca_reconcile.INPUT_EVENT_KEY: {
+                perform_orca_reconcile.EVENT_JOB_ID_KEY: job_id,
+                perform_orca_reconcile.EVENT_ORCA_ARCHIVE_LOCATION_KEY: orca_archive_location,
+                perform_orca_reconcile.EVENT_MESSAGE_RECEIPT_HANDLE_KEY: message_receipt_handle,
+            }
         }
 
         internal_report_queue_url = uuid.uuid4().__str__()
@@ -419,7 +425,7 @@ class TestPerformOrcaReconcile(
             mock_get_configuration.return_value,
         )
         self.assertEqual(
-            f"data.{perform_orca_reconcile.INPUT_JOB_ID_KEY} must be integer",
+            f"data.{perform_orca_reconcile.EVENT_JOB_ID_KEY} must be integer",
             str(cm.exception),
         )
 
