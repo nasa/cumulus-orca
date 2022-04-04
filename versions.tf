@@ -4,8 +4,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      # todo: Update to at least 4.0. Will require updates to several resources.
-      version = ">= 3.63.0"
+      version = ">= 3.63.0, < 4.0.0"
     }
   }
 }
