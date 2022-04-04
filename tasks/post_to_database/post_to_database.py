@@ -315,17 +315,17 @@ def handler(event: Dict[str, List], context) -> None:
                     'RequestMethod' (str): Matches to a shared_recovery.RequestMethod.
         context: An object passed through by AWS. Used for tracking.
     Environment Vars: 
-        SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
+        DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
         See shared_db.py's get_configuration for further details.
     """
     LOGGER.setMetadata(event, context)
 
     # get the secret ARN from the env variable
     try:
-        db_connect_info_secret_arn = os.environ["SECRET_ARN"]
+        db_connect_info_secret_arn = os.environ["DB_CONNECT_INFO_SECRET_ARN"]
     except KeyError as key_error:
         LOGGER.error(
-            "SECRET_ARN environment value not found."
+            "DB_CONNECT_INFO_SECRET_ARN environment value not found."
         )
         raise
     db_connect_info = shared_db.get_configuration(db_connect_info_secret_arn)

@@ -81,7 +81,7 @@ class TestPostCopyRequestToQueue(TestCase):
                 post_copy_request_to_queue.OS_ENVIRON_RETRY_BACKOFF_KEY: str(
                     retry_backoff
                 ),
-                post_copy_request_to_queue.OS_ENVIRON_SECRET_ARN_KEY: str(db_connect_info_secret_arn)
+                post_copy_request_to_queue.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY: str(db_connect_info_secret_arn)
             },
             clear=True,
         ):
@@ -137,7 +137,7 @@ class TestPostCopyRequestToQueue(TestCase):
                     post_copy_request_to_queue.OS_ENVIRON_RETRY_BACKOFF_KEY: str(
                         random.randint(0, 100)
                     ),
-                    post_copy_request_to_queue.OS_ENVIRON_SECRET_ARN_KEY: uuid.uuid4().__str__()
+                    post_copy_request_to_queue.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY: uuid.uuid4().__str__()
                 },
                 clear=True,
             ):
@@ -301,7 +301,7 @@ class TestPostCopyRequestToQueue(TestCase):
                 post_copy_request_to_queue.OS_ENVIRON_RETRY_BACKOFF_KEY: str(
                     retry_backoff
                 ),
-                post_copy_request_to_queue.OS_ENVIRON_SECRET_ARN_KEY:
+                post_copy_request_to_queue.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY:
                     db_connect_info_secret_arn
             },
             clear=True,

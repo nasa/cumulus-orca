@@ -21,7 +21,7 @@ class TestDbDeployFunctions(unittest.TestCase):
     @patch.dict(
         os.environ,
         {
-            "SECRET_ARN": "test"
+            "DB_CONNECT_INFO_SECRET_ARN": "test"
         },
         clear=True,
     )
@@ -58,7 +58,7 @@ class TestDbDeployFunctions(unittest.TestCase):
     @patch.dict(
         os.environ,
         {
-            "SECRET_ARN": "test"
+            "DB_CONNECT_INFO_SECRET_ARN": "test"
         },
         clear=True,
      )

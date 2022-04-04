@@ -20,7 +20,7 @@ OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY = "STATUS_UPDATE_QUEUE_URL"
 OS_ENVIRON_MAX_RETRIES_KEY = "MAX_RETRIES"
 OS_ENVIRON_RETRY_SLEEP_SECS_KEY = "RETRY_SLEEP_SECS"
 OS_ENVIRON_RETRY_BACKOFF_KEY = "RETRY_BACKOFF"
-OS_ENVIRON_SECRET_ARN_KEY = "SECRET_ARN"
+OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY = "DB_CONNECT_INFO_SECRET_ARN"
 
 JOB_ID_KEY = "jobId"
 GRANULE_ID_KEY = "granuleId"
@@ -268,7 +268,7 @@ def handler(event: Dict[str, Any], context) -> None:
         MAX_RETRIES (string): Number of times the code will retry in case of failure.
         RETRY_SLEEP_SECS (string): Number of seconds to wait between recovery failure retries.
         RETRY_BACKOFF (string): The multiplier by which the retry interval increases during each attempt.
-        SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
+        DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
     Args:
         event:
             A dictionary from the S3 bucket. See schemas/input.json for more information.
@@ -287,7 +287,7 @@ def handler(event: Dict[str, Any], context) -> None:
         OS_ENVIRON_MAX_RETRIES_KEY,
         OS_ENVIRON_RETRY_SLEEP_SECS_KEY,
         OS_ENVIRON_RETRY_BACKOFF_KEY,
-        OS_ENVIRON_SECRET_ARN_KEY
+        OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY
     ]
     environment_args = []
     for var in backoff_env:

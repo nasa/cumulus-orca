@@ -949,7 +949,7 @@ class TestGetCurrentArchiveList(
     @patch.dict(
         os.environ,
         {
-            "SECRET_ARN": "dummy_secret_arn"
+            "DB_CONNECT_INFO_SECRET_ARN": "dummy_secret_arn"
         },
         clear=True,
      )
@@ -1009,7 +1009,7 @@ class TestGetCurrentArchiveList(
 
         mock_LOGGER.setMetadata.assert_called_once_with(event, mock_context)
         mock_get_s3_credentials_from_secrets_manager.assert_called_once_with(db_connect_info_secret_arn)
-        mock_get_configuration.assert_called_once_with(os.environ["SECRET_ARN"])
+        mock_get_configuration.assert_called_once_with(os.environ["DB_CONNECT_INFO_SECRET_ARN"])
         mock_get_message_from_queue.assert_called_once_with(report_queue_url)
         mock_task.assert_called_once_with(
             mock_report_bucket_aws_region,
@@ -1029,7 +1029,7 @@ class TestGetCurrentArchiveList(
     @patch.dict(
         os.environ,
         {
-            "SECRET_ARN": "test"
+            "DB_CONNECT_INFO_SECRET_ARN": "test"
         },
         clear=True,
      )
