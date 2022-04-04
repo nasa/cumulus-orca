@@ -35,6 +35,8 @@ and includes an additional section for migration notes.
 
 ### Migration Notes
 
+- There is a new bucket `PREFIX-orca-reports`. Each of your glacier archive buckets needs write access to this bucket, which is automatic unless your glacier bucket is in a different account. Follow instructions at [the earthdata wiki](https://wiki.earthdata.nasa.gov/display/ESKB/Common+Bucket+Policies+Examples) for help requesting cross-account access.
+
 - The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variables. The following required variables have been added:
   - dlq_subscription_email
   - s3_access_key
