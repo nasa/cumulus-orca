@@ -10,6 +10,11 @@ variable "prefix" {
 }
 
 ## OPTIONAL
+variable "s3_report_frequency" {
+  type        = string
+  description = "How often to generate s3 reports for internal reconciliation." 
+}
+
 variable "tags" {
   type        = map(string)
   description = "Tags to be applied to resources that support tags."

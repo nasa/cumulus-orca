@@ -27,7 +27,7 @@ resource "aws_s3_bucket_inventory" "inventory-report" {
   optional_fields = ["Size", "LastModifiedDate", "StorageClass", "ETag"]
 
   schedule {
-    frequency = "Daily"
+    frequency = var.s3_report_frequency
   }
 
   destination {

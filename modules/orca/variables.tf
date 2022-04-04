@@ -94,6 +94,18 @@ variable "rds_security_group_id" {
   description = "Cumulus' RDS Security Group's ID."
 }
 
+
+variable "s3_access_key" {
+  type        = string
+  description = "Access key for communicating with Orca S3 buckets."
+}
+
+
+variable "s3_secret_key" {
+  type        = string
+  description = "Secret key for communicating with Orca S3 buckets."
+}
+
 variable "dlq_subscription_email" {
   type        = string
   description = "The email to notify users when messages are received in dead letter SQS queue due to restore failure. Sends one email until the dead letter queue is emptied."
@@ -196,21 +208,15 @@ variable "orca_recovery_retry_backoff" {
 }
 
 
-variable "s3_access_key" {
+variable "s3_report_frequency" {
   type        = string
-  description = "Access key for communicating with Orca S3 buckets."
+  description = "How often to generate s3 reports for internal reconciliation."
 }
 
 
 variable "s3_inventory_queue_message_retention_time_seconds" {
   type        = number
   description = "The number of seconds s3-inventory-queue fifo SQS retains a message in seconds. Maximum value is 14 days."
-}
-
-
-variable "s3_secret_key" {
-  type        = string
-  description = "Secret key for communicating with Orca S3 buckets."
 }
 
 

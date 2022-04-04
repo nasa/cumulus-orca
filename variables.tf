@@ -233,11 +233,20 @@ variable "orca_recovery_retry_backoff" {
   default     = 2
 }
 
+
+variable "s3_report_frequency" {
+  type        = string
+  description = "How often to generate s3 reports for internal reconciliation. Options are `Daily` or `Weekly`."
+  default     = "Daily"
+}
+
+
 variable "s3_inventory_queue_message_retention_time_seconds" {
   type        = number
   description = "The number of seconds s3-inventory-queue fifo SQS retains a message in seconds. Maximum value is 14 days."
   default     = 432000 #5 days
 }
+
 
 variable "sqs_delay_time_seconds" {
   type        = number

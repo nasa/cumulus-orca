@@ -105,6 +105,7 @@ module "orca" {
   # orca_recovery_retry_interval                         = 1
   # orca_recovery_retry_backoff                          = 2
   # s3_inventory_queue_message_retention_time_seconds    = 432000
+  # s3_report_frequency                                  = "Daily"
   # sqs_delay_time_seconds                               = 0
   # sqs_maximum_message_size                             = 262144
   # staged_recovery_queue_message_retention_time_seconds = 432000
@@ -536,6 +537,7 @@ variables is shown in the table below.
 | `orca_recovery_retry_interval`                        | number        | Number of seconds to wait between recovery failure retries.                                               | 1 |
 | `orca_recovery_retry_backoff`                         | number        | The multiplier by which the retry interval increases during each attempt.                                 | 2 |
 | `s3_inventory_queue_message_retention_time_seconds`   | number        | The number of seconds s3-inventory-queue fifo SQS retains a message in seconds. Maximum value is 14 days. | 432000 |
+| `s3_report_frequency`                                 | string        | How often to generate s3 reports for internal reconciliation. Options are `Daily` or `Weekly`.            | "Daily" |
 | `sqs_delay_time_seconds`                              | number        | Number of seconds that the delivery of all messages in the queue will be delayed.                         | 0 |
 | `sqs_maximum_message_size`                            | number        | The limit of how many bytes a message can contain before Amazon SQS rejects it.                           | 262144 |
 | `staged_recovery_queue_message_retention_time_seconds`| number        | Number of seconds the staged-recovery-queue fifo SQS retains a message.                                   | 432000 |

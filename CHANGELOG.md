@@ -25,6 +25,7 @@ and includes an additional section for migration notes.
 - *ORCA-308* Added lambda perform_orca_reconcile to find differences between S3 Inventory reports and Orca catalog.
 - *ORCA-373* Added bucket `PREFIX-orca-reports` for S3 Inventory Reports.
     S3 Inventory Reports will automatically be deleted after 30 days.
+    Report frequency defaults to `Daily`, but can be set to `Weekly` through variable `s3_report_frequency`.
 - *ORCA-403* Added lambda post_to_queue_and_trigger_step_function to trigger step function for internal reconciliation.
 
 ### Changed
@@ -109,23 +110,13 @@ variable "s3_secret_key" {
   orca_recovery_retry_limit                            = 3
   orca_recovery_retry_interval                         = 1
   orca_recovery_retry_backoff                          = 2
+  s3_report_frequency                                  = "Daily"
   s3_inventory_queue_message_retention_time_seconds    = 432000
   sqs_delay_time_seconds                               = 0
   sqs_maximum_message_size                             = 262144
   staged_recovery_queue_message_retention_time_seconds = 432000
   status_update_queue_message_retention_time_seconds   = 777600
   vpc_endpoint_id                                      = null
-  }
-  ```
-- Update the `buckets` variable in your `tfvars` file by adding the following bucket.
-  ```
-  buckets = {
-    ...
-    orca_reports = {
-      name = "PREFIX-orca-reports"
-      type = "orca-reports"
-    },
-    ...
   }
   ```
 

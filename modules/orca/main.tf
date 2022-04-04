@@ -11,6 +11,7 @@ module "orca_s3" {
   buckets                                              = var.buckets
   prefix                                               = var.prefix
   ## OPTIONAL
+  s3_report_frequency                                  = var.s3_report_frequency
   tags                                                 = var.tags
 }
 
