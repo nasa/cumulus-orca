@@ -1,3 +1,5 @@
+# todo: Pull out into a separate module per https://bugs.earthdata.nasa.gov/browse/ORCA-369
+
 ## Local Variables
 locals {
   orca_bucket_names  = [for k, v in var.buckets : v.name if v.type == "orca"]
