@@ -27,6 +27,7 @@ from sqlalchemy.sql.elements import TextClause
 
 OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY = "INTERNAL_REPORT_QUEUE_URL"
 OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY = "S3_CREDENTIALS_SECRET_ARN"  # nosec
+OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY = "DB_CONNECT_INFO_SECRET_ARN"  # nosec
 
 S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY = "s3_access_key"
 S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY = "s3_secret_key"  # nosec
@@ -433,11 +434,11 @@ def translate_s3_import_to_partitioned_data_sql() -> TextClause:
     )
 
 
-def get_s3_credentials_from_secrets_manager(db_connect_info_secret_arn: str) -> tuple:
+def get_s3_credentials_from_secrets_manager(s3_credentials_secret_arn: str) -> tuple:
     """
     Gets the s3 secret from the given arn and decompiles into two strings.
     Args:
-        db_connect_info_secret_arn: The arn of the secret containing s3 credentials.
+        s3_credentials_secret_arn: The arn of the secret containing s3 credentials.
 
     Returns:
         A tuple consisting of
@@ -447,9 +448,9 @@ def get_s3_credentials_from_secrets_manager(db_connect_info_secret_arn: str) -> 
     secretsmanager = boto3.client(
         "secretsmanager", region_name=os.environ["AWS_REGION"]
     )
-    LOGGER.debug(f"Getting secret '{db_connect_info_secret_arn}'")
+    LOGGER.debug(f"Getting secret '{s3_credentials_secret_arn}'")
     s3_credentials = json.loads(
-        secretsmanager.get_secret_value(SecretId=db_connect_info_secret_arn)["SecretString"]
+        secretsmanager.get_secret_value(SecretId=s3_credentials_secret_arn)["SecretString"]
     )
     s3_access_key = s3_credentials.get(S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY, None)
     if s3_access_key is None or len(s3_access_key) == 0:
@@ -508,7 +509,6 @@ def get_message_from_queue(
         message["ReceiptHandle"],
     )
 
-
 def handler(event: Dict[str, List], context) -> Dict[str, Any]:
     """
     Lambda handler. Receives a list of s3 events from an SQS queue, and loads the s3 inventory specified into postgres.
@@ -526,6 +526,19 @@ def handler(event: Dict[str, List], context) -> Dict[str, Any]:
     """
     LOGGER.setMetadata(event, context)
 
+    # env_variable_list=[("internal_report_queue_url",OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY),("s3_credentials_secret_arn",OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY),("db_connect_info_secret_arn",OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY)]
+
+    # for string, env_var_name in env_variable_list:
+
+    #     try:
+    #         string = str(
+    #             os.environ[env_var_name]
+    #         )
+    #     except KeyError as key_error:
+    #         LOGGER.error(
+    #             f"{env_var_name} environment value not found."
+    #         )
+    #         raise key_error
     try:
         internal_report_queue_url = str(
             os.environ[OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY]
@@ -547,12 +560,14 @@ def handler(event: Dict[str, List], context) -> Dict[str, Any]:
         raise key_error
 
     try:
-        db_connect_info_secret_arn = os.environ["DB_CONNECT_INFO_SECRET_ARN"]
+        db_connect_info_secret_arn = str(
+            os.environ[OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY]
+        )
     except KeyError as key_error:
         LOGGER.error(
-            "DB_CONNECT_INFO_SECRET_ARN environment value not found."
+            f"{OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY} environment value not found."
         )
-        raise
+        raise key_error
 
     s3_access_key, s3_secret_key = get_s3_credentials_from_secrets_manager(
         s3_credentials_secret_arn

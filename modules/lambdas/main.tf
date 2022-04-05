@@ -361,13 +361,12 @@ resource "aws_lambda_function" "post_copy_request_to_queue" {
   }
   environment {
     variables = {
-      SECRET_ARN              = var.db_connect_info_secret_arn
-      PREFIX                  = var.prefix
-      STATUS_UPDATE_QUEUE_URL = var.orca_sqs_status_update_queue_id
-      RECOVERY_QUEUE_URL      = var.orca_sqs_staged_recovery_queue_id
-      MAX_RETRIES             = var.orca_recovery_retry_limit
-      RETRY_SLEEP_SECS        = var.orca_recovery_retry_interval
-      RETRY_BACKOFF           = var.orca_recovery_retry_backoff
+      DB_CONNECT_INFO_SECRET_ARN   = var.db_connect_info_secret_arn
+      STATUS_UPDATE_QUEUE_URL      = var.orca_sqs_status_update_queue_id
+      RECOVERY_QUEUE_URL           = var.orca_sqs_staged_recovery_queue_id
+      MAX_RETRIES                  = var.orca_recovery_retry_limit
+      RETRY_SLEEP_SECS             = var.orca_recovery_retry_interval
+      RETRY_BACKOFF                = var.orca_recovery_retry_backoff
     }
   }
 }

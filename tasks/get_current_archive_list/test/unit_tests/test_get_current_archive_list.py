@@ -777,7 +777,7 @@ class TestGetCurrentArchiveList(
         """
         Happy path for pulling secret values from secretsmanager
         """
-        mock_db_connect_info_secret_arn = Mock()
+        mock_s3_credentials_secret_arn = Mock()
         region = uuid.uuid4().__str__()
         s3_access_key = uuid.uuid4().__str__()
         s3_secret_key = uuid.uuid4().__str__()
@@ -800,12 +800,12 @@ class TestGetCurrentArchiveList(
                 result_access_key,
                 result_secret_key,
             ) = get_current_archive_list.get_s3_credentials_from_secrets_manager(
-                mock_db_connect_info_secret_arn
+                mock_s3_credentials_secret_arn
             )
 
         mock_client.assert_called_once_with("secretsmanager", region_name=region)
         mock_secrets_manager.get_secret_value.assert_called_once_with(
-            SecretId=mock_db_connect_info_secret_arn
+            SecretId=mock_s3_credentials_secret_arn
         )
         self.assertEqual(s3_access_key, result_access_key)
         self.assertEqual(s3_secret_key, result_secret_key)
@@ -817,7 +817,7 @@ class TestGetCurrentArchiveList(
         """
         When returns are unset or empty strings, should raise KeyError.
         """
-        mock_db_connect_info_secret_arn = Mock()
+        mock_s3_credentials_secret_arn = Mock()
         s3_access_key = uuid.uuid4().__str__()
         s3_secret_key = uuid.uuid4().__str__()
         region = uuid.uuid4().__str__()
@@ -843,7 +843,7 @@ class TestGetCurrentArchiveList(
                     }
                     with self.assertRaises(ValueError) as cm:
                         get_current_archive_list.get_s3_credentials_from_secrets_manager(
-                            mock_db_connect_info_secret_arn
+                            mock_s3_credentials_secret_arn
                         )
                     self.assertEqual(
                         f"{secret_key} secret is not set.",
@@ -855,7 +855,7 @@ class TestGetCurrentArchiveList(
                     }
                     with self.assertRaises(ValueError) as cm:
                         get_current_archive_list.get_s3_credentials_from_secrets_manager(
-                            mock_db_connect_info_secret_arn
+                            mock_s3_credentials_secret_arn
                         )
                     self.assertEqual(
                         f"{secret_key} secret is not set.",
@@ -946,13 +946,6 @@ class TestGetCurrentArchiveList(
     @patch("get_current_archive_list.get_s3_credentials_from_secrets_manager")
     @patch("get_current_archive_list.LOGGER")
     @patch("get_current_archive_list.task")
-    @patch.dict(
-        os.environ,
-        {
-            "DB_CONNECT_INFO_SECRET_ARN": "dummy_secret_arn"
-        },
-        clear=True,
-     )
     def test_handler_happy_path(
         self,
         mock_task: MagicMock,
@@ -964,7 +957,8 @@ class TestGetCurrentArchiveList(
         """
         Happy path for handler assembling information to call Task.
         """
-        db_connect_info_secret_arn = uuid.uuid4().__str__()
+        mock_s3_credentials_secret_arn = uuid.uuid4().__str__()
+        mock_db_connect_info_secret_arn = uuid.uuid4().__str__()
         mock_report_bucket_aws_region = Mock()
         mock_report_bucket_name = Mock()
         mock_manifest_key_path = Mock()
@@ -1001,15 +995,17 @@ class TestGetCurrentArchiveList(
         with patch.dict(
             os.environ,
             {
-                get_current_archive_list.OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY: db_connect_info_secret_arn,
+                get_current_archive_list.OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY: mock_s3_credentials_secret_arn,
                 get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY: report_queue_url,
+                get_current_archive_list.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY: mock_db_connect_info_secret_arn,
+
             },
         ):
             result = get_current_archive_list.handler(event, mock_context)
 
         mock_LOGGER.setMetadata.assert_called_once_with(event, mock_context)
-        mock_get_s3_credentials_from_secrets_manager.assert_called_once_with(db_connect_info_secret_arn)
-        mock_get_configuration.assert_called_once_with(os.environ["DB_CONNECT_INFO_SECRET_ARN"])
+        mock_get_s3_credentials_from_secrets_manager.assert_called_once_with(mock_s3_credentials_secret_arn)
+        mock_get_configuration.assert_called_once_with(mock_db_connect_info_secret_arn)
         mock_get_message_from_queue.assert_called_once_with(report_queue_url)
         mock_task.assert_called_once_with(
             mock_report_bucket_aws_region,
@@ -1044,7 +1040,7 @@ class TestGetCurrentArchiveList(
         """
         Violating output.json schema should raise an error.
         """
-        db_connect_info_secret_arn = uuid.uuid4().__str__()
+        mock_s3_credentials_secret_arn = uuid.uuid4().__str__()
         mock_report_bucket_aws_region = Mock()
         mock_report_bucket_name = Mock()
         mock_manifest_key_path = Mock()
@@ -1074,7 +1070,7 @@ class TestGetCurrentArchiveList(
             with patch.dict(
                 os.environ,
                 {
-                    get_current_archive_list.OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY: db_connect_info_secret_arn,
+                    get_current_archive_list.OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY: mock_s3_credentials_secret_arn,
                     get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY: report_queue_url,
                 },
             ):

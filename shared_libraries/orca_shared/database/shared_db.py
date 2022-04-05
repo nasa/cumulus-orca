@@ -29,7 +29,7 @@ RT = TypeVar("RT")  # return type
 def get_configuration(db_connect_info_secret_arn: str) -> Dict[str, str]:
     """
     Create a dictionary of configuration values based on environment variables
-    information and other items needed to create the database.
+    and secret information items needed to create ORCA database connections.
 
     ```
     Environment Variables:

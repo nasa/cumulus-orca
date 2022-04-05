@@ -76,7 +76,6 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
     @patch.dict(
         os.environ,
         {
-            "AWS_REGION": ""
         },
         clear=True,
     )
