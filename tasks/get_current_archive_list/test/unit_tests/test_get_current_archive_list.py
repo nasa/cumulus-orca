@@ -946,8 +946,10 @@ class TestGetCurrentArchiveList(
     @patch("get_current_archive_list.get_s3_credentials_from_secrets_manager")
     @patch("get_current_archive_list.LOGGER")
     @patch("get_current_archive_list.task")
+    @patch("get_current_archive_list.check_env_variable")
     def test_handler_happy_path(
         self,
+        mock_check_env_variable: MagicMock,
         mock_task: MagicMock,
         mock_LOGGER: MagicMock,
         mock_get_s3_credentials_from_secrets_manager: MagicMock,
@@ -1004,9 +1006,9 @@ class TestGetCurrentArchiveList(
             result = get_current_archive_list.handler(event, mock_context)
 
         mock_LOGGER.setMetadata.assert_called_once_with(event, mock_context)
-        mock_get_s3_credentials_from_secrets_manager.assert_called_once_with(mock_s3_credentials_secret_arn)
-        mock_get_configuration.assert_called_once_with(mock_db_connect_info_secret_arn)
-        mock_get_message_from_queue.assert_called_once_with(report_queue_url)
+        mock_get_s3_credentials_from_secrets_manager.assert_called_once_with(mock_check_env_variable(get_current_archive_list.OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY))
+        mock_get_configuration.assert_called_once_with(mock_check_env_variable(get_current_archive_list.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY))
+        mock_get_message_from_queue.assert_called_once_with(mock_check_env_variable(get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY))
         mock_task.assert_called_once_with(
             mock_report_bucket_aws_region,
             mock_report_bucket_name,
@@ -1022,6 +1024,7 @@ class TestGetCurrentArchiveList(
     @patch("get_current_archive_list.get_s3_credentials_from_secrets_manager")
     @patch("get_current_archive_list.LOGGER")
     @patch("get_current_archive_list.task")
+    @patch("get_current_archive_list.check_env_variable")
     @patch.dict(
         os.environ,
         {
@@ -1031,6 +1034,7 @@ class TestGetCurrentArchiveList(
      )
     def test_handler_rejects_bad_output(
         self,
+        mock_check_env_variable: MagicMock,
         mock_task: MagicMock,
         mock_LOGGER: MagicMock,
         mock_get_s3_credentials_from_secrets_manager: MagicMock,
@@ -1077,7 +1081,7 @@ class TestGetCurrentArchiveList(
                 get_current_archive_list.handler(event, mock_context)
 
         mock_LOGGER.setMetadata.assert_called_once_with(event, mock_context)
-        mock_get_message_from_queue.assert_called_once_with(report_queue_url)
+        mock_get_message_from_queue.assert_called_once_with(mock_check_env_variable(get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY))
         mock_task.assert_called_once_with(
             mock_report_bucket_aws_region,
             mock_report_bucket_name,

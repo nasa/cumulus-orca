@@ -14,6 +14,7 @@
   * [get\_s3\_credentials\_from\_secrets\_manager](#get_current_archive_list.get_s3_credentials_from_secrets_manager)
   * [MessageData](#get_current_archive_list.MessageData)
   * [get\_message\_from\_queue](#get_current_archive_list.get_message_from_queue)
+  * [check\_env\_variable](#get_current_archive_list.check_env_variable)
   * [handler](#get_current_archive_list.handler)
 
 <a id="get_current_archive_list"></a>
@@ -206,7 +207,8 @@ SQL for translating between the temporary table and Orca table.
 #### get\_s3\_credentials\_from\_secrets\_manager
 
 ```python
-def get_s3_credentials_from_secrets_manager(s3_credentials_secret_arn: str) -> tuple
+def get_s3_credentials_from_secrets_manager(
+        s3_credentials_secret_arn: str) -> tuple
 ```
 
 Gets the s3 secret from the given arn and decompiles into two strings.
@@ -257,6 +259,22 @@ Gets a message from the queue and formats it into input.json schema.
 **Returns**:
 
   A MessageData consisting of the relevant data.
+
+<a id="get_current_archive_list.check_env_variable"></a>
+
+#### check\_env\_variable
+
+```python
+def check_env_variable(env_name: str) -> str
+```
+
+Checks for the lambda environment variable.
+
+**Arguments**:
+
+- `env_name` _str_ - The environment variable name set in lambda configuration.
+  
+- `Raises` - KeyError in case the environment variable is not found.
 
 <a id="get_current_archive_list.handler"></a>
 

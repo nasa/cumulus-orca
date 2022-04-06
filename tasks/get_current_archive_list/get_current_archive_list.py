@@ -509,6 +509,23 @@ def get_message_from_queue(
         message["ReceiptHandle"],
     )
 
+def check_env_variable(env_name: str)->str:
+    """
+    Checks for the lambda environment variable.
+
+    Args:
+        env_name (str): The environment variable name set in lambda configuration.
+
+    Raises: KeyError in case the environment variable is not found.
+    """
+    try:
+        env_value = os.environ[env_name]
+        if len(env_value) == 0 or env_value is None:
+            raise KeyError(f"Empty value for {env_name}")
+    except KeyError as key_error:
+        LOGGER.error(f"{env_name} environment value not found.")
+        raise key_error
+
 def handler(event: Dict[str, List], context) -> Dict[str, Any]:
     """
     Lambda handler. Receives a list of s3 events from an SQS queue, and loads the s3 inventory specified into postgres.
@@ -526,32 +543,10 @@ def handler(event: Dict[str, List], context) -> Dict[str, Any]:
     """
     LOGGER.setMetadata(event, context)
 
-    env_variable_list=[
-                        ("internal_report_queue_url",OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY),
-                        ("s3_credentials_secret_arn",OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY),
-                        ("db_connect_info_secret_arn",OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY)
-                    ]
-    env_value_result =[]
-    for string, env_var_name in env_variable_list:
-
-        try:
-            string = str(
-                os.environ[env_var_name]
-            )
-            env_value_result.append(string)
-        except KeyError as key_error:
-            LOGGER.error(
-                f"{env_var_name} environment value not found."
-            )
-            raise key_error
-
-    s3_access_key, s3_secret_key = get_s3_credentials_from_secrets_manager(
-        env_value_result[1]
-    )
-
-    db_connect_info = shared_db.get_configuration(env_value_result[2])
-
-    message_data = get_message_from_queue(env_value_result[0])
+    #getting the env variables
+    s3_access_key, s3_secret_key = get_s3_credentials_from_secrets_manager(check_env_variable(OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY))
+    db_connect_info = shared_db.get_configuration(check_env_variable(OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY))
+    message_data = get_message_from_queue(check_env_variable(OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY))
 
     result = task(
         message_data.report_bucket_region,
