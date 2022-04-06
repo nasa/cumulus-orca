@@ -526,56 +526,32 @@ def handler(event: Dict[str, List], context) -> Dict[str, Any]:
     """
     LOGGER.setMetadata(event, context)
 
-    # env_variable_list=[("internal_report_queue_url",OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY),("s3_credentials_secret_arn",OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY),("db_connect_info_secret_arn",OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY)]
+    env_variable_list=[
+                        ("internal_report_queue_url",OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY),
+                        ("s3_credentials_secret_arn",OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY),
+                        ("db_connect_info_secret_arn",OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY)
+                    ]
+    env_value_result =[]
+    for string, env_var_name in env_variable_list:
 
-    # for string, env_var_name in env_variable_list:
-
-    #     try:
-    #         string = str(
-    #             os.environ[env_var_name]
-    #         )
-    #     except KeyError as key_error:
-    #         LOGGER.error(
-    #             f"{env_var_name} environment value not found."
-    #         )
-    #         raise key_error
-    try:
-        internal_report_queue_url = str(
-            os.environ[OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY]
-        )
-    except KeyError as key_error:
-        LOGGER.error(
-            f"{OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY} environment value not found."
-        )
-        raise key_error
-
-    try:
-        s3_credentials_secret_arn = str(
-            os.environ[OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY]
-        )
-    except KeyError as key_error:
-        LOGGER.error(
-            f"{OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY} environment value not found."
-        )
-        raise key_error
-
-    try:
-        db_connect_info_secret_arn = str(
-            os.environ[OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY]
-        )
-    except KeyError as key_error:
-        LOGGER.error(
-            f"{OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY} environment value not found."
-        )
-        raise key_error
+        try:
+            string = str(
+                os.environ[env_var_name]
+            )
+            env_value_result.append(string)
+        except KeyError as key_error:
+            LOGGER.error(
+                f"{env_var_name} environment value not found."
+            )
+            raise key_error
 
     s3_access_key, s3_secret_key = get_s3_credentials_from_secrets_manager(
-        s3_credentials_secret_arn
+        env_value_result[1]
     )
 
-    db_connect_info = shared_db.get_configuration(db_connect_info_secret_arn)
+    db_connect_info = shared_db.get_configuration(env_value_result[2])
 
-    message_data = get_message_from_queue(internal_report_queue_url)
+    message_data = get_message_from_queue(env_value_result[0])
 
     result = task(
         message_data.report_bucket_region,
