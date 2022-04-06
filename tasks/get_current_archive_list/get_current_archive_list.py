@@ -522,9 +522,11 @@ def check_env_variable(env_name: str)->str:
         env_value = os.environ[env_name]
         if len(env_value) == 0 or env_value is None:
             raise KeyError(f"Empty value for {env_name}")
-    except KeyError as key_error:
+    except KeyError:
         LOGGER.error(f"{env_name} environment value not found.")
-        raise key_error
+        raise
+
+    return env_value 
 
 def handler(event: Dict[str, List], context) -> Dict[str, Any]:
     """
