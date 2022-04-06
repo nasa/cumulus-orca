@@ -39,9 +39,9 @@ This application will be used in future steps to authenticate users.
 - Create an AWS Key Value Pair by following  [the AWS instructions](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html#having-ec2-create-your-key-pair).
     - Choose the '.pem' format.
     - Naming convention is PREFIX-key-pair.pem
-- Create buckets in the same OU and region as the other installations.
-    - Same OU and region would not be ideal for a real backup system, but is generally sufficient for testing.
-    - Required buckets are PREFIX-tf-state, PREFIX-orca-primary, PREFIX-internal, PREFIX-private, PREFIX-protected, and PREFIX-public
+- Create buckets.
+    - Same OU and region would not be ideal for a real backup system, and is therefore not sufficient for testing.
+    - Required buckets are PREFIX-tf-state, PREFIX-orca-primary, PREFIX-internal, PREFIX-private, PREFIX-protected, PREFIX-public, and PREFIX-orca-reports
     :::tip
     An example command for creating a bucket in us-west-2. Remember to run `aws configure` first.
     ```commandline
@@ -126,13 +126,13 @@ terraform apply
     - Replace 12345 in permissions_boundary_arn with the Account Id.
     - Add to the buckets:
       ```
-      default_orca = {
-         name = "PREFIX-orca-primary"
-         type = "orca"
-        },
-        provider = {
-          name = "orca-sandbox-s3-provider"
-          type = "provider"
+      orca_default = {
+        name = "PREFIX-orca-primary"
+        type = "orca"
+      },
+      provider = {
+        name = "orca-sandbox-s3-provider"
+        type = "provider"
       }
       ```
       :::tip
@@ -211,6 +211,7 @@ terraform apply
       orca_recovery_retry_interval                         = 1
       orca_recovery_retry_backoff                          = 2
       s3_inventory_queue_message_retention_time_seconds    = 432000
+      s3_report_frequency                                  = "Daily"
       sqs_delay_time_seconds                               = 0
       sqs_maximum_message_size                             = 262144
       staged_recovery_queue_message_retention_time_seconds = 432000

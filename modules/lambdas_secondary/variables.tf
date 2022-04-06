@@ -31,6 +31,11 @@ variable "restore_object_role_arn" {
   description = "AWS ARN of the restore_object_role."
 }
 
+variable "orca_reports_bucket_arn" {
+  type        = string
+  description = "The ARN of the bucket to store s3 inventory reports."
+}
+
 variable "orca_sfn_internal_reconciliation_workflow_arn" {
   type        = string
   description = "The ARN of the internal_reconciliation step function."
@@ -62,5 +67,11 @@ variable "orca_reconciliation_lambda_memory_size" {
 variable "orca_reconciliation_lambda_timeout" {
   type        = number
   description = "Timeout in number of seconds for ORCA reconciliation lambdas."
+}
+
+
+variable "s3_report_frequency" {
+  type        = string
+  description = "How often to generate s3 reports for internal reconciliation."
 }
 

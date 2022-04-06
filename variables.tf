@@ -90,6 +90,12 @@ variable "orca_default_bucket" {
 }
 
 
+variable "orca_reports_bucket_arn" {
+  type        = string
+  description = "The ARN of the bucket to store s3 inventory reports."
+}
+
+
 variable "rds_security_group_id" {
   type        = string
   description = "Cumulus' RDS Security Group's ID."
@@ -238,6 +244,14 @@ variable "s3_inventory_queue_message_retention_time_seconds" {
   description = "The number of seconds s3-inventory-queue fifo SQS retains a message in seconds. Maximum value is 14 days."
   default     = 432000 #5 days
 }
+
+
+variable "s3_report_frequency" {
+  type        = string
+  description = "How often to generate s3 reports for internal reconciliation. `Daily` or `Weekly`."
+  default     = "Daily"
+}
+
 
 variable "sqs_delay_time_seconds" {
   type        = number
