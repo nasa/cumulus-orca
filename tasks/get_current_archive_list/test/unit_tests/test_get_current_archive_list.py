@@ -1095,3 +1095,33 @@ class TestGetCurrentArchiveList(
             f"'{get_current_archive_list.OUTPUT_ORCA_ARCHIVE_LOCATION_KEY}'] properties",
             str(cm.exception),
         )
+        
+    @patch.dict(
+        os.environ,
+        {
+             "CORRECT_ENV_VAR": uuid.uuid4().__str__(),
+             "EMPTY_ENV_VAR": ""
+        },
+        clear=True,
+     )
+    @patch("get_current_archive_list.LOGGER")
+    def test_check_env_variable(self, mock_logger: MagicMock):
+
+        """
+        Tests happy path for check_env_variable() and that it raises a KeyError if key ENV_VAR is missing or empty.
+        """
+        get_current_archive_list.check_env_variable("CORRECT_ENV_VAR")
+
+        with self.assertRaises(KeyError) as err:
+            get_current_archive_list.check_env_variable(
+                "EMPTY_ENV_VAR"
+            )
+        error_message = "Empty value for EMPTY_ENV_VAR"
+        self.assertEqual(err.exception.args[0], error_message)
+        with self.assertRaises(KeyError):
+            get_current_archive_list.check_env_variable(
+                "MISSING_ENV_VAR"
+            )
+        mock_logger.error.assert_called_with(
+            "MISSING_ENV_VAR environment value not found."
+        )
