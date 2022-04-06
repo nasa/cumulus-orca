@@ -5,6 +5,7 @@ Description:  Unit tests for request_status_for_job.py.
 """
 import copy
 import json
+import os
 import unittest
 import uuid
 from http import HTTPStatus
@@ -27,6 +28,13 @@ class TestRequestStatusForJobUnit(
     @patch("request_status_for_job.task")
     @patch("orca_shared.database.shared_db.get_configuration")
     @patch("cumulus_logger.CumulusLogger.setMetadata")
+    @patch.dict(
+        os.environ,
+        {
+            "DB_CONNECT_INFO_SECRET_ARN": "test"
+        },
+        clear=True,
+     )
     def test_handler_happy_path(
         self,
         mock_setMetadata: MagicMock,
@@ -51,6 +59,13 @@ class TestRequestStatusForJobUnit(
     # noinspection PyPep8Naming
     @patch("orca_shared.database.shared_db.get_configuration")
     @patch("cumulus_logger.CumulusLogger.setMetadata")
+    @patch.dict(
+        os.environ,
+        {
+            "DB_CONNECT_INFO_SECRET_ARN": "test"
+        },
+        clear=True,
+     )
     def test_handler_missing_job_id_returns_error_code(
         self, mock_setMetadata: MagicMock, mock_get_dbconnect_info: MagicMock
     ):
@@ -67,6 +82,13 @@ class TestRequestStatusForJobUnit(
     @patch("request_status_for_job.task")
     @patch("orca_shared.database.shared_db.get_configuration")
     @patch("cumulus_logger.CumulusLogger.setMetadata")
+    @patch.dict(
+        os.environ,
+        {
+            "DB_CONNECT_INFO_SECRET_ARN": "test"
+        },
+        clear=True,
+     )
     def test_handler_database_error_returns_error_code(
         self,
         mock_setMetadata: MagicMock,

@@ -3,6 +3,7 @@ Name: test_db_deploy.py
 
 Description:  Unit tests for db_deploy.py.
 """
+import os
 import unittest
 import uuid
 from unittest.mock import MagicMock, patch
@@ -17,6 +18,13 @@ class TestDbDeployFunctions(unittest.TestCase):
 
     @patch("db_deploy.get_configuration")
     @patch("db_deploy.task")
+    @patch.dict(
+        os.environ,
+        {
+            "DB_CONNECT_INFO_SECRET_ARN": "test"
+        },
+        clear=True,
+    )
     def test_handler_happy_path(
         self, mock_task: MagicMock, mock_get_configuration: MagicMock
     ):
@@ -47,6 +55,13 @@ class TestDbDeployFunctions(unittest.TestCase):
 
     @patch("db_deploy.get_configuration")
     @patch("db_deploy.task")
+    @patch.dict(
+        os.environ,
+        {
+            "DB_CONNECT_INFO_SECRET_ARN": "test"
+        },
+        clear=True,
+     )
     def test_handler_bad_input(
         self, mock_task: MagicMock, mock_get_configuration: MagicMock
     ):

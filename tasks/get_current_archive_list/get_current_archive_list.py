@@ -27,6 +27,7 @@ from sqlalchemy.sql.elements import TextClause
 
 OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY = "INTERNAL_REPORT_QUEUE_URL"
 OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY = "S3_CREDENTIALS_SECRET_ARN"  # nosec
+OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY = "DB_CONNECT_INFO_SECRET_ARN"  # nosec
 
 S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY = "s3_access_key"
 S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY = "s3_secret_key"  # nosec
@@ -433,11 +434,11 @@ def translate_s3_import_to_partitioned_data_sql() -> TextClause:
     )
 
 
-def get_s3_credentials_from_secrets_manager(secret_arn: str) -> tuple:
+def get_s3_credentials_from_secrets_manager(s3_credentials_secret_arn: str) -> tuple:
     """
     Gets the s3 secret from the given arn and decompiles into two strings.
     Args:
-        secret_arn: The arn of the secret containing s3 credentials.
+        s3_credentials_secret_arn: The arn of the secret containing s3 credentials.
 
     Returns:
         A tuple consisting of
@@ -447,9 +448,9 @@ def get_s3_credentials_from_secrets_manager(secret_arn: str) -> tuple:
     secretsmanager = boto3.client(
         "secretsmanager", region_name=os.environ["AWS_REGION"]
     )
-    LOGGER.debug(f"Getting secret '{secret_arn}'")
+    LOGGER.debug(f"Getting secret '{s3_credentials_secret_arn}'")
     s3_credentials = json.loads(
-        secretsmanager.get_secret_value(SecretId=secret_arn)["SecretString"]
+        secretsmanager.get_secret_value(SecretId=s3_credentials_secret_arn)["SecretString"]
     )
     s3_access_key = s3_credentials.get(S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY, None)
     if s3_access_key is None or len(s3_access_key) == 0:
@@ -508,6 +509,24 @@ def get_message_from_queue(
         message["ReceiptHandle"],
     )
 
+def check_env_variable(env_name: str)->str:
+    """
+    Checks for the lambda environment variable.
+
+    Args:
+        env_name (str): The environment variable name set in lambda configuration.
+
+    Raises: KeyError in case the environment variable is not found.
+    """
+    try:
+        env_value = os.environ[env_name]
+        if len(env_value) == 0 or env_value is None:
+            raise KeyError(f"Empty value for {env_name}")
+    except KeyError:
+        LOGGER.error(f"{env_name} environment value not found.")
+        raise
+
+    return env_value 
 
 def handler(event: Dict[str, List], context) -> Dict[str, Any]:
     """
@@ -519,39 +538,17 @@ def handler(event: Dict[str, List], context) -> Dict[str, Any]:
     Environment Vars:
         INTERNAL_REPORT_QUEUE_URL (string): The URL of the SQS queue the job came from.
         S3_CREDENTIALS_SECRET_ARN (string): The ARN of the secret containing s3 credentials.
+        DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
         See shared_db.py's get_configuration for further details.
 
     Returns: See output.json for details.
     """
     LOGGER.setMetadata(event, context)
 
-    try:
-        internal_report_queue_url = str(
-            os.environ[OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY]
-        )
-    except KeyError as key_error:
-        LOGGER.error(
-            f"{OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY} environment value not found."
-        )
-        raise key_error
-
-    try:
-        s3_credentials_secret_arn = str(
-            os.environ[OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY]
-        )
-    except KeyError as key_error:
-        LOGGER.error(
-            f"{OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY} environment value not found."
-        )
-        raise key_error
-
-    s3_access_key, s3_secret_key = get_s3_credentials_from_secrets_manager(
-        s3_credentials_secret_arn
-    )
-
-    db_connect_info = shared_db.get_configuration()
-
-    message_data = get_message_from_queue(internal_report_queue_url)
+    #getting the env variables
+    s3_access_key, s3_secret_key = get_s3_credentials_from_secrets_manager(check_env_variable(OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY))
+    db_connect_info = shared_db.get_configuration(check_env_variable(OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY))
+    message_data = get_message_from_queue(check_env_variable(OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY))
 
     result = task(
         message_data.report_bucket_region,
