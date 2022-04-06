@@ -283,3 +283,45 @@ class TestInternalReconcileReportPhantom(
             ],
             result,
         )
+
+    @patch("internal_reconcile_report_phantom.get_phantoms_sql")
+    def test_query_db_no_rows_happy_path(self, mock_get_phantoms_sql: MagicMock):
+        """
+        Should query the db, then return an empty array.
+        """
+        job_id = random.randint(0, 999)  # nosec
+        page_index = Mock()
+
+        mock_execute = Mock(return_value=[])
+        mock_connection = Mock()
+        mock_connection.execute = mock_execute
+        mock_exit = Mock(return_value=False)
+        mock_enter = Mock()
+        mock_enter.__enter__ = Mock(return_value=mock_connection)
+        mock_enter.__exit__ = mock_exit
+        mock_engine = Mock()
+        mock_engine.begin = Mock(return_value=mock_enter)
+
+        result = internal_reconcile_report_phantom.query_db(
+            mock_engine,
+            job_id,
+            page_index,
+        )
+
+        mock_enter.__enter__.assert_called_once_with()
+        mock_execute.assert_called_once_with(
+            mock_get_phantoms_sql.return_value,
+            [
+                {
+                    "job_id": job_id,
+                    "page_index": page_index,
+                    "page_size": internal_reconcile_report_phantom.PAGE_SIZE,
+                }
+            ],
+        )
+        mock_exit.assert_called_once_with(None, None, None)
+        mock_get_phantoms_sql.assert_called_once_with()
+        self.assertEqual(
+            [],
+            result,
+        )
