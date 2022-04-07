@@ -26,7 +26,7 @@
               "collectionId",
               "granuleId",
               "filename",
-              "key_path",
+              "keyPath",
               "orcaEtag",
               "orcaLastUpdate",
               "orcaSize"
@@ -44,7 +44,7 @@
                 "type": "string",
                 "description": "Filename of the object from the ORCA catalog."
               },
-            "key_path": {
+            "keyPath": {
                 "type": "string",
                 "description": "key path and filename of the object in the ORCA catalog."
               },
@@ -54,7 +54,7 @@
               },
             "orcaLastUpdate": {
               "type": "integer",
-              "description": "The time, in milliseconds since 1 January 1970 UTC, that information was updated in the ORCA catalog."
+              "description": "The time, in milliseconds since 1 January 1970 UTC, of last update of the object as reported in the ORCA catalog."
             },
             "orcaSize": {
               "type": "integer",

@@ -26,6 +26,7 @@ and includes an additional section for migration notes.
 - *ORCA-403* Added lambda post_to_queue_and_trigger_step_function to trigger step function for internal reconciliation.
 - *ORCA-373* Added input variable for `orca_reports_bucket_arn`. Set in your `variables.tf` or `orca_variables.tf` file as shown below.
     Report frequency defaults to `Daily`, but can be set to `Weekly` through variable `s3_report_frequency`.
+- *ORCA-309* Added lambda internal_reconcile_report_phantom to report entries present in the catalog, but not s3.
 
 ### Changed
 - *ORCA-299* `db_deploy` task has been updated to deploy ORCA internal reconciliation tables and objects.
