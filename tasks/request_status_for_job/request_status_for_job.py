@@ -1,3 +1,4 @@
+import os
 from http import HTTPStatus
 from typing import Dict, Any, List
 
@@ -198,7 +199,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             asyncOperationId: The unique asyncOperationId of the recovery job.
         context: An object provided by AWS Lambda. Used for context tracking.
 
-    Environment Vars: See shared_db.py's get_configuration for further details.
+    Environment Vars: 
+        DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
+        See shared_db.py's get_configuration for further details.
 
     Returns: A Dict with the following keys:
         asyncOperationId (str): The unique ID of the asyncOperation.
@@ -214,6 +217,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         Or, if an error occurs, see create_http_error_dict
             400 if asyncOperationId is missing. 500 if an error occurs when querying the database.
     """
+    # get the secret ARN from the env variable
+    try:
+        db_connect_info_secret_arn = os.environ["DB_CONNECT_INFO_SECRET_ARN"]
+    except KeyError as key_error:
+        LOGGER.error(
+            "DB_CONNECT_INFO_SECRET_ARN environment value not found."
+        )
+        raise
     try:
         LOGGER.setMetadata(event, context)
 
@@ -225,7 +236,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 context.aws_request_id,
                 f"{INPUT_JOB_ID_KEY} must be set to a non-empty value.",
             )
-        db_connect_info = shared_db.get_configuration()
+        db_connect_info = shared_db.get_configuration(db_connect_info_secret_arn)
         return task(job_id, db_connect_info, context.aws_request_id)
     except Exception as error:
         return create_http_error_dict(

@@ -31,6 +31,7 @@ and includes an additional section for migration notes.
 - *ORCA-299* `db_deploy` task has been updated to deploy ORCA internal reconciliation tables and objects.
 - *ORCA-161* Changed staged recovery SQS queue type from FIFO to standard queue.
 - SQS Queue names adjusted to include Orca. For example: `"${var.prefix}-orca-status-update-queue.fifo"`. Queues will be automatically recreated by Terraform.
+- *ORCA-404* Updated shared_db and relevant lambdas to use secrets manager ARN instead of magic strings.
 
 ### Migration Notes
 

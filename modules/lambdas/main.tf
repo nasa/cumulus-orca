@@ -83,7 +83,7 @@ resource "aws_lambda_function" "get_current_archive_list" {
 
   environment {
     variables = {
-      PREFIX = var.prefix
+      DB_CONNECT_INFO_SECRET_ARN = var.db_connect_info_secret_arn
       INTERNAL_REPORT_QUEUE_URL = var.orca_sqs_internal_report_queue_id,
       S3_CREDENTIALS_SECRET_ARN = var.orca_secretsmanager_s3_access_credentials_secret_arn
     }
@@ -112,7 +112,7 @@ resource "aws_lambda_function" "perform_orca_reconcile" {
 
   environment {
     variables = {
-      PREFIX = var.prefix
+      DB_CONNECT_INFO_SECRET_ARN = var.db_connect_info_secret_arn
       INTERNAL_REPORT_QUEUE_URL = var.orca_sqs_internal_report_queue_id
     }
   }
@@ -257,7 +257,7 @@ resource "aws_lambda_function" "post_to_database" {
 
   environment {
     variables = {
-      PREFIX = var.prefix
+      DB_CONNECT_INFO_SECRET_ARN = var.db_connect_info_secret_arn
     }
   }
 }
@@ -305,7 +305,7 @@ resource "aws_lambda_function" "request_status_for_granule" {
 
   environment {
     variables = {
-      PREFIX = var.prefix
+      DB_CONNECT_INFO_SECRET_ARN = var.db_connect_info_secret_arn
     }
   }
 }
@@ -335,7 +335,7 @@ resource "aws_lambda_function" "request_status_for_job" {
 
   environment {
     variables = {
-      PREFIX = var.prefix
+      DB_CONNECT_INFO_SECRET_ARN = var.db_connect_info_secret_arn
     }
   }
 }
@@ -361,12 +361,12 @@ resource "aws_lambda_function" "post_copy_request_to_queue" {
   }
   environment {
     variables = {
-      PREFIX                  = var.prefix
-      STATUS_UPDATE_QUEUE_URL = var.orca_sqs_status_update_queue_id
-      RECOVERY_QUEUE_URL      = var.orca_sqs_staged_recovery_queue_id
-      MAX_RETRIES             = var.orca_recovery_retry_limit
-      RETRY_SLEEP_SECS        = var.orca_recovery_retry_interval
-      RETRY_BACKOFF           = var.orca_recovery_retry_backoff
+      DB_CONNECT_INFO_SECRET_ARN   = var.db_connect_info_secret_arn
+      STATUS_UPDATE_QUEUE_URL      = var.orca_sqs_status_update_queue_id
+      RECOVERY_QUEUE_URL           = var.orca_sqs_staged_recovery_queue_id
+      MAX_RETRIES                  = var.orca_recovery_retry_limit
+      RETRY_SLEEP_SECS             = var.orca_recovery_retry_interval
+      RETRY_BACKOFF                = var.orca_recovery_retry_backoff
     }
   }
 }
@@ -425,7 +425,7 @@ resource "aws_lambda_function" "orca_catalog_reporting" {
 
   environment {
     variables = {
-      PREFIX = var.prefix
+      DB_CONNECT_INFO_SECRET_ARN = var.db_connect_info_secret_arn
     }
   }
 }
@@ -455,7 +455,7 @@ resource "aws_lambda_function" "post_to_catalog" {
 
   environment {
     variables = {
-      PREFIX = var.prefix
+      DB_CONNECT_INFO_SECRET_ARN = var.db_connect_info_secret_arn
     }
   }
 }
@@ -513,7 +513,7 @@ resource "aws_lambda_function" "db_deploy" {
 
   environment {
     variables = {
-      PREFIX = var.prefix
+      DB_CONNECT_INFO_SECRET_ARN = var.db_connect_info_secret_arn
     }
   }
 }

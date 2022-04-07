@@ -408,6 +408,7 @@ def handler(event: Dict[str, Dict[str, Dict[str, Union[str, int]]]], context) ->
         context: An object passed through by AWS. Used for tracking.
     Environment Vars:
         INTERNAL_REPORT_QUEUE_URL (string): The URL of the SQS queue the job came from.
+        DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
         See shared_db.py's get_configuration for further details.
     Returns: See output.json for details.
     """
@@ -424,13 +425,21 @@ def handler(event: Dict[str, Dict[str, Dict[str, Union[str, int]]]], context) ->
             f"{OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY} environment value not found."
         )
         raise key_error
+    # get the secret ARN from the env variable
+    try:
+        db_connect_info_secret_arn = os.environ["DB_CONNECT_INFO_SECRET_ARN"]
+    except KeyError as key_error:
+        LOGGER.error(
+            "DB_CONNECT_INFO_SECRET_ARN environment value not found."
+        )
+        raise
 
     inner_event = event[INPUT_EVENT_KEY]
     job_id = inner_event[EVENT_JOB_ID_KEY]
     orca_archive_location = inner_event[EVENT_ORCA_ARCHIVE_LOCATION_KEY]
     message_receipt_handle = inner_event[EVENT_MESSAGE_RECEIPT_HANDLE_KEY]
 
-    db_connect_info = shared_db.get_configuration()
+    db_connect_info = shared_db.get_configuration(db_connect_info_secret_arn)
 
     result = task(
         job_id,
