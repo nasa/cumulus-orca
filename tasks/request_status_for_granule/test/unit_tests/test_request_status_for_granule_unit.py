@@ -5,6 +5,7 @@ Description:  Unit tests for request_status_for_granule.py.
 """
 import copy
 import json
+import os
 import random
 import unittest
 import uuid
@@ -28,6 +29,13 @@ class TestRequestStatusForGranuleUnit(
     @patch("orca_shared.database.shared_db.get_configuration")
     @patch("request_status_for_granule.task")
     @patch("cumulus_logger.CumulusLogger.setMetadata")
+    @patch.dict(
+        os.environ,
+        {
+            "DB_CONNECT_INFO_SECRET_ARN": "test"
+        },
+        clear=True,
+     )
     def test_handler_happy_path(
         self,
         mock_setMetadata: MagicMock,
@@ -58,6 +66,13 @@ class TestRequestStatusForGranuleUnit(
 
     @patch("request_status_for_granule.task")
     @patch("orca_shared.database.shared_db.get_configuration")
+    @patch.dict(
+        os.environ,
+        {
+            "DB_CONNECT_INFO_SECRET_ARN": "test"
+        },
+        clear=True,
+     )
     def test_handler_async_operation_id_defaults_to_none(
         self, mock_get_dbconnect_info: MagicMock, mock_task: MagicMock
     ):
@@ -82,6 +97,13 @@ class TestRequestStatusForGranuleUnit(
     @patch("cumulus_logger.CumulusLogger.error")
     @patch("orca_shared.database.shared_db.get_configuration")
     @patch("cumulus_logger.CumulusLogger.setMetadata")
+    @patch.dict(
+        os.environ,
+        {
+            "DB_CONNECT_INFO_SECRET_ARN": "test"
+        },
+        clear=True,
+     )
     def test_handler_missing_granule_id_returns_error_code(
         self,
         mock_setMetadata: MagicMock,
@@ -105,6 +127,13 @@ class TestRequestStatusForGranuleUnit(
     @patch("request_status_for_granule.task")
     @patch("orca_shared.database.shared_db.get_configuration")
     @patch("cumulus_logger.CumulusLogger.setMetadata")
+    @patch.dict(
+        os.environ,
+        {
+            "DB_CONNECT_INFO_SECRET_ARN": "test"
+        },
+        clear=True,
+     )
     def test_handler_database_error_returns_error_code(
         self,
         mock_setMetadata: MagicMock,

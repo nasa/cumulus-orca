@@ -277,6 +277,13 @@ class TestPerformOrcaReconcile(
     @patch("orca_shared.database.shared_db.get_configuration")
     @patch("perform_orca_reconcile.LOGGER")
     @patch("perform_orca_reconcile.task")
+    @patch.dict(
+        os.environ,
+        {
+            "DB_CONNECT_INFO_SECRET_ARN": "test"
+        },
+        clear=True,
+     )
     def test_handler_happy_path(
         self,
         mock_task: MagicMock,
@@ -312,7 +319,7 @@ class TestPerformOrcaReconcile(
             result = perform_orca_reconcile.handler(event, mock_context)
 
         mock_LOGGER.setMetadata.assert_called_once_with(event, mock_context)
-        mock_get_configuration.assert_called_once_with()
+        mock_get_configuration.assert_called_once_with(os.environ["DB_CONNECT_INFO_SECRET_ARN"])
         mock_task.assert_called_once_with(
             job_id,
             orca_archive_location,
@@ -326,6 +333,13 @@ class TestPerformOrcaReconcile(
     @patch("orca_shared.database.shared_db.get_configuration")
     @patch("perform_orca_reconcile.LOGGER")
     @patch("perform_orca_reconcile.task")
+    @patch.dict(
+        os.environ,
+        {
+            "DB_CONNECT_INFO_SECRET_ARN": "test"
+        },
+        clear=True,
+     )
     def test_handler_rejects_bad_input(
         self,
         mock_task: MagicMock,
@@ -372,6 +386,13 @@ class TestPerformOrcaReconcile(
     @patch("orca_shared.database.shared_db.get_configuration")
     @patch("perform_orca_reconcile.LOGGER")
     @patch("perform_orca_reconcile.task")
+    @patch.dict(
+        os.environ,
+        {
+            "DB_CONNECT_INFO_SECRET_ARN": "test"
+        },
+        clear=True,
+     )
     def test_handler_rejects_bad_output(
         self,
         mock_task: MagicMock,
@@ -410,7 +431,7 @@ class TestPerformOrcaReconcile(
                 perform_orca_reconcile.handler(event, mock_context)
 
         mock_LOGGER.setMetadata.assert_called_once_with(event, mock_context)
-        mock_get_configuration.assert_called_once_with()
+        mock_get_configuration.assert_called_once_with(os.environ["DB_CONNECT_INFO_SECRET_ARN"])
         mock_task.assert_called_once_with(
             job_id,
             orca_archive_location,

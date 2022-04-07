@@ -1,7 +1,7 @@
 import json
 from http import HTTPStatus
 from typing import Dict, Any, List, Union
-
+import os
 import fastjsonschema as fastjsonschema
 from cumulus_logger import CumulusLogger
 from fastjsonschema import JsonSchemaException
@@ -198,7 +198,9 @@ def handler(
         event: See schemas/input.json
         context: An object provided by AWS Lambda. Used for context tracking.
 
-    Environment Vars: See requests_db.py's get_configuration for further details.
+    Environment Vars:
+        DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
+        See shared_db.py's get_configuration for further details.
 
     Returns:
         See schemas/output.json
@@ -221,8 +223,16 @@ def handler(
                 context.aws_request_id,
                 json_schema_exception.__str__(),
             )
+        # get the secret ARN from the env variable
+        try:
+            db_connect_info_secret_arn = os.environ["DB_CONNECT_INFO_SECRET_ARN"]
+        except KeyError as key_error:
+            LOGGER.error(
+                "DB_CONNECT_INFO_SECRET_ARN environment value not found."
+            )
+            raise
 
-        db_connect_info = shared_db.get_configuration()
+        db_connect_info = shared_db.get_configuration(db_connect_info_secret_arn)
 
         result = task(
             event.get("providerId", None),
