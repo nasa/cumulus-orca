@@ -28,6 +28,7 @@ module "orca_lambdas" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
+  db_connect_info_secret_arn                           = module.orca_secretsmanager.secretsmanager_arn
   orca_default_bucket                                  = var.orca_default_bucket
   orca_secretsmanager_s3_access_credentials_secret_arn = module.orca_secretsmanager.s3_access_credentials_secret_arn
   orca_sqs_internal_report_queue_id                    = module.orca_sqs.orca_sqs_internal_report_queue_id

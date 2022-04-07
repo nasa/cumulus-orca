@@ -2,6 +2,7 @@
 Name: test_internal_reconcile_report_phantom.py
 Description:  Unit tests for internal_reconcile_report_phantom.py.
 """
+import os
 import random
 import unittest
 import uuid
@@ -18,8 +19,10 @@ class TestInternalReconcileReportPhantom(
     @patch("internal_reconcile_report_phantom.task")
     @patch("orca_shared.database.shared_db.get_configuration")
     @patch("cumulus_logger.CumulusLogger.setMetadata")
+    @patch("internal_reconcile_report_phantom.check_env_variable")
     def test_handler_happy_path(
         self,
+        mock_check_env_variable: MagicMock,
         mock_setMetadata: MagicMock,
         mock_get_configuration: MagicMock,
         mock_task: MagicMock,
@@ -43,14 +46,24 @@ class TestInternalReconcileReportPhantom(
                     internal_reconcile_report_phantom.PHANTOMS_FILENAME_KEY: uuid.uuid4().__str__(),
                     internal_reconcile_report_phantom.PHANTOMS_KEY_PATH_KEY: uuid.uuid4().__str__(),
                     internal_reconcile_report_phantom.PHANTOMS_ORCA_ETAG_KEY: uuid.uuid4().__str__(),
-                    internal_reconcile_report_phantom.PHANTOMS_ORCA_LAST_UPDATE_KEY: random.randint(0, 999),  # nosec
-                    internal_reconcile_report_phantom.PHANTOMS_ORCA_SIZE_KEY: random.randint(0, 999),  # nosec
+                    internal_reconcile_report_phantom.PHANTOMS_ORCA_LAST_UPDATE_KEY: random.randint(  # nosec
+                        0, 999
+                    ),
+                    internal_reconcile_report_phantom.PHANTOMS_ORCA_SIZE_KEY: random.randint(  # nosec
+                        0, 999
+                    ),
                 }
             ],
         }
 
         result = internal_reconcile_report_phantom.handler(event, context)
 
+        mock_check_env_variable.assert_called_once_with(
+            internal_reconcile_report_phantom.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY
+        )
+        mock_get_configuration.assert_called_once_with(
+            mock_check_env_variable.return_value
+        )
         mock_setMetadata.assert_called_once_with(event, context)
         mock_task.assert_called_once_with(
             job_id,
@@ -95,8 +108,10 @@ class TestInternalReconcileReportPhantom(
     @patch("internal_reconcile_report_phantom.task")
     @patch("orca_shared.database.shared_db.get_configuration")
     @patch("cumulus_logger.CumulusLogger.setMetadata")
+    @patch("internal_reconcile_report_phantom.check_env_variable")
     def test_handler_bad_output_raises_error(
         self,
+        mock_check_env_variable: MagicMock,
         mock_setMetadata: MagicMock,
         mock_get_configuration: MagicMock,
         mock_task: MagicMock,
@@ -111,7 +126,9 @@ class TestInternalReconcileReportPhantom(
         }
         context = Mock()
         mock_task.return_value = {
-            internal_reconcile_report_phantom.OUTPUT_JOB_ID_KEY: random.randint(0, 999),  # nosec
+            internal_reconcile_report_phantom.OUTPUT_JOB_ID_KEY: random.randint(  # nosec
+                0, 999
+            ),
             internal_reconcile_report_phantom.OUTPUT_ANOTHER_PAGE_KEY: False,
             internal_reconcile_report_phantom.OUTPUT_PHANTOMS_KEY: [
                 {
@@ -120,8 +137,12 @@ class TestInternalReconcileReportPhantom(
                     internal_reconcile_report_phantom.PHANTOMS_FILENAME_KEY: uuid.uuid4().__str__(),
                     internal_reconcile_report_phantom.PHANTOMS_KEY_PATH_KEY: uuid.uuid4().__str__(),
                     internal_reconcile_report_phantom.PHANTOMS_ORCA_ETAG_KEY: uuid.uuid4().__str__(),
-                    internal_reconcile_report_phantom.PHANTOMS_ORCA_LAST_UPDATE_KEY: random.randint(0, 999).__str__(),  # nosec
-                    internal_reconcile_report_phantom.PHANTOMS_ORCA_SIZE_KEY: random.randint(0, 999),  # nosec
+                    internal_reconcile_report_phantom.PHANTOMS_ORCA_LAST_UPDATE_KEY: random.randint(  # nosec
+                        0, 999
+                    ).__str__(),
+                    internal_reconcile_report_phantom.PHANTOMS_ORCA_SIZE_KEY: random.randint(  # nosec
+                        0, 999
+                    ),
                 }
             ],
         }
@@ -324,4 +345,49 @@ class TestInternalReconcileReportPhantom(
         self.assertEqual(
             [],
             result,
+        )
+
+    # tests for check_env_variable copied from https://github.com/nasa/cumulus-orca/pull/260/
+    @patch.dict(
+        os.environ,
+        {
+            "ENV_VAR": uuid.uuid4().__str__(),
+        },
+        clear=True,
+    )
+    def test_check_env_variable_happy_path(self):
+
+        """
+        Happy path for check_env_variable().
+        """
+
+        return_value = internal_reconcile_report_phantom.check_env_variable("ENV_VAR")
+        self.assertEqual(os.environ["ENV_VAR"], return_value)
+
+    @patch.dict(
+        os.environ,
+        {
+            "EMPTY_ENV_VAR": "",
+        },
+        clear=True,
+    )
+    @patch("internal_reconcile_report_phantom.LOGGER")
+    def test_check_env_variable_empty_and_no_key(self, mock_logger: MagicMock):
+
+        """
+        Tests that check_env_variable() raises a KeyError if key ENV_VAR is missing or empty.
+        """
+
+        with self.assertRaises(KeyError) as err:
+            internal_reconcile_report_phantom.check_env_variable(
+                "EMPTY_ENV_VAR"
+            )
+        error_message = "Empty value for EMPTY_ENV_VAR"
+        self.assertEqual(err.exception.args[0], error_message)
+        with self.assertRaises(KeyError):
+            internal_reconcile_report_phantom.check_env_variable(
+                "MISSING_ENV_VAR"
+            )
+        mock_logger.error.assert_called_with(
+            "MISSING_ENV_VAR environment value not found."
         )

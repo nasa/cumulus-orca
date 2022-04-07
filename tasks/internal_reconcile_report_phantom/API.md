@@ -5,6 +5,7 @@
   * [query\_db](#internal_reconcile_report_phantom.query_db)
   * [get\_phantoms\_sql](#internal_reconcile_report_phantom.get_phantoms_sql)
   * [create\_http\_error\_dict](#internal_reconcile_report_phantom.create_http_error_dict)
+  * [check\_env\_variable](#internal_reconcile_report_phantom.check_env_variable)
   * [handler](#internal_reconcile_report_phantom.handler)
 
 <a id="internal_reconcile_report_phantom"></a>
@@ -86,6 +87,21 @@ Creates a standardized dictionary for error reporting.
   'requestId' (str)
   'message' (str)
 
+<a id="internal_reconcile_report_phantom.check_env_variable"></a>
+
+#### check\_env\_variable
+
+```python
+def check_env_variable(env_name: str) -> str
+```
+
+Checks for the lambda environment variable.
+
+**Arguments**:
+
+- `env_name` _str_ - The environment variable name set in lambda configuration.
+- `Raises` - KeyError in case the environment variable is not found.
+
 <a id="internal_reconcile_report_phantom.handler"></a>
 
 #### handler
@@ -102,7 +118,9 @@ Entry point for the internal_reconcile_report_phantom Lambda.
 - `event` - See schemas/input.json
 - `context` - An object provided by AWS Lambda. Used for context tracking.
   
-  Environment Vars: See requests_db.py's get_configuration for further details.
+  Environment Vars:
+- `DB_CONNECT_INFO_SECRET_ARN` _string_ - Secret ARN of the AWS secretsmanager secret for connecting to the database.
+  See shared_db.py's get_configuration for further details.
   
 
 **Returns**:

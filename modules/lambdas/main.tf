@@ -142,7 +142,7 @@ resource "aws_lambda_function" "internal_reconcile_report_phantom" {
 
   environment {
     variables = {
-      PREFIX = var.prefix
+      DB_CONNECT_INFO_SECRET_ARN = var.db_connect_info_secret_arn
     }
   }
 }

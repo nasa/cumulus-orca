@@ -1,4 +1,5 @@
 import json
+import os
 from http import HTTPStatus
 from typing import Any, Dict, List, Union
 
@@ -9,6 +10,8 @@ from orca_shared.database import shared_db
 from orca_shared.database.shared_db import retry_operational_error
 from sqlalchemy import text
 from sqlalchemy.future import Engine
+
+OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY = "DB_CONNECT_INFO_SECRET_ARN"  # nosec
 
 OUTPUT_JOB_ID_KEY = "jobId"
 OUTPUT_ANOTHER_PAGE_KEY = "anotherPage"
@@ -47,7 +50,9 @@ def task(
     return {
         OUTPUT_JOB_ID_KEY: job_id,
         OUTPUT_ANOTHER_PAGE_KEY: len(granules) > PAGE_SIZE,
-        OUTPUT_PHANTOMS_KEY: granules[0:PAGE_SIZE],  # we get one extra for anotherPage calculation.
+        OUTPUT_PHANTOMS_KEY: granules[
+            0:PAGE_SIZE
+        ],  # we get one extra for anotherPage calculation.
     }
 
 
@@ -148,6 +153,24 @@ def create_http_error_dict(
     }
 
 
+def check_env_variable(env_name: str) -> str:
+    """
+    Checks for the lambda environment variable.
+    Args:
+        env_name (str): The environment variable name set in lambda configuration.
+    Raises: KeyError in case the environment variable is not found.
+    """
+    try:
+        env_value = os.environ[env_name]
+        if len(env_value) == 0 or env_value is None:
+            raise KeyError(f"Empty value for {env_name}")
+    except KeyError:
+        LOGGER.error(f"{env_name} environment value not found.")
+        raise
+
+    return env_value
+
+
 def handler(
     event: Dict[str, Union[str, int]], context: Any
 ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
@@ -157,7 +180,9 @@ def handler(
         event: See schemas/input.json
         context: An object provided by AWS Lambda. Used for context tracking.
 
-    Environment Vars: See requests_db.py's get_configuration for further details.
+    Environment Vars:
+        DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
+        See shared_db.py's get_configuration for further details.
 
     Returns:
         See schemas/output.json
@@ -181,7 +206,9 @@ def handler(
                 json_schema_exception.__str__(),
             )
 
-        db_connect_info = shared_db.get_configuration()
+        db_connect_info = shared_db.get_configuration(
+            check_env_variable(OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY)
+        )
 
         result = task(
             event["jobId"],
