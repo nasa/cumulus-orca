@@ -71,7 +71,7 @@ resource "aws_lambda_function" "get_current_archive_list" {
   filename         = "${path.module}/../../tasks/get_current_archive_list/get_current_archive_list.zip"
   handler          = "get_current_archive_list.handler"
   memory_size      = var.orca_reconciliation_lambda_memory_size
-  runtime          = "python3.9"
+  runtime          = "python3.7"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/get_current_archive_list/get_current_archive_list.zip")
   tags             = var.tags
   timeout          = var.orca_reconciliation_lambda_timeout
@@ -100,7 +100,7 @@ resource "aws_lambda_function" "perform_orca_reconcile" {
   filename         = "${path.module}/../../tasks/perform_orca_reconcile/perform_orca_reconcile.zip"
   handler          = "perform_orca_reconcile.handler"
   memory_size      = var.orca_reconciliation_lambda_memory_size
-  runtime          = "python3.9"
+  runtime          = "python3.7"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/perform_orca_reconcile/perform_orca_reconcile.zip")
   tags             = var.tags
   timeout          = var.orca_reconciliation_lambda_timeout
@@ -114,6 +114,35 @@ resource "aws_lambda_function" "perform_orca_reconcile" {
     variables = {
       DB_CONNECT_INFO_SECRET_ARN = var.db_connect_info_secret_arn
       INTERNAL_REPORT_QUEUE_URL = var.orca_sqs_internal_report_queue_id
+    }
+  }
+}
+
+# internal_reconcile_report_phantom - Receives job id and page index from end user and returns reporting information of files that have records in the ORCA catalog but are missing from S3 bucket.
+# ==============================================================================
+resource "aws_lambda_function" "internal_reconcile_report_phantom" {
+  ## REQUIRED
+  function_name = "${var.prefix}_internal_reconcile_report_phantom"
+  role          = var.restore_object_role_arn
+
+  ## OPTIONAL
+  description      = "Receives job id and page index from end user and returns reporting information of files that have records in the ORCA catalog but are missing from S3 bucket."
+  filename         = "${path.module}/../../tasks/internal_reconcile_report_phantom/internal_reconcile_report_phantom.zip"
+  handler          = "internal_reconcile_report_phantom.handler"
+  memory_size      = var.orca_reconciliation_lambda_memory_size
+  runtime          = "python3.7"
+  source_code_hash = filebase64sha256("${path.module}/../../tasks/internal_reconcile_report_phantom/internal_reconcile_report_phantom.zip")
+  tags             = var.tags
+  timeout          = var.orca_reconciliation_lambda_timeout
+
+  vpc_config {
+    subnet_ids         = var.lambda_subnet_ids
+    security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
+  }
+
+  environment {
+    variables = {
+      DB_CONNECT_INFO_SECRET_ARN = var.db_connect_info_secret_arn
     }
   }
 }
@@ -409,7 +438,7 @@ resource "aws_lambda_function" "orca_catalog_reporting" {
   role          = var.restore_object_role_arn
 
   ## OPTIONAL
-  description      = "Returns reconcilliation report sample data."
+  description      = "Returns reconcilliation report data."
   filename         = "${path.module}/../../tasks/orca_catalog_reporting/orca_catalog_reporting.zip"
   handler          = "orca_catalog_reporting.handler"
   memory_size      = var.orca_ingest_lambda_memory_size

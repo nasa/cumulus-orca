@@ -367,7 +367,7 @@ def generate_temporary_s3_column_list(manifest_file_schema: str) -> str:
         "LastModifiedDate": "last_update timestamptz",
         "ETag": "etag text",
         "StorageClass": "storage_class text",
-        "IsDeleteMarker": "delete_flag bool",
+        "IsDeleteMarker": "delete_marker bool",
         "IsLatest": "is_latest bool",
     }
     manifest_file_schema = manifest_file_schema.replace(" ", "")
@@ -426,8 +426,8 @@ def translate_s3_import_to_partitioned_data_sql() -> TextClause:
     """
     return text(
         f"""
-        INSERT INTO orca.reconcile_s3_object (job_id, orca_archive_location, key_path, etag, last_update, size_in_bytes, storage_class, delete_flag)
-            SELECT :job_id, orca_archive_location, key_path, etag, last_update, size_in_bytes, storage_class, delete_flag
+        INSERT INTO orca.reconcile_s3_object (job_id, orca_archive_location, key_path, etag, last_update, size_in_bytes, storage_class, delete_marker)
+            SELECT :job_id, orca_archive_location, key_path, etag, last_update, size_in_bytes, storage_class, delete_marker
             FROM s3_import
             WHERE is_latest = TRUE
         """  # nosec
