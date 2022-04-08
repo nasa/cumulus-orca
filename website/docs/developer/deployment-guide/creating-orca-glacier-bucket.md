@@ -120,16 +120,17 @@ an example of a justification.
 #### Bucket Names(s):
 
 This is the name of the ORCA archive bucket created in the Disaster Recover OU.
-Below is an example name of an ORCA archive bucket.
+Below is an example name of an ORCA archive bucket and ORCA report bucket.
 
 > sandbox-orca-glacier-archive
+> sandbox-orca-reports
 
 
 #### Policy:
 
 The policy section is the JSON policy requested for the ORCA archive bucket in
 the Disaster Recovery OU. The policy shown below can be used with some minor
-modifications.
+modifications, which will be detailed below.
 
 ```json
 {
@@ -146,7 +147,9 @@ modifications.
         "s3:RestoreObject",
         "s3:GetBucket*",
         "s3:ListBucket",
-        "s3:PutBucketNotification"
+        "s3:PutBucketNotification",
+        "s3:GetInventoryConfiguration",
+        "s3:PutInventoryConfiguration"
       ],
       "Resource": [
         "arn:aws:s3:::sandbox-orca-glacier-archive",
@@ -173,14 +176,12 @@ modifications.
 }
 ```
 
-Change the values of the Principal and Resource keys to utilize the example above
-for your JSON policy.
-
 The Principal value is the AWS root user for your Cumulus application that will
 access the ORCA archive bucket. The value for this resource can be retrieved by
 performing the following.
 
-Using your AWS CLI client run the following command to get the account number:
+First, change your connection to the Cumulus account/OU rather than the Disaster Recovery account/OU.
+Then, using your AWS CLI client run the following command to get the account number:
 
 ```bash
 aws sts get-caller-identity
@@ -192,7 +193,7 @@ aws sts get-caller-identity
 }
 ```
 
-Replace the value of `arn:aws:iam::909121343565:root` with the value of your
+Replace the number in `arn:aws:iam::909121343565:root` with the value of your
 account number.
 
 The Resource value is the bucket and bucket paths that the Cumulus application

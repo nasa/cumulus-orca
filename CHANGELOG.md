@@ -36,9 +36,11 @@ and includes an additional section for migration notes.
 
 ### Migration Notes
 
-- Create a new bucket `PREFIX-orca-reports` in the same account and region as your other buckets.
+- Create a new bucket `PREFIX-orca-reports` in the same account and region as your primary orca bucket.
   - Give the bucket a lifecycle configuration with an expiration period of 30 days.
   - Add cross account policy similar to https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/deployment-s3-bucket/
+  - Modify the permissions for your primary Orca bucket.
+    - Under the `Cross Account Access` policy, add `s3:GetInventoryConfiguration` and `s3:PutInventoryConfiguration` to Actions.
   - Update the `buckets` variable in your `tfvars` file by adding the bucket.
     ```
     buckets = {
