@@ -6,6 +6,7 @@
       "Parameters": {
         "event.$": "$",
         "task_config": {
+        }
       },
       "Type": "Task",
       "Resource": "${orca_lambda_get_current_archive_list_arn}",
@@ -36,6 +37,7 @@
       "Parameters": {
         "event.$": "$",
         "task_config": {
+        }
       },
       "Type": "Task",
       "Resource": "${orca_lambda_perform_orca_reconcile_arn}",

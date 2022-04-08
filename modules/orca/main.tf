@@ -59,6 +59,7 @@ module "orca_lambdas_secondary" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
+  buckets                                              = var.buckets
   lambda_subnet_ids                                    = var.lambda_subnet_ids
   prefix                                               = var.prefix
   ## OPTIONAL
