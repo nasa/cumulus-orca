@@ -183,12 +183,14 @@ Using the AWS Lambda interface for db_deploy perform the following steps:
 
 1. Make sure the following environment variable is set for the Lambda.
    ```
-   PREFIX           - Your var.prefix value from variables.tfvars
+   DB_CONNECT_INFO_SECRET_ARN   - Your secretsmanager secret ARN needed for connecting to the DB.
    AWS_REGION       - automatically set by AWS as a defined runtime variable
    ```
-2. Create an empty JSON test event.
-   ```
-   {}
+2. Create a JSON test event as shown below. Replace `prefix` with the one you used.
+   ```json
+   {
+   "orcaBuckets": ["prefix-orca-primary"]
+   }  
    ```
 3. Perform validation of the migration similar to the tests and commands provided
    in the [manual test documentation](test/manual_tests/README.md) for validating
