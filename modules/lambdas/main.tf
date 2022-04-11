@@ -156,7 +156,7 @@ resource "aws_lambda_function" "internal_reconcile_report_phantom" {
 resource "aws_lambda_function" "extract_filepaths_for_granule" {
   ## REQUIRED
   function_name = "${var.prefix}_extract_filepaths_for_granule"
-  role          = var.restore_object_role_arn
+  role		= aws_iam_role.extract_filepaths_for_granule_iam_role.arn
 
   ## OPTIONAL
   description      = "Extracts bucket info and granules filepath from the CMA for ORCA request_files lambda."
@@ -172,6 +172,65 @@ resource "aws_lambda_function" "extract_filepaths_for_granule" {
     subnet_ids         = var.lambda_subnet_ids
     security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
   }
+}
+
+data "aws_iam_policy_document" "assume_lambda_role_extract" {
+  statement {
+
+    principals {
+      type = "Service"
+      identifiers = [
+        "lambda.amazonaws.com",
+        "states.amazonaws.com"
+      ]
+    }
+
+    actions = ["sts:AssumeRole"]
+
+  }
+}
+
+# Permissions needed to run the function successfully
+data "aws_iam_policy_document" "extract_filepaths_for_granule_policy_document" {
+  statement {
+    actions = [
+      "lambda:Invoke*",
+      "s3:PutObject"
+    ]
+    resources = [
+      "arn:aws:s3:::*",
+      "arn:aws:lambda:*:*:*extract_filepaths_for_granule"
+    ]
+    effect = "Allow"
+  }
+  statement {
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+      "ec2:CreateNetworkInterface",
+      "ec2:DescribeNetworkInterfaces",
+      "ec2:DeleteNetworkInterface",
+      "ec2:AssignPrivateIpAddresses",
+      "ec2:UnassignPrivateIpAddresses"
+    ]
+    resources = ["*"]
+    effect = "Allow"
+  }
+}
+
+resource "aws_iam_role" "extract_filepaths_for_granule_iam_role" {
+  name                 = "${var.prefix}_extract_filepaths_for_granule_role"
+  assume_role_policy   = data.aws_iam_policy_document.assume_lambda_role_extract.json
+  permissions_boundary = var.permissions_boundary_arn
+  tags                 = var.tags
+}
+
+
+resource "aws_iam_role_policy" "extract_filepaths_for_granule_policy" {
+  name   = "${var.prefix}_extract_filepaths_for_granule_policy"
+  role   = aws_iam_role.extract_filepaths_for_granule_iam_role.id
+  policy = data.aws_iam_policy_document.extract_filepaths_for_granule_policy_document.json
 }
 
 
