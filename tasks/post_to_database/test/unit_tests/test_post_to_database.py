@@ -5,6 +5,7 @@ Description:  Unit tests for test_post_to_database.py.
 """
 import datetime
 import json
+import os
 import random
 import unittest
 import uuid
@@ -27,6 +28,13 @@ class TestPostToDatabase(
     @patch("post_to_database.task")
     @patch("orca_shared.database.shared_db.get_configuration")
     @patch("cumulus_logger.CumulusLogger.setMetadata")
+    @patch.dict(
+        os.environ,
+        {
+            "DB_CONNECT_INFO_SECRET_ARN": "test"
+        },
+        clear=True,
+     )
     def test_handler_happy_path(
         self,
         mock_set_metadata: MagicMock,

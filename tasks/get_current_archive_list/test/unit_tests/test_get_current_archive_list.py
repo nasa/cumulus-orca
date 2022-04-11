@@ -765,7 +765,7 @@ class TestGetCurrentArchiveList(
             "IsDeleteMarker,StorageClass, blah, Size, Key, IsLatest,Extra, Bucket,LastModifiedDate,ETag"
         )
         self.assertEqual(
-            "delete_flag bool, storage_class text, junk2 text, size_in_bytes bigint, key_path text, is_latest bool, "
+            "delete_marker bool, storage_class text, junk2 text, size_in_bytes bigint, key_path text, is_latest bool, "
             "junk6 text, orca_archive_location text, last_update timestamptz, etag text",
             result,
         )
@@ -777,7 +777,7 @@ class TestGetCurrentArchiveList(
         """
         Happy path for pulling secret values from secretsmanager
         """
-        mock_secret_arn = Mock()
+        mock_s3_credentials_secret_arn = Mock()
         region = uuid.uuid4().__str__()
         s3_access_key = uuid.uuid4().__str__()
         s3_secret_key = uuid.uuid4().__str__()
@@ -800,12 +800,12 @@ class TestGetCurrentArchiveList(
                 result_access_key,
                 result_secret_key,
             ) = get_current_archive_list.get_s3_credentials_from_secrets_manager(
-                mock_secret_arn
+                mock_s3_credentials_secret_arn
             )
 
         mock_client.assert_called_once_with("secretsmanager", region_name=region)
         mock_secrets_manager.get_secret_value.assert_called_once_with(
-            SecretId=mock_secret_arn
+            SecretId=mock_s3_credentials_secret_arn
         )
         self.assertEqual(s3_access_key, result_access_key)
         self.assertEqual(s3_secret_key, result_secret_key)
@@ -817,7 +817,7 @@ class TestGetCurrentArchiveList(
         """
         When returns are unset or empty strings, should raise KeyError.
         """
-        mock_secret_arn = Mock()
+        mock_s3_credentials_secret_arn = Mock()
         s3_access_key = uuid.uuid4().__str__()
         s3_secret_key = uuid.uuid4().__str__()
         region = uuid.uuid4().__str__()
@@ -843,7 +843,7 @@ class TestGetCurrentArchiveList(
                     }
                     with self.assertRaises(ValueError) as cm:
                         get_current_archive_list.get_s3_credentials_from_secrets_manager(
-                            mock_secret_arn
+                            mock_s3_credentials_secret_arn
                         )
                     self.assertEqual(
                         f"{secret_key} secret is not set.",
@@ -855,7 +855,7 @@ class TestGetCurrentArchiveList(
                     }
                     with self.assertRaises(ValueError) as cm:
                         get_current_archive_list.get_s3_credentials_from_secrets_manager(
-                            mock_secret_arn
+                            mock_s3_credentials_secret_arn
                         )
                     self.assertEqual(
                         f"{secret_key} secret is not set.",
@@ -946,8 +946,10 @@ class TestGetCurrentArchiveList(
     @patch("get_current_archive_list.get_s3_credentials_from_secrets_manager")
     @patch("get_current_archive_list.LOGGER")
     @patch("get_current_archive_list.task")
+    @patch("get_current_archive_list.check_env_variable")
     def test_handler_happy_path(
         self,
+        mock_check_env_variable: MagicMock,
         mock_task: MagicMock,
         mock_LOGGER: MagicMock,
         mock_get_s3_credentials_from_secrets_manager: MagicMock,
@@ -957,7 +959,8 @@ class TestGetCurrentArchiveList(
         """
         Happy path for handler assembling information to call Task.
         """
-        secret_arn = uuid.uuid4().__str__()
+        mock_s3_credentials_secret_arn = uuid.uuid4().__str__()
+        mock_db_connect_info_secret_arn = uuid.uuid4().__str__()
         mock_report_bucket_aws_region = Mock()
         mock_report_bucket_name = Mock()
         mock_manifest_key_path = Mock()
@@ -994,16 +997,18 @@ class TestGetCurrentArchiveList(
         with patch.dict(
             os.environ,
             {
-                get_current_archive_list.OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY: secret_arn,
+                get_current_archive_list.OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY: mock_s3_credentials_secret_arn,
                 get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY: report_queue_url,
+                get_current_archive_list.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY: mock_db_connect_info_secret_arn,
+
             },
         ):
             result = get_current_archive_list.handler(event, mock_context)
 
         mock_LOGGER.setMetadata.assert_called_once_with(event, mock_context)
-        mock_get_s3_credentials_from_secrets_manager.assert_called_once_with(secret_arn)
-        mock_get_configuration.assert_called_once_with()
-        mock_get_message_from_queue.assert_called_once_with(report_queue_url)
+        mock_get_s3_credentials_from_secrets_manager.assert_called_once_with(mock_check_env_variable(get_current_archive_list.OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY))
+        mock_get_configuration.assert_called_once_with(mock_check_env_variable(get_current_archive_list.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY))
+        mock_get_message_from_queue.assert_called_once_with(mock_check_env_variable(get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY))
         mock_task.assert_called_once_with(
             mock_report_bucket_aws_region,
             mock_report_bucket_name,
@@ -1019,8 +1024,17 @@ class TestGetCurrentArchiveList(
     @patch("get_current_archive_list.get_s3_credentials_from_secrets_manager")
     @patch("get_current_archive_list.LOGGER")
     @patch("get_current_archive_list.task")
+    @patch("get_current_archive_list.check_env_variable")
+    @patch.dict(
+        os.environ,
+        {
+            "DB_CONNECT_INFO_SECRET_ARN": "test"
+        },
+        clear=True,
+     )
     def test_handler_rejects_bad_output(
         self,
+        mock_check_env_variable: MagicMock,
         mock_task: MagicMock,
         mock_LOGGER: MagicMock,
         mock_get_s3_credentials_from_secrets_manager: MagicMock,
@@ -1030,7 +1044,7 @@ class TestGetCurrentArchiveList(
         """
         Violating output.json schema should raise an error.
         """
-        secret_arn = uuid.uuid4().__str__()
+        mock_s3_credentials_secret_arn = uuid.uuid4().__str__()
         mock_report_bucket_aws_region = Mock()
         mock_report_bucket_name = Mock()
         mock_manifest_key_path = Mock()
@@ -1060,14 +1074,14 @@ class TestGetCurrentArchiveList(
             with patch.dict(
                 os.environ,
                 {
-                    get_current_archive_list.OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY: secret_arn,
+                    get_current_archive_list.OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY: mock_s3_credentials_secret_arn,
                     get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY: report_queue_url,
                 },
             ):
                 get_current_archive_list.handler(event, mock_context)
 
         mock_LOGGER.setMetadata.assert_called_once_with(event, mock_context)
-        mock_get_message_from_queue.assert_called_once_with(report_queue_url)
+        mock_get_message_from_queue.assert_called_once_with(mock_check_env_variable(get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY))
         mock_task.assert_called_once_with(
             mock_report_bucket_aws_region,
             mock_report_bucket_name,
@@ -1080,4 +1094,48 @@ class TestGetCurrentArchiveList(
             f"data must contain ['{get_current_archive_list.OUTPUT_JOB_ID_KEY}', "
             f"'{get_current_archive_list.OUTPUT_ORCA_ARCHIVE_LOCATION_KEY}'] properties",
             str(cm.exception),
+        )
+    
+    @patch.dict(
+        os.environ,
+        {
+             "ENV_VAR": uuid.uuid4().__str__(),
+        },
+        clear=True,
+     )
+    def test_check_env_variable_happy_path(self):
+
+        """
+        Happy path for check_env_variable().
+        """
+
+        return_value = get_current_archive_list.check_env_variable("ENV_VAR")
+        self.assertEqual(os.environ["ENV_VAR"], return_value)
+
+    @patch.dict(
+        os.environ,
+        {
+             "EMPTY_ENV_VAR": "",
+        },
+        clear=True,
+     )
+    @patch("get_current_archive_list.LOGGER")
+    def test_check_env_variable_empty_and_no_key(self, mock_logger: MagicMock):
+
+        """
+        Tests that check_env_variable() raises a KeyError if key ENV_VAR is missing or empty.
+        """
+
+        with self.assertRaises(KeyError) as err:
+            get_current_archive_list.check_env_variable(
+                "EMPTY_ENV_VAR"
+            )
+        error_message = "Empty value for EMPTY_ENV_VAR"
+        self.assertEqual(err.exception.args[0], error_message)
+        with self.assertRaises(KeyError):
+            get_current_archive_list.check_env_variable(
+                "MISSING_ENV_VAR"
+            )
+        mock_logger.error.assert_called_with(
+            "MISSING_ENV_VAR environment value not found."
         )

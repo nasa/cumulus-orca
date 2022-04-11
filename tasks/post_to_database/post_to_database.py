@@ -5,6 +5,7 @@ Description:  Pulls entries from a queue and posts them to a DB.
 """
 import datetime
 import json
+import os
 from typing import Any, List, Dict, Optional
 
 # noinspection SpellCheckingInspection
@@ -313,10 +314,20 @@ def handler(event: Dict[str, List], context) -> None:
                 'messageAttributes' (Dict): A dict with the following keys defined in the functions that write to queue.
                     'RequestMethod' (str): Matches to a shared_recovery.RequestMethod.
         context: An object passed through by AWS. Used for tracking.
-    Environment Vars: See shared_db.py's get_configuration for further details.
+    Environment Vars: 
+        DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
+        See shared_db.py's get_configuration for further details.
     """
     LOGGER.setMetadata(event, context)
 
-    db_connect_info = shared_db.get_configuration()
+    # get the secret ARN from the env variable
+    try:
+        db_connect_info_secret_arn = os.environ["DB_CONNECT_INFO_SECRET_ARN"]
+    except KeyError as key_error:
+        LOGGER.error(
+            "DB_CONNECT_INFO_SECRET_ARN environment value not found."
+        )
+        raise
+    db_connect_info = shared_db.get_configuration(db_connect_info_secret_arn)
 
     task(event["Records"], db_connect_info)

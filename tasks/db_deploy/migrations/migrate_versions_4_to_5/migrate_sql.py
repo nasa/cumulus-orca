@@ -54,10 +54,6 @@ def create_extension() -> TextClause:
         """
             -- Create extension
             CREATE EXTENSION IF NOT EXISTS aws_s3 CASCADE;
-
-            -- Comment
-            COMMENT ON EXTENSION aws_s3
-              IS 'Custom AWS extension that allows for data COPY from and to an S3 bucket object.';
         """
     )
 
