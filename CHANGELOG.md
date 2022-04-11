@@ -41,6 +41,28 @@ and includes an additional section for migration notes.
   - Add cross account policy similar to https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/deployment-s3-bucket/
   - Modify the permissions for your primary Orca bucket.
     - Under the `Cross Account Access` policy, add `s3:GetInventoryConfiguration` and `s3:PutInventoryConfiguration` to Actions.
+    - Add an additional `Statement` for each Orca Glacier bucket, replacing `PREFIX`, `YOUR DR ACCOUNT ID` and `ORCA GLACIER BUCKET NAME` as needed:
+      ```
+      {
+          "Sid": "Inventory",
+          "Effect": "Allow",
+          "Principal": {
+              "Service": "s3.amazonaws.com"
+          },
+          "Action": "s3:PutObject",
+          "Resource": "arn:aws:s3:::PREFIX-orca-reports/*",
+          "Condition": {
+              "StringEquals": {
+                  "aws:PrincipalOrgID": "o-j2j2wd84pp",
+                  "s3:x-amz-acl": "bucket-owner-full-control",
+                  "aws:SourceAccount": "YOUR DR ACCOUNT ID"
+              },
+              "ArnLike": {
+                  "aws:SourceArn": "arn:aws:s3:::ORCA GLACIER BUCKET NAME"
+              }
+          }
+      }
+      ```
   - Update the `buckets` variable in your `tfvars` file by adding the bucket.
     ```
     buckets = {
