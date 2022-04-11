@@ -1,6 +1,5 @@
 # Local Variables
 locals {
-  tags         = merge(var.tags, { Deployment = var.prefix })
   orca_buckets = [for k, v in var.buckets : v.name if v.type == "orca"]
 }
 
@@ -146,13 +145,17 @@ resource "aws_lambda_function" "extract_filepaths_for_granule" {
   }
 }
 
-
 data "aws_iam_policy_document" "assume_lambda_role_extract" {
   statement {
+
     principals {
-      type = "AWS"
-      identifiers = ["*"]
+      type = "Service"
+      identifiers = [
+        "lambda.amazonaws.com",
+        "states.amazonaws.com"
+      ]
     }
+
     actions = ["sts:AssumeRole"]
 
   }
@@ -163,12 +166,26 @@ data "aws_iam_policy_document" "extract_filepaths_for_granule_policy_document" {
   statement {
     actions = [
       "lambda:Invoke*",
-      "s3:PutObject*"
+      "s3:PutObject"
     ]
     resources = [
       "arn:aws:s3:::*",
       "arn:aws:lambda:*:*:*extract_filepaths_for_granule"
     ]
+    effect = "Allow"
+  }
+  statement {
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+      "ec2:CreateNetworkInterface",
+      "ec2:DescribeNetworkInterfaces",
+      "ec2:DeleteNetworkInterface",
+      "ec2:AssignPrivateIpAddresses",
+      "ec2:UnassignPrivateIpAddresses"
+    ]
+    resources = ["*"]
     effect = "Allow"
   }
 }
@@ -177,7 +194,7 @@ resource "aws_iam_role" "extract_filepaths_for_granule_iam_role" {
   name                 = "${var.prefix}_extract_filepaths_for_granule_role"
   assume_role_policy   = data.aws_iam_policy_document.assume_lambda_role_extract.json
   permissions_boundary = var.permissions_boundary_arn
-  tags                 = local.tags
+  tags                 = var.tags
 }
 
 
@@ -186,14 +203,6 @@ resource "aws_iam_role_policy" "extract_filepaths_for_granule_policy" {
   role   = aws_iam_role.extract_filepaths_for_granule_iam_role.id
   policy = data.aws_iam_policy_document.extract_filepaths_for_granule_policy_document.json
 }
-
-
-# Attaches permissions needed to deploy the Lambda
-resource "aws_iam_role_policy_attachment" "extract_filepaths_for_granule_iam_policy_attachment" {
-  role	     = aws_iam_role.extract_filepaths_for_granule_iam_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
-}
-
 
 
 # request_files - Requests files from ORCA S3 Glacier
