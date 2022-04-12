@@ -80,7 +80,7 @@ resource "aws_lambda_function" "extract_filepaths_for_granule" {
 The lambda handler event excepts a dictionary having a list of granules as input. Check the input schema [here](https://github.com/nasa/cumulus-orca/blob/master/tasks/extract_filepaths_for_granule/schemas/input.json) and the configuration schema [here](https://github.com/nasa/cumulus-orca/blob/master/tasks/extract_filepaths_for_granule/schemas/config.json). An example input to the Lambda function can be seen below.
 ```
 {
-      "payload":{
+   "payload":{
       "granules":[
          {
             "granuleId":"MOD09GQ.A0219114.N5aUCG.006.0656338553321",
@@ -109,40 +109,40 @@ The lambda handler event excepts a dictionary having a list of granules as input
                }
             ]
          }
-      ]},
-      "task_config":{
-         "buckets": {
-            "protected": {"name": "sndbx-cumulus-protected", "type": "protected"},
-            "internal": {"name": "sndbx-cumulus-internal", "type": "internal"},
-            "private": {"name": "sndbx-cumulus-private", "type": "private"},
-            "public": {"name": "sndbx-cumulus-public", "type": "public"}
+   ]},
+   "task_config":{
+      "buckets": {
+         "protected": {"name": "sndbx-cumulus-protected", "type": "protected"},
+         "internal": {"name": "sndbx-cumulus-internal", "type": "internal"},
+         "private": {"name": "sndbx-cumulus-private", "type": "private"},
+         "public": {"name": "sndbx-cumulus-public", "type": "public"}
+      },
+      "fileBucketMaps":[
+         {
+            "regex":".*.h5$",
+            "sampleFileName":"L0A_HR_RAW_product_0010-of-0420.h5",
+            "bucket":"protected"
          },
-         "fileBucketMaps":[
-            {
-               "regex":".*.h5$",
-               "sampleFileName":"L0A_HR_RAW_product_0010-of-0420.h5",
-               "bucket":"protected"
-            },
-            {
-               "regex":".*.cmr.xml$",
-               "sampleFileName":"L0A_HR_RAW_product_0010-of-0420.iso.xml",
-               "bucket":"protected"
-            },
-            {
-               "regex":".*.h5.mp$",
-               "sampleFileName":"L0A_HR_RAW_product_0001-of-0019.h5.mp",
-               "bucket":"public"
-            },
-            {
-               "regex":".*.cmr.json$",
-               "sampleFileName":"L0A_HR_RAW_product_0001-of-0019.cmr.json",
-               "bucket":"public"
-            }
-         ],
-         "excludeFileTypes":[
-            ".cmr"
-         ]
-      }
+         {
+            "regex":".*.cmr.xml$",
+            "sampleFileName":"L0A_HR_RAW_product_0010-of-0420.iso.xml",
+            "bucket":"protected"
+         },
+         {
+            "regex":".*.h5.mp$",
+            "sampleFileName":"L0A_HR_RAW_product_0001-of-0019.h5.mp",
+            "bucket":"public"
+         },
+         {
+            "regex":".*.cmr.json$",
+            "sampleFileName":"L0A_HR_RAW_product_0001-of-0019.cmr.json",
+            "bucket":"public"
+         }
+      ],
+      "excludeFileTypes":[
+         ".cmr"
+      ]
+   }
 }
 ```
 ## Output
