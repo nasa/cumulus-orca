@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/internal_reconcile_report_orphan/schemas/output.json",
+  "title": "internal_reconcile_report_orphan Lambda Output",
+  "description": "The output for the internal_reconcile_report_orphan Lambda.",
+  "type": "object",
+  "required": [
+    "jobId",
+    "anotherPage",
+    "orphans"
+  ],
+  "properties": {
+      "jobId": {
+          "type": "integer",
+          "description": "The unique ID of the reconciliation job."
+        },
+      "anotherPage": {
+        "description": "Indicates if more results can be retrieved on another page.",
+        "type": "boolean"
+      },
+      "orphans": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "keyPath",
+            "Etag",
+            "orcaLastUpdate",
+            "orcaSize"
+          ],
+        "properties": {
+          "keyPath": {
+              "type": "string",
+              "description": "key path and filename of the object."
+            },
+          "Etag": {
+              "type": "string",
+              "description": "etag of the object."
+            },
+          "lastUpdate": {
+            "type": "integer",
+            "description": "The time, in milliseconds since 1 January 1970 UTC, of last update of the object."
+          },
+          "sizeInBytes": {
+            "type": "integer",
+            "description": "Size in bytes of the object."
+        },
+          "storageClass": {
+            "type": "string",
+            "description": "AWS storage class the object is in."
+        }
+      }
+    }
+  }
+}
+}
