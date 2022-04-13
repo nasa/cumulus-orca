@@ -18,7 +18,7 @@ fi
 cd ../../
 
 failure=0
-for TASK in $(ls -d tasks/* | egrep -v "package|internal_reconcile_report_mismatch") #todo update once the lambdas are created
+for TASK in $(ls -d tasks/* | egrep -v "package|internal_reconcile_report_mismatch|internal_reconcile_report_orphan") #todo update once the lambdas are created
 do
   echo "Building ${TASK}"
   cd ${TASK}
