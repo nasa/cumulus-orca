@@ -99,6 +99,11 @@ variable "orca_sqs_status_update_queue_id" {
   description = "The URL of the SQS queue that recoery status updates are read from/posted to."
 }
 
+variable "permissions_boundary_arn" {
+  type        = string
+  description = "AWS ARN value for the permission boundary."
+}
+
 variable "restore_object_role_arn" {
   type        = string
   description = "AWS ARN of the restore_object_role."
