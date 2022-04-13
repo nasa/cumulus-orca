@@ -32,15 +32,13 @@ Fully defined json schemas written in the schema of https://json-schema.org/ can
 {
   "jobId": 123,
   "anotherPage": false,
-  "mismatches": [
+  "orphans": [
     {
-      "collectionId": "MOD09GQ___061",
-      "granuleId": "MOD09GQ.A2017025.h21v00.006.2017034065109",
-      "filename": "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
-      "key_path": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
-      "orcaEtag": "d41d8cd98f00b204e9800998ecf8427",
-      "orcaLastUpdate": "2020-01-01T23:00:00Z",
-      "orcaSize": 6543277389
+      "keyPath": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+      "etag": "d41d8cd98f00b204e9800998ecf8427",
+      "lastUpdate": "2020-01-01T23:00:00Z",
+      "sizeInBytes": 6543277389,
+      "storageClass": "glacier"
     }
   ]
 }
