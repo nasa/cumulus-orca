@@ -148,6 +148,41 @@ Based on this research, it looks like using lambda as containers is possible whe
 
 If the above issues are solved, then implementing lambda as container is recommended. One way to use private ECR repo is to use a script or terraform code if possible that will create the ECR repo and then build, tag and push the container image to that repo. One that is done, update the terraform lambda modules and deploy the lambda. An additional [card](https://bugs.earthdata.nasa.gov/browse/ORCA-375) has been created to look into this way.
 
+
+### Modifying get_current_archive_list and perform_orca_reconcile
+
+The Orca Internal Reconciliation workflow lambdas require an alternative approach.
+- The maximum time limit for lambdas is 15 minutes. These lambdas may take a significant amount of time, and should not be subject to this limitation.
+
+- Code changes
+  - Merge `get_current_archive_list` and `perform_orca_reconcile` into one codebase.
+  - Wrap functionality in a loop that will process the internal-report queue until no entries remain.
+  - Since ECS does not support timeout, create an overarching timing mechanic that exits if an infinite loop occurs while processing a queue entry.
+    - Alternatively, a side-program could manually stop the task if it exceeds its' time limit.
+    - Remember that in addition to processing time, Aurora Serverless can take up to 5 minutes to spin up.
+  - Raise the internal-report queue's `visibility_timeout_seconds` to the expected timeout.
+  
+
+
+
+- Follow prior instructions up to the Terraform deployment.
+- Create an IAM role with the permissions needed. Use case should be `EC2`. Note that developers do not have this capability.
+- Create a task definition for the image.
+  - `FARGATE` launch type.
+  - `PREFIX-orca-internal-reconciliation-task` name
+  - `PREFIX-ecs-task-role` Task role
+  - `Linux` Operating system family
+  - Use the previously created IAM role for Task execution IAM role
+  - Smallest options for Task memory and Task CPU
+  - Add container
+    - `PREFIX-orca-internal-reconciliation-container` name
+    - Link to the uploaded image for Image
+- Create an ECS cluster
+  - TODO
+
+
+
+
 ##### References
 - https://aws.amazon.com/blogs/aws/new-for-aws-lambda-container-image-support/
 - https://aws.amazon.com/blogs/compute/optimizing-lambda-functions-packaged-as-container-images/
