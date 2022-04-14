@@ -161,10 +161,8 @@ The Orca Internal Reconciliation workflow lambdas require an alternative approac
     - Alternatively, a side-program could manually stop the task if it exceeds its' time limit.
     - Remember that in addition to processing time, Aurora Serverless can take up to 5 minutes to spin up.
   - Raise the internal-report queue's `visibility_timeout_seconds` to the expected timeout.
+  - Environment variables can be passed in at task definition, or when the task is run. The former should be sufficient.
   
-
-
-
 - Follow prior instructions up to the Terraform deployment.
 - Create an IAM role with the permissions needed. Use case should be `EC2`. Note that developers do not have this capability.
 - Create a task definition for the image.
@@ -178,7 +176,8 @@ The Orca Internal Reconciliation workflow lambdas require an alternative approac
     - `PREFIX-orca-internal-reconciliation-container` name
     - Link to the uploaded image for Image
 - Create an ECS cluster
-  - TODO
+
+TODO: Demo this with a simple service that posts to a queue.
 
 
 
