@@ -62,7 +62,7 @@ Currently NGAP only allows developers to create a `private` ECR repository which
 
 Details on creating the prototype are shown below:
 
-1. Create an ECR repository from AWS CLI if needed as shown. Check [here](https://docs.aws.amazon.com/AmazonECR/latest/userguide/getting-started-cli.html#cli-create-repository) for additional details on this.
+1. Create an [ECR](https://us-west-2.console.aws.amazon.com/ecr/repositories) repository from AWS CLI if needed as shown. Check [here](https://docs.aws.amazon.com/AmazonECR/latest/userguide/getting-started-cli.html#cli-create-repository) for additional details on this.
 
 ```bash
 aws ecr create-repository \
@@ -90,7 +90,7 @@ COPY requirements.txt  .
 RUN  pip3 install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
 
 # Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
-CMD [ "test.hambda_handler" ]
+CMD [ "test.lambda_handler" ]
 
 ```
 
@@ -162,7 +162,26 @@ The Orca Internal Reconciliation workflow lambdas require an alternative approac
     - Remember that in addition to processing time, Aurora Serverless can take up to 5 minutes to spin up.
   - Raise the internal-report queue's `visibility_timeout_seconds` to the expected timeout.
   - Environment variables can be passed in at task definition, or when the task is run. The former should be sufficient.
-  
+
+- Use an alternative Dockerfile
+  ```yaml
+  FROM python:3.8-slim-buster
+
+  WORKDIR /src
+
+  # Copy function code
+  COPY main.py main.py
+  COPY sqs_library.py sqs_library.py
+
+  # Install the function's dependencies using file requirements.txt
+  # from your project folder.
+
+  COPY requirements.txt  .
+  RUN  pip3 install -r requirements.txt
+  COPY . .
+
+  CMD ["python", "main.py"]
+  ```
 - Follow prior instructions up to the Terraform deployment.
 - Create an IAM role with the permissions needed. Use case should be `EC2`. Note that developers do not have this capability.
 - Create a task definition for the image.
@@ -170,15 +189,15 @@ The Orca Internal Reconciliation workflow lambdas require an alternative approac
   - `PREFIX-orca-internal-reconciliation-task` name
   - `PREFIX-ecs-task-role` Task role
   - `Linux` Operating system family
-  - Use the previously created IAM role for Task execution IAM role
+  - Task Execution Role must be able to pull container images and publish container logs.
+  - Use the previously created IAM role for Task role
   - Smallest options for Task memory and Task CPU
   - Add container
     - `PREFIX-orca-internal-reconciliation-container` name
     - Link to the uploaded image for Image
 - Create an ECS cluster
-
-TODO: Demo this with a simple service that posts to a queue.
-
+  - Documentation on creation suggests that VPC is required, but developers are not authorized to create.
+- The task can now be run in the cluster. Current tests halt at this point, as the available role cannot pull secrets.
 
 
 
