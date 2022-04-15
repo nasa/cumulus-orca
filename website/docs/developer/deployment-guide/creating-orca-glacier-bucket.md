@@ -231,23 +231,23 @@ modifications, which will be detailed below.
       ]
     },
     {
-			"Sid": "Inventory-sandbox-orca-glacier-archive",
-			"Effect": "Allow",
-			"Principal": {
-				"Service": "s3.amazonaws.com"
-			},
-			"Action": "s3:PutObject",
-			"Resource": "arn:aws:s3:::sandbox-orca-glacier-archive/*",
-			"Condition": {
-				"StringEquals": {
-					"s3:x-amz-acl": "bucket-owner-full-control",
-					"aws:SourceAccount": "782417781503"
-				},
-				"ArnLike": {
-					"aws:SourceArn": "arn:aws:s3:::sandbox-orca-glacier-archive"
-				}
-			}
-		}
+      "Sid": "Inventory-sandbox-orca-glacier-archive",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "s3.amazonaws.com"
+      },
+      "Action": "s3:PutObject",
+      "Resource": "arn:aws:s3:::sandbox-orca-glacier-archive/*",
+      "Condition": {
+        "StringEquals": {
+      	  "s3:x-amz-acl": "bucket-owner-full-control",
+      	  "aws:SourceAccount": "782417781503"
+        },
+      	"ArnLike": {
+      	  "aws:SourceArn": "arn:aws:s3:::sandbox-orca-glacier-archive"
+      	}
+      }
+    }
   ]
 }
 ```
