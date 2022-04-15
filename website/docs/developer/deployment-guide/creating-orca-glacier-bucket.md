@@ -40,7 +40,7 @@ aws s3api create-bucket \
     --create-bucket-configuration "LocationConstraint=us-west-2"
 ```
 
-- **\[orca bucket name\]** - This is the name of your bucket. Example: `sandbox-orca-glacier-archive` `sandbox-orca-reports`
+- **\[orca bucket name\]** - This is the name of your bucket. Example: `sandbox-orca-glacier-archive` and `sandbox-orca-reports`
 - **\[AWS OU profile\]** - This is the AWS profile name to use to connect to the proper OU where the bucket will be created.
 
 :::note
@@ -196,8 +196,7 @@ aws sts get-caller-identity
 }
 ```
 
-Replace the number in `arn:aws:iam::909121343565:root` with the value of your
-account number.
+Replace the number in `arn:aws:iam::909121343565:root` with the value of your account number.
 
 The Resource value is the bucket and bucket paths that the Cumulus application
 can access. Replace `sandbox-orca-glacier-archive` with the name
@@ -251,13 +250,12 @@ modifications, which will be detailed below.
   ]
 }
 ```
-Replace `orca-primary` with the name of your orca bucket.
-
 The Principal value is the AWS root user for your Cumulus application that will
 access the ORCA archive bucket.
+See the Archive Bucket instructions for assistance getting this value.
 
-Replace the number in `arn:aws:iam::909121343565:root` with the value of your
-account number.
+Replace the number in `arn:aws:iam::909121343565:root` with the value of your account number.
+See the Archive Bucket instructions for assistance getting this value.
 
 The Resource value is the bucket and bucket paths that the Cumulus application
 can access. Replace `sandbox-orca-glacier-archive` with the name
