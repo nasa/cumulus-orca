@@ -112,6 +112,7 @@ SELECT
     storage_class
     FROM reconcile_orphan_report
     WHERE job_id = :job_id
+    ORDER BY key_path, etag
     OFFSET :page_index*:page_size
     LIMIT :page_size+1"""
     )
