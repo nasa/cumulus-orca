@@ -26,6 +26,11 @@ output "get_current_archive_list_arn" {
   value       = aws_lambda_function.get_current_archive_list.arn
 }
 
+output "internal_reconcile_report_orphan_arn" {
+  description = "AWS ARN for the internal_reconcile_report_orphan lambda."
+  value       = aws_lambda_function.internal_reconcile_report_orphan.arn
+}
+
 output "internal_reconcile_report_phantom_arn" {
   description = "AWS ARN for the internal_reconcile_report_phantom lambda."
   value       = aws_lambda_function.internal_reconcile_report_phantom.arn
