@@ -26,6 +26,13 @@ LOGGER = CumulusLogger()
 PAGE_SIZE = 100
 
 
+with open("schemas/input.json", "r") as raw_schema:
+    schema = json.loads(raw_schema.read())
+validate_input = fastjsonschema.compile(schema)
+with open("schemas/output.json", "r") as raw_schema:
+    schema = json.loads(raw_schema.read())
+validate_output = fastjsonschema.compile(schema)
+
 def task(
     job_id: int,
     page_index: int,
@@ -186,11 +193,7 @@ def handler(
         LOGGER.setMetadata(event, context)
 
         try:
-            with open("schemas/input.json", "r") as raw_schema:
-                schema = json.loads(raw_schema.read())
-
-            validate = fastjsonschema.compile(schema)
-            validate(event)
+            validate_input(event)
         except JsonSchemaException as json_schema_exception:
             return create_http_error_dict(
                 "BadRequest",
@@ -208,11 +211,7 @@ def handler(
             event["pageIndex"],
             db_connect_info,
         )
-        with open("schemas/output.json", "r") as raw_schema:
-            schema = json.loads(raw_schema.read())
-
-        validate = fastjsonschema.compile(schema)
-        validate(result)
+        validate_output(result)
 
         return result
     except Exception as error:
