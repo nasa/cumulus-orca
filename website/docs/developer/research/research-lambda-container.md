@@ -163,7 +163,7 @@ The Orca Internal Reconciliation workflow lambdas require an alternative approac
   - Raise the internal-report queue's `visibility_timeout_seconds` to the expected timeout.
   - Environment variables can be passed in at task definition, or when the task is run. The former should be sufficient.
 
-- Use an alternative Dockerfile
+- Use an alternative Dockerfile. The example below packages two code files into a lightweight python container with a `CMD` to run the main file.
   ```yaml
   FROM python:3.8-slim-buster
 
@@ -182,22 +182,115 @@ The Orca Internal Reconciliation workflow lambdas require an alternative approac
 
   CMD ["python", "main.py"]
   ```
-- Follow prior instructions up to the Terraform deployment.
-- Create an IAM role with the permissions needed. Use case should be `EC2`. Note that developers do not have this capability.
-- Create a task definition for the image.
-  - `FARGATE` launch type.
-  - `PREFIX-orca-internal-reconciliation-task` name
-  - `PREFIX-ecs-task-role` Task role
-  - `Linux` Operating system family
-  - Task Execution Role must be able to pull container images and publish container logs.
-  - Use the previously created IAM role for Task role
-  - Smallest options for Task memory and Task CPU
-  - Add container
-    - `PREFIX-orca-internal-reconciliation-container` name
-    - Link to the uploaded image for Image
-- Create an ECS cluster
-  - Documentation on creation suggests that VPC is required, but developers are not authorized to create.
-- The task can now be run in the cluster. Current tests halt at this point, as the available role cannot pull secrets.
+- Follow prior instructions up to the Terraform deployment. Use the following Terraform instead of the pervious example.
+```terraform
+data "aws_iam_policy_document" "sqs_task_policy_document" {
+  statement {
+    actions   = ["sts:AssumeRole"]
+    resources = ["*"]
+  }
+  statement {
+    actions = [
+      "sqs:ReceiveMessage",
+      "sqs:SendMessage",
+      "sqs:DeleteMessage",
+      "sqs:GetQueueAttributes"
+    ]
+    resources = ["*"]
+  }
+}
+
+data "aws_iam_policy_document" "assume_ecs_tasks_role_policy_document" {
+  statement {
+    principals {
+      type        = "Service"
+      identifiers = ["ecs-tasks.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+# IAM role that tasks can use to make API requests to authorized AWS services.
+resource "aws_iam_role" "orca_ecs_tasks_role" {
+  name                 = "${var.prefix}_orca_ecs_tasks_role"
+  assume_role_policy   = data.aws_iam_policy_document.assume_ecs_tasks_role_policy_document.json
+  permissions_boundary = var.permissions_boundary_arn
+  tags                 = var.tags
+}
+
+resource "aws_iam_role_policy" "sqs_task_role_policy" {
+  name   = "${var.prefix}_orca_sqs_task_role_policy"
+  role   = aws_iam_role.orca_ecs_tasks_role.id
+  policy = data.aws_iam_policy_document.sqs_task_policy_document.json
+}
+
+# This role is required by tasks to pull container images and publish container logs to Amazon CloudWatch on your behalf.
+resource "aws_iam_role" "orca_ecs_task_execution_role" {
+  name                 = "${var.prefix}_orca_ecs_task_execution_role"
+  assume_role_policy   = data.aws_iam_policy_document.assume_ecs_tasks_role_policy_document.json
+  permissions_boundary = var.permissions_boundary_arn
+  tags                 = var.tags
+}
+
+
+resource "aws_iam_role_policy_attachment" "ecs_role_policy" {
+  role       = aws_iam_role.orca_ecs_task_execution_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+}
+
+resource "aws_ecs_cluster" "test-cluster" {
+  name = "${var.prefix}_orca_ecs_cluster"
+  capacity_providers = ["FARGATE"]
+  default_capacity_provider_strategy {
+    capacity_provider = "FARGATE"
+    weight            = 100
+  }
+}
+
+resource "aws_ecs_task_definition" "task" {
+  family                   = "${var.prefix}_orca_sqs_task"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = "4096"
+  memory                   = "8192"
+  task_role_arn            = aws_iam_role.orca_ecs_tasks_role.arn
+  execution_role_arn       = aws_iam_role.orca_ecs_task_execution_role.arn
+  container_definitions    = <<DEFINITION
+[
+  {
+    "name": "sqs_task_container",
+    "image": "236859827343.dkr.ecr.us-west-2.amazonaws.com/adorn-test-repo:latest",
+    "cpu": 4096,
+    "memory": 256,
+    "networkMode": "awsvpc",
+    "environment": [
+      {
+        "name": "TARGET_QUEUE_URL",
+        "value": "https://sqs.us-west-2.amazonaws.com/236859827343/doctest-orca-internal-report-queue.fifo"
+      }
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-create-group": "true",
+        "awslogs-region": "us-west-2",
+        "awslogs-group": "${var.prefix}_orca_sqs_task",
+        "awslogs-stream-prefix": "ecs"
+      }
+    }
+  }
+]
+DEFINITION
+}
+:::note
+The above example was developed for deploying a simple task that posts to an sqs queue. Names and values should be changed to match new use cases.
+:::
+:::warning
+Applying admin permissions to orca_ecs_task_execution_role is likely overly permissive.
+:::
+- The task can now be run in the cluster.
+This can be done through [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ecs.html#ECS.Client.run_task) or the GUI,
+though the former is presently untested.
 
 
 
