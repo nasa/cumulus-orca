@@ -28,13 +28,18 @@ LOGGER = CumulusLogger()
 
 PAGE_SIZE = 100
 
-with open("schemas/input.json", "r") as raw_schema:
-    schema = json.loads(raw_schema.read())
-validate_input = fastjsonschema.compile(schema)
+# Generating schema validators can take time, so do it once and reuse.
+try:
+    with open("schemas/input.json", "r") as raw_schema:
+        input_schema = json.loads(raw_schema.read())
+        _VALIDATE_INPUT = fastjsonschema.compile(input_schema)
+    with open("schemas/output.json", "r") as raw_schema:
+        output_schema = json.loads(raw_schema.read())
+        _VALIDATE_OUTPUT = fastjsonschema.compile(output_schema)
+except Exception as ex:
+    LOGGER.error(f"Could not build schema validator: {ex}")
+    raise
 
-with open("schemas/output.json", "r") as raw_schema:
-    schema = json.loads(raw_schema.read())
-validate_output = fastjsonschema.compile(schema)
 
 def task(
     job_id: int,
@@ -200,7 +205,7 @@ def handler(
         LOGGER.setMetadata(event, context)
 
         try:
-            validate_input(event)
+            _VALIDATE_INPUT(event)
         except JsonSchemaException as json_schema_exception:
             return create_http_error_dict(
                 "BadRequest",
@@ -218,7 +223,7 @@ def handler(
             event["pageIndex"],
             db_connect_info,
         )
-        validate_output(result)
+        _VALIDATE_OUTPUT(result)
 
         return result
     except Exception as error:
