@@ -290,7 +290,7 @@ resource "aws_lambda_function" "request_files" {
       RESTORE_EXPIRE_DAYS      = var.orca_recovery_expiration_days
       RESTORE_REQUEST_RETRIES  = var.orca_recovery_retry_limit
       RESTORE_RETRY_SLEEP_SECS = var.orca_recovery_retry_interval
-      RESTORE_RETRIEVAL_TYPE   = "Standard"
+      RESTORE_RETRIEVAL_TYPE   = var.orca_restore_retrieval_type
       STATUS_UPDATE_QUEUE_URL  = var.orca_sqs_status_update_queue_id
       ORCA_DEFAULT_BUCKET      = var.orca_default_bucket
     }

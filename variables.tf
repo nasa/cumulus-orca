@@ -92,6 +92,7 @@ variable "orca_default_bucket" {
 variable "orca_restore_retrieval_type" {
   type        = string
   description = "The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'."
+  default     = "Standard"
 }
 
 variable "rds_security_group_id" {
