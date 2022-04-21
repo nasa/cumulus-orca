@@ -26,6 +26,7 @@ and includes an additional section for migration notes.
 - *ORCA-403* Added lambda post_to_queue_and_trigger_step_function to trigger step function for internal reconciliation.
 - *ORCA-309* Added lambda internal_reconcile_report_phantom to report entries present in the catalog, but not s3.
 - *ORCA-382* Added lambda internal_reconcile_report_orphan to report entries present in S3 bucket, but not in the ORCA catalog.
+- *ORCA-291* request_files lambda now accept "orcaRestoreTypeOverride" to override the glacier restore type at the workflow level. If desired, add "orcaRestoreTypeOverride": "{$.meta.collection.meta.restoreType}" to the workflow's task's task_config.
 
 ### Changed
 - *ORCA-299* `db_deploy` task has been updated to deploy ORCA internal reconciliation tables and objects.
@@ -33,7 +34,7 @@ and includes an additional section for migration notes.
 - SQS Queue names adjusted to include Orca. For example: `"${var.prefix}-orca-status-update-queue.fifo"`. Queues will be automatically recreated by Terraform.
 - *ORCA-334* Created IAM role for the extract_filepaths_for_granule lambda function, attached the role to the function
 - *ORCA-404* Updated shared_db and relevant lambdas to use secrets manager ARN instead of magic strings.
-- *ORCA-404* Updated terraform for request_files lambda so that the glacier restore type can now be set up the user instead of being hard-coded previously.
+- *ORCA-291* Updated request_files lambda and terraform so that the glacier restore type can now be overwritten by the user instead of being hard-coded previously during deployment.
 
 ### Migration Notes
 
@@ -123,7 +124,15 @@ variable "s3_secret_key" {
   vpc_endpoint_id                                      = null
   }
   ```
-
+Example of the new ORCA recovery workflow is shown below.  
+```json
+"task_config": {
+  "buckets": "{$.meta.buckets}",
+  "fileBucketMaps": "{$.meta.collection.files}",
+  "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
+  "restoreType": "{$.meta.collection.meta.restoreType}"
+}
+```
 
 ## [4.0.1]
 
