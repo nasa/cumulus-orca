@@ -295,12 +295,12 @@ class TestRequestFiles(unittest.TestCase):
 
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
-    @patch("cumulus_logger.CumulusLogger.warning")
+    @patch("cumulus_logger.CumulusLogger.warn")
     @patch("cumulus_logger.CumulusLogger.info")
     def test_task_retrieval_type_pass_from_config(
         self,
         mock_logger_info: MagicMock,
-        mock_logger_warning: MagicMock,
+        mock_logger_warn: MagicMock,
         mock_inner_task: MagicMock,
         mock_get_default_glacier_bucket_name: MagicMock,
     ):
@@ -333,21 +333,21 @@ class TestRequestFiles(unittest.TestCase):
 
         request_files.task(mock_event, None)
         mock_logger_info.assert_called_once_with(f"Found the following retrieval type from config: {config[request_files.CONFIG_RESTORE_RETRIEVAL_TYPE_KEY]}")
-        self.assertEquals(mock_logger_warning.call_count,0)
+        self.assertEquals(mock_logger_warn.call_count,0)
 
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
-    @patch("cumulus_logger.CumulusLogger.warning")
+    @patch("cumulus_logger.CumulusLogger.warn")
     @patch("cumulus_logger.CumulusLogger.info")
     def test_task_retrieval_type_invalid_from_config(
         self,
         mock_logger_info: MagicMock,
-        mock_logger_warning: MagicMock,
+        mock_logger_warn: MagicMock,
         mock_inner_task: MagicMock,
         mock_get_default_glacier_bucket_name: MagicMock,
     ):
         """
-        If retrieval_type is invalid in config, use from env variable.
+        If retrieval_type is invalid in config and missing from env variable, use the default value.
         """
         job_id = uuid.uuid4().__str__()
         config = {
@@ -375,8 +375,9 @@ class TestRequestFiles(unittest.TestCase):
 
         request_files.task(mock_event, None)
         mock_logger_info.assert_called_once_with(f"Found the following retrieval type from config: {config[request_files.CONFIG_RESTORE_RETRIEVAL_TYPE_KEY]}")
-        error_msg = f"Invalid value in {request_files.CONFIG_RESTORE_RETRIEVAL_TYPE_KEY}: '{config[request_files.CONFIG_RESTORE_RETRIEVAL_TYPE_KEY]}'. Getting the value from env variable"
-        mock_logger_warning.assert_called_once_with(error_msg)
+        error_msg = "Invalid RESTORE_RETRIEVAL_TYPE: 'None' defaulting to 'Standard'"
+        mock_logger_warn.assert_called_with(error_msg)
+        self.assertEqual(mock_logger_warn.call_count,2)
 
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
@@ -1602,7 +1603,8 @@ class TestRequestFiles(unittest.TestCase):
             request_files.EVENT_CONFIG_KEY: {
                 request_files.CONFIG_JOB_ID_KEY: None,
                 request_files.CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: 750,
-                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "lp-sndbx-cumulus-orca"
+                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "lp-sndbx-cumulus-orca",
+                request_files.CONFIG_RESTORE_RETRIEVAL_TYPE_KEY: None
             },
         }
         mock_task.return_value = {

@@ -144,14 +144,14 @@ def task(
         retrieval_type = event["config"][CONFIG_RESTORE_RETRIEVAL_TYPE_KEY]
         LOGGER.info(f"Found the following retrieval type from config: {retrieval_type}")
     except KeyError:
-        LOGGER.warning(
+        LOGGER.warn(
             f"{CONFIG_RESTORE_RETRIEVAL_TYPE_KEY} is not set. Using RESTORE_RETRIEVAL_TYPE environment value."
         )
         retrieval_type = None
 
     if retrieval_type is None or retrieval_type not in ("Standard", "Bulk", "Expedited"):
         error_msg = f"Invalid value in {CONFIG_RESTORE_RETRIEVAL_TYPE_KEY}: '{retrieval_type}'. Getting the value from env variable"
-        LOGGER.warning(error_msg)
+        LOGGER.warn(error_msg)
         # Get retrieval type from env variable
         try:
             retrieval_type = os.environ[OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY]
