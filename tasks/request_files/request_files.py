@@ -36,6 +36,7 @@ EVENT_CONFIG_KEY = "config"
 EVENT_INPUT_KEY = "input"
 
 CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY = "orcaDefaultBucketOverride"
+CONFIG_RESTORE_RETRIEVAL_TYPE_KEY = "orcaRestoreTypeOverride"
 
 INPUT_GRANULES_KEY = "granules"
 
@@ -138,19 +139,32 @@ def task(
         )
         retry_sleep_secs = DEFAULT_RESTORE_RETRY_SLEEP_SECS
 
-    # Get retrieval type
+    # Get retrieval type value from config first
     try:
-        retrieval_type = os.environ[OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY]
-        if retrieval_type not in ("Standard", "Bulk", "Expedited"):
-            msg = (
-                f"Invalid RESTORE_RETRIEVAL_TYPE: '{retrieval_type}'"
-                " defaulting to 'Standard'"
-            )
-            LOGGER.info(msg)
-            retrieval_type = DEFAULT_RESTORE_RETRIEVAL_TYPE
+        retrieval_type = event["config"][CONFIG_RESTORE_RETRIEVAL_TYPE_KEY]
+        LOGGER.info(f"Found the following retrieval type from config: {retrieval_type}")
     except KeyError:
-        LOGGER.warn("Invalid RESTORE_RETRIEVAL_TYPE: 'None' defaulting to 'Standard'")
-        retrieval_type = DEFAULT_RESTORE_RETRIEVAL_TYPE
+        LOGGER.warning(
+            f"{CONFIG_RESTORE_RETRIEVAL_TYPE_KEY} is not set. Using RESTORE_RETRIEVAL_TYPE environment value."
+        )
+        retrieval_type = None
+
+    if retrieval_type is None or retrieval_type not in ("Standard", "Bulk", "Expedited"):
+        error_msg = f"Invalid value in {CONFIG_RESTORE_RETRIEVAL_TYPE_KEY}: '{retrieval_type}'. Getting the value from env variable"
+        LOGGER.warning(error_msg)
+        # Get retrieval type from env variable
+        try:
+            retrieval_type = os.environ[OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY]
+            if retrieval_type not in ("Standard", "Bulk", "Expedited"):
+                msg = (
+                    f"Invalid RESTORE_RETRIEVAL_TYPE: '{retrieval_type}'"
+                    " defaulting to 'Standard'"
+                )
+                LOGGER.info(msg)
+                retrieval_type = DEFAULT_RESTORE_RETRIEVAL_TYPE
+        except KeyError:
+            LOGGER.warn("Invalid RESTORE_RETRIEVAL_TYPE: 'None' defaulting to 'Standard'")
+            retrieval_type = DEFAULT_RESTORE_RETRIEVAL_TYPE
 
     # Get QUEUE URL
     status_update_queue_url = str(os.environ[OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY])
@@ -360,7 +374,6 @@ def inner_task(
         "granules": copied_granules,
         "asyncOperationId": event[EVENT_CONFIG_KEY][CONFIG_JOB_ID_KEY],
     }
-
 
 def get_default_glacier_bucket_name(config: Dict[str, Any]) -> str:
     try:

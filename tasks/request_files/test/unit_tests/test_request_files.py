@@ -295,6 +295,91 @@ class TestRequestFiles(unittest.TestCase):
 
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
+    @patch("cumulus_logger.CumulusLogger.warning")
+    @patch("cumulus_logger.CumulusLogger.info")
+    def test_task_retrieval_type_pass_from_config(
+        self,
+        mock_logger_info: MagicMock,
+        mock_logger_warning: MagicMock,
+        mock_inner_task: MagicMock,
+        mock_get_default_glacier_bucket_name: MagicMock,
+    ):
+        """
+        If retrieval_type is valid in config, override the default value.
+        """
+        job_id = uuid.uuid4().__str__()
+        config = {
+            request_files.CONFIG_JOB_ID_KEY: job_id,
+            request_files.CONFIG_RESTORE_RETRIEVAL_TYPE_KEY: "Bulk",
+        }
+        mock_event = {
+            request_files.EVENT_CONFIG_KEY: config,
+        }
+        max_retries = randint(0, 99)  # nosec
+        retry_sleep_secs = uniform(0, 99)  # nosec
+        exp_days = randint(0, 99)  # nosec
+        db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
+        os.environ[request_files.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = db_queue_url
+
+        os.environ[
+            request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY
+        ] = max_retries.__str__()
+        os.environ[
+            request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
+        ] = retry_sleep_secs.__str__()
+        os.environ[
+            request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
+        ] = exp_days.__str__()
+
+        request_files.task(mock_event, None)
+        mock_logger_info.assert_called_once_with(f"Found the following retrieval type from config: {config[request_files.CONFIG_RESTORE_RETRIEVAL_TYPE_KEY]}")
+        self.assertEquals(mock_logger_warning.call_count,0)
+
+    @patch("request_files.get_default_glacier_bucket_name")
+    @patch("request_files.inner_task")
+    @patch("cumulus_logger.CumulusLogger.warning")
+    @patch("cumulus_logger.CumulusLogger.info")
+    def test_task_retrieval_type_invalid_from_config(
+        self,
+        mock_logger_info: MagicMock,
+        mock_logger_warning: MagicMock,
+        mock_inner_task: MagicMock,
+        mock_get_default_glacier_bucket_name: MagicMock,
+    ):
+        """
+        If retrieval_type is invalid in config, use from env variable.
+        """
+        job_id = uuid.uuid4().__str__()
+        config = {
+            request_files.CONFIG_JOB_ID_KEY: job_id,
+            request_files.CONFIG_RESTORE_RETRIEVAL_TYPE_KEY: "dummy",
+        }
+        mock_event = {
+            request_files.EVENT_CONFIG_KEY: config,
+        }
+        max_retries = randint(0, 99)  # nosec
+        retry_sleep_secs = uniform(0, 99)  # nosec
+        exp_days = randint(0, 99)  # nosec
+        db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
+        os.environ[request_files.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = db_queue_url
+
+        os.environ[
+            request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY
+        ] = max_retries.__str__()
+        os.environ[
+            request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
+        ] = retry_sleep_secs.__str__()
+        os.environ[
+            request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
+        ] = exp_days.__str__()
+
+        request_files.task(mock_event, None)
+        mock_logger_info.assert_called_once_with(f"Found the following retrieval type from config: {config[request_files.CONFIG_RESTORE_RETRIEVAL_TYPE_KEY]}")
+        error_msg = f"Invalid value in {request_files.CONFIG_RESTORE_RETRIEVAL_TYPE_KEY}: '{config[request_files.CONFIG_RESTORE_RETRIEVAL_TYPE_KEY]}'. Getting the value from env variable"
+        mock_logger_warning.assert_called_once_with(error_msg)
+
+    @patch("request_files.get_default_glacier_bucket_name")
+    @patch("request_files.inner_task")
     def test_task_default_for_missing_exp_days(
         self,
         mock_inner_task: MagicMock,

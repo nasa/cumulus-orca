@@ -13,7 +13,8 @@
           "task_config": {
             "buckets": "{$.meta.buckets}",
             "fileBucketMaps": "{$.meta.collection.files}",
-            "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}"
+            "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
+            "restoreType": "{$.meta.collection.meta.restoreType}"
           }
         }
       },

@@ -54,6 +54,11 @@ variable "db_connect_info_secret_arn" {
   description = "Secret ARN of the AWS secretsmanager secret for connecting to the database."
 }
 
+variable "orca_restore_retrieval_type" {
+  type        = string
+  description = "The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'."
+}
+
 variable "orca_secretsmanager_s3_access_credentials_secret_arn" {
   type        = string
   description = "The Amazon Resource Name (ARN) of the s3 credentials secret."

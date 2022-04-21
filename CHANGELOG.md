@@ -17,7 +17,7 @@ and includes an additional section for migration notes.
 ## [Unreleased]
 
 ### Added
-- *ORCA-300* Added `OrcaInternalReconciliation` workflow allong with an accompanying input queue and dead-letter queue.
+- *ORCA-300* Added `OrcaInternalReconciliation` workflow along with an accompanying input queue and dead-letter queue.
     Retention time can be changed by setting `internal_report_queue_message_retention_time_seconds` in your `variables.tf` or `orca_variables.tf` file. Defaults to 432000.
 - *ORCA-161* Added dead letter queue and cloudwatch alarm terraform code to recovery SQS queue.
 - *ORCA-307* Added lambda get_current_archive_list to pull S3 Inventory reports into Postgres. 
@@ -33,11 +33,13 @@ and includes an additional section for migration notes.
 - SQS Queue names adjusted to include Orca. For example: `"${var.prefix}-orca-status-update-queue.fifo"`. Queues will be automatically recreated by Terraform.
 - *ORCA-334* Created IAM role for the extract_filepaths_for_granule lambda function, attached the role to the function
 - *ORCA-404* Updated shared_db and relevant lambdas to use secrets manager ARN instead of magic strings.
+- *ORCA-404* Updated terraform for request_files lambda so that the glacier restore type can now be set up the user instead of being hard-coded previously.
 
 ### Migration Notes
 
 - The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variables. The following required variables have been added:
   - dlq_subscription_email
+  - orca_restore_retrieval_type
   - s3_access_key
   - s3_secret_key
   
@@ -47,6 +49,11 @@ and includes an additional section for migration notes.
 variable "dlq_subscription_email" {
   type        = string
   description = "The email to notify users when messages are received in dead letter SQS queue due to restore failure. Sends one email until the dead letter queue is emptied."
+}
+
+variable "orca_restore_retrieval_type" {
+  type        = string
+  description = "The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'."
 }
 
 variable "s3_access_key" {
@@ -84,14 +91,15 @@ variable "s3_secret_key" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  orca_default_bucket     = var.orca_default_bucket
-  db_admin_password       = var.db_admin_password
-  db_user_password        = var.db_user_password
-  db_host_endpoint        = var.db_host_endpoint
-  dlq_subscription_email  = var.dlq_subscription_email
-  rds_security_group_id   = var.rds_security_group_id
-  s3_access_key           = var.s3_access_key
-  s3_secret_key           = var.s3_secret_key
+  orca_default_bucket         = var.orca_default_bucket
+  orca_restore_retrieval_type = var.orca_restore_retrieval_type
+  db_admin_password           = var.db_admin_password
+  db_user_password            = var.db_user_password
+  db_host_endpoint            = var.db_host_endpoint
+  dlq_subscription_email      = var.dlq_subscription_email
+  rds_security_group_id       = var.rds_security_group_id
+  s3_access_key               = var.s3_access_key
+  s3_secret_key               = var.s3_secret_key
 
   ## OPTIONAL
   db_admin_username                                    = "postgres"

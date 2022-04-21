@@ -89,12 +89,16 @@ variable "orca_default_bucket" {
   description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
 }
 
+variable "orca_restore_retrieval_type" {
+  type        = string
+  description = "The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'."
+  default     = "Standard"
+}
 
 variable "rds_security_group_id" {
   type        = string
   description = "Cumulus' RDS Security Group's ID."
 }
-
 
 variable "s3_access_key" {
   type        = string
