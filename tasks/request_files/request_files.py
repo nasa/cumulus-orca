@@ -81,10 +81,8 @@ def task(
         Args:
             Note that because we are using CumulusMessageAdapter, this may not directly correspond to Lambda input.
             event: A dict with the following keys:
-                'config' (dict): A dict with the following keys:
-                    'orcaDefaultBucketOverride' (str): The name of the glacier bucket from which the files
-                    will be restored. Defaults to os.environ['ORCA_DEFAULT_BUCKET']
-                    'job_id' (str): The unique identifier used for tracking requests. If not present, will be generated.
+                'config' (dict): See the function's schemas/config.json for information on config.
+
                 'input' (dict): A dict with the following keys:
                     'granules' (list(dict)): A list of dicts with the following keys:
                         'granuleId' (str): The id of the granule being restored.
@@ -145,13 +143,14 @@ def task(
         LOGGER.info(f"Found the following retrieval type from config: {retrieval_type}")
     except KeyError:
         LOGGER.warn(
-            f"{CONFIG_RESTORE_RETRIEVAL_TYPE_KEY} is not set. Using RESTORE_RETRIEVAL_TYPE environment value."
+            f"{CONFIG_RESTORE_RETRIEVAL_TYPE_KEY} is not set. Using {OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY} environment value."
         )
         retrieval_type = None
 
     if retrieval_type is None or retrieval_type not in ("Standard", "Bulk", "Expedited"):
-        error_msg = f"Invalid value in {CONFIG_RESTORE_RETRIEVAL_TYPE_KEY}: '{retrieval_type}'. Getting the value from env variable"
-        LOGGER.warn(error_msg)
+        LOGGER.warn(
+            f"Invalid value in {CONFIG_RESTORE_RETRIEVAL_TYPE_KEY}: '{retrieval_type}'. Getting the value from env variable"
+        )
         # Get retrieval type from env variable
         try:
             retrieval_type = os.environ[OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY]

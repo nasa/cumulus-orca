@@ -375,8 +375,7 @@ class TestRequestFiles(unittest.TestCase):
 
         request_files.task(mock_event, None)
         mock_logger_info.assert_called_once_with(f"Found the following retrieval type from config: {config[request_files.CONFIG_RESTORE_RETRIEVAL_TYPE_KEY]}")
-        error_msg = "Invalid RESTORE_RETRIEVAL_TYPE: 'None' defaulting to 'Standard'"
-        mock_logger_warn.assert_called_with(error_msg)
+        mock_logger_warn.assert_called_with("Invalid RESTORE_RETRIEVAL_TYPE: 'None' defaulting to 'Standard'")
         self.assertEqual(mock_logger_warn.call_count,2)
 
     @patch("request_files.get_default_glacier_bucket_name")
