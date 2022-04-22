@@ -2,25 +2,34 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/perform_orca_reconcile/schemas/input.json",
   "title": "perform_orca_reconcile Lambda input",
-  "description": "The input for the perform_orca_reconcile Lambda. This will be similar to the output of get_current_archive_list lambda", 
+  "description": "The input for the perform_orca_reconcile Lambda. This will be similar to the output of get_current_archive_list lambda",
   "type": "object",
   "required": [
-    "jobId",
-    "orcaArchiveLocation",
-    "messageReceiptHandle"
+    "event"
   ],
   "properties": {
-    "jobId": {
-      "type": "integer",
-      "description": "The unique ID of the reconciliation job."
-    },
-    "orcaArchiveLocation": {
-      "type": "string",
-      "description": "The name of the glacier bucket the job targets."
-    },
-    "messageReceiptHandle": {
-      "type": "string",
-      "description": "The ReceiptHandle for the event in the queue."
+    "event": {
+      "type": "object",
+      "description": "The event passed in by the step function.",
+      "required": [
+        "jobId",
+        "orcaArchiveLocation",
+        "messageReceiptHandle"
+      ],
+      "properties": {
+        "jobId": {
+          "type": "integer",
+          "description": "The unique ID of the reconciliation job."
+        },
+        "orcaArchiveLocation": {
+          "type": "string",
+          "description": "The name of the glacier bucket the job targets."
+        },
+        "messageReceiptHandle": {
+          "type": "string",
+          "description": "The ReceiptHandle for the event in the queue."
+        }
+      }
     }
   }
 }

@@ -14,7 +14,7 @@ resource "aws_lambda_function" "post_to_queue_and_trigger_step_function" {
   filename         = "${path.module}/../../tasks/post_to_queue_and_trigger_step_function/post_to_queue_and_trigger_step_function.zip"
   handler          = "post_to_queue_and_trigger_step_function.handler"
   memory_size      = var.orca_reconciliation_lambda_memory_size
-  runtime          = "python3.9"
+  runtime          = "python3.7"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/post_to_queue_and_trigger_step_function/post_to_queue_and_trigger_step_function.zip")
   tags             = var.tags
   timeout          = var.orca_reconciliation_lambda_timeout
@@ -52,4 +52,30 @@ resource "aws_lambda_permission" "post_to_queue_and_trigger_step_function_allow_
   ## OPTIONAL
   statement_id = "AllowExecutionFromSQS"
   source_arn   = var.orca_sqs_s3_inventory_queue_arn
+}
+
+## Local Variables
+locals {
+  orca_bucket_names  = [for k, v in var.buckets : v.name if v.type == "orca"]
+}
+
+resource "aws_s3_bucket_inventory" "inventory-report" {
+  for_each = toset(local.orca_bucket_names)
+
+  bucket = each.key
+  name   = "${var.prefix}-${each.key}-inventory-report"
+
+  included_object_versions = "All"
+  optional_fields = ["Size", "LastModifiedDate", "StorageClass", "ETag"]
+
+  schedule {
+    frequency = var.s3_report_frequency
+  }
+
+  destination {
+    bucket {
+      format     = "CSV"
+      bucket_arn = var.orca_reports_bucket_arn
+    }
+  }
 }

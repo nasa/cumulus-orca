@@ -23,9 +23,10 @@ from sqlalchemy.sql.elements import TextClause
 
 OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY = "INTERNAL_REPORT_QUEUE_URL"
 
-INPUT_JOB_ID_KEY = "jobId"
-INPUT_ORCA_ARCHIVE_LOCATION_KEY = "orcaArchiveLocation"
-INPUT_MESSAGE_RECEIPT_HANDLE_KEY = "messageReceiptHandle"
+INPUT_EVENT_KEY = "event"
+EVENT_JOB_ID_KEY = "jobId"
+EVENT_ORCA_ARCHIVE_LOCATION_KEY = "orcaArchiveLocation"
+EVENT_MESSAGE_RECEIPT_HANDLE_KEY = "messageReceiptHandle"
 
 OUTPUT_JOB_ID_KEY = "jobId"
 
@@ -399,7 +400,7 @@ def remove_job_from_queue(internal_report_queue_url: str, message_receipt_handle
         raise queue_ex
 
 
-def handler(event: Dict[str, Union[str, int]], context) -> Dict[str, Any]:
+def handler(event: Dict[str, Dict[str, Dict[str, Union[str, int]]]], context) -> Dict[str, Any]:
     """
     Lambda handler. Receives a list of s3 events from an SQS queue, and loads the s3 inventory specified into postgres.
     Args:
@@ -433,9 +434,10 @@ def handler(event: Dict[str, Union[str, int]], context) -> Dict[str, Any]:
         )
         raise
 
-    job_id = event[INPUT_JOB_ID_KEY]
-    orca_archive_location = event[INPUT_ORCA_ARCHIVE_LOCATION_KEY]
-    message_receipt_handle = event[INPUT_MESSAGE_RECEIPT_HANDLE_KEY]
+    inner_event = event[INPUT_EVENT_KEY]
+    job_id = inner_event[EVENT_JOB_ID_KEY]
+    orca_archive_location = inner_event[EVENT_ORCA_ARCHIVE_LOCATION_KEY]
+    message_receipt_handle = inner_event[EVENT_MESSAGE_RECEIPT_HANDLE_KEY]
 
     db_connect_info = shared_db.get_configuration(db_connect_info_secret_arn)
 

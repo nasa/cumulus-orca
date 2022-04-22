@@ -1,9 +1,3 @@
-## Local Variables
-locals {
-  tags = merge(var.tags, { Deployment = var.prefix })
-}
-
-
 ## Referenced Modules
 
 ## orca_lambdas - lambdas module that calls iam and security_groups module
@@ -22,7 +16,7 @@ module "orca_lambdas" {
   rds_security_group_id                                = var.rds_security_group_id
   vpc_id                                               = var.vpc_id
   ## OPTIONAL
-  tags                           = local.tags
+  tags                           = var.tags
   default_multipart_chunksize_mb = var.default_multipart_chunksize_mb
 
   ## --------------------------
@@ -66,10 +60,11 @@ module "orca_lambdas_secondary" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
+  buckets                                              = var.buckets
   lambda_subnet_ids                                    = var.lambda_subnet_ids
   prefix                                               = var.prefix
   ## OPTIONAL
-  tags                           = local.tags
+  tags                           = var.tags
   default_multipart_chunksize_mb = var.default_multipart_chunksize_mb
 
   ## --------------------------
@@ -80,11 +75,13 @@ module "orca_lambdas_secondary" {
   orca_sqs_internal_report_queue_id             = module.orca_sqs.orca_sqs_internal_report_queue_id
   orca_sqs_s3_inventory_queue_arn               = module.orca_sqs.orca_sqs_s3_inventory_queue_arn
   restore_object_role_arn                       = module.orca_iam.restore_object_role_arn
+  orca_reports_bucket_arn                       = var.orca_reports_bucket_arn
   vpc_postgres_ingress_all_egress_id            = module.orca_lambdas.vpc_postgres_ingress_all_egress_id
 
   ## OPTIONAL
   orca_reconciliation_lambda_memory_size = var.orca_reconciliation_lambda_memory_size
   orca_reconciliation_lambda_timeout     = var.orca_reconciliation_lambda_timeout
+  s3_report_frequency                    = var.s3_report_frequency
 }
 
 
@@ -101,7 +98,7 @@ module "orca_workflows" {
   workflow_config = var.workflow_config
 
   ## OPTIONAL
-  tags = local.tags
+  tags = var.tags
 
   ## --------------------------
   ## ORCA Variables
@@ -128,12 +125,13 @@ module "orca_iam" {
   permissions_boundary_arn = var.permissions_boundary_arn
   prefix                   = var.prefix
   # OPTIONAL
-  tags = local.tags
+  tags = var.tags
   # --------------------------
   # ORCA Variables
   # --------------------------
   # OPTIONAL
-  orca_recovery_buckets = var.orca_recovery_buckets
+  orca_recovery_buckets   = var.orca_recovery_buckets
+  orca_reports_bucket_arn = var.orca_reports_bucket_arn
 }
 
 
@@ -149,7 +147,7 @@ module "orca_secretsmanager" {
   prefix = var.prefix
 
   ## OPTIONAL
-  tags = local.tags
+  tags = var.tags
   ## --------------------------
   ## ORCA Variables
   ## --------------------------
@@ -177,7 +175,7 @@ module "orca_sqs" {
   prefix = var.prefix
 
   ## OPTIONAL
-  tags = local.tags
+  tags = var.tags
 
   ## --------------------------
   ## ORCA Variables

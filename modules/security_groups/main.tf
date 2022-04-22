@@ -1,9 +1,3 @@
-## Local Variables
-locals {
-  tags = merge(var.tags, { Deployment = var.prefix })
-}
-
-
 ## Security Group Resources
 
 ## vpc_postgres_ingress_all_egress - PostgreSQL Security Group
@@ -12,7 +6,7 @@ resource "aws_security_group" "vpc-postgres-ingress-all-egress" {
   ## OPTIONAL
   description = "ORCA security group to allow PostgreSQL access."
   name        = "${var.prefix}-vpc-ingress-all-egress"
-  tags        = local.tags
+  tags        = var.tags
   vpc_id      = var.vpc_id
 
   ingress {
