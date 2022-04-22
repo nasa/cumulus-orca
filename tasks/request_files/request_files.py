@@ -36,7 +36,7 @@ EVENT_CONFIG_KEY = "config"
 EVENT_INPUT_KEY = "input"
 
 CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY = "orcaDefaultBucketOverride"
-CONFIG_RESTORE_RETRIEVAL_TYPE_KEY = "orcaRestoreTypeOverride"
+CONFIG_RESTORE_DEFAULT_RETRIEVAL_TYPE_OVERRIDE_KEY = "orcaDefaultRecoveryTypeOverride"
 
 INPUT_GRANULES_KEY = "granules"
 
@@ -137,33 +137,26 @@ def task(
         )
         retry_sleep_secs = DEFAULT_RESTORE_RETRY_SLEEP_SECS
 
-    # Get retrieval type value from config first
-    try:
-        retrieval_type = event["config"][CONFIG_RESTORE_RETRIEVAL_TYPE_KEY]
-        LOGGER.info(f"Found the following retrieval type from config: {retrieval_type}")
-    except KeyError:
-        LOGGER.warn(
-            f"{CONFIG_RESTORE_RETRIEVAL_TYPE_KEY} is not set. Using {OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY} environment value."
-        )
-        retrieval_type = None
+    VALID_RESTORE_TYPES = ["Bulk", "Expedited", "Standard"] 
 
-    if retrieval_type is None or retrieval_type not in ("Standard", "Bulk", "Expedited"):
-        LOGGER.warn(
-            f"Invalid value in {CONFIG_RESTORE_RETRIEVAL_TYPE_KEY}: '{retrieval_type}'. Getting the value from env variable"
-        )
-        # Get retrieval type from env variable
-        try:
-            retrieval_type = os.environ[OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY]
-            if retrieval_type not in ("Standard", "Bulk", "Expedited"):
-                msg = (
-                    f"Invalid RESTORE_RETRIEVAL_TYPE: '{retrieval_type}'"
-                    " defaulting to 'Standard'"
-                )
-                LOGGER.info(msg)
-                retrieval_type = DEFAULT_RESTORE_RETRIEVAL_TYPE
-        except KeyError:
-            LOGGER.warn("Invalid RESTORE_RETRIEVAL_TYPE: 'None' defaulting to 'Standard'")
-            retrieval_type = DEFAULT_RESTORE_RETRIEVAL_TYPE
+    # Get config and env set to None if the key does not exist
+    env_retrieval_type = os.getenv(OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY, None)
+    config_retrieval_type = event["config"].get(CONFIG_RESTORE_DEFAULT_RETRIEVAL_TYPE_OVERRIDE_KEY, None)
+    if env_retrieval_type in VALID_RESTORE_TYPES:
+        LOGGER.info(f"Found restore type from {OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY}: {env_retrieval_type}")
+    # Set initial default to deployment env value
+    retrieval_type = env_retrieval_type
+
+    # Overide with config if we are able
+    if config_retrieval_type is not None:
+        if config_retrieval_type in VALID_RESTORE_TYPES:
+            retrieval_type = config_retrieval_type
+            LOGGER.info(f"Found glacier restore type from config: {retrieval_type}. Overridding other values.")
+        
+    # Safety catch in case someone put a bogus value in env
+    if (retrieval_type is None) or (retrieval_type not in VALID_RESTORE_TYPES):
+        retrieval_type = DEFAULT_RESTORE_RETRIEVAL_TYPE
+        LOGGER.info(f"defaulting to {DEFAULT_RESTORE_RETRIEVAL_TYPE}")
 
     # Get QUEUE URL
     status_update_queue_url = str(os.environ[OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY])

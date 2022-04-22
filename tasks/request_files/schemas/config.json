@@ -17,7 +17,7 @@
       "type": ["string", "null"],
       "description": "Overrides the default bucket to copy to in os.environ['ORCA_DEFAULT_BUCKET']."
     },
-    "orcaRestoreTypeOverride": {
+    "orcaDefaultRecoveryTypeOverride": {
       "type": ["string", "null"],
       "description": "Overrides the default restore type in os.environ['RESTORE_RETRIEVAL_TYPE']."
     }

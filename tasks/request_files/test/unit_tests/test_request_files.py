@@ -295,12 +295,10 @@ class TestRequestFiles(unittest.TestCase):
 
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
-    @patch("cumulus_logger.CumulusLogger.warn")
     @patch("cumulus_logger.CumulusLogger.info")
     def test_task_retrieval_type_pass_from_config(
         self,
         mock_logger_info: MagicMock,
-        mock_logger_warn: MagicMock,
         mock_inner_task: MagicMock,
         mock_get_default_glacier_bucket_name: MagicMock,
     ):
@@ -310,7 +308,7 @@ class TestRequestFiles(unittest.TestCase):
         job_id = uuid.uuid4().__str__()
         config = {
             request_files.CONFIG_JOB_ID_KEY: job_id,
-            request_files.CONFIG_RESTORE_RETRIEVAL_TYPE_KEY: "Bulk",
+            request_files.CONFIG_RESTORE_DEFAULT_RETRIEVAL_TYPE_OVERRIDE_KEY: "Bulk",
         }
         mock_event = {
             request_files.EVENT_CONFIG_KEY: config,
@@ -332,27 +330,64 @@ class TestRequestFiles(unittest.TestCase):
         ] = exp_days.__str__()
 
         request_files.task(mock_event, None)
-        mock_logger_info.assert_called_once_with(f"Found the following retrieval type from config: {config[request_files.CONFIG_RESTORE_RETRIEVAL_TYPE_KEY]}")
-        self.assertEquals(mock_logger_warn.call_count,0)
+        mock_logger_info.assert_called_once_with(f"Found glacier restore type from config: {config[request_files.CONFIG_RESTORE_DEFAULT_RETRIEVAL_TYPE_OVERRIDE_KEY]}. Overridding other values.")
 
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
-    @patch("cumulus_logger.CumulusLogger.warn")
     @patch("cumulus_logger.CumulusLogger.info")
-    def test_task_retrieval_type_invalid_from_config(
+    def test_task_retrieval_type_config_none_env_value_valid(
         self,
         mock_logger_info: MagicMock,
-        mock_logger_warn: MagicMock,
         mock_inner_task: MagicMock,
         mock_get_default_glacier_bucket_name: MagicMock,
     ):
         """
-        If retrieval_type is invalid in config and missing from env variable, use the default value.
+        If retrieval_type in config is None, override the default value.
         """
         job_id = uuid.uuid4().__str__()
         config = {
             request_files.CONFIG_JOB_ID_KEY: job_id,
-            request_files.CONFIG_RESTORE_RETRIEVAL_TYPE_KEY: "dummy",
+            request_files.CONFIG_RESTORE_DEFAULT_RETRIEVAL_TYPE_OVERRIDE_KEY: None,
+        }
+        mock_event = {
+            request_files.EVENT_CONFIG_KEY: config,
+        }
+        max_retries = randint(0, 99)  # nosec
+        retry_sleep_secs = uniform(0, 99)  # nosec
+        exp_days = randint(0, 99)  # nosec
+        db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
+        os.environ[request_files.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = db_queue_url
+
+        os.environ[
+            request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY
+        ] = max_retries.__str__()
+        os.environ[
+            request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
+        ] = retry_sleep_secs.__str__()
+        os.environ[
+            request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
+        ] = exp_days.__str__()
+        os.environ[request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY] = "Bulk"
+
+        request_files.task(mock_event, None)
+        mock_logger_info.assert_called_once_with(f"Found restore type from {request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY}: {os.environ[request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY]}")
+
+    @patch("request_files.get_default_glacier_bucket_name")
+    @patch("request_files.inner_task")
+    @patch("cumulus_logger.CumulusLogger.info")
+    def test_task_retrieval_type_invalid_from_config(
+        self,
+        mock_logger_info: MagicMock,
+        mock_inner_task: MagicMock,
+        mock_get_default_glacier_bucket_name: MagicMock,
+    ):
+        """
+        If retrieval_type is invalid in config, use the default value.
+        """
+        job_id = uuid.uuid4().__str__()
+        config = {
+            request_files.CONFIG_JOB_ID_KEY: job_id,
+            request_files.CONFIG_RESTORE_DEFAULT_RETRIEVAL_TYPE_OVERRIDE_KEY: "dummy",
         }
         mock_event = {
             request_files.EVENT_CONFIG_KEY: config,
@@ -374,9 +409,8 @@ class TestRequestFiles(unittest.TestCase):
         ] = exp_days.__str__()
 
         request_files.task(mock_event, None)
-        mock_logger_info.assert_called_once_with(f"Found the following retrieval type from config: {config[request_files.CONFIG_RESTORE_RETRIEVAL_TYPE_KEY]}")
-        mock_logger_warn.assert_called_with("Invalid RESTORE_RETRIEVAL_TYPE: 'None' defaulting to 'Standard'")
-        self.assertEqual(mock_logger_warn.call_count,2)
+        mock_logger_info.assert_called_once_with(f"defaulting to {request_files.DEFAULT_RESTORE_RETRIEVAL_TYPE}")
+        self.assertEqual(mock_logger_info.call_count,1)
 
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
@@ -1603,7 +1637,7 @@ class TestRequestFiles(unittest.TestCase):
                 request_files.CONFIG_JOB_ID_KEY: None,
                 request_files.CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: 750,
                 request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "lp-sndbx-cumulus-orca",
-                request_files.CONFIG_RESTORE_RETRIEVAL_TYPE_KEY: None
+                request_files.CONFIG_RESTORE_DEFAULT_RETRIEVAL_TYPE_OVERRIDE_KEY: None
             },
         }
         mock_task.return_value = {

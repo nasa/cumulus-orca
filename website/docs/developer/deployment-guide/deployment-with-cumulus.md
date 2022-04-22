@@ -85,7 +85,6 @@ module "orca" {
   db_host_endpoint      = var.db_host_endpoint
   db_user_password      = var.db_user_password
   orca_default_bucket   = var.orca_default_bucket
-  orca_restore_retrieval_type = var.orca_restore_retrieval_type
   rds_security_group_id = var.rds_security_group_id
   dlq_subscription_email = var.dlq_subscription_email
 
@@ -93,6 +92,7 @@ module "orca" {
   # db_admin_username                                    = "postgres"
   # default_multipart_chunksize_mb                       = 250
   # metadata_queue_message_retention_time                = 777600
+  # orca_default_restore_retrieval_type                  = "Standard"
   # orca_ingest_lambda_memory_size                       = 2240
   # orca_ingest_lambda_timeout                           = 600
   # orca_reconciliation_lambda_memory_size               = 128
@@ -124,7 +124,6 @@ optional variables can be found in the [variables section](#orca-variables).
 - orca_default_bucket
 - db_user_password
 - db_host_endpoint
-- orca_restore_retrieval_type
 - rds_security_group_id
 - dlq_subscription_email
 
@@ -189,11 +188,6 @@ variable "orca_default_bucket" {
   description = "Default ORCA S3 Glacier bucket to use."
 }
 
-variable "orca_restore_retrieval_type" {
-  type        = string
-  description = "The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'."
-}
-
 variable "rds_security_group_id" {
   type        = string
   description = "Cumulus' RDS Security Group's ID."
@@ -253,7 +247,6 @@ Below describes the type of value expected for each variable.
 * `orca_default_bucket` (string) - default S3 glacier bucket to use for ORCA data.
 * `db_admin_password` (string) - password for the postgres user.
 * `db_host_endpoint`(string) - Database host endpoint to connect to.
-* `orca_restore_retrieval_type`(string) -The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
 * `rds_security_group_id`(string) - Cumulus' RDS Security Group's ID. Output as `security_group_id` from the rds-cluster deployment.
 * `dlq_subscription_email`(string) - "The email to notify users when messages are received in dead letter SQS queue due to restore failure. Sends one email until the dead letter queue is emptied."
 
@@ -496,7 +489,6 @@ file. The variables must be set with proper values for your environment in the
 | `db_user_password`     | Password for RDS database user authentication           | "My_Sup3rS3cr3tuserPassw0rd"                                |
 | `dlq_subscription_email`| The email to notify users when messages are received in dead letter SQS queue | "test@email.com"                     |
 | `orca_default_bucket`  | Default ORCA S3 Glacier bucket to use.                  | "PREFIX-orca-primary"                                       |
-| `orca_restore_retrieval_type`  | The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited' | "Bulk"                     |
 | `rds_security_group_id`| Cumulus' RDS Security Group's ID.                       | "sg-01234567890123456"                                      |
 | `s3_access_key`        | Access key for communicating with Orca S3 buckets.      |                                                             |
 | `s3_secret_key`        | Secret key for communicating with Orca S3 buckets.      |                                                             |
@@ -533,6 +525,7 @@ variables is shown in the table below.
 | `metadata_queue_message_retention_time_seconds`       | number        | Number of seconds the metadata-queue fifo SQS retains a message.                                          | 777600 |
 | `db_name`                                             | string        | The name of the Orca database within the RDS cluster. Any `-` in `prefix` will be replaced with `_`.      | PREFIX_orca |
 | `db_user_name`                                        | string        | The name of the application user for the Orca database. Any `-` in `prefix` will be replaced with `_`.    | PREFIX_orcauser |
+| `orca_default_restore_retrieval_type`                     | The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'                                            | "Bulk" |
 | `orca_ingest_lambda_memory_size`                      | number        | Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime.                                | 2240 |
 | `orca_ingest_lambda_timeout`                          | number        | Timeout in number of seconds for ORCA copy_to_glacier lambda.                                             | 600 |
 | `orca_reconciliation_lambda_memory_size`              | number        | Amount of memory in MB the ORCA reconciliation lambda can use at runtime.                                 | 128 |

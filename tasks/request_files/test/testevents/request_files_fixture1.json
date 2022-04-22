@@ -3,7 +3,7 @@
     "asyncOperationId": "{$.cumulus_meta.asyncOperationId}",
     "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
     "orcaDefaultBucketOverride": "{$.meta.collection.meta.orcaDefaultBucketOverride}",
-    "orcaRestoreTypeOverride": "{$.meta.collection.meta.orcaRestoreTypeOverride}"
+    "orcaDefaultRecoveryTypeOverride": "{$.meta.collection.meta.orcaDefaultRecoveryTypeOverride}"
   },
   "cumulus_meta": {
     "task": "request_files",

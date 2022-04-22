@@ -31,7 +31,6 @@ module "orca_lambdas" {
   ## REQUIRED
   db_connect_info_secret_arn                           = module.orca_secretsmanager.secretsmanager_arn
   orca_default_bucket                                  = var.orca_default_bucket
-  orca_restore_retrieval_type                          = var.orca_restore_retrieval_type
   orca_secretsmanager_s3_access_credentials_secret_arn = module.orca_secretsmanager.s3_access_credentials_secret_arn
   orca_sqs_internal_report_queue_id                    = module.orca_sqs.orca_sqs_internal_report_queue_id
   orca_sqs_metadata_queue_arn                          = module.orca_sqs.orca_sqs_metadata_queue_arn
@@ -46,6 +45,7 @@ module "orca_lambdas" {
   ## OPTIONAL
   orca_ingest_lambda_memory_size         = var.orca_ingest_lambda_memory_size
   orca_ingest_lambda_timeout             = var.orca_ingest_lambda_timeout
+  orca_default_restore_retrieval_type    = var.orca_default_restore_retrieval_type
   orca_reconciliation_lambda_memory_size = var.orca_reconciliation_lambda_memory_size
   orca_reconciliation_lambda_timeout     = var.orca_reconciliation_lambda_timeout
   orca_recovery_buckets                  = var.orca_recovery_buckets

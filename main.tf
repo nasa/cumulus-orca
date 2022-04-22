@@ -35,7 +35,6 @@ module "orca" {
   db_user_password            = var.db_user_password
   dlq_subscription_email      = var.dlq_subscription_email
   orca_default_bucket         = var.orca_default_bucket
-  orca_restore_retrieval_type = var.orca_restore_retrieval_type
   s3_access_key               = var.s3_access_key
   s3_secret_key               = var.s3_secret_key
   
@@ -46,6 +45,7 @@ module "orca" {
   default_multipart_chunksize_mb                       = var.default_multipart_chunksize_mb
   internal_report_queue_message_retention_time_seconds = var.internal_report_queue_message_retention_time_seconds
   metadata_queue_message_retention_time_seconds        = var.metadata_queue_message_retention_time_seconds
+  orca_default_restore_retrieval_type                  = var.orca_default_restore_retrieval_type
   orca_ingest_lambda_memory_size                       = var.orca_ingest_lambda_memory_size
   orca_ingest_lambda_timeout                           = var.orca_ingest_lambda_timeout
   orca_reconciliation_lambda_memory_size               = var.orca_reconciliation_lambda_memory_size

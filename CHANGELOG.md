@@ -26,7 +26,7 @@ and includes an additional section for migration notes.
 - *ORCA-403* Added lambda post_to_queue_and_trigger_step_function to trigger step function for internal reconciliation.
 - *ORCA-309* Added lambda internal_reconcile_report_phantom to report entries present in the catalog, but not s3.
 - *ORCA-382* Added lambda internal_reconcile_report_orphan to report entries present in S3 bucket, but not in the ORCA catalog.
-- *ORCA-291* request_files lambda now accept "orcaRestoreTypeOverride" to override the glacier restore type at the workflow level. If desired, add "orcaRestoreTypeOverride": "{$.meta.collection.meta.restoreType}" to the workflow's task's task_config.
+- *ORCA-291* request_files lambda now accept "orcaRestoreTypeOverride" to override the glacier restore type at the workflow level by adding it to task_config.
 
 ### Changed
 - *ORCA-299* `db_deploy` task has been updated to deploy ORCA internal reconciliation tables and objects.
@@ -34,27 +34,23 @@ and includes an additional section for migration notes.
 - SQS Queue names adjusted to include Orca. For example: `"${var.prefix}-orca-status-update-queue.fifo"`. Queues will be automatically recreated by Terraform.
 - *ORCA-334* Created IAM role for the extract_filepaths_for_granule lambda function, attached the role to the function
 - *ORCA-404* Updated shared_db and relevant lambdas to use secrets manager ARN instead of magic strings.
-- *ORCA-291* Updated request_files lambda and terraform so that the glacier restore type can now be overwritten by the user instead of being hard-coded previously during deployment.
+- *ORCA-291* Updated request_files lambda and terraform so that the glacier restore type can be set via terraform during deployment or overridden via a change in the collections configuration via `"orcaDefaultRecoveryTypeOverride": "{$.meta.collection.meta.orcaDefaultRecoveryTypeOverride}"`
 
 ### Migration Notes
 
 - The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variables. The following required variables have been added:
   - dlq_subscription_email
-  - orca_restore_retrieval_type
   - s3_access_key
   - s3_secret_key
   
+- Update the collection configuration with the new key `"orcaDefaultRecoveryTypeOverride": "{$.meta.collection.meta.orcaDefaultRecoveryTypeOverride}"`.
+
 - Add the following ORCA required variable definition to your `variables.tf` or `orca_variables.tf` file.
 
 ```terraform
 variable "dlq_subscription_email" {
   type        = string
   description = "The email to notify users when messages are received in dead letter SQS queue due to restore failure. Sends one email until the dead letter queue is emptied."
-}
-
-variable "orca_restore_retrieval_type" {
-  type        = string
-  description = "The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'."
 }
 
 variable "s3_access_key" {
@@ -93,7 +89,6 @@ variable "s3_secret_key" {
   ## --------------------------
   ## REQUIRED
   orca_default_bucket         = var.orca_default_bucket
-  orca_restore_retrieval_type = var.orca_restore_retrieval_type
   db_admin_password           = var.db_admin_password
   db_user_password            = var.db_user_password
   db_host_endpoint            = var.db_host_endpoint
@@ -106,6 +101,7 @@ variable "s3_secret_key" {
   db_admin_username                                    = "postgres"
   default_multipart_chunksize_mb                       = 250
   internal_report_queue_message_retention_time_seconds = 432000
+  orca_default_restore_retrieval_type                  = "Standard"
   orca_ingest_lambda_memory_size                       = 2240
   orca_ingest_lambda_timeout                           = 720
   orca_recovery_buckets                                = []
@@ -124,15 +120,6 @@ variable "s3_secret_key" {
   vpc_endpoint_id                                      = null
   }
   ```
-Example of the new ORCA recovery workflow is shown below.  
-```json
-"task_config": {
-  "buckets": "{$.meta.buckets}",
-  "fileBucketMaps": "{$.meta.collection.files}",
-  "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
-  "restoreType": "{$.meta.collection.meta.restoreType}"
-}
-```
 
 ## [4.0.1]
 
