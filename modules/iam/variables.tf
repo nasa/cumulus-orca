@@ -34,3 +34,8 @@ variable "orca_recovery_buckets" {
   type        = list(string)
   description = "List of bucket names that ORCA has permissions to restore data to."
 }
+
+variable "orca_reports_bucket_arn" {
+  type        = string
+  description = "The ARN of the bucket to store s3 inventory reports."
+}
