@@ -62,7 +62,7 @@ Currently NGAP only allows developers to create a `private` ECR repository which
 
 Details on creating the prototype are shown below:
 
-1. Create an ECR repository from AWS CLI if needed as shown. Check [here](https://docs.aws.amazon.com/AmazonECR/latest/userguide/getting-started-cli.html#cli-create-repository) for additional details on this.
+1. Create an [ECR](https://us-west-2.console.aws.amazon.com/ecr/repositories) repository from AWS CLI if needed as shown. Check [here](https://docs.aws.amazon.com/AmazonECR/latest/userguide/getting-started-cli.html#cli-create-repository) for additional details on this.
 
 ```bash
 aws ecr create-repository \
@@ -90,7 +90,7 @@ COPY requirements.txt  .
 RUN  pip3 install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
 
 # Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
-CMD [ "test.hambda_handler" ]
+CMD [ "test.lambda_handler" ]
 
 ```
 
@@ -137,6 +137,8 @@ Using the steps above, a prototype has been created in NGAP AWS sandbox account 
 ## Future directions
 Currently, the only option to store the Docker image for lambda containers is AWS ECR repository. Github package could be an option to store the image but in order to deploy the lambda, the image has to be stored into an ECR.
 
+The above example Dockerfile does not follow best practices. See example in section on Fargate.
+
 A few possible discussion items:
 - Discuss with NGAP team if the docker images can be stored in a public ECR repo.
 - If github packages are supported to store and deploy the lambda, then we have to contact NASA github admins to enable this feature in our repository.
@@ -147,6 +149,186 @@ Based on this research, it looks like using lambda as containers is possible whe
 - If github package is used to store the image, deploying lambda as container will be an issue since the terraform only supports deploying the image from ECR. Moreover, this feature for the github repository has to be approved by NASA Github admins.
 
 If the above issues are solved, then implementing lambda as container is recommended. One way to use private ECR repo is to use a script or terraform code if possible that will create the ECR repo and then build, tag and push the container image to that repo. One that is done, update the terraform lambda modules and deploy the lambda. An additional [card](https://bugs.earthdata.nasa.gov/browse/ORCA-375) has been created to look into this way.
+
+
+### Modifying get_current_archive_list and perform_orca_reconcile
+
+The Orca Internal Reconciliation workflow lambdas require an alternative approach.
+- The maximum time limit for lambdas is 15 minutes. These lambdas may take a significant amount of time, and should not be subject to this limitation.
+
+- Code changes
+  - Merge `get_current_archive_list` and `perform_orca_reconcile` into one codebase.
+  - Wrap functionality in a loop that will process the internal-report queue until no entries remain.
+  - Since ECS does not support timeout, create an overarching timing mechanic that exits if an infinite loop occurs while processing a queue entry.
+    - Alternatively, a side-program could manually stop the task if it exceeds its' time limit.
+    - Remember that in addition to processing time, Aurora Serverless can take up to 5 minutes to spin up.
+  - Raise the internal-report queue's `visibility_timeout_seconds` to the expected timeout.
+  - Environment variables can be passed in at task definition, or when the task is run. The former should be sufficient.
+
+- Use an alternative Dockerfile. The example below packages two code files into a lightweight python container with a `CMD` to run the main file.
+  ```yaml
+  # Build Stage - Here we can bring dev libraries and compile the wheels for the python libs
+  # =============================================================================
+  FROM python:3.8-slim as builder
+
+  WORKDIR /app
+
+  ENV PYTHONDONTWRITEBYTECODE 1
+  ENV PYTHONUNBUFFERED 1
+
+  # Install the function's dependencies using file requirements.txt
+  # from your project folder.
+  COPY requirements.txt  .
+  RUN pip wheel --no-cache-dir --no-deps --wheel-dir /app/wheels -r requirements.txt
+
+  # Run Stage - Contains everything needed to run code with entry point
+  # ===================================================================
+  FROM python:3.8-slim
+
+  # CREATE Non-Privileged User
+  RUN mkdir -p /app \
+      && groupadd -r appuser \
+      && useradd -r -s /bin/false -g appuser appuser \
+      && chown -R appuser:appuser /app
+
+  # Copy compiled wheels and install the requirements
+  COPY --from=builder /app/wheels /wheels
+  RUN pip install --no-cache /wheels/*
+
+  # Set the work directory for our application
+  WORKDIR /app
+
+  # Copy function code
+  COPY main.py main.py
+  COPY sqs_library.py sqs_library.py
+
+  # Set the User that the app will run as
+  USER appuser
+
+  # Set the entry point for the container
+  ENTRYPOINT ["python", "main.py"]
+  ```
+- Follow prior instructions up to the Terraform deployment. Use the following Terraform instead of the previous example.
+```terraform
+data "aws_iam_policy_document" "sqs_task_policy_document" {
+  statement {
+    actions   = ["sts:AssumeRole"]
+    resources = ["*"]
+  }
+  statement {
+    actions = [
+      "sqs:ReceiveMessage",
+      "sqs:SendMessage",
+      "sqs:DeleteMessage",
+      "sqs:GetQueueAttributes"
+    ]
+    resources = ["*"]
+  }
+}
+
+data "aws_iam_policy_document" "assume_ecs_tasks_role_policy_document" {
+  statement {
+    principals {
+      type        = "Service"
+      identifiers = ["ecs-tasks.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+# IAM role that tasks can use to make API requests to authorized AWS services.
+resource "aws_iam_role" "orca_ecs_tasks_role" {
+  name                 = "${var.prefix}_orca_ecs_tasks_role"
+  assume_role_policy   = data.aws_iam_policy_document.assume_ecs_tasks_role_policy_document.json
+  permissions_boundary = var.permissions_boundary_arn
+  tags                 = var.tags
+}
+
+resource "aws_iam_role_policy" "sqs_task_role_policy" {
+  name   = "${var.prefix}_orca_sqs_task_role_policy"
+  role   = aws_iam_role.orca_ecs_tasks_role.id
+  policy = data.aws_iam_policy_document.sqs_task_policy_document.json
+}
+
+# This role is required by tasks to pull container images and publish container logs to Amazon CloudWatch on your behalf.
+resource "aws_iam_role" "orca_ecs_task_execution_role" {
+  name                 = "${var.prefix}_orca_ecs_task_execution_role"
+  assume_role_policy   = data.aws_iam_policy_document.assume_ecs_tasks_role_policy_document.json
+  permissions_boundary = var.permissions_boundary_arn
+  tags                 = var.tags
+}
+
+
+resource "aws_iam_role_policy_attachment" "ecs_role_policy" {
+  role       = aws_iam_role.orca_ecs_task_execution_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+}
+
+resource "aws_ecs_cluster" "test-cluster" {
+  name = "${var.prefix}_orca_ecs_cluster"
+  capacity_providers = ["FARGATE"]
+  default_capacity_provider_strategy {
+    capacity_provider = "FARGATE"
+    weight            = 100
+  }
+}
+
+# Defines how the image will be run. container_definitions can be replaced by data element.
+resource "aws_ecs_task_definition" "task" {
+  family                   = "${var.prefix}_orca_sqs_task"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = "4096"
+  memory                   = "8192"
+  task_role_arn            = aws_iam_role.orca_ecs_tasks_role.arn
+  execution_role_arn       = aws_iam_role.orca_ecs_task_execution_role.arn
+  container_definitions    = <<DEFINITION
+[
+  {
+    "name": "sqs_task_container",
+    "image": "999999999999.dkr.ecr.us-west-2.amazonaws.com/adorn-test-repo:latest",
+    "cpu": 4096,
+    "memory": 256,
+    "networkMode": "awsvpc",
+    "environment": [
+      {
+        "name": "TARGET_QUEUE_URL",
+        "value": "https://sqs.us-west-2.amazonaws.com/999999999999/doctest-orca-internal-report-queue.fifo"
+      }
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-create-group": "true",
+        "awslogs-region": "us-west-2",
+        "awslogs-group": "${var.prefix}_orca_sqs_task",
+        "awslogs-stream-prefix": "ecs"
+      }
+    }
+  }
+]
+DEFINITION
+}
+:::note
+The above example was developed for deploying a simple task that posts to an sqs queue. Names and values should be changed to match new use cases.
+Values such as `cpu` and `memory` should similarly be reevaluated.
+:::
+:::warning
+Applying admin permissions to orca_ecs_task_execution_role is likely overly permissive.
+:::
+- The Fargate task can now be run in the ECS cluster.
+This can be done through [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ecs.html#ECS.Client.run_task) or the GUI,
+though the former is presently untested.
+- [Pricing](https://aws.amazon.com/ecs/pricing/?trk=2f064982-4fad-4e1f-ab75-e1df26258a60&sc_channel=ps&sc_campaign=acquisition&sc_medium=GC-PMM|PS-GO|Brand|All|PA|Database|ECS|Product|US|EN|Text|xx|SEM|PMO22-13405&s_kwcid=AL!4422!3!547620651289!e!!g!!amazon%20ecs%20pricing&ef_id=EAIaIQobChMIsO-ehu2l9wIVCfrICh0gOQ5OEAAYASABEgIZmfD_BwE:G:s&s_kwcid=AL!4422!3!547620651289!e!!g!!amazon%20ecs%20pricing) only applies to what is used in the moment, and can auto-scale down.
+  - Minimum compute time is one minute, so this architecture should not be used for small, frequent tasks.
+
+#### Recommendation
+Recommend use of the above architecture to resolve concerns with timeouts when handling large inventories.
+get_current_archive_list and perform_orca_reconcile can be merged into one codebase, with an overarching loop. https://bugs.earthdata.nasa.gov/browse/ORCA-428
+This script can be built into a Docker container and deployed to the result of [ECR reserach](https://bugs.earthdata.nasa.gov/browse/ORCA-375). https://bugs.earthdata.nasa.gov/browse/ORCA-429
+This new script can then be deployed as a task definition in AWS. https://bugs.earthdata.nasa.gov/browse/ORCA-432
+The task definition can be run periodically to empty the queue of any internal reconciliation jobs. https://bugs.earthdata.nasa.gov/browse/ORCA-430
+We can either remove triggering from post_to_queue_and_trigger_step_function or update it to trigger the Fargate task when called. https://bugs.earthdata.nasa.gov/browse/ORCA-431
 
 ##### References
 - https://aws.amazon.com/blogs/aws/new-for-aws-lambda-container-image-support/
