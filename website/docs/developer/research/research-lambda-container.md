@@ -137,6 +137,8 @@ Using the steps above, a prototype has been created in NGAP AWS sandbox account 
 ## Future directions
 Currently, the only option to store the Docker image for lambda containers is AWS ECR repository. Github package could be an option to store the image but in order to deploy the lambda, the image has to be stored into an ECR.
 
+The above example Dockerfile does not follow best practices. See example in section on Fargate.
+
 A few possible discussion items:
 - Discuss with NGAP team if the docker images can be stored in a public ECR repo.
 - If github packages are supported to store and deploy the lambda, then we have to contact NASA github admins to enable this feature in our repository.
@@ -165,22 +167,46 @@ The Orca Internal Reconciliation workflow lambdas require an alternative approac
 
 - Use an alternative Dockerfile. The example below packages two code files into a lightweight python container with a `CMD` to run the main file.
   ```yaml
-  FROM python:3.8-slim-buster
+  # Build Stage - Here we can bring dev libraries and compile the wheels for the python libs
+  # =============================================================================
+  FROM python:3.8-slim as builder
 
-  WORKDIR /src
+  WORKDIR /app
+
+  ENV PYTHONDONTWRITEBYTECODE 1
+  ENV PYTHONUNBUFFERED 1
+
+  # Install the function's dependencies using file requirements.txt
+  # from your project folder.
+  COPY requirements.txt  .
+  RUN pip wheel --no-cache-dir --no-deps --wheel-dir /app/wheels -r requirements.txt
+
+  # Run Stage - Contains everything needed to run code with entry point
+  # ===================================================================
+  FROM python:3.8-slim
+
+  # CREATE Non-Privileged User
+  RUN mkdir -p /app \
+      && groupadd -r appuser \
+      && useradd -r -s /bin/false -g appuser appuser \
+      && chown -R appuser:appuser /app
+
+  # Copy compiled wheels and install the requirements
+  COPY --from=builder /app/wheels /wheels
+  RUN pip install --no-cache /wheels/*
+
+  # Set the work directory for our application
+  WORKDIR /app
 
   # Copy function code
   COPY main.py main.py
   COPY sqs_library.py sqs_library.py
 
-  # Install the function's dependencies using file requirements.txt
-  # from your project folder.
+  # Set the User that the app will run as
+  USER appuser
 
-  COPY requirements.txt  .
-  RUN  pip3 install -r requirements.txt
-  COPY . .
-
-  CMD ["python", "main.py"]
+  # Set the entry point for the container
+  ENTRYPOINT ["python", "main.py"]
   ```
 - Follow prior instructions up to the Terraform deployment. Use the following Terraform instead of the previous example.
 ```terraform
@@ -260,14 +286,14 @@ resource "aws_ecs_task_definition" "task" {
 [
   {
     "name": "sqs_task_container",
-    "image": "236859827343.dkr.ecr.us-west-2.amazonaws.com/adorn-test-repo:latest",
+    "image": "999999999999.dkr.ecr.us-west-2.amazonaws.com/adorn-test-repo:latest",
     "cpu": 4096,
     "memory": 256,
     "networkMode": "awsvpc",
     "environment": [
       {
         "name": "TARGET_QUEUE_URL",
-        "value": "https://sqs.us-west-2.amazonaws.com/236859827343/doctest-orca-internal-report-queue.fifo"
+        "value": "https://sqs.us-west-2.amazonaws.com/999999999999/doctest-orca-internal-report-queue.fifo"
       }
     ],
     "logConfiguration": {
