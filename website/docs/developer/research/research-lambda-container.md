@@ -322,7 +322,13 @@ though the former is presently untested.
 - [Pricing](https://aws.amazon.com/ecs/pricing/?trk=2f064982-4fad-4e1f-ab75-e1df26258a60&sc_channel=ps&sc_campaign=acquisition&sc_medium=GC-PMM|PS-GO|Brand|All|PA|Database|ECS|Product|US|EN|Text|xx|SEM|PMO22-13405&s_kwcid=AL!4422!3!547620651289!e!!g!!amazon%20ecs%20pricing&ef_id=EAIaIQobChMIsO-ehu2l9wIVCfrICh0gOQ5OEAAYASABEgIZmfD_BwE:G:s&s_kwcid=AL!4422!3!547620651289!e!!g!!amazon%20ecs%20pricing) only applies to what is used in the moment, and can auto-scale down.
   - Minimum compute time is one minute, so this architecture should not be used for small, frequent tasks.
 
-
+#### Recommendation
+Recommend use of the above architecture to resolve concerns with timeouts when handling large inventories.
+get_current_archive_list and perform_orca_reconcile can be merged into one codebase, with an overarching loop. https://bugs.earthdata.nasa.gov/browse/ORCA-428
+This script can be built into a Docker container and deployed to the result of [ECR reserach](https://bugs.earthdata.nasa.gov/browse/ORCA-375). https://bugs.earthdata.nasa.gov/browse/ORCA-429
+This new script can then be deployed as a task definition in AWS. https://bugs.earthdata.nasa.gov/browse/ORCA-432
+The task definition can be run periodically to empty the queue of any internal reconciliation jobs. https://bugs.earthdata.nasa.gov/browse/ORCA-430
+We can either remove triggering from post_to_queue_and_trigger_step_function or update it to trigger the Fargate task when called. https://bugs.earthdata.nasa.gov/browse/ORCA-431
 
 ##### References
 - https://aws.amazon.com/blogs/aws/new-for-aws-lambda-container-image-support/
