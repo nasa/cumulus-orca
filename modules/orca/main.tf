@@ -129,7 +129,8 @@ module "orca_iam" {
   # ORCA Variables
   # --------------------------
   # OPTIONAL
-  orca_recovery_buckets = var.orca_recovery_buckets
+  orca_recovery_buckets   = var.orca_recovery_buckets
+  orca_reports_bucket_arn = var.orca_reports_bucket_arn
 }
 
 

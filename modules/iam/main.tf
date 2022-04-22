@@ -1,12 +1,12 @@
 ## Local Variables
 # We will eventually create more specific permissions. For now, only reports buckets are separated.
+# Note that all_bucket_names does not actually contain all buckets used by Orca.
 locals {
-  all_bucket_names  = length(var.orca_recovery_buckets) > 0 ? var.orca_recovery_buckets : [for k, v in var.buckets : v.name if v.type != "reports"]
+  all_bucket_names  = length(var.orca_recovery_buckets) > 0 ? var.orca_recovery_buckets : [for k, v in var.buckets : v.name]
   all_bucket_arns   = [for name in local.all_bucket_names : "arn:aws:s3:::${name}"]
   all_bucket_paths  = [for name in local.all_bucket_names : "arn:aws:s3:::${name}/*"]
   orca_bucket_arns  = [for k, v in var.buckets : "arn:aws:s3:::${v.name}" if v.type == "orca"]
   orca_bucket_paths = [for k, v in var.buckets : "arn:aws:s3:::${v.name}/*" if v.type == "orca"]
-  reports_bucket_paths = [for k, v in var.buckets : "arn:aws:s3:::${v.name}/*" if v.type == "reports"]
 }
 
 
@@ -125,7 +125,7 @@ data "aws_iam_policy_document" "restore_object_role_policy_document" {
       "s3:PutObject",  # Copy the gzip to add missing metadata
       "s3:PutObjectAcl"  # Copy the gzip to add missing metadata
     ]
-    resources = local.reports_bucket_paths
+    resources = ["${var.orca_reports_bucket_arn}/*"]
   }
 }
 
