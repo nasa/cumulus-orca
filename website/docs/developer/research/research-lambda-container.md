@@ -182,7 +182,7 @@ The Orca Internal Reconciliation workflow lambdas require an alternative approac
 
   CMD ["python", "main.py"]
   ```
-- Follow prior instructions up to the Terraform deployment. Use the following Terraform instead of the pervious example.
+- Follow prior instructions up to the Terraform deployment. Use the following Terraform instead of the previous example.
 ```terraform
 data "aws_iam_policy_document" "sqs_task_policy_document" {
   statement {
@@ -247,6 +247,7 @@ resource "aws_ecs_cluster" "test-cluster" {
   }
 }
 
+# Defines how the image will be run. container_definitions can be replaced by data element.
 resource "aws_ecs_task_definition" "task" {
   family                   = "${var.prefix}_orca_sqs_task"
   network_mode             = "awsvpc"
@@ -284,6 +285,7 @@ DEFINITION
 }
 :::note
 The above example was developed for deploying a simple task that posts to an sqs queue. Names and values should be changed to match new use cases.
+Values such as `cpu` and `memory` should similarly be reevaluated.
 :::
 :::warning
 Applying admin permissions to orca_ecs_task_execution_role is likely overly permissive.
@@ -291,6 +293,8 @@ Applying admin permissions to orca_ecs_task_execution_role is likely overly perm
 - The task can now be run in the cluster.
 This can be done through [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ecs.html#ECS.Client.run_task) or the GUI,
 though the former is presently untested.
+- [Pricing](https://aws.amazon.com/ecs/pricing/?trk=2f064982-4fad-4e1f-ab75-e1df26258a60&sc_channel=ps&sc_campaign=acquisition&sc_medium=GC-PMM|PS-GO|Brand|All|PA|Database|ECS|Product|US|EN|Text|xx|SEM|PMO22-13405&s_kwcid=AL!4422!3!547620651289!e!!g!!amazon%20ecs%20pricing&ef_id=EAIaIQobChMIsO-ehu2l9wIVCfrICh0gOQ5OEAAYASABEgIZmfD_BwE:G:s&s_kwcid=AL!4422!3!547620651289!e!!g!!amazon%20ecs%20pricing) only applies to what is used in the moment, and can auto-scale down.
+  - Minimum compute time is one minute, so this architecture should not be used for small, frequent tasks.
 
 
 
