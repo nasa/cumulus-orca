@@ -327,8 +327,10 @@ Recommend use of the above architecture to resolve concerns with timeouts when h
 get_current_archive_list and perform_orca_reconcile can be merged into one codebase, with an overarching loop. https://bugs.earthdata.nasa.gov/browse/ORCA-428
 This script can be built into a Docker container and deployed to the result of [ECR reserach](https://bugs.earthdata.nasa.gov/browse/ORCA-375). https://bugs.earthdata.nasa.gov/browse/ORCA-429
 This new script can then be deployed as a task definition in AWS. https://bugs.earthdata.nasa.gov/browse/ORCA-432
-The task definition can be run periodically to empty the queue of any internal reconciliation jobs. https://bugs.earthdata.nasa.gov/browse/ORCA-430
-We can either remove triggering from post_to_queue_and_trigger_step_function or update it to trigger the Fargate task when called. https://bugs.earthdata.nasa.gov/browse/ORCA-431
+We should also create our own ECS cluster to decouple from Cumulus. https://bugs.earthdata.nasa.gov/browse/ORCA-433
+The task definition can be run periodically in the ECS cluster to empty the queue of any internal reconciliation jobs. https://bugs.earthdata.nasa.gov/browse/ORCA-430
+We can either remove triggering from post_to_queue_and_trigger_step_function or update it to trigger the Fargate task when called.
+In either case, the old workflow can be removed. https://bugs.earthdata.nasa.gov/browse/ORCA-431
 
 ##### References
 - https://aws.amazon.com/blogs/aws/new-for-aws-lambda-container-image-support/
