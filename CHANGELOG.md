@@ -28,6 +28,7 @@ and includes an additional section for migration notes.
     Report frequency defaults to `Daily`, but can be set to `Weekly` through variable `s3_report_frequency`.
 - *ORCA-309* Added lambda internal_reconcile_report_phantom to report entries present in the catalog, but not s3.
 - *ORCA-382* Added lambda internal_reconcile_report_orphan to report entries present in S3 bucket, but not in the ORCA catalog.
+- *ORCA-381* Added lambda internal_reconcile_report_mismatch to report entries present in S3 bucket and catalog, but with conflicting data.
 
 ### Changed
 - *ORCA-299* `db_deploy` task has been updated to deploy ORCA internal reconciliation tables and objects.
