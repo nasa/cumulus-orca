@@ -1,91 +1,94 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/internal_reconcile_report_mismatch/schemas/output.json",
-    "title": "internal_reconcile_report_mismatch Lambda Output",
-    "description": "The output for the internal_reconcile_report_mismatch Lambda.",
-    "type": "object",
-    "required": [
-      "jobId",
-      "anotherPage",
-      "mismatches"
-    ],
-    "properties": {
-        "jobId": {
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/internal_reconcile_report_mismatch/schemas/output.json",
+  "title": "internal_reconcile_report_mismatch Lambda Output",
+  "description": "The output for the internal_reconcile_report_mismatch Lambda.",
+  "type": "object",
+  "required": [
+    "jobId",
+    "anotherPage",
+    "mismatches"
+  ],
+  "properties": {
+    "jobId": {
+      "type": "integer",
+      "description": "The unique ID of the reconciliation job."
+    },
+    "anotherPage": {
+      "description": "Indicates if more results can be retrieved on another page.",
+      "type": "boolean"
+    },
+    "mismatches": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "collectionId",
+          "granuleId",
+          "filename",
+          "keyPath",
+          "cumulusArchiveLocation",
+          "orcaEtag",
+          "s3Etag",
+          "orcaLastUpdate",
+          "s3LastUpdate",
+          "orcaSizeInBytes",
+          "s3SizeInBytes",
+          "discrepancyType"
+        ],
+        "properties": {
+          "collectionId": {
+            "type": "string",
+            "description": "Cumulus Collection ID value from the ORCA catalog."
+          },
+          "granuleId": {
+            "type": "string",
+            "description": "Cumulus granuleID value from the ORCA catalog."
+          },
+          "filename": {
+            "type": "string",
+            "description": "Filename of the object from the ORCA catalog."
+          },
+          "keyPath": {
+            "type": "string",
+            "description": "key path and filename of the object in the ORCA catalog."
+          },
+          "cumulusArchiveLocation": {
+            "type": "string",
+            "description": "Expected S3 bucket the object is located in Cumulus. From the ORCA catalog."
+          },
+          "orcaEtag": {
+            "type": "string",
+            "description": "etag of the object as reported in the ORCA catalog."
+          },
+          "s3Etag": {
+            "type": "string",
+            "description": "etag of the object as reported in the S3 bucket"
+          },
+          "orcaLastUpdate": {
             "type": "integer",
-            "description": "The unique ID of the reconciliation job."
+            "description": "The time, in milliseconds since 1 January 1970 UTC, that information was updated in the ORCA catalog."
           },
-        "anotherPage": {
-          "description": "Indicates if more results can be retrieved on another page.",
-          "type": "boolean"
-        },
-        "mismatches": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "required": [
-              "collectionId",
-              "granuleId",
-              "fileName",
-              "keyPath",
-              "cumulusArchiveLocation",
-              "orcaEtag",
-              "s3Etag",
-              "orcaLastUpdate",
-              "s3LastUpdate",
-              "orcaSizeinBytes",
-              "s3SizeInBytes",
-              "discrepancyType"
-
-            ],
-          "properties": {
-            "collectionId": {
-              "type": "string",
-              "description": "Cumulus Collection ID value from the ORCA catalog."
-            },
-            "granuleId": {
-                "type": "string",
-                "description": "Cumulus granuleID value from the ORCA catalog."
-              }, 
-            "filename": {
-                "type": "string",
-                "description": "Filename of the object from the ORCA catalog."
-              },
-            "keyPath": {
-                "type": "string",
-                "description": "key path and filename of the object in the ORCA catalog."
-              },
-            "cumulusArchiveLocation": {
-              "type": "string",
-              "description": "Expected S3 bucket the object is located in Cumulus. From the ORCA catalog."
-            },       
-            "orcaEtag": {
-                "type": "string",
-                "description": "etag of the object as reported in the ORCA catalog."
-              },
-            "s3Etag": {
-              "type": "string",
-              "description": "etag of the object as reported in the S3 bucket"
-            },
-            "orcaLastUpdate": {
-              "type": "integer",
-              "description": "The time, in milliseconds since 1 January 1970 UTC, that information was updated in the ORCA catalog."
-            },
-            "s3LastUpdate": {
-              "type": "integer",
-              "description": "The time, in milliseconds since 1 January 1970 UTC, that information was updated in the S3 bucket."
-            },
-            "orcaSizeinBytes": {
-              "type": "integer",
-              "description": "Size in bytes of the object as reported in the ORCA catalog."
+          "s3LastUpdate": {
+            "type": "integer",
+            "description": "The time, in milliseconds since 1 January 1970 UTC, that information was updated in the S3 bucket."
           },
-          "s3SizeinBytes": {
+          "orcaSizeInBytes": {
+            "type": "integer",
+            "description": "Size in bytes of the object as reported in the ORCA catalog."
+          },
+          "s3SizeInBytes": {
             "type": "integer",
             "description": "Size in bytes of the object as reported in the S3 bucket."
-        },
-        "discrepancyType": {
-          "type": "string",
-          "description": "ype of discrepancy found during reconciliation."
-      }
+          },
+          "discrepancyType": {
+            "type": "string",
+            "description": "Type of discrepancy found during reconciliation."
+          },
+          "comment": {
+            "type": "string",
+            "description": "Any additional context for the mismatch."
+          }
         }
       }
     }

@@ -37,10 +37,15 @@ Fully defined json schemas written in the schema of https://json-schema.org/ can
       "collectionId": "MOD09GQ___061",
       "granuleId": "MOD09GQ.A2017025.h21v00.006.2017034065109",
       "filename": "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
-      "key_path": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+      "keyPath": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+      "cumulusArchiveLocation": "cumulus-public",
       "orcaEtag": "d41d8cd98f00b204e9800998ecf8427",
+      "s3Etag": "1f78ve1d3f41vbhg4nbb4kjhong4x14",
       "orcaLastUpdate": "2020-01-01T23:00:00Z",
-      "orcaSize": 6543277389
+      "s3LastUpdate": "2020-01-01T23:00:00Z",
+      "orcaSizeInBytes": 6543277389,
+      "s3SizeInBytes": 1987618731,
+      "discrepancyType": "etag, size_in_bytes"
     }
   ]
 }

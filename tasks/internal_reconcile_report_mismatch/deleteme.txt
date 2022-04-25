@@ -1,0 +1,93 @@
+Help on module internal_reconcile_report_mismatch:
+
+NAME
+    internal_reconcile_report_mismatch
+
+FUNCTIONS
+    check_env_variable(env_name: str) -> str
+        Checks for the lambda environment variable.
+        Args:
+            env_name (str): The environment variable name set in lambda configuration.
+        Raises: KeyError in case the environment variable is not found.
+    
+    create_http_error_dict(error_type: str, http_status_code: int, request_id: str, message: str) -> Dict[str, Any]
+        Creates a standardized dictionary for error reporting.
+        Args:
+            error_type: The string representation of http_status_code.
+            http_status_code: The integer representation of the http error.
+            request_id: The incoming request's id.
+            message: The message to display to the user and to record for debugging.
+        Returns:
+            A dict with the following keys:
+                'errorType' (str)
+                'httpStatus' (int)
+                'requestId' (str)
+                'message' (str)
+    
+    get_mismatches_sql() -> <function text at 0x10404a9e0>
+        SQL for getting mismatch report entries for a given job_id, page_size, and page_index.
+        Formats datetimes in milliseconds since 1 January 1970 UTC.
+    
+    handler(event: Dict[str, Union[str, int]], context: Any) -> Union[List[Dict[str, Any]], Dict[str, Any]]
+        Entry point for the internal_reconcile_report_mismatch Lambda.
+        Args:
+            event: See schemas/input.json
+            context: An object provided by AWS Lambda. Used for context tracking.
+        
+        Environment Vars:
+            DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
+            See shared_db.py's get_configuration for further details.
+        
+        Returns:
+            See schemas/output.json
+            Or, if an error occurs, see create_http_error_dict
+                400 if input does not match schemas/input.json. 500 if an error occurs when querying the database.
+    
+    query_db(engine: sqlalchemy.future.engine.Engine, job_id: str, page_index: int) -> List[Dict[str, Any]]
+        Gets mismatches for the given job/page, up to PAGE_SIZE + 1 results.
+        
+        Args:
+            engine: The sqlalchemy engine to use for contacting the database.
+            job_id: The unique ID of job/report.
+            page_index: The 0-based index of the results page to return.
+        
+        Returns:
+            A list containing dicts matching the format of "mismatches" in output.json.
+    
+    task(job_id: int, page_index: int, db_connect_info: Dict[str, str]) -> Dict[str, Any]
+        Args:
+            job_id: The unique ID of job/report.
+            page_index: The 0-based index of the results page to return.
+            db_connect_info: See requests_db.py's get_configuration for further details.
+
+DATA
+    Any = typing.Any
+    Dict = typing.Dict
+    LOGGER = <cumulus_logger.CumulusLogger object>
+    List = typing.List
+    MISMATCHES_COLLECTION_ID_KEY = 'collectionId'
+    MISMATCHES_CUMULUS_ARCHIVE_LOCATION_KEY = 'cumulusArchiveLocation'
+    MISMATCHES_DISCREPANCY_TYPE_KEY = 'discrepancyType'
+    MISMATCHES_FILENAME_KEY = 'fileName'
+    MISMATCHES_GRANULE_ID_KEY = 'granuleId'
+    MISMATCHES_KEY_PATH_KEY = 'keyPath'
+    MISMATCHES_ORCA_ETAG_KEY = 'orcaEtag'
+    MISMATCHES_ORCA_LAST_UPDATE_KEY = 'orcaLastUpdate'
+    MISMATCHES_ORCA_SIZE_IN_BYTES_KEY = 'orcaSizeInBytes'
+    MISMATCHES_S3_ETAG_KEY = 's3Etag'
+    MISMATCHES_S3_LAST_UPDATE_KEY = 's3LastUpdate'
+    MISMATCHES_S3_SIZE_IN_BYTES_KEY = 's3SizeInBytes'
+    OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY = 'DB_CONNECT_INFO_SECRET_AR...
+    OUTPUT_ANOTHER_PAGE_KEY = 'anotherPage'
+    OUTPUT_JOB_ID_KEY = 'jobId'
+    OUTPUT_MISMATCHES_KEY = 'mismatches'
+    PAGE_SIZE = 100
+    Union = typing.Union
+    input_schema = {'$id': 'https://github.com/nasa/cumulus-orca/blob/mast...
+    output_schema = {'$id': 'https://github.com/nasa/cumulus-orca/blob/mas...
+    raw_schema = <_io.TextIOWrapper name='schemas/output.json' mode='r' en...
+
+FILE
+    /Users/adorn/Documents/GitHub/cumulus-orca/tasks/internal_reconcile_report_mismatch/internal_reconcile_report_mismatch.py
+
+
