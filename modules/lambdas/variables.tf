@@ -57,6 +57,10 @@ variable "db_connect_info_secret_arn" {
 variable "orca_default_restore_retrieval_type" {
   type        = string
   description = "The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'."
+  validation {
+    condition     = contains(["Standard", "Bulk", "Expedited"], var.orca_default_restore_retrieval_type)
+    error_message = "Valid values are 'Standard'|'Bulk'|'Expedited'."
+  }
 }
 
 variable "orca_secretsmanager_s3_access_credentials_secret_arn" {
