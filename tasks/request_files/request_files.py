@@ -28,7 +28,7 @@ DEFAULT_RESTORE_RETRIEVAL_TYPE = "Standard"
 OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY = "RESTORE_EXPIRE_DAYS"
 OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY = "RESTORE_REQUEST_RETRIES"
 OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY = "RESTORE_RETRY_SLEEP_SECS"
-OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY = "RESTORE_RETRIEVAL_TYPE"
+OS_ENVIRON_RESTORE_DEFAULT_RETRIEVAL_TYPE_KEY = "RESTORE_DEFAULT_RETRIEVAL_TYPE"
 OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY = "STATUS_UPDATE_QUEUE_URL"
 OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY = "ORCA_DEFAULT_BUCKET"
 
@@ -98,7 +98,7 @@ def task(
                 attempts to retry a restore_request that failed to submit.
             RESTORE_RETRY_SLEEP_SECS (int, optional, default = 0): The number of seconds
                 to sleep between retry attempts.
-            RESTORE_RETRIEVAL_TYPE (str, optional, default = 'Standard'): The Tier
+            RESTORE_DEFAULT_RETRIEVAL_TYPE (str, optional, default = 'Standard'): The Tier
                 for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
             STATUS_UPDATE_QUEUE_URL
                 The URL of the SQS queue to post status to.
@@ -140,10 +140,10 @@ def task(
     VALID_RESTORE_TYPES = ["Bulk", "Expedited", "Standard"] 
 
     # Get config and env set to None if the key does not exist
-    env_retrieval_type = os.getenv(OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY, None)
+    env_retrieval_type = os.getenv(OS_ENVIRON_RESTORE_DEFAULT_RETRIEVAL_TYPE_KEY, None)
     config_retrieval_type = event["config"].get(CONFIG_RESTORE_DEFAULT_RETRIEVAL_TYPE_OVERRIDE_KEY, None)
     if env_retrieval_type in VALID_RESTORE_TYPES:
-        LOGGER.info(f"Found restore type from {OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY}: {env_retrieval_type}")
+        LOGGER.info(f"Found restore type from {OS_ENVIRON_RESTORE_DEFAULT_RETRIEVAL_TYPE_KEY}: {env_retrieval_type}")
     # Set initial default to deployment env value
     retrieval_type = env_retrieval_type
 

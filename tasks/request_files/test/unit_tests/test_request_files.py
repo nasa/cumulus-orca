@@ -41,7 +41,7 @@ class TestRequestFiles(unittest.TestCase):
         os.environ.pop(request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY, None)
         os.environ.pop(request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY, None)
         os.environ.pop(request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY, None)
-        os.environ.pop(request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY, None)
+        os.environ.pop(request_files.OS_ENVIRON_RESTORE_DEFAULT_RETRIEVAL_TYPE_KEY, None)
 
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
@@ -73,7 +73,7 @@ class TestRequestFiles(unittest.TestCase):
         os.environ[
             request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
         ] = retry_sleep_secs.__str__()
-        os.environ[request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY] = retrieval_type
+        os.environ[request_files.OS_ENVIRON_RESTORE_DEFAULT_RETRIEVAL_TYPE_KEY] = retrieval_type
         os.environ[
             request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
         ] = exp_days.__str__()
@@ -121,7 +121,7 @@ class TestRequestFiles(unittest.TestCase):
         os.environ[
             request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
         ] = retry_sleep_secs.__str__()
-        os.environ[request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY] = retrieval_type
+        os.environ[request_files.OS_ENVIRON_RESTORE_DEFAULT_RETRIEVAL_TYPE_KEY] = retrieval_type
         os.environ[
             request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
         ] = exp_days.__str__()
@@ -169,7 +169,7 @@ class TestRequestFiles(unittest.TestCase):
         os.environ[
             request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY
         ] = max_retries.__str__()
-        os.environ[request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY] = retrieval_type
+        os.environ[request_files.OS_ENVIRON_RESTORE_DEFAULT_RETRIEVAL_TYPE_KEY] = retrieval_type
         os.environ[
             request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
         ] = exp_days.__str__()
@@ -271,7 +271,7 @@ class TestRequestFiles(unittest.TestCase):
         os.environ[
             request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
         ] = retry_sleep_secs.__str__()
-        os.environ[request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY] = retrieval_type
+        os.environ[request_files.OS_ENVIRON_RESTORE_DEFAULT_RETRIEVAL_TYPE_KEY] = retrieval_type
         os.environ[
             request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
         ] = exp_days.__str__()
@@ -367,10 +367,10 @@ class TestRequestFiles(unittest.TestCase):
         os.environ[
             request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
         ] = exp_days.__str__()
-        os.environ[request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY] = "Bulk"
+        os.environ[request_files.OS_ENVIRON_RESTORE_DEFAULT_RETRIEVAL_TYPE_KEY] = "Bulk"
 
         request_files.task(mock_event, None)
-        mock_logger_info.assert_called_once_with(f"Found restore type from {request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY}: {os.environ[request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY]}")
+        mock_logger_info.assert_called_once_with(f"Found restore type from {request_files.OS_ENVIRON_RESTORE_DEFAULT_RETRIEVAL_TYPE_KEY}: {os.environ[request_files.OS_ENVIRON_RESTORE_DEFAULT_RETRIEVAL_TYPE_KEY]}")
 
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
@@ -441,7 +441,7 @@ class TestRequestFiles(unittest.TestCase):
         os.environ[
             request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
         ] = retry_sleep_secs.__str__()
-        os.environ[request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY] = retrieval_type
+        os.environ[request_files.OS_ENVIRON_RESTORE_DEFAULT_RETRIEVAL_TYPE_KEY] = retrieval_type
 
         request_files.task(mock_event, None)
 
@@ -490,7 +490,7 @@ class TestRequestFiles(unittest.TestCase):
         os.environ[
             request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
         ] = retry_sleep_secs.__str__()
-        os.environ[request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY] = retrieval_type
+        os.environ[request_files.OS_ENVIRON_RESTORE_DEFAULT_RETRIEVAL_TYPE_KEY] = retrieval_type
         os.environ[
             request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
         ] = exp_days.__str__()
