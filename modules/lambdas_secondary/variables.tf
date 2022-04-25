@@ -1,6 +1,11 @@
 ## Variables obtained by Cumulus deployment
 ## Should exist in https://github.com/nasa/cumulus-template-deploy/blob/master/cumulus-tf/variables.tf
 ## REQUIRED
+variable "buckets" {
+  type        = map(object({ name = string, type = string }))
+  description = "S3 bucket locations for the various storage types being used."
+}
+
 variable "lambda_subnet_ids" {
   type        = list(string)
   description = "List of subnets the lambda functions have access to."
@@ -29,6 +34,11 @@ variable "default_multipart_chunksize_mb" {
 variable "restore_object_role_arn" {
   type        = string
   description = "AWS ARN of the restore_object_role."
+}
+
+variable "orca_reports_bucket_arn" {
+  type        = string
+  description = "The ARN of the bucket to store s3 inventory reports."
 }
 
 variable "orca_sfn_internal_reconciliation_workflow_arn" {
@@ -62,5 +72,11 @@ variable "orca_reconciliation_lambda_memory_size" {
 variable "orca_reconciliation_lambda_timeout" {
   type        = number
   description = "Timeout in number of seconds for ORCA reconciliation lambdas."
+}
+
+
+variable "s3_report_frequency" {
+  type        = string
+  description = "How often to generate s3 reports for internal reconciliation."
 }
 

@@ -1,9 +1,3 @@
-## Local Variables
-locals {
-  tags = merge(var.tags, { Deployment = var.prefix })
-}
-
-
 ## Referenced Modules - Workflows
 
 # orca_internal_reconciliation_workflow - Triggers off of s3 events releated to s3 Inventory. Creates reconciliation reports between s3 and Orca catalog.
@@ -16,7 +10,7 @@ module "orca_internal_reconciliation_workflow" {
   ## REQUIRED
   prefix          = var.prefix
   system_bucket   = var.system_bucket
-  tags            = local.tags
+  tags            = var.tags
   workflow_config = var.workflow_config
 
   ## --------------------------
@@ -39,7 +33,7 @@ module "orca_recovery_workflow" {
   ## REQUIRED
   prefix          = var.prefix
   system_bucket   = var.system_bucket
-  tags            = local.tags
+  tags            = var.tags
   workflow_config = var.workflow_config
 
   ## --------------------------
@@ -63,7 +57,7 @@ module "orca_copy_to_glacier_workflow" {
   ## REQUIRED
   prefix          = var.prefix
   system_bucket   = var.system_bucket
-  tags            = local.tags
+  tags            = var.tags
   workflow_config = var.workflow_config
 
   ## --------------------------
