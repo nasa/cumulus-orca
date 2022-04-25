@@ -26,7 +26,7 @@ and includes an additional section for migration notes.
 - *ORCA-403* Added lambda post_to_queue_and_trigger_step_function to trigger step function for internal reconciliation.
 - *ORCA-309* Added lambda internal_reconcile_report_phantom to report entries present in the catalog, but not s3.
 - *ORCA-382* Added lambda internal_reconcile_report_orphan to report entries present in S3 bucket, but not in the ORCA catalog.
-- *ORCA-291* request_files lambda now accept "orcaRestoreTypeOverride" to override the glacier restore type at the workflow level by adding it to task_config.
+- *ORCA-291* request_files lambda now accepts `orcaDefaultRecoveryTypeOverride` to override the glacier restore type at the workflow level by adding it to task_config.
 
 ### Changed
 - *ORCA-299* `db_deploy` task has been updated to deploy ORCA internal reconciliation tables and objects.
@@ -34,7 +34,8 @@ and includes an additional section for migration notes.
 - SQS Queue names adjusted to include Orca. For example: `"${var.prefix}-orca-status-update-queue.fifo"`. Queues will be automatically recreated by Terraform.
 - *ORCA-334* Created IAM role for the extract_filepaths_for_granule lambda function, attached the role to the function
 - *ORCA-404* Updated shared_db and relevant lambdas to use secrets manager ARN instead of magic strings.
-- *ORCA-291* Updated request_files lambda and terraform so that the glacier restore type can be set via terraform during deployment or overridden via a change in the collections configuration via `"orcaDefaultRecoveryTypeOverride": "{$.meta.collection.meta.orcaDefaultRecoveryTypeOverride}"`
+- *ORCA-291* Updated request_files lambda and terraform so that the glacier restore type can be set via terraform during deployment.
+ - *ORCA-291* The glacier retrieval type can now be overridden via a change in the collections configuration using `"orcaDefaultRecoveryTypeOverride": "{$.meta.collection.meta.orcaDefaultRecoveryTypeOverride}"`
 
 ### Migration Notes
 
