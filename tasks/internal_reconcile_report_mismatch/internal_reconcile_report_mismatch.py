@@ -120,6 +120,7 @@ def query_db(
                     MISMATCHES_ORCA_SIZE_IN_BYTES_KEY: sql_result["orca_size_in_bytes"],
                     MISMATCHES_S3_SIZE_IN_BYTES_KEY: sql_result["s3_size_in_bytes"],
                     MISMATCHES_DISCREPANCY_TYPE_KEY: sql_result["discrepancy_type"],
+                    MISMATCHES_COMMENT_KEY: sql_result["comment"]
                 }
             )
         return mismatches
@@ -145,7 +146,17 @@ SELECT
     orca_size_in_bytes,
     s3_size_in_bytes,
     discrepancy_type,
-    FROM reconcile_mismatch_report
+    CASE
+        WHEN (reconcile_job.inventory_creation_time <= orca_last_update)
+            THEN 'Error may be due to race condition, and should be checked manually.'
+        WHEN (reconcile_job.inventory_creation_time <= s3_last_update)
+            THEN 'Error may be due to race condition, and should be checked manually.'
+    END AS comment
+    FROM reconcile_catalog_mismatch_report
+    INNER JOIN reconcile_job ON
+    (
+        reconcile_job.id = reconcile_catalog_mismatch_report.job_id
+    )
     WHERE job_id = :job_id
     ORDER BY collection_id, granule_id, filename
     OFFSET :page_index*:page_size

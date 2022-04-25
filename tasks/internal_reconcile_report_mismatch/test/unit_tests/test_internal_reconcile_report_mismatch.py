@@ -64,6 +64,7 @@ class TestInternalReconcileReportMismatch(
                         0, 999
                     ),
                     internal_reconcile_report_mismatch.MISMATCHES_DISCREPANCY_TYPE_KEY: uuid.uuid4().__str__(),
+                    internal_reconcile_report_mismatch.MISMATCHES_COMMENT_KEY: None
                 }
             ],
         }
@@ -164,6 +165,7 @@ class TestInternalReconcileReportMismatch(
                         0, 999
                     ),
                     internal_reconcile_report_mismatch.MISMATCHES_DISCREPANCY_TYPE_KEY: uuid.uuid4().__str__(),
+                    internal_reconcile_report_mismatch.MISMATCHES_COMMENT_KEY: uuid.uuid4().__str__()
                 }
             ],
         }
@@ -277,6 +279,7 @@ class TestInternalReconcileReportMismatch(
         orca_size_in_bytes = random.randint(0, 999)  # nosec
         s3_size_in_bytes = random.randint(0, 999)  # nosec
         discrepancy_type = uuid.uuid4().__str__()
+        comment = uuid.uuid4().__str__()
 
         returned_row0 = {
             "collection_id": collection_id,
@@ -291,6 +294,7 @@ class TestInternalReconcileReportMismatch(
             "orca_size_in_bytes": orca_size_in_bytes,
             "s3_size_in_bytes": s3_size_in_bytes,
             "discrepancy_type": discrepancy_type,
+            "comment": comment
         }
         mock_execute = Mock(return_value=[returned_row0])
         mock_connection = Mock()
@@ -336,6 +340,7 @@ class TestInternalReconcileReportMismatch(
                     internal_reconcile_report_mismatch.MISMATCHES_ORCA_SIZE_IN_BYTES_KEY: orca_size_in_bytes,
                     internal_reconcile_report_mismatch.MISMATCHES_S3_SIZE_IN_BYTES_KEY: s3_size_in_bytes,
                     internal_reconcile_report_mismatch.MISMATCHES_DISCREPANCY_TYPE_KEY: discrepancy_type,
+                    internal_reconcile_report_mismatch.MISMATCHES_COMMENT_KEY: comment
                 }
             ],
             result,

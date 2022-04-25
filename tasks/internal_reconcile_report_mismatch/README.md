@@ -45,7 +45,8 @@ Fully defined json schemas written in the schema of https://json-schema.org/ can
       "s3LastUpdate": "2020-01-01T23:00:00Z",
       "orcaSizeInBytes": 6543277389,
       "s3SizeInBytes": 1987618731,
-      "discrepancyType": "etag, size_in_bytes"
+      "discrepancyType": "etag, size_in_bytes",
+      "comments": null
     }
   ]
 }

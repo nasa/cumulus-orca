@@ -34,7 +34,8 @@
           "s3LastUpdate",
           "orcaSizeInBytes",
           "s3SizeInBytes",
-          "discrepancyType"
+          "discrepancyType",
+          "comment"
         ],
         "properties": {
           "collectionId": {
@@ -86,7 +87,7 @@
             "description": "Type of discrepancy found during reconciliation."
           },
           "comment": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Any additional context for the mismatch."
           }
         }
