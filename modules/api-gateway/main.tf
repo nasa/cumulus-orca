@@ -313,5 +313,5 @@ resource "aws_lambda_permission" "internal_reconcile_report_orphan_api_permissio
 resource "aws_api_gateway_deployment" "orca_api_deployment" {
   rest_api_id = aws_api_gateway_rest_api.orca_api.id
   stage_name  = var.api_gateway_stage_name
-  depends_on  = [aws_api_gateway_integration.orca_catalog_reporting_api_integration, aws_api_gateway_integration.request_status_for_job_api_integration, aws_api_gateway_integration.request_status_for_granule_api_integration]
+  depends_on  = [aws_api_gateway_integration.orca_catalog_reporting_api_integration, aws_api_gateway_integration.request_status_for_job_api_integration, aws_api_gateway_integration.request_status_for_granule_api_integration, aws_api_gateway_integration.internal_reconcile_report_orphan_api_integration]
 }
