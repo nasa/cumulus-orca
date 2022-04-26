@@ -214,9 +214,10 @@ module "orca_api_gateway" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  orca_catalog_reporting_invoke_arn     = module.orca_lambdas.orca_catalog_reporting_invoke_arn
-  request_status_for_granule_invoke_arn = module.orca_lambdas.request_status_for_granule_invoke_arn
-  request_status_for_job_invoke_arn     = module.orca_lambdas.request_status_for_job_invoke_arn
+  internal_reconcile_report_orphan_invoke_arn = module.orca_lambdas.internal_reconcile_report_orphan_invoke_arn
+  orca_catalog_reporting_invoke_arn           = module.orca_lambdas.orca_catalog_reporting_invoke_arn
+  request_status_for_granule_invoke_arn       = module.orca_lambdas.request_status_for_granule_invoke_arn
+  request_status_for_job_invoke_arn           = module.orca_lambdas.request_status_for_job_invoke_arn
   ## OPTIONAL
-  vpc_endpoint_id                       = var.vpc_endpoint_id
+  vpc_endpoint_id                             = var.vpc_endpoint_id
 }

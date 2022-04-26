@@ -10,6 +10,12 @@ variable "request_status_for_granule_invoke_arn" {
   type        = string
   description = "Invoke ARN of the request_status_for_granule lambda function"
 }
+
+variable "internal_reconcile_report_orphan_invoke_arn" {
+  type        = string
+  description = "Invoke ARN of the internal_reconcile_report_orphan lambda function"
+}
+
 variable "vpc_id" {
   type        = string
   description = "Virtual Private Cloud AWS ID"
