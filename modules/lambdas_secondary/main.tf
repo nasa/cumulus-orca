@@ -75,7 +75,7 @@ resource "aws_s3_bucket_inventory" "inventory-report" {
   destination {
     bucket {
       format     = "CSV"
-      bucket_arn = var.orca_reports_bucket_arn
+      bucket_arn = "arn:aws:s3:::${var.orca_reports_bucket_name}"
     }
   }
 }
