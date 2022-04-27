@@ -39,7 +39,7 @@ module "orca_lambdas" {
   ## OPTIONAL
   orca_ingest_lambda_memory_size         = var.orca_ingest_lambda_memory_size
   orca_ingest_lambda_timeout             = var.orca_ingest_lambda_timeout
-  orca_default_recovery_retrieval_type   = var.orca_default_recovery_retrieval_type
+  orca_default_recovery_type             = var.orca_default_recovery_type
   orca_reconciliation_lambda_memory_size = var.orca_reconciliation_lambda_memory_size
   orca_reconciliation_lambda_timeout     = var.orca_reconciliation_lambda_timeout
   orca_recovery_buckets                  = var.orca_recovery_buckets

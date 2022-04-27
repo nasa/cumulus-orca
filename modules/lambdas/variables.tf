@@ -54,11 +54,11 @@ variable "db_connect_info_secret_arn" {
   description = "Secret ARN of the AWS secretsmanager secret for connecting to the database."
 }
 
-variable "orca_default_recovery_retrieval_type" {
+variable "orca_default_recovery_type" {
   type        = string
   description = "The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'."
   validation {
-    condition     = contains(["Standard", "Bulk", "Expedited"], var.orca_default_recovery_retrieval_type)
+    condition     = contains(["Standard", "Bulk", "Expedited"], var.orca_default_recovery_type)
     error_message = "Valid values are 'Standard'|'Bulk'|'Expedited'."
   }
 }
