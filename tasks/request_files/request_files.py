@@ -23,12 +23,12 @@ from orca_shared.recovery import shared_recovery
 DEFAULT_RESTORE_EXPIRE_DAYS = 5
 DEFAULT_MAX_REQUEST_RETRIES = 2
 DEFAULT_RESTORE_RETRY_SLEEP_SECS = 0
-DEFAULT_RESTORE_RETRIEVAL_TYPE = "Standard"
+DEFAULT_RESTORE_RECOVERY_TYPE = "Standard"
 
 OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY = "RESTORE_EXPIRE_DAYS"
 OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY = "RESTORE_REQUEST_RETRIES"
 OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY = "RESTORE_RETRY_SLEEP_SECS"
-OS_ENVIRON_RESTORE_DEFAULT_RETRIEVAL_TYPE_KEY = "RESTORE_DEFAULT_RETRIEVAL_TYPE"
+OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY = "RESTORE_DEFAULT_RECOVERY_TYPE"
 OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY = "STATUS_UPDATE_QUEUE_URL"
 OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY = "ORCA_DEFAULT_BUCKET"
 
@@ -36,7 +36,7 @@ EVENT_CONFIG_KEY = "config"
 EVENT_INPUT_KEY = "input"
 
 CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY = "orcaDefaultBucketOverride"
-CONFIG_RESTORE_DEFAULT_RETRIEVAL_TYPE_OVERRIDE_KEY = "orcaDefaultRecoveryTypeOverride"
+CONFIG_RESTORE_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY = "orcaDefaultRecoveryTypeOverride"
 
 INPUT_GRANULES_KEY = "granules"
 
@@ -137,13 +137,13 @@ def task(
         )
         retry_sleep_secs = DEFAULT_RESTORE_RETRY_SLEEP_SECS
 
+
     VALID_RESTORE_TYPES = ["Bulk", "Expedited", "Standard"] 
 
     # Get config and env set to None if the key does not exist
-    env_retrieval_type = os.getenv(OS_ENVIRON_RESTORE_DEFAULT_RETRIEVAL_TYPE_KEY, None)
-    config_retrieval_type = event["config"].get(CONFIG_RESTORE_DEFAULT_RETRIEVAL_TYPE_OVERRIDE_KEY, None)
-    if env_retrieval_type in VALID_RESTORE_TYPES:
-        LOGGER.info(f"Found restore type from {OS_ENVIRON_RESTORE_DEFAULT_RETRIEVAL_TYPE_KEY}: {env_retrieval_type}")
+    env_retrieval_type = os.getenv(OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY, None)
+    config_retrieval_type = event["config"].get(CONFIG_RESTORE_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY, None)
+
     # Set initial default to deployment env value
     retrieval_type = env_retrieval_type
 
@@ -152,11 +152,13 @@ def task(
         if config_retrieval_type in VALID_RESTORE_TYPES:
             retrieval_type = config_retrieval_type
             LOGGER.info(f"Found glacier restore type from config: {retrieval_type}. Overridding other values.")
+        else:
+            LOGGER.error(f"Invalid restore type from config: {config_retrieval_type}. Using environment variable")
         
-    # Safety catch in case someone put a bogus value in env
+    # Safety catch in case someone put an invalid value in env
     if (retrieval_type is None) or (retrieval_type not in VALID_RESTORE_TYPES):
-        retrieval_type = DEFAULT_RESTORE_RETRIEVAL_TYPE
-        LOGGER.info(f"defaulting to {DEFAULT_RESTORE_RETRIEVAL_TYPE}")
+        LOGGER.info(f"invalid value for {retrieval_type}. Defaulting to {DEFAULT_RESTORE_RECOVERY_TYPE}")
+        retrieval_type = DEFAULT_RESTORE_RECOVERY_TYPE
 
     # Get QUEUE URL
     status_update_queue_url = str(os.environ[OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY])
@@ -185,12 +187,10 @@ def task(
             f"No bulk job_id sent. Generated value"
             f" {event[EVENT_CONFIG_KEY][CONFIG_JOB_ID_KEY]} for job_id."
         )
-
     # Call the inner task to perform the work of restoring
     return inner_task(  # todo: Split 'event' into relevant properties.
         event, max_retries, retry_sleep_secs, retrieval_type, exp_days, status_update_queue_url
     )
-
 
 def inner_task(
     event: Dict,
@@ -595,7 +595,7 @@ def handler(event: Dict[str, Any], context):  # pylint: disable-msg=unused-argum
     but at this time, only 1 granule will be accepted.
     This is due to the error handling. If the restore request for any file for a
     granule fails to submit, the entire granule (workflow) fails. If more than one granule were
-    accepted, and a failure ocured, at present, it would fail all of them.
+    accepted, and a failure occurred, at present, it would fail all of them.
     Environment variables can be set to override how many days to keep the restored files, how
     many times to retry a restore_request, and how long to wait between retries.
         Environment Vars:

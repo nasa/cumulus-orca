@@ -41,7 +41,7 @@ class TestRequestFiles(unittest.TestCase):
         os.environ.pop(request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY, None)
         os.environ.pop(request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY, None)
         os.environ.pop(request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY, None)
-        os.environ.pop(request_files.OS_ENVIRON_RESTORE_DEFAULT_RETRIEVAL_TYPE_KEY, None)
+        os.environ.pop(request_files.OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY, None)
 
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
@@ -73,7 +73,7 @@ class TestRequestFiles(unittest.TestCase):
         os.environ[
             request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
         ] = retry_sleep_secs.__str__()
-        os.environ[request_files.OS_ENVIRON_RESTORE_DEFAULT_RETRIEVAL_TYPE_KEY] = retrieval_type
+        os.environ[request_files.OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY] = retrieval_type
         os.environ[
             request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
         ] = exp_days.__str__()
@@ -121,7 +121,7 @@ class TestRequestFiles(unittest.TestCase):
         os.environ[
             request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
         ] = retry_sleep_secs.__str__()
-        os.environ[request_files.OS_ENVIRON_RESTORE_DEFAULT_RETRIEVAL_TYPE_KEY] = retrieval_type
+        os.environ[request_files.OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY] = retrieval_type
         os.environ[
             request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
         ] = exp_days.__str__()
@@ -169,7 +169,7 @@ class TestRequestFiles(unittest.TestCase):
         os.environ[
             request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY
         ] = max_retries.__str__()
-        os.environ[request_files.OS_ENVIRON_RESTORE_DEFAULT_RETRIEVAL_TYPE_KEY] = retrieval_type
+        os.environ[request_files.OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY] = retrieval_type
         os.environ[
             request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
         ] = exp_days.__str__()
@@ -236,7 +236,7 @@ class TestRequestFiles(unittest.TestCase):
             },
             max_retries,
             retry_sleep_secs,
-            request_files.DEFAULT_RESTORE_RETRIEVAL_TYPE,
+            request_files.DEFAULT_RESTORE_RECOVERY_TYPE,
             exp_days,
             db_queue_url,
         )
@@ -271,7 +271,7 @@ class TestRequestFiles(unittest.TestCase):
         os.environ[
             request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
         ] = retry_sleep_secs.__str__()
-        os.environ[request_files.OS_ENVIRON_RESTORE_DEFAULT_RETRIEVAL_TYPE_KEY] = retrieval_type
+        os.environ[request_files.OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY] = retrieval_type
         os.environ[
             request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
         ] = exp_days.__str__()
@@ -288,7 +288,7 @@ class TestRequestFiles(unittest.TestCase):
             },
             max_retries,
             retry_sleep_secs,
-            request_files.DEFAULT_RESTORE_RETRIEVAL_TYPE,
+            request_files.DEFAULT_RESTORE_RECOVERY_TYPE,
             exp_days,
             db_queue_url,
         )
@@ -308,7 +308,7 @@ class TestRequestFiles(unittest.TestCase):
         job_id = uuid.uuid4().__str__()
         config = {
             request_files.CONFIG_JOB_ID_KEY: job_id,
-            request_files.CONFIG_RESTORE_DEFAULT_RETRIEVAL_TYPE_OVERRIDE_KEY: "Bulk",
+            request_files.CONFIG_RESTORE_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: "Bulk",
         }
         mock_event = {
             request_files.EVENT_CONFIG_KEY: config,
@@ -325,29 +325,39 @@ class TestRequestFiles(unittest.TestCase):
         os.environ[
             request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
         ] = retry_sleep_secs.__str__()
-        os.environ[
-            request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
-        ] = exp_days.__str__()
 
         request_files.task(mock_event, None)
-        mock_logger_info.assert_called_once_with(f"Found glacier restore type from config: {config[request_files.CONFIG_RESTORE_DEFAULT_RETRIEVAL_TYPE_OVERRIDE_KEY]}. Overridding other values.")
+        mock_logger_info.assert_called_once_with(f"Found glacier restore type from config: {config[request_files.CONFIG_RESTORE_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY]}. Overridding other values.")
+        mock_inner_task.assert_called_once_with(
+            {
+                request_files.EVENT_CONFIG_KEY: {
+                    request_files.CONFIG_JOB_ID_KEY: job_id,
+                    request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: mock_get_default_glacier_bucket_name.return_value,
+                    request_files.CONFIG_RESTORE_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: "Bulk",
+        }
+            },
+            max_retries,
+            retry_sleep_secs,
+            config[request_files.CONFIG_RESTORE_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY],
+            request_files.DEFAULT_RESTORE_EXPIRE_DAYS,
+            db_queue_url,
+        )
 
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
-    @patch("cumulus_logger.CumulusLogger.info")
+    @patch("cumulus_logger.CumulusLogger.error")
     def test_task_retrieval_type_config_none_env_value_valid(
         self,
-        mock_logger_info: MagicMock,
+        mock_logger_error: MagicMock,
         mock_inner_task: MagicMock,
         mock_get_default_glacier_bucket_name: MagicMock,
     ):
         """
-        If retrieval_type in config is None, override the default value.
+        If retrieval_type in config is None and env variable is valid, use the env variable.
         """
         job_id = uuid.uuid4().__str__()
         config = {
             request_files.CONFIG_JOB_ID_KEY: job_id,
-            request_files.CONFIG_RESTORE_DEFAULT_RETRIEVAL_TYPE_OVERRIDE_KEY: None,
         }
         mock_event = {
             request_files.EVENT_CONFIG_KEY: config,
@@ -364,14 +374,23 @@ class TestRequestFiles(unittest.TestCase):
         os.environ[
             request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
         ] = retry_sleep_secs.__str__()
-        os.environ[
-            request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
-        ] = exp_days.__str__()
-        os.environ[request_files.OS_ENVIRON_RESTORE_DEFAULT_RETRIEVAL_TYPE_KEY] = "Bulk"
+        os.environ[request_files.OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY] = "Bulk"
 
         request_files.task(mock_event, None)
-        mock_logger_info.assert_called_once_with(f"Found restore type from {request_files.OS_ENVIRON_RESTORE_DEFAULT_RETRIEVAL_TYPE_KEY}: {os.environ[request_files.OS_ENVIRON_RESTORE_DEFAULT_RETRIEVAL_TYPE_KEY]}")
-
+        mock_inner_task.assert_called_once_with(
+            {
+                request_files.EVENT_CONFIG_KEY: {
+                    request_files.CONFIG_JOB_ID_KEY: job_id,
+                    request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: mock_get_default_glacier_bucket_name.return_value
+                },
+            },
+            max_retries,
+            retry_sleep_secs,
+            os.environ[request_files.OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY],
+            request_files.DEFAULT_RESTORE_EXPIRE_DAYS,
+            db_queue_url,
+        )
+        
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
     @patch("cumulus_logger.CumulusLogger.info")
@@ -382,12 +401,12 @@ class TestRequestFiles(unittest.TestCase):
         mock_get_default_glacier_bucket_name: MagicMock,
     ):
         """
-        If retrieval_type is invalid in config, use the default value.
+        If retrieval_type is invalid in config as well as in env variable, use the default value.
         """
         job_id = uuid.uuid4().__str__()
         config = {
             request_files.CONFIG_JOB_ID_KEY: job_id,
-            request_files.CONFIG_RESTORE_DEFAULT_RETRIEVAL_TYPE_OVERRIDE_KEY: "dummy",
+            request_files.CONFIG_RESTORE_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: "Nope",
         }
         mock_event = {
             request_files.EVENT_CONFIG_KEY: config,
@@ -397,20 +416,30 @@ class TestRequestFiles(unittest.TestCase):
         exp_days = randint(0, 99)  # nosec
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
         os.environ[request_files.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = db_queue_url
-
+        os.environ[request_files.OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY] = "Nope"
         os.environ[
             request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY
         ] = max_retries.__str__()
         os.environ[
             request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
         ] = retry_sleep_secs.__str__()
-        os.environ[
-            request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
-        ] = exp_days.__str__()
 
         request_files.task(mock_event, None)
-        mock_logger_info.assert_called_once_with(f"defaulting to {request_files.DEFAULT_RESTORE_RETRIEVAL_TYPE}")
-        self.assertEqual(mock_logger_info.call_count,1)
+        mock_inner_task.assert_called_once_with(
+            {
+                request_files.EVENT_CONFIG_KEY: {
+                    request_files.CONFIG_JOB_ID_KEY: job_id,
+                    request_files.CONFIG_RESTORE_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: "Nope",
+                    request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: mock_get_default_glacier_bucket_name.return_value
+                },
+            },
+            max_retries,
+            retry_sleep_secs,
+            request_files.DEFAULT_RESTORE_RECOVERY_TYPE,
+            request_files.DEFAULT_RESTORE_EXPIRE_DAYS,
+            db_queue_url,
+        )
+        mock_logger_info.assert_called_once_with(f"invalid value for {os.environ[request_files.OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY]}. Defaulting to {request_files.DEFAULT_RESTORE_RECOVERY_TYPE}")
 
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
@@ -441,7 +470,7 @@ class TestRequestFiles(unittest.TestCase):
         os.environ[
             request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
         ] = retry_sleep_secs.__str__()
-        os.environ[request_files.OS_ENVIRON_RESTORE_DEFAULT_RETRIEVAL_TYPE_KEY] = retrieval_type
+        os.environ[request_files.OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY] = retrieval_type
 
         request_files.task(mock_event, None)
 
@@ -490,7 +519,7 @@ class TestRequestFiles(unittest.TestCase):
         os.environ[
             request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
         ] = retry_sleep_secs.__str__()
-        os.environ[request_files.OS_ENVIRON_RESTORE_DEFAULT_RETRIEVAL_TYPE_KEY] = retrieval_type
+        os.environ[request_files.OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY] = retrieval_type
         os.environ[
             request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
         ] = exp_days.__str__()
@@ -1637,7 +1666,7 @@ class TestRequestFiles(unittest.TestCase):
                 request_files.CONFIG_JOB_ID_KEY: None,
                 request_files.CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: 750,
                 request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "lp-sndbx-cumulus-orca",
-                request_files.CONFIG_RESTORE_DEFAULT_RETRIEVAL_TYPE_OVERRIDE_KEY: None
+                request_files.CONFIG_RESTORE_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: None
             },
         }
         mock_task.return_value = {
