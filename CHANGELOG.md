@@ -36,8 +36,12 @@ and includes an additional section for migration notes.
 - SQS Queue names adjusted to include Orca. For example: `"${var.prefix}-orca-status-update-queue.fifo"`. Queues will be automatically recreated by Terraform.
 - *ORCA-334* Created IAM role for the extract_filepaths_for_granule lambda function, attached the role to the function
 - *ORCA-404* Updated shared_db and relevant lambdas to use secrets manager ARN instead of magic strings.
-- *ORCA-291* Updated request_files lambda and terraform so that the glacier restore type can be set via terraform during deployment.
- - *ORCA-291* The glacier retrieval type can now be overridden via a change in the collections configuration using `"orcaDefaultRecoveryTypeOverride": "{$.meta.collection.meta.orcaDefaultRecoveryTypeOverride}"`
+- *ORCA-291* Updated request_files lambda and terraform so that the glacier restore type can be set via terraform during deployment. In addition, the glacier retrieval type can now be overridden via a change in the collections configuration using `orcaDefaultRecoveryTypeOverride` key under `meta` tag as shown below. 
+  ```json
+  "meta": {
+    "orcaDefaultRecoveryTypeOverride": "Standard"
+  }
+  ```
 
 ### Migration Notes
 
@@ -52,7 +56,13 @@ and includes an additional section for migration notes.
   - s3_access_key
   - s3_secret_key
   
-- Update the collection configuration with the new key `"orcaDefaultRecoveryTypeOverride": "{$.meta.collection.meta.orcaDefaultRecoveryTypeOverride}"`.
+- Update the collection configuration with the new key as shown below.
+
+  ```json
+    "meta": {
+      "orcaDefaultRecoveryTypeOverride": "Standard"
+    }
+  ```
 
 - Add the following ORCA required variable definition to your `variables.tf` or `orca_variables.tf` file.
 

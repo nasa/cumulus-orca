@@ -89,12 +89,12 @@ variable "orca_default_bucket" {
   description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
 }
 
-variable "orca_default_restore_retrieval_type" {
+variable "orca_default_restore_recovery_type" {
   type        = string
   description = "The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'."
   default     = "Standard"
   validation {
-    condition     = contains(["Standard", "Bulk", "Expedited"], var.orca_default_restore_retrieval_type)
+    condition     = contains(["Standard", "Bulk", "Expedited"], var.orca_default_restore_recovery_type)
     error_message = "Valid values are 'Standard'|'Bulk'|'Expedited'."
   }
 }
