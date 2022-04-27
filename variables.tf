@@ -89,7 +89,7 @@ variable "orca_default_bucket" {
   description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
 }
 
-variable "orca_default_restore_recovery_type" {
+variable "orca_default_recovery_retrieval_type" {
   type        = string
   description = "The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'."
   default     = "Standard"
