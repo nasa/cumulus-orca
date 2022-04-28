@@ -243,22 +243,57 @@ resource "aws_lambda_permission" "request_status_for_job_api_permission" {
   source_arn    = "${aws_api_gateway_rest_api.orca_api.execution_arn}/*/${aws_api_gateway_method.request_status_for_job_api_method.http_method}${aws_api_gateway_resource.request_status_for_job_api_resource_recovery_jobs.path}"
 }
 
-## API for internal_reconcile_report_orphan lambda
-resource "aws_api_gateway_resource" "internal_reconcile_report_api_resource" {
-  path_part   = "internal"
+## API resource for Root reconciliation pathing orca/datamanagement/reconciliation
+resource "aws_api_gateway_resource" "orca_api_resource" {
+  path_part   = "orca"
   parent_id   = aws_api_gateway_rest_api.orca_api.root_resource_id
   rest_api_id = aws_api_gateway_rest_api.orca_api.id
 }
 
-resource "aws_api_gateway_resource" "internal_reconcile_report_orphan_api_resource" {
-  path_part   = "orphan"
-  parent_id   = aws_api_gateway_resource.internal_reconcile_report_api_resource.id
+resource "aws_api_gateway_resource" "orca_datamanagement_api_resource" {
+  path_part   = "datamanagement"
+  parent_id   = aws_api_gateway_resource.orca_api_resource.id
+  rest_api_id = aws_api_gateway_rest_api.orca_api.id
+}
+
+resource "aws_api_gateway_resource" "orca_reconciliation_api_resource" {
+  path_part   = "reconciliation"
+  parent_id   = aws_api_gateway_resource.orca_datamanagement_api_resource.id
+  rest_api_id = aws_api_gateway_rest_api.orca_api.id
+}
+
+
+## ## API resource for creating the internal reconciliation pathing under orca/datamanagement/reconciliation
+# internal/jobs/job/{jobid}/orphans
+resource "aws_api_gateway_resource" "orca_internal_reconciliation_api_resource" {
+  path_part   = "internal"
+  parent_id   = aws_api_gateway_resource.orca_reconciliation_api_resource.id
+  rest_api_id = aws_api_gateway_rest_api.orca_api.id
+}
+
+resource "aws_api_gateway_resource" "orca_internal_reconciliation_jobs_api_resource" {
+  path_part   = "jobs"
+  parent_id   = aws_api_gateway_resource.orca_internal_reconciliation_api_resource.id
+  rest_api_id = aws_api_gateway_rest_api.orca_api.id
+}
+
+
+resource "aws_api_gateway_resource" "orca_internal_reconciliation_jobs_job_api_resource" {
+  path_part   = "job"
+  parent_id   = aws_api_gateway_resource.orca_internal_reconciliation_jobs_api_resource.id
+  rest_api_id = aws_api_gateway_rest_api.orca_api.id
+}
+
+## ## API resource for creating the methods and response for internal_reconcile_report_orphan lambda
+resource "aws_api_gateway_resource" "orca_internal_reconcile_report_orphans_api_resource" {
+  path_part   = "orphans"
+  parent_id   = aws_api_gateway_resource.orca_internal_reconciliation_jobs_job_api_resource.id
   rest_api_id = aws_api_gateway_rest_api.orca_api.id
 }
 
 resource "aws_api_gateway_method" "internal_reconcile_report_orphan_api_method" {
   rest_api_id = aws_api_gateway_rest_api.orca_api.id
-  resource_id = aws_api_gateway_resource.internal_reconcile_report_orphan_api_resource.id
+  resource_id = aws_api_gateway_resource.orca_internal_reconcile_report_orphans_api_resource.id
   http_method = "POST"
   # todo: Make sure this is locked down against external access.
   authorization = "NONE"
@@ -266,7 +301,7 @@ resource "aws_api_gateway_method" "internal_reconcile_report_orphan_api_method" 
 
 resource "aws_api_gateway_integration" "internal_reconcile_report_orphan_api_integration" {
   rest_api_id             = aws_api_gateway_rest_api.orca_api.id
-  resource_id             = aws_api_gateway_resource.internal_reconcile_report_orphan_api_resource.id
+  resource_id             = aws_api_gateway_resource.orca_internal_reconcile_report_orphans_api_resource.id
   http_method             = aws_api_gateway_method.internal_reconcile_report_orphan_api_method.http_method
   integration_http_method = "POST"
   type                    = "AWS"
@@ -275,7 +310,7 @@ resource "aws_api_gateway_integration" "internal_reconcile_report_orphan_api_int
 
 resource "aws_api_gateway_method_response" "internal_reconcile_report_orphan_response_200" {
   rest_api_id = aws_api_gateway_rest_api.orca_api.id
-  resource_id = aws_api_gateway_resource.internal_reconcile_report_orphan_api_resource.id
+  resource_id = aws_api_gateway_resource.orca_internal_reconcile_report_orphans_api_resource.id
   http_method = aws_api_gateway_method.internal_reconcile_report_orphan_api_method.http_method
   status_code = "200"
 }
@@ -305,7 +340,7 @@ resource "aws_lambda_permission" "internal_reconcile_report_orphan_api_permissio
   action        = "lambda:InvokeFunction"
   function_name = "${var.prefix}_internal_reconcile_report_orphan"
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.orca_api.execution_arn}/*/${aws_api_gateway_method.internal_reconcile_report_orphan_api_method.http_method}${aws_api_gateway_resource.internal_reconcile_report_orphan_api_resource.path}"
+  source_arn    = "${aws_api_gateway_rest_api.orca_api.execution_arn}/*/${aws_api_gateway_method.internal_reconcile_report_orphan_api_method.http_method}${aws_api_gateway_resource.orca_internal_reconcile_report_orphans_api_resource.path}"
 }
 
 
