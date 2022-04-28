@@ -318,7 +318,7 @@ resource "aws_api_gateway_method_response" "internal_reconcile_report_orphan_res
 resource "aws_api_gateway_integration_response" "internal_reconcile_report_orphan_api_response" {
   depends_on  = [aws_api_gateway_integration.internal_reconcile_report_orphan_api_integration]
   rest_api_id = aws_api_gateway_rest_api.orca_api.id
-  resource_id = aws_api_gateway_resource.internal_reconcile_report_orphan_api_resource.id
+  resource_id = aws_api_gateway_resource.orca_internal_reconcile_report_orphans_api_resource.id
   http_method = aws_api_gateway_method.internal_reconcile_report_orphan_api_method.http_method
   status_code = aws_api_gateway_method_response.internal_reconcile_report_orphan_response_200.status_code
   # Transforms the backend JSON response to XML. Currently being used by create_http_error_dict() function in internal_reconcile_report_orphan.py
