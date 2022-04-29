@@ -16,6 +16,16 @@ variable "internal_reconcile_report_orphan_invoke_arn" {
   description = "Invoke ARN of the internal_reconcile_report_orphan lambda function"
 }
 
+variable "internal_reconcile_report_phantom_invoke_arn" {
+  type        = string
+  description = "Invoke ARN of the internal_reconcile_report_phantom lambda function"
+}
+
+variable "internal_reconcile_report_mismatch_invoke_arn" {
+  type        = string
+  description = "Invoke ARN of the internal_reconcile_report_mismatch lambda function"
+}
+
 variable "vpc_id" {
   type        = string
   description = "Virtual Private Cloud AWS ID"
