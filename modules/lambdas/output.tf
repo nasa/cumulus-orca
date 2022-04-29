@@ -108,10 +108,10 @@ output "internal_reconcile_report_phantom_invoke_arn" {
   value       = aws_lambda_function.internal_reconcile_report_phantom.invoke_arn
 }
 
-# output "internal_reconcile_report_mismatch_invoke_arn" {
-#   description = "AWS invoke ARN for the internal_reconcile_report_mismatch lambda."
-#   value       = aws_lambda_function.internal_reconcile_report_mismatch.invoke_arn
-# }
+output "internal_reconcile_report_mismatch_invoke_arn" {
+  description = "AWS invoke ARN for the internal_reconcile_report_mismatch lambda."
+  value       = aws_lambda_function.internal_reconcile_report_mismatch.invoke_arn
+}
 # Utility Lambdas
 # ------------------------------------------------------------------------------
 output "db_deploy_function_name" {
