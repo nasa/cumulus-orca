@@ -52,31 +52,32 @@ def process_record(
     Central method for translating record to pass along and triggering step function.
 
     Args:
-        record: The record to post.
+        record: The record to post. See schemas/input.json under Records/items for details.
         target_queue_url: The url of the queue to post the records to.
         step_function_arn: The arn of the step function to trigger.
     """
-    new_body = translate_record_body(record["body"])
-    sqs_library.post_to_fifo_queue(target_queue_url, new_body)
-    trigger_step_function(step_function_arn)
+    body = json.loads(record["body"])
+    _BODY_VALIDATE(body)
+
+    for s3_record in body["Records"]:  # Unsure if AWS sends multiple records, but data structure supports it.
+        new_body = translate_record_body(s3_record)
+        sqs_library.post_to_fifo_queue(target_queue_url, new_body)
+        trigger_step_function(step_function_arn)
 
 
-def translate_record_body(body: str) -> Dict[str, Any]:
+def translate_record_body(s3_record: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Translates the SQS body into the format expected by the get_current_archive_list queue.
+    Translates the s3 body into the format expected by the get_current_archive_list queue.
     Args:
-        body: The string to convert.
+        s3_record: See schemas/body.json under Records/items for details.
 
     Returns:
         See get_current_archive_list/schemas/input.json for details.
     """
-    body = json.loads(body)
-    _BODY_VALIDATE(body)
-
     new_body = {
-        OUTPUT_REPORT_BUCKET_REGION_KEY: body["awsRegion"],
-        OUTPUT_REPORT_BUCKET_NAME_KEY: body["s3"]["bucket"]["name"],
-        OUTPUT_MANIFEST_KEY_KEY: body["s3"]["object"]["key"],
+        OUTPUT_REPORT_BUCKET_REGION_KEY: s3_record["awsRegion"],
+        OUTPUT_REPORT_BUCKET_NAME_KEY: s3_record["s3"]["bucket"]["name"],
+        OUTPUT_MANIFEST_KEY_KEY: s3_record["s3"]["object"]["key"],
     }
     return new_body
 

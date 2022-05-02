@@ -6,7 +6,7 @@ import json
 import os
 import unittest
 import uuid
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, Mock, patch, call
 
 import boto3
 from fastjsonschema import JsonSchemaValueException
@@ -55,20 +55,64 @@ class TestPostToQueueAndTriggerStepFunction(
         """
         mock_target_queue_url = Mock()
         mock_step_function_arn = Mock()
-        mock_record_body = Mock()
 
+        s3_record0 = {
+            "awsRegion": uuid.uuid4().__str__(),
+            "s3": {
+                "bucket": {"name": uuid.uuid4().__str__()},
+                "object": {"key": uuid.uuid4().__str__()},
+            },
+        }
+        s3_record1 = {
+            "awsRegion": uuid.uuid4().__str__(),
+            "s3": {
+                "bucket": {"name": uuid.uuid4().__str__()},
+                "object": {"key": uuid.uuid4().__str__()},
+            },
+        }
         post_to_queue_and_trigger_step_function.process_record(
-            {"body": mock_record_body},
+            {"body": json.dumps({"Records": [s3_record0, s3_record1]})},
             mock_target_queue_url,
             mock_step_function_arn,
         )
 
-        mock_translate_record_body.assert_called_once_with(mock_record_body)
-        mock_post_to_fifo_queue.assert_called_once_with(
-            mock_target_queue_url, mock_translate_record_body.return_value
+        mock_translate_record_body.assert_has_calls(
+            [call(s3_record0), call(s3_record1)]
         )
-        mock_trigger_step_function.assert_called_once_with(
-            mock_step_function_arn,
+        self.assertEqual(2, mock_translate_record_body.call_count)
+        mock_post_to_fifo_queue.assert_has_calls(
+            [
+                call(mock_target_queue_url, mock_translate_record_body.return_value),
+                call(mock_target_queue_url, mock_translate_record_body.return_value),
+            ]  # todo: Check specific return values
+        )
+        self.assertEqual(2, mock_post_to_fifo_queue.call_count)
+        mock_trigger_step_function.assert_has_calls(
+            [call(mock_step_function_arn), call(mock_step_function_arn)]
+        )
+        self.assertEqual(2, mock_trigger_step_function.call_count)
+
+    def test_process_record_rejects_bad_input(self):
+        """
+        If the input record is in a bad format, raise an error.
+        """
+        aws_region = uuid.uuid4().__str__()
+        object_key = uuid.uuid4().__str__()
+
+        s3_record0 = {
+            "awsRegion": uuid.uuid4().__str__(),
+            "s3": {
+                "bucket": {"name": uuid.uuid4().__str__()},
+            },
+        }
+        with self.assertRaises(JsonSchemaValueException) as cm:
+            post_to_queue_and_trigger_step_function.process_record(
+                {"body": json.dumps({"Records": [s3_record0]})},
+                Mock(),
+                Mock(),
+            )
+        self.assertEqual(
+            f"data.Records[0].s3 must contain ['bucket', 'object'] properties", str(cm.exception)
         )
 
     def test_translate_record_body_happy_path(self):
@@ -80,15 +124,13 @@ class TestPostToQueueAndTriggerStepFunction(
         object_key = uuid.uuid4().__str__()
 
         result = post_to_queue_and_trigger_step_function.translate_record_body(
-            json.dumps(
-                {
-                    "awsRegion": aws_region,
-                    "s3": {
-                        "bucket": {"name": bucket_name},
-                        "object": {"key": object_key},
-                    },
-                }
-            )
+            {
+                "awsRegion": aws_region,
+                "s3": {
+                    "bucket": {"name": bucket_name},
+                    "object": {"key": object_key},
+                },
+            }
         )
 
         self.assertEqual(
@@ -98,28 +140,6 @@ class TestPostToQueueAndTriggerStepFunction(
                 post_to_queue_and_trigger_step_function.OUTPUT_MANIFEST_KEY_KEY: object_key,
             },
             result,
-        )
-
-    def test_translate_record_body_rejects_bad_input(self):
-        """
-        If the input record is in a bad format, raise an error.
-        """
-        aws_region = uuid.uuid4().__str__()
-        object_key = uuid.uuid4().__str__()
-
-        with self.assertRaises(JsonSchemaValueException) as cm:
-            post_to_queue_and_trigger_step_function.translate_record_body(
-                json.dumps(
-                    {
-                        "awsRegion": aws_region,
-                        "s3": {
-                            "object": {"key": object_key},
-                        },
-                    }
-                )
-            )
-        self.assertEqual(
-            f"data.s3 must contain ['bucket', 'object'] properties", str(cm.exception)
         )
 
     @patch("boto3.client")
