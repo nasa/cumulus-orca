@@ -57,7 +57,7 @@ and includes an additional section for migration notes.
   - s3_access_key
   - s3_secret_key
   
-- Update the optional collection configuration with the new key as shown below.
+- Update the collection configuration with the new optional key `orcaDefaultRecoveryTypeOverride` that can be added to override the default S3 glacier recovery type as shown below.
 
   ```json
     "meta": {

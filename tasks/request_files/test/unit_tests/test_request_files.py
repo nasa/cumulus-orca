@@ -393,10 +393,10 @@ class TestRequestFiles(unittest.TestCase):
         
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
-    @patch("cumulus_logger.CumulusLogger.info")
+    @patch("cumulus_logger.CumulusLogger.error")
     def test_task_retrieval_type_invalid_from_config(
         self,
-        mock_logger_info: MagicMock,
+        mock_logger_error: MagicMock,
         mock_inner_task: MagicMock,
         mock_get_default_glacier_bucket_name: MagicMock,
     ):
@@ -439,7 +439,7 @@ class TestRequestFiles(unittest.TestCase):
             request_files.DEFAULT_RESTORE_EXPIRE_DAYS,
             db_queue_url,
         )
-        mock_logger_info.assert_called_once_with(f"invalid value for {os.environ[request_files.OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY]}. Defaulting to {request_files.DEFAULT_RESTORE_RECOVERY_TYPE}")
+        mock_logger_error.assert_called_with(f"Invalid value for {os.environ[request_files.OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY]}. Check your {request_files.OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY} value. Defaulting to {request_files.DEFAULT_RESTORE_RECOVERY_TYPE}")
 
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")

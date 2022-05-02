@@ -153,11 +153,11 @@ def task(
             retrieval_type = config_retrieval_type
             LOGGER.info(f"Found glacier restore type from config: {retrieval_type}. Overridding other values.")
         else:
-            LOGGER.error(f"Invalid restore type from config: {config_retrieval_type}. Using environment variable")
+            LOGGER.error(f"Invalid restore type from config: {config_retrieval_type}. {OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY} value of {retrieval_type} will be used.")
         
     # Safety catch in case someone put an invalid value in env
     if (retrieval_type is None) or (retrieval_type not in VALID_RESTORE_TYPES):
-        LOGGER.info(f"invalid value for {retrieval_type}. Defaulting to {DEFAULT_RESTORE_RECOVERY_TYPE}")
+        LOGGER.error(f"Invalid value for {retrieval_type}. Check your {OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY} value. Defaulting to {DEFAULT_RESTORE_RECOVERY_TYPE}")
         retrieval_type = DEFAULT_RESTORE_RECOVERY_TYPE
 
     # Get QUEUE URL
