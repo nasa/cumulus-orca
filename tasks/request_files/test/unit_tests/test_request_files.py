@@ -193,63 +193,15 @@ class TestRequestFiles(unittest.TestCase):
 
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
-    def test_task_default_for_missing_retrieval_type(
-        self,
-        mock_inner_task: MagicMock,
-        mock_get_default_glacier_bucket_name: MagicMock,
-    ):
-        """
-        If retrieval_type is missing, use default.
-        """
-        job_id = uuid.uuid4().__str__()
-        config = {
-            request_files.CONFIG_JOB_ID_KEY: job_id,
-        }
-        mock_event = {
-            request_files.EVENT_CONFIG_KEY: config,
-        }
-        max_retries = randint(0, 99)  # nosec
-        retry_sleep_secs = uniform(0, 99)  # nosec
-        exp_days = randint(0, 99)  # nosec
-        db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
-        os.environ[request_files.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = db_queue_url
-
-        os.environ[
-            request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY
-        ] = max_retries.__str__()
-        os.environ[
-            request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
-        ] = retry_sleep_secs.__str__()
-        os.environ[
-            request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
-        ] = exp_days.__str__()
-
-        request_files.task(mock_event, None)
-
-        mock_get_default_glacier_bucket_name.assert_called_once_with(config)
-        mock_inner_task.assert_called_once_with(
-            {
-                request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: mock_get_default_glacier_bucket_name.return_value,
-                    request_files.CONFIG_JOB_ID_KEY: job_id,
-                },
-            },
-            max_retries,
-            retry_sleep_secs,
-            request_files.DEFAULT_RESTORE_RECOVERY_TYPE,
-            exp_days,
-            db_queue_url,
-        )
-
-    @patch("request_files.get_default_glacier_bucket_name")
-    @patch("request_files.inner_task")
+    @patch("cumulus_logger.CumulusLogger.error")
     def test_task_default_for_bad_retrieval_type(
         self,
+        mock_logger_error: MagicMock,
         mock_inner_task: MagicMock,
         mock_get_default_glacier_bucket_name: MagicMock,
     ):
         """
-        If retrieval_type is invalid, use default.
+        If retrieval_type is invalid in env variable, raise ValueError.
         """
         job_id = uuid.uuid4().__str__()
         config = {
@@ -276,22 +228,10 @@ class TestRequestFiles(unittest.TestCase):
             request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
         ] = exp_days.__str__()
 
-        request_files.task(mock_event, None)
+        with self.assertRaises(ValueError) as ve:
+            request_files.task(mock_event, None)
 
-        mock_get_default_glacier_bucket_name.assert_called_once_with(config)
-        mock_inner_task.assert_called_once_with(
-            {
-                request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: mock_get_default_glacier_bucket_name.return_value,
-                    request_files.CONFIG_JOB_ID_KEY: job_id,
-                },
-            },
-            max_retries,
-            retry_sleep_secs,
-            request_files.DEFAULT_RESTORE_RECOVERY_TYPE,
-            exp_days,
-            db_queue_url,
-        )
+        mock_logger_error.assert_called_once_with(f"Invalid value in restore type {retrieval_type} in env variable.")
 
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
@@ -393,20 +333,18 @@ class TestRequestFiles(unittest.TestCase):
         
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
-    @patch("cumulus_logger.CumulusLogger.error")
     def test_task_retrieval_type_invalid_from_config(
         self,
-        mock_logger_error: MagicMock,
         mock_inner_task: MagicMock,
         mock_get_default_glacier_bucket_name: MagicMock,
     ):
         """
-        If retrieval_type is invalid in config as well as in env variable, use the default value.
+        If retrieval_type is None in config but invalid in env variable, raise ValueError.
         """
         job_id = uuid.uuid4().__str__()
         config = {
             request_files.CONFIG_JOB_ID_KEY: job_id,
-            request_files.CONFIG_RESTORE_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: "Nope",
+            request_files.CONFIG_RESTORE_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: None,
         }
         mock_event = {
             request_files.EVENT_CONFIG_KEY: config,
@@ -424,22 +362,9 @@ class TestRequestFiles(unittest.TestCase):
             request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
         ] = retry_sleep_secs.__str__()
 
-        request_files.task(mock_event, None)
-        mock_inner_task.assert_called_once_with(
-            {
-                request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_JOB_ID_KEY: job_id,
-                    request_files.CONFIG_RESTORE_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: "Nope",
-                    request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: mock_get_default_glacier_bucket_name.return_value
-                },
-            },
-            max_retries,
-            retry_sleep_secs,
-            request_files.DEFAULT_RESTORE_RECOVERY_TYPE,
-            request_files.DEFAULT_RESTORE_EXPIRE_DAYS,
-            db_queue_url,
-        )
-        mock_logger_error.assert_called_with(f"Invalid value for {os.environ[request_files.OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY]}. Check your {request_files.OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY} value. Defaulting to {request_files.DEFAULT_RESTORE_RECOVERY_TYPE}")
+        with self.assertRaises(ValueError) as ve:
+            request_files.task(mock_event, None)
+        self.assertEqual(ve.exception.args[0], "Invalid value in environment variable. Valid values are 'Bulk', 'Standard', 'Expedited'")
 
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
@@ -1727,6 +1652,7 @@ class TestRequestFiles(unittest.TestCase):
             "task_config": {
                 request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "my-dr-fake-glacier-bucket",
                 request_files.CONFIG_JOB_ID_KEY: job_id,
+                request_files.CONFIG_RESTORE_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: "Standard"
             },
         }
 

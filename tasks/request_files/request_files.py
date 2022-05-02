@@ -137,28 +137,26 @@ def task(
         )
         retry_sleep_secs = DEFAULT_RESTORE_RETRY_SLEEP_SECS
 
+    VALID_RESTORE_TYPES = ["Bulk", "Expedited", "Standard"]
 
-    VALID_RESTORE_TYPES = ["Bulk", "Expedited", "Standard"] 
-
-    # Get config and env set to None if the key does not exist
-    env_retrieval_type = os.getenv(OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY, None)
-    config_retrieval_type = event["config"].get(CONFIG_RESTORE_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY, None)
-
-    # Set initial default to deployment env value
-    retrieval_type = env_retrieval_type
-
-    # Overide with config if we are able
-    if config_retrieval_type is not None:
-        if config_retrieval_type in VALID_RESTORE_TYPES:
-            retrieval_type = config_retrieval_type
+    # Look for config override
+    retrieval_type = event["config"].get(CONFIG_RESTORE_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY, None)
+    if retrieval_type is not None:
+        if retrieval_type in VALID_RESTORE_TYPES:
             LOGGER.info(f"Found glacier restore type from config: {retrieval_type}. Overridding other values.")
         else:
-            LOGGER.error(f"Invalid restore type from config: {config_retrieval_type}. {OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY} value of {retrieval_type} will be used.")
-        
-    # Safety catch in case someone put an invalid value in env
-    if (retrieval_type is None) or (retrieval_type not in VALID_RESTORE_TYPES):
-        LOGGER.error(f"Invalid value for {retrieval_type}. Check your {OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY} value. Defaulting to {DEFAULT_RESTORE_RECOVERY_TYPE}")
-        retrieval_type = DEFAULT_RESTORE_RECOVERY_TYPE
+            LOGGER.error(f"Invalid value in restore type {retrieval_type} in config.")
+            raise ValueError("Invalid value in config. Valid values are 'Bulk', 'Standard', 'Expedited'")
+
+    # Look for default from TF
+    if retrieval_type is None:
+        retrieval_type = os.getenv(OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY, None)
+        if retrieval_type is not None:
+                if retrieval_type in VALID_RESTORE_TYPES:
+                    LOGGER.info(f"Found restore type from {OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY}: {retrieval_type}")
+                else:
+                    LOGGER.error(f"Invalid value in restore type {retrieval_type} in env variable.")
+                    raise ValueError("Invalid value in environment variable. Valid values are 'Bulk', 'Standard', 'Expedited'")
 
     # Get QUEUE URL
     status_update_queue_url = str(os.environ[OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY])
