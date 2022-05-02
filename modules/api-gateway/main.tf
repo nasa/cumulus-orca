@@ -357,72 +357,11 @@ resource "aws_lambda_permission" "internal_reconcile_report_orphan_api_permissio
 }
 
 
-# ----------------------## API resource for creating the methods and response for internal_reconcile_report_phantom lambda-----------------------------------------------------
-
-## API resource for pathing orca/datamanagement/reconciliation/internal/jobs/job/{jobid}/phantoms
-resource "aws_api_gateway_resource" "orca_internal_reconcile_report_phantom_api_resource" {
-  path_part   = "phantoms"
-  parent_id   = aws_api_gateway_resource.orca_internal_reconciliation_jobs_job_jobid_api_resource.id
-  rest_api_id = aws_api_gateway_rest_api.orca_api.id
-}
-
-resource "aws_api_gateway_method" "internal_reconcile_report_phantom_api_method" {
-  rest_api_id = aws_api_gateway_rest_api.orca_api.id
-  resource_id = aws_api_gateway_resource.orca_internal_reconcile_report_phantom_api_resource.id
-  http_method = "POST"
-  # todo: Make sure this is locked down against external access.
-  authorization = "NONE"
-}
-
-resource "aws_api_gateway_integration" "internal_reconcile_report_phantom_api_integration" {
-  rest_api_id             = aws_api_gateway_rest_api.orca_api.id
-  resource_id             = aws_api_gateway_resource.orca_internal_reconcile_report_phantom_api_resource.id
-  http_method             = aws_api_gateway_method.internal_reconcile_report_phantom_api_method.http_method
-  integration_http_method = "POST"
-  type                    = "AWS"
-  uri                     = var.internal_reconcile_report_phantom_invoke_arn
-}
-
-resource "aws_api_gateway_method_response" "internal_reconcile_report_phantom_response_200" {
-  rest_api_id = aws_api_gateway_rest_api.orca_api.id
-  resource_id = aws_api_gateway_resource.orca_internal_reconcile_report_phantom_api_resource.id
-  http_method = aws_api_gateway_method.internal_reconcile_report_phantom_api_method.http_method
-  status_code = "200"
-}
-
-resource "aws_api_gateway_integration_response" "internal_reconcile_report_phantom_api_response" {
-  depends_on  = [aws_api_gateway_integration.internal_reconcile_report_phantom_api_integration]
-  rest_api_id = aws_api_gateway_rest_api.orca_api.id
-  resource_id = aws_api_gateway_resource.orca_internal_reconcile_report_phantom_api_resource.id
-  http_method = aws_api_gateway_method.internal_reconcile_report_phantom_api_method.http_method
-  status_code = aws_api_gateway_method_response.internal_reconcile_report_phantom_response_200.status_code
-  # Transforms the backend JSON response to XML. Currently being used by create_http_error_dict() function in internal_reconcile_report_phantom.py
-  response_templates = {
-    "application/json" = <<EOF
-    #set($inputRoot = $input.path('$'))
-    $input.json("$")
-    #if($input.path("stackTrace") != '')
-    #set($context.responseOverride.status = 500)
-    #elseif($input.path("httpStatus") != '')
-    #set($context.responseOverride.status = $input.path('httpStatus'))
-    #end
-    EOF
-  }
-}
-
-resource "aws_lambda_permission" "internal_reconcile_report_phantom_api_permission" {
-  statement_id  = "AllowExecutionFromAPIGateway"
-  action        = "lambda:InvokeFunction"
-  function_name = "${var.prefix}_internal_reconcile_report_phantom"
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.orca_api.execution_arn}/*/${aws_api_gateway_method.internal_reconcile_report_phantom_api_method.http_method}${aws_api_gateway_resource.orca_internal_reconcile_report_phantom_api_resource.path}"
-}
-
 #deployment for the API
 resource "aws_api_gateway_deployment" "orca_api_deployment" {
   rest_api_id = aws_api_gateway_rest_api.orca_api.id
   stage_name  = var.api_gateway_stage_name
   depends_on  = [aws_api_gateway_integration.orca_catalog_reporting_api_integration, aws_api_gateway_integration.request_status_for_job_api_integration, 
-                  aws_api_gateway_integration.request_status_for_granule_api_integration, aws_api_gateway_integration.internal_reconcile_report_orphan_api_integration,
-                  aws_api_gateway_integration.internal_reconcile_report_phantom_api_integration]
+                  aws_api_gateway_integration.request_status_for_granule_api_integration, aws_api_gateway_integration.internal_reconcile_report_orphan_api_integration
+                  ]
 }
