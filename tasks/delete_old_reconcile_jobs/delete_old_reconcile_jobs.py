@@ -57,12 +57,13 @@ def get_jobs_older_than_x_days(
 ) -> List[int]:
     """
     Gets all jobs older than internal_reconciliation_expiration_days days.
+    If none are found, returns null.
 
     Args:
         internal_reconciliation_expiration_days: Only reports updated before this many days ago will be retrieved.
         engine: The sqlalchemy engine to use for contacting the database.
 
-    Returns: A list of ids for the jobs.
+    Returns: A list of ids for the jobs, or null if none were found.
 
     """
     try:
@@ -79,10 +80,9 @@ def get_jobs_older_than_x_days(
                     }
                 ],
             )
-
             return sql_results.fetchone()[
                 0
-            ]  # fetchone returns row. [0] returns the list.
+            ]  # fetchone returns row. [0] returns the list of ids.
     except Exception as sql_ex:
         LOGGER.error(f"Error while getting jobs: {sql_ex}")
         raise
@@ -102,7 +102,7 @@ def delete_jobs(job_ids: List[int], engine: Engine) -> None:
         with engine.begin() as connection:
             connection.execute(
                 # populate reconcile_phantom_report with files in orca.files but NOT reconcile_s3_object
-                delete_job_sql(),
+                delete_jobs_sql(),
                 [{"job_ids_to_delete": job_ids}],
             )
     except Exception as sql_ex:
@@ -123,7 +123,7 @@ def get_jobs_sql() -> TextClause:
     )
 
 
-def delete_job_sql() -> TextClause:
+def delete_jobs_sql() -> TextClause:
     """
     SQL for deleting all jobs in a given range.
     """

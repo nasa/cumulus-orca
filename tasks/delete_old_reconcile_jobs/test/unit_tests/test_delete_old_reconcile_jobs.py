@@ -21,144 +21,82 @@ class TestPerformOrcaReconcile(
     TestPerformOrcaReconcile.
     """
 
-    @patch("delete_old_reconcile_jobs.remove_job_from_queue")
-    @patch("delete_old_reconcile_jobs.update_job")
-    @patch("delete_old_reconcile_jobs.generate_reports")
+    @patch("delete_old_reconcile_jobs.delete_jobs")
+    @patch("delete_old_reconcile_jobs.get_jobs_older_than_x_days")
     @patch("orca_shared.database.shared_db.get_user_connection")
     def test_task_happy_path(
         self,
         mock_get_user_connection: MagicMock,
-        mock_generate_reports: MagicMock,
-        mock_update_job: MagicMock,
-        mock_remove_job_from_queue: MagicMock,
+        mock_get_jobs_older_than_x_days: MagicMock,
+        mock_delete_jobs: MagicMock,
     ):
         """
         Happy path that triggers the various DB tasks.
         """
+        internal_reconciliation_expiration_days = random.randint(1, 300)
         db_connect_info = Mock()
-        mock_orca_archive_location = Mock()
-        mock_job_id = Mock()
-        internal_report_queue_url = Mock()
-        message_receipt_handle = Mock()
 
-        result = delete_old_reconcile_jobs.task(
-            mock_job_id,
-            mock_orca_archive_location,
-            internal_report_queue_url,
-            message_receipt_handle,
+        mock_get_jobs_older_than_x_days.return_value = [Mock(), Mock()]
+
+        delete_old_reconcile_jobs.task(
+            internal_reconciliation_expiration_days,
             db_connect_info,
         )
 
         mock_get_user_connection.assert_called_once_with(db_connect_info)
-        mock_generate_reports.assert_called_once_with(
-            mock_job_id,
-            mock_orca_archive_location,
+        mock_get_jobs_older_than_x_days.assert_called_once_with(
+            internal_reconciliation_expiration_days,
             mock_get_user_connection.return_value,
         )
-        mock_update_job.assert_has_calls(
-            [
-                call(
-                    mock_job_id,
-                    OrcaStatus.GENERATING_REPORTS,
-                    None,
-                    mock_get_user_connection.return_value,
-                ),
-                call(
-                    mock_job_id,
-                    OrcaStatus.SUCCESS,
-                    None,
-                    mock_get_user_connection.return_value,
-                ),
-            ]
-        )
-        mock_remove_job_from_queue.assert_called_once_with(
-            internal_report_queue_url, message_receipt_handle
+        mock_delete_jobs.assert_called_once_with(
+            mock_get_jobs_older_than_x_days.return_value,
+            mock_get_user_connection.return_value
         )
 
-        self.assertEqual(
-            {
-                delete_old_reconcile_jobs.OUTPUT_JOB_ID_KEY: mock_job_id,
-            },
-            result,
-        )
-
-    @patch("delete_old_reconcile_jobs.remove_job_from_queue")
-    @patch("delete_old_reconcile_jobs.LOGGER")
-    @patch("delete_old_reconcile_jobs.update_job")
-    @patch("delete_old_reconcile_jobs.generate_reports")
+    @patch("delete_old_reconcile_jobs.delete_jobs")
+    @patch("delete_old_reconcile_jobs.get_jobs_older_than_x_days")
     @patch("orca_shared.database.shared_db.get_user_connection")
-    def test_task_error_posted_as_status_update(
-        self,
-        mock_get_user_connection: MagicMock,
-        mock_generate_reports: MagicMock,
-        mock_update_job: MagicMock,
-        mock_logger: MagicMock,
-        mock_remove_job_from_queue: MagicMock,
+    def test_task_no_jobs_found_does_not_delete(
+            self,
+            mock_get_user_connection: MagicMock,
+            mock_get_jobs_older_than_x_days: MagicMock,
+            mock_delete_jobs: MagicMock,
     ):
         """
-        Errors should be written to status entries.
+        If there are no jobs to delete, don't waste time calling the DB function
         """
-        expected_exception = Exception(uuid.uuid4().__str__())
-        mock_generate_reports.side_effect = expected_exception
-
+        internal_reconciliation_expiration_days = random.randint(1, 300)
         db_connect_info = Mock()
-        mock_orca_archive_location = Mock()
-        mock_job_id = Mock()
-        internal_report_queue_url = Mock()
-        message_receipt_handle = Mock()
 
-        with self.assertRaises(Exception) as cm:
-            delete_old_reconcile_jobs.task(
-                mock_job_id,
-                mock_orca_archive_location,
-                internal_report_queue_url,
-                message_receipt_handle,
-                db_connect_info,
-            )
-        self.assertEqual(expected_exception, cm.exception)
+        mock_get_jobs_older_than_x_days.return_value = None
+
+        delete_old_reconcile_jobs.task(
+            internal_reconciliation_expiration_days,
+            db_connect_info,
+        )
 
         mock_get_user_connection.assert_called_once_with(db_connect_info)
-        mock_generate_reports.assert_called_once_with(
-            mock_job_id,
-            mock_orca_archive_location,
+        mock_get_jobs_older_than_x_days.assert_called_once_with(
+            internal_reconciliation_expiration_days,
             mock_get_user_connection.return_value,
         )
-        mock_update_job.assert_has_calls(
-            [
-                call(
-                    mock_job_id,
-                    OrcaStatus.GENERATING_REPORTS,
-                    None,
-                    mock_get_user_connection.return_value,
-                ),
-                call(
-                    mock_job_id,
-                    OrcaStatus.ERROR,
-                    str(expected_exception),
-                    mock_get_user_connection.return_value,
-                ),
-            ]
-        )
-        mock_remove_job_from_queue.assert_not_called()
-        mock_logger.error.assert_called_once_with(
-            f"Encountered a fatal error: {expected_exception}"
+        mock_delete_jobs.assert_not_called(
         )
 
-    @patch("delete_old_reconcile_jobs.generate_mismatch_reports_sql")
-    @patch("delete_old_reconcile_jobs.generate_orphan_reports_sql")
-    @patch("delete_old_reconcile_jobs.generate_phantom_reports_sql")
-    def test_generate_reports_happy_path(
+    @patch("delete_old_reconcile_jobs.get_jobs_sql")
+    def test_get_jobs_older_than_x_days_happy_path(
         self,
-        mock_generate_phantom_reports_sql: MagicMock,
-        mock_generate_orphan_reports_sql: MagicMock,
-        mock_generate_mismatch_reports_sql: MagicMock,
+        mock_get_jobs_sql: MagicMock,
     ):
         """
-        Happy path for generating reports in postgres
+        Happy path for getting jobs older than x days
         """
-        mock_job_id = Mock()
-        mock_orca_archive_location = Mock()
+        ids = [random.randint(0, 9999), random.randint(0, 9999)]
+        internal_reconciliation_expiration_days = random.randint(1, 300)
+        mock_sql_result = Mock()
+        mock_sql_result.fetchone = Mock(return_value=[copy.deepcopy(ids)])
         mock_execute = Mock()
+        mock_execute.return_value = mock_sql_result
         mock_connection = Mock()
         mock_connection.execute = mock_execute
         mock_exit = Mock(return_value=False)
@@ -168,69 +106,40 @@ class TestPerformOrcaReconcile(
         mock_engine = Mock()
         mock_engine.begin = Mock(return_value=mock_enter)
 
-        delete_old_reconcile_jobs.generate_reports(
-            mock_job_id, mock_orca_archive_location, mock_engine
+        result = delete_old_reconcile_jobs.get_jobs_older_than_x_days(
+            internal_reconciliation_expiration_days, mock_engine
         )
 
         mock_enter.__enter__.assert_called_once_with()
 
-        mock_generate_phantom_reports_sql.assert_called_once_with()
-        mock_execute.assert_has_calls(
+        mock_get_jobs_sql.assert_called_once_with()
+        mock_execute.assert_called_once_with(
+            mock_get_jobs_sql.return_value,
             [
-                call(
-                    mock_generate_phantom_reports_sql.return_value,
-                    [
-                        {
-                            "job_id": mock_job_id,
-                            "orca_archive_location": mock_orca_archive_location,
-                        }
-                    ],
-                ),
-                call(
-                    mock_generate_orphan_reports_sql.return_value,
-                    [
-                        {
-                            "job_id": mock_job_id,
-                            "orca_archive_location": mock_orca_archive_location,
-                        }
-                    ],
-                ),
-                call(
-                    mock_generate_mismatch_reports_sql.return_value,
-                    [
-                        {
-                            "job_id": mock_job_id,
-                            "orca_archive_location": mock_orca_archive_location,
-                        }
-                    ],
-                ),
-            ]
+                {
+                    "internal_reconciliation_expiration_days": internal_reconciliation_expiration_days
+                }
+            ],
         )
-        self.assertEqual(3, mock_execute.call_count)
 
-        mock_generate_orphan_reports_sql.assert_called_once_with()
-
-        mock_generate_mismatch_reports_sql.assert_called_once_with()
+        mock_sql_result.fetchone.assert_called_once_with()
 
         mock_exit.assert_called_once_with(None, None, None)
 
+        self.assertEqual(ids, result)
+
     @patch("delete_old_reconcile_jobs.LOGGER")
-    @patch("delete_old_reconcile_jobs.generate_mismatch_reports_sql")
-    @patch("delete_old_reconcile_jobs.generate_orphan_reports_sql")
-    @patch("delete_old_reconcile_jobs.generate_phantom_reports_sql")
-    def test_generate_reports_error_logged_and_raised(
+    @patch("delete_old_reconcile_jobs.get_jobs_sql")
+    def test_get_jobs_older_than_x_days_error_logged_and_raised(
         self,
-        mock_generate_phantom_reports_sql: MagicMock,
-        mock_generate_orphan_reports_sql: MagicMock,
-        mock_generate_mismatch_reports_sql: MagicMock,
+        mock_get_jobs_sql: MagicMock,
         mock_logger: MagicMock,
     ):
         """
         Exceptions from Postgres should bubble up.
         """
         expected_exception = Exception(uuid.uuid4().__str__())
-        mock_job_id = Mock()
-        mock_orca_archive_location = Mock()
+        internal_reconciliation_expiration_days = random.randint(1, 300)
         mock_execute = Mock(side_effect=expected_exception)
         mock_connection = Mock()
         mock_connection.execute = mock_execute
@@ -242,8 +151,8 @@ class TestPerformOrcaReconcile(
         mock_engine.begin = Mock(return_value=mock_enter)
 
         with self.assertRaises(Exception) as cm:
-            delete_old_reconcile_jobs.generate_reports(
-                mock_job_id, mock_orca_archive_location, mock_engine
+            delete_old_reconcile_jobs.get_jobs_older_than_x_days(
+                internal_reconciliation_expiration_days, mock_engine
             )
         self.assertEqual(expected_exception, cm.exception)
         mock_enter.__enter__.assert_called_once_with()
@@ -252,25 +161,79 @@ class TestPerformOrcaReconcile(
             Exception, expected_exception, unittest.mock.ANY
         )
         mock_logger.error.assert_called_once_with(
-            f"Error while generating reports for job {mock_job_id}: {expected_exception}"
+            f"Error while getting jobs: {expected_exception}"
         )
 
-    @patch("boto3.client")
-    def test_remove_job_from_queue_happy_path(self, mock_client: MagicMock):
+    @patch("delete_old_reconcile_jobs.delete_jobs_sql")
+    def test_delete_jobs_happy_path(
+            self,
+            mock_delete_jobs_sql: MagicMock,
+    ):
         """
-        Happy path for removing the completed item from the queue.
+        Happy path for deleting all jobs in a list
         """
-        internal_report_queue_url = Mock()
-        message_receipt_handle = Mock()
+        ids = [random.randint(0, 9999), random.randint(0, 9999)]
+        mock_execute = Mock()
+        mock_connection = Mock()
+        mock_connection.execute = mock_execute
+        mock_exit = Mock(return_value=False)
+        mock_enter = Mock()
+        mock_enter.__enter__ = Mock(return_value=mock_connection)
+        mock_enter.__exit__ = mock_exit
+        mock_engine = Mock()
+        mock_engine.begin = Mock(return_value=mock_enter)
 
-        delete_old_reconcile_jobs.remove_job_from_queue(
-            internal_report_queue_url, message_receipt_handle
+        delete_old_reconcile_jobs.delete_jobs(
+            ids, mock_engine
         )
 
-        mock_client.assert_called_once_with("sqs")
-        mock_client.return_value.delete_message.assert_called_once_with(
-            QueueUrl=internal_report_queue_url,
-            ReceiptHandle=message_receipt_handle,
+        mock_enter.__enter__.assert_called_once_with()
+
+        mock_delete_jobs_sql.assert_called_once_with()
+        mock_execute.assert_called_once_with(
+            mock_delete_jobs_sql.return_value,
+            [
+                {"job_ids_to_delete": ids}
+            ],
+        )
+
+        mock_exit.assert_called_once_with(None, None, None)
+
+    @patch("delete_old_reconcile_jobs.LOGGER")
+    @patch("delete_old_reconcile_jobs.delete_jobs_sql")
+    def test_get_jobs_older_than_x_days_error_logged_and_raised(
+            self,
+            mock_delete_jobs_sql: MagicMock,
+            mock_logger: MagicMock,
+    ):
+        """
+        Exceptions from Postgres should bubble up.
+        """
+        ids = [random.randint(0, 9999), random.randint(0, 9999)]
+        expected_exception = Exception(uuid.uuid4().__str__())
+        mock_execute = Mock(side_effect=expected_exception)
+        mock_connection = Mock()
+        mock_connection.execute = mock_execute
+        mock_exit = Mock(return_value=False)
+        mock_enter = Mock()
+        mock_enter.__enter__ = Mock(return_value=mock_connection)
+        mock_enter.__exit__ = mock_exit
+        mock_engine = Mock()
+        mock_engine.begin = Mock(return_value=mock_enter)
+
+        with self.assertRaises(Exception) as cm:
+            delete_old_reconcile_jobs.delete_jobs(
+                ids,
+                mock_engine
+            )
+        self.assertEqual(expected_exception, cm.exception)
+        mock_enter.__enter__.assert_called_once_with()
+
+        mock_exit.assert_called_once_with(
+            Exception, expected_exception, unittest.mock.ANY
+        )
+        mock_logger.error.assert_called_once_with(
+            f"Error while deleting jobs: {expected_exception}"
         )
 
     # noinspection PyPep8Naming
@@ -293,161 +256,24 @@ class TestPerformOrcaReconcile(
         """
         Happy path for handler assembling information to call Task.
         """
-        job_id = random.randint(0, 1000)  # nosec
-        orca_archive_location = uuid.uuid4().__str__()
-        message_receipt_handle = uuid.uuid4().__str__()
-
-        expected_result = {
-            delete_old_reconcile_jobs.OUTPUT_JOB_ID_KEY: random.randint(0, 1000),  # nosec
-        }
-        mock_task.return_value = copy.deepcopy(expected_result)
+        internal_reconciliation_expiration_days = random.randint(1, 300)
 
         mock_context = Mock()
-        event = {
-            delete_old_reconcile_jobs.INPUT_EVENT_KEY: {
-                delete_old_reconcile_jobs.EVENT_JOB_ID_KEY: job_id,
-                delete_old_reconcile_jobs.EVENT_ORCA_ARCHIVE_LOCATION_KEY: orca_archive_location,
-                delete_old_reconcile_jobs.EVENT_MESSAGE_RECEIPT_HANDLE_KEY: message_receipt_handle,
-            }
-        }
+        event = Mock()
 
-        internal_report_queue_url = uuid.uuid4().__str__()
         with patch.dict(
             os.environ,
             {
-                delete_old_reconcile_jobs.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY: internal_report_queue_url
+                delete_old_reconcile_jobs.OS_ENVIRON_INTERNAL_RECONCILIATION_EXPIRATION_DAYS: str(internal_reconciliation_expiration_days)
             },
         ):
-            result = delete_old_reconcile_jobs.handler(event, mock_context)
+            delete_old_reconcile_jobs.handler(event, mock_context)
 
         mock_LOGGER.setMetadata.assert_called_once_with(event, mock_context)
         mock_get_configuration.assert_called_once_with(os.environ["DB_CONNECT_INFO_SECRET_ARN"])
         mock_task.assert_called_once_with(
-            job_id,
-            orca_archive_location,
-            internal_report_queue_url,
-            message_receipt_handle,
+            internal_reconciliation_expiration_days,
             mock_get_configuration.return_value,
-        )
-        self.assertEqual(expected_result, result)
-
-    # noinspection PyPep8Naming
-    @patch("orca_shared.database.shared_db.get_configuration")
-    @patch("delete_old_reconcile_jobs.LOGGER")
-    @patch("delete_old_reconcile_jobs.task")
-    @patch.dict(
-        os.environ,
-        {
-            "DB_CONNECT_INFO_SECRET_ARN": "test"
-        },
-        clear=True,
-     )
-    def test_handler_rejects_bad_input(
-        self,
-        mock_task: MagicMock,
-        mock_LOGGER: MagicMock,
-        mock_get_configuration: MagicMock,
-    ):
-        """
-        Violating input.json schema should raise an error.
-        """
-        job_id = random.randint(0, 1000)  # nosec
-        message_receipt_handle = uuid.uuid4().__str__()
-
-        expected_result = {
-            delete_old_reconcile_jobs.OUTPUT_JOB_ID_KEY: random.randint(0, 1000),  # nosec
-        }
-        mock_task.return_value = copy.deepcopy(expected_result)
-
-        mock_context = Mock()
-        event = {
-            delete_old_reconcile_jobs.INPUT_EVENT_KEY: {
-                delete_old_reconcile_jobs.EVENT_JOB_ID_KEY: job_id,
-                delete_old_reconcile_jobs.EVENT_MESSAGE_RECEIPT_HANDLE_KEY: message_receipt_handle,
-            }
-        }
-
-        internal_report_queue_url = uuid.uuid4().__str__()
-        with patch.dict(
-            os.environ,
-            {
-                delete_old_reconcile_jobs.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY: internal_report_queue_url
-            },
-        ):
-            with self.assertRaises(Exception) as cm:
-                delete_old_reconcile_jobs.handler(event, mock_context)
-
-        mock_LOGGER.setMetadata.assert_called_once_with(event, mock_context)
-        mock_task.assert_not_called()
-        self.assertEqual(
-            f"data.event must contain ['{delete_old_reconcile_jobs.EVENT_JOB_ID_KEY}', "
-            f"'{delete_old_reconcile_jobs.EVENT_ORCA_ARCHIVE_LOCATION_KEY}', "
-            f"'{delete_old_reconcile_jobs.EVENT_MESSAGE_RECEIPT_HANDLE_KEY}'] properties",
-            str(cm.exception),
-        )
-
-    # noinspection PyPep8Naming
-    @patch("orca_shared.database.shared_db.get_configuration")
-    @patch("delete_old_reconcile_jobs.LOGGER")
-    @patch("delete_old_reconcile_jobs.task")
-    @patch.dict(
-        os.environ,
-        {
-            "DB_CONNECT_INFO_SECRET_ARN": "test"
-        },
-        clear=True,
-     )
-    def test_handler_rejects_bad_output(
-        self,
-        mock_task: MagicMock,
-        mock_LOGGER: MagicMock,
-        mock_get_configuration: MagicMock,
-    ):
-        """
-        Violating output.json schema should raise an error.
-        """
-        job_id = random.randint(0, 1000)  # nosec
-        orca_archive_location = uuid.uuid4().__str__()
-        message_receipt_handle = uuid.uuid4().__str__()
-
-        expected_result = {
-            delete_old_reconcile_jobs.OUTPUT_JOB_ID_KEY: str(
-                random.randint(0, 1000)  # nosec
-            ),
-        }
-        mock_task.return_value = copy.deepcopy(expected_result)
-
-        mock_context = Mock()
-        event = {
-            delete_old_reconcile_jobs.INPUT_EVENT_KEY: {
-                delete_old_reconcile_jobs.EVENT_JOB_ID_KEY: job_id,
-                delete_old_reconcile_jobs.EVENT_ORCA_ARCHIVE_LOCATION_KEY: orca_archive_location,
-                delete_old_reconcile_jobs.EVENT_MESSAGE_RECEIPT_HANDLE_KEY: message_receipt_handle,
-            }
-        }
-
-        internal_report_queue_url = uuid.uuid4().__str__()
-        with patch.dict(
-            os.environ,
-            {
-                delete_old_reconcile_jobs.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY: internal_report_queue_url
-            },
-        ):
-            with self.assertRaises(Exception) as cm:
-                delete_old_reconcile_jobs.handler(event, mock_context)
-
-        mock_LOGGER.setMetadata.assert_called_once_with(event, mock_context)
-        mock_get_configuration.assert_called_once_with(os.environ["DB_CONNECT_INFO_SECRET_ARN"])
-        mock_task.assert_called_once_with(
-            job_id,
-            orca_archive_location,
-            internal_report_queue_url,
-            message_receipt_handle,
-            mock_get_configuration.return_value,
-        )
-        self.assertEqual(
-            f"data.{delete_old_reconcile_jobs.EVENT_JOB_ID_KEY} must be integer",
-            str(cm.exception),
         )
 
     # copied from shared_db.py
