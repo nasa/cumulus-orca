@@ -113,6 +113,16 @@ CLASSES
      |  args
 
 FUNCTIONS
+    def get_glacier_recovery_type(config: Dict[str, Any]) -> str:
+        """
+        Returns the glacier recovery type from either config or environment variable. 
+        Must be either 'Bulk', 'Expedited', or 'Standard'.
+        Args:
+            config: The config dictionary from lambda event.
+
+        Raises: ValueError if recovery type value is invalid.
+        """
+
     get_default_glacier_bucket_name(config: Dict[str, Any]) -> str
     
     handler(event: Dict[str, Any], context)

@@ -137,27 +137,6 @@ def task(
         )
         retry_sleep_secs = DEFAULT_RESTORE_RETRY_SLEEP_SECS
 
-    VALID_RESTORE_TYPES = ["Bulk", "Expedited", "Standard"]
-
-    # Look for config override
-    retrieval_type = event["config"].get(CONFIG_RESTORE_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY, None)
-    if retrieval_type is not None:
-        if retrieval_type in VALID_RESTORE_TYPES:
-            LOGGER.info(f"Found glacier restore type from config: {retrieval_type}. Overridding other values.")
-        else:
-            LOGGER.error(f"Invalid value in restore type {retrieval_type} in config.")
-            raise ValueError("Invalid value in config. Valid values are 'Bulk', 'Standard', 'Expedited'")
-
-    # Look for default from TF
-    if retrieval_type is None:
-        retrieval_type = os.getenv(OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY, None)
-        if retrieval_type is not None:
-                if retrieval_type in VALID_RESTORE_TYPES:
-                    LOGGER.info(f"Found restore type from {OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY}: {retrieval_type}")
-                else:
-                    LOGGER.error(f"Invalid value in restore type {retrieval_type} in env variable.")
-                    raise ValueError("Invalid value in environment variable. Valid values are 'Bulk', 'Standard', 'Expedited'")
-
     # Get QUEUE URL
     status_update_queue_url = str(os.environ[OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY])
 
@@ -185,6 +164,9 @@ def task(
             f"No bulk job_id sent. Generated value"
             f" {event[EVENT_CONFIG_KEY][CONFIG_JOB_ID_KEY]} for job_id."
         )
+    #get the glacier recovery type
+    retrieval_type = get_glacier_recovery_type(event["config"])
+
     # Call the inner task to perform the work of restoring
     return inner_task(  # todo: Split 'event' into relevant properties.
         event, max_retries, retry_sleep_secs, retrieval_type, exp_days, status_update_queue_url
@@ -364,6 +346,40 @@ def inner_task(
         "granules": copied_granules,
         "asyncOperationId": event[EVENT_CONFIG_KEY][CONFIG_JOB_ID_KEY],
     }
+
+def get_glacier_recovery_type(config: Dict[str, Any]) -> str:
+    """
+    Returns the glacier recovery type from either config or environment variable. 
+    Must be either 'Bulk', 'Expedited', or 'Standard'.
+    Args:
+        config: The config dictionary from lambda event.
+
+    Raises: ValueError if recovery type value is invalid.
+    """
+
+
+    VALID_RESTORE_TYPES = ["Bulk", "Expedited", "Standard"]
+
+    # Look for config override
+    retrieval_type = config.get(CONFIG_RESTORE_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY, None)
+    if retrieval_type is not None:
+        if retrieval_type in VALID_RESTORE_TYPES:
+            LOGGER.info(f"Found glacier restore type from config: {retrieval_type}. Overridding other values.")
+        else:
+            LOGGER.error(f"Invalid value in restore type {retrieval_type} in config.")
+            raise ValueError("Invalid value in config. Valid values are 'Bulk', 'Standard', 'Expedited'")
+
+    # Look for default from TF
+    if retrieval_type is None:
+        retrieval_type = os.getenv(OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY, None)
+        if retrieval_type is not None:
+                if retrieval_type in VALID_RESTORE_TYPES:
+                    LOGGER.info(f"Found restore type from {OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY}: {retrieval_type}")
+                else:
+                    LOGGER.error(f"Invalid value in restore type {retrieval_type} in env variable.")
+                    raise ValueError("Invalid value in environment variable. Valid values are 'Bulk', 'Standard', 'Expedited'")
+    
+    return retrieval_type
 
 def get_default_glacier_bucket_name(config: Dict[str, Any]) -> str:
     try:
