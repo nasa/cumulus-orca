@@ -897,8 +897,8 @@ class TestRequestFiles(unittest.TestCase):
         }
         with self.assertRaises(ValueError) as ve:
             request_files.get_glacier_recovery_type(config)
-        self.assertEqual(ve.exception.args[0], "Invalid value in config. Valid values are 'Bulk', 'Standard', 'Expedited'")
-        mock_logger_error.assert_called_once_with(f"Invalid value in restore type {config[request_files.CONFIG_RESTORE_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY]} in config.")
+        self.assertEqual(ve.exception.args[0], f"Invalid restore type value in configuration {request_files.CONFIG_RESTORE_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} key.")
+        mock_logger_error.assert_called_once_with(f"Invalid restore type value of {config[request_files.CONFIG_RESTORE_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY]} found in the configuration {request_files.CONFIG_RESTORE_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} key.")
     
     @patch.dict(
         os.environ,
@@ -934,8 +934,8 @@ class TestRequestFiles(unittest.TestCase):
         }
         with self.assertRaises(ValueError) as ve:
             request_files.get_glacier_recovery_type(config)
-        self.assertEqual(ve.exception.args[0], "Invalid value in environment variable. Valid values are 'Bulk', 'Standard', 'Expedited'")
-        mock_logger_error.assert_called_once_with(f"Invalid value in restore type {os.environ[request_files.OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY]} in env variable.")
+        self.assertEqual(ve.exception.args[0], f"Invalid restore type value in environment variable {request_files.OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY}")
+        mock_logger_error.assert_called_once_with(f"Invalid restore type value of {os.environ[request_files.OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY]} found in environment variable {request_files.OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY}.")
 
     @patch("time.sleep")
     @patch("request_files.restore_object")

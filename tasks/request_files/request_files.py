@@ -364,20 +364,20 @@ def get_glacier_recovery_type(config: Dict[str, Any]) -> str:
     retrieval_type = config.get(CONFIG_RESTORE_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY, None)
     if retrieval_type is not None:
         if retrieval_type in VALID_RESTORE_TYPES:
-            LOGGER.info(f"Found glacier restore type from config: {retrieval_type}. Overridding other values.")
+            LOGGER.info(f"Using restore type of {retrieval_type} found in the configuration {CONFIG_RESTORE_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} key.")
         else:
-            LOGGER.error(f"Invalid value in restore type {retrieval_type} in config.")
-            raise ValueError("Invalid value in config. Valid values are 'Bulk', 'Standard', 'Expedited'")
+            LOGGER.error(f"Invalid restore type value of {retrieval_type} found in the configuration {CONFIG_RESTORE_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} key.")
+            raise ValueError(f"Invalid restore type value in configuration {CONFIG_RESTORE_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} key.")
 
     # Look for default from TF
     if retrieval_type is None:
         retrieval_type = os.getenv(OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY, None)
         if retrieval_type is not None:
                 if retrieval_type in VALID_RESTORE_TYPES:
-                    LOGGER.info(f"Found restore type from {OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY}: {retrieval_type}")
+                    LOGGER.info(f"Using restore type of {retrieval_type} found in environment variable {OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY}.")
                 else:
-                    LOGGER.error(f"Invalid value in restore type {retrieval_type} in env variable.")
-                    raise ValueError("Invalid value in environment variable. Valid values are 'Bulk', 'Standard', 'Expedited'")
+                    LOGGER.error(f"Invalid restore type value of {retrieval_type} found in environment variable {OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY}.")
+                    raise ValueError(f"Invalid restore type value in environment variable {OS_ENVIRON_RESTORE_DEFAULT_RECOVERY_TYPE_KEY}")
     
     return retrieval_type
 
