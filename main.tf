@@ -48,6 +48,7 @@ module "orca" {
   metadata_queue_message_retention_time_seconds        = var.metadata_queue_message_retention_time_seconds
   orca_ingest_lambda_memory_size                       = var.orca_ingest_lambda_memory_size
   orca_ingest_lambda_timeout                           = var.orca_ingest_lambda_timeout
+  orca_internal_reconciliation_expiration_days         = var.orca_internal_reconciliation_expiration_days
   orca_reconciliation_lambda_memory_size               = var.orca_reconciliation_lambda_memory_size
   orca_reconciliation_lambda_timeout                   = var.orca_reconciliation_lambda_timeout
   orca_recovery_buckets                                = var.orca_recovery_buckets
