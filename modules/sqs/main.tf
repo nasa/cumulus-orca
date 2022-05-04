@@ -18,14 +18,9 @@ data "aws_iam_policy_document" "metadata_queue_policy" {
   }
 }
 
-## SQS IAM access policy for s3-inventory-queue.fifo SQS
+## SQS IAM access policy for s3-inventory-queue SQS
 ## ====================================================================================================
 data "aws_iam_policy_document" "s3_inventory_queue_policy" {
-  statement {
-    actions   = ["sqs:*"] # todo: Lock down access to specific actions and resources. https://bugs.earthdata.nasa.gov/browse/ORCA-273
-    resources = ["arn:aws:sqs:*"]
-    effect    = "Allow"
-  }
   statement {
     principals {
       type        = "Service"
