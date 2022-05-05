@@ -69,7 +69,7 @@ resource "aws_sqs_queue" "internal_report_queue" {
   message_retention_seconds   = var.internal_report_queue_message_retention_time_seconds
   tags                        = var.tags
   policy                      = data.aws_iam_policy_document.internal_report_queue_policy.json
-  visibility_timeout_seconds  = 30 # Does not cover maximum processing time. Reconsider when multiple consumers becomes possible.
+  visibility_timeout_seconds  = var.orca_reconciliation_lambda_timeout * 6
   depends_on = [
     aws_sqs_queue.internal_report_dlq
   ]
