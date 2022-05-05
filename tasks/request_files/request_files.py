@@ -23,12 +23,11 @@ from orca_shared.recovery import shared_recovery
 DEFAULT_RESTORE_EXPIRE_DAYS = 5
 DEFAULT_MAX_REQUEST_RETRIES = 2
 DEFAULT_RESTORE_RETRY_SLEEP_SECS = 0
-DEFAULT_RESTORE_RETRIEVAL_TYPE = "Standard"
 
 OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY = "RESTORE_EXPIRE_DAYS"
 OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY = "RESTORE_REQUEST_RETRIES"
 OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY = "RESTORE_RETRY_SLEEP_SECS"
-OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY = "RESTORE_RETRIEVAL_TYPE"
+OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY = "DEFAULT_RECOVERY_TYPE"
 OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY = "STATUS_UPDATE_QUEUE_URL"
 OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY = "ORCA_DEFAULT_BUCKET"
 
@@ -36,6 +35,7 @@ EVENT_CONFIG_KEY = "config"
 EVENT_INPUT_KEY = "input"
 
 CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY = "orcaDefaultBucketOverride"
+CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY = "orcaDefaultRecoveryTypeOverride"
 
 INPUT_GRANULES_KEY = "granules"
 
@@ -80,10 +80,8 @@ def task(
         Args:
             Note that because we are using CumulusMessageAdapter, this may not directly correspond to Lambda input.
             event: A dict with the following keys:
-                'config' (dict): A dict with the following keys:
-                    'orcaDefaultBucketOverride' (str): The name of the glacier bucket from which the files
-                    will be restored. Defaults to os.environ['ORCA_DEFAULT_BUCKET']
-                    'job_id' (str): The unique identifier used for tracking requests. If not present, will be generated.
+                'config' (dict): See the function's schemas/config.json for information on config.
+
                 'input' (dict): A dict with the following keys:
                     'granules' (list(dict)): A list of dicts with the following keys:
                         'granuleId' (str): The id of the granule being restored.
@@ -99,7 +97,7 @@ def task(
                 attempts to retry a restore_request that failed to submit.
             RESTORE_RETRY_SLEEP_SECS (int, optional, default = 0): The number of seconds
                 to sleep between retry attempts.
-            RESTORE_RETRIEVAL_TYPE (str, optional, default = 'Standard'): The Tier
+            DEFAULT_RECOVERY_TYPE (str, optional, default = 'Standard'): The Tier
                 for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
             STATUS_UPDATE_QUEUE_URL
                 The URL of the SQS queue to post status to.
@@ -138,20 +136,6 @@ def task(
         )
         retry_sleep_secs = DEFAULT_RESTORE_RETRY_SLEEP_SECS
 
-    # Get retrieval type
-    try:
-        retrieval_type = os.environ[OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY]
-        if retrieval_type not in ("Standard", "Bulk", "Expedited"):
-            msg = (
-                f"Invalid RESTORE_RETRIEVAL_TYPE: '{retrieval_type}'"
-                " defaulting to 'Standard'"
-            )
-            LOGGER.info(msg)
-            retrieval_type = DEFAULT_RESTORE_RETRIEVAL_TYPE
-    except KeyError:
-        LOGGER.warn("Invalid RESTORE_RETRIEVAL_TYPE: 'None' defaulting to 'Standard'")
-        retrieval_type = DEFAULT_RESTORE_RETRIEVAL_TYPE
-
     # Get QUEUE URL
     status_update_queue_url = str(os.environ[OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY])
 
@@ -179,18 +163,19 @@ def task(
             f"No bulk job_id sent. Generated value"
             f" {event[EVENT_CONFIG_KEY][CONFIG_JOB_ID_KEY]} for job_id."
         )
+    #get the glacier recovery type
+    recovery_type = get_glacier_recovery_type(event["config"])
 
     # Call the inner task to perform the work of restoring
     return inner_task(  # todo: Split 'event' into relevant properties.
-        event, max_retries, retry_sleep_secs, retrieval_type, exp_days, status_update_queue_url
+        event, max_retries, retry_sleep_secs, recovery_type, exp_days, status_update_queue_url
     )
-
 
 def inner_task(
     event: Dict,
     max_retries: int,
     retry_sleep_secs: float,
-    retrieval_type: str,
+    recovery_type: str,
     restore_expire_days: int,
     status_update_queue_url: str,
 ) -> Dict[str, Any]:  # pylint: disable-msg=unused-argument
@@ -215,7 +200,7 @@ def inner_task(
                                 to after the restore completes.
             max_retries: The maximum number of retries for network operations.
             retry_sleep_secs: The number of time to sleep between retries.
-            retrieval_type: The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
+            recovery_type: The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
             restore_expire_days: The number of days the restored file will be accessible in the S3 bucket before it
                 expires.
             status_update_queue_url: The URL of the SQS queue to post status to.
@@ -343,7 +328,7 @@ def inner_task(
             restore_expire_days,
             max_retries,
             retry_sleep_secs,
-            retrieval_type,
+            recovery_type,
             job_id,
             status_update_queue_url,
         )
@@ -361,6 +346,39 @@ def inner_task(
         "asyncOperationId": event[EVENT_CONFIG_KEY][CONFIG_JOB_ID_KEY],
     }
 
+def get_glacier_recovery_type(config: Dict[str, Any]) -> str:
+    """
+    Returns the glacier recovery type from either config or environment variable. 
+    Must be either 'Bulk', 'Expedited', or 'Standard'.
+    Args:
+        config: The config dictionary from lambda event.
+
+    Raises: ValueError if recovery type value is invalid.
+    """
+
+
+    VALID_RESTORE_TYPES = ["Bulk", "Expedited", "Standard"]
+
+    # Look for config override
+    recovery_type = config.get(CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY, None)
+    if recovery_type is not None:
+        if recovery_type in VALID_RESTORE_TYPES:
+            LOGGER.info(f"Using restore type of {recovery_type} found in the configuration {CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} key.")
+        else:
+            LOGGER.error(f"Invalid restore type value of {recovery_type} found in the configuration {CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} key.")
+            raise ValueError(f"Invalid restore type value in configuration {CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} key.")
+
+    # Look for default from TF
+    if recovery_type is None:
+        recovery_type = os.getenv(OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY, None)
+        if recovery_type is not None:
+                if recovery_type in VALID_RESTORE_TYPES:
+                    LOGGER.info(f"Using restore type of {recovery_type} found in environment variable {OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY}.")
+                else:
+                    LOGGER.error(f"Invalid restore type value of {recovery_type} found in environment variable {OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY}.")
+                    raise ValueError(f"Invalid restore type value in environment variable {OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY}")
+    
+    return recovery_type
 
 def get_default_glacier_bucket_name(config: Dict[str, Any]) -> str:
     try:
@@ -379,7 +397,7 @@ def process_granule(
     restore_expire_days: int,
     max_retries: int,
     retry_sleep_secs: float,
-    retrieval_type: str,
+    recovery_type: str,
     job_id: str,
     status_update_queue_url: str,
 ) -> None:  # pylint: disable-msg=unused-argument
@@ -399,7 +417,7 @@ def process_granule(
             The number of days the restored file will be accessible in the S3 bucket before it expires.
         max_retries: The number of attempts to retry a restore_request that failed to submit.
         retry_sleep_secs: The number of seconds to sleep between retry attempts.
-        retrieval_type: The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
+        recovery_type: The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
         job_id: The unique identifier used for tracking requests.
         status_update_queue_url: The URL of the SQS queue to post status to.
 
@@ -421,7 +439,7 @@ def process_granule(
                         glacier_bucket,
                         attempt,
                         job_id,
-                        retrieval_type,
+                        recovery_type,
                     )
 
                     # Successful restore
@@ -546,7 +564,7 @@ def restore_object(
     db_glacier_bucket_key: str,
     attempt: int,
     job_id: str,
-    retrieval_type: str = "Standard",
+    recovery_type: str = "Standard",
 ) -> None:
     # noinspection SpellCheckingInspection
     """Restore an archived S3 Glacier object in an Amazon S3 bucket.
@@ -557,11 +575,11 @@ def restore_object(
         db_glacier_bucket_key: The S3 bucket name.
         attempt: The attempt number for logging purposes.
         job_id: The unique id of the job. Used for logging.
-        retrieval_type: Glacier Tier. Valid values are 'Standard'|'Bulk'|'Expedited'. Defaults to 'Standard'.
+        recovery_type: Glacier Tier. Valid values are 'Standard'|'Bulk'|'Expedited'. Defaults to 'Standard'.
     Raises:
         ClientError: Raises ClientErrors from restore_object, or if the file is already restored.
     """
-    request = {"Days": days, "GlacierJobParameters": {"Tier": retrieval_type}}
+    request = {"Days": days, "GlacierJobParameters": {"Tier": recovery_type}}
     # Submit the request
     restore_result = s3_cli.restore_object(
         Bucket=db_glacier_bucket_key, Key=key, RestoreRequest=request
@@ -590,7 +608,7 @@ def handler(event: Dict[str, Any], context):  # pylint: disable-msg=unused-argum
     but at this time, only 1 granule will be accepted.
     This is due to the error handling. If the restore request for any file for a
     granule fails to submit, the entire granule (workflow) fails. If more than one granule were
-    accepted, and a failure ocured, at present, it would fail all of them.
+    accepted, and a failure occurred, at present, it would fail all of them.
     Environment variables can be set to override how many days to keep the restored files, how
     many times to retry a restore_request, and how long to wait between retries.
         Environment Vars:
@@ -600,7 +618,7 @@ def handler(event: Dict[str, Any], context):  # pylint: disable-msg=unused-argum
                 attempts to retry a restore_request that failed to submit.
             RESTORE_RETRY_SLEEP_SECS (int, optional, default = 0): The number of seconds
                 to sleep between retry attempts.
-            RESTORE_RETRIEVAL_TYPE (str, optional, default = 'Standard'): the Tier
+            RESTORE_RECOVERY_TYPE (str, optional, default = 'Standard'): the Tier
                 for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
             CUMULUS_MESSAGE_ADAPTER_DISABLED (str): If set to 'true', CumulusMessageAdapter does not modify input.
             STATUS_UPDATE_QUEUE_URL
