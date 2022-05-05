@@ -29,6 +29,8 @@ and includes an additional section for migration notes.
 - *ORCA-309* Added lambda internal_reconcile_report_phantom to report entries present in the catalog, but not s3.
 - *ORCA-382* Added lambda internal_reconcile_report_orphan to report entries present in S3 bucket, but not in the ORCA catalog.
 - *ORCA-381* Added lambda internal_reconcile_report_mismatch to report entries present in S3 bucket and catalog, but with conflicting data.
+- *ORCA-310* Added lambda delete_old_reconcile_jobs for removing old reconciliation reports from the database.
+    Use new optional variable `orca_internal_reconciliation_expiration_days` to set the retention period.
 
 ### Changed
 - *ORCA-299* `db_deploy` task has been updated to deploy ORCA internal reconciliation tables and objects.
@@ -114,6 +116,7 @@ variable "s3_secret_key" {
   internal_report_queue_message_retention_time_seconds = 432000
   orca_ingest_lambda_memory_size                       = 2240
   orca_ingest_lambda_timeout                           = 720
+  orca_internal_reconciliation_expiration_days         = 30
   orca_recovery_buckets                                = []
   orca_recovery_complete_filter_prefix                 = ""
   orca_recovery_expiration_days                        = 5
