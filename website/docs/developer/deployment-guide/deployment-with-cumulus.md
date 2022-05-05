@@ -537,7 +537,7 @@ variables is shown in the table below.
 | `metadata_queue_message_retention_time_seconds`       | number        | Number of seconds the metadata-queue fifo SQS retains a message.                                          | 777600 |
 | `db_name`                                             | string        | The name of the Orca database within the RDS cluster. Any `-` in `prefix` will be replaced with `_`.      | PREFIX_orca |
 | `db_user_name`                                        | string        | The name of the application user for the Orca database. Any `-` in `prefix` will be replaced with `_`.    | PREFIX_orcauser |
-| `orca_default_recovery_type`                          | string        | The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'                          | "Bulk" |
+| `orca_default_recovery_type`                          | string        | The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'                          | "Standard" |
 | `orca_ingest_lambda_memory_size`                      | number        | Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime.                                | 2240 |
 | `orca_ingest_lambda_timeout`                          | number        | Timeout in number of seconds for ORCA copy_to_glacier lambda.                                             | 600 |
 | `orca_reconciliation_lambda_memory_size`              | number        | Amount of memory in MB the ORCA reconciliation lambda can use at runtime.                                 | 128 |
