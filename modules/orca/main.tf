@@ -3,18 +3,18 @@
 ## orca_lambdas - lambdas module that calls iam and security_groups module
 ## =============================
 module "orca_lambdas" {
-  source = "../lambdas"
-  depends_on = [module.orca_iam, module.orca_secretsmanager]  ## secretsmanager sets up db connection secrets.
+  source     = "../lambdas"
+  depends_on = [module.orca_iam, module.orca_secretsmanager] ## secretsmanager sets up db connection secrets.
   ## --------------------------
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  buckets                                              = var.buckets
-  lambda_subnet_ids                                    = var.lambda_subnet_ids
-  permissions_boundary_arn                             = var.permissions_boundary_arn
-  prefix                                               = var.prefix
-  rds_security_group_id                                = var.rds_security_group_id
-  vpc_id                                               = var.vpc_id
+  buckets                  = var.buckets
+  lambda_subnet_ids        = var.lambda_subnet_ids
+  permissions_boundary_arn = var.permissions_boundary_arn
+  prefix                   = var.prefix
+  rds_security_group_id    = var.rds_security_group_id
+  vpc_id                   = var.vpc_id
   ## OPTIONAL
   tags                           = var.tags
   default_multipart_chunksize_mb = var.default_multipart_chunksize_mb
@@ -39,6 +39,7 @@ module "orca_lambdas" {
   ## OPTIONAL
   orca_ingest_lambda_memory_size         = var.orca_ingest_lambda_memory_size
   orca_ingest_lambda_timeout             = var.orca_ingest_lambda_timeout
+  orca_default_recovery_type             = var.orca_default_recovery_type
   orca_reconciliation_lambda_memory_size = var.orca_reconciliation_lambda_memory_size
   orca_reconciliation_lambda_timeout     = var.orca_reconciliation_lambda_timeout
   orca_recovery_buckets                  = var.orca_recovery_buckets
@@ -54,15 +55,15 @@ module "orca_lambdas" {
 ## orca_lambdas_secondary - lambdas module that is dependent on resources that presently are created after most lambdas
 ## ====================================================================================================================
 module "orca_lambdas_secondary" {
-  source = "../lambdas_secondary"
-  depends_on = [module.orca_iam, module.orca_secretsmanager, module.orca_workflows]  ## secretsmanager sets up db connection secrets.
+  source     = "../lambdas_secondary"
+  depends_on = [module.orca_iam, module.orca_secretsmanager, module.orca_workflows] ## secretsmanager sets up db connection secrets.
   ## --------------------------
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  buckets                                              = var.buckets
-  lambda_subnet_ids                                    = var.lambda_subnet_ids
-  prefix                                               = var.prefix
+  buckets           = var.buckets
+  lambda_subnet_ids = var.lambda_subnet_ids
+  prefix            = var.prefix
   ## OPTIONAL
   tags                           = var.tags
   default_multipart_chunksize_mb = var.default_multipart_chunksize_mb
@@ -138,7 +139,7 @@ module "orca_iam" {
 ## orca_secretsmanager - secretsmanager module
 ## =============================================================================
 module "orca_secretsmanager" {
-  source = "../secretsmanager"
+  source     = "../secretsmanager"
   depends_on = [module.orca_iam]
   ## --------------------------
   ## Cumulus Variables
@@ -152,12 +153,12 @@ module "orca_secretsmanager" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  db_admin_password = var.db_admin_password
-  db_user_password  = var.db_user_password
-  db_host_endpoint  = var.db_host_endpoint
+  db_admin_password       = var.db_admin_password
+  db_user_password        = var.db_user_password
+  db_host_endpoint        = var.db_host_endpoint
   restore_object_role_arn = module.orca_iam.restore_object_role_arn
-  s3_access_key = var.s3_access_key
-  s3_secret_key = var.s3_secret_key
+  s3_access_key           = var.s3_access_key
+  s3_secret_key           = var.s3_secret_key
 
   ## OPTIONAL
   db_admin_username = var.db_admin_username
@@ -215,9 +216,12 @@ module "orca_api_gateway" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  orca_catalog_reporting_invoke_arn     = module.orca_lambdas.orca_catalog_reporting_invoke_arn
-  request_status_for_granule_invoke_arn = module.orca_lambdas.request_status_for_granule_invoke_arn
-  request_status_for_job_invoke_arn     = module.orca_lambdas.request_status_for_job_invoke_arn
+  internal_reconcile_report_orphan_invoke_arn   = module.orca_lambdas.internal_reconcile_report_orphan_invoke_arn
+  internal_reconcile_report_phantom_invoke_arn  = module.orca_lambdas.internal_reconcile_report_phantom_invoke_arn
+  internal_reconcile_report_mismatch_invoke_arn = module.orca_lambdas.internal_reconcile_report_mismatch_invoke_arn
+  orca_catalog_reporting_invoke_arn             = module.orca_lambdas.orca_catalog_reporting_invoke_arn
+  request_status_for_granule_invoke_arn         = module.orca_lambdas.request_status_for_granule_invoke_arn
+  request_status_for_job_invoke_arn             = module.orca_lambdas.request_status_for_job_invoke_arn
   ## OPTIONAL
-  vpc_endpoint_id                       = var.vpc_endpoint_id
+  vpc_endpoint_id = var.vpc_endpoint_id
 }
