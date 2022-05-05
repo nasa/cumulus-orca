@@ -17,7 +17,7 @@ and includes an additional section for migration notes.
 ## [Unreleased]
 
 ### Added
-- *ORCA-300* Added `OrcaInternalReconciliation` workflow allong with an accompanying input queue and dead-letter queue.
+- *ORCA-300* Added `OrcaInternalReconciliation` workflow along with an accompanying input queue and dead-letter queue.
     Retention time can be changed by setting `internal_report_queue_message_retention_time_seconds` in your `variables.tf` or `orca_variables.tf` file. Defaults to 432000.
 - *ORCA-161* Added dead letter queue and cloudwatch alarm terraform code to recovery SQS queue.
 - *ORCA-307* Added lambda get_current_archive_list to pull S3 Inventory reports into Postgres. 
@@ -28,9 +28,11 @@ and includes an additional section for migration notes.
     Report frequency defaults to `Daily`, but can be set to `Weekly` through variable `s3_report_frequency`.
 - *ORCA-309* Added lambda internal_reconcile_report_phantom to report entries present in the catalog, but not s3.
 - *ORCA-382* Added lambda internal_reconcile_report_orphan to report entries present in S3 bucket, but not in the ORCA catalog.
+- *ORCA-291* request_files lambda now accepts `orcaDefaultRecoveryTypeOverride` to override the glacier restore type at the workflow level by adding it to task_config.
 - *ORCA-381* Added lambda internal_reconcile_report_mismatch to report entries present in S3 bucket and catalog, but with conflicting data.
 - *ORCA-310* Added lambda delete_old_reconcile_jobs for removing old reconciliation reports from the database.
     Use new optional variable `orca_internal_reconciliation_expiration_days` to set the retention period.
+- *ORCA-306* Added API gateway resources for internal reconciliation reporting lambdas.
 
 ### Changed
 - *ORCA-299* `db_deploy` task has been updated to deploy ORCA internal reconciliation tables and objects.
@@ -38,6 +40,12 @@ and includes an additional section for migration notes.
 - SQS Queue names adjusted to include Orca. For example: `"${var.prefix}-orca-status-update-queue.fifo"`. Queues will be automatically recreated by Terraform.
 - *ORCA-334* Created IAM role for the extract_filepaths_for_granule lambda function, attached the role to the function
 - *ORCA-404* Updated shared_db and relevant lambdas to use secrets manager ARN instead of magic strings.
+- *ORCA-291* Updated request_files lambda and terraform so that the glacier restore type can be set via terraform during deployment. In addition, the glacier retrieval type can now be overridden via a change in the collections configuration using `orcaDefaultRecoveryTypeOverride` key under `meta` tag as shown below. 
+  ```json
+  "meta": {
+    "orcaDefaultRecoveryTypeOverride": "Standard"
+  }
+  ```
 
 ### Migration Notes
 
@@ -52,6 +60,14 @@ and includes an additional section for migration notes.
   - s3_access_key
   - s3_secret_key
   
+- Update the collection configuration with the new optional key `orcaDefaultRecoveryTypeOverride` that can be added to override the default S3 glacier recovery type as shown below.
+
+  ```json
+    "meta": {
+      "orcaDefaultRecoveryTypeOverride": "Standard"
+    }
+  ```
+
 - Add the following ORCA required variable definition to your `variables.tf` or `orca_variables.tf` file.
 
 ```terraform
@@ -114,6 +130,7 @@ variable "s3_secret_key" {
   db_admin_username                                    = "postgres"
   default_multipart_chunksize_mb                       = 250
   internal_report_queue_message_retention_time_seconds = 432000
+  orca_default_recovery_type                           = "Standard"
   orca_ingest_lambda_memory_size                       = 2240
   orca_ingest_lambda_timeout                           = 720
   orca_internal_reconciliation_expiration_days         = 30
@@ -134,7 +151,6 @@ variable "s3_secret_key" {
   vpc_endpoint_id                                      = null
   }
   ```
-
 
 ## [4.0.1]
 
