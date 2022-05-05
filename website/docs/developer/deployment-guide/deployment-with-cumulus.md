@@ -235,7 +235,7 @@ db_user_password = "my-super-secret-orca-application-user-password"
 ## Default ORCA S3 Glacier bucket to use
 orca_default_bucket = "orca-archive-primary"
 
-## The ARN of the bucket to store s3 inventory reports.
+## The name of the bucket to store s3 inventory reports.
 orca_reports_bucket_name = "PREFIX-orca-reports"
 
 ## PostgreSQL database (root) user password
@@ -493,17 +493,17 @@ The following variables should be present in the `cumulus-tf/orca_variables.tf`
 file. The variables must be set with proper values for your environment in the
 `cumulus-tf/terraform.tfvars` file.
 
-| Variable                 | Definition                                              |              Example Value                                  |
-| ------------------------ | --------------------------------------------------------| ------------------------------------------------------------|
-| `db_admin_password`      | Password for RDS database administrator authentication  | "My_Sup3rS3cr3t_admin_Passw0rd"                             |
-| `db_host_endpoint`       | Database host endpoint to connect to.                   | "aws.postgresrds.host"                                      |
-| `db_user_password`       | Password for RDS database user authentication           | "My_Sup3rS3cr3tuserPassw0rd"                                |
-| `dlq_subscription_email` | The email to notify users when messages are received in dead letter SQS queue | "test@email.com"                      |
-| `orca_default_bucket`    | Default ORCA S3 Glacier bucket to use.                  | "PREFIX-orca-primary"                                       |
-| `orca_reports_bucket_name`| The ARN of the bucket to store s3 inventory reports.    | "PREFIX-orca-reports"                          |
-| `rds_security_group_id`  | Cumulus' RDS Security Group's ID.                       | "sg-01234567890123456"                                      |
-| `s3_access_key`          | Access key for communicating with Orca S3 buckets.      |                                                             |
-| `s3_secret_key`          | Secret key for communicating with Orca S3 buckets.      |                                                             |
+| Variable                   | Definition                                               |              Example Value                                  |
+| -------------------------- | -------------------------------------------------------- | ------------------------------------------------------------|
+| `db_admin_password`        | Password for RDS database administrator authentication   | "My_Sup3rS3cr3t_admin_Passw0rd"                             |
+| `db_host_endpoint`         | Database host endpoint to connect to.                    | "aws.postgresrds.host"                                      |
+| `db_user_password`         | Password for RDS database user authentication            | "My_Sup3rS3cr3tuserPassw0rd"                                |
+| `dlq_subscription_email`   | The email to notify users when messages are received in dead letter SQS queue | "test@email.com"                      |
+| `orca_default_bucket`      | Default ORCA S3 Glacier bucket to use.                   | "PREFIX-orca-primary"                                       |
+| `orca_reports_bucket_name` | The Name of the bucket to store s3 inventory reports.    | "PREFIX-orca-reports"                          |
+| `rds_security_group_id`    | Cumulus' RDS Security Group's ID.                        | "sg-01234567890123456"                                      |
+| `s3_access_key`            | Access key for communicating with Orca S3 buckets.       |                                                             |
+| `s3_secret_key`            | Secret key for communicating with Orca S3 buckets.       |                                                             |
 
 ### Optional Variables
 

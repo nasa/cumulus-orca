@@ -6,6 +6,7 @@ sends it to another queue, then triggers the internal report step function.
 """
 import json
 import os
+from time import sleep
 from typing import Any, Dict, TypeVar
 
 import boto3
@@ -62,6 +63,7 @@ def process_record(
     for s3_record in body["Records"]:  # Unsure if AWS sends multiple records, but data structure supports it.
         new_body = translate_record_body(s3_record)
         sqs_library.post_to_fifo_queue(target_queue_url, new_body)
+        sleep(5)  # Make sure the message has time to become available.
         trigger_step_function(step_function_arn)
 
 
