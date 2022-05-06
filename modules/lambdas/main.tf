@@ -68,7 +68,7 @@ resource "aws_lambda_function" "delete_old_reconcile_jobs" {
 
   ## OPTIONAL
   description      = "Receives a list of s3 events from an SQS queue, and loads the s3 inventory specified into postgres."
-  filename         = "${path.module}/../../tasks/delete_old_reconcile_jobs_list/delete_old_reconcile_jobs.zip"
+  filename         = "${path.module}/../../tasks/delete_old_reconcile_jobs/delete_old_reconcile_jobs.zip"
   handler          = "delete_old_reconcile_jobs.handler"
   memory_size      = var.orca_reconciliation_lambda_memory_size
   runtime          = "python3.7"
