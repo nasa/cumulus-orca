@@ -81,13 +81,13 @@ module "orca" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  db_admin_password       = var.db_admin_password
-  db_host_endpoint        = var.db_host_endpoint
-  db_user_password        = var.db_user_password
-  dlq_subscription_email  = var.dlq_subscription_email
-  orca_default_bucket     = var.orca_default_bucket
-  orca_reports_bucket_arn = var.orca_reports_bucket_arn
-  rds_security_group_id   = var.rds_security_group_id
+  db_admin_password        = var.db_admin_password
+  db_host_endpoint         = var.db_host_endpoint
+  db_user_password         = var.db_user_password
+  dlq_subscription_email   = var.dlq_subscription_email
+  orca_default_bucket      = var.orca_default_bucket
+  orca_reports_bucket_name = var.orca_reports_bucket_name
+  rds_security_group_id    = var.rds_security_group_id
 
   ## OPTIONAL
   # db_admin_username                                    = "postgres"
@@ -124,7 +124,7 @@ optional variables can be found in the [variables section](#orca-variables).
 
 - db_admin_password
 - orca_default_bucket
-- orca_reports_bucket_arn
+- orca_reports_bucket_name
 - db_user_password
 - db_host_endpoint
 - rds_security_group_id
@@ -195,9 +195,9 @@ variable "orca_default_bucket" {
   description = "Default ORCA S3 Glacier bucket to use."
 }
 
-variable "orca_reports_bucket_arn" {
+variable "orca_reports_bucket_name" {
   type        = string
-  description = "The ARN of the bucket to store s3 inventory reports."
+  description = "The name of the bucket to store s3 inventory reports."
 }
 
 variable "rds_security_group_id" {
@@ -235,8 +235,8 @@ db_user_password = "my-super-secret-orca-application-user-password"
 ## Default ORCA S3 Glacier bucket to use
 orca_default_bucket = "orca-archive-primary"
 
-## The ARN of the bucket to store s3 inventory reports.
-orca_reports_bucket_arn = "arn:aws:s3:::PREFIX-orca-reports"
+## The name of the bucket to store s3 inventory reports.
+orca_reports_bucket_name = "PREFIX-orca-reports"
 
 ## PostgreSQL database (root) user password
 db_admin_password = "my-super-secret-database-owner-password"
@@ -258,7 +258,7 @@ Below describes the type of value expected for each variable.
 * `db_user_password` (string) - the password for the application user.
 * `dlq_subscription_email`(string) - "The email to notify users when messages are received in dead letter SQS queue due to restore failure. Sends one email until the dead letter queue is emptied."
 * `orca_default_bucket` (string) - Default S3 glacier bucket to use for ORCA data.
-* `orca_reports_bucket_arn` (string) - The ARN of the bucket to store s3 inventory reports.
+* `orca_reports_bucket_name` (string) - The name of the bucket to store s3 inventory reports.
 * `rds_security_group_id`(string) - Cumulus' RDS Security Group's ID. Output as `security_group_id` from the rds-cluster deployment.
 
 Additional variable definitions can be found in the [ORCA variables](#orca-variables)
@@ -493,17 +493,17 @@ The following variables should be present in the `cumulus-tf/orca_variables.tf`
 file. The variables must be set with proper values for your environment in the
 `cumulus-tf/terraform.tfvars` file.
 
-| Variable                 | Definition                                              |              Example Value                                  |
-| ------------------------ | --------------------------------------------------------| ------------------------------------------------------------|
-| `db_admin_password`      | Password for RDS database administrator authentication  | "My_Sup3rS3cr3t_admin_Passw0rd"                             |
-| `db_host_endpoint`       | Database host endpoint to connect to.                   | "aws.postgresrds.host"                                      |
-| `db_user_password`       | Password for RDS database user authentication           | "My_Sup3rS3cr3tuserPassw0rd"                                |
-| `dlq_subscription_email` | The email to notify users when messages are received in dead letter SQS queue | "test@email.com"                      |
-| `orca_default_bucket`    | Default ORCA S3 Glacier bucket to use.                  | "PREFIX-orca-primary"                                       |
-| `orca_reports_bucket_arn`| The ARN of the bucket to store s3 inventory reports.    | "arn:aws:s3:::PREFIX-orca-reports"                          |
-| `rds_security_group_id`  | Cumulus' RDS Security Group's ID.                       | "sg-01234567890123456"                                      |
-| `s3_access_key`          | Access key for communicating with Orca S3 buckets.      |                                                             |
-| `s3_secret_key`          | Secret key for communicating with Orca S3 buckets.      |                                                             |
+| Variable                   | Definition                                               |              Example Value                                  |
+| -------------------------- | -------------------------------------------------------- | ------------------------------------------------------------|
+| `db_admin_password`        | Password for RDS database administrator authentication   | "My_Sup3rS3cr3t_admin_Passw0rd"                             |
+| `db_host_endpoint`         | Database host endpoint to connect to.                    | "aws.postgresrds.host"                                      |
+| `db_user_password`         | Password for RDS database user authentication            | "My_Sup3rS3cr3tuserPassw0rd"                                |
+| `dlq_subscription_email`   | The email to notify users when messages are received in dead letter SQS queue | "test@email.com"                      |
+| `orca_default_bucket`      | Default ORCA S3 Glacier bucket to use.                   | "PREFIX-orca-primary"                                       |
+| `orca_reports_bucket_name` | The Name of the bucket to store s3 inventory reports.    | "PREFIX-orca-reports"                          |
+| `rds_security_group_id`    | Cumulus' RDS Security Group's ID.                        | "sg-01234567890123456"                                      |
+| `s3_access_key`            | Access key for communicating with Orca S3 buckets.       |                                                             |
+| `s3_secret_key`            | Secret key for communicating with Orca S3 buckets.       |                                                             |
 
 ### Optional Variables
 
