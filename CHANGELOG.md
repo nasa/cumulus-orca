@@ -24,7 +24,7 @@ and includes an additional section for migration notes.
     Adds `orca_reconciliation_lambda_memory_size` and `orca_reconciliation_lambda_timeout` to Terraform variables.
 - *ORCA-308* Added lambda perform_orca_reconcile to find differences between S3 Inventory reports and Orca catalog.
 - *ORCA-403* Added lambda post_to_queue_and_trigger_step_function to trigger step function for internal reconciliation.
-- *ORCA-373* Added input variable for `orca_reports_bucket_arn`. Set in your `variables.tf` or `orca_variables.tf` file as shown below.
+- *ORCA-373* Added input variable for `orca_reports_bucket_name`. Set in your `variables.tf` or `orca_variables.tf` file as shown below.
     Report frequency defaults to `Daily`, but can be set to `Weekly` through variable `s3_report_frequency`.
 - *ORCA-309* Added lambda internal_reconcile_report_phantom to report entries present in the catalog, but not s3.
 - *ORCA-382* Added lambda internal_reconcile_report_orphan to report entries present in S3 bucket, but not in the ORCA catalog.
@@ -32,6 +32,7 @@ and includes an additional section for migration notes.
 - *ORCA-381* Added lambda internal_reconcile_report_mismatch to report entries present in S3 bucket and catalog, but with conflicting data.
 - *ORCA-310* Added lambda delete_old_reconcile_jobs for removing old reconciliation reports from the database.
     Use new optional variable `orca_internal_reconciliation_expiration_days` to set the retention period.
+- *ORCA-372* Added automatic trigger for inventory events being read in by `post_to_queue_and_trigger_step_function`.
 - *ORCA-306* Added API gateway resources for internal reconciliation reporting lambdas.
 
 ### Changed
@@ -56,7 +57,7 @@ and includes an additional section for migration notes.
     - Under the `Cross Account Access` policy, add `s3:GetInventoryConfiguration` and `s3:PutInventoryConfiguration` to Actions.
 - The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variables. The following required variables have been added:
   - dlq_subscription_email
-  - orca_reports_bucket_arn
+  - orca_reports_bucket_name
   - s3_access_key
   - s3_secret_key
   
@@ -76,9 +77,9 @@ variable "dlq_subscription_email" {
   description = "The email to notify users when messages are received in dead letter SQS queue due to restore failure. Sends one email until the dead letter queue is emptied."
 }
 
-variable "orca_reports_bucket_arn" {
+variable "orca_reports_bucket_name" {
   type        = string
-  description = "The ARN of the bucket to store s3 inventory reports."
+  description = "The name of the bucket to store s3 inventory reports."
 }
 
 variable "s3_access_key" {
@@ -116,15 +117,15 @@ variable "s3_secret_key" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  db_admin_password       = var.db_admin_password
-  db_user_password        = var.db_user_password
-  db_host_endpoint        = var.db_host_endpoint
-  dlq_subscription_email  = var.dlq_subscription_email
-  orca_default_bucket     = var.orca_default_bucket
-  orca_reports_bucket_arn = var.orca_reports_bucket_arn
-  rds_security_group_id   = var.rds_security_group_id
-  s3_access_key           = var.s3_access_key
-  s3_secret_key           = var.s3_secret_key
+  db_admin_password        = var.db_admin_password
+  db_user_password         = var.db_user_password
+  db_host_endpoint         = var.db_host_endpoint
+  dlq_subscription_email   = var.dlq_subscription_email
+  orca_default_bucket      = var.orca_default_bucket
+  orca_reports_bucket_name = var.orca_reports_bucket_name
+  rds_security_group_id    = var.rds_security_group_id
+  s3_access_key            = var.s3_access_key
+  s3_secret_key            = var.s3_secret_key
 
   ## OPTIONAL
   db_admin_username                                    = "postgres"

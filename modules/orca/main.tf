@@ -77,7 +77,7 @@ module "orca_lambdas_secondary" {
   orca_sqs_internal_report_queue_id             = module.orca_sqs.orca_sqs_internal_report_queue_id
   orca_sqs_s3_inventory_queue_arn               = module.orca_sqs.orca_sqs_s3_inventory_queue_arn
   restore_object_role_arn                       = module.orca_iam.restore_object_role_arn
-  orca_reports_bucket_arn                       = var.orca_reports_bucket_arn
+  orca_reports_bucket_name                      = var.orca_reports_bucket_name
   vpc_postgres_ingress_all_egress_id            = module.orca_lambdas.vpc_postgres_ingress_all_egress_id
 
   ## OPTIONAL
@@ -132,8 +132,8 @@ module "orca_iam" {
   # ORCA Variables
   # --------------------------
   # OPTIONAL
-  orca_recovery_buckets   = var.orca_recovery_buckets
-  orca_reports_bucket_arn = var.orca_reports_bucket_arn
+  orca_recovery_buckets    = var.orca_recovery_buckets
+  orca_reports_bucket_name = var.orca_reports_bucket_name
 }
 
 
@@ -184,7 +184,8 @@ module "orca_sqs" {
   ## --------------------------
 
   ## REQUIRED
-  dlq_subscription_email = var.dlq_subscription_email
+  dlq_subscription_email   = var.dlq_subscription_email
+  orca_reports_bucket_name = var.orca_reports_bucket_name
 
   ## OPTIONAL
   internal_report_queue_message_retention_time_seconds = var.internal_report_queue_message_retention_time_seconds

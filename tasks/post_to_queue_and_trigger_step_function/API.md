@@ -24,9 +24,11 @@ def process_record(record: Dict[str, Any], target_queue_url: str,
                    step_function_arn: str) -> None
 ```
 
+Central method for translating record to pass along and triggering step function.
+
 **Arguments**:
 
-- `record` - The record to post.
+- `record` - The record to post. See schemas/input.json under Records/items for details.
 - `target_queue_url` - The url of the queue to post the records to.
 - `step_function_arn` - The arn of the step function to trigger.
 
@@ -35,14 +37,14 @@ def process_record(record: Dict[str, Any], target_queue_url: str,
 #### translate\_record\_body
 
 ```python
-def translate_record_body(body: str) -> Dict[str, Any]
+def translate_record_body(s3_record: Dict[str, Any]) -> Dict[str, Any]
 ```
 
-Translates the SQS body into the format expected by the get_current_archive_list queue.
+Translates the s3 body into the format expected by the get_current_archive_list queue.
 
 **Arguments**:
 
-- `body` - The string to convert.
+- `s3_record` - See schemas/body.json under Records/items for details.
   
 
 **Returns**:

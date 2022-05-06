@@ -222,7 +222,8 @@ modifications, which will be detailed below.
         "s3:GetBucket*",
         "s3:ListBucket",
         "s3:PutObject",
-        "s3:PutObjectAcl"
+        "s3:PutObjectAcl",
+        "s3:PutBucketNotification"
       ],
       "Resource": [
         "arn:aws:s3:::sandbox-orca-glacier-archive",

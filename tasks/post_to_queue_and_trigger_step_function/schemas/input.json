@@ -16,7 +16,7 @@
         "type": "object",
         "properties": {
           "body": {
-            "description": "The body to transfer to the outgoing queue.",
+            "description": "The body to transfer to the outgoing queue. See schemas/body.json for details.",
             "type": "string"
           }
         }
