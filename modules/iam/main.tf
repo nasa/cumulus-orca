@@ -125,7 +125,7 @@ data "aws_iam_policy_document" "restore_object_role_policy_document" {
       "s3:PutObject",  # Copy the gzip to add missing metadata
       "s3:PutObjectAcl"  # Copy the gzip to add missing metadata
     ]
-    resources = ["${var.orca_reports_bucket_arn}/*"]
+    resources = ["arn:aws:s3:::${var.orca_reports_bucket_name}/*"]
   }
 }
 

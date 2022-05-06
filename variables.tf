@@ -99,9 +99,9 @@ variable "orca_default_recovery_type" {
   }
 }
 
-variable "orca_reports_bucket_arn" {
+variable "orca_reports_bucket_name" {
   type        = string
-  description = "The ARN of the bucket to store s3 inventory reports."
+  description = "The name of the bucket to store s3 inventory reports."
 }
 
 

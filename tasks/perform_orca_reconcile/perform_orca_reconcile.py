@@ -385,22 +385,17 @@ def remove_job_from_queue(internal_report_queue_url: str, message_receipt_handle
         internal_report_queue_url: The url of the queue containing the message.
         message_receipt_handle: message_receipt_handle: The ReceiptHandle for the event in the queue.
     """
-    for i in range(3):
-        try:
-            aws_client_sqs = boto3.client("sqs")
-            # Remove message from the queue we are listening to.
-            aws_client_sqs.delete_message(
-                QueueUrl=internal_report_queue_url,
-                ReceiptHandle=message_receipt_handle,
-            )
-            return
-        except Exception as queue_ex:  # nosec
-            pass
-    else:
-        raise queue_ex
+    aws_client_sqs = boto3.client("sqs")
+    # Remove message from the queue we are listening to.
+    aws_client_sqs.delete_message(
+        QueueUrl=internal_report_queue_url,
+        ReceiptHandle=message_receipt_handle,
+    )
 
 
-def handler(event: Dict[str, Dict[str, Dict[str, Union[str, int]]]], context) -> Dict[str, Any]:
+def handler(
+    event: Dict[str, Dict[str, Dict[str, Union[str, int]]]], context
+) -> Dict[str, Any]:
     """
     Lambda handler. Receives a list of s3 events from an SQS queue, and loads the s3 inventory specified into postgres.
     Args:
@@ -429,9 +424,7 @@ def handler(event: Dict[str, Dict[str, Dict[str, Union[str, int]]]], context) ->
     try:
         db_connect_info_secret_arn = os.environ["DB_CONNECT_INFO_SECRET_ARN"]
     except KeyError as key_error:
-        LOGGER.error(
-            "DB_CONNECT_INFO_SECRET_ARN environment value not found."
-        )
+        LOGGER.error("DB_CONNECT_INFO_SECRET_ARN environment value not found.")
         raise
 
     inner_event = event[INPUT_EVENT_KEY]

@@ -29,6 +29,11 @@ variable "orca_reconciliation_lambda_timeout" {
   description = "Timeout in number of seconds for ORCA reconciliation lambdas."
 }
 
+variable "orca_reports_bucket_name" {
+  type        = string
+  description = "The name of the bucket to store s3 inventory reports."
+}
+
 variable "s3_inventory_queue_message_retention_time_seconds" {
   type        = number
   description = "The number of seconds s3-inventory-queue fifo SQS retains a message in seconds. Maximum value is 14 days."
