@@ -72,7 +72,6 @@ def get_jobs_older_than_x_days(
         )
         with engine.begin() as connection:
             sql_results = connection.execute(
-                # populate reconcile_phantom_report with files in orca.files but NOT reconcile_s3_object
                 get_jobs_sql(),
                 [
                     {
@@ -119,7 +118,6 @@ def get_jobs_sql() -> TextClause:
         SELECT json_agg(reconcile_job.id)
             FROM reconcile_job
             WHERE last_update < (NOW() - interval ':internal_reconciliation_expiration_days days')"""
-        # todo: limit?
     )
 
 
@@ -135,69 +133,6 @@ def delete_jobs_sql() -> TextClause:
         DELETE FROM reconcile_s3_object WHERE job_id = ANY(:job_ids_to_delete);
         DELETE FROM reconcile_job WHERE id = ANY(:job_ids_to_delete);"""
     )
-
-
-# copied from shared_db.py
-# Retry decorator for functions
-def retry_error(
-    max_retries: int = 3,
-    backoff_in_seconds: int = 1,
-    backoff_factor: int = 2,
-) -> Callable[[Callable[[], RT]], Callable[[], RT]]:
-    """
-    Decorator takes arguments to adjust number of retries and backoff strategy.
-    Args:
-        max_retries (int): number of times to retry in case of failure.
-        backoff_in_seconds (int): Number of seconds to sleep the first time through.
-        backoff_factor (int): Value of the factor used for backoff.
-    """
-
-    def decorator_retry_error(func: Callable[[], RT]) -> Callable[[], RT]:
-        """
-        Main Decorator that takes our function as an argument
-        """
-
-        @functools.wraps(func)  # Use built in for decorators
-        def wrapper_retry_error(*args, **kwargs) -> RT:
-            """
-            Wrapper that performs our extra tasks on the function
-            """
-            # Initialize the retry loop
-            total_retries = 0
-
-            # Enter loop
-            while True:
-                # Try the function and catch the expected error
-                # noinspection PyBroadException
-                try:
-                    # noinspection PyArgumentList
-                    return func(*args, **kwargs)
-                except Exception:
-                    if total_retries == max_retries:
-                        # Log it and re-raise if we maxed our retries + initial attempt
-                        LOGGER.error(
-                            "Encountered Errors {total_attempts} times. Reached max retry limit.",
-                            total_attempts=total_retries,
-                        )
-                        raise
-                    else:
-                        # perform exponential delay
-                        backoff_time = (
-                            backoff_in_seconds * backoff_factor ** total_retries
-                            + random.uniform(0, 1)  # nosec
-                        )
-                        LOGGER.error(
-                            f"Encountered Error on attempt {total_retries}. "
-                            f"Sleeping {backoff_time} seconds."
-                        )
-                        time.sleep(backoff_time)
-                        total_retries += 1
-
-        # Return our wrapper
-        return wrapper_retry_error
-
-    # Return our decorator
-    return decorator_retry_error
 
 
 def handler(event: Dict[str, Dict[str, Dict[str, Union[str, int]]]], context) -> None:
@@ -223,19 +158,14 @@ def handler(event: Dict[str, Dict[str, Dict[str, Union[str, int]]]], context) ->
         raise
 
     try:
-        internal_reconciliation_expiration_days = os.environ[
+        internal_reconciliation_expiration_days = int(os.environ[
             OS_ENVIRON_INTERNAL_RECONCILIATION_EXPIRATION_DAYS
-        ]
+        ])
     except KeyError:
         LOGGER.error(
             f"{OS_ENVIRON_INTERNAL_RECONCILIATION_EXPIRATION_DAYS} environment value not found."
         )
         raise
-
-    try:
-        internal_reconciliation_expiration_days = int(
-            internal_reconciliation_expiration_days
-        )
     except ValueError:
         LOGGER.error(
             f"{OS_ENVIRON_INTERNAL_RECONCILIATION_EXPIRATION_DAYS} "

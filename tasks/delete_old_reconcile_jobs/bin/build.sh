@@ -109,16 +109,6 @@ let return_code=$?
 
 check_rc $return_code "ERROR: Failed to copy lambda files to build directory."
 
-# ## Copy the schema files to build
-# mkdir -p build/schemas
-# let return_code=$?
-# check_rc $return_code "ERROR: Unable to create build/schemas directory."
-# echo "INFO: Creating the Lambda package ..."
-# cp schemas/*.json build/schemas/
-# let return_code=$?
-#
-# check_rc $return_code "ERROR: Failed to copy schema files to build directory."
-
 ## Create the zip archive
 cd build
 zip -qr ../delete_old_reconcile_jobs.zip .

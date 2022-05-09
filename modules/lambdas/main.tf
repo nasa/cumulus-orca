@@ -67,7 +67,7 @@ resource "aws_lambda_function" "delete_old_reconcile_jobs" {
   role          = var.restore_object_role_arn
 
   ## OPTIONAL
-  description      = "Receives a list of s3 events from an SQS queue, and loads the s3 inventory specified into postgres."
+  description      = "Deletes old internal reconciliation reports, reducing DB size."
   filename         = "${path.module}/../../tasks/delete_old_reconcile_jobs/delete_old_reconcile_jobs.zip"
   handler          = "delete_old_reconcile_jobs.handler"
   memory_size      = var.orca_reconciliation_lambda_memory_size
