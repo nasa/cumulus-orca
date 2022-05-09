@@ -158,14 +158,14 @@ def handler(event: Dict[str, Dict[str, Dict[str, Union[str, int]]]], context) ->
         raise
 
     try:
-        internal_reconciliation_expiration_days = int(os.environ[
-            OS_ENVIRON_INTERNAL_RECONCILIATION_EXPIRATION_DAYS
-        ])
+        internal_reconciliation_expiration_days = os.environ[OS_ENVIRON_INTERNAL_RECONCILIATION_EXPIRATION_DAYS]
     except KeyError:
         LOGGER.error(
             f"{OS_ENVIRON_INTERNAL_RECONCILIATION_EXPIRATION_DAYS} environment value not found."
         )
         raise
+    try:
+        internal_reconciliation_expiration_days = int(internal_reconciliation_expiration_days)
     except ValueError:
         LOGGER.error(
             f"{OS_ENVIRON_INTERNAL_RECONCILIATION_EXPIRATION_DAYS} "
