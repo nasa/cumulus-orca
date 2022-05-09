@@ -3,16 +3,13 @@ Name: delete_old_reconcile_jobs.py
 
 Description: Deletes old internal reconciliation reports, reducing DB size.
 """
-import functools
 import os
-import random
 import time
-from typing import Callable, Dict, Union, List
+from typing import Dict, Union
 
 from cumulus_logger import CumulusLogger
 from orca_shared.database import shared_db
-from orca_shared.database.shared_db import RT
-from sqlalchemy import text, bindparam
+from sqlalchemy import text
 from sqlalchemy.future import Engine
 from sqlalchemy.sql.elements import TextClause
 
@@ -37,101 +34,182 @@ def task(
     """
 
     user_engine = shared_db.get_user_connection(db_connect_info)
-    old_job_ids = get_jobs_older_than_x_days(
-        internal_reconciliation_expiration_days, user_engine
-    )
-
-    if old_job_ids is None:
-        LOGGER.info("No jobs found.")
-        return
-
-    delete_jobs(
-        old_job_ids,
+    delete_jobs_older_than_x_days(
+        internal_reconciliation_expiration_days,
         user_engine,
     )
 
 
 @shared_db.retry_operational_error()
-def get_jobs_older_than_x_days(
+def delete_jobs_older_than_x_days(
     internal_reconciliation_expiration_days: int, engine: Engine
-) -> List[int]:
+) -> None:
     """
-    Gets all jobs older than internal_reconciliation_expiration_days days.
-    If none are found, returns null.
+    Deletes all records for the given job older than internal_reconciliation_expiration_days days.
 
     Args:
         internal_reconciliation_expiration_days: Only reports updated before this many days ago will be retrieved.
         engine: The sqlalchemy engine to use for contacting the database.
-
-    Returns: A list of ids for the jobs, or null if none were found.
-
     """
     try:
         LOGGER.debug(
-            f"Getting jobs older than {internal_reconciliation_expiration_days} days."
+            f"Deleting data for jobs older than {internal_reconciliation_expiration_days} days."
         )
         with engine.begin() as connection:
-            sql_results = connection.execute(
-                get_jobs_sql(),
+            start = time.perf_counter()
+            sql_cursor = connection.execute(
+                delete_catalog_mismatches_older_than_x_days_sql(),
                 [
                     {
                         "internal_reconciliation_expiration_days": internal_reconciliation_expiration_days
                     }
                 ],
             )
-            return sql_results.fetchone()[
-                0
-            ]  # fetchone returns row. [0] returns the list of ids.
-    except Exception as sql_ex:
-        LOGGER.error(f"Error while getting jobs: {sql_ex}")
-        raise
-
-
-@shared_db.retry_operational_error()
-def delete_jobs(job_ids: List[int], engine: Engine) -> None:
-    """
-    Deletes all records for the given job ids from the database.
-
-    Args:
-        job_ids: The ids of the jobs containing s3 inventory info.
-        engine: The sqlalchemy engine to use for contacting the database.
-    """
-    try:
-        LOGGER.debug(f"Deleting data for job ids {job_ids}.")
-        with engine.begin() as connection:
-            connection.execute(
-                # populate reconcile_phantom_report with files in orca.files but NOT reconcile_s3_object
-                delete_jobs_sql(),
-                [{"job_ids_to_delete": job_ids}],
+            LOGGER.info(
+                f"Deleted {sql_cursor.rowcount} mismatches in {time.perf_counter() - start} seconds."
             )
+            start = time.perf_counter()
+            sql_cursor = connection.execute(
+                delete_catalog_orphans_older_than_x_days_sql(),
+                [
+                    {
+                        "internal_reconciliation_expiration_days": internal_reconciliation_expiration_days
+                    }
+                ],
+            )
+            LOGGER.info(f"Deleted {sql_cursor.rowcount} orphans in {time.perf_counter() - start} seconds.")
+            start = time.perf_counter()
+            sql_cursor = connection.execute(
+                delete_catalog_phantoms_older_than_x_days_sql(),
+                [
+                    {
+                        "internal_reconciliation_expiration_days": internal_reconciliation_expiration_days
+                    }
+                ],
+            )
+            LOGGER.info(f"Deleted {sql_cursor.rowcount} phantoms in {time.perf_counter() - start} seconds.")
+            start = time.perf_counter()
+            sql_cursor = connection.execute(
+                delete_catalog_s3_objects_older_than_x_days_sql(),
+                [
+                    {
+                        "internal_reconciliation_expiration_days": internal_reconciliation_expiration_days
+                    }
+                ],
+            )
+            LOGGER.info(f"Deleted {sql_cursor.rowcount} s3 objects in {time.perf_counter() - start} seconds.")
+            start = time.perf_counter()
+            sql_cursor = connection.execute(
+                delete_jobs_older_than_x_days_sql(),
+                [
+                    {
+                        "internal_reconciliation_expiration_days": internal_reconciliation_expiration_days
+                    }
+                ],
+            )
+            LOGGER.info(f"Deleted {sql_cursor.rowcount} root jobs in {time.perf_counter() - start} seconds.")
+
+            LOGGER.info(f"Finished deleting report data. Closing connection.")
     except Exception as sql_ex:
         LOGGER.error(f"Error while deleting jobs: {sql_ex}")
         raise
 
 
-def get_jobs_sql() -> TextClause:
+def delete_catalog_mismatches_older_than_x_days_sql() -> TextClause:
     """
-    SQL for getting jobs older than a certain date.
+    SQL for deleting from reconcile_catalog_mismatch_report entries older than a certain date.
     """
     return text(
         """
-        SELECT json_agg(reconcile_job.id)
-            FROM reconcile_job
-            WHERE last_update < (NOW() - interval ':internal_reconciliation_expiration_days days')"""
+        DELETE
+        FROM
+            reconcile_catalog_mismatch_report
+        WHERE
+            job_id IN (
+                SELECT
+                    id
+                FROM
+                    reconcile_job
+                WHERE
+                    last_update < (NOW() - interval ':internal_reconciliation_expiration_days days')
+            )"""
     )
 
 
-def delete_jobs_sql() -> TextClause:
+def delete_catalog_orphans_older_than_x_days_sql() -> TextClause:
     """
-    SQL for deleting all jobs in a given range.
+    SQL for deleting from reconcile_orphan_report entries older than a certain date.
     """
     return text(
         """
-        DELETE FROM reconcile_catalog_mismatch_report WHERE job_id = ANY(:job_ids_to_delete);
-        DELETE FROM reconcile_orphan_report WHERE job_id = ANY(:job_ids_to_delete);
-        DELETE FROM reconcile_phantom_report WHERE job_id = ANY(:job_ids_to_delete);
-        DELETE FROM reconcile_s3_object WHERE job_id = ANY(:job_ids_to_delete);
-        DELETE FROM reconcile_job WHERE id = ANY(:job_ids_to_delete);"""
+        DELETE
+        FROM
+            reconcile_orphan_report
+        WHERE
+            job_id IN (
+                SELECT
+                    id
+                FROM
+                    reconcile_job
+                WHERE
+                    last_update < (NOW() - interval ':internal_reconciliation_expiration_days days')
+            )"""
+    )
+
+
+def delete_catalog_phantoms_older_than_x_days_sql() -> TextClause:
+    """
+    SQL for deleting from reconcile_phantom_report entries older than a certain date.
+    """
+    return text(
+        """
+        DELETE
+        FROM
+            reconcile_phantom_report
+        WHERE
+            job_id IN (
+                SELECT
+                    id
+                FROM
+                    reconcile_job
+                WHERE
+                    last_update < (NOW() - interval ':internal_reconciliation_expiration_days days')
+            )"""
+    )
+
+
+def delete_catalog_s3_objects_older_than_x_days_sql() -> TextClause:
+    """
+    SQL for deleting from reconcile_s3_object entries older than a certain date.
+    """
+    return text(
+        """
+        DELETE
+        FROM
+            reconcile_s3_object
+        WHERE
+            job_id IN (
+                SELECT
+                    id
+                FROM
+                    reconcile_job
+                WHERE
+                    last_update < (NOW() - interval ':internal_reconciliation_expiration_days days')
+            )"""
+    )
+
+
+def delete_jobs_older_than_x_days_sql() -> TextClause:
+    """
+    SQL for deleting from reconcile_job entries older than a certain date.
+    """
+    return text(
+        """
+        DELETE
+        FROM
+            reconcile_job
+        WHERE
+            last_update < (NOW() - interval ':internal_reconciliation_expiration_days days')"""
     )
 
 
@@ -158,14 +236,14 @@ def handler(event: Dict[str, Dict[str, Dict[str, Union[str, int]]]], context) ->
         raise
 
     try:
-        internal_reconciliation_expiration_days = int(os.environ[
-            OS_ENVIRON_INTERNAL_RECONCILIATION_EXPIRATION_DAYS
-        ])
+        internal_reconciliation_expiration_days = os.environ[OS_ENVIRON_INTERNAL_RECONCILIATION_EXPIRATION_DAYS]
     except KeyError:
         LOGGER.error(
             f"{OS_ENVIRON_INTERNAL_RECONCILIATION_EXPIRATION_DAYS} environment value not found."
         )
         raise
+    try:
+        internal_reconciliation_expiration_days = int(internal_reconciliation_expiration_days)
     except ValueError:
         LOGGER.error(
             f"{OS_ENVIRON_INTERNAL_RECONCILIATION_EXPIRATION_DAYS} "
