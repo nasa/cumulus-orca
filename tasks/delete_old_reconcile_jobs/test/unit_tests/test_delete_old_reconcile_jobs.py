@@ -32,7 +32,7 @@ class TestPerformOrcaReconcile(
         """
         Happy path that triggers the various DB tasks.
         """
-        internal_reconciliation_expiration_days = random.randint(1, 300)
+        internal_reconciliation_expiration_days = random.randint(1, 300)  # nosec
         db_connect_info = Mock()
 
         delete_old_reconcile_jobs.task(
@@ -52,17 +52,17 @@ class TestPerformOrcaReconcile(
     @patch("delete_old_reconcile_jobs.delete_catalog_orphans_older_than_x_days_sql")
     @patch("delete_old_reconcile_jobs.delete_catalog_mismatches_older_than_x_days_sql")
     def test_delete_jobs_older_than_x_days_happy_path(
-            self,
-            mock_delete_catalog_mismatches_older_than_x_days_sql: MagicMock,
-            mock_delete_catalog_orphans_older_than_x_days_sql_sql: MagicMock,
-            mock_delete_catalog_phantoms_older_than_x_days_sql_sql: MagicMock,
-            mock_delete_catalog_s3_objects_older_than_x_days_sql_sql: MagicMock,
-            mock_delete_jobs_older_than_x_days_sql_sql: MagicMock,
+        self,
+        mock_delete_catalog_mismatches_older_than_x_days_sql: MagicMock,
+        mock_delete_catalog_orphans_older_than_x_days_sql_sql: MagicMock,
+        mock_delete_catalog_phantoms_older_than_x_days_sql_sql: MagicMock,
+        mock_delete_catalog_s3_objects_older_than_x_days_sql_sql: MagicMock,
+        mock_delete_jobs_older_than_x_days_sql_sql: MagicMock,
     ):
         """
         Happy path for deleting all jobs in a list
         """
-        internal_reconciliation_expiration_days = random.randint(1, 300)
+        internal_reconciliation_expiration_days = random.randint(1, 300)  # nosec
         mock_execute = Mock()
         mock_connection = Mock()
         mock_connection.execute = mock_execute
@@ -86,22 +86,42 @@ class TestPerformOrcaReconcile(
         mock_delete_catalog_s3_objects_older_than_x_days_sql_sql.assert_called_once_with()
         mock_delete_jobs_older_than_x_days_sql_sql.assert_called_once_with()
 
-        mock_execute.assert_has_calls([
-            call(mock_delete_catalog_mismatches_older_than_x_days_sql.return_value, [{"cutoff": unittest.mock.ANY}]),
-            call(mock_delete_catalog_orphans_older_than_x_days_sql_sql.return_value, [{"cutoff": unittest.mock.ANY}]),
-            call(mock_delete_catalog_phantoms_older_than_x_days_sql_sql.return_value, [{"cutoff": unittest.mock.ANY}]),
-            call(mock_delete_catalog_s3_objects_older_than_x_days_sql_sql.return_value, [{"cutoff": unittest.mock.ANY}]),
-            call(mock_delete_jobs_older_than_x_days_sql_sql.return_value, [{"cutoff": unittest.mock.ANY}])
-        ])
+        mock_execute.assert_has_calls(
+            [
+                call(
+                    mock_delete_catalog_mismatches_older_than_x_days_sql.return_value,
+                    [{"cutoff": unittest.mock.ANY}],
+                ),
+                call(
+                    mock_delete_catalog_orphans_older_than_x_days_sql_sql.return_value,
+                    [{"cutoff": unittest.mock.ANY}],
+                ),
+                call(
+                    mock_delete_catalog_phantoms_older_than_x_days_sql_sql.return_value,
+                    [{"cutoff": unittest.mock.ANY}],
+                ),
+                call(
+                    mock_delete_catalog_s3_objects_older_than_x_days_sql_sql.return_value,
+                    [{"cutoff": unittest.mock.ANY}],
+                ),
+                call(
+                    mock_delete_jobs_older_than_x_days_sql_sql.return_value,
+                    [{"cutoff": unittest.mock.ANY}],
+                ),
+            ]
+        )
         execute_call_params = mock_execute.call_args[0][1]
         self.assertEqual([{"cutoff": unittest.mock.ANY}], execute_call_params)
         # Make sure that the datetime on the filter is x days ago, accounting for processing time.
         self.assertLessEqual(
             now - datetime.timedelta(days=internal_reconciliation_expiration_days),
-            execute_call_params[0]["cutoff"])
+            execute_call_params[0]["cutoff"],
+        )
         self.assertGreaterEqual(
-            datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=internal_reconciliation_expiration_days),
-            execute_call_params[0]["cutoff"])
+            datetime.datetime.now(datetime.timezone.utc)
+            - datetime.timedelta(days=internal_reconciliation_expiration_days),
+            execute_call_params[0]["cutoff"],
+        )
         self.assertEqual(5, mock_execute.call_count)
 
         mock_exit.assert_called_once_with(None, None, None)
@@ -109,14 +129,14 @@ class TestPerformOrcaReconcile(
     @patch("delete_old_reconcile_jobs.LOGGER")
     @patch("delete_old_reconcile_jobs.delete_catalog_mismatches_older_than_x_days_sql")
     def test_delete_jobs_older_than_x_days_error_logged_and_raised(
-            self,
-            mock_delete_catalog_mismatches_older_than_x_days_sql: MagicMock,
-            mock_logger: MagicMock,
+        self,
+        mock_delete_catalog_mismatches_older_than_x_days_sql: MagicMock,
+        mock_logger: MagicMock,
     ):
         """
         Exceptions from Postgres should bubble up.
         """
-        internal_reconciliation_expiration_days = random.randint(1, 300)
+        internal_reconciliation_expiration_days = random.randint(1, 300)  # nosec
         expected_exception = Exception(uuid.uuid4().__str__())
         mock_execute = Mock(side_effect=expected_exception)
         mock_connection = Mock()
@@ -130,8 +150,7 @@ class TestPerformOrcaReconcile(
 
         with self.assertRaises(Exception) as cm:
             delete_old_reconcile_jobs.delete_jobs_older_than_x_days(
-                internal_reconciliation_expiration_days,
-                mock_engine
+                internal_reconciliation_expiration_days, mock_engine
             )
         self.assertEqual(expected_exception, cm.exception)
         mock_enter.__enter__.assert_called_once_with()
@@ -149,11 +168,9 @@ class TestPerformOrcaReconcile(
     @patch("delete_old_reconcile_jobs.task")
     @patch.dict(
         os.environ,
-        {
-            "DB_CONNECT_INFO_SECRET_ARN": "test"
-        },
+        {"DB_CONNECT_INFO_SECRET_ARN": "test"},
         clear=True,
-     )
+    )
     def test_handler_happy_path(
         self,
         mock_task: MagicMock,
@@ -163,7 +180,7 @@ class TestPerformOrcaReconcile(
         """
         Happy path for handler assembling information to call Task.
         """
-        internal_reconciliation_expiration_days = random.randint(1, 300)
+        internal_reconciliation_expiration_days = random.randint(1, 300)  # nosec
 
         mock_context = Mock()
         event = Mock()
@@ -171,13 +188,17 @@ class TestPerformOrcaReconcile(
         with patch.dict(
             os.environ,
             {
-                delete_old_reconcile_jobs.OS_ENVIRON_INTERNAL_RECONCILIATION_EXPIRATION_DAYS: str(internal_reconciliation_expiration_days)
+                delete_old_reconcile_jobs.OS_ENVIRON_INTERNAL_RECONCILIATION_EXPIRATION_DAYS: str(
+                    internal_reconciliation_expiration_days
+                )
             },
         ):
             delete_old_reconcile_jobs.handler(event, mock_context)
 
         mock_LOGGER.setMetadata.assert_called_once_with(event, mock_context)
-        mock_get_configuration.assert_called_once_with(os.environ["DB_CONNECT_INFO_SECRET_ARN"])
+        mock_get_configuration.assert_called_once_with(
+            os.environ["DB_CONNECT_INFO_SECRET_ARN"]
+        )
         mock_task.assert_called_once_with(
             internal_reconciliation_expiration_days,
             mock_get_configuration.return_value,

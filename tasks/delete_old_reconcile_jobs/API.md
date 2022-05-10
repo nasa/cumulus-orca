@@ -2,11 +2,12 @@
 
 * [delete\_old\_reconcile\_jobs](#delete_old_reconcile_jobs)
   * [task](#delete_old_reconcile_jobs.task)
-  * [get\_jobs\_older\_than\_x\_days](#delete_old_reconcile_jobs.get_jobs_older_than_x_days)
-  * [delete\_jobs](#delete_old_reconcile_jobs.delete_jobs)
-  * [get\_jobs\_sql](#delete_old_reconcile_jobs.get_jobs_sql)
-  * [delete\_job\_sql](#delete_old_reconcile_jobs.delete_job_sql)
-  * [retry\_error](#delete_old_reconcile_jobs.retry_error)
+  * [delete\_jobs\_older\_than\_x\_days](#delete_old_reconcile_jobs.delete_jobs_older_than_x_days)
+  * [delete\_catalog\_mismatches\_older\_than\_x\_days\_sql](#delete_old_reconcile_jobs.delete_catalog_mismatches_older_than_x_days_sql)
+  * [delete\_catalog\_orphans\_older\_than\_x\_days\_sql](#delete_old_reconcile_jobs.delete_catalog_orphans_older_than_x_days_sql)
+  * [delete\_catalog\_phantoms\_older\_than\_x\_days\_sql](#delete_old_reconcile_jobs.delete_catalog_phantoms_older_than_x_days_sql)
+  * [delete\_catalog\_s3\_objects\_older\_than\_x\_days\_sql](#delete_old_reconcile_jobs.delete_catalog_s3_objects_older_than_x_days_sql)
+  * [delete\_jobs\_older\_than\_x\_days\_sql](#delete_old_reconcile_jobs.delete_jobs_older_than_x_days_sql)
   * [handler](#delete_old_reconcile_jobs.handler)
 
 <a id="delete_old_reconcile_jobs"></a>
@@ -33,79 +34,72 @@ Gets all jobs older than internal_reconciliation_expiration_days days, then dele
 - `internal_reconciliation_expiration_days` - Only reports updated before this many days ago will be deleted.
 - `db_connect_info` - See shared_db.py's get_configuration for further details.
 
-<a id="delete_old_reconcile_jobs.get_jobs_older_than_x_days"></a>
+<a id="delete_old_reconcile_jobs.delete_jobs_older_than_x_days"></a>
 
-#### get\_jobs\_older\_than\_x\_days
+#### delete\_jobs\_older\_than\_x\_days
 
 ```python
 @shared_db.retry_operational_error()
-def get_jobs_older_than_x_days(internal_reconciliation_expiration_days: int,
-                               engine: Engine) -> List[int]
+def delete_jobs_older_than_x_days(internal_reconciliation_expiration_days: int,
+                                  engine: Engine) -> None
 ```
 
-Gets all jobs older than internal_reconciliation_expiration_days days.
+Deletes all records for the given job older than internal_reconciliation_expiration_days days.
 
 **Arguments**:
 
 - `internal_reconciliation_expiration_days` - Only reports updated before this many days ago will be retrieved.
 - `engine` - The sqlalchemy engine to use for contacting the database.
-  
-- `Returns` - A list of ids for the jobs.
 
-<a id="delete_old_reconcile_jobs.delete_jobs"></a>
+<a id="delete_old_reconcile_jobs.delete_catalog_mismatches_older_than_x_days_sql"></a>
 
-#### delete\_jobs
+#### delete\_catalog\_mismatches\_older\_than\_x\_days\_sql
 
 ```python
-@shared_db.retry_operational_error()
-def delete_jobs(job_ids: List[int], engine: Engine) -> None
+def delete_catalog_mismatches_older_than_x_days_sql() -> TextClause
 ```
 
-Deletes all records for the given job ids from the database.
+SQL for deleting from reconcile_catalog_mismatch_report entries older than a certain date.
 
-**Arguments**:
+<a id="delete_old_reconcile_jobs.delete_catalog_orphans_older_than_x_days_sql"></a>
 
-- `job_ids` - The ids of the jobs containing s3 inventory info.
-- `engine` - The sqlalchemy engine to use for contacting the database.
-
-<a id="delete_old_reconcile_jobs.get_jobs_sql"></a>
-
-#### get\_jobs\_sql
+#### delete\_catalog\_orphans\_older\_than\_x\_days\_sql
 
 ```python
-def get_jobs_sql() -> TextClause
+def delete_catalog_orphans_older_than_x_days_sql() -> TextClause
 ```
 
-SQL for getting jobs older than a certain date.
+SQL for deleting from reconcile_orphan_report entries older than a certain date.
 
-<a id="delete_old_reconcile_jobs.delete_job_sql"></a>
+<a id="delete_old_reconcile_jobs.delete_catalog_phantoms_older_than_x_days_sql"></a>
 
-#### delete\_job\_sql
+#### delete\_catalog\_phantoms\_older\_than\_x\_days\_sql
 
 ```python
-def delete_job_sql() -> TextClause
+def delete_catalog_phantoms_older_than_x_days_sql() -> TextClause
 ```
 
-SQL for deleting all jobs in a given range.
+SQL for deleting from reconcile_phantom_report entries older than a certain date.
 
-<a id="delete_old_reconcile_jobs.retry_error"></a>
+<a id="delete_old_reconcile_jobs.delete_catalog_s3_objects_older_than_x_days_sql"></a>
 
-#### retry\_error
+#### delete\_catalog\_s3\_objects\_older\_than\_x\_days\_sql
 
 ```python
-def retry_error(max_retries: int = 3,
-                backoff_in_seconds: int = 1,
-                backoff_factor: int = 2
-                ) -> Callable[[Callable[[], RT]], Callable[[], RT]]
+def delete_catalog_s3_objects_older_than_x_days_sql() -> TextClause
 ```
 
-Decorator takes arguments to adjust number of retries and backoff strategy.
+SQL for deleting from reconcile_s3_object entries older than a certain date.
 
-**Arguments**:
+<a id="delete_old_reconcile_jobs.delete_jobs_older_than_x_days_sql"></a>
 
-- `max_retries` _int_ - number of times to retry in case of failure.
-- `backoff_in_seconds` _int_ - Number of seconds to sleep the first time through.
-- `backoff_factor` _int_ - Value of the factor used for backoff.
+#### delete\_jobs\_older\_than\_x\_days\_sql
+
+```python
+def delete_jobs_older_than_x_days_sql() -> TextClause
+```
+
+SQL for deleting from reconcile_job entries older than a certain date.
 
 <a id="delete_old_reconcile_jobs.handler"></a>
 

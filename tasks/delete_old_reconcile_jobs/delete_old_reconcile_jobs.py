@@ -52,12 +52,10 @@ def delete_jobs_older_than_x_days(
         internal_reconciliation_expiration_days: Only reports updated before this many days ago will be retrieved.
         engine: The sqlalchemy engine to use for contacting the database.
     """
-    cutoff = datetime.now(timezone.utc) - timedelta(days=internal_reconciliation_expiration_days)
-    params = [
-        {
-            "cutoff": cutoff
-        }
-    ]
+    cutoff = datetime.now(timezone.utc) - timedelta(
+        days=internal_reconciliation_expiration_days
+    )
+    params = [{"cutoff": cutoff}]
     try:
         LOGGER.debug(
             f"Deleting data for jobs older than {internal_reconciliation_expiration_days} days ago, {cutoff} UTC."
@@ -76,25 +74,33 @@ def delete_jobs_older_than_x_days(
                 delete_catalog_orphans_older_than_x_days_sql(),
                 params,
             )
-            LOGGER.info(f"Deleted {sql_cursor.rowcount} orphans in {time.perf_counter() - start} seconds.")
+            LOGGER.info(
+                f"Deleted {sql_cursor.rowcount} orphans in {time.perf_counter() - start} seconds."
+            )
             start = time.perf_counter()
             sql_cursor = connection.execute(
                 delete_catalog_phantoms_older_than_x_days_sql(),
                 params,
             )
-            LOGGER.info(f"Deleted {sql_cursor.rowcount} phantoms in {time.perf_counter() - start} seconds.")
+            LOGGER.info(
+                f"Deleted {sql_cursor.rowcount} phantoms in {time.perf_counter() - start} seconds."
+            )
             start = time.perf_counter()
             sql_cursor = connection.execute(
                 delete_catalog_s3_objects_older_than_x_days_sql(),
                 params,
             )
-            LOGGER.info(f"Deleted {sql_cursor.rowcount} s3 objects in {time.perf_counter() - start} seconds.")
+            LOGGER.info(
+                f"Deleted {sql_cursor.rowcount} s3 objects in {time.perf_counter() - start} seconds."
+            )
             start = time.perf_counter()
             sql_cursor = connection.execute(
                 delete_jobs_older_than_x_days_sql(),
                 params,
             )
-            LOGGER.info(f"Deleted {sql_cursor.rowcount} root jobs in {time.perf_counter() - start} seconds.")
+            LOGGER.info(
+                f"Deleted {sql_cursor.rowcount} root jobs in {time.perf_counter() - start} seconds."
+            )
 
             LOGGER.info(f"Finished deleting report data. Closing connection.")
     except Exception as sql_ex:
@@ -223,14 +229,18 @@ def handler(event: Dict[str, Dict[str, Dict[str, Union[str, int]]]], context) ->
         raise
 
     try:
-        internal_reconciliation_expiration_days = os.environ[OS_ENVIRON_INTERNAL_RECONCILIATION_EXPIRATION_DAYS]
+        internal_reconciliation_expiration_days = os.environ[
+            OS_ENVIRON_INTERNAL_RECONCILIATION_EXPIRATION_DAYS
+        ]
     except KeyError:
         LOGGER.error(
             f"{OS_ENVIRON_INTERNAL_RECONCILIATION_EXPIRATION_DAYS} environment value not found."
         )
         raise
     try:
-        internal_reconciliation_expiration_days = int(internal_reconciliation_expiration_days)
+        internal_reconciliation_expiration_days = int(
+            internal_reconciliation_expiration_days
+        )
     except ValueError:
         LOGGER.error(
             f"{OS_ENVIRON_INTERNAL_RECONCILIATION_EXPIRATION_DAYS} "
