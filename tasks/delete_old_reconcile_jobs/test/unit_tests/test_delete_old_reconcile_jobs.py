@@ -15,11 +15,11 @@ from orca_shared.reconciliation import OrcaStatus
 import delete_old_reconcile_jobs
 
 
-class TestPerformOrcaReconcile(
+class TestDeleteOldReconcileJobs(
     unittest.TestCase
 ):  # pylint: disable-msg=too-many-instance-attributes
     """
-    TestPerformOrcaReconcile.
+    TestDeleteOldReconcileJobs.
     """
 
     @patch("delete_old_reconcile_jobs.delete_jobs_older_than_x_days")
