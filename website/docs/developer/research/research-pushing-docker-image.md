@@ -50,11 +50,11 @@ Replace `<USERNAME>` with your github username. It will show `Login Succeeded` u
 ```bash
 docker tag <image_name> ghcr.io/<GITHUB_USERNAME>/<image_name>
 # example 
-docker tag sample-image ghcr.io/rizbihassan/sample-image
+docker tag sample-image ghcr.io/username/sample-image
 ```
 - Finally push the image
 ```bash
-docker push ghcr.io/rizbihassan/sample-image
+docker push ghcr.io/username/sample-image
 ```
 :::note
 Make sure your username matches with your github username or else it will show error while pushing the image.
@@ -69,7 +69,7 @@ Docker image in github repository can then be pulled by other users using
 ```bash
 docker pull ghcr.io/<GITHUB_USERNAME>/<image_name>:<TAG>
 #example 
-docker pull ghcr.io/rizbihassan/sample-image:latest
+docker pull ghcr.io/username/sample-image:latest
 
 ```
 Once image is pulled and ECR is deployed, login to ECR and then tag and push the image.
@@ -89,7 +89,7 @@ aws ecr get-login-password --region us-west-2 | docker login --username AWS --pa
 #tag your local image with your ECR repo name
 docker tag <IMAGE_NAME>:<IMAGE_TAG> <YOUR_AWS_ECR_REPO_URI>:<IMAGE_TAG>
 #example
-docker tag ghcr.io/rizbihassan/sample-image:latest 123456789.dkr.ecr.us-west-2.amazonaws.com/prototype_repo:prototype
+docker tag ghcr.io/username/sample-image:latest 123456789.dkr.ecr.us-west-2.amazonaws.com/prototype_repo:prototype
 ```
 
 
@@ -102,7 +102,7 @@ docker push 123456789.dkr.ecr.us-west-2.amazonaws.com/prototype_repo:prototype
 
 ## Prototyping using github package
 
-A prototype of a github package has been created by following the steps above and can be seen [here](https://github.com/users/rizbihassan/packages/container/package/sample-image). Note that a personal github account has been used for prototyping since it requires creating a personal access token first. The github repository containing image that was pulled from github repo above can be found in the ECR console and is named `prototype_repo`.
+A prototype of a github package has been created by following the steps above and can be seen [here](https://github.com/users/username/packages/container/package/sample-image). Note that a personal github account has been used for prototyping since it requires creating a personal access token first. The github repository containing image that was pulled from github repo above can be found in the ECR console and is named `prototype_repo`.
 
 ## Future directions and recommendations
 Using github packages for storing docker container looks promising, easy to use and free of cost. However, the user will need to create a personal access token having proper permissions first to login to github package and push/pull images which could cause some delay. Other technologies to build a docker image include packer but in this case docker CLI seems to be sufficient and simple for building the image.
