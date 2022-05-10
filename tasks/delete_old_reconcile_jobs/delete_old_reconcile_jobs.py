@@ -5,6 +5,7 @@ Description: Deletes old internal reconciliation reports, reducing DB size.
 """
 import os
 import time
+from datetime import datetime, timezone, timedelta
 from typing import Dict, Union
 
 from cumulus_logger import CumulusLogger
@@ -51,19 +52,21 @@ def delete_jobs_older_than_x_days(
         internal_reconciliation_expiration_days: Only reports updated before this many days ago will be retrieved.
         engine: The sqlalchemy engine to use for contacting the database.
     """
+    cutoff = datetime.now(timezone.utc) - timedelta(days=internal_reconciliation_expiration_days)
+    params = [
+        {
+            "cutoff": cutoff
+        }
+    ]
     try:
         LOGGER.debug(
-            f"Deleting data for jobs older than {internal_reconciliation_expiration_days} days."
+            f"Deleting data for jobs older than {internal_reconciliation_expiration_days} days ago, {cutoff} UTC."
         )
         with engine.begin() as connection:
             start = time.perf_counter()
             sql_cursor = connection.execute(
                 delete_catalog_mismatches_older_than_x_days_sql(),
-                [
-                    {
-                        "internal_reconciliation_expiration_days": internal_reconciliation_expiration_days
-                    }
-                ],
+                params,
             )
             LOGGER.info(
                 f"Deleted {sql_cursor.rowcount} mismatches in {time.perf_counter() - start} seconds."
@@ -71,41 +74,25 @@ def delete_jobs_older_than_x_days(
             start = time.perf_counter()
             sql_cursor = connection.execute(
                 delete_catalog_orphans_older_than_x_days_sql(),
-                [
-                    {
-                        "internal_reconciliation_expiration_days": internal_reconciliation_expiration_days
-                    }
-                ],
+                params,
             )
             LOGGER.info(f"Deleted {sql_cursor.rowcount} orphans in {time.perf_counter() - start} seconds.")
             start = time.perf_counter()
             sql_cursor = connection.execute(
                 delete_catalog_phantoms_older_than_x_days_sql(),
-                [
-                    {
-                        "internal_reconciliation_expiration_days": internal_reconciliation_expiration_days
-                    }
-                ],
+                params,
             )
             LOGGER.info(f"Deleted {sql_cursor.rowcount} phantoms in {time.perf_counter() - start} seconds.")
             start = time.perf_counter()
             sql_cursor = connection.execute(
                 delete_catalog_s3_objects_older_than_x_days_sql(),
-                [
-                    {
-                        "internal_reconciliation_expiration_days": internal_reconciliation_expiration_days
-                    }
-                ],
+                params,
             )
             LOGGER.info(f"Deleted {sql_cursor.rowcount} s3 objects in {time.perf_counter() - start} seconds.")
             start = time.perf_counter()
             sql_cursor = connection.execute(
                 delete_jobs_older_than_x_days_sql(),
-                [
-                    {
-                        "internal_reconciliation_expiration_days": internal_reconciliation_expiration_days
-                    }
-                ],
+                params,
             )
             LOGGER.info(f"Deleted {sql_cursor.rowcount} root jobs in {time.perf_counter() - start} seconds.")
 
@@ -131,7 +118,7 @@ def delete_catalog_mismatches_older_than_x_days_sql() -> TextClause:
                 FROM
                     reconcile_job
                 WHERE
-                    last_update < (NOW() - interval ':internal_reconciliation_expiration_days days')
+                    last_update < :cutoff
             )"""
     )
 
@@ -152,7 +139,7 @@ def delete_catalog_orphans_older_than_x_days_sql() -> TextClause:
                 FROM
                     reconcile_job
                 WHERE
-                    last_update < (NOW() - interval ':internal_reconciliation_expiration_days days')
+                    last_update < :cutoff
             )"""
     )
 
@@ -173,7 +160,7 @@ def delete_catalog_phantoms_older_than_x_days_sql() -> TextClause:
                 FROM
                     reconcile_job
                 WHERE
-                    last_update < (NOW() - interval ':internal_reconciliation_expiration_days days')
+                    last_update < :cutoff
             )"""
     )
 
@@ -194,7 +181,7 @@ def delete_catalog_s3_objects_older_than_x_days_sql() -> TextClause:
                 FROM
                     reconcile_job
                 WHERE
-                    last_update < (NOW() - interval ':internal_reconciliation_expiration_days days')
+                    last_update < :cutoff
             )"""
     )
 
@@ -209,7 +196,7 @@ def delete_jobs_older_than_x_days_sql() -> TextClause:
         FROM
             reconcile_job
         WHERE
-            last_update < (NOW() - interval ':internal_reconciliation_expiration_days days')"""
+            last_update < :cutoff"""
     )
 
 
