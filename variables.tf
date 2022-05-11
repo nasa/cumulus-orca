@@ -178,6 +178,13 @@ variable "orca_ingest_lambda_timeout" {
 }
 
 
+variable "orca_internal_reconciliation_expiration_days" {
+  type        = number
+  description = "Only reports updated before this many days ago will be deleted."
+  default     = 30
+}
+
+
 variable "orca_reconciliation_lambda_memory_size" {
   type        = number
   description = "Amount of memory in MB the ORCA reconciliation lambda can use at runtime."

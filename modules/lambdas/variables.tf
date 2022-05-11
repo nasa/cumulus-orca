@@ -132,6 +132,13 @@ variable "orca_ingest_lambda_timeout" {
   description = "Timeout in number of seconds for ORCA copy_to_glacier lambda."
 }
 
+
+variable "orca_internal_reconciliation_expiration_days" {
+  type        = number
+  description = "Only reports updated before this many days ago will be deleted."
+}
+
+
 variable "orca_reconciliation_lambda_memory_size" {
   type        = number
   description = "Amount of memory in MB the ORCA reconciliation lambda can use at runtime."
