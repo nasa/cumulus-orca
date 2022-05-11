@@ -34,6 +34,7 @@ and includes an additional section for migration notes.
     Use new optional variable `orca_internal_reconciliation_expiration_days` to set the retention period.
 - *ORCA-372* Added automatic trigger for inventory events being read in by `post_to_queue_and_trigger_step_function`.
 - *ORCA-306* Added API gateway resources for internal reconciliation reporting lambdas.
+- *ORCA-424* Added automatic trigger for delete_old_reconcile_jobs. Will run once per day.
 
 ### Changed
 - *ORCA-299* `db_deploy` task has been updated to deploy ORCA internal reconciliation tables and objects.
