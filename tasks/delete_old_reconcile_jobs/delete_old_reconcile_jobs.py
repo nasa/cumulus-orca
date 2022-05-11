@@ -5,7 +5,7 @@ Description: Deletes old internal reconciliation reports, reducing DB size.
 """
 import os
 import time
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, Union
 
 from cumulus_logger import CumulusLogger
@@ -14,7 +14,7 @@ from sqlalchemy import text
 from sqlalchemy.future import Engine
 from sqlalchemy.sql.elements import TextClause
 
-OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN = "DB_CONNECT_INFO_SECRET_ARN"
+OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN = "DB_CONNECT_INFO_SECRET_ARN"  # nosec
 OS_ENVIRON_INTERNAL_RECONCILIATION_EXPIRATION_DAYS = (
     "INTERNAL_RECONCILIATION_EXPIRATION_DAYS"
 )
