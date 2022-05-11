@@ -96,6 +96,7 @@ module "orca" {
   # orca_default_recovery_type                           = "Standard"
   # orca_ingest_lambda_memory_size                       = 2240
   # orca_ingest_lambda_timeout                           = 600
+  # orca_internal_reconciliation_expiration_days         = 30
   # orca_reconciliation_lambda_memory_size               = 128
   # orca_reconciliation_lambda_timeout                   = 720
   # orca_recovery_buckets                                = []
@@ -540,6 +541,7 @@ variables is shown in the table below.
 | `orca_default_recovery_type`                          | string        | The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'                          | "Standard" |
 | `orca_ingest_lambda_memory_size`                      | number        | Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime.                                | 2240 |
 | `orca_ingest_lambda_timeout`                          | number        | Timeout in number of seconds for ORCA copy_to_glacier lambda.                                             | 600 |
+| `orca_internal_reconciliation_expiration_days`        | number        | Only reports updated before this many days ago will be deleted.                                           | 30 |
 | `orca_reconciliation_lambda_memory_size`              | number        | Amount of memory in MB the ORCA reconciliation lambda can use at runtime.                                 | 128 |
 | `orca_reconciliation_lambda_timeout`                  | number        | Timeout in number of seconds for ORCA reconciliation lambdas.                                             | 720 |
 | `orca_recovery_buckets`                               | List (string) | List of bucket names that ORCA has permissions to restore data to. Default is all in the `buckets` map.   | [] |

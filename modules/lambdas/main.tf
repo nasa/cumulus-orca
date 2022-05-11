@@ -59,6 +59,36 @@ resource "aws_lambda_function" "copy_to_glacier" {
 ## Reconciliation Lambdas Definitions and Resources
 ## =============================================================================
 
+# delete_old_reconcile_jobs - Deletes old internal reconciliation reports, reducing DB size.
+# ==============================================================================
+resource "aws_lambda_function" "delete_old_reconcile_jobs" {
+  ## REQUIRED
+  function_name = "${var.prefix}_delete_old_reconcile_jobs"
+  role          = var.restore_object_role_arn
+
+  ## OPTIONAL
+  description      = "Deletes old internal reconciliation reports, reducing DB size."
+  filename         = "${path.module}/../../tasks/delete_old_reconcile_jobs/delete_old_reconcile_jobs.zip"
+  handler          = "delete_old_reconcile_jobs.handler"
+  memory_size      = var.orca_reconciliation_lambda_memory_size
+  runtime          = "python3.7"
+  source_code_hash = filebase64sha256("${path.module}/../../tasks/delete_old_reconcile_jobs/delete_old_reconcile_jobs.zip")
+  tags             = var.tags
+  timeout          = var.orca_reconciliation_lambda_timeout
+
+  vpc_config {
+    subnet_ids         = var.lambda_subnet_ids
+    security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
+  }
+
+  environment {
+    variables = {
+      DB_CONNECT_INFO_SECRET_ARN              = var.db_connect_info_secret_arn
+      INTERNAL_RECONCILIATION_EXPIRATION_DAYS = var.orca_internal_reconciliation_expiration_days
+    }
+  }
+}
+
 # get_current_archive_list - From an s3 event for an s3 inventory report's manifest.json, pulls inventory report into postgres.
 # ==============================================================================
 resource "aws_lambda_function" "get_current_archive_list" {

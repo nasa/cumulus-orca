@@ -30,6 +30,8 @@ and includes an additional section for migration notes.
 - *ORCA-382* Added lambda internal_reconcile_report_orphan to report entries present in S3 bucket, but not in the ORCA catalog.
 - *ORCA-291* request_files lambda now accepts `orcaDefaultRecoveryTypeOverride` to override the glacier restore type at the workflow level by adding it to task_config.
 - *ORCA-381* Added lambda internal_reconcile_report_mismatch to report entries present in S3 bucket and catalog, but with conflicting data.
+- *ORCA-310* Added lambda delete_old_reconcile_jobs for removing old reconciliation reports from the database.
+    Use new optional variable `orca_internal_reconciliation_expiration_days` to set the retention period.
 - *ORCA-372* Added automatic trigger for inventory events being read in by `post_to_queue_and_trigger_step_function`.
 - *ORCA-306* Added API gateway resources for internal reconciliation reporting lambdas.
 
@@ -132,6 +134,7 @@ variable "s3_secret_key" {
   orca_default_recovery_type                           = "Standard"
   orca_ingest_lambda_memory_size                       = 2240
   orca_ingest_lambda_timeout                           = 720
+  orca_internal_reconciliation_expiration_days         = 30
   orca_recovery_buckets                                = []
   orca_recovery_complete_filter_prefix                 = ""
   orca_recovery_expiration_days                        = 5
