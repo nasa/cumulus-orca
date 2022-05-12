@@ -201,6 +201,7 @@ terraform apply
       rds_security_group_id = var.rds_security_group_id
       ## OPTIONAL
       db_admin_username                                    = "postgres"
+      orca_delete_old_reconcile_jobs_frequency_cron        = "cron(0 0 ? * SUN *)"
       orca_ingest_lambda_memory_size                       = 2240
       orca_ingest_lambda_timeout                           = 600
       orca_internal_reconciliation_expiration_days         = 30

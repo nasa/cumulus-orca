@@ -37,20 +37,21 @@ module "orca_lambdas" {
   restore_object_role_arn                              = module.orca_iam.restore_object_role_arn
 
   ## OPTIONAL
-  orca_default_recovery_type                   = var.orca_default_recovery_type
-  orca_ingest_lambda_memory_size               = var.orca_ingest_lambda_memory_size
-  orca_ingest_lambda_timeout                   = var.orca_ingest_lambda_timeout
-  orca_internal_reconciliation_expiration_days = var.orca_internal_reconciliation_expiration_days
-  orca_reconciliation_lambda_memory_size       = var.orca_reconciliation_lambda_memory_size
-  orca_reconciliation_lambda_timeout           = var.orca_reconciliation_lambda_timeout
-  orca_recovery_buckets                        = var.orca_recovery_buckets
-  orca_recovery_complete_filter_prefix         = var.orca_recovery_complete_filter_prefix
-  orca_recovery_expiration_days                = var.orca_recovery_expiration_days
-  orca_recovery_lambda_memory_size             = var.orca_recovery_lambda_memory_size
-  orca_recovery_lambda_timeout                 = var.orca_recovery_lambda_timeout
-  orca_recovery_retry_limit                    = var.orca_recovery_retry_limit
-  orca_recovery_retry_interval                 = var.orca_recovery_retry_interval
-  orca_recovery_retry_backoff                  = var.orca_recovery_retry_backoff
+  orca_delete_old_reconcile_jobs_frequency_cron = var.orca_delete_old_reconcile_jobs_frequency_cron
+  orca_default_recovery_type                    = var.orca_default_recovery_type
+  orca_ingest_lambda_memory_size                = var.orca_ingest_lambda_memory_size
+  orca_ingest_lambda_timeout                    = var.orca_ingest_lambda_timeout
+  orca_internal_reconciliation_expiration_days  = var.orca_internal_reconciliation_expiration_days
+  orca_reconciliation_lambda_memory_size        = var.orca_reconciliation_lambda_memory_size
+  orca_reconciliation_lambda_timeout            = var.orca_reconciliation_lambda_timeout
+  orca_recovery_buckets                         = var.orca_recovery_buckets
+  orca_recovery_complete_filter_prefix          = var.orca_recovery_complete_filter_prefix
+  orca_recovery_expiration_days                 = var.orca_recovery_expiration_days
+  orca_recovery_lambda_memory_size              = var.orca_recovery_lambda_memory_size
+  orca_recovery_lambda_timeout                  = var.orca_recovery_lambda_timeout
+  orca_recovery_retry_limit                     = var.orca_recovery_retry_limit
+  orca_recovery_retry_interval                  = var.orca_recovery_retry_interval
+  orca_recovery_retry_backoff                   = var.orca_recovery_retry_backoff
 }
 
 ## orca_lambdas_secondary - lambdas module that is dependent on resources that presently are created after most lambdas

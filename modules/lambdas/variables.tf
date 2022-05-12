@@ -121,6 +121,12 @@ variable "restore_object_role_arn" {
 
 ## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
 
+variable "orca_delete_old_reconcile_jobs_frequency_cron" {
+  type        = string
+  description = "Frequency cron for running the delete_old_reconcile_jobs lambda."
+}
+
+
 variable "orca_ingest_lambda_memory_size" {
   type        = number
   description = "Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime."

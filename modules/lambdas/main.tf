@@ -93,7 +93,7 @@ resource "aws_lambda_function" "delete_old_reconcile_jobs" {
 resource "aws_cloudwatch_event_rule" "delete_old_reconcile_jobs_daily_event_rule" {
   ## REQUIRED
   name                = "${var.prefix}_delete_old_reconcile_jobs_daily_event_rule"
-  schedule_expression = "cron(0 5 * * ? *)"  # (Minutes Hours DayOfMonth DayOfWeek Year)
+  schedule_expression = var.orca_delete_old_reconcile_jobs_frequency_cron
 
   ## OPTIONAL
   description = "Triggers once per day at midnight CDT."
