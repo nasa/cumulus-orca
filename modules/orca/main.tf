@@ -217,6 +217,7 @@ module "orca_api_gateway" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
+  internal_reconcile_report_job_invoke_arn      = module.orca_lambdas.internal_reconcile_report_job_invoke_arn
   internal_reconcile_report_orphan_invoke_arn   = module.orca_lambdas.internal_reconcile_report_orphan_invoke_arn
   internal_reconcile_report_phantom_invoke_arn  = module.orca_lambdas.internal_reconcile_report_phantom_invoke_arn
   internal_reconcile_report_mismatch_invoke_arn = module.orca_lambdas.internal_reconcile_report_mismatch_invoke_arn

@@ -11,6 +11,11 @@ variable "request_status_for_granule_invoke_arn" {
   description = "Invoke ARN of the request_status_for_granule lambda function"
 }
 
+variable "internal_reconcile_report_job_invoke_arn" {
+  type        = string
+  description = "Invoke ARN of the internal_reconcile_report_job lambda function"
+}
+
 variable "internal_reconcile_report_orphan_invoke_arn" {
   type        = string
   description = "Invoke ARN of the internal_reconcile_report_orphan lambda function"

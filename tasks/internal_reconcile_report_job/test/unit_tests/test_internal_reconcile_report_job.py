@@ -39,18 +39,18 @@ class TestInternalReconcileReportJob(
             internal_reconcile_report_job.OUTPUT_ANOTHER_PAGE_KEY: False,
             internal_reconcile_report_job.OUTPUT_JOBS_KEY: [
                 {
-                    internal_reconcile_report_job.JOBS_ID_KEY: random.randint(0, 999),
+                    internal_reconcile_report_job.JOBS_ID_KEY: random.randint(0, 999),  # nosec
                     internal_reconcile_report_job.JOBS_ORCA_ARCHIVE_LOCATION_KEY: uuid.uuid4().__str__(),
                     internal_reconcile_report_job.JOBS_STATUS_KEY: "generating reports",
-                    internal_reconcile_report_job.JOBS_INVENTORY_CREATION_TIME_KEY: random.randint(0, 999),
+                    internal_reconcile_report_job.JOBS_INVENTORY_CREATION_TIME_KEY: random.randint(0, 999),  # nosec
                     internal_reconcile_report_job.JOBS_LAST_UPDATE_KEY: random.randint(  # nosec
                         0, 999
                     ),
                     internal_reconcile_report_job.JOBS_ERROR_MESSAGE_KEY: uuid.uuid4().__str__(),
                     internal_reconcile_report_job.JOBS_REPORT_TOTALS_KEY: {
-                        internal_reconcile_report_job.REPORT_TOTALS_ORPHAN_KEY: random.randint(0, 999),
-                        internal_reconcile_report_job.REPORT_TOTALS_PHANTOM_KEY: random.randint(0, 999),
-                        internal_reconcile_report_job.REPORT_TOTALS_CATALOG_MISMATCH_KEY: random.randint(0, 999)
+                        internal_reconcile_report_job.REPORT_TOTALS_ORPHAN_KEY: random.randint(0, 999),  # nosec
+                        internal_reconcile_report_job.REPORT_TOTALS_PHANTOM_KEY: random.randint(0, 999),  # nosec
+                        internal_reconcile_report_job.REPORT_TOTALS_CATALOG_MISMATCH_KEY: random.randint(0, 999)  # nosec
                     }
                 }
             ],
@@ -125,17 +125,17 @@ class TestInternalReconcileReportJob(
             internal_reconcile_report_job.OUTPUT_ANOTHER_PAGE_KEY: False,
             internal_reconcile_report_job.OUTPUT_JOBS_KEY: [
                 {
-                    internal_reconcile_report_job.JOBS_ID_KEY: random.randint(0, 999),
+                    internal_reconcile_report_job.JOBS_ID_KEY: random.randint(0, 999),  # nosec
                     internal_reconcile_report_job.JOBS_ORCA_ARCHIVE_LOCATION_KEY: uuid.uuid4().__str__(),
                     internal_reconcile_report_job.JOBS_STATUS_KEY: "generating reports",
-                    internal_reconcile_report_job.JOBS_INVENTORY_CREATION_TIME_KEY: random.randint(0, 999),
+                    internal_reconcile_report_job.JOBS_INVENTORY_CREATION_TIME_KEY: random.randint(0, 999),  # nosec
                     internal_reconcile_report_job.JOBS_LAST_UPDATE_KEY: random.randint(  # nosec
                         0, 999
                     ),
                     internal_reconcile_report_job.JOBS_ERROR_MESSAGE_KEY: None,
                     internal_reconcile_report_job.JOBS_REPORT_TOTALS_KEY: {
-                        internal_reconcile_report_job.REPORT_TOTALS_PHANTOM_KEY: random.randint(0, 999),
-                        internal_reconcile_report_job.REPORT_TOTALS_CATALOG_MISMATCH_KEY: random.randint(0, 999)
+                        internal_reconcile_report_job.REPORT_TOTALS_PHANTOM_KEY: random.randint(0, 999),  # nosec
+                        internal_reconcile_report_job.REPORT_TOTALS_CATALOG_MISMATCH_KEY: random.randint(0, 999)  # nosec
                     }
                 }
             ],
@@ -231,7 +231,7 @@ class TestInternalReconcileReportJob(
         """
         page_index = Mock()
 
-        job_id = random.randint(0, 999)
+        job_id = random.randint(0, 999)  # nosec
         orca_archive_location = uuid.uuid4().__str__()
         status = uuid.uuid4().__str__()
         inventory_creation_time = random.randint(0, 999999)  # nosec

@@ -31,7 +31,32 @@ Fully defined json schemas written in the schema of https://json-schema.org/ can
 {
   "anotherPage": false,
   "jobs": [
-    todo
+    {
+      "id": 826,
+      "orcaArchiveLocation": "PREFIX-orca-primary",
+      "status": "success",
+      "inventoryCreationTime": 1652227200000,
+      "lastUpdate": 1652299312334,
+      "errorMessage": null,
+      "reportTotals": {
+        "orphan": 0,
+        "phantom": 1,
+        "catalogMismatch": 1
+      }
+    },
+    {
+      "id": 793,
+      "orcaArchiveLocation": "doctest-orca-primary",
+      "status": "error",
+      "inventoryCreationTime": 1652140800000,
+      "lastUpdate": 1652198623479,
+      "errorMessage": "Error while posting mismatches to database.",
+      "reportTotals": {
+        "orphan": 2,
+        "phantom": 1,
+        "catalogMismatch": 0
+      }
+    }
   ]
 }
 ```
