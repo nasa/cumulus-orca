@@ -102,7 +102,7 @@ docker push 123456789.dkr.ecr.us-west-2.amazonaws.com/prototype_repo:prototype
 
 ## Prototyping using github package
 
-A prototype of a github package has been created by following the steps above and can be seen [here](https://github.com/users/rizbihassan/packages/container/package/cumulus-orca%2Fsample-image). Note that a personal github account has been used for prototyping since it requires creating a personal access token first. The github repository containing image that was pulled from github repo above can be found in the ECR console and is named `prototype_repo`.
+A prototype of a github package has been created by following the steps above and can be seen [here](https://github.com/users/rizbihassan/packages/container/package/cumulus-orca/sample-image). Note that a personal github account has been used for prototyping since it requires creating a personal access token first. The github repository containing image that was pulled from github repo above can be found in the ECR console and is named `prototype_repo`.
 
 ## Future directions and recommendations
 Using github packages for storing docker container looks promising, easy to use and free of cost. However, the user will need to create a personal access token having proper permissions first to login to github package and push images which could cause some delay. No token is necessary to pull public images from github repository. Other technologies to build a docker image include packer but in this case docker CLI seems to be sufficient and simple for building the image.
