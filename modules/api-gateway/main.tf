@@ -297,16 +297,9 @@ resource "aws_api_gateway_resource" "orca_internal_reconciliation_jobs_job_jobid
 
 # ----------------------## API resource for creating the methods and response for internal_reconcile_report_job lambda-----------------------------------------------------
 
-## API resource for pathing orca/datamanagement/reconciliation/internal/jobs/job/{jobid}/job
-resource "aws_api_gateway_resource" "orca_internal_reconcile_report_job_api_resource" {
-  path_part   = "job"
-  parent_id   = aws_api_gateway_resource.orca_internal_reconciliation_jobs_job_jobid_api_resource.id
-  rest_api_id = aws_api_gateway_rest_api.orca_api.id
-}
-
 resource "aws_api_gateway_method" "internal_reconcile_report_job_api_method" {
   rest_api_id = aws_api_gateway_rest_api.orca_api.id
-  resource_id = aws_api_gateway_resource.orca_internal_reconcile_report_job_api_resource.id
+  resource_id = aws_api_gateway_resource.orca_internal_reconciliation_jobs_api_resource.id
   http_method = "POST"
   # todo: Make sure this is locked down against external access.
   authorization = "NONE"
@@ -314,7 +307,7 @@ resource "aws_api_gateway_method" "internal_reconcile_report_job_api_method" {
 
 resource "aws_api_gateway_integration" "internal_reconcile_report_job_api_integration" {
   rest_api_id             = aws_api_gateway_rest_api.orca_api.id
-  resource_id             = aws_api_gateway_resource.orca_internal_reconcile_report_job_api_resource.id
+  resource_id             = aws_api_gateway_resource.orca_internal_reconciliation_jobs_api_resource.id
   http_method             = aws_api_gateway_method.internal_reconcile_report_job_api_method.http_method
   integration_http_method = "POST"
   type                    = "AWS"
@@ -323,7 +316,7 @@ resource "aws_api_gateway_integration" "internal_reconcile_report_job_api_integr
 
 resource "aws_api_gateway_method_response" "internal_reconcile_report_job_response_200" {
   rest_api_id = aws_api_gateway_rest_api.orca_api.id
-  resource_id = aws_api_gateway_resource.orca_internal_reconcile_report_job_api_resource.id
+  resource_id = aws_api_gateway_resource.orca_internal_reconciliation_jobs_api_resource.id
   http_method = aws_api_gateway_method.internal_reconcile_report_job_api_method.http_method
   status_code = "200"
 }
@@ -331,7 +324,7 @@ resource "aws_api_gateway_method_response" "internal_reconcile_report_job_respon
 resource "aws_api_gateway_integration_response" "internal_reconcile_report_job_api_response" {
   depends_on  = [aws_api_gateway_integration.internal_reconcile_report_job_api_integration]
   rest_api_id = aws_api_gateway_rest_api.orca_api.id
-  resource_id = aws_api_gateway_resource.orca_internal_reconcile_report_job_api_resource.id
+  resource_id = aws_api_gateway_resource.orca_internal_reconciliation_jobs_api_resource.id
   http_method = aws_api_gateway_method.internal_reconcile_report_job_api_method.http_method
   status_code = aws_api_gateway_method_response.internal_reconcile_report_job_response_200.status_code
   # Transforms the backend JSON response to XML. Currently being used by create_http_error_dict() function in internal_reconcile_report_job.py
@@ -353,7 +346,7 @@ resource "aws_lambda_permission" "internal_reconcile_report_job_api_permission" 
   action        = "lambda:InvokeFunction"
   function_name = "${var.prefix}_internal_reconcile_report_job"
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.orca_api.execution_arn}/*/${aws_api_gateway_method.internal_reconcile_report_job_api_method.http_method}${aws_api_gateway_resource.orca_internal_reconcile_report_job_api_resource.path}"
+  source_arn    = "${aws_api_gateway_rest_api.orca_api.execution_arn}/*/${aws_api_gateway_method.internal_reconcile_report_job_api_method.http_method}${aws_api_gateway_resource.orca_internal_reconciliation_jobs_api_resource.path}"
 }
 
 
