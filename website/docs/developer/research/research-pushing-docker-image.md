@@ -46,11 +46,11 @@ echo $CR_PAT | docker login ghcr.io -u <GITHUB_USERNAME> --password-stdin
 ```
 Replace `<USERNAME>` with your github username. It will show `Login Succeeded` upon success.
 
-- Tag the docker image using the following format. Note that the format must be `ghcr.io/<GITHUB_USERNAME>/<image_name>:<image_tag>`
+- Tag the docker image using the following format. Note that the format must be `ghcr.io/<GITHUB_USERNAME>/<image_name>:<image_tag>`. The image name must have the prefix `cumulus-orca/`. e.g. `cumulus-orca/<image_name>:<image_tag>`. Note that `<image_tag>` is the image version.
 ```bash
 docker tag <image_name> ghcr.io/<GITHUB_USERNAME>/<image_name>:<image_tag>
-# example 
-docker tag sample-image ghcr.io/nasa/sample-image:latest
+# example using image name "cumulus-orca/sample-image:latest" and github username "nasa"
+docker tag sample-image ghcr.io/nasa/cumulus-orca/sample-image:latest
 ```
 - Finally push the image
 ```bash
@@ -102,7 +102,7 @@ docker push 123456789.dkr.ecr.us-west-2.amazonaws.com/prototype_repo:prototype
 
 ## Prototyping using github package
 
-A prototype of a github package has been created by following the steps above and can be seen [here](https://github.com/users/rizbihassan/packages/container/package/sample-image). Note that a personal github account has been used for prototyping since it requires creating a personal access token first. The github repository containing image that was pulled from github repo above can be found in the ECR console and is named `prototype_repo`.
+A prototype of a github package has been created by following the steps above and can be seen [here](https://github.com/users/rizbihassan/packages/container/package/cumulus-orca%2Fsample-image). Note that a personal github account has been used for prototyping since it requires creating a personal access token first. The github repository containing image that was pulled from github repo above can be found in the ECR console and is named `prototype_repo`.
 
 ## Future directions and recommendations
 Using github packages for storing docker container looks promising, easy to use and free of cost. However, the user will need to create a personal access token having proper permissions first to login to github package and push images which could cause some delay. No token is necessary to pull public images from github repository. Other technologies to build a docker image include packer but in this case docker CLI seems to be sufficient and simple for building the image.
