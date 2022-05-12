@@ -89,20 +89,20 @@ resource "aws_lambda_function" "delete_old_reconcile_jobs" {
   }
 }
 
-# rule to run the lambda every day
-resource "aws_cloudwatch_event_rule" "delete_old_reconcile_jobs_daily_event_rule" {
+# rule to run the lambda periodically
+resource "aws_cloudwatch_event_rule" "delete_old_reconcile_jobs_event_rule" {
   ## REQUIRED
-  name                = "${var.prefix}_delete_old_reconcile_jobs_daily_event_rule"
+  name                = "${var.prefix}_delete_old_reconcile_jobs_event_rule"
   schedule_expression = var.orca_delete_old_reconcile_jobs_frequency_cron
 
   ## OPTIONAL
-  description = "Triggers once per day at midnight CDT."
+  description = "Scheduled execution of the ${aws_lambda_function.delete_old_reconcile_jobs.name} lambda."
   tags        = var.tags
 }
 
 resource "aws_cloudwatch_event_target" "delete_old_reconcile_jobs_event_link" {
   arn = aws_lambda_function.delete_old_reconcile_jobs.arn
-  rule = aws_cloudwatch_event_rule.delete_old_reconcile_jobs_daily_event_rule.id
+  rule = aws_cloudwatch_event_rule.delete_old_reconcile_jobs_event_rule.id
 }
 
 # Permissions to allow cloudwatch rule to invoke lambda
@@ -114,7 +114,7 @@ resource "aws_lambda_permission" "delete_old_reconcile_jobs_allow_cloudwatch_eve
 
   ## OPTIONAL
   statement_id = "AllowExecutionFromEvent"
-  source_arn   = aws_cloudwatch_event_rule.delete_old_reconcile_jobs_daily_event_rule.arn
+  source_arn   = aws_cloudwatch_event_rule.delete_old_reconcile_jobs_event_rule.arn
 }
 
 # get_current_archive_list - From an s3 event for an s3 inventory report's manifest.json, pulls inventory report into postgres.
