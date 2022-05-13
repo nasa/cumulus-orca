@@ -213,6 +213,82 @@ The following table lists the fields in the output:
 
 The API returns status code 200 on success, 400 if `asyncOperationId` is missing, 500 if an error occurs when querying the database and 404 if not found.
 
+## Internal Reconcile report jobs API
+The `orca/datamanagement/reconciliation/internal/jobs` API call receives page index from end user and returns available internal reconciliation jobs from the Orca database.
+Internal reconcile report jobs API input invoke URL example: `https://example.execute-api.us-west-2.amazonaws.com/orca/datamanagement/reconciliation/internal/jobs`
+
+### Internal Reconcile report jobs API input
+An example of the API input body is shown below:
+```json
+{
+  "pageIndex": 0
+}
+```
+
+The following table lists the fields in the input:
+
+| Name             | Data Type | Description                                              | Required |
+|------------------|-----------|----------------------------------------------------------|----------|
+| pageIndex        | `int`     | The 0-based index of the results page to return.         | Yes      |
+
+
+### Internal Reconcile report jobs API output
+An example of the API output is shown below:
+```json
+{
+  "anotherPage": false,
+  "jobs": [
+    {
+      "id": 826,
+      "orcaArchiveLocation": "PREFIX-orca-primary",
+      "status": "success",
+      "inventoryCreationTime": 1652227200000,
+      "lastUpdate": 1652299312334,
+      "errorMessage": null,
+      "reportTotals": {
+        "orphan": 0,
+        "phantom": 1,
+        "catalogMismatch": 1
+      }
+    },
+    {
+      "id": 793,
+      "orcaArchiveLocation": "doctest-orca-primary",
+      "status": "error",
+      "inventoryCreationTime": 1652140800000,
+      "lastUpdate": 1652198623479,
+      "errorMessage": "Error while posting mismatches to database.",
+      "reportTotals": {
+        "orphan": 2,
+        "phantom": 1,
+        "catalogMismatch": 0
+      }
+    }
+  ]
+}
+```
+The following table lists the fields in the output:
+
+| Name                  | Data Type       | Description                                                                                                   |
+|-----------------------|-----------------|---------------------------------------------------------------------------------------------------------------|
+| anotherPage           | `bool`          | Indicates if more results can be retrieved on another page.                                                   |
+| jobs                  | `Array[Object]` | The jobs on the page.                                                                                         |
+| id                    | `int`           | The unique ID of the reconciliation job.                                                                      |
+| orcaArchiveLocation   | `str`           | ORCA S3 Glacier bucket the reconciliation targets.                                                            |           
+| status                | `str`           | Current status of the job. `getting S3 list`, `staged`, `generating reports`, `error`, or `success`           |
+| inventoryCreationTime | `int`           | The time, in milliseconds since 1 January 1970 UTC, of inventory report initiation time from the s3 manifest. |
+| lastUpdate            | `int`           | The time, in milliseconds since 1 January 1970 UTC, when status was last updated.                             |
+| errorMessage          | `str` or `null` | Critical error the job ran into that prevented it from finishing.                                             |
+| reportTotals          | `Object`        | The number of error reports of each type.                                                                     |
+| orphan                | `int`           | Number of files that have records in the S3 glacier bucket but are missing in the ORCA catalog.               |
+| phantom               | `int`           | Number of files that have records in the ORCA catalog but are missing from S3 bucket.                         |
+| catalogMismatch       | `int`           | Number of files that are missing from ORCA S3 bucket or have different metadata values than what is expected. |
+
+The API returns status code 200 on success, 400 if `jobId` or `pageIndex` are missing and 500 if an error occurs.
+
+
+
+
 ## Internal Reconcile report orphan API
 The `orca/datamanagement/reconciliation/internal/jobs/job/{jobid}/orphans` API call receives job id and page index from end user and returns reporting information of files that have records in the S3 glacier bucket but are missing in the ORCA catalog from the internal reconciliation job. Note that `{jobid}` is optional.
 Internal reconcile report orphan API input invoke URL example: `https://example.execute-api.us-west-2.amazonaws.com/orca/datamanagement/reconciliation/internal/jobs/job/{jobid}/orphans`
@@ -257,7 +333,7 @@ The following table lists the fields in the output:
 |------------------|-----------------|-----------------------------------------------------------------------------|
 | jobId            | `str`           |The unique ID of the reconciliation job.                                     |
 | anotherPage      | `Boolean`       | Indicates if more results can be retrieved on another page.                 |           
-| orphans          | `Array[Object]` | An array representing each orphans if available.                            |
+| orphans          | `Array[Object]` | An array representing each orphan if available.                             |
 | s3SizeInBytes    | `int`           | Size in bytes of the object in S3 bucket.                                   |
 | storageClass     | `str`           | AWS storage class the object is in the S3 bucket.                           |
 
