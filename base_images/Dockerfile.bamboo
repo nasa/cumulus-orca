@@ -1,0 +1,36 @@
+FROM amazonlinux:2
+LABEL maintainer="Rizbi Hassan" \
+      version="1" \
+      description="# This image can be used to run unit & validation tests for ORCA in Bamboo."
+
+ENV NODE_VERSION="16.x"
+ENV TERRAFORM_VERSION "0.13.6"
+
+# Add NodeJS and Yarn repos & update package index
+RUN \
+curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash - && \
+curl -sL https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo && \
+yum update -y
+
+# CLI utilities
+RUN yum install -y gcc git make openssl wget zip unzip tar
+
+# install Python 3, pip and other tools
+RUN \
+yum install -y python3-devel && \
+yum install -y nodejs yarn && \
+yum -y install python3-pip && \
+pip3 install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org pydoc-markdown==4.5.0 bandit==1.7.0 safety==1.10.3 flake8==4.0.1 black==21.12b0 isort==5.10.1
+
+# Install AWS CLI & Terraform
+RUN \
+yum install -y awscli && \
+wget "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" && \
+unzip *.zip && \
+chmod +x terraform && \
+mv terraform /usr/local/bin
+
+# Install session manager plugin
+RUN \
+curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_64bit/session-manager-plugin.rpm" -o "session-manager-plugin.rpm" && \
+yum install -y session-manager-plugin.rpm
