@@ -215,9 +215,9 @@ The API returns status code 200 on success, 400 if `asyncOperationId` is missing
 
 ## Internal Reconcile report jobs API
 The `orca/datamanagement/reconciliation/internal/jobs` API call receives page index from end user and returns available internal reconciliation jobs from the Orca database.
-Internal reconcile report orphan API input invoke URL example: `https://example.execute-api.us-west-2.amazonaws.com/orca/datamanagement/reconciliation/internal/jobs`
+Internal reconcile report jobs API input invoke URL example: `https://example.execute-api.us-west-2.amazonaws.com/orca/datamanagement/reconciliation/internal/jobs`
 
-### Internal Reconcile report orphan API input
+### Internal Reconcile report jobs API input
 An example of the API input body is shown below:
 ```json
 {
@@ -232,7 +232,7 @@ The following table lists the fields in the input:
 | pageIndex        | `int`     | The 0-based index of the results page to return.         | Yes      |
 
 
-### Internal Reconcile report orphan API output
+### Internal Reconcile report jobs API output
 An example of the API output is shown below:
 ```json
 {
