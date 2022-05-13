@@ -17,6 +17,9 @@ import sqlalchemy
 
 import request_status_for_job
 
+# Generating schema validators can take time, so do it once and reuse.
+with open("schemas/output.json", "r") as raw_schema:
+    _OUTPUT_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
 
 class TestRequestStatusForJobUnit(
     unittest.TestCase
@@ -314,5 +317,4 @@ class TestRequestStatusForJobUnit(
         with open("schemas/output.json", "r") as raw_schema:
             schema = json.loads(raw_schema.read())
 
-        validate = fastjsonschema.compile(schema)
-        validate(result)
+        _OUTPUT_VALIDATE(result)

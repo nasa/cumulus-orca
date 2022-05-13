@@ -23,6 +23,9 @@ from botocore.exceptions import ClientError
 
 import request_files
 
+# Generating schema validators can take time, so do it once and reuse.
+with open("schemas/output.json", "r") as raw_schema:
+    _OUTPUT_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
 
 class TestRequestFiles(unittest.TestCase):
     """
@@ -1659,11 +1662,7 @@ class TestRequestFiles(unittest.TestCase):
         }
 
         # Validate the output is correct
-        with open("schemas/output.json", "r") as raw_schema:
-            schema = json.loads(raw_schema.read())
-
-        validate = fastjsonschema.compile(schema)
-        validate(result_value)
+        _OUTPUT_VALIDATE(result_value)
 
         # Check the values of the result less the times since those will never match
         for granule in result_value["granules"]:

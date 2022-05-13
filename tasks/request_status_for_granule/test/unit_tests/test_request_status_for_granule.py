@@ -17,6 +17,9 @@ import sqlalchemy.exc
 
 import request_status_for_granule
 
+# Generating schema validators can take time, so do it once and reuse.
+with open("schemas/output.json", "r") as raw_schema:
+    _OUTPUT_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
 
 class TestRequestStatusForGranuleUnit(
     unittest.TestCase
@@ -528,8 +531,4 @@ class TestRequestStatusForGranuleUnit(
         )
 
         mock_get_user_connection.assert_called_once_with(db_connect_info)
-        with open("schemas/output.json", "r") as raw_schema:
-            schema = json.loads(raw_schema.read())
-
-        validate = fastjsonschema.compile(schema)
-        validate(result)
+        _OUTPUT_VALIDATE(result)
