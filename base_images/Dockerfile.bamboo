@@ -1,7 +1,7 @@
 FROM amazonlinux:2
 LABEL maintainer="Rizbi Hassan" \
       version="1" \
-      description="# This image can be used to run unit & validation tests for ORCA in Bamboo."
+      description="This image can be used to run unit & validation tests for ORCA in Bamboo."
 
 ENV NODE_VERSION="16.x"
 ENV TERRAFORM_VERSION "0.13.6"
