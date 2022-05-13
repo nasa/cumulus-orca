@@ -34,6 +34,8 @@ and includes an additional section for migration notes.
     Use new optional variable `orca_internal_reconciliation_expiration_days` to set the retention period.
 - *ORCA-372* Added automatic trigger for inventory events being read in by `post_to_queue_and_trigger_step_function`.
 - *ORCA-306* Added API gateway resources for internal reconciliation reporting lambdas.
+- *ORCA-424* Added automatic trigger for delete_old_reconcile_jobs. Will run every sunday at midnight UTC.
+    Adjust with the new optional variable `orca_delete_old_reconcile_jobs_frequency_cron`
 
 ### Changed
 - *ORCA-299* `db_deploy` task has been updated to deploy ORCA internal reconciliation tables and objects.
@@ -132,6 +134,7 @@ variable "s3_secret_key" {
   default_multipart_chunksize_mb                       = 250
   internal_report_queue_message_retention_time_seconds = 432000
   orca_default_recovery_type                           = "Standard"
+  orca_delete_old_reconcile_jobs_frequency_cron        = "cron(0 0 ? * SUN *)"
   orca_ingest_lambda_memory_size                       = 2240
   orca_ingest_lambda_timeout                           = 720
   orca_internal_reconciliation_expiration_days         = 30

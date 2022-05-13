@@ -94,6 +94,7 @@ module "orca" {
   # default_multipart_chunksize_mb                       = 250
   # metadata_queue_message_retention_time                = 777600
   # orca_default_recovery_type                           = "Standard"
+  # orca_delete_old_reconcile_jobs_frequency_cron        = "cron(0 0 ? * SUN *)"
   # orca_ingest_lambda_memory_size                       = 2240
   # orca_ingest_lambda_timeout                           = 600
   # orca_internal_reconciliation_expiration_days         = 30
@@ -539,6 +540,7 @@ variables is shown in the table below.
 | `db_name`                                             | string        | The name of the Orca database within the RDS cluster. Any `-` in `prefix` will be replaced with `_`.      | PREFIX_orca |
 | `db_user_name`                                        | string        | The name of the application user for the Orca database. Any `-` in `prefix` will be replaced with `_`.    | PREFIX_orcauser |
 | `orca_default_recovery_type`                          | string        | The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'                          | "Standard" |
+| `orca_delete_old_reconcile_jobs_frequency_cron`       | string        | Frequency cron for running the delete_old_reconcile_jobs lambda.                                          | "cron(0 0 ? * SUN *)" |
 | `orca_ingest_lambda_memory_size`                      | number        | Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime.                                | 2240 |
 | `orca_ingest_lambda_timeout`                          | number        | Timeout in number of seconds for ORCA copy_to_glacier lambda.                                             | 600 |
 | `orca_internal_reconciliation_expiration_days`        | number        | Only reports updated before this many days ago will be deleted.                                           | 30 |
