@@ -1,5 +1,5 @@
 """
-Name: test_orca_catalog_reporting_unit.py
+Name: test_orca_catalog_reporting.py
 
 Description:  Unit tests for orca_catalog_reporting.py.
 """
@@ -21,11 +21,9 @@ class TestOrcaCatalogReportingUnit(
     @patch("cumulus_logger.CumulusLogger.setMetadata")
     @patch.dict(
         os.environ,
-        {
-            "DB_CONNECT_INFO_SECRET_ARN": "test"
-        },
+        {"DB_CONNECT_INFO_SECRET_ARN": "test"},
         clear=True,
-     )
+    )
     def test_handler_happy_path(
         self,
         mock_setMetadata: MagicMock,
@@ -98,11 +96,9 @@ class TestOrcaCatalogReportingUnit(
     @patch("cumulus_logger.CumulusLogger.setMetadata")
     @patch.dict(
         os.environ,
-        {
-            "DB_CONNECT_INFO_SECRET_ARN": "test"
-        },
+        {"DB_CONNECT_INFO_SECRET_ARN": "test"},
         clear=True,
-     )
+    )
     def test_handler_missing_properties_uses_default(
         self,
         mock_setMetadata: MagicMock,
@@ -138,11 +134,9 @@ class TestOrcaCatalogReportingUnit(
     @patch("cumulus_logger.CumulusLogger.setMetadata")
     @patch.dict(
         os.environ,
-        {
-            "DB_CONNECT_INFO_SECRET_ARN": "test"
-        },
+        {"DB_CONNECT_INFO_SECRET_ARN": "test"},
         clear=True,
-     )
+    )
     def test_handler_missing_page_index_returns_error(
         self,
         mock_setMetadata: MagicMock,
@@ -221,11 +215,9 @@ class TestOrcaCatalogReportingUnit(
     @patch("cumulus_logger.CumulusLogger.setMetadata")
     @patch.dict(
         os.environ,
-        {
-            "DB_CONNECT_INFO_SECRET_ARN": "test"
-        },
+        {"DB_CONNECT_INFO_SECRET_ARN": "test"},
         clear=True,
-     )
+    )
     def test_handler_bad_output_raises_error(
         self,
         mock_setMetadata: MagicMock,
@@ -457,3 +449,25 @@ class TestOrcaCatalogReportingUnit(
             ],
             result,
         )
+
+    @patch("cumulus_logger.CumulusLogger.error")
+    def test_create_http_error_dict_happy_path(
+            self,
+            mock_error: MagicMock
+    ):
+        error_type = uuid.uuid4().__str__()
+        http_status_code = random.randint(0, 9999)  # nosec
+        request_id = uuid.uuid4().__str__()
+        message = """Some error dictionary: {"fruit": "apple"}"""
+        modified_message = """Some error dictionary: {{"fruit": "apple"}}"""
+
+        result = orca_catalog_reporting.create_http_error_dict(error_type, http_status_code, request_id, message)
+
+        self.assertEqual({
+            "errorType": error_type,
+            "httpStatus": http_status_code,
+            "requestId": request_id,
+            "message": modified_message,
+        }, result)
+
+        mock_error.assert_called_once_with(modified_message)

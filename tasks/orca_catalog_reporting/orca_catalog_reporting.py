@@ -13,6 +13,20 @@ from sqlalchemy.future import Engine
 LOGGER = CumulusLogger()
 
 PAGE_SIZE = 100
+# Generating schema validators can take time, so do it once and reuse.
+try:
+    with open("schemas/input.json", "r") as raw_schema:
+        _INPUT_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
+except Exception as ex:
+    LOGGER.error(f"Could not build schema validator: {ex}")
+    raise
+
+try:
+    with open("schemas/output.json", "r") as raw_schema:
+        _OUTPUT_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
+except Exception as ex:
+    LOGGER.error(f"Could not build schema validator: {ex}")
+    raise
 
 
 def task(
@@ -211,11 +225,7 @@ def handler(
         LOGGER.setMetadata(event, context)
 
         try:
-            with open("schemas/input.json", "r") as raw_schema:
-                schema = json.loads(raw_schema.read())
-
-            validate = fastjsonschema.compile(schema)
-            validate(event)
+            _INPUT_VALIDATE(event)
         except JsonSchemaException as json_schema_exception:
             return create_http_error_dict(
                 "BadRequest",
@@ -243,11 +253,7 @@ def handler(
             event["pageIndex"],
             db_connect_info,
         )
-        with open("schemas/output.json", "r") as raw_schema:
-            schema = json.loads(raw_schema.read())
-
-        validate = fastjsonschema.compile(schema)
-        validate(result)
+        _OUTPUT_VALIDATE(result)
 
         return result
     except Exception as error:
