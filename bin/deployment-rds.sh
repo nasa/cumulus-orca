@@ -32,10 +32,10 @@ RDS_CLUSTER_KEY=x"$bamboo_PREFIX/rds-cluster-tf/terraform.tfstate"
 # Ensure remote state is configured for the deployment
 echo "terraform {
         backend \"s3\" {
-            bucket = \"$bamboo_TFSTATE_BUCKET\"
+            bucket = \"$bamboo_PREFIX-tfstate\"
             key    = \"$RDS_CLUSTER_KEY\"
             region = \"$bamboo_AWS_DEFAULT_REGION\"
-            dynamodb_table = \"$bamboo_TFSTATE_LOCK_TABLE\"
+            dynamodb_table = \"$bamboo_PREFIX-tf-locks\"
     }
 }" > terraform.tf
 
@@ -59,7 +59,7 @@ terraform apply \
   -var "db_admin_username=$bamboo_DB_ADMIN_USERNAME" \
   -var "db_admin_password=$bamboo_DB_ADMIN_PASSWORD" \
   -var "vpc_id=$bamboo_VPC_ID" \
-  -var "cluster_identifier=$bamboo_RDS_CLUSTER_ID" \
+  -var "cluster_identifier=$bamboo_PREFIX-cumulus-rds-serverless-default-cluster" \
   -var "deletion_protection=false"\
   -var "provision_user_database=false"\
   -var "engine_version=10.14"\
