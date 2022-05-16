@@ -28,7 +28,7 @@ cd rds-cluster-tf
 echo "inside rds-cluster-tf"
 mv terraform.tfvars.example terraform.tfvars
 
-RDS_CLUSTER_KEY=x"$bamboo_PREFIX/rds-cluster-tf/terraform.tfstate"
+RDS_CLUSTER_KEY="$bamboo_PREFIX/rds-cluster-tf/terraform.tfstate"
 # Ensure remote state is configured for the deployment
 echo "terraform {
         backend \"s3\" {
