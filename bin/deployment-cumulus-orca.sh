@@ -71,13 +71,90 @@ echo "inside cumulus-tf module"
 mv terraform.tfvars.example terraform.tfvars
 
 CUMULUS_KEY="$bamboo_PREFIX/cumulus/terraform.tfstate"
-# echo "db_host_endpoint = \"$bamboo_DB_HOST_ENDPOINT\"
-#       orca_default_bucket    = \"$bamboo_PREFIX-orca-primary\"
-#       rds_security_group_id = \"$bamboo_RDS_SECURITY_GROUP\"
-#       db_user_password = \"$bamboo_DB_USER_PASSWORD\"
-#       db_admin_password = \"$bamboo_DB_ADMIN_PASSWORD\"
-#  " > var.tfvars
-terraform fmt
+
+# adding variables to var.tfvars file
+echo "## Variables unique to ORCA
+## REQUIRED
+
+variable "db_admin_password" {
+  description = "Password for RDS database administrator authentication"
+  type        = string
+}
+
+variable "orca_reports_bucket_name" {
+  type        = string
+  description = "The name of the bucket to store s3 inventory reports."
+}
+
+variable "db_user_password" {
+  description = "Password for RDS database user authentication"
+  type        = string
+}
+
+variable "db_host_endpoint" {
+  type        = string
+  description = "Database host endpoint to connect to."
+}
+
+variable "orca_default_bucket" {
+  description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
+  type        = string
+}
+
+variable "rds_security_group_id" {
+  type        = string
+  description = "Cumulus' RDS Security Group's ID."
+}
+
+## OPTIONAL
+
+variable "db_admin_password" {
+  description = "Password for RDS database administrator authentication"
+  type        = string
+}
+
+variable "orca_reports_bucket_name" {
+  type        = string
+  description = "The name of the bucket to store s3 inventory reports."
+}
+
+variable "db_user_password" {
+  description = "Password for RDS database user authentication"
+  type        = string
+}
+
+variable "db_host_endpoint" {
+  type        = string
+  description = "Database host endpoint to connect to."
+}
+
+variable "orca_default_bucket" {
+  description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
+  type        = string
+}
+
+variable "rds_security_group_id" {
+  type        = string
+  description = "Cumulus' RDS Security Group's ID."
+}
+
+## OPTIONAL
+
+variable "dlq_subscription_email" {
+  type        = string
+  description = "The email to notify users when messages are received in dead letter SQS queue due to restore failure. Sends one email until the dead letter queue is emptied."
+}
+
+variable "s3_access_key" {
+  type        = string
+  description = "Access key for communicating with Orca S3 buckets."
+}
+
+variable "s3_secret_key" {
+  type        = string
+  description = "Secret key for communicating with Orca S3 buckets."
+}" > orca_variables.tf
+
 
 # Ensure remote state is configured for the deployment
 echo "terraform {
