@@ -32,10 +32,10 @@ DATA_PERSISTENCE_KEY="$bamboo_PREFIX/data-persistence-tf/terraform.tfstate"
 # Ensure remote state is configured for the deployment
 echo "terraform {
         backend \"s3\" {
-            bucket = \"$bamboo_TFSTATE_BUCKET\"
+            bucket = \"$bamboo_PREFIX-tf-state\"
             key    = \"$DATA_PERSISTENCE_KEY\"
             region = \"$bamboo_AWS_DEFAULT_REGION\"
-            dynamodb_table = \"$bamboo_TFSTATE_LOCK_TABLE\"
+            dynamodb_table = \"$bamboo_PREFIX-tf-locks\"
     }
 }" > terraform.tf
 
@@ -75,7 +75,7 @@ mv terraform.tfvars.example terraform.tfvars
 CUMULUS_KEY="$bamboo_PREFIX/cumulus/terraform.tfstate"
 # Ensure remote state is configured for the deployment
 echo "db_host_endpoint = \"$bamboo_RDS_ENDPOINT\"
-      orca_default_bucket    = \"rizbi-bamboo-new-orca-primary\"
+      orca_default_bucket    = \"$bamboo_PREFIX-orca-primary\"
       rds_security_group_id = \"$bamboo_RDS_SECURITY_GROUP\"
       db_user_password = \"$bamboo_DB_USER_PASSWORD\"
       db_admin_password = \"$bamboo_DB_ADMIN_PASSWORD\"
@@ -84,10 +84,10 @@ terraform fmt
 
 echo "terraform {
         backend \"s3\" {
-            bucket = \"$bamboo_TFSTATE_BUCKET\"
+            bucket = \"$bamboo_PREFIX-tfstate\"
             key    = \"$CUMULUS_KEY\"
             region = \"$bamboo_AWS_DEFAULT_REGION\"
-            dynamodb_table = \"$bamboo_TFSTATE_LOCK_TABLE\"
+            dynamodb_table = \"$bamboo_PREFIX-tf-locks\"
     }
 }" > terraform.tf
 
@@ -113,7 +113,7 @@ terraform apply \
   -var "cmr_client_id=cumulus-core-$bamboo_DEPLOYMENT" \
   -var "cmr_provider=CUMULUS" \
   -var "cmr_environment=UAT" \
-  -var "data_persistence_remote_state_config={ region: \"$bamboo_AWS_DEFAULT_REGION\", bucket: \"$TFSTATE_BUCKET\", key: \"$DATA_PERSISTENCE_KEY\" }" \
+  -var "data_persistence_remote_state_config={ region: \"$bamboo_AWS_DEFAULT_REGION\", bucket: \"$bamboo_PREFIX-tf-state\", key: \"$DATA_PERSISTENCE_KEY\" }" \
   -var "region=$bamboo_AWS_DEFAULT_REGION" \
   -var "vpc_id=$bamboo_VPC_ID" \
   -var "lambda_subnet_ids=[\"$bamboo_AWS_SUBNET_ID1\", \"$bamboo_AWS_SUBNET_ID2\"]" \
@@ -126,7 +126,7 @@ terraform apply \
   -var "prefix=$bamboo_PREFIX" \
   -var "permissions_boundary_arn=arn:aws:iam::$bamboo_AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
   -var "db_user_password=$bamboo_PREFIX" \
-  -var "orca_default_bucket=rizbi-bamboo-new-orca-primary" \ #replace this
+  -var "orca_default_bucket=$bamboo_PREFIX-orca-primary" \ #replace this
   -var "db_admin_password=$bamboo_DB_ADMIN_PASSWORD" \
   -var "db_host_endpoint=$bamboo_RDS_ENDPOINT"
   -var "rds_security_group_id=$bamboo_RDS_SECURITY_GROUP"
