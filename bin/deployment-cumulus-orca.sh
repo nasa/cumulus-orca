@@ -130,7 +130,7 @@ EOF
 echo "buckets = {
         default_orca = {
           name = \"$bamboo_PREFIX-orca-primary\"
-          type = "orca"
+          type = \"orca\"
           },
         l0archive = {
           name = \"$bamboo_PREFIX-level0\"
