@@ -96,6 +96,7 @@ terraform fmt
 terraform init \
   -input=false
 
+
 #validate the terraform files
 terraform validate
 # Deploy cumulus-tf via terraform
