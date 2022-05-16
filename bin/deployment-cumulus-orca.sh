@@ -64,25 +64,24 @@ terraform apply \
 
 # script for deploying cumulus-tf module
 # clone cumulus-orca repo and run build_tasks.sh to create the lambda zip files first
-cd ../..
-git clone https://github.com/nasa/cumulus-orca.git
-cd cumulus-orca
-git checkout $bamboo_ORCA_TEST_BRANCH
+cd ../.. && git clone https://github.com/nasa/cumulus-orca.git
+cd cumulus-orca && git checkout $bamboo_ORCA_TEST_BRANCH
+# run the build script to create lambda zip files
 ./bin/build_tasks.sh
 cd ../cumulus-orca-deploy-template/cumulus-tf
 echo "inside cumulus-tf module"
 mv terraform.tfvars.example terraform.tfvars
 
 CUMULUS_KEY="$bamboo_PREFIX/cumulus/terraform.tfstate"
-# Ensure remote state is configured for the deployment
-echo "db_host_endpoint = \"$bamboo_RDS_ENDPOINT\"
-      orca_default_bucket    = \"$bamboo_PREFIX-orca-primary\"
-      rds_security_group_id = \"$bamboo_RDS_SECURITY_GROUP\"
-      db_user_password = \"$bamboo_DB_USER_PASSWORD\"
-      db_admin_password = \"$bamboo_DB_ADMIN_PASSWORD\"
- " > var.tfvars
+# echo "db_host_endpoint = \"$bamboo_RDS_ENDPOINT\"
+#       orca_default_bucket    = \"$bamboo_PREFIX-orca-primary\"
+#       rds_security_group_id = \"$bamboo_RDS_SECURITY_GROUP\"
+#       db_user_password = \"$bamboo_DB_USER_PASSWORD\"
+#       db_admin_password = \"$bamboo_DB_ADMIN_PASSWORD\"
+#  " > var.tfvars
 terraform fmt
 
+# Ensure remote state is configured for the deployment
 echo "terraform {
         backend \"s3\" {
             bucket = \"$bamboo_PREFIX-tfstate\"
@@ -107,8 +106,7 @@ terraform apply \
   -lock=false \
   -input=false \
   -var-file="terraform.tfvars" \
-  -var-file="var.tfvars" \
-  -var "cumulus_message_adapter_version=$bamboo_CMA_LAYER_VERSION" \
+  -var "cumulus_message_adapter_version="$bamboo_CMA_LAYER_VERSION"" \
   -var "cmr_username=$bamboo_CMR_USERNAME" \
   -var "cmr_password=$bamboo_CMR_PASSWORD" \
   -var "cmr_client_id=cumulus-core-$bamboo_DEPLOYMENT" \
@@ -127,7 +125,7 @@ terraform apply \
   -var "prefix=$bamboo_PREFIX" \
   -var "permissions_boundary_arn=arn:aws:iam::$bamboo_AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
   -var "db_user_password=$bamboo_PREFIX" \
-  -var "orca_default_bucket=$bamboo_PREFIX-orca-primary" \ #replace this
+  -var "orca_default_bucket=$bamboo_PREFIX-orca-primary"
   -var "db_admin_password=$bamboo_DB_ADMIN_PASSWORD" \
   -var "db_host_endpoint=$bamboo_RDS_ENDPOINT"
   -var "rds_security_group_id=$bamboo_RDS_SECURITY_GROUP"
