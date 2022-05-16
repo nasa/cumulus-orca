@@ -84,7 +84,7 @@ terraform fmt
 # Ensure remote state is configured for the deployment
 echo "terraform {
         backend \"s3\" {
-            bucket = \"$bamboo_PREFIX-tfstate\"
+            bucket = \"$bamboo_PREFIX-tf-state\"
             key    = \"$CUMULUS_KEY\"
             region = \"$bamboo_AWS_DEFAULT_REGION\"
             dynamodb_table = \"$bamboo_PREFIX-tf-locks\"
@@ -96,9 +96,6 @@ terraform fmt
 terraform init \
   -input=false
 
-
-#validate the terraform files
-terraform validate
 # Deploy cumulus-tf via terraform
 echo "Deploying Cumulus tf module to $bamboo_DEPLOYMENT"
 terraform apply \
