@@ -49,6 +49,7 @@ and includes an additional section for migration notes.
     "orcaDefaultRecoveryTypeOverride": "Standard"
   }
   ```
+- *ORCA-426* Performance improvements around json schema validators.
 
 ### Migration Notes
 
