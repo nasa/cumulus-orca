@@ -176,27 +176,27 @@ terraform apply \
   -var "orca_reports_bucket_name=$bamboo_ORCA_REPORTS_BUCKET_NAME" \
   -var "buckets={
                   default_orca = {
-                  name = "$bamboo_PREFIX-orca-primary"
+                  name = \"$bamboo_PREFIX-orca-primary\"
                   type = "orca"
                   },
                   l0archive = {
-                  name = "$bamboo_PREFIX-level0"
+                  name = \"$bamboo_PREFIX-level0\"
                   type = "private"
                   },
                   internal = {
-                    name = "$bamboo_PREFIX-internal"
+                    name = \"$bamboo_PREFIX-internal\"
                     type = "internal"
                   }
                   private = {
-                    name = "$bamboo_PREFIX-private"
+                    name = \"$bamboo_PREFIX-private""
                     type = "private"
                   },
                   protected = {
-                    name = "$bamboo_PREFIX-protected"
+                    name = \"$bamboo_PREFIX-protected\"
                     type = "protected"
                   },
                   public = {
-                    name = "$bamboo_PREFIX-public"
+                    name = \"$bamboo_PREFIX-public\"
                     type = "public"
                   },
                   provider = {
