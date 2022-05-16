@@ -29,6 +29,7 @@ echo "inside data persistence tf"
 mv terraform.tfvars.example terraform.tfvars
 
 DATA_PERSISTENCE_KEY="$bamboo_PREFIX/data-persistence-tf/terraform.tfstate"
+
 # Ensure remote state is configured for the deployment
 echo "terraform {
         backend \"s3\" {
