@@ -44,8 +44,6 @@ terraform fmt
 terraform init \
   -input=false
 
-#validate the terraform files
-terraform validate
 # Deploy drds-cluster-tf via terraform
 echo "Deploying rds-cluster-tf  module to $bamboo_DEPLOYMENT"
 terraform apply \

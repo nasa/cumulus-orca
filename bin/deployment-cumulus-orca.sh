@@ -73,36 +73,16 @@ mv terraform.tfvars.example terraform.tfvars
 CUMULUS_KEY="$bamboo_PREFIX/cumulus/terraform.tfstate"
 
 # adding variables to orca_variables.tf file
-rm orca_variables.tf
 cat << EOF > orca_variables.tf
-variable "db_admin_password" {
-  description = "Password for RDS database administrator authentication"
-  type        = string
-}
 
 variable "orca_reports_bucket_name" {
   type        = string
   description = "The name of the bucket to store s3 inventory reports."
 }
 
-variable "db_user_password" {
-  description = "Password for RDS database user authentication"
-  type        = string
-}
-
 variable "db_host_endpoint" {
   type        = string
   description = "Database host endpoint to connect to."
-}
-
-variable "orca_default_bucket" {
-  description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
-  type        = string
-}
-
-variable "rds_security_group_id" {
-  type        = string
-  description = "Cumulus' RDS Security Group's ID."
 }
 
 ## OPTIONAL
@@ -112,19 +92,9 @@ variable "db_admin_password" {
   type        = string
 }
 
-variable "orca_reports_bucket_name" {
-  type        = string
-  description = "The name of the bucket to store s3 inventory reports."
-}
-
 variable "db_user_password" {
   description = "Password for RDS database user authentication"
   type        = string
-}
-
-variable "db_host_endpoint" {
-  type        = string
-  description = "Database host endpoint to connect to."
 }
 
 variable "orca_default_bucket" {
@@ -164,7 +134,7 @@ echo "terraform {
             dynamodb_table = \"$bamboo_PREFIX-tf-locks\"
     }
 }" > terraform.tf
-
+less orca_variables.tf
 terraform fmt
 # Initialize deployment
 terraform init \
