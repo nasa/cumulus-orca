@@ -24,6 +24,14 @@ BACKOFF_FACTOR = 2  # Value of the factor used to backoff
 INITIAL_BACKOFF_IN_SECONDS = 1  # Number of seconds to sleep the first time through.
 RT = TypeVar("RT")  # return type
 
+# Generating schema validators can take time, so do it once and reuse.
+try:
+    with open("schemas/output_body.json", "r") as raw_schema:
+        _OUTPUT_BODY_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
+except Exception as ex:
+    LOGGER.error(f"Could not build schema validator: {ex}")
+    raise
+
 
 # Retry decorator for function
 # todo: Lacks unit tests. Will likely eventually be part of shared lib ORCA-148.
@@ -105,12 +113,8 @@ def post_to_fifo_queue(
     Raises:
         None
     """
-    # validate body.json schema
-    with open("schemas/output_body.json", "r") as raw_schema:
-        schema = json.loads(raw_schema.read())
-    validate = fastjsonschema.compile(schema)
     LOGGER.debug("Validating the SQS message body with the schema.")
-    validate(sqs_body)
+    _OUTPUT_BODY_VALIDATE(sqs_body)
     body = json.dumps(sqs_body)
     LOGGER.debug(
         f"Creating SQS resource for {queue_url}",

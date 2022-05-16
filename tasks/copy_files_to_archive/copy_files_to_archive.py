@@ -38,6 +38,20 @@ INPUT_SOURCE_BUCKET_KEY = "sourceBucket"
 INPUT_MULTIPART_CHUNKSIZE_MB_KEY = "s3MultipartChunksizeMb"
 
 LOGGER = CumulusLogger()
+# Generating schema validators can take time, so do it once and reuse.
+try:
+    with open("schemas/input.json", "r") as raw_schema:
+        _INPUT_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
+except Exception as ex:
+    LOGGER.error(f"Could not build schema validator: {ex}")
+    raise
+
+try:
+    with open("schemas/sub_schemas/body.json", "r") as raw_schema:
+        _BODY_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
+except Exception as ex:
+    LOGGER.error(f"Could not build schema validator: {ex}")
+    raise
 
 
 class CopyRequestError(Exception):
@@ -149,15 +163,11 @@ def get_files_from_records(
     Returns:
         records, parsed into Dicts, with the additional KVP 'success' = False
     """
-    with open("schemas/sub_schemas/body.json", "r") as raw_schema:
-        schema = json.loads(raw_schema.read())
-
-    validate = fastjsonschema.compile(schema)
     files = []
     for record in records:
         a_file = json.loads(record["body"])
         LOGGER.debug("Validating {file}", file=a_file)
-        validate(a_file)
+        _BODY_VALIDATE(a_file)
         a_file[FILE_SUCCESS_KEY] = False
         a_file[FILE_MESSAGE_RECEIPT] = record[FILE_MESSAGE_RECEIPT]
         files.append(a_file)
@@ -246,12 +256,7 @@ def handler(
         message, with 'success' = False for the files for which the copy failed.
     """
     LOGGER.setMetadata(event, context)
-
-    with open("schemas/input.json", "r") as raw_schema:
-        schema = json.loads(raw_schema.read())
-
-    validate = fastjsonschema.compile(schema)
-    validate(event)
+    _INPUT_VALIDATE(event)
 
     try:
         str_env_val = os.environ["COPY_RETRIES"]
