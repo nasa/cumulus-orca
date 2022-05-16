@@ -45,8 +45,6 @@ terraform fmt
 terraform init \
   -input=false
 
-#validate the terraform files
-terraform validate
 # Deploy data-persistence via terraform
 echo "Deploying Cumulus data-persistence module to $bamboo_DEPLOYMENT"
 terraform apply \
