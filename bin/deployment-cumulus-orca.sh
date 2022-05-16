@@ -72,7 +72,7 @@ mv terraform.tfvars.example terraform.tfvars
 
 CUMULUS_KEY="$bamboo_PREFIX/cumulus/terraform.tfstate"
 
-# adding variables to var.tfvars file
+# adding variables to orca_variables.tf file
 cat << EOF > orca_variables.tf
 variable "db_admin_password" {
   description = "Password for RDS database administrator authentication"
@@ -151,7 +151,7 @@ variable "s3_access_key" {
 variable "s3_secret_key" {
   type        = string
   description = "Secret key for communicating with Orca S3 buckets."
-}"
+}
 EOF
 
 # Ensure remote state is configured for the deployment
