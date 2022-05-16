@@ -3,15 +3,12 @@ Name: test_db_deploy.py
 
 Description:  Unit tests for db_deploy.py.
 """
-import unittest
 import os
-from unittest.mock import Mock, call, patch, MagicMock
-from moto import mock_secretsmanager
-import boto3
+import unittest
+import uuid
+from unittest.mock import MagicMock, patch
+
 import db_deploy
-from orca_shared.database import shared_db
-from sqlalchemy import text
-import json
 
 
 class TestDbDeployFunctions(unittest.TestCase):
@@ -19,16 +16,26 @@ class TestDbDeployFunctions(unittest.TestCase):
     Tests the db_deploy functions.
     """
 
-    # Create the mock instance of secrets manager
-    mock_sm = mock_secretsmanager()
-
-    def setUp(self):
+    @patch("db_deploy.get_configuration")
+    @patch("db_deploy.task")
+    @patch.dict(
+        os.environ,
+        {
+            "DB_CONNECT_INFO_SECRET_ARN": "test"
+        },
+        clear=True,
+    )
+    def test_handler_happy_path(
+        self, mock_task: MagicMock, mock_get_configuration: MagicMock
+    ):
         """
-        Perform initial setup for test.
+        Does a happy path test. No real logic here as it just sets up the
+        Cumulus Logger and the database configuration which are tested in
+        other test cases. Only checks input is valid.
         """
-        self.mock_sm.start()
-        self.test_sm = boto3.client("secretsmanager", region_name="us-west-2")
-        self.config = {
+        # Set values for the test
+        event = {"orcaBuckets": ["orca_worm", "orca_versioned", "orca_special"]}
+        config = {
             "admin_database": "admin_db",
             "admin_password": "admin123",
             "admin_username": "admin",
@@ -38,68 +45,97 @@ class TestDbDeployFunctions(unittest.TestCase):
             "user_password": "user123",
             "user_username": "user",
         }
-        self.secretstring = json.dumps(self.config)
-        self.test_sm.create_secret(
-            Name="orcatest-orca-db-login-secret", SecretString=self.secretstring
-        )
+        mock_get_configuration.return_value = config
 
-    def tearDown(self):
-        """
-        Perform tear down actions
-        """
-        self.mock_sm.stop()
+        # Run the function
+        db_deploy.handler(event, {})
 
+        # Check tests
+        mock_task.assert_called_with(config, event["orcaBuckets"])
+
+    @patch("db_deploy.get_configuration")
+    @patch("db_deploy.task")
     @patch.dict(
         os.environ,
         {
-            "PREFIX": "orcatest",
-            "AWS_REGION": "us-west-2",
+            "DB_CONNECT_INFO_SECRET_ARN": "test"
         },
         clear=True,
-    )
-    @patch("db_deploy.task")
-    def test_handler_happy_path(self, mock_task: MagicMock):
+     )
+    def test_handler_bad_input(
+        self, mock_task: MagicMock, mock_get_configuration: MagicMock
+    ):
         """
-        Does a happy path test. No real logic here as it just sets up the
-        Cumulus Logger and the database configuration which are tested in
-        other test cases.
+        Tests handler and makes sure a failure occurs if the input is not correct.
         """
-        records = {}
-        event = {"Records": records}
+        # Set values for the test
+        events = [
+            {"orcaBuckets": []},
+            {"orcaBuckets": 1234},
+            {"orcaBuckets": "abcds"},
+            {},
+        ]
+        config = {
+            "admin_database": "admin_db",
+            "admin_password": "admin123",
+            "admin_username": "admin",
+            "host": "aws.postgresrds.host",
+            "port": 5432,
+            "user_database": "user_db",
+            "user_password": "user123",
+            "user_username": "user",
+        }
+        mock_get_configuration.return_value = config
 
-        db_deploy.handler(event, {})
+        # Run the function and see if it fails wit a value error
+        for event in events:
+            with self.subTest(event=event):
+                with self.assertRaises(ValueError) as ve:
+                    db_deploy.handler(event, {})
 
-        mock_task.assert_called_with(json.loads(self.secretstring))
+                value_error_message = str(ve.exception)
+                self.assertEqual(
+                    value_error_message,
+                    "orcaBuckets must be a valid list of ORCA S3 bucket names.",
+                )
 
     @patch("db_deploy.create_fresh_orca_install")
-    @patch("orca_sql.app_database_comment_sql")
-    @patch("orca_sql.app_database_sql")
-    @patch("orca_sql.commit_sql")
+    @patch("db_deploy.create_database")
     @patch("db_deploy.get_admin_connection")
     @patch("db_deploy.app_db_exists")
     def test_task_no_database(
-        self, mock_db_exists: MagicMock,
-            mock_connection: MagicMock,
-            mock_commit_sql: MagicMock,
-            mock_app_database_sql: MagicMock,
-            mock_app_database_comment_sql: MagicMock,
-            mock_create_fresh_orca_install: MagicMock
+        self,
+        mock_app_db_exists: MagicMock,
+        mock_connection: MagicMock,
+        mock_create_database: MagicMock,
+        mock_create_fresh_orca_install: MagicMock,
     ):
         """
         Validates if the ORCA database does not exist, then it is created.
         """
-        mock_db_exists.return_value = False
+        # Setup
+        mock_app_db_exists.return_value = False
+        config = {
+            "admin_database": "admin_db",
+            "admin_password": "admin123",
+            "admin_username": "admin",
+            "host": "aws.postgresrds.host",
+            "port": 5432,
+            "user_database": "user_db",
+            "user_password": "user123",
+            "user_username": "user",
+        }
+        orca_buckets = ["orca_worm", "orca_versioned", "orca_special"]
 
-        db_deploy.task(self.config)
-        mock_db_exists.assert_called_with(mock_connection().connect().__enter__())
-        # Check the text calls occur and in the proper order
-        execute_calls = [
-            call(mock_commit_sql.return_value),
-            call(mock_app_database_sql.return_value),
-            call(mock_app_database_comment_sql.return_value)
-        ]
-        mock_connection().connect().__enter__().execute.assert_has_calls(execute_calls, any_order=False)
-        mock_create_fresh_orca_install.assert_called_once_with(self.config)
+        # Call the task
+        db_deploy.task(config, orca_buckets)
+
+        # Check function calls
+        mock_app_db_exists.assert_called_with(
+            mock_connection().connect().__enter__(), config["user_database"]
+        )
+        mock_create_database.assert_called_once_with(config)
+        mock_create_fresh_orca_install.assert_called_once_with(config, orca_buckets)
 
     @patch("db_deploy.get_admin_connection")
     @patch("db_deploy.create_fresh_orca_install")
@@ -118,9 +154,20 @@ class TestDbDeployFunctions(unittest.TestCase):
         """
         mock_db_exists.return_value = True
         mock_schema_exists.return_value = False
+        config = {
+            "admin_database": "admin_db",
+            "admin_password": "admin123",
+            "admin_username": "admin",
+            "host": "aws.postgresrds.host",
+            "port": 5432,
+            "user_database": "user_db",
+            "user_password": "user123",
+            "user_username": "user",
+        }
+        orca_buckets = ["orca_worm", "orca_versioned", "orca_special"]
 
-        db_deploy.task(self.config)
-        mock_fresh_install.assert_called_with(self.config)
+        db_deploy.task(config, orca_buckets)
+        mock_fresh_install.assert_called_with(config, orca_buckets)
 
     @patch("db_deploy.get_admin_connection")
     @patch("db_deploy.perform_migration")
@@ -142,9 +189,20 @@ class TestDbDeployFunctions(unittest.TestCase):
         mock_db_exists.return_value = True
         mock_schema_exists.return_value = True
         mock_migration_version.return_value = 1
+        config = {
+            "admin_database": "admin_db",
+            "admin_password": "admin123",
+            "admin_username": "admin",
+            "host": "aws.postgresrds.host",
+            "port": 5432,
+            "user_database": "user_db",
+            "user_password": "user123",
+            "user_username": "user",
+        }
+        orca_buckets = ["orca_worm", "orca_versioned", "orca_special"]
 
-        db_deploy.task(self.config)
-        mock_perform_migration.assert_called_with(1, self.config)
+        db_deploy.task(config, orca_buckets)
+        mock_perform_migration.assert_called_with(1, config, orca_buckets)
 
     @patch("db_deploy.get_admin_connection")
     @patch("db_deploy.logger.info")
@@ -165,10 +223,21 @@ class TestDbDeployFunctions(unittest.TestCase):
         """
         mock_db_exists.return_value = True
         mock_schema_exists.return_value = True
-        mock_migration_version.return_value = 4
+        mock_migration_version.return_value = 5
         message = "Current ORCA schema version detected. No migration needed!"
+        config = {
+            "admin_database": "admin_db",
+            "admin_password": "admin123",
+            "admin_username": "admin",
+            "host": "aws.postgresrds.host",
+            "port": 5432,
+            "user_database": "user_db",
+            "user_password": "user123",
+            "user_username": "user",
+        }
+        orca_buckets = ["orca_worm", "orca_versioned", "orca_special"]
 
-        db_deploy.task(self.config)
+        db_deploy.task(config, orca_buckets)
         mock_logger_info.assert_called_with(message)
 
     def test_app_db_exists_happy_path(self):
@@ -184,7 +253,7 @@ class TestDbDeployFunctions(unittest.TestCase):
         ]
 
         # call the function
-        db_exists = db_deploy.app_db_exists(mock_conn)
+        db_exists = db_deploy.app_db_exists(mock_conn, uuid.uuid4().__str__())
 
         self.assertEqual(db_exists, True)
 
@@ -229,7 +298,7 @@ class TestDbDeployFunctions(unittest.TestCase):
         table_exists_array = [True, False]
         mock_conn.execute.return_value.fetchall.return_value = [
             [
-                4,
+                5,
             ],
         ]
 
@@ -241,6 +310,6 @@ class TestDbDeployFunctions(unittest.TestCase):
                 schema_version = db_deploy.get_migration_version(mock_conn)
 
                 if table_exists:
-                    self.assertEqual(schema_version, 4)
+                    self.assertEqual(schema_version, 5)
                 else:
                     self.assertEqual(schema_version, 1)

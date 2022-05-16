@@ -23,14 +23,14 @@ for more information.
 
 The sections below go into further detail on creating the ORCA archive bucket.
 
-## Create the ORCA Archive Bucket
+## Create the ORCA Archive and Report Buckets
 
-Prior to creating the S3 bucket, make sure the deployment environment is created
+Prior to creating the S3 buckets, make sure the deployment environment is created
 per the [Creating the Deployment Environment](setting-up-deployment-environment.mdx)
 documentation.
 
-To create the ORCA archive bucket run the AWS CLI command below and replace the
-\[place holder text\] with proper values for your deployment.
+To create the ORCA buckets run the AWS CLI command below twice, once for your archive bucket and once for your report bucket.
+Replace the \[place holder text\] with proper values for your deployment.
 
 ```bash
 aws s3api create-bucket \
@@ -40,7 +40,7 @@ aws s3api create-bucket \
     --create-bucket-configuration "LocationConstraint=us-west-2"
 ```
 
-- **\[orca bucket name\]** - This is the name of your ORCA archive bucket. Example: sandbox-orca-glacier-archive
+- **\[orca bucket name\]** - This is the name of your bucket. Example: `sandbox-orca-glacier-archive` and `sandbox-orca-reports`
 - **\[AWS OU profile\]** - This is the AWS profile name to use to connect to the proper OU where the bucket will be created.
 
 :::note
@@ -110,7 +110,7 @@ This is the business justification for the cross account bucket access. Below is
 an example of a justification.
 
 > The ORCA Cumulus application in the Cumulus Sandbox OU needs to read/write to
-> the ORCA DR account S3 bucket in order to create an operational archive copy of
+> the ORCA DR account S3 buckets in order to create an operational archive copy of
 > ORCA data and recover data back to the primary Cumulus data holdings in case
 > of a failure. This cross account access will allow the Cumulus application to
 > seamlessly perform these functions and provide operators with the capability to
@@ -120,16 +120,20 @@ an example of a justification.
 #### Bucket Names(s):
 
 This is the name of the ORCA archive bucket created in the Disaster Recover OU.
-Below is an example name of an ORCA archive bucket.
+Below is an example name of an ORCA archive bucket and ORCA report bucket.
 
 > sandbox-orca-glacier-archive
-
+> sandbox-orca-reports
 
 #### Policy:
 
 The policy section is the JSON policy requested for the ORCA archive bucket in
-the Disaster Recovery OU. The policy shown below can be used with some minor
-modifications.
+the Disaster Recovery OU.
+
+##### Archive Bucket:
+
+The policy shown below can be used with some minor
+modifications, which will be detailed below.
 
 ```json
 {
@@ -146,7 +150,9 @@ modifications.
         "s3:RestoreObject",
         "s3:GetBucket*",
         "s3:ListBucket",
-        "s3:PutBucketNotification"
+        "s3:PutBucketNotification",
+        "s3:GetInventoryConfiguration",
+        "s3:PutInventoryConfiguration"
       ],
       "Resource": [
         "arn:aws:s3:::sandbox-orca-glacier-archive",
@@ -173,14 +179,12 @@ modifications.
 }
 ```
 
-Change the values of the Principal and Resource keys to utilize the example above
-for your JSON policy.
-
 The Principal value is the AWS root user for your Cumulus application that will
-access the ORCA archive bucket. The value for this resource can be retrieved by
+access the ORCA archive bucket. The value for this can be retrieved by
 performing the following.
 
-Using your AWS CLI client run the following command to get the account number:
+First, change your connection to the Cumulus account/OU rather than the Disaster Recovery account/OU.
+Then, using your AWS CLI client run the following command to get the account number:
 
 ```bash
 aws sts get-caller-identity
@@ -192,11 +196,68 @@ aws sts get-caller-identity
 }
 ```
 
-Replace the value of `arn:aws:iam::909121343565:root` with the value of your
-account number.
+Replace the number in `arn:aws:iam::909121343565:root` with the value of your account number.
 
 The Resource value is the bucket and bucket paths that the Cumulus application
-can access. Replace `arn:aws:s3:::sandbox-orca-glacier-archive` with the name
+can access. Replace `sandbox-orca-glacier-archive` with the name
 of the Orca archive bucket created in the previous section.
 
+##### Reports Bucket:
 
+The policy shown below can be used with some minor
+modifications, which will be detailed below.
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "Cross Account Access",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::909121343565:root"
+      },
+      "Action": [
+        "s3:GetObject*",
+        "s3:GetBucket*",
+        "s3:ListBucket",
+        "s3:PutObject",
+        "s3:PutObjectAcl",
+        "s3:PutBucketNotification"
+      ],
+      "Resource": [
+        "arn:aws:s3:::sandbox-orca-glacier-archive",
+        "arn:aws:s3:::sandbox-orca-glacier-archive/*"
+      ]
+    },
+    {
+      "Sid": "Inventory-sandbox-orca-glacier-archive",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "s3.amazonaws.com"
+      },
+      "Action": "s3:PutObject",
+      "Resource": "arn:aws:s3:::sandbox-orca-glacier-archive/*",
+      "Condition": {
+        "StringEquals": {
+      	  "s3:x-amz-acl": "bucket-owner-full-control",
+      	  "aws:SourceAccount": "782417781503"
+        },
+      	"ArnLike": {
+      	  "aws:SourceArn": "arn:aws:s3:::sandbox-orca-glacier-archive"
+      	}
+      }
+    }
+  ]
+}
+```
+The Principal value is the AWS root user for your Cumulus application that will
+access the ORCA archive bucket.
+See the Archive Bucket instructions for assistance getting this value.
+
+Replace the number in `arn:aws:iam::909121343565:root` with the value of your account number.
+See the Archive Bucket instructions for assistance getting this value.
+
+The Resource value is the bucket and bucket paths that the Cumulus application
+can access. Replace `sandbox-orca-glacier-archive` with the name
+of the Orca archive bucket created in the previous section.

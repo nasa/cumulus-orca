@@ -18,6 +18,11 @@ variable "db_admin_password" {
   type        = string
 }
 
+variable "db_user_name" {
+  description = "Username for RDS database user authentication"
+  type        = string
+}
+
 variable "db_user_password" {
   description = "Password for RDS database user authentication"
   type        = string
@@ -26,6 +31,27 @@ variable "db_user_password" {
 variable "db_host_endpoint" {
   type        = string
   description = "Database host endpoint to connect to."
+}
+
+variable "db_name" {
+  type        = string
+  description = "The name of the Orca database within the RDS cluster."
+}
+
+## variables related to iam roles
+variable "restore_object_role_arn" {
+  type        = string
+  description = "AWS ARN of the restore_object_role."
+}
+
+variable "s3_access_key" {
+  type        = string
+  description = "Access key for communicating with Orca S3 buckets."
+}
+
+variable "s3_secret_key" {
+  type        = string
+  description = "Secret key for communicating with Orca S3 buckets."
 }
 
 ## Default variable value is set in ../main.tf to disallow any modification.

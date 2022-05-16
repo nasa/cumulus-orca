@@ -1,14 +1,13 @@
 import json
 from http import HTTPStatus
 from typing import Dict, Any, List, Union
-
+import os
 import fastjsonschema as fastjsonschema
 from cumulus_logger import CumulusLogger
 from fastjsonschema import JsonSchemaException
 from orca_shared.database import shared_db
 from orca_shared.database.shared_db import retry_operational_error
 from sqlalchemy import text
-from sqlalchemy.exc import DatabaseError
 from sqlalchemy.future import Engine
 
 LOGGER = CumulusLogger()
@@ -20,8 +19,8 @@ def task(
     provider_id: Union[None, List[str]],
     collection_id: Union[None, List[str]],
     granule_id: Union[None, List[str]],
-    start_timestamp: Union[None, str],
-    end_timestamp: str,
+    start_timestamp: Union[None, int],
+    end_timestamp: int,
     page_index: int,
     db_connect_info: Dict[str, str],
 ) -> Dict[str, Any]:
@@ -55,20 +54,20 @@ def query_db(
     provider_id: Union[None, List[str]],
     collection_id: Union[None, List[str]],
     granule_id: Union[None, List[str]],
-    start_timestamp: Union[None, str],
-    end_timestamp: str,
+    start_timestamp: Union[None, int],
+    end_timestamp: int,
     page_index: int,
 ) -> List[Dict[str, Any]]:
     """
 
     Args:
+        engine: The sqlalchemy engine to use for contacting the database.
         provider_id: The unique ID of the provider(s) making the request.
         collection_id: The unique ID of collection(s) to compare.
         granule_id: The unique ID of granule(s) to compare.
         start_timestamp: Cumulus createdAt start time for date range to compare data.
         end_timestamp: Cumulus createdAt end-time for date range to compare data.
         page_index: The 0-based index of the results page to return.
-        engine: The sqlalchemy engine to use for contacting the database.
     """
     with engine.begin() as connection:
         sql_results = connection.execute(
@@ -90,19 +89,13 @@ def query_db(
         for sql_result in sql_results:
             granules.append(
                 {
-                    "providerId": sql_result["provider_ids"],
+                    "providerId": sql_result["provider_id"],
                     "collectionId": sql_result["collection_id"],
                     "id": sql_result["cumulus_granule_id"],
-                    "createdAt": sql_result["cumulus_create_time"].strftime(
-                        "%Y-%m-%dT%H:%M:%S.%fZ"
-                    ),
+                    "createdAt": sql_result["cumulus_create_time"],
                     "executionId": sql_result["execution_id"],
-                    "ingestDate": sql_result["ingest_time"].strftime(
-                        "%Y-%m-%dT%H:%M:%S.%fZ"
-                    ),
-                    "lastUpdate": sql_result["last_update"].strftime(
-                        "%Y-%m-%dT%H:%M:%S.%fZ"
-                    ),
+                    "ingestDate": sql_result["ingest_time"],
+                    "lastUpdate": sql_result["last_update"],
                     "files": sql_result["files"],
                 }
             )
@@ -123,36 +116,31 @@ SELECT
         (
             SELECT 
                 granules.id,
+                granules.provider_id,
                 granules.collection_id, 
                 granules.cumulus_granule_id, 
-                granules.cumulus_create_time, 
+                (EXTRACT(EPOCH FROM date_trunc('milliseconds', granules.cumulus_create_time) AT TIME ZONE 'UTC') * 1000)::bigint as cumulus_create_time, 
                 granules.execution_id, 
-                granules.ingest_time, 
-                granules.last_update
+                (EXTRACT(EPOCH FROM date_trunc('milliseconds', granules.ingest_time) AT TIME ZONE 'UTC') * 1000)::bigint as ingest_time, 
+                (EXTRACT(EPOCH FROM date_trunc('milliseconds', granules.last_update) AT TIME ZONE 'UTC') * 1000)::bigint as last_update
             FROM
             (SELECT DISTINCT
                 granules.cumulus_granule_id
             FROM granules
             WHERE 
-                (:granule_id is null or cumulus_granule_id=ANY(:granule_id)) and 
+                (:provider_id is null or provider_id=ANY(:provider_id)) and 
                 (:collection_id is null or collection_id=ANY(:collection_id)) and 
-                (:start_timestamp is null or cumulus_create_time>=:start_timestamp) and 
-                (:end_timestamp is null or cumulus_create_time<:end_timestamp)
-            ORDER BY cumulus_granule_id
+                (:granule_id is null or cumulus_granule_id=ANY(:granule_id)) and 
+                (:start_timestamp is null or (EXTRACT(EPOCH FROM date_trunc('milliseconds', cumulus_create_time) AT TIME ZONE 'UTC') * 1000)::bigint>=:start_timestamp) and 
+                (:end_timestamp is null or (EXTRACT(EPOCH FROM date_trunc('milliseconds', cumulus_create_time) AT TIME ZONE 'UTC') * 1000)::bigint<:end_timestamp)
             ) as granule_ids
             JOIN
                 granules ON granule_ids.cumulus_granule_id = granules.cumulus_granule_id
         ) as granules
-    JOIN LATERAL
-        (SELECT array_agg(provider_collection_xref.provider_id) AS provider_ids
-        FROM provider_collection_xref
-        WHERE
-            (:provider_id is null or provider_collection_xref.provider_id=ANY(:provider_id)) and
-            granules.collection_id = provider_collection_xref.collection_id
-    ) as granules_collections_and_providers on TRUE
+    ORDER BY cumulus_granule_id, provider_id
     OFFSET :page_index*:page_size
     LIMIT :page_size+1
-) as granules_collections_and_providers
+) as granules
 LEFT JOIN LATERAL
     (SELECT json_agg(files) as files
     FROM (
@@ -166,7 +154,7 @@ LEFT JOIN LATERAL
         'hashType', files.hash_type,
         'version', files.version) AS files
     FROM files
-    WHERE granules_collections_and_providers.id = files.granule_id
+    WHERE granules.id = files.granule_id
     ) as files
 ) as grouped on TRUE"""
     )
@@ -201,7 +189,7 @@ def create_http_error_dict(
 
 
 def handler(
-    event: Dict[str, Any], context: Any
+    event: Dict[str, Union[str, int]], context: Any
 ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
     # noinspection SpellCheckingInspection
     """
@@ -210,11 +198,14 @@ def handler(
         event: See schemas/input.json
         context: An object provided by AWS Lambda. Used for context tracking.
 
-    Environment Vars: See requests_db.py's get_configuration for further details.
+    Environment Vars:
+        DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
+        See shared_db.py's get_configuration for further details.
 
     Returns:
         See schemas/output.json
         Or, if an error occurs, see create_http_error_dict
+            400 if input does not match schemas/input.json. 500 if an error occurs when querying the database.
     """
     try:
         LOGGER.setMetadata(event, context)
@@ -232,8 +223,16 @@ def handler(
                 context.aws_request_id,
                 json_schema_exception.__str__(),
             )
+        # get the secret ARN from the env variable
+        try:
+            db_connect_info_secret_arn = os.environ["DB_CONNECT_INFO_SECRET_ARN"]
+        except KeyError as key_error:
+            LOGGER.error(
+                "DB_CONNECT_INFO_SECRET_ARN environment value not found."
+            )
+            raise
 
-        db_connect_info = shared_db.get_configuration()
+        db_connect_info = shared_db.get_configuration(db_connect_info_secret_arn)
 
         result = task(
             event.get("providerId", None),

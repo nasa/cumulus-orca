@@ -10,22 +10,22 @@
       "description": "A list of objects representing individual files to copy.",
       "type": "array",
       "items": {
-        "required": ["granuleId", "files"],
+        "required": ["granuleId", "createdAt", "files"],
         "properties": {
           "granuleId": {
             "description": "The granule's ID.",
             "type": "string"
           },
+          "createdAt": {
+            "description": "The time, in milliseconds since 1 January 1970 UTC, data was originally ingested into Cumulus.",
+            "type": "integer"
+          },
           "files": {
             "description": "The files to copy.",
             "type": "array",
             "items": {
-              "required": ["fileName", "bucket", "key", "source"],
+              "required": ["bucket", "key"],
               "properties": {
-                "fileName": {
-                  "type": "string",
-                  "description": "Name of file (e.g. file.txt)."
-                },
                 "bucket": {
                   "type": "string",
                   "description": "Name of the Bucket where file is archived in S3."
@@ -34,9 +34,13 @@
                   "type": "string",
                   "description": "S3 Key for archived file."
                 },
-                "source": {
-                  "type": "string",
-                  "description": "Source URI of the file from origin system (e.g. S3, FTP, HTTP)."
+                "hash": {
+                  "type": ["string", "null"],
+                  "description": "Hash of the object from Cumulus"
+                },
+                "hashType": {
+                  "type": ["string", "null"],
+                  "description": "Hash type used to hash the object. Supplied by Cumulus."
                 }
               }
             }

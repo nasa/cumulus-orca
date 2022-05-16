@@ -28,7 +28,7 @@ We currently are using the default value of 8mb, which will cause problems when 
   )
   ```
 - This will require a variable passed into the lambda.
-  - Could be set at the collection level under `config['collection']['multipart_chunksize_mb']` with a default value in the lambdas/main.tf entry for `copy_to_glacier` defined as
+  - Could be set at the collection level under `config['collection']['s3MultipartChunksizeMb']` with a default value in the lambdas/main.tf entry for `copy_to_glacier` defined as
     ```
     environment {
       variables = {

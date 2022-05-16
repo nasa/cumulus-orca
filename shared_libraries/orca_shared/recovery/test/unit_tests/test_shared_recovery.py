@@ -55,10 +55,10 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         {"AWS_REGION": "us-west-2"},
         clear=True,
     )
-    def test_post_entry_to_queue_no_errors(self):
+    def test_post_entry_to_fifo_queue_no_errors(self):
         """
         *Happy Path*
-        Test that sending a message to SQS queue using post_entry_to_queue()
+        Test that sending a message to SQS queue using post_entry_to_fifo_queue()
         function returns the same expected message.
         """
         new_data = {"name": "test"}
@@ -66,7 +66,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
             # Run subtests
             with self.subTest(request_method=request_method):
                 # Send values to the function
-                shared_recovery.post_entry_to_queue(
+                shared_recovery.post_entry_to_fifo_queue(
                     new_data, request_method, self.db_queue_url
                 )
 
@@ -78,6 +78,28 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
 
                 # Testing SQS body
                 self.assertEqual(queue_output_body, new_data)
+
+    @patch.dict(
+        os.environ,
+        {"AWS_REGION": "us-west-2"},
+        clear=True,
+    )
+    def test_post_entry_to_standard_queue_happy_path(self):
+        """
+        *Happy Path*
+        Test that sending a message to SQS queue using post_entry_to_standard_queue()
+        function returns the same expected message.
+        """
+        new_data = {"name": "test"}
+
+        shared_recovery.post_entry_to_standard_queue(new_data, self.db_queue_url)
+
+        # grabbing queue contents after the message is sent
+        queue_contents = self.queue.receive_messages(MessageAttributeNames=["All"])
+        queue_output_body = json.loads(queue_contents[0].body)
+
+        # Testing SQS body
+        self.assertEqual(queue_output_body, new_data)
 
     @patch.dict(
         os.environ,
@@ -105,16 +127,20 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
             queue_output_body = json.loads(queue_contents[0].body)
 
             # Testing required fields
-            self.assertEqual(queue_output_body["job_id"], self.job_id)
-            self.assertEqual(queue_output_body["granule_id"], self.granule_id)
+            self.assertEqual(queue_output_body[shared_recovery.JOB_ID_KEY], self.job_id)
+            self.assertEqual(
+                queue_output_body[shared_recovery.GRANULE_ID_KEY], self.granule_id
+            )
 
             # Testing optional fields
-            self.assertIn("request_time", queue_output_body)
+            self.assertIn(shared_recovery.REQUEST_TIME_KEY, queue_output_body)
             # Get the request time
-            new_request_time = datetime.fromisoformat(queue_output_body["request_time"])
+            new_request_time = datetime.fromisoformat(
+                queue_output_body[shared_recovery.REQUEST_TIME_KEY]
+            )
             self.assertEqual(new_request_time.tzinfo, timezone.utc)
             self.assertEqual(
-                queue_output_body["archive_destination"],
+                queue_output_body[shared_recovery.ARCHIVE_DESTINATION_KEY],
                 archive_destination,
             )
 
@@ -155,13 +181,23 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                 queue_output_body = json.loads(queue_contents[0].body)
 
                 # Testing required fields
-                self.assertEqual(queue_output_body["job_id"], self.job_id)
-                self.assertEqual(queue_output_body["granule_id"], self.granule_id)
-                self.assertEqual(queue_output_body["status_id"], status_id.value)
-                self.assertEqual(queue_output_body["filename"], filename)
-                self.assertNotIn("request_time", queue_output_body)
-                self.assertNotIn("restore_destination", queue_output_body)
-                self.assertNotIn("key_path", queue_output_body)
+                self.assertEqual(
+                    queue_output_body[shared_recovery.JOB_ID_KEY], self.job_id
+                )
+                self.assertEqual(
+                    queue_output_body[shared_recovery.GRANULE_ID_KEY], self.granule_id
+                )
+                self.assertEqual(
+                    queue_output_body[shared_recovery.STATUS_ID_KEY], status_id.value
+                )
+                self.assertEqual(
+                    queue_output_body[shared_recovery.FILENAME_KEY], filename
+                )
+                self.assertNotIn(shared_recovery.REQUEST_TIME_KEY, queue_output_body)
+                self.assertNotIn(
+                    shared_recovery.RESTORE_DESTINATION_KEY, queue_output_body
+                )
+                self.assertNotIn(shared_recovery.KEY_PATH_KEY, queue_output_body)
 
                 # Testing fields based on status_id
                 completion_status = [
@@ -170,17 +206,26 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                 ]
 
                 if status_id in completion_status:
-                    self.assertIn("completion_time", queue_output_body)
+                    self.assertIn(
+                        shared_recovery.COMPLETION_TIME_KEY, queue_output_body
+                    )
                     new_completion_time = datetime.fromisoformat(
-                        queue_output_body["completion_time"]
+                        queue_output_body[shared_recovery.COMPLETION_TIME_KEY]
                     )
                     self.assertEqual(new_completion_time.tzinfo, timezone.utc)
                 else:
-                    self.assertNotIn("completion_time", queue_output_body)
+                    self.assertNotIn(
+                        shared_recovery.COMPLETION_TIME_KEY, queue_output_body
+                    )
                 if status_id == shared_recovery.OrcaStatus.FAILED:
-                    self.assertEqual(queue_output_body["error_message"], error_message)
+                    self.assertEqual(
+                        queue_output_body[shared_recovery.ERROR_MESSAGE_KEY],
+                        error_message,
+                    )
                 else:
-                    self.assertNotIn("error_message", queue_output_body)
+                    self.assertNotIn(
+                        shared_recovery.ERROR_MESSAGE_KEY, queue_output_body
+                    )
 
     def test_update_status_for_file_raise_errors_error_message(self):
         """

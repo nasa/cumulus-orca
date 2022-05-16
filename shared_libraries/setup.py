@@ -28,11 +28,11 @@ def get_version():
 
 
 # General installation requirements
-install_requirements = ["cumulus-message-adapter-python==1.2.1"]
+install_requirements = ["cumulus-message-adapter-python==2.0.1"]
 
 
 # Additional library dependencies
-_dep_boto3 = "boto3~=1.12.47"
+_dep_boto3 = "boto3~=1.18.40"
 _dep_sqlalchemy = "SQLAlchemy==1.4.11"
 
 
@@ -46,7 +46,7 @@ for library_name in [
 
 # Update with library specific requirements
 extras_per_library.update(
-    {"database": [_dep_boto3, _dep_sqlalchemy], "recovery": [_dep_boto3]}
+    {"database": [_dep_boto3, _dep_sqlalchemy], "recovery": [_dep_boto3], "reconciliation": []}
 )
 
 

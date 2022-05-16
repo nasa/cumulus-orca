@@ -1,0 +1,26 @@
+FROM amazonlinux:2
+LABEL maintainer="Rizbi Hassan" \
+      version="1" \
+      description="This image can be used to run unit & validation tests for ORCA in Bamboo."
+
+ENV NODE_VERSION="16.x"
+ENV TERRAFORM_VERSION "0.13.6"
+
+# Add NodeJS and Yarn repos & update package index
+RUN \
+curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash - && \
+curl -sL https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo && \
+curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_64bit/session-manager-plugin.rpm" -o "session-manager-plugin.rpm" && \
+yum update -y
+
+# install Python 3, pip, CLI utilities, session manager and other tools
+RUN \
+yum install -y gcc git make openssl wget zip unzip tar python3-devel nodejs yarn python3-pip awscli session-manager-plugin.rpm && \
+pip3 install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org pydoc-markdown bandit safety flake8 black isort
+
+# Install Terraform
+RUN \
+wget "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" && \
+unzip *.zip && \
+chmod +x terraform && \
+mv terraform /usr/local/bin

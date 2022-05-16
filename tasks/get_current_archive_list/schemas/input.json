@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/get_current_archive_list/schemas/input.json",
+  "title": "get_current_archive_list Lambda Config",
+  "description": "The input for the get_current_archive_list Lambda.",
+  "type": "object",
+  "required": [
+    "reportBucketRegion",
+    "reportBucketName",
+    "manifestKey"
+  ],
+  "properties": {
+    "reportBucketRegion": {
+      "type": "string",
+      "description": "The region containing the bucket the event occurred in."
+    },
+    "reportBucketName": {
+      "type": "string",
+      "description": "The name of the bucket the event occurred in."
+    },
+    "manifestKey": {
+      "type": "string",
+      "description": "The full path within the s3 bucket to the file that the event occurred on."
+    }
+  }
+}

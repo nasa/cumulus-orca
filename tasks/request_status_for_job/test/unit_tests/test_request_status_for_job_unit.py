@@ -5,6 +5,7 @@ Description:  Unit tests for request_status_for_job.py.
 """
 import copy
 import json
+import os
 import unittest
 import uuid
 from http import HTTPStatus
@@ -27,6 +28,13 @@ class TestRequestStatusForJobUnit(
     @patch("request_status_for_job.task")
     @patch("orca_shared.database.shared_db.get_configuration")
     @patch("cumulus_logger.CumulusLogger.setMetadata")
+    @patch.dict(
+        os.environ,
+        {
+            "DB_CONNECT_INFO_SECRET_ARN": "test"
+        },
+        clear=True,
+     )
     def test_handler_happy_path(
         self,
         mock_setMetadata: MagicMock,
@@ -51,6 +59,13 @@ class TestRequestStatusForJobUnit(
     # noinspection PyPep8Naming
     @patch("orca_shared.database.shared_db.get_configuration")
     @patch("cumulus_logger.CumulusLogger.setMetadata")
+    @patch.dict(
+        os.environ,
+        {
+            "DB_CONNECT_INFO_SECRET_ARN": "test"
+        },
+        clear=True,
+     )
     def test_handler_missing_job_id_returns_error_code(
         self, mock_setMetadata: MagicMock, mock_get_dbconnect_info: MagicMock
     ):
@@ -67,6 +82,13 @@ class TestRequestStatusForJobUnit(
     @patch("request_status_for_job.task")
     @patch("orca_shared.database.shared_db.get_configuration")
     @patch("cumulus_logger.CumulusLogger.setMetadata")
+    @patch.dict(
+        os.environ,
+        {
+            "DB_CONNECT_INFO_SECRET_ARN": "test"
+        },
+        clear=True,
+     )
     def test_handler_database_error_returns_error_code(
         self,
         mock_setMetadata: MagicMock,
@@ -158,8 +180,8 @@ class TestRequestStatusForJobUnit(
         job_id = uuid.uuid4().__str__()
 
         expected_result = [
-            {"granule_id": uuid.uuid4().__str__(), "status": uuid.uuid4().__str__()},
-            {"granule_id": uuid.uuid4().__str__(), "status": uuid.uuid4().__str__()},
+            { request_status_for_job.OUTPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(), request_status_for_job.OUTPUT_STATUS_KEY: uuid.uuid4().__str__()},
+            { request_status_for_job.OUTPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(), request_status_for_job.OUTPUT_STATUS_KEY: uuid.uuid4().__str__()},
         ]
         mock_engine = Mock()
         mock_engine.begin.return_value = Mock()
@@ -168,7 +190,7 @@ class TestRequestStatusForJobUnit(
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
         mock_engine.begin.return_value.__exit__ = (
-            Mock()
+            Mock(return_value=False)
         )  # required for "with", but untestable.
 
         result = request_status_for_job.get_granule_status_entries_for_job(
@@ -200,7 +222,7 @@ class TestRequestStatusForJobUnit(
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
         mock_engine.begin.return_value.__exit__ = (
-            Mock()
+            Mock(return_value=False)
         )  # required for "with", but untestable.
 
         result = request_status_for_job.get_status_totals_for_job(job_id, mock_engine)
@@ -259,7 +281,7 @@ class TestRequestStatusForJobUnit(
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
         mock_engine.begin.return_value.__exit__ = (
-            Mock()
+            Mock(return_value=False)
         )  # required for "with", but untestable.
         mock_get_user_connection.return_value = mock_engine
 

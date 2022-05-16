@@ -5,6 +5,8 @@ Description:  Unit tests for request_status_for_granule.py.
 """
 import copy
 import json
+import os
+import random
 import unittest
 import uuid
 from http import HTTPStatus
@@ -27,6 +29,13 @@ class TestRequestStatusForGranuleUnit(
     @patch("orca_shared.database.shared_db.get_configuration")
     @patch("request_status_for_granule.task")
     @patch("cumulus_logger.CumulusLogger.setMetadata")
+    @patch.dict(
+        os.environ,
+        {
+            "DB_CONNECT_INFO_SECRET_ARN": "test"
+        },
+        clear=True,
+     )
     def test_handler_happy_path(
         self,
         mock_setMetadata: MagicMock,
@@ -57,6 +66,13 @@ class TestRequestStatusForGranuleUnit(
 
     @patch("request_status_for_granule.task")
     @patch("orca_shared.database.shared_db.get_configuration")
+    @patch.dict(
+        os.environ,
+        {
+            "DB_CONNECT_INFO_SECRET_ARN": "test"
+        },
+        clear=True,
+     )
     def test_handler_async_operation_id_defaults_to_none(
         self, mock_get_dbconnect_info: MagicMock, mock_task: MagicMock
     ):
@@ -81,6 +97,13 @@ class TestRequestStatusForGranuleUnit(
     @patch("cumulus_logger.CumulusLogger.error")
     @patch("orca_shared.database.shared_db.get_configuration")
     @patch("cumulus_logger.CumulusLogger.setMetadata")
+    @patch.dict(
+        os.environ,
+        {
+            "DB_CONNECT_INFO_SECRET_ARN": "test"
+        },
+        clear=True,
+     )
     def test_handler_missing_granule_id_returns_error_code(
         self,
         mock_setMetadata: MagicMock,
@@ -104,6 +127,13 @@ class TestRequestStatusForGranuleUnit(
     @patch("request_status_for_granule.task")
     @patch("orca_shared.database.shared_db.get_configuration")
     @patch("cumulus_logger.CumulusLogger.setMetadata")
+    @patch.dict(
+        os.environ,
+        {
+            "DB_CONNECT_INFO_SECRET_ARN": "test"
+        },
+        clear=True,
+     )
     def test_handler_database_error_returns_error_code(
         self,
         mock_setMetadata: MagicMock,
@@ -324,7 +354,7 @@ class TestRequestStatusForGranuleUnit(
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
         mock_engine.begin.return_value.__exit__ = (
-            Mock()
+            Mock(return_value=False)
         )  # required for "with", but untestable.
 
         result = request_status_for_granule.get_most_recent_job_id_for_granule(
@@ -348,8 +378,8 @@ class TestRequestStatusForGranuleUnit(
         expected_result = {
             request_status_for_granule.OUTPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(),
             request_status_for_granule.OUTPUT_JOB_ID_KEY: uuid.uuid4().__str__(),
-            request_status_for_granule.OUTPUT_REQUEST_TIME_KEY: uuid.uuid4().__str__(),
-            request_status_for_granule.OUTPUT_COMPLETION_TIME_KEY: uuid.uuid4().__str__(),
+            request_status_for_granule.OUTPUT_REQUEST_TIME_KEY: random.randint(0, 628021800000),
+            request_status_for_granule.OUTPUT_COMPLETION_TIME_KEY: random.randint(0, 628021800000),
         }
 
         mock_engine = Mock()
@@ -359,7 +389,7 @@ class TestRequestStatusForGranuleUnit(
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
         mock_engine.begin.return_value.__exit__ = (
-            Mock()
+            Mock(return_value=False)
         )  # required for "with", but untestable.
 
         result = request_status_for_granule.get_job_entry_for_granule(
@@ -402,7 +432,7 @@ class TestRequestStatusForGranuleUnit(
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
         mock_engine.begin.return_value.__exit__ = (
-            Mock()
+            Mock(return_value=False)
         )  # required for "with", but untestable.
 
         result = request_status_for_granule.get_file_entries_for_granule_in_job(
@@ -442,7 +472,7 @@ class TestRequestStatusForGranuleUnit(
                 {
                     request_status_for_granule.OUTPUT_GRANULE_ID_KEY: granule_id,
                     request_status_for_granule.OUTPUT_JOB_ID_KEY: job_id,
-                    request_status_for_granule.OUTPUT_REQUEST_TIME_KEY: "2019-07-17T17:36:38.494918+00:00",
+                    request_status_for_granule.OUTPUT_REQUEST_TIME_KEY: random.randint(0, 628021800000),
                     request_status_for_granule.OUTPUT_COMPLETION_TIME_KEY: None,
                 }
             ],
@@ -467,7 +497,7 @@ class TestRequestStatusForGranuleUnit(
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
         mock_engine.begin.return_value.__exit__ = (
-            Mock()
+            Mock(return_value=False)
         )  # required for "with", but untestable.
         mock_get_user_connection.return_value = mock_engine
 

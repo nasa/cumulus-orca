@@ -11,6 +11,7 @@ available libraries and their purpose.
 
 - [**database**](API.md#orca_shared.database) - The database library contains several functions for connecting to and working with a database.
 - [**recovery**](API.md#orca_shared.recovery) - The recovery library contains several functions used by ORCA recovery workflows.
+- [**reconciliation**](API.md#orca_shared.reconciliation) - The reconciliation library contains information used by ORCA reconciliation workflows.
 
 
 The following sections go into more detail on utilizing the libraries.

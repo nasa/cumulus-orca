@@ -15,33 +15,222 @@ and includes an additional section for migration notes.
 
 
 ## [Unreleased]
+
+### Added
+- *ORCA-300* Added `OrcaInternalReconciliation` workflow along with an accompanying input queue and dead-letter queue.
+    Retention time can be changed by setting `internal_report_queue_message_retention_time_seconds` in your `variables.tf` or `orca_variables.tf` file. Defaults to 432000.
+- *ORCA-161* Added dead letter queue and cloudwatch alarm terraform code to recovery SQS queue.
+- *ORCA-307* Added lambda get_current_archive_list to pull S3 Inventory reports into Postgres. 
+    Adds `orca_reconciliation_lambda_memory_size` and `orca_reconciliation_lambda_timeout` to Terraform variables.
+- *ORCA-308* Added lambda perform_orca_reconcile to find differences between S3 Inventory reports and Orca catalog.
+- *ORCA-403* Added lambda post_to_queue_and_trigger_step_function to trigger step function for internal reconciliation.
+- *ORCA-373* Added input variable for `orca_reports_bucket_name`. Set in your `variables.tf` or `orca_variables.tf` file as shown below.
+    Report frequency defaults to `Daily`, but can be set to `Weekly` through variable `s3_report_frequency`.
+- *ORCA-309* Added lambda internal_reconcile_report_phantom to report entries present in the catalog, but not s3.
+- *ORCA-382* Added lambda internal_reconcile_report_orphan to report entries present in S3 bucket, but not in the ORCA catalog.
+- *ORCA-291* request_files lambda now accepts `orcaDefaultRecoveryTypeOverride` to override the glacier restore type at the workflow level by adding it to task_config.
+- *ORCA-381* Added lambda internal_reconcile_report_mismatch to report entries present in S3 bucket and catalog, but with conflicting data.
+- *ORCA-310* Added lambda delete_old_reconcile_jobs for removing old reconciliation reports from the database.
+    Use new optional variable `orca_internal_reconciliation_expiration_days` to set the retention period.
+- *ORCA-372* Added automatic trigger for inventory events being read in by `post_to_queue_and_trigger_step_function`.
+- *ORCA-306* Added API gateway resources for internal reconciliation reporting lambdas.
+- *ORCA-424* Added automatic trigger for delete_old_reconcile_jobs. Will run every sunday at midnight UTC.
+    Adjust with the new optional variable `orca_delete_old_reconcile_jobs_frequency_cron`
+
+### Changed
+- *ORCA-299* `db_deploy` task has been updated to deploy ORCA internal reconciliation tables and objects.
+- *ORCA-161* Changed staged recovery SQS queue type from FIFO to standard queue.
+- SQS Queue names adjusted to include Orca. For example: `"${var.prefix}-orca-status-update-queue.fifo"`. Queues will be automatically recreated by Terraform.
+- *ORCA-334* Created IAM role for the extract_filepaths_for_granule lambda function, attached the role to the function
+- *ORCA-404* Updated shared_db and relevant lambdas to use secrets manager ARN instead of magic strings.
+- *ORCA-291* Updated request_files lambda and terraform so that the glacier restore type can be set via terraform during deployment. In addition, the glacier retrieval type can now be overridden via a change in the collections configuration using `orcaDefaultRecoveryTypeOverride` key under `meta` tag as shown below. 
+  ```json
+  "meta": {
+    "orcaDefaultRecoveryTypeOverride": "Standard"
+  }
+  ```
+
+### Migration Notes
+
+- Create a new bucket `PREFIX-orca-reports` in the same account and region as your primary orca bucket.
+  - Give the bucket a [lifecycle configuration](https://docs.aws.amazon.com/AmazonS3/latest/userguide/how-to-set-lifecycle-configuration-intro.html) with an expiration period of 30 days.
+  - Follow instructions in https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/deployment-s3-bucket/ to set up permission policy.
+  - Modify the permissions for your primary Orca bucket.
+    - Under the `Cross Account Access` policy, add `s3:GetInventoryConfiguration` and `s3:PutInventoryConfiguration` to Actions.
+- The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variables. The following required variables have been added:
+  - dlq_subscription_email
+  - orca_reports_bucket_name
+  - s3_access_key
+  - s3_secret_key
+  
+- Update the collection configuration with the new optional key `orcaDefaultRecoveryTypeOverride` that can be added to override the default S3 glacier recovery type as shown below.
+
+  ```json
+    "meta": {
+      "orcaDefaultRecoveryTypeOverride": "Standard"
+    }
+  ```
+
+- Add the following ORCA required variable definition to your `variables.tf` or `orca_variables.tf` file.
+
+```terraform
+variable "dlq_subscription_email" {
+  type        = string
+  description = "The email to notify users when messages are received in dead letter SQS queue due to restore failure. Sends one email until the dead letter queue is emptied."
+}
+
+variable "orca_reports_bucket_name" {
+  type        = string
+  description = "The name of the bucket to store s3 inventory reports."
+}
+
+variable "s3_access_key" {
+  type        = string
+  description = "Access key for communicating with Orca S3 buckets."
+}
+
+variable "s3_secret_key" {
+  type        = string
+  description = "Secret key for communicating with Orca S3 buckets."
+}
+```
+- Update the `orca.tf` file to include all of the updated and new variables as seen below. Note the change to source and the commented out optional variables.
+  ```terraform
+  ## ORCA Module
+  ## =============================================================================
+  module "orca" {
+    source = "https://github.com/nasa/cumulus-orca/releases/download/v3.0.1/cumulus-orca-terraform.zip//modules"
+  ## --------------------------
+  ## Cumulus Variables
+  ## --------------------------
+  ## REQUIRED
+  buckets                  = var.buckets
+  lambda_subnet_ids        = var.lambda_subnet_ids
+  permissions_boundary_arn = var.permissions_boundary_arn
+  prefix                   = var.prefix
+  system_bucket            = var.system_bucket
+  vpc_id                   = var.vpc_id
+  workflow_config          = module.cumulus.workflow_config
+
+  ## OPTIONAL
+  tags        = local.tags
+
+  ## --------------------------
+  ## ORCA Variables
+  ## --------------------------
+  ## REQUIRED
+  db_admin_password        = var.db_admin_password
+  db_user_password         = var.db_user_password
+  db_host_endpoint         = var.db_host_endpoint
+  dlq_subscription_email   = var.dlq_subscription_email
+  orca_default_bucket      = var.orca_default_bucket
+  orca_reports_bucket_name = var.orca_reports_bucket_name
+  rds_security_group_id    = var.rds_security_group_id
+  s3_access_key            = var.s3_access_key
+  s3_secret_key            = var.s3_secret_key
+
+  ## OPTIONAL
+  db_admin_username                                    = "postgres"
+  default_multipart_chunksize_mb                       = 250
+  internal_report_queue_message_retention_time_seconds = 432000
+  orca_default_recovery_type                           = "Standard"
+  orca_delete_old_reconcile_jobs_frequency_cron        = "cron(0 0 ? * SUN *)"
+  orca_ingest_lambda_memory_size                       = 2240
+  orca_ingest_lambda_timeout                           = 720
+  orca_internal_reconciliation_expiration_days         = 30
+  orca_recovery_buckets                                = []
+  orca_recovery_complete_filter_prefix                 = ""
+  orca_recovery_expiration_days                        = 5
+  orca_recovery_lambda_memory_size                     = 128
+  orca_recovery_lambda_timeout                         = 720
+  orca_recovery_retry_limit                            = 3
+  orca_recovery_retry_interval                         = 1
+  orca_recovery_retry_backoff                          = 2
+  s3_inventory_queue_message_retention_time_seconds    = 432000
+  s3_report_frequency                                  = "Daily"
+  sqs_delay_time_seconds                               = 0
+  sqs_maximum_message_size                             = 262144
+  staged_recovery_queue_message_retention_time_seconds = 432000
+  status_update_queue_message_retention_time_seconds   = 777600
+  vpc_endpoint_id                                      = null
+  }
+  ```
+
+## [4.0.1]
+
+### Fixed
+- Updated release build script to perform cleanup sooner.
+- Updated terraform deployment with additional depends_on parameters and fixes
+  to prevent db_deploy lambda from firing prematurely.
+
+
 ## [4.0.0]
 
 ### Removed
 - The `modules/rds` directory is removed since ORCA will utilize the Cumulus DB.
-- *ORCA-233* The `disaster_recovery` database will now be created by db_deploy instead of Terraform.
+- *ORCA-233* The `disaster_recovery` database, now renamed `PREFIX_orca`, will now be created by db_deploy instead of Terraform.
 - *ORCA-288* Removed copy_to_glacier_cumulus_translator due to better consistency in Cumulus's [file dictionary](https://github.com/nasa/cumulus/blob/master/packages/schemas/files.schema.json).
+- *ORCA-311* `copy_to_glacier` no longer accepts/returns file properties other than `bucket` and `key`.
+  `copied_to_glacier` is similarly no longer passed through, but generated.
 
 ### Added
 - *ORCA-256* Added AWS API Gateway in modules/api_gateway/main.tf for the catalog reporting lambda.
 - *ORCA-227* Added modules/secretsmanager directory that contains terraform code for deploying AWS secretsmanager.
 - *ORCA-177* Added AWS API Gateway in modules/api_gateway/main.tf for the request_status_for_granule and request_status_for_job lambdas.
 - *ORCA-257* orca_catalog_reporting lambda now returns data from actual catalog.
+- *ORCA-151* copy_to_glacier and request_files now accept "orcaDefaultBucketOverride" which can be used on a per-collection basis. If desired, add "orcaDefaultBucketOverride": "{$.meta.collection.meta.orcaDefaultBucketOverride}" to the workflow's task's task_config.
+- *ORCA-335* request_files now recognizes when a file is already recovered, and posts an error message to status tables.
+- *ORCA-230* copy_to_glacier now writes metadata to an ORCA catalog for comparisons to cumulus holdings.
 
 ### Changed
+- *ORCA-217* Lambda inputs now conform to the Cumulus camel case standard.
+- *ORCA-297* Default database name is now PREFIX_orca
 - *ORCA-287* Updated copy_to_glacier and extract_filepaths_for_granule to [new Cumulus file format](https://github.com/nasa/cumulus/blob/master/packages/schemas/files.schema.json). 
+- *ORCA-245* Updated resource policies related to KMS keys to provide better security.
+- *ORCA-318* Updated post_to_catalog lambda to match new Cumulus schema changes.
+- *ORCA-317* Updated the db_deploy task, unit tests, manual tests, research pages and SQL to reflect new inventory layout to better align with Cumulus.
+- *ORCA-249* Changed `mutipart_chunksize_mb` in lambda configs to `s3MultipartChunksizeMb`. Standard workflows now pull from `$.meta.collection.meta.s3MultipartChunksizeMb`
+- *ORCA-230* Updated lambdas to use Cumulus Message Adapter Python v2.0.0.
+- *ORCA-132* Updated workflows to use latest Cumulus v10.0.0 workflow code.
 
 ### Migration Notes
 
 - Orca is only compatible with versions of Cumulus that use the [new Cumulus file format](https://github.com/nasa/cumulus/blob/master/packages/schemas/files.schema.json). Any calls to extract_filepaths_for_granule or copy_to_glacier should switch to the new format.
+- Ensure that anything calling `copy_to_glacier` only relies on properties currently present in `copy_to_glacier/schemas/output.json`
 - Remove any added references in your setup to copy_to_glacier_cumulus_translator. It is no longer necesarry as a Cumulus intermediary.
 - The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variables. The following two variable names have changed:
   - postgres_user_pw-> db_admin_password (*new*)
   - database_app_user_pw-> db_user_password (*new*)
 - These are the new variables added:
   - db_admin_username (defaults to "postgres")
-  - db_host_endpoint (Requires a value. Set in terraform.tfvars to your RDS Cluster's endpoint, similar to "PREFIX-cumulus-db.cluster-000000000000.us-west-2.rds.amazonaws.com")
-  - api_gateway_policy_vpc_id
+  - db_host_endpoint (Requires a value. Set in terraform.tfvars to your RDS Database's endpoint, similar to "PREFIX-cumulus-db.cluster-000000000000.us-west-2.rds.amazonaws.com")
+  - db_name (Defaults to PREFIX_orca.)
+    - Any `-` in `prefix` are replaced with `_` to follow [SQL Naming Conventions](https://www.postgresql.org/docs/7.0/syntax525.htm#:~:text=Names%20in%20SQL%20must%20begin,but%20they%20will%20be%20truncated.)
+    - If preserving a database from a previous version of Orca, set to disaster_recovery.
+  - db_user_name (Defaults to PREFIX_orcauser.)
+    - Any `-` in `prefix` are replaced with `_` to follow [SQL Naming Conventions](https://www.postgresql.org/docs/7.0/syntax525.htm#:~:text=Names%20in%20SQL%20must%20begin,but%20they%20will%20be%20truncated.)
+    - If preserving a database from a previous version of Orca, set to orcauser.
+  - rds_security_group_id (Requires a value. Set in terraform.tfvars to the Security Group ID of your RDS Database's Security Group. Output from Cumulus' RDS module as `security_group_id`)
+  - vpc_endpoint_id
+- Adjust workflows/step functions for `extract_filepaths`.
+  - `file-buckets` argument in `task_config` is now `fileBucketsMaps`.
+- Adjust workflows/step functions for `copy_to_glacier`. 
+  - `multipart_chunksize_mb` argument in `task_config` is now the Cumulus standard of `s3MultipartChunksizeMb`. See example below.
+  - `copy_to_glacier` has new requirements for writing to the orca catalog. See example below. Required properties are `providerId`, `executionId`, `collectionShortname`, and `collectionVersion`. See example below.
+- 
+```
+"task_config": {
+  "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
+  "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
+  "providerId": "{$.meta.provider.id}",
+  "providerName": "{$.meta.provider.name}",
+  "executionId": "{$.cumulus_meta.execution_name}",
+  "collectionShortname": "{$.meta.collection.name}",
+  "collectionVersion": "{$.meta.collection.version}",
+  "orcaDefaultBucketOverride": "{$.meta.collection.meta.orcaDefaultBucketOverride}"
+}
+```
+- `request_status_for_granule` [input](https://github.com/nasa/cumulus-orca/blob/master/tasks/request_status_for_granule/schemas/input.json)/[output](https://github.com/nasa/cumulus-orca/blob/master/tasks/request_status_for_granule/schemas/output.json) and `request_status_for_job` [input](https://github.com/nasa/cumulus-orca/blob/master/tasks/request_status_for_job/schemas/input.json)/[output](https://github.com/nasa/cumulus-orca/blob/master/tasks/request_status_for_job/schemas/output.json) are now fully camel case.
 - Add the following ORCA required variables definition to your `variables.tf` or `orca_variables.tf` file.
 
 ```terraform
@@ -60,9 +249,9 @@ variable "db_host_endpoint" {
   description = "Database host endpoint to connect to."
 }
 
-variable "api_gateway_policy_vpc_id" {
+variable "rds_security_group_id" {
   type        = string
-  description = "VPC ID that will have access to the API gateways"
+  description = "Cumulus' RDS Security Group's ID."
 }
 ```
 - Update the `orca.tf` file to include all of the updated and new variables as seen below. Note the change to source and the commented out optional variables.
@@ -94,7 +283,7 @@ variable "api_gateway_policy_vpc_id" {
   db_admin_password   = var.db_admin_password
   db_user_password    = var.db_user_password
   db_host_endpoint    = var.db_host_endpoint
-  api_gateway_policy_vpc_id = var.api_gateway_policy_vpc_id
+  rds_security_group_id    = var.rds_security_group_id
   ## OPTIONAL
   db_admin_username                                    = "postgres"
   default_multipart_chunksize_mb                       = 250
@@ -112,6 +301,7 @@ variable "api_gateway_policy_vpc_id" {
   sqs_maximum_message_size                             = 262144
   staged_recovery_queue_message_retention_time_seconds = 432000
   status_update_queue_message_retention_time_seconds   = 777600
+  vpc_endpoint_id                                      = null
   }
   ```
 

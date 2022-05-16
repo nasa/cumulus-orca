@@ -7,8 +7,14 @@
         "cma": {
           "event.$": "$",
           "task_config": {
-            "multipart_chunksize_mb": "{$.meta.collection.meta.multipart_chunksize_mb}",
-            "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}"
+            "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
+            "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
+            "providerId": "{$.meta.provider.id}",
+            "providerName": "{$.meta.provider.name}",
+            "executionId": "{$.cumulus_meta.execution_name}",
+            "collectionShortname": "{$.meta.collection.name}",
+            "collectionVersion": "{$.meta.collection.version}",
+            "orcaDefaultBucketOverride": "{$.meta.collection.meta.orcaDefaultBucketOverride}"
           }
         }
       },

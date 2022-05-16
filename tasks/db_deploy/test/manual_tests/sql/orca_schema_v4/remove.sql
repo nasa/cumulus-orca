@@ -1,6 +1,5 @@
 DROP TABLE IF EXISTS orca.files;
 DROP TABLE IF EXISTS orca.granules;
-DROP TABLE IF EXISTS orca.provider_collection_xref;
 DROP TABLE IF EXISTS orca.collections;
 DROP TABLE IF EXISTS orca.providers;
 DELETE FROM orca.schema_versions

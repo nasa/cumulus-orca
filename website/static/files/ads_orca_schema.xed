@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?><Diagram version="1.0" type="POSTGRES" versionMajor="9" versionMinor="6" groupSchema="false" hide_inv="false">
-<Table id="0" name="recovery_job" schema="orca" database="disaster_recovery" background="16777165">
+<Table id="0" name="recovery_job" schema="orca" database="orca" background="16777165">
 <Text>ORCA Job Recovery table that contains basic information at the granule level.</Text>
 <Column id="1" name="job_id" type="text" length="0" nulls="false">
 <CP name="COMMENTS">This is the Cumulus AsyncOperationId value used to group all recovery executions for granule recovery together.</CP>
@@ -30,8 +30,8 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="7" name="recovery_status" schema="orca" database="disaster_recovery" background="16777165">
-<Text>Refrence table for valid status values and status order.</Text>
+<Table id="7" name="recovery_status" schema="orca" database="orca" background="16777165">
+<Text>Reference table for valid status values and status order.</Text>
 <Column id="8" name="id" type="int2" length="0" nulls="false">
 <CP name="COMMENTS">Status ID</CP>
 </Column>
@@ -49,7 +49,7 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="10" name="recovery_file" schema="orca" database="disaster_recovery" background="16777165">
+<Table id="10" name="recovery_file" schema="orca" database="orca" background="16777165">
 <Text>ORCA Recovery table that contains basic information at the file level.</Text>
 <Column id="11" name="job_id" type="text" length="0" nulls="false">
 <CP name="COMMENTS">This is the Cumulus AsyncOperationId value used to group all recovery executions for granule recovery together.</CP>
@@ -92,7 +92,7 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="21" name="providers" schema="orca" database="disaster_recovery" background="16777165">
+<Table id="21" name="providers" schema="orca" database="orca" background="16777165">
 <Text>Providers that are in the ORCA holdings.</Text>
 <Column id="22" name="provider_id" type="text" length="25" nulls="false">
 <CP name="COMMENTS">Provider ID supplied by Cumulus</CP>
@@ -111,7 +111,7 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="24" name="collections" schema="orca" database="disaster_recovery" background="16777165">
+<Table id="24" name="collections" schema="orca" database="orca" background="16777165">
 <Text>Collections that are in the ORCA archive holdings.</Text>
 <Column id="25" name="collection_id" type="text" length="25" nulls="false">
 <CP name="COMMENTS">Collection ID from Cumulus usually in the format shortname__version.</CP>
@@ -133,13 +133,13 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="28" name="granules" schema="orca" database="disaster_recovery" background="16777165">
+<Table id="28" name="granules" schema="orca" database="orca" background="16777165">
 <Text>Granules that are in the ORCA archive holdings.</Text>
 <Column id="29" name="id" type="int8" length="25" nulls="false">
 <CP name="COMMENTS">Internal orca granule ID pseudo key</CP>
 </Column>
 <Column id="30" name="collection_id" type="text" length="25" nulls="false">
-<CP name="COMMENTS">Collection ID from Cumulus that refrences the Collections table.</CP>
+<CP name="COMMENTS">Collection ID from Cumulus that references the Collections table.</CP>
 </Column>
 <Column id="31" name="cumulus_granule_id" type="text" length="25" nulls="false">
 <CP name="COMMENTS">Granule ID from Cumulus</CP>
@@ -167,13 +167,13 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="36" name="files" schema="orca" database="disaster_recovery" background="16777165">
+<Table id="36" name="files" schema="orca" database="orca" background="16777165">
 <Text>Files that are in the ORCA holdings. (Latest version only)</Text>
 <Column id="37" name="id" type="int8" length="25" nulls="false">
 <CP name="COMMENTS">Internal ORCA file ID</CP>
 </Column>
 <Column id="38" name="granule_id" type="int8" length="25" nulls="false">
-<CP name="COMMENTS">Granule that the file belongs to refrences the internal ORCA granule ID.</CP>
+<CP name="COMMENTS">Granule that the file belongs to references the internal ORCA granule ID.</CP>
 </Column>
 <Column id="39" name="name" type="text" length="25" nulls="false">
 <CP name="COMMENTS">Name of the file including extension</CP>
@@ -216,8 +216,8 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="49" name="provider_collection_xref" schema="orca" database="disaster_recovery" background="16777165">
-<Text>Cross refrence table that ties a collection and provider together and resolves the many to many relationship.</Text>
+<Table id="49" name="provider_collection_xref" schema="orca" database="orca" background="16777165">
+<Text>Cross reference table that ties a collection and provider together and resolves the many to many relationship.</Text>
 <Column id="50" name="provider_id" type="text" length="25" nulls="false">
 <CP name="COMMENTS">Provider ID from the providers table.</CP>
 </Column>
@@ -235,7 +235,7 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="52" name="reconcile_s3_objects" schema="orca" database="disaster_recovery" background="16777165">
+<Table id="52" name="reconcile_s3_object" schema="orca" database="orca" background="16777165">
 <Text>Temporary table that holds the listing from the ORCA S3 bucket to use for comparisons against the ORCA catalog.</Text>
 <Column id="53" name="job_id" type="int8" length="25" nulls="false">
 <CP name="COMMENTS">Job the S3 listing is a part of for the comparison. Foreign key to the reconcile jobs table.</CP>
@@ -244,19 +244,19 @@
 <CP name="COMMENTS">ORCA S3 Glacier bucket name where the file is stored.</CP>
 </Column>
 <Column id="55" name="key_path" type="text" length="25" nulls="false">
-<CP name="COMMENTS">Full path and file name of the object in the S3 bucket from the S3 list command.</CP>
+<CP name="COMMENTS">Full path and file name of the object in the S3 bucket.</CP>
 </Column>
 <Column id="56" name="etag" type="text" length="25" nulls="false">
-<CP name="COMMENTS">AWS etag value from the S3 list command.</CP>
+<CP name="COMMENTS">AWS etag value from the s3 inventory report.</CP>
 </Column>
 <Column id="57" name="last_update" type="timestamp with time zone" length="25" nulls="false">
-<CP name="COMMENTS">AWS Last Update from the S3 list command.</CP>
+<CP name="COMMENTS">AWS Last Update from the s3 inventory report.</CP>
 </Column>
 <Column id="58" name="size_in_bytes" type="int8" length="25" nulls="false">
-<CP name="COMMENTS">AWS size of the file in bytes from the S3 list command.</CP>
+<CP name="COMMENTS">AWS size of the file in bytes from the s3 inventory report.</CP>
 </Column>
 <Column id="59" name="storage_class" type="text" length="25" nulls="false">
-<CP name="COMMENTS">AWS storage class the object is in from the S3 list command.</CP>
+<CP name="COMMENTS">AWS storage class the object is in from the s3 inventory report.</CP>
 </Column>
 <Storage name="transferTable" value="false"/>
 <Storage name="ValueCompression" value="false"/>
@@ -269,7 +269,7 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="60" name="reconcile_jobs" schema="orca" database="disaster_recovery" background="16777165">
+<Table id="60" name="reconcile_job" schema="orca" database="orca" background="16777165">
 <Text>Manages internal reconciliation job information.</Text>
 <Column id="61" name="id" type="int8" length="25" nulls="false">
 <CP name="COMMENTS">Job ID unique to each internal reconciliation job.</CP>
@@ -300,10 +300,10 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="67" name="reconcile_catalog_mismatch_report" schema="orca" database="disaster_recovery" background="16777165">
+<Table id="67" name="reconcile_catalog_mismatch_report" schema="orca" database="orca" background="16777165">
 <Text>Table that identifies objects that exist in the ORCA catalog and either do not exist in the ORCA S3 bucket or have mismatched values from the s3 objects table.</Text>
 <Column id="68" name="job_id" type="int8" length="25" nulls="false">
-<CP name="COMMENTS">Job the mismatch or missing granule was foundin. Refrences the reconcile_job table.</CP>
+<CP name="COMMENTS">Job the mismatch or missing granule was found in. References the reconcile_job table.</CP>
 </Column>
 <Column id="69" name="collection_id" type="text" length="25" nulls="false">
 <CP name="COMMENTS">Cumulus Collection ID value from the ORCA catalog.</CP>
@@ -355,28 +355,28 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="82" name="reconcile_orphan_report" schema="orca" database="disaster_recovery" background="16777165">
+<Table id="82" name="reconcile_orphan_report" schema="orca" database="orca" background="16777165">
 <Text>Table that identifies objects in the ORCA S3 Glacier bucket that are not in the ORCA catalog from the internal reconciliation job.</Text>
 <Column id="83" name="job_id" type="int8" length="25" nulls="false">
-<CP name="COMMENTS">Associates the orphaned file to a internal reconcilation job. Refrences the reconcile jobs table.</CP>
+<CP name="COMMENTS">Associates the orphaned file to a internal reconciliation job. References the reconcile jobs table.</CP>
 </Column>
 <Column id="84" name="orca_archive_location" type="text" length="25" nulls="false">
-<CP name="COMMENTS">ORCA S3 Glacier bucket the orphan was found in. Value is obtained from the reconcile_s3_objects (orca_archive_location) column.</CP>
+<CP name="COMMENTS">ORCA S3 Glacier bucket the orphan was found in. Value is obtained from the reconcile_s3_object (orca_archive_location) column.</CP>
 </Column>
 <Column id="85" name="key_path" type="text" length="25" nulls="false">
-<CP name="COMMENTS">Key that contains the path and file name. Value is obtained from the reconcile_s3_objects (key_path) column.</CP>
+<CP name="COMMENTS">Key that contains the path and file name. Value is obtained from the reconcile_s3_object (key_path) column.</CP>
 </Column>
 <Column id="86" name="etag" type="text" length="25" nulls="false">
-<CP name="COMMENTS">AWS Etag of the object. Value is obtained from the reconcile_s3_objects (etag) column.</CP>
+<CP name="COMMENTS">AWS Etag of the object. Value is obtained from the reconcile_s3_object (etag) column.</CP>
 </Column>
 <Column id="87" name="last_update" type="timestamp with time zone" length="25" nulls="false">
-<CP name="COMMENTS">AWS last update of the object. Value is obtained from the reconcile_s3_objects (lst_update) column.</CP>
+<CP name="COMMENTS">AWS last update of the object. Value is obtained from the reconcile_s3_object (lst_update) column.</CP>
 </Column>
 <Column id="88" name="size_in_bytes" type="int8" length="25" nulls="false">
-<CP name="COMMENTS">AWS size of the object in bytes. Value is obtained from the reconcile_s3_objects (size) column.</CP>
+<CP name="COMMENTS">AWS size of the object in bytes. Value is obtained from the reconcile_s3_object (size) column.</CP>
 </Column>
 <Column id="89" name="storage_class" type="text" length="25" nulls="false">
-<CP name="COMMENTS">ASWS storage class the object is in. Value is obtained from the reconcile_s3_objects (storage_class) column.</CP>
+<CP name="COMMENTS">AWS storage class the object is in. Value is obtained from the reconcile_s3_object (storage_class) column.</CP>
 </Column>
 <Storage name="transferTable" value="false"/>
 <Storage name="ValueCompression" value="false"/>
@@ -389,7 +389,7 @@
 <Storage name="WithCRCols" value="false"/>
 <Storage name="External" value="false"/>
 </Table>
-<Table id="90" name="schema_versions" schema="orca" database="disaster_recovery" background="16777165">
+<Table id="90" name="schema_versions" schema="orca" database="orca" background="16777165">
 <Text>Migration management table that tracks ORCA installed schema versions.</Text>
 <Column id="91" name="version_id" type="int" length="25" nulls="false">
 <CP name="COMMENTS">Version of the ORCA schema that is installed</CP>
@@ -431,15 +431,15 @@
 <FK>22</FK>
 <PK>50</PK>
 </Relation>
-<Relation id="99" name="reconcile_jobs_catalog_mismatch_fk" cardinality="-2" identifying="true" nulls="false">
+<Relation id="99" name="reconcile_job_catalog_mismatch_fk" cardinality="-2" identifying="true" nulls="false">
 <FK>61</FK>
 <PK>68</PK>
 </Relation>
-<Relation id="100" name="reconcile_jobs_orphan_report_fk" cardinality="-2" identifying="true" nulls="false">
+<Relation id="100" name="reconcile_job_orphan_report_fk" cardinality="-2" identifying="true" nulls="false">
 <FK>61</FK>
 <PK>83</PK>
 </Relation>
-<Relation id="101" name="reconcile_jobs_s3_objects_fk" cardinality="-2" identifying="true" nulls="false">
+<Relation id="101" name="reconcile_job_s3_objects_fk" cardinality="-2" identifying="true" nulls="false">
 <FK>61</FK>
 <PK>53</PK>
 </Relation>
@@ -459,7 +459,7 @@
 </Relation>
 <Note id="105">
 <Text>Engine:  PostgreSQL
-Database: disater_recovery
+Database: orca
 Schema: orca
 
 Description: ORCA metadata storage</Text>
@@ -514,15 +514,15 @@ Description: ORCA metadata storage</Text>
 <ConstraintColumn id="50"/>
 <ConstraintColumn id="51"/>
 </Constraint>
-<Constraint table="52" name="PK_reconcile_s3_objects_1" type="PrimKey">
+<Constraint table="52" name="PK_reconcile_s3_object_1" type="PrimKey">
 <ConstraintColumn id="53"/>
 <ConstraintColumn id="54"/>
 <ConstraintColumn id="55"/>
 </Constraint>
-<Constraint table="60" name="PK_reconcile_jobs_1" type="PrimKey">
+<Constraint table="60" name="PK_reconcile_job_1" type="PrimKey">
 <ConstraintColumn id="61"/>
 </Constraint>
-<Constraint table="60" name="CHECK_reconcile_jobs_status" type="Check" condition="status in ('pending', 'getting S3 list', 'finding orphans', 'finding mismatches', 'error', 'complete')"/>
+<Constraint table="60" name="CHECK_reconcile_job_status" type="Check" condition="status in ('pending', 'getting S3 list', 'finding orphans', 'finding mismatches', 'error', 'complete')"/>
 <Constraint table="67" name="PK_reconcile_catalog_mismatch_report_1" type="PrimKey">
 <ConstraintColumn id="68"/>
 <ConstraintColumn id="69"/>

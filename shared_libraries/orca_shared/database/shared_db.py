@@ -19,29 +19,25 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy.future import Engine
 
 # instantiate CumulusLogger
-logger = CumulusLogger(name="orca")
+logger = CumulusLogger(name="ORCA")
 MAX_RETRIES = 3  # number of times to retry.
 BACKOFF_FACTOR = 2  # Value of the factor used to backoff
 INITIAL_BACKOFF_IN_SECONDS = 1  # Number of seconds to sleep the first time through.
 RT = TypeVar("RT")  # return type
 
 
-def get_configuration() -> Dict[str, str]:
+def get_configuration(db_connect_info_secret_arn: str) -> Dict[str, str]:
     """
     Create a dictionary of configuration values based on environment variables
-    parameter store information and other items needed to create the database.
+    and secret information items needed to create ORCA database connections.
 
     ```
     Environment Variables:
-        PREFIX (str): Deployment prefix used to pull the proper AWS secret.
         AWS_REGION (str): AWS reserved runtime variable used to set boto3 client region.
-
-    Parameter Store:
-        <prefix>-orca-db-login-secret (string): The json string containing all the db login info.
     ```
 
     Args:
-        None
+        db_connect_info_secret_arn (str): The secret ARN of the secret in AWS secretsmanager.
 
     Returns:
         Configuration (Dict): Dictionary with all of the configuration information.
@@ -50,14 +46,6 @@ def get_configuration() -> Dict[str, str]:
     Raises:
         Exception (Exception): When variables or secrets are not available.
     """
-    # Get the PREFIX
-    logger.debug("Getting environment variable PREFIX value.")
-    prefix = os.getenv("PREFIX", None)
-
-    if prefix is None or len(prefix) == 0:
-        message = "Environment variable PREFIX is not set."
-        logger.critical(message)
-        raise Exception(message)
 
     # Get the AWS_REGION defined runtime environment reserved variable
     logger.debug("Getting environment variable AWS_REGION value.")
@@ -76,7 +64,7 @@ def get_configuration() -> Dict[str, str]:
             "Retrieving db login info for both user and admin as a dictionary."
         )
         config = json.loads(
-            secretsmanager.get_secret_value(SecretId=f"{prefix}-orca-db-login-secret")[
+            secretsmanager.get_secret_value(SecretId=db_connect_info_secret_arn)[
                 "SecretString"
             ]
         )

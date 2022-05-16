@@ -1,12 +1,6 @@
-## Local Variables
-locals {
-  tags = merge(var.tags, { Deployment = var.prefix })
-}
-
-
 ## Referenced Modules - Workflows
 module "orca_copy_to_glacier_workflow" {
-  source = "https://github.com/nasa/cumulus/releases/download/v9.7.0/terraform-aws-cumulus-workflow.zip"
+  source = "https://github.com/nasa/cumulus/releases/download/v10.0.0/terraform-aws-cumulus-workflow.zip"
   ## --------------------------
   ## Cumulus Variables
   ## --------------------------
@@ -15,7 +9,7 @@ module "orca_copy_to_glacier_workflow" {
   name            = "OrcaCopyToGlacierWorkflow"
   workflow_config = var.workflow_config
   system_bucket   = var.system_bucket
-  tags            = local.tags
+  tags            = var.tags
 
   state_machine_definition = templatefile(
     "${path.module}/orca_copy_to_glacier_workflow.asl.json",

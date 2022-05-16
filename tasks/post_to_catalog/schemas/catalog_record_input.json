@@ -23,7 +23,7 @@
           "description": "Provider ID supplied by Cumulus"
         },
         "name": {
-          "type": "string",
+          "type": ["string", "null"],
           "description": "Name of the provider provided by Cumulus."
         }
       }
@@ -63,6 +63,10 @@
         "files"
       ],
       "properties": {
+        "providerId": {
+          "type": "string",
+          "description": "provider ID from Cumulus"
+        },
         "cumulusGranuleId": {
           "type": "string",
           "description": "Granule ID from Cumulus"
@@ -98,6 +102,8 @@
                 "orcaArchiveLocation",
                 "keyPath",
                 "sizeInBytes",
+                "hash",
+                "hashType",
                 "version",
                 "ingestTime",
                 "etag"

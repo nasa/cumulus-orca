@@ -4,6 +4,7 @@ Name: post_to_catalog.py
 Description:  Pulls entries from a queue and posts them to a DB.
 """
 import json
+import os
 from datetime import datetime, timezone
 from typing import Any, List, Dict, Union
 
@@ -107,21 +108,12 @@ def create_catalog_records(
                     }
                 ],
             )
-            LOGGER.debug("Creating provider_collection_xref record.")
-            connection.execute(
-                create_provider_collection_xref_sql(),
-                [
-                    {
-                        "provider_id": provider["providerId"],
-                        "collection_id": collection["collectionId"]
-                    }
-                ]
-            )
             LOGGER.debug("Creating granule record '{cumulusGranuleId}'", cumulusGranuleId=granule["cumulusGranuleId"])
             results = connection.execute(
                 create_granule_sql(),
                 [
                     {
+                        "provider_id": provider["providerId"],
                         "collection_id": collection["collectionId"],
                         "cumulus_granule_id": granule["cumulusGranuleId"],
                         "execution_id": granule["executionId"],
@@ -197,29 +189,16 @@ def create_collection_sql():
     """
     )
 
-
-def create_provider_collection_xref_sql():
-    return text(
-        """
-    INSERT INTO provider_collection_xref
-            (provider_id, collection_id)
-    VALUES
-        (:provider_id, :collection_id)
-    ON CONFLICT DO NOTHING
-    """
-    )
-
-
 def create_granule_sql():
     return text(
         """
     INSERT INTO granules
-        (collection_id, cumulus_granule_id, execution_id, ingest_time, cumulus_create_time, last_update)
+        (provider_id, collection_id, cumulus_granule_id, execution_id, ingest_time, cumulus_create_time, last_update)
     VALUES
-        (:collection_id, :cumulus_granule_id, :execution_id, :ingest_time, :cumulus_create_time, :last_update)
+        (:provider_id, :collection_id, :cumulus_granule_id, :execution_id, :ingest_time, :cumulus_create_time, :last_update)
     ON CONFLICT (collection_id, cumulus_granule_id) DO UPDATE
         SET 
-            execution_id=:execution_id, last_update=:last_update
+            provider_id=:provider_id, execution_id=:execution_id, last_update=:last_update
     RETURNING id"""
     )
     # ON CONFLICT will only trigger if both collection_id and cumulus_granule_id match.
@@ -261,10 +240,20 @@ def handler(event: Dict[str, List], context) -> None:
                 'body' (str): A json string representing a dict.
                     See catalog_record_input in schemas for details.
         context: An object passed through by AWS. Used for tracking.
-    Environment Vars: See shared_db.py's get_configuration for further details.
+    Environment Vars: 
+        DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
+        See shared_db.py's get_configuration for further details.
     """
     LOGGER.setMetadata(event, context)
 
-    db_connect_info = shared_db.get_configuration()
+    # get the secret ARN from the env variable
+    try:
+        db_connect_info_secret_arn = os.environ["DB_CONNECT_INFO_SECRET_ARN"]
+    except KeyError as key_error:
+        LOGGER.error(
+            "DB_CONNECT_INFO_SECRET_ARN environment value not found."
+        )
+        raise
+    db_connect_info = shared_db.get_configuration(db_connect_info_secret_arn)
 
     task(event["Records"], db_connect_info)

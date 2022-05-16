@@ -21,7 +21,7 @@
 ## Make sure we are calling the script the correct way.
 BASEDIR=$(dirname $0)
 if [ "$BASEDIR" != "bin" ]; then
-  >&2 echo "ERROR: This script must be called from the root directory of the shared library [bin/build.sh]."
+  >&2 echo "ERROR: This script must be called from the root directory shared_libraries [bin/build_api.sh]."
   exit 1
 fi
 

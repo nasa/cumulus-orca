@@ -21,7 +21,7 @@ BEGIN
             IS 'GROUP: application-dr, Group that contains all the permissions necessary for the dr application.';
 
         -- Add Grants
-        GRANT CONNECT ON DATABASE disaster_recovery TO dr_role;
+        GRANT CONNECT ON DATABASE orca TO dr_role;
 
     END IF;
 END

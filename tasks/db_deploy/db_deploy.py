@@ -4,24 +4,24 @@ Name: db_deploy.py
 Description: Performs database installation and migration for the ORCA schema.
 """
 # Imports
+import os
+from typing import Any, Dict, List
+
 from orca_shared.database.shared_db import (
-    logger,
-    get_configuration,
     get_admin_connection,
+    get_configuration,
+    logger,
     retry_operational_error,
 )
 from sqlalchemy import text
 from sqlalchemy.future import Connection
 
-import orca_sql
-from create_db import create_fresh_orca_install
-from migrate_db import perform_migration
-from typing import Any, Dict
-
+from install.create_db import create_database, create_fresh_orca_install
+from migrations.migrate_db import perform_migration
 
 # Globals
 # Latest version of the ORCA schema.
-LATEST_ORCA_SCHEMA_VERSION = 4
+LATEST_ORCA_SCHEMA_VERSION = 5
 MAX_RETRIES = 3
 
 
@@ -31,13 +31,16 @@ def handler(
     """
     Lambda handler for db_deploy. The handler generates the database connection
     configuration information, sets logging handler information and calls the
-    Lambda task function. See the `shared_db.get_configuration()` function for
+    Lambda task function. See the `shared_db.get_configuration(db_connect_info_secret_arn)` function for
     information on the needed environment variables and parameter store names
     required by this Lambda.
 
     Args:
         event (Dict): Event dictionary passed by AWS.
         context (object): An object required by AWS Lambda.
+    Environment Vars:
+        DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
+        See shared_db.py's get_configuration for further details.
 
     Raises:
         Exception: If environment or secrets are unavailable.
@@ -45,13 +48,27 @@ def handler(
     # Set the logging
     logger.setMetadata(event, context)
 
-    # Get the configuration
-    config = get_configuration()
+    # get the secret ARN from the env variable
+    try:
+        db_connect_info_secret_arn = os.environ["DB_CONNECT_INFO_SECRET_ARN"]
+    except KeyError as key_error:
+        logger.error(
+            "DB_CONNECT_INFO_SECRET_ARN environment value not found."
+        )
+        raise
 
-    return task(config)
+    # Get the secrets needed for database connections
+    config = get_configuration(db_connect_info_secret_arn)
+
+    # Get the ORCA bucket list
+    orca_buckets = event.get("orcaBuckets", None)
+    if type(orca_buckets) != list or len(orca_buckets) == 0:
+        raise ValueError("orcaBuckets must be a valid list of ORCA S3 bucket names.")
+
+    return task(config, orca_buckets)
 
 
-def task(config: Dict[str, str]) -> None:
+def task(config: Dict[str, str], orca_buckets: List[str]) -> None:
     """
     Checks for the ORCA database and throws an error if it does not exist.
     Determines if a fresh install or a migration is needed for the ORCA
@@ -59,6 +76,7 @@ def task(config: Dict[str, str]) -> None:
 
     Args:
         config (Dict): Dictionary of connection information.
+        orca_buckets: List[str]): List of ORCA buckets needed to create partitioned tables.
 
     Raises:
         Exception: If database does not exist.
@@ -70,21 +88,17 @@ def task(config: Dict[str, str]) -> None:
     # Connect as admin user to the postgres database
     with postgres_admin_engine.connect() as connection:
         # Check if database exists. If not, start from scratch.
-        if not app_db_exists(connection):
+        if not app_db_exists(connection, config["user_database"]):
             logger.info(
-                "The ORCA database disaster_recovery does not exist, "
+                f"The ORCA database {config['user_database']} does not exist, "
                 "or the server could not be connected to."
             )
-            connection.execute(
-                orca_sql.commit_sql()
-            )  # exit the default transaction to allow database creation.
-            connection.execute(orca_sql.app_database_sql())
-            connection.execute(orca_sql.app_database_comment_sql())
-            logger.info("Database created.")
-            create_fresh_orca_install(config)
+            create_database(config)
+            create_fresh_orca_install(config, orca_buckets)
+
             return
 
-    # Connect as admin user to disaster_recovery database.
+    # Connect as admin user to config["user_database"] database.
     with user_admin_engine.connect() as connection:
         # Determine if we need a fresh install or need a migration based on if
         # the orca schemas exist or not.
@@ -103,23 +117,24 @@ def task(config: Dict[str, str]) -> None:
             else:
                 # Run the migration
                 logger.info("Performing migration of the ORCA schema.")
-                perform_migration(current_version, config)
+                perform_migration(current_version, config, orca_buckets)
 
         else:
             # If we got here, the DB existed, but was not correctly populated for whatever reason.
             # Run a fresh install
             logger.info("Performing full install of ORCA schema.")
-            create_fresh_orca_install(config)
+            create_fresh_orca_install(config, orca_buckets)
 
 
 # def app_db_exists(config: Dict[str, str]) -> bool:
 @retry_operational_error(MAX_RETRIES)
-def app_db_exists(connection: Connection) -> bool:
+def app_db_exists(connection: Connection, db_name: str) -> bool:
     """
     Checks to see if the ORCA application database exists.
 
     Args:
         connection (sqlalchemy.future.Connection): Database connection object.
+        db_name: The name of the Orca database within the RDS cluster.
 
     Returns:
         True/False (bool): True if database exists.
@@ -134,13 +149,13 @@ def app_db_exists(connection: Connection) -> bool:
             FROM
                 pg_catalog.pg_database
             WHERE
-                datname = 'disaster_recovery'
+                datname = :db_name
         );
     """
     )
 
     # Run the query
-    results = connection.execute(check_db_sql)
+    results = connection.execute(check_db_sql, {"db_name": db_name})
     for row in results.fetchall():
         db_exists = row[0]
 

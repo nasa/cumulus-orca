@@ -18,7 +18,7 @@ from sqlalchemy.engine import URL
 from orca_shared.database import shared_db
 
 
-class TestSharedDatabseLibraries(unittest.TestCase):
+class TestSharedDatabaseLibraries(unittest.TestCase):
     """
     Runs unit tests for all of the functions in the shared_db library.
     """
@@ -44,9 +44,13 @@ class TestSharedDatabseLibraries(unittest.TestCase):
                 "user_username":"user"
             }
         """
+        secret_name = "orcatest-orca-db-login-secret" #nosec
         self.test_sm.create_secret(
-            Name="orcatest-orca-db-login-secret", SecretString=self.secretstring
+            Name=secret_name, SecretString=self.secretstring
         )
+        self.db_connect_info_secret_arn = self.test_sm.describe_secret(
+                    SecretId=secret_name
+                    )["ARN"]
 
     def tearDown(self):
         """
@@ -57,7 +61,6 @@ class TestSharedDatabseLibraries(unittest.TestCase):
     @patch.dict(
         os.environ,
         {
-            "PREFIX": "orcatest",
             "AWS_REGION": "us-west-2",
         },
         clear=True,
@@ -66,48 +69,36 @@ class TestSharedDatabseLibraries(unittest.TestCase):
         """
         Testing the rainbows and bunnies path of this call.
         """
-        testing_config = shared_db.get_configuration()
+        testing_config = shared_db.get_configuration(self.db_connect_info_secret_arn)
 
         self.assertEqual(json.loads(self.secretstring), testing_config)
-
-    def test_get_configuration_no_prefix(self):
-        """
-        Validate an error is thrown if PREFIX is not set.
-        """
-        error_message = "Environment variable PREFIX is not set."
-
-        with self.assertRaises(Exception) as ex:
-            shared_db.get_configuration()
-            self.assertEqual(ex.message, error_message)
 
     @patch.dict(
         os.environ,
         {
-            "PREFIX": "orcatest",
         },
         clear=True,
     )
     def test_get_configuration_no_aws_region(self):
         """
-        Validate an error is thrown if PREFIX is not set.
+        Validate an error is thrown if AWS_REGION is not set.
         """
-        error_message = "Environment variable AWS_REGION is not set."
-
-        with self.assertRaises(Exception) as ex:
-            shared_db.get_configuration()
-            self.assertEqual(ex.message, error_message)
+        
+        error_message = "Runtime environment variable AWS_REGION is not set."
+        with self.assertRaises(Exception) as cm:
+            shared_db.get_configuration(self.db_connect_info_secret_arn)
+        self.assertEqual(str(cm.exception), error_message)
 
     @patch.dict(
         os.environ,
         {
-            "PREFIX": "orcatest",
             "AWS_REGION": "us-west-2",
         },
         clear=True,
     )
     def test_get_configuration_bad_secret(self):
         """
-        Validates a secret is thrown if a secretmanager ID is invalid.
+        Validates a secret is thrown if a secretsmanager ID is invalid.
         """
         secret_key = "orcatest-orca-db-login-secret"  # nosec
         message = "Failed to retrieve secret manager value."
@@ -115,9 +106,9 @@ class TestSharedDatabseLibraries(unittest.TestCase):
         self.test_sm.delete_secret(SecretId=secret_key, ForceDeleteWithoutRecovery=True)
 
         # Run the test
-        with self.assertRaises(Exception) as ex:
-            shared_db.get_configuration()
-            self.assertEqual(ex.message, message)
+        with self.assertRaises(Exception) as cm:
+            shared_db.get_configuration(self.db_connect_info_secret_arn)
+        self.assertEqual(str(cm.exception), message)
 
         # Recreate the key
         self.test_sm.create_secret(Name=secret_key, SecretString="Some-Value-Here")
@@ -125,7 +116,6 @@ class TestSharedDatabseLibraries(unittest.TestCase):
     @patch.dict(
         os.environ,
         {
-            "PREFIX": "orcatest",
             "AWS_REGION": "us-west-2",
         },
         clear=True,
@@ -146,23 +136,22 @@ class TestSharedDatabseLibraries(unittest.TestCase):
         user_db_call = {
             "host": "aws.postgresrds.host",
             "port": 5432,
-            "database": "disaster_recovery",
+            "database": "orca",
             "username": "admin",
             "password": "admin123",
         }
 
-        config = shared_db.get_configuration()
+        config = shared_db.get_configuration(self.db_connect_info_secret_arn)
 
         _ = shared_db.get_admin_connection(config)
         mock_connection.assert_called_with(**root_db_call)
 
-        _ = shared_db.get_admin_connection(config, "disaster_recovery")
+        _ = shared_db.get_admin_connection(config, "orca")
         mock_connection.assert_called_with(**user_db_call)
 
     @patch.dict(
         os.environ,
         {
-            "PREFIX": "orcatest",
             "AWS_REGION": "us-west-2",
         },
         clear=True,
@@ -180,7 +169,7 @@ class TestSharedDatabseLibraries(unittest.TestCase):
             "password": "user123",
         }
 
-        config = shared_db.get_configuration()
+        config = shared_db.get_configuration(self.db_connect_info_secret_arn)
 
         _ = shared_db.get_user_connection(config)
         mock_connection.assert_called_with(**user_db_call)
@@ -188,7 +177,6 @@ class TestSharedDatabseLibraries(unittest.TestCase):
     @patch.dict(
         os.environ,
         {
-            "PREFIX": "orcatest",
             "AWS_REGION": "us-west-2",
         },
         clear=True,

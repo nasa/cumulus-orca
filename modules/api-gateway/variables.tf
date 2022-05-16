@@ -10,6 +10,27 @@ variable "request_status_for_granule_invoke_arn" {
   type        = string
   description = "Invoke ARN of the request_status_for_granule lambda function"
 }
+
+variable "internal_reconcile_report_job_invoke_arn" {
+  type        = string
+  description = "Invoke ARN of the internal_reconcile_report_job lambda function"
+}
+
+variable "internal_reconcile_report_orphan_invoke_arn" {
+  type        = string
+  description = "Invoke ARN of the internal_reconcile_report_orphan lambda function"
+}
+
+variable "internal_reconcile_report_phantom_invoke_arn" {
+  type        = string
+  description = "Invoke ARN of the internal_reconcile_report_phantom lambda function"
+}
+
+variable "internal_reconcile_report_mismatch_invoke_arn" {
+  type        = string
+  description = "Invoke ARN of the internal_reconcile_report_mismatch lambda function"
+}
+
 variable "vpc_id" {
   type        = string
   description = "Virtual Private Cloud AWS ID"
@@ -34,5 +55,4 @@ variable "api_gateway_stage_name" {
 variable "vpc_endpoint_id" {
   type        = string
   description = "NGAP vpc endpoint id needed to access the api. Defaults to null."
-  default = null
 }

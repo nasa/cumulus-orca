@@ -2,6 +2,7 @@
 Name: sqs_library.py
 Description: library for copy_to_glacier lambda function for posting to metadata SQS queue.
 """
+# todo: Move to shared lib ORCA-406
 # Standard libraries
 import functools
 import hashlib
@@ -23,7 +24,9 @@ BACKOFF_FACTOR = 2  # Value of the factor used to backoff
 INITIAL_BACKOFF_IN_SECONDS = 1  # Number of seconds to sleep the first time through.
 RT = TypeVar("RT")  # return type
 
+
 # Retry decorator for function
+# todo: Lacks unit tests. Will likely eventually be part of shared lib ORCA-148.
 def retry_error(
     max_retries: int = MAX_RETRIES,
     backoff_in_seconds: int = INITIAL_BACKOFF_IN_SECONDS,
@@ -114,7 +117,7 @@ def post_to_metadata_queue(
     Posts metadata information to the metadata SQS queue.
     Args:
         sqs_body: A dictionary containing the metadata objects that will be sent to SQS.
-        db_queue_url: The metadata SQS queue URL defined by AWS.
+        metadata_queue_url: The metadata SQS queue URL defined by AWS.
     Raises:
         None
     """
@@ -141,7 +144,7 @@ def post_to_metadata_queue(
         MessageDeduplicationId=deduplication_id,
         MessageGroupId="metadata_message",
         MessageBody=body,
-    )
+    )  # todo: Look at changes in post_to_queue_and_trigger_step_function ORCA-406
     LOGGER.debug("SQS Message Response: {response}", response=json.dumps(response))
     return_status = response["ResponseMetadata"]["HTTPStatusCode"]
     if return_status < 200 or return_status > 299:

@@ -1,10 +1,9 @@
-## Module outputs
+## Secutiry Group Outputs
 ## =============================================================================
 output "vpc_postgres_ingress_all_egress_id" {
-  description = "Security Group ID for PostgreSQL access."
+  description = "PostgreSQL security group id"
   value       = module.lambda_security_group.vpc_postgres_ingress_all_egress_id
 }
-
 
 ## Lambda Outputs
 ## =============================================================================
@@ -20,6 +19,37 @@ output "orca_catalog_reporting_arn" {
   value       = aws_lambda_function.orca_catalog_reporting.arn
 }
 
+# Reconciliation Lambdas
+# ------------------------------------------------------------------------------
+output "get_current_archive_list_arn" {
+  description = "AWS ARN for the get_current_archive_list lambda."
+  value       = aws_lambda_function.get_current_archive_list.arn
+}
+
+output "internal_reconcile_report_job_arn" {
+  description = "AWS ARN for the internal_reconcile_report_job lambda."
+  value       = aws_lambda_function.internal_reconcile_report_job.arn
+}
+
+output "internal_reconcile_report_mismatch_arn" {
+  description = "AWS ARN for the internal_reconcile_report_mismatch lambda."
+  value       = aws_lambda_function.internal_reconcile_report_mismatch.arn
+}
+
+output "internal_reconcile_report_orphan_arn" {
+  description = "AWS ARN for the internal_reconcile_report_orphan lambda."
+  value       = aws_lambda_function.internal_reconcile_report_orphan.arn
+}
+
+output "internal_reconcile_report_phantom_arn" {
+  description = "AWS ARN for the internal_reconcile_report_phantom lambda."
+  value       = aws_lambda_function.internal_reconcile_report_phantom.arn
+}
+
+output "perform_orca_reconcile_arn" {
+  description = "AWS ARN for the perform_orca_reconcile lambda."
+  value       = aws_lambda_function.perform_orca_reconcile.arn
+}
 
 # Recovery Lambdas
 # ------------------------------------------------------------------------------
@@ -73,7 +103,25 @@ output "request_status_for_job_invoke_arn" {
   value       = aws_lambda_function.request_status_for_job.invoke_arn
 }
 
+output "internal_reconcile_report_job_invoke_arn" {
+  description = "AWS invoke ARN for the internal_reconcile_report_job lambda."
+  value       = aws_lambda_function.internal_reconcile_report_job.invoke_arn
+}
 
+output "internal_reconcile_report_orphan_invoke_arn" {
+  description = "AWS invoke ARN for the internal_reconcile_report_orphan lambda."
+  value       = aws_lambda_function.internal_reconcile_report_orphan.invoke_arn
+}
+
+output "internal_reconcile_report_phantom_invoke_arn" {
+  description = "AWS invoke ARN for the internal_reconcile_report_phantom lambda."
+  value       = aws_lambda_function.internal_reconcile_report_phantom.invoke_arn
+}
+
+output "internal_reconcile_report_mismatch_invoke_arn" {
+  description = "AWS invoke ARN for the internal_reconcile_report_mismatch lambda."
+  value       = aws_lambda_function.internal_reconcile_report_mismatch.invoke_arn
+}
 # Utility Lambdas
 # ------------------------------------------------------------------------------
 output "db_deploy_function_name" {

@@ -67,39 +67,6 @@ let return_code=$?
 
 check_rc $return_code "ERROR: pip install encountered an error."
 
-## Run unit tests and check Coverage
-echo "INFO: Running unit and coverage tests ..."
-
-# Export the AWS_REGION for the boto3 clients. Note that if you clear the
-# environment for unit tests, you will need to add this environment variable back
-# in to avoid a client error "botocore.exceptions.NoRegionError: You must specify
-# a region." In real AWS, the AWS_REGION is set for you per the Lamda developer
-# docs seen here https://docs.aws.amazon.com/lambda/latest/dg/lambda-dg.pdf
-export AWS_REGION="us-west-2"
-
-coverage run --source=orca_shared -m pytest
-let return_code=$?
-check_rc $return_code "ERROR: Unit tests encountered failures."
-
-# Unit tests expected to cover minimum of 80%.
-coverage report --fail-under=80
-let return_code=$?
-check_rc $return_code "ERROR: Unit tests coverage is less than 80%"
-
-
-## Run code smell and security tests using bandit
-echo "INFO: Running code smell security tests ..."
-bandit -r orca_shared
-let return_code=$?
-check_rc $return_code "ERROR: Potential security or code issues found."
-
-
-## Check code third party libraries for CVE issues
-echo "INFO: Running checks on third party libraries ..."
-safety check -r requirements.txt
-let return_code=$?
-check_rc $return_code "ERROR: Potential security issues third party libraries."
-
 
 ## Check code formatting and styling
 echo "INFO: Checking formatting and style of code ..."
@@ -122,6 +89,40 @@ isort \
 
 echo "INFO: Formatting with black ..."
 black orca_shared
+
+
+## Run code smell and security tests using bandit
+echo "INFO: Running code smell security tests ..."
+bandit -r orca_shared
+let return_code=$?
+check_rc $return_code "ERROR: Potential security or code issues found."
+
+
+## Check code third party libraries for CVE issues
+echo "INFO: Running checks on third party libraries ..."
+safety check -r requirements.txt
+let return_code=$?
+check_rc $return_code "ERROR: Potential security issues third party libraries."
+
+
+## Run unit tests and check Coverage
+echo "INFO: Running unit and coverage tests ..."
+
+# Export the AWS_REGION for the boto3 clients. Note that if you clear the
+# environment for unit tests, you will need to add this environment variable back
+# in to avoid a client error "botocore.exceptions.NoRegionError: You must specify
+# a region." In real AWS, the AWS_REGION is set for you per the Lambda developer
+# docs seen here https://docs.aws.amazon.com/lambda/latest/dg/lambda-dg.pdf
+export AWS_REGION="us-west-2"
+
+coverage run --source=orca_shared -m pytest
+let return_code=$?
+check_rc $return_code "ERROR: Unit tests encountered failures."
+
+# Unit tests expected to cover minimum of 80%.
+coverage report --fail-under=80
+let return_code=$?
+check_rc $return_code "ERROR: Unit tests coverage is less than 80%"
 
 
 ## Deactivate and remove the virtual env

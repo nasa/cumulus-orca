@@ -65,23 +65,52 @@ variable "default_multipart_chunksize_mb" {
 ## Variables unique to ORCA
 ## REQUIRED
 
-
 variable "db_admin_password" {
   description = "Password for RDS database administrator authentication"
   type        = string
 }
+
+
 variable "db_user_password" {
   description = "Password for RDS database user authentication"
   type        = string
 }
+
+
 variable "db_host_endpoint" {
   type        = string
   description = "Database host endpoint to connect to."
 }
 
+
 variable "orca_default_bucket" {
   type        = string
   description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
+}
+
+variable "orca_default_recovery_type" {
+  type        = string
+  description = "The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'."
+  validation {
+    condition     = contains(["Standard", "Bulk", "Expedited"], var.orca_default_recovery_type)
+    error_message = "Valid values are 'Standard'|'Bulk'|'Expedited'."
+  }
+}
+
+variable "orca_reports_bucket_name" {
+  type        = string
+  description = "The name of the bucket to store s3 inventory reports."
+}
+
+
+variable "rds_security_group_id" {
+  type        = string
+  description = "Cumulus' RDS Security Group's ID."
+}
+
+variable "dlq_subscription_email" {
+  type        = string
+  description = "The email to notify users when messages are received in dead letter SQS queue due to restore failure. Sends one email until the dead letter queue is emptied."
 }
 
 ## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
@@ -89,6 +118,31 @@ variable "db_admin_username" {
   description = "Username for RDS database administrator authentication"
   type        = string
 }
+
+
+variable "db_name" {
+  description = "The name of the Orca database within the RDS cluster."
+  type        = string
+}
+
+
+variable "db_user_name" {
+  description = "Username for RDS database user authentication"
+  type        = string
+}
+
+
+variable "internal_report_queue_message_retention_time_seconds" {
+  type        = number
+  description = "The number of seconds internal-report-queue SQS retains a message in seconds. Maximum value is 14 days."
+}
+
+
+variable "orca_delete_old_reconcile_jobs_frequency_cron" {
+  type        = string
+  description = "Frequency cron for running the delete_old_reconcile_jobs lambda."
+}
+
 
 variable "orca_ingest_lambda_memory_size" {
   type        = number
@@ -99,6 +153,24 @@ variable "orca_ingest_lambda_memory_size" {
 variable "orca_ingest_lambda_timeout" {
   type        = number
   description = "Timeout in number of seconds for ORCA copy_to_glacier lambda."
+}
+
+
+variable "orca_internal_reconciliation_expiration_days" {
+  type        = number
+  description = "Only reports updated before this many days ago will be deleted."
+}
+
+
+variable "orca_reconciliation_lambda_memory_size" {
+  type        = number
+  description = "Amount of memory in MB the ORCA reconciliation lambda can use at runtime."
+}
+
+
+variable "orca_reconciliation_lambda_timeout" {
+  type        = number
+  description = "Timeout in number of seconds for ORCA reconciliation lambdas."
 }
 
 
@@ -143,10 +215,36 @@ variable "orca_recovery_retry_interval" {
   description = "Number of seconds to wait between recovery failure retries."
 }
 
+
 variable "orca_recovery_retry_backoff" {
   type        = number
   description = "The multiplier by which the retry interval increases during each attempt."
 }
+
+
+variable "s3_access_key" {
+  type        = string
+  description = "Access key for communicating with Orca S3 buckets."
+}
+
+
+variable "s3_inventory_queue_message_retention_time_seconds" {
+  type        = number
+  description = "The number of seconds s3-inventory-queue fifo SQS retains a message in seconds. Maximum value is 14 days."
+}
+
+
+variable "s3_report_frequency" {
+  type        = string
+  description = "How often to generate s3 reports for internal reconciliation."
+}
+
+
+variable "s3_secret_key" {
+  type        = string
+  description = "Secret key for communicating with Orca S3 buckets."
+}
+
 
 variable "sqs_delay_time_seconds" {
   type        = number
@@ -176,6 +274,7 @@ variable "status_update_queue_message_retention_time_seconds" {
   type        = number
   description = "The number of seconds status_update_queue SQS retains a message in seconds. Maximum value is 14 days."
 }
+
 
 variable "vpc_endpoint_id" {
   type        = string

@@ -23,3 +23,5 @@ __pycache__/
 .vscode/
 tasks/request_files/test/private_config.json
 .env
+**/.DS_Store
+**/temp_scripted_test.py

@@ -31,14 +31,12 @@
         }
       },
       "startTimestamp": {
-        "description": "Cumulus granule createdAt start time for date range to compare data.",
-        "type": "string",
-        "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]*)?Z"
+        "description": "Cumulus granule createdAt start time for date range to compare data, in milliseconds since 1 January 1970 UTC.",
+        "type": "integer"
       },
       "endTimestamp": {
-        "description": "Cumulus granule createdAt end-time for date range to compare data.",
-        "type": "string",
-        "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]*)?Z"
+        "description": "Cumulus granule createdAt end-time for date range to compare data, in milliseconds since 1 January 1970 UTC.",
+        "type": "integer"
       },
       "pageIndex": {
         "description": "The 0-based index of the results page to return.",

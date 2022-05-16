@@ -29,11 +29,8 @@
         ],
         "properties": {
           "providerId": {
-            "description": "The unique ID of the provider. Provided by Cumulus. May be multiple.",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "description": "The unique ID of the provider. Provided by Cumulus.",
+            "type": "string"
           },
           "collectionId": {
             "description": "The unique ID of the collection. Provided by Cumulus.",
@@ -44,23 +41,20 @@
             "type": "string"
           },
           "createdAt": {
-            "description": "Date and time data was originally ingested into cumulus.",
-            "type": "string",
-            "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]*)?Z"
+            "description": "The time, in milliseconds since 1 January 1970 UTC, data was originally ingested into cumulus.",
+            "type": "integer"
           },
           "executionId": {
             "description": "Step function execution ID from AWS.",
             "type": "string"
           },
           "ingestDate": {
-            "description": "Date and time in UTC that the data was originally ingested into ORCA.",
-            "type": "string",
-            "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]*)?Z"
+            "description": "The time, in milliseconds since 1 January 1970 UTC, that the data was originally ingested into ORCA.",
+            "type": "integer"
           },
           "lastUpdate": {
-            "description": "Date and time in UTC that information was updated.",
-            "type": "string",
-            "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]*)?Z"
+            "description": "The time, in milliseconds since 1 January 1970 UTC, that information was updated.",
+            "type": "integer"
           },
           "files": {
             "description": "The files within the granule. Defaults to the latest stored version of each file.",

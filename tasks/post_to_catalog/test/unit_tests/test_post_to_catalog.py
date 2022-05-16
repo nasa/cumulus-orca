@@ -5,6 +5,7 @@ Description:  Unit tests for test_post_to_catalog.py.
 """
 import copy
 import json
+import os
 import random
 import unittest
 import uuid
@@ -26,6 +27,13 @@ class TestPostToDatabase(
     @patch("post_to_catalog.task")
     @patch("orca_shared.database.shared_db.get_configuration")
     @patch("cumulus_logger.CumulusLogger.setMetadata")
+    @patch.dict(
+        os.environ,
+        {
+            "DB_CONNECT_INFO_SECRET_ARN": "test"
+        },
+        clear=True,
+     )
     def test_handler_happy_path(
         self,
         mock_set_metadata: MagicMock,
@@ -75,7 +83,7 @@ class TestPostToDatabase(
         """
         provider = {
             "providerId": uuid.uuid4().__str__(),
-            "name": uuid.uuid4().__str__(),
+            "name": None,
         }
         collection = {
             "collectionId": uuid.uuid4().__str__(),
@@ -95,6 +103,8 @@ class TestPostToDatabase(
                     "orcaArchiveLocation": uuid.uuid4().__str__(),
                     "keyPath": uuid.uuid4().__str__(),
                     "sizeInBytes": random.randint(0, 10000),
+                    "hash": uuid.uuid4().__str__(),
+                    "hashType": uuid.uuid4().__str__(),
                     "version": uuid.uuid4().__str__(),
                     "ingestTime": datetime.now(timezone.utc).isoformat(),
                     "etag": uuid.uuid4().__str__(),
@@ -105,6 +115,8 @@ class TestPostToDatabase(
                     "orcaArchiveLocation": uuid.uuid4().__str__(),
                     "keyPath": uuid.uuid4().__str__(),
                     "sizeInBytes": random.randint(0, 10000),
+                    "hash": None,
+                    "hashType": None,
                     "version": uuid.uuid4().__str__(),
                     "ingestTime": datetime.now(timezone.utc).isoformat(),
                     "etag": "etag1",
@@ -166,14 +178,12 @@ class TestPostToDatabase(
 
     @patch("post_to_catalog.create_file_sql")
     @patch("post_to_catalog.create_granule_sql")
-    @patch("post_to_catalog.create_provider_collection_xref_sql")
     @patch("post_to_catalog.create_collection_sql")
     @patch("post_to_catalog.create_provider_sql")
     def test_create_catalog_records_happy_path(
         self,
         mock_create_provider_sql: MagicMock,
         mock_create_collection_sql: MagicMock,
-        mock_create_provider_collection_xref_sql: MagicMock,
         mock_create_granule_sql: MagicMock,
         mock_create_file_sql: MagicMock,
     ):
@@ -207,6 +217,8 @@ class TestPostToDatabase(
             "orcaArchiveLocation": uuid.uuid4().__str__(),
             "keyPath": uuid.uuid4().__str__(),
             "sizeInBytes": random.randint(0, 10000),
+            "hash": None,
+            "hashType": None,
             "version": uuid.uuid4().__str__(),
             "ingestTime": datetime.now(timezone.utc).isoformat(),
             "etag": uuid.uuid4().__str__(),
@@ -227,7 +239,7 @@ class TestPostToDatabase(
         mock_connection.execute.return_value = [{"id": internal_id}]
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
-        mock_engine.begin.return_value.__exit__ = Mock()
+        mock_engine.begin.return_value.__exit__ = Mock(return_value=False)
 
         post_to_catalog.create_catalog_records(
             copy.deepcopy(provider),
@@ -253,18 +265,10 @@ class TestPostToDatabase(
                     ],
                 ),
                 call(
-                    mock_create_provider_collection_xref_sql.return_value,
-                    [
-                        {
-                            "provider_id": provider["providerId"],
-                            "collection_id": collection["collectionId"],
-                        }
-                    ],
-                ),
-                call(
                     mock_create_granule_sql.return_value,
                     [
                         {
+                            "provider_id": provider["providerId"],
                             "collection_id": collection["collectionId"],
                             "cumulus_granule_id": granule["cumulusGranuleId"],
                             "execution_id": granule["executionId"],
@@ -297,7 +301,7 @@ class TestPostToDatabase(
                             "orca_archive_location": file1["orcaArchiveLocation"],
                             "key_path": file1["keyPath"],
                             "size_in_bytes": file1["sizeInBytes"],
-                            "hash": None,  # Missing hash info defaults to None
+                            "hash": None,  # None is a valid value.
                             "hash_type": None,
                             "version": file1["version"],
                             "ingest_time": file1["ingestTime"],

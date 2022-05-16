@@ -17,7 +17,7 @@ versioning can be found [here](https://semver.org/).
 
 From develop, create a new release branch from develop following the
 `release-MAJOR.MINOR.x`. For example, `release-1.14.1`. Push this branch 
-to github if you created it locally.
+to GitHub if you created it locally.
 
 ### Update CHANGELOG.md
 
@@ -46,47 +46,39 @@ bamboo deployment plan.
 
 #### Creating a Bamboo deployment plan
 
-1. In the ORCA project (https://ci.earthdata.nasa.gov/browse/ORCA-OI), click
-   `Actions -> Configure Plan` at the top right.
-2. Scroll to the bottom of the branch list in the bottom left and select
-   `Create Plan Branch`.
-3. Add the values in that list. Choose a display name that makes it very clear 
-   this is a deployment branch plan. Release (branch name) seems to work well. 
-   Make sure you enter the correct branch name.
-4. Important Deselect Enable Branch - if you do not do this, it will immediately
-   fire off a build.
-5. Do Immediately On the Branch Details page, enable 'Change Trigger'. Set the 
-   Trigger type to manual, and this will prevent commits to the branch from 
-   triggering the build plan. You should have been redirected to the 'Branch 
-   Details' tab after creating the plan. If not, navigate to the branch from
-   the list where you clicked 'Create Plan Branch' in the previous step.
-6. Go to the Variables tab. Ensure that you are on your branch plan and not the
-   master plan: You should not see a large list of configured variables, but 
-   instead a dropdown allowing you to select variables to override, and the tab 
-   title will be Branch Variables. Set a DEPLOYMENT variable appropriate for the
-   release (defaults to last committer). This should be cumulus-from-npm-tf 
-   except in special cases such as incompatible backport branches. Then set:
+1. The deployment plan is already created in Bamboo using [Bamboo Specs](https://github.com/nasa/cumulus-orca/tree/develop/bamboo-specs). If you have updated the `bamboo.yaml` config file, you will need to import the updated spec file from Bamboo specs UI. Under `Specs` section, click on the `Set up Specs Repository`. On the `Project Type`, select `Build Project` and then `ORCA`. On the Specs repository, select the repository host as `orca-develop`. Note that choosing the wrong repository branch will cause issues in deployment. `ORCA repo` repository host is for `master` branch and `orca test branch` host is for `feature/ORCA-test-bamboo` branch used for testing and prototyping. Contact `Venku Jayanti` from CI/CD team for additional support.
+   In the ORCA project (https://ci.earthdata.nasa.gov/browse/ORCA-OI), scroll to the top left of the page where it indicates `Plan branch`. From the `Plan branch` dropdown menu, select the release branch you created for the release which should be in the format `release-X.X.X`.
+2. Once inside the release branch page, scroll to the top right of the page and click `Actions`-> `Configure branch`.
+3. On the `Plan branch configuration` page, under `Plan branch configuration`, enable 'Change Trigger'. Set the 
+   Trigger type to manual, and this will prevent commits to the branch from triggering the build plan.
+4. Click on the `Variables` tab.
+Ensure that you are on your branch plan and not the master plan. Click on the `Choose from inherited variables` dropdown menu.
+   except in special cases such as incompatible backport branches. Then add and set the following variables:
      * ORCA_VERSION: `<version number>`
      * RELEASE_FLAG: true
-7. Enable the branch from the 'Branch Details' page.
-8. Run the branch using the 'Run' button in the top right.
+     * SECRET_GITHUB_EMAIL: `<secret github email>`
+     * SECRET_GITHUB_TOKEN: `<secret github token>`
+     * SECRET_GITHUB_USER: `<secret github user>`
+   
+   Contact ORCA team to know values of the three GitHub variables.
+5. Run the branch using the 'Run' button in the top right.
 
 Bamboo will build and run unit tests against that tagged release.
 
-## Create a new ORCA release on github
+## Create a new ORCA release on GitHub
 
 The release is automated in Bamboo, but the step must be manually started. If
 you set the `RELEASE_FLAG` to `true` and the build steps passed, you will
 be able to run the manual 'Release' step in Bamboo.
 
 The CI release scripts will create a release based on the release version tag,
-as well as uploading release artifacts to the Github release for the Terraform
+as well as uploading release artifacts to the GitHub release for the Terraform
 modules provided by Cumulus. The Terraform release artifacts include:
 
 * A multi-module Terraform .zip artifact containing filtered copies of the 
   tf-modules, packages, and tasks directories for use as Terraform module sources.
 
-Just make sure to verify the appropriate .zip files are present on Github after
+Just make sure to verify the appropriate .zip files are present on GitHub after
 the release process is complete.
 
 **Merge the base branch back into develop and master**
@@ -97,7 +89,7 @@ master.
 If this is the latest version, create the PRs to merge the release branch 
 into develop and master. 
 
-:::note Note: 
+:::note 
 
 Do not squash this merge. Doing so will make the "compare" view from step 4 
 show an incorrect diff, because the tag is linked to a specific commit on the 

@@ -18,8 +18,8 @@ Fully defined json schemas written in the schema of https://json-schema.org/ can
   "providerId": ["lpdaac"],
   "collectionId": ["MOD14A1__061"],
   "granuleId": ["MOD14A1.061.A23V45.2020235"],
-  "startTimestamp": "2020-01-01T23:00:00+00:00",
-  "endTimestamp": "2020-01-02T23:00:00+00:00"
+  "startTimestamp": "628021800000",
+  "endTimestamp": "628021900000"
 }
 ```
 
@@ -29,13 +29,13 @@ Fully defined json schemas written in the schema of https://json-schema.org/ can
   "anotherPage": false,
   "granules": [
     {
-      "providerId": ["lpdaac"],
+      "providerId": "lpdaac",
       "collectionId": "MOD14A1___061",
       "id": "MOD14A1.061.A23V45.2020235",
-      "createdAt": "2020-01-01T23:00:00Z",
+      "createdAt": "628021850000",
       "executionId": "u654-123-Yx679",
-      "ingestDate": "2020-01-01T23:00:00Z",
-      "lastUpdate": "2020-01-01T23:00:00Z",
+      "ingestDate": "628021950000",
+      "lastUpdate": "628021970000",
       "files": [
         {
           "name": "MOD14A1.061.A23V45.2020235.2020240145621.hdf",
@@ -75,9 +75,9 @@ FUNCTIONS
                 'requestId' (str)
                 'message' (str)
     
-    get_catalog_sql() -> <function text at 0x0000018517678670>
+    get_catalog_sql() -> <function text at 0x10c8e7560>
     
-    handler(event: Dict[str, Any], context: Any) -> Union[List[Dict[str, Any]], Dict[str, Any]]
+    handler(event: Dict[str, Union[str, int]], context: Any) -> Union[List[Dict[str, Any]], Dict[str, Any]]
         Entry point for the orca_catalog_reporting Lambda.
         Args:
             event: See schemas/input.json
@@ -89,7 +89,7 @@ FUNCTIONS
             See schemas/output.json
             Or, if an error occurs, see create_http_error_dict
     
-    query_db(engine: sqlalchemy.future.engine.Engine, provider_id: Union[NoneType, List[str]], collection_id: Union[NoneType, List[str]], granule_id: Union[NoneType, List[str]], start_timestamp: Union[NoneType, str], end_timestamp: str, page_index: int) -> List[Dict[str, Any]]
+    query_db(engine: sqlalchemy.future.engine.Engine, provider_id: Union[NoneType, List[str]], collection_id: Union[NoneType, List[str]], granule_id: Union[NoneType, List[str]], start_timestamp: Union[NoneType, int], end_timestamp: int, page_index: int) -> List[Dict[str, Any]]
         Args:
             provider_id: The unique ID of the provider(s) making the request.
             collection_id: The unique ID of collection(s) to compare.
@@ -99,7 +99,7 @@ FUNCTIONS
             page_index: The 0-based index of the results page to return.
             engine: The sqlalchemy engine to use for contacting the database.
     
-    task(provider_id: Union[NoneType, List[str]], collection_id: Union[NoneType, List[str]], granule_id: Union[NoneType, List[str]], start_timestamp: Union[NoneType, str], end_timestamp: str, page_index: int, db_connect_info: Dict[str, str]) -> Dict[str, Any]
+    task(provider_id: Union[NoneType, List[str]], collection_id: Union[NoneType, List[str]], granule_id: Union[NoneType, List[str]], start_timestamp: Union[NoneType, int], end_timestamp: int, page_index: int, db_connect_info: Dict[str, str]) -> Dict[str, Any]
         Args:
             provider_id: The unique ID of the provider(s) making the request.
             collection_id: The unique ID of collection(s) to compare.

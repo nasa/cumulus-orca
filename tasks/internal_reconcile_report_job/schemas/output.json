@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/internal_reconcile_report_job/schemas/output.json",
+  "title": "internal_reconcile_report_job Lambda Output",
+  "description": "The output for the internal_reconcile_report_job Lambda.",
+  "type": "object",
+  "required": [
+    "anotherPage",
+    "jobs"
+  ],
+  "properties": {
+    "anotherPage": {
+      "description": "Indicates if more results can be retrieved on another page.",
+      "type": "boolean"
+    },
+    "jobs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "orcaArchiveLocation",
+          "status",
+          "inventoryCreationTime",
+          "lastUpdate",
+          "errorMessage",
+          "reportTotals"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "The unique job ID of the reconciliation job."
+          },
+          "orcaArchiveLocation": {
+            "type": "string",
+            "description": "ORCA S3 Glacier bucket the reconciliation targets."
+          },
+          "status": {
+            "type": "string",
+            "description": "Current status of the job.",
+            "pattern": "^(getting S3 list|staged|generating reports|error|success)$"
+          },
+          "inventoryCreationTime": {
+            "type": "integer",
+            "description": "The time, in milliseconds since 1 January 1970 UTC, of inventory report initiation time from the s3 manifest."
+          },
+          "lastUpdate": {
+            "type": "integer",
+            "description": "The time, in milliseconds since 1 January 1970 UTC, when status was last updated."
+          },
+          "errorMessage": {
+            "type": ["string", "null"],
+            "description": "Critical error the job ran into that prevented it from finishing."
+          },
+          "reportTotals": {
+            "type": "object",
+            "description": "The number of error reports of each type.",
+            "required": ["orphan", "phantom", "catalogMismatch"],
+            "properties": {
+              "orphan": {
+                "type": "integer",
+                "description": "Number of files that have records in the S3 glacier bucket but are missing in the ORCA catalog.",
+                "minimum": 0
+              },
+              "phantom": {
+                "type": "integer",
+                "description": "Number of files that have records in the ORCA catalog but are missing from S3 bucket.",
+                "minimum": 0
+              },
+              "catalogMismatch": {
+                "type": "integer",
+                "description": "Number of files that are missing from ORCA S3 bucket or have different metadata values than what is expected.",
+                "minimum": 0
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

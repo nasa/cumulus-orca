@@ -1,3 +1,4 @@
+import os
 from http import HTTPStatus
 from typing import Dict, Any, List, Union
 
@@ -6,18 +7,18 @@ from orca_shared.database import shared_db
 from sqlalchemy import text
 from sqlalchemy.future import Engine
 
-INPUT_GRANULE_ID_KEY = "granule_id"
+INPUT_GRANULE_ID_KEY = "granuleId"
 INPUT_JOB_ID_KEY = "asyncOperationId"
 
-OUTPUT_GRANULE_ID_KEY = "granule_id"
+OUTPUT_GRANULE_ID_KEY = "granuleId"
 OUTPUT_JOB_ID_KEY = "asyncOperationId"
 OUTPUT_FILES_KEY = "files"
-OUTPUT_FILENAME_KEY = "file_name"
-OUTPUT_RESTORE_DESTINATION_KEY = "restore_destination"
+OUTPUT_FILENAME_KEY = "fileName"
+OUTPUT_RESTORE_DESTINATION_KEY = "restoreDestination"
 OUTPUT_STATUS_KEY = "status"
-OUTPUT_ERROR_MESSAGE_KEY = "error_message"
-OUTPUT_REQUEST_TIME_KEY = "request_time"
-OUTPUT_COMPLETION_TIME_KEY = "completion_time"
+OUTPUT_ERROR_MESSAGE_KEY = "errorMessage"
+OUTPUT_REQUEST_TIME_KEY = "requestTime"
+OUTPUT_COMPLETION_TIME_KEY = "completionTime"
 
 LOGGER = CumulusLogger()
 
@@ -32,18 +33,7 @@ def task(
         db_connect_info: The {database}.py defined db_connect_info.
         request_id: An ID provided by AWS Lambda. Used for context tracking.
         job_id: An optional additional filter to get a specific job's entry.
-    Returns: A Dict with the following keys:
-        'granule_id' (str): The unique ID of the granule to retrieve status for.
-        'asyncOperationId' (str): The unique ID of the asyncOperation.
-        'files' (List): Description and status of the files within the given granule. List of Dicts with keys:
-            'file_name' (str): The name and extension of the file.
-            'restore_destination' (str): The name of the glacier bucket the file is being copied to.
-            'status' (str):
-                The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.
-            'error_message' (str, Optional): If the restoration of the file errored, the error will be stored here.
-        'request_time' (DateTime): The time, in UTC isoformat, when the request to restore the granule was initiated.
-        'completion_time' (DateTime, Optional):
-            The time, in UTC isoformat, when all granule_files were no longer 'pending'/'staged'.
+    Returns: See output.json
 
         Will also return a dict from create_http_error_dict with error NOT_FOUND if job/granule could not be found.
     """
@@ -152,9 +142,10 @@ def get_job_entry_for_granule(
     Returns: A Dict with the following keys:
         'granule_id' (str): The unique ID of the granule to retrieve status for.
         'job_id' (str): The unique ID of the asyncOperation.
-        'request_time' (DateTime): The time, in UTC isoformat, when the request to restore the granule was initiated.
-        'completion_time' (DateTime, Optional):
-            The time, in UTC isoformat, when all granule_files were no longer 'pending'/'staged'.
+        'request_time' (int): The time, in milliseconds since 1 January 1970 UTC,
+            when the request to restore the granule was initiated.
+        'completion_time' (int, Null): The time, in milliseconds since 1 January 1970 UTC,
+            when all granule_files were no longer 'pending'/'staged'.
     """
     try:
         with engine.begin() as connection:
@@ -187,13 +178,13 @@ def get_job_entry_for_granule(
 
 
 def get_job_entry_for_granule_sql() -> text:
-    text(
+    return text(
         f"""
                 SELECT
                     granule_id as "{OUTPUT_GRANULE_ID_KEY}",
                     job_id as "{OUTPUT_JOB_ID_KEY}",
-                    request_time as "{OUTPUT_REQUEST_TIME_KEY}",
-                    completion_time as "{OUTPUT_COMPLETION_TIME_KEY}"
+                    (EXTRACT(EPOCH FROM date_trunc('milliseconds', request_time) AT TIME ZONE 'UTC') * 1000)::bigint as "{OUTPUT_REQUEST_TIME_KEY}",
+                    (EXTRACT(EPOCH FROM date_trunc('milliseconds', completion_time) AT TIME ZONE 'UTC') * 1000)::bigint as "{OUTPUT_COMPLETION_TIME_KEY}"
                 FROM
                     recovery_job
                 WHERE
@@ -306,7 +297,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 May apply to a request that covers multiple granules.
         context: An object provided by AWS Lambda. Used for context tracking.
 
-    Environment Vars: See shared_db.py's get_configuration for further details.
+    Environment Vars:
+        DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
+        See shared_db.py's get_configuration for further details.
 
     Returns: A Dict with the following keys:
         'granule_id' (str): The unique ID of the granule to retrieve status for.
@@ -324,6 +317,18 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         Or, if an error occurs, see create_http_error_dict
             400 if granule_id is missing. 500 if an error occurs when querying the database, 404 if not found.
     """
+
+    # get the secret ARN from the env variable
+    try:
+        db_connect_info_secret_arn = os.environ["DB_CONNECT_INFO_SECRET_ARN"]
+    except KeyError as key_error:
+        LOGGER.error(
+            "DB_CONNECT_INFO_SECRET_ARN environment value not found."
+        )
+        raise
+
+    db_connect_info = shared_db.get_configuration(db_connect_info_secret_arn)
+
     try:
         LOGGER.setMetadata(event, context)
 
@@ -335,8 +340,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 context.aws_request_id,
                 f"{INPUT_GRANULE_ID_KEY} must be set to a non-empty value.",
             )
-
-        db_connect_info = shared_db.get_configuration()
 
         return task(
             granule_id,
