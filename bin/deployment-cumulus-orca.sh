@@ -118,9 +118,9 @@ terraform apply \
   -var "cmr_oauth_provider=$bamboo_CMR_OAUTH_PROVIDER" \
   -var "key_name=$bamboo_PREFIX" \
   -var "prefix=$bamboo_PREFIX" \
-  -var "permissions_boundary_arn=arn:aws:iam::$bamboo_AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
+  -var "permissions_boundary_arn=arn:aws:iam::$bamboo_AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY" \
   -var "db_user_password=$bamboo_PREFIX" \
-  -var "orca_default_bucket=$bamboo_PREFIX-orca-primary"
+  -var "orca_default_bucket=$bamboo_PREFIX-orca-primary" \
   -var "db_admin_password=$bamboo_DB_ADMIN_PASSWORD" \
   -var "db_host_endpoint=$bamboo_DB_HOST_ENDPOINT" \
   -var "rds_security_group_id=$bamboo_RDS_SECURITY_GROUP" \
