@@ -256,8 +256,7 @@ class TestRequestStatusForJobUnit(
         error_type = uuid.uuid4().__str__()
         http_status_code = random.randint(0, 9999)  # nosec
         request_id = uuid.uuid4().__str__()
-        message = """Some error dictionary: {"fruit": "apple"}"""
-        modified_message = """Some error dictionary: {{"fruit": "apple"}}"""
+        message = uuid.uuid4().__str__()
 
         result = request_status_for_job.create_http_error_dict(error_type, http_status_code, request_id, message)
 
@@ -265,10 +264,10 @@ class TestRequestStatusForJobUnit(
             "errorType": error_type,
             "httpStatus": http_status_code,
             "requestId": request_id,
-            "message": modified_message,
+            "message": message,
         }, result)
 
-        mock_error.assert_called_once_with(modified_message)
+        mock_error.assert_called_once_with(message)
 
     # Multi-Function Tests:
     @patch("orca_shared.database.shared_db.get_user_connection")
