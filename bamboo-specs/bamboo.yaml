@@ -402,6 +402,11 @@ variables:
   CMR_USERNAME: username
   EARTHDATA_CLIENT_ID: WclQnSRCE7MrSS9MtXifNA
   EARTHDATA_CLIENT_PASSWORD: BAMSCRT@0@0@0kgw7HCINxNxv1DrtMHK6A==
+  DLQ_SUBSCRIPTION_EMAIL: rhassan@contractor.usgs.gov
+  DB_HOST_ENDPOINT: BAMSCRT@0@0@0kgw7HCINxNxv1DrtMHK6A==
+  S3_ACCESS_KEY: dummy
+  S3_SECRET_KEY: dummy
+  ORCA_REPORTS_BUCKET_NAME: test
 
 repositories:
 - orca test branch: #this is created by CICD team from https://ci.earthdata.nasa.gov/. Contact Venku Jayanti with any issues.

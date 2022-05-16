@@ -73,7 +73,7 @@ echo "inside cumulus-tf module"
 mv terraform.tfvars.example terraform.tfvars
 
 CUMULUS_KEY="$bamboo_PREFIX/cumulus/terraform.tfstate"
-# echo "db_host_endpoint = \"$bamboo_RDS_ENDPOINT\"
+# echo "db_host_endpoint = \"$bamboo_DB_HOST_ENDPOINT\"
 #       orca_default_bucket    = \"$bamboo_PREFIX-orca-primary\"
 #       rds_security_group_id = \"$bamboo_RDS_SECURITY_GROUP\"
 #       db_user_password = \"$bamboo_DB_USER_PASSWORD\"
@@ -124,5 +124,9 @@ terraform apply \
   -var "db_user_password=$bamboo_PREFIX" \
   -var "orca_default_bucket=$bamboo_PREFIX-orca-primary"
   -var "db_admin_password=$bamboo_DB_ADMIN_PASSWORD" \
-  -var "db_host_endpoint=$bamboo_RDS_ENDPOINT"
-  -var "rds_security_group_id=$bamboo_RDS_SECURITY_GROUP"
+  -var "db_host_endpoint=$bamboo_DB_HOST_ENDPOINT" \
+  -var "rds_security_group_id=$bamboo_RDS_SECURITY_GROUP" \
+  -var "dlq_subscription_email=$bamboo_DLQ_SUBSCRIPTION_EMAIL" \
+  -var "s3_access_key=$bamboo_S3_ACCESS_KEY" \
+  -var "s3_secret_key=$bamboo_S3_SECRET_KEY" \
+  -var "orca_reports_bucket_name=$bamboo_ORCA_REPORTS_BUCKET_NAME"
