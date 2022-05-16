@@ -451,23 +451,25 @@ class TestOrcaCatalogReportingUnit(
         )
 
     @patch("cumulus_logger.CumulusLogger.error")
-    def test_create_http_error_dict_happy_path(
-            self,
-            mock_error: MagicMock
-    ):
+    def test_create_http_error_dict_happy_path(self, mock_error: MagicMock):
         error_type = uuid.uuid4().__str__()
         http_status_code = random.randint(0, 9999)  # nosec
         request_id = uuid.uuid4().__str__()
         message = """Some error dictionary: {"fruit": "apple"}"""
         modified_message = """Some error dictionary: {{"fruit": "apple"}}"""
 
-        result = orca_catalog_reporting.create_http_error_dict(error_type, http_status_code, request_id, message)
+        result = orca_catalog_reporting.create_http_error_dict(
+            error_type, http_status_code, request_id, message
+        )
 
-        self.assertEqual({
-            "errorType": error_type,
-            "httpStatus": http_status_code,
-            "requestId": request_id,
-            "message": modified_message,
-        }, result)
+        self.assertEqual(
+            {
+                "errorType": error_type,
+                "httpStatus": http_status_code,
+                "requestId": request_id,
+                "message": modified_message,
+            },
+            result,
+        )
 
         mock_error.assert_called_once_with(modified_message)
