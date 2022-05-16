@@ -73,6 +73,7 @@ mv terraform.tfvars.example terraform.tfvars
 CUMULUS_KEY="$bamboo_PREFIX/cumulus/terraform.tfstate"
 
 # adding variables to orca_variables.tf file
+rm orca_variables.tf
 cat << EOF > orca_variables.tf
 variable "db_admin_password" {
   description = "Password for RDS database administrator authentication"
