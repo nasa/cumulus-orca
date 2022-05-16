@@ -405,7 +405,7 @@ variables:
   DLQ_SUBSCRIPTION_EMAIL: rhassan@contractor.usgs.gov
   DB_HOST_ENDPOINT: BAMSCRT@0@0@0kgw7HCINxNxv1DrtMHK6A==
   S3_ACCESS_KEY: dummy
-  S3_SECRET_KEY: dummy
+  S3_SECRET_KEY: BAMSCRT@0@0@0kgw7HCINxNxv1DrtMHK6A==
   ORCA_REPORTS_BUCKET_NAME: test
 
 repositories:
