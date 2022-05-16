@@ -32,7 +32,7 @@ RDS_CLUSTER_KEY="$bamboo_PREFIX/rds-cluster-tf/terraform.tfstate"
 # Ensure remote state is configured for the deployment
 echo "terraform {
         backend \"s3\" {
-            bucket = \"$bamboo_PREFIX-tfstate\"
+            bucket = \"$bamboo_PREFIX-tf-state\"
             key    = \"$RDS_CLUSTER_KEY\"
             region = \"$bamboo_AWS_DEFAULT_REGION\"
             dynamodb_table = \"$bamboo_PREFIX-tf-locks\"
