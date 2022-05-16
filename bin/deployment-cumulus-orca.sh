@@ -173,4 +173,22 @@ terraform apply \
   -var "dlq_subscription_email=$bamboo_DLQ_SUBSCRIPTION_EMAIL" \
   -var "s3_access_key=$bamboo_S3_ACCESS_KEY" \
   -var "s3_secret_key=$bamboo_S3_SECRET_KEY" \
-  -var "orca_reports_bucket_name=$bamboo_ORCA_REPORTS_BUCKET_NAME"
+  -var "orca_reports_bucket_name=$bamboo_ORCA_REPORTS_BUCKET_NAME" \
+  -var "buckets={
+          internal = {
+            name = "$bamboo_PREFIX-internal"
+            type = "internal"
+          }
+          private = {
+            name = "$bamboo_PREFIX-private"
+            type = "private"
+          },
+          protected = {
+            name = "$bamboo_PREFIX-protected"
+            type = "protected"
+          },
+          public = {
+            name = "$bamboo_PREFIX-public"
+            type = "public"
+          }
+        }"
