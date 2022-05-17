@@ -21,7 +21,7 @@ def commit_sql() -> TextClause:
     return text("commit")
 
 
-def app_database_sql(db_name: str, admin_username: str = "postgres") -> TextClause:
+def app_database_sql(db_name: str, admin_username: str) -> TextClause:
     """
     Full SQL for creating the ORCA application database.
 
@@ -54,7 +54,7 @@ def app_database_comment_sql(db_name: str) -> TextClause:
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA schema, roles, and users
 # ----------------------------------------------------------------------------
-def dbo_role_sql(db_name: str, admin_username: str = "postgres") -> TextClause:
+def dbo_role_sql(db_name: str, admin_username: str) -> TextClause:
     """
     Full SQL for creating the ORCA dbo role that owns the ORCA schema and
     objects.
