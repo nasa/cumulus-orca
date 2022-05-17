@@ -126,37 +126,91 @@ variable "s3_secret_key" {
 EOF
 
 
-# adding buckets variable to a new file
-echo "buckets = {
-        default_orca = {
-          name = \"$bamboo_PREFIX-orca-primary\"
-          type = \"orca\"
-          },
-        l0archive = {
-          name = \"$bamboo_PREFIX-level0\"
-          type = \"private\"
-          },
-        internal = {
-            name = \"$bamboo_PREFIX-internal\"
-            type = \"internal\"
-          },
-        private = {
-            name = \"$bamboo_PREFIX-private\"
-            type = \"private\"
-          },
-        protected = {
-          name = \"$bamboo_PREFIX-protected\"
-          type = \"protected\"
-        },
-        public = {
-          name = \"$bamboo_PREFIX-public\"
-          type = \"public\"
-        },
-        provider = {
-          name = \"orca-sandbox-s3-provider\"
-          type = \"provider\"
-        }
-      }" > buckets.tfvars
+# # adding buckets variable to a new file
+# echo "buckets = {
+#         default_orca = {
+#           name = \"$bamboo_PREFIX-orca-primary\"
+#           type = \"orca\"
+#           },
+#         l0archive = {
+#           name = \"$bamboo_PREFIX-level0\"
+#           type = \"private\"
+#           },
+#         internal = {
+#             name = \"$bamboo_PREFIX-internal\"
+#             type = \"internal\"
+#           },
+#         private = {
+#             name = \"$bamboo_PREFIX-private\"
+#             type = \"private\"
+#           },
+#         protected = {
+#           name = \"$bamboo_PREFIX-protected\"
+#           type = \"protected\"
+#         },
+#         public = {
+#           name = \"$bamboo_PREFIX-public\"
+#           type = \"public\"
+#         },
+#         provider = {
+#           name = \"orca-sandbox-s3-provider\"
+#           type = \"provider\"
+#         }
+#       }" > buckets.tfvars
+
+# adding variables to orca_variables.tf file
+cat << EOF > orca_variables.tf
+
+variable "orca_reports_bucket_name" {
+  type        = string
+  description = "The name of the bucket to store s3 inventory reports."
+}
+
+variable "db_host_endpoint" {
+  type        = string
+  description = "Database host endpoint to connect to."
+}
+
+## OPTIONAL
+
+variable "db_admin_password" {
+  description = "Password for RDS database administrator authentication"
+  type        = string
+}
+
+variable "db_user_password" {
+  description = "Password for RDS database user authentication"
+  type        = string
+}
+
+variable "orca_default_bucket" {
+  description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
+  type        = string
+}
+
+variable "rds_security_group_id" {
+  type        = string
+  description = "Cumulus' RDS Security Group's ID."
+}
+
+## OPTIONAL
+
+variable "dlq_subscription_email" {
+  type        = string
+  description = "The email to notify users when messages are received in dead letter SQS queue due to restore failure. Sends one email until the dead letter queue is emptied."
+}
+
+variable "s3_access_key" {
+  type        = string
+  description = "Access key for communicating with Orca S3 buckets."
+}
+
+variable "s3_secret_key" {
+  type        = string
+  description = "Secret key for communicating with Orca S3 buckets."
+}
+EOF
+
 
 # Ensure remote state is configured for the deployment
 echo "terraform {
@@ -180,7 +234,7 @@ terraform apply \
   -input=false \
   -var-file="terraform.tfvars" \
   -var-file="buckets.tfvars" \
-  -var "cumulus_message_adapter_version="$bamboo_CMA_LAYER_VERSION"" \
+  -var "cumulus_message_adapter_lambda_layer_version_arn=arn:aws:lambda:$bamboo_AWS_DEFAULT_REGION:$bamboo_AWS_ACCOUNT_ID:layer:Cumulus_Message_Adapter:4 \
   -var "cmr_username=$bamboo_CMR_USERNAME" \
   -var "cmr_password=$bamboo_CMR_PASSWORD" \
   -var "cmr_client_id=cumulus-core-$bamboo_DEPLOYMENT" \
@@ -206,4 +260,7 @@ terraform apply \
   -var "dlq_subscription_email=$bamboo_DLQ_SUBSCRIPTION_EMAIL" \
   -var "s3_access_key=$bamboo_S3_ACCESS_KEY" \
   -var "s3_secret_key=$bamboo_S3_SECRET_KEY" \
-  -var "orca_reports_bucket_name=$bamboo_ORCA_REPORTS_BUCKET_NAME"
+  -var "orca_reports_bucket_name=$bamboo_ORCA_REPORTS_BUCKET_NAME" \
+  -var "buckets={default_orca={name: \"$bamboo_PREFIX-orca-primary\", type: \"orca\"}, l0archive={name: \"$bamboo_PREFIX-level0\", type: \"private\"}, internal={name: \"$bamboo_PREFIX-internal\", type: \"internal\"}, private={name: \"$bamboo_PREFIX-private\", type: \"private\"}, protected={name: \"$bamboo_PREFIX-protected\", type: \"protected\"}, public={name: \"$bamboo_PREFIX-public\", type: \"public\"}, provider={name: \"orca-sandbox-s3-provider\", type: \"provider\"}}"
+
+
