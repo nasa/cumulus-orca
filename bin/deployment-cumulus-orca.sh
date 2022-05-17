@@ -261,6 +261,4 @@ terraform apply \
   -var "s3_access_key=$bamboo_S3_ACCESS_KEY" \
   -var "s3_secret_key=$bamboo_S3_SECRET_KEY" \
   -var "orca_reports_bucket_name=$bamboo_ORCA_REPORTS_BUCKET_NAME" \
-  -var "buckets={default_orca={name: \"$bamboo_PREFIX-orca-primary\", type: \"orca\"}, l0archive={name: \"$bamboo_PREFIX-level0\", type: \"private\"}, internal={name: \"$bamboo_PREFIX-internal\", type: \"internal\"}, private={name: \"$bamboo_PREFIX-private\", type: \"private\"}, protected={name: \"$bamboo_PREFIX-protected\", type: \"protected\"}, public={name: \"$bamboo_PREFIX-public\", type: \"public\"}, provider={name: \"orca-sandbox-s3-provider\", type: \"provider\"}}"
-
-
+  -var "buckets={default_orca: {name: \"$bamboo_PREFIX-orca-primary\", type: \"orca\"}, l0archive: {name: \"$bamboo_PREFIX-level0\", type: \"private\"}, internal: {name: \"$bamboo_PREFIX-internal\", type: \"internal\"}, private: {name: \"$bamboo_PREFIX-private\", type: \"private\"}, protected: {name: \"$bamboo_PREFIX-protected\", type: \"protected\"}, public: {name: \"$bamboo_PREFIX-public\", type: \"public\"}, provider: {name: \"orca-sandbox-s3-provider\", type: \"provider\"}}"
