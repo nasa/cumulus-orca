@@ -68,7 +68,7 @@ def create_database(config: Dict[str, str]) -> None:
         connection.execute(
             sql.commit_sql()
         )  # exit the default transaction to allow database creation.
-        connection.execute(sql.app_database_sql(config["user_database"]))
+        connection.execute(sql.app_database_sql(config["user_database"], config["admin_username"]))
         connection.execute(sql.app_database_comment_sql(config["user_database"]))
         logger.info("Database created.")
 

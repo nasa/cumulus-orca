@@ -104,13 +104,13 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         """
         create_db.create_database(self.config)
 
-        execute_calls = [
+        mock_app_database_sql.assert_called_once_with(self.config["user_database"], self.config["admin_username"])
+        mock_connection().connect().__enter__().execute.assert_has_calls(
+        [
             call(mock_commit_sql.return_value),
             call(mock_app_database_sql.return_value),
             call(mock_app_database_comment_sql.return_value),
-        ]
-        mock_connection().connect().__enter__().execute.assert_has_calls(
-            execute_calls, any_order=True
+        ], any_order=True
         )
 
     @patch("install.create_db.sql.create_extension")
