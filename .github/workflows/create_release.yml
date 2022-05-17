@@ -6,7 +6,7 @@ on:
 
 jobs:
   create_release:
-    if: contains(github.ref, '/tags/v')
+    if: contains(github.ref, '/tags/')
     runs-on: ubuntu-latest
     strategy:
       matrix:
