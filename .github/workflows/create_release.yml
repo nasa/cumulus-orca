@@ -3,14 +3,14 @@ on:
   pull_request:
   push:
     tags:
-        - v*
+        - *
 jobs:
   create_release:
     if: contains(github.ref, '/tags/v')
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.8' ]
+        python-version: ['3.9' ]
     steps:
         - uses: actions/checkout@v2
         - name: Get tag version
