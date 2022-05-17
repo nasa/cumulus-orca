@@ -73,10 +73,10 @@ class TestOrcaSqlLogic(unittest.TestCase):
         for name, function in getmembers(orca_sql, isfunction):
             if name not in ["text"]:
                 with self.subTest(function=function):
-                    if name in ["app_user_sql"]:
-                        self.assertEqual(type(function(uuid.uuid4().__str__(), uuid.uuid4().__str__())), TextClause)
+                    if name in ["app_database_sql", "app_user_sql"]:
                         # These functions take in two string parameters.
-                    elif name in ["app_database_sql", "app_database_comment_sql", "dbo_role_sql", "app_role_sql",
+                        self.assertEqual(type(function(uuid.uuid4().__str__(), uuid.uuid4().__str__())), TextClause)
+                    elif name in ["app_database_comment_sql", "dbo_role_sql", "app_role_sql",
                                   "drop_dr_role_sql", "drop_dbo_user_sql", "drop_drdbo_role_sql"]:
                         # These functions take in a string parameter.
                         self.assertEqual(type(function(uuid.uuid4().__str__())), TextClause)
