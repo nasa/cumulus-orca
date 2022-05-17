@@ -27,6 +27,6 @@ jobs:
           run: |
             bash bin/build_release_package.sh
           env:
-            bamboo_SECRET_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            bamboo_SECRET_GITHUB_TOKEN: ${{ secrets.SECRET_TOKEN }}
             bamboo_ORCA_VERSION: ${{ steps.tag_name.outputs.SOURCE_TAG }}
             bamboo_RELEASE_FLAG: true
