@@ -390,7 +390,7 @@ variables:
   VPC_ID: vpc-0c4932fcc4b86cff6
   AWS_ACCOUNT_ID: AMSCRT@0@0@AuBwYN809zPGzk1MH5DRPQ==
   ROLE_BOUNDARY: NGAPShRoleBoundary
-  ORCA_RELEASE_BRANCH: release/v10.0.0-v4.0.1
+  ORCA_RELEASE_BRANCH: release/v11.1.1-v4.0.1
   ORCA_TEST_BRANCH: feature/ORCA-test-bamboo
   PREFIX: rizh-bamboo
   DB_ADMIN_USERNAME: postgres

@@ -158,39 +158,6 @@ echo "buckets = {
         }
       }" > buckets.tfvars
 
-# cat << EOF > buckets.tfvars
-
-# buckets = {
-#   default_orca = {
-#   name = "$bamboo_PREFIX-orca-primary"
-#   type = "orca"
-#   },
-#   l0archive = {
-#   name = "rizh-level0"
-#   type = "private"
-#   },
-#   internal = {
-#     name = "rizh-internal"
-#     type = "internal"
-#   }
-#   private = {
-#     name = "rizh-private"
-#     type = "private"
-#   },
-#   protected = {
-#     name = "rizh-protected"
-#     type = "protected"
-#   },
-#   public = {
-#     name = "rizh-public"
-#     type = "public"
-#   },
-#   provider = {
-#   name = "orca-sandbox-s3-provider"
-#   type = "provider"
-# }
-# }
-# EOF
 # Ensure remote state is configured for the deployment
 echo "terraform {
         backend \"s3\" {
