@@ -21,7 +21,7 @@ def commit_sql() -> TextClause:
     return text("commit")
 
 
-def app_database_sql(db_name: str) -> TextClause:
+def app_database_sql(db_name: str, admin_username: str) -> TextClause:
     """
     Full SQL for creating the ORCA application database.
 
@@ -31,7 +31,7 @@ def app_database_sql(db_name: str) -> TextClause:
     return text(
         f"""
         CREATE DATABASE {db_name}
-            OWNER postgres
+            OWNER {admin_username}
             TEMPLATE template1
             ENCODING 'UTF8';
     """

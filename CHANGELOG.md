@@ -89,6 +89,11 @@ variable "dlq_subscription_email" {
   ```
 
 
+## [4.0.2]
+
+### Fixed
+- Fixed bug where `db_admin_username` was not set as the owner of new databases.
+
 ## [4.0.1]
 
 ### Fixed
