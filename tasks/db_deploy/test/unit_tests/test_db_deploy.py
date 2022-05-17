@@ -34,6 +34,7 @@ class TestDbDeployFunctions(unittest.TestCase):
         other test cases. Only checks input is valid.
         """
         # Set values for the test
+        # todo: Switch to randomized values generated per-test.
         event = {"orcaBuckets": ["orca_worm", "orca_versioned", "orca_special"]}
         config = {
             "admin_database": "admin_db",
