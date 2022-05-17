@@ -3,7 +3,7 @@ on:
   pull_request:
   push:
     tags:
-        - *
+
 jobs:
   create_release:
     if: contains(github.ref, '/tags/v')
