@@ -61,7 +61,7 @@ Set Pending Github Status:
 #   other:
 #     clean-working-dir: true
 #   docker:
-#     image: amazonlinux:2
+#     image: maven.earthdata.nasa.gov/cumulus_orca
 #     volumes:
 #       ${bamboo.working.directory}: ${bamboo.working.directory}
 #       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
@@ -192,7 +192,7 @@ Deploy RDS cluster:
     clean-working-dir: true
     # Some plugin configurations are not supported by YAML Specs
   docker:
-    image: amazonlinux:2
+    image: maven.earthdata.nasa.gov/cumulus_orca
     volumes:
       ${bamboo.working.directory}: ${bamboo.working.directory}
       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
@@ -216,7 +216,7 @@ Deploy cumulus and orca:
     clean-working-dir: true
     # Some plugin configurations are not supported by YAML Specs
   docker:
-    image: amazonlinux:2
+    image: maven.earthdata.nasa.gov/cumulus_orca
     volumes:
       ${bamboo.working.directory}: ${bamboo.working.directory}
       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
@@ -318,7 +318,7 @@ Release ORCA Code:
   key: RO
   description: Creates a GitHub Release and uploads artifacts for release
   docker:
-    image: amazonlinux:2
+    image: maven.earthdata.nasa.gov/cumulus_orca
     volumes:
       ${bamboo.working.directory}: ${bamboo.working.directory}
       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
