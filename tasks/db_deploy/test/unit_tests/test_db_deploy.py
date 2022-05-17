@@ -29,7 +29,6 @@ class TestDbDeployFunctions(unittest.TestCase):
         """
         self.mock_sm.start()
         self.test_sm = boto3.client("secretsmanager", region_name="us-west-2")
-        # todo: Switch to randomized values generated per-test.
         self.config = {
             "admin_database": "admin_db",
             "admin_password": "admin123",
@@ -95,12 +94,12 @@ class TestDbDeployFunctions(unittest.TestCase):
         db_deploy.task(self.config)
         mock_app_db_exists.assert_called_with(mock_connection().connect().__enter__(), self.config["user_database"])
         # Check the text calls occur and in the proper order
-        mock_app_database_sql.assert_called_once_with(self.config["user_database"], self.config["admin_username"])
-        mock_connection().connect().__enter__().execute.assert_has_calls([
+        execute_calls = [
             call(mock_commit_sql.return_value),
             call(mock_app_database_sql.return_value),
             call(mock_app_database_comment_sql.return_value)
-        ], any_order=False)
+        ]
+        mock_connection().connect().__enter__().execute.assert_has_calls(execute_calls, any_order=False)
         mock_create_fresh_orca_install.assert_called_once_with(self.config)
 
     @patch("db_deploy.get_admin_connection")

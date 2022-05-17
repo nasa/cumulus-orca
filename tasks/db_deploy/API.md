@@ -403,7 +403,7 @@ SQL for a simple 'commit' to exit the current transaction.
 #### app\_database\_sql
 
 ```python
-app_database_sql(db_name: str, admin_username: str) -> TextClause
+app_database_sql(db_name: str) -> TextClause
 ```
 
 Full SQL for creating the ORCA application database.
