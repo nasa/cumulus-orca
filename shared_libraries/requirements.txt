@@ -43,3 +43,5 @@ SQLAlchemy==1.4.11
 
 ## Libraries used by reconciliation package
 # None
+
+importlib-metadata==4.11.3
