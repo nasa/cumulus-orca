@@ -234,7 +234,7 @@ terraform apply \
   -input=false \
   -var-file="terraform.tfvars" \
   -var-file="buckets.tfvars" \
-  -var "cumulus_message_adapter_lambda_layer_version_arn=arn:aws:lambda:$bamboo_AWS_DEFAULT_REGION:$bamboo_AWS_ACCOUNT_ID:layer:Cumulus_Message_Adapter:4 \
+  -var "cumulus_message_adapter_lambda_layer_version_arn=arn:aws:lambda:$bamboo_AWS_DEFAULT_REGION:$bamboo_AWS_ACCOUNT_ID:layer:Cumulus_Message_Adapter:4" \
   -var "cmr_username=$bamboo_CMR_USERNAME" \
   -var "cmr_password=$bamboo_CMR_PASSWORD" \
   -var "cmr_client_id=cumulus-core-$bamboo_DEPLOYMENT" \
