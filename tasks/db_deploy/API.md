@@ -77,7 +77,7 @@ by the ORCA application as a fresh install.
 #### create\_app\_schema\_role\_users
 
 ```python
-create_app_schema_role_users(connection: Connection, app_username: str, app_password: str, db_name: str) -> None
+create_app_schema_role_users(connection: Connection, app_username: str, app_password: str, db_name: str, admin_username: str) -> None
 ```
 
 Creates the ORCA application database schema, users and roles.
@@ -88,6 +88,7 @@ Creates the ORCA application database schema, users and roles.
 - `app_username` - The name for the created scoped user.
 - `app_password` - The password for the created scoped user.
 - `db_name` - The name of the Orca database within the RDS cluster.
+- `admin_username` - The name of the admin user for the Orca database.
   
 
 **Returns**:
@@ -426,7 +427,7 @@ Cannot be merged with DB creation due to SQLAlchemy limitations.
 #### dbo\_role\_sql
 
 ```python
-dbo_role_sql(db_name: str) -> TextClause
+dbo_role_sql(db_name: str, admin_username: str) -> TextClause
 ```
 
 Full SQL for creating the ORCA dbo role that owns the ORCA schema and

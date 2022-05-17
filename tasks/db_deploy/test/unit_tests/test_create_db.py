@@ -18,6 +18,8 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         """
         Set up test.
         """
+
+        # todo: Use randomized values on a per-test basis.
         self.config = {
             "admin_database": "admin_db",
             "admin_password": "admin123",
@@ -61,7 +63,8 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         mock_conn_enter = mock_connection().connect().__enter__()
 
         mock_create_app_schema_roles.assert_called_once_with(
-            mock_conn_enter, self.config["user_username"], self.config["user_password"], self.config["user_database"]
+            mock_conn_enter, self.config["user_username"], self.config["user_password"], self.config["user_database"],
+            self.config["admin_username"]
         )
         mock_set_search_path_role.assert_called_once_with(mock_conn_enter)
         mock_create_inventory_objects.assert_called_once_with(mock_conn_enter)
@@ -90,24 +93,24 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         Tests happy path of create_app_schema_role_users function.
         """
         create_db.create_app_schema_role_users(
-            self.mock_connection, self.config["user_username"], self.config["user_password"], self.config["user_database"]
+            self.mock_connection, self.config["user_username"], self.config["user_password"], self.config["user_database"],
+            self.config["admin_username"]
         )
 
         # Check that SQL called properly
-        mock_dbo_role_sql.assert_called_once()
+        mock_dbo_role_sql.assert_called_once_with(self.config["user_database"], self.config["admin_username"])
         mock_app_role_sql.assert_called_once()
         mock_schema_sql.assert_called_once()
         mock_user_sql.assert_called_once_with(self.config["user_username"], self.config["user_password"])
 
         # Check SQL called in proper order
-        execution_order = [
+        # todo: here and elsewhere, checks are not sufficient. assert_called_once should never be used, and all assert_has_calls should be followed by a check on the call count.
+        self.mock_connection.assert_has_calls([
             call.execute(mock_dbo_role_sql()),
             call.execute(mock_app_role_sql()),
             call.execute(mock_schema_sql()),
             call.execute(mock_user_sql(self.config["user_password"])),
-        ]
-
-        self.assertEqual(self.mock_connection.mock_calls, execution_order)
+        ])
 
     @patch("create_db.text")
     def test_set_search_path_and_role(self, mock_text: MagicMock):
