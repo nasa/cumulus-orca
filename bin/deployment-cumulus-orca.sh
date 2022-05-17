@@ -211,7 +211,74 @@ variable "s3_secret_key" {
 }
 EOF
 
+# adding variables to orca_variables.tf file
+cat << EOF > terraform.tfvars
+# DO NOT CHANGE THIS VARIABLE UNLESS DEPLOYING OUTSIDE NGAP
+deploy_to_ngap = true
 
+cumulus_message_adapter_version = "1.3.0"
+
+rds_connection_heartbeat = true
+cmr_client_id   = "CHANGEME"
+cmr_environment = "UAT"
+cmr_password    = "password"
+cmr_provider    = "CHANGEME"
+cmr_username    = "username"
+
+urs_url             = "https://uat.urs.earthdata.nasa.gov"
+
+# Name of secret in AWS secrets manager containing SSH keys for signing JWTs
+thin_egress_jwt_secret_name = "secret_name"
+
+oauth_provider   = "earthdata"
+cmr_oauth_provider = "earthdata"
+private_archive_api_gateway = true
+
+# Whether or not to include the S3 credentials endpoint in the Thin Egress App
+# default to true if not specified
+deploy_distribution_s3_credentials_endpoint = false
+
+# If using TEA, Toggle this after deployed to put the correct port in. (and hosts and config)
+tea_distribution_url = "TEA distribution url"
+
+# Cumulus Distribution variables.
+
+deploy_cumulus_distribution = false
+EOF
+
+# adding buckets variable to a new file
+echo "buckets = {
+        default_orca = {
+          name = \"$bamboo_PREFIX-orca-primary\"
+          type = \"orca\"
+          },
+        l0archive = {
+          name = \"$bamboo_PREFIX-level0\"
+          type = \"private\"
+          },
+        internal = {
+            name = \"$bamboo_PREFIX-internal\"
+            type = \"internal\"
+          },
+        private = {
+            name = \"$bamboo_PREFIX-private\"
+            type = \"private\"
+          },
+        protected = {
+          name = \"$bamboo_PREFIX-protected\"
+          type = \"protected\"
+        },
+        public = {
+          name = \"$bamboo_PREFIX-public\"
+          type = \"public\"
+        },
+        provider = {
+          name = \"orca-sandbox-s3-provider\"
+          type = \"provider\"
+        }
+      }" >> terraform.tfvars
+
+less terraform.tfvars
 # Ensure remote state is configured for the deployment
 echo "terraform {
         backend \"s3\" {
@@ -241,6 +308,7 @@ terraform apply \
   -var "data_persistence_remote_state_config={ region: \"$bamboo_AWS_DEFAULT_REGION\", bucket: \"$bamboo_PREFIX-tf-state\", key: \"$DATA_PERSISTENCE_KEY\" }" \
   -var "region=$bamboo_AWS_DEFAULT_REGION" \
   -var "vpc_id=$bamboo_VPC_ID" \
+  -var "system_bucket=$bamboo_PREFIX-internal" \
   -var "lambda_subnet_ids=[\"$bamboo_AWS_SUBNET_ID1\", \"$bamboo_AWS_SUBNET_ID2\"]" \
   -var "urs_client_id=$bamboo_EARTHDATA_CLIENT_ID" \
   -var "urs_client_password=$bamboo_EARTHDATA_CLIENT_PASSWORD" \
@@ -258,5 +326,5 @@ terraform apply \
   -var "dlq_subscription_email=$bamboo_DLQ_SUBSCRIPTION_EMAIL" \
   -var "s3_access_key=$bamboo_S3_ACCESS_KEY" \
   -var "s3_secret_key=$bamboo_S3_SECRET_KEY" \
-  -var "orca_reports_bucket_name=$bamboo_ORCA_REPORTS_BUCKET_NAME" \
-  -var "buckets={default_orca: {name: \"$bamboo_PREFIX-orca-primary\", type: \"orca\"}, l0archive: {name: \"$bamboo_PREFIX-level0\", type: \"private\"}, internal: {name: \"$bamboo_PREFIX-internal\", type: \"internal\"}, private: {name: \"$bamboo_PREFIX-private\", type: \"private\"}, protected: {name: \"$bamboo_PREFIX-protected\", type: \"protected\"}, public: {name: \"$bamboo_PREFIX-public\", type: \"public\"}, provider: {name: \"orca-sandbox-s3-provider\", type: \"provider\"}}"
+  -var "orca_reports_bucket_name=$bamboo_ORCA_REPORTS_BUCKET_NAME"
+  # -var "buckets={default_orca: {name: \"$bamboo_PREFIX-orca-primary\", type: \"orca\"}, l0archive: {name: \"$bamboo_PREFIX-level0\", type: \"private\"}, internal: {name: \"$bamboo_PREFIX-internal\", type: \"internal\"}, private: {name: \"$bamboo_PREFIX-private\", type: \"private\"}, protected: {name: \"$bamboo_PREFIX-protected\", type: \"protected\"}, public: {name: \"$bamboo_PREFIX-public\", type: \"public\"}, provider: {name: \"orca-sandbox-s3-provider\", type: \"provider\"}}"
