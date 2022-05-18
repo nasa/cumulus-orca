@@ -440,7 +440,7 @@ schema and run the migration of objects and data to an ORCA v4 schema.
    psql:sql/orca_schema_v1/create.sql:15: WARNING:  there is no transaction in progress
    COMMIT
    
-   # Once complete quit psql. We will login as postgres user during validation.
+   # Once complete quit psql. We will login as admin user during validation.
    orca=> \q
    ```
 
