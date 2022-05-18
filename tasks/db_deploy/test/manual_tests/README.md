@@ -640,7 +640,7 @@ To run the migration test, in your **python** window run the command
 {"message": "recovery_job table created.", "timestamp": "2022-02-16T22:01:20.724418", "level": "info"}
 {"message": "Creating recovery_file table ...", "timestamp": "2022-02-16T22:01:20.724599", "level": "debug"}
 {"message": "recovery_file table created.", "timestamp": "2022-02-16T22:01:20.749111", "level": "info"}
-{"message": "Changing to the postgres role ...", "timestamp": "2022-02-16T22:01:20.753621", "level": "debug"}
+{"message": "Changing to the admin role ...", "timestamp": "2022-02-16T22:01:20.753621", "level": "debug"}
 {"message": "Setting search path to the ORCA and dr schema ...", "timestamp": "2022-02-16T22:01:20.755699", "level": "debug"}
 {"message": "Populating the recovery_status table with data ...", "timestamp": "2022-02-16T22:01:20.756844", "level": "debug"}
 {"message": "Data added to the recovery_status table.", "timestamp": "2022-02-16T22:01:20.772545", "level": "info"}
@@ -653,7 +653,7 @@ To run the migration test, in your **python** window run the command
 {"message": "Changing to the dbo role ...", "timestamp": "2022-02-16T22:01:20.878311", "level": "debug"}
 {"message": "Dropping dr schema ...", "timestamp": "2022-02-16T22:01:20.879903", "level": "debug"}
 {"message": "dr schema removed.", "timestamp": "2022-02-16T22:01:20.881228", "level": "info"}
-{"message": "Changing to the postgres role ...", "timestamp": "2022-02-16T22:01:20.881340", "level": "debug"}
+{"message": "Changing to the admin role ...", "timestamp": "2022-02-16T22:01:20.881340", "level": "debug"}
 {"message": "Dropping drdbo_role role ...", "timestamp": "2022-02-16T22:01:20.882405", "level": "debug"}
 {"message": "drdbo_role role removed.", "timestamp": "2022-02-16T22:01:20.883609", "level": "info"}
 {"message": "Dropping dr_role role ...", "timestamp": "2022-02-16T22:01:20.883712", "level": "debug"}

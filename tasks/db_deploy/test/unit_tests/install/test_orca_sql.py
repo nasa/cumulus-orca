@@ -86,6 +86,7 @@ class TestOrcaSqlLogic(unittest.TestCase):
                     if name in [
                         "app_database_sql",
                         "app_user_sql",
+                        "dbo_role_sql",
                     ]:
                         self.assertEqual(
                             type(
@@ -97,7 +98,6 @@ class TestOrcaSqlLogic(unittest.TestCase):
                     # These functions take in a string parameter.
                     elif name in [
                         "app_database_comment_sql",
-                        "dbo_role_sql",
                         "app_role_sql",
                         "drop_dr_role_sql",
                         "drop_dbo_user_sql",

@@ -19,6 +19,7 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
         """
         Set up test.
         """
+        # todo: Use randomized values on a per-test basis.
         self.config = {
             "admin_database": "admin_db",
             "admin_password": "admin123",
@@ -104,7 +105,8 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 )
 
                 # First commit block
-                mock_dbo_role_sql.assert_called_once()
+                # todo: here and elsewhere, checks are not sufficient. assert_called_once should never be used, and all assert_has_calls should be followed by a check on the call count.
+                mock_dbo_role_sql.assert_called_once_with(self.config["user_database"], self.config["admin_username"])
                 mock_app_role_sql.assert_called_once()
                 mock_orca_schema_sql.assert_called_once()
                 mock_app_user_sql.assert_called_once_with(
@@ -127,15 +129,14 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 mock_drop_druser_user.assert_called_once()
 
                 # Check the text calls occur and in the proper order
-                text_calls = [
+                mock_text.assert_has_calls([
                     call("SET ROLE orca_dbo;"),
                     call("SET search_path TO orca, public;"),
                     call("RESET ROLE;"),
                     call("SET search_path TO orca, dr, public;"),
                     call("SET ROLE dbo;"),
                     call("RESET ROLE;"),
-                ]
-                mock_text.assert_has_calls(text_calls, any_order=False)
+                ])
 
                 # Validate logic switch and set the execution order
                 if latest_version:

@@ -7,170 +7,89 @@
   * [app\_schema\_exists](#db_deploy.app_schema_exists)
   * [app\_version\_table\_exists](#db_deploy.app_version_table_exists)
   * [get\_migration\_version](#db_deploy.get_migration_version)
-* [migrate\_db](#migrate_db)
-  * [perform\_migration](#migrate_db.perform_migration)
-  * [migrate\_versions\_1\_to\_2](#migrate_db.migrate_versions_1_to_2)
-  * [migrate\_versions\_2\_to\_3](#migrate_db.migrate_versions_2_to_3)
-  * [migrate\_versions\_3\_to\_4](#migrate_db.migrate_versions_3_to_4)
-* [orca\_sql](#orca_sql)
-  * [commit\_sql](#orca_sql.commit_sql)
-  * [app\_database\_sql](#orca_sql.app_database_sql)
-  * [app\_database\_comment\_sql](#orca_sql.app_database_comment_sql)
-  * [dbo\_role\_sql](#orca_sql.dbo_role_sql)
-  * [app\_role\_sql](#orca_sql.app_role_sql)
-  * [orca\_schema\_sql](#orca_sql.orca_schema_sql)
-  * [app\_user\_sql](#orca_sql.app_user_sql)
-  * [schema\_versions\_table\_sql](#orca_sql.schema_versions_table_sql)
-  * [schema\_versions\_data\_sql](#orca_sql.schema_versions_data_sql)
-  * [recovery\_status\_table\_sql](#orca_sql.recovery_status_table_sql)
-  * [recovery\_status\_data\_sql](#orca_sql.recovery_status_data_sql)
-  * [recovery\_job\_table\_sql](#orca_sql.recovery_job_table_sql)
-  * [recovery\_file\_table\_sql](#orca_sql.recovery_file_table_sql)
-  * [providers\_table\_sql](#orca_sql.providers_table_sql)
-  * [collections\_table\_sql](#orca_sql.collections_table_sql)
-  * [granules\_table\_sql](#orca_sql.granules_table_sql)
-  * [files\_table\_sql](#orca_sql.files_table_sql)
-  * [migrate\_recovery\_job\_data\_sql](#orca_sql.migrate_recovery_job_data_sql)
-  * [migrate\_recovery\_file\_data\_sql](#orca_sql.migrate_recovery_file_data_sql)
-  * [drop\_request\_status\_table\_sql](#orca_sql.drop_request_status_table_sql)
-  * [drop\_dr\_schema\_sql](#orca_sql.drop_dr_schema_sql)
-  * [drop\_druser\_user\_sql](#orca_sql.drop_druser_user_sql)
-  * [drop\_dbo\_user\_sql](#orca_sql.drop_dbo_user_sql)
-  * [drop\_dr\_role\_sql](#orca_sql.drop_dr_role_sql)
-  * [drop\_drdbo\_role\_sql](#orca_sql.drop_drdbo_role_sql)
-  * [add\_multipart\_chunksize\_sql](#orca_sql.add_multipart_chunksize_sql)
-
-<a name="create_db"></a>
-# create\_db
-
-Name: create_db.py
-
-Description: Creates the current version on the ORCA database.
-
-<a name="create_db.create_fresh_orca_install"></a>
-#### create\_fresh\_orca\_install
-
-```python
-create_fresh_orca_install(config: Dict[str, str]) -> None
-```
-
-This task will create the ORCA roles, users, schema, and tables needed
-by the ORCA application as a fresh install.
-
-**Arguments**:
-
-- `config` _Dict_ - Dictionary with database connection information
-  
-
-**Returns**:
-
-  None
-
-<a name="create_db.create_app_schema_role_users"></a>
-#### create\_app\_schema\_role\_users
-
-```python
-create_app_schema_role_users(connection: Connection, app_username: str, app_password: str, db_name: str, admin_username: str) -> None
-```
-
-Creates the ORCA application database schema, users and roles.
-
-**Arguments**:
-
-- `connection` _sqlalchemy.future.Connection_ - Database connection.
-- `app_username` - The name for the created scoped user.
-- `app_password` - The password for the created scoped user.
-- `db_name` - The name of the Orca database within the RDS cluster.
-- `admin_username` - The name of the admin user for the Orca database.
-  
-
-**Returns**:
-
-  None
-
-<a name="create_db.set_search_path_and_role"></a>
-#### set\_search\_path\_and\_role
-
-```python
-set_search_path_and_role(connection: Connection) -> None
-```
-
-Sets the role to the dbo role to create/modify ORCA objects and sets the
-search_path to make the orca schema first. This must be run before any
-creations or modifications to ORCA objects in the ORCA schema.
-
-**Arguments**:
-
-- `connection` _sqlalchemy.future.Connection_ - Database connection.
-  
-
-**Returns**:
-
-  None
-
-<a name="create_db.create_metadata_objects"></a>
-#### create\_metadata\_objects
-
-```python
-create_metadata_objects(connection: Connection) -> None
-```
-
-Create the ORCA application metadata tables used to manage application
-versions and other ORCA internal information in the proper order.
-- schema_versions
-
-**Arguments**:
-
-- `connection` _sqlalchemy.future.Connection_ - Database connection.
-  
-
-**Returns**:
-
-  None
-
-<a name="create_db.create_recovery_objects"></a>
-#### create\_recovery\_objects
-
-```python
-create_recovery_objects(connection: Connection) -> None
-```
-
-Creates the ORCA recovery tables in the proper order.
-- recovery_status
-- recovery_job
-- recovery_table
-
-**Arguments**:
-
-- `connection` _sqlalchemy.future.Connection_ - Database connection.
-  
-
-**Returns**:
-
-  None
-
-<a name="create_db.create_inventory_objects"></a>
-#### create\_inventory\_objects
-
-```python
-create_inventory_objects(connection: Connection) -> None
-```
-
-Creates the ORCA catalog metadata tables used for reconciliation with Cumulus in the proper order.
-- providers
-- collections
-- provider_collection_xref
-- granules
-- files
-
-**Arguments**:
-
-- `connection` _sqlalchemy.future.Connection_ - Database connection.
-  
-
-**Returns**:
-
-  None
+* [install/create\_db](#install/create_db)
+  * [create\_fresh\_orca\_install](#install/create_db.create_fresh_orca_install)
+  * [create\_database](#install/create_db.create_database)
+  * [create\_app\_schema\_role\_users](#install/create_db.create_app_schema_role_users)
+  * [set\_search\_path\_and\_role](#install/create_db.set_search_path_and_role)
+  * [create\_metadata\_objects](#install/create_db.create_metadata_objects)
+  * [create\_recovery\_objects](#install/create_db.create_recovery_objects)
+  * [create\_inventory\_objects](#install/create_db.create_inventory_objects)
+  * [create\_internal\_reconciliation\_objects](#install/create_db.create_internal_reconciliation_objects)
+* [install/orca\_sql](#install/orca_sql)
+  * [commit\_sql](#install/orca_sql.commit_sql)
+  * [app\_database\_sql](#install/orca_sql.app_database_sql)
+  * [app\_database\_comment\_sql](#install/orca_sql.app_database_comment_sql)
+  * [dbo\_role\_sql](#install/orca_sql.dbo_role_sql)
+  * [app\_role\_sql](#install/orca_sql.app_role_sql)
+  * [orca\_schema\_sql](#install/orca_sql.orca_schema_sql)
+  * [app\_user\_sql](#install/orca_sql.app_user_sql)
+  * [create\_extension](#install/orca_sql.create_extension)
+  * [schema\_versions\_table\_sql](#install/orca_sql.schema_versions_table_sql)
+  * [schema\_versions\_data\_sql](#install/orca_sql.schema_versions_data_sql)
+  * [recovery\_status\_table\_sql](#install/orca_sql.recovery_status_table_sql)
+  * [recovery\_status\_data\_sql](#install/orca_sql.recovery_status_data_sql)
+  * [recovery\_job\_table\_sql](#install/orca_sql.recovery_job_table_sql)
+  * [recovery\_file\_table\_sql](#install/orca_sql.recovery_file_table_sql)
+  * [providers\_table\_sql](#install/orca_sql.providers_table_sql)
+  * [collections\_table\_sql](#install/orca_sql.collections_table_sql)
+  * [granules\_table\_sql](#install/orca_sql.granules_table_sql)
+  * [files\_table\_sql](#install/orca_sql.files_table_sql)
+  * [reconcile\_status\_table\_sql](#install/orca_sql.reconcile_status_table_sql)
+  * [reconcile\_job\_table\_sql](#install/orca_sql.reconcile_job_table_sql)
+  * [reconcile\_s3\_object\_table\_sql](#install/orca_sql.reconcile_s3_object_table_sql)
+  * [reconcile\_s3\_object\_partition\_sql](#install/orca_sql.reconcile_s3_object_partition_sql)
+  * [reconcile\_catalog\_mismatch\_report\_table\_sql](#install/orca_sql.reconcile_catalog_mismatch_report_table_sql)
+  * [reconcile\_orphan\_report\_table\_sql](#install/orca_sql.reconcile_orphan_report_table_sql)
+  * [reconcile\_phantom\_report\_table\_sql](#install/orca_sql.reconcile_phantom_report_table_sql)
+* [migrations/migrate\_db](#migrations/migrate_db)
+  * [perform\_migration](#migrations/migrate_db.perform_migration)
+* [migrations/migrate\_versions\_1\_to\_2/migrate](#migrations/migrate_versions_1_to_2/migrate)
+  * [migrate\_versions\_1\_to\_2](#migrations/migrate_versions_1_to_2/migrate.migrate_versions_1_to_2)
+* [migrations/migrate\_versions\_1\_to\_2/migrate\_sql](#migrations/migrate_versions_1_to_2/migrate_sql)
+  * [dbo\_role\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.dbo_role_sql)
+  * [app\_role\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.app_role_sql)
+  * [orca\_schema\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.orca_schema_sql)
+  * [app\_user\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.app_user_sql)
+  * [schema\_versions\_table\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.schema_versions_table_sql)
+  * [schema\_versions\_data\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.schema_versions_data_sql)
+  * [recovery\_status\_table\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.recovery_status_table_sql)
+  * [recovery\_status\_data\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.recovery_status_data_sql)
+  * [recovery\_job\_table\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.recovery_job_table_sql)
+  * [recovery\_file\_table\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.recovery_file_table_sql)
+  * [migrate\_recovery\_job\_data\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.migrate_recovery_job_data_sql)
+  * [migrate\_recovery\_file\_data\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.migrate_recovery_file_data_sql)
+  * [drop\_request\_status\_table\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.drop_request_status_table_sql)
+  * [drop\_dr\_schema\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.drop_dr_schema_sql)
+  * [drop\_druser\_user\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.drop_druser_user_sql)
+  * [drop\_dbo\_user\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.drop_dbo_user_sql)
+  * [drop\_dr\_role\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.drop_dr_role_sql)
+  * [drop\_drdbo\_role\_sql](#migrations/migrate_versions_1_to_2/migrate_sql.drop_drdbo_role_sql)
+* [migrations/migrate\_versions\_2\_to\_3/migrate](#migrations/migrate_versions_2_to_3/migrate)
+  * [migrate\_versions\_2\_to\_3](#migrations/migrate_versions_2_to_3/migrate.migrate_versions_2_to_3)
+* [migrations/migrate\_versions\_2\_to\_3/migrate\_sql](#migrations/migrate_versions_2_to_3/migrate_sql)
+  * [add\_multipart\_chunksize\_sql](#migrations/migrate_versions_2_to_3/migrate_sql.add_multipart_chunksize_sql)
+  * [schema\_versions\_data\_sql](#migrations/migrate_versions_2_to_3/migrate_sql.schema_versions_data_sql)
+* [migrations/migrate\_versions\_3\_to\_4/migrate](#migrations/migrate_versions_3_to_4/migrate)
+  * [migrate\_versions\_3\_to\_4](#migrations/migrate_versions_3_to_4/migrate.migrate_versions_3_to_4)
+* [migrations/migrate\_versions\_3\_to\_4/migrate\_sql](#migrations/migrate_versions_3_to_4/migrate_sql)
+  * [providers\_table\_sql](#migrations/migrate_versions_3_to_4/migrate_sql.providers_table_sql)
+  * [collections\_table\_sql](#migrations/migrate_versions_3_to_4/migrate_sql.collections_table_sql)
+  * [granules\_table\_sql](#migrations/migrate_versions_3_to_4/migrate_sql.granules_table_sql)
+  * [files\_table\_sql](#migrations/migrate_versions_3_to_4/migrate_sql.files_table_sql)
+  * [schema\_versions\_data\_sql](#migrations/migrate_versions_3_to_4/migrate_sql.schema_versions_data_sql)
+* [migrations/migrate\_versions\_4\_to\_5/migrate](#migrations/migrate_versions_4_to_5/migrate)
+  * [migrate\_versions\_4\_to\_5](#migrations/migrate_versions_4_to_5/migrate.migrate_versions_4_to_5)
+* [migrations/migrate\_versions\_4\_to\_5/migrate\_sql](#migrations/migrate_versions_4_to_5/migrate_sql)
+  * [schema\_versions\_data\_sql](#migrations/migrate_versions_4_to_5/migrate_sql.schema_versions_data_sql)
+  * [create\_extension](#migrations/migrate_versions_4_to_5/migrate_sql.create_extension)
+  * [reconcile\_status\_table\_sql](#migrations/migrate_versions_4_to_5/migrate_sql.reconcile_status_table_sql)
+  * [reconcile\_job\_table\_sql](#migrations/migrate_versions_4_to_5/migrate_sql.reconcile_job_table_sql)
+  * [reconcile\_s3\_object\_table\_sql](#migrations/migrate_versions_4_to_5/migrate_sql.reconcile_s3_object_table_sql)
+  * [reconcile\_s3\_object\_partition\_sql](#migrations/migrate_versions_4_to_5/migrate_sql.reconcile_s3_object_partition_sql)
+  * [reconcile\_catalog\_mismatch\_report\_table\_sql](#migrations/migrate_versions_4_to_5/migrate_sql.reconcile_catalog_mismatch_report_table_sql)
+  * [reconcile\_orphan\_report\_table\_sql](#migrations/migrate_versions_4_to_5/migrate_sql.reconcile_orphan_report_table_sql)
+  * [reconcile\_phantom\_report\_table\_sql](#migrations/migrate_versions_4_to_5/migrate_sql.reconcile_phantom_report_table_sql)
 
 <a name="db_deploy"></a>
 # db\_deploy
@@ -196,6 +115,9 @@ required by this Lambda.
 
 - `event` _Dict_ - Event dictionary passed by AWS.
 - `context` _object_ - An object required by AWS Lambda.
+  Environment Vars:
+- `DB_CONNECT_INFO_SECRET_ARN` _string_ - Secret ARN of the AWS secretsmanager secret for connecting to the database.
+  See shared_db.py's get_configuration for further details.
   
 
 **Raises**:
@@ -338,7 +260,7 @@ Creates the orca database
 #### create\_app\_schema\_role\_users
 
 ```python
-create_app_schema_role_users(connection: Connection, app_username: str, app_password: str, db_name: str) -> None
+create_app_schema_role_users(connection: Connection, app_username: str, app_password: str, db_name: str, admin_username: str) -> None
 ```
 
 Creates the ORCA application database schema, users and roles.
@@ -349,6 +271,7 @@ Creates the ORCA application database schema, users and roles.
 - `app_username` - The name for the created scoped user.
 - `app_password` - The password for the created scoped user.
 - `db_name` - The name of the Orca database within the RDS cluster.
+- `admin_username` - The name of the admin user for the Orca database.
   
 
 **Returns**:
@@ -881,7 +804,7 @@ Description: All of the SQL used for creating and migrating the ORCA schema to v
 #### dbo\_role\_sql
 
 ```python
-dbo_role_sql(db_name: str) -> TextClause
+dbo_role_sql(db_name: str, admin_username: str) -> TextClause
 ```
 
 Full SQL for creating the ORCA dbo role that owns the ORCA schema and
