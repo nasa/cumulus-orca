@@ -241,7 +241,6 @@ Below describes the type of value expected for each variable.
 
 * `db_user_password` (string) - the password for the application user.
 * `orca_default_bucket` (string) - default S3 glacier bucket to use for ORCA data.
-* `db_admin_username` (string) - username for the admin user.
 * `db_admin_password` (string) - password for the admin user.
 * `db_host_endpoint`(string) - Database host endpoint to connect to.
 * `rds_security_group_id`(string) - Cumulus' RDS Security Group's ID. Output as `security_group_id` from the rds-cluster deployment.
