@@ -379,8 +379,8 @@ variables:
   SECRET_GITHUB_TOKEN: BAMSCRT@0@0@nPxyXQXMyE6zm3B1oI8Goma78s0H1fJD4vHy6+dpBQJpjDI2ekbcvCAOI8AyjYiILPhqi2w4fT0fx9MFVXxz2JPTp5uPNzG3GM/8XSUgvYo= #encrypted
   SECRET_GITHUB_USER: BAMSCRT@0@0@fFtitNITDsAjJqK2ZXjhnBZ96z2775QLzGR1Xz557gSl8HxxBaTD3Fbmp+HUbpfx  #encrypted
   AWS_DEFAULT_REGION: us-west-2
-  TFSTATE_LOCK_TABLE: rhorca-tf-locks
-  TFSTATE_BUCKET: rhorca-tf-state
+  TFSTATE_LOCK_TABLE: rhassanorca-tf-locks
+  TFSTATE_BUCKET: rhassanorca-tf-state
   AWS_ACCESS_KEY_ID: BAMSCRT@0@0@kGZXFxP372YNHoX+IOMW5aJ0UqNRcVn23p3pdd1N2cE=
   AWS_SECRET_ACCESS_KEY: BAMSCRT@0@0@L81dje5pniBmplVLwbMq7rFxJVHTSMyK1+fDzKitigInHekJyDfRHMJ3W/o+0WWn
   RDS_SECURITY_GROUP: sg-09a501805c9978195
@@ -392,8 +392,8 @@ variables:
   ROLE_BOUNDARY: NGAPShRoleBoundary
   ORCA_RELEASE_BRANCH: release/v11.1.1-v4.0.1
   ORCA_TEST_BRANCH: feature/ORCA-test-bamboo
-  PREFIX: rhorca
-  DB_ADMIN_USERNAME: postgres
+  PREFIX: rhassanorca
+  DB_ADMIN_USERNAME: postgresrizbi
   DB_ADMIN_PASSWORD: BAMSCRT@0@0@AuBwYN809zPGzk1MH5DRPQ==
   DB_USER_PASSWORD: BAMSCRT@0@0@AuBwYN809zPGzk1MH5DRPQ==
   RDS_CLUSTER_ID: rhorca-cumulus-rds-serverless-default-cluster
@@ -405,7 +405,7 @@ variables:
   DB_HOST_ENDPOINT: rhorca-cumulus-rds-serverless-default-cluster.cluster-c1xufm1sp0ux.us-west-2.rds.amazonaws.com
   S3_ACCESS_KEY: dummy
   S3_SECRET_KEY: BAMSCRT@0@0@0kgw7HCINxNxv1DrtMHK6A==
-  ORCA_REPORTS_BUCKET_NAME: rhorca-orca-primary
+  ORCA_REPORTS_BUCKET_NAME: rhassanorca-orca-primary
 
 repositories:
 - orca test branch: #this is created by CICD team from https://ci.earthdata.nasa.gov/. Contact Venku Jayanti with any issues.
