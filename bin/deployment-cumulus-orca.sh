@@ -1,15 +1,5 @@
 #!/bin/bash
 set -ex
-export TERRAFORM_VERSION="0.13.6"
-# CLI utilities
-yum install -y git unzip wget zip
-
-# AWS & Terraform
-yum install -y python3-devel awscli
-wget "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip"
-unzip *.zip
-chmod +x terraform
-mv terraform /usr/local/bin
 
 export AWS_ACCESS_KEY_ID=$bamboo_AWS_ACCESS_KEY_ID
 export AWS_SECRET_ACCESS_KEY=$bamboo_AWS_SECRET_ACCESS_KEY
