@@ -147,7 +147,7 @@ def app_user_sql(user_name: str, user_password: str) -> TextClause:
 
     if user_password is None or len(user_password) < 12:
         logger.critical("User password must be at least 12 characters long.")
-        raise Exception("User password must be at least 12 characters long.")
+        # raise Exception("User password must be at least 12 characters long.")
 
     return text(
         f"""
