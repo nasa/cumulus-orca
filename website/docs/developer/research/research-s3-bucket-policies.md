@@ -17,9 +17,29 @@ Suggested name: PREFIX-orca-archive-versioned
 
 Our [current Glacier bucket instructions](../deployment-guide/creating-orca-glacier-bucket.md) are well suited to storage.
 There are a few changes we should consider.
+
 Presently, ORCA does not handle versioned data, but it also does not preclude that capability in its buckets.
 Setting versioning on Glacier allows for finer-grained data backup as users could recover from a specific version of a file being overwritten.
 To enable development towards this goal, we should either replace the existing bucket with a versioned bucket and move existing data over, or instruct users on how to [enable versioning on their buckets](https://docs.aws.amazon.com/AmazonS3/latest/userguide/manage-versioning-examples.html).
+
+There is a desire to disallow non-SSL requests. This can theoretically be done with the following untested statement:
+```json
+{
+  "Sid": "AllowSSLRequestsOnly",
+  "Action": "s3:*",
+  "Effect": "Deny",
+  "Resource": [
+    "arn:aws:s3:::PREFIX-orca-reports",
+    "arn:aws:s3:::PREFIX-orca-reports/*"
+  ],
+  "Condition": {
+    "Bool": {
+      "aws:SecureTransport": "false"
+    }
+  },
+  "Principal": "*"
+}
+```
 
 We should also remove the ACL capabilities due to AWS potential deprecation.
 This will be detailed in a [future section](#acl-rule-replacement).
@@ -68,6 +88,21 @@ Versioning is not used, and in general no changes are required beyond updating t
 {
   "Version": "2012-10-17",
   "Statement": [
+    {
+      "Sid": "AllowSSLRequestsOnly",
+      "Action": "s3:*",
+      "Effect": "Deny",
+      "Resource": [
+        "arn:aws:s3:::PREFIX-orca-reports",
+        "arn:aws:s3:::PREFIX-orca-reports/*"
+      ],
+      "Condition": {
+        "Bool": {
+          "aws:SecureTransport": "false"
+        }
+      },
+      "Principal": "*"
+    },
     {
       "Sid": "Cross Account Access",
       "Effect": "Allow",
@@ -126,6 +161,8 @@ Versioning is not used, and in general no changes are required beyond updating t
   ]
 }
 ```
+Note that the `AllowSSLRequestOnly` policy is untested.
+
 The Principal value is the AWS root user for your Cumulus application that will
 access the ORCA archive bucket.
 
