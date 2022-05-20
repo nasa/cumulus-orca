@@ -258,6 +258,8 @@ See the Archive Bucket instructions for assistance getting this value.
 Replace the number in `arn:aws:iam::909121343565:root` with the value of your account number.
 See the Archive Bucket instructions for assistance getting this value.
 
+Replace the number `782417781503` with your DR account number.
+
 The Resource value is the bucket and bucket paths that the Cumulus application
 can access. Replace `sandbox-orca-glacier-archive` with the name
 of the Orca archive bucket created in the previous section.
