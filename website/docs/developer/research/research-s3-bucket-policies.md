@@ -72,7 +72,7 @@ Versioning is not used, and in general no changes are required beyond updating t
       "Sid": "Cross Account Access",
       "Effect": "Allow",
       "Principal": {
-        "AWS": "arn:aws:iam::909121343565:root"
+        "AWS": "arn:aws:iam::012345678912:root"
       },
       "Action": [
         "s3:GetObject*",
@@ -98,7 +98,7 @@ Versioning is not used, and in general no changes are required beyond updating t
       "Condition": {
         "StringEquals": {
       	  "s3:x-amz-acl": "bucket-owner-full-control",
-      	  "aws:SourceAccount": "782417781503"
+      	  "aws:SourceAccount": "0000000000000"
         },
       	"ArnLike": {
       	  "aws:SourceArn": "arn:aws:s3:::PREFIX-orca-archive-versioned"
@@ -116,7 +116,7 @@ Versioning is not used, and in general no changes are required beyond updating t
       "Condition": {
         "StringEquals": {
       	  "s3:x-amz-acl": "bucket-owner-full-control",
-      	  "aws:SourceAccount": "782417781503"
+      	  "aws:SourceAccount": "000000000000"
         },
       	"ArnLike": {
       	  "aws:SourceArn": "arn:aws:s3:::PREFIX-orca-archive-worm"
@@ -129,9 +129,9 @@ Versioning is not used, and in general no changes are required beyond updating t
 The Principal value is the AWS root user for your Cumulus application that will
 access the ORCA archive bucket.
 
-Replace the number in `arn:aws:iam::909121343565:root` with the value of your account number.
+Replace the number in `arn:aws:iam::012345678912:root` with the value of your account number.
 
-Replace the number `782417781503` with your DR account number.
+Replace the number `000000000000` with your DR account number.
 
 The Resource value is the bucket and bucket paths that the Cumulus application
 can access. Replace `PREFIX-orca-archive-versioned` with the name
