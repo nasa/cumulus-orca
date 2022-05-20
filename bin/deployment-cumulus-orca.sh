@@ -115,39 +115,6 @@ variable "s3_secret_key" {
 }
 EOF
 
-
-# # adding buckets variable to a new file
-# echo "buckets = {
-#         default_orca = {
-#           name = \"$bamboo_PREFIX-orca-primary\"
-#           type = \"orca\"
-#           },
-#         l0archive = {
-#           name = \"$bamboo_PREFIX-level0\"
-#           type = \"private\"
-#           },
-#         internal = {
-#             name = \"$bamboo_PREFIX-internal\"
-#             type = \"internal\"
-#           },
-#         private = {
-#             name = \"$bamboo_PREFIX-private\"
-#             type = \"private\"
-#           },
-#         protected = {
-#           name = \"$bamboo_PREFIX-protected\"
-#           type = \"protected\"
-#         },
-#         public = {
-#           name = \"$bamboo_PREFIX-public\"
-#           type = \"public\"
-#         },
-#         provider = {
-#           name = \"orca-sandbox-s3-provider\"
-#           type = \"provider\"
-#         }
-#       }" > buckets.tfvars
-
 # adding variables to orca_variables.tf file
 cat << EOF > orca_variables.tf
 
@@ -308,7 +275,7 @@ terraform apply \
   -var "key_name=$bamboo_PREFIX" \
   -var "prefix=$bamboo_PREFIX" \
   -var "permissions_boundary_arn=arn:aws:iam::$bamboo_AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY" \
-  -var "db_user_password=$bamboo_PREFIX" \
+  -var "db_user_password=$bamboo_DB_USER_PASSWORD" \
   -var "orca_default_bucket=$bamboo_PREFIX-orca-primary" \
   -var "db_admin_password=$bamboo_DB_ADMIN_PASSWORD" \
   -var "db_host_endpoint=$bamboo_DB_HOST_ENDPOINT" \
@@ -317,4 +284,3 @@ terraform apply \
   -var "s3_access_key=$bamboo_S3_ACCESS_KEY" \
   -var "s3_secret_key=$bamboo_S3_SECRET_KEY" \
   -var "orca_reports_bucket_name=$bamboo_ORCA_REPORTS_BUCKET_NAME"
-  # -var "buckets={default_orca: {name: \"$bamboo_PREFIX-orca-primary\", type: \"orca\"}, l0archive: {name: \"$bamboo_PREFIX-level0\", type: \"private\"}, internal: {name: \"$bamboo_PREFIX-internal\", type: \"internal\"}, private: {name: \"$bamboo_PREFIX-private\", type: \"private\"}, protected: {name: \"$bamboo_PREFIX-protected\", type: \"protected\"}, public: {name: \"$bamboo_PREFIX-public\", type: \"public\"}, provider: {name: \"orca-sandbox-s3-provider\", type: \"provider\"}}"
