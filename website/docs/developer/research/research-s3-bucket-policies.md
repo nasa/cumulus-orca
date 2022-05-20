@@ -9,18 +9,15 @@ description: Research notes on S3 best practices and some directions to take dev
 Presently, our S3 buckets are only defined through [documentation](../deployment-guide/creating-orca-glacier-bucket.md) and there are changes we wish to make to support future development.
 This document aims to document the desired final state of our S3 buckets.
 
-## Versioned Glacier Bucket
+## Universal Suggestions
 
-Note that this work depends on completing (ORCA-351)[https://bugs.earthdata.nasa.gov/browse/ORCA-351]
+### Deny Public Access
 
-Suggested name: PREFIX-orca-archive-versioned
+For all buckets, make sure that [public access is disabled](https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-control-block-public-access.html).
+This is the default behavior for new buckets, but may not be enforced on pre-existing buckets.
+Simply put, permissions should be granted on a case-by-case basis when needed.
 
-Our [current Glacier bucket instructions](../deployment-guide/creating-orca-glacier-bucket.md) are well suited to storage.
-There are a few changes we should consider.
-
-Presently, ORCA does not handle versioned data, but it also does not preclude that capability in its buckets.
-Setting versioning on Glacier allows for finer-grained data backup as users could recover from a specific version of a file being overwritten.
-To enable development towards this goal, we should either replace the existing bucket with a versioned bucket and move existing data over, or instruct users on how to [enable versioning on their buckets](https://docs.aws.amazon.com/AmazonS3/latest/userguide/manage-versioning-examples.html).
+### Deny Non-SSL Requests
 
 There is a desire to disallow non-SSL requests. This can theoretically be done with the following untested statement:
 ```json
@@ -29,8 +26,8 @@ There is a desire to disallow non-SSL requests. This can theoretically be done w
   "Action": "s3:*",
   "Effect": "Deny",
   "Resource": [
-    "arn:aws:s3:::PREFIX-orca-reports",
-    "arn:aws:s3:::PREFIX-orca-reports/*"
+    "arn:aws:s3:::PREFIX-orca-bucket-name",
+    "arn:aws:s3:::PREFIX-orca-bucket-name/*"
   ],
   "Condition": {
     "Bool": {
@@ -41,10 +38,33 @@ There is a desire to disallow non-SSL requests. This can theoretically be done w
 }
 ```
 
+Testing should be done to identify any changes needed to lock out Non-SSL requests.
+A [Jira task](https://bugs.earthdata.nasa.gov/browse/ORCA-452) has been created to implement this limit.
+
+### Encryption
+
+A [default encryption](https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucket-encryption.html) should be used to encrypt data-at-rest, protecting it from attackers targeting storage mediums.
+Since Orca S3 buckets presently reside in a different account from the producers/consumers, this presently requires a customer-managed key with [proper cross-account access](https://aws.amazon.com/premiumsupport/knowledge-center/s3-bucket-access-default-encryption/).
+Note that objects already in an un-encrypted bucket will not be automatically encrypted if encryption is added.
+A [Jira task](https://bugs.earthdata.nasa.gov/browse/ORCA-453) has been created to implement this feature.
+
+## Versioned Glacier Bucket
+
+Suggested name: PREFIX-orca-archive-versioned
+
+Our [current Glacier bucket instructions](../deployment-guide/creating-orca-glacier-bucket.md) are well suited to storage.
+There are a few changes we should consider.
+
+Presently, ORCA does not handle versioned data, but it also does not preclude that capability in its buckets.
+Setting versioning on Glacier allows for finer-grained data backup as users could recover from a specific version of a file being overwritten.
+To enable development towards this goal, we should either replace the existing bucket with a versioned bucket and move existing data over, or instruct users on how to [enable versioning on their buckets](https://docs.aws.amazon.com/AmazonS3/latest/userguide/manage-versioning-examples.html).
+
 We should also remove the ACL capabilities due to AWS potential deprecation.
 This will be detailed in a [future section](#acl-rule-replacement).
 
 ## WORM Glacier Bucket
+
+Note that this work depends on completing (ORCA-351)[https://bugs.earthdata.nasa.gov/browse/ORCA-351]
 
 Suggested name: PREFIX-orca-archive-worm
 
@@ -88,21 +108,6 @@ Versioning is not used, and in general no changes are required beyond updating t
 {
   "Version": "2012-10-17",
   "Statement": [
-    {
-      "Sid": "AllowSSLRequestsOnly",
-      "Action": "s3:*",
-      "Effect": "Deny",
-      "Resource": [
-        "arn:aws:s3:::PREFIX-orca-reports",
-        "arn:aws:s3:::PREFIX-orca-reports/*"
-      ],
-      "Condition": {
-        "Bool": {
-          "aws:SecureTransport": "false"
-        }
-      },
-      "Principal": "*"
-    },
     {
       "Sid": "Cross Account Access",
       "Effect": "Allow",
@@ -161,8 +166,6 @@ Versioning is not used, and in general no changes are required beyond updating t
   ]
 }
 ```
-Note that the `AllowSSLRequestOnly` policy is untested.
-
 The Principal value is the AWS root user for your Cumulus application that will
 access the ORCA archive bucket.
 
@@ -193,10 +196,12 @@ Unfortunately, since our deployment presently targets an account different from 
 This will require the buckets to be recreated, so this will also require code to copy data from the old buckets to the new.
 This will only need to be run once for switching from manual setup to TF setup, and will also help with cases where updates require buckets to be recreated.
 
+A [Jira task](https://bugs.earthdata.nasa.gov/browse/ORCA-369) has been created to implement this feature.
+
 ## ACL Rule Replacement
 
 Due to AWS suggesting that they will deprecate ACL rules, we should research a replacement for current ACL functionality.
-A [task](https://bugs.earthdata.nasa.gov/browse/ORCA-450) has been created in Jira.
 Presently ACL is used primarily to allow ORCA full ownership over files uploaded to S3, via the addition of `"ACL": "bucket-owner-full-control"` when uploading via `copy_to_glacier`.
 Buckets with ACL rules disabled default to objects being owned by the bucket, so this may be a clean switch.
 Additional research and testing should be conducted.
+A [Jira task](https://bugs.earthdata.nasa.gov/browse/ORCA-450) has been created to implement this switch.
