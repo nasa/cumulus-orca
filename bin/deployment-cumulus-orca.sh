@@ -201,6 +201,7 @@ tea_distribution_url = "TEA distribution url"
 # Cumulus Distribution variables.
 
 deploy_cumulus_distribution = false
+db_admin_username = "postgres"
 EOF
 
 # adding buckets variable to a new file
