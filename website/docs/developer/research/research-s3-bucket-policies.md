@@ -139,6 +139,13 @@ of the Orca archive bucket created in the [Versioned Glacier Bucket](#versioned-
 
 It may be possible to combine the two `Inventory-PREFIX-orca-archive-*` rules, but this has not yet been tested.
 
+The [storage class](https://aws.amazon.com/s3/storage-classes/) should likely be modified to reduce costs associated with storing reports.
+More research is needed, as the cost of downloading data goes up as the cost of storage goes down.
+
+A lifecycle rule should be created to delete reports after a certain amount of time, tentatively placed at 30 days.
+Instructions on creating this through TF can be found in the [official docs](https://registry.terraform.io/providers/hashicorp/aws/3.63.0/docs/resources/s3_bucket).
+A Jira card for this [currently exists](https://bugs.earthdata.nasa.gov/browse/ORCA-451).
+
 We should also remove the ACL capabilities due to AWS potential deprecation.
 This will be detailed in a [future section](#acl-rule-replacement).
 
