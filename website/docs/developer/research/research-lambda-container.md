@@ -1,7 +1,7 @@
 ---
 id: research-lambda-container
 title: Using Lambda functions as container research Notes
-description: Research Notes on 
+description: Research Notes on Containerizing Lambdas
 ---
 
 ## Overview
