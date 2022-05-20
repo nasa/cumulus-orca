@@ -133,6 +133,7 @@ variable "db_admin_username {
   description = "username for database"
   type        = string
 }
+
 variable "db_admin_password" {
   description = "Password for RDS database administrator authentication"
   type        = string
@@ -171,7 +172,7 @@ variable "s3_secret_key" {
 }
 EOF
 
-# adding variables to orca_variables.tf file
+# adding variables to terraform.tfvars file
 cat << EOF > terraform.tfvars
 # DO NOT CHANGE THIS VARIABLE UNLESS DEPLOYING OUTSIDE NGAP
 deploy_to_ngap = true
