@@ -129,7 +129,10 @@ variable "db_host_endpoint" {
 }
 
 ## OPTIONAL
-
+variable "db_admin_username {
+  description = "username for database"
+  type        = string
+}
 variable "db_admin_password" {
   description = "Password for RDS database administrator authentication"
   type        = string
@@ -201,7 +204,6 @@ tea_distribution_url = "TEA distribution url"
 # Cumulus Distribution variables.
 
 deploy_cumulus_distribution = false
-db_admin_username = "postgres"
 EOF
 
 # adding buckets variable to a new file
