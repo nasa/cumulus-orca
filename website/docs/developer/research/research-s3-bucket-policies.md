@@ -13,7 +13,7 @@ This document aims to document the desired final state of our S3 buckets.
 
 Note that this work depends on completing (ORCA-351)[https://bugs.earthdata.nasa.gov/browse/ORCA-351]
 
-Suggested name: PREFIX-orca-glacier-archive-versioned
+Suggested name: PREFIX-orca-archive-versioned
 
 Our [current Glacier bucket instructions](../deployment-guide/creating-orca-glacier-bucket.md) are well suited to storage.
 There are a few changes we should consider.
@@ -26,7 +26,7 @@ This will be detailed in a [future section](#acl-rule-replacement).
 
 ## WORM Glacier Bucket
 
-Suggested name: PREFIX-orca-glacier-archive-worm
+Suggested name: PREFIX-orca-archive-worm
 
 Some data will never have additional versions. This includes raw or near-raw satellite data. This data should be stored in a Read Once Write Many (WORM) model, and be protected from accidental deletion, as it is the foundation of all derived data.
 
@@ -83,43 +83,43 @@ Versioning is not used, and in general no changes are required beyond updating t
         "s3:PutBucketNotification"
       ],
       "Resource": [
-        "arn:aws:s3:::PREFIX-orca-glacier-archive-versioned",
-        "arn:aws:s3:::PREFIX-orca-glacier-archive-versioned/*"
+        "arn:aws:s3:::PREFIX-orca-archive-versioned",
+        "arn:aws:s3:::PREFIX-orca-archive-versioned/*"
       ]
     },
     {
-      "Sid": "Inventory-PREFIX-orca-glacier-archive-versioned",
+      "Sid": "Inventory-PREFIX-orca-archive-versioned",
       "Effect": "Allow",
       "Principal": {
         "Service": "s3.amazonaws.com"
       },
       "Action": "s3:PutObject",
-      "Resource": "arn:aws:s3:::PREFIX-orca-glacier-archive-versioned/*",
+      "Resource": "arn:aws:s3:::PREFIX-orca-archive-versioned/*",
       "Condition": {
         "StringEquals": {
       	  "s3:x-amz-acl": "bucket-owner-full-control",
       	  "aws:SourceAccount": "782417781503"
         },
       	"ArnLike": {
-      	  "aws:SourceArn": "arn:aws:s3:::PREFIX-orca-glacier-archive-versioned"
+      	  "aws:SourceArn": "arn:aws:s3:::PREFIX-orca-archive-versioned"
       	}
       }
     },
     {
-      "Sid": "Inventory-PREFIX-orca-glacier-archive-worm",
+      "Sid": "Inventory-PREFIX-orca-archive-worm",
       "Effect": "Allow",
       "Principal": {
         "Service": "s3.amazonaws.com"
       },
       "Action": "s3:PutObject",
-      "Resource": "arn:aws:s3:::PREFIX-orca-glacier-archive-worm/*",
+      "Resource": "arn:aws:s3:::PREFIX-orca-archive-worm/*",
       "Condition": {
         "StringEquals": {
       	  "s3:x-amz-acl": "bucket-owner-full-control",
       	  "aws:SourceAccount": "782417781503"
         },
       	"ArnLike": {
-      	  "aws:SourceArn": "arn:aws:s3:::PREFIX-orca-glacier-archive-worm"
+      	  "aws:SourceArn": "arn:aws:s3:::PREFIX-orca-archive-worm"
       	}
       }
     }
@@ -134,10 +134,10 @@ Replace the number in `arn:aws:iam::909121343565:root` with the value of your ac
 Replace the number `782417781503` with your DR account number.
 
 The Resource value is the bucket and bucket paths that the Cumulus application
-can access. Replace `sandbox-orca-glacier-archive` with the name
+can access. Replace `PREFIX-orca-archive-versioned` with the name
 of the Orca archive bucket created in the [Versioned Glacier Bucket](#versioned-glacier-bucket) section.
 
-It may be possible to combine the two `Inventory-PREFIX-orca-glacier-archive-*` rules, but this has not yet been tested.
+It may be possible to combine the two `Inventory-PREFIX-orca-archive-*` rules, but this has not yet been tested.
 
 We should also remove the ACL capabilities due to AWS potential deprecation.
 This will be detailed in a [future section](#acl-rule-replacement).
