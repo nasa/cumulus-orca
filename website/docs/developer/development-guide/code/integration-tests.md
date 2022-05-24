@@ -8,9 +8,10 @@ While [unit tests](./unit-tests.md) cover individual functions, this does not co
 Consideration should be given to how the components of a large system interact, and how the layers fit together.
 These tests run realistic scenarios against a full system via Bamboo scripts.
 
-## Test Priorities
+## Test Assumptions
 
-TODO
+These are suggestions for rules and setup procedures for integration tests.
+Documentation below assumes that the following are applied.
 
 - Values should be randomized whenever possible.
   This will avoid copy-pasted strings causing false-positives.
@@ -23,6 +24,16 @@ TODO
   Build retries with timeouts into network calls when appropriate.
 - Since tests may take some time, test multiple values at once.
   For example, if testing a flow where different file extensions are treated differently, pass multiple types into the flow and make sure they are handled properly.
+- A persistent data bucket should exist to provide files for ingest.
+- Tests should be run in parallel when possible.
+- Use realistic routes when feasible. For example, ingest files to Orca instead of placing them in the bucket manually.
+- All resources, including storage mediums, should be deleted after all tests have been run.
+  :::warning
+  KMS keys persist for a minimum of 7 days. This can be gotten around by randomizing the environment's prefix.
+  :::
+- For initial setup, we do not plan on automating checking logs.
+  In the future, this may be a method of identifying point-of-failure in automated processes.
+- Files should be run on a regular cadence. Initial suggestion is once every 1-2 weeks.
 
 Some broad categories of tests are shown below.
 
@@ -41,6 +52,11 @@ For components such as databases and S3 buckets, this will involve attempting to
 To improve maintainability, use a shared function for setup of the [Happy Path](#happy-path) and Security Path tests for a given component.
 :::
 
+:::warning
+Due to how NGAP handles security, even resources with public access enabled cannot be accessed publicly.
+Further research should be done to identify how to perform these tests.
+:::
+
 ### Error Paths
 
 These tests verify that when an error is expected, a proper error is returned/raised.
@@ -54,15 +70,19 @@ The test should fail if the API returns the error in a dictionary instead of an 
 We do not presently test integrations with Cumulus or other external consumers.
 As we do not want to deepen coupling with Cumulus, it is best to focus on maintaining a consistent API.
 
+### Performance
+
+While there is a desire to eventually develop performance tests, these tests should focus on functionality with generous timeouts.
+
 ## Needed Tests
 
 This is a list of tests that should be created for existing Orca architecture. This list may change as tests are created and components are modified.
 
 ### [Internal Reconciliation](../../research/research-reconciliation.mdx)
 - [Happy](#happy-path):
-  1. Post randomized data to Orca catalog.
-  1. Post S3 data in the structure of an S3 inventory report to the report bucket. Include at least one of each error type comparing between this and the catalog.
-  1. Post a manifest to the report bucket.
+  1. Ingest randomized data to Orca.
+  1. Modify the catalog and post S3 data in the structure of an S3 inventory report to the report bucket. Include at least one of each error type comparing between the two sources.
+  1. Post a mocked-up manifest to the report bucket.
   1. Retry calls to the [Internal Reconcile Report API](../../../developer/api/api-gateway.md/#internal-reconcile-report-jobs-api) until job is complete.
   1. Check that job is successful, and expected errors can be retrieved through the API.
      ::: warning
@@ -79,7 +99,19 @@ This is a list of tests that should be created for existing Orca architecture. T
 - [Happy](#happy-path):
   1. Add files to an S3 bucket that is registered with Orca.
      Structure should imitate two granules.
+     :::tip
+     Include a 200 GB file to make sure timeouts do not prevent ingest.
+     :::
+     :::tip
+     Test ingesting from Glacier buckets as well as regular buckets.
+     :::
   1. Call the OrcaCopyToGlacierWorkflow to ingest the granules to Orca.
+     :::tip
+     Make sure to cover ExcludeDataTypes being set, being unset, and excluding files. May require additional tests.
+     :::
+     :::tip
+     Future work will allow us to target multiple buckets with ingest.
+     :::
   1. Retry calls to the [Catalog API](../../../developer/api/api-gateway.md/#catalog-reporting-api) until entries are found.
   1. Verify that the files are present in the proper Orca bucket.
 - [Security](#security-paths):
@@ -92,10 +124,15 @@ This is a list of tests that should be created for existing Orca architecture. T
 
 ### Recovery
 - [Happy](#happy-path):
-  1. Add files to an Orca backup bucket.
-     Structure should imitate two granules.
+  1. Ingest randomized data to Orca.
+     :::tip
+     Include a 200 GB file to make sure timeouts do not prevent recovery.
+     :::
   1. Call the OrcaRecoveryWorkflow to restore the files from Orca to another bucket.
   1. Retry calls to the [Recovery Granules API](../../../developer/api/api-gateway.md/#recovery-granules-api) until entries are found, and status is `complete`.
+     :::warning
+     Recovery may take up to 4 hours.
+     :::
   1. Verify that the files are present in the proper Orca bucket.
 - [Security](#security-paths):
   1. Follow the Happy test up to calling the workflow.
@@ -106,6 +143,8 @@ This is a list of tests that should be created for existing Orca architecture. T
   1. No recovery endpoints should be publicly accessible, even if the granule-id or other values are known.
 - [Error](#error-paths):
   1. Requests for recovery info on files that are not being recovered should return HTTP Status 404.
+
+  1. Recovering files that are in the process of being recovered should return an error.
 
 ### General Security
 
