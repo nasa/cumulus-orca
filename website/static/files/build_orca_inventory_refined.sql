@@ -74,7 +74,7 @@ BEGIN;
     COMMENT ON COLUMN granules.ingest_time
       IS 'Date and time the granule was originally ingested into ORCA.';
     COMMENT ON COLUMN granules.cumulus_create_time
-      IS 'Date and time data was originally ingested into Cumulus';
+      IS 'CreateTime from Cumulus';
     COMMENT ON COLUMN granules.last_update
       IS 'Last time the data for the granule was updated. This generally will coincide with a duplicate or a change to the underlying data file.';
 
