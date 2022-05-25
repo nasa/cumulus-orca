@@ -247,7 +247,6 @@ echo "terraform {
             dynamodb_table = \"$bamboo_PREFIX-tf-locks\"
     }
 }" > terraform.tf
-terraform fmt
 # Initialize deployment
 terraform init \
   -input=false
