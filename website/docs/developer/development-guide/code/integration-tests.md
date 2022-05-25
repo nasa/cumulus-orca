@@ -29,11 +29,12 @@ Documentation below assumes that the following are applied.
 - Use realistic routes when feasible. For example, ingest files to Orca instead of placing them in the bucket manually.
 - All resources, including storage mediums, should be deleted after all tests have been run.
   :::warning
-  KMS keys persist for a minimum of 7 days. This can be gotten around by randomizing the environment's prefix.
+  When deleted, KMS keys persist for a minimum of 7 days. In order to run tests more often 
+  than every 7-8 days, a randomized prefix could be used for   deployment to avoid collision
+  errors with KMS key names within the same environment.
   :::
-- For initial setup, we do not plan on automating checking logs.
-  In the future, this may be a method of identifying point-of-failure in automated processes.
-- Files should be run on a regular cadence. Initial suggestion is once every 1-2 weeks.
+- Initially, automated validation will not include checking Cloudwatch logs. Logs will be available for x days to help manually identify any errors and troubleshoot problems. In the future, automating searches for key phrases in Cloudwatch logs as validation may be used for identifying point-of-failure in processes.
+- Integration tests should be run on a regular cadence. Initial suggestion is once every 1-2 weeks.
 
 Some broad categories of tests are shown below.
 
@@ -70,6 +71,8 @@ The test should fail if the API returns the error in a dictionary instead of an 
 We do not presently test integrations with Cumulus or other external consumers.
 As we do not want to deepen coupling with Cumulus, it is best to focus on maintaining a consistent API.
 
+Manual tests should still be run with Cumulus to check for changes in schemas, Cumulus Message Adapter, and the Cumulus Dashboard. These manual tests should replicate the ingest/recovery tests.
+
 ### Performance
 
 While there is a desire to eventually develop performance tests, these tests should focus on functionality with generous timeouts.
@@ -82,6 +85,10 @@ This is a list of tests that should be created for existing Orca architecture. T
 - [Happy](#happy-path):
   1. Ingest randomized data to Orca.
   1. Modify the catalog and post S3 data in the structure of an S3 inventory report to the report bucket. Include at least one of each error type comparing between the two sources.
+     :::note
+     While we could wait for the automated S3 Inventory report to generate, this could take up to 24 hours.
+     This process should be checked manually before release.
+     :::
   1. Post a mocked-up manifest to the report bucket.
   1. Retry calls to the [Internal Reconcile Report API](../../../developer/api/api-gateway.md/#internal-reconcile-report-jobs-api) until job is complete.
   1. Check that job is successful, and expected errors can be retrieved through the API.
@@ -98,21 +105,23 @@ This is a list of tests that should be created for existing Orca architecture. T
 ### Ingest
 - [Happy](#happy-path):
   1. Add files to an S3 bucket that is registered with Orca.
-     Structure should imitate two granules.
+     Structure should imitate multiple granules.
      :::tip
-     Include a 200 GB file to make sure timeouts do not prevent ingest.
+     Include a large (bigger than 250 Gb) file to make sure timeouts do not prevent ingest.
      :::
      :::tip
      Test ingesting from Glacier buckets as well as regular buckets.
+     Make sure that Glacier data is less than 24 hours old.
+     If older, ingest will incur additional costs and time penalties, possibly beyond timeout limits.
      :::
   1. Call the OrcaCopyToGlacierWorkflow to ingest the granules to Orca.
      :::tip
-     Make sure to cover ExcludeDataTypes being set, being unset, and excluding files. May require additional tests.
+     Make sure to cover ExcludeFileTypes being set, being unset, and excluding files. May require additional tests.
      :::
      :::tip
      Future work will allow us to target multiple buckets with ingest.
      :::
-  1. Retry calls to the [Catalog API](../../../developer/api/api-gateway.md/#catalog-reporting-api) until entries are found.
+  1. Retry calls to the [Catalog API](../../../developer/api/api-gateway.md/#catalog-reporting-api) and check the StepFunction status until entries are found.
   1. Verify that the files are present in the proper Orca bucket.
 - [Security](#security-paths):
   1. Follow the Happy test up to calling the workflow.
@@ -122,29 +131,40 @@ This is a list of tests that should be created for existing Orca architecture. T
 - [Error](#error-paths):
   1. Requests for catalog info on a non-existent granule/file should return HTTP Status 404.
 
+  1. Attempting to ingest a file that does not exist should result in `files does not exist`.
+
 ### Recovery
 - [Happy](#happy-path):
   1. Ingest randomized data to Orca.
      :::tip
-     Include a 200 GB file to make sure timeouts do not prevent recovery.
+     Include a large (bigger than 250 Gb) file to make sure timeouts do not prevent recovery.
      :::
   1. Call the OrcaRecoveryWorkflow to restore the files from Orca to another bucket.
+     :::tip
+     Make sure to cover ExcludeFileTypes being set, being unset, and excluding files. May require additional tests.
+     :::
   1. Retry calls to the [Recovery Granules API](../../../developer/api/api-gateway.md/#recovery-granules-api) until entries are found, and status is `complete`.
      :::warning
      Recovery may take up to 4 hours.
      :::
-  1. Verify that the files are present in the proper Orca bucket.
+  1. Verify that the files are present in the proper target bucket.
 - [Security](#security-paths):
+  1. Follow the Happy test up to contacting the API.
+  1. No recovery endpoints should be publicly accessible, even if the granule-id or other values are known.
+
+  :::tip
+  The following test will only be valid after completing [ORCA-351](https://bugs.earthdata.nasa.gov/browse/ORCA-351).
+  :::
   1. Follow the Happy test up to calling the workflow.
   1. Workflow should not be publicly accessible, even if files are valid.
   1. Follow the Happy test up to calling the workflow.
-  1. Workflow should not be able to restore files to arbitrary buckets.
-  1. Follow the Happy test up to contacting the API.
-  1. No recovery endpoints should be publicly accessible, even if the granule-id or other values are known.
+  1. Workflow should not be able to restore files to arbitrary buckets that are not registered with Orca.
 - [Error](#error-paths):
   1. Requests for recovery info on files that are not being recovered should return HTTP Status 404.
 
   1. Recovering files that are in the process of being recovered should return an error.
+
+  1. Attempting to recover a file that does not exist should result in `files does not exist`.
 
 ### General Security
 
