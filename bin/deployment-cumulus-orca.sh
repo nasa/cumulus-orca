@@ -64,6 +64,7 @@ CUMULUS_KEY="$bamboo_PREFIX/cumulus/terraform.tfstate"
 
 # adding variables to orca_variables.tf file
 cat << EOF > orca_variables.tf
+
 variable "orca_reports_bucket_name" {
   type        = string
   description = "The name of the bucket to store s3 inventory reports."
@@ -75,62 +76,6 @@ variable "db_host_endpoint" {
 }
 
 ## OPTIONAL
-
-variable "db_admin_password" {
-  description = "Password for RDS database administrator authentication"
-  type        = string
-}
-
-variable "db_user_password" {
-  description = "Password for RDS database user authentication"
-  type        = string
-}
-
-variable "orca_default_bucket" {
-  description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
-  type        = string
-}
-
-variable "rds_security_group_id" {
-  type        = string
-  description = "Cumulus' RDS Security Group's ID."
-}
-
-## OPTIONAL
-
-variable "dlq_subscription_email" {
-  type        = string
-  description = "The email to notify users when messages are received in dead letter SQS queue due to restore failure. Sends one email until the dead letter queue is emptied."
-}
-
-variable "s3_access_key" {
-  type        = string
-  description = "Access key for communicating with Orca S3 buckets."
-}
-
-variable "s3_secret_key" {
-  type        = string
-  description = "Secret key for communicating with Orca S3 buckets."
-}
-EOF
-
-# adding variables to orca_variables.tf file
-cat << EOF > orca_variables.tf
-variable "orca_reports_bucket_name" {
-  type        = string
-  description = "The name of the bucket to store s3 inventory reports."
-}
-
-variable "db_host_endpoint" {
-  type        = string
-  description = "Database host endpoint to connect to."
-}
-
-## OPTIONAL
-variable "db_admin_username {
-  description = "username for database"
-  type        = string
-}
 
 variable "db_admin_password" {
   description = "Password for RDS database administrator authentication"
@@ -203,6 +148,7 @@ tea_distribution_url = "TEA distribution url"
 # Cumulus Distribution variables.
 
 deploy_cumulus_distribution = false
+db_admin_username = "postgres"
 EOF
 
 # adding buckets variable to a new file
