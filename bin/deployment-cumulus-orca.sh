@@ -64,7 +64,6 @@ CUMULUS_KEY="$bamboo_PREFIX/cumulus/terraform.tfstate"
 
 # adding variables to orca_variables.tf file
 cat << EOF > orca_variables.tf
-
 variable "orca_reports_bucket_name" {
   type        = string
   description = "The name of the bucket to store s3 inventory reports."
@@ -117,7 +116,6 @@ EOF
 
 # adding variables to orca_variables.tf file
 cat << EOF > orca_variables.tf
-
 variable "orca_reports_bucket_name" {
   type        = string
   description = "The name of the bucket to store s3 inventory reports."
