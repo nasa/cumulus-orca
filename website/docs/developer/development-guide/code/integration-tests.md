@@ -112,7 +112,7 @@ This is a list of tests that should be created for existing Orca architecture. T
      :::tip
      Test ingesting from Glacier buckets as well as regular buckets.
      Make sure that Glacier data is less than 24 hours old.
-     If older, ingest will incur additional costs and time penalties, possibly beyond timeout limits.
+     If older, data will be moved out of `recovered` and `pre-archival` states, and ingest will incur additional costs and time penalties, possibly beyond timeout limits.
      :::
   1. Call the OrcaCopyToGlacierWorkflow to ingest the granules to Orca.
      :::tip
