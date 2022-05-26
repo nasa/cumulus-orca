@@ -33,7 +33,7 @@ Documentation below assumes that the following are applied.
   than every 7-8 days, a randomized prefix could be used for   deployment to avoid collision
   errors with KMS key names within the same environment.
   :::
-- Initially, automated validation will not include checking Cloudwatch logs. Logs will be available for x days to help manually identify any errors and troubleshoot problems. In the future, automating searches for key phrases in Cloudwatch logs as validation may be used for identifying point-of-failure in processes.
+- Initially, automated validation will not include checking Cloudwatch logs. Logs will be available for 7 days to help manually identify any errors and troubleshoot problems. In the future, automating searches for key phrases in Cloudwatch logs as validation may be used for identifying point-of-failure in processes.
 - Integration tests should be run on a regular cadence. Initial suggestion is once every 1-2 weeks.
 
 Some broad categories of tests are shown below.
@@ -87,7 +87,7 @@ This is a list of tests that should be created for existing Orca architecture. T
   1. Modify the catalog and post S3 data in the structure of an S3 inventory report to the report bucket. Include at least one of each error type comparing between the two sources.
      :::note
      While we could wait for the automated S3 Inventory report to generate, this could take up to 24 hours.
-     This process should be checked manually before release.
+     Prior to release or periodically, an S3 Inventory report should be generated through AWS mechanisms to validate the schema and style of the test report being used.
      :::
   1. Post a mocked-up manifest to the report bucket.
   1. Retry calls to the [Internal Reconcile Report API](../../../developer/api/api-gateway.md/#internal-reconcile-report-jobs-api) until job is complete.
@@ -116,12 +116,13 @@ This is a list of tests that should be created for existing Orca architecture. T
      :::
   1. Call the OrcaCopyToGlacierWorkflow to ingest the granules to Orca.
      :::tip
-     Make sure to cover ExcludeFileTypes being set, being unset, and excluding files. May require additional tests.
+     Make sure to cover ExcludeFileTypes being set, being unset, and excluding/allowing proper files in either case. May require additional tests.
      :::
      :::tip
      Future work will allow us to target multiple buckets with ingest.
      :::
-  1. Retry calls to the [Catalog API](../../../developer/api/api-gateway.md/#catalog-reporting-api) and check the StepFunction status until entries are found.
+  1. Check the StepFunction status until status is completed.
+  1. Call the [Catalog API](../../../developer/api/api-gateway.md/#catalog-reporting-api) to make sure entries are found.
   1. Verify that the files are present in the proper Orca bucket.
 - [Security](#security-paths):
   1. Follow the Happy test up to calling the workflow.
@@ -141,7 +142,7 @@ This is a list of tests that should be created for existing Orca architecture. T
      :::
   1. Call the OrcaRecoveryWorkflow to restore the files from Orca to another bucket.
      :::tip
-     Make sure to cover ExcludeFileTypes being set, being unset, and excluding files. May require additional tests.
+     Make sure to cover ExcludeFileTypes being set, being unset, and excluding/allowing proper files in either case. May require additional tests.
      :::
   1. Retry calls to the [Recovery Granules API](../../../developer/api/api-gateway.md/#recovery-granules-api) until entries are found, and status is `complete`.
      :::warning
