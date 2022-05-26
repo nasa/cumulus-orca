@@ -31,7 +31,7 @@ def app_database_sql(db_name: str, admin_username: str) -> TextClause:
     return text(
         f"""
         CREATE DATABASE {db_name}
-            OWNER {admin_username}
+            OWNER "{admin_username}"
             TEMPLATE template1
             ENCODING 'UTF8';
     """
@@ -450,7 +450,7 @@ def recovery_file_table_sql() -> TextClause:
 
 def providers_table_sql() -> TextClause:
     """
-    Full SQL for creating the providers table. 
+    Full SQL for creating the providers table.
 
     Returns:
         (sqlalchemy.sql.element.TextClause): SQL for creating providers table.
@@ -480,7 +480,7 @@ def providers_table_sql() -> TextClause:
 
 def collections_table_sql() -> TextClause:
     """
-    Full SQL for creating the collections table. 
+    Full SQL for creating the collections table.
 
     Returns:
         (sqlalchemy.sql.element.TextClause): SQL for creating collections table.
