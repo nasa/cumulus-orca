@@ -82,6 +82,11 @@ variable "db_admin_password" {
   type        = string
 }
 
+variable "db_admin_username" {
+  description = "Username for RDS database admin"
+  type        = string
+}
+
 variable "db_user_password" {
   description = "Password for RDS database user authentication"
   type        = string
