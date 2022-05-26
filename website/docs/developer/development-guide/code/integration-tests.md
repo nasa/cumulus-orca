@@ -6,7 +6,7 @@ description: Instructions on Developing and Running Integration Tests
 
 While [unit tests](./unit-tests.md) cover individual functions, this does not constitute full coverage.
 Consideration should be given to how the components of a large system interact, and how the layers fit together.
-These tests run realistic scenarios against a full system via Bamboo scripts.
+These tests run realistic scenarios against a full system via scripts run in Bamboo.
 
 ## Test Assumptions
 
@@ -71,7 +71,7 @@ The test should fail if the API returns the error in a dictionary instead of an 
 We do not presently test integrations with Cumulus or other external consumers.
 As we do not want to deepen coupling with Cumulus, it is best to focus on maintaining a consistent API.
 
-Manual tests should still be run with Cumulus to check for changes in schemas, Cumulus Message Adapter, and the Cumulus Dashboard. These manual tests should replicate the ingest/recovery tests.
+Manual tests should still be run with Cumulus to check for changes in Cumulus output/input schemas, Orca input/output schemas, Cumulus Message Adapter, and the Cumulus Dashboard. These manual tests should replicate the ingest/recovery tests.
 
 ### Performance
 
@@ -86,7 +86,8 @@ This is a list of tests that should be created for existing Orca architecture. T
   1. Ingest randomized data to Orca.
   1. Modify the catalog and post S3 data in the structure of an S3 inventory report to the report bucket. Include at least one of each error type comparing between the two sources.
      :::note
-     While we could wait for the automated S3 Inventory report to generate, this could take up to 24 hours.
+     While we could wait for the automated S3 Inventory report to generate, this could take up to 24 hours, which would delay testing.
+     Therefore, use a dummy report that matches the AWS report schema to perform automated testing.
      Prior to release or periodically, an S3 Inventory report should be generated through AWS mechanisms to validate the schema and style of the test report being used.
      :::
   1. Post a mocked-up manifest to the report bucket.
@@ -116,7 +117,8 @@ This is a list of tests that should be created for existing Orca architecture. T
      :::
   1. Call the OrcaCopyToGlacierWorkflow to ingest the granules to Orca.
      :::tip
-     Make sure to cover ExcludeFileTypes being set, being unset, and excluding/allowing proper files in either case. May require additional tests.
+     Make sure to cover ExcludeFileTypes being set, being unset, and excluding/allowing proper files in either case.
+     May require additional tests.
      :::
      :::tip
      Future work will allow us to target multiple buckets with ingest.
@@ -142,7 +144,9 @@ This is a list of tests that should be created for existing Orca architecture. T
      :::
   1. Call the OrcaRecoveryWorkflow to restore the files from Orca to another bucket.
      :::tip
-     Make sure to cover ExcludeFileTypes being set, being unset, and excluding/allowing proper files in either case. May require additional tests.
+     Make sure to cover ExcludeFileTypes being set, being unset, and excluding/allowing proper files in either case.
+     May require additional tests.
+     Ignored files will not be listed in output.
      :::
   1. Retry calls to the [Recovery Granules API](../../../developer/api/api-gateway.md/#recovery-granules-api) until entries are found, and status is `complete`.
      :::warning
@@ -159,7 +163,7 @@ This is a list of tests that should be created for existing Orca architecture. T
   1. Follow the Happy test up to calling the workflow.
   1. Workflow should not be publicly accessible, even if files are valid.
   1. Follow the Happy test up to calling the workflow.
-  1. Workflow should not be able to restore files to arbitrary buckets that are not registered with Orca.
+  1. Workflow should not be able to restore files to arbitrary buckets that Orca does not have permission to write to.
 - [Error](#error-paths):
   1. Requests for recovery info on files that are not being recovered should return HTTP Status 404.
 
