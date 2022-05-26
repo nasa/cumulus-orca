@@ -2,12 +2,12 @@
 Name: request_files.py
 Description:  Lambda function that makes a restore request from glacier for each input file.
 """
+import json
 import os
 import time
 import uuid
-import json
-from typing import Dict, Any, Union, List
 from datetime import datetime, timezone
+from typing import Any, Dict, List, Union
 
 # noinspection PyPackageRequirements
 import boto3
@@ -17,8 +17,8 @@ from botocore.client import BaseClient
 
 # noinspection PyPackageRequirements
 from botocore.exceptions import ClientError
-from run_cumulus_task import run_cumulus_task
 from orca_shared.recovery import shared_recovery
+from run_cumulus_task import run_cumulus_task
 
 DEFAULT_RESTORE_EXPIRE_DAYS = 5
 DEFAULT_MAX_REQUEST_RETRIES = 2
