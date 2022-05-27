@@ -82,7 +82,7 @@ def dbo_role_sql(db_name: str, admin_username: str) -> TextClause:
             -- Grants
             GRANT CONNECT ON DATABASE {db_name} TO orca_dbo;
             GRANT CREATE ON DATABASE {db_name} TO orca_dbo;
-            GRANT orca_dbo TO {admin_username};
+            GRANT orca_dbo TO "{admin_username}";
           END
         $$
     """
