@@ -4,7 +4,7 @@ set -e
 
 rm -rf venv
 python3 -m venv venv
-. venv/bin/activate
+source venv/bin/activate
 pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org
 deactivate
 echo "pwd `pwd`"

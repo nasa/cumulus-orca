@@ -50,7 +50,7 @@ export RELEASE_URL=$(curl \
     -d "{\"tag_name\": \"v$bamboo_ORCA_VERSION\", \"target_commitsh\": \"v$bamboo_ORCA_VERSION\", \"name\": \"v$bamboo_ORCA_VERSION\", \"body\": \"Release v$bamboo_ORCA_VERSION\" }" \
     -H "Content-Type: application/json" \
     -X POST \
-    "https://api.github.com/repos/$GITHUB_REPO/releases"\
+    https://api.github.com/repos/nasa/cumulus-orca/releases \
     | grep \"url\" \
     | grep releases \
     | sed -e 's/.*\(https.*\)\"\,/\1/' \
