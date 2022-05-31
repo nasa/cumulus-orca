@@ -187,7 +187,6 @@ module "orca" {
   lambda_subnet_ids        = var.lambda_subnet_ids
   permissions_boundary_arn = var.permissions_boundary_arn
   prefix                   = var.prefix
-  rds_security_group_id    = var.rds_security_group_id
   system_bucket            = var.system_bucket
   vpc_id                   = var.vpc_id
   workflow_config          = module.cumulus.workflow_config
