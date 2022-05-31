@@ -89,6 +89,11 @@ variable "rds_security_group_id" {
   description = "Cumulus' RDS Security Group's ID."
 }
 
+variable "dlq_subscription_email" {
+  type        = string
+  description = "The email to notify users when messages are received in dead letter SQS queue due to restore failure. Sends one email until the dead letter queue is emptied."
+}
+
 variable "orca_reports_bucket_name" {
   type        = string
   description = "The name of the bucket to store s3 inventory reports."
@@ -102,6 +107,13 @@ variable "s3_access_key" {
 variable "s3_secret_key" {
   type        = string
   description = "Secret key for communicating with Orca S3 buckets."
+}
+
+## OPTIONAL
+
+variable "db_admin_username" {
+ description = "Username for RDS database administrator authentication"
+ type        = string
 }
 EOF
 
