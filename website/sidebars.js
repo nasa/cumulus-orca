@@ -75,7 +75,8 @@ module.exports = {
       'developer/research/research-orca-delete-functionality',
       'developer/research/research-bamboo-integration-tests',
       'developer/research/research-lambda-container',
-      'developer/research/research-pushing-docker-image'
+      'developer/research/research-pushing-docker-image',
+      'developer/research/research-s3-bucket-best-practices'
     ],
   },
   cookbook: {

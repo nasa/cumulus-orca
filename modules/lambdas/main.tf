@@ -96,7 +96,7 @@ resource "aws_cloudwatch_event_rule" "delete_old_reconcile_jobs_event_rule" {
   schedule_expression = var.orca_delete_old_reconcile_jobs_frequency_cron
 
   ## OPTIONAL
-  description = "Scheduled execution of the ${aws_lambda_function.delete_old_reconcile_jobs.name} lambda."
+  description = "Scheduled execution of the ${aws_lambda_function.delete_old_reconcile_jobs.function_name} lambda."
   tags        = var.tags
 }
 

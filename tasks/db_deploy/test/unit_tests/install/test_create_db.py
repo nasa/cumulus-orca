@@ -19,6 +19,7 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         """
         Set up test.
         """
+        # todo: Use randomized values on a per-test basis.
         self.config = {
             "admin_database": "admin_db",
             "admin_password": "admin123",
@@ -72,6 +73,7 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
             self.config["user_username"],
             self.config["user_password"],
             self.config["user_database"],
+            self.config["admin_username"]
         )
         mock_set_search_path_role.assert_called_once_with(mock_conn_enter)
         mock_create_inventory_objects.assert_called_once_with(mock_conn_enter)
@@ -104,13 +106,13 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         """
         create_db.create_database(self.config)
 
-        execute_calls = [
+        mock_app_database_sql.assert_called_once_with(self.config["user_database"], self.config["admin_username"])
+        mock_connection().connect().__enter__().execute.assert_has_calls(
+        [
             call(mock_commit_sql.return_value),
             call(mock_app_database_sql.return_value),
             call(mock_app_database_comment_sql.return_value),
-        ]
-        mock_connection().connect().__enter__().execute.assert_has_calls(
-            execute_calls, any_order=True
+        ], any_order=True
         )
 
     @patch("install.create_db.sql.create_extension")
@@ -134,10 +136,11 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
             self.config["user_username"],
             self.config["user_password"],
             self.config["user_database"],
+            self.config["admin_username"]
         )
 
         # Check that SQL called properly
-        mock_dbo_role_sql.assert_called_once()
+        mock_dbo_role_sql.assert_called_once_with(self.config["user_database"], self.config["admin_username"])
         mock_app_role_sql.assert_called_once()
         mock_schema_sql.assert_called_once()
         mock_user_sql.assert_called_once_with(
@@ -146,15 +149,14 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         mock_extension_sql.assert_called_once()
 
         # Check SQL called in proper order
-        execution_order = [
+        # todo: here and elsewhere, checks are not sufficient. assert_called_once should never be used, and all assert_has_calls should be followed by a check on the call count.
+        self.mock_connection.assert_has_calls([
             call.execute(mock_dbo_role_sql()),
             call.execute(mock_app_role_sql()),
             call.execute(mock_schema_sql()),
             call.execute(mock_user_sql(self.config["user_password"])),
             call.execute(mock_extension_sql()),
-        ]
-
-        self.assertEqual(self.mock_connection.mock_calls, execution_order)
+        ])
 
     @patch("install.create_db.sql.text")
     def test_set_search_path_and_role(self, mock_text: MagicMock):

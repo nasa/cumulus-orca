@@ -49,6 +49,7 @@ and includes an additional section for migration notes.
     "orcaDefaultRecoveryTypeOverride": "Standard"
   }
   ```
+- *ORCA-426* Performance improvements around json schema validators.
 
 ### Migration Notes
 
@@ -155,6 +156,12 @@ variable "s3_secret_key" {
   vpc_endpoint_id                                      = null
   }
   ```
+
+
+## [4.0.2]
+
+### Fixed
+- Fixed bug where `db_admin_username` was not set as the owner of new databases.
 
 ## [4.0.1]
 

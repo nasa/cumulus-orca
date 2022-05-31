@@ -13,6 +13,11 @@ import extract_filepaths_for_granule
 import fastjsonschema as fastjsonschema
 from unittest.mock import patch, MagicMock, Mock
 
+# Generating schema validators can take time, so do it once and reuse.
+with open("schemas/input.json", "r") as raw_schema:
+    _INPUT_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
+with open("schemas/output.json", "r") as raw_schema:
+    _OUTPUT_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
 
 class TestExtractFilePaths(unittest.TestCase):
     """
@@ -383,11 +388,7 @@ class TestExtractFilePaths(unittest.TestCase):
         self.assertEqual(exp_result, result)
 
         # Validate the output is correct by matching with the output schema
-        with open("schemas/output.json", "r") as output_schema:
-            output_schema = json.loads(output_schema.read())
-
-        validate_output = fastjsonschema.compile(output_schema)
-        validate_output(exp_result)
+        _OUTPUT_VALIDATE(exp_result)
 
     def test_exclude_file_types(self):
         """
@@ -420,11 +421,8 @@ class TestExtractFilePaths(unittest.TestCase):
             ]
         }
         # Validate the input is correct by matching with the input schema
-        with open("schemas/input.json", "r") as input_schema:
-            input_schema = json.loads(input_schema.read())
         try:
-            validate_input = fastjsonschema.compile(input_schema)
-            validate_input(input_event)
+            _INPUT_VALIDATE(input_event)
         except Exception as ex:
             self.assertEqual(
                 ex.message,

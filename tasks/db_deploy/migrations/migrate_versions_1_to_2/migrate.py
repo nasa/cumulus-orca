@@ -28,7 +28,7 @@ def migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> 
     with admin_app_connection.connect() as connection:
         # Create the roles first since they are needed by schema and users
         logger.debug("Creating the ORCA dbo role ...")
-        connection.execute(sql.dbo_role_sql(config["user_database"]))
+        connection.execute(sql.dbo_role_sql(config["user_database"], config["admin_username"]))
         logger.info("ORCA dbo role created.")
 
         logger.debug("Creating the ORCA app role ...")
@@ -77,8 +77,8 @@ def migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> 
 
     # Migrate the data and drop old tables, schema, users, roles
     with admin_app_connection.connect() as connection:
-        # Change to Postgres role and set search path
-        logger.debug("Changing to the postgres role ...")
+        # Change to admin role and set search path
+        logger.debug("Changing to the admin role ...")
         connection.execute(sql.text("RESET ROLE;"))
 
         # Set the search path
@@ -111,7 +111,7 @@ def migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> 
         connection.execute(sql.drop_dr_schema_sql())
         logger.info("dr schema removed.")
 
-        logger.debug("Changing to the postgres role ...")
+        logger.debug("Changing to the admin role ...")
         connection.execute(sql.text("RESET ROLE;"))
 
         # Remove the users and roles

@@ -11,7 +11,7 @@ from sqlalchemy.sql.elements import TextClause
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA schema, roles, and users
 # ----------------------------------------------------------------------------
-def dbo_role_sql(db_name: str) -> TextClause:
+def dbo_role_sql(db_name: str, admin_username: str) -> TextClause:
     """
     Full SQL for creating the ORCA dbo role that owns the ORCA schema and
     objects.
@@ -39,7 +39,7 @@ def dbo_role_sql(db_name: str) -> TextClause:
             -- Grants
             GRANT CONNECT ON DATABASE {db_name} TO orca_dbo;
             GRANT CREATE ON DATABASE {db_name} TO orca_dbo;
-            GRANT orca_dbo TO postgres;
+            GRANT orca_dbo TO {admin_username};
           END
         $$
     """  # nosec

@@ -300,7 +300,8 @@ Release ORCA Documentation:
       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
   tasks:
   - checkout:
-      force-clean-build: 'false'
+      force-clean-build: 'true'
+      path: source
       description: Checkout Default Repository
   - script:
       interpreter: SHELL
@@ -316,7 +317,7 @@ Release ORCA Documentation:
       description: Run documentation release script
 Release ORCA Code:
   key: RO
-  description: Creates a GitHub Release and uploads artifacts for release
+  description: Cleans, creates a GitHub Release and uploads artifacts for release
   docker:
     image: maven.earthdata.nasa.gov/cumulus_orca
     volumes:
@@ -334,7 +335,8 @@ Release ORCA Code:
         rm -rf dist
       description: Clean Working Directory
   - checkout:
-      force-clean-build: 'false'
+      force-clean-build: 'true'
+      path: source
       description: Checkout Default Repository
   - script:
       interpreter: SHELL

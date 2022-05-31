@@ -143,7 +143,7 @@ modifications, which will be detailed below.
       "Sid": "Cross Account Access",
       "Effect": "Allow",
       "Principal": {
-        "AWS": "arn:aws:iam::909121343565:root"
+        "AWS": "arn:aws:iam::012345678912:root"
       },
       "Action": [
         "s3:GetObject*",
@@ -163,7 +163,7 @@ modifications, which will be detailed below.
       "Sid": "Cross Account Write Access",
       "Effect": "Allow",
       "Principal": {
-        "AWS": "arn:aws:iam::909121343565:root"
+        "AWS": "arn:aws:iam::012345678912:root"
       },
       "Action": "s3:PutObject*",
       "Resource": [
@@ -196,7 +196,7 @@ aws sts get-caller-identity
 }
 ```
 
-Replace the number in `arn:aws:iam::909121343565:root` with the value of your account number.
+Replace the number in `arn:aws:iam::012345678912:root` with the value of your account number.
 
 The Resource value is the bucket and bucket paths that the Cumulus application
 can access. Replace `sandbox-orca-glacier-archive` with the name
@@ -215,7 +215,7 @@ modifications, which will be detailed below.
       "Sid": "Cross Account Access",
       "Effect": "Allow",
       "Principal": {
-        "AWS": "arn:aws:iam::909121343565:root"
+        "AWS": "arn:aws:iam::012345678912:root"
       },
       "Action": [
         "s3:GetObject*",
@@ -241,7 +241,7 @@ modifications, which will be detailed below.
       "Condition": {
         "StringEquals": {
       	  "s3:x-amz-acl": "bucket-owner-full-control",
-      	  "aws:SourceAccount": "782417781503"
+      	  "aws:SourceAccount": "000000000000"
         },
       	"ArnLike": {
       	  "aws:SourceArn": "arn:aws:s3:::sandbox-orca-glacier-archive"
@@ -255,8 +255,10 @@ The Principal value is the AWS root user for your Cumulus application that will
 access the ORCA archive bucket.
 See the Archive Bucket instructions for assistance getting this value.
 
-Replace the number in `arn:aws:iam::909121343565:root` with the value of your account number.
+Replace the number in `arn:aws:iam::012345678912:root` with the value of your account number.
 See the Archive Bucket instructions for assistance getting this value.
+
+Replace the number `000000000000` with your DR account number.
 
 The Resource value is the bucket and bucket paths that the Cumulus application
 can access. Replace `sandbox-orca-glacier-archive` with the name

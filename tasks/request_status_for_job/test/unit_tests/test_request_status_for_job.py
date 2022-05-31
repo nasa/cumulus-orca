@@ -6,6 +6,7 @@ Description:  Unit tests for request_status_for_job.py.
 import copy
 import json
 import os
+import random
 import unittest
 import uuid
 from http import HTTPStatus
@@ -16,6 +17,9 @@ import sqlalchemy
 
 import request_status_for_job
 
+# Generating schema validators can take time, so do it once and reuse.
+with open("schemas/output.json", "r") as raw_schema:
+    _OUTPUT_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
 
 class TestRequestStatusForJobUnit(
     unittest.TestCase
@@ -244,6 +248,27 @@ class TestRequestStatusForJobUnit(
             return
         self.fail("Error not raised.")
 
+    @patch("cumulus_logger.CumulusLogger.error")
+    def test_create_http_error_dict_happy_path(
+            self,
+            mock_error: MagicMock
+    ):
+        error_type = uuid.uuid4().__str__()
+        http_status_code = random.randint(0, 9999)  # nosec
+        request_id = uuid.uuid4().__str__()
+        message = uuid.uuid4().__str__()
+
+        result = request_status_for_job.create_http_error_dict(error_type, http_status_code, request_id, message)
+
+        self.assertEqual({
+            "errorType": error_type,
+            "httpStatus": http_status_code,
+            "requestId": request_id,
+            "message": message,
+        }, result)
+
+        mock_error.assert_called_once_with(message)
+
     # Multi-Function Tests:
     @patch("orca_shared.database.shared_db.get_user_connection")
     def test_task_output_json_schema(self, mock_get_user_connection: MagicMock):
@@ -291,5 +316,4 @@ class TestRequestStatusForJobUnit(
         with open("schemas/output.json", "r") as raw_schema:
             schema = json.loads(raw_schema.read())
 
-        validate = fastjsonschema.compile(schema)
-        validate(result)
+        _OUTPUT_VALIDATE(result)
