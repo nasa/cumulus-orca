@@ -205,19 +205,7 @@ def inner_task(
                 expires.
             status_update_queue_url: The URL of the SQS queue to post status to.
         Returns:
-            A dict with the following keys:
-                'granules' (List): A list of dicts, each with the following keys:
-                    'granuleId' (string): The id of the granule being restored.
-                    'recoverFiles' (list(dict)): A list of dicts with the following keys:
-                        'key' (str): Name of the file within the granule.
-                        'destBucket' (str): The bucket the restored file will be moved
-                            to after the restore completes.
-                        'success' (boolean): True, indicating the restore request was submitted successfully.
-                            If any value would be false, RestoreRequestError is raised instead.
-                        'errorMessage' (string): when success is False, this will contain
-                            the error message from the restore error.
-                    'keys': Same as recoverFiles, but without 'success' and 'errorMessage'.
-                'job_id' (str): The 'job_id' from event if present, otherwise a newly-generated uuid.
+            See schemas/output.json
         Raises:
             RestoreRequestError: Thrown if there are errors with the input request.
     """
