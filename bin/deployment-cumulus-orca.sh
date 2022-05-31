@@ -15,7 +15,6 @@ echo "checked out to $bamboo_ORCA_RELEASE_BRANCH branch"
 #deploy data persistence tf module
 
 cd data-persistence-tf
-echo "inside data persistence tf"
 mv terraform.tfvars.example terraform.tfvars
 
 DATA_PERSISTENCE_KEY="$bamboo_PREFIX/data-persistence-tf/terraform.tfstate"
@@ -30,7 +29,6 @@ echo "terraform {
     }
 }" > terraform.tf
 
-terraform fmt
 # Initialize deployment
 terraform init \
   -input=false
@@ -57,39 +55,28 @@ cd cumulus-orca && git checkout $bamboo_ORCA_TEST_BRANCH
 # run the build script to create lambda zip files
 ./bin/build_tasks.sh
 cd ../cumulus-orca-deploy-template/cumulus-tf
-echo "inside cumulus-tf module"
 mv terraform.tfvars.example terraform.tfvars
 
 CUMULUS_KEY="$bamboo_PREFIX/cumulus/terraform.tfstate"
 
-# adding variables to orca_variables.tf file
+# adding required variables to orca_variables.tf
 cat << EOF > orca_variables.tf
-
-variable "orca_reports_bucket_name" {
-  type        = string
-  description = "The name of the bucket to store s3 inventory reports."
-}
-
-variable "db_host_endpoint" {
-  type        = string
-  description = "Database host endpoint to connect to."
-}
-
-## OPTIONAL
+## Variables unique to ORCA
+## REQUIRED
 
 variable "db_admin_password" {
   description = "Password for RDS database administrator authentication"
   type        = string
 }
 
-variable "db_admin_username" {
-  description = "Username for RDS database admin"
-  type        = string
-}
-
 variable "db_user_password" {
   description = "Password for RDS database user authentication"
   type        = string
+}
+
+variable "db_host_endpoint" {
+  type        = string
+  description = "Database host endpoint to connect to."
 }
 
 variable "orca_default_bucket" {
@@ -102,11 +89,9 @@ variable "rds_security_group_id" {
   description = "Cumulus' RDS Security Group's ID."
 }
 
-## OPTIONAL
-
-variable "dlq_subscription_email" {
+variable "orca_reports_bucket_name" {
   type        = string
-  description = "The email to notify users when messages are received in dead letter SQS queue due to restore failure. Sends one email until the dead letter queue is emptied."
+  description = "The name of the bucket to store s3 inventory reports."
 }
 
 variable "s3_access_key" {
@@ -156,7 +141,7 @@ deploy_cumulus_distribution = false
 db_admin_username = "postgres"
 EOF
 
-# adding buckets variable to a new file
+# adding buckets variable to terraform.tfvars
 echo "buckets = {
         default_orca = {
           name = \"$bamboo_PREFIX-orca-primary\"
@@ -188,7 +173,43 @@ echo "buckets = {
         }
       }" >> terraform.tfvars
 
-less terraform.tfvars
+cat << EOF > orca.tf
+## ORCA Module
+## =============================================================================
+module "orca" {
+  # source = "https://github.com/nasa/cumulus-orca/releases/download/v4.0.1/cumulus-orca-terraform.zip"
+  source = "../../cumulus-orca"
+  ## --------------------------
+  ## Cumulus Variables
+  ## --------------------------
+  ## REQUIRED
+  buckets                  = var.buckets
+  lambda_subnet_ids        = var.lambda_subnet_ids
+  permissions_boundary_arn = var.permissions_boundary_arn
+  prefix                   = var.prefix
+  rds_security_group_id    = var.rds_security_group_id
+  system_bucket            = var.system_bucket
+  vpc_id                   = var.vpc_id
+  workflow_config          = module.cumulus.workflow_config
+
+  ## OPTIONAL
+  tags = var.tags
+
+  ## --------------------------
+  ## ORCA Variables
+  ## --------------------------
+  ## REQUIRED
+  db_admin_password        = var.db_admin_password
+  db_user_password         = var.db_user_password
+  db_host_endpoint         = var.db_host_endpoint
+  dlq_subscription_email   = var.dlq_subscription_email
+  orca_default_bucket      = var.orca_default_bucket
+  orca_reports_bucket_name = var.orca_reports_bucket_name
+  rds_security_group_id    = var.rds_security_group_id
+  s3_access_key            = var.s3_access_key
+  s3_secret_key            = var.s3_secret_key
+EOF
+
 # Ensure remote state is configured for the deployment
 echo "terraform {
         backend \"s3\" {
