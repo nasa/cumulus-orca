@@ -29,7 +29,6 @@ echo "terraform {
     }
 }" > terraform.tf
 
-terraform fmt
 # Initialize deployment
 terraform init \
   -input=false
@@ -50,5 +49,5 @@ terraform apply \
   -var "cluster_identifier=$bamboo_PREFIX-cumulus-rds-serverless-default-cluster" \
   -var "deletion_protection=false"\
   -var "provision_user_database=false"\
-  -var "engine_version=10.14"\
+  -var "engine_version=10.12"\
   -var "permissions_boundary_arn=arn:aws:iam::$bamboo_AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
