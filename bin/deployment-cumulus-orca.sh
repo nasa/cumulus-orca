@@ -208,6 +208,7 @@ module "orca" {
   rds_security_group_id    = var.rds_security_group_id
   s3_access_key            = var.s3_access_key
   s3_secret_key            = var.s3_secret_key
+  }
 EOF
 
 # Ensure remote state is configured for the deployment
