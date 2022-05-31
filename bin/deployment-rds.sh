@@ -49,5 +49,5 @@ terraform apply \
   -var "cluster_identifier=$bamboo_PREFIX-cumulus-rds-serverless-default-cluster" \
   -var "deletion_protection=false"\
   -var "provision_user_database=false"\
-  -var "engine_version=10.12"\
+  -var "engine_version=$bamboo_RDS_ENGINE_VERSION" \
   -var "permissions_boundary_arn=arn:aws:iam::$bamboo_AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
