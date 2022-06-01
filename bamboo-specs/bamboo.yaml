@@ -29,6 +29,7 @@ stages:
     - Release ORCA Code
 
 #deploy RDS cluster for integration test
+#TODO: move to a different stage or even to a new plan for better maintenance.
 - Deploy Dev RDS Stack:
     manual: true
     final: false
