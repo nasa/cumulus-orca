@@ -108,3 +108,27 @@ To delete a published tag to re-tag, follow these steps:
     git push -d origin vx.y.z
 ```
 
+## Deploying RDS cluster and Cumulus ORCA modules in bamboo
+
+For testing, use the `feature/ORCA-test-bamboo` branch in cumulus-orca github repo and use the `ORCA-test-branch` linked repo in bamboo specs. 
+
+While running the `Deploy Dev RDS Stack` stage, replace the following variables with yours. This is because some variables are sensitive and some will vary depending upon the user running the pipeline. Make sure the proper buckets and dynamoDB table are first created. See this cumulus [documentation](https://nasa.github.io/cumulus/docs/deployment/deployment-readme) for additional details.
+
+- AWS_ACCESS_KEY_ID
+- AWS_SECRET_ACCESS_KEY
+- PREFIX
+- AWS_ACCOUNT_ID
+- DB_ADMIN_PASSWORD
+- DB_USER_PASSWORD
+
+For `Deploy Dev Cumulus and ORCA Stack` stage, add the following variables. The RDS variables `RDS_SECURITY_GROUP`, `RDS_USER_ACCESS_SECRET_ARN` and `DB_HOST_ENDPOINT` can be found from output logs of the previous `Deploy Dev RDS Stack` stage.
+
+- RDS_SECURITY_GROUP
+- RDS_USER_ACCESS_SECRET_ARN
+- DB_HOST_ENDPOINT
+- EARTHDATA_CLIENT_ID
+- EARTHDATA_CLIENT_PASSWORD
+- DLQ_SUBSCRIPTION_EMAIL
+- ORCA_REPORTS_BUCKET_NAME
+- ORCA_TEST_BRANCH
+- ORCA_RELEASE_BRANCH
