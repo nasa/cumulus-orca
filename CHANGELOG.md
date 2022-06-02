@@ -15,7 +15,6 @@ and includes an additional section for migration notes.
 
 
 ## [Unreleased]
-
 ### Added
 - *ORCA-300* Added `OrcaInternalReconciliation` workflow along with an accompanying input queue and dead-letter queue.
     Retention time can be changed by setting `internal_report_queue_message_retention_time_seconds` in your `variables.tf` or `orca_variables.tf` file. Defaults to 432000.
@@ -157,6 +156,8 @@ variable "s3_secret_key" {
   }
   ```
 
+## [4.0.3]
+- Fixed bug where `db_admin_username` had to be lower-case.
 
 ## [4.0.2]
 
