@@ -31,7 +31,7 @@ def app_database_sql(db_name: str, admin_username: str) -> TextClause:
     return text(
         f"""
         CREATE DATABASE {db_name}
-            OWNER {admin_username}
+            OWNER "{admin_username}"
             TEMPLATE template1
             ENCODING 'UTF8';
     """
@@ -82,7 +82,7 @@ def dbo_role_sql(db_name: str, admin_username: str) -> TextClause:
             -- Grants
             GRANT CONNECT ON DATABASE {db_name} TO orca_dbo;
             GRANT CREATE ON DATABASE {db_name} TO orca_dbo;
-            GRANT orca_dbo TO {admin_username};
+            GRANT orca_dbo TO "{admin_username}";
           END
         $$
     """  # nosec
@@ -199,14 +199,14 @@ def app_user_sql(user_name: str, user_password: str) -> TextClause:
         BEGIN
             IF NOT EXISTS (SELECT 1 FROM pg_user WHERE usename = '{user_name}' ) THEN
                 -- Create {user_name}
-                CREATE ROLE {user_name}
+                CREATE ROLE "{user_name}"
                     LOGIN
                     INHERIT
                     ENCRYPTED PASSWORD '{user_password}'
                     IN ROLE orca_app;
 
                 -- Add comment
-                COMMENT ON ROLE {user_name}
+                COMMENT ON ROLE "{user_name}"
                     IS 'ORCA application user.';
 
                 RAISE NOTICE 'USER CREATED {user_name}.';
@@ -214,7 +214,7 @@ def app_user_sql(user_name: str, user_password: str) -> TextClause:
             END IF;
 
             -- Alter the roles search path so on login it has what it needs for a path
-            ALTER ROLE {user_name} SET search_path = orca, public;
+            ALTER ROLE "{user_name}" SET search_path = orca, public;
         END
         $$;
     """  # nosec
