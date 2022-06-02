@@ -224,19 +224,19 @@
 <CP name="COMMENTS">ORCA S3 Glacier bucket name where the file is stored.</CP>
 </Column>
 <Column id="53" name="key_path" type="text" length="25" nulls="false">
-<CP name="COMMENTS">Full path and file name of the object in the S3 bucket from the s3 inventory report.</CP>
+<CP name="COMMENTS">Full path and file name of the object in the S3 bucket from the S3 list command.</CP>
 </Column>
 <Column id="54" name="etag" type="text" length="25" nulls="false">
-<CP name="COMMENTS">AWS etag value from the s3 inventory report.</CP>
+<CP name="COMMENTS">AWS etag value from the S3 list command.</CP>
 </Column>
 <Column id="55" name="last_update" type="timestamp with time zone" length="25" nulls="false">
-<CP name="COMMENTS">AWS Last Update from the s3 inventory report.</CP>
+<CP name="COMMENTS">AWS Last Update from the S3 list command.</CP>
 </Column>
 <Column id="56" name="size_in_bytes" type="int8" length="25" nulls="false">
-<CP name="COMMENTS">AWS size of the file in bytes from the s3 inventory report.</CP>
+<CP name="COMMENTS">AWS size of the file in bytes from the S3 list command.</CP>
 </Column>
 <Column id="57" name="storage_class" type="text" length="25" nulls="false">
-<CP name="COMMENTS">AWS storage class the object is in from the s3 inventory report.</CP>
+<CP name="COMMENTS">AWS storage class the object is in from the S3 list command.</CP>
 </Column>
 <Column id="58" name="delete_marker" type="bool" length="25" nulls="false">
 <CP name="COMMENTS">Set to `True` if object is a delete marker.</CP>

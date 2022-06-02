@@ -42,7 +42,7 @@ resources you have in AWS.
 
 For more information, see the [AWS User Guide](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html).
 
-### Cloud Notification Mechanism (CNM)
+### Cloud Nofification Mechanism (CNM)
 An interface mechanism to support cloud-based ingest messaging. For more
 information, see [PO.DAAC's CNM Schema](https://github.com/podaac/cloud-notification-message-schema).
 
@@ -76,7 +76,7 @@ archive centers. For more information see [EOSDIS's DAAC page](https://earthdata
 ### Dead Letter Queue (DLQ)
 This refers to Amazon SQS Dead-Letter Queues - these SQS queues are
 specifically configured to capture failed messages from other services/SQS
-queues/etc. to allow for processing of failed messages.
+queues/etc to allow for processing of failed messages.
 
 For more on DLQs, see the [Amazon Documentation](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html)
 and the [Cumulus DLQ feature page](https://nasa.github.io/cumulus/docs/features/dead_letter_queues).
@@ -148,7 +148,7 @@ For more information, see [AWS's lambda page](https://aws.amazon.com/lambda/).
 
 ## M
 ### Module (Terraform)
-Refers to a [Terraform module](https://www.terraform.io/docs/configuration/modules.html).
+Refers to a [terraform module](https://www.terraform.io/docs/configuration/modules.html).
 
 
 ## N
@@ -169,7 +169,7 @@ For more information, see [npmjs.com](https://www.npmjs.com/).
 ## O
 ### Operator
 Refers to those tasked with monitoring, configuring or otherwise utilizing
-Cumulus in an operational deployment.
+umulus in an operational deployment.
 
 ### ORCA
 Operational Recovery Cloud Archive. See [https://github.com/nasa/cumulus-orca](https://github.com/nasa/cumulus-orca)
@@ -242,7 +242,7 @@ data-persistence modules that is managed by Terraform.
 ### Step Function
 AWS's web service that allows you to compose complex workflows as a state
 machine comprised of tasks (Lambdas, activities hosted on EC2/ECS, some AWS
-service APIs, etc.). See [AWS's Step Function Documentation](https://aws.amazon.com/step-functions/)
+service APIs, etc). See [AWS's Step Function Documentation](https://aws.amazon.com/step-functions/)
 for more information. In the context of Cumulus these are the underlying AWS
 service used to create Workflows.
 

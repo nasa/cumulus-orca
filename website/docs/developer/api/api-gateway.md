@@ -29,14 +29,14 @@ An example of the API input body is shown below:
 ```
 The following table lists the fields in the input:
 
-| Name           | Data Type    | Description                                                                                                    | Required |
-|----------------|--------------|----------------------------------------------------------------------------------------------------------------|----------|
-| pageIndex      | `int`        | The 0-based index of the results page to return.                                                               | Yes      |
-| endTimestamp   | `int`        | Cumulus granule createdAt end-time for date range to compare data, in milliseconds since 1 January 1970 UTC.   | Yes      |
-| providerId     | `Array[str]` | The unique ID of the provider making the request.                                                              | No       |
-| collectionId   | `Array[str]` | The unique ID of collection to compare.                                                                        | No       |
-| granuleId      | `Array[str]` | The unique ID of granule to compare.                                                                           | No       |
-| startTimestamp | `int`        | Cumulus granule createdAt start time for date range to compare data, in milliseconds since 1 January 1970 UTC. | No       |
+| Name            | Data Type   | Description                                                                                                   | Required |
+| ----------------| ------------|---------------------------------------------------------------------------------------------------------------|----------|
+| pageIndex       | `int`       | The 0-based index of the results page to return.                                                              | Yes |
+| endTimestamp   | `int`       | Cumulus granule createdAt end-time for date range to compare data, in milliseconds since 1 January 1970 UTC.  | Yes |
+| providerId      | `Array[str]` | The unique ID of the provider making the request.                                                             | No  |
+| collectionId    | `Array[str]` | The unique ID of collection to compare.                                                                       | No  |
+| granuleId       | `Array[str]` | The unique ID of granule to compare.                                                                          | No  |
+| startTimestamp  | `int`       | Cumulus granule createdAt start time for date range to compare data, in milliseconds since 1 January 1970 UTC.| No  |
 
 ### Catalog reporting API output
 An example of the API output is shown below:
@@ -70,26 +70,26 @@ An example of the API output is shown below:
 ```
 The following table lists the fields in the output:
 
-| Name                   | Data Type       | Description                                                                                          |
-|------------------------|-----------------|------------------------------------------------------------------------------------------------------|
-| anotherPage            | `Boolean`       | Indicates if more results can be retrieved on another page.                                          |
-| granules               | `Array[Object]` | A list of objects representing individual files to copy.                                             |
-| providerId             | `int`           | The unique ID of the provider making the request.                                                    |
-| collectionId           | `str`           | The unique ID of collection to compare.                                                              |
-| id                     | `str`           | The unique ID of the granule.                                                                        |
-| createdAt              | `int`           | The time, in milliseconds since 1 January 1970 UTC, data was originally ingested into cumulus.       |
-| executionId            | `str`           | Step function execution ID from AWS.                                                                 |
-| ingestDate             | `int`           | The time, in milliseconds since 1 January 1970 UTC, that the data was originally ingested into ORCA. |
-| lastUpdate             | `int`           | The time, in milliseconds since 1 January 1970 UTC, that information was updated.                    |
-| files                  | `Array[Object]` | Description and status of the files within the given granule.                                        |
-| name                   | `str`           | The name and extension of the file.                                                                  |
-| cumulusArchiveLocation | `str`           | Cumulus bucket the file resides in.                                                                  |
-| orcaArchiveLocation    | `str`           | ORCA S3 Glacier bucket the file resides in.                                                          |
-| keyPath                | `str`           | S3 path to the file including the file name and extension, but not the bucket.                       |
-| sizeBytes              | `str`           | Size in bytes of the file. From Cumulus ingest.                                                      |
-| hash                   | `str`           | Checksum hash of the file provided by Cumulus.                                                       |
-| hashType               | `str`           | Hash type used to calculate the hash value of the file.                                              |
-| version                | `str`           | AWS provided version of the file.                                                                    |
+| Name                      | Data Type   |                           Description                                                               |
+| --------------------------| ----------- | ----------------------------------------------------------------------------------------------------|
+| anotherPage               | `Boolean`   | Indicates if more results can be retrieved on another page.                                         |
+| granules                  | `Array[Object]`| A list of objects representing individual files to copy.                                         |
+| providerId             | `int`       | The unique ID of the provider making the request.                                                   |
+| collectionId           | `str`       | The unique ID of collection to compare.                                                             |
+| id                     | `str`       | The unique ID of the granule.                                                                       |
+| createdAt              | `int`       | The time, in milliseconds since 1 January 1970 UTC, data was originally ingested into cumulus.      |
+| executionId            | `str`       | Step function execution ID from AWS.                                                                |
+| ingestDate             | `int`       | The time, in milliseconds since 1 January 1970 UTC, that the data was originally ingested into ORCA.|
+| lastUpdate             | `int`       | The time, in milliseconds since 1 January 1970 UTC, that information was updated.                   |
+| files                  | `Array[Object]`| Description and status of the files within the given granule.                                    |
+| name                   | `str`       | The name and extension of the file.                                                                 |
+| cumulusArchiveLocation | `str`       | Cumulus bucket the file resides in.                                                                 |
+| orcaArchiveLocation    | `str`       | ORCA S3 Glacier bucket the file resides in.                                                         |
+| keyPath                | `str`       | S3 path to the file including the file name and extension, but not the bucket.                      |
+| sizeBytes              | `str`       | Size in bytes of the file. From Cumulus ingest.                                                     |
+| hash                   | `str`       | Checksum hash of the file provided by Cumulus.                                                      |
+| hashType               | `str`       | Hash type used to calculate the hash value of the file.                                             |
+| version                | `str`       | AWS provided version of the file.                                                                   |
 
 
 The API returns status code 200 on success, 400 if `pageIndex` or  `endTimestamp` is missing and 500 if an error occurs when querying the database.
@@ -110,10 +110,10 @@ An example of the API input body is shown below:
 ```
 The following table lists the fields in the input:
 
-| Name             | Data Type | Description                                                                                | Required |
-|------------------|-----------|--------------------------------------------------------------------------------------------|----------|
-| granuleId        | `str`     | The unique ID of the granule to retrieve status for.                                       | Yes      |
-| asyncOperationId | `str`     | The unique ID of the asyncOperation. May apply to a request that covers multiple granules. | No       |
+| Name              | Data Type   | Description                                                                              | Required |
+| ------------------|-------------|------------------------------------------------------------------------------------------|----------|
+| granuleId         | `str`       | The unique ID of the granule to retrieve status for.                                     | Yes |
+| asyncOperationId  | `str`       | The unique ID of the asyncOperation. May apply to a request that covers multiple granules. | No |
 
 
 ### Recovery granules API output
@@ -146,17 +146,17 @@ An example of the API output is shown below:
 
 The following table lists the fields in the output:
 
-| Name               | Data Type       | Description                                                                                                |
-|--------------------|-----------------|------------------------------------------------------------------------------------------------------------|
-| granuleId          | `str`           | The unique ID of the granule retrieved.                                                                    |
-| asyncOperationId   | `str`           | The unique ID of the asyncOperation.                                                                       |
-| files              | `Array[Object]` | Description and status of the files within the given granule.                                              |
-| fileName           | `str`           | The name and extension of the file.                                                                        |
-| status             | `str`           | The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.             |
-| errorMessage       | `str`           | If the restoration of the file showed error, the error will be stored here.                                |
-| restoreDestination | `str`           | The name of the glacier bucket the granule is being copied to.                                             |
-| requestTime        | `int`           | The time, in milliseconds since 1 January 1970 UTC, when the request to restore the granule was initiated. |
-| completionTime     | `int`           | The time, in milliseconds since 1 January 1970 UTC, when all granule_files were in an end state.           |
+| Name               | Data Type   |                           Description                                                               |
+| -------------------| ----------- | ----------------------------------------------------------------------------------------------------|
+| granuleId          | `str`       | The unique ID of the granule retrieved.                                                             |
+| asyncOperationId   | `str`       | The unique ID of the asyncOperation.                                                                |
+| files              | `Array[Object]`| Description and status of the files within the given granule.                                    |
+| fileName           | `str`       | The name and extension of the file.                                                                 |
+| status             | `str`       | The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.      |
+| errorMessage       | `str`       | If the restoration of the file showed error, the error will be stored here.                         |
+| restoreDestination | `str`       | The name of the glacier bucket the granule is being copied to.                                      |
+| requestTime        | `int`       | The time, in milliseconds since 1 January 1970 UTC, when the request to restore the granule was initiated.|
+| completionTime     | `int`       | The time, in milliseconds since 1 January 1970 UTC, when all granule_files were in an end state.    |
 
 The API returns status code 200 on success, 400 if `granuleId` is missing, 500 if an error occurs when querying the database and 404 if not found.
 
@@ -174,9 +174,9 @@ An example of the API input body is shown below:
 
 The following table lists the fields in the input:
 
-| Name             | Data Type | Description                                              | Required |
-|------------------|-----------|----------------------------------------------------------|----------|
-| asyncOperationId | `str`     | The unique ID of the asyncOperation of the recovery job. | Yes      |
+| Name              | Data Type   | Description                                               | Required |
+| ------------------| ------------| ----------------------------------------------------------|-----------|
+| asyncOperationId  | `str`       | The unique ID of the asyncOperation of the recovery job.  | Yes |
 
 
 ### Recovery jobs API output
@@ -203,12 +203,12 @@ An example of the API output is shown below:
 ```
 The following table lists the fields in the output:
 
-| Name             | Data Type       | Description                                                                                                       |
-|------------------|-----------------|-------------------------------------------------------------------------------------------------------------------|
-| asyncOperationId | `str`           | The unique ID of the asyncOperation.                                                                              |
-| jobStatusTotals  | `Object`        | Sum of how many granules are in each particular restoration status ('pending', 'staged', 'success', or 'failed'). |
-| granules         | `Array[Object]` | An array representing each granule being copied as part of the job.                                               |
-| granuleId        | `str`           | The unique ID of the granule retrieved.                                                                           |
-| status           | `str`           | The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.                    |
+| Name                | Data Type   |                           Description                                                               |
+| --------------------| ----------- | ----------------------------------------------------------------------------------------------------|
+| asyncOperationId    | `str`       | The unique ID of the asyncOperation.                                                                |
+| jobStatusTotals     | `Object`    | Sum of how many granules are in each particular restoration status ('pending', 'staged', 'success', or 'failed'). |
+| granules            | `Array[Object]` | An array representing each granule being copied as part of the job.                                 |
+| granuleId           | `str`       | The unique ID of the granule retrieved.                                                             |
+| status              | `str`       | The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.      |
 
 The API returns status code 200 on success, 400 if `asyncOperationId` is missing, 500 if an error occurs when querying the database and 404 if not found.
