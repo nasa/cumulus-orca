@@ -15,6 +15,10 @@ and includes an additional section for migration notes.
 
 
 ## [Unreleased]
+
+## [4.0.3]
+- Fixed bug where `db_admin_username` had to be lower-case.
+
 ## [4.0.2]
 
 ### Fixed
