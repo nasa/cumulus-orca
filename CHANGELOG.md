@@ -15,7 +15,6 @@ and includes an additional section for migration notes.
 
 
 ## [Unreleased]
-
 ### Added
 - *ORCA-161* Added dead letter queue and cloudwatch alarm terraform code to recovery SQS queue.
 
@@ -88,6 +87,8 @@ variable "dlq_subscription_email" {
   }
   ```
 
+## [4.0.3]
+- Fixed bug where `db_admin_username` had to be lower-case.
 
 ## [4.0.2]
 
