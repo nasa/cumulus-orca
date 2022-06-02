@@ -2,12 +2,12 @@
 Name: request_files.py
 Description:  Lambda function that makes a restore request from glacier for each input file.
 """
+import json
 import os
 import time
 import uuid
-import json
-from typing import Dict, Any, Union, List
 from datetime import datetime, timezone
+from typing import Any, Dict, List, Union
 
 # noinspection PyPackageRequirements
 import boto3
@@ -17,8 +17,8 @@ from botocore.client import BaseClient
 
 # noinspection PyPackageRequirements
 from botocore.exceptions import ClientError
-from run_cumulus_task import run_cumulus_task
 from orca_shared.recovery import shared_recovery
+from run_cumulus_task import run_cumulus_task
 
 DEFAULT_RESTORE_EXPIRE_DAYS = 5
 DEFAULT_MAX_REQUEST_RETRIES = 2
@@ -205,19 +205,7 @@ def inner_task(
                 expires.
             status_update_queue_url: The URL of the SQS queue to post status to.
         Returns:
-            A dict with the following keys:
-                'granules' (List): A list of dicts, each with the following keys:
-                    'granuleId' (string): The id of the granule being restored.
-                    'recoverFiles' (list(dict)): A list of dicts with the following keys:
-                        'key' (str): Name of the file within the granule.
-                        'destBucket' (str): The bucket the restored file will be moved
-                            to after the restore completes.
-                        'success' (boolean): True, indicating the restore request was submitted successfully.
-                            If any value would be false, RestoreRequestError is raised instead.
-                        'errorMessage' (string): when success is False, this will contain
-                            the error message from the restore error.
-                    'keys': Same as recoverFiles, but without 'success' and 'errorMessage'.
-                'job_id' (str): The 'job_id' from event if present, otherwise a newly-generated uuid.
+            See schemas/output.json
         Raises:
             RestoreRequestError: Thrown if there are errors with the input request.
     """
