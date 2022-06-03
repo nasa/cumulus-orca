@@ -112,14 +112,43 @@ To delete a published tag to re-tag, follow these steps:
 
 For testing, use the `feature/ORCA-test-bamboo` branch in cumulus-orca github repo and use the `ORCA-test-branch` linked repo in bamboo specs. 
 
-While running the `Deploy Dev RDS Stack` stage, replace the following variables with yours. This is because some variables are sensitive and some will vary depending upon the user running the pipeline. Make sure the proper buckets and dynamoDB table are first created manually using the same prefix before running the pipeline. See this cumulus [documentation](https://nasa.github.io/cumulus/docs/deployment/deployment-readme) for additional details.
-
+While running the `Deploy Dev RDS Stack` stage, replace the following variables with yours. This is because some variables are sensitive and some will vary depending upon the user running the pipeline. 
 - AWS_ACCESS_KEY_ID
 - AWS_SECRET_ACCESS_KEY
 - PREFIX
 - AWS_ACCOUNT_ID
 - DB_ADMIN_PASSWORD
 - DB_USER_PASSWORD
+
+Make sure the proper buckets and dynamoDB table are first created manually using the same prefix before running the pipeline. See this cumulus [documentation](https://nasa.github.io/cumulus/docs/deployment/deployment-readme) and [deployment with cumulus documentation](https://github.com/nasa/cumulus-orca/blob/develop/website/docs/developer/deployment-guide/deployment-with-cumulus.md#modifying-cumulus-tfterraformtfvars) for additional details. Typically, these are the buckets that need to be created first
+- `<PREFIX>-internal`
+- `<PREFIX>-level0`
+- `<PREFIX>-public`
+- `<PREFIX>-private`
+- `<PREFIX>-protected`
+- `<PREFIX>-orca-primary`
+- `<PREFIX>-tf-state` (for storing the terraform state file)
+
+The bucket can be created using the following CLI command:
+```bash
+aws s3api create-bucket --bucket <BUCKET_NAME>  --region us-west-2 --create-bucket-configuration LocationConstraint=us-west-2
+
+```
+In addition to this, the dynamodb table and bucket version need to created as well.
+```bash
+   aws dynamodb create-table \
+      --table-name <PREFIX>-tf-locks \
+      --attribute-definitions AttributeName=LockID,AttributeType=S \
+      --key-schema AttributeName=LockID,KeyType=HASH \
+      --billing-mode PAY_PER_REQUEST \
+      --region us-west-2
+```
+    
+```bash
+      aws s3api put-bucket-versioning \
+    --bucket <PREFIX>-tf-state \
+    --versioning-configuration Status=Enabled
+```
 
 For `Deploy Dev Cumulus and ORCA Stack` stage, add the following variables. The RDS variables `RDS_SECURITY_GROUP`, `RDS_USER_ACCESS_SECRET_ARN` and `DB_HOST_ENDPOINT` can be found from output logs of the previous `Deploy Dev RDS Stack` stage.
 
