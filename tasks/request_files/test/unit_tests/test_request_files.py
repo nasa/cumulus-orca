@@ -9,17 +9,17 @@ import random
 import unittest
 import uuid
 from random import randint, uniform
-from unittest import mock
-from unittest.mock import patch, MagicMock, call, Mock
-from orca_shared.recovery import shared_recovery
-from orca_shared.recovery.shared_recovery import OrcaStatus
 from test.request_helpers import LambdaContextMock, create_handler_event
+from unittest import mock
+from unittest.mock import MagicMock, Mock, call, patch
 
 # noinspection PyPackageRequirements
 import fastjsonschema as fastjsonschema
 
 # noinspection PyPackageRequirements
 from botocore.exceptions import ClientError
+from orca_shared.recovery import shared_recovery
+from orca_shared.recovery.shared_recovery import OrcaStatus
 
 import request_files
 
@@ -327,7 +327,7 @@ class TestRequestFiles(unittest.TestCase):
         Basic path with multiple granules.
         """
         glacier_bucket = uuid.uuid4().__str__()
-        collection_multipart_chunksize_mb = random.randint(1, 10000)
+        collection_multipart_chunksize_mb = random.randint(1, 10000)  # nosec
         file_key_0 = uuid.uuid4().__str__()
         file_key_1 = uuid.uuid4().__str__()
         file_dest_bucket_0 = uuid.uuid4().__str__()
@@ -497,7 +497,7 @@ class TestRequestFiles(unittest.TestCase):
         If posting to status DB Queue fails, raise error.
         """
         glacier_bucket = uuid.uuid4().__str__()
-        collection_multipart_chunksize_mb = random.randint(1, 10000)
+        collection_multipart_chunksize_mb = random.randint(1, 10000)  # nosec
         file_key_0 = uuid.uuid4().__str__()
         file_key_1 = uuid.uuid4().__str__()
         file_dest_bucket_0 = uuid.uuid4().__str__()
@@ -642,7 +642,7 @@ class TestRequestFiles(unittest.TestCase):
         A return of 'false' from object_exists should ignore the file and continue.
         """
         glacier_bucket = uuid.uuid4().__str__()
-        collection_multipart_chunksize_mb = random.randint(1, 10000)
+        collection_multipart_chunksize_mb = random.randint(1, 10000)  # nosec
         file_key_0 = uuid.uuid4().__str__()
         file_key_1 = uuid.uuid4().__str__()
         missing_file_key = uuid.uuid4().__str__()
@@ -1114,7 +1114,7 @@ class TestRequestFiles(unittest.TestCase):
         mock_update_status_for_file: MagicMock,
     ):
         mock_s3 = Mock()
-        max_retries = randint(3, 20)
+        max_retries = randint(3, 20)  # nosec
         glacier_bucket = uuid.uuid4().__str__()
         retry_sleep_secs = randint(0, 99)  # nosec
         recovery_type = uuid.uuid4().__str__()
@@ -1237,7 +1237,7 @@ class TestRequestFiles(unittest.TestCase):
         If a file expended all attempts for recovery, and posting to status DB expended all attempts, raise error.
         """
         mock_s3 = Mock()
-        max_retries = randint(3, 20)
+        max_retries = randint(3, 20)  # nosec
         glacier_bucket = uuid.uuid4().__str__()
         retry_sleep_secs = randint(0, 99)  # nosec
         recovery_type = uuid.uuid4().__str__()

@@ -6,7 +6,7 @@ Description:  Unit tests for extract_file_paths_for_granule.py.
 import unittest
 import json
 from cumulus_logger import CumulusLogger
-from test.helpers import LambdaContextMock, create_handler_event, create_task_event
+from test.helpers import create_handler_event, create_task_event
 import extract_filepaths_for_granule
 
 # noinspection PyPackageRequirements
@@ -19,6 +19,7 @@ with open("schemas/input.json", "r") as raw_schema:
 with open("schemas/output.json", "r") as raw_schema:
     _OUTPUT_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
 
+
 class TestExtractFilePaths(unittest.TestCase):
     """
     TestExtractFilePaths.
@@ -26,12 +27,7 @@ class TestExtractFilePaths(unittest.TestCase):
 
     def setUp(self):
         # todo: Remove hardcoded and imported values.
-        self.context = LambdaContextMock()
-        self.mock_error = CumulusLogger.error
         self.task_input_event = create_task_event()
-
-    def tearDown(self):
-        CumulusLogger.error = self.mock_error
 
     @patch("extract_filepaths_for_granule.task")
     def test_handler_happy_path(self, mock_task: MagicMock):
@@ -85,29 +81,36 @@ class TestExtractFilePaths(unittest.TestCase):
                 }
             ]
         }
-        result = extract_filepaths_for_granule.handler(
-            handler_input_event, self.context
-        )
-        mock_task.assert_called_once_with(expected_task_input, self.context)
+        context = Mock()
+        result = extract_filepaths_for_granule.handler(handler_input_event, context)
+        mock_task.assert_called_once_with(expected_task_input, context)
 
         self.assertEqual(mock_task.return_value, result["payload"])
 
-    def test_task(self):
+    @patch("cumulus_logger.CumulusLogger.debug")
+    def test_task(self, mock_debug: MagicMock):
         """
         Test successful with four keys returned.
         """
-        result = extract_filepaths_for_granule.task(self.task_input_event, self.context)
+        context = Mock()
+        result = extract_filepaths_for_granule.task(self.task_input_event, context)
 
         exp_key1 = {
-            extract_filepaths_for_granule.OUTPUT_KEY_KEY: self.task_input_event["input"]["granules"][0]["files"][0]["key"],
+            extract_filepaths_for_granule.OUTPUT_KEY_KEY: self.task_input_event[
+                "input"
+            ]["granules"][0]["files"][0]["key"],
             extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY: "sndbx-cumulus-protected",
         }
         exp_key2 = {
-            extract_filepaths_for_granule.OUTPUT_KEY_KEY: self.task_input_event["input"]["granules"][0]["files"][1]["key"],
+            extract_filepaths_for_granule.OUTPUT_KEY_KEY: self.task_input_event[
+                "input"
+            ]["granules"][0]["files"][1]["key"],
             extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY: "sndbx-cumulus-public",
         }
         exp_key3 = {
-            extract_filepaths_for_granule.OUTPUT_KEY_KEY: self.task_input_event["input"]["granules"][0]["files"][2]["key"],
+            extract_filepaths_for_granule.OUTPUT_KEY_KEY: self.task_input_event[
+                "input"
+            ]["granules"][0]["files"][2]["key"],
             extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY: "sndbx-cumulus-public",
         }
         exp_gran = {
@@ -155,20 +158,23 @@ class TestExtractFilePaths(unittest.TestCase):
         exp_result = {"granules": exp_grans}
         self.assertEqual(exp_result, result)
 
-    def test_task_no_granules(self):
+    @patch("cumulus_logger.CumulusLogger.debug")
+    def test_task_no_granules(self, mock_debug: MagicMock):
         """
         Test no 'granules' key in input event.
         """
         self.task_input_event["input"].pop("granules", None)
         exp_err = "KeyError: \"event['input']['granules']\" is required"
         CumulusLogger.error = Mock()
+        context = Mock()
         try:
-            extract_filepaths_for_granule.task(self.task_input_event, self.context)
+            extract_filepaths_for_granule.task(self.task_input_event, context)
             self.fail("ExtractFilePathsError expected")
         except extract_filepaths_for_granule.ExtractFilePathsError as ex:
             self.assertEqual(exp_err, str(ex))
 
-    def test_task_no_granule(self):
+    @patch("cumulus_logger.CumulusLogger.debug")
+    def test_task_no_granule(self, mock_debug: MagicMock):
         """
         Test no granuleId in input event.
         """
@@ -176,13 +182,15 @@ class TestExtractFilePaths(unittest.TestCase):
 
         exp_err = "KeyError: \"event['input']['granules'][]['granuleId']\" is required"
         CumulusLogger.error = Mock()
+        context = Mock()
         try:
-            extract_filepaths_for_granule.task(self.task_input_event, self.context)
+            extract_filepaths_for_granule.task(self.task_input_event, context)
             self.fail("ExtractFilePathsError expected")
         except extract_filepaths_for_granule.ExtractFilePathsError as ex:
             self.assertEqual(exp_err, str(ex))
 
-    def test_task_no_files(self):
+    @patch("cumulus_logger.CumulusLogger.debug")
+    def test_task_no_files(self, mock_debug: MagicMock):
         """
         Test no files in input event.
         """
@@ -192,13 +200,15 @@ class TestExtractFilePaths(unittest.TestCase):
         ]
 
         exp_err = "KeyError: \"event['input']['granules'][]['files']\" is required"
+        context = Mock()
         try:
-            extract_filepaths_for_granule.task(self.task_input_event, self.context)
+            extract_filepaths_for_granule.task(self.task_input_event, context)
             self.fail("ExtractFilePathsError expected")
         except extract_filepaths_for_granule.ExtractFilePathsError as ex:
             self.assertEqual(exp_err, str(ex))
 
-    def test_task_no_filepath(self):
+    @patch("cumulus_logger.CumulusLogger.debug")
+    def test_task_no_filepath(self, mock_debug):
         """
         Test no key in input event.
         """
@@ -207,7 +217,9 @@ class TestExtractFilePaths(unittest.TestCase):
         self.task_input_event["config"]["internal-bucket"] = "my_internal_bucket"
         self.task_input_event["config"]["private-bucket"] = "my_private_bucket"
         self.task_input_event["config"]["public-bucket"] = "my_public_bucket"
-        self.task_input_event["config"][extract_filepaths_for_granule.CONFIG_FILE_BUCKETS_KEY] = [
+        self.task_input_event["config"][
+            extract_filepaths_for_granule.CONFIG_FILE_BUCKETS_KEY
+        ] = [
             {"regex": ".*.h5$", "sampleFileName": "L_10-420.h5", "bucket": "protected"},
             {
                 "regex": ".*.iso.xml$",
@@ -239,13 +251,15 @@ class TestExtractFilePaths(unittest.TestCase):
         exp_err = (
             "KeyError: \"event['input']['granules'][]['files']['key']\" is required"
         )
+        context = Mock()
         try:
-            extract_filepaths_for_granule.task(self.task_input_event, self.context)
+            extract_filepaths_for_granule.task(self.task_input_event, context)
             self.fail("ExtractFilePathsError expected")
         except extract_filepaths_for_granule.ExtractFilePathsError as ex:
             self.assertEqual(exp_err, str(ex))
 
-    def test_task_one_file(self):
+    @patch("cumulus_logger.CumulusLogger.debug")
+    def test_task_one_file(self, mock_debug: MagicMock):
         """
         Test with one valid file in input.
         """
@@ -281,7 +295,8 @@ class TestExtractFilePaths(unittest.TestCase):
                 }
             ]
         }
-        result = extract_filepaths_for_granule.task(self.task_input_event, self.context)
+        context = Mock()
+        result = extract_filepaths_for_granule.task(self.task_input_event, context)
         self.assertEqual(exp_result, result)
 
     def test_exclude_file_type(self):
@@ -316,10 +331,12 @@ class TestExtractFilePaths(unittest.TestCase):
                 }
             ]
         }
-        result = extract_filepaths_for_granule.task(self.task_input_event, self.context)
+        context = Mock()
+        result = extract_filepaths_for_granule.task(self.task_input_event, context)
         self.assertEqual(exp_result, result)
 
-    def test_task_two_granules(self):
+    @patch("cumulus_logger.CumulusLogger.debug")
+    def test_task_two_granules(self, mock_debug: MagicMock):
         """
         Test with two granules, one key each.
         """
@@ -384,7 +401,8 @@ class TestExtractFilePaths(unittest.TestCase):
             ]
         }
 
-        result = extract_filepaths_for_granule.task(self.task_input_event, self.context)
+        context = Mock()
+        result = extract_filepaths_for_granule.task(self.task_input_event, context)
         self.assertEqual(exp_result, result)
 
         # Validate the output is correct by matching with the output schema
