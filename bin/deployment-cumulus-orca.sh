@@ -6,28 +6,16 @@ export AWS_SECRET_ACCESS_KEY=$bamboo_AWS_SECRET_ACCESS_KEY
 export AWS_DEFAULT_REGION=$bamboo_AWS_DEFAULT_REGION
 
 #clone cumulus orca template for deploying cumulus and orca
-git clone https://git.earthdata.nasa.gov/scm/orca/cumulus-orca-deploy-template.git
+git clone --branch $bamboo_ORCA_RELEASE_BRANCH --single-branch https://git.earthdata.nasa.gov/scm/orca/cumulus-orca-deploy-template.git
 cd cumulus-orca-deploy-template
-git checkout $bamboo_ORCA_RELEASE_BRANCH
 echo "checked out to $bamboo_ORCA_RELEASE_BRANCH branch"
 
 
 #deploy data persistence tf module
-
 cd data-persistence-tf
 mv terraform.tfvars.example terraform.tfvars
-
-DATA_PERSISTENCE_KEY="$bamboo_PREFIX/data-persistence-tf/terraform.tfstate"
-
-# Ensure remote state is configured for the deployment
-echo "terraform {
-        backend \"s3\" {
-            bucket = \"$bamboo_PREFIX-tf-state\"
-            key    = \"$DATA_PERSISTENCE_KEY\"
-            region = \"$bamboo_AWS_DEFAULT_REGION\"
-            dynamodb_table = \"$bamboo_PREFIX-tf-locks\"
-    }
-}" > terraform.tf
+#replacing terraform.tf with proper values
+sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g; s/us-east-1/'"$bamboo_AWS_DEFAULT_REGION"'/g' terraform.tf.example > terraform.tf
 
 # Initialize deployment
 terraform init \
@@ -50,187 +38,18 @@ terraform apply \
 
 # script for deploying cumulus-tf module
 # clone cumulus-orca repo and run build_tasks.sh to create the lambda zip files first
-cd ../.. && git clone https://github.com/nasa/cumulus-orca.git
-cd cumulus-orca && git checkout $bamboo_ORCA_TEST_BRANCH
+cd ../.. && git clone --branch $bamboo_ORCA_TEST_BRANCH --single-branch https://github.com/nasa/cumulus-orca.git
+cd cumulus-orca
 # run the build script to create lambda zip files
 ./bin/build_tasks.sh
 cd ../cumulus-orca-deploy-template/cumulus-tf
-mv terraform.tfvars.example terraform.tfvars
 
 CUMULUS_KEY="$bamboo_PREFIX/cumulus/terraform.tfstate"
 
-# adding required variables to orca_variables.tf
-cat << EOF > orca_variables.tf
-## Variables unique to ORCA
-## REQUIRED
+#replacing .tf files with proper values
+sed 's/PREFIX/'"$bamboo_PREFIX"'/g' terraform.tfvars.example > terraform.tfvars
+sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g; s/us-east-1/'"$bamboo_AWS_DEFAULT_REGION"'/g' terraform.tf.example > terraform.tf
 
-variable "db_admin_password" {
-  description = "Password for RDS database administrator authentication"
-  type        = string
-}
-
-variable "db_user_password" {
-  description = "Password for RDS database user authentication"
-  type        = string
-}
-
-variable "db_host_endpoint" {
-  type        = string
-  description = "Database host endpoint to connect to."
-}
-
-variable "orca_default_bucket" {
-  description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
-  type        = string
-}
-
-variable "rds_security_group_id" {
-  type        = string
-  description = "Cumulus' RDS Security Group's ID."
-}
-
-variable "dlq_subscription_email" {
-  type        = string
-  description = "The email to notify users when messages are received in dead letter SQS queue due to restore failure. Sends one email until the dead letter queue is emptied."
-}
-
-variable "orca_reports_bucket_name" {
-  type        = string
-  description = "The name of the bucket to store s3 inventory reports."
-}
-
-variable "s3_access_key" {
-  type        = string
-  description = "Access key for communicating with Orca S3 buckets."
-}
-
-variable "s3_secret_key" {
-  type        = string
-  description = "Secret key for communicating with Orca S3 buckets."
-}
-
-## OPTIONAL
-
-variable "db_admin_username" {
- description = "Username for RDS database administrator authentication"
- type        = string
-}
-EOF
-
-# adding variables to terraform.tfvars file
-cat << EOF > terraform.tfvars
-# DO NOT CHANGE THIS VARIABLE UNLESS DEPLOYING OUTSIDE NGAP
-deploy_to_ngap = true
-
-cumulus_message_adapter_version = "1.3.0"
-
-rds_connection_heartbeat = true
-cmr_client_id   = "CHANGEME"
-cmr_environment = "UAT"
-cmr_password    = "password"
-cmr_provider    = "CHANGEME"
-cmr_username    = "username"
-
-urs_url             = "https://uat.urs.earthdata.nasa.gov"
-
-# Name of secret in AWS secrets manager containing SSH keys for signing JWTs
-thin_egress_jwt_secret_name = "secret_name"
-
-oauth_provider   = "earthdata"
-cmr_oauth_provider = "earthdata"
-private_archive_api_gateway = true
-
-# Whether or not to include the S3 credentials endpoint in the Thin Egress App
-# default to true if not specified
-deploy_distribution_s3_credentials_endpoint = false
-
-# If using TEA, Toggle this after deployed to put the correct port in. (and hosts and config)
-tea_distribution_url = "TEA distribution url"
-
-# Cumulus Distribution variables.
-
-deploy_cumulus_distribution = false
-db_admin_username = "postgres"
-EOF
-
-# adding buckets variable to terraform.tfvars
-echo "buckets = {
-        default_orca = {
-          name = \"$bamboo_PREFIX-orca-primary\"
-          type = \"orca\"
-          },
-        l0archive = {
-          name = \"$bamboo_PREFIX-level0\"
-          type = \"private\"
-          },
-        internal = {
-            name = \"$bamboo_PREFIX-internal\"
-            type = \"internal\"
-          },
-        private = {
-            name = \"$bamboo_PREFIX-private\"
-            type = \"private\"
-          },
-        protected = {
-          name = \"$bamboo_PREFIX-protected\"
-          type = \"protected\"
-        },
-        public = {
-          name = \"$bamboo_PREFIX-public\"
-          type = \"public\"
-        },
-        provider = {
-          name = \"orca-sandbox-s3-provider\"
-          type = \"provider\"
-        }
-      }" >> terraform.tfvars
-
-cat << EOF > orca.tf
-## ORCA Module
-## =============================================================================
-module "orca" {
-  # source = "https://github.com/nasa/cumulus-orca/releases/download/v4.0.1/cumulus-orca-terraform.zip"
-  source = "../../cumulus-orca"
-  ## --------------------------
-  ## Cumulus Variables
-  ## --------------------------
-  ## REQUIRED
-  buckets                  = var.buckets
-  lambda_subnet_ids        = var.lambda_subnet_ids
-  permissions_boundary_arn = var.permissions_boundary_arn
-  prefix                   = var.prefix
-  system_bucket            = var.system_bucket
-  vpc_id                   = var.vpc_id
-  workflow_config          = module.cumulus.workflow_config
-
-  ## OPTIONAL
-  tags = var.tags
-
-  ## --------------------------
-  ## ORCA Variables
-  ## --------------------------
-  ## REQUIRED
-  db_admin_password        = var.db_admin_password
-  db_user_password         = var.db_user_password
-  db_host_endpoint         = var.db_host_endpoint
-  dlq_subscription_email   = var.dlq_subscription_email
-  orca_default_bucket      = var.orca_default_bucket
-  orca_reports_bucket_name = var.orca_reports_bucket_name
-  rds_security_group_id    = var.rds_security_group_id
-  s3_access_key            = var.s3_access_key
-  s3_secret_key            = var.s3_secret_key
-  }
-EOF
-
-# Ensure remote state is configured for the deployment
-echo "terraform {
-        backend \"s3\" {
-            bucket = \"$bamboo_PREFIX-tf-state\"
-            key    = \"$CUMULUS_KEY\"
-            region = \"$bamboo_AWS_DEFAULT_REGION\"
-            dynamodb_table = \"$bamboo_PREFIX-tf-locks\"
-    }
-}" > terraform.tf
 # Initialize deployment
 terraform init \
   -input=false
@@ -247,7 +66,7 @@ terraform apply \
   -var "cmr_client_id=cumulus-core-$bamboo_DEPLOYMENT" \
   -var "cmr_provider=CUMULUS" \
   -var "cmr_environment=UAT" \
-  -var "data_persistence_remote_state_config={ region: \"$bamboo_AWS_DEFAULT_REGION\", bucket: \"$bamboo_PREFIX-tf-state\", key: \"$DATA_PERSISTENCE_KEY\" }" \
+  -var "data_persistence_remote_state_config={ region: \"$bamboo_AWS_DEFAULT_REGION\", bucket: \"$bamboo_PREFIX-tf-state\", key: \"$bamboo_PREFIX/data-persistence-tf/terraform.tfstate\" }" \
   -var "region=$bamboo_AWS_DEFAULT_REGION" \
   -var "vpc_id=$bamboo_VPC_ID" \
   -var "system_bucket=$bamboo_PREFIX-internal" \
@@ -265,8 +84,4 @@ terraform apply \
   -var "db_admin_username=$bamboo_DB_ADMIN_USERNAME" \
   -var "db_admin_password=$bamboo_DB_ADMIN_PASSWORD" \
   -var "db_host_endpoint=$bamboo_DB_HOST_ENDPOINT" \
-  -var "rds_security_group_id=$bamboo_RDS_SECURITY_GROUP" \
-  -var "dlq_subscription_email=$bamboo_DLQ_SUBSCRIPTION_EMAIL" \
-  -var "s3_access_key=$bamboo_S3_ACCESS_KEY" \
-  -var "s3_secret_key=$bamboo_S3_SECRET_KEY" \
-  -var "orca_reports_bucket_name=$bamboo_ORCA_REPORTS_BUCKET_NAME"
+  -var "rds_security_group_id=$bamboo_RDS_SECURITY_GROUP"
