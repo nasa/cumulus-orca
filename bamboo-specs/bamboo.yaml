@@ -52,14 +52,14 @@ Set Pending Github Status:
   - script:
       interpreter: SHELL
       scripts:
-      - |-
+      - |-   #used for better script formatting
         set -ex
         ./bin/set_status.sh pending ${bamboo.resultsUrl} "CI Running"
       description: Set Pending Status
   - script:
       interpreter: SHELL
       scripts:
-      - |-
+      - |-   #used for better script formatting
         set -ex
         ./bin/set_status.sh pending ${bamboo.resultsUrl} "CI Running"
       description: Set Pending Status but again!
