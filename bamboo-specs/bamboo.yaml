@@ -206,9 +206,8 @@ Deploy RDS cluster:
       scripts:
       - |-
         #!/bin/bash
-        chmod +x bin/deployment-rds.sh
-        bin/deployment-rds.sh
-
+        bash bin/deployment-rds.sh
+        
 #job for deploying cumulus and orca
 Deploy cumulus and orca:
   key: DCO
@@ -230,9 +229,7 @@ Deploy cumulus and orca:
       scripts:
       - |-
         #!/bin/bash
-        chmod +x bin/deployment-cumulus-orca.sh
-        bin/deployment-cumulus-orca.sh
-        
+        bash bin/deployment-cumulus-orca.sh        
 
 
 
