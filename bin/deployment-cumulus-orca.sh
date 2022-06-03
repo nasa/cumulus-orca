@@ -84,8 +84,4 @@ terraform apply \
   -var "db_admin_username=$bamboo_DB_ADMIN_USERNAME" \
   -var "db_admin_password=$bamboo_DB_ADMIN_PASSWORD" \
   -var "db_host_endpoint=$bamboo_DB_HOST_ENDPOINT" \
-  -var "rds_security_group_id=$bamboo_RDS_SECURITY_GROUP" \
-  -var "dlq_subscription_email=$bamboo_DLQ_SUBSCRIPTION_EMAIL" \
-  -var "s3_access_key=$bamboo_S3_ACCESS_KEY" \
-  -var "s3_secret_key=$bamboo_S3_SECRET_KEY" \
-  -var "orca_reports_bucket_name=$bamboo_ORCA_REPORTS_BUCKET_NAME"
+  -var "rds_security_group_id=$bamboo_RDS_SECURITY_GROUP"
