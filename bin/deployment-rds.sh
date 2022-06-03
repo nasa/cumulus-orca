@@ -18,15 +18,8 @@ cd rds-cluster-tf
 echo "inside rds-cluster-tf"
 mv terraform.tfvars.example terraform.tfvars
 
-# Ensure remote state is configured for the deployment
-echo "terraform {
-        backend \"s3\" {
-            bucket = \"$bamboo_PREFIX-tf-state\"
-            key    = \"$bamboo_PREFIX/rds-cluster-tf/terraform.tfstate\"
-            region = \"$bamboo_AWS_DEFAULT_REGION\"
-            dynamodb_table = \"$bamboo_PREFIX-tf-locks\"
-    }
-}" > terraform.tf
+#replacing terraform.tf with proper values
+sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g; s/us-east-1/'"$bamboo_AWS_DEFAULT_REGION"'/g' terraform.tf.example > terraform.tf
 
 # Initialize deployment
 terraform init \

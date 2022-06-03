@@ -112,7 +112,7 @@ To delete a published tag to re-tag, follow these steps:
 
 For testing, use the `feature/ORCA-test-bamboo` branch in cumulus-orca github repo and use the `ORCA-test-branch` linked repo in bamboo specs. 
 
-While running the `Deploy Dev RDS Stack` stage, replace the following variables with yours. This is because some variables are sensitive and some will vary depending upon the user running the pipeline. Make sure the proper buckets and dynamoDB table are first created. See this cumulus [documentation](https://nasa.github.io/cumulus/docs/deployment/deployment-readme) for additional details.
+While running the `Deploy Dev RDS Stack` stage, replace the following variables with yours. This is because some variables are sensitive and some will vary depending upon the user running the pipeline. Make sure the proper buckets and dynamoDB table are first created manually using the same prefix before running the pipeline. See this cumulus [documentation](https://nasa.github.io/cumulus/docs/deployment/deployment-readme) for additional details.
 
 - AWS_ACCESS_KEY_ID
 - AWS_SECRET_ACCESS_KEY
