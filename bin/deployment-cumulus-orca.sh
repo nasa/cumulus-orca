@@ -6,9 +6,8 @@ export AWS_SECRET_ACCESS_KEY=$bamboo_AWS_SECRET_ACCESS_KEY
 export AWS_DEFAULT_REGION=$bamboo_AWS_DEFAULT_REGION
 
 #clone cumulus orca template for deploying cumulus and orca
-git clone https://git.earthdata.nasa.gov/scm/orca/cumulus-orca-deploy-template.git
+git clone --branch $bamboo_ORCA_RELEASE_BRANCH --single-branch https://git.earthdata.nasa.gov/scm/orca/cumulus-orca-deploy-template.git
 cd cumulus-orca-deploy-template
-git checkout $bamboo_ORCA_RELEASE_BRANCH
 echo "checked out to $bamboo_ORCA_RELEASE_BRANCH branch"
 
 
@@ -50,8 +49,8 @@ terraform apply \
 
 # script for deploying cumulus-tf module
 # clone cumulus-orca repo and run build_tasks.sh to create the lambda zip files first
-cd ../.. && git clone https://github.com/nasa/cumulus-orca.git
-cd cumulus-orca && git checkout $bamboo_ORCA_TEST_BRANCH
+cd ../.. && git clone --branch $bamboo_ORCA_TEST_BRANCH --single-branch https://github.com/nasa/cumulus-orca.git
+cd cumulus-orca
 # run the build script to create lambda zip files
 ./bin/build_tasks.sh
 cd ../cumulus-orca-deploy-template/cumulus-tf

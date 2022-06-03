@@ -29,7 +29,7 @@ stages:
     - Release ORCA Code
 
 #deploy RDS cluster for integration test
-#TODO: move to a different stage or even to a new plan for better maintenance.
+#TODO ORCA-462: move to a different stage or even to a new plan for better maintenance.
 - Deploy Dev RDS Stack:
     manual: true
     final: false
@@ -312,8 +312,7 @@ Deploy RDS cluster:
       scripts:
       - |-
         #!/bin/bash
-        chmod +x bin/deployment-rds.sh
-        bin/deployment-rds.sh
+        bash bin/deployment-rds.sh
 #job for deploying cumulus and orca
 Deploy cumulus and orca:
   key: DCO
@@ -335,12 +334,10 @@ Deploy cumulus and orca:
       scripts:
       - |-
         #!/bin/bash
-        chmod +x bin/deployment-cumulus-orca.sh
-        bin/deployment-cumulus-orca.sh
-
+        bash bin/deployment-cumulus-orca.sh
 variables:
   DEPLOYMENT: sandbox
-  ORCA_VERSION: 0.0.1
+  ORCA_VERSION: 4.0.3
   RELEASE_FLAG: 'false'
   REPORT_BUILD_STATUS: 'true'
   SECRET_GITHUB_EMAIL: BAMSCRT@0@0@HYUkicwfEqt17JZaZuGYmtmRHrnDySiT+kQkBQa7/Rg7IQgl1lUvbncMUu0Wx2k1ayHojNkh2TdOlF0kJ5tw6Q== #encrypted
