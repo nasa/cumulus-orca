@@ -130,6 +130,8 @@ Make sure the proper buckets and dynamoDB table are first created manually using
 - `<PREFIX>-orca-primary`
 - `<PREFIX>-tf-state` (for storing the terraform state file)
 
+Note that the `<PREFIX>-orca-primary` bucket should be created in the DR OU if we want a full test. This will also need a cross account policy applied to it as well which should be similar to this [policy](https://github.com/nasa/cumulus-orca/blob/develop/website/docs/developer/research/research-s3-bucket-policies.md#reports-bucket).
+
 The bucket can be created using the following CLI command:
 ```bash
 aws s3api create-bucket --bucket <BUCKET_NAME>  --region us-west-2 --create-bucket-configuration LocationConstraint=us-west-2
