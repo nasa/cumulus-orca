@@ -112,7 +112,8 @@ To delete a published tag to re-tag, follow these steps:
 
 For testing, use the `feature/ORCA-test-bamboo` branch in cumulus-orca github repo and use the `ORCA-test-branch` linked repo in bamboo specs. 
 
-While running the `Deploy Dev RDS Stack` stage, replace the following variables with yours. This is because some variables are sensitive and some will vary depending upon the user running the pipeline. 
+While running the `Deploy Dev RDS Stack` stage, replace the following variables with yours. This is because some variables are sensitive and some will vary depending upon the user running the pipeline. Hitting 'play' next to `Deploy Dev RDS Stack` and `Deploy Dev Cumulus and ORCA Stack` brings up a checkbox list to run multiple jobs at once. Note that none of the checkboxes should be checked.
+
 - AWS_ACCESS_KEY_ID
 - AWS_SECRET_ACCESS_KEY
 - PREFIX
@@ -150,7 +151,7 @@ In addition to this, the dynamodb table and bucket version need to created as we
     --versioning-configuration Status=Enabled
 ```
 
-For `Deploy Dev Cumulus and ORCA Stack` stage, add the following variables. The RDS variables `RDS_SECURITY_GROUP`, `RDS_USER_ACCESS_SECRET_ARN` and `DB_HOST_ENDPOINT` can be found from output logs of the previous `Deploy Dev RDS Stack` stage.
+For `Deploy Dev Cumulus and ORCA Stack` stage, add the following variables. The RDS variables `RDS_SECURITY_GROUP`, `RDS_USER_ACCESS_SECRET_ARN` and `DB_HOST_ENDPOINT` can be found from output logs of the previous `Deploy Dev RDS Stack` stage. Note that a new earthdata application will need to be first created if using a new prefix for new deployment which will give the values for `EARTHDATA_CLIENT_ID` and `EARTHDATA_CLIENT_PASSWORD`. `ORCA_TEST_BRANCH` refers to the feature branch used for testing in cumulus-orca repo while `ORCA_RELEASE_BRANCH` is the branch you checked out in the [deployment repo](https://git.earthdata.nasa.gov/projects/ORCA/repos/cumulus-orca-deploy-template/browse) such as `v11.1.1-v4.0.1`.
 
 - RDS_SECURITY_GROUP
 - RDS_USER_ACCESS_SECRET_ARN
