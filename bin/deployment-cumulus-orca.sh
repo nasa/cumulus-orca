@@ -80,6 +80,7 @@ terraform apply \
   -var "key_name=$bamboo_PREFIX" \
   -var "prefix=$bamboo_PREFIX" \
   -var "permissions_boundary_arn=arn:aws:iam::$bamboo_AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY" \
+  -var "db_admin_username=$bamboo_DB_ADMIN_USERNAME" \
   -var "db_user_password=$bamboo_DB_USER_PASSWORD" \
   -var "orca_default_bucket=$bamboo_PREFIX-orca-primary" \
   -var "db_admin_password=$bamboo_DB_ADMIN_PASSWORD" \
