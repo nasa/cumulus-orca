@@ -121,7 +121,7 @@ While running the `Deploy Dev RDS Stack` stage, replace the following variables 
 - DB_ADMIN_PASSWORD
 - DB_USER_PASSWORD
 
-Make sure the proper buckets and dynamoDB table are first created manually using the same prefix before running the pipeline. See this cumulus [documentation](https://nasa.github.io/cumulus/docs/deployment/deployment-readme) and [deployment with cumulus documentation](https://github.com/nasa/cumulus-orca/blob/develop/website/docs/developer/deployment-guide/deployment-with-cumulus.md#modifying-cumulus-tfterraformtfvars) for additional details. Typically, these are the buckets that need to be created first
+Make sure the proper buckets, dynamoDB table and the EC2 key pair are first created manually using the same prefix before running the pipeline. See this cumulus [documentation](https://nasa.github.io/cumulus/docs/deployment/deployment-readme) and [deployment with cumulus documentation](https://github.com/nasa/cumulus-orca/blob/develop/website/docs/developer/deployment-guide/deployment-with-cumulus.md#modifying-cumulus-tfterraformtfvars) for additional details. Typically, these are the buckets that need to be created first
 - `<PREFIX>-internal`
 - `<PREFIX>-level0`
 - `<PREFIX>-public`
@@ -153,7 +153,13 @@ In addition to this, the dynamodb table and bucket version need to created as we
     --versioning-configuration Status=Enabled
 ```
 
-For `Deploy Dev Cumulus and ORCA Stack` stage, add the following variables. The RDS variables `RDS_SECURITY_GROUP`, `RDS_USER_ACCESS_SECRET_ARN` and `DB_HOST_ENDPOINT` can be found from output logs of the previous `Deploy Dev RDS Stack` stage. Note that a new earthdata application will need to be first created if using a new prefix for new deployment which will give the values for `EARTHDATA_CLIENT_ID` and `EARTHDATA_CLIENT_PASSWORD`. `ORCA_TEST_BRANCH` refers to the feature branch used for testing in cumulus-orca repo while `ORCA_RELEASE_BRANCH` is the branch you want to check out in the [deployment repo](https://git.earthdata.nasa.gov/projects/ORCA/repos/cumulus-orca-deploy-template/browse) such as `v11.1.1-v4.0.1`.
+The EC2 key pair can be created using the AWS CLI:
+
+```bash
+aws ec2 create-key-pair --key-name <PREFIX>
+```
+
+For `Deploy Dev Cumulus and ORCA Stack` stage, add the following variables. The RDS variables `RDS_SECURITY_GROUP`, `RDS_USER_ACCESS_SECRET_ARN` and `DB_HOST_ENDPOINT` can be found from output logs of the previous `Deploy Dev RDS Stack` stage. Note that a new earthdata application will need to be first created if using a new prefix for new deployment which will give the values for `EARTHDATA_CLIENT_ID` and `EARTHDATA_CLIENT_PASSWORD`. `ORCA_TEST_BRANCH` refers to the feature branch used for testing in cumulus-orca repo while `CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION` is the branch you want to check out in the [deployment repo](https://git.earthdata.nasa.gov/projects/ORCA/repos/cumulus-orca-deploy-template/browse) such as `v11.1.1-v4.0.1`.
 
 - RDS_SECURITY_GROUP
 - RDS_USER_ACCESS_SECRET_ARN
@@ -161,6 +167,6 @@ For `Deploy Dev Cumulus and ORCA Stack` stage, add the following variables. The 
 - EARTHDATA_CLIENT_ID
 - EARTHDATA_CLIENT_PASSWORD
 - ORCA_TEST_BRANCH
-- ORCA_RELEASE_BRANCH
+- CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION
 
 Note that `RDS_USER_ACCESS_SECRET_ARN` value from the initial run should be recorded, as they may be hidden on future deployments. In addition, the jobs may need to be run multiple times to get past deployment errors if there is one.

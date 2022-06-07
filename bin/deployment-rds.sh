@@ -6,10 +6,10 @@ export AWS_SECRET_ACCESS_KEY=$bamboo_AWS_SECRET_ACCESS_KEY
 export AWS_DEFAULT_REGION=$bamboo_AWS_DEFAULT_REGION
 
 #clone cumulus orca template for deploying cumulus and orca
-git clone --branch $bamboo_ORCA_RELEASE_BRANCH --single-branch https://git.earthdata.nasa.gov/scm/orca/cumulus-orca-deploy-template.git
+git clone --branch $CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION --single-branch https://git.earthdata.nasa.gov/scm/orca/cumulus-orca-deploy-template.git
 cd cumulus-orca-deploy-template
-git checkout $bamboo_ORCA_RELEASE_BRANCH
-echo "checked out to $bamboo_ORCA_RELEASE_BRANCH branch"
+git checkout $CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION
+echo "checked out to $CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION branch"
 
 
 #deploy rds-cluster-tf module
