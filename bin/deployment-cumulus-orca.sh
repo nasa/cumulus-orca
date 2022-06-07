@@ -70,6 +70,7 @@ terraform apply \
   -var "region=$bamboo_AWS_DEFAULT_REGION" \
   -var "vpc_id=$bamboo_VPC_ID" \
   -var "system_bucket=$bamboo_PREFIX-internal" \
+  -var "ecs_cluster_instance_subnet_ids=[\"$bamboo_AWS_SUBNET_ID1\", \"$bamboo_AWS_SUBNET_ID2\"]" \
   -var "lambda_subnet_ids=[\"$bamboo_AWS_SUBNET_ID1\", \"$bamboo_AWS_SUBNET_ID2\"]" \
   -var "urs_client_id=$bamboo_EARTHDATA_CLIENT_ID" \
   -var "urs_client_password=$bamboo_EARTHDATA_CLIENT_PASSWORD" \
