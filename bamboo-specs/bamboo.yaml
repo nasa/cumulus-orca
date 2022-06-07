@@ -28,13 +28,13 @@ stages:
 #     - Release ORCA Documentation
 #     - Release ORCA Code
 
-# #deploy RDS cluster for integration test
-# #TODO ORCA-462: move to a different stage or even to a new plan for better maintenance.
-# - Deploy Dev RDS Stack:
-#     manual: true
-#     final: false
-#     jobs:
-#     - Deploy RDS cluster
+#deploy RDS cluster for integration test
+#TODO ORCA-462: move to a different stage or even to a new plan for better maintenance.
+- Deploy Dev RDS Stack:
+    manual: true
+    final: false
+    jobs:
+    - Deploy RDS cluster
 
 #deploy orca and cumulus for integration test
 - Deploy Dev Cumulus and ORCA Stack:
