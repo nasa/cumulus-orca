@@ -66,10 +66,11 @@ terraform apply \
   -var "cmr_client_id=cumulus-core-$bamboo_DEPLOYMENT" \
   -var "cmr_provider=CUMULUS" \
   -var "cmr_environment=UAT" \
-  -var "data_persistence_remote_state_config={ region: \"$bamboo_AWS_DEFAULT_REGION\", bucket: \"$bamboo_PREFIX-tf-state\", key: \"$bamboo_PREFIX/data-persistence-tf/terraform.tfstate\" }" \
+  -var "data_persistence_remote_state_config={ region: \"$bamboo_AWS_DEFAULT_REGION\", bucket: \"$bamboo_PREFIX-tf-state\", key: \"$bamboo_PREFIX/data-persistence/terraform.tfstate\" }" \
   -var "region=$bamboo_AWS_DEFAULT_REGION" \
   -var "vpc_id=$bamboo_VPC_ID" \
   -var "system_bucket=$bamboo_PREFIX-internal" \
+  -var "ecs_cluster_instance_subnet_ids=[\"$bamboo_AWS_SUBNET_ID1\", \"$bamboo_AWS_SUBNET_ID2\"]" \
   -var "lambda_subnet_ids=[\"$bamboo_AWS_SUBNET_ID1\", \"$bamboo_AWS_SUBNET_ID2\"]" \
   -var "urs_client_id=$bamboo_EARTHDATA_CLIENT_ID" \
   -var "urs_client_password=$bamboo_EARTHDATA_CLIENT_PASSWORD" \
@@ -81,7 +82,6 @@ terraform apply \
   -var "permissions_boundary_arn=arn:aws:iam::$bamboo_AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY" \
   -var "db_user_password=$bamboo_DB_USER_PASSWORD" \
   -var "orca_default_bucket=$bamboo_PREFIX-orca-primary" \
-  -var "db_admin_username=$bamboo_DB_ADMIN_USERNAME" \
   -var "db_admin_password=$bamboo_DB_ADMIN_PASSWORD" \
   -var "db_host_endpoint=$bamboo_DB_HOST_ENDPOINT" \
   -var "rds_security_group_id=$bamboo_RDS_SECURITY_GROUP"

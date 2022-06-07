@@ -2,8 +2,8 @@
 version: 2
 plan:
   project-key: ORCA
-  key: PP
-  name: prototype-demo
+  key: OI
+  name: ORCA Integrator
 stages:
 - Setup Env:
     manual: false
@@ -14,16 +14,27 @@ stages:
 #     manual: false
 #     final: false
 #     jobs:
-#     # - Build and Test
+#     - Build and Test
 #     - Python snyk
+# - Clean Up and Report:
+#     manual: false
+#     final: false
+#     jobs:
+#     - Report Status
+# - Release Stage:
+#     manual: true
+#     final: false
+#     jobs:
+#     - Release ORCA Documentation
+#     - Release ORCA Code
 
-
-#deploy RDS cluster for integration test
-- Deploy Dev RDS Stack:
-    manual: true
-    final: false
-    jobs:
-    - Deploy RDS cluster
+# #deploy RDS cluster for integration test
+# #TODO ORCA-462: move to a different stage or even to a new plan for better maintenance.
+# - Deploy Dev RDS Stack:
+#     manual: true
+#     final: false
+#     jobs:
+#     - Deploy RDS cluster
 
 #deploy orca and cumulus for integration test
 - Deploy Dev Cumulus and ORCA Stack:
@@ -32,17 +43,6 @@ stages:
     jobs:
     - Deploy cumulus and orca
 
-- Clean Up and Report:
-    manual: false
-    final: false
-    jobs:
-    - Report Status
-- Release Stage:
-    manual: true
-    final: false
-    jobs:
-    - Release ORCA Documentation
-    - Release ORCA Code
 Set Pending Github Status:
   key: SPGS
   tasks:
@@ -52,16 +52,23 @@ Set Pending Github Status:
   - script:
       interpreter: SHELL
       scripts:
-      - |-
+      - |-   #used for better script formatting
         set -ex
         ./bin/set_status.sh pending ${bamboo.resultsUrl} "CI Running"
       description: Set Pending Status
+  - script:
+      interpreter: SHELL
+      scripts:
+      - |-   #used for better script formatting
+        set -ex
+        ./bin/set_status.sh pending ${bamboo.resultsUrl} "CI Running"
+      description: Set Pending Status but again!
 # Build and Test:
 #   key: JOB1
 #   other:
 #     clean-working-dir: true
 #   docker:
-#     image: maven.earthdata.nasa.gov/cumulus_orca
+#     image: amazonlinux:2
 #     volumes:
 #       ${bamboo.working.directory}: ${bamboo.working.directory}
 #       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
@@ -74,8 +81,8 @@ Set Pending Github Status:
 #       scripts:
 #       - |-
 #         #!/bin/bash
-#         export NODE_VERSION "12.x"
-#         export TERRAFORM_VERSION "0.13.6"
+#         export NODE_VERSION="16.x"
+#         export TERRAFORM_VERSION="0.13.6"
 
 #         # Add NodeJS and Yarn repos & update package index
 #         curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash - 
@@ -185,12 +192,112 @@ Set Pending Github Status:
 #     pattern: '**/*.html'
 #     shared: false
 #     required: true
+# Report Status:
+#   key: RS
+#   tasks:
+#   - checkout:
+#       force-clean-build: 'false'
+#       description: Checkout Default Repository
+#   final-tasks:
+#   - script:
+#       interpreter: SHELL
+#       scripts:
+#       - |-
+#         #!/bin/bash 
+#         set -e
+#         ./bin/set_status.sh success ${bamboo.resultsUrl} "Build Success"
+#       description: Report Success to GitHub
+
+# Release ORCA Documentation:
+#   key: ROD
+#   description: Releases ORCA Documentation to nasa.github.io/cumulus-orca
+#   docker:
+#     image: node:16.13.1
+#     volumes:
+#       ${bamboo.working.directory}: ${bamboo.working.directory}
+#       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+#   tasks:
+#   - checkout:
+#       force-clean-build: 'true'
+#       path: source
+#       description: Checkout Default Repository
+#   - script:
+#       interpreter: SHELL
+#       scripts:
+#       - |-
+#         #!/bin/bash
+#         cd source
+#         set -ex
+#         if [ ! -f "bin/create_release_documentation.sh" ]; then
+#           echo "ERROR: create_release_documentation.sh script does not exist!"
+#           exit 1
+#         fi
+#         bin/create_release_documentation.sh
+#       description: Run documentation release script
+# Release ORCA Code:
+#   key: RO
+#   description: Cleans, creates a GitHub Release and uploads artifacts for release
+#   docker:
+#     image: amazonlinux:2
+#     volumes:
+#       ${bamboo.working.directory}: ${bamboo.working.directory}
+#       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+#   tasks:
+#   - script:
+#       interpreter: SHELL
+#       scripts:
+#       - |-
+#         ## This script removes the "source" subdirectory which all jobs in this stage utilize. This ensures that there's nothing left over from previous runs.
+#         ## This is required as the checkout job does not interface correctly with docker in all instances.
+#         rm -rf ./source
+#         mkdir source
+#         rm -rf dist
+#       description: Clean Working Directory
+#   - checkout:
+#       force-clean-build: 'true'
+#       path: source
+#       description: Checkout Default Repository
+#   - script:
+#       interpreter: SHELL
+#       scripts:
+#       - |-
+#         #!/bin/bash
+#         cd source
+#         export NODE_VERSION="16.x"
+#         export TERRAFORM_VERSION="0.13.6"
+
+#         # Add NodeJS and Yarn repos & update package index
+#         curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash - 
+#         curl -sL https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo
+#         yum update -y
+
+#         # CLI utilities
+#         yum install -y gcc git make openssl unzip wget zip
+
+#         # Python 3 & NodeJS
+#         yum install -y python3-devel
+#         yum install -y nodejs yarn
+
+#         # AWS & Terraform
+#         yum install -y awscli
+#         #wget "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip"
+#         #unzip *.zip
+#         #chmod +x terraform
+#         #mv terraform /usr/local/bin
+
+#         # SSM SessionManager plugin
+#         curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_64bit/session-manager-plugin.rpm" -o "session-manager-plugin.rpm"
+#         yum install -y session-manager-plugin.rpm
+
+#         set -ex
+#         bin/build_release_package.sh
+#       description: Create Release Files and Release in GitHub
+
 #job for deploying cumulus and orca
 Deploy RDS cluster:
   key: DRC
   other:
     clean-working-dir: true
-    # Some plugin configurations are not supported by YAML Specs
   docker:
     image: maven.earthdata.nasa.gov/cumulus_orca
     volumes:
@@ -200,14 +307,12 @@ Deploy RDS cluster:
   - checkout:
       force-clean-build: 'true'
       description: Checkout Default Repository
-
   - script:
       interpreter: SHELL
       scripts:
       - |-
         #!/bin/bash
         bash bin/deployment-rds.sh
-        
 #job for deploying cumulus and orca
 Deploy cumulus and orca:
   key: DCO
@@ -229,157 +334,16 @@ Deploy cumulus and orca:
       scripts:
       - |-
         #!/bin/bash
-        bash bin/deployment-cumulus-orca.sh        
-
-
-
-      
-  # - checkout:
-  #     path: source/cumulus
-  #     force-clean-build: 'true'
-  #     description: Checkout Default Repository
-  # - script:
-  #     interpreter: SHELL
-  #     scripts:
-  #     - "#!/bin/bash\n## This script moves  the incoming environment artifact to the source/work directory \nset -e\ncp -f .bamboo_env_vars ./source/cumulus/.bamboo_env_vars\ncp -f .bamboo_env_vars /cumulus/"
-  #     description: Move bamboo_env_vars into project
-
-  # - script:
-  #     interpreter: SHELL
-  #     scripts:
-  #     - "#!/bin/bash\n## This script creates a file as a method of letting cleanup jobs know if it was reached, this allows github failure notifications to be sent if the job failed. \nset -e \ntouch success.flag"
-  #     working-dir: source/cumulus
-  #     description: Set job success flag
-  # final-tasks:
-  # - script:
-  #     interpreter: SHELL
-  #     scripts:
-  #     - "#!/bin/bash\n## This script looks for the output from the \"Set job success flag\" script and reports failure to github if it is not present\n## This script sets a default test output so that the Junit parser task doesn't fail if there's no test output (due to test skips, etc)\nset -e\nif [[ ! -f success.flag ]]; then \n  echo \"Job failed, sending failure notice to github\"\n  ./bamboo/set-status.sh failure ${bamboo.resultsUrl} \"Deploy Dev Integration Stack Step Failed\"\nelse\n  echo '<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<testsuites disabled=\"0\" errors=\"0\" failures=\"0\" tests=\"1\" time=\"0.014\">\n <testsuite name=\"Disabled Build\" hostname=\"localhost\" time=\"0.009\" errors=\"0\" tests=\"1\" skipped=\"1\" disabled=\"0\" failures=\"0\">\n  <testcase classname=\"Disabled Test\" name=\"is disabled\" time=\"0.001\">\n   <skipped message=\"Disabled due to bamboo flags\" />\n  </testcase>\n </testsuite>\n</testsuites>' >> ../../junit-DisabledBuild.xml\nfi"
-  #     working-dir: source/cumulus
-  #     description: Report Build Failure to Github
-  # - script:
-  #     interpreter: SHELL
-  #     scripts:
-  #     - "#!/bin/bash\n\n## This script removes the \"source\" subdirectory which all jobs in this stage utilize.   This ensures that there's nothing left over from previous runs. \n## This is required as the checkout job does not interface correctly with docker in all instances. \n\nrm -Rf ../../*.xml\nrm -Rf ../cumulus"
-  #     working-dir: source/cumulus
-  #     description: Cleanup
-  # artifact-subscriptions:
-  # - artifact: cross_job_build_envs
-  # - artifact: ts_build_cache
-
-
-
-
-
-Report Status:
-  key: RS
-  tasks:
-  - checkout:
-      force-clean-build: 'false'
-      description: Checkout Default Repository
-  final-tasks:
-  - script:
-      interpreter: SHELL
-      scripts:
-      - |-
-        #!/bin/bash 
-        set -e
-        ./bin/set_status.sh success ${bamboo.resultsUrl} "Build Success"
-      description: Report Success to GitHub
-
-Release ORCA Documentation:
-  key: ROD
-  description: Releases ORCA Documentation to nasa.github.io/cumulus-orca
-  docker:
-    image: node:12.15.0
-    volumes:
-      ${bamboo.working.directory}: ${bamboo.working.directory}
-      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
-  tasks:
-  - checkout:
-      force-clean-build: 'true'
-      path: source
-      description: Checkout Default Repository
-  - script:
-      interpreter: SHELL
-      scripts:
-      - |-
-        #!/bin/bash
-        set -ex
-        if [ ! -f "bin/create_release_documentation.sh" ]; then
-          echo "ERROR: create_release_documentation.sh script does not exist!"
-          exit 0
-        fi
-        bin/create_release_documentation.sh
-      description: Run documentation release script
-Release ORCA Code:
-  key: RO
-  description: Cleans, creates a GitHub Release and uploads artifacts for release
-  docker:
-    image: maven.earthdata.nasa.gov/cumulus_orca
-    volumes:
-      ${bamboo.working.directory}: ${bamboo.working.directory}
-      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
-  tasks:
-  - script:
-      interpreter: SHELL
-      scripts:
-      - |-
-        ## This script removes the "source" subdirectory which all jobs in this stage utilize.   This ensures that there's nothing left over from previous runs. 
-        ## This is required as the checkout job does not interface correctly with docker in all instances. 
-        rm -rf ./source
-        mkdir source
-        rm -rf dist
-      description: Clean Working Directory
-  - checkout:
-      force-clean-build: 'true'
-      path: source
-      description: Checkout Default Repository
-  - script:
-      interpreter: SHELL
-      scripts:
-      - |-
-        #!/bin/bash
-        export NODE_VERSION "12.x"
-        export TERRAFORM_VERSION "0.13.6"
-
-        # Add NodeJS and Yarn repos & update package index
-        curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash - 
-        curl -sL https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo
-        yum update -y
-
-        # CLI utilities
-        yum install -y gcc git make openssl unzip wget zip
-
-        # Python 3 & NodeJS
-        yum install -y python3-devel
-        yum install -y nodejs yarn
-
-        # AWS & Terraform
-        yum install -y awscli
-        #wget "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip"
-        #unzip *.zip
-        #chmod +x terraform
-        #mv terraform /usr/local/bin
-
-        # SSM SessionManager plugin
-        curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_64bit/session-manager-plugin.rpm" -o "session-manager-plugin.rpm"
-        yum install -y session-manager-plugin.rpm
-
-        set -ex
-        bin/build_release_package.sh
-      description: Create Release Files and Release in GitHub
+        bash bin/deployment-cumulus-orca.sh
 variables:
   DEPLOYMENT: sandbox
-  ORCA_VERSION: 0.0.1
+  ORCA_VERSION: 4.0.3
   RELEASE_FLAG: 'false'
   REPORT_BUILD_STATUS: 'true'
   SECRET_GITHUB_EMAIL: BAMSCRT@0@0@HYUkicwfEqt17JZaZuGYmtmRHrnDySiT+kQkBQa7/Rg7IQgl1lUvbncMUu0Wx2k1ayHojNkh2TdOlF0kJ5tw6Q== #encrypted
   SECRET_GITHUB_TOKEN: BAMSCRT@0@0@nPxyXQXMyE6zm3B1oI8Goma78s0H1fJD4vHy6+dpBQJpjDI2ekbcvCAOI8AyjYiILPhqi2w4fT0fx9MFVXxz2JPTp5uPNzG3GM/8XSUgvYo= #encrypted
   SECRET_GITHUB_USER: BAMSCRT@0@0@fFtitNITDsAjJqK2ZXjhnBZ96z2775QLzGR1Xz557gSl8HxxBaTD3Fbmp+HUbpfx  #encrypted
   AWS_DEFAULT_REGION: us-west-2
-  TFSTATE_LOCK_TABLE: rhassanorca-tf-locks
-  TFSTATE_BUCKET: rhassanorca-tf-state
   AWS_ACCESS_KEY_ID: BAMSCRT@0@0@kGZXFxP372YNHoX+IOMW5aJ0UqNRcVn23p3pdd1N2cE=
   AWS_SECRET_ACCESS_KEY: BAMSCRT@0@0@L81dje5pniBmplVLwbMq7rFxJVHTSMyK1+fDzKitigInHekJyDfRHMJ3W/o+0WWn
   RDS_SECURITY_GROUP: sg-0c325ffd7caa65675
@@ -399,19 +363,15 @@ variables:
   RDS_CLUSTER_ID: rhorca-cumulus-rds-serverless-default-cluster
   CMR_PASSWORD: BAMSCRT@0@0@OUkgyKDboRA/V/4Qhgpz/A==
   CMR_USERNAME: username
-  EARTHDATA_CLIENT_ID: WclQnSRCE7MrSS9MtXifNA
+  EARTHDATA_CLIENT_ID: BAMSCRT@0@0@0kgw7HCINxNxv1DrtMHK6A==
   EARTHDATA_CLIENT_PASSWORD: BAMSCRT@0@0@0kgw7HCINxNxv1DrtMHK6A==
-  DLQ_SUBSCRIPTION_EMAIL: rhassan@contractor.usgs.gov
-  DB_HOST_ENDPOINT: rhassanorca-cumulus-rds-serverless-default-cluster.cluster-c1xufm1sp0ux.us-west-2.rds.amazonaws.com
-  S3_ACCESS_KEY: dummy
-  S3_SECRET_KEY: BAMSCRT@0@0@0kgw7HCINxNxv1DrtMHK6A==
-  ORCA_REPORTS_BUCKET_NAME: rhassanorca-orca-primary
-
+  DB_HOST_ENDPOINT: BAMSCRT@0@0@0kgw7HCINxNxv1DrtMHK6A==
+  
 repositories:
 - orca test branch: #this is created by CICD team from https://ci.earthdata.nasa.gov/. Contact Venku Jayanti with any issues.
     scope: global
 triggers:
-- polling:
+- polling: # Does not actually poll, as we do not have webhooks enabled.
     period: '60' #time in seconds
 branches:
   create: for-new-branch
@@ -422,7 +382,7 @@ branches:
 ---
 version: 2
 plan:
-  key: ORCA-PP
+  key: ORCA-OI
 plan-permissions:
 - users:
   - bhazuka
