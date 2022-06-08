@@ -354,7 +354,7 @@ variables:
   VPC_ID: vpc-0c4932fcc4b86cff6
   AWS_ACCOUNT_ID: AMSCRT@0@0@AuBwYN809zPGzk1MH5DRPQ==
   ROLE_BOUNDARY: NGAPShRoleBoundary
-  CUMULUS_ORCA_DEPLOY_TEMPLATE: release/v11.1.1-v4.0.1
+  CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION: release/v11.1.1-v4.0.1
   ORCA_TEST_BRANCH: feature/ORCA-test-bamboo
   PREFIX: rhassanorca
   DB_ADMIN_USERNAME: postgres
