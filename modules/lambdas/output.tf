@@ -26,6 +26,16 @@ output "get_current_archive_list_arn" {
   value       = aws_lambda_function.get_current_archive_list.arn
 }
 
+output "internal_reconcile_report_job_arn" {
+  description = "AWS ARN for the internal_reconcile_report_job lambda."
+  value       = aws_lambda_function.internal_reconcile_report_job.arn
+}
+
+output "internal_reconcile_report_mismatch_arn" {
+  description = "AWS ARN for the internal_reconcile_report_mismatch lambda."
+  value       = aws_lambda_function.internal_reconcile_report_mismatch.arn
+}
+
 output "internal_reconcile_report_orphan_arn" {
   description = "AWS ARN for the internal_reconcile_report_orphan lambda."
   value       = aws_lambda_function.internal_reconcile_report_orphan.arn
@@ -93,7 +103,25 @@ output "request_status_for_job_invoke_arn" {
   value       = aws_lambda_function.request_status_for_job.invoke_arn
 }
 
+output "internal_reconcile_report_job_invoke_arn" {
+  description = "AWS invoke ARN for the internal_reconcile_report_job lambda."
+  value       = aws_lambda_function.internal_reconcile_report_job.invoke_arn
+}
 
+output "internal_reconcile_report_orphan_invoke_arn" {
+  description = "AWS invoke ARN for the internal_reconcile_report_orphan lambda."
+  value       = aws_lambda_function.internal_reconcile_report_orphan.invoke_arn
+}
+
+output "internal_reconcile_report_phantom_invoke_arn" {
+  description = "AWS invoke ARN for the internal_reconcile_report_phantom lambda."
+  value       = aws_lambda_function.internal_reconcile_report_phantom.invoke_arn
+}
+
+output "internal_reconcile_report_mismatch_invoke_arn" {
+  description = "AWS invoke ARN for the internal_reconcile_report_mismatch lambda."
+  value       = aws_lambda_function.internal_reconcile_report_mismatch.invoke_arn
+}
 # Utility Lambdas
 # ------------------------------------------------------------------------------
 output "db_deploy_function_name" {

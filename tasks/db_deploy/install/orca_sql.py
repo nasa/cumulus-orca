@@ -21,7 +21,7 @@ def commit_sql() -> TextClause:
     return text("commit")
 
 
-def app_database_sql(db_name: str) -> TextClause:
+def app_database_sql(db_name: str, admin_username: str) -> TextClause:
     """
     Full SQL for creating the ORCA application database.
 
@@ -31,7 +31,7 @@ def app_database_sql(db_name: str) -> TextClause:
     return text(
         f"""
         CREATE DATABASE {db_name}
-            OWNER postgres
+            OWNER "{admin_username}"
             TEMPLATE template1
             ENCODING 'UTF8';
     """
@@ -54,7 +54,7 @@ def app_database_comment_sql(db_name: str) -> TextClause:
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA schema, roles, and users
 # ----------------------------------------------------------------------------
-def dbo_role_sql(db_name: str) -> TextClause:
+def dbo_role_sql(db_name: str, admin_username: str) -> TextClause:
     """
     Full SQL for creating the ORCA dbo role that owns the ORCA schema and
     objects.
@@ -82,7 +82,7 @@ def dbo_role_sql(db_name: str) -> TextClause:
             -- Grants
             GRANT CONNECT ON DATABASE {db_name} TO orca_dbo;
             GRANT CREATE ON DATABASE {db_name} TO orca_dbo;
-            GRANT orca_dbo TO postgres;
+            GRANT orca_dbo TO "{admin_username}";
           END
         $$
     """  # nosec
@@ -199,14 +199,14 @@ def app_user_sql(user_name: str, user_password: str) -> TextClause:
         BEGIN
             IF NOT EXISTS (SELECT 1 FROM pg_user WHERE usename = '{user_name}' ) THEN
                 -- Create {user_name}
-                CREATE ROLE {user_name}
+                CREATE ROLE "{user_name}"
                     LOGIN
                     INHERIT
                     ENCRYPTED PASSWORD '{user_password}'
                     IN ROLE orca_app;
 
                 -- Add comment
-                COMMENT ON ROLE {user_name}
+                COMMENT ON ROLE "{user_name}"
                     IS 'ORCA application user.';
 
                 RAISE NOTICE 'USER CREATED {user_name}.';
@@ -214,7 +214,7 @@ def app_user_sql(user_name: str, user_password: str) -> TextClause:
             END IF;
 
             -- Alter the roles search path so on login it has what it needs for a path
-            ALTER ROLE {user_name} SET search_path = orca, public;
+            ALTER ROLE "{user_name}" SET search_path = orca, public;
         END
         $$;
     """  # nosec
@@ -591,7 +591,7 @@ def granules_table_sql() -> TextClause:
         COMMENT ON COLUMN granules.ingest_time
             IS 'Date and time the granule was originally ingested into ORCA.';
         COMMENT ON COLUMN granules.cumulus_create_time
-            IS 'Date and time data was originally ingested into Cumulus';
+            IS 'createdAt time from Cumulus';
         COMMENT ON COLUMN granules.last_update
             IS 'Last time the data for the granule was updated.';
         -- Grants

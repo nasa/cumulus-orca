@@ -337,6 +337,27 @@ class TestInternalReconcileReportOrphan(
             result,
         )
 
+    @patch("cumulus_logger.CumulusLogger.error")
+    def test_create_http_error_dict_happy_path(
+            self,
+            mock_error: MagicMock
+    ):
+        error_type = uuid.uuid4().__str__()
+        http_status_code = random.randint(0, 9999)  # nosec
+        request_id = uuid.uuid4().__str__()
+        message = uuid.uuid4().__str__()
+
+        result = internal_reconcile_report_orphan.create_http_error_dict(error_type, http_status_code, request_id, message)
+
+        self.assertEqual({
+            "errorType": error_type,
+            "httpStatus": http_status_code,
+            "requestId": request_id,
+            "message": message,
+        }, result)
+
+        mock_error.assert_called_once_with(message)
+
     # tests for check_env_variable copied from https://github.com/nasa/cumulus-orca/pull/260/
     @patch.dict(
         os.environ,

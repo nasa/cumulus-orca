@@ -27,7 +27,7 @@ Fully defined json schemas written in the schema of https://json-schema.org/ can
     "Records": 
     [
         {
-            "body": "{\"awsRegion\": \"us-west-2\", \"s3\": {\"bucket\": {\"name\": \"PREFIX-orca-reports\"}, \"object\": {\"key\": \"PREFIX-orca-primary/deleteme/2022-02-13T00-00Z/manifest.json\"}}}"
+            "body": "{\"Records\": [{\"awsRegion\": \"us-west-2\", \"s3\": {\"bucket\": {\"name\": \"PREFIX-orca-reports\"}, \"object\": {\"key\": \"PREFIX-orca-primary/PREFIX-orca-primary-inventory-report/2022-02-13T00-00Z/manifest.json\"}}}]}"
         }
     ]
 }

@@ -54,6 +54,15 @@ variable "db_connect_info_secret_arn" {
   description = "Secret ARN of the AWS secretsmanager secret for connecting to the database."
 }
 
+variable "orca_default_recovery_type" {
+  type        = string
+  description = "The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'."
+  validation {
+    condition     = contains(["Standard", "Bulk", "Expedited"], var.orca_default_recovery_type)
+    error_message = "Valid values are 'Standard'|'Bulk'|'Expedited'."
+  }
+}
+
 variable "orca_secretsmanager_s3_access_credentials_secret_arn" {
   type        = string
   description = "The Amazon Resource Name (ARN) of the s3 credentials secret."
@@ -112,6 +121,12 @@ variable "restore_object_role_arn" {
 
 ## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
 
+variable "orca_delete_old_reconcile_jobs_frequency_cron" {
+  type        = string
+  description = "Frequency cron for running the delete_old_reconcile_jobs lambda."
+}
+
+
 variable "orca_ingest_lambda_memory_size" {
   type        = number
   description = "Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime."
@@ -122,6 +137,13 @@ variable "orca_ingest_lambda_timeout" {
   type        = number
   description = "Timeout in number of seconds for ORCA copy_to_glacier lambda."
 }
+
+
+variable "orca_internal_reconciliation_expiration_days" {
+  type        = number
+  description = "Only reports updated before this many days ago will be deleted."
+}
+
 
 variable "orca_reconciliation_lambda_memory_size" {
   type        = number

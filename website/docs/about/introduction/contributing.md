@@ -3,7 +3,7 @@ id: intro-contributing
 title: Contributing to ORCA
 description: Provides high level information on contributing to the ORCA project.
 ---
-# Types of Contributors
+# Types of Contributers
 ## Engagement Levels
 ORCA has several ways to engage with the project and several different
 engagement levels. The various levels are explained below.
@@ -35,7 +35,7 @@ Prior to creating a card, please verify that a card does not already exist
 in the project. If a card does exist, add a comment to the card so that the
 team knows the additional impact for the feature or bug.
 
-All cards are prioritized and worked on in a normal 2-week sprint cycle
+All cards are prioritized and worked on in a normal 2 week sprint cycle
 that follows the EOSDIS SAFe timelines.
 
 ## Providing Fixes, Enhancements, and Features

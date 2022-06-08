@@ -19,6 +19,7 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
         """
         Set up test.
         """
+        # todo: Use randomized values on a per-test basis.
         self.config = {
             "admin_database": "admin_db",
             "admin_password": "admin123",

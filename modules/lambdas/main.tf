@@ -59,6 +59,64 @@ resource "aws_lambda_function" "copy_to_glacier" {
 ## Reconciliation Lambdas Definitions and Resources
 ## =============================================================================
 
+# delete_old_reconcile_jobs - Deletes old internal reconciliation reports, reducing DB size.
+# ==============================================================================
+resource "aws_lambda_function" "delete_old_reconcile_jobs" {
+  ## REQUIRED
+  function_name = "${var.prefix}_delete_old_reconcile_jobs"
+  role          = var.restore_object_role_arn
+
+  ## OPTIONAL
+  description      = "Deletes old internal reconciliation reports, reducing DB size."
+  filename         = "${path.module}/../../tasks/delete_old_reconcile_jobs/delete_old_reconcile_jobs.zip"
+  handler          = "delete_old_reconcile_jobs.handler"
+  memory_size      = var.orca_reconciliation_lambda_memory_size
+  runtime          = "python3.7"
+  source_code_hash = filebase64sha256("${path.module}/../../tasks/delete_old_reconcile_jobs/delete_old_reconcile_jobs.zip")
+  tags             = var.tags
+  timeout          = var.orca_reconciliation_lambda_timeout
+
+  vpc_config {
+    subnet_ids         = var.lambda_subnet_ids
+    security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
+  }
+
+  environment {
+    variables = {
+      DB_CONNECT_INFO_SECRET_ARN              = var.db_connect_info_secret_arn
+      INTERNAL_RECONCILIATION_EXPIRATION_DAYS = var.orca_internal_reconciliation_expiration_days
+    }
+  }
+}
+
+# rule to run the lambda periodically
+resource "aws_cloudwatch_event_rule" "delete_old_reconcile_jobs_event_rule" {
+  ## REQUIRED
+  name                = "${var.prefix}_delete_old_reconcile_jobs_event_rule"
+  schedule_expression = var.orca_delete_old_reconcile_jobs_frequency_cron
+
+  ## OPTIONAL
+  description = "Scheduled execution of the ${aws_lambda_function.delete_old_reconcile_jobs.function_name} lambda."
+  tags        = var.tags
+}
+
+resource "aws_cloudwatch_event_target" "delete_old_reconcile_jobs_event_link" {
+  arn = aws_lambda_function.delete_old_reconcile_jobs.arn
+  rule = aws_cloudwatch_event_rule.delete_old_reconcile_jobs_event_rule.id
+}
+
+# Permissions to allow cloudwatch rule to invoke lambda
+resource "aws_lambda_permission" "delete_old_reconcile_jobs_allow_cloudwatch_event" {
+  ## REQUIRED
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.delete_old_reconcile_jobs.function_name
+  principal     = "events.amazonaws.com"
+
+  ## OPTIONAL
+  statement_id = "AllowExecutionFromEvent"
+  source_arn   = aws_cloudwatch_event_rule.delete_old_reconcile_jobs_event_rule.arn
+}
+
 # get_current_archive_list - From an s3 event for an s3 inventory report's manifest.json, pulls inventory report into postgres.
 # ==============================================================================
 resource "aws_lambda_function" "get_current_archive_list" {
@@ -114,6 +172,64 @@ resource "aws_lambda_function" "perform_orca_reconcile" {
     variables = {
       DB_CONNECT_INFO_SECRET_ARN = var.db_connect_info_secret_arn
       INTERNAL_REPORT_QUEUE_URL = var.orca_sqs_internal_report_queue_id
+    }
+  }
+}
+
+# internal_reconcile_report_job - Receives page index from end user and returns available internal reconciliation jobs from the Orca database.
+# ==============================================================================
+resource "aws_lambda_function" "internal_reconcile_report_job" {
+  ## REQUIRED
+  function_name = "${var.prefix}_internal_reconcile_report_job"
+  role          = var.restore_object_role_arn
+
+  ## OPTIONAL
+  description      = "Receives page index from end user and returns available internal reconciliation jobs from the Orca database."
+  filename         = "${path.module}/../../tasks/internal_reconcile_report_job/internal_reconcile_report_job.zip"
+  handler          = "internal_reconcile_report_job.handler"
+  memory_size      = var.orca_reconciliation_lambda_memory_size
+  runtime          = "python3.7"
+  source_code_hash = filebase64sha256("${path.module}/../../tasks/internal_reconcile_report_job/internal_reconcile_report_job.zip")
+  tags             = var.tags
+  timeout          = var.orca_reconciliation_lambda_timeout
+
+  vpc_config {
+    subnet_ids         = var.lambda_subnet_ids
+    security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
+  }
+
+  environment {
+    variables = {
+      DB_CONNECT_INFO_SECRET_ARN = var.db_connect_info_secret_arn
+    }
+  }
+}
+
+# internal_reconcile_report_mismatch - Receives job id and page index from end user and returns reporting information of files that have records in the S3 bucket but are missing from ORCA catalog.
+# ==============================================================================
+resource "aws_lambda_function" "internal_reconcile_report_mismatch" {
+  ## REQUIRED
+  function_name = "${var.prefix}_internal_reconcile_report_mismatch"
+  role          = var.restore_object_role_arn
+
+  ## OPTIONAL
+  description      = "Receives job id and page index from end user and returns reporting information of files that have records in the S3 bucket and the ORCA catalog, but the records disagree."
+  filename         = "${path.module}/../../tasks/internal_reconcile_report_mismatch/internal_reconcile_report_mismatch.zip"
+  handler          = "internal_reconcile_report_mismatch.handler"
+  memory_size      = var.orca_reconciliation_lambda_memory_size
+  runtime          = "python3.7"
+  source_code_hash = filebase64sha256("${path.module}/../../tasks/internal_reconcile_report_mismatch/internal_reconcile_report_mismatch.zip")
+  tags             = var.tags
+  timeout          = var.orca_reconciliation_lambda_timeout
+
+  vpc_config {
+    subnet_ids         = var.lambda_subnet_ids
+    security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
+  }
+
+  environment {
+    variables = {
+      DB_CONNECT_INFO_SECRET_ARN = var.db_connect_info_secret_arn
     }
   }
 }
@@ -287,12 +403,12 @@ resource "aws_lambda_function" "request_files" {
 
   environment {
     variables = {
-      RESTORE_EXPIRE_DAYS      = var.orca_recovery_expiration_days
-      RESTORE_REQUEST_RETRIES  = var.orca_recovery_retry_limit
-      RESTORE_RETRY_SLEEP_SECS = var.orca_recovery_retry_interval
-      RESTORE_RETRIEVAL_TYPE   = "Standard"
-      STATUS_UPDATE_QUEUE_URL  = var.orca_sqs_status_update_queue_id
-      ORCA_DEFAULT_BUCKET      = var.orca_default_bucket
+      RESTORE_EXPIRE_DAYS             = var.orca_recovery_expiration_days
+      RESTORE_REQUEST_RETRIES         = var.orca_recovery_retry_limit
+      RESTORE_RETRY_SLEEP_SECS        = var.orca_recovery_retry_interval
+      DEFAULT_RECOVERY_TYPE           = var.orca_default_recovery_type
+      STATUS_UPDATE_QUEUE_URL         = var.orca_sqs_status_update_queue_id
+      ORCA_DEFAULT_BUCKET             = var.orca_default_bucket
     }
   }
 }

@@ -89,10 +89,19 @@ variable "orca_default_bucket" {
   description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
 }
 
-
-variable "orca_reports_bucket_arn" {
+variable "orca_default_recovery_type" {
   type        = string
-  description = "The ARN of the bucket to store s3 inventory reports."
+  description = "The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'."
+  default     = "Standard"
+  validation {
+    condition     = contains(["Standard", "Bulk", "Expedited"], var.orca_default_recovery_type)
+    error_message = "Valid values are 'Standard'|'Bulk'|'Expedited'."
+  }
+}
+
+variable "orca_reports_bucket_name" {
+  type        = string
+  description = "The name of the bucket to store s3 inventory reports."
 }
 
 
@@ -100,7 +109,6 @@ variable "rds_security_group_id" {
   type        = string
   description = "Cumulus' RDS Security Group's ID."
 }
-
 
 variable "s3_access_key" {
   type        = string
@@ -156,6 +164,13 @@ variable "metadata_queue_message_retention_time_seconds" {
 }
 
 
+variable "orca_delete_old_reconcile_jobs_frequency_cron" {
+  type        = string
+  description = "Frequency cron for running the delete_old_reconcile_jobs lambda."
+  default     = "cron(0 0 ? * SUN *)"  # UTC Sunday Midnight
+}
+
+
 variable "orca_ingest_lambda_memory_size" {
   type        = number
   description = "Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime."
@@ -167,6 +182,13 @@ variable "orca_ingest_lambda_timeout" {
   type        = number
   description = "Timeout in number of seconds for ORCA copy_to_glacier lambda."
   default     = 600
+}
+
+
+variable "orca_internal_reconciliation_expiration_days" {
+  type        = number
+  description = "Only reports updated before this many days ago will be deleted."
+  default     = 30
 }
 
 

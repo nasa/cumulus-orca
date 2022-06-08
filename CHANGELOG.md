@@ -15,19 +15,26 @@ and includes an additional section for migration notes.
 
 
 ## [Unreleased]
-
 ### Added
-- *ORCA-300* Added `OrcaInternalReconciliation` workflow allong with an accompanying input queue and dead-letter queue.
+- *ORCA-300* Added `OrcaInternalReconciliation` workflow along with an accompanying input queue and dead-letter queue.
     Retention time can be changed by setting `internal_report_queue_message_retention_time_seconds` in your `variables.tf` or `orca_variables.tf` file. Defaults to 432000.
 - *ORCA-161* Added dead letter queue and cloudwatch alarm terraform code to recovery SQS queue.
 - *ORCA-307* Added lambda get_current_archive_list to pull S3 Inventory reports into Postgres. 
     Adds `orca_reconciliation_lambda_memory_size` and `orca_reconciliation_lambda_timeout` to Terraform variables.
 - *ORCA-308* Added lambda perform_orca_reconcile to find differences between S3 Inventory reports and Orca catalog.
 - *ORCA-403* Added lambda post_to_queue_and_trigger_step_function to trigger step function for internal reconciliation.
-- *ORCA-373* Added input variable for `orca_reports_bucket_arn`. Set in your `variables.tf` or `orca_variables.tf` file as shown below.
+- *ORCA-373* Added input variable for `orca_reports_bucket_name`. Set in your `variables.tf` or `orca_variables.tf` file as shown below.
     Report frequency defaults to `Daily`, but can be set to `Weekly` through variable `s3_report_frequency`.
 - *ORCA-309* Added lambda internal_reconcile_report_phantom to report entries present in the catalog, but not s3.
 - *ORCA-382* Added lambda internal_reconcile_report_orphan to report entries present in S3 bucket, but not in the ORCA catalog.
+- *ORCA-291* request_files lambda now accepts `orcaDefaultRecoveryTypeOverride` to override the glacier restore type at the workflow level by adding it to task_config.
+- *ORCA-381* Added lambda internal_reconcile_report_mismatch to report entries present in S3 bucket and catalog, but with conflicting data.
+- *ORCA-310* Added lambda delete_old_reconcile_jobs for removing old reconciliation reports from the database.
+    Use new optional variable `orca_internal_reconciliation_expiration_days` to set the retention period.
+- *ORCA-372* Added automatic trigger for inventory events being read in by `post_to_queue_and_trigger_step_function`.
+- *ORCA-306* Added API gateway resources for internal reconciliation reporting lambdas.
+- *ORCA-424* Added automatic trigger for delete_old_reconcile_jobs. Will run every sunday at midnight UTC.
+    Adjust with the new optional variable `orca_delete_old_reconcile_jobs_frequency_cron`
 
 ### Changed
 - *ORCA-299* `db_deploy` task has been updated to deploy ORCA internal reconciliation tables and objects.
@@ -35,6 +42,13 @@ and includes an additional section for migration notes.
 - SQS Queue names adjusted to include Orca. For example: `"${var.prefix}-orca-status-update-queue.fifo"`. Queues will be automatically recreated by Terraform.
 - *ORCA-334* Created IAM role for the extract_filepaths_for_granule lambda function, attached the role to the function
 - *ORCA-404* Updated shared_db and relevant lambdas to use secrets manager ARN instead of magic strings.
+- *ORCA-291* Updated request_files lambda and terraform so that the glacier restore type can be set via terraform during deployment. In addition, the glacier retrieval type can now be overridden via a change in the collections configuration using `orcaDefaultRecoveryTypeOverride` key under `meta` tag as shown below. 
+  ```json
+  "meta": {
+    "orcaDefaultRecoveryTypeOverride": "Standard"
+  }
+  ```
+- *ORCA-426* Performance improvements around json schema validators.
 
 ### Migration Notes
 
@@ -45,10 +59,18 @@ and includes an additional section for migration notes.
     - Under the `Cross Account Access` policy, add `s3:GetInventoryConfiguration` and `s3:PutInventoryConfiguration` to Actions.
 - The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variables. The following required variables have been added:
   - dlq_subscription_email
-  - orca_reports_bucket_arn
+  - orca_reports_bucket_name
   - s3_access_key
   - s3_secret_key
   
+- Update the collection configuration with the new optional key `orcaDefaultRecoveryTypeOverride` that can be added to override the default S3 glacier recovery type as shown below.
+
+  ```json
+    "meta": {
+      "orcaDefaultRecoveryTypeOverride": "Standard"
+    }
+  ```
+
 - Add the following ORCA required variable definition to your `variables.tf` or `orca_variables.tf` file.
 
 ```terraform
@@ -57,9 +79,9 @@ variable "dlq_subscription_email" {
   description = "The email to notify users when messages are received in dead letter SQS queue due to restore failure. Sends one email until the dead letter queue is emptied."
 }
 
-variable "orca_reports_bucket_arn" {
+variable "orca_reports_bucket_name" {
   type        = string
-  description = "The ARN of the bucket to store s3 inventory reports."
+  description = "The name of the bucket to store s3 inventory reports."
 }
 
 variable "s3_access_key" {
@@ -97,22 +119,25 @@ variable "s3_secret_key" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  db_admin_password       = var.db_admin_password
-  db_user_password        = var.db_user_password
-  db_host_endpoint        = var.db_host_endpoint
-  dlq_subscription_email  = var.dlq_subscription_email
-  orca_default_bucket     = var.orca_default_bucket
-  orca_reports_bucket_arn = var.orca_reports_bucket_arn
-  rds_security_group_id   = var.rds_security_group_id
-  s3_access_key           = var.s3_access_key
-  s3_secret_key           = var.s3_secret_key
+  db_admin_password        = var.db_admin_password
+  db_user_password         = var.db_user_password
+  db_host_endpoint         = var.db_host_endpoint
+  dlq_subscription_email   = var.dlq_subscription_email
+  orca_default_bucket      = var.orca_default_bucket
+  orca_reports_bucket_name = var.orca_reports_bucket_name
+  rds_security_group_id    = var.rds_security_group_id
+  s3_access_key            = var.s3_access_key
+  s3_secret_key            = var.s3_secret_key
 
   ## OPTIONAL
   db_admin_username                                    = "postgres"
   default_multipart_chunksize_mb                       = 250
   internal_report_queue_message_retention_time_seconds = 432000
+  orca_default_recovery_type                           = "Standard"
+  orca_delete_old_reconcile_jobs_frequency_cron        = "cron(0 0 ? * SUN *)"
   orca_ingest_lambda_memory_size                       = 2240
   orca_ingest_lambda_timeout                           = 720
+  orca_internal_reconciliation_expiration_days         = 30
   orca_recovery_buckets                                = []
   orca_recovery_complete_filter_prefix                 = ""
   orca_recovery_expiration_days                        = 5
@@ -131,6 +156,13 @@ variable "s3_secret_key" {
   }
   ```
 
+## [4.0.3]
+- Fixed bug where `db_admin_username` had to be lower-case.
+
+## [4.0.2]
+
+### Fixed
+- Fixed bug where `db_admin_username` was not set as the owner of new databases.
 
 ## [4.0.1]
 

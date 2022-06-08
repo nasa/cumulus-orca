@@ -254,7 +254,7 @@ def reconcile_catalog_mismatch_report_table_sql() -> TextClause:
             , s3_etag                     text NOT NULL
             , orca_last_update            timestamp with time zone NOT NULL
             , s3_last_update              timestamp with time zone NOT NULL
-            , orca_size_in_bytes        int8 NOT NULL
+            , orca_size_in_bytes          int8 NOT NULL
             , s3_size_in_bytes            int8 NOT NULL
             , discrepancy_type            text NOT NULL
             , CONSTRAINT PK_reconcile_catalog_mismatch_report

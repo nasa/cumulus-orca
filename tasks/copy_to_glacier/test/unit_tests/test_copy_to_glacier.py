@@ -14,6 +14,9 @@ from copy_to_glacier import *
 from test.helpers import LambdaContextMock
 from test.unit_tests.ConfigCheck import ConfigCheck
 
+# Generating schema validators can take time, so do it once and reuse.
+with open("schemas/output.json", "r") as raw_schema:
+    _OUTPUT_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
 
 class TestCopyToGlacierHandler(TestCase):
     """
@@ -241,11 +244,7 @@ class TestCopyToGlacierHandler(TestCase):
 
         mock_get_default_glacier_bucket_name.assert_called_once_with(config)
 
-        with open("schemas/output.json", "r") as raw_schema:
-            schema = json.loads(raw_schema.read())
-
-        validate = fastjsonschema.compile(schema)
-        validate(result)
+        _OUTPUT_VALIDATE(result)
 
         expected_granules = copy.deepcopy(event["input"]["granules"])
         self.assertEqual(expected_granules, result["granules"])
@@ -508,11 +507,7 @@ class TestCopyToGlacierHandler(TestCase):
 
         mock_get_default_glacier_bucket_name.assert_called_once_with(config)
 
-        with open("schemas/output.json", "r") as raw_schema:
-            schema = json.loads(raw_schema.read())
-
-        validate = fastjsonschema.compile(schema)
-        validate(result)
+        _OUTPUT_VALIDATE(result)
 
         expected_granules = copy.deepcopy(event["input"]["granules"])
         self.assertEqual(expected_granules, result["granules"])
@@ -612,11 +607,7 @@ class TestCopyToGlacierHandler(TestCase):
 
         mock_get_default_glacier_bucket_name.assert_called_once_with(config)
 
-        with open("schemas/output.json", "r") as raw_schema:
-            schema = json.loads(raw_schema.read())
-
-        validate = fastjsonschema.compile(schema)
-        validate(result)
+        _OUTPUT_VALIDATE(result)
 
         expected_granules = copy.deepcopy(event["input"]["granules"])
         self.assertEqual(expected_granules, result["granules"])
@@ -690,11 +681,7 @@ class TestCopyToGlacierHandler(TestCase):
 
         mock_get_default_glacier_bucket_name.assert_called_once_with(config)
 
-        with open("schemas/output.json", "r") as raw_schema:
-            schema = json.loads(raw_schema.read())
-
-        validate = fastjsonschema.compile(schema)
-        validate(result)
+        _OUTPUT_VALIDATE(result)
 
         self.assertEqual([], result["granules"])
         granules = result["granules"]

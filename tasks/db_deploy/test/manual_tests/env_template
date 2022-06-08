@@ -10,7 +10,7 @@ export DATA_DIR=""
 export TASK_DIR=""
 
 ## Password variables needed for the database.
-# root password for postgres user. Must be at least 12 characters long.
+# root password for admin user. Must be at least 12 characters long.
 export ADMIN_PASSWORD=""
 
 # application password for PREFIX_orcauser user. Must be at least 12 characters long.

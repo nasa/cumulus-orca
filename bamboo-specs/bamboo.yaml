@@ -40,6 +40,13 @@ Set Pending Github Status:
         set -ex
         ./bin/set_status.sh pending ${bamboo.resultsUrl} "CI Running"
       description: Set Pending Status
+  - script:
+      interpreter: SHELL
+      scripts:
+      - |-
+        set -ex
+        ./bin/set_status.sh pending ${bamboo.resultsUrl} "CI Running"
+      description: Set Pending Status but again!
 Build and Test:
   key: JOB1
   other:
@@ -195,7 +202,7 @@ Release ORCA Documentation:
       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
   tasks:
   - checkout:
-      force-clean-build: true
+      force-clean-build: 'true'
       path: source
       description: Checkout Default Repository
   - script:
@@ -213,7 +220,7 @@ Release ORCA Documentation:
       description: Run documentation release script
 Release ORCA Code:
   key: RO
-  description: Creates a GitHub Release and uploads artifacts for release
+  description: Cleans, creates a GitHub Release and uploads artifacts for release
   docker:
     image: amazonlinux:2
     volumes:
@@ -231,7 +238,7 @@ Release ORCA Code:
         rm -rf dist
       description: Clean Working Directory
   - checkout:
-      force-clean-build: true
+      force-clean-build: 'true'
       path: source
       description: Checkout Default Repository
   - script:

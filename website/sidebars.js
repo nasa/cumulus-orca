@@ -35,6 +35,7 @@ module.exports = {
                 'developer/development-guide/code/versioning-releases',
                 'developer/development-guide/code/linting',
                 'developer/development-guide/code/unit-tests',
+                'developer/development-guide/code/integration-tests',
                 'developer/development-guide/code/postgres-tests',
                 'developer/development-guide/code/orca-logging',
             ],
@@ -74,7 +75,9 @@ module.exports = {
       'developer/research/research-lambda-container',
       'developer/research/research-orca-delete-functionality',
       'developer/research/research-bamboo-integration-tests',
-      'developer/research/research-lambda-container'
+      'developer/research/research-lambda-container',
+      'developer/research/research-pushing-docker-image',
+      'developer/research/research-s3-bucket-best-practices'
     ],
   },
   cookbook: {
