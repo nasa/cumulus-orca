@@ -2,8 +2,8 @@
 version: 2
 plan:
   project-key: ORCA
-  key: PD
-  name: prototype-demo
+  key: PN
+  name: prototype-new
 stages:
 - Setup Env:
     manual: false
