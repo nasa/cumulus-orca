@@ -37,7 +37,7 @@ terraform apply \
   -var "permissions_boundary_arn=arn:aws:iam::$bamboo_AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
 
 # script for deploying cumulus-tf module
-cd ../cumulus-orca-deploy-template/cumulus-tf
+cd ../../cumulus-orca-deploy-template/cumulus-tf
 
 CUMULUS_KEY="$bamboo_PREFIX/cumulus/terraform.tfstate"
 
