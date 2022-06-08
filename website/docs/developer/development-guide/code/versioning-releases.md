@@ -159,7 +159,7 @@ The EC2 key pair can be created using the AWS CLI:
 aws ec2 create-key-pair --key-name <PREFIX>
 ```
 
-For `Deploy Dev Cumulus and ORCA Stack` stage, add the following variables. The RDS variables `RDS_SECURITY_GROUP`, `RDS_USER_ACCESS_SECRET_ARN` and `DB_HOST_ENDPOINT` can be found from output logs of the previous `Deploy Dev RDS Stack` stage. Note that a new earthdata application will need to be first created if using a new prefix for new deployment which will give the values for `EARTHDATA_CLIENT_ID` and `EARTHDATA_CLIENT_PASSWORD`. `ORCA_TEST_BRANCH` refers to the feature branch used for testing in cumulus-orca repo while `CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION` is the branch you want to check out in the [deployment repo](https://git.earthdata.nasa.gov/projects/ORCA/repos/cumulus-orca-deploy-template/browse) such as `v11.1.1-v4.0.1`.
+For `Deploy Dev Cumulus and ORCA Stack` stage, add the following variables. The RDS variables `RDS_SECURITY_GROUP`, `RDS_USER_ACCESS_SECRET_ARN` and `DB_HOST_ENDPOINT` can be found from output logs of the previous `Deploy Dev RDS Stack` stage. Note that a new earthdata application will need to be first created if using a new prefix for new deployment which will give the values for `EARTHDATA_CLIENT_ID` and `EARTHDATA_CLIENT_PASSWORD`. `ORCA_TEST_BRANCH` refers to the feature branch used for testing in cumulus-orca repo while `CUMULUS_ORCA_DEPLOY_BRANCH` is the branch you want to check out in the [deployment repo](https://git.earthdata.nasa.gov/projects/ORCA/repos/cumulus-orca-deploy-template/browse) such as `v11.1.1-v4.0.1`.
 
 - RDS_SECURITY_GROUP
 - RDS_USER_ACCESS_SECRET_ARN
@@ -167,6 +167,6 @@ For `Deploy Dev Cumulus and ORCA Stack` stage, add the following variables. The 
 - EARTHDATA_CLIENT_ID
 - EARTHDATA_CLIENT_PASSWORD
 - ORCA_TEST_BRANCH
-- CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION
+- CUMULUS_ORCA_DEPLOY_BRANCH
 
 Note that `RDS_USER_ACCESS_SECRET_ARN` value from the initial run should be recorded, as they may be hidden on future deployments. In addition, the jobs may need to be run multiple times to get past deployment errors if there is one.
