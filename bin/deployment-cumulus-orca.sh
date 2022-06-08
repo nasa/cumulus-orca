@@ -37,11 +37,6 @@ terraform apply \
   -var "permissions_boundary_arn=arn:aws:iam::$bamboo_AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
 
 # script for deploying cumulus-tf module
-# clone cumulus-orca repo and run build_tasks.sh to create the lambda zip files first
-cd ../.. && git clone --branch $bamboo_ORCA_TEST_BRANCH --single-branch https://github.com/nasa/cumulus-orca.git
-cd cumulus-orca
-# run the build script to create lambda zip files
-./bin/build_tasks.sh
 cd ../cumulus-orca-deploy-template/cumulus-tf
 
 CUMULUS_KEY="$bamboo_PREFIX/cumulus/terraform.tfstate"
