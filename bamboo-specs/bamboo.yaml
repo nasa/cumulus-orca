@@ -2,8 +2,8 @@
 version: 2
 plan:
   project-key: ORCA
-  key: OI
-  name: ORCA Integrator
+  key: PD
+  name: prototype-demo
 stages:
 - Setup Env:
     manual: false
