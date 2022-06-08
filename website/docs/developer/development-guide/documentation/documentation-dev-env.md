@@ -22,7 +22,7 @@ The installation steps below goes into further details.
    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
    ```
 
-2. Install the proper Node.js and npm versions to your machine. Currently Node v16.11.1 should be used.
+2. Install the proper Node.js and npm versions to your machine. Currently Node v16.15.1 should be used.
    ```sh
    nvm install --lts
    nvm use --lts
