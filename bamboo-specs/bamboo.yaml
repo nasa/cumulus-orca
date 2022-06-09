@@ -21,12 +21,29 @@ stages:
     final: false
     jobs:
     - Report Status
+    
+#deploy RDS cluster for integration test
+#TODO ORCA-462: move to a different stage or even to a new plan for better maintenance.
+- Deploy Dev RDS Stack:
+    manual: true
+    final: false
+    jobs:
+    - Deploy RDS cluster
+
+#deploy orca and cumulus for integration test
+- Deploy Dev Cumulus and ORCA Stack:
+    manual: true
+    final: false
+    jobs:
+    - Deploy cumulus and orca
+
 - Release Stage:
     manual: true
     final: false
     jobs:
     - Release ORCA Documentation
     - Release ORCA Code
+
 Set Pending Github Status:
   key: SPGS
   tasks:
@@ -36,14 +53,14 @@ Set Pending Github Status:
   - script:
       interpreter: SHELL
       scripts:
-      - |-
+      - |-   #used for better script formatting
         set -ex
         ./bin/set_status.sh pending ${bamboo.resultsUrl} "CI Running"
       description: Set Pending Status
   - script:
       interpreter: SHELL
       scripts:
-      - |-
+      - |-   #used for better script formatting
         set -ex
         ./bin/set_status.sh pending ${bamboo.resultsUrl} "CI Running"
       description: Set Pending Status but again!
@@ -192,6 +209,49 @@ Report Status:
         ./bin/set_status.sh success ${bamboo.resultsUrl} "Build Success"
       description: Report Success to GitHub
 
+#job for deploying cumulus and orca
+Deploy RDS cluster:
+  key: DRC
+  other:
+    clean-working-dir: true
+  docker:
+    image: maven.earthdata.nasa.gov/cumulus_orca
+    volumes:
+      ${bamboo.working.directory}: ${bamboo.working.directory}
+      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+  tasks:
+  - checkout:
+      force-clean-build: 'true'
+      description: Checkout Default Repository
+  - script:
+      interpreter: SHELL
+      scripts:
+      - |-
+        #!/bin/bash
+        bash bin/deployment-rds.sh
+#job for deploying cumulus and orca
+Deploy cumulus and orca:
+  key: DCO
+  other:
+    clean-working-dir: true
+    # Some plugin configurations are not supported by YAML Specs
+  docker:
+    image: maven.earthdata.nasa.gov/cumulus_orca
+    volumes:
+      ${bamboo.working.directory}: ${bamboo.working.directory}
+      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+  tasks:
+  - checkout:
+      force-clean-build: 'true'
+      description: Checkout Default Repository
+
+  - script:
+      interpreter: SHELL
+      scripts:
+      - |-
+        #!/bin/bash
+        bash bin/deployment-cumulus-orca.sh
+
 Release ORCA Documentation:
   key: ROD
   description: Releases ORCA Documentation to nasa.github.io/cumulus-orca
@@ -276,13 +336,36 @@ Release ORCA Code:
         set -ex
         bin/build_release_package.sh
       description: Create Release Files and Release in GitHub
+
 variables:
-  ORCA_VERSION: 4.0.0
+  DEPLOYMENT: sandbox
+  ORCA_VERSION: 4.0.3
   RELEASE_FLAG: 'false'
   REPORT_BUILD_STATUS: 'true'
   SECRET_GITHUB_EMAIL: BAMSCRT@0@0@HYUkicwfEqt17JZaZuGYmtmRHrnDySiT+kQkBQa7/Rg7IQgl1lUvbncMUu0Wx2k1ayHojNkh2TdOlF0kJ5tw6Q== #encrypted
   SECRET_GITHUB_TOKEN: BAMSCRT@0@0@nPxyXQXMyE6zm3B1oI8Goma78s0H1fJD4vHy6+dpBQJpjDI2ekbcvCAOI8AyjYiILPhqi2w4fT0fx9MFVXxz2JPTp5uPNzG3GM/8XSUgvYo= #encrypted
   SECRET_GITHUB_USER: BAMSCRT@0@0@fFtitNITDsAjJqK2ZXjhnBZ96z2775QLzGR1Xz557gSl8HxxBaTD3Fbmp+HUbpfx  #encrypted
+  AWS_DEFAULT_REGION: us-west-2
+  AWS_ACCESS_KEY_ID: REPLACE ME
+  AWS_SECRET_ACCESS_KEY: REPLACE ME
+  RDS_SECURITY_GROUP: REPLACE ME
+  RDS_ENGINE_VERSION: 10.18
+  RDS_USER_ACCESS_SECRET_ARN: REPLACE ME
+  AWS_SUBNET_ID1: REPLACE ME
+  AWS_SUBNET_ID2: REPLACE ME
+  VPC_ID: REPLACE ME
+  AWS_ACCOUNT_ID: REPLACE ME
+  ROLE_BOUNDARY: NGAPShRoleBoundary
+  CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION: release/v11.1.1-v4.0.1
+  PREFIX: REPLACE ME
+  DB_ADMIN_USERNAME: postgres
+  DB_ADMIN_PASSWORD: REPLACE ME
+  DB_USER_PASSWORD: REPLACE ME
+  CMR_PASSWORD: REPLACE ME
+  CMR_USERNAME: username
+  EARTHDATA_CLIENT_ID: REPLACE ME
+  EARTHDATA_CLIENT_PASSWORD: REPLACE ME
+  DB_HOST_ENDPOINT: REPLACE ME
   
 repositories:
 - orca-develop: #this is created by CICD team from https://ci.earthdata.nasa.gov/. Contact Venku Jayanti with any issues.

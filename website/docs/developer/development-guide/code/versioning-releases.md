@@ -108,3 +108,64 @@ To delete a published tag to re-tag, follow these steps:
     git push -d origin vx.y.z
 ```
 
+## Deploying RDS cluster and Cumulus ORCA modules in bamboo
+
+For testing, use your feature branch in cumulus-orca github repo and `ORCA-test-branch` linked repo in bamboo specs. 
+
+While running the `Deploy Dev RDS Stack` stage, replace the following variables with yours. This is because some variables are sensitive and some will vary depending upon the user running the pipeline. Hitting 'play' next to `Deploy Dev RDS Stack` and `Deploy Dev Cumulus and ORCA Stack` brings up a checkbox list to run multiple jobs at once. Note that none of the checkboxes should be checked.
+
+- AWS_ACCESS_KEY_ID
+- AWS_SECRET_ACCESS_KEY
+- PREFIX
+- AWS_ACCOUNT_ID
+- DB_ADMIN_PASSWORD
+- DB_USER_PASSWORD
+
+Make sure the proper buckets, dynamoDB table and the EC2 key pair are first created manually using the same prefix before running the pipeline. See this cumulus [documentation](https://nasa.github.io/cumulus/docs/deployment/deployment-readme) and [deployment with cumulus documentation](https://github.com/nasa/cumulus-orca/blob/develop/website/docs/developer/deployment-guide/deployment-with-cumulus.md#modifying-cumulus-tfterraformtfvars) for additional details. Typically, these are the buckets that need to be created first
+- `<PREFIX>-internal`
+- `<PREFIX>-level0`
+- `<PREFIX>-public`
+- `<PREFIX>-private`
+- `<PREFIX>-protected`
+- `<PREFIX>-orca-primary`
+- `<PREFIX>-tf-state` (for storing the terraform state file)
+
+Note that the `<PREFIX>-orca-primary` bucket should be created in the DR OU if we want a full test. This will also need a cross account policy applied to it as well which should be similar to this [policy](https://github.com/nasa/cumulus-orca/blob/develop/website/docs/developer/research/research-s3-bucket-policies.md#reports-bucket).
+
+The bucket can be created using the following CLI command:
+```bash
+aws s3api create-bucket --bucket <BUCKET_NAME>  --region us-west-2 --create-bucket-configuration LocationConstraint=us-west-2
+
+```
+In addition to this, the dynamodb table and bucket version need to created as well.
+```bash
+   aws dynamodb create-table \
+      --table-name <PREFIX>-tf-locks \
+      --attribute-definitions AttributeName=LockID,AttributeType=S \
+      --key-schema AttributeName=LockID,KeyType=HASH \
+      --billing-mode PAY_PER_REQUEST \
+      --region us-west-2
+```
+    
+```bash
+      aws s3api put-bucket-versioning \
+    --bucket <PREFIX>-tf-state \
+    --versioning-configuration Status=Enabled
+```
+
+The EC2 key pair can be created using the AWS CLI:
+
+```bash
+aws ec2 create-key-pair --key-name <PREFIX>
+```
+
+For `Deploy Dev Cumulus and ORCA Stack` stage, add the following variables. The RDS variables `RDS_SECURITY_GROUP`, `RDS_USER_ACCESS_SECRET_ARN` and `DB_HOST_ENDPOINT` can be found from output logs of the previous `Deploy Dev RDS Stack` stage. Note that a new earthdata application will need to be first created if using a new prefix for new deployment which will give the values for `EARTHDATA_CLIENT_ID` and `EARTHDATA_CLIENT_PASSWORD`. `CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION` is the branch you want to check out in the [deployment repo](https://git.earthdata.nasa.gov/projects/ORCA/repos/cumulus-orca-deploy-template/browse) such as `v11.1.1-v4.0.1`.
+
+- RDS_SECURITY_GROUP
+- RDS_USER_ACCESS_SECRET_ARN
+- DB_HOST_ENDPOINT
+- EARTHDATA_CLIENT_ID
+- EARTHDATA_CLIENT_PASSWORD
+- CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION
+
+Note that `RDS_USER_ACCESS_SECRET_ARN` value from the initial run should be recorded, as they may be hidden on future deployments. In addition, the jobs may need to be run multiple times to get past deployment errors if there is one. If an error is raised saying `Cloudwatch log groups already exist`, then manually delete all the cloudwatch log groups and corresponding lambdas having the same name as the log groups from the AWS console and retry running the job.
