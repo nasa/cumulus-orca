@@ -156,7 +156,12 @@ variable "s3_secret_key" {
   }
   ```
 
+### Security
+- Updated Docusaurus to version 2.0.0.beta-21 to resolve security issues.
+
 ## [4.0.3]
+
+### Fixed
 - Fixed bug where `db_admin_username` had to be lower-case.
 
 ## [4.0.2]

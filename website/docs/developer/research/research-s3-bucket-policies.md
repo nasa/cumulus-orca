@@ -1,5 +1,5 @@
 ---
-id: research-s3-practices
+id: research-s3-bucket-best-practices
 title: S3 Future Direction/Best Practices
 description: Research notes on S3 best practices and some directions to take development.
 ---
