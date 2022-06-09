@@ -24,8 +24,8 @@ The installation steps below goes into further details.
 
 2. Install the proper Node.js and npm versions to your machine. Currently Node v16.15.1 should be used.
    ```sh
-   nvm install --lts
-   nvm use --lts
+   nvm install v16.15.1
+   nvm use v16.15.1
    npm install npm@latest -g
    ```
 
