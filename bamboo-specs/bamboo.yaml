@@ -43,7 +43,12 @@ stages:
     jobs:
     - Release ORCA Documentation
     - Release ORCA Code
-
+#delete resources for integration test
+- Cleanup Integration Test:
+    manual: true
+    final: false
+    jobs:
+    - Cleanup integration test resources
 Set Pending Github Status:
   key: SPGS
   tasks:
@@ -338,6 +343,26 @@ Release ORCA Code:
         bin/build_release_package.sh
       description: Create Release Files and Release in GitHub
 
+Cleanup integration test resources:
+  key: CITR
+  other:
+    clean-working-dir: true
+  docker:
+    image: maven.earthdata.nasa.gov/cumulus_orca
+    volumes:
+      ${bamboo.working.directory}: ${bamboo.working.directory}
+      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+  tasks:
+  - checkout:
+      force-clean-build: 'true'
+      description: Checkout Default Repository
+
+  - script:
+      interpreter: SHELL
+      scripts:
+      - |-
+        #!/bin/bash
+        bash bin/cleanup-integration.sh
 variables:
   DEPLOYMENT: sandbox
   ORCA_VERSION: 4.0.1
