@@ -30,19 +30,19 @@ stages:
     jobs:
     - Deploy RDS cluster
 
-#deploy orca and cumulus for integration test
-- Deploy Dev Cumulus and ORCA Stack:
-    manual: true
-    final: false
-    jobs:
-    - Deploy cumulus and orca
+# #deploy orca and cumulus for integration test
+# - Deploy Dev Cumulus and ORCA Stack:
+#     manual: true
+#     final: false
+#     jobs:
+#     - Deploy cumulus and orca
 
-- Release Stage:
-    manual: true
-    final: false
-    jobs:
-    - Release ORCA Documentation
-    - Release ORCA Code
+# - Release Stage:
+#     manual: true
+#     final: false
+#     jobs:
+#     - Release ORCA Documentation
+#     - Release ORCA Code
 #delete resources for integration test
 - Cleanup Integration Test:
     manual: true
@@ -235,113 +235,113 @@ Deploy RDS cluster:
         #!/bin/bash
         bash bin/deployment-rds.sh
 #job for deploying cumulus and orca
-Deploy cumulus and orca:
-  key: DCO
-  other:
-    clean-working-dir: true
-    # Some plugin configurations are not supported by YAML Specs
-  docker:
-    image: maven.earthdata.nasa.gov/cumulus_orca
-    volumes:
-      ${bamboo.working.directory}: ${bamboo.working.directory}
-      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
-  tasks:
-  - checkout:
-      force-clean-build: 'true'
-      description: Checkout Default Repository
+# Deploy cumulus and orca:
+#   key: DCO
+#   other:
+#     clean-working-dir: true
+#     # Some plugin configurations are not supported by YAML Specs
+#   docker:
+#     image: maven.earthdata.nasa.gov/cumulus_orca
+#     volumes:
+#       ${bamboo.working.directory}: ${bamboo.working.directory}
+#       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+#   tasks:
+#   - checkout:
+#       force-clean-build: 'true'
+#       description: Checkout Default Repository
 
-  - script:
-      interpreter: SHELL
-      scripts:
-      - |-
-        #!/bin/bash
-        bash bin/deployment-cumulus-orca.sh
+#   - script:
+#       interpreter: SHELL
+#       scripts:
+#       - |-
+#         #!/bin/bash
+#         bash bin/deployment-cumulus-orca.sh
 
-Release ORCA Documentation:
-  key: ROD
-  description: Releases ORCA Documentation to nasa.github.io/cumulus-orca
-  docker:
-    image: node:16.13.1
-    volumes:
-      ${bamboo.working.directory}: ${bamboo.working.directory}
-      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
-  tasks:
-  - checkout:
-      force-clean-build: 'true'
-      path: source
-      description: Checkout Default Repository
-  - script:
-      interpreter: SHELL
-      scripts:
-      - |-
-        #!/bin/bash
-        cd source
-        set -ex
-        if [ ! -f "bin/create_release_documentation.sh" ]; then
-          echo "ERROR: create_release_documentation.sh script does not exist!"
-          exit 1
-        fi
-        bin/create_release_documentation.sh
-      description: Run documentation release script
+# Release ORCA Documentation:
+#   key: ROD
+#   description: Releases ORCA Documentation to nasa.github.io/cumulus-orca
+#   docker:
+#     image: node:16.13.1
+#     volumes:
+#       ${bamboo.working.directory}: ${bamboo.working.directory}
+#       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+#   tasks:
+#   - checkout:
+#       force-clean-build: 'true'
+#       path: source
+#       description: Checkout Default Repository
+#   - script:
+#       interpreter: SHELL
+#       scripts:
+#       - |-
+#         #!/bin/bash
+#         cd source
+#         set -ex
+#         if [ ! -f "bin/create_release_documentation.sh" ]; then
+#           echo "ERROR: create_release_documentation.sh script does not exist!"
+#           exit 1
+#         fi
+#         bin/create_release_documentation.sh
+#       description: Run documentation release script
 
-Release ORCA Code:
-  key: RO
-  description: Cleans, creates a GitHub Release and uploads artifacts for release
-  docker:
-    image: amazonlinux:2
-    volumes:
-      ${bamboo.working.directory}: ${bamboo.working.directory}
-      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
-  tasks:
-  - script:
-      interpreter: SHELL
-      scripts:
-      - |-
-        ## This script removes the "source" subdirectory which all jobs in this stage utilize. This ensures that there's nothing left over from previous runs.
-        ## This is required as the checkout job does not interface correctly with docker in all instances.
-        rm -rf ./source
-        mkdir source
-        rm -rf dist
-      description: Clean Working Directory
-  - checkout:
-      force-clean-build: 'true'
-      path: source
-      description: Checkout Default Repository
-  - script:
-      interpreter: SHELL
-      scripts:
-      - |-
-        #!/bin/bash
-        cd source
-        export NODE_VERSION="16.x"
-        export TERRAFORM_VERSION="0.13.6"
+# Release ORCA Code:
+#   key: RO
+#   description: Cleans, creates a GitHub Release and uploads artifacts for release
+#   docker:
+#     image: amazonlinux:2
+#     volumes:
+#       ${bamboo.working.directory}: ${bamboo.working.directory}
+#       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+#   tasks:
+#   - script:
+#       interpreter: SHELL
+#       scripts:
+#       - |-
+#         ## This script removes the "source" subdirectory which all jobs in this stage utilize. This ensures that there's nothing left over from previous runs.
+#         ## This is required as the checkout job does not interface correctly with docker in all instances.
+#         rm -rf ./source
+#         mkdir source
+#         rm -rf dist
+#       description: Clean Working Directory
+#   - checkout:
+#       force-clean-build: 'true'
+#       path: source
+#       description: Checkout Default Repository
+#   - script:
+#       interpreter: SHELL
+#       scripts:
+#       - |-
+#         #!/bin/bash
+#         cd source
+#         export NODE_VERSION="16.x"
+#         export TERRAFORM_VERSION="0.13.6"
 
-        # Add NodeJS and Yarn repos & update package index
-        curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash - 
-        curl -sL https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo
-        yum update -y
+#         # Add NodeJS and Yarn repos & update package index
+#         curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash - 
+#         curl -sL https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo
+#         yum update -y
 
-        # CLI utilities
-        yum install -y gcc git make openssl unzip wget zip
+#         # CLI utilities
+#         yum install -y gcc git make openssl unzip wget zip
 
-        # Python 3 & NodeJS
-        yum install -y python3-devel
-        yum install -y nodejs yarn
+#         # Python 3 & NodeJS
+#         yum install -y python3-devel
+#         yum install -y nodejs yarn
 
-        # AWS & Terraform
-        yum install -y awscli
-        #wget "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip"
-        #unzip *.zip
-        #chmod +x terraform
-        #mv terraform /usr/local/bin
+#         # AWS & Terraform
+#         yum install -y awscli
+#         #wget "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip"
+#         #unzip *.zip
+#         #chmod +x terraform
+#         #mv terraform /usr/local/bin
 
-        # SSM SessionManager plugin
-        curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_64bit/session-manager-plugin.rpm" -o "session-manager-plugin.rpm"
-        yum install -y session-manager-plugin.rpm
+#         # SSM SessionManager plugin
+#         curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_64bit/session-manager-plugin.rpm" -o "session-manager-plugin.rpm"
+#         yum install -y session-manager-plugin.rpm
 
-        set -ex
-        bin/build_release_package.sh
-      description: Create Release Files and Release in GitHub
+#         set -ex
+#         bin/build_release_package.sh
+#       description: Create Release Files and Release in GitHub
 
 Cleanup integration test resources:
   key: CITR
