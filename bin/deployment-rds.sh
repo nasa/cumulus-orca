@@ -62,10 +62,21 @@ terraform apply \
   -lock=false \
   -input=false
 
- terraform destroy \
-  -auto-approve \
-  -lock=false \
-  -input=false 
+
+# Ensure remote state is configured for the deployment
+echo "terraform {
+        backend \"s3\" {
+            bucket = \"$bamboo_PREFIX-tf-state\"
+            key    = \"resources\terraform.tfstate\"
+            region = \"$bamboo_AWS_DEFAULT_REGION\"
+            dynamodb_table = \"$bamboo_PREFIX-tf-locks\"
+    }
+}"
+
+#  terraform destroy \
+#   -auto-approve \
+#   -lock=false \
+#   -input=false 
 
 
 #clone cumulus orca template for deploying cumulus and orca
