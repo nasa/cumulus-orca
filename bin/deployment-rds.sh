@@ -63,7 +63,7 @@ terraform apply \
   -input=false
 
 #copy the terraform state file to the created tf-state bucket
-aws s3 cp resources.tf s3://$bamboo_PREFIX-tf-state/resources/terraform.tfstate
+aws s3 cp terraform.tfstate s3://$bamboo_PREFIX-tf-state/resources/terraform.tfstate
 
 # # Ensure remote state is configured for the deployment
 # echo "terraform {
@@ -82,9 +82,9 @@ aws s3 cp resources.tf s3://$bamboo_PREFIX-tf-state/resources/terraform.tfstate
 
 
 #clone cumulus orca template for deploying cumulus and orca
-git clone --branch $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE --single-branch https://git.earthdata.nasa.gov/scm/orca/cumulus-orca-deploy-template.git
+git clone --branch $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION --single-branch https://git.earthdata.nasa.gov/scm/orca/cumulus-orca-deploy-template.git
 cd cumulus-orca-deploy-template
-echo "checked out to $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE branch"
+echo "checked out to $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION branch"
 
 
 #deploy rds-cluster-tf module
