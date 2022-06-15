@@ -46,14 +46,25 @@ resource "aws_dynamodb_table" "tf-locks" {
 }
 EOF
 
+# Check remote state is configured for the deployment
+echo "terraform {
+        backend \"s3\" {
+            bucket = \"$bamboo_PREFIX-tf-state\"
+            key    = \"resources\"
+            region = \"$bamboo_AWS_DEFAULT_REGION\"
+            dynamodb_table = \"$bamboo_PREFIX-tf-locks\"
+    }
+}"
+
 #replace prefix with bamboo prefix variable
 sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' resources.tf.template > resources.tf
 
 #remove old files from bamboo as they throw error
 rm variables.tf outputs.tf main.tf
-# Initialize deployment
-terraform init \
-  -input=false
+
+if ! terraform init -input=false;then
+  echo "Cannot initialize terraform using S3 backend since non is currently present." >&2
+  cd .terraform && rm terraform.tfstate
 
 # Deploy buckets and dynamodb table via terraform
 echo "Deploying S3  buckets and dynamoDB table"
