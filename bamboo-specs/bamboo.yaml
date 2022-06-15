@@ -22,11 +22,6 @@ stages:
     jobs:
     - Report Status
 
-- Deploy S3 buckets:
-    manual: true
-    final: false
-    jobs:
-    - Deploy S3 buckets
 #deploy RDS cluster for integration test
 #TODO ORCA-462: move to a different stage or even to a new plan for better maintenance.
 - Deploy Dev RDS Stack:
@@ -75,25 +70,6 @@ Set Pending Github Status:
         ./bin/set_status.sh pending ${bamboo.resultsUrl} "CI Running"
       description: Set Pending Status but again!
 
-Deploy S3 buckets:
-  key: DSB
-  other:
-    clean-working-dir: true
-  docker:
-    image: maven.earthdata.nasa.gov/cumulus_orca
-    volumes:
-      ${bamboo.working.directory}: ${bamboo.working.directory}
-      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
-  tasks:
-  - checkout:
-      force-clean-build: 'true'
-      description: Checkout Default Repository
-  - script:
-      interpreter: SHELL
-      scripts:
-      - |-
-        #!/bin/bash
-        bash bin/deploy_resources.sh
 # Build and Test:
 #   key: JOB1
 #   other:
