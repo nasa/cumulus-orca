@@ -27,7 +27,7 @@ resource "aws_s3_bucket" "orca-primary" {
   bucket = "PREFIX-orca-primary"
 }
 resource "aws_s3_bucket" "protected" {
-  bucket = "PREFIX-protected"
+  bucket = "PREFIX-protected-test"
 }
 resource "aws_dynamodb_table" "tf-locks" {
   name           = "PREFIX-tf-locks"
@@ -60,28 +60,6 @@ terraform apply \
 
 #copy the terraform state file to the created tf-state bucket
 aws s3 cp terraform.tfstate s3://$bamboo_PREFIX-tf-state/terraform.tfstate
-
-# Check remote state is configured for the deployment
-# echo "terraform {
-#         backend \"s3\" {
-#             bucket = \"$bamboo_PREFIX-tf-state\"
-#             region = \"$bamboo_AWS_DEFAULT_REGION\"
-#             dynamodb_table = \"$bamboo_PREFIX-tf-locks\"
-#     }
-# }"
-# terraform init
-# #remove everything except the terraform state bucket
-# terraform state rm aws_s3_bucket.tf-state
-
-#  terraform destroy \
-#   -auto-approve \
-#   -lock=false \
-#   -input=false
-
-# aws s3 rm s3://$bamboo_PREFIX-tf-state --recursive
-# aws s3api delete-bucket --bucket $bamboo_PREFIX-tf-state
-
-
 
 # #clone cumulus orca template for deploying cumulus and orca
 # git clone --branch $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION --single-branch https://git.earthdata.nasa.gov/scm/orca/cumulus-orca-deploy-template.git
