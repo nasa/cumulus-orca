@@ -62,16 +62,18 @@ terraform apply \
   -lock=false \
   -input=false
 
+#copy the terraform state file to the created tf-state bucket
+aws s3 cp resources.tf s3://$bamboo_PREFIX-tf-state/resources/terraform.tfstate
 
-# Ensure remote state is configured for the deployment
-echo "terraform {
-        backend \"s3\" {
-            bucket = \"$bamboo_PREFIX-tf-state\"
-            key    = \"resources\terraform.tfstate\"
-            region = \"$bamboo_AWS_DEFAULT_REGION\"
-            dynamodb_table = \"$bamboo_PREFIX-tf-locks\"
-    }
-}"
+# # Ensure remote state is configured for the deployment
+# echo "terraform {
+#         backend \"s3\" {
+#             bucket = \"$bamboo_PREFIX-tf-state\"
+#             key    = \"resources\terraform.tfstate\"
+#             region = \"$bamboo_AWS_DEFAULT_REGION\"
+#             dynamodb_table = \"$bamboo_PREFIX-tf-locks\"
+#     }
+# }"
 
 #  terraform destroy \
 #   -auto-approve \
