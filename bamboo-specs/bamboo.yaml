@@ -10,18 +10,23 @@ stages:
     final: false
     jobs:
     - Set Pending Github Status
-- Default Stage:
-    manual: false
-    final: false
-    jobs:
-    - Build and Test
-    - Python snyk
+# - Default Stage:
+#     manual: false
+#     final: false
+#     jobs:
+#     - Build and Test
+#     - Python snyk
 - Clean Up and Report:
     manual: false
     final: false
     jobs:
     - Report Status
 
+- Deploy S3 buckets:
+    manual: true
+    final: false
+    jobs:
+    - Deploy S3 buckets
 #deploy RDS cluster for integration test
 #TODO ORCA-462: move to a different stage or even to a new plan for better maintenance.
 - Deploy Dev RDS Stack:
@@ -69,8 +74,9 @@ Set Pending Github Status:
         set -ex
         ./bin/set_status.sh pending ${bamboo.resultsUrl} "CI Running"
       description: Set Pending Status but again!
-Build and Test:
-  key: JOB1
+
+Deploy S3 buckets:
+  key: DSB
   other:
     clean-working-dir: true
   docker:
@@ -80,99 +86,118 @@ Build and Test:
       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
   tasks:
   - checkout:
-      force-clean-build: 'false'
-      description: checkout code
+      force-clean-build: 'true'
+      description: Checkout Default Repository
   - script:
       interpreter: SHELL
       scripts:
       - |-
         #!/bin/bash
-        bin/run_tests.sh
-      description: run all tests
-  - script:
-      interpreter: SHELL
-      scripts:
-      - |-
-        #!/bin/bash
-        ## This script creates a file as a method of letting cleanup jobs know if it was reached, this allows github failure notifications to be sent if the job failed. 
-        set -e
-        touch success.flag
-      description: Set Success Flag
-  final-tasks:
-  - script:
-      interpreter: SHELL
-      scripts:
-      - |-
-        #!/bin/bash
-        ## This script looks for the output from the "Set job success flag" script and reports failure to github if it is not present
-        set -e
+        bash bin/deploy_resources.sh
+# Build and Test:
+#   key: JOB1
+#   other:
+#     clean-working-dir: true
+#   docker:
+#     image: maven.earthdata.nasa.gov/cumulus_orca
+#     volumes:
+#       ${bamboo.working.directory}: ${bamboo.working.directory}
+#       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+#   tasks:
+#   - checkout:
+#       force-clean-build: 'false'
+#       description: checkout code
+#   - script:
+#       interpreter: SHELL
+#       scripts:
+#       - |-
+#         #!/bin/bash
+#         bin/run_tests.sh
+#       description: run all tests
+#   - script:
+#       interpreter: SHELL
+#       scripts:
+#       - |-
+#         #!/bin/bash
+#         ## This script creates a file as a method of letting cleanup jobs know if it was reached, this allows github failure notifications to be sent if the job failed. 
+#         set -e
+#         touch success.flag
+#       description: Set Success Flag
+#   final-tasks:
+#   - script:
+#       interpreter: SHELL
+#       scripts:
+#       - |-
+#         #!/bin/bash
+#         ## This script looks for the output from the "Set job success flag" script and reports failure to github if it is not present
+#         set -e
 
-        if [[ ! -f success.flag ]]; then 
-          echo "Job failed, sending failure notice to github"
-          ./bin/set_status.sh failure ${bamboo.resultsUrl} "Testing Step Failed"
-        fi
-      description: report failure to github
-Python snyk:
-  key: PS
-  other:
-    clean-working-dir: true
-  docker:
-    image: maven.earthdata.nasa.gov/node:snyk
-    volumes:
-      ${bamboo.working.directory}: ${bamboo.working.directory}
-      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
-    docker-run-arguments:
-    - --net=host
-  tasks:
-  - script:
-      interpreter: SHELL
-      scripts:
-      - chown -R 500:502 .
-      description: change owner
-  - clean:
-      description: clean up working dir
-  - checkout:
-      force-clean-build: 'false'
-      description: checkout source
-  - script:
-      interpreter: SHELL
-      scripts:
-      - |-
-        npm install snyk-to-html -g
-        cat > scan.sh <<EOF
-        snyk test --json --file=\$1 --package-manager=pip
-        EOF
-        echo $bamboo_hello
-        find . -name requirement*.txt
-        chmod +x scan.sh
-        for pom in $(find . -name requirements.txt);
-        do
-        snyk test --json --file=$pom --package-manager=pip > report.json;
-        filename=$(dirname $pom |  sed s'/\.\///')
-        snyk-to-html -i report.json -o "$filename.html";
-        done 
-        chown -R 500:502 .
+#         if [[ ! -f success.flag ]]; then 
+#           echo "Job failed, sending failure notice to github"
+#           ./bin/set_status.sh failure ${bamboo.resultsUrl} "Testing Step Failed"
+#         fi
+#       description: report failure to github
+# Python snyk:
+#   key: PS
+#   other:
+#     clean-working-dir: true
+#   docker:
+#     image: maven.earthdata.nasa.gov/node:snyk
+#     volumes:
+#       ${bamboo.working.directory}: ${bamboo.working.directory}
+#       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+#     docker-run-arguments:
+#     - --net=host
+#   tasks:
+#   - script:
+#       interpreter: SHELL
+#       scripts:
+#       - chown -R 500:502 .
+#       description: change owner
+#   - clean:
+#       description: clean up working dir
+#   - checkout:
+#       force-clean-build: 'false'
+#       description: checkout source
+#   - script:
+#       interpreter: SHELL
+#       scripts:
+#       - |-
+#         npm install snyk-to-html -g
+#         cat > scan.sh <<EOF
+#         snyk test --json --file=\$1 --package-manager=pip
+#         EOF
+#         echo $bamboo_hello
+#         find . -name requirement*.txt
+#         chmod +x scan.sh
+#         for pom in $(find . -name requirements.txt);
+#         do
+#         snyk test --json --file=$pom --package-manager=pip > report.json;
+#         filename=$(dirname $pom |  sed s'/\.\///')
+#         snyk-to-html -i report.json -o "$filename.html";
+#         done 
+#         chown -R 500:502 .
 
-        #cat > scan.sh <<EOF
-        #!/bin/bash
-        #python3.7 -m venv snyk-test
-        #source snyk-test/bin/activate
-        #update-alternatives --install /tmp/snyk-test/bin/python  python /usr/local/bin/python3.7 1
-        #pip install -r pip_requirements.txt
-        #snyk test --json --package-manager=pip --file=data/mask_fill_pip_requirements.txt > pip_report.json
-        #snyk-to-html -i pip_report.json -o pip_results.html
-        #snyk test --json --file=data/mask_fill_conda_requirements.txt > conda_report.json
-        #snyk-to-html -i conda_report.json -o conda_results.html
-        #EOF
-        #chmod +x scan.sh
-        #docker run --rm -v $PWD:/tmp -w /tmp maven.earthdata.nasa.gov/snyk:py ./scan.sh
+#         #cat > scan.sh <<EOF
+#         #!/bin/bash
+#         #python3.7 -m venv snyk-test
+#         #source snyk-test/bin/activate
+#         #update-alternatives --install /tmp/snyk-test/bin/python  python /usr/local/bin/python3.7 1
+#         #pip install -r pip_requirements.txt
+#         #snyk test --json --package-manager=pip --file=data/mask_fill_pip_requirements.txt > pip_report.json
+#         #snyk-to-html -i pip_report.json -o pip_results.html
+#         #snyk test --json --file=data/mask_fill_conda_requirements.txt > conda_report.json
+#         #snyk-to-html -i conda_report.json -o conda_results.html
+#         #EOF
+#         #chmod +x scan.sh
+#         #docker run --rm -v $PWD:/tmp -w /tmp maven.earthdata.nasa.gov/snyk:py ./scan.sh
 
-      description: snyk scan
-  artifacts:
-  - name: html report
-    pattern: '**/*.html'
-    shared: false
-    required: true
+#       description: snyk scan
+#   artifacts:
+#   - name: html report
+#     pattern: '**/*.html'
+#     shared: false
+#     required: true
 Report Status:
   key: RS
   tasks:
