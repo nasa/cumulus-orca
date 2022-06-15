@@ -5,24 +5,19 @@ export AWS_ACCESS_KEY_ID=$bamboo_AWS_ACCESS_KEY_ID
 export AWS_SECRET_ACCESS_KEY=$bamboo_AWS_SECRET_ACCESS_KEY
 export AWS_DEFAULT_REGION=$bamboo_AWS_DEFAULT_REGION
 
+cat << EOF > resources.tf.template
+# create buckets
+resource "aws_s3_bucket" "tf-state" {
+  bucket = "PREFIX-tf-state"
+}
 
-# Ensure remote state is configured for the deployment
-# echo "terraform {
-#         backend \"s3\" {
-#             bucket = \"$bamboo_PREFIX-tf-state\"
-#             key    = \"deploy_resources\"
-#             region = \"$bamboo_AWS_DEFAULT_REGION\"
-#             dynamodb_table = \"$bamboo_PREFIX-tf-locks\"
-#     }
-# }" > resources.tf
-
-cat << EOF > resources.tf
-# create the ECR repo
-resource "aws_sqs_queue" "test_queue" {
-  ## OPTIONAL
-  name                        = "test-queue"
+# create buckets
+resource "aws_s3_bucket" "internal" {
+  bucket = "PREFIX-internal"
 }
 EOF
+
+sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' resources.tf.template > resources.tf
 
 #remove old files from bamboo
 rm variables.tf outputs.tf main.tf
