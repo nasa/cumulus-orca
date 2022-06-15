@@ -70,6 +70,7 @@ echo "terraform {
             dynamodb_table = \"$bamboo_PREFIX-tf-locks\"
     }
 }"
+terraform init
 terraform state rm aws_s3_bucket.tf-state 
  terraform destroy \
   -auto-approve \
