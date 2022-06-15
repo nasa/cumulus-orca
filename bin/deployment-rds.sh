@@ -62,6 +62,7 @@ rm variables.tf outputs.tf main.tf
 #   echo "Reinitialized using S3 backend"
 # fi
 # Deploy buckets and dynamodb table via terraform
+terraform init -input=false
 echo "Deploying S3  buckets and dynamoDB table"
 terraform apply \
   -auto-approve \
