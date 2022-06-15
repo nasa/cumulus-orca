@@ -50,7 +50,6 @@ EOF
 echo "terraform {
         backend \"s3\" {
             bucket = \"$bamboo_PREFIX-tf-state\"
-            key    = \"resources\"
             region = \"$bamboo_AWS_DEFAULT_REGION\"
             dynamodb_table = \"$bamboo_PREFIX-tf-locks\"
     }
@@ -63,7 +62,7 @@ sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' resources.tf.template > resources.tf
 rm variables.tf outputs.tf main.tf
 
 if ! terraform init -input=false;then
-  echo "Cannot initialize terraform using S3 backend since non is currently present." >&2
+  echo "Cannot initialize terraform using S3 backend since non is currently present."
   cd .terraform && rm terraform.tfstate
   terraform init -input=false
 fi
@@ -76,16 +75,6 @@ terraform apply \
 
 #copy the terraform state file to the created tf-state bucket
 aws s3 cp terraform.tfstate s3://$bamboo_PREFIX-tf-state/resources/terraform.tfstate
-
-# # Ensure remote state is configured for the deployment
-# echo "terraform {
-#         backend \"s3\" {
-#             bucket = \"$bamboo_PREFIX-tf-state\"
-#             key    = \"resources\terraform.tfstate\"
-#             region = \"$bamboo_AWS_DEFAULT_REGION\"
-#             dynamodb_table = \"$bamboo_PREFIX-tf-locks\"
-#     }
-# }"
 
 #  terraform destroy \
 #   -auto-approve \
