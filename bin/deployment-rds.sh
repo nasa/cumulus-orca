@@ -45,13 +45,12 @@ rm *.tf
 #replace prefix with bamboo prefix variable
 sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' resources.tf.template > resources.tf
 
-# if ! terraform init -input=false;then
-#   echo "Cannot initialize terraform using S3 backend since non is currently present."
-#   rm -r .terraform
-# else
-#   echo "Reinitialized using S3 backend"
-# fi
-# Deploy buckets and dynamodb table via terraform
+if ! aws s3 cp terraform.tfstate s3://$bamboo_PREFIX-tf-state/terraform.tfstate .;then
+    echo "state file not present. Creating the buckets..."
+else
+    echo "State file found. Using S3 remote backend"
+fi
+
 terraform init -input=false
 echo "Deploying S3  buckets and dynamoDB table"
 terraform apply \
@@ -70,12 +69,18 @@ echo "terraform {
             dynamodb_table = \"$bamboo_PREFIX-tf-locks\"
     }
 }"
-terraform init
-terraform state rm aws_s3_bucket.tf-state 
- terraform destroy \
-  -auto-approve \
-  -lock=false \
-  -input=false 
+# terraform init
+# #remove everything except the terraform state bucket
+# terraform state rm aws_s3_bucket.tf-state
+
+#  terraform destroy \
+#   -auto-approve \
+#   -lock=false \
+#   -input=false
+
+# aws s3 rm s3://$bamboo_PREFIX-tf-state --recursive
+# aws s3api delete-bucket --bucket $bamboo_PREFIX-tf-state
+
 
 
 # #clone cumulus orca template for deploying cumulus and orca
