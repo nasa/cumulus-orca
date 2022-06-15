@@ -57,13 +57,12 @@ rm variables.tf outputs.tf main.tf
 
 if ! terraform init -input=false;then
   echo "Cannot initialize terraform using S3 backend since non is currently present."
-  cd .terraform && rm terraform.tfstate
-  terraform init -input=false
+#   cd .terraform && rm terraform.tfstate
+  terraform init -input=false -reconfigure
   echo "Reinitialized since backend is not there"
 fi
 # Deploy buckets and dynamodb table via terraform
 echo "Deploying S3  buckets and dynamoDB table"
-terraform refresh
 terraform apply \
   -auto-approve \
   -lock=false \
