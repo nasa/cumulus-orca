@@ -356,14 +356,14 @@ def generate_temporary_s3_column_list(manifest_file_schema: str) -> str:
 
     Returns: A string representing SQL columns to create.
         Columns required for import but unused by orca will be filled in with `junk` values.
-        For example, 'orca_archive_location text, key_path text, size_in_bytes bigint, last_update timestamptz, etag text, storage_class text, junk7 text, junk8 text, junk9 text, junk10 text, junk11 text, junk12 text, junk13 text, junk14 text'
+        For example, 'orca_archive_location text, key_path text, size_in_bytes text, last_update timestamptz, etag text, storage_class text, junk7 text, junk8 text, junk9 text, junk10 text, junk11 text, junk12 text, junk13 text, junk14 text'
 
     """
     # Keys indicate columns in the s3 inventory csv. Values indicate the corresponding column in orca.reconcile_s3_object
     column_mappings = {
         "Bucket": "orca_archive_location text",
         "Key": "key_path text",
-        "Size": "size_in_bytes bigint",
+        "Size": "size_in_bytes text",  # delete markers have size: ""
         "LastModifiedDate": "last_update timestamptz",
         "ETag": "etag text",
         "StorageClass": "storage_class text",
@@ -427,7 +427,9 @@ def translate_s3_import_to_partitioned_data_sql() -> TextClause:
     return text(
         f"""
         INSERT INTO orca.reconcile_s3_object (job_id, orca_archive_location, key_path, etag, last_update, size_in_bytes, storage_class, delete_marker)
-            SELECT :job_id, orca_archive_location, key_path, etag, last_update, size_in_bytes, storage_class, delete_marker
+            SELECT :job_id, orca_archive_location, key_path, etag, last_update, 
+            CAST(size_in_bytes AS BIGINT), 
+            storage_class, delete_marker
             FROM s3_import
             WHERE is_latest = TRUE
         """  # nosec

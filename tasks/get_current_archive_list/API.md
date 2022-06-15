@@ -165,7 +165,7 @@ Columns used by our database are given standardized names.
   
 - `Returns` - A string representing SQL columns to create.
   Columns required for import but unused by orca will be filled in with `junk` values.
-  For example, 'orca_archive_location text, key_path text, size_in_bytes bigint, last_update timestamptz, etag text, storage_class text, junk7 text, junk8 text, junk9 text, junk10 text, junk11 text, junk12 text, junk13 text, junk14 text'
+  For example, 'orca_archive_location text, key_path text, size_in_bytes text, last_update timestamptz, etag text, storage_class text, junk7 text, junk8 text, junk9 text, junk10 text, junk11 text, junk12 text, junk13 text, junk14 text'
 
 <a id="get_current_archive_list.create_temporary_table_sql"></a>
 

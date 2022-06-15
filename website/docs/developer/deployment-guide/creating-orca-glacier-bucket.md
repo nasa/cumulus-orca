@@ -152,7 +152,8 @@ modifications, which will be detailed below.
         "s3:ListBucket",
         "s3:PutBucketNotification",
         "s3:GetInventoryConfiguration",
-        "s3:PutInventoryConfiguration"
+        "s3:PutInventoryConfiguration",
+        "s3:ListBucketVersions"
       ],
       "Resource": [
         "arn:aws:s3:::sandbox-orca-glacier-archive",
