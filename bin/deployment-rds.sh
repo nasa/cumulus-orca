@@ -62,6 +62,7 @@ if ! terraform init -input=false;then
 fi
 # Deploy buckets and dynamodb table via terraform
 echo "Deploying S3  buckets and dynamoDB table"
+terraform refresh
 terraform apply \
   -auto-approve \
   -lock=false \
