@@ -16,16 +16,16 @@ export AWS_DEFAULT_REGION=$bamboo_AWS_DEFAULT_REGION
 #     }
 # }" > resources.tf
 
-# adding variables to terraform.tfvars file
-cat << EOF > main.tf
-
-
+cat << EOF > resources.tf
 # create the ECR repo
 resource "aws_sqs_queue" "test_queue" {
   ## OPTIONAL
   name                        = "test-queue"
 }
 EOF
+
+#remove old files from bamboo
+rm variables.tf outputs.tf main.tf
 # Initialize deployment
 terraform init \
   -input=false
