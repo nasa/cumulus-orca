@@ -45,7 +45,7 @@ rm *.tf
 #replace prefix with bamboo prefix variable
 sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' resources.tf.template > resources.tf
 
-if ! aws s3 cp terraform.tfstate s3://$bamboo_PREFIX-tf-state/terraform.tfstate .;then
+if ! aws s3 cp s3://$bamboo_PREFIX-tf-state/terraform.tfstate .;then
     echo "state file not present. Creating the buckets..."
 else
     echo "State file found. Using S3 remote backend"
@@ -62,13 +62,13 @@ terraform apply \
 aws s3 cp terraform.tfstate s3://$bamboo_PREFIX-tf-state/terraform.tfstate
 
 # Check remote state is configured for the deployment
-echo "terraform {
-        backend \"s3\" {
-            bucket = \"$bamboo_PREFIX-tf-state\"
-            region = \"$bamboo_AWS_DEFAULT_REGION\"
-            dynamodb_table = \"$bamboo_PREFIX-tf-locks\"
-    }
-}"
+# echo "terraform {
+#         backend \"s3\" {
+#             bucket = \"$bamboo_PREFIX-tf-state\"
+#             region = \"$bamboo_AWS_DEFAULT_REGION\"
+#             dynamodb_table = \"$bamboo_PREFIX-tf-locks\"
+#     }
+# }"
 # terraform init
 # #remove everything except the terraform state bucket
 # terraform state rm aws_s3_bucket.tf-state
