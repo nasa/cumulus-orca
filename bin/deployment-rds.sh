@@ -68,7 +68,7 @@ terraform apply \
   -input=false
 
 #copy the terraform state file to the created tf-state bucket
-aws s3 cp terraform.tfstate s3://$bamboo_PREFIX-tf-state/resources/terraform.tfstate
+aws s3 cp terraform.tfstate s3://$bamboo_PREFIX-tf-state/terraform.tfstate
 
 #  terraform destroy \
 #   -auto-approve \
