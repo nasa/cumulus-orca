@@ -41,6 +41,7 @@ resource "aws_dynamodb_table" "tf-locks" {
   attribute {
     name = "LockID"
     type = "S"
+ }
 }
 EOF
 
