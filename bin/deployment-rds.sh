@@ -55,12 +55,12 @@ sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' resources.tf.template > resources.tf
 #remove old files from bamboo as they throw error
 rm variables.tf outputs.tf main.tf
 
-if ! terraform init -input=false;then
-  echo "Cannot initialize terraform using S3 backend since non is currently present."
-  rm -r .terraform
-else
-  echo "Reinitialized using S3 backend"
-fi
+# if ! terraform init -input=false;then
+#   echo "Cannot initialize terraform using S3 backend since non is currently present."
+#   rm -r .terraform
+# else
+#   echo "Reinitialized using S3 backend"
+# fi
 # Deploy buckets and dynamodb table via terraform
 echo "Deploying S3  buckets and dynamoDB table"
 terraform apply \
