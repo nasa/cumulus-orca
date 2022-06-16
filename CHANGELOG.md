@@ -35,6 +35,7 @@ and includes an additional section for migration notes.
 - *ORCA-306* Added API gateway resources for internal reconciliation reporting lambdas.
 - *ORCA-424* Added automatic trigger for delete_old_reconcile_jobs. Will run every sunday at midnight UTC.
     Adjust with the new optional variable `orca_delete_old_reconcile_jobs_frequency_cron`
+- *ORCA-468* Added `status_update_dlq` to prevent ingest lock-down when theoretical errors occur.
 
 ### Changed
 - *ORCA-299* `db_deploy` task has been updated to deploy ORCA internal reconciliation tables and objects.
