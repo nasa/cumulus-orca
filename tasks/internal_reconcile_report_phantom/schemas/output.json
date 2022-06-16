@@ -28,8 +28,8 @@
               "filename",
               "keyPath",
               "orcaEtag",
-              "orcaLastUpdate",
-              "orcaSize"
+              "orcaGranuleLastUpdate",
+              "orcaSizeInBytes"
             ],
           "properties": {
             "collectionId": {
@@ -52,11 +52,11 @@
                 "type": "string",
                 "description": "etag of the object as reported in the ORCA catalog."
               },
-            "orcaLastUpdate": {
+            "orcaGranuleLastUpdate": {
               "type": "integer",
               "description": "The time, in milliseconds since 1 January 1970 UTC, of last update of the object as reported in the ORCA catalog."
             },
-            "orcaSize": {
+            "orcaSizeInBytes": {
               "type": "integer",
               "description": "Size in bytes of the object as reported in the ORCA catalog."
           }

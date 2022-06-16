@@ -320,7 +320,7 @@ An example of the API output is shown below:
     {
       "keyPath": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
       "s3Etag": "d41d8cd98f00b204e9800998ecf8427",
-      "s3LastUpdate": "2020-01-01T23:00:00Z",
+      "s3FileLastUpdate": 1654878716000,
       "s3SizeInBytes": 6543277389,
       "storageClass": "glacier"
     }
@@ -329,13 +329,16 @@ An example of the API output is shown below:
 ```
 The following table lists the fields in the output:
 
-| Name             | Data Type       | Description                                                                 |
-|------------------|-----------------|-----------------------------------------------------------------------------|
-| jobId            | `str`           |The unique ID of the reconciliation job.                                     |
-| anotherPage      | `Boolean`       | Indicates if more results can be retrieved on another page.                 |           
-| orphans          | `Array[Object]` | An array representing each orphan if available.                             |
-| s3SizeInBytes    | `int`           | Size in bytes of the object in S3 bucket.                                   |
-| storageClass     | `str`           | AWS storage class the object is in the S3 bucket.                           |
+| Name             | Data Type       | Description                                                                                    |
+|------------------|-----------------|------------------------------------------------------------------------------------------------|
+| jobId            | `str`           |The unique ID of the reconciliation job.                                                        |
+| anotherPage      | `Boolean`       | Indicates if more results can be retrieved on another page.                                    |           
+| orphans          | `Array[Object]` | An array representing each orphan if available.                                                |
+| keyPath          | `str`           | Key path and filename of the object in S3 bucket.                                              |
+| s3Etag           | `str`           | etag of the object in S3 bucket.                                                               |
+| s3FileLastUpdate | `int`           | The time, in milliseconds since 1 January 1970 UTC, of last update of the object in S3 bucket. |
+| s3SizeInBytes    | `int`           | Size in bytes of the object in S3 bucket.                                                      |
+| storageClass     | `str`           | AWS storage class the object is in the S3 bucket.                                              |
 
 The API returns status code 200 on success, 400 if `jobId` or `pageIndex` are missing and 500 if an error occurs.
 
@@ -373,28 +376,28 @@ An example of the API output is shown below:
       "collectionId": "MOD09GQ___061",
       "granuleId": "MOD09GQ.A2017025.h21v00.006.2017034065109",
       "filename": "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
-      "key_path": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+      "keyPath": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
       "orcaEtag": "d41d8cd98f00b204e9800998ecf8427",
-      "orcaLastUpdate": 628021970000,
-      "orcaSize": 6543277389
+      "orcaGranuleLastUpdate": 1654878715868,
+      "orcaSizeInBytes": 6543277389
     }
   ]
 }
 ```
 The following table lists the fields in the output:
 
-| Name             | Data Type       | Description                                                                                                       |
-|------------------|-----------------|-------------------------------------------------------------------------------------------------------------------|
-| jobId            | `str`           |The unique ID of the reconciliation job.                                                                           |
-| anotherPage      | `Boolean`       | Indicates if more results can be retrieved on another page.                                                       |       
-| phantoms         | `Array[Object]` | An array representing each phantoms if available.                                                                 |
-| collectionId     | `int`           | Cumulus Collection ID value from the ORCA catalog.                                                                |
-| granuleId        | `str`           | Cumulus granuleID value from the ORCA catalog.                                                                    |
-| filename         | `str`           | Filename of the object from the ORCA catalog.                                                                     |
-| key_path         | `str`           | key path and filename of the object in the ORCA catalog.                                                          |  
-| orcaEtag         | `str`           | etag of the object as reported in the ORCA catalog.                                                               |
-| orcaLastUpdate   | `str`           | The time, in milliseconds since 1 January 1970 UTC, of last update of the object as reported in the ORCA catalog. |
-| orcaSize         | `str`           | Size in bytes of the object as reported in the ORCA catalog.                                                      |
+| Name                  | Data Type       | Description                                                                                                       |
+|-----------------------|-----------------|-------------------------------------------------------------------------------------------------------------------|
+| jobId                 | `str`           |The unique ID of the reconciliation job.                                                                           |
+| anotherPage           | `Boolean`       | Indicates if more results can be retrieved on another page.                                                       |       
+| phantoms              | `Array[Object]` | An array representing each phantoms if available.                                                                 |
+| collectionId          | `str`           | Cumulus Collection ID value from the ORCA catalog.                                                                |
+| granuleId             | `str`           | Cumulus granuleID value from the ORCA catalog.                                                                    |
+| filename              | `str`           | Filename of the object from the ORCA catalog.                                                                     |
+| keyPath               | `str`           | key path and filename of the object in the ORCA catalog.                                                          |  
+| orcaEtag              | `str`           | etag of the object as reported in the ORCA catalog.                                                               |
+| orcaGranuleLastUpdate | `int`           | The time, in milliseconds since 1 January 1970 UTC, of last update of the object as reported in the ORCA catalog. |
+| orcaSizeInBytes       | `int`           | Size in bytes of the object as reported in the ORCA catalog.                                                      |
 
 The API returns status code 200 on success, 400 if `jobId` or `pageIndex` are missing and 500 if an error occurs.
 
@@ -434,8 +437,8 @@ An example of the API output is shown below:
       "cumulusArchiveLocation": "cumulus-public",
       "orcaEtag": "d41d8cd98f00b204e9800998ecf8427",
       "s3Etag": "1f78ve1d3f41vbhg4nbb4kjhong4x14",
-      "orcaLastUpdate": "2020-01-01T23:00:00Z",
-      "s3LastUpdate": "2020-01-01T23:00:00Z",
+      "orcaGranuleLastUpdate": 1654878715868,
+      "s3FileLastUpdate": 1654878716000,
       "orcaSizeInBytes": 6543277389,
       "s3SizeInBytes": 1987618731,
       "discrepancyType": "etag, size_in_bytes",
@@ -446,23 +449,23 @@ An example of the API output is shown below:
 ```
 The following table lists the fields in the output:
 
-| Name             | Data Type       | Description                                                                                                       |
-|------------------|-----------------|-------------------------------------------------------------------------------------------------------------------|
-| jobId            | `str`           |The unique ID of the reconciliation job.                                                                           |
-| anotherPage      | `Boolean`       | Indicates if more results can be retrieved on another page.                                                       |       
-| mismatches       | `Array[Object]` | An array representing each mismatch if available.                                                                 |
-| collectionId     | `int`           | Cumulus Collection ID value from the ORCA catalog.                                                                |
-| granuleId        | `str`           | Cumulus granuleID value from the ORCA catalog.                                                                    |
-| filename         | `str`           | Filename of the object from the ORCA catalog.                                                                     |
-| keyPath          | `str`           | key path and filename of the object in the ORCA catalog.                                                          |
-| cumulusArchiveLocation| `str`      | Expected S3 bucket the object is located in Cumulus. From the ORCA catalog.                                       |
-| orcaEtag         | `str`           | etag of the object as reported in the ORCA catalog.                                                               |
-| s3Etag           | `str`           | etag of the object as reported in the S3 bucket                                                                   |
-| orcaLastUpdate   | `int`           | The time, in milliseconds since 1 January 1970 UTC, of last update of the object as reported in the ORCA catalog. |
-| s3LastUpdate     | `int`           | The time, in milliseconds since 1 January 1970 UTC, that information was updated in the S3 bucket.                |
-| orcaSizeInBytes  | `int`           | Size in bytes of the object as reported in the ORCA catalog.                                                      |
-| s3SizeInBytes    | `int`           | Size in bytes of the object as reported in the S3 bucket.                                                         |
-| discrepancyType  | `str`           | Type of discrepancy found during reconciliation.                                                                  |
-| comment          | `str`           | Any additional context for the mismatch.                                                                          |
+| Name                   | Data Type       | Description                                                                                                       |
+|------------------------|-----------------|-------------------------------------------------------------------------------------------------------------------|
+| jobId                  | `str`           |The unique ID of the reconciliation job.                                                                           |
+| anotherPage            | `Boolean`       | Indicates if more results can be retrieved on another page.                                                       |       
+| mismatches             | `Array[Object]` | An array representing each mismatch if available.                                                                 |
+| collectionId           | `str`           | Cumulus Collection ID value from the ORCA catalog.                                                                |
+| granuleId              | `str`           | Cumulus granuleID value from the ORCA catalog.                                                                    |
+| filename               | `str`           | Filename of the object from the ORCA catalog.                                                                     |
+| keyPath                | `str`           | key path and filename of the object in the ORCA catalog.                                                          |
+| cumulusArchiveLocation | `str`           | Expected S3 bucket the object is located in Cumulus. From the ORCA catalog.                                       |
+| orcaEtag               | `str`           | etag of the object as reported in the ORCA catalog.                                                               |
+| s3Etag                 | `str`           | etag of the object as reported in the S3 bucket                                                                   |
+| orcaGranuleLastUpdate  | `int`           | The time, in milliseconds since 1 January 1970 UTC, of last update of the object as reported in the ORCA catalog. |
+| s3FileLastUpdate       | `int`           | The time, in milliseconds since 1 January 1970 UTC, that information was updated in the S3 bucket.                |
+| orcaSizeInBytes        | `int`           | Size in bytes of the object as reported in the ORCA catalog.                                                      |
+| s3SizeInBytes          | `int`           | Size in bytes of the object as reported in the S3 bucket.                                                         |
+| discrepancyType        | `str`           | Type of discrepancy found during reconciliation.                                                                  |
+| comment                | `str`           | Any additional context for the mismatch.                                                                          |
 
 The API returns status code 200 on success, 400 if `jobId` or `pageIndex` are missing and 500 if an error occurs.

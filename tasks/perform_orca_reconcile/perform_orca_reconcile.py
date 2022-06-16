@@ -247,6 +247,7 @@ def generate_mismatch_reports_sql() -> TextClause:
     SQL for retrieving mismatches between entries in S3 and the Orca catalog.
     """
     return text(
+        # todo: Probably have to remove orca_last_update from this. Could just remove the comparison. Could leave s3_last_update in if it helps.
         f"""
         INSERT INTO orca.reconcile_catalog_mismatch_report 
         (
@@ -278,20 +279,12 @@ def generate_mismatch_reports_sql() -> TextClause:
             files.size_in_bytes AS orca_size_in_bytes, 
             reconcile_s3_object.size_in_bytes AS s3_size_in_bytes,
             CASE 
-                WHEN (files.etag != reconcile_s3_object.etag AND files.size_in_bytes != reconcile_s3_object.size_in_bytes AND files.ingest_time !=  reconcile_s3_object.last_update) 
-                    THEN 'etag, size_in_bytes, last_update'
                 WHEN (files.etag != reconcile_s3_object.etag AND files.size_in_bytes != reconcile_s3_object.size_in_bytes) 
                     THEN 'etag, size_in_bytes'
-                WHEN (files.etag != reconcile_s3_object.etag AND files.ingest_time !=  reconcile_s3_object.last_update) 
-                    THEN 'etag, last_update'
-                WHEN (files.size_in_bytes != reconcile_s3_object.size_in_bytes AND files.ingest_time !=  reconcile_s3_object.last_update) 
-                    THEN 'size_in_bytes, last_update'
                 WHEN files.etag != reconcile_s3_object.etag 
                     THEN 'etag'
                 WHEN files.size_in_bytes != reconcile_s3_object.size_in_bytes 
                     THEN 'size_in_bytes'
-                WHEN files.ingest_time !=  reconcile_s3_object.last_update 
-                    THEN 'last_update'
                 ELSE 'UNKNOWN'
             END AS discrepancy_type
         FROM 
@@ -309,7 +302,6 @@ def generate_mismatch_reports_sql() -> TextClause:
             AND
             (
                 files.etag != reconcile_s3_object.etag OR
-                files.ingest_time != reconcile_s3_object.last_update OR
                 files.size_in_bytes != reconcile_s3_object.size_in_bytes
             )"""  # nosec
     )

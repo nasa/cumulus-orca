@@ -36,7 +36,7 @@ Fully defined json schemas written in the schema of https://json-schema.org/ can
     {
       "keyPath": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
       "s3Etag": "d41d8cd98f00b204e9800998ecf8427",
-      "s3LastUpdate": "2020-01-01T23:00:00Z",
+      "s3FileLastUpdate": "2020-01-01T23:00:00Z",
       "s3SizeInBytes": 6543277389,
       "storageClass": "glacier"
     }

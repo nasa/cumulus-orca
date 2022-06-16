@@ -427,7 +427,12 @@ def translate_s3_import_to_partitioned_data_sql() -> TextClause:
     return text(
         f"""
         INSERT INTO orca.reconcile_s3_object (job_id, orca_archive_location, key_path, etag, last_update, size_in_bytes, storage_class, delete_marker)
-            SELECT :job_id, orca_archive_location, key_path, etag, last_update, 
+            SELECT 
+            :job_id, 
+            orca_archive_location, 
+            key_path, 
+            CONCAT('"', etag, '"') as etag, /* copy_to_glacier's AWS call presently wraps this in quotes. Seems like a bug, but is shown on https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.list_object_versions */
+            last_update, 
             CAST(size_in_bytes AS BIGINT), 
             storage_class, delete_marker
             FROM s3_import
