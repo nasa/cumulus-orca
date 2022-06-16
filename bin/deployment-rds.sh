@@ -5,14 +5,68 @@ export AWS_ACCESS_KEY_ID=$bamboo_AWS_ACCESS_KEY_ID
 export AWS_SECRET_ACCESS_KEY=$bamboo_AWS_SECRET_ACCESS_KEY
 export AWS_DEFAULT_REGION=$bamboo_AWS_DEFAULT_REGION
 
+#deploy the S3 buckets and dynamoDB table first
+cat << EOF > resources.tf.template
+# create buckets
+resource "aws_s3_bucket" "tf-state" {
+  bucket = "PREFIX-tf-state"
+}
+resource "aws_s3_bucket" "internal" {
+  bucket = "PREFIX-internal"
+}
+resource "aws_s3_bucket" "public" {
+  bucket = "PREFIX-public"
+}
+resource "aws_s3_bucket" "private" {
+  bucket = "PREFIX-private"
+}
+resource "aws_s3_bucket" "level0" {
+  bucket = "PREFIX-level0"
+}
+resource "aws_s3_bucket" "orca-primary" {
+  bucket = "PREFIX-orca-primary"
+}
+resource "aws_s3_bucket" "protected" {
+  bucket = "PREFIX-protected"
+}
+resource "aws_dynamodb_table" "tf-locks" {
+  name           = "PREFIX-tf-locks"
+  billing_mode   = "PAY_PER_REQUEST"
+  hash_key       = "LockID"
+  attribute {
+    name = "LockID"
+    type = "S"
+ }
+}
+EOF
+
+#remove old files from bamboo as they throw error
+rm *.tf
+#replace prefix with bamboo prefix variable
+sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' resources.tf.template > resources.tf
+
+if ! aws s3 cp s3://$bamboo_PREFIX-tf-state/terraform.tfstate .;then
+    echo "terraform state file not present in S3. Creating the buckets and dynamoDB table..."
+else
+    echo "Terraform state file found in S3 bucket. Using S3 remote backend"
+fi
+
+terraform init -input=false
+echo "Deploying S3  buckets and dynamoDB table"
+terraform apply \
+  -auto-approve \
+  -lock=false \
+  -input=false
+
+#copy terraform state file to the created tf-state bucket
+aws s3 cp terraform.tfstate s3://$bamboo_PREFIX-tf-state/terraform.tfstate
+
 #clone cumulus orca template for deploying cumulus and orca
 git clone --branch $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION --single-branch https://git.earthdata.nasa.gov/scm/orca/cumulus-orca-deploy-template.git
 cd cumulus-orca-deploy-template
 echo "checked out to $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION branch"
 
-
 #deploy rds-cluster-tf module
-
 cd rds-cluster-tf
 echo "inside rds-cluster-tf"
 mv terraform.tfvars.example terraform.tfvars
