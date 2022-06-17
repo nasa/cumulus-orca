@@ -57,7 +57,7 @@ and includes an additional section for migration notes.
   - Give the bucket a [lifecycle configuration](https://docs.aws.amazon.com/AmazonS3/latest/userguide/how-to-set-lifecycle-configuration-intro.html) with an expiration period of 30 days.
   - Follow instructions in https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/deployment-s3-bucket/ to set up permission policy.
   - Modify the permissions for your primary Orca bucket.
-    - Under the `Cross Account Access` policy, add `s3:GetInventoryConfiguration` and `s3:PutInventoryConfiguration` to Actions.
+    - Under the `Cross Account Access` policy, add `s3:GetInventoryConfiguration`, `s3:PutInventoryConfiguration`, and `s3:ListBucketVersions` to Actions.
 - The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variables. The following required variables have been added:
   - dlq_subscription_email
   - orca_reports_bucket_name
