@@ -29,6 +29,12 @@ resource "aws_s3_bucket" "orca-primary" {
 resource "aws_s3_bucket" "protected" {
   bucket = "PREFIX-protected"
 }
+resource "aws_s3_bucket_versioning" "tf-state-bucket-versioning" {
+  bucket = aws_s3_bucket.tf-state.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
 resource "aws_dynamodb_table" "tf-locks" {
   name           = "PREFIX-tf-locks"
   billing_mode   = "PAY_PER_REQUEST"
