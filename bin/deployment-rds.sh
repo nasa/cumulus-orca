@@ -45,7 +45,7 @@ rm *.tf
 #replace prefix with bamboo prefix variable
 sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' resources.tf.template > resources.tf
 
-if ! aws s3 cp s3://$bamboo_PREFIX-tf-state/terraform.tfstate .;then
+if ! aws s3 cp s3://$bamboo_PREFIX-tf-state/buckets-tf/terraform.tfstate .;then
     echo "state file not present. Creating the buckets..."
 else
     echo "State file found. Using S3 remote backend"
@@ -59,7 +59,7 @@ terraform apply \
   -input=false
 
 #copy the terraform state file to the created tf-state bucket
-aws s3 cp terraform.tfstate s3://$bamboo_PREFIX-tf-state/terraform.tfstate
+aws s3 cp terraform.tfstate s3://$bamboo_PREFIX-tf-state/buckets-tf/terraform.tfstate
 
 #clone cumulus orca template for deploying cumulus and orca
 git clone --branch $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION --single-branch https://git.earthdata.nasa.gov/scm/orca/cumulus-orca-deploy-template.git
