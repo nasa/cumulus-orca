@@ -765,7 +765,7 @@ class TestGetCurrentArchiveList(
             "IsDeleteMarker,StorageClass, blah, Size, Key, IsLatest,Extra, Bucket,LastModifiedDate,ETag"
         )
         self.assertEqual(
-            "delete_marker bool, storage_class text, junk2 text, size_in_bytes text, key_path text, is_latest bool, "
+            "delete_marker bool, storage_class text, junk2 text, size_in_bytes bigint, key_path text, is_latest bool, "
             "junk6 text, orca_archive_location text, last_update timestamptz, etag text",
             result,
         )
