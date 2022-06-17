@@ -186,7 +186,7 @@ Release ORCA Documentation:
   key: ROD
   description: Releases ORCA Documentation to nasa.github.io/cumulus-orca
   docker:
-    image: node:16.13.1
+    image: maven.earthdata.nasa.gov/cumulus_orca
     volumes:
       ${bamboo.working.directory}: ${bamboo.working.directory}
       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
