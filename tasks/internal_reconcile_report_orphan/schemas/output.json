@@ -25,20 +25,20 @@
         "required": [
           "keyPath",
           "s3Etag",
-          "s3LastUpdate",
+          "s3FileLastUpdate",
           "s3SizeInBytes",
           "storageClass"
         ],
         "properties": {
           "keyPath": {
             "type": "string",
-            "description": "key path and filename of the object in S3 bucket."
+            "description": "Key path and filename of the object in S3 bucket."
           },
           "s3Etag": {
             "type": "string",
             "description": "etag of the object in S3 bucket."
           },
-          "s3LastUpdate": {
+          "s3FileLastUpdate": {
             "type": "integer",
             "description": "The time, in milliseconds since 1 January 1970 UTC, of last update of the object in S3 bucket."
           },

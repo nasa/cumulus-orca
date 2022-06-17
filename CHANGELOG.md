@@ -35,6 +35,7 @@ and includes an additional section for migration notes.
 - *ORCA-306* Added API gateway resources for internal reconciliation reporting lambdas.
 - *ORCA-424* Added automatic trigger for delete_old_reconcile_jobs. Will run every sunday at midnight UTC.
     Adjust with the new optional variable `orca_delete_old_reconcile_jobs_frequency_cron`
+- *ORCA-468* Added `status_update_dlq` to prevent ingest lock-down when theoretical errors occur.
 
 ### Changed
 - *ORCA-299* `db_deploy` task has been updated to deploy ORCA internal reconciliation tables and objects.
@@ -56,7 +57,7 @@ and includes an additional section for migration notes.
   - Give the bucket a [lifecycle configuration](https://docs.aws.amazon.com/AmazonS3/latest/userguide/how-to-set-lifecycle-configuration-intro.html) with an expiration period of 30 days.
   - Follow instructions in https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/deployment-s3-bucket/ to set up permission policy.
   - Modify the permissions for your primary Orca bucket.
-    - Under the `Cross Account Access` policy, add `s3:GetInventoryConfiguration` and `s3:PutInventoryConfiguration` to Actions.
+    - Under the `Cross Account Access` policy, add `s3:GetInventoryConfiguration`, `s3:PutInventoryConfiguration`, and `s3:ListBucketVersions` to Actions.
 - The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variables. The following required variables have been added:
   - dlq_subscription_email
   - orca_reports_bucket_name
