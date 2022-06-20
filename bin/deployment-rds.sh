@@ -12,48 +12,48 @@ resource "aws_s3_bucket" "tf-state" {
   bucket = "PREFIX-tf-state"
   force_destroy = true
   tags = {
-    Deployment = PREFIX
-    Application = ORCA
+    Deployment = "PREFIX"
+    Application = "ORCA"
   }
 }
 resource "aws_s3_bucket" "internal" {
   bucket = "PREFIX-internal"
   force_destroy = true
   tags = {
-    Deployment = PREFIX
-    Application = ORCA
+    Deployment = "PREFIX"
+    Application = "ORCA"
   }
 }
 resource "aws_s3_bucket" "public" {
   bucket = "PREFIX-public"
   force_destroy = true
   tags = {
-    Deployment = PREFIX
-    Application = ORCA
+    Deployment = "PREFIX"
+    Application = "ORCA"
   }
 }
 resource "aws_s3_bucket" "private" {
   bucket = "PREFIX-private"
   force_destroy = true
   tags = {
-    Deployment = PREFIX
-    Application = ORCA
+    Deployment = "PREFIX"
+    Application = "ORCA"
   }
 }
 resource "aws_s3_bucket" "level0" {
   bucket = "PREFIX-level0"
   force_destroy = true
   tags = {
-    Deployment = PREFIX
-    Application = ORCA
+    Deployment = "PREFIX"
+    Application = "ORCA"
   }
 }
 resource "aws_s3_bucket" "protected" {
   bucket = "PREFIX-protected"
   force_destroy = true
   tags = {
-    Deployment = PREFIX
-    Application = ORCA
+    Deployment = "PREFIX"
+    Application = "ORCA"
   }
 }
 resource "aws_s3_bucket_versioning" "tf-state-bucket-versioning" {
@@ -70,6 +70,10 @@ resource "aws_dynamodb_table" "tf-locks" {
     name = "LockID"
     type = "S"
  }
+  tags = {
+    Deployment = "PREFIX"
+    Application = "ORCA"
+  }
 }
 EOF
 
