@@ -12,48 +12,48 @@ resource "aws_s3_bucket" "tf-state" {
   bucket = "PREFIX-tf-state"
   force_destroy = true
   tags = {
-    Deployment = PREFIX
-    Application = ORCA
+    Deployment = "PREFIX"
+    Application = "ORCA"
   }
 }
 resource "aws_s3_bucket" "internal" {
   bucket = "PREFIX-internal"
   force_destroy = true
   tags = {
-    Deployment = PREFIX
-    Application = ORCA
+    Deployment = "PREFIX"
+    Application = "ORCA"
   }
 }
 resource "aws_s3_bucket" "public" {
   bucket = "PREFIX-public"
   force_destroy = true
   tags = {
-    Deployment = PREFIX
-    Application = ORCA
+    Deployment = "PREFIX"
+    Application = "ORCA"
   }
 }
 resource "aws_s3_bucket" "private" {
   bucket = "PREFIX-private"
   force_destroy = true
   tags = {
-    Deployment = PREFIX
-    Application = ORCA
+    Deployment = "PREFIX"
+    Application = "ORCA"
   }
 }
 resource "aws_s3_bucket" "level0" {
   bucket = "PREFIX-level0"
   force_destroy = true
   tags = {
-    Deployment = PREFIX
-    Application = ORCA
+    Deployment = "PREFIX"
+    Application = "ORCA"
   }
 }
 resource "aws_s3_bucket" "protected" {
   bucket = "PREFIX-protected"
   force_destroy = true
   tags = {
-    Deployment = PREFIX
-    Application = ORCA
+    Deployment = "PREFIX"
+    Application = "ORCA"
   }
 }
 resource "aws_s3_bucket_versioning" "tf-state-bucket-versioning" {
@@ -69,11 +69,11 @@ resource "aws_dynamodb_table" "tf-locks" {
   attribute {
     name = "LockID"
     type = "S"
- }
-}
-resource "aws_key_pair" "ec2-key-pair-name" {
-  key_name   = "PREFIX"
-  public_key = "ssh-rsa"
+  }
+  tags = {
+    Deployment = "PREFIX"
+    Application = "ORCA"
+  }
 }
 EOF
 
@@ -92,7 +92,6 @@ terraform init -input=false
 echo "Deploying S3  buckets and dynamoDB table"
 terraform apply \
   -auto-approve \
-  -lock=false \
   -input=false
 
 #copy terraform state file to the created tf-state bucket
@@ -119,7 +118,6 @@ terraform init \
 echo "Deploying rds-cluster-tf  module to $bamboo_DEPLOYMENT"
 terraform apply \
   -auto-approve \
-  -lock=false \
   -input=false \
   -var-file="terraform.tfvars" \
   -var "prefix=$bamboo_PREFIX" \
