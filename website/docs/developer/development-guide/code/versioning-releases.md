@@ -121,13 +121,45 @@ While running the `Deploy Dev RDS Stack` stage, replace the following variables 
 - DB_ADMIN_PASSWORD
 - DB_USER_PASSWORD
 
+The ORCA buckets and dynamoDB table are created automatically in bamboo `Deploy Dev Cumulus and ORCA Stack` stage. However, these can also be created manually if desired by the user. These are the buckets that need to be created:
+
+- `<PREFIX>-internal`
+- `<PREFIX>-level0`
+- `<PREFIX>-public`
+- `<PREFIX>-private`
+- `<PREFIX>-protected`
+- `<PREFIX>-orca-primary`
+- `<PREFIX>-tf-state` (for storing the terraform state file)
+
+Note that the `<PREFIX>-orca-primary` bucket should be created in the DR OU if we want a full test. This will also need a cross account policy applied to it as well which should be similar to this [policy](https://github.com/nasa/cumulus-orca/blob/develop/website/docs/developer/research/research-s3-bucket-policies.md#reports-bucket).
+
+The bucket can be created using the following CLI command:
+```bash
+aws s3api create-bucket --bucket <BUCKET_NAME>  --region us-west-2 --create-bucket-configuration LocationConstraint=us-west-2
+```
+In addition to this, the dynamodb table and bucket version need to created as well.
+```bash
+   aws dynamodb create-table \
+      --table-name <PREFIX>-tf-locks \
+      --attribute-definitions AttributeName=LockID,AttributeType=S \
+      --key-schema AttributeName=LockID,KeyType=HASH \
+      --billing-mode PAY_PER_REQUEST \
+      --region us-west-2
+```
+
+```bash
+      aws s3api put-bucket-versioning \
+    --bucket <PREFIX>-tf-state \
+    --versioning-configuration Status=Enabled
+```
+
 The EC2 key pair can be created using the AWS CLI:
 
 ```bash
 aws ec2 create-key-pair --key-name <PREFIX>
 ```
 
-The necessary buckets and dynamodb table will be dynamically created while running the `Deploy Dev Cumulus and ORCA Stack` stage. For this stage, add the following variables. 
+For the `Deploy Dev Cumulus and ORCA Stack`  stage, add the following variables. 
 
 - RDS_SECURITY_GROUP
 - RDS_USER_ACCESS_SECRET_ARN
