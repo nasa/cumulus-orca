@@ -66,7 +66,7 @@ BEGIN;
     COMMENT ON COLUMN granules.provider_id
       IS 'Provider ID supplied by Cumulus';
     COMMENT ON COLUMN granules.collection_id
-      IS 'Collection ID from Cumulus that refrences the Collections table.';
+      IS 'Collection ID from Cumulus that references the Collections table.';
     COMMENT ON COLUMN granules.cumulus_granule_id
       IS 'Granule ID from Cumulus';
     COMMENT ON COLUMN granules.execution_id
@@ -74,7 +74,7 @@ BEGIN;
     COMMENT ON COLUMN granules.ingest_time
       IS 'Date and time the granule was originally ingested into ORCA.';
     COMMENT ON COLUMN granules.cumulus_create_time
-      IS 'Date and time data was originally ingested into Cumulus';
+      IS 'createdAt time from Cumulus';
     COMMENT ON COLUMN granules.last_update
       IS 'Last time the data for the granule was updated. This generally will coincide with a duplicate or a change to the underlying data file.';
 
@@ -104,7 +104,7 @@ BEGIN;
     COMMENT ON COLUMN files.id
       IS 'Internal ORCA file ID';
     COMMENT ON COLUMN files.granule_id
-      IS 'Granule that the file belongs to refrences the internal ORCA granule ID.';
+      IS 'Granule that the file belongs to references the internal ORCA granule ID.';
     COMMENT ON COLUMN files.name
       IS 'Name of the file including extension';
     COMMENT ON COLUMN files.orca_archive_location
