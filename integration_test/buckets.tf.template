@@ -37,6 +37,14 @@ resource "aws_s3_bucket" "level0" {
     Deployment = "PREFIX"
     Application = "ORCA"
   }
+  lifecycle_rule {
+    id      = "move all objects to glacier"
+    enabled = true
+    transition {
+      days          = 0
+      storage_class = "GLACIER"
+    }
+  }
 }
 resource "aws_s3_bucket" "protected" {
   bucket = "PREFIX-protected"
