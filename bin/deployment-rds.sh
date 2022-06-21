@@ -5,82 +5,12 @@ export AWS_ACCESS_KEY_ID=$bamboo_AWS_ACCESS_KEY_ID
 export AWS_SECRET_ACCESS_KEY=$bamboo_AWS_SECRET_ACCESS_KEY
 export AWS_DEFAULT_REGION=$bamboo_AWS_DEFAULT_REGION
 
-#deploy the S3 buckets and dynamoDB table first
-cat << EOF > resources.tf.template
-# create buckets
-resource "aws_s3_bucket" "tf-state" {
-  bucket = "PREFIX-tf-state"
-  force_destroy = true
-  tags = {
-    Deployment = "PREFIX"
-    Application = "ORCA"
-  }
-}
-resource "aws_s3_bucket" "internal" {
-  bucket = "PREFIX-internal"
-  force_destroy = true
-  tags = {
-    Deployment = "PREFIX"
-    Application = "ORCA"
-  }
-}
-resource "aws_s3_bucket" "public" {
-  bucket = "PREFIX-public"
-  force_destroy = true
-  tags = {
-    Deployment = "PREFIX"
-    Application = "ORCA"
-  }
-}
-resource "aws_s3_bucket" "private" {
-  bucket = "PREFIX-private"
-  force_destroy = true
-  tags = {
-    Deployment = "PREFIX"
-    Application = "ORCA"
-  }
-}
-resource "aws_s3_bucket" "level0" {
-  bucket = "PREFIX-level0"
-  force_destroy = true
-  tags = {
-    Deployment = "PREFIX"
-    Application = "ORCA"
-  }
-}
-resource "aws_s3_bucket" "protected" {
-  bucket = "PREFIX-protected"
-  force_destroy = true
-  tags = {
-    Deployment = "PREFIX"
-    Application = "ORCA"
-  }
-}
-resource "aws_s3_bucket_versioning" "tf-state-bucket-versioning" {
-  bucket = aws_s3_bucket.tf-state.id
-  versioning_configuration {
-    status = "Enabled"
-  }
-}
-resource "aws_dynamodb_table" "tf-locks" {
-  name           = "PREFIX-tf-locks"
-  billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "LockID"
-  attribute {
-    name = "LockID"
-    type = "S"
-  }
-  tags = {
-    Deployment = "PREFIX"
-    Application = "ORCA"
-  }
-}
-EOF
-
 #remove old files from bamboo as they throw error
 rm *.tf
+#deploy the S3 buckets and dynamoDB table first
+git clone --branch feature/ORCA-test-bamboo --single-branch https://github.com/nasa/cumulus-orca.git && cd integration_test
 #replace prefix with bamboo prefix variable
-sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' resources.tf.template > resources.tf
+sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' buckets.tf.template > buckets.tf
 
 if ! aws s3 cp s3://$bamboo_PREFIX-tf-state/buckets-tf/terraform.tfstate .;then
     echo "terraform state file not present in S3. Creating the buckets and dynamoDB table..."
