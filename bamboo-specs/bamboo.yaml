@@ -260,7 +260,7 @@ Deploy RDS cluster:
       scripts:
       - |-
         #!/bin/bash
-        bash bin/deployment-rds.sh
+        bash integration_test/deployment-rds.sh
 
 #job for deploying cumulus and orca
 Deploy cumulus and orca:
@@ -283,7 +283,7 @@ Deploy cumulus and orca:
       scripts:
       - |-
         #!/bin/bash
-        bash bin/deployment-cumulus-orca.sh
+        bash integration_test/deployment-cumulus-orca.sh
 variables:
   DEPLOYMENT: sandbox
   ORCA_VERSION: 4.0.3
