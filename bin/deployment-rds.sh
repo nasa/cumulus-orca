@@ -22,7 +22,6 @@ terraform init -input=false
 echo "Deploying S3  buckets and dynamoDB table"
 terraform apply \
   -auto-approve \
-  -lock=false \
   -input=false
 
 #copy the terraform state file to the created tf-state bucket
@@ -51,7 +50,6 @@ terraform init \
 echo "Deploying rds-cluster-tf  module to $bamboo_DEPLOYMENT"
 terraform apply \
   -auto-approve \
-  -lock=false \
   -input=false \
   -var-file="terraform.tfvars" \
   -var "prefix=$bamboo_PREFIX" \
