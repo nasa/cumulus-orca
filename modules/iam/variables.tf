@@ -27,6 +27,10 @@ variable "tags" {
 
 ## Variables unique to ORCA
 ## REQUIRED
+variable "orca_reports_bucket_name" {
+  type        = string
+  description = "The name of the bucket to store s3 inventory reports."
+}
 
 
 ## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.

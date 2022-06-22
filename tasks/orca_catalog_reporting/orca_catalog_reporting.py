@@ -1,7 +1,7 @@
 import json
 from http import HTTPStatus
 from typing import Dict, Any, List, Union
-
+import os
 import fastjsonschema as fastjsonschema
 from cumulus_logger import CumulusLogger
 from fastjsonschema import JsonSchemaException
@@ -13,6 +13,20 @@ from sqlalchemy.future import Engine
 LOGGER = CumulusLogger()
 
 PAGE_SIZE = 100
+# Generating schema validators can take time, so do it once and reuse.
+try:
+    with open("schemas/input.json", "r") as raw_schema:
+        _INPUT_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
+except Exception as ex:
+    LOGGER.error(f"Could not build schema validator: {ex}")
+    raise
+
+try:
+    with open("schemas/output.json", "r") as raw_schema:
+        _OUTPUT_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
+except Exception as ex:
+    LOGGER.error(f"Could not build schema validator: {ex}")
+    raise
 
 
 def task(
@@ -177,8 +191,6 @@ def create_http_error_dict(
             'requestId' (str)
             'message' (str)
     """
-    # CumulusLogger will error if a string containing '{' or '}' is passed in without escaping.
-    message = message.replace("{", "{{").replace("}", "}}")
     LOGGER.error(message)
     return {
         "errorType": error_type,
@@ -198,7 +210,9 @@ def handler(
         event: See schemas/input.json
         context: An object provided by AWS Lambda. Used for context tracking.
 
-    Environment Vars: See requests_db.py's get_configuration for further details.
+    Environment Vars:
+        DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
+        See shared_db.py's get_configuration for further details.
 
     Returns:
         See schemas/output.json
@@ -209,11 +223,7 @@ def handler(
         LOGGER.setMetadata(event, context)
 
         try:
-            with open("schemas/input.json", "r") as raw_schema:
-                schema = json.loads(raw_schema.read())
-
-            validate = fastjsonschema.compile(schema)
-            validate(event)
+            _INPUT_VALIDATE(event)
         except JsonSchemaException as json_schema_exception:
             return create_http_error_dict(
                 "BadRequest",
@@ -221,8 +231,16 @@ def handler(
                 context.aws_request_id,
                 json_schema_exception.__str__(),
             )
+        # get the secret ARN from the env variable
+        try:
+            db_connect_info_secret_arn = os.environ["DB_CONNECT_INFO_SECRET_ARN"]
+        except KeyError as key_error:
+            LOGGER.error(
+                "DB_CONNECT_INFO_SECRET_ARN environment value not found."
+            )
+            raise
 
-        db_connect_info = shared_db.get_configuration()
+        db_connect_info = shared_db.get_configuration(db_connect_info_secret_arn)
 
         result = task(
             event.get("providerId", None),
@@ -233,11 +251,7 @@ def handler(
             event["pageIndex"],
             db_connect_info,
         )
-        with open("schemas/output.json", "r") as raw_schema:
-            schema = json.loads(raw_schema.read())
-
-        validate = fastjsonschema.compile(schema)
-        validate(result)
+        _OUTPUT_VALIDATE(result)
 
         return result
     except Exception as error:

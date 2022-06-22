@@ -108,11 +108,13 @@ check_rc $return_code "ERROR: Unable to install psycopg2."
 ## Copy the lambda files to build
 echo "INFO: Copying the lambda files ..."
 cp *.py build/
+cp -R migrations build/
+cp -R install build/
+
 let return_code=$?
 check_rc $return_code "ERROR: Failed to copy lambda files to build directory."
 
 
-## Copy the lambda files to build
 echo "INFO: Creating the Lambda package ..."
 ## Create the zip archive
 cd build

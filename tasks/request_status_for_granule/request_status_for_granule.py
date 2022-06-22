@@ -1,3 +1,4 @@
+import os
 from http import HTTPStatus
 from typing import Dict, Any, List, Union
 
@@ -273,15 +274,12 @@ def create_http_error_dict(
             'requestId' (str)
             'message' (str)
     """
-    # CumulusLogger will error if a string containing '{' or '}' is passed in without escaping.
-    message = message.replace("{", "{{").replace("}", "}}")
     LOGGER.error(message)
     return {
         "errorType": error_type,
         "httpStatus": http_status_code,
         "requestId": request_id,
-        # CumulusLogger will error if a string containing '{' or '}' is passed in without escaping.
-        "message": message.replace("{", "{{").replace("}", "}}"),
+        "message": message,
     }
 
 
@@ -296,7 +294,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 May apply to a request that covers multiple granules.
         context: An object provided by AWS Lambda. Used for context tracking.
 
-    Environment Vars: See shared_db.py's get_configuration for further details.
+    Environment Vars:
+        DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
+        See shared_db.py's get_configuration for further details.
 
     Returns: A Dict with the following keys:
         'granule_id' (str): The unique ID of the granule to retrieve status for.
@@ -314,6 +314,18 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         Or, if an error occurs, see create_http_error_dict
             400 if granule_id is missing. 500 if an error occurs when querying the database, 404 if not found.
     """
+
+    # get the secret ARN from the env variable
+    try:
+        db_connect_info_secret_arn = os.environ["DB_CONNECT_INFO_SECRET_ARN"]
+    except KeyError as key_error:
+        LOGGER.error(
+            "DB_CONNECT_INFO_SECRET_ARN environment value not found."
+        )
+        raise
+
+    db_connect_info = shared_db.get_configuration(db_connect_info_secret_arn)
+
     try:
         LOGGER.setMetadata(event, context)
 
@@ -325,8 +337,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 context.aws_request_id,
                 f"{INPUT_GRANULE_ID_KEY} must be set to a non-empty value.",
             )
-
-        db_connect_info = shared_db.get_configuration()
 
         return task(
             granule_id,

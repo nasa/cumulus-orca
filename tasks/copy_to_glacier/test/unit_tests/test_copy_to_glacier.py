@@ -14,6 +14,9 @@ from copy_to_glacier import *
 from test.helpers import LambdaContextMock
 from test.unit_tests.ConfigCheck import ConfigCheck
 
+# Generating schema validators can take time, so do it once and reuse.
+with open("schemas/output.json", "r") as raw_schema:
+    _OUTPUT_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
 
 class TestCopyToGlacierHandler(TestCase):
     """
@@ -241,11 +244,7 @@ class TestCopyToGlacierHandler(TestCase):
 
         mock_get_default_glacier_bucket_name.assert_called_once_with(config)
 
-        with open("schemas/output.json", "r") as raw_schema:
-            schema = json.loads(raw_schema.read())
-
-        validate = fastjsonschema.compile(schema)
-        validate(result)
+        _OUTPUT_VALIDATE(result)
 
         expected_granules = copy.deepcopy(event["input"]["granules"])
         self.assertEqual(expected_granules, result["granules"])
@@ -508,11 +507,7 @@ class TestCopyToGlacierHandler(TestCase):
 
         mock_get_default_glacier_bucket_name.assert_called_once_with(config)
 
-        with open("schemas/output.json", "r") as raw_schema:
-            schema = json.loads(raw_schema.read())
-
-        validate = fastjsonschema.compile(schema)
-        validate(result)
+        _OUTPUT_VALIDATE(result)
 
         expected_granules = copy.deepcopy(event["input"]["granules"])
         self.assertEqual(expected_granules, result["granules"])
@@ -612,11 +607,7 @@ class TestCopyToGlacierHandler(TestCase):
 
         mock_get_default_glacier_bucket_name.assert_called_once_with(config)
 
-        with open("schemas/output.json", "r") as raw_schema:
-            schema = json.loads(raw_schema.read())
-
-        validate = fastjsonschema.compile(schema)
-        validate(result)
+        _OUTPUT_VALIDATE(result)
 
         expected_granules = copy.deepcopy(event["input"]["granules"])
         self.assertEqual(expected_granules, result["granules"])
@@ -690,11 +681,7 @@ class TestCopyToGlacierHandler(TestCase):
 
         mock_get_default_glacier_bucket_name.assert_called_once_with(config)
 
-        with open("schemas/output.json", "r") as raw_schema:
-            schema = json.loads(raw_schema.read())
-
-        validate = fastjsonschema.compile(schema)
-        validate(result)
+        _OUTPUT_VALIDATE(result)
 
         self.assertEqual([], result["granules"])
         granules = result["granules"]
@@ -794,16 +781,15 @@ class TestCopyToGlacierHandler(TestCase):
         # Testing required fields
         self.assertEqual(queue_output_body, sqs_body)
 
+    # todo: since sleep is not called in function under test, this violates good unit test practices. Fix in ORCA-406
     @patch("time.sleep")
-    @patch("sqs_library.retry_error")
     @patch.dict(os.environ, {"AWS_REGION": "us-west-2"}, clear=True)
     def test_post_to_metadata_queue_retry_failures(
-        self, mock_retry_error: MagicMock, mock_sleep: MagicMock
+        self, mock_sleep: MagicMock
     ):
         """
-        Produces a failure in the json schema and checks if retries are performed in the SQS library.
+        Produces a failure and checks if retries are performed in the SQS library.
         """
-        # collectionId is intentionally removed so the schema validation will fail.
         sqs_body = {
             "provider": {"providerId": "1234", "name": "LPCUmumulus"},
             "collection": {
@@ -833,14 +819,16 @@ class TestCopyToGlacierHandler(TestCase):
                 ],
             },
         }
-        #
-        self.metadata_queue_url = "dummy"
+        # url is intentionally set wrong so send_message will fail.
         # Send values to the function
-        with self.assertRaises(Exception) as ex:
+        with self.assertRaises(Exception) as cm:
             sqs_library.post_to_metadata_queue(
                 sqs_body,
-                self.metadata_queue_url,
+                "dummy",
             )
+        self.assertEqual(
+            "An error occurred (AWS.SimpleQueueService.NonExistentQueue) when calling the SendMessage operation: The "
+            "specified queue does not exist for this wsdl version.", str(cm.exception))
         self.assertEqual(3, mock_sleep.call_count)
 
 

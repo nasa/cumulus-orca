@@ -14,10 +14,115 @@ the ORCA version.
 
 The following sections going into more detail on utilizing this Lambda.
 
+- [Updating db_deploy](#updating-db_deploy) - Adding to and updating the lambda.
 - [Testing db_deploy](#test-db_deploy) - Testing the lambda via unit and manual tests
 - [Building db_deploy](#building-db_deploy) - Building the lambda and documentation.
 - [Deploying db_deploy](#deploying-db_deploy) - Deploying and using the db_deploy lambda
 - [db_deploy API Reference](#db_deploy-api-reference) - API reference
+
+
+## Updating db_deploy
+
+There are several areas to update when adding schema changes to the `db_deploy`
+lambda. The layout, files, and methods to be aware of when adding migrations
+to db_deploy are outlined below and consist of the following steps.
+
+1. [Add the migration code](#adding-migration-code), sql, migration logic updates, and unit tests.
+2. [Update the clean install](#updating-clean-install-code) sql, logic, and unit tests.
+3. [Updatd the manual testing documentation](#updating-manual-testing).
+
+
+### Adding Migration Code
+
+When adding a new migration to db_deploy, there are certain naming and layout
+conventions that should be followed. In addition there are several files that
+should be updated so that the migration code can be ran properly. The steps
+below will guide you through the files that need to be touched and the naming
+standards expected.
+
+1. **Create the migration directories.** Migrations in db_deploy are located
+   under the `migrations` folder and follow a naming convention of
+   *migrate_versions_x_to_y* where x is the current version of the schema and y
+   is the new schema version. An identical folder should also be created under
+   the `test/unit_tests/migrations` directory. An example can be seen below. Note
+   that schema versions do not equate to ORCA application version and do not use
+   semantic versioning but are an increasing integer.
+   ```bash
+   mkdir -p migrations/migrate_versions_4_to_5
+   mkdir -p test/unit_tests/migrations/migrate_versions_4_to_5
+   ```
+2. **Create the migration files in the new migration directories.** Once the
+   migration directory is created, create a `migrate.py` and `migrate_sql.py`
+   file within the directory. Add corresponding `test_migrate_vY.py` and
+   `test_migrate_sql_vY.py` files in the test migration directory. An example can
+   be seen below. The `migrate.py` file should include a function with the
+   following naming convention and signature
+   `def migrate_versions_x_to_y(config: Dict[str, str], is_latest_version: bool, *args)`
+   this function should run the migration SQL in the proper order to perform a
+   migration from version x to version y. The `migrate_sql.py` file should have
+   the SQL needed to perform the migration. See previous versions for examples
+   on how the SQL should be formatted and expressed in functions. The unit test
+   files `test_migrate_vY.py` and `test_migrate_sql_vY.py` should contain unit
+   tests for all code written.
+   ```bash
+   touch migrations/migrate_versions_4_to_5/migrate.py
+   touch migrations/migrate_versions_4_to_5/migrate_sql.py
+   touch test/unit_tests/migrations/migrate_versions_4_to_5/test_migrate_v5.py
+   touch test/unit_tests/migrations/migrate_versions_4_to_5/test_migrate_sql_v5.py
+   ```
+3. **Update the `migrate_db.py` file.** Within the `migrations/migrate_db.py`
+   file, the `perform_migrations` function logic must be updated to include
+   the new migration. A typical logic update can be seen below. Note that any
+   additional arguments needed by migration will need to be expressed in the
+   `perform_migration` function as inputs.
+   ```bash
+   from migrations.migrate_versions_4_to_5.migrate import migrate_versions_4_to_5
+
+   def perform_migration(
+    current_schema_version: int, config: Dict[str, str], orca_buckets: List[str]
+) -> None:
+       ...
+
+       if current_schema_version == 4:
+           # Run migrations from version 4 to version 5
+           migrate_versions_4_to_5(config, True, orca_buckets)
+           current_schema_version = 5
+   ```
+4. **Update the `db_deploy.py` file.** Within the `db_deploy.py` file, update the
+   `LATEST_ORCA_SCHEMA_VERSION` value to the new version number `Y`. Make
+   additional updates as needed for inputs needed by the migration scripts.
+
+
+### Updating Clean Install Code
+
+In addition to writing the migration code, the code for a clean install must also
+be updated. It is recommended that since the clean install code is an approximate
+duplication of the migration code, that updates to this code occur after the
+migration SQL and install have been properly vetted. The steps below provide some
+broad guidance on updating the clean install code.
+
+1. **Update the `orca_sql.py` file.** In the `install/orca_sql.py` file, add any
+   new objects created by the migration. The code can often be copied directly
+   from the `migrate_sql.py` directly. Update the definitions of current objects
+   modified by the migration to present the proper end state for the latest
+   version. It is recommended to arrange the SQL into proper schema sections based
+   on application database and application logic.
+2. **Update the `create_db.py` file.** In the `install/create_db.py` file, update
+   the logic to create any new objects. This may require updates to existing
+   functions, or creation of new functions if the objects are a part of a new
+   schema.
+3. **Update the `db_deploy.py` file.** Make updates to the `db_deploy.py`
+   function call `create_fresh_orca_install` if needed.
+
+
+### Updating Manual Testing
+
+All migration changes should be manually tested to verify that the proper changes
+occur and that the SQL is well formed. Run the tests outlined in the manual
+testing document. Add additional tests as needed to interrogate the migration
+objects, and update the examples and outputs to match the latest version changes.
+In addition, update the manual test helper scripts and instructions as needed
+based on testing needs.
 
 
 ## Testing db_deploy
@@ -78,12 +183,14 @@ Using the AWS Lambda interface for db_deploy perform the following steps:
 
 1. Make sure the following environment variable is set for the Lambda.
    ```
-   PREFIX           - Your var.prefix value from variables.tfvars
+   DB_CONNECT_INFO_SECRET_ARN   - Your secretsmanager secret ARN needed for connecting to the DB.
    AWS_REGION       - automatically set by AWS as a defined runtime variable
    ```
-2. Create an empty JSON test event.
-   ```
-   {}
+2. Create a JSON test event as shown below. Replace `prefix` with the one you used.
+   ```json
+   {
+   "orcaBuckets": ["prefix-orca-primary"]
+   }  
    ```
 3. Perform validation of the migration similar to the tests and commands provided
    in the [manual test documentation](test/manual_tests/README.md) for validating

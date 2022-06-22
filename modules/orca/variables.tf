@@ -88,6 +88,20 @@ variable "orca_default_bucket" {
   description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
 }
 
+variable "orca_default_recovery_type" {
+  type        = string
+  description = "The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'."
+  validation {
+    condition     = contains(["Standard", "Bulk", "Expedited"], var.orca_default_recovery_type)
+    error_message = "Valid values are 'Standard'|'Bulk'|'Expedited'."
+  }
+}
+
+variable "orca_reports_bucket_name" {
+  type        = string
+  description = "The name of the bucket to store s3 inventory reports."
+}
+
 
 variable "rds_security_group_id" {
   type        = string
@@ -118,6 +132,18 @@ variable "db_user_name" {
 }
 
 
+variable "internal_report_queue_message_retention_time_seconds" {
+  type        = number
+  description = "The number of seconds internal-report-queue SQS retains a message in seconds. Maximum value is 14 days."
+}
+
+
+variable "orca_delete_old_reconcile_jobs_frequency_cron" {
+  type        = string
+  description = "Frequency cron for running the delete_old_reconcile_jobs lambda."
+}
+
+
 variable "orca_ingest_lambda_memory_size" {
   type        = number
   description = "Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime."
@@ -127,6 +153,24 @@ variable "orca_ingest_lambda_memory_size" {
 variable "orca_ingest_lambda_timeout" {
   type        = number
   description = "Timeout in number of seconds for ORCA copy_to_glacier lambda."
+}
+
+
+variable "orca_internal_reconciliation_expiration_days" {
+  type        = number
+  description = "Only reports updated before this many days ago will be deleted."
+}
+
+
+variable "orca_reconciliation_lambda_memory_size" {
+  type        = number
+  description = "Amount of memory in MB the ORCA reconciliation lambda can use at runtime."
+}
+
+
+variable "orca_reconciliation_lambda_timeout" {
+  type        = number
+  description = "Timeout in number of seconds for ORCA reconciliation lambdas."
 }
 
 
@@ -175,6 +219,30 @@ variable "orca_recovery_retry_interval" {
 variable "orca_recovery_retry_backoff" {
   type        = number
   description = "The multiplier by which the retry interval increases during each attempt."
+}
+
+
+variable "s3_access_key" {
+  type        = string
+  description = "Access key for communicating with Orca S3 buckets."
+}
+
+
+variable "s3_inventory_queue_message_retention_time_seconds" {
+  type        = number
+  description = "The number of seconds s3-inventory-queue fifo SQS retains a message in seconds. Maximum value is 14 days."
+}
+
+
+variable "s3_report_frequency" {
+  type        = string
+  description = "How often to generate s3 reports for internal reconciliation."
+}
+
+
+variable "s3_secret_key" {
+  type        = string
+  description = "Secret key for communicating with Orca S3 buckets."
 }
 
 

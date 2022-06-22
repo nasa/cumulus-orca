@@ -20,6 +20,7 @@ OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY = "STATUS_UPDATE_QUEUE_URL"
 OS_ENVIRON_MAX_RETRIES_KEY = "MAX_RETRIES"
 OS_ENVIRON_RETRY_SLEEP_SECS_KEY = "RETRY_SLEEP_SECS"
 OS_ENVIRON_RETRY_BACKOFF_KEY = "RETRY_BACKOFF"
+OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY = "DB_CONNECT_INFO_SECRET_ARN"  # nosec
 
 JOB_ID_KEY = "jobId"
 GRANULE_ID_KEY = "granuleId"
@@ -42,6 +43,7 @@ def task(
     max_retries: int,
     retry_sleep_secs: int,
     retry_backoff: int,
+    db_connect_info_secret_arn: str
 ) -> None:
     """
     Task called by the handler to perform the work.
@@ -57,13 +59,14 @@ def task(
         max_retries: Number of times the code will retry in case of failure.
         retry_sleep_secs: Number of seconds to wait between recovery failure retries.
         retry_backoff: The multiplier by which the retry interval increases during each attempt.
+        db_connect_info_secret_arn: Secret ARN of the secretsmanager secret to connect to the DB.
     Returns:
         None
     Raises:
         Exception: If unable to retrieve key_path or db parameters, convert db result to json,
         or post to queue.
     """
-    rows = query_db(key_path, bucket_name)
+    rows = query_db(key_path, bucket_name, db_connect_info_secret_arn)
 
     my_base_delay = retry_sleep_secs
 
@@ -163,7 +166,7 @@ def exponential_delay(base_delay: int, exponential_backoff: int = 2) -> int:
 
 
 @retry_operational_error()
-def query_db(key_path: str, bucket_name: str) -> List[Dict[str, str]]:
+def query_db(key_path: str, bucket_name: str, db_connect_info_secret_arn: str) -> List[Dict[str, str]]:
     """
     Connect and query the recover_file status table return needed metadata for posting to the recovery status SQS Queue.
 
@@ -171,6 +174,7 @@ def query_db(key_path: str, bucket_name: str) -> List[Dict[str, str]]:
         key_path:
            Full AWS key path including file name of the file where the file resides.
         bucket_name: Name of the source S3 bucket.
+        db_connect_info_secret_arn: Secret ARN of the secretsmanager secret to connect to the DB.
     Returns:
         A list of dict containing the following keys, matching the input format from copy_files_to_archive:
             "jobId" (str):
@@ -190,7 +194,7 @@ def query_db(key_path: str, bucket_name: str) -> List[Dict[str, str]]:
     # database.
     try:
         LOGGER.debug("Getting database connection information.")
-        db_connect_info = shared_db.get_configuration()
+        db_connect_info = shared_db.get_configuration(db_connect_info_secret_arn)
         LOGGER.debug("Retrieved the database connection info")
 
         engine = shared_db.get_user_connection(db_connect_info)
@@ -258,20 +262,13 @@ def handler(event: Dict[str, Any], context) -> None:
     Lambda handler. This lambda calls the task function to perform db queries
     and send message to SQS.
     
-        Environment Vars:
-            RECOVERY_QUEUE_URL (string): the SQS URL for staged_recovery_queue
-            DB_QUEUE_URL (string): the SQS URL for status-update-queue
-            MAX_RETRIES (string): Number of times the code will retry in case of failure.
-            RETRY_SLEEP_SECS (string): Number of seconds to wait between recovery failure retries.
-            RETRY_BACKOFF (string): The multiplier by which the retry interval increases during each attempt.
-            Required by shared_db.get_configuration():
-                PREFIX (string): the prefix
-                DATABASE_PORT (string): the database port. The standard is 5432.
-                DATABASE_NAME (string): the name of the database.
-                DATABASE_USER (string): the name of the application user.
-        Parameter store:
-            {prefix}-drdb-host (string): host name that will be retrieved from secrets manager
-            {prefix}-drdb-user-pass (string):db password that will be retrieved from secrets manager
+    Environment Vars:
+        RECOVERY_QUEUE_URL (string): the SQS URL for staged_recovery_queue
+        DB_QUEUE_URL (string): the SQS URL for status-update-queue
+        MAX_RETRIES (string): Number of times the code will retry in case of failure.
+        RETRY_SLEEP_SECS (string): Number of seconds to wait between recovery failure retries.
+        RETRY_BACKOFF (string): The multiplier by which the retry interval increases during each attempt.
+        DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
     Args:
         event:
             A dictionary from the S3 bucket. See schemas/input.json for more information.
@@ -290,6 +287,7 @@ def handler(event: Dict[str, Any], context) -> None:
         OS_ENVIRON_MAX_RETRIES_KEY,
         OS_ENVIRON_RETRY_SLEEP_SECS_KEY,
         OS_ENVIRON_RETRY_BACKOFF_KEY,
+        OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY
     ]
     environment_args = []
     for var in backoff_env:
@@ -312,9 +310,10 @@ def handler(event: Dict[str, Any], context) -> None:
                 raise error
         environment_args.append(env_var_value)
 
-    if len(event["Records"]) != 1:
-        raise ValueError(f"Must be passed a single record. Was {len(event['Records'])}")
-    record = event["Records"][0]
+    records = event["Records"]
+    if len(records) != 1:
+        raise ValueError(f"Must be passed a single record. Was {len(records)}")
+    record = records[0]
     LOGGER.debug("Event passed = {event}", event=event)
     # grab the key_path and bucket name from record
     key_path = record["s3"]["object"]["key"]

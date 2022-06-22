@@ -78,9 +78,30 @@ variable "db_host_endpoint" {
 }
 
 
+variable "dlq_subscription_email" {
+  type        = string
+  description = "The email to notify users when messages are received in dead letter SQS queue due to restore failure. Sends one email until the dead letter queue is emptied."
+}
+
+
 variable "orca_default_bucket" {
   type        = string
   description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
+}
+
+variable "orca_default_recovery_type" {
+  type        = string
+  description = "The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'."
+  default     = "Standard"
+  validation {
+    condition     = contains(["Standard", "Bulk", "Expedited"], var.orca_default_recovery_type)
+    error_message = "Valid values are 'Standard'|'Bulk'|'Expedited'."
+  }
+}
+
+variable "orca_reports_bucket_name" {
+  type        = string
+  description = "The name of the bucket to store s3 inventory reports."
 }
 
 
@@ -89,9 +110,14 @@ variable "rds_security_group_id" {
   description = "Cumulus' RDS Security Group's ID."
 }
 
-variable "dlq_subscription_email" {
+variable "s3_access_key" {
   type        = string
-  description = "The email to notify users when messages are received in dead letter SQS queue due to restore failure. Sends one email until the dead letter queue is emptied."
+  description = "Access key for communicating with Orca S3 buckets."
+}
+
+variable "s3_secret_key" {
+  type        = string
+  description = "Secret key for communicating with Orca S3 buckets."
 }
 
 ## OPTIONAL
@@ -124,10 +150,24 @@ variable "default_multipart_chunksize_mb" {
 }
 
 
+variable "internal_report_queue_message_retention_time_seconds" {
+  type        = number
+  description = "The number of seconds internal-report-queue SQS retains a message in seconds. Maximum value is 14 days."
+  default     = 432000 #5 days
+}
+
+
 variable "metadata_queue_message_retention_time_seconds" {
   type        = number
   description = "The number of seconds metadata-queue fifo SQS retains a message in seconds. Maximum value is 14 days."
   default     = 777600 #9 days
+}
+
+
+variable "orca_delete_old_reconcile_jobs_frequency_cron" {
+  type        = string
+  description = "Frequency cron for running the delete_old_reconcile_jobs lambda."
+  default     = "cron(0 0 ? * SUN *)"  # UTC Sunday Midnight
 }
 
 
@@ -142,6 +182,27 @@ variable "orca_ingest_lambda_timeout" {
   type        = number
   description = "Timeout in number of seconds for ORCA copy_to_glacier lambda."
   default     = 600
+}
+
+
+variable "orca_internal_reconciliation_expiration_days" {
+  type        = number
+  description = "Only reports updated before this many days ago will be deleted."
+  default     = 30
+}
+
+
+variable "orca_reconciliation_lambda_memory_size" {
+  type        = number
+  description = "Amount of memory in MB the ORCA reconciliation lambda can use at runtime."
+  default     = 128
+}
+
+
+variable "orca_reconciliation_lambda_timeout" {
+  type        = number
+  description = "Timeout in number of seconds for ORCA reconciliation lambdas."
+  default     = 720
 }
 
 
@@ -199,6 +260,20 @@ variable "orca_recovery_retry_backoff" {
   description = "The multiplier by which the retry interval increases during each attempt."
   default     = 2
 }
+
+variable "s3_inventory_queue_message_retention_time_seconds" {
+  type        = number
+  description = "The number of seconds s3-inventory-queue fifo SQS retains a message in seconds. Maximum value is 14 days."
+  default     = 432000 #5 days
+}
+
+
+variable "s3_report_frequency" {
+  type        = string
+  description = "How often to generate s3 reports for internal reconciliation. `Daily` or `Weekly`."
+  default     = "Daily"
+}
+
 
 variable "sqs_delay_time_seconds" {
   type        = number

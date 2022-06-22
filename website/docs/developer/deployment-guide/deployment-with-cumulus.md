@@ -81,19 +81,25 @@ module "orca" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  db_admin_password     = var.db_admin_password
-  db_host_endpoint      = var.db_host_endpoint
-  db_user_password      = var.db_user_password
-  orca_default_bucket   = var.orca_default_bucket
-  rds_security_group_id = var.rds_security_group_id
-  dlq_subscription_email = var.dlq_subscription_email
+  db_admin_password        = var.db_admin_password
+  db_host_endpoint         = var.db_host_endpoint
+  db_user_password         = var.db_user_password
+  dlq_subscription_email   = var.dlq_subscription_email
+  orca_default_bucket      = var.orca_default_bucket
+  orca_reports_bucket_name = var.orca_reports_bucket_name
+  rds_security_group_id    = var.rds_security_group_id
 
   ## OPTIONAL
   # db_admin_username                                    = "postgres"
   # default_multipart_chunksize_mb                       = 250
   # metadata_queue_message_retention_time                = 777600
+  # orca_default_recovery_type                           = "Standard"
+  # orca_delete_old_reconcile_jobs_frequency_cron        = "cron(0 0 ? * SUN *)"
   # orca_ingest_lambda_memory_size                       = 2240
   # orca_ingest_lambda_timeout                           = 600
+  # orca_internal_reconciliation_expiration_days         = 30
+  # orca_reconciliation_lambda_memory_size               = 128
+  # orca_reconciliation_lambda_timeout                   = 720
   # orca_recovery_buckets                                = []
   # orca_recovery_complete_filter_prefix                 = ""
   # orca_recovery_expiration_days                        = 5
@@ -102,6 +108,8 @@ module "orca" {
   # orca_recovery_retry_limit                            = 3
   # orca_recovery_retry_interval                         = 1
   # orca_recovery_retry_backoff                          = 2
+  # s3_inventory_queue_message_retention_time_seconds    = 432000
+  # s3_report_frequency                                  = "Daily"
   # sqs_delay_time_seconds                               = 0
   # sqs_maximum_message_size                             = 262144
   # staged_recovery_queue_message_retention_time_seconds = 432000
@@ -118,6 +126,7 @@ optional variables can be found in the [variables section](#orca-variables).
 
 - db_admin_password
 - orca_default_bucket
+- orca_reports_bucket_name
 - db_user_password
 - db_host_endpoint
 - rds_security_group_id
@@ -178,20 +187,24 @@ variable "db_host_endpoint" {
   description = "Database host endpoint to connect to."
 }
 
+variable "dlq_subscription_email" {
+  type        = string
+  description = "The email to notify users when messages are received in dead letter SQS queue due to restore failure. Sends one email until the dead letter queue is emptied."
+}
 
 variable "orca_default_bucket" {
   type        = string
   description = "Default ORCA S3 Glacier bucket to use."
 }
 
+variable "orca_reports_bucket_name" {
+  type        = string
+  description = "The name of the bucket to store s3 inventory reports."
+}
+
 variable "rds_security_group_id" {
   type        = string
   description = "Cumulus' RDS Security Group's ID."
-}
-
-variable "dlq_subscription_email" {
-  type        = string
-  description = "The email to notify users when messages are received in dead letter SQS queue due to restore failure. Sends one email until the dead letter queue is emptied."
 }
 ```
 
@@ -224,6 +237,9 @@ db_user_password = "my-super-secret-orca-application-user-password"
 ## Default ORCA S3 Glacier bucket to use
 orca_default_bucket = "orca-archive-primary"
 
+## The name of the bucket to store s3 inventory reports.
+orca_reports_bucket_name = "PREFIX-orca-reports"
+
 ## PostgreSQL database (root) user password
 db_admin_password = "my-super-secret-database-owner-password"
 
@@ -243,8 +259,11 @@ Below describes the type of value expected for each variable.
 * `orca_default_bucket` (string) - default S3 glacier bucket to use for ORCA data.
 * `db_admin_password` (string) - password for the admin user.
 * `db_host_endpoint`(string) - Database host endpoint to connect to.
-* `rds_security_group_id`(string) - Cumulus' RDS Security Group's ID. Output as `security_group_id` from the rds-cluster deployment.
+* `db_user_password` (string) - the password for the application user.
 * `dlq_subscription_email`(string) - "The email to notify users when messages are received in dead letter SQS queue due to restore failure. Sends one email until the dead letter queue is emptied."
+* `orca_default_bucket` (string) - Default S3 glacier bucket to use for ORCA data.
+* `orca_reports_bucket_name` (string) - The name of the bucket to store s3 inventory reports.
+* `rds_security_group_id`(string) - Cumulus' RDS Security Group's ID. Output as `security_group_id` from the rds-cluster deployment.
 
 Additional variable definitions can be found in the [ORCA variables](#orca-variables)
 section of the document.
@@ -478,14 +497,17 @@ The following variables should be present in the `cumulus-tf/orca_variables.tf`
 file. The variables must be set with proper values for your environment in the
 `cumulus-tf/terraform.tfvars` file.
 
-| Variable               | Definition                                              |              Example Value                                  |
-| ---------------------- | --------------------------------------------------------| ------------------------------------------------------------|
-| `db_admin_password`    | Password for RDS database administrator authentication  | "My_Sup3rS3cr3t_admin_Passw0rd"                             |
-| `db_host_endpoint`     | Database host endpoint to connect to.                   | "aws.postgresrds.host"                                      |
-| `db_user_password`     | Password for RDS database user authentication           | "My_Sup3rS3cr3tuserPassw0rd"                                |
-| `orca_default_bucket`  | Default ORCA S3 Glacier bucket to use.                  | "PREFIX-orca-primary"                                       |
-| `rds_security_group_id`| Cumulus' RDS Security Group's ID.                       | "sg-01234567890123456"                                      |
-| `dlq_subscription_email`| The email to notify users when messages are received in dead letter SQS queue | "test@email.com"                     |
+| Variable                   | Definition                                               |              Example Value                                  |
+| -------------------------- | -------------------------------------------------------- | ------------------------------------------------------------|
+| `db_admin_password`        | Password for RDS database administrator authentication   | "My_Sup3rS3cr3t_admin_Passw0rd"                             |
+| `db_host_endpoint`         | Database host endpoint to connect to.                    | "aws.postgresrds.host"                                      |
+| `db_user_password`         | Password for RDS database user authentication            | "My_Sup3rS3cr3tuserPassw0rd"                                |
+| `dlq_subscription_email`   | The email to notify users when messages are received in dead letter SQS queue | "test@email.com"                      |
+| `orca_default_bucket`      | Default ORCA S3 Glacier bucket to use.                   | "PREFIX-orca-primary"                                       |
+| `orca_reports_bucket_name` | The Name of the bucket to store s3 inventory reports.    | "PREFIX-orca-reports"                          |
+| `rds_security_group_id`    | Cumulus' RDS Security Group's ID.                        | "sg-01234567890123456"                                      |
+| `s3_access_key`            | Access key for communicating with Orca S3 buckets.       |                                                             |
+| `s3_secret_key`            | Secret key for communicating with Orca S3 buckets.       |                                                             |
 
 ### Optional Variables
 
@@ -511,26 +533,35 @@ file. The variables can be set with proper values for your environment in the
 `cumulus-tf/terraform.tfvars` file. The default setting for each of the optional
 variables is shown in the table below.
 
-| Variable                                              | Type          | Definition                                                                                              | Default
-| ----------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------- | ---------- |
-| `db_admin_username`                                   | string        | Username for RDS database administrator authentication.                                                 | "postgres" |
-| `default_multipart_chunksize_mb`                      | number        | The default maximum size of chunks to use when copying. Can be overridden by collection config.         | 250 |
-| `metadata_queue_message_retention_time_seconds`       | number        | Number of seconds the metadata-queue fifo SQS retains a message.                                        | 777600 |
-| `db_name`                                             | string        | The name of the Orca database within the RDS cluster. Any `-` in `prefix` will be replaced with `_`.    | PREFIX_orca |
+| Variable                                              | Type          | Definition                                                                                                | Default
+| ----------------------------------------------------- | ------------- | --------------------------------------------------------------------------------------------------------- | ---------- |
+| `db_admin_username`                                   | string        | Username for RDS database administrator authentication.                                                   | "postgres" |
+| `default_multipart_chunksize_mb`                      | number        | The default maximum size of chunks to use when copying. Can be overridden by collection config.           | 250 |
+| `internal_report_queue_message_retention_time_seconds`| number        | Number of seconds the internal-report-queue SQS retains a message.                                        | 432000 |
+| `metadata_queue_message_retention_time_seconds`       | number        | Number of seconds the metadata-queue fifo SQS retains a message.                                          | 777600 |
+| `db_name`                                             | string        | The name of the Orca database within the RDS cluster. Any `-` in `prefix` will be replaced with `_`.      | PREFIX_orca |
 | `db_user_name`                                        | string        | The name of the application user for the Orca database. Any `-` in `prefix` will be replaced with `_`.    | PREFIX_orcauser |
-| `orca_ingest_lambda_memory_size`                      | number        | Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime.                              | 2240 |
-| `orca_ingest_lambda_timeout`                          | number        | Timeout in number of seconds for ORCA copy_to_glacier lambda.                                           | 600 |
-| `orca_recovery_buckets`                               | List (string) | List of bucket names that ORCA has permissions to restore data to. Default is all in the `buckets` map. | [] |
-| `orca_recovery_complete_filter_prefix`                | string        | Specifies object key name prefix by the Glacier Bucket trigger.                                         | "" |
-| `orca_recovery_expiration_days`                       | number        | Number of days a recovered file will remain available for copy.                                         | 5 |
-| `orca_recovery_lambda_memory_size`                    | number        | Amount of memory in MB the ORCA recovery lambda can use at runtime.                                     | 128 |
-| `orca_recovery_lambda_timeout`                        | number        | Timeout in number of seconds for ORCA recovery lambdas.                                                 | 720 |
-| `orca_recovery_retry_limit`                           | number        | Maximum number of retries of a recovery failure before giving up.                                       | 3 |
-| `orca_recovery_retry_interval`                        | number        | Number of seconds to wait between recovery failure retries.                                             | 1 |
-| `sqs_delay_time_seconds`                              | number        | Number of seconds that the delivery of all messages in the queue will be delayed.                       | 0 |
-| `sqs_maximum_message_size`                            | number        | The limit of how many bytes a message can contain before Amazon SQS rejects it.                         | 262144 |
-| `staged_recovery_queue_message_retention_time_seconds`| number        | Number of seconds the staged-recovery-queue fifo SQS retains a message.                                 | 432000 |
-| `status_update_queue_message_retention_time_seconds`  | number        | Number of seconds the status_update_queue fifo SQS retains a message.                                   | 777600 |
+| `orca_default_recovery_type`                          | string        | The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'                          | "Standard" |
+| `orca_delete_old_reconcile_jobs_frequency_cron`       | string        | Frequency cron for running the delete_old_reconcile_jobs lambda.                                          | "cron(0 0 ? * SUN *)" |
+| `orca_ingest_lambda_memory_size`                      | number        | Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime.                                | 2240 |
+| `orca_ingest_lambda_timeout`                          | number        | Timeout in number of seconds for ORCA copy_to_glacier lambda.                                             | 600 |
+| `orca_internal_reconciliation_expiration_days`        | number        | Only reports updated before this many days ago will be deleted.                                           | 30 |
+| `orca_reconciliation_lambda_memory_size`              | number        | Amount of memory in MB the ORCA reconciliation lambda can use at runtime.                                 | 128 |
+| `orca_reconciliation_lambda_timeout`                  | number        | Timeout in number of seconds for ORCA reconciliation lambdas.                                             | 720 |
+| `orca_recovery_buckets`                               | List (string) | List of bucket names that ORCA has permissions to restore data to. Default is all in the `buckets` map.   | [] |
+| `orca_recovery_complete_filter_prefix`                | string        | Specifies object key name prefix by the Glacier Bucket trigger.                                           | "" |
+| `orca_recovery_expiration_days`                       | number        | Number of days a recovered file will remain available for copy.                                           | 5 |
+| `orca_recovery_lambda_memory_size`                    | number        | Amount of memory in MB the ORCA recovery lambda can use at runtime.                                       | 128 |
+| `orca_recovery_lambda_timeout`                        | number        | Timeout in number of seconds for ORCA recovery lambdas.                                                   | 720 |
+| `orca_recovery_retry_limit`                           | number        | Maximum number of retries of a recovery failure before giving up.                                         | 3 |
+| `orca_recovery_retry_interval`                        | number        | Number of seconds to wait between recovery failure retries.                                               | 1 |
+| `orca_recovery_retry_backoff`                         | number        | The multiplier by which the retry interval increases during each attempt.                                 | 2 |
+| `s3_inventory_queue_message_retention_time_seconds`   | number        | The number of seconds s3-inventory-queue fifo SQS retains a message in seconds. Maximum value is 14 days. | 432000 |
+| `s3_report_frequency`                                 | string        | How often to generate s3 reports for internal reconciliation. `Daily` or `Weekly`                         | Daily |
+| `sqs_delay_time_seconds`                              | number        | Number of seconds that the delivery of all messages in the queue will be delayed.                         | 0 |
+| `sqs_maximum_message_size`                            | number        | The limit of how many bytes a message can contain before Amazon SQS rejects it.                           | 262144 |
+| `staged_recovery_queue_message_retention_time_seconds`| number        | Number of seconds the staged-recovery-queue fifo SQS retains a message.                                   | 432000 |
+| `status_update_queue_message_retention_time_seconds`  | number        | Number of seconds the status_update_queue fifo SQS retains a message.                                     | 777600 |
 
 
 ## ORCA Module Outputs

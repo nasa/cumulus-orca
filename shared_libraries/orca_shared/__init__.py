@@ -12,10 +12,10 @@ def lazy_load(module_name, element):
 
 
 __title__ = "orca_shared"
-__version__ = "1.1.0"
+__version__ = "1.4.0"
 
 
 # Libraries
 shared_database = lazy_load(".database", "shared_database")
 shared_recovery = lazy_load(".recovery", "shared_recovery")
-shared_recovery = lazy_load(".reconciliation", "shared_reconciliation")
+shared_reconciliation = lazy_load(".reconciliation", "shared_reconciliation")

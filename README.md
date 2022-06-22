@@ -8,8 +8,8 @@ The documentation is available for developers, data managers, and users.
 Additional documentation is being added continually.
 
 Make sure you are using the following node.js versions to view the documentation.
-- npm 6.14.10
-- node 12.15.0
+- npm 8.11.0
+- node 16.15.1
 
 Further ORCA documentation can be read locally by performing the following:
 ```

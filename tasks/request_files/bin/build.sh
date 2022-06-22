@@ -101,12 +101,23 @@ cp ../package/awslambda-psycopg2/psycopg2-3.7/* build/psycopg2/
 let return_code=$?
 check_rc $return_code "ERROR: Unable to install psycopg2."
 
+
 ## Copy the lambda files to build
 echo "INFO: Creating the Lambda package ..."
 cp *.py build/
 let return_code=$?
 
 check_rc $return_code "ERROR: Failed to copy lambda files to build directory."
+
+## Copy the schema files to build
+mkdir -p build/schemas
+let return_code=$?
+check_rc $return_code "ERROR: Unable to create build/schemas directory."
+echo "INFO: Copying schema files ..."
+cp schemas/*.json build/schemas/
+let return_code=$?
+
+check_rc $return_code "ERROR: Failed to copy schema files to build directory."
 
 ## Create the zip archive
 cd build
@@ -120,5 +131,6 @@ check_rc $return_code "ERROR: Failed to create zip archive."
 echo "INFO: Cleaning up build ..."
 deactivate
 rm -rf build
+rm -rf include
 
 exit 0

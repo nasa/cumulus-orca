@@ -1,15 +1,49 @@
 # Table of Contents
 
 * [orca\_shared](#orca_shared)
+* [orca\_shared.reconciliation.test.unit\_tests.test\_shared\_reconciliation](#orca_shared.reconciliation.test.unit_tests.test_shared_reconciliation)
+  * [TestSharedReconciliationLibraries](#orca_shared.reconciliation.test.unit_tests.test_shared_reconciliation.TestSharedReconciliationLibraries)
+    * [test\_get\_partition\_name\_from\_bucket\_name\_happy\_path](#orca_shared.reconciliation.test.unit_tests.test_shared_reconciliation.TestSharedReconciliationLibraries.test_get_partition_name_from_bucket_name_happy_path)
+    * [test\_get\_partition\_name\_from\_bucket\_name\_rejects\_non\_alphanumeric](#orca_shared.reconciliation.test.unit_tests.test_shared_reconciliation.TestSharedReconciliationLibraries.test_get_partition_name_from_bucket_name_rejects_non_alphanumeric)
+    * [test\_update\_job\_happy\_path](#orca_shared.reconciliation.test.unit_tests.test_shared_reconciliation.TestSharedReconciliationLibraries.test_update_job_happy_path)
+    * [test\_update\_job\_error\_message\_required\_on\_error\_status](#orca_shared.reconciliation.test.unit_tests.test_shared_reconciliation.TestSharedReconciliationLibraries.test_update_job_error_message_required_on_error_status)
+    * [test\_update\_job\_error\_message\_only\_valid\_on\_error\_status](#orca_shared.reconciliation.test.unit_tests.test_shared_reconciliation.TestSharedReconciliationLibraries.test_update_job_error_message_only_valid_on_error_status)
+    * [test\_internal\_update\_job\_error\_logged\_and\_raised](#orca_shared.reconciliation.test.unit_tests.test_shared_reconciliation.TestSharedReconciliationLibraries.test_internal_update_job_error_logged_and_raised)
 * [orca\_shared.reconciliation](#orca_shared.reconciliation)
 * [orca\_shared.reconciliation.shared\_reconciliation](#orca_shared.reconciliation.shared_reconciliation)
   * [OrcaStatus](#orca_shared.reconciliation.shared_reconciliation.OrcaStatus)
-* [orca\_shared.database](#orca_shared.database)
+  * [get\_partition\_name\_from\_bucket\_name](#orca_shared.reconciliation.shared_reconciliation.get_partition_name_from_bucket_name)
+  * [update\_job](#orca_shared.reconciliation.shared_reconciliation.update_job)
+  * [internal\_update\_job](#orca_shared.reconciliation.shared_reconciliation.internal_update_job)
+* [orca\_shared.database.test.unit\_tests.test\_shared\_db](#orca_shared.database.test.unit_tests.test_shared_db)
+  * [TestSharedDatabaseLibraries](#orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries)
+    * [setUp](#orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.setUp)
+    * [tearDown](#orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.tearDown)
+    * [test\_get\_configuration\_happy\_path](#orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.test_get_configuration_happy_path)
+    * [test\_get\_configuration\_no\_prefix](#orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.test_get_configuration_no_prefix)
+    * [test\_get\_configuration\_no\_aws\_region](#orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.test_get_configuration_no_aws_region)
+    * [test\_get\_configuration\_bad\_secret](#orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.test_get_configuration_bad_secret)
+    * [test\_get\_admin\_connection\_database\_values](#orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.test_get_admin_connection_database_values)
+    * [test\_get\_user\_connection\_database\_values](#orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.test_get_user_connection_database_values)
+    * [test\_\_create\_connection\_call\_values](#orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.test__create_connection_call_values)
+    * [test\_retry\_operational\_error\_non\_operational\_error\_raises](#orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.test_retry_operational_error_non_operational_error_raises)
+    * [test\_retry\_operational\_error\_operational\_error\_retries\_and\_raises](#orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.test_retry_operational_error_operational_error_retries_and_raises)
 * [orca\_shared.database.shared\_db](#orca_shared.database.shared_db)
   * [get\_configuration](#orca_shared.database.shared_db.get_configuration)
   * [get\_admin\_connection](#orca_shared.database.shared_db.get_admin_connection)
   * [get\_user\_connection](#orca_shared.database.shared_db.get_user_connection)
   * [retry\_operational\_error](#orca_shared.database.shared_db.retry_operational_error)
+* [orca\_shared.database](#orca_shared.database)
+* [orca\_shared.database.test](#orca_shared.database.test)
+* [orca\_shared.recovery.test.unit\_tests.test\_shared\_recovery](#orca_shared.recovery.test.unit_tests.test_shared_recovery)
+  * [TestSharedRecoveryLibraries](#orca_shared.recovery.test.unit_tests.test_shared_recovery.TestSharedRecoveryLibraries)
+    * [setUp](#orca_shared.recovery.test.unit_tests.test_shared_recovery.TestSharedRecoveryLibraries.setUp)
+    * [tearDown](#orca_shared.recovery.test.unit_tests.test_shared_recovery.TestSharedRecoveryLibraries.tearDown)
+    * [test\_post\_entry\_to\_fifo\_queue\_no\_errors](#orca_shared.recovery.test.unit_tests.test_shared_recovery.TestSharedRecoveryLibraries.test_post_entry_to_fifo_queue_no_errors)
+    * [test\_post\_entry\_to\_standard\_queue\_happy\_path](#orca_shared.recovery.test.unit_tests.test_shared_recovery.TestSharedRecoveryLibraries.test_post_entry_to_standard_queue_happy_path)
+    * [test\_create\_status\_for\_job\_no\_errors](#orca_shared.recovery.test.unit_tests.test_shared_recovery.TestSharedRecoveryLibraries.test_create_status_for_job_no_errors)
+    * [test\_update\_status\_for\_file\_no\_errors](#orca_shared.recovery.test.unit_tests.test_shared_recovery.TestSharedRecoveryLibraries.test_update_status_for_file_no_errors)
+    * [test\_update\_status\_for\_file\_raise\_errors\_error\_message](#orca_shared.recovery.test.unit_tests.test_shared_recovery.TestSharedRecoveryLibraries.test_update_status_for_file_raise_errors_error_message)
 * [orca\_shared.recovery](#orca_shared.recovery)
 * [orca\_shared.recovery.shared\_recovery](#orca_shared.recovery.shared_recovery)
   * [RequestMethod](#orca_shared.recovery.shared_recovery.RequestMethod)
@@ -23,6 +57,92 @@
 <a id="orca_shared"></a>
 
 # orca\_shared
+
+<a id="orca_shared.reconciliation.test.unit_tests.test_shared_reconciliation"></a>
+
+# orca\_shared.reconciliation.test.unit\_tests.test\_shared\_reconciliation
+
+Name: test_shared_reconciliation.py
+Description: Unit tests for shared_reconciliation.py shared library.
+
+<a id="orca_shared.reconciliation.test.unit_tests.test_shared_reconciliation.TestSharedReconciliationLibraries"></a>
+
+## TestSharedReconciliationLibraries Objects
+
+```python
+class TestSharedReconciliationLibraries(unittest.TestCase)
+```
+
+Unit tests for the shared_reconciliation library used by ORCA Reconciliation Lambdas.
+
+<a id="orca_shared.reconciliation.test.unit_tests.test_shared_reconciliation.TestSharedReconciliationLibraries.test_get_partition_name_from_bucket_name_happy_path"></a>
+
+#### test\_get\_partition\_name\_from\_bucket\_name\_happy\_path
+
+```python
+def test_get_partition_name_from_bucket_name_happy_path()
+```
+
+Should replace dashes with underscores.
+Leave this test hardcoded to avoid unintentional deviations from DB.
+
+<a id="orca_shared.reconciliation.test.unit_tests.test_shared_reconciliation.TestSharedReconciliationLibraries.test_get_partition_name_from_bucket_name_rejects_non_alphanumeric"></a>
+
+#### test\_get\_partition\_name\_from\_bucket\_name\_rejects\_non\_alphanumeric
+
+```python
+def test_get_partition_name_from_bucket_name_rejects_non_alphanumeric()
+```
+
+Should replace dashes with underscores.
+
+<a id="orca_shared.reconciliation.test.unit_tests.test_shared_reconciliation.TestSharedReconciliationLibraries.test_update_job_happy_path"></a>
+
+#### test\_update\_job\_happy\_path
+
+```python
+@patch("orca_shared.reconciliation.shared_reconciliation.internal_update_job")
+def test_update_job_happy_path(mock_internal_update_job: MagicMock)
+```
+
+Happy path for updating job entry with status.
+
+<a id="orca_shared.reconciliation.test.unit_tests.test_shared_reconciliation.TestSharedReconciliationLibraries.test_update_job_error_message_required_on_error_status"></a>
+
+#### test\_update\_job\_error\_message\_required\_on\_error\_status
+
+```python
+@patch("orca_shared.reconciliation.shared_reconciliation.internal_update_job")
+def test_update_job_error_message_required_on_error_status(
+        mock_internal_update_job: MagicMock)
+```
+
+Happy path for updating job entry with status.
+
+<a id="orca_shared.reconciliation.test.unit_tests.test_shared_reconciliation.TestSharedReconciliationLibraries.test_update_job_error_message_only_valid_on_error_status"></a>
+
+#### test\_update\_job\_error\_message\_only\_valid\_on\_error\_status
+
+```python
+@patch("orca_shared.reconciliation.shared_reconciliation.internal_update_job")
+def test_update_job_error_message_only_valid_on_error_status(
+        mock_internal_update_job: MagicMock)
+```
+
+Error message can only be applied on error statuses. Otherwise, raise an error.
+
+<a id="orca_shared.reconciliation.test.unit_tests.test_shared_reconciliation.TestSharedReconciliationLibraries.test_internal_update_job_error_logged_and_raised"></a>
+
+#### test\_internal\_update\_job\_error\_logged\_and\_raised
+
+```python
+@patch("orca_shared.reconciliation.shared_reconciliation.LOGGER")
+@patch("orca_shared.reconciliation.shared_reconciliation.update_job_sql")
+def test_internal_update_job_error_logged_and_raised(
+        mock_update_job_sql: MagicMock, mock_logger: MagicMock)
+```
+
+Exceptions from Postgres should bubble up.
 
 <a id="orca_shared.reconciliation"></a>
 
@@ -47,9 +167,241 @@ class OrcaStatus(Enum)
 An enumeration.
 Defines the status value used in the ORCA Reconciliation database for use by the reconciliation functions.
 
-<a id="orca_shared.database"></a>
+<a id="orca_shared.reconciliation.shared_reconciliation.get_partition_name_from_bucket_name"></a>
 
-# orca\_shared.database
+#### get\_partition\_name\_from\_bucket\_name
+
+```python
+def get_partition_name_from_bucket_name(bucket_name: str)
+```
+
+Used for interacting with the reconcile_s3_object table.
+Provides a valid partition name given an Orca bucket name.
+Changes to this function may require a DB migration to recreate partitions.
+
+bucket_name: The name of the Orca bucket in AWS.
+
+<a id="orca_shared.reconciliation.shared_reconciliation.update_job"></a>
+
+#### update\_job
+
+```python
+def update_job(job_id: int, status: OrcaStatus, error_message: Optional[str],
+               engine: Engine) -> None
+```
+
+Updates the status entry for a job.
+
+**Arguments**:
+
+- `job_id` - The id of the job to associate info with.
+- `status` - The status to update the job with.
+- `error_message` - The error to post to the job, if any.
+- `engine` - The sqlalchemy engine to use for contacting the database.
+
+<a id="orca_shared.reconciliation.shared_reconciliation.internal_update_job"></a>
+
+#### internal\_update\_job
+
+```python
+@shared_db.retry_operational_error()
+def internal_update_job(job_id: int, status: OrcaStatus, last_update: datetime,
+                        end_time: Optional[datetime],
+                        error_message: Optional[str], engine: Engine) -> None
+```
+
+Updates the status entry for a job.
+
+**Arguments**:
+
+- `job_id` - The id of the job to associate info with.
+- `status` - The status to update the job with.
+- `last_update` - Datetime returned by datetime.now(timezone.utc)
+- `end_time` - Datetime the job ended, if applicable
+- `error_message` - The error to post to the job, if any.
+- `engine` - The sqlalchemy engine to use for contacting the database.
+
+<a id="orca_shared.database.test.unit_tests.test_shared_db"></a>
+
+# orca\_shared.database.test.unit\_tests.test\_shared\_db
+
+Name: test_shared_db.py
+
+Description: Runs unit tests for the shared_db.py library.
+
+<a id="orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries"></a>
+
+## TestSharedDatabaseLibraries Objects
+
+```python
+class TestSharedDatabaseLibraries(unittest.TestCase)
+```
+
+Runs unit tests for all of the functions in the shared_db library.
+
+<a id="orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.setUp"></a>
+
+#### setUp
+
+```python
+def setUp()
+```
+
+Perform initial setup for test.
+
+<a id="orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.tearDown"></a>
+
+#### tearDown
+
+```python
+def tearDown()
+```
+
+Perform tear down actions
+
+<a id="orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.test_get_configuration_happy_path"></a>
+
+#### test\_get\_configuration\_happy\_path
+
+```python
+@patch.dict(
+    os.environ,
+    {
+        "PREFIX": "orcatest",
+        "AWS_REGION": "us-west-2",
+    },
+    clear=True,
+)
+def test_get_configuration_happy_path()
+```
+
+Testing the rainbows and bunnies path of this call.
+
+<a id="orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.test_get_configuration_no_prefix"></a>
+
+#### test\_get\_configuration\_no\_prefix
+
+```python
+def test_get_configuration_no_prefix()
+```
+
+Validate an error is thrown if PREFIX is not set.
+
+<a id="orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.test_get_configuration_no_aws_region"></a>
+
+#### test\_get\_configuration\_no\_aws\_region
+
+```python
+@patch.dict(
+    os.environ,
+    {
+        "PREFIX": "orcatest",
+    },
+    clear=True,
+)
+def test_get_configuration_no_aws_region()
+```
+
+Validate an error is thrown if AWS_REGION is not set.
+
+<a id="orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.test_get_configuration_bad_secret"></a>
+
+#### test\_get\_configuration\_bad\_secret
+
+```python
+@patch.dict(
+    os.environ,
+    {
+        "PREFIX": "orcatest",
+        "AWS_REGION": "us-west-2",
+    },
+    clear=True,
+)
+def test_get_configuration_bad_secret()
+```
+
+Validates a secret is thrown if a secretsmanager ID is invalid.
+
+<a id="orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.test_get_admin_connection_database_values"></a>
+
+#### test\_get\_admin\_connection\_database\_values
+
+```python
+@patch.dict(
+    os.environ,
+    {
+        "PREFIX": "orcatest",
+        "AWS_REGION": "us-west-2",
+    },
+    clear=True,
+)
+@patch("orca_shared.database.shared_db._create_connection")
+def test_get_admin_connection_database_values(mock_connection: MagicMock)
+```
+
+Tests the function to make sure the correct database value is passed.
+
+<a id="orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.test_get_user_connection_database_values"></a>
+
+#### test\_get\_user\_connection\_database\_values
+
+```python
+@patch.dict(
+    os.environ,
+    {
+        "PREFIX": "orcatest",
+        "AWS_REGION": "us-west-2",
+    },
+    clear=True,
+)
+@patch("orca_shared.database.shared_db._create_connection")
+def test_get_user_connection_database_values(mock_connection: MagicMock)
+```
+
+Tests the function to make sure the correct database value is passed.
+
+<a id="orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.test__create_connection_call_values"></a>
+
+#### test\_\_create\_connection\_call\_values
+
+```python
+@patch.dict(
+    os.environ,
+    {
+        "PREFIX": "orcatest",
+        "AWS_REGION": "us-west-2",
+    },
+    clear=True,
+)
+@patch("orca_shared.database.shared_db.create_engine")
+def test__create_connection_call_values(mock_connection: MagicMock)
+```
+
+Tests the function to make sure the correct database value is passed.
+
+<a id="orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.test_retry_operational_error_non_operational_error_raises"></a>
+
+#### test\_retry\_operational\_error\_non\_operational\_error\_raises
+
+```python
+@patch("time.sleep")
+def test_retry_operational_error_non_operational_error_raises(
+        mock_sleep: MagicMock)
+```
+
+If the error raised is not an OperationalError, it should just be raised.
+
+<a id="orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.test_retry_operational_error_operational_error_retries_and_raises"></a>
+
+#### test\_retry\_operational\_error\_operational\_error\_retries\_and\_raises
+
+```python
+@patch("time.sleep")
+def test_retry_operational_error_operational_error_retries_and_raises(
+        mock_sleep: MagicMock)
+```
+
+If the error raised is an OperationalError, it should retry up to the maximum allowed.
 
 <a id="orca_shared.database.shared_db"></a>
 
@@ -64,25 +416,22 @@ Description: Shared library for database objects needed by the various libraries
 #### get\_configuration
 
 ```python
-def get_configuration() -> Dict[str, str]
+def get_configuration(db_connect_info_secret_arn: str) -> Dict[str, str]
 ```
 
 Create a dictionary of configuration values based on environment variables
-parameter store information and other items needed to create the database.
+information and other items needed to create the database.
 
 
 ```
 Environment Variables:
     PREFIX (str): Deployment prefix used to pull the proper AWS secret.
     AWS_REGION (str): AWS reserved runtime variable used to set boto3 client region.
-
-Parameter Store:
-    <prefix>-orca-db-login-secret (string): The json string containing all the db login info.
 ```
 
 **Arguments**:
 
-  None
+- `db_connect_info_secret_arn` _str_ - The secret ARN of the secret in AWS secretsmanager.
   
 
 **Returns**:
@@ -100,7 +449,8 @@ Parameter Store:
 #### get\_admin\_connection
 
 ```python
-def get_admin_connection(config: Dict[str, str], database: str = None) -> Engine
+def get_admin_connection(config: Dict[str, str],
+                         database: str = None) -> Engine
 ```
 
 Creates a connection engine to a database as a superuser.
@@ -136,7 +486,11 @@ database user.
 #### retry\_operational\_error
 
 ```python
-def retry_operational_error(max_retries: int = MAX_RETRIES, backoff_in_seconds: int = INITIAL_BACKOFF_IN_SECONDS, backoff_factor: int = BACKOFF_FACTOR) -> Callable[[Callable[[], RT]], Callable[[], RT]]
+def retry_operational_error(
+    max_retries: int = MAX_RETRIES,
+    backoff_in_seconds: int = INITIAL_BACKOFF_IN_SECONDS,
+    backoff_factor: int = BACKOFF_FACTOR
+) -> Callable[[Callable[[], RT]], Callable[[], RT]]
 ```
 
 Decorator takes arguments to adjust number of retries and backoff strategy.
@@ -146,6 +500,131 @@ Decorator takes arguments to adjust number of retries and backoff strategy.
 - `max_retries` _int_ - number of times to retry in case of failure.
 - `backoff_in_seconds` _int_ - Number of seconds to sleep the first time through.
 - `backoff_factor` _int_ - Value of the factor used for backoff.
+
+<a id="orca_shared.database"></a>
+
+# orca\_shared.database
+
+<a id="orca_shared.database.test"></a>
+
+# orca\_shared.database.test
+
+<a id="orca_shared.recovery.test.unit_tests.test_shared_recovery"></a>
+
+# orca\_shared.recovery.test.unit\_tests.test\_shared\_recovery
+
+Name: test_shared_recovery.py
+Description: Unit tests for shared_recovery.py shared library.
+
+<a id="orca_shared.recovery.test.unit_tests.test_shared_recovery.TestSharedRecoveryLibraries"></a>
+
+## TestSharedRecoveryLibraries Objects
+
+```python
+class TestSharedRecoveryLibraries(unittest.TestCase)
+```
+
+Unit tests for the shared_recovery library used by ORCA Recovery Lambdas.
+
+<a id="orca_shared.recovery.test.unit_tests.test_shared_recovery.TestSharedRecoveryLibraries.setUp"></a>
+
+#### setUp
+
+```python
+def setUp()
+```
+
+Perform initial setup for the tests.
+
+<a id="orca_shared.recovery.test.unit_tests.test_shared_recovery.TestSharedRecoveryLibraries.tearDown"></a>
+
+#### tearDown
+
+```python
+def tearDown()
+```
+
+Perform teardown for the tests
+
+<a id="orca_shared.recovery.test.unit_tests.test_shared_recovery.TestSharedRecoveryLibraries.test_post_entry_to_fifo_queue_no_errors"></a>
+
+#### test\_post\_entry\_to\_fifo\_queue\_no\_errors
+
+```python
+@patch.dict(
+    os.environ,
+    {"AWS_REGION": "us-west-2"},
+    clear=True,
+)
+def test_post_entry_to_fifo_queue_no_errors()
+```
+
+*Happy Path*
+Test that sending a message to SQS queue using post_entry_to_fifo_queue()
+function returns the same expected message.
+
+<a id="orca_shared.recovery.test.unit_tests.test_shared_recovery.TestSharedRecoveryLibraries.test_post_entry_to_standard_queue_happy_path"></a>
+
+#### test\_post\_entry\_to\_standard\_queue\_happy\_path
+
+```python
+@patch.dict(
+    os.environ,
+    {"AWS_REGION": "us-west-2"},
+    clear=True,
+)
+def test_post_entry_to_standard_queue_happy_path()
+```
+
+*Happy Path*
+Test that sending a message to SQS queue using post_entry_to_standard_queue()
+function returns the same expected message.
+
+<a id="orca_shared.recovery.test.unit_tests.test_shared_recovery.TestSharedRecoveryLibraries.test_create_status_for_job_no_errors"></a>
+
+#### test\_create\_status\_for\_job\_no\_errors
+
+```python
+@patch.dict(
+    os.environ,
+    {"AWS_REGION": "us-west-2"},
+    clear=True,
+)
+def test_create_status_for_job_no_errors()
+```
+
+*Happy Path*
+Tests that messages are correctly constructed by function and sent to
+the queue based on RequestMethod and Status values.
+
+<a id="orca_shared.recovery.test.unit_tests.test_shared_recovery.TestSharedRecoveryLibraries.test_update_status_for_file_no_errors"></a>
+
+#### test\_update\_status\_for\_file\_no\_errors
+
+```python
+@patch.dict(
+    os.environ,
+    {"AWS_REGION": "us-west-2"},
+    clear=True,
+)
+def test_update_status_for_file_no_errors()
+```
+
+*Happy Path*
+Test that sending a message to SQS queue using post_status_for_file
+function returns the same expected message.
+
+<a id="orca_shared.recovery.test.unit_tests.test_shared_recovery.TestSharedRecoveryLibraries.test_update_status_for_file_raise_errors_error_message"></a>
+
+#### test\_update\_status\_for\_file\_raise\_errors\_error\_message
+
+```python
+def test_update_status_for_file_raise_errors_error_message()
+```
+
+Tests that update_status_for_file will raise a ValueError
+if the error_message is either empty or None in case of status_id as FAILED.
+request_method is set as NEW since the logics only apply for it.
 
 <a id="orca_shared.recovery"></a>
 
@@ -204,7 +683,9 @@ Gets AWS region variable from the runtime environment variable.
 #### create\_status\_for\_job
 
 ```python
-def create_status_for_job(job_id: str, granule_id: str, archive_destination: str, files: List[Dict[str, Any]], db_queue_url: str)
+def create_status_for_job(job_id: str, granule_id: str,
+                          archive_destination: str,
+                          files: List[Dict[str, Any]], db_queue_url: str)
 ```
 
 Creates status information for a new job and its files, and posts to queue.
@@ -231,7 +712,9 @@ Creates status information for a new job and its files, and posts to queue.
 #### update\_status\_for\_file
 
 ```python
-def update_status_for_file(job_id: str, granule_id: str, filename: str, orca_status: OrcaStatus, error_message: Optional[str], db_queue_url: str)
+def update_status_for_file(job_id: str, granule_id: str, filename: str,
+                           orca_status: OrcaStatus,
+                           error_message: Optional[str], db_queue_url: str)
 ```
 
 Creates update information for a file's status entry, and posts to queue.
@@ -252,7 +735,9 @@ job_id + granule_id + filename does not exist.
 #### post\_entry\_to\_fifo\_queue
 
 ```python
-def post_entry_to_fifo_queue(new_data: Dict[str, Any], request_method: RequestMethod, db_queue_url: str) -> None
+def post_entry_to_fifo_queue(new_data: Dict[str, Any],
+                             request_method: RequestMethod,
+                             db_queue_url: str) -> None
 ```
 
 Posts messages to SQS FIFO queue.
@@ -272,7 +757,8 @@ Posts messages to SQS FIFO queue.
 #### post\_entry\_to\_standard\_queue
 
 ```python
-def post_entry_to_standard_queue(new_data: Dict[str, Any], recovery_queue_url: str) -> None
+def post_entry_to_standard_queue(new_data: Dict[str, Any],
+                                 recovery_queue_url: str) -> None
 ```
 
 Posts messages to the recovery standard SQS queue.

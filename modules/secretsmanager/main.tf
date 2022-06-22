@@ -13,7 +13,6 @@ data "aws_region" "current_region" {}
 
 ## Local Variables
 locals {
-  tags = merge(var.tags, { Deployment = var.prefix })
   iam_users    = data.aws_iam_users.orca_users.arns
   account_id   = data.aws_caller_identity.current_account.account_id
   region       = data.aws_region.current_region.name
@@ -32,7 +31,7 @@ resource "aws_secretsmanager_secret" "db_login" {
   kms_key_id              = aws_kms_key.orca_kms_key.arn
   name                    = "${var.prefix}-orca-db-login-secret"
   recovery_window_in_days = 0
-  tags                    = local.tags
+  tags                    = var.tags
 }
 
 #Reference to Cumulus secretsmanager: https://github.com/nasa/cumulus/blob/master/tf-modules/cumulus-rds-tf/main.tf#L33
@@ -48,6 +47,24 @@ resource "aws_secretsmanager_secret_version" "db_login" {
     user_database  = var.db_name
     host           = var.db_host_endpoint
     port           = "5432"
+  })
+}
+
+resource "aws_secretsmanager_secret" "s3_access_credentials" {
+  description             = "Allows postgres to access s3"
+  kms_key_id              = aws_kms_key.orca_kms_key.arn
+  name                    = "${var.prefix}-orca-s3-access-credentials"
+  recovery_window_in_days = 0
+  tags                    = var.tags
+}
+
+#Reference to Cumulus secretsmanager: https://github.com/nasa/cumulus/blob/master/tf-modules/cumulus-rds-tf/main.tf#L33
+resource "aws_secretsmanager_secret_version" "s3_access_credentials" {
+  secret_id  = aws_secretsmanager_secret.s3_access_credentials.id
+  depends_on = [aws_secretsmanager_secret.s3_access_credentials]
+  secret_string = jsonencode({
+    s3_access_key = var.s3_access_key
+    s3_secret_key = var.s3_secret_key
   })
 }
 

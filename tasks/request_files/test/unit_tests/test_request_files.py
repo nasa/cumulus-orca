@@ -9,21 +9,23 @@ import random
 import unittest
 import uuid
 from random import randint, uniform
-from unittest import mock
-from unittest.mock import patch, MagicMock, call, Mock
-
-from orca_shared.recovery import shared_recovery
-from orca_shared.recovery.shared_recovery import OrcaStatus
 from test.request_helpers import LambdaContextMock, create_handler_event
+from unittest import mock
+from unittest.mock import MagicMock, Mock, call, patch
 
 # noinspection PyPackageRequirements
 import fastjsonschema as fastjsonschema
 
 # noinspection PyPackageRequirements
 from botocore.exceptions import ClientError
+from orca_shared.recovery import shared_recovery
+from orca_shared.recovery.shared_recovery import OrcaStatus
 
 import request_files
 
+# Generating schema validators can take time, so do it once and reuse.
+with open("schemas/output.json", "r") as raw_schema:
+    _OUTPUT_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
 
 class TestRequestFiles(unittest.TestCase):
     """
@@ -41,12 +43,14 @@ class TestRequestFiles(unittest.TestCase):
         os.environ.pop(request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY, None)
         os.environ.pop(request_files.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY, None)
         os.environ.pop(request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY, None)
-        os.environ.pop(request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY, None)
+        os.environ.pop(request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY, None)
 
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
+    @patch("request_files.get_glacier_recovery_type")
     def test_task_happy_path(
         self,
+        mock_get_glacier_recovery_type: MagicMock,
         mock_inner_task: MagicMock,
         mock_get_default_glacier_bucket_name: MagicMock,
     ):
@@ -62,7 +66,7 @@ class TestRequestFiles(unittest.TestCase):
         }
         max_retries = randint(0, 99)  # nosec
         retry_sleep_secs = uniform(0, 99)  # nosec
-        retrieval_type = "Bulk"
+        recovery_type = "Bulk"
         exp_days = randint(0, 99)  # nosec
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
 
@@ -73,7 +77,7 @@ class TestRequestFiles(unittest.TestCase):
         os.environ[
             request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
         ] = retry_sleep_secs.__str__()
-        os.environ[request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY] = retrieval_type
+        os.environ[request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY] = recovery_type
         os.environ[
             request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
         ] = exp_days.__str__()
@@ -81,6 +85,7 @@ class TestRequestFiles(unittest.TestCase):
         request_files.task(mock_event, None)
 
         mock_get_default_glacier_bucket_name.assert_called_once_with(config)
+        mock_get_glacier_recovery_type.assert_called_once_with(config)
         mock_inner_task.assert_called_once_with(
             {
                 request_files.EVENT_CONFIG_KEY: {
@@ -90,15 +95,17 @@ class TestRequestFiles(unittest.TestCase):
             },
             max_retries,
             retry_sleep_secs,
-            retrieval_type,
+            mock_get_glacier_recovery_type(config),
             exp_days,
             db_queue_url,
         )
 
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
+    @patch("request_files.get_glacier_recovery_type")
     def test_task_default_for_missing_max_retries(
         self,
+        mock_get_glacier_recovery_type: MagicMock,
         mock_inner_task: MagicMock,
         mock_get_default_glacier_bucket_name: MagicMock,
     ):
@@ -113,7 +120,7 @@ class TestRequestFiles(unittest.TestCase):
             request_files.EVENT_CONFIG_KEY: config,
         }
         retry_sleep_secs = uniform(0, 99)  # nosec
-        retrieval_type = "Bulk"
+        recovery_type = "Bulk"
         exp_days = randint(0, 99)  # nosec
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
 
@@ -121,7 +128,7 @@ class TestRequestFiles(unittest.TestCase):
         os.environ[
             request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
         ] = retry_sleep_secs.__str__()
-        os.environ[request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY] = retrieval_type
+        os.environ[request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY] = recovery_type
         os.environ[
             request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
         ] = exp_days.__str__()
@@ -129,6 +136,7 @@ class TestRequestFiles(unittest.TestCase):
         request_files.task(mock_event, None)
 
         mock_get_default_glacier_bucket_name.assert_called_once_with(config)
+        mock_get_glacier_recovery_type.assert_called_once_with(config)
         mock_inner_task.assert_called_once_with(
             {
                 request_files.EVENT_CONFIG_KEY: {
@@ -138,15 +146,17 @@ class TestRequestFiles(unittest.TestCase):
             },
             request_files.DEFAULT_MAX_REQUEST_RETRIES,
             retry_sleep_secs,
-            retrieval_type,
+            mock_get_glacier_recovery_type(config),
             exp_days,
             db_queue_url,
         )
 
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
+    @patch("request_files.get_glacier_recovery_type")
     def test_task_default_for_missing_sleep_secs(
         self,
+        mock_get_glacier_recovery_type: MagicMock,
         mock_inner_task: MagicMock,
         mock_get_default_glacier_bucket_name: MagicMock,
     ):
@@ -161,7 +171,7 @@ class TestRequestFiles(unittest.TestCase):
             request_files.EVENT_CONFIG_KEY: config,
         }
         max_retries = randint(0, 99)  # nosec
-        retrieval_type = "Bulk"
+        recovery_type = "Bulk"
         exp_days = randint(0, 99)  # nosec
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
         os.environ[request_files.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = db_queue_url
@@ -169,7 +179,7 @@ class TestRequestFiles(unittest.TestCase):
         os.environ[
             request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY
         ] = max_retries.__str__()
-        os.environ[request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY] = retrieval_type
+        os.environ[request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY] = recovery_type
         os.environ[
             request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
         ] = exp_days.__str__()
@@ -177,6 +187,7 @@ class TestRequestFiles(unittest.TestCase):
         request_files.task(mock_event, None)
 
         mock_get_default_glacier_bucket_name.assert_called_once_with(config)
+        mock_get_glacier_recovery_type.assert_called_once_with(config)
         mock_inner_task.assert_called_once_with(
             {
                 request_files.EVENT_CONFIG_KEY: {
@@ -186,117 +197,17 @@ class TestRequestFiles(unittest.TestCase):
             },
             max_retries,
             request_files.DEFAULT_RESTORE_RETRY_SLEEP_SECS,
-            retrieval_type,
+            mock_get_glacier_recovery_type(config),
             exp_days,
             db_queue_url,
         )
-
+        
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
-    def test_task_default_for_missing_retrieval_type(
-        self,
-        mock_inner_task: MagicMock,
-        mock_get_default_glacier_bucket_name: MagicMock,
-    ):
-        """
-        If retrieval_type is missing, use default.
-        """
-        job_id = uuid.uuid4().__str__()
-        config = {
-            request_files.CONFIG_JOB_ID_KEY: job_id,
-        }
-        mock_event = {
-            request_files.EVENT_CONFIG_KEY: config,
-        }
-        max_retries = randint(0, 99)  # nosec
-        retry_sleep_secs = uniform(0, 99)  # nosec
-        exp_days = randint(0, 99)  # nosec
-        db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
-        os.environ[request_files.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = db_queue_url
-
-        os.environ[
-            request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY
-        ] = max_retries.__str__()
-        os.environ[
-            request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
-        ] = retry_sleep_secs.__str__()
-        os.environ[
-            request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
-        ] = exp_days.__str__()
-
-        request_files.task(mock_event, None)
-
-        mock_get_default_glacier_bucket_name.assert_called_once_with(config)
-        mock_inner_task.assert_called_once_with(
-            {
-                request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: mock_get_default_glacier_bucket_name.return_value,
-                    request_files.CONFIG_JOB_ID_KEY: job_id,
-                },
-            },
-            max_retries,
-            retry_sleep_secs,
-            request_files.DEFAULT_RESTORE_RETRIEVAL_TYPE,
-            exp_days,
-            db_queue_url,
-        )
-
-    @patch("request_files.get_default_glacier_bucket_name")
-    @patch("request_files.inner_task")
-    def test_task_default_for_bad_retrieval_type(
-        self,
-        mock_inner_task: MagicMock,
-        mock_get_default_glacier_bucket_name: MagicMock,
-    ):
-        """
-        If retrieval_type is invalid, use default.
-        """
-        job_id = uuid.uuid4().__str__()
-        config = {
-            request_files.CONFIG_JOB_ID_KEY: job_id,
-        }
-        mock_event = {
-            request_files.EVENT_CONFIG_KEY: config,
-        }
-        max_retries = randint(0, 99)  # nosec
-        retry_sleep_secs = uniform(0, 99)  # nosec
-        retrieval_type = "Nope"
-        exp_days = randint(0, 99)  # nosec
-        db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
-
-        os.environ[request_files.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = db_queue_url
-        os.environ[
-            request_files.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY
-        ] = max_retries.__str__()
-        os.environ[
-            request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
-        ] = retry_sleep_secs.__str__()
-        os.environ[request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY] = retrieval_type
-        os.environ[
-            request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
-        ] = exp_days.__str__()
-
-        request_files.task(mock_event, None)
-
-        mock_get_default_glacier_bucket_name.assert_called_once_with(config)
-        mock_inner_task.assert_called_once_with(
-            {
-                request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: mock_get_default_glacier_bucket_name.return_value,
-                    request_files.CONFIG_JOB_ID_KEY: job_id,
-                },
-            },
-            max_retries,
-            retry_sleep_secs,
-            request_files.DEFAULT_RESTORE_RETRIEVAL_TYPE,
-            exp_days,
-            db_queue_url,
-        )
-
-    @patch("request_files.get_default_glacier_bucket_name")
-    @patch("request_files.inner_task")
+    @patch("request_files.get_glacier_recovery_type")
     def test_task_default_for_missing_exp_days(
         self,
+        mock_get_glacier_recovery_type: MagicMock,
         mock_inner_task: MagicMock,
         mock_get_default_glacier_bucket_name: MagicMock,
     ):
@@ -312,7 +223,7 @@ class TestRequestFiles(unittest.TestCase):
         }
         max_retries = randint(0, 99)  # nosec
         retry_sleep_secs = uniform(0, 99)  # nosec
-        retrieval_type = "Bulk"
+        recovery_type = "Bulk"
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
 
         os.environ[request_files.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = db_queue_url
@@ -322,11 +233,12 @@ class TestRequestFiles(unittest.TestCase):
         os.environ[
             request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
         ] = retry_sleep_secs.__str__()
-        os.environ[request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY] = retrieval_type
+        os.environ[request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY] = recovery_type
 
         request_files.task(mock_event, None)
 
         mock_get_default_glacier_bucket_name.assert_called_once_with(config)
+        mock_get_glacier_recovery_type.assert_called_once_with(config)
         mock_inner_task.assert_called_once_with(
             {
                 request_files.EVENT_CONFIG_KEY: {
@@ -336,15 +248,17 @@ class TestRequestFiles(unittest.TestCase):
             },
             max_retries,
             retry_sleep_secs,
-            retrieval_type,
+            mock_get_glacier_recovery_type(config),
             request_files.DEFAULT_RESTORE_EXPIRE_DAYS,
             db_queue_url,
         )
 
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
+    @patch("request_files.get_glacier_recovery_type")
     def test_task_job_id_missing_generates(
         self,
+        mock_get_glacier_recovery_type: MagicMock,
         mock_inner_task: MagicMock,
         mock_get_default_glacier_bucket_name: MagicMock,
     ):
@@ -359,7 +273,7 @@ class TestRequestFiles(unittest.TestCase):
         }
         max_retries = randint(0, 99)  # nosec
         retry_sleep_secs = uniform(0, 99)  # nosec
-        retrieval_type = "Bulk"
+        recovery_type = "Bulk"
         exp_days = randint(0, 99)  # nosec
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
         job_id = uuid.uuid4()
@@ -371,7 +285,7 @@ class TestRequestFiles(unittest.TestCase):
         os.environ[
             request_files.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
         ] = retry_sleep_secs.__str__()
-        os.environ[request_files.OS_ENVIRON_RESTORE_RETRIEVAL_TYPE_KEY] = retrieval_type
+        os.environ[request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY] = recovery_type
         os.environ[
             request_files.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
         ] = exp_days.__str__()
@@ -380,6 +294,7 @@ class TestRequestFiles(unittest.TestCase):
             request_files.task(mock_event, None)
 
         mock_get_default_glacier_bucket_name.assert_called_once_with(config)
+        mock_get_glacier_recovery_type.assert_called_once_with(config)
         mock_inner_task.assert_called_once_with(
             {
                 request_files.EVENT_CONFIG_KEY: {
@@ -389,7 +304,7 @@ class TestRequestFiles(unittest.TestCase):
             },
             max_retries,
             retry_sleep_secs,
-            retrieval_type,
+            mock_get_glacier_recovery_type(config),
             exp_days,
             db_queue_url,
         )
@@ -412,7 +327,7 @@ class TestRequestFiles(unittest.TestCase):
         Basic path with multiple granules.
         """
         glacier_bucket = uuid.uuid4().__str__()
-        collection_multipart_chunksize_mb = random.randint(1, 10000)
+        collection_multipart_chunksize_mb = random.randint(1, 10000)  # nosec
         file_key_0 = uuid.uuid4().__str__()
         file_key_1 = uuid.uuid4().__str__()
         file_dest_bucket_0 = uuid.uuid4().__str__()
@@ -490,7 +405,7 @@ class TestRequestFiles(unittest.TestCase):
         }
         max_retries = randint(0, 99)  # nosec
         retry_sleep_secs = randint(0, 99)  # nosec
-        retrieval_type = uuid.uuid4().__str__()
+        recovery_type = uuid.uuid4().__str__()
         restore_expire_days = randint(0, 99)  # nosec
         mock_s3_cli = mock_boto3_client("s3")
 
@@ -500,7 +415,7 @@ class TestRequestFiles(unittest.TestCase):
             event,
             max_retries,
             retry_sleep_secs,
-            retrieval_type,
+            recovery_type,
             restore_expire_days,
             db_queue_url,
         )
@@ -538,7 +453,7 @@ class TestRequestFiles(unittest.TestCase):
                     restore_expire_days,
                     max_retries,
                     retry_sleep_secs,
-                    retrieval_type,
+                    recovery_type,
                     job_id,
                     db_queue_url,
                 ),
@@ -549,7 +464,7 @@ class TestRequestFiles(unittest.TestCase):
                     restore_expire_days,
                     max_retries,
                     retry_sleep_secs,
-                    retrieval_type,
+                    recovery_type,
                     job_id,
                     db_queue_url,
                 ),
@@ -582,7 +497,7 @@ class TestRequestFiles(unittest.TestCase):
         If posting to status DB Queue fails, raise error.
         """
         glacier_bucket = uuid.uuid4().__str__()
-        collection_multipart_chunksize_mb = random.randint(1, 10000)
+        collection_multipart_chunksize_mb = random.randint(1, 10000)  # nosec
         file_key_0 = uuid.uuid4().__str__()
         file_key_1 = uuid.uuid4().__str__()
         file_dest_bucket_0 = uuid.uuid4().__str__()
@@ -660,7 +575,7 @@ class TestRequestFiles(unittest.TestCase):
         }
         max_retries = randint(0, 99)  # nosec
         retry_sleep_secs = randint(0, 99)  # nosec
-        retrieval_type = uuid.uuid4().__str__()
+        recovery_type = uuid.uuid4().__str__()
         restore_expire_days = randint(0, 99)  # nosec
         mock_s3_cli = mock_boto3_client("s3")
 
@@ -673,7 +588,7 @@ class TestRequestFiles(unittest.TestCase):
                 event,
                 max_retries,
                 retry_sleep_secs,
-                retrieval_type,
+                recovery_type,
                 restore_expire_days,
                 db_queue_url,
             )
@@ -727,7 +642,7 @@ class TestRequestFiles(unittest.TestCase):
         A return of 'false' from object_exists should ignore the file and continue.
         """
         glacier_bucket = uuid.uuid4().__str__()
-        collection_multipart_chunksize_mb = random.randint(1, 10000)
+        collection_multipart_chunksize_mb = random.randint(1, 10000)  # nosec
         file_key_0 = uuid.uuid4().__str__()
         file_key_1 = uuid.uuid4().__str__()
         missing_file_key = uuid.uuid4().__str__()
@@ -813,7 +728,7 @@ class TestRequestFiles(unittest.TestCase):
         }
         max_retries = randint(0, 99)  # nosec
         retry_sleep_secs = randint(0, 99)  # nosec
-        retrieval_type = uuid.uuid4().__str__()
+        recovery_type = uuid.uuid4().__str__()
         restore_expire_days = randint(0, 99)  # nosec
         mock_s3_cli = mock_boto3_client("s3")
 
@@ -829,7 +744,7 @@ class TestRequestFiles(unittest.TestCase):
             event,
             max_retries,
             retry_sleep_secs,
-            retrieval_type,
+            recovery_type,
             restore_expire_days,
             db_queue_url,
         )
@@ -879,7 +794,7 @@ class TestRequestFiles(unittest.TestCase):
             restore_expire_days,
             max_retries,
             retry_sleep_secs,
-            retrieval_type,
+            recovery_type,
             job_id,
             db_queue_url,
         )
@@ -958,6 +873,72 @@ class TestRequestFiles(unittest.TestCase):
                 {request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: None}
             )
         self.assertEqual("'ORCA_DEFAULT_BUCKET'", str(cm.exception))
+    @patch.dict(
+        os.environ,
+        {
+            request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY: "Bulk"
+        },
+        clear=True,
+    )
+    def test_get_glacier_recovery_type_valid_config_overrides(self):
+        """
+        Returns the value in config if valid, overriding other values.
+        """
+        config = {
+            request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: "Standard"
+        }
+        result = request_files.get_glacier_recovery_type(config)
+        self.assertEqual(result, config[request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY])
+
+    @patch("cumulus_logger.CumulusLogger.error")
+    def test_get_glacier_recovery_type_invalid_config_raises_valueerror(self, mock_logger_error: MagicMock):
+        """
+        Raises ValueError if invalid config value.
+        """
+        config = {
+            request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: "Nope"
+        }
+        with self.assertRaises(ValueError) as ve:
+            request_files.get_glacier_recovery_type(config)
+        self.assertEqual(ve.exception.args[0], f"Invalid restore type value in configuration {request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} key.")
+        mock_logger_error.assert_called_once_with(f"Invalid restore type value of {config[request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY]} found in the configuration {request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} key.")
+    
+    @patch.dict(
+        os.environ,
+        {
+            request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY: "Bulk"
+        },
+        clear=True,
+    )
+    def test_get_glacier_recovery_type_env_variable_valid(self):
+        """
+        Returns the value in env variable if valid and config is None.
+        """
+        config = {
+            request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: None
+        }
+        result = request_files.get_glacier_recovery_type(config)
+        self.assertEqual(result, os.environ[request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY])
+
+    @patch("cumulus_logger.CumulusLogger.error")
+    @patch.dict(
+        os.environ,
+        {
+            request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY: "Nope"
+        },
+        clear=True,
+    )
+    def test_get_glacier_recovery_type_env_variable_invalid_raises_valueerror(self, mock_logger_error: MagicMock):
+        """
+        Returns ValueError if the value in env variable if invalid and config is None.
+        """
+        config = {
+            request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: None
+        }
+        with self.assertRaises(ValueError) as ve:
+            request_files.get_glacier_recovery_type(config)
+        self.assertEqual(ve.exception.args[0], f"Invalid restore type value in environment variable {request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY}")
+        mock_logger_error.assert_called_once_with(f"Invalid restore type value of {os.environ[request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY]} found in environment variable {request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY}.")
 
     @patch("time.sleep")
     @patch("request_files.restore_object")
@@ -968,7 +949,7 @@ class TestRequestFiles(unittest.TestCase):
         max_retries = randint(10, 999)  # nosec
         glacier_bucket = uuid.uuid4().__str__()
         retry_sleep_secs = randint(0, 99)  # nosec
-        retrieval_type = uuid.uuid4().__str__()
+        recovery_type = uuid.uuid4().__str__()
         restore_expire_days = randint(0, 99)  # nosec
         granule_id = uuid.uuid4().__str__()
         file_name_0 = uuid.uuid4().__str__()
@@ -1005,7 +986,7 @@ class TestRequestFiles(unittest.TestCase):
             restore_expire_days,
             max_retries,
             retry_sleep_secs,
-            retrieval_type,
+            recovery_type,
             job_id,
             db_queue_url,
         )
@@ -1030,7 +1011,7 @@ class TestRequestFiles(unittest.TestCase):
                     glacier_bucket,
                     1,
                     job_id,
-                    retrieval_type,
+                    recovery_type,
                 ),
                 call(
                     mock_s3,
@@ -1039,7 +1020,7 @@ class TestRequestFiles(unittest.TestCase):
                     glacier_bucket,
                     1,
                     job_id,
-                    retrieval_type,
+                    recovery_type,
                 ),
             ]
         )
@@ -1055,7 +1036,7 @@ class TestRequestFiles(unittest.TestCase):
         max_retries = 5
         glacier_bucket = uuid.uuid4().__str__()
         retry_sleep_secs = randint(0, 99)  # nosec
-        retrieval_type = uuid.uuid4().__str__()
+        recovery_type = uuid.uuid4().__str__()
         restore_expire_days = randint(0, 99)  # nosec
         granule_id = uuid.uuid4().__str__()
         file_name_0 = uuid.uuid4().__str__()
@@ -1085,7 +1066,7 @@ class TestRequestFiles(unittest.TestCase):
             restore_expire_days,
             max_retries,
             retry_sleep_secs,
-            retrieval_type,
+            recovery_type,
             job_id,
             db_queue_url,
         )
@@ -1104,7 +1085,7 @@ class TestRequestFiles(unittest.TestCase):
                     glacier_bucket,
                     1,
                     job_id,
-                    retrieval_type,
+                    recovery_type,
                 ),
                 call(
                     mock_s3,
@@ -1113,7 +1094,7 @@ class TestRequestFiles(unittest.TestCase):
                     glacier_bucket,
                     2,
                     job_id,
-                    retrieval_type,
+                    recovery_type,
                 ),
             ]
         )
@@ -1133,10 +1114,10 @@ class TestRequestFiles(unittest.TestCase):
         mock_update_status_for_file: MagicMock,
     ):
         mock_s3 = Mock()
-        max_retries = randint(3, 20)
+        max_retries = randint(3, 20)  # nosec
         glacier_bucket = uuid.uuid4().__str__()
         retry_sleep_secs = randint(0, 99)  # nosec
-        retrieval_type = uuid.uuid4().__str__()
+        recovery_type = uuid.uuid4().__str__()
         restore_expire_days = randint(0, 99)  # nosec
         granule_id = uuid.uuid4().__str__()
         file_name_0 = uuid.uuid4().__str__()
@@ -1168,7 +1149,7 @@ class TestRequestFiles(unittest.TestCase):
                 restore_expire_days,
                 max_retries,
                 retry_sleep_secs,
-                retrieval_type,
+                recovery_type,
                 job_id,
                 db_queue_url,
             )
@@ -1194,7 +1175,7 @@ class TestRequestFiles(unittest.TestCase):
                     glacier_bucket,
                     1,
                     job_id,
-                    retrieval_type,
+                    recovery_type,
                 ),
                 call(
                     mock_s3,
@@ -1203,7 +1184,7 @@ class TestRequestFiles(unittest.TestCase):
                     glacier_bucket,
                     2,
                     job_id,
-                    retrieval_type,
+                    recovery_type,
                 ),
                 call(
                     mock_s3,
@@ -1212,7 +1193,7 @@ class TestRequestFiles(unittest.TestCase):
                     glacier_bucket,
                     3,
                     job_id,
-                    retrieval_type,
+                    recovery_type,
                 ),
             ]
         )
@@ -1256,10 +1237,10 @@ class TestRequestFiles(unittest.TestCase):
         If a file expended all attempts for recovery, and posting to status DB expended all attempts, raise error.
         """
         mock_s3 = Mock()
-        max_retries = randint(3, 20)
+        max_retries = randint(3, 20)  # nosec
         glacier_bucket = uuid.uuid4().__str__()
         retry_sleep_secs = randint(0, 99)  # nosec
-        retrieval_type = uuid.uuid4().__str__()
+        recovery_type = uuid.uuid4().__str__()
         restore_expire_days = randint(0, 99)  # nosec
         granule_id = uuid.uuid4().__str__()
         file_name_0 = uuid.uuid4().__str__()
@@ -1294,7 +1275,7 @@ class TestRequestFiles(unittest.TestCase):
                 restore_expire_days,
                 max_retries,
                 retry_sleep_secs,
-                retrieval_type,
+                recovery_type,
                 job_id,
                 db_queue_url,
             )
@@ -1320,7 +1301,7 @@ class TestRequestFiles(unittest.TestCase):
                     glacier_bucket,
                     1,
                     job_id,
-                    retrieval_type,
+                    recovery_type,
                 ),
                 call(
                     mock_s3,
@@ -1329,7 +1310,7 @@ class TestRequestFiles(unittest.TestCase):
                     glacier_bucket,
                     2,
                     job_id,
-                    retrieval_type,
+                    recovery_type,
                 ),
                 call(
                     mock_s3,
@@ -1338,7 +1319,7 @@ class TestRequestFiles(unittest.TestCase):
                     glacier_bucket,
                     3,
                     job_id,
-                    retrieval_type,
+                    recovery_type,
                 ),
             ]
         )
@@ -1410,7 +1391,7 @@ class TestRequestFiles(unittest.TestCase):
         glacier_bucket = uuid.uuid4().__str__()
         key = uuid.uuid4().__str__()
         restore_expire_days = randint(0, 99)  # nosec
-        retrieval_type = uuid.uuid4().__str__()
+        recovery_type = uuid.uuid4().__str__()
         mock_s3_cli = Mock()
         mock_s3_cli.restore_object.return_value = {
             "ResponseMetadata": {"HTTPStatusCode": 202}
@@ -1423,7 +1404,7 @@ class TestRequestFiles(unittest.TestCase):
             glacier_bucket,
             randint(0, 99),  # nosec
             uuid.uuid4().__str__(),
-            retrieval_type,
+            recovery_type,
         )
 
         mock_s3_cli.restore_object.assert_called_once_with(
@@ -1431,7 +1412,7 @@ class TestRequestFiles(unittest.TestCase):
             Key=key,
             RestoreRequest={
                 "Days": restore_expire_days,
-                "GlacierJobParameters": {"Tier": retrieval_type},
+                "GlacierJobParameters": {"Tier": recovery_type},
             },
         )
 
@@ -1442,7 +1423,7 @@ class TestRequestFiles(unittest.TestCase):
         glacier_bucket = uuid.uuid4().__str__()
         key = uuid.uuid4().__str__()
         restore_expire_days = randint(0, 99)  # nosec
-        retrieval_type = uuid.uuid4().__str__()
+        recovery_type = uuid.uuid4().__str__()
         expected_error = ClientError({}, "")
         mock_s3_cli = Mock()
         mock_s3_cli.restore_object.side_effect = expected_error
@@ -1455,7 +1436,7 @@ class TestRequestFiles(unittest.TestCase):
                 glacier_bucket,
                 1,
                 job_id,
-                retrieval_type,
+                recovery_type,
             )
             self.fail("Error not Raised.")
         except ClientError as error:
@@ -1465,7 +1446,7 @@ class TestRequestFiles(unittest.TestCase):
                 Key=key,
                 RestoreRequest={
                     "Days": restore_expire_days,
-                    "GlacierJobParameters": {"Tier": retrieval_type},
+                    "GlacierJobParameters": {"Tier": recovery_type},
                 },
             )
 
@@ -1479,7 +1460,7 @@ class TestRequestFiles(unittest.TestCase):
         glacier_bucket = uuid.uuid4().__str__()
         key = uuid.uuid4().__str__()
         restore_expire_days = randint(0, 99)  # nosec
-        retrieval_type = uuid.uuid4().__str__()
+        recovery_type = uuid.uuid4().__str__()
         mock_s3_cli = Mock()
         mock_s3_cli.restore_object.return_value = {
             "ResponseMetadata": {"HTTPStatusCode": 200}
@@ -1493,7 +1474,7 @@ class TestRequestFiles(unittest.TestCase):
                 glacier_bucket,
                 2,
                 uuid.uuid4().__str__(),
-                retrieval_type,
+                recovery_type,
             )
         self.assertEqual(
             f"An error occurred (HTTPStatus: 200) when calling the restore_object operation: "
@@ -1517,7 +1498,8 @@ class TestRequestFiles(unittest.TestCase):
             request_files.EVENT_CONFIG_KEY: {
                 request_files.CONFIG_JOB_ID_KEY: None,
                 request_files.CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: 750,
-                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "lp-sndbx-cumulus-orca"
+                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "lp-sndbx-cumulus-orca",
+                request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: None
             },
         }
         mock_task.return_value = {
@@ -1578,6 +1560,7 @@ class TestRequestFiles(unittest.TestCase):
             "task_config": {
                 request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "my-dr-fake-glacier-bucket",
                 request_files.CONFIG_JOB_ID_KEY: job_id,
+                request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: "Standard"
             },
         }
 
@@ -1679,11 +1662,7 @@ class TestRequestFiles(unittest.TestCase):
         }
 
         # Validate the output is correct
-        with open("schemas/output.json", "r") as raw_schema:
-            schema = json.loads(raw_schema.read())
-
-        validate = fastjsonschema.compile(schema)
-        validate(result_value)
+        _OUTPUT_VALIDATE(result_value)
 
         # Check the values of the result less the times since those will never match
         for granule in result_value["granules"]:

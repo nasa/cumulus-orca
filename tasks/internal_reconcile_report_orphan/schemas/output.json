@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/internal_reconcile_report_orphan/schemas/output.json",
+  "title": "internal_reconcile_report_orphan Lambda Output",
+  "description": "The output for the internal_reconcile_report_orphan Lambda.",
+  "type": "object",
+  "required": [
+    "jobId",
+    "anotherPage",
+    "orphans"
+  ],
+  "properties": {
+    "jobId": {
+      "type": "integer",
+      "description": "The unique ID of the reconciliation job."
+    },
+    "anotherPage": {
+      "description": "Indicates if more results can be retrieved on another page.",
+      "type": "boolean"
+    },
+    "orphans": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "keyPath",
+          "s3Etag",
+          "s3FileLastUpdate",
+          "s3SizeInBytes",
+          "storageClass"
+        ],
+        "properties": {
+          "keyPath": {
+            "type": "string",
+            "description": "Key path and filename of the object in S3 bucket."
+          },
+          "s3Etag": {
+            "type": "string",
+            "description": "etag of the object in S3 bucket."
+          },
+          "s3FileLastUpdate": {
+            "type": "integer",
+            "description": "The time, in milliseconds since 1 January 1970 UTC, of last update of the object in S3 bucket."
+          },
+          "s3SizeInBytes": {
+            "type": "integer",
+            "description": "Size in bytes of the object in S3 bucket."
+          },
+          "storageClass": {
+            "type": "string",
+            "description": "AWS storage class the object is in the S3 bucket."
+          }
+        }
+      }
+    }
+  }
+}
