@@ -8,7 +8,7 @@ export AWS_DEFAULT_REGION=$bamboo_AWS_DEFAULT_REGION
 #remove old files from bamboo as they throw error
 rm *.tf
 #deploy the S3 buckets and dynamoDB table first
-git clone --branch feature/ORCA-test-bamboo --single-branch https://github.com/nasa/cumulus-orca.git && cd integration_test
+git checkout feature/ORCA-test-bamboo && cd integration_test
 #replace prefix with bamboo prefix variable
 sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' buckets.tf.template > buckets.tf
 
