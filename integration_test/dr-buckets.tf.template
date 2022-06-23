@@ -1,5 +1,5 @@
-resource "aws_s3_bucket" "tf-state" {
-  bucket = "PREFIX-tf-state"
+resource "aws_s3_bucket" "dr-tf-state" {
+  bucket = "PREFIX-dr-tf-state"
   force_destroy = true
   tags = {
     Deployment = "PREFIX"
@@ -43,7 +43,7 @@ data "aws_iam_policy_document" "orca-reports-policy-json" {
         "s3:PutObjectAcl",
         "s3:PutBucketNotification"
     ]
-    resources = ["arn:aws:s3:::PREFIX-*"]
+    resources = ["*"]
   }
   statement {
     principals {
@@ -88,7 +88,7 @@ data "aws_iam_policy_document" "orca-primary-policy-json" {
     actions = [
         "s3:*"
     ]
-    resources = ["arn:aws:s3:::PREFIX-*"]
+    resources = ["*"]
   }
 }
 resource "aws_s3_bucket_policy" "orca-primary-policy" {

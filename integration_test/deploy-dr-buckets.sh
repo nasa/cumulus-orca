@@ -11,7 +11,7 @@ git clone --branch develop --single-branch https://github.com/nasa/cumulus-orca.
 #replace prefix with bamboo prefix variable
 sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' dr-buckets.tf.template > dr-buckets.tf
 
-if ! aws s3 cp s3://$bamboo_PREFIX-tf-state/dr-buckets-tf/terraform.tfstate .;then
+if ! aws s3 cp s3://$bamboo_PREFIX-dr-tf-state/dr-buckets-tf/terraform.tfstate .;then
     echo "terraform state file not present in S3. Creating the buckets in DR account."
 else
     echo "Terraform state file found in S3 bucket. Using S3 remote backend"
@@ -24,4 +24,4 @@ terraform apply \
   -input=false
 
 #copy terraform state file to the created tf-state bucket
-aws s3 cp terraform.tfstate s3://$bamboo_PREFIX-tf-state/dr-buckets-tf/terraform.tfstate
+aws s3 cp terraform.tfstate s3://$bamboo_PREFIX-dr-tf-state/dr-buckets-tf/terraform.tfstate
