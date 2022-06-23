@@ -1,0 +1,97 @@
+resource "aws_s3_bucket" "dr-tf-state" {
+  bucket = "PREFIX-dr-tf-state"
+  force_destroy = true
+  tags = {
+    Deployment = "PREFIX"
+    Application = "ORCA"
+  }
+}
+resource "aws_s3_bucket" "orca-archive-worm" {
+  bucket = "PREFIX-orca-archive-worm"
+  force_destroy = true
+  tags = {
+    Deployment = "PREFIX"
+    Application = "ORCA"
+  }
+}
+resource "aws_s3_bucket_versioning" "orca-archive-worm-versioning" {
+  bucket = aws_s3_bucket.orca-archive-worm.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+resource "aws_s3_bucket" "orca-reports" {
+  bucket = "PREFIX-orca-reports"
+  depends_on = [aws_s3_bucket.orca-archive-worm]
+  force_destroy = true
+  tags = {
+    Deployment = "PREFIX"
+    Application = "ORCA"
+  }
+}
+resource "aws_s3_bucket_lifecycle_configuration" "orca-reports-lifecycle-rule" {
+  bucket = aws_s3_bucket.orca-reports.id
+  rule {
+    id = "delete objects after 30 days"
+    status = "Enabled"
+    expiration {
+      days = 30
+    }
+  }
+}
+# data "aws_iam_policy_document" "orca-reports-policy-json" {
+#   statement {
+#     principals {
+#       type        = "AWS"
+#       identifiers = ["arn:aws:iam::236859827343:root"]
+#     }
+#     actions = [
+#         "s3:GetObject*",
+#         "s3:GetBucket*",
+#         "s3:ListBucket",
+#         "s3:PutObject",
+#         "s3:PutObjectAcl",
+#         "s3:PutBucketNotification"
+#     ]
+#     resources = ["*"]
+#   }
+#   statement {
+#     principals {
+#       type        = "Service"
+#       identifiers = ["s3.amazonaws.com"]
+#     }
+#     actions = [
+#         "s3:PutObject"
+#     ]
+#     resources = ["arn:aws:s3:::orca-archive-worm/*"]
+#   }
+# }
+
+# resource "aws_s3_bucket_policy" "orca-reports-policy" {
+#   bucket = aws_s3_bucket.orca-reports.id
+#   policy = data.aws_iam_policy_document.orca-reports-policy-json.json
+# }
+resource "aws_s3_bucket" "orca-primary" {
+  bucket = "PREFIX-orca-primary"
+  force_destroy = true
+  tags = {
+    Deployment = "PREFIX"
+    Application = "ORCA"
+  }
+}
+# data "aws_iam_policy_document" "orca-primary-policy-json" {
+#  statement {
+#    principals {
+#      type        = "AWS"
+ #     identifiers = ["arn:aws:iam::236859827343:root"]
+#     }
+#     actions = [
+#         "s3:*"
+#     ]
+#     resources = ["arn:aws:s3:::*"]
+#   }
+# }
+# resource "aws_s3_bucket_policy" "orca-primary-policy" {
+#   bucket = aws_s3_bucket.orca-primary.id
+#   policy = data.aws_iam_policy_document.orca-primary-policy-json.json
+# }
