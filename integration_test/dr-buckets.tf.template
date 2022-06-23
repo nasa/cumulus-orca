@@ -55,6 +55,7 @@ data "aws_iam_policy_document" "orca-reports-policy-json" {
     ]
     resources = ["${aws_s3_bucket.orca-archive-worm.arn}/*"]
   }
+}
 
 resource "aws_s3_bucket_policy" "orca-reports-policy" {
   bucket = aws_s3_bucket.orca-reports.id
