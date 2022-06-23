@@ -90,6 +90,38 @@ data "aws_iam_policy_document" "orca-reports-policy-json" {
         ]
       }
     }
+  statement {
+    principals {
+      type        = "Service"
+      identifiers = ["s3.amazonaws.com"]
+      }
+      actions = [
+                  "s3:PutObject"
+      ]
+      resources = [
+                  "arn:aws:s3:::PREFIX-orca-reports",
+                  "arn:aws:s3:::PREFIX-orca-reports/*"
+                  ]
+      condition {
+        test     = "StringEquals"
+        variable = "s3:x-amz-acl"
+        values = [
+          "bucket-owner-full-control"
+        ]
+      }
+      condition {
+        test     = "StringEquals"
+        variable = "aws:SourceAccount"
+        values   = ["782417781503"]
+      }
+      condition {
+        test = "ArnLike"
+        variable = "aws:SourceArn"
+        values = [
+          "arn:aws:s3:::PREFIX-orca-archive-worm"
+        ]
+      }
+    }
 }
   
 resource "aws_s3_bucket_policy" "orca-reports-policy" {
