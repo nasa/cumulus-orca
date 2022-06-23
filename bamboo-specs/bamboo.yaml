@@ -22,6 +22,11 @@ stages:
     jobs:
     - Report Status
 
+- Deploy DR ORCA buckets:
+    manual: true
+    final: false
+    jobs:
+    - Deploy DR ORCA buckets
 #deploy RDS cluster for integration test
 #TODO ORCA-462: move to a different stage or even to a new plan for better maintenance.
 - Deploy Dev RDS Stack:
@@ -189,7 +194,25 @@ Report Status:
         set -e
         ./bin/set_status.sh success ${bamboo.resultsUrl} "Build Success"
       description: Report Success to GitHub
-
+Deploy DR ORCA buckets:
+  key: DDROB
+  other:
+    clean-working-dir: true
+  docker:
+    image: maven.earthdata.nasa.gov/cumulus_orca
+    volumes:
+      ${bamboo.working.directory}: ${bamboo.working.directory}
+      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+  tasks:
+  - checkout:
+      force-clean-build: 'true'
+      description: Checkout Default Repository
+  - script:
+      interpreter: SHELL
+      scripts:
+      - |-
+        #!/bin/bash
+        bash integration_test/deploy-dr-buckets.sh
 #job for deploying cumulus and orca
 Deploy RDS cluster:
   key: DRC
