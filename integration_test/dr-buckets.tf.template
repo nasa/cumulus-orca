@@ -58,18 +58,39 @@ data "aws_iam_policy_document" "orca-reports-policy-json" {
         "arn:aws:s3:::PREFIX-orca-reports/*"
         ]
   }
-#   statement {
-#     principals {
-#       type        = "Service"
-#       identifiers = ["s3.amazonaws.com"]
-#     }
-#     actions = [
-#         "s3:PutObject"
-#     ]
-#     resources = ["arn:aws:s3:::orca-archive-worm/*"]
-#   }
-}
-
+  statement {
+    principals {
+      type        = "Service"
+      identifiers = ["s3.amazonaws.com"]
+      }
+      actions = [
+                  "s3:PutObject"
+      ]
+      resources = [
+                  "arn:aws:s3:::PREFIX-orca-reports",
+                  "arn:aws:s3:::PREFIX-orca-reports/*"
+                  ]
+      condition {
+        test     = "StringEquals"
+        variable = "s3:x-amz-acl"
+        values = [
+          "bucket-owner-full-control"
+        ]
+      }
+      condition {
+        test     = "StringEquals"
+        variable = "aws:SourceAccount"
+        values   = ["782417781503"]
+      }
+      condition {
+        test = "ArnLike"
+        variable = "aws:SourceArn"
+        values = [
+          "arn:aws:s3:::PREFIX-*"
+        ]
+      }
+    }
+  
 resource "aws_s3_bucket_policy" "orca-reports-policy" {
   bucket = aws_s3_bucket.orca-reports.id
   policy = data.aws_iam_policy_document.orca-reports-policy-json.json
