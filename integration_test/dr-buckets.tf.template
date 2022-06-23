@@ -53,7 +53,7 @@ data "aws_iam_policy_document" "orca-reports-policy-json" {
     actions = [
         "s3:PutObject"
     ]
-    resources = ["${aws_s3_bucket.orca-archive-worm.arn}/*"]
+    resources = ["arn:aws:s3:::orca-archive-worm/*"]
   }
 }
 
@@ -88,7 +88,7 @@ data "aws_iam_policy_document" "orca-primary-policy-json" {
     actions = [
         "s3:*"
     ]
-    resources = ["*"]
+    resources = ["arn:aws:s3:::*"]
   }
 }
 resource "aws_s3_bucket_policy" "orca-primary-policy" {
