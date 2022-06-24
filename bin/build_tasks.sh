@@ -17,20 +17,22 @@ if [ ! -d "awslambda-psycopg2" ]; then
 fi
 cd ../../
 
-failure=0
-for TASK in $(ls -d tasks/* | egrep -v "package")
-do
-  echo "Building ${TASK}"
-  cd ${TASK}
+function build_task() {
+  echo "Building $1"
+  cd $1
   bin/build.sh
   return_code=$?
-  cd -
-
-  if [ $return_code -ne 0 ]; then
-    echo "ERROR: Building of $TASK failed."
-    failure=1
+  if [ $return_code != 0 ]; then
+    echo "ERROR: Building of $1 failed."
   fi
-done
+  return $return_code
+}
+export -f build_task
 
+task_dirs=$(ls -d tasks/* | egrep -v "package")
 
-exit $failure
+parallel -X --halt now,fail=1 build_task ::: $task_dirs
+
+process_return_code=$?
+if [ $process_return_code -ne 0 ]; then
+  exit 1  # process_return_code indicates how many tasks failed. Flatten to 1 if any number failed.
