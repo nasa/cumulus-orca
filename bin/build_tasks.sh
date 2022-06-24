@@ -36,3 +36,5 @@ parallel -X --halt now,fail=1 build_task ::: $task_dirs
 process_return_code=$?
 if [ $process_return_code -ne 0 ]; then
   exit 1  # process_return_code indicates how many tasks failed. Flatten to 1 if any number failed.
+fi
+exit 0
