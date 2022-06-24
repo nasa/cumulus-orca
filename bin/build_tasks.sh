@@ -31,10 +31,12 @@ export -f build_task
 
 task_dirs=$(ls -d tasks/* | egrep -v "package")
 
-parallel -X --halt now,fail=1 build_task ::: $task_dirs
+echo "Building in parallel..."
+parallel --jobs 0 -n 1 -X --halt now,fail=1 build_task ::: $task_dirs
 
 process_return_code=$?
 if [ $process_return_code -ne 0 ]; then
+  echo "ERROR: process failed with code $process_return_code."
   exit 1  # process_return_code indicates how many tasks failed. Flatten to 1 if any number failed.
 fi
 exit 0

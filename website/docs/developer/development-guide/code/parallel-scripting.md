@@ -18,18 +18,19 @@ Standard output for each process will be buffered, and shown all at once when th
 After all processes exit, execution of the main script will continue.
 `$?` will contain how many tasks exited with a non-0 exit code.
 
+- `--jobs 0` indicates that as many processes as possible should run at once.
 - `-n 1` limits the number of parameters per process to 1.
 - `-X` distributes the parameters among the new processes.
-- `--halt now,fail=1` is used to halt all ongoing processes once 1 process exits with a non-0 exit code.
+- `--halt now,fail=1` is used to halt all ongoing processes once 1 process exits with a non-0 exit code. Modifies `$?` to return the failing process' exit code instead of how many processes failed.
   :::tip
   Since the exit code does not indicate which process failed, logging for individual processes should be robust.
   :::
 
 ```bash
-parallel -n 1 -X --halt now,fail=1 function_name ::: $parameter_array
+parallel --jobs 0 -n 1 -X --halt now,fail=1 function_name ::: $parameter_array
 process_return_code=$?
 if [ $process_return_code -ne 0 ]; then
-  echo "ERROR: $process_return_code processes failed."
+  echo "ERROR: process failed with code $process_return_code."
   failure=1
 fi
 ```
