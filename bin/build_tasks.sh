@@ -12,18 +12,23 @@ echo "pwd `pwd`"
 echo "Pulling awslambda-psycopg2 in preparation for build"
 mkdir -p tasks/package
 cd tasks/package
-if [ ! -d "awslambda-psycopg2" ]; then
+if [ ! -d "awslambda-psycopg2" ]
+then
   git clone https://github.com/jkehler/awslambda-psycopg2.git
 fi
 cd ../../
 
 function build_task() {
+  echo
   echo "Building $1"
+  echo
+  
   cd $1
   bin/build.sh
   return_code=$?
-  if [ $return_code != 0 ]; then
-    echo "ERROR: Building of $1 failed."
+  if [ $return_code != 0 ]
+  then
+    echo "ERROR: Building of $1 failed with code $return_code"
   fi
   return $return_code
 }
@@ -35,8 +40,12 @@ echo "Building in parallel..."
 parallel --jobs 0 -n 1 -X --halt now,fail=1 build_task ::: $task_dirs
 
 process_return_code=$?
-if [ $process_return_code -ne 0 ]; then
+echo
+if [ $process_return_code -ne 0 ]
+then
   echo "ERROR: process failed with code $process_return_code."
-  exit 1  # process_return_code indicates how many tasks failed. Flatten to 1 if any number failed.
+  exit 1  # process_return_code may indicate how many tasks failed. Flatten to 1 if any number failed.
+else
+  echo "All builds succeeded."
 fi
 exit 0
