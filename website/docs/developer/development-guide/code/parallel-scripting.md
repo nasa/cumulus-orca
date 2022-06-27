@@ -10,6 +10,7 @@ For example, in cases with network calls such as package installation.
 
 ## Installation
 
+For development, install via [brew](https://formulae.brew.sh/formula/parallel).
 
 ## Scripting Basics
 
@@ -18,6 +19,7 @@ Standard output for each process will be buffered, and shown all at once when th
 After all processes exit, execution of the main script will continue.
 `$?` will contain how many tasks exited with a non-0 exit code.
 
+#### Demo
 - `--jobs 0` indicates that as many processes as possible should run at once.
 - `-n 1` limits the number of parameters per process to 1.
 - `-X` distributes the parameters among the new processes.
@@ -42,7 +44,11 @@ Some alternatives were researched, but found to be more limited.
 If a function is run with a `&` suffix, it will start in a new process.
 The process ID can then be captured, and used to track progress and exit codes.
 
+#### Cons
+- Requires extra code for managing processes.
 - Logging is not grouped by function invocation.
+
+#### Demo
 ```bash
 declare -A pids
 for param in $parameter_array
@@ -66,9 +72,12 @@ done
 ### [Xargs](https://www.man7.org/linux/man-pages/man1/xargs.1.html)
 Xargs has several useful performance optimization parameters, but is more difficult to use.
 
+#### Cons
 - Logging is not grouped by function invocation.
 - Parameters are passed in via a single string, split on a separator character, which is rather brittle.
 - Exit codes are not passed out to main process.
+
+#### Demo
 ```bash
 echo "${parameter_array[@]}" | xargs -n 1 -P 0 bash -c 'function_name "$@"' _
 ```
