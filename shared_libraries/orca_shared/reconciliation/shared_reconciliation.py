@@ -13,7 +13,6 @@ from typing import Optional
 # Third party libraries
 from sqlalchemy import text
 from sqlalchemy.future import Engine
-from sqlalchemy.sql.elements import TextClause
 
 from orca_shared.database import shared_db
 
@@ -115,7 +114,7 @@ def internal_update_job(
         raise
 
 
-def update_job_sql() -> TextClause:
+def update_job_sql() -> text:
     return text(
         """
         UPDATE

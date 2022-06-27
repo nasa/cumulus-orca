@@ -5,14 +5,13 @@ Description: All of the SQL used for creating and migrating the ORCA schema to v
 """
 # Imports
 from sqlalchemy import text
-from sqlalchemy.sql.elements import TextClause
 
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA inventory metadata tables
 # ----------------------------------------------------------------------------
 
 
-def providers_table_sql() -> TextClause:
+def providers_table_sql() -> text:
     """
     Full SQL for creating the providers table.
 
@@ -42,7 +41,7 @@ def providers_table_sql() -> TextClause:
     )
 
 
-def collections_table_sql() -> TextClause:
+def collections_table_sql() -> text:
     """
     Full SQL for creating the collections table.
 
@@ -75,7 +74,7 @@ def collections_table_sql() -> TextClause:
     )
 
 
-def granules_table_sql() -> TextClause:
+def granules_table_sql() -> text:
     """
     Full SQL for creating the catalog granules table.
 
@@ -131,7 +130,7 @@ def granules_table_sql() -> TextClause:
     )
 
 
-def files_table_sql() -> TextClause:
+def files_table_sql() -> text:
     """
     Full SQL for creating the catalog files table.
 
@@ -198,7 +197,7 @@ def files_table_sql() -> TextClause:
     )
 
 
-def schema_versions_data_sql() -> TextClause:
+def schema_versions_data_sql() -> text:
     """
     Data for the schema_versions table. Inserts the current schema
     version into the table.

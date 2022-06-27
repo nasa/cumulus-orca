@@ -56,7 +56,7 @@ Deletes all records for the given job older than internal_reconciliation_expirat
 #### delete\_catalog\_mismatches\_older\_than\_x\_days\_sql
 
 ```python
-def delete_catalog_mismatches_older_than_x_days_sql() -> TextClause
+def delete_catalog_mismatches_older_than_x_days_sql() -> text
 ```
 
 SQL for deleting from reconcile_catalog_mismatch_report entries older than a certain date.
@@ -66,7 +66,7 @@ SQL for deleting from reconcile_catalog_mismatch_report entries older than a cer
 #### delete\_catalog\_orphans\_older\_than\_x\_days\_sql
 
 ```python
-def delete_catalog_orphans_older_than_x_days_sql() -> TextClause
+def delete_catalog_orphans_older_than_x_days_sql() -> text
 ```
 
 SQL for deleting from reconcile_orphan_report entries older than a certain date.
@@ -76,7 +76,7 @@ SQL for deleting from reconcile_orphan_report entries older than a certain date.
 #### delete\_catalog\_phantoms\_older\_than\_x\_days\_sql
 
 ```python
-def delete_catalog_phantoms_older_than_x_days_sql() -> TextClause
+def delete_catalog_phantoms_older_than_x_days_sql() -> text
 ```
 
 SQL for deleting from reconcile_phantom_report entries older than a certain date.
@@ -86,7 +86,7 @@ SQL for deleting from reconcile_phantom_report entries older than a certain date
 #### delete\_catalog\_s3\_objects\_older\_than\_x\_days\_sql
 
 ```python
-def delete_catalog_s3_objects_older_than_x_days_sql() -> TextClause
+def delete_catalog_s3_objects_older_than_x_days_sql() -> text
 ```
 
 SQL for deleting from reconcile_s3_object entries older than a certain date.
@@ -96,7 +96,7 @@ SQL for deleting from reconcile_s3_object entries older than a certain date.
 #### delete\_jobs\_older\_than\_x\_days\_sql
 
 ```python
-def delete_jobs_older_than_x_days_sql() -> TextClause
+def delete_jobs_older_than_x_days_sql() -> text
 ```
 
 SQL for deleting from reconcile_job entries older than a certain date.

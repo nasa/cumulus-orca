@@ -7,13 +7,12 @@ Description: All of the SQL used for creating and migrating the ORCA schema to v
 import re
 
 from sqlalchemy import text
-from sqlalchemy.sql.elements import TextClause
 
 
 # ----------------------------------------------------------------------------
 # Version table information
 # ----------------------------------------------------------------------------
-def schema_versions_data_sql() -> TextClause:
+def schema_versions_data_sql() -> text:
     """
     Data for the schema_versions table. Inserts the current schema
     version into the table.
@@ -41,7 +40,7 @@ def schema_versions_data_sql() -> TextClause:
 # ----------------------------------------------------------------------------
 # Database extension
 # ----------------------------------------------------------------------------
-def create_extension() -> TextClause:
+def create_extension() -> text:
     """
     Full SQL for creating the aws_s3 extension used for COPYING S3 reporting data
     from a CSV file in an AWS bucket into the database.
@@ -61,7 +60,7 @@ def create_extension() -> TextClause:
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA internal reconciliation tables
 # ----------------------------------------------------------------------------
-def reconcile_status_table_sql() -> TextClause:
+def reconcile_status_table_sql() -> text:
     """
     Full SQL for creating the reconcile_status table.
 
@@ -102,7 +101,7 @@ def reconcile_status_table_sql() -> TextClause:
     )
 
 
-def reconcile_job_table_sql() -> TextClause:
+def reconcile_job_table_sql() -> text:
     """
     Full SQL for creating the reconcile_job table.
 
@@ -149,7 +148,7 @@ def reconcile_job_table_sql() -> TextClause:
     )
 
 
-def reconcile_s3_object_table_sql() -> TextClause:
+def reconcile_s3_object_table_sql() -> text:
     """
     Full SQL for creating the reconcile_s3_object table.
 
@@ -195,7 +194,7 @@ def reconcile_s3_object_table_sql() -> TextClause:
     )
 
 
-def reconcile_s3_object_partition_sql(partition_name: str) -> TextClause:
+def reconcile_s3_object_partition_sql(partition_name: str) -> text:
     """
     Full SQL for creating the reconcile_s3_object partition table. Requires the
     user to pass the orca_archive_location value for the partition in the form
@@ -232,7 +231,7 @@ def reconcile_s3_object_partition_sql(partition_name: str) -> TextClause:
     )
 
 
-def reconcile_catalog_mismatch_report_table_sql() -> TextClause:
+def reconcile_catalog_mismatch_report_table_sql() -> text:
     """
     Full SQL for creating the reconcile_catalog_mismatch_report table.
 
@@ -296,7 +295,7 @@ def reconcile_catalog_mismatch_report_table_sql() -> TextClause:
     )
 
 
-def reconcile_orphan_report_table_sql() -> TextClause:
+def reconcile_orphan_report_table_sql() -> text:
     """
     Full SQL for creating the reconcile_orphan_report table.
 
@@ -339,7 +338,7 @@ def reconcile_orphan_report_table_sql() -> TextClause:
     )
 
 
-def reconcile_phantom_report_table_sql() -> TextClause:
+def reconcile_phantom_report_table_sql() -> text:
     """
     Full SQL for creating the reconcile_phantom_report table.
 

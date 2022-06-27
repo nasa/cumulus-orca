@@ -234,7 +234,7 @@ def update_status_for_file(
         raise
 
 
-def create_job_sql():
+def create_job_sql() -> text:
     return text(
         """
         INSERT INTO recovery_job
@@ -244,7 +244,7 @@ def create_job_sql():
     )
 
 
-def create_file_sql():
+def create_file_sql() -> text:
     return text(
         """
         INSERT INTO recovery_file
@@ -256,7 +256,7 @@ def create_file_sql():
     )
 
 
-def update_file_sql():
+def update_file_sql() -> text:
     return text(
         """
         UPDATE recovery_file
@@ -266,7 +266,7 @@ def update_file_sql():
     )
 
 
-def update_job_sql():
+def update_job_sql() -> text:
     return text(
         """
         with granule_status as (

@@ -8,20 +8,19 @@ import re
 
 from orca_shared.database.shared_db import logger
 from sqlalchemy import text
-from sqlalchemy.sql.elements import TextClause
 
 
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating the Database
 # ----------------------------------------------------------------------------
-def commit_sql() -> TextClause:
+def commit_sql() -> text:
     """
     SQL for a simple 'commit' to exit the current transaction.
     """
     return text("commit")
 
 
-def app_database_sql(db_name: str, admin_username: str) -> TextClause:
+def app_database_sql(db_name: str, admin_username: str) -> text:
     """
     Full SQL for creating the ORCA application database.
 
@@ -38,7 +37,7 @@ def app_database_sql(db_name: str, admin_username: str) -> TextClause:
     )
 
 
-def app_database_comment_sql(db_name: str) -> TextClause:
+def app_database_comment_sql(db_name: str) -> text:
     """
     SQL for adding a documentation comment to the database.
     Cannot be merged with DB creation due to SQLAlchemy limitations.
@@ -54,7 +53,7 @@ def app_database_comment_sql(db_name: str) -> TextClause:
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA schema, roles, and users
 # ----------------------------------------------------------------------------
-def dbo_role_sql(db_name: str, admin_username: str) -> TextClause:
+def dbo_role_sql(db_name: str, admin_username: str) -> text:
     """
     Full SQL for creating the ORCA dbo role that owns the ORCA schema and
     objects.
@@ -89,7 +88,7 @@ def dbo_role_sql(db_name: str, admin_username: str) -> TextClause:
     )
 
 
-def app_role_sql(db_name: str) -> TextClause:
+def app_role_sql(db_name: str) -> text:
     """
     Full SQL for creating the ORCA application role that has all the privileges
     to interact with the ORCA schema.
@@ -122,7 +121,7 @@ def app_role_sql(db_name: str) -> TextClause:
     )
 
 
-def orca_schema_sql() -> TextClause:
+def orca_schema_sql() -> text:
     """
     Full SQL for creating the ORCA application schema that contains all the
     ORCA tables and objects. This SQL must be used after the dbo_role_sql and
@@ -170,7 +169,7 @@ def orca_schema_sql() -> TextClause:
     )
 
 
-def app_user_sql(user_name: str, user_password: str) -> TextClause:
+def app_user_sql(user_name: str, user_password: str) -> text:
     """
     Full SQL for creating the ORCA application database user. Must be created
     after the app_role_sql and orca_schema_sql.
@@ -221,7 +220,7 @@ def app_user_sql(user_name: str, user_password: str) -> TextClause:
     )
 
 
-def create_extension() -> TextClause:
+def create_extension() -> text:
     """
     Full SQL for creating the aws_s3 extension used for COPYING S3 reporting data
     from a CSV file in an AWS bucket into the database.
@@ -241,7 +240,7 @@ def create_extension() -> TextClause:
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA general metadata tables
 # ----------------------------------------------------------------------------
-def schema_versions_table_sql() -> TextClause:
+def schema_versions_table_sql() -> text:
     """
     Full SQL for creating the schema_versions table.
 
@@ -282,7 +281,7 @@ def schema_versions_table_sql() -> TextClause:
     )
 
 
-def schema_versions_data_sql() -> TextClause:
+def schema_versions_data_sql() -> text:
     """
     Data for the schema_versions table. Inserts the current schema
     version into the table.
@@ -310,7 +309,7 @@ def schema_versions_data_sql() -> TextClause:
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA recovery tables
 # ----------------------------------------------------------------------------
-def recovery_status_table_sql() -> TextClause:
+def recovery_status_table_sql() -> text:
     """
     Full SQL for creating the recovery_status table. This SQL must be run
     before any of the other recovery table sql.
@@ -343,7 +342,7 @@ def recovery_status_table_sql() -> TextClause:
     )
 
 
-def recovery_status_data_sql() -> TextClause:
+def recovery_status_data_sql() -> text:
     """
     Data for the recovery_status table. Inserts the current status values into
     the table.
@@ -366,7 +365,7 @@ def recovery_status_data_sql() -> TextClause:
     )
 
 
-def recovery_job_table_sql() -> TextClause:
+def recovery_job_table_sql() -> text:
     """
     Full SQL for creating the recovery_job table. This SQL must be run
     before the other recovery_file table sql and after the recovery_status
@@ -414,7 +413,7 @@ def recovery_job_table_sql() -> TextClause:
     )
 
 
-def recovery_file_table_sql() -> TextClause:
+def recovery_file_table_sql() -> text:
     """
     Full SQL for creating the recovery_file table. This SQL must be run
     after the recovery_job table sql to maintain key dependencies.
@@ -481,7 +480,7 @@ def recovery_file_table_sql() -> TextClause:
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA inventory metadata tables
 # ----------------------------------------------------------------------------
-def providers_table_sql() -> TextClause:
+def providers_table_sql() -> text:
     """
     Full SQL for creating the providers table.
 
@@ -511,7 +510,7 @@ def providers_table_sql() -> TextClause:
     )
 
 
-def collections_table_sql() -> TextClause:
+def collections_table_sql() -> text:
     """
     Full SQL for creating the collections table.
 
@@ -544,7 +543,7 @@ def collections_table_sql() -> TextClause:
     )
 
 
-def granules_table_sql() -> TextClause:
+def granules_table_sql() -> text:
     """
     Full SQL for creating the catalog granules table.
 
@@ -600,7 +599,7 @@ def granules_table_sql() -> TextClause:
     )
 
 
-def files_table_sql() -> TextClause:
+def files_table_sql() -> text:
     """
     Full SQL for creating the catalog files table.
 
@@ -670,7 +669,7 @@ def files_table_sql() -> TextClause:
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA internal reconciliation tables
 # ----------------------------------------------------------------------------
-def reconcile_status_table_sql() -> TextClause:
+def reconcile_status_table_sql() -> text:
     """
     Full SQL for creating the reconcile_status table.
 
@@ -711,7 +710,7 @@ def reconcile_status_table_sql() -> TextClause:
     )
 
 
-def reconcile_job_table_sql() -> TextClause:
+def reconcile_job_table_sql() -> text:
     """
     Full SQL for creating the reconcile_job table.
 
@@ -760,7 +759,7 @@ def reconcile_job_table_sql() -> TextClause:
     )
 
 
-def reconcile_s3_object_table_sql() -> TextClause:
+def reconcile_s3_object_table_sql() -> text:
     """
     Full SQL for creating the reconcile_s3_object table.
 
@@ -806,7 +805,7 @@ def reconcile_s3_object_table_sql() -> TextClause:
     )
 
 
-def reconcile_s3_object_partition_sql(partition_name: str) -> TextClause:
+def reconcile_s3_object_partition_sql(partition_name: str) -> text:
     """
     Full SQL for creating the reconcile_s3_object partition table. Requires the
     user to pass the orca_archive_location value for the partition in the form
@@ -843,7 +842,7 @@ def reconcile_s3_object_partition_sql(partition_name: str) -> TextClause:
     )
 
 
-def reconcile_catalog_mismatch_report_table_sql() -> TextClause:
+def reconcile_catalog_mismatch_report_table_sql() -> text:
     """
     Full SQL for creating the reconcile_catalog_mismatch_report table.
 
@@ -907,7 +906,7 @@ def reconcile_catalog_mismatch_report_table_sql() -> TextClause:
     )
 
 
-def reconcile_orphan_report_table_sql() -> TextClause:
+def reconcile_orphan_report_table_sql() -> text:
     """
     Full SQL for creating the reconcile_orphan_report table.
 
@@ -950,7 +949,7 @@ def reconcile_orphan_report_table_sql() -> TextClause:
     )
 
 
-def reconcile_phantom_report_table_sql() -> TextClause:
+def reconcile_phantom_report_table_sql() -> text:
     """
     Full SQL for creating the reconcile_phantom_report table.
 
