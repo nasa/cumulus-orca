@@ -21,8 +21,8 @@ PHANTOMS_GRANULE_ID_KEY = "granuleId"
 PHANTOMS_FILENAME_KEY = "filename"
 PHANTOMS_KEY_PATH_KEY = "keyPath"
 PHANTOMS_ORCA_ETAG_KEY = "orcaEtag"
-PHANTOMS_ORCA_LAST_UPDATE_KEY = "orcaLastUpdate"
-PHANTOMS_ORCA_SIZE_KEY = "orcaSize"
+PHANTOMS_ORCA_LAST_UPDATE_KEY = "orcaGranuleLastUpdate"
+PHANTOMS_ORCA_SIZE_KEY = "orcaSizeInBytes"
 
 LOGGER = CumulusLogger()
 

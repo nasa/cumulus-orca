@@ -30,8 +30,8 @@
           "cumulusArchiveLocation",
           "orcaEtag",
           "s3Etag",
-          "orcaLastUpdate",
-          "s3LastUpdate",
+          "orcaGranuleLastUpdate",
+          "s3FileLastUpdate",
           "orcaSizeInBytes",
           "s3SizeInBytes",
           "discrepancyType",
@@ -66,11 +66,11 @@
             "type": "string",
             "description": "etag of the object as reported in the S3 bucket"
           },
-          "orcaLastUpdate": {
+          "orcaGranuleLastUpdate": {
             "type": "integer",
             "description": "The time, in milliseconds since 1 January 1970 UTC, that information was updated in the ORCA catalog."
           },
-          "s3LastUpdate": {
+          "s3FileLastUpdate": {
             "type": "integer",
             "description": "The time, in milliseconds since 1 January 1970 UTC, that information was updated in the S3 bucket."
           },

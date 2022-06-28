@@ -61,6 +61,7 @@ def send_record_to_database(record: Dict[str, Any], engine: Engine) -> None:
     request_method = RequestMethod(
         record["messageAttributes"]["RequestMethod"]["stringValue"]
     )
+    LOGGER.debug(f"Processing request method {request_method} with record {values}")
     if request_method == RequestMethod.NEW_JOB:
         _NEW_JOB_VALIDATE(values)
         create_status_for_job_and_files(

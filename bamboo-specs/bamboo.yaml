@@ -191,7 +191,7 @@ Release ORCA Documentation:
   key: ROD
   description: Releases ORCA Documentation to nasa.github.io/cumulus-orca
   docker:
-    image: node:16.13.1
+    image: maven.earthdata.nasa.gov/cumulus_orca
     volumes:
       ${bamboo.working.directory}: ${bamboo.working.directory}
       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
@@ -286,7 +286,7 @@ Deploy RDS cluster:
       scripts:
       - |-
         #!/bin/bash
-        bash bin/deployment-rds.sh
+        bash integration_test/deployment-rds.sh
 
 #job for deploying cumulus and orca
 Deploy cumulus and orca:
@@ -309,7 +309,7 @@ Deploy cumulus and orca:
       scripts:
       - |-
         #!/bin/bash
-        bash bin/deployment-cumulus-orca.sh
+        bash integration_test/deployment-cumulus-orca.sh
 variables:
   DEPLOYMENT: sandbox
   ORCA_VERSION: 4.0.3
