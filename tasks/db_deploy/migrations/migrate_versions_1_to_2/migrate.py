@@ -21,9 +21,6 @@ def migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> 
     Returns:
         None
     """
-    # Get the admin engine to the app database
-    admin_app_connection = get_admin_connection(config, config["user_database"])
-
     if config["user_username"] is None or len(config["user_username"]) == 0:
         logger.critical("Username must be non-empty.")
         raise Exception("Username must be non-empty.")
@@ -34,6 +31,9 @@ def migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> 
     if config["user_password"] is None or len(config["user_password"]) < 12:
         logger.critical("User password must be at least 12 characters long.")
         raise Exception("User password must be at least 12 characters long.")
+
+    # Get the admin engine to the app database
+    admin_app_connection = get_admin_connection(config, config["user_database"])
 
     # Create all the new objects, users, roles, etc.
     with admin_app_connection.connect() as connection:

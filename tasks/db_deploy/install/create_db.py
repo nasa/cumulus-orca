@@ -287,11 +287,6 @@ def create_internal_reconciliation_objects(
     # Create partitioned tables for the reconcile_s3_object table
     for bucket_name in orca_buckets:
         _partition_name = get_partition_name_from_bucket_name(bucket_name)
-        try:
-            if not re.match("^[\w+]+$", _partition_name):  # noqa: W605
-                raise ValueError(f"Table name {_partition_name} is invalid.")
-        except TypeError:
-            raise ValueError("Table name must be a string and cannot be None.")
         logger.debug(
             f"Creating partition table {_partition_name} for reconcile_s3_object ..."
         )

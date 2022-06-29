@@ -5,7 +5,7 @@ Description: Runs unit tests for the create_db.py library.
 """
 
 import unittest
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, Mock, call, patch
 
 from install import create_db
 
@@ -27,8 +27,8 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
             "host": "aws.postgresrds.host",
             "port": 5432,
             "user_database": "user_db",
-            "user_password": "user123",
-            "user_username": "user",
+            "user_password": "pass56789012",
+            "user_username": "user56789012",
         }
 
         self.mock_connection = MagicMock()
@@ -120,7 +120,7 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
     @patch("install.create_db.sql.orca_schema_sql")
     @patch("install.create_db.sql.app_role_sql")
     @patch("install.create_db.sql.dbo_role_sql")
-    def test_create_app_schema_user_role_users_happy_path(
+    def test_create_app_schema_role_users_happy_path(
         self,
         mock_dbo_role_sql: MagicMock,
         mock_app_role_sql: MagicMock,
@@ -144,7 +144,7 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         mock_app_role_sql.assert_called_once()
         mock_schema_sql.assert_called_once()
         mock_user_sql.assert_called_once_with(
-            self.config["user_username"], self.config["user_password"]
+            self.config["user_username"],
         )
         mock_extension_sql.assert_called_once()
 
@@ -154,9 +154,40 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
             call.execute(mock_dbo_role_sql()),
             call.execute(mock_app_role_sql()),
             call.execute(mock_schema_sql()),
-            call.execute(mock_user_sql(self.config["user_password"])),
+            call.execute(mock_user_sql(self.config["user_password"]),
+                         [{'user_name': self.config["user_username"], 'user_password': self.config["user_password"]}]),
             call.execute(mock_extension_sql()),
         ])
+
+    def test_create_app_schema_role_users_exceptions(self) -> None:
+        """
+        Tests that an exception is thrown if the password is not set or is not
+        a minimum of 12 characters,
+        or if user_name is not set or is over 64 characters.
+        """
+        bad_passwords = [None, "", "abc123", "1234567890", "AbCdEfG1234"]
+        message = "User password must be at least 12 characters long."
+
+        for bad_password in bad_passwords:
+            with self.subTest(bad_password=bad_password):
+                with self.assertRaises(Exception) as cm:
+                    create_db.create_app_schema_role_users(Mock(), "orcauser", bad_password, Mock(), Mock())
+                self.assertEqual(str(cm.exception), message)
+
+        bad_user_names = [None, ""]
+        message = "Username must be non-empty."
+        for bad_user_name in bad_user_names:
+            with self.subTest(bad_user_name=bad_user_name):
+                with self.assertRaises(Exception) as cm:
+                    create_db.create_app_schema_role_users(Mock(), bad_user_name, "AbCdEfG12345", Mock(), Mock())
+                self.assertEqual(str(cm.exception), message)
+
+        message = "Username must be less than 64 characters."
+        bad_user_name = "".join("a" * 64)
+        with self.subTest(bad_user_name=bad_user_name) as cm:
+            with self.assertRaises(Exception) as cm:
+                create_db.create_app_schema_role_users(Mock(), bad_user_name, "AbCdEfG12345", Mock(), Mock())
+            self.assertEqual(str(cm.exception), message)
 
     @patch("install.create_db.sql.text")
     def test_set_search_path_and_role(self, mock_text: MagicMock):
@@ -273,7 +304,7 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
     @patch("install.create_db.sql.reconcile_phantom_report_table_sql")
     @patch("install.create_db.sql.reconcile_s3_object_partition_sql")
     @patch("install.create_db.sql.create_extension")
-    def test_create_internal_reconciliation_objects(
+    def test_create_internal_reconciliation_objects_happy_path(
         self,
         mock_extension: MagicMock,
         mock_reconcile_s3_object_partition_table: MagicMock,
