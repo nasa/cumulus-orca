@@ -116,7 +116,7 @@ def query_db(
         return granules
 
 
-def get_catalog_sql() -> text:
+def get_catalog_sql() -> text:  # pragma: no cover
     return text(
         # todo: Optimize for large data sets. https://bugs.earthdata.nasa.gov/browse/ORCA-286
         """

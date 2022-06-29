@@ -1,18 +1,16 @@
 """
 Name: migrate_sql.py
 
-Description: All of the SQL used for creating and migrating the ORCA schema to version 5.
+Description: All the SQL used for creating and migrating the ORCA schema to version 5.
 """
 # Imports
-import re
-
 from sqlalchemy import text
 
 
 # ----------------------------------------------------------------------------
 # Version table information
 # ----------------------------------------------------------------------------
-def schema_versions_data_sql() -> text:
+def schema_versions_data_sql() -> text:  # pragma: no cover
     """
     Data for the schema_versions table. Inserts the current schema
     version into the table.
@@ -40,7 +38,7 @@ def schema_versions_data_sql() -> text:
 # ----------------------------------------------------------------------------
 # Database extension
 # ----------------------------------------------------------------------------
-def create_extension() -> text:
+def create_extension() -> text:  # pragma: no cover
     """
     Full SQL for creating the aws_s3 extension used for COPYING S3 reporting data
     from a CSV file in an AWS bucket into the database.
@@ -60,7 +58,7 @@ def create_extension() -> text:
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA internal reconciliation tables
 # ----------------------------------------------------------------------------
-def reconcile_status_table_sql() -> text:
+def reconcile_status_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the reconcile_status table.
 
@@ -101,7 +99,7 @@ def reconcile_status_table_sql() -> text:
     )
 
 
-def reconcile_job_table_sql() -> text:
+def reconcile_job_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the reconcile_job table.
 
@@ -148,7 +146,7 @@ def reconcile_job_table_sql() -> text:
     )
 
 
-def reconcile_s3_object_table_sql() -> text:
+def reconcile_s3_object_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the reconcile_s3_object table.
 
@@ -206,32 +204,26 @@ def reconcile_s3_object_partition_sql(partition_name: str) -> text:
     Returns:
         (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_s3_object partition table.
     """
-    try:
-        if not re.match("^[\w+]+$", partition_name):  # noqa: W605
-            raise ValueError(f"Table name {partition_name} is invalid.")
-    except TypeError:
-        raise ValueError("Table name must be a string and cannot be None.")
-
     return text(
         f"""
             -- Create orca_archive_location_:bucket_name
-            CREATE TABLE {partition_name} PARTITION OF reconcile_s3_object
+            CREATE TABLE "{partition_name}" PARTITION OF reconcile_s3_object
             (
-              CONSTRAINT PK_{partition_name}
+              CONSTRAINT "PK_{partition_name}"
                 PRIMARY KEY(key_path)
-            , CONSTRAINT FK_reconcile_job_{partition_name}
+            , CONSTRAINT "FK_reconcile_job_{partition_name}"
                 FOREIGN KEY(job_id) REFERENCES reconcile_job(id)
             )
             FOR VALUES IN (:bucket_name);
 
             -- Comment
-            COMMENT ON TABLE {partition_name}
+            COMMENT ON TABLE "{partition_name}"
               IS 'Partition table for reconcile_s3_object based on orca_archive_location.';
             """
     )
 
 
-def reconcile_catalog_mismatch_report_table_sql() -> text:
+def reconcile_catalog_mismatch_report_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the reconcile_catalog_mismatch_report table.
 
@@ -295,7 +287,7 @@ def reconcile_catalog_mismatch_report_table_sql() -> text:
     )
 
 
-def reconcile_orphan_report_table_sql() -> text:
+def reconcile_orphan_report_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the reconcile_orphan_report table.
 
@@ -338,7 +330,7 @@ def reconcile_orphan_report_table_sql() -> text:
     )
 
 
-def reconcile_phantom_report_table_sql() -> text:
+def reconcile_phantom_report_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the reconcile_phantom_report table.
 

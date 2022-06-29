@@ -114,7 +114,7 @@ def internal_update_job(
         raise
 
 
-def update_job_sql() -> text:
+def update_job_sql() -> text:  # pragma: no cover
     return text(
         """
         UPDATE

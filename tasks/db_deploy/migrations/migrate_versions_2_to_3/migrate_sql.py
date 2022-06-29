@@ -7,7 +7,7 @@ Description: All of the SQL used for creating and migrating the ORCA schema to v
 from sqlalchemy import text
 
 
-def add_multipart_chunksize_sql() -> text:
+def add_multipart_chunksize_sql() -> text:  # pragma: no cover
     """
     SQL that adds the multipart_chunksize_mb column to recovery_file.
 
@@ -23,7 +23,7 @@ def add_multipart_chunksize_sql() -> text:
     )
 
 
-def schema_versions_data_sql() -> text:
+def schema_versions_data_sql() -> text:  # pragma: no cover
     """
     Data for the schema_versions table. Inserts the current schema
     version into the table.

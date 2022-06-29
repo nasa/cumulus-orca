@@ -1,11 +1,9 @@
 """
 Name: orca_sql.py
 
-Description: All of the SQL used for creating and migrating the ORCA schema.
+Description: All the SQL used for creating and migrating the ORCA schema.
 """
 # Imports
-import re
-
 from orca_shared.database.shared_db import logger
 from sqlalchemy import text
 
@@ -13,7 +11,7 @@ from sqlalchemy import text
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating the Database
 # ----------------------------------------------------------------------------
-def commit_sql() -> text:
+def commit_sql() -> text:  # pragma: no cover
     """
     SQL for a simple 'commit' to exit the current transaction.
     """
@@ -79,8 +77,8 @@ def dbo_role_sql(db_name: str, admin_username: str) -> text:
             END IF;
 
             -- Grants
-            GRANT CONNECT ON DATABASE {db_name} TO orca_dbo;
-            GRANT CREATE ON DATABASE {db_name} TO orca_dbo;
+            GRANT CONNECT ON DATABASE "{db_name}" TO orca_dbo;
+            GRANT CREATE ON DATABASE "{db_name}" TO orca_dbo;
             GRANT orca_dbo TO "{admin_username}";
           END
         $$
@@ -114,14 +112,14 @@ def app_role_sql(db_name: str) -> text:
           END IF;
 
           -- Add Grants
-          GRANT CONNECT ON DATABASE {db_name} TO orca_app;
+          GRANT CONNECT ON DATABASE "{db_name}" TO orca_app;
         END
         $$;
     """  # nosec
     )
 
 
-def orca_schema_sql() -> text:
+def orca_schema_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the ORCA application schema that contains all the
     ORCA tables and objects. This SQL must be used after the dbo_role_sql and
@@ -139,10 +137,10 @@ def orca_schema_sql() -> text:
         COMMENT ON SCHEMA orca
             IS 'Contains all the objects needed to operate the ORCA application';
 
-        -- GRANT the privelages needed
+        -- GRANT the privileges needed
         GRANT USAGE ON SCHEMA orca TO orca_app;
 
-        -- Setup Default Privelages for application user as a catch all
+        -- Setup Default Privileges for application user as a catch all
         ALTER DEFAULT PRIVILEGES FOR USER orca_dbo IN SCHEMA orca
           GRANT SELECT ON TABLES TO orca_app;
         ALTER DEFAULT PRIVILEGES FOR USER orca_dbo IN SCHEMA orca
@@ -169,46 +167,35 @@ def orca_schema_sql() -> text:
     )
 
 
-def app_user_sql(user_name: str, user_password: str) -> text:
+def app_user_sql(user_name: str) -> text:
     """
     Full SQL for creating the ORCA application database user. Must be created
     after the app_role_sql and orca_schema_sql.
 
     Args:
-        user_password (str): Password for the application user
+        user_name: Username for the application user
 
     Returns:
         (sqlalchemy.sql.element.TextClause): SQL for creating PREFIX_orcauser user.
     """
-    if user_name is None or len(user_name) == 0:
-        logger.critical("Username must be non-empty.")
-        raise Exception("Username must be non-empty.")
-    if len(user_name) > 63:
-        logger.critical("Username must be less than 64 characters.")
-        raise Exception("Username must be less than 64 characters.")
-
-    if user_password is None or len(user_password) < 12:
-        logger.critical("User password must be at least 12 characters long.")
-        raise Exception("User password must be at least 12 characters long.")
-
     return text(
         f"""
         DO
         $$
         BEGIN
-            IF NOT EXISTS (SELECT 1 FROM pg_user WHERE usename = '{user_name}' ) THEN
-                -- Create {user_name}
+            IF NOT EXISTS (SELECT 1 FROM pg_user WHERE usename = :user_name ) THEN
+                -- Create user
                 CREATE ROLE "{user_name}"
                     LOGIN
                     INHERIT
-                    ENCRYPTED PASSWORD '{user_password}'
+                    ENCRYPTED PASSWORD :user_password
                     IN ROLE orca_app;
 
                 -- Add comment
                 COMMENT ON ROLE "{user_name}"
                     IS 'ORCA application user.';
 
-                RAISE NOTICE 'USER CREATED {user_name}.';
+                RAISE NOTICE 'USER CREATED "{user_name}".';
 
             END IF;
 
@@ -220,7 +207,7 @@ def app_user_sql(user_name: str, user_password: str) -> text:
     )
 
 
-def create_extension() -> text:
+def create_extension() -> text:  # pragma: no cover
     """
     Full SQL for creating the aws_s3 extension used for COPYING S3 reporting data
     from a CSV file in an AWS bucket into the database.
@@ -240,7 +227,7 @@ def create_extension() -> text:
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA general metadata tables
 # ----------------------------------------------------------------------------
-def schema_versions_table_sql() -> text:
+def schema_versions_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the schema_versions table.
 
@@ -281,7 +268,7 @@ def schema_versions_table_sql() -> text:
     )
 
 
-def schema_versions_data_sql() -> text:
+def schema_versions_data_sql() -> text:  # pragma: no cover
     """
     Data for the schema_versions table. Inserts the current schema
     version into the table.
@@ -309,7 +296,7 @@ def schema_versions_data_sql() -> text:
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA recovery tables
 # ----------------------------------------------------------------------------
-def recovery_status_table_sql() -> text:
+def recovery_status_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the recovery_status table. This SQL must be run
     before any of the other recovery table sql.
@@ -342,7 +329,7 @@ def recovery_status_table_sql() -> text:
     )
 
 
-def recovery_status_data_sql() -> text:
+def recovery_status_data_sql() -> text:  # pragma: no cover
     """
     Data for the recovery_status table. Inserts the current status values into
     the table.
@@ -365,7 +352,7 @@ def recovery_status_data_sql() -> text:
     )
 
 
-def recovery_job_table_sql() -> text:
+def recovery_job_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the recovery_job table. This SQL must be run
     before the other recovery_file table sql and after the recovery_status
@@ -413,7 +400,7 @@ def recovery_job_table_sql() -> text:
     )
 
 
-def recovery_file_table_sql() -> text:
+def recovery_file_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the recovery_file table. This SQL must be run
     after the recovery_job table sql to maintain key dependencies.
@@ -480,7 +467,7 @@ def recovery_file_table_sql() -> text:
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA inventory metadata tables
 # ----------------------------------------------------------------------------
-def providers_table_sql() -> text:
+def providers_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the providers table.
 
@@ -510,7 +497,7 @@ def providers_table_sql() -> text:
     )
 
 
-def collections_table_sql() -> text:
+def collections_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the collections table.
 
@@ -543,7 +530,7 @@ def collections_table_sql() -> text:
     )
 
 
-def granules_table_sql() -> text:
+def granules_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the catalog granules table.
 
@@ -599,7 +586,7 @@ def granules_table_sql() -> text:
     )
 
 
-def files_table_sql() -> text:
+def files_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the catalog files table.
 
@@ -669,7 +656,7 @@ def files_table_sql() -> text:
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA internal reconciliation tables
 # ----------------------------------------------------------------------------
-def reconcile_status_table_sql() -> text:
+def reconcile_status_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the reconcile_status table.
 
@@ -710,7 +697,7 @@ def reconcile_status_table_sql() -> text:
     )
 
 
-def reconcile_job_table_sql() -> text:
+def reconcile_job_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the reconcile_job table.
 
@@ -759,7 +746,7 @@ def reconcile_job_table_sql() -> text:
     )
 
 
-def reconcile_s3_object_table_sql() -> text:
+def reconcile_s3_object_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the reconcile_s3_object table.
 
@@ -817,32 +804,26 @@ def reconcile_s3_object_partition_sql(partition_name: str) -> text:
     Returns:
         (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_s3_object partition table.
     """
-    try:
-        if not re.match("^[\w+]+$", partition_name):  # noqa: W605
-            raise ValueError(f"Table name {partition_name} is invalid.")
-    except TypeError:
-        raise ValueError("Table name must be a string and cannot be None.")
-
     return text(
         f"""
             -- Create orca_archive_location_:bucket_name
-            CREATE TABLE {partition_name} PARTITION OF reconcile_s3_object
+            CREATE TABLE "{partition_name}" PARTITION OF reconcile_s3_object
             (
-              CONSTRAINT PK_{partition_name}
+              CONSTRAINT "PK_{partition_name}"
                 PRIMARY KEY(key_path)
-            , CONSTRAINT FK_reconcile_job_{partition_name}
+            , CONSTRAINT "FK_reconcile_job_{partition_name}"
                 FOREIGN KEY(job_id) REFERENCES reconcile_job(id)
             )
             FOR VALUES IN (:bucket_name);
 
             -- Comment
-            COMMENT ON TABLE {partition_name}
+            COMMENT ON TABLE "{partition_name}"
               IS 'Partition table for reconcile_s3_object based on orca_archive_location.';
             """
     )
 
 
-def reconcile_catalog_mismatch_report_table_sql() -> text:
+def reconcile_catalog_mismatch_report_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the reconcile_catalog_mismatch_report table.
 
@@ -906,7 +887,7 @@ def reconcile_catalog_mismatch_report_table_sql() -> text:
     )
 
 
-def reconcile_orphan_report_table_sql() -> text:
+def reconcile_orphan_report_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the reconcile_orphan_report table.
 
@@ -949,7 +930,7 @@ def reconcile_orphan_report_table_sql() -> text:
     )
 
 
-def reconcile_phantom_report_table_sql() -> text:
+def reconcile_phantom_report_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the reconcile_phantom_report table.
 

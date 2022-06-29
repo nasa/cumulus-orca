@@ -3,6 +3,7 @@ Name: create_db.py
 
 Description: Creates the current version on the ORCA database.
 """
+import re
 from typing import Dict, List
 
 from orca_shared.database.shared_db import get_admin_connection, logger
@@ -17,18 +18,18 @@ import install.orca_sql as sql
 def create_fresh_orca_install(config: Dict[str, str], orca_buckets: List[str]) -> None:
     """
     This task will create the ORCA roles, users, schema, and tables needed
-    by the ORCA application as a fresh install.
+    by the ORCA application as a fresh installation.
 
     Args:
-        config (Dict): Dictionary with database connection information
-        orca_buckets: List[str]): List of ORCA buckets needed to create
+        config: Dictionary with database connection information
+        orca_buckets: List of ORCA buckets needed to create
                                   partitioned tables for reporting.
 
     Returns:
         None
     """
     # Assume the database has been created at this point. Connect to the ORCA
-    # database as a super user and create the roles, users,  schema, and
+    # database as a superuser and create the roles, users,  schema, and
     # objects.
     admin_app_connection = get_admin_connection(config, config["user_database"])
 
@@ -75,7 +76,7 @@ def create_database(config: Dict[str, str]) -> None:
 
 
 def create_app_schema_role_users(
-    connection: Connection, app_username: str, app_password: str, db_name: str, admin_username: str
+        connection: Connection, app_username: str, app_password: str, db_name: str, admin_username: str
 ) -> None:
     """
     Creates the ORCA application database schema, users and roles.
@@ -90,6 +91,17 @@ def create_app_schema_role_users(
     Returns:
         None
     """
+    if app_username is None or len(app_username) == 0:
+        logger.critical("Username must be non-empty.")
+        raise Exception("Username must be non-empty.")
+    if len(app_username) > 63:
+        logger.critical("Username must be less than 64 characters.")
+        raise Exception("Username must be less than 64 characters.")
+
+    if app_password is None or len(app_password) < 12:
+        logger.critical("User password must be at least 12 characters long.")
+        raise Exception("User password must be at least 12 characters long.")
+
     # Create the roles first since they are needed by schema and users
     logger.debug("Creating the ORCA dbo role ...")
     connection.execute(sql.dbo_role_sql(db_name, admin_username))
@@ -106,7 +118,15 @@ def create_app_schema_role_users(
 
     # Create the users last
     logger.debug("Creating the ORCA application user ...")
-    connection.execute(sql.app_user_sql(app_username, app_password))
+    connection.execute(
+        sql.app_user_sql(app_username),
+        [
+            {
+                "user_name": app_username,
+                "user_password": app_password
+            }
+        ]
+    )
     logger.info("ORCA application user created.")
 
     # Create extension for the database
@@ -127,7 +147,7 @@ def set_search_path_and_role(connection: Connection) -> None:
     Returns:
         None
     """
-    # Set the user and search_path for the install
+    # Set the user and search_path for the installation
     logger.debug("Changing to the dbo role to create objects ...")
     connection.execute(sql.text("SET ROLE orca_dbo;"))
 
@@ -230,7 +250,7 @@ def create_inventory_objects(connection: Connection) -> None:
 
 
 def create_internal_reconciliation_objects(
-    connection: Connection, orca_buckets: List[str]
+        connection: Connection, orca_buckets: List[str]
 ) -> None:
     """
     Creates the ORCA internal reconciliation tables in the proper order.
@@ -242,8 +262,8 @@ def create_internal_reconciliation_objects(
     - reconcile_phantom_report
 
     Args:
-        connection (sqlalchemy.future.Connection): Database connection.
-        orca_buckets: List[str]): List of ORCA buckets needed to create
+        connection: Database connection.
+        orca_buckets: List of ORCA buckets needed to create
                                   partitioned tables for reporting.
 
     Returns:
@@ -267,6 +287,11 @@ def create_internal_reconciliation_objects(
     # Create partitioned tables for the reconcile_s3_object table
     for bucket_name in orca_buckets:
         _partition_name = get_partition_name_from_bucket_name(bucket_name)
+        try:
+            if not re.match("^[\w+]+$", _partition_name):  # noqa: W605
+                raise ValueError(f"Table name {_partition_name} is invalid.")
+        except TypeError:
+            raise ValueError("Table name must be a string and cannot be None.")
         logger.debug(
             f"Creating partition table {_partition_name} for reconcile_s3_object ..."
         )

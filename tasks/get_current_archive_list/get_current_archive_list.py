@@ -201,7 +201,7 @@ def create_job(
     return rows.fetchone()["id"]
 
 
-def create_job_sql() -> text:
+def create_job_sql() -> text:  # pragma: no cover
     return text(
         """
         INSERT INTO reconcile_job
@@ -399,7 +399,7 @@ def create_temporary_table_sql(temporary_s3_column_list: str) -> text:
     )
 
 
-def trigger_csv_load_from_s3_sql() -> text:
+def trigger_csv_load_from_s3_sql() -> text:  # pragma: no cover
     """
     SQL for telling postgres where/how to copy in the s3 inventory data.
     """
@@ -420,7 +420,7 @@ def trigger_csv_load_from_s3_sql() -> text:
     )
 
 
-def translate_s3_import_to_partitioned_data_sql() -> text:
+def translate_s3_import_to_partitioned_data_sql() -> text:  # pragma: no cover
     """
     SQL for translating between the temporary table and Orca table.
     """

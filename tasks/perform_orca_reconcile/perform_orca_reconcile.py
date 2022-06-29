@@ -127,7 +127,7 @@ def generate_reports(job_id: int, orca_archive_location: str, engine: Engine) ->
         raise
 
 
-def generate_phantom_reports_sql() -> text:
+def generate_phantom_reports_sql() -> text:  # pragma: no cover
     """
     SQL for generating reports on files in the Orca catalog, but not S3.
     """
@@ -195,7 +195,7 @@ def generate_phantom_reports_sql() -> text:
     )
 
 
-def generate_orphan_reports_sql() -> text:
+def generate_orphan_reports_sql() -> text:  # pragma: no cover
     """
     SQL for generating reports on files in S3, but not the Orca catalog.
     """
@@ -241,7 +241,7 @@ def generate_orphan_reports_sql() -> text:
     )
 
 
-def generate_mismatch_reports_sql() -> text:
+def generate_mismatch_reports_sql() -> text:  # pragma: no cover
     """
     SQL for retrieving mismatches between entries in S3 and the Orca catalog.
     """

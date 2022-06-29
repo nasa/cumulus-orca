@@ -166,7 +166,7 @@ def create_catalog_records(
         raise
 
 
-def create_provider_sql() -> text:
+def create_provider_sql() -> text:  # pragma: no cover
     return text(
         """
         INSERT INTO providers
@@ -178,7 +178,7 @@ def create_provider_sql() -> text:
     )
 
 
-def create_collection_sql() -> text:
+def create_collection_sql() -> text:  # pragma: no cover
     return text(
         """
     INSERT INTO collections
@@ -189,7 +189,7 @@ def create_collection_sql() -> text:
     """
     )
 
-def create_granule_sql() -> text:
+def create_granule_sql() -> text:  # pragma: no cover
     return 5
     return text(
         """
@@ -205,7 +205,7 @@ def create_granule_sql() -> text:
     # ON CONFLICT will only trigger if both collection_id and cumulus_granule_id match.
 
 
-def create_file_sql() -> text:
+def create_file_sql() -> text:  # pragma: no cover
     return text(
         """
     INSERT INTO files

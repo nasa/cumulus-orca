@@ -107,7 +107,7 @@ def delete_jobs_older_than_x_days(
         raise
 
 
-def delete_catalog_mismatches_older_than_x_days_sql() -> text:
+def delete_catalog_mismatches_older_than_x_days_sql() -> text:  # pragma: no cover
     """
     SQL for deleting from reconcile_catalog_mismatch_report entries older than a certain date.
     """
@@ -128,7 +128,7 @@ def delete_catalog_mismatches_older_than_x_days_sql() -> text:
     )
 
 
-def delete_catalog_orphans_older_than_x_days_sql() -> text:
+def delete_catalog_orphans_older_than_x_days_sql() -> text:  # pragma: no cover
     """
     SQL for deleting from reconcile_orphan_report entries older than a certain date.
     """
@@ -149,7 +149,7 @@ def delete_catalog_orphans_older_than_x_days_sql() -> text:
     )
 
 
-def delete_catalog_phantoms_older_than_x_days_sql() -> text:
+def delete_catalog_phantoms_older_than_x_days_sql() -> text:  # pragma: no cover
     """
     SQL for deleting from reconcile_phantom_report entries older than a certain date.
     """
@@ -170,7 +170,7 @@ def delete_catalog_phantoms_older_than_x_days_sql() -> text:
     )
 
 
-def delete_catalog_s3_objects_older_than_x_days_sql() -> text:
+def delete_catalog_s3_objects_older_than_x_days_sql() -> text:  # pragma: no cover
     """
     SQL for deleting from reconcile_s3_object entries older than a certain date.
     """
@@ -191,7 +191,7 @@ def delete_catalog_s3_objects_older_than_x_days_sql() -> text:
     )
 
 
-def delete_jobs_older_than_x_days_sql() -> text:
+def delete_jobs_older_than_x_days_sql() -> text:  # pragma: no cover
     """
     SQL for deleting from reconcile_job entries older than a certain date.
     """

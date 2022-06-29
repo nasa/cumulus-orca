@@ -11,7 +11,7 @@ from sqlalchemy import text
 # ----------------------------------------------------------------------------
 
 
-def providers_table_sql() -> text:
+def providers_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the providers table.
 
@@ -41,7 +41,7 @@ def providers_table_sql() -> text:
     )
 
 
-def collections_table_sql() -> text:
+def collections_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the collections table.
 
@@ -74,7 +74,7 @@ def collections_table_sql() -> text:
     )
 
 
-def granules_table_sql() -> text:
+def granules_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the catalog granules table.
 
@@ -130,7 +130,7 @@ def granules_table_sql() -> text:
     )
 
 
-def files_table_sql() -> text:
+def files_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the catalog files table.
 
@@ -197,7 +197,7 @@ def files_table_sql() -> text:
     )
 
 
-def schema_versions_data_sql() -> text:
+def schema_versions_data_sql() -> text:  # pragma: no cover
     """
     Data for the schema_versions table. Inserts the current schema
     version into the table.

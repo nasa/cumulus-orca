@@ -3,6 +3,7 @@ Name: migrate.py
 
 Description: Migrates the ORCA schema from version 4 to version 5.
 """
+import re
 from typing import Dict, List
 
 from orca_shared.database.shared_db import get_admin_connection, logger
@@ -75,6 +76,11 @@ def migrate_versions_4_to_5(
             logger.debug(
                 f"Creating partition table {_partition_name} for reconcile_s3_object ..."
             )
+            try:
+                if not re.match("^[\w+]+$", _partition_name):  # noqa: W605
+                    raise ValueError(f"Table name {_partition_name} is invalid.")
+            except TypeError:
+                raise ValueError("Table name must be a string and cannot be None.")
             connection.execute(
                 sql.reconcile_s3_object_partition_sql(_partition_name),
                 {"bucket_name": bucket_name},
