@@ -131,7 +131,7 @@ While running the `Deploy Dev RDS Stack` stage, replace the following variables 
 - DB_USER_PASSWORDThese are the buckets that need to be created in cumulus OU account:
 
 
-These are the optional buckets that can be created in disaster recovery AWS account
+These are the buckets that can be created in disaster recovery AWS account
 
 - `<PREFIX>-orca-primary`
 - `<PREFIX>-orca-archive-worm`
