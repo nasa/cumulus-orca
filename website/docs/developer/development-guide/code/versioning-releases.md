@@ -123,8 +123,8 @@ The ORCA buckets and dynamoDB table in cumulus OU account are created automatica
 
 While running the `Deploy Dev RDS Stack` stage, replace the following variables with yours. This is because some variables are sensitive and some will vary depending upon the user running the pipeline. Hitting 'play' next to `Deploy DR ORCA buckets`, `Deploy Dev RDS Stack` and `Deploy Dev Cumulus and ORCA Stack` brings up a checkbox list to run multiple jobs at once. Note that none of the checkboxes should be checked.
 
-- AWS_ACCESS_KEY_ID(for cumulus sandbox account)
-- AWS_SECRET_ACCESS_KEY(for cumulus sandbox account)
+- CUMULUS_AWS_ACCESS_KEY_ID
+- CUMULUS_AWS_SECRET_ACCESS_KEY
 - PREFIX
 - AWS_ACCOUNT_ID(for cumulus sandbox account)
 - DB_ADMIN_PASSWORD
@@ -138,7 +138,7 @@ These are the optional buckets that can be created in disaster recovery AWS acco
 - `<PREFIX>-orca-reports`
 - `<PREFIX>-dr-tf-state` (for storing the terraform state file in DR account)
 
-For `Deploy buckets in DR account` stage in bamboo plan, add the values for `PREFIX`, `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` variables for the `Disaster Recovery` AWS account to deploy the buckets in DR account. Some of these buckets have cross-account IAM policies attached so that they can be accessed from the other cumulus sandbox.
+For `Deploy buckets in DR account` stage in bamboo plan, add the values for `PREFIX`, `DR_AWS_ACCESS_KEY_ID` and `DR_AWS_SECRET_ACCESS_KEY` variables for the `Disaster Recovery` AWS account to deploy the buckets in DR account. Some of these buckets have cross-account IAM policies attached so that they can be accessed from the other cumulus sandbox.
 
 Note that the above buckets can also be created manually if desired by the user. Make sure to use the proper AWS access keys for configuration before running the commands.
 
