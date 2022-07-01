@@ -112,7 +112,7 @@ To delete a published tag to re-tag, follow these steps:
 
 For testing, use your feature branch in cumulus-orca github repo and `ORCA-test-branch` linked repo in bamboo specs. 
 
-The ORCA buckets and dynamoDB table in cumulus OU account are created automatically in bamboo `Deploy Dev Cumulus and ORCA Stack` stage. These are the buckets that need to be created in cumulus OU account:
+The Cumulus and TF buckets as well as dynamoDB table in cumulus OU account are created automatically in bamboo `Deploy Dev Cumulus and ORCA Stack` stage. These are the buckets that need to be created in cumulus OU account:
 
 - `<PREFIX>-internal`
 - `<PREFIX>-level0`
@@ -128,10 +128,10 @@ While running the `Deploy Dev RDS Stack` stage, replace the following variables 
 - PREFIX
 - AWS_ACCOUNT_ID(for cumulus sandbox account)
 - DB_ADMIN_PASSWORD
-- DB_USER_PASSWORDThese are the buckets that need to be created in cumulus OU account:
+- DB_USER_PASSWORD
 
 
-These are the buckets that can be created in disaster recovery AWS account
+These are the ORCA buckets that are created in disaster recovery AWS account
 
 - `<PREFIX>-orca-primary`
 - `<PREFIX>-orca-archive-worm`
