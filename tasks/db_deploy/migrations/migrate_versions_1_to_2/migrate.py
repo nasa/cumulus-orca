@@ -39,7 +39,9 @@ def migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> 
     with admin_app_connection.connect() as connection:
         # Create the roles first since they are needed by schema and users
         logger.debug("Creating the ORCA dbo role ...")
-        connection.execute(sql.dbo_role_sql(config["user_database"], config["admin_username"]))
+        connection.execute(
+            sql.dbo_role_sql(config["user_database"], config["admin_username"])
+        )
         logger.info("ORCA dbo role created.")
 
         logger.debug("Creating the ORCA app role ...")
@@ -58,9 +60,9 @@ def migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> 
             [
                 {
                     "user_name": config["user_username"],
-                    "user_password": config["user_password"]
+                    "user_password": config["user_password"],
                 }
-            ]
+            ],
         )
         logger.info("ORCA application user created.")
 

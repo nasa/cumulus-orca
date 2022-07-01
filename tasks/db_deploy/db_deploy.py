@@ -52,9 +52,7 @@ def handler(
     try:
         db_connect_info_secret_arn = os.environ["DB_CONNECT_INFO_SECRET_ARN"]
     except KeyError as key_error:
-        logger.error(
-            "DB_CONNECT_INFO_SECRET_ARN environment value not found."
-        )
+        logger.error("DB_CONNECT_INFO_SECRET_ARN environment value not found.")
         raise
 
     # Get the secrets needed for database connections

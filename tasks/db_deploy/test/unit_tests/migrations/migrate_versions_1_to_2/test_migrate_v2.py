@@ -106,12 +106,12 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
 
                 # First commit block
                 # todo: here and elsewhere, checks are not sufficient. assert_called_once should never be used, and all assert_has_calls should be followed by a check on the call count.
-                mock_dbo_role_sql.assert_called_once_with(self.config["user_database"], self.config["admin_username"])
+                mock_dbo_role_sql.assert_called_once_with(
+                    self.config["user_database"], self.config["admin_username"]
+                )
                 mock_app_role_sql.assert_called_once()
                 mock_orca_schema_sql.assert_called_once()
-                mock_app_user_sql.assert_called_once_with(
-                    self.config["user_username"]
-                )
+                mock_app_user_sql.assert_called_once_with(self.config["user_username"])
                 mock_schema_versions_table.assert_called_once()
                 mock_recovery_status_table.assert_called_once()
                 mock_recovery_job_table.assert_called_once()
@@ -129,14 +129,16 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 mock_drop_druser_user.assert_called_once()
 
                 # Check the text calls occur and in the proper order
-                mock_text.assert_has_calls([
-                    call("SET ROLE orca_dbo;"),
-                    call("SET search_path TO orca, public;"),
-                    call("RESET ROLE;"),
-                    call("SET search_path TO orca, dr, public;"),
-                    call("SET ROLE dbo;"),
-                    call("RESET ROLE;"),
-                ])
+                mock_text.assert_has_calls(
+                    [
+                        call("SET ROLE orca_dbo;"),
+                        call("SET search_path TO orca, public;"),
+                        call("RESET ROLE;"),
+                        call("SET search_path TO orca, dr, public;"),
+                        call("SET ROLE dbo;"),
+                        call("RESET ROLE;"),
+                    ]
+                )
 
                 # Validate logic switch and set the execution order
                 if latest_version:
@@ -145,14 +147,15 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                         call.execute(mock_dbo_role_sql()),
                         call.execute(mock_app_role_sql()),
                         call.execute(mock_orca_schema_sql()),
-                        call.execute(mock_app_user_sql(self.config["user_password"]),
-                                     [
-                                         {
-                                             "user_name": self.config["user_username"],
-                                             "user_password": self.config["user_password"]
-                                         }
-                                     ]
-                                     ),
+                        call.execute(
+                            mock_app_user_sql(self.config["user_password"]),
+                            [
+                                {
+                                    "user_name": self.config["user_username"],
+                                    "user_password": self.config["user_password"],
+                                }
+                            ],
+                        ),
                         call.execute(mock_text("SET ROLE orca_dbo;")),
                         call.execute(mock_text("SET search_path TO orca, public;")),
                         call.execute(mock_schema_versions_table()),
@@ -183,14 +186,15 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                         call.execute(mock_dbo_role_sql()),
                         call.execute(mock_app_role_sql()),
                         call.execute(mock_orca_schema_sql()),
-                        call.execute(mock_app_user_sql(self.config["user_password"]),
-                                     [
-                                         {
-                                             "user_name": self.config["user_username"],
-                                             "user_password": self.config["user_password"]
-                                         }
-                                     ]
-                                     ),
+                        call.execute(
+                            mock_app_user_sql(self.config["user_password"]),
+                            [
+                                {
+                                    "user_name": self.config["user_username"],
+                                    "user_password": self.config["user_password"],
+                                }
+                            ],
+                        ),
                         call.execute(mock_text("SET ROLE orca_dbo;")),
                         call.execute(mock_text("SET search_path TO orca, public;")),
                         call.execute(mock_schema_versions_table()),
@@ -251,10 +255,10 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
         for bad_password in bad_passwords:
             with self.subTest(bad_password=bad_password):
                 with self.assertRaises(Exception) as cm:
-                    migrate.migrate_versions_1_to_2({
-                        "user_username": "orcauser",
-                        "user_password": bad_password
-                    }, Mock())
+                    migrate.migrate_versions_1_to_2(
+                        {"user_username": "orcauser", "user_password": bad_password},
+                        Mock(),
+                    )
                 self.assertEqual(str(cm.exception), message)
 
         bad_user_names = [None, ""]
@@ -262,18 +266,21 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
         for bad_user_name in bad_user_names:
             with self.subTest(bad_user_name=bad_user_name):
                 with self.assertRaises(Exception) as cm:
-                    migrate.migrate_versions_1_to_2({
-                        "user_username": bad_user_name,
-                        "user_password": "AbCdEfG12345"
-                    }, Mock())
+                    migrate.migrate_versions_1_to_2(
+                        {
+                            "user_username": bad_user_name,
+                            "user_password": "AbCdEfG12345",
+                        },
+                        Mock(),
+                    )
                 self.assertEqual(str(cm.exception), message)
 
         message = "Username must be less than 64 characters."
         bad_user_name = "".join("a" * 64)
         with self.subTest(bad_user_name=bad_user_name) as cm:
             with self.assertRaises(Exception) as cm:
-                migrate.migrate_versions_1_to_2({
-                    "user_username": bad_user_name,
-                    "user_password": "AbCdEfG12345"
-                }, Mock())
+                migrate.migrate_versions_1_to_2(
+                    {"user_username": bad_user_name, "user_password": "AbCdEfG12345"},
+                    Mock(),
+                )
             self.assertEqual(str(cm.exception), message)

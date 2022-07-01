@@ -73,7 +73,7 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
             self.config["user_username"],
             self.config["user_password"],
             self.config["user_database"],
-            self.config["admin_username"]
+            self.config["admin_username"],
         )
         mock_set_search_path_role.assert_called_once_with(mock_conn_enter)
         mock_create_inventory_objects.assert_called_once_with(mock_conn_enter)
@@ -106,13 +106,16 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         """
         create_db.create_database(self.config)
 
-        mock_app_database_sql.assert_called_once_with(self.config["user_database"], self.config["admin_username"])
+        mock_app_database_sql.assert_called_once_with(
+            self.config["user_database"], self.config["admin_username"]
+        )
         mock_connection().connect().__enter__().execute.assert_has_calls(
-        [
-            call(mock_commit_sql.return_value),
-            call(mock_app_database_sql.return_value),
-            call(mock_app_database_comment_sql.return_value),
-        ], any_order=True
+            [
+                call(mock_commit_sql.return_value),
+                call(mock_app_database_sql.return_value),
+                call(mock_app_database_comment_sql.return_value),
+            ],
+            any_order=True,
         )
 
     @patch("install.create_db.sql.create_extension")
@@ -136,11 +139,13 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
             self.config["user_username"],
             self.config["user_password"],
             self.config["user_database"],
-            self.config["admin_username"]
+            self.config["admin_username"],
         )
 
         # Check that SQL called properly
-        mock_dbo_role_sql.assert_called_once_with(self.config["user_database"], self.config["admin_username"])
+        mock_dbo_role_sql.assert_called_once_with(
+            self.config["user_database"], self.config["admin_username"]
+        )
         mock_app_role_sql.assert_called_once()
         mock_schema_sql.assert_called_once()
         mock_user_sql.assert_called_once_with(
@@ -150,14 +155,23 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
 
         # Check SQL called in proper order
         # todo: here and elsewhere, checks are not sufficient. assert_called_once should never be used, and all assert_has_calls should be followed by a check on the call count.
-        self.mock_connection.assert_has_calls([
-            call.execute(mock_dbo_role_sql()),
-            call.execute(mock_app_role_sql()),
-            call.execute(mock_schema_sql()),
-            call.execute(mock_user_sql(self.config["user_password"]),
-                         [{'user_name': self.config["user_username"], 'user_password': self.config["user_password"]}]),
-            call.execute(mock_extension_sql()),
-        ])
+        self.mock_connection.assert_has_calls(
+            [
+                call.execute(mock_dbo_role_sql()),
+                call.execute(mock_app_role_sql()),
+                call.execute(mock_schema_sql()),
+                call.execute(
+                    mock_user_sql(self.config["user_password"]),
+                    [
+                        {
+                            "user_name": self.config["user_username"],
+                            "user_password": self.config["user_password"],
+                        }
+                    ],
+                ),
+                call.execute(mock_extension_sql()),
+            ]
+        )
 
     def test_create_app_schema_role_users_exceptions(self) -> None:
         """
@@ -171,7 +185,9 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         for bad_password in bad_passwords:
             with self.subTest(bad_password=bad_password):
                 with self.assertRaises(Exception) as cm:
-                    create_db.create_app_schema_role_users(Mock(), "orcauser", bad_password, Mock(), Mock())
+                    create_db.create_app_schema_role_users(
+                        Mock(), "orcauser", bad_password, Mock(), Mock()
+                    )
                 self.assertEqual(str(cm.exception), message)
 
         bad_user_names = [None, ""]
@@ -179,14 +195,18 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         for bad_user_name in bad_user_names:
             with self.subTest(bad_user_name=bad_user_name):
                 with self.assertRaises(Exception) as cm:
-                    create_db.create_app_schema_role_users(Mock(), bad_user_name, "AbCdEfG12345", Mock(), Mock())
+                    create_db.create_app_schema_role_users(
+                        Mock(), bad_user_name, "AbCdEfG12345", Mock(), Mock()
+                    )
                 self.assertEqual(str(cm.exception), message)
 
         message = "Username must be less than 64 characters."
         bad_user_name = "".join("a" * 64)
         with self.subTest(bad_user_name=bad_user_name) as cm:
             with self.assertRaises(Exception) as cm:
-                create_db.create_app_schema_role_users(Mock(), bad_user_name, "AbCdEfG12345", Mock(), Mock())
+                create_db.create_app_schema_role_users(
+                    Mock(), bad_user_name, "AbCdEfG12345", Mock(), Mock()
+                )
             self.assertEqual(str(cm.exception), message)
 
     @patch("install.create_db.sql.text")

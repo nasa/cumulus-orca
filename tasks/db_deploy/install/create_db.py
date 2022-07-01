@@ -40,7 +40,7 @@ def create_fresh_orca_install(config: Dict[str, str], orca_buckets: List[str]) -
             config["user_username"],
             config["user_password"],
             config["user_database"],
-            config["admin_username"]
+            config["admin_username"],
         )
 
         # Change to DBO role and set search path
@@ -70,13 +70,19 @@ def create_database(config: Dict[str, str]) -> None:
         connection.execute(
             sql.commit_sql()
         )  # exit the default transaction to allow database creation.
-        connection.execute(sql.app_database_sql(config["user_database"], config["admin_username"]))
+        connection.execute(
+            sql.app_database_sql(config["user_database"], config["admin_username"])
+        )
         connection.execute(sql.app_database_comment_sql(config["user_database"]))
         logger.info("Database created.")
 
 
 def create_app_schema_role_users(
-        connection: Connection, app_username: str, app_password: str, db_name: str, admin_username: str
+    connection: Connection,
+    app_username: str,
+    app_password: str,
+    db_name: str,
+    admin_username: str,
 ) -> None:
     """
     Creates the ORCA application database schema, users and roles.
@@ -120,12 +126,7 @@ def create_app_schema_role_users(
     logger.debug("Creating the ORCA application user ...")
     connection.execute(
         sql.app_user_sql(app_username),
-        [
-            {
-                "user_name": app_username,
-                "user_password": app_password
-            }
-        ]
+        [{"user_name": app_username, "user_password": app_password}],
     )
     logger.info("ORCA application user created.")
 
@@ -250,7 +251,7 @@ def create_inventory_objects(connection: Connection) -> None:
 
 
 def create_internal_reconciliation_objects(
-        connection: Connection, orca_buckets: List[str]
+    connection: Connection, orca_buckets: List[str]
 ) -> None:
     """
     Creates the ORCA internal reconciliation tables in the proper order.
