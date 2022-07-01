@@ -91,14 +91,14 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
         """
         for latest_version in [True, False]:
             with self.subTest(latest_version=latest_version):
-                # Setup the mock object that conn.execute is a part of in
+                # Set up the mock object that conn.execute is a part of in
                 # the connection with block
                 mock_conn_enter = mock_connection().connect().__enter__()
 
                 # Run the function
                 migrate.migrate_versions_1_to_2(self.config, latest_version)
 
-                # Check that all of the functions were called the correct
+                # Check that all the functions were called the correct
                 # number of times with the proper values
                 mock_connection.assert_any_call(
                     self.config, self.config["user_database"]
@@ -139,6 +139,7 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                         call("RESET ROLE;"),
                     ]
                 )
+                self.assertEqual(6, mock_text.call_count)
 
                 # Validate logic switch and set the execution order
                 if latest_version:
@@ -220,6 +221,7 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
 
                 # Check that items were called in the proper order
                 mock_conn_enter.assert_has_calls(execution_order, any_order=False)
+                self.assertEqual(len(execution_order), len(mock_conn_enter.method_calls))
 
                 # Reset the mocks for next loop
                 mock_connection.reset_mock()
@@ -277,7 +279,7 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
 
         message = "Username must be less than 64 characters."
         bad_user_name = "".join("a" * 64)
-        with self.subTest(bad_user_name=bad_user_name) as cm:
+        with self.subTest(bad_user_name=bad_user_name) as _:
             with self.assertRaises(Exception) as cm:
                 migrate.migrate_versions_1_to_2(
                     {"user_username": bad_user_name, "user_password": "AbCdEfG12345"},

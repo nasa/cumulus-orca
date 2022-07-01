@@ -586,6 +586,60 @@ def granules_table_sql() -> text:  # pragma: no cover
     )
 
 
+def storage_class_table_sql() -> text:  # pragma: no cover
+    """
+    Full SQL for creating the storage_class table. This SQL must be run
+    before any of the other recovery table sql.
+
+    Returns:
+        (sqlalchemy.sql.element.TextClause): SQL for creating storage_class table.
+    """
+    return text(
+        """
+        -- Create table
+        CREATE TABLE IF NOT EXISTS storage_class
+        (
+          id    int2 NOT NULL
+        , value text NOT NULL
+        , CONSTRAINT PK_storage_class PRIMARY KEY(id)
+        , CONSTRAINT UNIQUE_storage_class_value UNIQUE (value)
+        );
+
+        -- Comments
+        COMMENT ON TABLE storage_class
+            IS 'Reference table for valid storage classes.';
+        COMMENT ON COLUMN storage_class.id
+            IS 'Storage Class ID';
+        COMMENT ON COLUMN storage_class.value
+            IS 'Human readable storage class';
+
+        -- Grants
+        GRANT SELECT ON storage_class TO orca_app;
+    """
+    )
+
+
+def storage_class_data_sql() -> text:  # pragma: no cover
+    """
+    Data for the storage_class table. Inserts the currently valid storage classes into
+    the table.
+
+    TODO: Research on Deep Glacier vs Deep Archive is limited.
+
+    Returns:
+        (sqlalchemy.sql.element.TextClause): SQL for populating storage_class table.
+    """
+    return text(
+        """
+        -- Upsert the data lookup rows for the table
+        INSERT INTO storage_class VALUES (1, 'GLACIER')
+            ON CONFLICT (id) DO NOTHING;
+        INSERT INTO storage_class VALUES (2, 'DEEP_ARCHIVE')
+            ON CONFLICT (id) DO NOTHING;
+    """
+    )
+
+
 def files_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the catalog files table.
@@ -610,6 +664,7 @@ def files_table_sql() -> text:  # pragma: no cover
         , size_in_bytes             int8 NOT NULL
         , hash                      text NULL
         , hash_type                 text NULL
+        , storage_class_id          int2 NOT NULL
         , CONSTRAINT PK_files
             PRIMARY KEY (id)
         , CONSTRAINT FK_granule_file
@@ -618,6 +673,8 @@ def files_table_sql() -> text:  # pragma: no cover
             UNIQUE (orca_archive_location, key_path)
         , CONSTRAINT UNIQUE_cumulus_archive_location_key_path
             UNIQUE (cumulus_archive_location, key_path)
+        , CONSTRAINT FK_recovery_file_storage_class
+            FOREIGN KEY (storage_class_id) REFERENCES storage_class (id)
         );
 
         -- Comments
@@ -647,6 +704,8 @@ def files_table_sql() -> text:  # pragma: no cover
             IS 'Hash of the object from Cumulus';
         COMMENT ON COLUMN files.hash_type
             IS 'Hash type used to hash the object. Supplied by Cumulus.';
+        COMMENT ON COLUMN files.storage_class_id
+            IS 'Storage class of the file.';
         -- Grants
         GRANT SELECT, INSERT, UPDATE, DELETE ON files TO orca_app;
     """

@@ -284,16 +284,20 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
 
         self.assertEqual(self.mock_connection.mock_calls, execution_order)
 
-    @patch("install.create_db.sql.providers_table_sql")
-    @patch("install.create_db.sql.collections_table_sql")
-    @patch("install.create_db.sql.granules_table_sql")
     @patch("install.create_db.sql.files_table_sql")
+    @patch("install.create_db.sql.storage_class_data_sql")
+    @patch("install.create_db.sql.storage_class_table_sql")
+    @patch("install.create_db.sql.granules_table_sql")
+    @patch("install.create_db.sql.collections_table_sql")
+    @patch("install.create_db.sql.providers_table_sql")
     def test_create_inventory_objects(
         self,
-        mock_files_table: MagicMock,
-        mock_granules_table: MagicMock,
-        mock_collections_table: MagicMock,
-        mock_providers_table: MagicMock,
+        mock_providers_table_sql: MagicMock,
+        mock_collections_table_sql: MagicMock,
+        mock_granules_table_sql: MagicMock,
+        mock_storage_class_table_sql: MagicMock,
+        mock_storage_class_data_sql: MagicMock,
+        mock_files_table_sql: MagicMock,
     ):
         """
         Tests happy path of the create_inventory_objects function
@@ -301,17 +305,21 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         create_db.create_inventory_objects(self.mock_connection)
 
         # Check that the SQL calls were made
-        mock_providers_table.assert_called_once()
-        mock_collections_table.assert_called_once()
-        mock_granules_table.assert_called_once()
-        mock_files_table.assert_called_once()
+        mock_storage_class_table_sql.assert_called_once_with()
+        mock_storage_class_data_sql.assert_called_once_with()
+        mock_providers_table_sql.assert_called_once_with()
+        mock_collections_table_sql.assert_called_once_with()
+        mock_granules_table_sql.assert_called_once_with()
+        mock_files_table_sql.assert_called_once_with()
 
         # Check that they were called in the proper order
         execution_order = [
-            call.execute(mock_providers_table()),
-            call.execute(mock_collections_table()),
-            call.execute(mock_granules_table()),
-            call.execute(mock_files_table()),
+            call.execute(mock_providers_table_sql()),
+            call.execute(mock_collections_table_sql()),
+            call.execute(mock_granules_table_sql()),
+            call.execute(mock_storage_class_table_sql()),
+            call.execute(mock_storage_class_data_sql()),
+            call.execute(mock_files_table_sql()),
         ]
 
         self.assertEqual(self.mock_connection.mock_calls, execution_order)

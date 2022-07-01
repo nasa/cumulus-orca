@@ -244,6 +244,13 @@ def create_inventory_objects(connection: Connection) -> None:
     connection.execute(sql.granules_table_sql())
     logger.info("granules table created.")
 
+    # Create storage_class table
+    logger.debug("Creating storage_class table ...")
+    connection.execute(sql.storage_class_table_sql())
+    logger.info("Populating storage_class table ...")
+    connection.execute(sql.storage_class_data_sql())
+    logger.info("storage_class table created.")
+
     # Create files table
     logger.debug("Creating files table ...")
     connection.execute(sql.files_table_sql())

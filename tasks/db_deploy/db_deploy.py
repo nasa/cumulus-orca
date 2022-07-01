@@ -21,7 +21,7 @@ from migrations.migrate_db import perform_migration
 
 # Globals
 # Latest version of the ORCA schema.
-LATEST_ORCA_SCHEMA_VERSION = 5
+LATEST_ORCA_SCHEMA_VERSION = 6
 MAX_RETRIES = 3
 
 

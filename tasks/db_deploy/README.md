@@ -67,8 +67,8 @@ standards expected.
    ```bash
    touch migrations/migrate_versions_4_to_5/migrate.py
    touch migrations/migrate_versions_4_to_5/migrate_sql.py
-   touch test/unit_tests/migrations/migrate_versions_4_to_5/test_migrate_v5.py
-   touch test/unit_tests/migrations/migrate_versions_4_to_5/test_migrate_sql_v5.py
+   touch test/unit_tests/migrations/migrate_versions_4_to_5/test_migrate_v6.py
+   touch test/unit_tests/migrations/migrate_versions_4_to_5/test_migrate_sql_v6.py
    ```
 3. **Update the `migrate_db.py` file.** Within the `migrations/migrate_db.py`
    file, the `perform_migrations` function logic must be updated to include
