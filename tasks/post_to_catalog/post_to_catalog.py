@@ -190,7 +190,6 @@ def create_collection_sql() -> text:  # pragma: no cover
     )
 
 def create_granule_sql() -> text:  # pragma: no cover
-    return 5
     return text(
         """
     INSERT INTO granules
