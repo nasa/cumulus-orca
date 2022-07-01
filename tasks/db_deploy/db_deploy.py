@@ -75,8 +75,8 @@ def task(config: Dict[str, str], orca_buckets: List[str]) -> None:
     schema.
 
     Args:
-        config (Dict): Dictionary of connection information.
-        orca_buckets: List[str]): List of ORCA buckets needed to create partitioned tables.
+        config: Dictionary of connection information.
+        orca_buckets: List of ORCA buckets needed to create partitioned tables.
 
     Raises:
         Exception: If database does not exist.

@@ -137,8 +137,8 @@ schema.
 
 **Arguments**:
 
-- `config` _Dict_ - Dictionary of connection information.
-- `orca_buckets` - List[str]): List of ORCA buckets needed to create partitioned tables.
+- `config` - Dictionary of connection information.
+- `orca_buckets` - List of ORCA buckets needed to create partitioned tables.
   
 
 **Raises**:
@@ -234,12 +234,12 @@ create_fresh_orca_install(config: Dict[str, str], orca_buckets: List[str]) -> No
 ```
 
 This task will create the ORCA roles, users, schema, and tables needed
-by the ORCA application as a fresh install.
+by the ORCA application as a fresh installation.
 
 **Arguments**:
 
-- `config` _Dict_ - Dictionary with database connection information
-- `orca_buckets` - List[str]): List of ORCA buckets needed to create
+- `config` - Dictionary with database connection information
+- `orca_buckets` - List of ORCA buckets needed to create
   partitioned tables for reporting.
   
 
@@ -380,8 +380,8 @@ Creates the ORCA internal reconciliation tables in the proper order.
 
 **Arguments**:
 
-- `connection` _sqlalchemy.future.Connection_ - Database connection.
-- `orca_buckets` - List[str]): List of ORCA buckets needed to create
+- `connection` - Database connection.
+- `orca_buckets` - List of ORCA buckets needed to create
   partitioned tables for reporting.
   
 
@@ -394,7 +394,7 @@ Creates the ORCA internal reconciliation tables in the proper order.
 
 Name: orca_sql.py
 
-Description: All of the SQL used for creating and migrating the ORCA schema.
+Description: All the SQL used for creating and migrating the ORCA schema.
 
 <a name="install/orca_sql.commit_sql"></a>
 #### commit\_sql
@@ -475,7 +475,7 @@ before the app_user_sql and ORCA objects.
 #### app\_user\_sql
 
 ```python
-app_user_sql(user_name: str, user_password: str) -> text
+app_user_sql(user_name: str) -> text
 ```
 
 Full SQL for creating the ORCA application database user. Must be created
@@ -483,7 +483,7 @@ after the app_role_sql and orca_schema_sql.
 
 **Arguments**:
 
-- `user_password` _str_ - Password for the application user
+- `user_name` - Username for the application user
   
 
 **Returns**:
@@ -798,7 +798,7 @@ the ORCA schema.
 
 Name: orca_sql_v2.py
 
-Description: All of the SQL used for creating and migrating the ORCA schema to version 2.
+Description: All the SQL used for creating and migrating the ORCA schema to version 2.
 
 <a name="migrations/migrate_versions_1_to_2/migrate_sql.dbo_role_sql"></a>
 #### dbo\_role\_sql
@@ -847,7 +847,7 @@ before the app_user_sql and ORCA objects.
 #### app\_user\_sql
 
 ```python
-app_user_sql(user_name: str, user_password: str) -> text
+app_user_sql(user_name: str) -> text
 ```
 
 Full SQL for creating the ORCA application database user. Must be created
@@ -855,7 +855,7 @@ after the app_role_sql and orca_schema_sql.
 
 **Arguments**:
 
-- `user_password` _str_ - Password for the application user
+- `user_name` - Username for the application user
   
 
 **Returns**:
@@ -1247,7 +1247,7 @@ following tables:
 
 Name: migrate_sql.py
 
-Description: All of the SQL used for creating and migrating the ORCA schema to version 5.
+Description: All the SQL used for creating and migrating the ORCA schema to version 5.
 
 <a name="migrations/migrate_versions_4_to_5/migrate_sql.schema_versions_data_sql"></a>
 #### schema\_versions\_data\_sql
