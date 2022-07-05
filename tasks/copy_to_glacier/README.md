@@ -310,6 +310,7 @@ An example of a message is shown below:
                   "sizeInBytes": 100934568723,
                   "hash": "ACFH325128030192834127347",
                   "hashType": "SHA-256",
+                  "storageClass": "GLACIER",
                   "version": "VXCDEG902",
                   "ingestTime": "2020-01-01T23:00:00Z",
                   "etag": "YXC432BGT789",
