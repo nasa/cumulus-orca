@@ -36,11 +36,7 @@ def task(records: List[Dict[str, Any]], db_connect_info: Dict) -> None:
         db_connect_info: See shared_db.py's get_configuration for further details.
     """
     engine = shared_db.get_user_connection(db_connect_info)
-    for (
-        record
-    ) in (
-        records
-    ):
+    for record in records:
         send_record_to_database(record, engine)
         # Not deleting from active queue due to FIFO not requiring it.
 
@@ -87,7 +83,10 @@ def create_catalog_records(
         # Could theoretically use same connection for multiple records.
         # Would extend connection time. Serverless may throw a fit under specific circumstances.
         with engine.begin() as connection:
-            LOGGER.debug("Creating provider record '{providerId}'", providerId=provider["providerId"])
+            LOGGER.debug(
+                "Creating provider record '{providerId}'",
+                providerId=provider["providerId"],
+            )
             connection.execute(
                 create_provider_sql(),
                 [
@@ -97,7 +96,10 @@ def create_catalog_records(
                     }
                 ],
             )
-            LOGGER.debug("Creating collection record '{collectionId}'", collectionId=collection["collectionId"])
+            LOGGER.debug(
+                "Creating collection record '{collectionId}'",
+                collectionId=collection["collectionId"],
+            )
             connection.execute(
                 create_collection_sql(),
                 [
@@ -108,7 +110,10 @@ def create_catalog_records(
                     }
                 ],
             )
-            LOGGER.debug("Creating granule record '{cumulusGranuleId}'", cumulusGranuleId=granule["cumulusGranuleId"])
+            LOGGER.debug(
+                "Creating granule record '{cumulusGranuleId}'",
+                cumulusGranuleId=granule["cumulusGranuleId"],
+            )
             results = connection.execute(
                 create_granule_sql(),
                 [
@@ -133,8 +138,10 @@ def create_catalog_records(
 
             file_parameters = []
             for file in granule["files"]:
-                LOGGER.debug("Queueing file record '{cumulus_archive_location}'",
-                             cumulus_archive_location=file["cumulusArchiveLocation"])
+                LOGGER.debug(
+                    "Queueing file record '{cumulus_archive_location}'",
+                    cumulus_archive_location=file["cumulusArchiveLocation"],
+                )
                 file_parameters.append(
                     {
                         "granule_id": granule_id,
@@ -145,6 +152,7 @@ def create_catalog_records(
                         "size_in_bytes": file["sizeInBytes"],
                         "hash": file.get("hash", None),
                         "hash_type": file.get("hashType", None),
+                        "storage_class": file.get("storageClass"),
                         "version": file["version"],
                         "ingest_time": file["ingestTime"],
                         "etag": file["etag"],
@@ -189,8 +197,8 @@ def create_collection_sql() -> text:  # pragma: no cover
     """
     )
 
+
 def create_granule_sql() -> text:  # pragma: no cover
-    return 5
     return text(
         """
     INSERT INTO granules
@@ -210,10 +218,12 @@ def create_file_sql() -> text:  # pragma: no cover
         """
     INSERT INTO files
         (granule_id, name, orca_archive_location, cumulus_archive_location, key_path, ingest_time, etag, 
-        version, size_in_bytes, hash, hash_type)
-    VALUES
-        (:granule_id, :name, :orca_archive_location, :cumulus_archive_location, :key_path, :ingest_time, :etag, 
-        :version, :size_in_bytes, :hash, :hash_type)
+        version, size_in_bytes, hash, hash_type, storage_class_id)
+    SELECT
+        :granule_id, :name, :orca_archive_location, :cumulus_archive_location, :key_path, :ingest_time, :etag, 
+        :version, :size_in_bytes, :hash, :hash_type, storage_class.id
+    FROM
+        storage_class WHERE storage_class.value=:storage_class
     ON CONFLICT (cumulus_archive_location, key_path) DO UPDATE
         SET
         name=EXCLUDED.name,
@@ -223,7 +233,8 @@ def create_file_sql() -> text:  # pragma: no cover
         version=EXCLUDED.version,
         size_in_bytes=EXCLUDED.size_in_bytes,
         hash=EXCLUDED.hash, 
-        hash_type=EXCLUDED.hash_type"""
+        hash_type=EXCLUDED.hash_type,
+        storage_class_id=EXCLUDED.storage_class_id"""
     )
     # ON CONFLICT will only trigger if all listed properties match.
     # EXCLUDED refers to the row that would have been inserted.
@@ -241,7 +252,7 @@ def handler(event: Dict[str, List], context) -> None:
                 'body' (str): A json string representing a dict.
                     See catalog_record_input in schemas for details.
         context: An object passed through by AWS. Used for tracking.
-    Environment Vars: 
+    Environment Vars:
         DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
         See shared_db.py's get_configuration for further details.
     """
@@ -251,9 +262,7 @@ def handler(event: Dict[str, List], context) -> None:
     try:
         db_connect_info_secret_arn = os.environ["DB_CONNECT_INFO_SECRET_ARN"]
     except KeyError as key_error:
-        LOGGER.error(
-            "DB_CONNECT_INFO_SECRET_ARN environment value not found."
-        )
+        LOGGER.error("DB_CONNECT_INFO_SECRET_ARN environment value not found.")
         raise
     db_connect_info = shared_db.get_configuration(db_connect_info_secret_arn)
 
