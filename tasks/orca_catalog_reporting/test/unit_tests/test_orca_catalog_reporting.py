@@ -70,6 +70,7 @@ class TestOrcaCatalogReportingUnit(
                             "sizeBytes": random.randint(0, 999),
                             "hash": uuid.uuid4().__str__(),
                             "hashType": uuid.uuid4().__str__(),
+                            "storageClass": uuid.uuid4().__str__(),
                             "version": uuid.uuid4().__str__(),
                         }
                     ],
@@ -257,6 +258,7 @@ class TestOrcaCatalogReportingUnit(
                             "sizeBytes": random.randint(0, 999),
                             "hash": uuid.uuid4().__str__(),
                             "hashType": uuid.uuid4().__str__(),
+                            "storageClass": uuid.uuid4().__str__(),
                             "version": uuid.uuid4().__str__(),
                         }
                     ],

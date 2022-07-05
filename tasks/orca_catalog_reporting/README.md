@@ -45,6 +45,7 @@ Fully defined json schemas written in the schema of https://json-schema.org/ can
           "sizeBytes": 100934568723,
           "hash": "ACFH325128030192834127347",
           "hashType": "SHA-256",
+          "storageClass": "GLACIER",
           "version": "VXCDEG902"
         }
       ]
