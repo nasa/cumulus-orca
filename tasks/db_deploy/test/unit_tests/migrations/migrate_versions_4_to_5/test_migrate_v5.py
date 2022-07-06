@@ -5,7 +5,8 @@ Description: Runs unit tests for the migrations/migrate_versions_4_to_5/migrate.
 """
 
 import unittest
-from unittest.mock import MagicMock, call, patch
+import uuid
+from unittest.mock import MagicMock, Mock, call, patch
 
 from migrations.migrate_versions_4_to_5 import migrate
 
@@ -125,7 +126,7 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                     call.execute(mock_reconcile_s3_object_table()),
                     call.execute(
                         mock_reconcile_s3_object_partition_table(
-                            f"reconcile_s3_object_{self.orca_buckets[0]}"
+                            f"reconcile_s3_object_{self.orca_buckets[0]}"  # Left hard-coded for backwards compatibility
                         ),
                         {"bucket_name": self.orca_buckets[0]},
                     ),
@@ -172,3 +173,43 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 mock_extension.reset_mock()
                 mock_schema_versions_data.reset_mock()
                 mock_text.reset_mock()
+
+    @patch("orca_shared.reconciliation.shared_reconciliation.get_partition_name_from_bucket_name")
+    @patch("migrations.migrate_versions_4_to_5.migrate.get_admin_connection")
+    def test_migrate_versions_4_to_5_exception(
+            self,
+            mock_get_admin_connection: MagicMock,
+            mock_get_partition_name_from_bucket_name: MagicMock,
+    ) -> None:
+        """
+        Tests that an exception is thrown if the table name contains anything other than
+        A-Z, a-z, 0-9, and _ or is None.
+        """
+        config = {
+            "user_database": Mock()
+        }
+
+        orca_bucket_name = Mock()
+        # Test for None
+        partition_name = None
+        with self.subTest(partition_name=partition_name):
+            mock_get_partition_name_from_bucket_name.return_value = partition_name
+            with self.assertRaises(ValueError) as ve:
+                migrate.migrate_versions_4_to_5(config, False, [orca_bucket_name])
+            self.assertEqual(
+                "Table name must be a string and cannot be None.", str(ve.exception)
+            )
+            mock_get_partition_name_from_bucket_name.assert_called_once_with(orca_bucket_name)
+            mock_get_partition_name_from_bucket_name.reset_mock()
+
+        partition_names = ["", uuid.uuid4().__str__(), "$!ABadName2"]
+        for partition_name in partition_names:
+            with self.subTest(partition_name=partition_name):
+                mock_get_partition_name_from_bucket_name.return_value = partition_name
+                with self.assertRaises(ValueError) as ve:
+                    migrate.migrate_versions_4_to_5(config, False, [orca_bucket_name])
+                self.assertEqual(
+                    f"Table name {partition_name} is invalid.", str(ve.exception)
+                )
+                mock_get_partition_name_from_bucket_name.assert_called_once_with(orca_bucket_name)
+                mock_get_partition_name_from_bucket_name.reset_mock()
