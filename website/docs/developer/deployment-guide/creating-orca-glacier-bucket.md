@@ -112,7 +112,7 @@ an example of a justification.
 > The ORCA Cumulus application in the Cumulus Sandbox OU needs to read/write to
 > the ORCA DR account S3 buckets in order to create an operational archive copy of
 > ORCA data and recover data back to the primary Cumulus data holdings in case
-> of a failure. This cross account access will allow the Cumulus application to
+> of a failure. Note that only `GLACIER` and `DEEP_ARCHIVE` storage types are allowed for objects written to the bucket. This cross account access will allow the Cumulus application to
 > seamlessly perform these functions and provide operators with the capability to
 > test and verify disaster recovery scenarios.
 
