@@ -353,7 +353,7 @@ FUNCTIONS
                     "ingestTime" (str): Date and time the file was originally ingested into ORCA.
                     "etag" (str): etag of the file object in the AWS S3 Glacier bucket.
     
-    get_default_glacier_bucket_name(config: Dict[str, Any]) -> str
+    get_destination_bucket_name(config: Dict[str, Any]) -> str
     
     handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any
         Lambda handler. Runs a cumulus task that
