@@ -172,9 +172,10 @@ modifications, which will be detailed below.
       ],
       "Condition": {
         "StringEquals": {
-          "s3:x-amz-acl": "bucket-owner-full-control"
+          "s3:x-amz-acl": "bucket-owner-full-control",
+          "s3:x-amz-storage-class": ["GLACIER", "DEEP_ARCHIVE"]
         }
-      }
+     }
     }
   ]
 }
