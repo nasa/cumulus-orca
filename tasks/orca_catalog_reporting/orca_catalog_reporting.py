@@ -156,7 +156,7 @@ SELECT
     LIMIT :page_size+1
 ) as granules
 LEFT JOIN LATERAL
-    (SELECT json_agg(files) as files
+    (SELECT COALESCE(json_agg(files), '[]'::json) as files
     FROM (
     SELECT json_build_object(
         'name', files.name, 
