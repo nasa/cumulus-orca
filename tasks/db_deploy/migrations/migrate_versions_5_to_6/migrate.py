@@ -51,6 +51,16 @@ def migrate_versions_5_to_6(config: Dict[str, str], is_latest_version: bool) -> 
         connection.execute(sql.add_files_storage_class_id_column_sql())
         logger.info("storage_class_id column added.")
 
+        # Add storage_class columns to mismatches table
+        logger.debug("Adding storage_class column to mismatches table ...")
+        connection.execute(sql.add_mismatch_storage_class_columns_sql())
+        logger.info("storage_class columns added.")
+
+        # Add storage_class columns to phantoms table
+        logger.debug("Adding storage_class column to phantoms table ...")
+        connection.execute(sql.add_phantom_storage_class_column_sql())
+        logger.info("storage_class column added.")
+
         # If v6 is the latest version, update the schema_versions table.
         if is_latest_version:
             logger.debug("Populating the schema_versions table with data ...")
