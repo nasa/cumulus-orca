@@ -22,10 +22,32 @@ class TestOrcaSqlLogic(unittest.TestCase):
     def test_all_functions_return_text(self) -> None:
         """
         Validates that all functions return a type TextClause
-        except reconcile_s3_object_partition_sql which is tested in other tests
         """
 
         for name, function in getmembers(sql, isfunction):
-            if name not in ["text", "reconcile_s3_object_partition_sql"]:  # todo: no it isn't
+            if name not in ["text"]:
                 with self.subTest(function=function):
-                    self.assertEqual(type(function()), TextClause)
+                    # These functions take in a string parameter:
+                    if name in ["reconcile_s3_object_partition_sql"]:
+                        self.assertEqual(
+                            type(
+                                function(uuid.uuid4().__str__())
+                            ),
+                            TextClause
+                        )
+
+                    # All other functions have no parameters passed
+                    else:
+                        self.assertEqual(type(function()), TextClause)
+
+    def test_reconcile_s3_object_partition_sql_happy_path(self) -> None:
+        """
+        Tests the happy path and validates the partition_name is a part of the SQL.
+        """
+        partition_name = uuid.uuid4().__str__()
+        partition_sql = sql.reconcile_s3_object_partition_sql(partition_name)
+
+        # Check that the partition_name is in the SQL and the type is text
+        self.assertIn(partition_name, partition_sql.text)
+        self.assertEqual(type(partition_sql), TextClause)
+
