@@ -3,8 +3,7 @@ Name: migrate.py
 
 Description: Migrates the ORCA schema from version 5 to version 6.
 """
-import re
-from typing import Dict, List
+from typing import Dict
 
 from orca_shared.database.shared_db import get_admin_connection, logger
 
