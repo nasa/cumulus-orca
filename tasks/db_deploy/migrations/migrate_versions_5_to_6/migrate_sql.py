@@ -71,8 +71,6 @@ def storage_class_data_sql() -> text:  # pragma: no cover
     Data for the storage_class table. Inserts the currently valid storage classes into
     the table.
 
-    TODO: Research on Deep Glacier vs Deep Archive is limited.
-
     Returns: SQL for populating storage_class table.
     """
     return text(
