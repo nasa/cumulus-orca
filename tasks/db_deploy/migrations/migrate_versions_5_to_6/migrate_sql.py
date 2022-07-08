@@ -1,7 +1,7 @@
 """
 Name: migrate_sql.py
 
-Description: All the SQL used for creating and migrating the ORCA schema to version 5.
+Description: All the SQL used for creating and migrating the ORCA schema to version 6.
 """
 # Imports
 from sqlalchemy import text
