@@ -38,6 +38,7 @@ module.exports = {
                 'developer/development-guide/code/integration-tests',
                 'developer/development-guide/code/postgres-tests',
                 'developer/development-guide/code/orca-logging',
+                'developer/development-guide/code/parallel-scripting',
             ],
             "Developing Documentation": [
                 'developer/development-guide/documentation/contrib-documentation-intro',
