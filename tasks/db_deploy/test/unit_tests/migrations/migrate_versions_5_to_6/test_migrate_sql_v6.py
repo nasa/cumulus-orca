@@ -1,7 +1,7 @@
 """
 Name: test_migrate_sql_v6.py
 
-Description: Testing library for the migrations/migrate_versions_4_to_5/migrate_sql.py.
+Description: Testing library for the migrations/migrate_versions_5_to_6/migrate_sql.py.
 """
 
 import unittest

@@ -1,7 +1,7 @@
 """
 Name: migrate.py
 
-Description: Migrates the ORCA schema from version 4 to version 5.
+Description: Migrates the ORCA schema from version 5 to version 6.
 """
 import re
 from typing import Dict, List
@@ -22,7 +22,7 @@ def migrate_versions_5_to_6(config: Dict[str, str], is_latest_version: bool) -> 
 
     Args:
         config: Connection information for the database.
-        is_latest_version: Flag to determine if version 5 is the latest
+        is_latest_version: Flag to determine if version 6 is the latest
                                   schema version.
     Returns:
         None
@@ -52,7 +52,7 @@ def migrate_versions_5_to_6(config: Dict[str, str], is_latest_version: bool) -> 
         connection.execute(sql.add_files_storage_class_id_column_sql())
         logger.info("storage_class_id column added.")
 
-        # If v5 is the latest version, update the schema_versions table.
+        # If v6 is the latest version, update the schema_versions table.
         if is_latest_version:
             logger.debug("Populating the schema_versions table with data ...")
             connection.execute(sql.schema_versions_data_sql())
