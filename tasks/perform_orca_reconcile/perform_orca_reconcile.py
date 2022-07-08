@@ -141,7 +141,9 @@ def generate_phantom_reports_sql() -> text:  # pragma: no cover
                     files.name, 
                     files.key_path, 
                     files.etag, 
-                    files.size_in_bytes
+                    files.size_in_bytes,
+                    files.storage_class_id
+                    
                 FROM
                     files
                 LEFT OUTER JOIN reconcile_s3_object USING 
@@ -162,12 +164,17 @@ def generate_phantom_reports_sql() -> text:  # pragma: no cover
                     etag, 
                     last_update, 
                     size_in_bytes, 
-                    cumulus_granule_id 
+                    cumulus_granule_id,
+                    storage_class.value as storage_class
                 FROM 
                     phantom_files
                 INNER JOIN granules ON 
                 (
                     phantom_files.granule_id=granules.id
+                )
+                JOIN storage_class ON
+                (
+                    phantom_files.storage_class_id=storage_class.id
                 )
             )
         INSERT INTO reconcile_phantom_report 
@@ -179,7 +186,8 @@ def generate_phantom_reports_sql() -> text:  # pragma: no cover
             key_path, 
             orca_etag, 
             orca_last_update, 
-            orca_size
+            orca_size,
+            orca_storage_class
         )
         SELECT 
             :job_id, 
@@ -189,7 +197,8 @@ def generate_phantom_reports_sql() -> text:  # pragma: no cover
             key_path, 
             etag, 
             last_update, 
-            size_in_bytes
+            size_in_bytes,
+            storage_class
         FROM 
             phantom_reports"""
     )
@@ -246,7 +255,6 @@ def generate_mismatch_reports_sql() -> text:  # pragma: no cover
     SQL for retrieving mismatches between entries in S3 and the Orca catalog.
     """
     return text(
-        # todo: Probably have to remove orca_last_update from this. Could just remove the comparison. Could leave s3_last_update in if it helps.
         f"""
         INSERT INTO orca.reconcile_catalog_mismatch_report 
         (
@@ -262,6 +270,8 @@ def generate_mismatch_reports_sql() -> text:  # pragma: no cover
             s3_last_update, 
             orca_size_in_bytes, 
             s3_size_in_bytes, 
+            orca_storage_class,
+            s3_storage_class,
             discrepancy_type
         )
         SELECT
@@ -277,13 +287,23 @@ def generate_mismatch_reports_sql() -> text:  # pragma: no cover
             reconcile_s3_object.last_update AS s3_last_update,
             files.size_in_bytes AS orca_size_in_bytes, 
             reconcile_s3_object.size_in_bytes AS s3_size_in_bytes,
+            storage_class.value AS orca_storage_class,
+            reconcile_s3_object.storage_class AS s3_storage_class
             CASE 
+                WHEN (files.etag != reconcile_s3_object.etag AND files.size_in_bytes != reconcile_s3_object.size_in_bytes AND storage_class.value != reconcile_s3_object.storage_class) 
+                    THEN 'etag, size_in_bytes, storage_class'
                 WHEN (files.etag != reconcile_s3_object.etag AND files.size_in_bytes != reconcile_s3_object.size_in_bytes) 
                     THEN 'etag, size_in_bytes'
+                WHEN files.etag != reconcile_s3_object.etag AND storage_class.value != reconcile_s3_object.storage_class
+                    THEN 'etag, storage_class'
+                WHEN files.size_in_bytes != reconcile_s3_object.size_in_bytes AND storage_class.value != reconcile_s3_object.storage_class
+                    THEN 'size_in_bytes, storage_class'
                 WHEN files.etag != reconcile_s3_object.etag 
                     THEN 'etag'
                 WHEN files.size_in_bytes != reconcile_s3_object.size_in_bytes 
                     THEN 'size_in_bytes'
+                WHEN storage_class.value != reconcile_s3_object.storage_class
+                    THEN 'storage_class'
                 ELSE 'UNKNOWN'
             END AS discrepancy_type
         FROM 
@@ -296,12 +316,17 @@ def generate_mismatch_reports_sql() -> text:  # pragma: no cover
         (
             files.granule_id=granules.id
         )
+        INNER JOIN storage_class ON
+        (
+            storage_class_id=storage_class.id
+        )
         WHERE
             reconcile_s3_object.orca_archive_location = :orca_archive_location
             AND
             (
                 files.etag != reconcile_s3_object.etag OR
-                files.size_in_bytes != reconcile_s3_object.size_in_bytes
+                files.size_in_bytes != reconcile_s3_object.size_in_bytes OR
+                storage_class.value != reconcile_s3_object.storage_class
             )"""  # nosec
     )
 
