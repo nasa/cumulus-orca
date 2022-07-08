@@ -62,13 +62,13 @@ standards expected.
    migration from version x to version y. The `migrate_sql.py` file should have
    the SQL needed to perform the migration. See previous versions for examples
    on how the SQL should be formatted and expressed in functions. The unit test
-   files `test_migrate_vY.py` and `test_migrate_sql_vY.py` should contain unit
+   files `test_migrate_vy.py` and `test_migrate_sql_vy.py` should contain unit
    tests for all code written.
    ```bash
-   touch migrations/migrate_versions_4_to_5/migrate.py
-   touch migrations/migrate_versions_4_to_5/migrate_sql.py
-   touch test/unit_tests/migrations/migrate_versions_4_to_5/test_migrate_v6.py
-   touch test/unit_tests/migrations/migrate_versions_4_to_5/test_migrate_sql_v6.py
+   touch migrations/migrate_versions_x_to_y/migrate.py
+   touch migrations/migrate_versions_x_to_y/migrate_sql.py
+   touch test/unit_tests/migrations/migrate_versions_x_to_y/test_migrate_vy.py
+   touch test/unit_tests/migrations/migrate_versions_x_to_y/test_migrate_sql_vy.py
    ```
 3. **Update the `migrate_db.py` file.** Within the `migrations/migrate_db.py`
    file, the `perform_migrations` function logic must be updated to include
