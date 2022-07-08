@@ -5,6 +5,7 @@ Description: Testing library for the migrations/migrate_versions_4_to_5/migrate_
 """
 
 import unittest
+import uuid
 from inspect import getmembers, isfunction
 
 from sqlalchemy.sql.elements import TextClause
