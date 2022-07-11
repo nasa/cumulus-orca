@@ -45,4 +45,4 @@ terraform apply \
   -auto-approve \
   -input=false
 
-  aws s3 cp terraform.tfstate s3://$bamboo_PREFIX-dr-tf-state/terraform.tfstate
+aws s3 cp terraform.tfstate s3://$bamboo_PREFIX-dr-tf-state/terraform.tfstate
