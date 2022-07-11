@@ -1,11 +1,3 @@
-resource "aws_s3_bucket" "dr-tf-state" {
-  bucket = "PREFIX-dr-tf-state"
-  force_destroy = true
-  tags = {
-    Deployment = "PREFIX"
-    Application = "ORCA"
-  }
-}
 resource "aws_s3_bucket" "orca-archive-worm" {
   bucket = "PREFIX-orca-archive-worm"
   force_destroy = true
