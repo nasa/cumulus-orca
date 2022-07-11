@@ -209,9 +209,9 @@ def reconcile_s3_object_partition_sql(partition_name: str) -> text:
             -- Create orca_archive_location_:bucket_name
             CREATE TABLE {partition_name} PARTITION OF reconcile_s3_object
             (
-              CONSTRAINT "PK_{partition_name}"
+              CONSTRAINT PK_{partition_name}
                 PRIMARY KEY(key_path)
-            , CONSTRAINT "FK_reconcile_job_{partition_name}"
+            , CONSTRAINT FK_reconcile_job_{partition_name}
                 FOREIGN KEY(job_id) REFERENCES reconcile_job(id)
             )
             FOR VALUES IN (:bucket_name);
