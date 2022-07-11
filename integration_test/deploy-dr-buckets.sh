@@ -14,6 +14,11 @@ sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' dr-buckets.tf.template > dr-buckets.tf
 if ! aws s3api head-bucket --bucket $bamboo_PREFIX-dr-tf-state;then
     echo "terraform state bucket is not created. Creating ..."
     aws s3api create-bucket --bucket $bamboo_PREFIX-dr-tf-state  --region $bamboo_AWS_DEFAULT_REGION --create-bucket-configuration LocationConstraint=$bamboo_AWS_DEFAULT_REGION
+    
+    aws s3api put-bucket-versioning \
+    --bucket $bamboo_PREFIX-dr-tf-state \
+    --versioning-configuration Status=Enabled
+
     aws dynamodb create-table \
       --table-name $bamboo_PREFIX-dr-tf-locks \
       --attribute-definitions AttributeName=LockID,AttributeType=S \
@@ -39,3 +44,5 @@ echo "Deploying S3  buckets in Disaaster Recovery account"
 terraform apply \
   -auto-approve \
   -input=false
+
+  aws s3 cp terraform.tfstate s3://$bamboo_PREFIX-dr-tf-state/terraform.tfstate
