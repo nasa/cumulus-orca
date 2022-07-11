@@ -16,7 +16,7 @@ def schema_versions_data_sql() -> text:  # pragma: no cover
     version into the table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for populating schema_versions table.
+        SQL for populating schema_versions table.
     """
     return text(
         """
@@ -44,7 +44,7 @@ def create_extension() -> text:  # pragma: no cover
     from a CSV file in an AWS bucket into the database.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating extension for the database.
+        SQL for creating extension for the database.
     """
 
     return text(
@@ -63,7 +63,7 @@ def reconcile_status_table_sql() -> text:  # pragma: no cover
     Full SQL for creating the reconcile_status table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_status table.
+        SQL for creating reconcile_status table.
     """
     return text(
         """
@@ -104,7 +104,7 @@ def reconcile_job_table_sql() -> text:  # pragma: no cover
     Full SQL for creating the reconcile_job table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_job table.
+        SQL for creating reconcile_job table.
     """
     return text(
         """
@@ -151,7 +151,7 @@ def reconcile_s3_object_table_sql() -> text:  # pragma: no cover
     Full SQL for creating the reconcile_s3_object table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_s3_object table.
+        SQL for creating reconcile_s3_object table.
     """
     return text(
         """
@@ -202,7 +202,7 @@ def reconcile_s3_object_partition_sql(partition_name: str) -> text:
         partition_name(str): Name of the partition table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_s3_object partition table.
+        SQL for creating reconcile_s3_object partition table.
     """
     return text(
         f"""
@@ -228,7 +228,7 @@ def reconcile_catalog_mismatch_report_table_sql() -> text:  # pragma: no cover
     Full SQL for creating the reconcile_catalog_mismatch_report table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_catalog_mismatch_report.
+        SQL for creating reconcile_catalog_mismatch_report.
     """
     return text(
         """
@@ -292,7 +292,7 @@ def reconcile_orphan_report_table_sql() -> text:  # pragma: no cover
     Full SQL for creating the reconcile_orphan_report table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_orphan_report table.
+        SQL for creating reconcile_orphan_report table.
     """
     return text(
         """
@@ -335,7 +335,7 @@ def reconcile_phantom_report_table_sql() -> text:  # pragma: no cover
     Full SQL for creating the reconcile_phantom_report table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_phantom_report table.
+        SQL for creating reconcile_phantom_report table.
     """
     return text(
         """

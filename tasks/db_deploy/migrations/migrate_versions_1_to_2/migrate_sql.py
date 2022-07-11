@@ -16,7 +16,7 @@ def dbo_role_sql(db_name: str, admin_username: str) -> text:
     objects.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating orca_dbo role.
+        SQL for creating orca_dbo role.
     """
     return text(
         f"""
@@ -51,7 +51,7 @@ def app_role_sql(db_name: str) -> text:
     to interact with the ORCA schema.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating orca_app role.
+        SQL for creating orca_app role.
     """
     return text(
         f"""
@@ -85,7 +85,7 @@ def orca_schema_sql() -> text:  # pragma: no cover
     before the app_user_sql and ORCA objects.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating orca schema.
+        SQL for creating orca schema.
     """
     return text(
         """
@@ -135,7 +135,7 @@ def app_user_sql(user_name: str) -> text:
         user_name: Username for the application user
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating PREFIX_orcauser user.
+        SQL for creating PREFIX_orcauser user.
     """
     return text(
         f"""
@@ -174,7 +174,7 @@ def schema_versions_table_sql() -> text:  # pragma: no cover
     Full SQL for creating the schema_versions table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating schema_versions table.
+        SQL for creating schema_versions table.
     """
     return text(
         """
@@ -216,7 +216,7 @@ def schema_versions_data_sql() -> text:  # pragma: no cover
     version into the table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for populating schema_versions table.
+        SQL for populating schema_versions table.
     """
     return text(
         """
@@ -243,7 +243,7 @@ def recovery_status_table_sql() -> text:  # pragma: no cover
     before any of the other recovery table sql.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating recovery_status table.
+        SQL for creating recovery_status table.
     """
     return text(
         """
@@ -276,7 +276,7 @@ def recovery_status_data_sql() -> text:  # pragma: no cover
     the table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for populating recovery_status table.
+        SQL for populating recovery_status table.
     """
     return text(
         """
@@ -300,7 +300,7 @@ def recovery_job_table_sql() -> text:  # pragma: no cover
     table sql to maintain key dependencies.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating recovery_job table.
+        SQL for creating recovery_job table.
     """
     return text(
         """
@@ -345,7 +345,7 @@ def recovery_file_table_sql() -> text:  # pragma: no cover
     after the recovery_job table sql to maintain key dependencies.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating recovery_file table.
+        SQL for creating recovery_file table.
     """
     return text(
         """
@@ -412,7 +412,7 @@ def migrate_recovery_job_data_sql() -> text:  # pragma: no cover
     orca.recovery_job table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for populating recovery_job table.
+        SQL for populating recovery_job table.
     """
     return text(
         """
@@ -455,7 +455,7 @@ def migrate_recovery_file_data_sql() -> text:  # pragma: no cover
     orca.recovery_file table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for populating recovery_file table.
+        SQL for populating recovery_file table.
     """
     return text(
         """
@@ -500,7 +500,7 @@ def drop_request_status_table_sql() -> text:  # pragma: no cover
     SQL that removes the dr.request_status table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for dropping request_status table.
+        SQL for dropping request_status table.
     """
     return text(
         """
@@ -514,7 +514,7 @@ def drop_dr_schema_sql() -> text:  # pragma: no cover
     SQL that removes the dr schema.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for dropping dr schema.
+        SQL for dropping dr schema.
     """
     return text(
         """
@@ -528,7 +528,7 @@ def drop_druser_user_sql() -> text:  # pragma: no cover
     SQL that removes the druser user.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for dropping druser user.
+        SQL for dropping druser user.
     """
     return text(
         """
@@ -543,7 +543,7 @@ def drop_dbo_user_sql(db_name: str) -> text:
     SQL that removes the dbo user.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for dropping dbo user.
+        SQL for dropping dbo user.
     """
     return text(
         f"""
@@ -558,7 +558,7 @@ def drop_dr_role_sql(db_name: str) -> text:
     SQL that removes the dr_role role.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for dropping dr_role role.
+        SQL for dropping dr_role role.
     """
     return text(
         f"""
@@ -573,7 +573,7 @@ def drop_drdbo_role_sql(db_name: str) -> text:
     SQL that removes the drdbo_role role.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for dropping drdbo_role role.
+        SQL for dropping drdbo_role role.
     f"""
     return text(
         f"""

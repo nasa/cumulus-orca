@@ -29,7 +29,7 @@ def schema_versions_data_sql() -> text:  # pragma: no cover
     version into the table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for populating schema_versions table.
+        SQL for populating schema_versions table.
     """
     return text(
         """
