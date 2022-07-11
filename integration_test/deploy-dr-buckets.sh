@@ -13,9 +13,9 @@ sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' dr-buckets.tf.template > dr-buckets.tf
 
 if ! aws s3api head-bucket --bucket $bamboo_PREFIX-tf-state;then
     echo "terraform state bucket is not created. Creating ..."
-    aws s3api create-bucket --bucket $bamboo_PREFIX-tf-state  --region $bamboo_AWS_DEFAULT_REGION --create-bucket-configuration LocationConstraint=$bamboo_AWS_DEFAULT_REGION
+    aws s3api create-bucket --bucket $bamboo_PREFIX-dr-tf-state  --region $bamboo_AWS_DEFAULT_REGION --create-bucket-configuration LocationConstraint=$bamboo_AWS_DEFAULT_REGION
     aws dynamodb create-table \
-      --table-name $bamboo_PREFIX-tf-locks \
+      --table-name $bamboo_PREFIX-dr-tf-locks \
       --attribute-definitions AttributeName=LockID,AttributeType=S \
       --key-schema AttributeName=LockID,KeyType=HASH \
       --billing-mode PAY_PER_REQUEST \
@@ -27,9 +27,9 @@ fi
 #configruing S3 backend
 echo "terraform {
   backend \"s3\" {
-    bucket = \"$bamboo_PREFIX-tf-state\"
+    bucket = \"$bamboo_PREFIX-dr-tf-state\"
     region = \"$bamboo_AWS_DEFAULT_REGION\"
-    dynamodb_table = \"$bamboo_PREFIX-tf-locks\"
+    dynamodb_table = \"$bamboo_PREFIX-dr-tf-locks\"
   }
 }"
 
@@ -38,6 +38,3 @@ echo "Deploying S3  buckets in Disaaster Recovery account"
 terraform apply \
   -auto-approve \
   -input=false
-
-#copy terraform state file to the created tf-state bucket
-aws s3 cp terraform.tfstate s3://$bamboo_PREFIX-dr-tf-state/dr-buckets-tf/terraform.tfstate
