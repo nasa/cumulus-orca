@@ -1,8 +1,8 @@
-ALTER TABLE reconcile_phantom_report DROP COLUMN IF EXISTS orca_storage_class;
-ALTER TABLE reconcile_catalog_mismatch_report DROP COLUMN IF EXISTS s3_storage_class;
-ALTER TABLE reconcile_catalog_mismatch_report DROP COLUMN IF EXISTS orca_storage_class;
-ALTER TABLE files DROP COLUMN IF EXISTS storage_class_id;
-DROP CONSTRAINT IF EXISTS FK_recovery_file_storage_class;
+ALTER TABLE orca.reconcile_phantom_report DROP COLUMN IF EXISTS orca_storage_class;
+ALTER TABLE orca.reconcile_catalog_mismatch_report DROP COLUMN IF EXISTS s3_storage_class;
+ALTER TABLE orca.reconcile_catalog_mismatch_report DROP COLUMN IF EXISTS orca_storage_class;
+ALTER TABLE orca.files DROP COLUMN IF EXISTS storage_class_id;
+ALTER TABLE orca.files DROP CONSTRAINT IF EXISTS FK_recovery_file_storage_class;
 DROP TABLE IF EXISTS orca.storage_class;
 DELETE FROM orca.schema_versions
     WHERE version_id=6;

@@ -126,10 +126,10 @@ def add_mismatch_storage_class_columns_sql() -> text:  # pragma: no cover
         """
         -- Add the storage_class columns with a default of GLACIER
         ALTER TABLE reconcile_catalog_mismatch_report
-        ADD COLUMN IF NOT EXISTS orca_storage_class text NOT NULL default 'GLACIER';
+        ADD COLUMN IF NOT EXISTS orca_storage_class text NOT NULL default 'GLACIER',
+        ADD COLUMN IF NOT EXISTS s3_storage_class text NOT NULL default 'GLACIER';
         COMMENT ON COLUMN reconcile_catalog_mismatch_report.orca_storage_class
             IS 'Storage class of the file as reported in the ORCA catalog.';
-        ADD COLUMN IF NOT EXISTS s3_storage_class text NOT NULL default 'GLACIER';
         COMMENT ON COLUMN reconcile_catalog_mismatch_report.s3_storage_class
             IS 'Storage class of the file as reported in the S3 bucket.';
 
