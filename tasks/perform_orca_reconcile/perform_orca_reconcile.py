@@ -19,7 +19,6 @@ from orca_shared.database.shared_db import RT
 from orca_shared.reconciliation import OrcaStatus, update_job
 from sqlalchemy import text
 from sqlalchemy.future import Engine
-from sqlalchemy.sql.elements import TextClause
 
 OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY = "INTERNAL_REPORT_QUEUE_URL"
 
@@ -128,7 +127,7 @@ def generate_reports(job_id: int, orca_archive_location: str, engine: Engine) ->
         raise
 
 
-def generate_phantom_reports_sql() -> TextClause:
+def generate_phantom_reports_sql() -> text:  # pragma: no cover
     """
     SQL for generating reports on files in the Orca catalog, but not S3.
     """
@@ -196,7 +195,7 @@ def generate_phantom_reports_sql() -> TextClause:
     )
 
 
-def generate_orphan_reports_sql() -> TextClause:
+def generate_orphan_reports_sql() -> text:  # pragma: no cover
     """
     SQL for generating reports on files in S3, but not the Orca catalog.
     """
@@ -242,7 +241,7 @@ def generate_orphan_reports_sql() -> TextClause:
     )
 
 
-def generate_mismatch_reports_sql() -> TextClause:
+def generate_mismatch_reports_sql() -> text:  # pragma: no cover
     """
     SQL for retrieving mismatches between entries in S3 and the Orca catalog.
     """

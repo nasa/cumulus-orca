@@ -1,25 +1,22 @@
 """
 Name: migrate_sql.py
 
-Description: All of the SQL used for creating and migrating the ORCA schema to version 5.
+Description: All the SQL used for creating and migrating the ORCA schema to version 5.
 """
 # Imports
-import re
-
 from sqlalchemy import text
-from sqlalchemy.sql.elements import TextClause
 
 
 # ----------------------------------------------------------------------------
 # Version table information
 # ----------------------------------------------------------------------------
-def schema_versions_data_sql() -> TextClause:
+def schema_versions_data_sql() -> text:  # pragma: no cover
     """
     Data for the schema_versions table. Inserts the current schema
     version into the table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for populating schema_versions table.
+        SQL for populating schema_versions table.
     """
     return text(
         """
@@ -41,13 +38,13 @@ def schema_versions_data_sql() -> TextClause:
 # ----------------------------------------------------------------------------
 # Database extension
 # ----------------------------------------------------------------------------
-def create_extension() -> TextClause:
+def create_extension() -> text:  # pragma: no cover
     """
     Full SQL for creating the aws_s3 extension used for COPYING S3 reporting data
     from a CSV file in an AWS bucket into the database.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating extension for the database.
+        SQL for creating extension for the database.
     """
 
     return text(
@@ -61,12 +58,12 @@ def create_extension() -> TextClause:
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA internal reconciliation tables
 # ----------------------------------------------------------------------------
-def reconcile_status_table_sql() -> TextClause:
+def reconcile_status_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the reconcile_status table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_status table.
+        SQL for creating reconcile_status table.
     """
     return text(
         """
@@ -102,12 +99,12 @@ def reconcile_status_table_sql() -> TextClause:
     )
 
 
-def reconcile_job_table_sql() -> TextClause:
+def reconcile_job_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the reconcile_job table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_job table.
+        SQL for creating reconcile_job table.
     """
     return text(
         """
@@ -149,12 +146,12 @@ def reconcile_job_table_sql() -> TextClause:
     )
 
 
-def reconcile_s3_object_table_sql() -> TextClause:
+def reconcile_s3_object_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the reconcile_s3_object table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_s3_object table.
+        SQL for creating reconcile_s3_object table.
     """
     return text(
         """
@@ -195,7 +192,7 @@ def reconcile_s3_object_table_sql() -> TextClause:
     )
 
 
-def reconcile_s3_object_partition_sql(partition_name: str) -> TextClause:
+def reconcile_s3_object_partition_sql(partition_name: str) -> text:
     """
     Full SQL for creating the reconcile_s3_object partition table. Requires the
     user to pass the orca_archive_location value for the partition in the form
@@ -205,14 +202,8 @@ def reconcile_s3_object_partition_sql(partition_name: str) -> TextClause:
         partition_name(str): Name of the partition table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_s3_object partition table.
+        SQL for creating reconcile_s3_object partition table.
     """
-    try:
-        if not re.match("^[\w+]+$", partition_name):  # noqa: W605
-            raise ValueError(f"Table name {partition_name} is invalid.")
-    except TypeError:
-        raise ValueError("Table name must be a string and cannot be None.")
-
     return text(
         f"""
             -- Create orca_archive_location_:bucket_name
@@ -232,12 +223,12 @@ def reconcile_s3_object_partition_sql(partition_name: str) -> TextClause:
     )
 
 
-def reconcile_catalog_mismatch_report_table_sql() -> TextClause:
+def reconcile_catalog_mismatch_report_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the reconcile_catalog_mismatch_report table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_catalog_mismatch_report.
+        SQL for creating reconcile_catalog_mismatch_report.
     """
     return text(
         """
@@ -296,12 +287,12 @@ def reconcile_catalog_mismatch_report_table_sql() -> TextClause:
     )
 
 
-def reconcile_orphan_report_table_sql() -> TextClause:
+def reconcile_orphan_report_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the reconcile_orphan_report table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_orphan_report table.
+        SQL for creating reconcile_orphan_report table.
     """
     return text(
         """
@@ -339,12 +330,12 @@ def reconcile_orphan_report_table_sql() -> TextClause:
     )
 
 
-def reconcile_phantom_report_table_sql() -> TextClause:
+def reconcile_phantom_report_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the reconcile_phantom_report table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_phantom_report table.
+        SQL for creating reconcile_phantom_report table.
     """
     return text(
         """

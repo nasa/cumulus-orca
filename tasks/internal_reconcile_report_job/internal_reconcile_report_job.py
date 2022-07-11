@@ -112,7 +112,7 @@ def query_db(
         return jobs
 
 
-def get_jobs_sql() -> text:
+def get_jobs_sql() -> text:  # pragma: no cover
     """
     SQL for getting jobs and associated metadata from Postgres.
     Formats datetimes in milliseconds since 1 January 1970 UTC.

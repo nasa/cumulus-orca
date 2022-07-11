@@ -33,41 +33,32 @@ class TestOrcaSqlLogic(unittest.TestCase):
     def test_all_functions_return_text(self) -> None:
         """
         Validates that all functions return a type TextClause
-        except reconcile_s3_object_partition_sql which is tested in other tests
         """
 
         for name, function in getmembers(sql, isfunction):
-            if name not in ["text", "reconcile_s3_object_partition_sql"]:
+            if name not in ["text"]:
                 with self.subTest(function=function):
-                    self.assertEqual(type(function()), TextClause)
+                    # These functions take in a string parameter:
+                    if name in ["reconcile_s3_object_partition_sql"]:
+                        self.assertEqual(
+                            type(
+                                function(uuid.uuid4().__str__())
+                            ),
+                            TextClause
+                        )
+
+                    # All other functions have no parameters passed
+                    else:
+                        self.assertEqual(type(function()), TextClause)
 
     def test_reconcile_s3_object_partition_sql_happy_path(self) -> None:
         """
-        Tests that a well formed table name passes checks. The name must be made up of the
-        characters A-Z, a-z, 0-9, or _
+        Tests the happy path and validates the partition_name is a part of the SQL.
         """
-        partition_name = generate_randoms_string()
-        sql_text = sql.reconcile_s3_object_partition_sql(partition_name)
-        self.assertEqual(type(sql_text), TextClause)
+        partition_name = uuid.uuid4().__str__()
+        partition_sql = sql.reconcile_s3_object_partition_sql(partition_name)
 
-    def test_reconcile_s3_object_partition_sql_exception(self) -> None:
-        """
-        Tests that an exception is thrown if the table name is not made up of the following
-        characters A-Z, a-z, 0-9, and _. Also the table name cannot be None.
-        """
-        # Test for None
-        partition_name = None
-        with self.assertRaises(ValueError) as ve:
-            sql.reconcile_s3_object_partition_sql(partition_name)
-        self.assertEqual(
-            "Table name must be a string and cannot be None.", str(ve.exception)
-        )
+        # Check that the partition_name is in the SQL and the type is text
+        self.assertIn(partition_name, partition_sql.text)
+        self.assertEqual(type(partition_sql), TextClause)
 
-        partition_names = ["", uuid.uuid4().__str__(), "$!ABadName2"]
-        for partition_name in partition_names:
-            with self.subTest(partition_name=partition_name):
-                with self.assertRaises(ValueError) as ve:
-                    sql.reconcile_s3_object_partition_sql(partition_name)
-                self.assertEqual(
-                    f"Table name {partition_name} is invalid.", str(ve.exception)
-                )

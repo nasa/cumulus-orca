@@ -64,7 +64,7 @@ Generates and posts phantom, orphan, and mismatch reports within the same transa
 #### generate\_phantom\_reports\_sql
 
 ```python
-def generate_phantom_reports_sql() -> TextClause
+def generate_phantom_reports_sql() -> text
 ```
 
 SQL for generating reports on files in the Orca catalog, but not S3.
@@ -74,7 +74,7 @@ SQL for generating reports on files in the Orca catalog, but not S3.
 #### generate\_orphan\_reports\_sql
 
 ```python
-def generate_orphan_reports_sql() -> TextClause
+def generate_orphan_reports_sql() -> text
 ```
 
 SQL for generating reports on files in S3, but not the Orca catalog.
@@ -84,7 +84,7 @@ SQL for generating reports on files in S3, but not the Orca catalog.
 #### generate\_mismatch\_reports\_sql
 
 ```python
-def generate_mismatch_reports_sql() -> TextClause
+def generate_mismatch_reports_sql() -> text
 ```
 
 SQL for retrieving mismatches between entries in S3 and the Orca catalog.
