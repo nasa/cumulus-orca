@@ -13,13 +13,13 @@ sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' dr-buckets.tf.template > dr-buckets.tf
 
 if ! aws s3api head-bucket --bucket $bamboo_PREFIX-tf-state;then
     echo "terraform state bucket is not created. Creating ..."
-    aws s3api create-bucket --bucket $bamboo_PREFIX-tf-state  --region $AWS_REGION --create-bucket-configuration LocationConstraint=$AWS_REGION
+    aws s3api create-bucket --bucket $bamboo_PREFIX-tf-state  --region $bamboo_AWS_DEFAULT_REGION --create-bucket-configuration LocationConstraint=$bamboo_AWS_DEFAULT_REGION
     aws dynamodb create-table \
       --table-name $bamboo_PREFIX-tf-locks \
       --attribute-definitions AttributeName=LockID,AttributeType=S \
       --key-schema AttributeName=LockID,KeyType=HASH \
       --billing-mode PAY_PER_REQUEST \
-      --region $AWS_REGION
+      --region $bamboo_AWS_DEFAULT_REGION
 else
     echo "terraform state bucket present."
 fi
@@ -28,7 +28,7 @@ fi
 echo "terraform {
   backend \"s3\" {
     bucket = \"$bamboo_PREFIX-tf-state\"
-    region = \"$AWS_REGION\"
+    region = \"$bamboo_AWS_DEFAULT_REGION\"
     dynamodb_table = \"$bamboo_PREFIX-tf-locks\"
   }
 }"
