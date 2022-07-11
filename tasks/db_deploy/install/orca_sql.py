@@ -23,7 +23,7 @@ def app_database_sql(db_name: str, admin_username: str) -> text:
     Full SQL for creating the ORCA application database.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating database.
+        SQL for creating database.
     """
     return text(
         f"""
@@ -57,7 +57,7 @@ def dbo_role_sql(db_name: str, admin_username: str) -> text:
     objects.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating orca_dbo role.
+        SQL for creating orca_dbo role.
     """
     return text(
         f"""
@@ -92,7 +92,7 @@ def app_role_sql(db_name: str) -> text:
     to interact with the ORCA schema.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating orca_app role.
+        SQL for creating orca_app role.
     """
     return text(
         f"""
@@ -126,7 +126,7 @@ def orca_schema_sql() -> text:  # pragma: no cover
     before the app_user_sql and ORCA objects.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating orca schema.
+        SQL for creating orca schema.
     """
     return text(
         """
@@ -176,7 +176,7 @@ def app_user_sql(user_name: str) -> text:
         user_name: Username for the application user
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating PREFIX_orcauser user.
+        SQL for creating PREFIX_orcauser user.
     """
     return text(
         f"""
@@ -213,7 +213,7 @@ def create_extension() -> text:  # pragma: no cover
     from a CSV file in an AWS bucket into the database.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating extension for the database.
+        SQL for creating extension for the database.
     """
 
     return text(
@@ -232,7 +232,7 @@ def schema_versions_table_sql() -> text:  # pragma: no cover
     Full SQL for creating the schema_versions table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating schema_versions table.
+        SQL for creating schema_versions table.
     """
     return text(
         """
@@ -274,7 +274,7 @@ def schema_versions_data_sql() -> text:  # pragma: no cover
     version into the table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for populating schema_versions table.
+        SQL for populating schema_versions table.
     """
     return text(
         """
@@ -302,7 +302,7 @@ def recovery_status_table_sql() -> text:  # pragma: no cover
     before any of the other recovery table sql.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating recovery_status table.
+        SQL for creating recovery_status table.
     """
     return text(
         """
@@ -335,7 +335,7 @@ def recovery_status_data_sql() -> text:  # pragma: no cover
     the table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for populating recovery_status table.
+        SQL for populating recovery_status table.
     """
     return text(
         """
@@ -359,7 +359,7 @@ def recovery_job_table_sql() -> text:  # pragma: no cover
     table sql to maintain key dependencies.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating recovery_job table.
+        SQL for creating recovery_job table.
     """
     return text(
         """
@@ -406,7 +406,7 @@ def recovery_file_table_sql() -> text:  # pragma: no cover
     after the recovery_job table sql to maintain key dependencies.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating recovery_file table.
+        SQL for creating recovery_file table.
     """
     return text(
         """
@@ -472,7 +472,7 @@ def providers_table_sql() -> text:  # pragma: no cover
     Full SQL for creating the providers table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating providers table.
+        SQL for creating providers table.
     """
     return text(
         """
@@ -502,7 +502,7 @@ def collections_table_sql() -> text:  # pragma: no cover
     Full SQL for creating the collections table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating collections table.
+        SQL for creating collections table.
     """
     return text(
         """
@@ -535,7 +535,7 @@ def granules_table_sql() -> text:  # pragma: no cover
     Full SQL for creating the catalog granules table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating granules table.
+        SQL for creating granules table.
     """
     return text(
         """
@@ -645,7 +645,7 @@ def files_table_sql() -> text:  # pragma: no cover
     Full SQL for creating the catalog files table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating files table.
+        SQL for creating files table.
     """
     return text(
         """
@@ -720,7 +720,7 @@ def reconcile_status_table_sql() -> text:  # pragma: no cover
     Full SQL for creating the reconcile_status table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_status table.
+        SQL for creating reconcile_status table.
     """
     return text(
         """
@@ -761,7 +761,7 @@ def reconcile_job_table_sql() -> text:  # pragma: no cover
     Full SQL for creating the reconcile_job table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_job table.
+        SQL for creating reconcile_job table.
     """
     return text(
         """
@@ -810,7 +810,7 @@ def reconcile_s3_object_table_sql() -> text:  # pragma: no cover
     Full SQL for creating the reconcile_s3_object table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_s3_object table.
+        SQL for creating reconcile_s3_object table.
     """
     return text(
         """
@@ -861,22 +861,22 @@ def reconcile_s3_object_partition_sql(partition_name: str) -> text:
         partition_name(str): Name of the partition table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_s3_object partition table.
+        SQL for creating reconcile_s3_object partition table.
     """
     return text(
         f"""
             -- Create orca_archive_location_:bucket_name
-            CREATE TABLE "{partition_name}" PARTITION OF reconcile_s3_object
+            CREATE TABLE {partition_name} PARTITION OF reconcile_s3_object
             (
-              CONSTRAINT "PK_{partition_name}"
+              CONSTRAINT PK_{partition_name}
                 PRIMARY KEY(key_path)
-            , CONSTRAINT "FK_reconcile_job_{partition_name}"
+            , CONSTRAINT FK_reconcile_job_{partition_name}
                 FOREIGN KEY(job_id) REFERENCES reconcile_job(id)
             )
             FOR VALUES IN (:bucket_name);
 
             -- Comment
-            COMMENT ON TABLE "{partition_name}"
+            COMMENT ON TABLE {partition_name}
               IS 'Partition table for reconcile_s3_object based on orca_archive_location.';
             """
     )
@@ -887,7 +887,7 @@ def reconcile_catalog_mismatch_report_table_sql() -> text:  # pragma: no cover
     Full SQL for creating the reconcile_catalog_mismatch_report table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_catalog_mismatch_report.
+        SQL for creating reconcile_catalog_mismatch_report.
     """
     return text(
         """
@@ -951,7 +951,7 @@ def reconcile_orphan_report_table_sql() -> text:  # pragma: no cover
     Full SQL for creating the reconcile_orphan_report table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_orphan_report table.
+        SQL for creating reconcile_orphan_report table.
     """
     return text(
         """
@@ -994,7 +994,7 @@ def reconcile_phantom_report_table_sql() -> text:  # pragma: no cover
     Full SQL for creating the reconcile_phantom_report table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_phantom_report table.
+        SQL for creating reconcile_phantom_report table.
     """
     return text(
         """

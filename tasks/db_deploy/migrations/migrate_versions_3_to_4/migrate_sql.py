@@ -16,7 +16,7 @@ def providers_table_sql() -> text:  # pragma: no cover
     Full SQL for creating the providers table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating providers table.
+        SQL for creating providers table.
     """
     return text(
         """
@@ -46,7 +46,7 @@ def collections_table_sql() -> text:  # pragma: no cover
     Full SQL for creating the collections table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating collections table.
+        SQL for creating collections table.
     """
     return text(
         """
@@ -79,7 +79,7 @@ def granules_table_sql() -> text:  # pragma: no cover
     Full SQL for creating the catalog granules table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating granules table.
+        SQL for creating granules table.
     """
     return text(
         """
@@ -135,7 +135,7 @@ def files_table_sql() -> text:  # pragma: no cover
     Full SQL for creating the catalog files table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating files table.
+        SQL for creating files table.
     """
     return text(
         """
@@ -203,7 +203,7 @@ def schema_versions_data_sql() -> text:  # pragma: no cover
     version into the table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for populating schema_versions table.
+        SQL for populating schema_versions table.
     """
     return text(
         """
