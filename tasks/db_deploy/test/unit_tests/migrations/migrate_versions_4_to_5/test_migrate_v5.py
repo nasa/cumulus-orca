@@ -86,7 +86,7 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
 
         for latest_version in [True, False]:
             with self.subTest(latest_version=latest_version):
-                # Setup the mock object that conn.execute is a part of in
+                # Set up the mock object that conn.execute is a part of in
                 # the connection with block
                 mock_conn_enter = mock_connection().connect().__enter__()
 
@@ -95,7 +95,7 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                     self.config, latest_version, self.orca_buckets
                 )
 
-                # Check that all of the functions were called the correct
+                # Check that all the functions were called the correct
                 # number of times with the proper values
                 mock_connection.assert_any_call(
                     self.config, self.config["user_database"]

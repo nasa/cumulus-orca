@@ -18,6 +18,7 @@ from test.unit_tests.ConfigCheck import ConfigCheck
 with open("schemas/output.json", "r") as raw_schema:
     _OUTPUT_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
 
+
 class TestCopyToGlacierHandler(TestCase):
     """
     Test copy to glacier handler
@@ -312,6 +313,7 @@ class TestCopyToGlacierHandler(TestCase):
                         "hashType": event["input"]["granules"][0]["files"][0][
                             copy_to_glacier.FILE_HASH_TYPE_KEY
                         ],
+                        "storageClass": "GLACIER",
                     },
                     {
                         "cumulusArchiveLocation": event["input"]["granules"][0][
@@ -334,6 +336,7 @@ class TestCopyToGlacierHandler(TestCase):
                         "hashType": event["input"]["granules"][0]["files"][1][
                             copy_to_glacier.FILE_HASH_TYPE_KEY
                         ],
+                        "storageClass": "GLACIER",
                     },
                     {
                         "cumulusArchiveLocation": event["input"]["granules"][0][
@@ -356,6 +359,7 @@ class TestCopyToGlacierHandler(TestCase):
                         "hashType": event["input"]["granules"][0]["files"][2][
                             copy_to_glacier.FILE_HASH_TYPE_KEY
                         ],
+                        "storageClass": "GLACIER",
                     },
                     {
                         "cumulusArchiveLocation": event["input"]["granules"][0][
@@ -378,6 +382,7 @@ class TestCopyToGlacierHandler(TestCase):
                         "hashType": event["input"]["granules"][0]["files"][3][
                             copy_to_glacier.FILE_HASH_TYPE_KEY
                         ],
+                        "storageClass": "GLACIER",
                     },
                 ],
             },
@@ -762,6 +767,7 @@ class TestCopyToGlacierHandler(TestCase):
                         "sizeInBytes": 100934568723,
                         "hash": "ACFH325128030192834127347",
                         "hashType": "SHA-256",
+                        "storageClass": "GLACIER",
                         "version": "VXCDEG902",
                         "ingestTime": "2019-07-17T17:36:38.494918+00:00",
                         "etag": "YXC432BGT789",
@@ -784,9 +790,7 @@ class TestCopyToGlacierHandler(TestCase):
     # todo: since sleep is not called in function under test, this violates good unit test practices. Fix in ORCA-406
     @patch("time.sleep")
     @patch.dict(os.environ, {"AWS_REGION": "us-west-2"}, clear=True)
-    def test_post_to_metadata_queue_retry_failures(
-        self, mock_sleep: MagicMock
-    ):
+    def test_post_to_metadata_queue_retry_failures(self, mock_sleep: MagicMock):
         """
         Produces a failure and checks if retries are performed in the SQS library.
         """
@@ -812,6 +816,7 @@ class TestCopyToGlacierHandler(TestCase):
                         "sizeInBytes": 100934568723,
                         "hash": "ACFH325128030192834127347",
                         "hashType": "SHA-256",
+                        "storageClass": "GLACIER",
                         "version": "VXCDEG902",
                         "ingestTime": "2019-07-17T17:36:38.494918+00:00",
                         "etag": "YXC432BGT789",
@@ -828,7 +833,9 @@ class TestCopyToGlacierHandler(TestCase):
             )
         self.assertEqual(
             "An error occurred (AWS.SimpleQueueService.NonExistentQueue) when calling the SendMessage operation: The "
-            "specified queue does not exist for this wsdl version.", str(cm.exception))
+            "specified queue does not exist for this wsdl version.",
+            str(cm.exception),
+        )
         self.assertEqual(3, mock_sleep.call_count)
 
 

@@ -34,6 +34,8 @@
   * [providers\_table\_sql](#install/orca_sql.providers_table_sql)
   * [collections\_table\_sql](#install/orca_sql.collections_table_sql)
   * [granules\_table\_sql](#install/orca_sql.granules_table_sql)
+  * [storage\_class\_table\_sql](#install/orca_sql.storage_class_table_sql)
+  * [storage\_class\_data\_sql](#install/orca_sql.storage_class_data_sql)
   * [files\_table\_sql](#install/orca_sql.files_table_sql)
   * [reconcile\_status\_table\_sql](#install/orca_sql.reconcile_status_table_sql)
   * [reconcile\_job\_table\_sql](#install/orca_sql.reconcile_job_table_sql)
@@ -90,6 +92,13 @@
   * [reconcile\_catalog\_mismatch\_report\_table\_sql](#migrations/migrate_versions_4_to_5/migrate_sql.reconcile_catalog_mismatch_report_table_sql)
   * [reconcile\_orphan\_report\_table\_sql](#migrations/migrate_versions_4_to_5/migrate_sql.reconcile_orphan_report_table_sql)
   * [reconcile\_phantom\_report\_table\_sql](#migrations/migrate_versions_4_to_5/migrate_sql.reconcile_phantom_report_table_sql)
+* [migrations/migrate\_versions\_5\_to\_6/migrate](#migrations/migrate_versions_5_to_6/migrate)
+  * [migrate\_versions\_5\_to\_6](#migrations/migrate_versions_5_to_6/migrate.migrate_versions_5_to_6)
+* [migrations/migrate\_versions\_5\_to\_6/migrate\_sql](#migrations/migrate_versions_5_to_6/migrate_sql)
+  * [schema\_versions\_data\_sql](#migrations/migrate_versions_5_to_6/migrate_sql.schema_versions_data_sql)
+  * [storage\_class\_table\_sql](#migrations/migrate_versions_5_to_6/migrate_sql.storage_class_table_sql)
+  * [storage\_class\_data\_sql](#migrations/migrate_versions_5_to_6/migrate_sql.storage_class_data_sql)
+  * [add\_files\_storage\_class\_id\_column\_sql](#migrations/migrate_versions_5_to_6/migrate_sql.add_files_storage_class_id_column_sql)
 
 <a name="db_deploy"></a>
 # db\_deploy
@@ -627,6 +636,36 @@ Full SQL for creating the catalog granules table.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for creating granules table.
 
+<a name="install/orca_sql.storage_class_table_sql"></a>
+#### storage\_class\_table\_sql
+
+```python
+storage_class_table_sql() -> text
+```
+
+Full SQL for creating the storage_class table. This SQL must be run
+before any of the other recovery table sql.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating storage_class table.
+
+<a name="install/orca_sql.storage_class_data_sql"></a>
+#### storage\_class\_data\_sql
+
+```python
+storage_class_data_sql() -> text
+```
+
+Data for the storage_class table. Inserts the currently valid storage classes into
+the table.
+
+TODO: Research on Deep Glacier vs Deep Archive is limited.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for populating storage_class table.
+
 <a name="install/orca_sql.files_table_sql"></a>
 #### files\_table\_sql
 
@@ -757,9 +796,9 @@ migrations to run.
 
 **Arguments**:
 
-- `current_schema_version` _int_ - Current version of the ORCA schema
-- `config` _Dict_ - Dictionary containing database connection information
-- `orca_buckets` - List[str]): List of ORCA bucket names used to create partition tables for v5.
+- `current_schema_version` - Current version of the ORCA schema
+- `config` - Dictionary containing database connection information
+- `orca_buckets` - List of ORCA bucket names used to create partition tables for v5.
   
 
 **Returns**:
@@ -1374,4 +1413,92 @@ Full SQL for creating the reconcile_phantom_report table.
 **Returns**:
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_phantom_report table.
+
+<a name="migrations/migrate_versions_5_to_6/migrate"></a>
+# migrations/migrate\_versions\_5\_to\_6/migrate
+
+Name: migrate.py
+
+Description: Migrates the ORCA schema from version 4 to version 5.
+
+<a name="migrations/migrate_versions_5_to_6/migrate.migrate_versions_5_to_6"></a>
+#### migrate\_versions\_5\_to\_6
+
+```python
+migrate_versions_5_to_6(config: Dict[str, str], is_latest_version: bool) -> None
+```
+
+Performs the migration of the ORCA schema from version 5 to version 6 of
+the ORCA schema. This includes adding the
+following tables:
+- storage_class
+and adding the following columns
+- files/storage_class_id    default 1 (GLACIER)
+
+**Arguments**:
+
+- `config` - Connection information for the database.
+- `is_latest_version` - Flag to determine if version 5 is the latest
+  schema version.
+
+**Returns**:
+
+  None
+
+<a name="migrations/migrate_versions_5_to_6/migrate_sql"></a>
+# migrations/migrate\_versions\_5\_to\_6/migrate\_sql
+
+Name: migrate_sql.py
+
+Description: All the SQL used for creating and migrating the ORCA schema to version 5.
+
+<a name="migrations/migrate_versions_5_to_6/migrate_sql.schema_versions_data_sql"></a>
+#### schema\_versions\_data\_sql
+
+```python
+schema_versions_data_sql() -> text
+```
+
+Data for the schema_versions table. Inserts the current schema
+version into the table.
+
+Returns: SQL for populating schema_versions table.
+
+<a name="migrations/migrate_versions_5_to_6/migrate_sql.storage_class_table_sql"></a>
+#### storage\_class\_table\_sql
+
+```python
+storage_class_table_sql() -> text
+```
+
+Full SQL for creating the storage_class table. This SQL must be run
+before any of the other recovery table sql.
+
+Returns: SQL for creating storage_class table.
+
+<a name="migrations/migrate_versions_5_to_6/migrate_sql.storage_class_data_sql"></a>
+#### storage\_class\_data\_sql
+
+```python
+storage_class_data_sql() -> text
+```
+
+Data for the storage_class table. Inserts the currently valid storage classes into
+the table.
+
+TODO: Research on Deep Glacier vs Deep Archive is limited.
+
+Returns: SQL for populating storage_class table.
+
+<a name="migrations/migrate_versions_5_to_6/migrate_sql.add_files_storage_class_id_column_sql"></a>
+#### add\_files\_storage\_class\_id\_column\_sql
+
+```python
+add_files_storage_class_id_column_sql() -> text
+```
+
+SQL for adding the storage_class_id column to the files table.
+New cells will contain '1', the id for GLACIER.
+
+Returns: SQL for adding the column.
 

@@ -680,6 +680,9 @@ To run the migration test, in your **python** window run the command
 {"message": "collections table created.", "timestamp": "2022-02-16T22:01:21.025011", "level": "info"}
 {"message": "Creating granules table ...", "timestamp": "2022-02-16T22:01:21.025153", "level": "debug"}
 {"message": "granules table created.", "timestamp": "2022-02-16T22:01:21.081774", "level": "info"}
+{"message": "Creating storage_class table ...", "timestamp": "2022-02-16T22:01:21.081917", "level": "debug"}
+{"message": "Populating storage_class table ...", "timestamp": "2022-02-16T22:01:21.081917", "level": "debug"}
+{"message": "storage_class table created.", "timestamp": "2022-02-16T22:01:21.081917", "level": "debug"}
 {"message": "Creating files table ...", "timestamp": "2022-02-16T22:01:21.081917", "level": "debug"}
 {"message": "files table created.", "timestamp": "2022-02-16T22:01:21.129938", "level": "info"}
 {"message": "Creating admin user connection object.", "timestamp": "2022-02-16T22:01:21.134615", "level": "debug"}
@@ -743,6 +746,7 @@ expressed in the logs.
 {"message": "providers table created.", "timestamp": "2022-02-16T22:01:21.006541", "level": "info"}
 {"message": "collections table created.", "timestamp": "2022-02-16T22:01:21.025011", "level": "info"}
 {"message": "granules table created.", "timestamp": "2022-02-16T22:01:21.081774", "level": "info"}
+{"message": "storage_class table created.", "timestamp": "2022-02-16T22:01:21.081917", "level": "debug"}
 {"message": "files table created.", "timestamp": "2022-02-16T22:01:21.129938", "level": "info"}
 {"message": "extension aws_s3 created.", "timestamp": "2022-02-16T22:01:21.184853", "level": "info"}
 {"message": "reconcile_status table created.", "timestamp": "2022-02-16T22:01:21.232049", "level": "info"}
@@ -808,7 +812,7 @@ PostgreSQL *orca* database. Perform the checks below by going to the
     public      | postgres
    (4 rows)
    ```
-4. Verify the tables were created in the ORCA schema. It is assumed that the partition table in schema version 5 is named `orca_archive_location_test_bucket`
+4. Verify the tables were created in the ORCA schema. It is assumed that the partition table in schema version 5+ is named `orca_archive_location_test_bucket`
    ```bash
    orca=# \dt orca.*
 
@@ -832,6 +836,7 @@ PostgreSQL *orca* database. Perform the checks below by going to the
     orca   | recovery_job                              | table | orca_dbo
     orca   | recovery_status                           | table | orca_dbo
     orca   | schema_versions                           | table | orca_dbo
+    orca   | storage_class                             | table | orca_dbo
     (17 rows)
    ```
 5. Check that the partition table was created properly.

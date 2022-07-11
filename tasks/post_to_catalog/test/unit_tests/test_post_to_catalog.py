@@ -29,11 +29,9 @@ class TestPostToDatabase(
     @patch("cumulus_logger.CumulusLogger.setMetadata")
     @patch.dict(
         os.environ,
-        {
-            "DB_CONNECT_INFO_SECRET_ARN": "test"
-        },
+        {"DB_CONNECT_INFO_SECRET_ARN": "test"},
         clear=True,
-     )
+    )
     def test_handler_happy_path(
         self,
         mock_set_metadata: MagicMock,
@@ -105,6 +103,7 @@ class TestPostToDatabase(
                     "sizeInBytes": random.randint(0, 10000),
                     "hash": uuid.uuid4().__str__(),
                     "hashType": uuid.uuid4().__str__(),
+                    "storageClass": "GLACIER",
                     "version": uuid.uuid4().__str__(),
                     "ingestTime": datetime.now(timezone.utc).isoformat(),
                     "etag": uuid.uuid4().__str__(),
@@ -117,6 +116,7 @@ class TestPostToDatabase(
                     "sizeInBytes": random.randint(0, 10000),
                     "hash": None,
                     "hashType": None,
+                    "storageClass": "DEEP_ARCHIVE",
                     "version": uuid.uuid4().__str__(),
                     "ingestTime": datetime.now(timezone.utc).isoformat(),
                     "etag": "etag1",
@@ -207,6 +207,7 @@ class TestPostToDatabase(
             "sizeInBytes": random.randint(0, 10000),
             "hash": uuid.uuid4().__str__(),
             "hashType": uuid.uuid4().__str__(),
+            "storageClass": uuid.uuid4().__str__(),
             "version": uuid.uuid4().__str__(),
             "ingestTime": datetime.now(timezone.utc).isoformat(),
             "etag": uuid.uuid4().__str__(),
@@ -219,6 +220,7 @@ class TestPostToDatabase(
             "sizeInBytes": random.randint(0, 10000),
             "hash": None,
             "hashType": None,
+            "storageClass": uuid.uuid4().__str__(),
             "version": uuid.uuid4().__str__(),
             "ingestTime": datetime.now(timezone.utc).isoformat(),
             "etag": uuid.uuid4().__str__(),
@@ -290,6 +292,7 @@ class TestPostToDatabase(
                             "size_in_bytes": file0["sizeInBytes"],
                             "hash": file0["hash"],
                             "hash_type": file0["hashType"],
+                            "storage_class": file0["storageClass"],
                             "version": file0["version"],
                             "ingest_time": file0["ingestTime"],
                             "etag": file0["etag"],
@@ -303,6 +306,7 @@ class TestPostToDatabase(
                             "size_in_bytes": file1["sizeInBytes"],
                             "hash": None,  # None is a valid value.
                             "hash_type": None,
+                            "storage_class": file1["storageClass"],
                             "version": file1["version"],
                             "ingest_time": file1["ingestTime"],
                             "etag": file1["etag"],

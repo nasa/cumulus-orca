@@ -104,6 +104,7 @@
                 "sizeInBytes",
                 "hash",
                 "hashType",
+                "storageClass",
                 "version",
                 "ingestTime",
                 "etag"
@@ -136,6 +137,11 @@
                 "hashType": {
                   "type": ["string", "null"],
                   "description": "Hash type used to hash the object. Supplied by Cumulus."
+                },
+                "storageClass": {
+                  "type": "string",
+                  "description": "The class of storage containing the file. Must match value in storage_class table.",
+                  "pattern": "^(GLACIER|DEEP_ARCHIVE)$"
                 },
                 "version": {
                   "type": "string",

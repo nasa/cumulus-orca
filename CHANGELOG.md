@@ -16,6 +16,9 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 
+### Added
+- *ORCA-480* Added `storageClass` to Orca catalog and associated [reporting API](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#catalog-reporting-api). Existing entries will be reported as in the `GLACIER` storage class.
+
 ## [5.0.0]
 
 ### Added

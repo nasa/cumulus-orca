@@ -220,7 +220,7 @@ class TestDbDeployFunctions(unittest.TestCase):
         """
         mock_db_exists.return_value = True
         mock_schema_exists.return_value = True
-        mock_migration_version.return_value = 5
+        mock_migration_version.return_value = db_deploy.LATEST_ORCA_SCHEMA_VERSION
         message = "Current ORCA schema version detected. No migration needed!"
         config = {
             "admin_database": "admin_db",
