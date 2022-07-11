@@ -96,7 +96,7 @@ def copy_granule_between_buckets(
     file_versions = s3.list_object_versions(
         Bucket=destination_bucket, Prefix=destination_key
     )
-    latest_version = next(
+    latest_version = next(  # Find the first item in file_versions["Versions"] that has "IsLatest" set to true.
         filter(lambda file_version: file_version["IsLatest"], file_versions["Versions"])
     )
     LOGGER.info("collecting metadata from file version")
