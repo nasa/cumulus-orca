@@ -71,14 +71,6 @@ def migrate_versions_4_to_5(
         # Create partitioned tables for the reconcile_s3_object table
         for bucket_name in orca_buckets:
             _partition_name = orca_shared.reconciliation.shared_reconciliation.get_partition_name_from_bucket_name(bucket_name)
-            try:
-                # Matches 'word characters' (a-z, A-Z, 0-9, and '_')
-                # Presently redundant with checks in get_partition_name_from_bucket_name,
-                # but preserves backwards compatibility to check here.
-                if not re.match("^[\w+]+$", _partition_name):  # noqa: W605
-                    raise ValueError(f"Table name {_partition_name} is invalid.")
-            except TypeError:
-                raise ValueError("Table name must be a string and cannot be None.")
 
             logger.debug(
                 f"Creating partition table {_partition_name} for reconcile_s3_object ..."

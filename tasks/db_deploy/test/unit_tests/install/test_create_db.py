@@ -173,11 +173,10 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
             ]
         )
 
-    def test_create_app_schema_role_users_exceptions(self) -> None:
+    def test_create_app_schema_role_users_password_exceptions(self) -> None:
         """
         Tests that an exception is thrown if the password is not set or is not
-        a minimum of 12 characters,
-        or if user_name is not set or is over 64 characters.
+        a minimum of 12 characters.
         """
         bad_passwords = [None, "", "abc123", "1234567890", "AbCdEfG1234"]
         message = "User password must be at least 12 characters long."
@@ -190,6 +189,10 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
                     )
                 self.assertEqual(str(cm.exception), message)
 
+    def test_create_app_schema_role_users_username_exceptions(self) -> None:
+        """
+        Tests that an exception is thrown if user_name is not set or is over 64 characters.
+        """
         bad_user_names = [None, ""]
         message = "Username must be non-empty."
         for bad_user_name in bad_user_names:
@@ -202,7 +205,7 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
 
         message = "Username must be less than 64 characters."
         bad_user_name = "".join("a" * 64)
-        with self.subTest(bad_user_name=bad_user_name) as cm:
+        with self.subTest(bad_user_name=bad_user_name):
             with self.assertRaises(Exception) as cm:
                 create_db.create_app_schema_role_users(
                     Mock(), bad_user_name, "AbCdEfG12345", Mock(), Mock()

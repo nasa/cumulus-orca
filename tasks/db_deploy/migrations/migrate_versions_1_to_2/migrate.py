@@ -55,6 +55,7 @@ def migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> 
 
         # Create the users last
         logger.debug("Creating the ORCA application user ...")
+        # todo: Fully move app_username to the dictionary of parameters. https://bugs.earthdata.nasa.gov/browse/ORCA-461
         connection.execute(
             sql.app_user_sql(config["user_username"]),
             [
