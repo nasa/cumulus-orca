@@ -273,6 +273,7 @@ def get_destination_bucket_name(config: Dict[str, Any]) -> str:
 
 def get_storage_class(config: Dict[str, Any]) -> str:
     try:
+        # run_cumulus_task checked config against config.json, so the number of values this can be is limited.
         storage_class = config[CONFIG_ORCA_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY]
     except KeyError:
         LOGGER.warning(
