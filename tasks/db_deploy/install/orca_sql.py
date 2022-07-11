@@ -807,7 +807,7 @@ def reconcile_s3_object_partition_sql(partition_name: str) -> text:
     return text(
         f"""
             -- Create orca_archive_location_:bucket_name
-            CREATE TABLE "{partition_name}" PARTITION OF reconcile_s3_object
+            CREATE TABLE {partition_name} PARTITION OF reconcile_s3_object
             (
               CONSTRAINT "PK_{partition_name}"
                 PRIMARY KEY(key_path)
@@ -817,7 +817,7 @@ def reconcile_s3_object_partition_sql(partition_name: str) -> text:
             FOR VALUES IN (:bucket_name);
 
             -- Comment
-            COMMENT ON TABLE "{partition_name}"
+            COMMENT ON TABLE {partition_name}
               IS 'Partition table for reconcile_s3_object based on orca_archive_location.';
             """
     )
