@@ -16,6 +16,17 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 
+### Changed
+- *ORCA-478* Updated bucket policy documentation for deep glacier bucket in DR account so that the users now can only upload objects with storage type as either `GLACIER` or `DEEP_ARCHIVE`.
+
+### Migration Notes
+
+- Add the following rule to the existing glacier archive bucket policy under `Condition` key:
+
+```json
+"s3:x-amz-storage-class": ["GLACIER", "DEEP_ARCHIVE"]
+```
+See this policy [example](https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/deployment-s3-bucket/#archive-bucket) for details.
 ### Added
 - *ORCA-480* Added `storageClass` to Orca catalog and associated [reporting API](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#catalog-reporting-api). Existing entries will be reported as in the `GLACIER` storage class.
 
@@ -581,5 +592,3 @@ None - this is the baseline release.
   * Updated requirements-dev.txt files for each task and moved the testing framework from nosetest (no longer supported) to coverage and pytest. 
   * Support in GitHub for automated build/test/release via Bamboo
   * Use `coverage` and `pytest` for coverage/testing
-
-### Changed
