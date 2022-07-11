@@ -137,47 +137,50 @@ modifications, which will be detailed below.
 
 ```json
 {
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "Cross Account Access",
-      "Effect": "Allow",
-      "Principal": {
-        "AWS": "arn:aws:iam::012345678912:root"
+   "Version":"2012-10-17",
+   "Statement":[
+      {
+         "Sid":"Cross Account Access",
+         "Effect":"Allow",
+         "Principal":{
+            "AWS":"arn:aws:iam::012345678912:root"
+         },
+         "Action":[
+            "s3:GetObject*",
+            "s3:RestoreObject",
+            "s3:GetBucket*",
+            "s3:ListBucket",
+            "s3:PutBucketNotification",
+            "s3:GetInventoryConfiguration",
+            "s3:PutInventoryConfiguration",
+            "s3:ListBucketVersions"
+         ],
+         "Resource":[
+            "arn:aws:s3:::sandbox-orca-glacier-archive",
+            "arn:aws:s3:::sandbox-orca-glacier-archive/*"
+         ]
       },
-      "Action": [
-        "s3:GetObject*",
-        "s3:RestoreObject",
-        "s3:GetBucket*",
-        "s3:ListBucket",
-        "s3:PutBucketNotification",
-        "s3:GetInventoryConfiguration",
-        "s3:PutInventoryConfiguration",
-        "s3:ListBucketVersions"
-      ],
-      "Resource": [
-        "arn:aws:s3:::sandbox-orca-glacier-archive",
-        "arn:aws:s3:::sandbox-orca-glacier-archive/*"
-      ]
-    },
-    {
-      "Sid": "Cross Account Write Access",
-      "Effect": "Allow",
-      "Principal": {
-        "AWS": "arn:aws:iam::012345678912:root"
-      },
-      "Action": "s3:PutObject*",
-      "Resource": [
-        "arn:aws:s3:::sandbox-orca-glacier-archive/*"
-      ],
-      "Condition": {
-        "StringEquals": {
-          "s3:x-amz-acl": "bucket-owner-full-control",
-          "s3:x-amz-storage-class": ["GLACIER", "DEEP_ARCHIVE"]
-        }
-     }
-    }
-  ]
+      {
+         "Sid":"Cross Account Write Access",
+         "Effect":"Allow",
+         "Principal":{
+            "AWS":"arn:aws:iam::012345678912:root"
+         },
+         "Action":"s3:PutObject*",
+         "Resource":[
+            "arn:aws:s3:::sandbox-orca-glacier-archive/*"
+         ],
+         "Condition":{
+            "StringEquals":{
+               "s3:x-amz-acl":"bucket-owner-full-control",
+               "s3:x-amz-storage-class":[
+                  "GLACIER",
+                  "DEEP_ARCHIVE"
+               ]
+            }
+         }
+      }
+   ]
 }
 ```
 
