@@ -612,10 +612,14 @@ run `terraform destroy`.
 
 To configure a collection to enable ORCA, add the line
 `"granuleRecoveryWorkflow": "OrcaRecoveryWorkflow"` to the collection configuration
-as seen below. Optionally, you can exclude files by adding values to an
-`"excludeFileTypes"` variable as seen below. In addition, when dealing with large
-files, the `"s3MultipartChunksizeMb"` variable can also be set to override the
-default setting set during ORCA installation. For more information, see the documentation on the
+as seen below.
+
+Optionally, you can exclude files by adding values to an
+`excludeFileTypes` variable as seen below.
+In addition, when dealing with large files, the `s3MultipartChunksizeMb` variable can also be set to override the
+default setting set during ORCA installation.
+If the file should be stored in a [storage class](https://aws.amazon.com/s3/storage-classes/) other than your default, specify it using `orcaDefaultStorageClassOverride`.
+For more information, see the documentation on the
 [`copy_to_glacier` task](https://github.com/nasa/cumulus-orca/tree/master/tasks/copy_to_glacier).
 
 ```json
@@ -633,7 +637,8 @@ default setting set during ORCA installation. For more information, see the docu
     "granuleRecoveryWorkflow": "OrcaRecoveryWorkflow",
     "excludeFileTypes": [".cmr", ".xml", ".met"],
     "s3MultipartChunksizeMb": 400,
-    "orcaDefaultBucketOverride": "prod_orca_worm"
+    "orcaDefaultBucketOverride": "prod_orca_worm",
+    "orcaDefaultStorageClassOverride": "DEEP_ARCHIVE"
   },
   ...
 }
