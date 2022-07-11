@@ -618,7 +618,7 @@ Optionally, you can exclude files by adding values to an
 `excludeFileTypes` variable as seen below.
 In addition, when dealing with large files, the `s3MultipartChunksizeMb` variable can also be set to override the
 default setting set during ORCA installation.
-If the file should be stored in a [storage class](https://aws.amazon.com/s3/storage-classes/) other than your default, specify it using `orcaDefaultStorageClassOverride`.
+If the file should be stored in a [storage class](https://aws.amazon.com/s3/storage-classes/) other than the default set in `orca_default_storage_class` during installation, specify it using `orcaDefaultStorageClassOverride`.
 For more information, see the documentation on the
 [`copy_to_glacier` task](https://github.com/nasa/cumulus-orca/tree/master/tasks/copy_to_glacier).
 
