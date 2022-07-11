@@ -335,14 +335,16 @@ DESCRIPTION
     and copies those files from their current storage location into a staging/glacier location.
 
 FUNCTIONS
-    copy_granule_between_buckets(source_bucket_name: str, source_key: str, destination_bucket: str, destination_key: str, multipart_chunksize_mb: int) -> Dict[str, str]
-        Copies granule from source bucket to destination. Also queries the destination_bucket to get additional metadata file info.
+    copy_granule_between_buckets(source_bucket_name: str, source_key: str, destination_bucket: str, destination_key: str, multipart_chunksize_mb: int, storage_class: str) -> Dict[str, str]
+        Copies granule from source bucket to destination.
+        Also queries the destination_bucket to get additional metadata file info.
         Args:
             source_bucket_name: The name of the bucket in which the granule is currently located.
             source_key: source Granule path excluding s3://[bucket]/
             destination_bucket: The name of the bucket the granule is to be copied to.
             destination_key: Destination granule path excluding s3://[bucket]/
             multipart_chunksize_mb: The maximum size of chunks to use when copying.
+            storage_class: The storage class to store in.
         Returns:
             A dictionary containing all the file metadata needed for reconciliation with Cumulus with the following keys:
                     "cumulusArchiveLocation" (str): Cumulus S3 bucket where the file is stored in.
@@ -355,17 +357,22 @@ FUNCTIONS
     
     get_destination_bucket_name(config: Dict[str, Any]) -> str
     
+    get_storage_class(config: Dict[str, Any]) -> str
+    
     handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any
         Lambda handler. Runs a cumulus task that
         Copies the files in {event}['input']
         to the default ORCA bucket. Environment variables must be set to
         provide a default ORCA bucket to store the files in.
             Environment Vars:
-                ORCA_DEFAULT_BUCKET (str, required): Name of the default S3 Glacier
+                DEFAULT_MULTIPART_CHUNKSIZE_MB (int): The default maximum size of chunks to use when copying.
+                                                                    Can be overridden by collection config.
+                DEFAULT_STORAGE_CLASS (str): The class of storage to use when ingesting files.
+                                                                    Can be overridden by collection config.
+                                                                    Must match value in storage_class table.
+                ORCA_DEFAULT_BUCKET (str): Name of the default S3 Glacier
                                                      ORCA bucket files should be
                                                      archived to.
-                DEFAULT_MULTIPART_CHUNKSIZE_MB (int, required): The default maximum size of chunks to use when copying.
-                                                                     Can be overridden by collection config.
                 METADATA_DB_QUEUE_URL (string, required): SQS URL of the metadata queue.
         
         Args:
@@ -379,7 +386,7 @@ FUNCTIONS
             The result of the cumulus task. See schemas/output.json for more information.
     
     should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> bool
-        Tests whether or not file is included in {excludeFileTypes} from copy to glacier.
+        Tests whether file is included in {excludeFileTypes} from copy to glacier.
         Args:
             file_key: The key of the file within the s3 bucket.
             exclude_file_types: List of extensions to exclude in the backup.
@@ -409,6 +416,7 @@ DATA
     CONFIG_EXCLUDE_FILE_TYPES_KEY = 'excludeFileTypes'
     CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = 's3MultipartChunksizeMb'
     CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY = 'orcaDefaultBucketOverride'
+    CONFIG_ORCA_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY = 'orcaDefaultStorageCl...
     Dict = typing.Dict
     FILE_BUCKET_KEY = 'bucket'
     FILE_FILEPATH_KEY = 'key'
@@ -417,44 +425,7 @@ DATA
     LOGGER = <cumulus_logger.CumulusLogger object>
     List = typing.List
     MB = 1048576
+    OS_ENVIRON_DEFAULT_STORAGE_CLASS_KEY = 'DEFAULT_STORAGE_CLASS'
+    OS_ENVIRON_ORCA_DEFAULT_BUCKET_KEY = 'ORCA_DEFAULT_BUCKET'
     Union = typing.Union
-```
-
-## pydoc sqs_library.py
-
-```
-Help on sqs_library:
-NAME
-    sqs_library
-FUNCTIONS
-    post_to_metadata_queue(sqs_body: Dict[str, Any], metadata_queue_url: str,) -> None:
-        Posts metadata information to the metadata SQS queue.
-        Args:
-            sqs_body: A dictionary containing the metadata objects that will be sent to SQS.
-            metadata_queue_url: The metadata SQS queue URL defined by AWS.
-        Returns:
-            None
-    get_aws_region() -> str:
-        Gets AWS region variable from the runtime environment variable.
-        Args:
-            None
-        Returns:
-            The AWS region variable.
-        Raises:
-            Exception: Thrown if AWS region is empty or None.
-    
-    retry_error(max_retries: int, backoff_in_seconds: int, backoff_factor: int) -> Callable[[Callable[[], RT]], Callable[[], RT]]:
-        Decorator takes arguments to adjust number of retries and backoff strategy.
-        Args:
-            max_retries (int): number of times to retry in case of failure.
-            backoff_in_seconds (int): Number of seconds to sleep the first time through.
-            backoff_factor (int): Value of the factor used for backoff.
-DATA
-    Any = typing.Any
-    Callable = typing.Callable
-    Dict = typing.Dict
-    TypeVar = typing.TypeVar
-    MAX_RETRIES = 3
-    BACKOFF_FACTOR = 2
-    INITIAL_BACKOFF_IN_SECONDS = 1
 ```
