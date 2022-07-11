@@ -96,6 +96,8 @@ def add_files_storage_class_id_column_sql() -> text:  # pragma: no cover
         -- Add the storage_class_id column with a default of 1 (GLACIER)
         ALTER TABLE files
         ADD COLUMN IF NOT EXISTS storage_class_id int2 NOT NULL default 1;
+        COMMENT ON COLUMN files.storage_class_id
+            IS 'Storage class of the file.';
         
         -- Remove the default now that new cells are populated.
         ALTER TABLE files
