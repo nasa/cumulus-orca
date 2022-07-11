@@ -135,7 +135,7 @@ def add_mismatch_storage_class_columns_sql() -> text:  # pragma: no cover
 
         -- Remove the default now that new cells are populated.
         ALTER TABLE reconcile_catalog_mismatch_report
-        ALTER COLUMN orca_storage_class DROP DEFAULT;
+        ALTER COLUMN orca_storage_class DROP DEFAULT,
         ALTER COLUMN s3_storage_class DROP DEFAULT;
     """
     )
