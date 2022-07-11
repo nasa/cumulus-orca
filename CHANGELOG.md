@@ -25,7 +25,7 @@ and includes an additional section for migration notes.
 
 ### Migration Notes
 
-- The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variables. The following required variables have been added:
+- The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variables. The following optional variables have been added:
   - orca_default_storage_class
   
 - If desired, update collection configurations with the new optional key `orcaDefaultStorageClassOverride` that can be added to override the default S3 glacier recovery type as shown below.
