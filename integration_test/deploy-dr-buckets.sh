@@ -29,6 +29,7 @@ echo "terraform {
   backend \"s3\" {
     bucket = \"$bamboo_PREFIX-dr-tf-state\"
     region = \"$bamboo_AWS_DEFAULT_REGION\"
+    key    = \"terraform.tfstate\"
     dynamodb_table = \"$bamboo_PREFIX-dr-tf-locks\"
   }
 }"
