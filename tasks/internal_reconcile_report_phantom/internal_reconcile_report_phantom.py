@@ -114,7 +114,7 @@ def query_db(
         return phantoms
 
 
-def get_phantoms_sql() -> text:
+def get_phantoms_sql() -> text:  # pragma: no cover
     """
     SQL for getting phantom report entries for a given job_id, page_size, and page_index.
     Formats datetimes in milliseconds since 1 January 1970 UTC.

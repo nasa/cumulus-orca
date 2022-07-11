@@ -27,6 +27,8 @@ and includes an additional section for migration notes.
 "s3:x-amz-storage-class": ["GLACIER", "DEEP_ARCHIVE"]
 ```
 See this policy [example](https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/deployment-s3-bucket/#archive-bucket) for details.
+### Added
+- *ORCA-480* Added `storageClass` to Orca catalog and associated [reporting API](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#catalog-reporting-api). Existing entries will be reported as in the `GLACIER` storage class.
 
 ## [5.0.0]
 

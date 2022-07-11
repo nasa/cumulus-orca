@@ -9,6 +9,7 @@ from migrations.migrate_versions_1_to_2.migrate import migrate_versions_1_to_2
 from migrations.migrate_versions_2_to_3.migrate import migrate_versions_2_to_3
 from migrations.migrate_versions_3_to_4.migrate import migrate_versions_3_to_4
 from migrations.migrate_versions_4_to_5.migrate import migrate_versions_4_to_5
+from migrations.migrate_versions_5_to_6.migrate import migrate_versions_5_to_6
 
 
 def perform_migration(
@@ -19,9 +20,9 @@ def perform_migration(
     migrations to run.
 
     Args:
-        current_schema_version (int): Current version of the ORCA schema
-        config (Dict): Dictionary containing database connection information
-        orca_buckets: List[str]): List of ORCA bucket names used to create partition tables for v5.
+        current_schema_version: Current version of the ORCA schema
+        config: Dictionary containing database connection information
+        orca_buckets: List of ORCA bucket names used to create partition tables for v5.
 
     Returns:
         None
@@ -46,5 +47,10 @@ def perform_migration(
 
     if current_schema_version == 4:
         # Run migrations from version 4 to version 5
-        migrate_versions_4_to_5(config, True, orca_buckets)
+        migrate_versions_4_to_5(config, False, orca_buckets)
         current_schema_version = 5
+
+    if current_schema_version == 5:
+        # Run migrations from version 5 to version 6
+        migrate_versions_5_to_6(config, True)
+        current_schema_version = 6

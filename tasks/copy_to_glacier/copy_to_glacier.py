@@ -215,6 +215,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
             ]  # since fileName is no longer available in event
             result["hash"] = file_hash
             result["hashType"] = file_hash_type
+            result["storageClass"] = "GLACIER"  # todo: Make configurable https://bugs.earthdata.nasa.gov/browse/ORCA-479
             copied_file_urls.append(file_source_uri)
             LOGGER.info(
                 "Copied {file_filepath} into glacier storage bucket {default_bucket}.",

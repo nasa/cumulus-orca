@@ -21,14 +21,27 @@ def migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> 
     Returns:
         None
     """
+    if config["user_username"] is None or len(config["user_username"]) == 0:
+        logger.critical("Username must be non-empty.")
+        raise Exception("Username must be non-empty.")
+    if len(config["user_username"]) > 63:
+        logger.critical("Username must be less than 64 characters.")
+        raise Exception("Username must be less than 64 characters.")
+
+    if config["user_password"] is None or len(config["user_password"]) < 12:
+        logger.critical("User password must be at least 12 characters long.")
+        raise Exception("User password must be at least 12 characters long.")
+
     # Get the admin engine to the app database
     admin_app_connection = get_admin_connection(config, config["user_database"])
 
-    # Create all of the new objects, users, roles, etc.
+    # Create all the new objects, users, roles, etc.
     with admin_app_connection.connect() as connection:
         # Create the roles first since they are needed by schema and users
         logger.debug("Creating the ORCA dbo role ...")
-        connection.execute(sql.dbo_role_sql(config["user_database"], config["admin_username"]))
+        connection.execute(
+            sql.dbo_role_sql(config["user_database"], config["admin_username"])
+        )
         logger.info("ORCA dbo role created.")
 
         logger.debug("Creating the ORCA app role ...")
@@ -42,8 +55,15 @@ def migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> 
 
         # Create the users last
         logger.debug("Creating the ORCA application user ...")
+        # todo: Fully move app_username to the dictionary of parameters. https://bugs.earthdata.nasa.gov/browse/ORCA-461
         connection.execute(
-            sql.app_user_sql(config["user_username"], config["user_password"])
+            sql.app_user_sql(config["user_username"]),
+            [
+                {
+                    "user_name": config["user_username"],
+                    "user_password": config["user_password"],
+                }
+            ],
         )
         logger.info("ORCA application user created.")
 

@@ -116,7 +116,7 @@ def query_db(
         return granules
 
 
-def get_catalog_sql() -> text:
+def get_catalog_sql() -> text:  # pragma: no cover
     return text(
         # todo: Optimize for large data sets. https://bugs.earthdata.nasa.gov/browse/ORCA-286
         """
@@ -156,7 +156,7 @@ SELECT
     LIMIT :page_size+1
 ) as granules
 LEFT JOIN LATERAL
-    (SELECT json_agg(files) as files
+    (SELECT COALESCE(json_agg(files), '[]'::json) as files
     FROM (
     SELECT json_build_object(
         'name', files.name, 
@@ -166,8 +166,11 @@ LEFT JOIN LATERAL
         'sizeBytes', files.size_in_bytes,
         'hash', files.hash,
         'hashType', files.hash_type,
+        'storageClass', storage_class.value,
         'version', files.version) AS files
     FROM files
+    JOIN
+        storage_class ON storage_class_id=storage_class.id
     WHERE granules.id = files.granule_id
     ) as files
 ) as grouped on TRUE"""
@@ -235,9 +238,7 @@ def handler(
         try:
             db_connect_info_secret_arn = os.environ["DB_CONNECT_INFO_SECRET_ARN"]
         except KeyError as key_error:
-            LOGGER.error(
-                "DB_CONNECT_INFO_SECRET_ARN environment value not found."
-            )
+            LOGGER.error("DB_CONNECT_INFO_SECRET_ARN environment value not found.")
             raise
 
         db_connect_info = shared_db.get_configuration(db_connect_info_secret_arn)

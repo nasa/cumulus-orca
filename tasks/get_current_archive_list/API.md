@@ -172,7 +172,7 @@ Columns used by our database are given standardized names.
 #### create\_temporary\_table\_sql
 
 ```python
-def create_temporary_table_sql(temporary_s3_column_list: str) -> TextClause
+def create_temporary_table_sql(temporary_s3_column_list: str) -> text
 ```
 
 Creates a temporary table to store inventory data.
@@ -187,7 +187,7 @@ Creates a temporary table to store inventory data.
 #### trigger\_csv\_load\_from\_s3\_sql
 
 ```python
-def trigger_csv_load_from_s3_sql() -> TextClause
+def trigger_csv_load_from_s3_sql() -> text
 ```
 
 SQL for telling postgres where/how to copy in the s3 inventory data.
@@ -197,7 +197,7 @@ SQL for telling postgres where/how to copy in the s3 inventory data.
 #### translate\_s3\_import\_to\_partitioned\_data\_sql
 
 ```python
-def translate_s3_import_to_partitioned_data_sql() -> TextClause
+def translate_s3_import_to_partitioned_data_sql() -> text
 ```
 
 SQL for translating between the temporary table and Orca table.

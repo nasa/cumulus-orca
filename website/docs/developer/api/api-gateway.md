@@ -61,6 +61,7 @@ An example of the API output is shown below:
           "sizeBytes": 100934568723,
           "hash": "ACFH325128030192834127347",
           "hashType": "SHA-256",
+          "storageClass": "GLACIER",
           "version": "VXCDEG902"
         }
       ]
@@ -89,6 +90,7 @@ The following table lists the fields in the output:
 | sizeBytes              | `str`       | Size in bytes of the file. From Cumulus ingest.                                                     |
 | hash                   | `str`       | Checksum hash of the file provided by Cumulus.                                                      |
 | hashType               | `str`       | Hash type used to calculate the hash value of the file.                                             |
+| storageClass           | `str`       | The class of storage containing the file.                                                           |
 | version                | `str`       | AWS provided version of the file.                                                                   |
 
 

@@ -5,7 +5,7 @@ Description: Runs unit tests for the create_db.py library.
 """
 
 import unittest
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, Mock, call, patch
 
 from install import create_db
 
@@ -27,8 +27,8 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
             "host": "aws.postgresrds.host",
             "port": 5432,
             "user_database": "user_db",
-            "user_password": "user123",
-            "user_username": "user",
+            "user_password": "pass56789012",
+            "user_username": "user56789012",
         }
 
         self.mock_connection = MagicMock()
@@ -73,7 +73,7 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
             self.config["user_username"],
             self.config["user_password"],
             self.config["user_database"],
-            self.config["admin_username"]
+            self.config["admin_username"],
         )
         mock_set_search_path_role.assert_called_once_with(mock_conn_enter)
         mock_create_inventory_objects.assert_called_once_with(mock_conn_enter)
@@ -106,13 +106,16 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         """
         create_db.create_database(self.config)
 
-        mock_app_database_sql.assert_called_once_with(self.config["user_database"], self.config["admin_username"])
+        mock_app_database_sql.assert_called_once_with(
+            self.config["user_database"], self.config["admin_username"]
+        )
         mock_connection().connect().__enter__().execute.assert_has_calls(
-        [
-            call(mock_commit_sql.return_value),
-            call(mock_app_database_sql.return_value),
-            call(mock_app_database_comment_sql.return_value),
-        ], any_order=True
+            [
+                call(mock_commit_sql.return_value),
+                call(mock_app_database_sql.return_value),
+                call(mock_app_database_comment_sql.return_value),
+            ],
+            any_order=True,
         )
 
     @patch("install.create_db.sql.create_extension")
@@ -120,7 +123,7 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
     @patch("install.create_db.sql.orca_schema_sql")
     @patch("install.create_db.sql.app_role_sql")
     @patch("install.create_db.sql.dbo_role_sql")
-    def test_create_app_schema_user_role_users_happy_path(
+    def test_create_app_schema_role_users_happy_path(
         self,
         mock_dbo_role_sql: MagicMock,
         mock_app_role_sql: MagicMock,
@@ -136,27 +139,78 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
             self.config["user_username"],
             self.config["user_password"],
             self.config["user_database"],
-            self.config["admin_username"]
+            self.config["admin_username"],
         )
 
         # Check that SQL called properly
-        mock_dbo_role_sql.assert_called_once_with(self.config["user_database"], self.config["admin_username"])
+        mock_dbo_role_sql.assert_called_once_with(
+            self.config["user_database"], self.config["admin_username"]
+        )
         mock_app_role_sql.assert_called_once()
         mock_schema_sql.assert_called_once()
         mock_user_sql.assert_called_once_with(
-            self.config["user_username"], self.config["user_password"]
+            self.config["user_username"],
         )
         mock_extension_sql.assert_called_once()
 
         # Check SQL called in proper order
         # todo: here and elsewhere, checks are not sufficient. assert_called_once should never be used, and all assert_has_calls should be followed by a check on the call count.
-        self.mock_connection.assert_has_calls([
-            call.execute(mock_dbo_role_sql()),
-            call.execute(mock_app_role_sql()),
-            call.execute(mock_schema_sql()),
-            call.execute(mock_user_sql(self.config["user_password"])),
-            call.execute(mock_extension_sql()),
-        ])
+        self.mock_connection.assert_has_calls(
+            [
+                call.execute(mock_dbo_role_sql()),
+                call.execute(mock_app_role_sql()),
+                call.execute(mock_schema_sql()),
+                call.execute(
+                    mock_user_sql(self.config["user_password"]),
+                    [
+                        {
+                            "user_name": self.config["user_username"],
+                            "user_password": self.config["user_password"],
+                        }
+                    ],
+                ),
+                call.execute(mock_extension_sql()),
+            ]
+        )
+
+    def test_create_app_schema_role_users_password_exceptions(self) -> None:
+        """
+        Tests that an exception is thrown if the password is not set or is not
+        a minimum of 12 characters.
+        """
+        bad_passwords = [None, "", "abc123", "1234567890", "AbCdEfG1234"]
+        message = "User password must be at least 12 characters long."
+
+        for bad_password in bad_passwords:
+            with self.subTest(bad_password=bad_password):
+                with self.assertRaises(Exception) as cm:
+                    create_db.create_app_schema_role_users(
+                        Mock(), "orcauser", bad_password, Mock(), Mock()
+                    )
+                self.assertEqual(str(cm.exception), message)
+
+    def test_create_app_schema_role_users_username_exceptions(self) -> None:
+        """
+        Tests that an exception is thrown if user_name is not set or is over 64 characters.
+        """
+        bad_user_names = [None, ""]
+        message = "Username must be non-empty."
+        for bad_user_name in bad_user_names:
+            with self.subTest(bad_user_name=bad_user_name):
+                with self.assertRaises(Exception) as cm:
+                    create_db.create_app_schema_role_users(
+                        Mock(), bad_user_name, "AbCdEfG12345", Mock(), Mock()
+                    )
+                self.assertEqual(str(cm.exception), message)
+
+        message = "Username must be less than 64 characters."
+        bad_user_name = "".join("a" * 64)
+        with self.subTest(bad_user_name=bad_user_name):
+            with self.assertRaises(Exception) as cm:
+                create_db.create_app_schema_role_users(
+                    Mock(), bad_user_name, "AbCdEfG12345", Mock(), Mock()
+                )
+            self.assertEqual(str(cm.exception), message)
 
     @patch("install.create_db.sql.text")
     def test_set_search_path_and_role(self, mock_text: MagicMock):
@@ -233,16 +287,20 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
 
         self.assertEqual(self.mock_connection.mock_calls, execution_order)
 
-    @patch("install.create_db.sql.providers_table_sql")
-    @patch("install.create_db.sql.collections_table_sql")
-    @patch("install.create_db.sql.granules_table_sql")
     @patch("install.create_db.sql.files_table_sql")
+    @patch("install.create_db.sql.storage_class_data_sql")
+    @patch("install.create_db.sql.storage_class_table_sql")
+    @patch("install.create_db.sql.granules_table_sql")
+    @patch("install.create_db.sql.collections_table_sql")
+    @patch("install.create_db.sql.providers_table_sql")
     def test_create_inventory_objects(
         self,
-        mock_files_table: MagicMock,
-        mock_granules_table: MagicMock,
-        mock_collections_table: MagicMock,
-        mock_providers_table: MagicMock,
+        mock_providers_table_sql: MagicMock,
+        mock_collections_table_sql: MagicMock,
+        mock_granules_table_sql: MagicMock,
+        mock_storage_class_table_sql: MagicMock,
+        mock_storage_class_data_sql: MagicMock,
+        mock_files_table_sql: MagicMock,
     ):
         """
         Tests happy path of the create_inventory_objects function
@@ -250,17 +308,21 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         create_db.create_inventory_objects(self.mock_connection)
 
         # Check that the SQL calls were made
-        mock_providers_table.assert_called_once()
-        mock_collections_table.assert_called_once()
-        mock_granules_table.assert_called_once()
-        mock_files_table.assert_called_once()
+        mock_storage_class_table_sql.assert_called_once_with()
+        mock_storage_class_data_sql.assert_called_once_with()
+        mock_providers_table_sql.assert_called_once_with()
+        mock_collections_table_sql.assert_called_once_with()
+        mock_granules_table_sql.assert_called_once_with()
+        mock_files_table_sql.assert_called_once_with()
 
         # Check that they were called in the proper order
         execution_order = [
-            call.execute(mock_providers_table()),
-            call.execute(mock_collections_table()),
-            call.execute(mock_granules_table()),
-            call.execute(mock_files_table()),
+            call.execute(mock_providers_table_sql()),
+            call.execute(mock_collections_table_sql()),
+            call.execute(mock_granules_table_sql()),
+            call.execute(mock_storage_class_table_sql()),
+            call.execute(mock_storage_class_data_sql()),
+            call.execute(mock_files_table_sql()),
         ]
 
         self.assertEqual(self.mock_connection.mock_calls, execution_order)
@@ -273,7 +335,7 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
     @patch("install.create_db.sql.reconcile_phantom_report_table_sql")
     @patch("install.create_db.sql.reconcile_s3_object_partition_sql")
     @patch("install.create_db.sql.create_extension")
-    def test_create_internal_reconciliation_objects(
+    def test_create_internal_reconciliation_objects_happy_path(
         self,
         mock_extension: MagicMock,
         mock_reconcile_s3_object_partition_table: MagicMock,

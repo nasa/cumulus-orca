@@ -99,7 +99,7 @@ def get_granule_status_entries_for_job(
     return rows
 
 
-def get_granule_status_entries_for_job_sql() -> text:
+def get_granule_status_entries_for_job_sql() -> text:  # pragma: no cover
     return text(
         f"""
                 SELECT
@@ -145,7 +145,7 @@ def get_status_totals_for_job(job_id: str, engine: Engine) -> Dict[str, int]:
     return totals
 
 
-def get_status_totals_for_job_sql() -> text:
+def get_status_totals_for_job_sql() -> text:  # pragma: no cover
     return text(
         f"""
                 with granule_status_count AS (

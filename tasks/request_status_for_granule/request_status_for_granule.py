@@ -110,7 +110,7 @@ def get_most_recent_job_id_for_granule(
     return row["job_id"]
 
 
-def get_most_recent_job_id_for_granule_sql() -> text:
+def get_most_recent_job_id_for_granule_sql() -> text:  # pragma: no cover
     return text(
         """
             SELECT
@@ -177,7 +177,7 @@ def get_job_entry_for_granule(
     }
 
 
-def get_job_entry_for_granule_sql() -> text:
+def get_job_entry_for_granule_sql() -> text:  # pragma: no cover
     return text(
         f"""
                 SELECT
@@ -240,7 +240,7 @@ def get_file_entries_for_granule_in_job(
     return rows
 
 
-def get_file_entries_for_granule_in_job_sql() -> text:
+def get_file_entries_for_granule_in_job_sql() -> text:  # pragma: no cover
     return text(
         f"""
             SELECT
