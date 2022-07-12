@@ -16,6 +16,17 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 
+### Changed
+- *ORCA-478* Updated bucket policy documentation for deep glacier bucket in DR account so that the users now can only upload objects with storage type as either `GLACIER` or `DEEP_ARCHIVE`.
+
+### Migration Notes
+
+- Add the following rule to the existing glacier archive bucket policy under `Condition` key:
+
+```json
+"s3:x-amz-storage-class": ["GLACIER", "DEEP_ARCHIVE"]
+```
+See this policy [example](https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/deployment-s3-bucket/#archive-bucket) for details.
 ### Added
 - *ORCA-480* Added `storageClass` to Orca catalog and associated [reporting API](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#catalog-reporting-api). Existing entries will be reported as in the `GLACIER` storage class.
 - *ORCA-479*
@@ -25,14 +36,14 @@ and includes an additional section for migration notes.
 
 ### Migration Notes
 
-- The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variables. The following required variables have been added:
+- The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variables. The following optional variables have been added:
   - orca_default_storage_class
   
 - If desired, update collection configurations with the new optional key `orcaDefaultStorageClassOverride` that can be added to override the default S3 glacier recovery type as shown below.
 
   ```json
     "meta": {
-      "orcaDefaultStorageClassOverride": "Standard"
+      "orcaDefaultStorageClassOverride": "DEEP_ARCHIVE"
     }
   ```
 
@@ -41,7 +52,7 @@ and includes an additional section for migration notes.
   ## ORCA Module
   ## =============================================================================
   module "orca" {
-    source = "https://github.com/nasa/cumulus-orca/releases/download/v3.0.1/cumulus-orca-terraform.zip//modules"
+    source = "https://github.com/nasa/cumulus-orca/releases/download/v6.0.0/cumulus-orca-terraform.zip//modules"
   ## --------------------------
   ## Cumulus Variables
   ## --------------------------
@@ -186,7 +197,7 @@ variable "s3_secret_key" {
   ## ORCA Module
   ## =============================================================================
   module "orca" {
-    source = "https://github.com/nasa/cumulus-orca/releases/download/v3.0.1/cumulus-orca-terraform.zip//modules"
+    source = "https://github.com/nasa/cumulus-orca/releases/download/v5.0.0/cumulus-orca-terraform.zip//modules"
   ## --------------------------
   ## Cumulus Variables
   ## --------------------------
@@ -359,7 +370,7 @@ variable "rds_security_group_id" {
   ## ORCA Module
   ## =============================================================================
   module "orca" {
-    source = "https://github.com/nasa/cumulus-orca/releases/download/v3.0.1/cumulus-orca-terraform.zip//modules"
+    source = "https://github.com/nasa/cumulus-orca/releases/download/v4.0.0/cumulus-orca-terraform.zip//modules"
   ## --------------------------
   ## Cumulus Variables
   ## --------------------------
@@ -661,5 +672,3 @@ None - this is the baseline release.
   * Updated requirements-dev.txt files for each task and moved the testing framework from nosetest (no longer supported) to coverage and pytest. 
   * Support in GitHub for automated build/test/release via Bamboo
   * Use `coverage` and `pytest` for coverage/testing
-
-### Changed

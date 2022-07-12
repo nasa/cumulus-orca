@@ -112,7 +112,7 @@ an example of a justification.
 > The ORCA Cumulus application in the Cumulus Sandbox OU needs to read/write to
 > the ORCA DR account S3 buckets in order to create an operational archive copy of
 > ORCA data and recover data back to the primary Cumulus data holdings in case
-> of a failure. This cross account access will allow the Cumulus application to
+> of a failure. Note that only `GLACIER` and `DEEP_ARCHIVE` storage types are allowed for objects written to the bucket. This cross account access will allow the Cumulus application to
 > seamlessly perform these functions and provide operators with the capability to
 > test and verify disaster recovery scenarios.
 
@@ -137,46 +137,50 @@ modifications, which will be detailed below.
 
 ```json
 {
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "Cross Account Access",
-      "Effect": "Allow",
-      "Principal": {
-        "AWS": "arn:aws:iam::012345678912:root"
+   "Version":"2012-10-17",
+   "Statement":[
+      {
+         "Sid":"Cross Account Access",
+         "Effect":"Allow",
+         "Principal":{
+            "AWS":"arn:aws:iam::012345678912:root"
+         },
+         "Action":[
+            "s3:GetObject*",
+            "s3:RestoreObject",
+            "s3:GetBucket*",
+            "s3:ListBucket",
+            "s3:PutBucketNotification",
+            "s3:GetInventoryConfiguration",
+            "s3:PutInventoryConfiguration",
+            "s3:ListBucketVersions"
+         ],
+         "Resource":[
+            "arn:aws:s3:::sandbox-orca-glacier-archive",
+            "arn:aws:s3:::sandbox-orca-glacier-archive/*"
+         ]
       },
-      "Action": [
-        "s3:GetObject*",
-        "s3:RestoreObject",
-        "s3:GetBucket*",
-        "s3:ListBucket",
-        "s3:PutBucketNotification",
-        "s3:GetInventoryConfiguration",
-        "s3:PutInventoryConfiguration",
-        "s3:ListBucketVersions"
-      ],
-      "Resource": [
-        "arn:aws:s3:::sandbox-orca-glacier-archive",
-        "arn:aws:s3:::sandbox-orca-glacier-archive/*"
-      ]
-    },
-    {
-      "Sid": "Cross Account Write Access",
-      "Effect": "Allow",
-      "Principal": {
-        "AWS": "arn:aws:iam::012345678912:root"
-      },
-      "Action": "s3:PutObject*",
-      "Resource": [
-        "arn:aws:s3:::sandbox-orca-glacier-archive/*"
-      ],
-      "Condition": {
-        "StringEquals": {
-          "s3:x-amz-acl": "bucket-owner-full-control"
-        }
+      {
+         "Sid":"Cross Account Write Access",
+         "Effect":"Allow",
+         "Principal":{
+            "AWS":"arn:aws:iam::012345678912:root"
+         },
+         "Action":"s3:PutObject*",
+         "Resource":[
+            "arn:aws:s3:::sandbox-orca-glacier-archive/*"
+         ],
+         "Condition":{
+            "StringEquals":{
+               "s3:x-amz-acl":"bucket-owner-full-control",
+               "s3:x-amz-storage-class":[
+                  "GLACIER",
+                  "DEEP_ARCHIVE"
+               ]
+            }
+         }
       }
-    }
-  ]
+   ]
 }
 ```
 
