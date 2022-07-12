@@ -29,6 +29,86 @@ and includes an additional section for migration notes.
 See this policy [example](https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/deployment-s3-bucket/#archive-bucket) for details.
 ### Added
 - *ORCA-480* Added `storageClass` to Orca catalog and associated [reporting API](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#catalog-reporting-api). Existing entries will be reported as in the `GLACIER` storage class.
+- *ORCA-479*
+    Added variable `orca_default_storage_class` which denotes the default [storage class](https://aws.amazon.com/s3/storage-classes/) to use when storing files in Orca.
+    Currently allowed values are `GLACIER` and `DEEP_ARCHIVE`
+    copy_to_glacier accepts `orcaDefaultStorageClassOverride` which can be used on a per-collection basis. If desired, add `"orcaDefaultStorageClassOverride": "{$.meta.collection.meta.orcaDefaultStorageClassOverride}` to the workflow's task's task_config.
+
+### Migration Notes
+
+- The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variables. The following optional variables have been added:
+  - orca_default_storage_class
+  
+- If desired, update collection configurations with the new optional key `orcaDefaultStorageClassOverride` that can be added to override the default S3 glacier recovery type as shown below.
+
+  ```json
+    "meta": {
+      "orcaDefaultStorageClassOverride": "DEEP_ARCHIVE"
+    }
+  ```
+
+- Update the `orca.tf` file to include all of the updated and new variables as seen below. Note the change to source and the commented out optional variables.
+  ```terraform
+  ## ORCA Module
+  ## =============================================================================
+  module "orca" {
+    source = "https://github.com/nasa/cumulus-orca/releases/download/v6.0.0/cumulus-orca-terraform.zip//modules"
+  ## --------------------------
+  ## Cumulus Variables
+  ## --------------------------
+  ## REQUIRED
+  buckets                  = var.buckets
+  lambda_subnet_ids        = var.lambda_subnet_ids
+  permissions_boundary_arn = var.permissions_boundary_arn
+  prefix                   = var.prefix
+  system_bucket            = var.system_bucket
+  vpc_id                   = var.vpc_id
+  workflow_config          = module.cumulus.workflow_config
+
+  ## OPTIONAL
+  tags        = local.tags
+
+  ## --------------------------
+  ## ORCA Variables
+  ## --------------------------
+  ## REQUIRED
+  db_admin_password        = var.db_admin_password
+  db_user_password         = var.db_user_password
+  db_host_endpoint         = var.db_host_endpoint
+  dlq_subscription_email   = var.dlq_subscription_email
+  orca_default_bucket      = var.orca_default_bucket
+  orca_reports_bucket_name = var.orca_reports_bucket_name
+  rds_security_group_id    = var.rds_security_group_id
+  s3_access_key            = var.s3_access_key
+  s3_secret_key            = var.s3_secret_key
+
+  ## OPTIONAL
+  db_admin_username                                    = "postgres"
+  default_multipart_chunksize_mb                       = 250
+  internal_report_queue_message_retention_time_seconds = 432000
+  orca_default_recovery_type                           = "Standard"
+  orca_default_storage_class                           = "GLACIER"
+  orca_delete_old_reconcile_jobs_frequency_cron        = "cron(0 0 ? * SUN *)"
+  orca_ingest_lambda_memory_size                       = 2240
+  orca_ingest_lambda_timeout                           = 720
+  orca_internal_reconciliation_expiration_days         = 30
+  orca_recovery_buckets                                = []
+  orca_recovery_complete_filter_prefix                 = ""
+  orca_recovery_expiration_days                        = 5
+  orca_recovery_lambda_memory_size                     = 128
+  orca_recovery_lambda_timeout                         = 720
+  orca_recovery_retry_limit                            = 3
+  orca_recovery_retry_interval                         = 1
+  orca_recovery_retry_backoff                          = 2
+  s3_inventory_queue_message_retention_time_seconds    = 432000
+  s3_report_frequency                                  = "Daily"
+  sqs_delay_time_seconds                               = 0
+  sqs_maximum_message_size                             = 262144
+  staged_recovery_queue_message_retention_time_seconds = 432000
+  status_update_queue_message_retention_time_seconds   = 777600
+  vpc_endpoint_id                                      = null
+  }
+  ```
 
 ## [5.0.0]
 
@@ -117,7 +197,7 @@ variable "s3_secret_key" {
   ## ORCA Module
   ## =============================================================================
   module "orca" {
-    source = "https://github.com/nasa/cumulus-orca/releases/download/v3.0.1/cumulus-orca-terraform.zip//modules"
+    source = "https://github.com/nasa/cumulus-orca/releases/download/v5.0.0/cumulus-orca-terraform.zip//modules"
   ## --------------------------
   ## Cumulus Variables
   ## --------------------------
@@ -290,7 +370,7 @@ variable "rds_security_group_id" {
   ## ORCA Module
   ## =============================================================================
   module "orca" {
-    source = "https://github.com/nasa/cumulus-orca/releases/download/v3.0.1/cumulus-orca-terraform.zip//modules"
+    source = "https://github.com/nasa/cumulus-orca/releases/download/v4.0.0/cumulus-orca-terraform.zip//modules"
   ## --------------------------
   ## Cumulus Variables
   ## --------------------------

@@ -94,6 +94,7 @@ module "orca" {
   # default_multipart_chunksize_mb                       = 250
   # metadata_queue_message_retention_time                = 777600
   # orca_default_recovery_type                           = "Standard"
+  # orca_default_storage_class                           = "GLACIER"
   # orca_delete_old_reconcile_jobs_frequency_cron        = "cron(0 0 ? * SUN *)"
   # orca_ingest_lambda_memory_size                       = 2240
   # orca_ingest_lambda_timeout                           = 600
@@ -542,6 +543,7 @@ variables is shown in the table below.
 | `db_name`                                             | string        | The name of the Orca database within the RDS cluster. Any `-` in `prefix` will be replaced with `_`.      | PREFIX_orca |
 | `db_user_name`                                        | string        | The name of the application user for the Orca database. Any `-` in `prefix` will be replaced with `_`.    | PREFIX_orcauser |
 | `orca_default_recovery_type`                          | string        | The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'                          | "Standard" |
+| `orca_default_storage_class`                          | string        | The class of storage to use when ingesting files. Can be overridden by collection config.                 | "GLACIER" |
 | `orca_delete_old_reconcile_jobs_frequency_cron`       | string        | Frequency cron for running the delete_old_reconcile_jobs lambda.                                          | "cron(0 0 ? * SUN *)" |
 | `orca_ingest_lambda_memory_size`                      | number        | Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime.                                | 2240 |
 | `orca_ingest_lambda_timeout`                          | number        | Timeout in number of seconds for ORCA copy_to_glacier lambda.                                             | 600 |
@@ -610,10 +612,14 @@ run `terraform destroy`.
 
 To configure a collection to enable ORCA, add the line
 `"granuleRecoveryWorkflow": "OrcaRecoveryWorkflow"` to the collection configuration
-as seen below. Optionally, you can exclude files by adding values to an
-`"excludeFileTypes"` variable as seen below. In addition, when dealing with large
-files, the `"s3MultipartChunksizeMb"` variable can also be set to override the
-default setting set during ORCA installation. For more information, see the documentation on the
+as seen below.
+
+Optionally, you can exclude files by adding values to an
+`excludeFileTypes` variable as seen below.
+In addition, when dealing with large files, the `s3MultipartChunksizeMb` variable can also be set to override the
+default setting set during ORCA installation.
+If the file should be stored in a [storage class](https://aws.amazon.com/s3/storage-classes/) other than the default set in `orca_default_storage_class` during installation, specify it using `orcaDefaultStorageClassOverride`.
+For more information, see the documentation on the
 [`copy_to_glacier` task](https://github.com/nasa/cumulus-orca/tree/master/tasks/copy_to_glacier).
 
 ```json
@@ -631,7 +637,8 @@ default setting set during ORCA installation. For more information, see the docu
     "granuleRecoveryWorkflow": "OrcaRecoveryWorkflow",
     "excludeFileTypes": [".cmr", ".xml", ".met"],
     "s3MultipartChunksizeMb": 400,
-    "orcaDefaultBucketOverride": "prod_orca_worm"
+    "orcaDefaultBucketOverride": "prod_orca_worm",
+    "orcaDefaultStorageClassOverride": "DEEP_ARCHIVE"
   },
   ...
 }
