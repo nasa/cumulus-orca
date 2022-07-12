@@ -244,6 +244,22 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
 
 
 def get_destination_bucket_name(config: Dict[str, Any]) -> str:
+    """
+    Returns the bucket to copy to.
+    Uses the collection value in config if present,
+    otherwise the default.
+
+    Environment Vars:
+        ORCA_DEFAULT_BUCKET (str): Name of the default S3 Glacier
+                                             ORCA bucket files should be
+                                             archived to.
+
+    Args:
+        config: See schemas/config.json for more information.
+
+    Returns:
+        The name of the bucket to use.
+    """
     try:
         destination_bucket = config[CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY]
     except KeyError:
@@ -272,6 +288,22 @@ def get_destination_bucket_name(config: Dict[str, Any]) -> str:
 
 
 def get_storage_class(config: Dict[str, Any]) -> str:
+    """
+    Returns the storage class to use on ingest.
+    Uses the collection value in config if present,
+    otherwise the default.
+
+    Environment Vars:
+        DEFAULT_STORAGE_CLASS (str): The class of storage to use when ingesting files.
+                                                            Can be overridden by collection config.
+                                                            Must match value in storage_class table.
+
+    Args:
+        config: See schemas/config.json for more information.
+
+    Returns:
+        The name of the storage class to use.
+    """
     try:
         # run_cumulus_task checked config against config.json, so the number of values this can be is limited.
         storage_class = config[CONFIG_ORCA_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY]
@@ -304,16 +336,17 @@ def handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any:
     Copies the files in {event}['input']
     to the default ORCA bucket. Environment variables must be set to
     provide a default ORCA bucket to store the files in.
-        Environment Vars:
-            DEFAULT_MULTIPART_CHUNKSIZE_MB (int): The default maximum size of chunks to use when copying.
-                                                                Can be overridden by collection config.
-            DEFAULT_STORAGE_CLASS (str): The class of storage to use when ingesting files.
-                                                                Can be overridden by collection config.
-                                                                Must match value in storage_class table.
-            ORCA_DEFAULT_BUCKET (str): Name of the default S3 Glacier
-                                                 ORCA bucket files should be
-                                                 archived to.
-            METADATA_DB_QUEUE_URL (string, required): SQS URL of the metadata queue.
+
+    Environment Vars:
+        DEFAULT_MULTIPART_CHUNKSIZE_MB (int): The default maximum size of chunks to use when copying.
+                                                            Can be overridden by collection config.
+        DEFAULT_STORAGE_CLASS (str): The class of storage to use when ingesting files.
+                                                            Can be overridden by collection config.
+                                                            Must match value in storage_class table.
+        ORCA_DEFAULT_BUCKET (str): Name of the default S3 Glacier
+                                                ORCA bucket files should be
+                                                archived to.
+        METADATA_DB_QUEUE_URL (string, required): SQS URL of the metadata queue.
 
     Args:
         event: Event passed into the step from the aws workflow.

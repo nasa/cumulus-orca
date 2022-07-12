@@ -32,7 +32,7 @@ and includes an additional section for migration notes.
 
   ```json
     "meta": {
-      "orcaDefaultStorageClassOverride": "Standard"
+      "orcaDefaultStorageClassOverride": "DEEP_ARCHIVE"
     }
   ```
 

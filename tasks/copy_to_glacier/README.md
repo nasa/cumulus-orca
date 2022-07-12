@@ -356,8 +356,36 @@ FUNCTIONS
                     "etag" (str): etag of the file object in the AWS S3 Glacier bucket.
     
     get_destination_bucket_name(config: Dict[str, Any]) -> str
+        Returns the bucket to copy to.
+        Uses the collection value in config if present,
+        otherwise the default.
+
+        Environment Vars:
+            ORCA_DEFAULT_BUCKET (str): Name of the default S3 Glacier
+                                                ORCA bucket files should be
+                                                archived to.
+
+        Args:
+            config: See schemas/config.json for more information.
+
+        Returns:
+            The name of the bucket to use.
     
     get_storage_class(config: Dict[str, Any]) -> str
+        Returns the storage class to use on ingest.
+        Uses the collection value in config if present,
+        otherwise the default.
+
+        Environment Vars:
+            DEFAULT_STORAGE_CLASS (str): The class of storage to use when ingesting files.
+                                                                Can be overridden by collection config.
+                                                                Must match value in storage_class table.
+
+        Args:
+            config: See schemas/config.json for more information.
+
+        Returns:
+            The name of the storage class to use.
     
     handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any
         Lambda handler. Runs a cumulus task that
@@ -397,12 +425,12 @@ FUNCTIONS
         Copies the files in {event}['input']
         to the ORCA glacier bucket defined in ORCA_DEFAULT_BUCKET.
         
-            Environment Variables:
-                ORCA_DEFAULT_BUCKET (string, required): Name of the default ORCA S3 Glacier bucket.
-                    Overridden by bucket specified in config.
-                DEFAULT_MULTIPART_CHUNKSIZE_MB (int, optional): The default maximum size of chunks to use when copying.
-                    Can be overridden by collection config.
-                METADATA_DB_QUEUE_URL (string, required): SQS URL of the metadata queue.
+        Environment Variables:
+            ORCA_DEFAULT_BUCKET (string, required): Name of the default ORCA S3 Glacier bucket.
+                Overridden by bucket specified in config.
+            DEFAULT_MULTIPART_CHUNKSIZE_MB (int, optional): The default maximum size of chunks to use when copying.
+                Can be overridden by collection config.
+            METADATA_DB_QUEUE_URL (string, required): SQS URL of the metadata queue.
         
         Args:
             event: Passed through from {handler}
