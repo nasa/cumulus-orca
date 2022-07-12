@@ -41,7 +41,7 @@ and includes an additional section for migration notes.
   ## ORCA Module
   ## =============================================================================
   module "orca" {
-    source = "https://github.com/nasa/cumulus-orca/releases/download/v3.0.1/cumulus-orca-terraform.zip//modules"
+    source = "https://github.com/nasa/cumulus-orca/releases/download/v6.0.0/cumulus-orca-terraform.zip//modules"
   ## --------------------------
   ## Cumulus Variables
   ## --------------------------
@@ -186,7 +186,7 @@ variable "s3_secret_key" {
   ## ORCA Module
   ## =============================================================================
   module "orca" {
-    source = "https://github.com/nasa/cumulus-orca/releases/download/v3.0.1/cumulus-orca-terraform.zip//modules"
+    source = "https://github.com/nasa/cumulus-orca/releases/download/v5.0.0/cumulus-orca-terraform.zip//modules"
   ## --------------------------
   ## Cumulus Variables
   ## --------------------------
@@ -359,7 +359,7 @@ variable "rds_security_group_id" {
   ## ORCA Module
   ## =============================================================================
   module "orca" {
-    source = "https://github.com/nasa/cumulus-orca/releases/download/v3.0.1/cumulus-orca-terraform.zip//modules"
+    source = "https://github.com/nasa/cumulus-orca/releases/download/v4.0.0/cumulus-orca-terraform.zip//modules"
   ## --------------------------
   ## Cumulus Variables
   ## --------------------------
