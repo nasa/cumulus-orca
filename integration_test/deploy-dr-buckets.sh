@@ -37,12 +37,10 @@ echo "terraform {
     key    = \"terraform.tfstate\"
     dynamodb_table = \"$bamboo_PREFIX-dr-tf-locks\"
   }
-}"
+}" >> terraform.tf
 
 terraform init -input=false
 echo "Deploying S3  buckets in Disaaster Recovery account"
 terraform apply \
   -auto-approve \
   -input=false
-
-aws s3 cp terraform.tfstate s3://$bamboo_PREFIX-dr-tf-state/terraform.tfstate
