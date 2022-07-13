@@ -1,5 +1,9 @@
 #!/bin/bash
 set -ex
+if [${bamboo_PREFIX} == "REPLACE ME" ];then
+echo "Please enter a valid value for PREFIX variable."
+exit 1
+fi
 
 export AWS_ACCESS_KEY_ID=$bamboo_DR_AWS_ACCESS_KEY_ID
 export AWS_SECRET_ACCESS_KEY=$bamboo_DR_AWS_SECRET_ACCESS_KEY
