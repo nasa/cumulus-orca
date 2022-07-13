@@ -146,6 +146,14 @@ data "aws_iam_policy_document" "orca-primary-policy-json" {
                 "arn:aws:s3:::PREFIX-orca-primary",
                 "arn:aws:s3:::PREFIX-orca-primary/*"
                 ]
+    condition {
+      test     = "StringEquals"
+      variable = "s3:x-amz-storage-class"
+      values = [
+        "GLACIER",
+        "DEEP_ARCHIVE"
+      ]
+    }
   }
 }
 resource "aws_s3_bucket_policy" "orca-primary-policy" {
