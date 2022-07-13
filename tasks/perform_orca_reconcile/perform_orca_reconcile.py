@@ -102,7 +102,7 @@ def generate_reports(job_id: int, orca_archive_location: str, engine: Engine) ->
         engine: The sqlalchemy engine to use for contacting the database.
     """
     try:
-        LOGGER.debug(f"Generating phantom reports for job id {job_id}.")
+        LOGGER.debug(f"Generating reports for job id {job_id}.")
         with engine.begin() as connection:
             LOGGER.debug(f"Generating phantom reports for job id {job_id}.")
             connection.execute(
@@ -288,7 +288,7 @@ def generate_mismatch_reports_sql() -> text:  # pragma: no cover
             files.size_in_bytes AS orca_size_in_bytes, 
             reconcile_s3_object.size_in_bytes AS s3_size_in_bytes,
             storage_class.value AS orca_storage_class,
-            reconcile_s3_object.storage_class AS s3_storage_class
+            reconcile_s3_object.storage_class AS s3_storage_class,
             CASE 
                 WHEN (files.etag != reconcile_s3_object.etag AND files.size_in_bytes != reconcile_s3_object.size_in_bytes AND storage_class.value != reconcile_s3_object.storage_class) 
                     THEN 'etag, size_in_bytes, storage_class'
@@ -402,6 +402,7 @@ def remove_job_from_queue(internal_report_queue_url: str, message_receipt_handle
         message_receipt_handle: message_receipt_handle: The ReceiptHandle for the event in the queue.
     """
     aws_client_sqs = boto3.client("sqs")
+    LOGGER.debug(f"Deleting message '{message_receipt_handle}' from queue '{internal_report_queue_url}'")
     # Remove message from the queue we are listening to.
     aws_client_sqs.delete_message(
         QueueUrl=internal_report_queue_url,
