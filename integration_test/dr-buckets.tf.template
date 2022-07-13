@@ -138,7 +138,6 @@ data "aws_iam_policy_document" "orca-primary-policy-json" {
                 "s3:GetObject*",
                 "s3:GetBucket*",
                 "s3:ListBucket",
-                "s3:PutObject",
                 "s3:PutObjectAcl",
                 "s3:PutBucketNotification"
     ]
@@ -146,15 +145,27 @@ data "aws_iam_policy_document" "orca-primary-policy-json" {
                 "arn:aws:s3:::PREFIX-orca-primary",
                 "arn:aws:s3:::PREFIX-orca-primary/*"
                 ]
-    condition {
-      test     = "StringEquals"
-      variable = "s3:x-amz-storage-class"
-      values = [
-        "GLACIER",
-        "DEEP_ARCHIVE"
-      ]
-    }
   }
+ statement {
+    principals {
+      type        = "AWS"
+      identifiers = ["arn:aws:iam::236859827343:root"]
+      }
+      actions = [
+                  "s3:PutObject*"
+      ]
+      resources = [
+                  "arn:aws:s3:::PREFIX-orca-primary/*"
+                  ]
+      condition {
+        test     = "StringEquals"
+        variable = "s3:x-amz-storage-class"
+        values = [
+          "GLACIER",
+          "DEEP_ARCHIVE"
+        ]
+      }
+   }
 }
 resource "aws_s3_bucket_policy" "orca-primary-policy" {
   bucket = aws_s3_bucket.orca-primary.id
