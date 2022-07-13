@@ -1,6 +1,6 @@
 #!/bin/bash
 set -ex
-if [${bamboo_PREFIX} == "REPLACE ME" ];then
+if [${bamboo_PREFIX} == "" ];then
 echo "Please enter a valid value for PREFIX variable."
 exit 1
 fi
