@@ -1,10 +1,10 @@
 #!/bin/bash
 set -ex
 # Negated REGEX that checks that the PREFIX is alpha numeric with no spaces and the optional use of an _
-if [[ ${bamboo_PREFIX} =~ ^[^a-zA-Z0-9_]+$ ]]; then
+if ! [[ ${bamboo_PREFIX} =~ ^[\w+]+$ ]]; then
     echo "FATAL: PREFIX variable value [${bamboo_PREFIX}] is invalid. Only alpha numeric values and _ are allowed."
     exit 1
-fi
+fi  
 
 export AWS_ACCESS_KEY_ID=$bamboo_DR_AWS_ACCESS_KEY_ID
 export AWS_SECRET_ACCESS_KEY=$bamboo_DR_AWS_SECRET_ACCESS_KEY
