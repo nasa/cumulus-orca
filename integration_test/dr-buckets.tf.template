@@ -1,17 +1,58 @@
 resource "aws_s3_bucket" "orca-archive-worm" {
   bucket = "PREFIX-orca-archive-worm"
   force_destroy = true
+  object_lock_enabled = true
   tags = {
     Deployment = "PREFIX"
     Application = "ORCA"
   }
 }
+
 resource "aws_s3_bucket_versioning" "orca-archive-worm-versioning" {
   bucket = aws_s3_bucket.orca-archive-worm.id
   versioning_configuration {
     status = "Enabled"
   }
 }
+
+resource "aws_s3_bucket_object_lock_configuration" "orca-archive-worm-object-lock-config" {
+  bucket = aws_s3_bucket.orca-archive-worm.bucket
+  rule {
+    default_retention {
+      mode = "GOVERNANCE"
+      days = 180
+    }
+  }
+}
+
+data "aws_iam_policy_document" "orca-archive-worm-policy-json" {
+ statement {
+    principals {
+      type        = "AWS"
+      identifiers = ["arn:aws:iam::236859827343:root"]
+      }
+      actions = [
+                  "s3:PutObject*"
+      ]
+      resources = [
+                  "arn:aws:s3:::PREFIX-orca-archive-worm/*"
+                  ]
+      condition {
+        test     = "StringEquals"
+        variable = "s3:x-amz-storage-class"
+        values = [
+          "GLACIER",
+          "DEEP_ARCHIVE"
+        ]
+      }
+   }
+}
+
+resource "aws_s3_bucket_policy" "orca-archive-worm-policy" {
+  bucket = aws_s3_bucket.orca-archive-worm.id
+  policy = data.aws_iam_policy_document.orca-archive-worm-policy-json.json
+}
+
 resource "aws_s3_bucket" "orca-reports" {
   bucket = "PREFIX-orca-reports"
   depends_on = [aws_s3_bucket.orca-archive-worm]
@@ -21,16 +62,18 @@ resource "aws_s3_bucket" "orca-reports" {
     Application = "ORCA"
   }
 }
+
 resource "aws_s3_bucket_lifecycle_configuration" "orca-reports-lifecycle-rule" {
   bucket = aws_s3_bucket.orca-reports.id
   rule {
-    id = "delete objects after 30 days"
+    id = "delete objects after 7 days"
     status = "Enabled"
     expiration {
-      days = 30
+      days = 7
     }
   }
 }
+
 data "aws_iam_policy_document" "orca-reports-policy-json" {
   statement {
     principals {
@@ -120,6 +163,7 @@ resource "aws_s3_bucket_policy" "orca-reports-policy" {
   bucket = aws_s3_bucket.orca-reports.id
   policy = data.aws_iam_policy_document.orca-reports-policy-json.json
 }
+
 resource "aws_s3_bucket" "orca-primary" {
   bucket = "PREFIX-orca-primary"
   force_destroy = true
@@ -128,6 +172,7 @@ resource "aws_s3_bucket" "orca-primary" {
     Application = "ORCA"
   }
 }
+
 data "aws_iam_policy_document" "orca-primary-policy-json" {
  statement {
    principals {
@@ -167,6 +212,7 @@ data "aws_iam_policy_document" "orca-primary-policy-json" {
       }
    }
 }
+
 resource "aws_s3_bucket_policy" "orca-primary-policy" {
   bucket = aws_s3_bucket.orca-primary.id
   policy = data.aws_iam_policy_document.orca-primary-policy-json.json
