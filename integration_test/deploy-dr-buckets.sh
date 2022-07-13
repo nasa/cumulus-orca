@@ -1,7 +1,7 @@
 #!/bin/bash
 set -ex
 if [[ "${bamboo_PREFIX}" = 'REPLACE ME' ]]; then
-    echo "You have to override this variable"
+    echo "ERROR! You must override this variable"
     exit 1
 fi
 
