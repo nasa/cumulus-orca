@@ -1,7 +1,7 @@
 #!/bin/bash
 set -ex
 if [[ "${bamboo_PREFIX}" = 'REPLACE ME' ]]; then
-    echo "ERROR! You must override this variable"
+    echo "ERROR! You must override this variable while running the pipeline"
     exit 1
 fi
 
