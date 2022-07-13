@@ -1,8 +1,8 @@
 #!/bin/bash
 set -ex
-if [${bamboo_PREFIX} == "" ];then
-echo "Please enter a valid value for PREFIX variable."
-exit 1
+if [[ "${bamboo.PREFIX}" = 'REPLACE ME' ]]; then
+    echo "You have to override this variable"
+    exit 1
 fi
 
 export AWS_ACCESS_KEY_ID=$bamboo_DR_AWS_ACCESS_KEY_ID
