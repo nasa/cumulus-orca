@@ -23,6 +23,7 @@ PHANTOMS_KEY_PATH_KEY = "keyPath"
 PHANTOMS_ORCA_ETAG_KEY = "orcaEtag"
 PHANTOMS_ORCA_LAST_UPDATE_KEY = "orcaGranuleLastUpdate"
 PHANTOMS_ORCA_SIZE_KEY = "orcaSizeInBytes"
+PHANTOMS_ORCA_STORAGE_CLASS_KEY = "orcaStorageClass"
 
 LOGGER = CumulusLogger()
 
@@ -109,6 +110,7 @@ def query_db(
                     PHANTOMS_ORCA_ETAG_KEY: sql_result["orca_etag"],
                     PHANTOMS_ORCA_LAST_UPDATE_KEY: sql_result["orca_last_update"],
                     PHANTOMS_ORCA_SIZE_KEY: sql_result["orca_size"],
+                    PHANTOMS_ORCA_STORAGE_CLASS_KEY: sql_result["orca_storage_class"]
                 }
             )
         return phantoms
@@ -128,8 +130,13 @@ SELECT
     key_path, 
     orca_etag, 
     (EXTRACT(EPOCH FROM date_trunc('milliseconds', orca_last_update) AT TIME ZONE 'UTC') * 1000)::bigint as orca_last_update,
-    orca_size
+    orca_size,
+    storage_class.value as orca_storage_class
     FROM reconcile_phantom_report
+    INNER JOIN storage_class ON
+    (
+        orca_storage_class_id=storage_class.id
+    )
     WHERE job_id = :job_id
     ORDER BY collection_id, granule_id, filename
     OFFSET :page_index*:page_size

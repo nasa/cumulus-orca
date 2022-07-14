@@ -34,6 +34,8 @@
           "s3FileLastUpdate",
           "orcaSizeInBytes",
           "s3SizeInBytes",
+          "orcaStorageClass",
+          "s3StorageClass",
           "discrepancyType",
           "comment"
         ],
@@ -81,6 +83,14 @@
           "s3SizeInBytes": {
             "type": "integer",
             "description": "Size in bytes of the object as reported in the S3 bucket."
+          },
+          "orcaStorageClass": {
+            "type": "string",
+            "description": "AWS storage class the object is in the Orca catalog."
+          },
+          "s3StorageClass": {
+            "type": "string",
+            "description": "AWS storage class the object is in the S3 bucket."
           },
           "discrepancyType": {
             "type": "string",

@@ -27,7 +27,7 @@
           "s3Etag",
           "s3FileLastUpdate",
           "s3SizeInBytes",
-          "storageClass"
+          "s3StorageClass"
         ],
         "properties": {
           "keyPath": {
@@ -46,7 +46,7 @@
             "type": "integer",
             "description": "Size in bytes of the object in S3 bucket."
           },
-          "storageClass": {
+          "s3StorageClass": {
             "type": "string",
             "description": "AWS storage class the object is in the S3 bucket."
           }
