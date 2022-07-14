@@ -165,16 +165,12 @@ def generate_phantom_reports_sql() -> text:  # pragma: no cover
                     last_update, 
                     size_in_bytes, 
                     cumulus_granule_id,
-                    storage_class.value as storage_class
+                    storage_class_id
                 FROM 
                     phantom_files
                 INNER JOIN granules ON 
                 (
                     phantom_files.granule_id=granules.id
-                )
-                JOIN storage_class ON
-                (
-                    phantom_files.storage_class_id=storage_class.id
                 )
             )
         INSERT INTO reconcile_phantom_report 
@@ -187,7 +183,7 @@ def generate_phantom_reports_sql() -> text:  # pragma: no cover
             orca_etag, 
             orca_last_update, 
             orca_size,
-            orca_storage_class
+            orca_storage_class_id
         )
         SELECT 
             :job_id, 
@@ -198,7 +194,7 @@ def generate_phantom_reports_sql() -> text:  # pragma: no cover
             etag, 
             last_update, 
             size_in_bytes,
-            storage_class
+            storage_class_id
         FROM 
             phantom_reports"""
     )
@@ -270,7 +266,7 @@ def generate_mismatch_reports_sql() -> text:  # pragma: no cover
             s3_last_update, 
             orca_size_in_bytes, 
             s3_size_in_bytes, 
-            orca_storage_class,
+            orca_storage_class_id,
             s3_storage_class,
             discrepancy_type
         )
@@ -287,7 +283,7 @@ def generate_mismatch_reports_sql() -> text:  # pragma: no cover
             reconcile_s3_object.last_update AS s3_last_update,
             files.size_in_bytes AS orca_size_in_bytes, 
             reconcile_s3_object.size_in_bytes AS s3_size_in_bytes,
-            storage_class.value AS orca_storage_class,
+            files.storage_class_id AS orca_storage_class_id,
             reconcile_s3_object.storage_class AS s3_storage_class,
             CASE 
                 WHEN (files.etag != reconcile_s3_object.etag AND files.size_in_bytes != reconcile_s3_object.size_in_bytes AND storage_class.value != reconcile_s3_object.storage_class) 
