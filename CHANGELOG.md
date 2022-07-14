@@ -19,20 +19,13 @@ and includes an additional section for migration notes.
 ### Changed
 - *ORCA-478* Updated bucket policy documentation for deep glacier bucket in DR account so that the users now can only upload objects with storage type as either `GLACIER` or `DEEP_ARCHIVE`.
 
-### Migration Notes
-
-- Add the following rule to the existing glacier archive bucket policy under `Condition` key:
-
-```json
-"s3:x-amz-storage-class": ["GLACIER", "DEEP_ARCHIVE"]
-```
-See this policy [example](https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/deployment-s3-bucket/#archive-bucket) for details.
 ### Added
 - *ORCA-480* Added `storageClass` to Orca catalog and associated [reporting API](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#catalog-reporting-api). Existing entries will be reported as in the `GLACIER` storage class.
 - *ORCA-479*
     Added variable `orca_default_storage_class` which denotes the default [storage class](https://aws.amazon.com/s3/storage-classes/) to use when storing files in Orca.
     Currently allowed values are `GLACIER` and `DEEP_ARCHIVE`
     copy_to_glacier accepts `orcaDefaultStorageClassOverride` which can be used on a per-collection basis. If desired, add `"orcaDefaultStorageClassOverride": "{$.meta.collection.meta.orcaDefaultStorageClassOverride}` to the workflow's task's task_config.
+- *ORCA-458* Added `storage_class` to internal reconciliation. See [reporting API](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api/#internal-reconcile-report-jobs-api) for retrieval via reporting lambdas.
 
 ### Migration Notes
 
@@ -46,6 +39,14 @@ See this policy [example](https://nasa.github.io/cumulus-orca/docs/developer/dep
       "orcaDefaultStorageClassOverride": "DEEP_ARCHIVE"
     }
   ```
+
+- Add the following rule to the existing glacier archive bucket policy under `Condition` key:
+  ```json
+  "s3:x-amz-storage-class": ["GLACIER", "DEEP_ARCHIVE"]
+  ```
+  See this policy [example](https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/deployment-s3-bucket/#archive-bucket) for details.
+
+- The property `storageClass` returned by the [Orphan reporting lambda](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api/#internal-reconcile-report-orphan-api) has been renamed to `s3StorageClass`.
 
 - Update the `orca.tf` file to include all of the updated and new variables as seen below. Note the change to source and the commented out optional variables.
   ```terraform
