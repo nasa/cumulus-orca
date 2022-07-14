@@ -27,6 +27,11 @@ stages:
     jobs:
     - Release ORCA Documentation
     - Release ORCA Code
+- Deploy DR ORCA Buckets:
+    manual: true
+    final: false
+    jobs:
+    - Deploy DR ORCA buckets
 #deploy RDS cluster for integration test
 #TODO ORCA-462: move to a different stage or even to a new plan for better maintenance.
 - Deploy Dev RDS Stack:
@@ -240,7 +245,28 @@ Release ORCA Code:
         set -ex
         bin/build_release_package.sh
       description: Create Release Files and Release in GitHub
-      
+
+#job for deploying ORCA buckets in DR account
+Deploy DR ORCA buckets:
+  key: DDROB
+  other:
+    clean-working-dir: true
+  docker:
+    image: maven.earthdata.nasa.gov/cumulus_orca
+    volumes:
+      ${bamboo.working.directory}: ${bamboo.working.directory}
+      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+  tasks:
+  - checkout:
+      force-clean-build: 'true'
+      description: Checkout Default Repository
+  - script:
+      interpreter: SHELL
+      scripts:
+      - |-
+        #!/bin/bash
+        bash integration_test/deploy-dr-buckets.sh
+          
 #job for deploying cumulus and orca
 Deploy RDS cluster:
   key: DRC
@@ -293,8 +319,10 @@ variables:
   SECRET_GITHUB_TOKEN: BAMSCRT@0@0@nPxyXQXMyE6zm3B1oI8Goma78s0H1fJD4vHy6+dpBQJpjDI2ekbcvCAOI8AyjYiILPhqi2w4fT0fx9MFVXxz2JPTp5uPNzG3GM/8XSUgvYo= #encrypted
   SECRET_GITHUB_USER: BAMSCRT@0@0@fFtitNITDsAjJqK2ZXjhnBZ96z2775QLzGR1Xz557gSl8HxxBaTD3Fbmp+HUbpfx  #encrypted
   AWS_DEFAULT_REGION: us-west-2
-  AWS_ACCESS_KEY_ID: REPLACE ME
-  AWS_SECRET_ACCESS_KEY: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
+  CUMULUS_AWS_ACCESS_KEY_ID: REPLACE ME
+  CUMULUS_AWS_SECRET_ACCESS_KEY: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
+  DR_AWS_ACCESS_KEY_ID: REPLACE ME
+  DR_AWS_SECRET_ACCESS_KEY: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
   RDS_SECURITY_GROUP: REPLACE ME
   RDS_ENGINE_VERSION: 10.18
   RDS_USER_ACCESS_SECRET_ARN: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
