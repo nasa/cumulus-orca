@@ -38,6 +38,8 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
         self.orca_buckets = None
 
     @patch("migrations.migrate_versions_5_to_6.migrate.sql.schema_versions_data_sql")
+    @patch("migrations.migrate_versions_5_to_6.migrate.sql.add_phantom_storage_class_column_sql")
+    @patch("migrations.migrate_versions_5_to_6.migrate.sql.add_mismatch_storage_class_columns_sql")
     @patch(
         "migrations.migrate_versions_5_to_6.migrate.sql.add_files_storage_class_id_column_sql"
     )
@@ -52,6 +54,8 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
         mock_storage_class_table_sql: MagicMock,
         mock_storage_class_data_sql: MagicMock,
         mock_add_files_storage_class_id_column_sql: MagicMock,
+        mock_add_mismatch_storage_class_columns_sql: MagicMock,
+        mock_add_phantom_storage_class_column_sql: MagicMock,
         mock_schema_versions_data_sql: MagicMock,
     ):
         """
@@ -71,9 +75,11 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 mock_connection.assert_any_call(
                     self.config, self.config["user_database"]
                 )
-                mock_storage_class_table_sql.assert_called_once()
-                mock_storage_class_data_sql.assert_called_once()
-                mock_add_files_storage_class_id_column_sql.assert_called_once()
+                mock_storage_class_table_sql.assert_called_once_with()
+                mock_storage_class_data_sql.assert_called_once_with()
+                mock_add_files_storage_class_id_column_sql.assert_called_once_with()
+                mock_add_mismatch_storage_class_columns_sql.assert_called_once_with()
+                mock_add_phantom_storage_class_column_sql.assert_called_once_with()
 
                 # Check the text calls occur and in the proper order
                 text_calls = [
@@ -88,11 +94,13 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                     call.execute(mock_storage_class_table_sql()),
                     call.execute(mock_storage_class_data_sql()),
                     call.execute(mock_add_files_storage_class_id_column_sql()),
+                    call.execute(mock_add_mismatch_storage_class_columns_sql()),
+                    call.execute(mock_add_phantom_storage_class_column_sql()),
                 ]
 
                 # Validate logic switch and set the execution order
                 if latest_version:
-                    mock_schema_versions_data_sql.assert_called_once()
+                    mock_schema_versions_data_sql.assert_called_once_with()
                     execution_order.append(
                         call.execute(mock_schema_versions_data_sql())
                     )
@@ -114,5 +122,7 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 mock_storage_class_table_sql.reset_mock()
                 mock_storage_class_data_sql.reset_mock()
                 mock_add_files_storage_class_id_column_sql.reset_mock()
+                mock_add_mismatch_storage_class_columns_sql.reset_mock()
+                mock_add_phantom_storage_class_column_sql.reset_mock()
                 mock_schema_versions_data_sql.reset_mock()
                 mock_text.reset_mock()

@@ -4,7 +4,6 @@ Name: orca_sql.py
 Description: All the SQL used for creating and migrating the ORCA schema.
 """
 # Imports
-from orca_shared.database.shared_db import logger
 from sqlalchemy import text
 
 
@@ -904,13 +903,17 @@ def reconcile_catalog_mismatch_report_table_sql() -> text:  # pragma: no cover
             , s3_etag                     text NOT NULL
             , orca_last_update            timestamp with time zone NOT NULL
             , s3_last_update              timestamp with time zone NOT NULL
-            , orca_size_in_bytes        int8 NOT NULL
+            , orca_size_in_bytes          int8 NOT NULL
             , s3_size_in_bytes            int8 NOT NULL
+            , orca_storage_class_id       int2 NOT NULL
+            , s3_storage_class            text NOT NULL
             , discrepancy_type            text NOT NULL
             , CONSTRAINT PK_reconcile_catalog_mismatch_report
                 PRIMARY KEY(job_id,collection_id,granule_id,key_path)
             , CONSTRAINT FK_reconcile_job_mismatch_report
                 FOREIGN KEY(job_id) REFERENCES reconcile_job(id)
+            , CONSTRAINT FK_mismatch_orca_storage_class
+                FOREIGN KEY (orca_storage_class_id) REFERENCES storage_class (id)
             );
 
             -- Comment
@@ -940,6 +943,10 @@ def reconcile_catalog_mismatch_report_table_sql() -> text:  # pragma: no cover
               IS 'Size in bytes of the object as reported in the ORCA catalog.';
             COMMENT ON COLUMN reconcile_catalog_mismatch_report.s3_size_in_bytes
               IS 'Size in bytes of the object as reported in the S3 bucket.';
+            COMMENT ON COLUMN reconcile_catalog_mismatch_report.orca_storage_class_id
+              IS 'Storage class of the file as reported in the ORCA catalog.';
+            COMMENT ON COLUMN reconcile_catalog_mismatch_report.s3_storage_class
+              IS 'Storage class of the file as reported in the S3 bucket.';
             COMMENT ON COLUMN reconcile_catalog_mismatch_report.discrepancy_type
               IS 'Type of discrepancy found during reconciliation.';
         """
@@ -1001,18 +1008,21 @@ def reconcile_phantom_report_table_sql() -> text:  # pragma: no cover
             -- Create reconcile_phantom_report table
             CREATE TABLE IF NOT EXISTS reconcile_phantom_report
             (
-              job_id              int8 NOT NULL
-            , collection_id       text NOT NULL
-            , granule_id          text NOT NULL
-            , filename            text NOT NULL
-            , key_path            text NOT NULL
-            , orca_etag           text NOT NULL
-            , orca_last_update    timestamp with time zone NOT NULL
-            , orca_size           int8 NOT NULL
+              job_id                int8 NOT NULL
+            , collection_id         text NOT NULL
+            , granule_id            text NOT NULL
+            , filename              text NOT NULL
+            , key_path              text NOT NULL
+            , orca_etag             text NOT NULL
+            , orca_last_update      timestamp with time zone NOT NULL
+            , orca_size             int8 NOT NULL
+            , orca_storage_class_id int2 NOT NULL
             , CONSTRAINT PK_reconcile_phantom_report
                 PRIMARY KEY(job_id,collection_id,granule_id,key_path)
             , CONSTRAINT FK_reconcile_job_phantom_report
                 FOREIGN KEY(job_id) REFERENCES reconcile_job(id)
+            , CONSTRAINT FK_phantom_orca_storage_class
+                FOREIGN KEY (orca_storage_class_id) REFERENCES storage_class (id)
             );
             -- Comment
             COMMENT ON TABLE reconcile_phantom_report
@@ -1033,5 +1043,7 @@ def reconcile_phantom_report_table_sql() -> text:  # pragma: no cover
               IS 'Last update of the object as reported in the ORCA catalog.';
             COMMENT ON COLUMN reconcile_phantom_report.orca_size
               IS 'Size in bytes of the object as reported in the ORCA catalog.';
+            COMMENT ON COLUMN reconcile_phantom_report.s3_storage_class_id
+              IS 'Storage class of the file as reported in the ORCA catalog.';
         """
     )

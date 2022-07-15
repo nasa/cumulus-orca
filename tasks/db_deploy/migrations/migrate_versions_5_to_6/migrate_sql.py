@@ -113,3 +113,69 @@ def add_files_storage_class_id_column_sql() -> text:  # pragma: no cover
             FOREIGN KEY (storage_class_id) REFERENCES storage_class (id);
     """
     )
+
+
+def add_mismatch_storage_class_columns_sql() -> text:  # pragma: no cover
+    """
+    SQL for adding the orca_storage_class_id and s3_storage_class columns to the reconcile_catalog_mismatch_report table.
+    New cells will contain '1', the id for GLACIER.
+
+    Returns: SQL for adding the column.
+    """
+    return text(
+        """
+        -- Add the storage_class columns with a default of 1/GLACIER
+        ALTER TABLE reconcile_catalog_mismatch_report
+        ADD COLUMN IF NOT EXISTS orca_storage_class_id int2 NOT NULL default 1,
+        ADD COLUMN IF NOT EXISTS s3_storage_class text NOT NULL default 'GLACIER';
+        COMMENT ON COLUMN reconcile_catalog_mismatch_report.orca_storage_class_id
+            IS 'Storage class of the file as reported in the ORCA catalog.';
+        COMMENT ON COLUMN reconcile_catalog_mismatch_report.s3_storage_class
+            IS 'Storage class of the file as reported in the S3 bucket.';
+
+        -- Remove the default now that new cells are populated.
+        ALTER TABLE reconcile_catalog_mismatch_report
+        ALTER COLUMN orca_storage_class_id DROP DEFAULT,
+        ALTER COLUMN s3_storage_class DROP DEFAULT;
+        
+        -- Drop the FK constraint since ADD CONSTRAINT IF NOT EXISTS isn't an option
+        ALTER TABLE reconcile_catalog_mismatch_report
+            DROP CONSTRAINT IF EXISTS FK_mismatch_orca_storage_class;
+        
+        -- Add the FK constraint
+        ALTER TABLE reconcile_catalog_mismatch_report
+        ADD CONSTRAINT FK_mismatch_orca_storage_class
+            FOREIGN KEY (orca_storage_class_id) REFERENCES storage_class (id);
+    """
+    )
+
+
+def add_phantom_storage_class_column_sql() -> text:  # pragma: no cover
+    """
+    SQL for adding the orca_storage_class column to the reconcile_phantom_report table.
+    New cells will contain '1', the id for GLACIER.
+
+    Returns: SQL for adding the column.
+    """
+    return text(
+        """
+        -- Add the orca_storage_class_id column with a default of 1 (GLACIER)
+        ALTER TABLE reconcile_phantom_report
+        ADD COLUMN IF NOT EXISTS orca_storage_class_id int2 NOT NULL default 1;
+        COMMENT ON COLUMN reconcile_phantom_report.orca_storage_class_id
+            IS 'Storage class of the file as reported in the ORCA catalog.';
+
+        -- Remove the default now that new cells are populated.
+        ALTER TABLE reconcile_phantom_report
+        ALTER COLUMN orca_storage_class_id DROP DEFAULT;
+        
+        -- Drop the FK constraint since ADD CONSTRAINT IF NOT EXISTS isn't an option
+        ALTER TABLE reconcile_phantom_report
+            DROP CONSTRAINT IF EXISTS FK_phantom_orca_storage_class;
+        
+        -- Add the FK constraint
+        ALTER TABLE reconcile_phantom_report
+        ADD CONSTRAINT FK_phantom_orca_storage_class
+            FOREIGN KEY (orca_storage_class_id) REFERENCES storage_class (id);
+    """
+    )
