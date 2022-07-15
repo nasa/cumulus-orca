@@ -5,3 +5,4 @@ description: Provides documentation for Operators to configure a collection usin
 ---
 
 This document in under construction.
+See [Deploying ORCA with Cumulus](../developer/deployment-guide/deployment-with-cumulus.md#collection-configuration) for overview.
