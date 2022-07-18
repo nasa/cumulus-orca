@@ -313,10 +313,8 @@ def inner_task(
                 a_file[FILE_COMPLETION_TIME_KEY] = time_stamp
             files.append(a_file)
 
-        # Create a copy of the granule and add file information in the proper format
-        # todo: Why make a copy? Why preserve the old data separately?
-        copied_granule = granule.copy()
-        copied_granule[GRANULE_RECOVER_FILES_KEY] = files
+        # Add file information in the proper format
+        granule[GRANULE_RECOVER_FILES_KEY] = files
 
         # Send initial job and status information to the database queues
         # post to DB-queue. Retry using exponential delay if it fails
@@ -346,7 +344,7 @@ def inner_task(
         # database with any failure information.
         process_granule(
             s3,
-            copied_granule,
+            granule,
             glacier_bucket,
             restore_expire_days,
             max_retries,
@@ -356,16 +354,11 @@ def inner_task(
             status_update_queue_url,
         )
 
-        # Add to copied_granules array for output.
-        # todo: update process_granule to return copied_granule with updated
-        #       file information and stick that into the array.
-        copied_granules.append(copied_granule)
-
     # Cumulus expects response (payload.granules) to be a list of granule objects.
     # Ideally, we should get a return from process granule with the updated file
     # information.
     return {
-        "granules": copied_granules,
+        "granules": granules,
         "asyncOperationId": event[EVENT_CONFIG_KEY][CONFIG_JOB_ID_KEY],
     }
 
