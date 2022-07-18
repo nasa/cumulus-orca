@@ -27,6 +27,7 @@ import request_files
 with open("schemas/output.json", "r") as raw_schema:
     _OUTPUT_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
 
+
 class TestRequestFiles(unittest.TestCase):
     """
     TestRequestFiles.
@@ -201,7 +202,7 @@ class TestRequestFiles(unittest.TestCase):
             exp_days,
             db_queue_url,
         )
-        
+
     @patch("request_files.get_default_glacier_bucket_name")
     @patch("request_files.inner_task")
     @patch("request_files.get_glacier_recovery_type")
@@ -316,12 +317,12 @@ class TestRequestFiles(unittest.TestCase):
     @patch("request_files.object_exists")
     @patch("boto3.client")
     def test_inner_task_happy_path(
-            self,
-            mock_boto3_client: MagicMock,
-            mock_object_exists: MagicMock,
-            mock_process_granule: MagicMock,
-            mock_sleep: MagicMock,
-            mock_create_status_for_job: MagicMock,
+        self,
+        mock_boto3_client: MagicMock,
+        mock_object_exists: MagicMock,
+        mock_process_granule: MagicMock,
+        mock_sleep: MagicMock,
+        mock_create_status_for_job: MagicMock,
     ):
         """
         Basic path with multiple granules.
@@ -421,28 +422,46 @@ class TestRequestFiles(unittest.TestCase):
         )
 
         # Compare to orca_shared to verify schema.
-        mock_create_status_for_job.assert_has_calls([
-            call(job_id, granule_id0, glacier_bucket, [{
-                request_files.FILE_SUCCESS_KEY: False,  # This value is changed by process_granule.
-                shared_recovery.FILENAME_KEY: file_key_0,
-                shared_recovery.KEY_PATH_KEY: file_key_0,
-                shared_recovery.RESTORE_DESTINATION_KEY: file_dest_bucket_0,
-                shared_recovery.MULTIPART_CHUNKSIZE_KEY: collection_multipart_chunksize_mb,
-                shared_recovery.STATUS_ID_KEY: OrcaStatus.PENDING.value,
-                shared_recovery.REQUEST_TIME_KEY: mock.ANY,
-                shared_recovery.LAST_UPDATE_KEY: mock.ANY,
-            }], db_queue_url),
-            call(job_id, granule_id1, glacier_bucket, [{
-                request_files.FILE_SUCCESS_KEY: False,  # This value is changed by process_granule.
-                shared_recovery.FILENAME_KEY: file_key_1,
-                shared_recovery.KEY_PATH_KEY: file_key_1,
-                shared_recovery.RESTORE_DESTINATION_KEY: file_dest_bucket_1,
-                shared_recovery.MULTIPART_CHUNKSIZE_KEY: collection_multipart_chunksize_mb,
-                shared_recovery.STATUS_ID_KEY: OrcaStatus.PENDING.value,
-                shared_recovery.REQUEST_TIME_KEY: mock.ANY,
-                shared_recovery.LAST_UPDATE_KEY: mock.ANY,
-            }], db_queue_url)
-        ])
+        mock_create_status_for_job.assert_has_calls(
+            [
+                call(
+                    job_id,
+                    granule_id0,
+                    glacier_bucket,
+                    [
+                        {
+                            request_files.FILE_SUCCESS_KEY: False,  # This value is changed by process_granule.
+                            shared_recovery.FILENAME_KEY: file_key_0,
+                            shared_recovery.KEY_PATH_KEY: file_key_0,
+                            shared_recovery.RESTORE_DESTINATION_KEY: file_dest_bucket_0,
+                            shared_recovery.MULTIPART_CHUNKSIZE_KEY: collection_multipart_chunksize_mb,
+                            shared_recovery.STATUS_ID_KEY: OrcaStatus.PENDING.value,
+                            shared_recovery.REQUEST_TIME_KEY: mock.ANY,
+                            shared_recovery.LAST_UPDATE_KEY: mock.ANY,
+                        }
+                    ],
+                    db_queue_url,
+                ),
+                call(
+                    job_id,
+                    granule_id1,
+                    glacier_bucket,
+                    [
+                        {
+                            request_files.FILE_SUCCESS_KEY: False,  # This value is changed by process_granule.
+                            shared_recovery.FILENAME_KEY: file_key_1,
+                            shared_recovery.KEY_PATH_KEY: file_key_1,
+                            shared_recovery.RESTORE_DESTINATION_KEY: file_dest_bucket_1,
+                            shared_recovery.MULTIPART_CHUNKSIZE_KEY: collection_multipart_chunksize_mb,
+                            shared_recovery.STATUS_ID_KEY: OrcaStatus.PENDING.value,
+                            shared_recovery.REQUEST_TIME_KEY: mock.ANY,
+                            shared_recovery.LAST_UPDATE_KEY: mock.ANY,
+                        }
+                    ],
+                    db_queue_url,
+                ),
+            ]
+        )
         self.assertEqual(2, mock_create_status_for_job.call_count)
         mock_process_granule.assert_has_calls(
             [
@@ -486,12 +505,12 @@ class TestRequestFiles(unittest.TestCase):
     @patch("request_files.object_exists")
     @patch("boto3.client")
     def test_inner_task_error_posting_status_raises(
-            self,
-            mock_boto3_client: MagicMock,
-            mock_object_exists: MagicMock,
-            mock_process_granule: MagicMock,
-            mock_sleep: MagicMock,
-            mock_create_status_for_job: MagicMock,
+        self,
+        mock_boto3_client: MagicMock,
+        mock_object_exists: MagicMock,
+        mock_process_granule: MagicMock,
+        mock_sleep: MagicMock,
+        mock_create_status_for_job: MagicMock,
     ):
         """
         If posting to status DB Queue fails, raise error.
@@ -592,21 +611,35 @@ class TestRequestFiles(unittest.TestCase):
                 restore_expire_days,
                 db_queue_url,
             )
-        self.assertEqual(f"Unable to send message to QUEUE {db_queue_url}", str(cm.exception))
+        self.assertEqual(
+            f"Unable to send message to QUEUE {db_queue_url}", str(cm.exception)
+        )
 
         # Compare to orca_shared to verify schema.
-        mock_create_status_for_job.assert_has_calls([
-            call(job_id, granule_id0, glacier_bucket, [{
-                request_files.FILE_SUCCESS_KEY: False,  # This value is changed by process_granule.
-                shared_recovery.FILENAME_KEY: file_key_0,
-                shared_recovery.KEY_PATH_KEY: file_key_0,
-                shared_recovery.RESTORE_DESTINATION_KEY: file_dest_bucket_0,
-                shared_recovery.MULTIPART_CHUNKSIZE_KEY: collection_multipart_chunksize_mb,
-                shared_recovery.STATUS_ID_KEY: OrcaStatus.PENDING.value,
-                shared_recovery.REQUEST_TIME_KEY: mock.ANY,
-                shared_recovery.LAST_UPDATE_KEY: mock.ANY,
-            }], db_queue_url)
-        ] * (max_retries + 1))
+        mock_create_status_for_job.assert_has_calls(
+            [
+                call(
+                    job_id,
+                    granule_id0,
+                    glacier_bucket,
+                    [
+                        {
+                            request_files.FILE_SUCCESS_KEY: False,
+                            # This value is changed by process_granule.
+                            shared_recovery.FILENAME_KEY: file_key_0,
+                            shared_recovery.KEY_PATH_KEY: file_key_0,
+                            shared_recovery.RESTORE_DESTINATION_KEY: file_dest_bucket_0,
+                            shared_recovery.MULTIPART_CHUNKSIZE_KEY: collection_multipart_chunksize_mb,
+                            shared_recovery.STATUS_ID_KEY: OrcaStatus.PENDING.value,
+                            shared_recovery.REQUEST_TIME_KEY: mock.ANY,
+                            shared_recovery.LAST_UPDATE_KEY: mock.ANY,
+                        }
+                    ],
+                    db_queue_url,
+                )
+            ]
+            * (max_retries + 1)
+        )
         self.assertEqual(max_retries + 1, mock_create_status_for_job.call_count)
         self.assertEqual(0, mock_process_granule.call_count)
 
@@ -750,7 +783,9 @@ class TestRequestFiles(unittest.TestCase):
         )
 
         mock_create_status_for_job.assert_called_once_with(
-            job_id, granule_id, glacier_bucket,
+            job_id,
+            granule_id,
+            glacier_bucket,
             # Compare to orca_shared to verify schema.
             [
                 {
@@ -785,7 +820,8 @@ class TestRequestFiles(unittest.TestCase):
                     shared_recovery.REQUEST_TIME_KEY: mock.ANY,
                     shared_recovery.LAST_UPDATE_KEY: mock.ANY,
                 },
-            ], db_queue_url
+            ],
+            db_queue_url,
         )
         mock_process_granule.assert_called_once_with(
             mock_s3_cli,
@@ -873,72 +909,79 @@ class TestRequestFiles(unittest.TestCase):
                 {request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: None}
             )
         self.assertEqual("'ORCA_DEFAULT_BUCKET'", str(cm.exception))
+
     @patch.dict(
         os.environ,
-        {
-            request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY: "Bulk"
-        },
+        {request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY: "Bulk"},
         clear=True,
     )
     def test_get_glacier_recovery_type_valid_config_overrides(self):
         """
         Returns the value in config if valid, overriding other values.
         """
-        config = {
-            request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: "Standard"
-        }
+        config = {request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: "Standard"}
         result = request_files.get_glacier_recovery_type(config)
-        self.assertEqual(result, config[request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY])
+        self.assertEqual(
+            result, config[request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY]
+        )
 
     @patch("cumulus_logger.CumulusLogger.error")
-    def test_get_glacier_recovery_type_invalid_config_raises_valueerror(self, mock_logger_error: MagicMock):
+    def test_get_glacier_recovery_type_invalid_config_raises_valueerror(
+        self, mock_logger_error: MagicMock
+    ):
         """
         Raises ValueError if invalid config value.
         """
-        config = {
-            request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: "Nope"
-        }
+        config = {request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: "Nope"}
         with self.assertRaises(ValueError) as ve:
             request_files.get_glacier_recovery_type(config)
-        self.assertEqual(ve.exception.args[0], f"Invalid restore type value in configuration {request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} key.")
-        mock_logger_error.assert_called_once_with(f"Invalid restore type value of {config[request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY]} found in the configuration {request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} key.")
-    
+        self.assertEqual(
+            ve.exception.args[0],
+            f"Invalid restore type value in configuration {request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} key.",
+        )
+        mock_logger_error.assert_called_once_with(
+            f"Invalid restore type value of {config[request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY]} "
+            f"found in the configuration {request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} key."
+        )
+
     @patch.dict(
         os.environ,
-        {
-            request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY: "Bulk"
-        },
+        {request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY: "Bulk"},
         clear=True,
     )
     def test_get_glacier_recovery_type_env_variable_valid(self):
         """
         Returns the value in env variable if valid and config is None.
         """
-        config = {
-            request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: None
-        }
+        config = {request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: None}
         result = request_files.get_glacier_recovery_type(config)
-        self.assertEqual(result, os.environ[request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY])
+        self.assertEqual(
+            result, os.environ[request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY]
+        )
 
     @patch("cumulus_logger.CumulusLogger.error")
     @patch.dict(
         os.environ,
-        {
-            request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY: "Nope"
-        },
+        {request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY: "Nope"},
         clear=True,
     )
-    def test_get_glacier_recovery_type_env_variable_invalid_raises_valueerror(self, mock_logger_error: MagicMock):
+    def test_get_glacier_recovery_type_env_variable_invalid_raises_valueerror(
+        self, mock_logger_error: MagicMock
+    ):
         """
         Returns ValueError if the value in env variable if invalid and config is None.
         """
-        config = {
-            request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: None
-        }
+        config = {request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: None}
         with self.assertRaises(ValueError) as ve:
             request_files.get_glacier_recovery_type(config)
-        self.assertEqual(ve.exception.args[0], f"Invalid restore type value in environment variable {request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY}")
-        mock_logger_error.assert_called_once_with(f"Invalid restore type value of {os.environ[request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY]} found in environment variable {request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY}.")
+        self.assertEqual(
+            ve.exception.args[0],
+            f"Invalid restore type value in environment variable {request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY}",
+        )
+        mock_logger_error.assert_called_once_with(
+            f"Invalid restore type value of {os.environ[request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY]} "
+            f"found in environment variable {request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY}."
+        )
 
     @patch("time.sleep")
     @patch("request_files.restore_object")
@@ -1227,11 +1270,11 @@ class TestRequestFiles(unittest.TestCase):
     @patch("request_files.restore_object")
     @patch("cumulus_logger.CumulusLogger.error")
     def test_process_granule_error_when_posting_status_raises_after_retries(
-            self,
-            mock_logger_error: MagicMock,
-            mock_restore_object: MagicMock,
-            mock_sleep: MagicMock,
-            mock_update_status_for_file: MagicMock,
+        self,
+        mock_logger_error: MagicMock,
+        mock_restore_object: MagicMock,
+        mock_sleep: MagicMock,
+        mock_update_status_for_file: MagicMock,
     ):
         """
         If a file expended all attempts for recovery, and posting to status DB expended all attempts, raise error.
@@ -1323,16 +1366,19 @@ class TestRequestFiles(unittest.TestCase):
                 ),
             ]
         )
-        mock_update_status_for_file.assert_has_calls([
-            call(
-                job_id,
-                granule_id,
-                file_name_0,
-                OrcaStatus.FAILED,
-                str(expected_error),
-                db_queue_url,
-            )
-        ] * (max_retries + 1))
+        mock_update_status_for_file.assert_has_calls(
+            [
+                call(
+                    job_id,
+                    granule_id,
+                    file_name_0,
+                    OrcaStatus.FAILED,
+                    str(expected_error),
+                    db_queue_url,
+                )
+            ]
+            * (max_retries + 1)
+        )
         self.assertEqual(max_retries + 1, mock_restore_object.call_count)
         self.assertEqual(max_retries + 1, mock_update_status_for_file.call_count)
         mock_sleep.assert_has_calls([call(retry_sleep_secs)] * max_retries * 2)
@@ -1346,9 +1392,10 @@ class TestRequestFiles(unittest.TestCase):
                 ),
                 call(
                     f"Ran into error posting to SQS {max_retries + 1} time(s) with exception {{ex}}",
-                    ex=str(expected_status_error)
-                )
-            ], any_order=True
+                    ex=str(expected_status_error),
+                ),
+            ],
+            any_order=True,
         )
 
     def test_object_exists_happy_path(self):
@@ -1499,7 +1546,7 @@ class TestRequestFiles(unittest.TestCase):
                 request_files.CONFIG_JOB_ID_KEY: None,
                 request_files.CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: 750,
                 request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "lp-sndbx-cumulus-orca",
-                request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: None
+                request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: None,
             },
         }
         mock_task.return_value = {
@@ -1546,21 +1593,42 @@ class TestRequestFiles(unittest.TestCase):
         file3 = "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml"
         protected_bucket_name = "sndbx-cumulus-protected"
         public_bucket_name = "sndbx-cumulus-public"
-        key0 = {request_files.FILE_KEY_KEY: file0, request_files.FILE_DEST_BUCKET_KEY: protected_bucket_name}
-        key1 = {request_files.FILE_KEY_KEY: file1, request_files.FILE_DEST_BUCKET_KEY: protected_bucket_name}
-        key2 = {request_files.FILE_KEY_KEY: file2, request_files.FILE_DEST_BUCKET_KEY: public_bucket_name}
-        key3 = {request_files.FILE_KEY_KEY: file3, request_files.FILE_DEST_BUCKET_KEY: public_bucket_name}
+        key0 = {
+            request_files.FILE_KEY_KEY: file0,
+            request_files.FILE_DEST_BUCKET_KEY: protected_bucket_name,
+        }
+        key1 = {
+            request_files.FILE_KEY_KEY: file1,
+            request_files.FILE_DEST_BUCKET_KEY: protected_bucket_name,
+        }
+        key2 = {
+            request_files.FILE_KEY_KEY: file2,
+            request_files.FILE_DEST_BUCKET_KEY: public_bucket_name,
+        }
+        key3 = {
+            request_files.FILE_KEY_KEY: file3,
+            request_files.FILE_DEST_BUCKET_KEY: public_bucket_name,
+        }
 
-        os.environ[request_files.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = "https://db.queue.url"
+        os.environ[
+            request_files.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY
+        ] = "https://db.queue.url"
         job_id = uuid.uuid4().__str__()
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
         files = [key0, key1, key2, key3]
         input_event = {
-            "payload": {request_files.INPUT_GRANULES_KEY: [{request_files.GRANULE_GRANULE_ID_KEY: granule_id, request_files.GRANULE_KEYS_KEY: files}]},
+            "payload": {
+                request_files.INPUT_GRANULES_KEY: [
+                    {
+                        request_files.GRANULE_GRANULE_ID_KEY: granule_id,
+                        request_files.GRANULE_KEYS_KEY: files,
+                    }
+                ]
+            },
             "task_config": {
                 request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: "my-dr-fake-glacier-bucket",
                 request_files.CONFIG_JOB_ID_KEY: job_id,
-                request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: "Standard"
+                request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: "Standard",
             },
         }
 
@@ -1616,10 +1684,22 @@ class TestRequestFiles(unittest.TestCase):
         expected_granule = {
             request_files.GRANULE_GRANULE_ID_KEY: granule_id,
             request_files.GRANULE_KEYS_KEY: [
-                {request_files.FILE_DEST_BUCKET_KEY: protected_bucket_name, request_files.FILE_KEY_KEY: file0},
-                {request_files.FILE_DEST_BUCKET_KEY: protected_bucket_name, request_files.FILE_KEY_KEY: file1},
-                {request_files.FILE_DEST_BUCKET_KEY: public_bucket_name, request_files.FILE_KEY_KEY: file2},
-                {request_files.FILE_DEST_BUCKET_KEY: public_bucket_name, request_files.FILE_KEY_KEY: file3},
+                {
+                    request_files.FILE_DEST_BUCKET_KEY: protected_bucket_name,
+                    request_files.FILE_KEY_KEY: file0,
+                },
+                {
+                    request_files.FILE_DEST_BUCKET_KEY: protected_bucket_name,
+                    request_files.FILE_KEY_KEY: file1,
+                },
+                {
+                    request_files.FILE_DEST_BUCKET_KEY: public_bucket_name,
+                    request_files.FILE_KEY_KEY: file2,
+                },
+                {
+                    request_files.FILE_DEST_BUCKET_KEY: public_bucket_name,
+                    request_files.FILE_KEY_KEY: file3,
+                },
             ],
             request_files.GRANULE_RECOVER_FILES_KEY: [
                 {
