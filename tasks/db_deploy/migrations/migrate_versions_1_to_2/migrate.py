@@ -92,7 +92,7 @@ def migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> 
         connection.execute(sql.recovery_file_table_sql())
         logger.info("recovery_file table created.")
 
-        # Commit if there is no issues
+        # Commit if there are no issues
         connection.commit()
 
     # Migrate the data and drop old tables, schema, users, roles
@@ -157,5 +157,5 @@ def migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> 
             connection.execute(sql.schema_versions_data_sql())
             logger.info("Data added to the schema_versions table.")
 
-        # Commit if there is no issues
+        # Commit if there are no issues
         connection.commit()
