@@ -612,7 +612,7 @@ class TestRequestFiles(unittest.TestCase):
                 db_queue_url,
             )
         self.assertEqual(
-            f"Unable to send message to QUEUE {db_queue_url}", str(cm.exception)
+            f"Unable to send message to QUEUE '{db_queue_url}'", str(cm.exception)
         )
 
         # Compare to orca_shared to verify schema.
@@ -728,7 +728,7 @@ class TestRequestFiles(unittest.TestCase):
             request_files.FILE_STATUS_ID_KEY: OrcaStatus.FAILED.value,
             request_files.FILE_REQUEST_TIME_KEY: mock.ANY,
             request_files.FILE_LAST_UPDATE_KEY: mock.ANY,
-            request_files.FILE_ERROR_MESSAGE_KEY: f"{missing_file_key} does not exist in {glacier_bucket} bucket",
+            request_files.FILE_ERROR_MESSAGE_KEY: f"'{missing_file_key}' does not exist in '{glacier_bucket}' bucket",
             request_files.FILE_COMPLETION_TIME_KEY: mock.ANY,
         }
 
@@ -807,7 +807,7 @@ class TestRequestFiles(unittest.TestCase):
                     shared_recovery.STATUS_ID_KEY: OrcaStatus.FAILED.value,
                     shared_recovery.REQUEST_TIME_KEY: mock.ANY,
                     shared_recovery.LAST_UPDATE_KEY: mock.ANY,
-                    shared_recovery.ERROR_MESSAGE_KEY: f"{missing_file_key} does not exist in {glacier_bucket} bucket",
+                    shared_recovery.ERROR_MESSAGE_KEY: f"'{missing_file_key}' does not exist in '{glacier_bucket}' bucket",
                     shared_recovery.COMPLETION_TIME_KEY: mock.ANY,
                 },
                 {
@@ -936,11 +936,11 @@ class TestRequestFiles(unittest.TestCase):
         with self.assertRaises(ValueError) as ve:
             request_files.get_glacier_recovery_type(config)
         self.assertEqual(
-            ve.exception.args[0],
             f"Invalid restore type value in configuration {request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} key.",
+            ve.exception.args[0]
         )
         mock_logger_error.assert_called_once_with(
-            f"Invalid restore type value of {config[request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY]} "
+            f"Invalid restore type value of '{config[request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY]}' "
             f"found in the configuration {request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} key."
         )
 
@@ -975,11 +975,11 @@ class TestRequestFiles(unittest.TestCase):
         with self.assertRaises(ValueError) as ve:
             request_files.get_glacier_recovery_type(config)
         self.assertEqual(
-            ve.exception.args[0],
             f"Invalid restore type value in environment variable {request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY}",
+            ve.exception.args[0]
         )
         mock_logger_error.assert_called_once_with(
-            f"Invalid restore type value of {os.environ[request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY]} "
+            f"Invalid restore type value of '{os.environ[request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY]}' "
             f"found in environment variable {request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY}."
         )
 
@@ -1200,7 +1200,7 @@ class TestRequestFiles(unittest.TestCase):
         # except request_files.RestoreRequestError:
         except request_files.RestoreRequestError as caught_error:
             self.assertEqual(
-                f"One or more files failed to be requested from {glacier_bucket}.",
+                f"One or more files failed to be requested from '{glacier_bucket}'.",
                 str(caught_error),
             )
         self.assertFalse(
@@ -1253,14 +1253,10 @@ class TestRequestFiles(unittest.TestCase):
         mock_logger_error.assert_has_calls(
             [
                 call(
-                    "Failed to restore {file} from {glacier_bucket}. Encountered error [ {err} ].",
-                    file=file_name_0,
-                    glacier_bucket=glacier_bucket,
-                    err=expected_error,
+                    f"Failed to restore '{file_name_0}' from '{glacier_bucket}'. Encountered error '{str(expected_error)}'."
                 ),
                 call(
-                    f"One or more files failed to be requested from {glacier_bucket}.  GRANULE: {{granule}}",
-                    granule=json.dumps(granule),
+                    f"One or more files failed to be requested from '{glacier_bucket}'. GRANULE: {json.dumps(granule)}",
                 ),
             ]
         )
@@ -1326,7 +1322,7 @@ class TestRequestFiles(unittest.TestCase):
         # except request_files.RestoreRequestError:
         except Exception as caught_error:
             self.assertEqual(
-                f"Unable to send message to QUEUE {db_queue_url}",
+                f"Unable to send message to QUEUE '{db_queue_url}'",
                 str(caught_error),
             )
         self.assertFalse(
@@ -1382,17 +1378,14 @@ class TestRequestFiles(unittest.TestCase):
         self.assertEqual(max_retries + 1, mock_restore_object.call_count)
         self.assertEqual(max_retries + 1, mock_update_status_for_file.call_count)
         mock_sleep.assert_has_calls([call(retry_sleep_secs)] * max_retries * 2)
+        # The following does not check all error messages. Do not implement a call count check.
         mock_logger_error.assert_has_calls(
             [
                 call(
-                    "Failed to restore {file} from {glacier_bucket}. Encountered error [ {err} ].",
-                    file=file_name_0,
-                    glacier_bucket=glacier_bucket,
-                    err=expected_error,
+                    f"Failed to restore '{file_name_0}' from '{glacier_bucket}'. Encountered error '{str(expected_error)}'."
                 ),
                 call(
-                    f"Ran into error posting to SQS {max_retries + 1} time(s) with exception {{ex}}",
-                    ex=str(expected_status_error),
+                    f"Ran into error posting to SQS {max_retries + 1} time(s) with exception '{str(expected_status_error)}'"
                 ),
             ],
             any_order=True,

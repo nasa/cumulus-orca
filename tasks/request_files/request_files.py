@@ -173,7 +173,7 @@ def get_glacier_recovery_type(config: Dict[str, Any]) -> str:
             )
         else:
             LOGGER.error(
-                f"Invalid restore type value of {recovery_type} "
+                f"Invalid restore type value of '{recovery_type}' "
                 f"found in the configuration {CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} key."
             )
             raise ValueError(
@@ -191,7 +191,7 @@ def get_glacier_recovery_type(config: Dict[str, Any]) -> str:
                 )
             else:
                 LOGGER.error(
-                    f"Invalid restore type value of {recovery_type} "
+                    f"Invalid restore type value of '{recovery_type}' "
                     f"found in environment variable {OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY}."
                 )
                 raise ValueError(
@@ -305,7 +305,7 @@ def inner_task(
                     f"Added {file_key} to the list of files we'll attempt to recover."
                 )
             else:
-                message = f"{file_key} does not exist in {glacier_bucket} bucket"
+                message = f"'{file_key}' does not exist in '{glacier_bucket}' bucket"
                 LOGGER.error(message)
                 a_file[FILE_SUCCESS_KEY] = True
                 a_file[FILE_STATUS_ID_KEY] = shared_recovery.OrcaStatus.FAILED.value
@@ -332,13 +332,13 @@ def inner_task(
                 break
             except Exception as ex:
                 LOGGER.error(
-                    f"Ran into error posting to SQS {retry + 1} time(s) with exception {str(ex)}"
+                    f"Ran into error posting to SQS {retry + 1} time(s) with exception '{ex}'"
                 )
                 # todo: Use backoff code. ORCA-201
                 time.sleep(retry_sleep_secs)
                 continue
         else:
-            message = f"Unable to send message to QUEUE {status_update_queue_url}"
+            message = f"Unable to send message to QUEUE '{status_update_queue_url}'"
             LOGGER.critical(message, exec_info=True)
             raise Exception(message)
 
@@ -427,12 +427,9 @@ def process_granule(
 
                 except ClientError as err:
                     # Set the message for logging and populate the file's error message information.
-                    msg = "Failed to restore {file} from {glacier_bucket}. Encountered error [ {err} ]."
                     LOGGER.error(
-                        msg,
-                        file=a_file[FILE_KEY_PATH_KEY],
-                        glacier_bucket=glacier_bucket,
-                        err=err,
+                        f"Failed to restore '{a_file[FILE_KEY_PATH_KEY]}' from '{glacier_bucket}'. "
+                        f"Encountered error '{err}'."
                     )
                     a_file[FILE_ERROR_MESSAGE_KEY] = str(err)
 
@@ -483,14 +480,13 @@ def process_granule(
                     break
                 except Exception as ex:
                     LOGGER.error(
-                        f"Ran into error posting to SQS {attempt + 1} time(s) with exception {str(ex)}",
-                        ex=str(ex),
+                        f"Ran into error posting to SQS {attempt + 1} time(s) with exception '{ex}'"
                     )
                     # todo: Use backoff code. ORCA-201
                     time.sleep(retry_sleep_secs)
                     continue
             else:
-                message = f"Unable to send message to QUEUE {status_update_queue_url}"
+                message = f"Unable to send message to QUEUE '{status_update_queue_url}'"
                 LOGGER.critical(message, exec_info=True)
                 raise Exception(message)
 
@@ -502,10 +498,9 @@ def process_granule(
 
     # If this is reached, that means there is no entry in the db for file's status.
     if any_error:
-        msg = f"One or more files failed to be requested from {glacier_bucket}.  GRANULE: {{granule}}"
-        LOGGER.error(msg, granule=json.dumps(granule))
+        LOGGER.error(f"One or more files failed to be requested from '{glacier_bucket}'. GRANULE: {json.dumps(granule)}")
         raise RestoreRequestError(
-            f"One or more files failed to be requested from {glacier_bucket}."
+            f"One or more files failed to be requested from '{glacier_bucket}'."
         )
 
 
