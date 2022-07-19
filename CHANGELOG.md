@@ -18,6 +18,8 @@ and includes an additional section for migration notes.
 
 ### Changed
 - *ORCA-478* Updated bucket policy documentation for deep glacier bucket in DR account so that the users now can only upload objects with storage type as either `GLACIER` or `DEEP_ARCHIVE`.
+- *ORCA-457* `RequestFiles` will now raise a descriptive error when user attempts to recover `DEEP_ARCHIVE` files with the `Expedited` recovery method.
+  For more details on `storageClass` see [the Orca `storageClass` documentation](https://nasa.github.io/cumulus-orca/docs/todo).
 
 ### Added
 - *ORCA-480* Added `storageClass` to Orca catalog and associated [reporting API](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#catalog-reporting-api). Existing entries will be reported as in the `GLACIER` storage class.
