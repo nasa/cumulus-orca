@@ -7,7 +7,7 @@ import os
 import time
 import uuid
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, Optional
 
 # noinspection PyPackageRequirements
 import boto3
@@ -300,7 +300,12 @@ def inner_task(
                 FILE_REQUEST_TIME_KEY: time_stamp,
                 FILE_LAST_UPDATE_KEY: time_stamp,
             }
-            if object_exists(s3, glacier_bucket, file_key):
+            file_info = get_s3_object_information(s3, glacier_bucket, file_key)
+            if file_info is not None:
+                if file_info["StorageClass"] == "DEEP_ARCHIVE" and recovery_type == "Expedited":
+                    raise RestoreRequestError(f"File '{file_key}' from bucket '{glacier_bucket}' "
+                                              f"is in storage class '{file_info['StorageClass']}' "
+                                              f"which is incompatible with recovery type '{recovery_type}'")
                 LOGGER.info(
                     f"Added {file_key} to the list of files we'll attempt to recover."
                 )
@@ -404,6 +409,7 @@ def process_granule(
         for a_file in granule[GRANULE_RECOVER_FILES_KEY]:
             # Only restore files we have not restored or have not successfully been restored
             if not a_file[FILE_SUCCESS_KEY]:
+                LOGGER.debug(f"Attempting to restore object at key '{a_file[FILE_KEY_PATH_KEY]}'...")
                 try:
                     restore_object(
                         s3,
@@ -497,11 +503,11 @@ def process_granule(
         )
 
 
-def object_exists(s3_cli: BaseClient, glacier_bucket: str, file_key: str) -> bool:
-    """Check to see if an object exists in S3 Glacier.
+def get_s3_object_information(s3_cli: BaseClient, glacier_bucket: str, file_key: str) -> Optional[Dict[str, Any]]:
+    """Perform a head request to get information about a file in S3.
     Args:
         s3_cli: An instance of boto3 s3 client
-        glacier_bucket: The S3 glacier bucket name
+        glacier_bucket: The S3 bucket name
         file_key: The key of the Glacier object
     Returns:
         True if the object exists, otherwise False.
@@ -509,16 +515,16 @@ def object_exists(s3_cli: BaseClient, glacier_bucket: str, file_key: str) -> boo
     try:
         # head_object will fail with a thrown 404 if the object doesn't exist
         # todo: The above case was not covered, and should be considered untested.
-        s3_cli.head_object(Bucket=glacier_bucket, Key=file_key)
-        return True
+        file_info = s3_cli.head_object(Bucket=glacier_bucket, Key=file_key)
+        return file_info
     except ClientError as err:
         LOGGER.error(err)
         code = err.response["Error"]["Code"]
         message = err.response["Error"]["Message"]
         if (
             message == "NoSuchKey" or message == "Not Found" or code == "404"
-        ):  # Unit tests say 'Not Found', some online docs say 'NoSuchKey'
-            return False
+        ):  # todo: Unit tests say 'Not Found', some online docs say 'NoSuchKey'
+            return None
         raise
         # todo: Online docs suggest we could catch 'S3.Client.exceptions.NoSuchKey instead of deconstructing ClientError
 

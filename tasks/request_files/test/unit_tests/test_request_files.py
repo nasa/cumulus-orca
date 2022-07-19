@@ -314,12 +314,12 @@ class TestRequestFiles(unittest.TestCase):
     @patch("request_files.shared_recovery.create_status_for_job")
     @patch("time.sleep")
     @patch("request_files.process_granule")
-    @patch("request_files.object_exists")
+    @patch("request_files.get_s3_object_information")
     @patch("boto3.client")
     def test_inner_task_happy_path(
         self,
         mock_boto3_client: MagicMock,
-        mock_object_exists: MagicMock,
+        mock_get_s3_object_information: MagicMock,
         mock_process_granule: MagicMock,
         mock_sleep: MagicMock,
         mock_create_status_for_job: MagicMock,
@@ -410,7 +410,7 @@ class TestRequestFiles(unittest.TestCase):
         restore_expire_days = randint(0, 99)  # nosec
         mock_s3_cli = mock_boto3_client("s3")
 
-        mock_object_exists.return_value = True
+        mock_get_s3_object_information.return_value = {"StorageClass": "GLACIER"}
 
         result = request_files.inner_task(
             event,
@@ -502,12 +502,103 @@ class TestRequestFiles(unittest.TestCase):
     @patch("request_files.shared_recovery.create_status_for_job")
     @patch("time.sleep")
     @patch("request_files.process_granule")
-    @patch("request_files.object_exists")
+    @patch("request_files.get_s3_object_information")
+    @patch("boto3.client")
+    def test_inner_task_expedited_recovery_type_conflicts_with_deep_archive(
+        self,
+        mock_boto3_client: MagicMock,
+        mock_get_s3_object_information: MagicMock,
+        mock_process_granule: MagicMock,
+        mock_sleep: MagicMock,
+        mock_create_status_for_job: MagicMock,
+    ):
+        """
+        If the recovery type is 'Expedited', then files found with storage class 'DEEP_ARCHIVE' cannot be recovered.
+        Should raise an error.
+        """
+        glacier_bucket = uuid.uuid4().__str__()
+        collection_multipart_chunksize_mb = random.randint(1, 10000)  # nosec
+        file_key_0 = uuid.uuid4().__str__()
+        file_dest_bucket_0 = uuid.uuid4().__str__()
+        job_id = uuid.uuid4().__str__()
+        granule_id0 = uuid.uuid4().__str__()
+        db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
+        file_0 = {
+            request_files.FILE_KEY_KEY: file_key_0,
+            request_files.FILE_DEST_BUCKET_KEY: file_dest_bucket_0,
+        }
+        expected_file0_output = {
+            request_files.FILE_SUCCESS_KEY: False,
+            request_files.FILE_FILENAME_KEY: file_key_0,
+            request_files.FILE_KEY_PATH_KEY: file_key_0,
+            request_files.FILE_RESTORE_DESTINATION_KEY: file_dest_bucket_0,
+            request_files.FILE_MULTIPART_CHUNKSIZE_MB_KEY: collection_multipart_chunksize_mb,
+            request_files.FILE_STATUS_ID_KEY: OrcaStatus.PENDING.value,
+            request_files.FILE_REQUEST_TIME_KEY: mock.ANY,
+            request_files.FILE_LAST_UPDATE_KEY: mock.ANY,
+        }
+
+        expected_input_granule_files0 = [
+            expected_file0_output,
+        ]
+        granule0 = {
+            request_files.GRANULE_GRANULE_ID_KEY: granule_id0,
+            request_files.GRANULE_KEYS_KEY: [
+                file_0,
+            ],
+        }
+        expected_input_granule0 = granule0.copy()
+        expected_input_granule0[
+            request_files.GRANULE_RECOVER_FILES_KEY
+        ] = expected_input_granule_files0
+
+        event = {
+            request_files.EVENT_CONFIG_KEY: {
+                request_files.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: glacier_bucket,
+                request_files.CONFIG_JOB_ID_KEY: job_id,
+                request_files.CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: collection_multipart_chunksize_mb,
+            },
+            request_files.EVENT_INPUT_KEY: {
+                request_files.INPUT_GRANULES_KEY: [granule0]
+            },
+        }
+        max_retries = randint(0, 99)  # nosec
+        retry_sleep_secs = randint(0, 99)  # nosec
+        recovery_type = "Expedited"
+        restore_expire_days = randint(0, 99)  # nosec
+        mock_s3_cli = mock_boto3_client("s3")
+
+        mock_get_s3_object_information.return_value = {"StorageClass": "DEEP_ARCHIVE"}
+
+        with self.assertRaises(Exception) as cm:
+            request_files.inner_task(
+                event,
+                max_retries,
+                retry_sleep_secs,
+                recovery_type,
+                restore_expire_days,
+                db_queue_url,
+            )
+        self.assertEqual(
+            f"File '{file_key_0}' from bucket '{glacier_bucket}' "
+            f"is in storage class 'DEEP_ARCHIVE' "
+            f"which is incompatible with recovery type '{recovery_type}'",
+            str(cm.exception),
+        )
+
+        mock_create_status_for_job.assert_not_called()
+        mock_process_granule.assert_not_called()
+
+    # noinspection PyUnusedLocal
+    @patch("request_files.shared_recovery.create_status_for_job")
+    @patch("time.sleep")
+    @patch("request_files.process_granule")
+    @patch("request_files.get_s3_object_information")
     @patch("boto3.client")
     def test_inner_task_error_posting_status_raises(
         self,
         mock_boto3_client: MagicMock,
-        mock_object_exists: MagicMock,
+        mock_get_s3_object_information: MagicMock,
         mock_process_granule: MagicMock,
         mock_sleep: MagicMock,
         mock_create_status_for_job: MagicMock,
@@ -598,7 +689,7 @@ class TestRequestFiles(unittest.TestCase):
         restore_expire_days = randint(0, 99)  # nosec
         mock_s3_cli = mock_boto3_client("s3")
 
-        mock_object_exists.return_value = True
+        mock_get_s3_object_information.return_value = {"StorageClass": "DEEP_ARCHIVE"}
 
         mock_create_status_for_job.side_effect = Exception("mock insert failed error")
 
@@ -661,18 +752,18 @@ class TestRequestFiles(unittest.TestCase):
     @patch("request_files.shared_recovery.create_status_for_job")
     @patch("time.sleep")
     @patch("request_files.process_granule")
-    @patch("request_files.object_exists")
+    @patch("request_files.get_s3_object_information")
     @patch("boto3.client")
     def test_inner_task_missing_files_do_not_halt(
         self,
         mock_boto3_client: MagicMock,
-        mock_object_exists: MagicMock,
+        mock_get_s3_object_information: MagicMock,
         mock_process_granule: MagicMock,
         mock_sleep: MagicMock,
         mock_create_status_for_job: MagicMock,
     ):
         """
-        A return of 'false' from object_exists should ignore the file and continue.
+        A return of None from get_s3_object_information should ignore the file and continue.
         """
         glacier_bucket = uuid.uuid4().__str__()
         collection_multipart_chunksize_mb = random.randint(1, 10000)  # nosec
@@ -766,12 +857,17 @@ class TestRequestFiles(unittest.TestCase):
         mock_s3_cli = mock_boto3_client("s3")
 
         # noinspection PyUnusedLocal
-        def object_exists_return_func(
+        def get_s3_object_information_return_func(
             input_s3_cli, input_glacier_bucket, input_file_key
         ):
-            return input_file_key in [file_key_0, file_key_1]
+            if input_file_key in [file_key_0, file_key_1]:
+                return {"StorageClass": "DEEP_ARCHIVE"}
+            else:
+                return None
 
-        mock_object_exists.side_effect = object_exists_return_func
+        mock_get_s3_object_information.side_effect = (
+            get_s3_object_information_return_func
+        )
 
         result = request_files.inner_task(
             event,
@@ -937,7 +1033,7 @@ class TestRequestFiles(unittest.TestCase):
             request_files.get_glacier_recovery_type(config)
         self.assertEqual(
             f"Invalid restore type value in configuration {request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} key.",
-            ve.exception.args[0]
+            ve.exception.args[0],
         )
         mock_logger_error.assert_called_once_with(
             f"Invalid restore type value of '{config[request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY]}' "
@@ -976,7 +1072,7 @@ class TestRequestFiles(unittest.TestCase):
             request_files.get_glacier_recovery_type(config)
         self.assertEqual(
             f"Invalid restore type value in environment variable {request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY}",
-            ve.exception.args[0]
+            ve.exception.args[0],
         )
         mock_logger_error.assert_called_once_with(
             f"Invalid restore type value of '{os.environ[request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY]}' "
@@ -1391,16 +1487,18 @@ class TestRequestFiles(unittest.TestCase):
             any_order=True,
         )
 
-    def test_object_exists_happy_path(self):
+    def test_get_s3_object_information_happy_path(self):
         mock_s3_cli = Mock()
         mock_s3_cli.head_object.side_effect = None
         glacier_bucket = uuid.uuid4().__str__()
         file_key = uuid.uuid4().__str__()
 
-        result = request_files.object_exists(mock_s3_cli, glacier_bucket, file_key)
-        self.assertTrue(result)
+        result = request_files.get_s3_object_information(
+            mock_s3_cli, glacier_bucket, file_key
+        )
+        self.assertEqual(mock_s3_cli.head_object.return_value, result)
 
-    def test_object_exists_client_error_raised(self):
+    def test_get_s3_object_information_client_error_raised(self):
         expected_error = ClientError(
             {"Error": {"Code": "Teapot", "Message": "test"}}, ""
         )
@@ -1410,12 +1508,14 @@ class TestRequestFiles(unittest.TestCase):
         file_key = uuid.uuid4().__str__()
 
         try:
-            request_files.object_exists(mock_s3_cli, glacier_bucket, file_key)
+            request_files.get_s3_object_information(
+                mock_s3_cli, glacier_bucket, file_key
+            )
             self.fail("Error not raised.")
         except ClientError as err:
             self.assertEqual(expected_error, err)
 
-    def test_object_exists_NotFound_returns_false(self):
+    def test_get_s3_object_information_NotFound_returns_none(self):
         expected_error = ClientError(
             {"Error": {"Code": "404", "Message": "Not Found"}}, ""
         )
@@ -1424,8 +1524,10 @@ class TestRequestFiles(unittest.TestCase):
         glacier_bucket = uuid.uuid4().__str__()
         file_key = uuid.uuid4().__str__()
 
-        result = request_files.object_exists(mock_s3_cli, glacier_bucket, file_key)
-        self.assertFalse(result)
+        result = request_files.get_s3_object_information(
+            mock_s3_cli, glacier_bucket, file_key
+        )
+        self.assertIsNone(result)
 
     def test_restore_object_happy_path(self):
         glacier_bucket = uuid.uuid4().__str__()
