@@ -3,10 +3,10 @@
 * [request\_files](#request_files)
   * [RestoreRequestError](#request_files.RestoreRequestError)
   * [task](#request_files.task)
-  * [inner\_task](#request_files.inner_task)
   * [get\_glacier\_recovery\_type](#request_files.get_glacier_recovery_type)
+  * [inner\_task](#request_files.inner_task)
   * [process\_granule](#request_files.process_granule)
-  * [object\_exists](#request_files.object_exists)
+  * [get\_s3\_object\_information](#request_files.get_s3_object_information)
   * [restore\_object](#request_files.restore_object)
   * [handler](#request_files.handler)
 
@@ -35,52 +35,43 @@ Exception to be raised if the restore request fails submission for any of the fi
 def task(event: Dict, context: object) -> Dict[str, Any]
 ```
 
-Pulls information from os.environ, utilizing defaults if needed.
-Then calls inner_task.
+Pulls information from os.environ, utilizing defaults if needed,
+then calls inner_task.
 
 **Arguments**:
 
   Note that because we are using CumulusMessageAdapter, this may not directly correspond to Lambda input.
 - `event` - A dict with the following keys:
-- `'config'` _dict_ - See the function's schemas/config.json for information on config.
-  
-- `'input'` _dict_ - A dict with the following keys:
-  'granules' (list(dict)): A list of dicts with the following keys:
-- `'granuleId'` _str_ - The id of the granule being restored.
-  'keys' (list(dict)): A list of dicts with the following keys:
-- `'key'` _str_ - Name of the file within the granule.  # TODO: It actually might be a path.
-- `'destBucket'` _str_ - The bucket the restored file will be moved
-  to after the restore completes.
+- `'config'` _dict_ - See schemas/config.json for details.
+- `'input'` _dict_ - See schemas/input.json for details.
 - `context` - Passed through from AWS and CMA. Unused.
   Environment Vars:
-- `RESTORE_EXPIRE_DAYS` _int, optional, default = 5_ - The number of days
-  the restored file will be accessible in the S3 bucket before it expires.
-- `RESTORE_REQUEST_RETRIES` _int, optional, default = 3_ - The number of
-  attempts to retry a restore_request that failed to submit.
-- `RESTORE_RETRY_SLEEP_SECS` _int, optional, default = 0_ - The number of seconds
-  to sleep between retry attempts.
-- `DEFAULT_RECOVERY_TYPE` _str, optional, default = 'Standard'_ - The Tier
-  for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
-  STATUS_UPDATE_QUEUE_URL
-  The URL of the SQS queue to post status to.
-  ORCA_DEFAULT_BUCKET
-  The bucket to use if destBucket is not set.
+  See docs in handler for details.
 
 **Returns**:
 
-  The value from inner_task.
-  Example Input:
-- `{'granules'` - [
-  {
-- `'granuleId'` - 'granxyz',
-- `'recoverFiles'` - [
-- `{'key'` - 'path1', 'destBucket': 'bucketName', 'success': True}
-  ]
-  }]}
+  See schemas/output.json for details.
 
 **Raises**:
 
 - `RestoreRequestError` - Thrown if there are errors with the input request.
+
+<a id="request_files.get_glacier_recovery_type"></a>
+
+#### get\_glacier\_recovery\_type
+
+```python
+def get_glacier_recovery_type(config: Dict[str, Any]) -> str
+```
+
+Returns the glacier recovery type from either config or environment variable.
+Must be either 'Bulk', 'Expedited', or 'Standard'.
+
+**Arguments**:
+
+- `config` - The config dictionary from lambda event.
+  
+- `Raises` - ValueError if recovery type value is invalid.
 
 <a id="request_files.inner_task"></a>
 
@@ -109,7 +100,7 @@ if it fails, waiting {retry_sleep_secs} between each attempt.
   'granules' (list(dict)): A list of dicts with the following keys:
 - `'granuleId'` _str_ - The id of the granule being restored.
   'keys' (list(dict)): A list of dicts with the following keys:
-- `'key'` _str_ - Name of the file within the granule.  # TODO: It actually might be a path.
+- `'key'` _str_ - Key to the file within the granule.
 - `'destBucket'` _str_ - The bucket the restored file will be moved
   to after the restore completes.
 - `max_retries` - The maximum number of retries for network operations.
@@ -121,40 +112,11 @@ if it fails, waiting {retry_sleep_secs} between each attempt.
 
 **Returns**:
 
-  A dict with the following keys:
-- `'granules'` _List_ - A list of dicts, each with the following keys:
-- `'granuleId'` _string_ - The id of the granule being restored.
-  'recoverFiles' (list(dict)): A list of dicts with the following keys:
-- `'key'` _str_ - Name of the file within the granule.
-- `'destBucket'` _str_ - The bucket the restored file will be moved
-  to after the restore completes.
-- `'success'` _boolean_ - True, indicating the restore request was submitted successfully.
-  If any value would be false, RestoreRequestError is raised instead.
-- `'errorMessage'` _string_ - when success is False, this will contain
-  the error message from the restore error.
-- `'keys'` - Same as recoverFiles, but without 'success' and 'errorMessage'.
-- `'job_id'` _str_ - The 'job_id' from event if present, otherwise a newly-generated uuid.
+  See schemas/output.json
 
 **Raises**:
 
 - `RestoreRequestError` - Thrown if there are errors with the input request.
-
-<a id="request_files.get_glacier_recovery_type"></a>
-
-#### get\_glacier\_recovery\_type
-
-```python
-def get_glacier_recovery_type(config: Dict[str, Any]) -> str
-```
-
-Returns the glacier recovery type from either config or environment variable.
-Must be either 'Bulk', 'Expedited', or 'Standard'.
-
-**Arguments**:
-
-- `config` - The config dictionary from lambda event.
-  
-- `Raises` - ValueError if recovery type value is invalid.
 
 <a id="request_files.process_granule"></a>
 
@@ -176,7 +138,7 @@ Call restore_object for the files in the granule_list. Modifies granule for outp
 - `granule` - A dict with the following keys:
 - `'granuleId'` _str_ - The id of the granule being restored.
   'recover_files' (list(dict)): A list of dicts with the following keys:
-- `'keyPath'` _str_ - Name of the file within the granule.
+- `'keyPath'` _str_ - Key to the file within the granule.
 - `'success'` _bool_ - Should enter this method set to False. Modified to 'True' by method end.
 - `'errorMessage'` _str_ - Will be modified if error occurs.
   
@@ -192,21 +154,21 @@ Call restore_object for the files in the granule_list. Modifies granule for outp
   
 - `Raises` - RestoreRequestError if any file restore could not be initiated.
 
-<a id="request_files.object_exists"></a>
+<a id="request_files.get_s3_object_information"></a>
 
-#### object\_exists
+#### get\_s3\_object\_information
 
 ```python
-def object_exists(s3_cli: BaseClient, glacier_bucket: str,
-                  file_key: str) -> bool
+def get_s3_object_information(s3_cli: BaseClient, glacier_bucket: str,
+                              file_key: str) -> Optional[Dict[str, Any]]
 ```
 
-Check to see if an object exists in S3 Glacier.
+Perform a head request to get information about a file in S3.
 
 **Arguments**:
 
 - `s3_cli` - An instance of boto3 s3 client
-- `glacier_bucket` - The S3 glacier bucket name
+- `glacier_bucket` - The S3 bucket name
 - `file_key` - The key of the Glacier object
 
 **Returns**:
@@ -271,6 +233,8 @@ for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
 CUMULUS_MESSAGE_ADAPTER_DISABLED (str): If set to 'true', CumulusMessageAdapter does not modify input.
 STATUS_UPDATE_QUEUE_URL
 The URL of the SQS queue to post status to.
+ORCA_DEFAULT_BUCKET
+The bucket to use if destBucket is not set.
 
 **Arguments**:
 
