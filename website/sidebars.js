@@ -96,6 +96,7 @@ module.exports = {
     ],
     "Configuration": [
       'operator/collection-configuration',
+      'operator/storage-classes',
     ],
   },
 };
