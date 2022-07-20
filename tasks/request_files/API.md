@@ -173,7 +173,9 @@ Perform a head request to get information about a file in S3.
 
 **Returns**:
 
-  True if the object exists, otherwise False.
+  None if the object does not exist.
+  Otherwise, the dictionary specified in
+  https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.head_object
 
 <a id="request_files.restore_object"></a>
 

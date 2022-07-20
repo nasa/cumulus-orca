@@ -510,7 +510,9 @@ def get_s3_object_information(s3_cli: BaseClient, glacier_bucket: str, file_key:
         glacier_bucket: The S3 bucket name
         file_key: The key of the Glacier object
     Returns:
-        True if the object exists, otherwise False.
+        None if the object does not exist.
+        Otherwise, the dictionary specified in
+        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.head_object
     """
     try:
         # head_object will fail with a thrown 404 if the object doesn't exist
