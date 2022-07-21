@@ -15,5 +15,5 @@ The default storage class. Files stored in the `GLACIER` class can be recovered 
 ### DEEP_ARCHIVE
 Files stored in `DEEP_ARCHIVE` [cost roughly 1/3rd](https://aws.amazon.com/s3/pricing/) to keep stored in S3 compared to `GLACIER`.
 As a trade-off, [retrieval takes 3-4 times as long](https://docs.aws.amazon.com/AmazonS3/latest/userguide/restoring-objects-retrieval-options.html), and cannot be restored with the `Expedited` recovery type.
-It is also moderately more expensive to store files as `DEEP_ARCHIVE`, but [the cost is still minimal](https://aws.amazon.com/s3/pricing/).
+The initial cost of placing or updating a file in `DEEP_ARCHIVE` is moderately more expensive compared to `GLACIER`, but [is still minimal unless you are uploading thousands of files](https://aws.amazon.com/s3/pricing/).
 `DEEP_ARCHIVE` is recommended for large files that will not see frequent changes.
