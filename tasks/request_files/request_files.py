@@ -52,7 +52,7 @@ GRANULE_RECOVER_FILES_KEY = "recoverFiles"
 # noinspection SpellCheckingInspection
 FILE_DEST_BUCKET_KEY = "destBucket"
 FILE_KEY_KEY = "key"
-FILE_SUCCESS_KEY = "success"
+FILE_PROCESSED_KEY = "success"  # todo: Rename key in schema to avoid user confusion
 FILE_ERROR_MESSAGE_KEY = "errorMessage"
 FILE_COMPLETION_TIME_KEY = "completionTime"
 FILE_KEY_PATH_KEY = "keyPath"
@@ -291,7 +291,7 @@ def inner_task(
 
             # Set the initial pending state for the file.
             a_file = {
-                FILE_SUCCESS_KEY: False,
+                FILE_PROCESSED_KEY: False,
                 FILE_FILENAME_KEY: os.path.basename(file_key),
                 FILE_KEY_PATH_KEY: file_key,
                 FILE_RESTORE_DESTINATION_KEY: destination_bucket_name,
@@ -303,16 +303,22 @@ def inner_task(
             file_info = get_s3_object_information(s3, glacier_bucket, file_key)
             if file_info is not None:
                 if file_info["StorageClass"] == "DEEP_ARCHIVE" and recovery_type == "Expedited":
-                    raise RestoreRequestError(f"File '{file_key}' from bucket '{glacier_bucket}' "
-                                              f"is in storage class '{file_info['StorageClass']}' "
-                                              f"which is incompatible with recovery type '{recovery_type}'")
-                LOGGER.info(
-                    f"Added {file_key} to the list of files we'll attempt to recover."
-                )
+                    message = f"File '{file_key}' from bucket '{glacier_bucket}' " \
+                              f"is in storage class '{file_info['StorageClass']}' " \
+                              f"which is incompatible with recovery type '{recovery_type}'"
+                    LOGGER.error(message)
+                    a_file[FILE_PROCESSED_KEY] = True
+                    a_file[FILE_STATUS_ID_KEY] = shared_recovery.OrcaStatus.FAILED.value
+                    a_file[FILE_ERROR_MESSAGE_KEY] = message
+                    a_file[FILE_COMPLETION_TIME_KEY] = time_stamp
+                else:
+                    LOGGER.info(
+                        f"Added {file_key} to the list of files we'll attempt to recover."
+                    )
             else:
                 message = f"'{file_key}' does not exist in '{glacier_bucket}' bucket"
                 LOGGER.error(message)
-                a_file[FILE_SUCCESS_KEY] = True
+                a_file[FILE_PROCESSED_KEY] = True
                 a_file[FILE_STATUS_ID_KEY] = shared_recovery.OrcaStatus.FAILED.value
                 a_file[FILE_ERROR_MESSAGE_KEY] = message
                 a_file[FILE_COMPLETION_TIME_KEY] = time_stamp
@@ -408,7 +414,7 @@ def process_granule(
     while attempt <= max_retries + 1:
         for a_file in granule[GRANULE_RECOVER_FILES_KEY]:
             # Only restore files we have not restored or have not successfully been restored
-            if not a_file[FILE_SUCCESS_KEY]:
+            if not a_file[FILE_PROCESSED_KEY]:
                 LOGGER.debug(f"Attempting to restore object at key '{a_file[FILE_KEY_PATH_KEY]}'...")
                 try:
                     restore_object(
@@ -422,7 +428,7 @@ def process_granule(
                     )
 
                     # Successful restore
-                    a_file[FILE_SUCCESS_KEY] = True
+                    a_file[FILE_PROCESSED_KEY] = True
 
                 except ClientError as err:
                     # Set the message for logging and populate the file's error message information.
@@ -439,7 +445,7 @@ def process_granule(
         if attempt <= max_retries + 1:
             # Check for early completion.
             if all(
-                a_file[FILE_SUCCESS_KEY]
+                a_file[FILE_PROCESSED_KEY]
                 for a_file in granule[GRANULE_RECOVER_FILES_KEY]
             ):
                 break
@@ -451,7 +457,7 @@ def process_granule(
     any_error = False
     failed_files = []
     for a_file in granule[GRANULE_RECOVER_FILES_KEY]:
-        if not a_file[FILE_SUCCESS_KEY]:
+        if not a_file[FILE_PROCESSED_KEY]:
             # if any file failed, the whole granule will fail and the file
             # information should be updated
             any_error = True
