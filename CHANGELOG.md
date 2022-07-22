@@ -19,7 +19,7 @@ and includes an additional section for migration notes.
 ### Changed
 - *ORCA-478* Updated bucket policy documentation for deep glacier bucket in DR account so that the users now can only upload objects with storage type as either `GLACIER` or `DEEP_ARCHIVE`.
 - *ORCA-457* `RequestFiles` will now raise a descriptive error when user attempts to recover `DEEP_ARCHIVE` files with the `Expedited` recovery method.
-  For more details on `storageClass` see [the Orca `storageClass` documentation](https://nasa.github.io/cumulus-orca/docs/todo).
+  For more details on `storageClass` see [the Orca `storageClass` documentation](https://nasa.github.io/cumulus-orca/docs/operator/storage-classes).
 
 ### Added
 - *ORCA-480* Added `storageClass` to Orca catalog and associated [reporting API](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#catalog-reporting-api). Existing entries will be reported as in the `GLACIER` storage class.
@@ -35,12 +35,12 @@ and includes an additional section for migration notes.
   - orca_default_storage_class
   
 - If desired, update collection configurations with the new optional key `orcaDefaultStorageClassOverride` that can be added to override the default S3 glacier recovery type as shown below.
-
   ```json
     "meta": {
       "orcaDefaultStorageClassOverride": "DEEP_ARCHIVE"
     }
   ```
+  For more information on storage classes and their impact on available recovery options, see [the Orca `storageClass` documentation](https://nasa.github.io/cumulus-orca/docs/operator/storage-classes).
 
 - Add the following rule to the existing glacier archive bucket policy under `Condition` key:
   ```json

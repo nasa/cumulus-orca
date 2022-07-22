@@ -104,5 +104,5 @@ def migrate_versions_4_to_5(
             connection.execute(sql.schema_versions_data_sql())
             logger.info("Data added to the schema_versions table.")
 
-        # Commit if there is no issues
+        # Commit if there are no issues
         connection.commit()
