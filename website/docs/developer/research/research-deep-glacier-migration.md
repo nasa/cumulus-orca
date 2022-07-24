@@ -48,7 +48,7 @@ for retrieve_object in retrieve_objects:
 
 ```
 Output:
-```json
+```
 {'ResponseMetadata': {'RequestId': '61ZWC27NHSFNMYJT', 'HostId': 'ItKZaYvn9rfi6ZVYmUjfZX24mKJlDZlciT9MaKK0aHiNuLWB3Pt8WSEMNt5yBK+5u+MJfzjFDfU=', 'HTTPStatusCode': 202, 'HTTPHeaders': {'x-amz-id-2': 'ItKZaYvn9rfi6ZVYmUjfZX24mKJlDZlciT9MaKK0aHiNuLWB3Pt8WSEMNt5yBK+5u+MJfzjFDfU=', 'x-amz-request-id': '61ZWC27NHSFNMYJT', 'date': 'Sun, 24 Jul 2022 18:01:33 GMT', 'server': 'AmazonS3', 'content-length': '0'}, 'RetryAttempts': 0}}
 {'ResponseMetadata': {'RequestId': 'PNN4XXA5SYTBBRKG', 'HostId': 'HgiIiqfb0hZPHgZml98VCyLLfD5LyQ8pSLpgGN6hwUUMtmcPZoo/ACbCL1rXz+pXZ4Ce2UEe34s=', 'HTTPStatusCode': 202, 'HTTPHeaders': {'x-amz-id-2': 'HgiIiqfb0hZPHgZml98VCyLLfD5LyQ8pSLpgGN6hwUUMtmcPZoo/ACbCL1rXz+pXZ4Ce2UEe34s=', 'x-amz-request-id': 'PNN4XXA5SYTBBRKG', 'date': 'Sun, 24 Jul 2022 18:01:34 GMT', 'server': 'AmazonS3', 'content-length': '0'}, 'RetryAttempts': 0}}
 ```
@@ -106,7 +106,7 @@ for migrate_object in retrieve_objects:
         print(ex)
 ```
 Output:
-```json
+```
 {'ResponseMetadata': {'RequestId': 'EM3XDZ6BB7FJJ88W', 'HostId': '/HayQvl8E2cCsclvO0b4MQUHAJnf7exmJhCILDsXfCieuaJIrAt5ZD9ocOkaam6rQbgXt0qx18A=', 'HTTPStatusCode': 200, 'HTTPHeaders': {'x-amz-id-2': '/HayQvl8E2cCsclvO0b4MQUHAJnf7exmJhCILDsXfCieuaJIrAt5ZD9ocOkaam6rQbgXt0qx18A=', 'x-amz-request-id': 'EM3XDZ6BB7FJJ88W', 'date': 'Sun, 24 Jul 2022 18:13:32 GMT', 'x-amz-storage-class': 'DEEP_ARCHIVE', 'content-type': 'application/xml', 'server': 'AmazonS3', 'content-length': '234'}, 'RetryAttempts': 0}, 'CopyObjectResult': {'ETag': '"66d8119b127d165f8bc66fa66e0e35a6"', 'LastModified': datetime.datetime(2022, 7, 24, 18, 13, 32, tzinfo=tzutc())}}
 copy succeeded for object test1.xml having E tag "66d8119b127d165f8bc66fa66e0e35a6"
 {'ResponseMetadata': {'RequestId': 'SA312G5B2RRN5P0C', 'HostId': '/YIl4aUR+CAov4/pxzzd8oVORmYYsewTbwZfnVDkWRa+8g/epeQ7KEZGqSVgcx5LheMhU/dXMfw=', 'HTTPStatusCode': 200, 'HTTPHeaders': {'x-amz-id-2': '/YIl4aUR+CAov4/pxzzd8oVORmYYsewTbwZfnVDkWRa+8g/epeQ7KEZGqSVgcx5LheMhU/dXMfw=', 'x-amz-request-id': 'SA312G5B2RRN5P0C', 'date': 'Sun, 24 Jul 2022 18:13:33 GMT', 'x-amz-storage-class': 'DEEP_ARCHIVE', 'content-type': 'application/xml', 'server': 'AmazonS3', 'content-length': '234'}, 'RetryAttempts': 0}, 'CopyObjectResult': {'ETag': '"14694ab9e3089a7c29e0dc9add4a82ab"', 'LastModified': datetime.datetime(2022, 7, 24, 18, 13, 33, tzinfo=tzutc())}}
@@ -133,10 +133,8 @@ for delete_object in delete_objects:
         print(ex)
 ```
 Output:
-```json
-{'ResponseMetadata': {'RequestId': 'C38C978YGKEF6BCR', 'HostId': 'iPQXFX3m215jhR0giFh/3cmbbuqIjQejXO8zQIxGjEnDbwoA1Yb+ZLvPDB2xJ5UmpEACMzAVD6c=', 'HTTPStatusCode': 204, 'HTTPHeaders': {'x-amz-id-2': 'iPQXFX3m215jhR0giFh/3cmbbuqIjQejXO8zQIxGjEnDbwoA1Yb+ZLvPDB2xJ5UmpEACMzAVD6c=', 'x-amz-request-id': 'C38C978YGKEF6BCR', 'date': 'Sun, 24 Jul 2022 18:29:20 GMT', 'server': 'AmazonS3'}, 'RetryAttempts': 0}}
-test1.xml deleted
-{'ResponseMetadata': {'RequestId': 'C38CPZ61SV9DH9A8', 'HostId': 'FOU0+D9gnBM7rwI4a7eO3ZXxmxfdcKxYWb7DtwnN4hx0fgHDfYE5W99vPZxqBNqJEFmPcbuoMXQ=', 'HTTPStatusCode': 204, 'HTTPHeaders': {'x-amz-id-2': 'FOU0+D9gnBM7rwI4a7eO3ZXxmxfdcKxYWb7DtwnN4hx0fgHDfYE5W99vPZxqBNqJEFmPcbuoMXQ=', 'x-amz-request-id': 'C38CPZ61SV9DH9A8', 'date': 'Sun, 24 Jul 2022 18:29:20 GMT', 'server': 'AmazonS3'}, 'RetryAttempts': 0}}
+```
+{'ResponseMetadata': {'RequestId': 'C38C978YGKEF6BCR', 'HostId': 'iPQXFX3m215jhR0giFh/3cmbbuqIjQejXO8zQIxGjEnDbwoA1Yb+ZLvPDB2xJ5UmpEACMzAVD6c=', 'HTTPStatusCode': 204, 'HTTPHeaders': {'x-amz-id-2': 'iPQXFX3m215jhR0giFh/3cmbbuqIjQejXO8zQIxGjEnDbwoA1Yb+ZLvPDB2xJ5UmpEACMzAVD6c=', 'x-amz-request-id': 'C38C978YGKEF6BCR', 'date': 'Sun, 24 Jul 2022 18:29:20 GMT', 'server': 'AmazonS3'}, 'RetryAttempts': 0}} test1.xml deleted {'ResponseMetadata': {'RequestId': 'C38CPZ61SV9DH9A8', 'HostId': 'FOU0+D9gnBM7rwI4a7eO3ZXxmxfdcKxYWb7DtwnN4hx0fgHDfYE5W99vPZxqBNqJEFmPcbuoMXQ=', 'HTTPStatusCode': 204, 'HTTPHeaders': {'x-amz-id-2': 'FOU0+D9gnBM7rwI4a7eO3ZXxmxfdcKxYWb7DtwnN4hx0fgHDfYE5W99vPZxqBNqJEFmPcbuoMXQ=', 'x-amz-request-id': 'C38CPZ61SV9DH9A8', 'date': 'Sun, 24 Jul 2022 18:29:20 GMT', 'server': 'AmazonS3'}, 'RetryAttempts': 0}}
 test2.xml deleted
 ```
 
