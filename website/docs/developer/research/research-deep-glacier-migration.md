@@ -19,7 +19,7 @@ The goal of this wikipage is to provide an initial design and recommendation for
 ### Initial Implementation Idea
 
 A user might want to 
-- convert all the holdings or holdings with a know key prefix to DEEP ARCHIVE.
+- convert all the holdings or holdings with a known key prefix to DEEP ARCHIVE.
 - convert specific collection or granules to DEEP ARCHIVE which might not have the same prefix.
 
 #### Implementation idea for migrating all ORCA holdings to deep archive.
@@ -92,28 +92,7 @@ Make sure the S3 bucket policy has permission for `s3:PutObject*` action otherwi
 
 Once all files are restored from glacier, there should be some mechanism that will notify users that the retrieval process is complete. One approach could be to enable event notifications in bucket that will trigger either an SQS, SNS or lambda. This will require additional research since AWS notifies for each `s3:ObjectRestore:Completed` API call and not for a specific number of objects.
 
-- Once all objects are retrieved in standard S3 storage, the bucket's lifecycle policy can be configured with `Deep Archive` storage type if the whole bucket objects have to be moved to deep archive.
-
-```teraform
-resource "aws_s3_bucket_lifecycle_configuration" "bucket-config" {
-  bucket = aws_s3_bucket.bucket.bucket
-
-  rule {
-    id = "transition to deep archive"
-    status = "Enabled"
-
-    transition {
-      days          = 0
-      storage_class = "DEEP_ARCHIVE"
-    }
-  }
-
-```
-:::warning
-This will not work in case a user only wants to migrate some specific objects to deep archive.
-:::
-
-- If a user only wants to restore some specific objects instead of all objects in the bucket, we can use a lambda function or a script that will run after 12 hours and copy the restored objects to deep archive S3 storage using boto3 `copy_object` function as shown below. 
+- After objects are restored, we can use a lambda function or a script that will run after 12 hours and copy the restored objects to deep archive S3 storage using boto3 `copy_object` function as shown below. 
 
 :::important
 Note that there should be some confirmation that all requested objects are successfully restored before running this script.
@@ -171,6 +150,10 @@ Output:
 {'ResponseMetadata': {'RequestId': 'C38C978YGKEF6BCR', 'HostId': 'iPQXFX3m215jhR0giFh/3cmbbuqIjQejXO8zQIxGjEnDbwoA1Yb+ZLvPDB2xJ5UmpEACMzAVD6c=', 'HTTPStatusCode': 204, 'HTTPHeaders': {'x-amz-id-2': 'iPQXFX3m215jhR0giFh/3cmbbuqIjQejXO8zQIxGjEnDbwoA1Yb+ZLvPDB2xJ5UmpEACMzAVD6c=', 'x-amz-request-id': 'C38C978YGKEF6BCR', 'date': 'Sun, 24 Jul 2022 18:29:20 GMT', 'server': 'AmazonS3'}, 'RetryAttempts': 0}} test1.xml deleted {'ResponseMetadata': {'RequestId': 'C38CPZ61SV9DH9A8', 'HostId': 'FOU0+D9gnBM7rwI4a7eO3ZXxmxfdcKxYWb7DtwnN4hx0fgHDfYE5W99vPZxqBNqJEFmPcbuoMXQ=', 'HTTPStatusCode': 204, 'HTTPHeaders': {'x-amz-id-2': 'FOU0+D9gnBM7rwI4a7eO3ZXxmxfdcKxYWb7DtwnN4hx0fgHDfYE5W99vPZxqBNqJEFmPcbuoMXQ=', 'x-amz-request-id': 'C38CPZ61SV9DH9A8', 'date': 'Sun, 24 Jul 2022 18:29:20 GMT', 'server': 'AmazonS3'}, 'RetryAttempts': 0}}
 test2.xml deleted
 ```
+
+### Initial architecture
+ TODO
+
 
 ### Cards created
 
