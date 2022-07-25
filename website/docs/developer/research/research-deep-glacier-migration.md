@@ -8,7 +8,7 @@ description: Research Notes on deep archive migration.
 
 Deep archive S3 storage type is the cheapest glacier storage type currently present in AWS S3. For archive data that does not require immediate access such as backup or disaster recovery use cases, choosing `Deep Archive Access` tier could be a wise choice.
 - Storage cost is ~$1/TB data per month. 
-- Objects in the Deep Archive Access tier are moved to the Frequent Access tier within 12 hours. Once the object is in the Frequent Access tier, users can send a GET request to retrieve the object.
+- Objects in the Deep Archive Access tier can be moved to the Frequent Access tier within 12 hours. Once the object is in the Frequent Access tier, users can send a GET request to retrieve the object.
 
 
 ### Assumptions
@@ -20,7 +20,7 @@ Deep archive S3 storage type is the cheapest glacier storage type currently pres
 
 Migration should be a 2 step process- first retrieve the objects and then copy the objects to deep archive.
 
-- Retrieve all objects currently stored with Glacier Flexible Retrieval type using `Bulk Retrievel` which is the cheapest retrieval option. Bulk retrievals are typically completed within 5–12 hours. The prices are lowest among all retrieval rates - $0.0025 per GB plus $0.025 per 1,000 requests.
+- Retrieve all objects currently stored with Glacier Flexible Retrieval type using `Bulk Retrieval` which is the cheapest retrieval option. Bulk retrievals are typically completed within 5–12 hours. The prices are lowest among all retrieval rates - $0.0025 per GB plus $0.025 per 1,000 requests.
 One option of bulk retrieval is to use python boto3 client for S3:
 
 ```python
