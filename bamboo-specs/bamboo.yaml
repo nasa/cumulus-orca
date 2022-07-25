@@ -2,8 +2,8 @@
 version: 2
 plan:
   project-key: ORCA
-  key: OI
-  name: ORCA Integrator
+  key: PL
+  name: prototype-latest
 stages:
 - Setup Env:
     manual: false
@@ -357,7 +357,7 @@ branches:
 ---
 version: 2
 plan:
-  key: ORCA-OI
+  key: ORCA-PL
 plan-permissions:
 - users:
   - bhazuka
