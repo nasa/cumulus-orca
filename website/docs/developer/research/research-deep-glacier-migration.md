@@ -6,10 +6,10 @@ description: Research Notes on deep archive migration.
 
 ## Overview
 
-Deep archive S3 storage type is the cheapest glacier storage type currently present in AWS S3. For archive data that does not require immediate access such as backup or disaster recovery use cases, choosing `Deep Archive Access` tier could be a wise choice.
+The goal of this wikipage is to provide an initial design and recommendation for migrating a customer's ORCA Flexible Retrieval (formerly Glacier) archive to DEEP ARCHIVE storage class. Deep archive S3 storage type is the cheapest glacier storage type currently present in AWS S3. For archive data that does not require immediate access such as backup or disaster recovery use cases, choosing `Deep Archive Access` tier could be a wise choice.
 - Storage cost is ~$1/TB data per month. 
-- Objects in the Deep Archive Access tier can be moved to the Frequent Access tier within 12 hours. Once the object is in the Frequent Access tier, users can send a GET request to retrieve the object.
-
+- Objects in the Deep Archive Access tier can be moved to the Frequent Access tier within 48 hours. Once the object is in the Frequent Access tier, users can send a GET request to retrieve the object. Like Flexible retrieval, the restored file is only available in frequent access for a configured number of days. For more information, see this [documentation](See https://docs.amazonaws.cn/en_us/AmazonS3/latest/userguide/restoring-objects-retrieval-options.html
+).
 
 ### Assumptions
 
@@ -18,9 +18,43 @@ Deep archive S3 storage type is the cheapest glacier storage type currently pres
 
 ### Initial Implementation Idea
 
+A user might want to 
+- convert all the holdings or holdings with a know key prefix to DEEP ARCHIVE.
+- convert specific collection or granules to DEEP ARCHIVE which might not have the same prefix.
+
+#### Implementation idea for migrating all ORCA holdings to deep archive.
+
+- Use S3 lifecycle rule in this case possibly with a prefix option to migrate from glacier to deep archive.
+The following rule will move all objects with under prefix `tmp/` to DEEP ARCHIVE.
+
+```teraform
+resource "aws_s3_bucket_lifecycle_configuration" "bucket-config" {
+  bucket = aws_s3_bucket.bucket.bucket
+
+  rule {
+    id = "transition to deep archive"
+    status = "Enabled"
+
+    transition {
+      days          = 0
+      storage_class = "DEEP_ARCHIVE"
+    }
+    filter {
+      prefix = "tmp/"
+    }
+  }
+
+```
+:::tips
+To migrate to a different storage class, change `storage_class` under transition block to the desired class in the terraform code above.
+:::
+
+#### Implementation idea for migrating specific ORCA holdings to deep archive.
+
+S3 lifecycle rule will not work in this case. 
 Migration should be a 2 step process- first retrieve the objects and then copy the objects to deep archive.
 
-- Retrieve all objects currently stored with Glacier Flexible Retrieval type using `Bulk Retrieval` which is the cheapest retrieval option. Bulk retrievals are typically completed within 5–12 hours. The prices are lowest among all retrieval rates - $0.0025 per GB plus $0.025 per 1,000 requests.
+- Retrieve all objects currently stored with Glacier Flexible Retrieval type using `Bulk Retrieval` which is the cheapest retrieval option. Bulk retrievals are typically completed within 5–12 hours. The prices are lowest among all retrieval rates - $0.025 per 1,000 requests.
 One option of bulk retrieval is to use python boto3 client for S3:
 
 ```python
@@ -144,6 +178,8 @@ test2.xml deleted
 - ORCA-500- Implement script for retrieving objects from glacier flexible retrieval.
 - ORCA-501- Implement script/lambda function for copying existing S3 objects to DEEP ARCHIVE storage
 - ORCA-502- Delete old objects that have been copied over to deep archive from S3.
+- ORCA-503- Update ORCA catalog records for files migrated to deep archive storage.
+
 
 #### Sources
 - https://pages.awscloud.com/Amazon-S3-Glacier-Deep-Archive-The-Cheapest-Storage-in-the-Cloud_2019_0409-STG_OD.html
@@ -152,3 +188,4 @@ test2.xml deleted
 - https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.copy_object
 - https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html?highlight=delete#S3.Client.delete_object
 - https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.restore_object
+- https://docs.aws.amazon.com/AmazonS3/latest/userguide/lifecycle-transition-general-considerations.html
