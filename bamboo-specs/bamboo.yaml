@@ -194,68 +194,68 @@ Report Status:
         set -e
         ./bin/set_status.sh success ${bamboo.resultsUrl} "Build Success"
       description: Report Success to GitHub
-Deploy DR ORCA buckets:
-  key: DDROB
-  other:
-    clean-working-dir: true
-  docker:
-    image: maven.earthdata.nasa.gov/cumulus_orca
-    volumes:
-      ${bamboo.working.directory}: ${bamboo.working.directory}
-      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
-  tasks:
-  - checkout:
-      force-clean-build: 'true'
-      description: Checkout Default Repository
-  - script:
-      interpreter: SHELL
-      scripts:
-      - |-
-        #!/bin/bash
-        bash integration_test/deploy-dr-buckets.sh
-#job for deploying cumulus and orca
-Deploy RDS cluster:
-  key: DRC
-  other:
-    clean-working-dir: true
-  docker:
-    image: maven.earthdata.nasa.gov/cumulus_orca
-    volumes:
-      ${bamboo.working.directory}: ${bamboo.working.directory}
-      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
-  tasks:
-  - checkout:
-      force-clean-build: 'true'
-      description: Checkout Default Repository
-  - script:
-      interpreter: SHELL
-      scripts:
-      - |-
-        #!/bin/bash
-        bash bin/deployment-rds.sh
+# Deploy DR ORCA buckets:
+#   key: DDROB
+#   other:
+#     clean-working-dir: true
+#   docker:
+#     image: maven.earthdata.nasa.gov/cumulus_orca
+#     volumes:
+#       ${bamboo.working.directory}: ${bamboo.working.directory}
+#       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+#   tasks:
+#   - checkout:
+#       force-clean-build: 'true'
+#       description: Checkout Default Repository
+#   - script:
+#       interpreter: SHELL
+#       scripts:
+#       - |-
+#         #!/bin/bash
+#         bash integration_test/deploy-dr-buckets.sh
+# #job for deploying cumulus and orca
+# Deploy RDS cluster:
+#   key: DRC
+#   other:
+#     clean-working-dir: true
+#   docker:
+#     image: maven.earthdata.nasa.gov/cumulus_orca
+#     volumes:
+#       ${bamboo.working.directory}: ${bamboo.working.directory}
+#       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+#   tasks:
+#   - checkout:
+#       force-clean-build: 'true'
+#       description: Checkout Default Repository
+#   - script:
+#       interpreter: SHELL
+#       scripts:
+#       - |-
+#         #!/bin/bash
+#         bash bin/deployment-rds.sh
 
-#job for deploying cumulus and orca
-Deploy cumulus and orca:
-  key: DCO
-  other:
-    clean-working-dir: true
-    # Some plugin configurations are not supported by YAML Specs
-  docker:
-    image: maven.earthdata.nasa.gov/cumulus_orca
-    volumes:
-      ${bamboo.working.directory}: ${bamboo.working.directory}
-      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
-  tasks:
-  - checkout:
-      force-clean-build: 'true'
-      description: Checkout Default Repository
+# #job for deploying cumulus and orca
+# Deploy cumulus and orca:
+#   key: DCO
+#   other:
+#     clean-working-dir: true
+#     # Some plugin configurations are not supported by YAML Specs
+#   docker:
+#     image: maven.earthdata.nasa.gov/cumulus_orca
+#     volumes:
+#       ${bamboo.working.directory}: ${bamboo.working.directory}
+#       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+#   tasks:
+#   - checkout:
+#       force-clean-build: 'true'
+#       description: Checkout Default Repository
 
-  - script:
-      interpreter: SHELL
-      scripts:
-      - |-
-        #!/bin/bash
-        bash bin/deployment-cumulus-orca.sh
+#   - script:
+#       interpreter: SHELL
+#       scripts:
+#       - |-
+#         #!/bin/bash
+#         bash bin/deployment-cumulus-orca.sh
 
 Release ORCA Documentation:
   key: ROD
