@@ -343,7 +343,7 @@ variables:
   DB_HOST_ENDPOINT: REPLACE ME
   
 repositories:
-- orca-develop: #this is created by CICD team from https://ci.earthdata.nasa.gov/. Contact Venku Jayanti with any issues.
+- orca test branch: #this is created by CICD team from https://ci.earthdata.nasa.gov/. Contact Venku Jayanti with any issues.
     scope: global
 triggers:
 - polling: # Does not actually poll, as we do not have webhooks enabled.
