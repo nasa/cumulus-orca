@@ -3,6 +3,8 @@ id: research-deep-glacier-migration
 title: Deep archive storage migration Research Notes
 description: Research Notes on deep archive migration.
 ---
+import MyImage from '@site/docs/templates/pan-zoom-image.mdx';
+import useBaseUrl from '@docusaurus/useBaseUrl';
 
 ## Overview
 
@@ -22,7 +24,7 @@ A user might want to
 - convert all the holdings or holdings with a known key prefix to DEEP ARCHIVE.
 - convert specific collection or granules to DEEP ARCHIVE which might not have the same prefix.
 
-#### Implementation idea for migrating all ORCA holdings to deep archive.
+### Implementation idea for migrating all ORCA holdings to deep archive.
 
 - Use S3 lifecycle rule in this case possibly with a prefix option to migrate from glacier to deep archive.
 The following rule will move all objects with under prefix `tmp/` to DEEP ARCHIVE.
@@ -45,11 +47,13 @@ resource "aws_s3_bucket_lifecycle_configuration" "bucket-config" {
   }
 
 ```
-:::tips
+:::tip
 To migrate to a different storage class, change `storage_class` under transition block to the desired class in the terraform code above.
 :::
 
-#### Implementation idea for migrating specific ORCA holdings to deep archive.
+Once migration is complete, disable the lifecycle rule to prevent any new files from being automatically moved to deep archive.
+
+### Implementation idea for migrating specific ORCA holdings to deep archive.
 
 S3 lifecycle rule will not work in this case. 
 Migration should be a 2 step process- first retrieve the objects and then copy the objects to deep archive.
@@ -92,7 +96,7 @@ Make sure the S3 bucket policy has permission for `s3:PutObject*` action otherwi
 
 Once all files are restored from glacier, there should be some mechanism that will notify users that the retrieval process is complete. One approach could be to enable event notifications in bucket that will trigger either an SQS, SNS or lambda. This will require additional research since AWS notifies for each `s3:ObjectRestore:Completed` API call and not for a specific number of objects.
 
-- After objects are restored, we can use a lambda function or a script that will run after 12 hours and copy the restored objects to deep archive S3 storage using boto3 `copy_object` function as shown below. 
+- After objects are restored, we can use a lambda function that will run after 12 hours and copy the restored objects to deep archive S3 storage using boto3 `copy_object` function as shown below. 
 
 :::important
 Note that there should be some confirmation that all requested objects are successfully restored before running this script.
@@ -151,10 +155,144 @@ Output:
 test2.xml deleted
 ```
 
-### Initial architecture
- TODO
 
+### Initial architecture design for migrating specific ORCA holdings to deep archive
 
+The following is an initial architecture for ORCA deep archive migration. Note that this could possibly change during implementation phase.
+
+<MyImage
+    imageSource={useBaseUrl('img/ORCA-Deep-Archive-Migration-Architecture-Initial.svg')}
+    imageAlt="System Context"
+    zoomInPic={useBaseUrl('img/zoom-in.png')}
+    zoomOutPic={useBaseUrl('img/zoom-out.png')}
+    resetPic={useBaseUrl('img/zoom-pan-reset.png')}
+/>
+
+<br />
+<br />
+<br />
+
+The corresponding step function workflow diagram is shown below.
+
+<MyImage
+    imageSource={useBaseUrl('img/stepfunction_graph_migration_deep_archive.svg')}
+    imageAlt="System Context"
+    zoomInPic={useBaseUrl('img/zoom-in.png')}
+    zoomOutPic={useBaseUrl('img/zoom-out.png')}
+    resetPic={useBaseUrl('img/zoom-pan-reset.png')}
+/>
+<br />
+<br />
+The workflow definition is given below:
+
+```json
+{
+  "StartAt": "Restore objects using bulk retrieval",
+  "States": {
+    "Restore objects using bulk retrieval": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "Payload.$": "$"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "Retrieval in progress"
+    },
+    "Retrieval in progress": {
+      "Type": "Parallel",
+      "Next": "copy objects to deep archive",
+      "Branches": [
+        {
+          "StartAt": "Wait 12 hours to complete bulk retrieval",
+          "States": {
+            "Wait 12 hours to complete bulk retrieval": {
+              "Type": "Wait",
+              "Seconds": 43200,
+              "Comment": "wait until 12 hours to finish bulk retrieval process",
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Notify end user about successful retrieval",
+          "States": {
+            "Notify end user about successful retrieval": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::sqs:sendMessage",
+              "Parameters": {
+                "MessageBody.$": "$"
+              },
+              "End": true
+            }
+          }
+        }
+      ]
+    },
+    "copy objects to deep archive": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "Payload.$": "$"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "notify user on successful copy"
+    },
+    "notify user on successful copy": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sqs:sendMessage",
+      "Parameters": {
+        "MessageBody.$": "$"
+      },
+      "Next": "Delete objects that have been copied over to deep archive"
+    },
+    "Delete objects that have been copied over to deep archive": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "Payload.$": "$"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "End": true
+    }
+  }
+}
+```
 ### Cards created
 
 - ORCA-499 -Research how to notify end users on completion of specific object restore from glacier.
