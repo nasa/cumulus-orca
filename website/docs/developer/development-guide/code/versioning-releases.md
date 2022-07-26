@@ -110,7 +110,7 @@ To delete a published tag to re-tag, follow these steps:
 
 ## Deploying ORCA buckets, RDS cluster and Cumulus ORCA modules in bamboo
 
-For testing, use your feature branch in cumulus-orca github repo and `ORCA-test-branch` linked repo in bamboo specs. 
+For testing, use your feature branch in cumulus-orca github repo and `ORCA-test-branch` linked repo in bamboo specs. The ORCA `prototype-latest` bamboo plan can be used for testing purposes.
 
 The Cumulus and TF buckets as well as dynamoDB table in cumulus OU account are created automatically in bamboo `Deploy Dev Cumulus and ORCA Stack` stage. These are the buckets that need to be created in cumulus OU account:
 
