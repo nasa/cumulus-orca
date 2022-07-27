@@ -1,6 +1,6 @@
 import os
 from http import HTTPStatus
-from typing import Dict, Any, List, Union
+from typing import Any, Dict, List, Union
 
 from cumulus_logger import CumulusLogger
 from orca_shared.database import shared_db
@@ -319,9 +319,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     try:
         db_connect_info_secret_arn = os.environ["DB_CONNECT_INFO_SECRET_ARN"]
     except KeyError as key_error:
-        LOGGER.error(
-            "DB_CONNECT_INFO_SECRET_ARN environment value not found."
-        )
+        LOGGER.error("DB_CONNECT_INFO_SECRET_ARN environment value not found.")
         raise
 
     db_connect_info = shared_db.get_configuration(db_connect_info_secret_arn)
