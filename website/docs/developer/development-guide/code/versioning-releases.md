@@ -69,7 +69,7 @@ Bamboo will build and run unit tests against that tagged release.
 
 The release is automated in Bamboo, but the step must be manually started. If
 you set the `RELEASE_FLAG` to `true` and the build steps passed, you will
-be able to run the manual 'Release' step in Bamboo.
+be able to run the manual 'Release' step in Bamboo. Make sure to use the `ORCA Integrator` plan under ORCA on bamboo website for performing a release.
 
 The CI release scripts will create a release based on the release version tag,
 as well as uploading release artifacts to the Github release for the Terraform
@@ -110,7 +110,16 @@ To delete a published tag to re-tag, follow these steps:
 
 ## Deploying ORCA buckets, RDS cluster and Cumulus ORCA modules in bamboo
 
-For testing, use your feature branch in cumulus-orca github repo and `ORCA-test-branch` linked repo in bamboo specs. The ORCA `prototype-latest` bamboo plan can be used for testing purposes.
+For testing purposes, you should use your feature branch in cumulus-orca github repo and `prototype-latest` bamboo plan so that it does not affect the ORCA github `develop` branch. The `prototype-latest` bamboo plan is linked to `feature/ORCA-test-bamboo` github branch as the default branch under cumulus-orca repo. In addition, if changes are made to the bamboo spec file `bamboo.yaml` in this default branch, you have to manually import the bamboo spec by choosing `ORCA-test-branch` as the linked repo.
+
+Make sure to use the `ORCA Deploy Plan` bamboo plan for deploying the resources. These are the ORCA buckets that are created in disaster recovery AWS account:
+
+- `<PREFIX>-orca-primary`
+- `<PREFIX>-orca-archive-worm`
+- `<PREFIX>-orca-reports`
+- `<PREFIX>-dr-tf-state` (for storing the terraform state file in DR account)
+
+For `Deploy buckets in DR account` stage in bamboo plan, add the values for `PREFIX`, `DR_AWS_ACCESS_KEY_ID` and `DR_AWS_SECRET_ACCESS_KEY` variables for the `Disaster Recovery` AWS account to deploy the buckets in DR account. Some of these buckets have cross-account IAM policies attached so that they can be accessed from the other cumulus sandbox.
 
 The Cumulus and TF buckets as well as dynamoDB table in cumulus OU account are created automatically in bamboo `Deploy Dev Cumulus and ORCA Stack` stage. These are the buckets that need to be created in cumulus OU account:
 
@@ -129,16 +138,6 @@ While running the `Deploy Dev RDS Stack` stage, replace the following variables 
 - AWS_ACCOUNT_ID(for cumulus sandbox account)
 - DB_ADMIN_PASSWORD
 - DB_USER_PASSWORD
-
-
-These are the ORCA buckets that are created in disaster recovery AWS account
-
-- `<PREFIX>-orca-primary`
-- `<PREFIX>-orca-archive-worm`
-- `<PREFIX>-orca-reports`
-- `<PREFIX>-dr-tf-state` (for storing the terraform state file in DR account)
-
-For `Deploy buckets in DR account` stage in bamboo plan, add the values for `PREFIX`, `DR_AWS_ACCESS_KEY_ID` and `DR_AWS_SECRET_ACCESS_KEY` variables for the `Disaster Recovery` AWS account to deploy the buckets in DR account. Some of these buckets have cross-account IAM policies attached so that they can be accessed from the other cumulus sandbox.
 
 Note that the above buckets can also be created manually if desired by the user. Make sure to use the proper AWS access keys for configuration before running the commands.
 
