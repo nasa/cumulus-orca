@@ -1,3 +1,6 @@
+
+# ------------------------------------------------------------------------------------------------
+#bamboo plan for running unit tests and doing a release
 ---
 version: 2
 plan:
@@ -27,25 +30,6 @@ stages:
     jobs:
     - Release ORCA Documentation
     - Release ORCA Code
-- Deploy DR ORCA Buckets:
-    manual: true
-    final: false
-    jobs:
-    - Deploy DR ORCA buckets
-#deploy RDS cluster for integration test
-#TODO ORCA-462: move to a different stage or even to a new plan for better maintenance.
-- Deploy Dev RDS Stack:
-    manual: true
-    final: false
-    jobs:
-    - Deploy RDS cluster
-
-#deploy orca and cumulus for integration test
-- Deploy Dev Cumulus and ORCA Stack:
-    manual: true
-    final: false
-    jobs:
-    - Deploy cumulus and orca
 
 Set Pending Github Status:
   key: SPGS
@@ -92,7 +76,7 @@ Build and Test:
       scripts:
       - |-
         #!/bin/bash
-        ## This script creates a file as a method of letting cleanup jobs know if it was reached, this allows github failure notifications to be sent if the job failed. 
+        ## This script creates a file as a method of letting cleanup jobs know if it was reached, this allows github failure notifications to be sent if the job failed.
         set -e
         touch success.flag
       description: Set Success Flag
@@ -105,7 +89,7 @@ Build and Test:
         ## This script looks for the output from the "Set job success flag" script and reports failure to github if it is not present
         set -e
 
-        if [[ ! -f success.flag ]]; then 
+        if [[ ! -f success.flag ]]; then
           echo "Job failed, sending failure notice to github"
           ./bin/set_status.sh failure ${bamboo.resultsUrl} "Testing Step Failed"
         fi
@@ -148,7 +132,7 @@ Python snyk:
         snyk test --json --file=$pom --package-manager=pip > report.json;
         filename=$(dirname $pom |  sed s'/\.\///')
         snyk-to-html -i report.json -o "$filename.html";
-        done 
+        done
         chown -R 500:502 .
 
         #cat > scan.sh <<EOF
@@ -182,7 +166,7 @@ Report Status:
       interpreter: SHELL
       scripts:
       - |-
-        #!/bin/bash 
+        #!/bin/bash
         set -e
         ./bin/set_status.sh success ${bamboo.resultsUrl} "Build Success"
       description: Report Success to GitHub
@@ -246,6 +230,74 @@ Release ORCA Code:
         bin/build_release_package.sh
       description: Create Release Files and Release in GitHub
 
+variables:
+  ORCA_VERSION: 4.0.3
+  RELEASE_FLAG: 'false'
+  REPORT_BUILD_STATUS: 'true'
+  SECRET_GITHUB_EMAIL: BAMSCRT@0@0@HYUkicwfEqt17JZaZuGYmtmRHrnDySiT+kQkBQa7/Rg7IQgl1lUvbncMUu0Wx2k1ayHojNkh2TdOlF0kJ5tw6Q== #encrypted
+  SECRET_GITHUB_TOKEN: BAMSCRT@0@0@nPxyXQXMyE6zm3B1oI8Goma78s0H1fJD4vHy6+dpBQJpjDI2ekbcvCAOI8AyjYiILPhqi2w4fT0fx9MFVXxz2JPTp5uPNzG3GM/8XSUgvYo= #encrypted
+  SECRET_GITHUB_USER: BAMSCRT@0@0@fFtitNITDsAjJqK2ZXjhnBZ96z2775QLzGR1Xz557gSl8HxxBaTD3Fbmp+HUbpfx  #encrypted
+ 
+repositories:
+- orca-develop: #this is created by CICD team from https://ci.earthdata.nasa.gov/. Contact ci/cd team with any issues.
+    scope: global
+triggers:
+- polling: # Does not actually poll, as we do not have webhooks enabled.
+    period: '60' #time in seconds
+branches:
+  create: for-new-branch
+  delete:
+    after-deleted-days: 7
+    after-inactive-days: 30
+  link-to-jira: true
+---
+version: 2
+plan:
+  key: ORCA-OI
+plan-permissions:
+- users:
+  - bhazuka
+  - andrew.dorn
+  - rizbi.hassan
+  - scott.saxon
+
+  permissions:
+  - view
+  - edit
+  - build
+  - clone
+  - admin
+...
+
+# ------------------------------------------------------------------------------------------------
+#bamboo plan for deploying cumulus, ORCA and relevant buckets.
+---
+version: 2
+plan:
+  project-key: ORCA
+  key: ODP
+  name: ORCA Deploy Plan
+stages:
+- Deploy DR ORCA Buckets:
+    manual: true
+    final: false
+    jobs:
+    - Deploy DR ORCA buckets
+
+#deploy RDS cluster for integration test
+- Deploy Dev RDS Stack:
+    manual: true
+    final: false
+    jobs:
+    - Deploy RDS cluster
+
+#deploy orca and cumulus for integration test
+- Deploy Dev Cumulus and ORCA Stack:
+    manual: true
+    final: false
+    jobs:
+    - Deploy cumulus and orca
+
 #job for deploying ORCA buckets in DR account
 Deploy DR ORCA buckets:
   key: DDROB
@@ -266,7 +318,7 @@ Deploy DR ORCA buckets:
       - |-
         #!/bin/bash
         bash integration_test/deploy-dr-buckets.sh
-          
+         
 #job for deploying cumulus and orca
 Deploy RDS cluster:
   key: DRC
@@ -313,11 +365,6 @@ Deploy cumulus and orca:
 variables:
   DEPLOYMENT: sandbox
   ORCA_VERSION: 4.0.3
-  RELEASE_FLAG: 'false'
-  REPORT_BUILD_STATUS: 'true'
-  SECRET_GITHUB_EMAIL: BAMSCRT@0@0@HYUkicwfEqt17JZaZuGYmtmRHrnDySiT+kQkBQa7/Rg7IQgl1lUvbncMUu0Wx2k1ayHojNkh2TdOlF0kJ5tw6Q== #encrypted
-  SECRET_GITHUB_TOKEN: BAMSCRT@0@0@nPxyXQXMyE6zm3B1oI8Goma78s0H1fJD4vHy6+dpBQJpjDI2ekbcvCAOI8AyjYiILPhqi2w4fT0fx9MFVXxz2JPTp5uPNzG3GM/8XSUgvYo= #encrypted
-  SECRET_GITHUB_USER: BAMSCRT@0@0@fFtitNITDsAjJqK2ZXjhnBZ96z2775QLzGR1Xz557gSl8HxxBaTD3Fbmp+HUbpfx  #encrypted
   AWS_DEFAULT_REGION: us-west-2
   CUMULUS_AWS_ACCESS_KEY_ID: REPLACE ME
   CUMULUS_AWS_SECRET_ACCESS_KEY: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
@@ -341,9 +388,9 @@ variables:
   EARTHDATA_CLIENT_ID: REPLACE ME
   EARTHDATA_CLIENT_PASSWORD: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
   DB_HOST_ENDPOINT: REPLACE ME
-  
+ 
 repositories:
-- orca-develop: #this is created by CICD team from https://ci.earthdata.nasa.gov/. Contact Venku Jayanti with any issues.
+- orca-develop: #this is created by CICD team from https://ci.earthdata.nasa.gov/. Contact ci/cd team with any issues.
     scope: global
 triggers:
 - polling: # Does not actually poll, as we do not have webhooks enabled.
@@ -357,7 +404,7 @@ branches:
 ---
 version: 2
 plan:
-  key: ORCA-OI
+  key: ORCA-ODP
 plan-permissions:
 - users:
   - bhazuka
