@@ -5,14 +5,14 @@ of recovered file to staged,
 and sends the staged file info to staged_recovery queue for further processing.
 """
 import os
-from typing import Dict, List, Any
-import time
 import random
+import time
+from typing import Any, Dict, List
 
-from orca_shared.recovery import shared_recovery
+from cumulus_logger import CumulusLogger
 from orca_shared.database import shared_db
 from orca_shared.database.shared_db import retry_operational_error
-from cumulus_logger import CumulusLogger
+from orca_shared.recovery import shared_recovery
 from sqlalchemy import text
 
 OS_ENVIRON_RECOVERY_QUEUE_URL_KEY = "RECOVERY_QUEUE_URL"
@@ -43,7 +43,7 @@ def task(
     max_retries: int,
     retry_sleep_secs: int,
     retry_backoff: int,
-    db_connect_info_secret_arn: str
+    db_connect_info_secret_arn: str,
 ) -> None:
     """
     Task called by the handler to perform the work.
@@ -114,9 +114,7 @@ def task(
         # primary location. Retry using exponential delay if it fails.
         for attempt in range(max_retries + 1):
             try:
-                shared_recovery.post_entry_to_standard_queue(
-                    row, recovery_queue_url
-                )
+                shared_recovery.post_entry_to_standard_queue(row, recovery_queue_url)
                 break
             except Exception as ex:
                 # Can't use f"" because of '{}' bug in CumulusLogger.
@@ -158,7 +156,7 @@ def exponential_delay(base_delay: int, exponential_backoff: int = 2) -> int:
         LOGGER.error("arguments are not integer. Raised ValueError: {ve}", ve=ve)
         raise ve
 
-    random_addition = random.randint(0, 1000) / 1000.0
+    random_addition = random.randint(0, 1000) / 1000.0  # nosec
     delay = base_delay + random_addition
     LOGGER.debug(f"Performing back off retry sleeping {delay} seconds")
     time.sleep(delay)
@@ -166,7 +164,9 @@ def exponential_delay(base_delay: int, exponential_backoff: int = 2) -> int:
 
 
 @retry_operational_error()
-def query_db(key_path: str, bucket_name: str, db_connect_info_secret_arn: str) -> List[Dict[str, str]]:
+def query_db(
+    key_path: str, bucket_name: str, db_connect_info_secret_arn: str
+) -> List[Dict[str, str]]:
     """
     Connect and query the recover_file status table return needed metadata for posting to the recovery status SQS Queue.
 
@@ -228,7 +228,9 @@ def query_db(key_path: str, bucket_name: str, db_connect_info_secret_arn: str) -
             raise Exception(message)
 
     except Exception as ex:
-        message = "Unable to retrieve {key_path} metadata. Exception '{ex}' encountered."
+        message = (
+            "Unable to retrieve {key_path} metadata. Exception '{ex}' encountered."
+        )
         LOGGER.error(message, key_path=key_path, ex=ex, exc_info=True)
         raise Exception(message.format(key_path=key_path, ex=ex))
     return rows
@@ -253,7 +255,7 @@ def get_metadata_sql(key_path: str) -> text:
                 key_path = '{key_path}'
             AND
                 status_id = {shared_recovery.OrcaStatus.PENDING.value}
-        """
+        """  # nosec
     )
 
 
@@ -261,7 +263,7 @@ def handler(event: Dict[str, Any], context) -> None:
     """
     Lambda handler. This lambda calls the task function to perform db queries
     and send message to SQS.
-    
+
     Environment Vars:
         RECOVERY_QUEUE_URL (string): the SQS URL for staged_recovery_queue
         DB_QUEUE_URL (string): the SQS URL for status-update-queue
@@ -287,7 +289,7 @@ def handler(event: Dict[str, Any], context) -> None:
         OS_ENVIRON_MAX_RETRIES_KEY,
         OS_ENVIRON_RETRY_SLEEP_SECS_KEY,
         OS_ENVIRON_RETRY_BACKOFF_KEY,
-        OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY
+        OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY,
     ]
     environment_args = []
     for var in backoff_env:
