@@ -29,3 +29,4 @@ and are billed for [double the `GLACIER` retention policy at 180 days](https://d
 
 # Retrieval
 As a trade-off for their reduced cost compared to `GLACIER`, [`DEEP_ARCHIVE` retrieval takes 3-4 times as long](https://docs.aws.amazon.com/AmazonS3/latest/userguide/restoring-objects-retrieval-options.html), and cannot be restored with the `Expedited` recovery type.
+Retrieval also mildly increases in minimum [cost](https://aws.amazon.com/s3/pricing/) from the free `Bulk` tier in `GLACIER` to $0.0025 per GB.
