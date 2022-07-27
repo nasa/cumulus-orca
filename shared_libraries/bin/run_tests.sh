@@ -17,7 +17,7 @@
 ## =============================================================================
 
 ## Set this for Debugging only
-#set -x
+#set -ex
 
 ## Make sure we are calling the script the correct way.
 BASEDIR=$(dirname $0)

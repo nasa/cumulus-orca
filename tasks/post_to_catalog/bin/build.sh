@@ -48,7 +48,7 @@ function check_rc () {
 
 ## MAIN
 ## -----------------------------------------------------------------------------
-## Create the build director. Remove it if it exists.
+## create the build directory. Remove it if it exists.
 echo "INFO: Creating build directory ..."
 if [ -d build ]; then
     rm -rf build
@@ -114,7 +114,7 @@ mkdir -p build/schemas
 let return_code=$?
 check_rc $return_code "ERROR: Unable to create build/schemas directory."
 echo "INFO: Copying schema files ..."
-cp schemas/*.json build/schemas/
+cp -r schemas/ build/schemas/
 let return_code=$?
 
 check_rc $return_code "ERROR: Failed to copy schema files to build directory."

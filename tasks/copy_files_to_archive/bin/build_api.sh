@@ -5,14 +5,14 @@
 ##
 ## DESCRIPTION
 ## -----------------------------------------------------------------------------
-## Builds the get_current_archive_list API documentation.
+## Builds the copy_files_to_archive API documentation.
 ##
 ##
 ## USAGE
 ## -----------------------------------------------------------------------------
 ## bin/build_api.sh
 ##
-## This must be called from the (root) lambda directory /tasks/get_current_archive_list
+## This must be called from the (root) lambda directory /tasks/copy_files_to_archive
 ## =============================================================================
 
 ## Set this for Debugging only
@@ -21,7 +21,7 @@
 ## Make sure we are calling the script the correct way.
 BASEDIR=$(dirname $0)
 if [ "$BASEDIR" != "bin" ]; then
-  >&2 echo "ERROR: This script must be called from the root directory get_current_archive_list [bin/build_api.sh]."
+  >&2 echo "ERROR: This script must be called from the root directory copy_files_to_archive [bin/build_api.sh]."
   exit 1
 fi
 
@@ -67,7 +67,7 @@ let return_code=$?
 check_rc $return_code "ERROR: pip install encountered an error."
 
 ## Run the documentation command
-pydoc-markdown -I . -m get_current_archive_list --render-toc > API.md
+pydoc-markdown -I . -m copy_files_to_archive --render-toc > API.md
 let return_code=$?
 
 check_rc $return_code "ERROR: Failed to create API.md file."
