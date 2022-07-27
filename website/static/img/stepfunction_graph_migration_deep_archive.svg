@@ -1,187 +1,0 @@
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "https://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg xmlns="http://www.w3.org/2000/svg" class="sc-jWUzTF cwkPFH graph" data-testid="graph" width="766" height="732"><g transform="translate(12,12)" class="new-look-graph"><g class="nodes"><g class="node-container" transform="translate(371,22)"><g><circle class="sc-fKVsgm eREiWo shape" r="22"/><text class="sc-kfPtPH cJssHP label"><tspan xml:space="preserve" text-anchor="middle" alignment-baseline="central">Start</tspan></text></g></g><g class="node-container" transform="translate(371,103.5)"><g class="sc-ieebsP fjpJNi node state Task" data-testid="graph-Restore objects using bulk retrieval" data-state-id="Restore objects using bulk retrieval" data-state-type="Task"><g class="new-look-state-node "><rect x="-152" y="-24.5" width="304" height="49" rx="3" ry="3"/><g class="handle" transform="translate(-152,-24.5)"><path d="M5,16 L5,34 M8,16 L8,34"/></g><g class="icon" transform="translate(-136,-24)"><rect fill="var(--color-background-container-header-2Hjv9p, #fafafa)" x="0.0361026108" y="0.0181291967" width="48" height="48"/><line x1="47.5" y1="0.49122807" x2="47.5" y2="47.5" stroke="var(--color-text-home-header-secondary-1Ph38f, #d5dbdb)" stroke-linecap="square"/><line x1="0.5" y1="0.49122807" x2="0.5" y2="47.5" stroke="var(--color-text-home-header-secondary-1Ph38f, #d5dbdb)" stroke-linecap="square"/><use href="#icon-service-lam"/></g><g class="text-lines" transform="translate(-80,-24.5)"><text transform="translate(0,17)" class="line1"><tspan xml:space="preserve" text-anchor="start">Lambda: Invoke</tspan></text><text transform="translate(0,35.5)" class="line2 label"><tspan xml:space="preserve" text-anchor="start">Restore objects using bulk retrieval</tspan></text></g></g></g></g><g class="node-container" transform="translate(371,270)"><g class="sc-ieebsP fjpJNi node state container Parallel" data-testid="graph-Retrieval in progress" data-state-id="graph-Retrieval in progress" data-state-type="Parallel"><g class="new-look-state-node "><g class="bounding-box" transform="translate(0,5)"><rect class="sc-ezbkgU iYxMPu shape" rx="7" ry="7" x="-371" y="-107" width="742" height="209"/><g class="content" transform="translate(-371,-107)"><g class="branch" transform="translate(20,89)"><g class="branchInsertArea" data-insertion-index="0" data-parent-state-id="Retrieval in progress" id="Retrieval in progress:0" x="-20" y="0" width="20" height="100"><rect x="-20" y="0" width="20" height="100" stroke="none" fill="none"/><path d="M-10,0 l0,100" stroke="none" fill="none"/></g><g transform=""><g class="nodes"><g class="node-container" transform="translate(169,24.5)"><g class="sc-ieebsP fjpJNi node state Wait" data-testid="graph-Wait 12 hours to complete bulk retrieval" data-state-id="Wait 12 hours to complete bulk retrieval" data-state-type="Wait"><g class="new-look-state-node "><rect x="-169" y="-24.5" width="338" height="49" rx="3" ry="3"/><g class="handle" transform="translate(-169,-24.5)"><path d="M5,16 L5,34 M8,16 L8,34"/></g><g class="icon" transform="translate(-153,-24)"><rect fill="var(--color-background-container-header-2Hjv9p, #fafafa)" x="0.0361026108" y="0.0181291967" width="48" height="48"/><line x1="47.5" y1="0.49122807" x2="47.5" y2="47.5" stroke="var(--color-text-home-header-secondary-1Ph38f, #d5dbdb)" stroke-linecap="square"/><line x1="0.5" y1="0.49122807" x2="0.5" y2="47.5" stroke="var(--color-text-home-header-secondary-1Ph38f, #d5dbdb)" stroke-linecap="square"/><use href="#icon-flow-wait"/></g><g class="text-lines" transform="translate(-97,-24.5)"><text transform="translate(0,17)" class="line1"><tspan xml:space="preserve" text-anchor="start">Wait state</tspan></text><text transform="translate(0,35.5)" class="line2 label"><tspan xml:space="preserve" text-anchor="start">Wait 12 hours to complete bulk retrieval</tspan></text></g></g></g></g><g class="node-container" transform="translate(169,92)"><g><circle class="sc-bBHwJV hDsuPB shape" r="8"/></g></g></g><g class="edges"><g class="sc-dJjZJu kszVAv edge"><path id="state-Wait 12 hours to complete bulk retrieval:end:normal" d="M169,49L169,51.916666666666664C169,54.833333333333336,169,60.666666666666664,169,66.5C169,72.33333333333333,169,78.16666666666667,169,81.08333333333333L169,84" marker-end="url(#arrowhead)" fill="none"/></g></g></g><g class="branchInsertArea" data-insertion-index="1" data-parent-state-id="Retrieval in progress" id="Retrieval in progress:1" x="338" y="0" width="20" height="100"><rect x="338" y="0" width="20" height="100" stroke="none" fill="none"/><path d="M348,0 l0,100" stroke="none" fill="none"/></g></g><g class="branch" transform="translate(378,89)"><g transform=""><g class="nodes"><g class="node-container" transform="translate(172,24.5)"><g class="sc-ieebsP fjpJNi node state Task" data-testid="graph-Notify end user about successful retrieval" data-state-id="Notify end user about successful retrieval" data-state-type="Task"><g class="new-look-state-node "><rect x="-172" y="-24.5" width="344" height="49" rx="3" ry="3"/><g class="handle" transform="translate(-172,-24.5)"><path d="M5,16 L5,34 M8,16 L8,34"/></g><g class="icon" transform="translate(-156,-24)"><rect fill="var(--color-background-container-header-2Hjv9p, #fafafa)" x="0.0361026108" y="0.0181291967" width="48" height="48"/><line x1="47.5" y1="0.49122807" x2="47.5" y2="47.5" stroke="var(--color-text-home-header-secondary-1Ph38f, #d5dbdb)" stroke-linecap="square"/><line x1="0.5" y1="0.49122807" x2="0.5" y2="47.5" stroke="var(--color-text-home-header-secondary-1Ph38f, #d5dbdb)" stroke-linecap="square"/><use href="#icon-service-sqs"/></g><g class="text-lines" transform="translate(-100,-24.5)"><text transform="translate(0,17)" class="line1"><tspan xml:space="preserve" text-anchor="start">SQS: SendMessage</tspan></text><text transform="translate(0,35.5)" class="line2 label"><tspan xml:space="preserve" text-anchor="start">Notify end user about successful retrieval</tspan></text></g></g></g></g><g class="node-container" transform="translate(172,92)"><g><circle class="sc-bBHwJV hDsuPB shape" r="8"/></g></g></g><g class="edges"><g class="sc-dJjZJu kszVAv edge"><path id="state-Notify end user about successful retrieval:end:normal" d="M172,49L172,51.916666666666664C172,54.833333333333336,172,60.666666666666664,172,66.5C172,72.33333333333333,172,78.16666666666667,172,81.08333333333333L172,84" marker-end="url(#arrowhead)" fill="none"/></g></g></g><g class="branchInsertArea" data-insertion-index="2" data-parent-state-id="Retrieval in progress" id="Retrieval in progress:2" x="344" y="0" width="20" height="100"><rect x="344" y="0" width="20" height="100" stroke="none" fill="none"/><path d="M354,0 l0,100" stroke="none" fill="none"/></g></g><g class="sc-dJjZJu kszVAv"><path id="Retrieval in progress-Wait 12 hours to complete bulk retrieval" class="path starting-connection" d="M371,44L371,47.75C371,51.5,371,59,340.6666666666667,62.75C310.3333333333333,66.5,249.66666666666666,66.5,219.33333333333334,70.25C189,74,189,81.5,189,85.25L189,89" fill="none"/></g><g class="sc-dJjZJu kszVAv"><path id="Retrieval in progress-Notify end user about successful retrieval" class="path starting-connection" d="M371,44L371,47.75C371,51.5,371,59,400.8333333333333,62.75C430.6666666666667,66.5,490.3333333333333,66.5,520.1666666666666,70.25C550,74,550,81.5,550,85.25L550,89" fill="none"/></g></g></g><g class="new-look-state-node "><rect x="-120" y="-107" width="240" height="49" rx="3" ry="3"/><g class="handle" transform="translate(-120,-107)"><path d="M5,16 L5,34 M8,16 L8,34"/></g><g class="icon" transform="translate(-104,-106.5)"><rect fill="var(--color-background-container-header-2Hjv9p, #fafafa)" x="0.0361026108" y="0.0181291967" width="48" height="48"/><line x1="47.5" y1="0.49122807" x2="47.5" y2="47.5" stroke="var(--color-text-home-header-secondary-1Ph38f, #d5dbdb)" stroke-linecap="square"/><line x1="0.5" y1="0.49122807" x2="0.5" y2="47.5" stroke="var(--color-text-home-header-secondary-1Ph38f, #d5dbdb)" stroke-linecap="square"/><use href="#icon-flow-parallel"/></g><g class="text-lines" transform="translate(-48,-107)"><text transform="translate(0,17)" class="line1"><tspan xml:space="preserve" text-anchor="start">Parallel state</tspan></text><text transform="translate(0,35.5)" class="line2 label"><tspan xml:space="preserve" text-anchor="start">Retrieval in progress</tspan></text></g></g></g></g></g><g class="node-container" transform="translate(371,436.5)"><g class="sc-ieebsP fjpJNi node state Task" data-testid="graph-copy objects to deep archive" data-state-id="copy objects to deep archive" data-state-type="Task"><g class="new-look-state-node "><rect x="-131" y="-24.5" width="262" height="49" rx="3" ry="3"/><g class="handle" transform="translate(-131,-24.5)"><path d="M5,16 L5,34 M8,16 L8,34"/></g><g class="icon" transform="translate(-115,-24)"><rect fill="var(--color-background-container-header-2Hjv9p, #fafafa)" x="0.0361026108" y="0.0181291967" width="48" height="48"/><line x1="47.5" y1="0.49122807" x2="47.5" y2="47.5" stroke="var(--color-text-home-header-secondary-1Ph38f, #d5dbdb)" stroke-linecap="square"/><line x1="0.5" y1="0.49122807" x2="0.5" y2="47.5" stroke="var(--color-text-home-header-secondary-1Ph38f, #d5dbdb)" stroke-linecap="square"/><use href="#icon-service-lam"/></g><g class="text-lines" transform="translate(-59,-24.5)"><text transform="translate(0,17)" class="line1"><tspan xml:space="preserve" text-anchor="start">Lambda: Invoke</tspan></text><text transform="translate(0,35.5)" class="line2 label"><tspan xml:space="preserve" text-anchor="start">copy objects to deep archive</tspan></text></g></g></g></g><g class="node-container" transform="translate(371,520.5)"><g class="sc-ieebsP fjpJNi node state Task" data-testid="graph-notify user on successful copy" data-state-id="notify user on successful copy" data-state-type="Task"><g class="new-look-state-node "><rect x="-135.5" y="-24.5" width="271" height="49" rx="3" ry="3"/><g class="handle" transform="translate(-135.5,-24.5)"><path d="M5,16 L5,34 M8,16 L8,34"/></g><g class="icon" transform="translate(-119.5,-24)"><rect fill="var(--color-background-container-header-2Hjv9p, #fafafa)" x="0.0361026108" y="0.0181291967" width="48" height="48"/><line x1="47.5" y1="0.49122807" x2="47.5" y2="47.5" stroke="var(--color-text-home-header-secondary-1Ph38f, #d5dbdb)" stroke-linecap="square"/><line x1="0.5" y1="0.49122807" x2="0.5" y2="47.5" stroke="var(--color-text-home-header-secondary-1Ph38f, #d5dbdb)" stroke-linecap="square"/><use href="#icon-service-sqs"/></g><g class="text-lines" transform="translate(-63.5,-24.5)"><text transform="translate(0,17)" class="line1"><tspan xml:space="preserve" text-anchor="start">SQS: SendMessage</tspan></text><text transform="translate(0,35.5)" class="line2 label"><tspan xml:space="preserve" text-anchor="start">notify user on successful copy</tspan></text></g></g></g></g><g class="node-container" transform="translate(371,604.5)"><g class="sc-ieebsP fjpJNi node state Task" data-testid="graph-Delete objects that have been copied over to deep archive" data-state-id="Delete objects that have been copied over to deep archive" data-state-type="Task"><g class="new-look-state-node "><rect x="-224.5" y="-24.5" width="449" height="49" rx="3" ry="3"/><g class="handle" transform="translate(-224.5,-24.5)"><path d="M5,16 L5,34 M8,16 L8,34"/></g><g class="icon" transform="translate(-208.5,-24)"><rect fill="var(--color-background-container-header-2Hjv9p, #fafafa)" x="0.0361026108" y="0.0181291967" width="48" height="48"/><line x1="47.5" y1="0.49122807" x2="47.5" y2="47.5" stroke="var(--color-text-home-header-secondary-1Ph38f, #d5dbdb)" stroke-linecap="square"/><line x1="0.5" y1="0.49122807" x2="0.5" y2="47.5" stroke="var(--color-text-home-header-secondary-1Ph38f, #d5dbdb)" stroke-linecap="square"/><use href="#icon-service-lam"/></g><g class="text-lines" transform="translate(-152.5,-24.5)"><text transform="translate(0,17)" class="line1"><tspan xml:space="preserve" text-anchor="start">Lambda: Invoke</tspan></text><text transform="translate(0,35.5)" class="line2 label"><tspan xml:space="preserve" text-anchor="start">Delete objects that have been copied over to deep archive</tspan></text></g></g></g></g><g class="node-container" transform="translate(371,686)"><g><circle class="sc-fKVsgm eREiWo shape" r="22"/><text class="sc-kfPtPH cJssHP label"><tspan xml:space="preserve" text-anchor="middle" alignment-baseline="central">End</tspan></text></g></g></g><g class="edges"><g class="sc-dJjZJu kszVAv edge"><path id="state-Restore objects using bulk retrieval:state-Retrieval in progress:normal" d="M371,128L371,130.91666666666666C371,133.83333333333334,371,139.66666666666666,371,145.5C371,151.33333333333334,371,157.16666666666666,371,160.08333333333334L371,163" marker-end="url(#arrowhead)" fill="none"/></g><g class="sc-dJjZJu kszVAv edge"><path id="start:state-Restore objects using bulk retrieval" d="M371,44L371,46.916666666666664C371,49.833333333333336,371,55.666666666666664,371,61.5C371,67.33333333333333,371,73.16666666666667,371,76.08333333333333L371,79" marker-end="url(#arrowhead)" fill="none"/></g><g class="sc-dJjZJu kszVAv edge"><path id="state-Retrieval in progress:state-copy objects to deep archive:normal" d="M371,377L371,379.9166666666667C371,382.8333333333333,371,388.6666666666667,371,394.5C371,400.3333333333333,371,406.1666666666667,371,409.0833333333333L371,412" marker-end="url(#arrowhead)" fill="none"/></g><g class="sc-dJjZJu kszVAv edge"><path id="state-copy objects to deep archive:state-notify user on successful copy:normal" d="M371,461L371,463.9166666666667C371,466.8333333333333,371,472.6666666666667,371,478.5C371,484.3333333333333,371,490.1666666666667,371,493.0833333333333L371,496" marker-end="url(#arrowhead)" fill="none"/></g><g class="sc-dJjZJu kszVAv edge"><path id="state-notify user on successful copy:state-Delete objects that have been copied over to deep archive:normal" d="M371,545L371,547.9166666666666C371,550.8333333333334,371,556.6666666666666,371,562.5C371,568.3333333333334,371,574.1666666666666,371,577.0833333333334L371,580" marker-end="url(#arrowhead)" fill="none"/></g><g class="sc-dJjZJu kszVAv edge"><path id="state-Delete objects that have been copied over to deep archive:end:normal" d="M371,629L371,631.9166666666666C371,634.8333333333334,371,640.6666666666666,371,646.5C371,652.3333333333334,371,658.1666666666666,371,661.0833333333334L371,664" marker-end="url(#arrowhead)" fill="none"/></g></g><defs><marker id="arrowhead" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto" class="sc-dlVyqM cDNlyh"><polygon points="0 0, 8 3, 0 6"/></marker><marker id="highlighted-arrowhead" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto" class="sc-dlVyqM cDNlyh"><polygon points="0 0, 6 2, 0 4"/></marker><marker id="error-arrowhead" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto" class="sc-dlVyqM cDNlyh"><polygon points="0 0, 6 2, 0 4"/></marker><marker id="large-arrowhead" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" class="sc-dlVyqM cDNlyh"><polygon points="0 0, 10 4, 0 8"/></marker><marker id="large-highlighted-arrowhead" markerWidth="5.5" markerHeight="4" refX="4.5" refY="2" orient="auto" class="sc-dlVyqM cDNlyh"><polygon points="0 0, 5.5 2, 0 4"/></marker><marker id="large-error-arrowhead" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" class="sc-dlVyqM cDNlyh"><polygon points="0 0, 10 4, 0 8"/></marker><linearGradient x1="0%" y1="100%" x2="100%" y2="0%" id="gradient-orange"><stop stop-color="#C8511B" offset="0%"/><stop stop-color="#FF9900" offset="100%"/></linearGradient><linearGradient x1="0%" y1="100%" x2="100%" y2="0%" id="gradient-turquoise"><stop stop-color="#055F4E" offset="0%"/><stop stop-color="#56C0A7" offset="100%"/></linearGradient><linearGradient x1="0%" y1="100%" x2="100%" y2="0%" id="gradient-blue"><stop stop-color="#2E27AD" offset="0%"/><stop stop-color="#527FFF" offset="100%"/></linearGradient><linearGradient x1="0%" y1="100%" x2="100%" y2="0%" id="gradient-pink"><stop stop-color="#B0084D" offset="0%"/><stop stop-color="#FF4F8B" offset="100%"/></linearGradient><linearGradient x1="0%" y1="100%" x2="100%" y2="0%" id="gradient-red"><stop stop-color="#BD0816" offset="0%"/><stop stop-color="#FF5252" offset="100%"/></linearGradient><linearGradient x1="0%" y1="100%" x2="100%" y2="0%" id="gradient-green"><stop stop-color="#1B660F" offset="0%"/><stop stop-color="#6CAE3E" offset="100%"/></linearGradient><linearGradient x1="0%" y1="100%" x2="100%" y2="0%" id="gradient-purple"><stop stop-color="#4D27A8" offset="0%"/><stop stop-color="#A166FF" offset="100%"/></linearGradient><linearGradient x1="0%" y1="100%" x2="100%" y2="0%" id="gradient-grey"><stop stop-color="#DCDCDC" offset="0%"/><stop stop-color="#F6F5F7" offset="100%"/></linearGradient>,<linearGradient x1="0%" y1="100%" x2="100%" y2="0%" id="gradient-ag"><stop stop-color="#BC1356" offset="0%"/><stop stop-color="#F34482" offset="100%"/></linearGradient><linearGradient x1="0%" y1="100%" x2="100%" y2="0%" id="gradient-athena"><stop stop-color="#5930B5" offset="0%"/><stop stop-color="#945DF2" offset="100%"/></linearGradient><linearGradient x1="0%" y1="100%" x2="100%" y2="0%" id="gradient-emr"><stop stop-color="#5930B5" offset="0%"/><stop stop-color="#945DF2" offset="100%"/></linearGradient><linearGradient x1="0%" y1="100%" x2="100%" y2="0%" id="gradient-glue"><stop stop-color="#5930B5" offset="0%"/><stop stop-color="#945DF2" offset="100%"/></linearGradient><linearGradient x1="0%" y1="100%" x2="100%" y2="0%" id="gradient-sns"><stop stop-color="#BC1356" offset="0%"/><stop stop-color="#F34482" offset="100%"/></linearGradient><linearGradient x1="0%" y1="100%" x2="100%" y2="0%" id="gradient-states"><stop stop-color="#BC1356" offset="0%"/><stop stop-color="#F34482" offset="100%"/></linearGradient><linearGradient x1="0%" y1="100%" x2="100%" y2="0%" id="gradient-generic"><stop stop-color="#ccc" offset="0%"/><stop stop-color="#ddd" offset="100%"/></linearGradient><g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" id="icon-flow-wait"><path d="M26.75,8.85825893 L26.75,10.3582589 L25,10.3582589 L25.0010332,13.2887186 C27.2395643,13.4625704 29.3159269,14.2145278 31.0809903,15.3954598 L32.3188424,13.6912711 L34.7458934,15.4546269 L33.3682881,17.3513419 C35.4674483,19.6240431 36.75,22.6622436 36.75,26 C36.75,33.0416306 31.0416306,38.75 24,38.75 C16.9583694,38.75 11.25,33.0416306 11.25,26 C11.25,22.7657627 12.4542298,19.8127884 14.4387685,17.5649977 L12.9047966,15.4546269 L15.3318476,13.6912711 L16.6858812,15.555197 C18.2387522,14.4657629 20.0456704,13.7138336 22.0001068,13.4059384 L22,10.3582589 L20.25,10.3582589 L20.25,8.85825893 L26.75,8.85825893 Z M24,14.75 C17.7867966,14.75 12.75,19.7867966 12.75,26 C12.75,32.2132034 17.7867966,37.25 24,37.25 C30.2132034,37.25 35.25,32.2132034 35.25,26 C35.25,19.7867966 30.2132034,14.75 24,14.75 Z M24.4666648,19.3452148 L24.466,26.499 L30.9387207,26.4993034 L30.9387207,27.9993034 L23.7166648,27.9993034 C23.336969,27.9993034 23.0231738,27.7171495 22.9735114,27.3510739 L22.9666648,27.2493034 L22.9666648,19.3452148 L24.4666648,19.3452148 Z" fill="#0073BB" fill-rule="nonzero"/></g><g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" id="icon-flow-parallel"><g transform="translate(7.794758, 8.750000)" fill="#0073BB" fill-rule="nonzero"><path d="M16.199562,30.9615157 L16.1088907,30.9567289 L16.0428411,30.9462621 L15.9289205,30.9134016 L15.8581395,30.8824655 L15.747534,30.8144639 L15.6634156,30.7418457 L12.1634156,27.2418457 C11.8705224,26.9489525 11.8705224,26.4740788 12.1634156,26.1811856 C12.4296821,25.914919 12.8463458,25.890713 13.1399573,26.1085674 L13.2240758,26.1811856 L15.455,28.412 L15.455,12.999 L4.95524179,12.999 L4.955,28.446 L7.21966991,26.1811856 L7.30378835,26.1085674 C7.59739984,25.890713 8.01406352,25.914919 8.28033009,26.1811856 C8.54659665,26.4474521 8.5708027,26.8641158 8.35294824,27.1577273 L8.28033009,27.2418457 L4.78033009,30.7418457 L4.69621165,30.8144639 L4.689,30.818 C4.66089447,30.8406686 4.6237969,30.8633711 4.58539483,30.8825712 L4.50825575,30.9158403 L4.44163507,30.9367462 L4.36774058,30.9522701 L4.27779844,30.9610057 L4.22212648,30.9610007 L4.09909543,30.9462621 L3.99176083,30.9158467 L3.9143938,30.8824655 L3.82554184,30.8300094 L3.80378835,30.8144639 L3.71966991,30.7418457 L0.219669914,27.2418457 C-0.0732233047,26.9489525 -0.0732233047,26.4740788 0.219669914,26.1811856 C0.485936477,25.914919 0.902600159,25.890713 1.19621165,26.1085674 L1.28033009,26.1811856 L3.455,28.356 L3.45524179,12.25 C3.45524179,11.8703042 3.73739568,11.556509 4.10347124,11.5068466 L4.20524179,11.5 L15.455,11.502 L15.4552418,-1.42108547e-13 L16.9552418,-1.42108547e-13 L16.955,11.495 L28.1555171,11.5 C28.5351143,11.5001394 28.8487603,11.7822674 28.8983985,12.1482549 L28.9052418,12.25 L28.905,28.44 L31.1641955,26.1811856 L31.2483139,26.1085674 C31.5419254,25.890713 31.9585891,25.914919 32.2248557,26.1811856 C32.4911222,26.4474521 32.5153283,26.8641158 32.2974738,27.1577273 L32.2248557,27.2418457 L28.7248557,30.7418457 C28.6845386,30.7821628 28.6407734,30.8169302 28.5945094,30.8461478 L28.5328469,30.8811 L28.4268027,30.9248089 L28.3112733,30.9524264 L28.1887092,30.9615157 L28.1087231,30.9566189 L28.0352714,30.9445058 L27.9277401,30.9126603 L27.8920604,30.8980433 L27.8568141,30.8814079 C27.8351606,30.8704626 27.8145136,30.8587698 27.7943421,30.8460217 C27.7482777,30.8169302 27.7045126,30.7821628 27.6641955,30.7418457 L24.1641955,27.2418457 C23.8713023,26.9489525 23.8713023,26.4740788 24.1641955,26.1811856 C24.4304621,25.914919 24.8471258,25.890713 25.1407372,26.1085674 L25.2248557,26.1811856 L27.405,28.362 L27.4052418,12.999 L16.955,12.992 L16.955,28.389 L19.1634156,26.1811856 L19.247534,26.1085674 C19.5411455,25.890713 19.9578092,25.914919 20.2240758,26.1811856 C20.4903423,26.4474521 20.5145484,26.8641158 20.2966939,27.1577273 L20.2240758,27.2418457 L16.7240758,30.7418457 L16.6399573,30.8144639 L16.636,30.816 L16.589136,30.8490255 L16.5330413,30.8806066 L16.4260228,30.9248089 L16.3532729,30.9444467 L16.2795333,30.9566255 L16.199562,30.9615157 Z"/></g></g><g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" id="icon-service-lam"><polygon fill="url(#gradient-orange)" fill-rule="nonzero" points="0 0 48 0 48 48 0 48"/><g transform="translate(11, 10)" fill="#FFFFFF"><path d="M26.5889213,27.8937088 L19.6925948,27.8937088 C19.4772752,27.8931074 19.2813916,27.7706914 19.1888047,27.578869 L9.43766764,7.45673404 L5.31218659,7.45673404 C5.00303594,7.45673404 4.75241983,7.20943823 4.75241983,6.90438337 L4.75241983,0.828526005 C4.75241983,0.523471153 5.00303594,0.276175335 5.31218659,0.276175335 L13.9325948,0.276175335 C14.1479143,0.276776788 14.3437979,0.399192787 14.4363848,0.591015217 L24.1427405,20.7131501 L26.5889213,20.7131501 C26.8980719,20.7131501 27.148688,20.9604459 27.148688,21.2655008 L27.148688,27.3413582 C27.148688,27.646413 26.8980719,27.8937088 26.5889213,27.8937088 Z M20.0452478,26.7890075 L26.0291545,26.7890075 L26.0291545,21.8178515 L23.7900875,21.8178515 C23.5747679,21.81725 23.3788843,21.694834 23.2862974,21.5030116 L13.5799417,1.38087667 L5.87755102,1.38087667 L5.87755102,6.3520327 L9.79591837,6.3520327 C10.0112379,6.35263416 10.2071215,6.47505016 10.2997085,6.66687259 L20.0452478,26.7890075 Z"/><path d="M8.10542274,27.8937099 L0.82845481,27.8937099 C0.635054571,27.8940907 0.455155006,27.7959347 0.352653061,27.634104 C0.243858391,27.4681848 0.233185428,27.2575536 0.324664723,27.0817533 L7.93749271,11.3894708 C8.03007964,11.1976484 8.22596323,11.0752324 8.4412828,11.0746298 L8.4412828,11.0746298 C8.65533487,11.0742082 8.85089022,11.1942751 8.94507289,11.3839473 L12.5891545,18.7799228 C12.6634688,18.931712 12.6634688,19.1086786 12.5891545,19.2604679 L8.6148105,27.5457279 C8.53147526,27.7523199 8.33072312,27.8894609 8.10542274,27.8937099 L8.10542274,27.8937099 Z M1.72408163,26.7890075 L7.75276968,26.7890075 L11.4640233,19.0560981 L8.44688047,12.8973881 L1.72408163,26.7890075 Z"/></g></g><g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" id="icon-service-sqs"><polygon fill="url(#gradient-pink)" fill-rule="nonzero" points="0 0 48 0 48 48 0 48"/><g transform="translate(5.142857, 8.571429)" fill="#FFFFFF"><path d="M8.75099274,5.82507289 C12.199558,2.33979238 17.1740722,0.891686988 21.9242217,1.99028157 C26.6743712,3.08887616 30.5345894,6.58024123 32.1466344,11.2359184 L33.35477,10.8087464 C31.1863432,4.52933615 25.3343647,0.324076433 18.7644552,0.324076433 C12.1945457,0.324076433 6.34256723,4.52933615 4.17414044,10.8087464 L5.38227603,11.2359184 C6.08212426,9.19538059 7.23452905,7.34438366 8.75099274,5.82507289 Z"/><path d="M28.7651332,25.8892128 C23.227346,31.4887116 14.2568186,31.4887116 8.71903148,25.8892128 C7.20048733,24.3564411 6.04821374,22.4923718 5.35031477,20.4395335 L4.14217918,20.8667055 C5.88850894,25.9556154 10.0971359,29.7773089 15.2828622,30.9831348 C20.4685885,32.1889607 25.9022873,30.6093765 29.6664407,26.8018076 C31.3374905,25.1213581 32.6020195,23.0723312 33.3611622,20.8149271 L32.1530266,20.4006997 C31.4548,22.4692673 30.2955578,24.3472826 28.7651332,25.8892128 L28.7651332,25.8892128 Z"/><path d="M7.76659995,15.8312536 C7.76933578,14.0274078 6.51284421,12.4729655 4.7659317,12.1190568 C3.01901918,11.7651481 1.26855982,12.7104093 0.585622431,14.3764553 C-0.0973149553,16.0425012 0.47760803,17.9649957 1.95860824,18.9676053 C3.43960846,19.970215 5.41392304,19.7735069 6.6735109,18.4978426 C7.37558993,17.7928824 7.76930507,16.8324026 7.76659995,15.8312536 L7.76659995,15.8312536 Z M5.75302663,17.5852478 C4.78372642,18.5164458 3.26411861,18.5164458 2.2948184,17.5852478 C1.59903522,16.8764869 1.39161219,15.8140139 1.76873463,14.8905142 C2.14585707,13.9670145 3.03376689,13.3631073 4.02072639,13.3588338 C4.66985355,13.3603379 5.29224775,13.6207849 5.75302663,14.0837318 C6.7063806,15.0513208 6.7063806,16.6176588 5.75302663,17.5852478 L5.75302663,17.5852478 Z"/><path d="M36.3079903,13.2099708 C35.2440461,12.1325134 33.6438315,11.8101138 32.253574,12.3931165 C30.8633164,12.9761193 29.956826,14.3497025 29.956826,15.8733236 C29.956826,17.3969448 30.8633164,18.7705279 32.253574,19.3535307 C33.6438315,19.9365334 35.2440461,19.6141338 36.3079903,18.5366764 L36.3079903,18.5366764 C37.7605461,17.0656716 37.7605461,14.6809756 36.3079903,13.2099708 L36.3079903,13.2099708 Z M35.4002906,17.6176093 C34.4468607,18.5821591 32.9019044,18.5821591 31.9484746,17.6176093 C31.4894188,17.1548463 31.2313538,16.5259784 31.2313538,15.8700875 C31.2313538,15.2141965 31.4894188,14.5853286 31.9484746,14.1225656 C32.5587504,13.4675238 33.4725028,13.2002414 34.3337587,13.4248444 C35.1950145,13.6494474 35.8675571,14.3304123 36.0893821,15.2024539 C36.3112071,16.0744954 36.0472306,16.9996909 35.4002906,17.6176093 L35.4002906,17.6176093 Z"/><path d="M13.5387893,22.1223324 C16.1596126,19.468688 21.4971429,19.468688 24.1179661,22.1223324 C24.2370286,22.2419044 24.3977295,22.3093142 24.5654237,22.3100292 C24.918458,22.3100292 25.2046489,22.0202543 25.2046489,21.6627988 C25.2056312,21.4907631 25.1389279,21.3254099 25.0192736,21.2032653 C23.7143164,19.7410388 23.0260497,17.8199564 23.1015981,15.8506706 C23.0267337,13.8814926 23.7149097,11.9606634 25.0192736,10.4980758 C25.2671163,10.2456317 25.2671163,9.83792512 25.0192736,9.58548105 C24.7699518,9.33453458 24.3672879,9.33453458 24.1179661,9.58548105 C21.4971429,12.2326531 16.1596126,12.2326531 13.5387893,9.58548105 C13.2894676,9.33453458 12.8868036,9.33453458 12.6374818,9.58548105 C12.3896392,9.83792512 12.3896392,10.2456317 12.6374818,10.4980758 C13.9534405,11.9556105 14.6532962,13.8770165 14.5871186,15.8506706 C14.6539827,17.8244365 13.9540344,19.7460968 12.6374818,21.2032653 C12.5178275,21.3254099 12.4511242,21.4907631 12.4521065,21.6627988 C12.4511242,21.8348346 12.5178275,22.0001878 12.6374818,22.1223324 C12.8868036,22.3732788 13.2894676,22.3732788 13.5387893,22.1223324 L13.5387893,22.1223324 Z M15.1943826,12.1808746 C17.5307809,13.1066362 20.1259746,13.1066362 22.4623729,12.1808746 C21.5673965,14.5457249 21.5673965,17.1620885 22.4623729,19.5269388 C20.1259746,18.6011772 17.5307809,18.6011772 15.1943826,19.5269388 C16.089359,17.1620885 16.089359,14.5457249 15.1943826,12.1808746 L15.1943826,12.1808746 Z"/><path d="M26.6109443,18.5043149 L28.7651332,16.2972595 C29.0129759,16.0448154 29.0129759,15.6371088 28.7651332,15.3846647 L26.5981598,13.1905539 L25.69046,14.10348 L26.7835351,15.2034402 L23.8942373,15.2034402 L23.8942373,16.4979009 L26.7835351,16.4979009 L25.7032446,17.5917201 L26.6109443,18.5043149 Z"/><path d="M11.1608717,18.5172595 L13.3406295,16.3102041 C13.5884722,16.05776 13.5884722,15.6500534 13.3406295,15.3976093 L11.1608717,13.1905539 L10.2595642,14.10348 L11.346247,15.2034402 L8.55283293,15.2034402 L8.55283293,16.4979009 L11.346247,16.4979009 L10.2595642,17.6046647 L11.1608717,18.5172595 Z"/></g></g></defs></g><style data-styled="true" data-styled-version="5.2.3">.fjpJNi{cursor:pointer;}/*!sc*/
-data-styled.g22[id="sc-ieebsP"]{content:"fjpJNi,"}/*!sc*/
-.kszVAv{stroke:#555;background-color:#555;stroke-width:1px;}/*!sc*/
-data-styled.g23[id="sc-dJjZJu"]{content:"kszVAv,"}/*!sc*/
-.cDNlyh{fill:var(--color-text-form-secondary-2zuvDp,#687078);}/*!sc*/
-data-styled.g25[id="sc-dlVyqM"]{content:"cDNlyh,"}/*!sc*/
-.cJssHP{font-weight:400;font-size:12px;line-height:16px;font-family:Amazon Ember,Arial,Roboto,Arial,sans-serif;text-shadow:none;fill:var(--color-text-body-default-fgLpHn,#16191f);}/*!sc*/
-data-styled.g26[id="sc-kfPtPH"]{content:"cJssHP,"}/*!sc*/
-.eREiWo{fill:#fff9cc;stroke:var(--color-text-form-secondary-2zuvDp,#687078);stroke-width:0.6px;}/*!sc*/
-data-styled.g27[id="sc-fKVsgm"]{content:"eREiWo,"}/*!sc*/
-.hDsuPB{fill:#fff9cc;stroke:var(--color-text-form-secondary-2zuvDp,#687078);stroke-width:0.6px;}/*!sc*/
-data-styled.g28[id="sc-bBHwJV"]{content:"hDsuPB,"}/*!sc*/
-.iYxMPu{stroke:var(--color-border-control-default-31hYZM,#aab7b8);stroke-width:1px;fill:var(--color-background-container-content-1xRjOR,#ffffff);opacity:0.5;}/*!sc*/
-.node &gt; .new-look-state-node.has-errors &gt; .bounding-box &gt; .sc-ezbkgU{stroke:var(--color-border-status-error-31wSg2,#d13212);fill:var(--color-background-status-error-3cOAi7,#fdf3f1);}/*!sc*/
-.selected &gt; .node &gt; .new-look-state-node &gt; .bounding-box &gt; .sc-ezbkgU{stroke:var(--color-border-status-info-1Avj4-,#0073bb);fill:var(--color-background-status-info-2lIPTJ,#f1faff);}/*!sc*/
-.selected &gt; .node &gt; .new-look-state-node.has-errors &gt; .bounding-box &gt; .sc-ezbkgU{stroke:var(--color-border-status-error-31wSg2,#d13212);fill:#fde0da;}/*!sc*/
-data-styled.g34[id="sc-ezbkgU"]{content:"iYxMPu,"}/*!sc*/
-</style><style>
-.new-look-state-node &gt; rect:first-of-type {
-  stroke: #687078;
-  stroke-width: 1px;
-  fill: #FFFFFF;
-}
-
-.new-look-state-node .error-icon circle {
- stroke-linejoin: round;
-}
-
-.new-look-state-node .error-icon circle, .new-look-state-node .error-icon path {
- stroke: var(--color-border-status-error-31wSg2, #d13212);
- fill: none;
- stroke-width: 2px;
-}
-
-.new-look-state-node.has-errors &gt; rect:first-of-type {
- stroke: var(--color-border-status-error-31wSg2, #d13212);
- fill: var(--color-background-status-error-3cOAi7, #fdf3f1);
-}
-
-.new-look-state-node .handle path {
-  stroke: var(--color-border-dropdown-item-hover-9Qud2b, #879596);
-  stroke-width: 1px;
-  fill: none;
-}
-
-.new-look-state-node {
-  font-weight: 400;
-  font-family: Amazon Ember, Arial, Roboto, Arial, sans-serif;
-  text-shadow: none;
-}
-
-.new-look-state-node .line1 {
-  fill: #687078;
-  font-size: 12px;
-}
-
-.selected.node &gt; .new-look-state-node &gt; rect,
-.selected.node &gt; .new-look-state-node &gt; .new-look-state-node &gt; rect {
-  stroke: var(--color-border-status-info-1Avj4-, #0073bb);
-  fill: var(--color-background-status-info-2lIPTJ, #f1faff);
-  stroke-width: 1px;
-}
-
-.selected.node &gt; .new-look-state-node.has-errors &gt; rect,
-.selected.node &gt; .new-look-state-node.has-errors &gt; .new-look-state-node &gt; rect {
- stroke: var(--color-border-status-error-31wSg2, #d13212);
- fill: #fde0da;
-}
-
-.new-look-graph .drag-source {
-  opacity: 0.2;
-}
-
-.new-look-graph .edge, .new-look-graph path.starting-connection {
-  stroke-width: 1px;
-  stroke: var(--color-text-form-secondary-2zuvDp, #687078);
-  marker-end: url(#large-arrowhead);
-}
-
-.new-look-graph .edge-label {
-  cursor: pointer;
-}
-
-.new-look-graph .edge-label rect {
-  stroke-width: 1px;
-  stroke: var(--color-border-control-default-31hYZM, #aab7b8);
-  fill: var(--color-background-container-header-2Hjv9p, #fafafa);
-}
-
-.new-look-graph .edge-label.selected rect {
-  stroke: var(--color-border-status-info-1Avj4-, #0073bb);
-  fill: var(--color-background-status-info-2lIPTJ, #f1faff);
-  stroke-width: 0.6px;
-}
-
-
-
-.new-look-graph .edge-label .label {
-  fill: var(--color-text-form-secondary-2zuvDp, #687078);
-  font-family: Amazon Ember, Arial, Roboto, Arial, sans-serif;
-}
-
-/* centering the shape text */
-@-moz-document url-prefix() {
-  .new-look-graph .shape + text,
-  .new-look-graph .edge-label text {
-    transform: translateY(3.5px);
-  }
-}
-
-.new-look-graph .edge path {
-  marker-end: url(#large-arrowhead) !important;
-}
-
-.new-look-graph .edge.selected path{
-  stroke: var(--color-border-status-info-1Avj4-, #0073bb);
-  stroke-width: 1.1px;
-}
-
-.new-look-graph .edge.dragging-over path, .new-look-graph  g.dragging-over .starting-connection {
-  stroke: #5C86FF;
-  stroke-width: 2px;
-}
-
-.new-look-graph .edge.dragging-over path, .new-look-graph .dragging-over path.starting-connection {
-  marker-end: url(#large-highlighted-arrowhead) !important;
-}
-
-.new-look-graph .edge.dragging-over .edge-label text {
-  fill: #5C86FF;
-}
-
-#large-highlighted-arrowhead {
-  fill: #5C86FF;
-}
-
-#large-highlighted-arrowhead path {
-  stroke: none;
-}
-
-.new-look-graph .edge.drop-not-supported path, g.drop-not-supported .starting-connection {
-  stroke: red;
-}
-
-.new-look-graph .edge.drop-not-supported .edge-label text {
-  fill: red;
-}
-
-.new-look-graph .edge.drop-not-supported path {
-  marker-end: url(#large-error-arrowhead) !important;
-}
-
-#large-error-arrowhead {
-  fill: red;
-}
-
-
-.node.Placeholder.dragging-over rect {
-  stroke: var(--color-border-status-info-1Avj4-, #0073bb);
-  fill: var(--color-background-status-info-2lIPTJ, #f1faff);
-  stroke-width: 2px;
-}
-
-.node.Placeholder.dragging-over .label {
-  fill: var(--color-text-status-info-2YM3rg, #0073bb);
-}
-
-g.Placeholder rect {
-  stroke-dasharray: 5 4;
-  stroke: var(--color-border-dropdown-item-hover-9Qud2b, #879596);
-  fill: var(--color-background-control-default-1CAayK, #ffffff);
-  stroke-width: 1px;
-}
-
-g.Placeholder .label {
-  font-style: italic;
-  fill: var(--color-text-input-placeholder-3rku1q, #aab7b8);
-}
-
-.node.Placeholder.drop-not-supported rect {
-  stroke: red;
-}
-
-.node.Placeholder.drop-not-supported .label {
-  fill: red;
-}
-</style><style>.line2 { font-size: 14px }</style></svg>
