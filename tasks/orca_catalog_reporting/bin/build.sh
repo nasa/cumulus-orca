@@ -47,7 +47,7 @@ function check_rc () {
 
 ## MAIN
 ## -----------------------------------------------------------------------------
-## create the build directory. Remove it if it exists.
+## Create the build directory. Remove it if it exists.
 echo "INFO: Creating build directory ..."
 if [ -d build ]; then
     rm -rf build
