@@ -5,10 +5,10 @@ Description:  Extracts the keys (filepaths) for a granule's files from a Cumulus
 """
 
 import re
+from typing import List
 
 from cumulus_logger import CumulusLogger
 from run_cumulus_task import run_cumulus_task
-from typing import List
 
 # instantiate Cumulus logger
 LOGGER = CumulusLogger(name="ORCA")
@@ -18,6 +18,7 @@ CONFIG_FILE_BUCKETS_KEY = "fileBucketMaps"
 
 OUTPUT_DESTINATION_BUCKET_KEY = "destBucket"
 OUTPUT_KEY_KEY = "key"
+
 
 class ExtractFilePathsError(Exception):
     """Exception to be raised if any errors occur"""
@@ -46,7 +47,9 @@ def task(event, context):  # pylint: disable-msg=unused-argument
         if exclude_file_types is None:
             exclude_file_types = []
         if len(exclude_file_types) == 0:
-            LOGGER.debug(f"The configuration list {CONFIG_EXCLUDE_FILE_TYPES_KEY} is empty.")
+            LOGGER.debug(
+                f"The configuration list {CONFIG_EXCLUDE_FILE_TYPES_KEY} is empty."
+            )
         else:
             LOGGER.debug(
                 f"The configuration {CONFIG_EXCLUDE_FILE_TYPES_KEY} list {exclude_file_types} was found."
@@ -84,7 +87,12 @@ def task(event, context):  # pylint: disable-msg=unused-argument
                                 dest_bucket=dest_bucket,
                                 file=file_name,
                             )
-                    files.append({OUTPUT_KEY_KEY: file_key, OUTPUT_DESTINATION_BUCKET_KEY: dest_bucket})
+                    files.append(
+                        {
+                            OUTPUT_KEY_KEY: file_key,
+                            OUTPUT_DESTINATION_BUCKET_KEY: dest_bucket,
+                        }
+                    )
             gran["keys"] = files
             grans.append(gran)
         result["granules"] = grans
