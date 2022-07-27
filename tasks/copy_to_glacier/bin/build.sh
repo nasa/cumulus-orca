@@ -108,6 +108,5 @@ check_rc $return_code "ERROR: Failed to create zip archive."
 echo "INFO: Cleaning up build ..."
 deactivate
 rm -rf build
-rm -rf include  # todo: Not sure what this is. From get_current_archive_list
 
 exit 0

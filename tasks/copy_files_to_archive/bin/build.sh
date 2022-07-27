@@ -127,6 +127,5 @@ check_rc $return_code "ERROR: Failed to create zip archive."
 echo "INFO: Cleaning up build ..."
 deactivate
 rm -rf build
-rm -rf include
 
 exit 0

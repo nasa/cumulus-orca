@@ -60,18 +60,54 @@ python3 -m venv venv
 source venv/bin/activate
 
 ## Install the requirements
-pip install -q --upgrade pip
+pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org
 pip install -q -r requirements-dev.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
 let return_code=$?
 
 check_rc $return_code "ERROR: pip install encountered an error."
 
 
+## Check code formatting and styling
+echo "INFO: Checking formatting and style of code ..."
+echo "INFO: Checking lint rules ..."
+flake8 \
+    --max-line-length 99 \
+    orca_catalog_reporting.py test
+check_rc $return_code "ERROR: Linting issues found."
+
+echo "INFO: Sorting imports ..."
+isort \
+    --trailing-comma \
+    --ensure-newline-before-comments \
+    --line-length 88 \
+    --use-parentheses \
+    --force-grid-wrap 0 \
+    -m 3 \
+    orca_catalog_reporting.py test
+
+echo "INFO: Formatting with black ..."
+black orca_catalog_reporting.py test
+
+
+## Run code smell and security tests using bandit
+echo "INFO: Running code smell security tests ..."
+bandit -r orca_catalog_reporting.py test
+let return_code=$?
+check_rc $return_code "ERROR: Potential security or code issues found."
+
+
+## Check code third party libraries for CVE issues
+echo "INFO: Running checks on third party libraries ..."
+safety check -r requirements.txt -r requirements-dev.txt
+let return_code=$?
+check_rc $return_code "ERROR: Potential security issues third party libraries."
+
+
 ## Run unit tests and check Coverage
 echo "INFO: Running unit and coverage tests ..."
 
 # Currently just running unit tests until we fix/support large tests
-coverage run --source orca_catalog_reporting -m pytest
+coverage run --source=orca_catalog_reporting -m pytest
 let return_code=$?
 check_rc $return_code "ERROR: Unit tests encountered failures."
 
@@ -79,6 +115,7 @@ check_rc $return_code "ERROR: Unit tests encountered failures."
 coverage report --fail-under=80
 let return_code=$?
 check_rc $return_code "ERROR: Unit tests coverage is less than 80%"
+
 
 ## Deactivate and remove the virtual env
 echo "INFO: Cleaning up the environment ..."

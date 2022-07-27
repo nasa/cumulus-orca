@@ -121,7 +121,6 @@ echo "INFO: Cleaning up build ..."
 deactivate
 rm -rf build
 # Remove the include dir from greenlet sqlalchemy
-rm -rf include
 rm -rf venv
 find . -type d -name "__pycache__" -exec rm -rf {} +
 
