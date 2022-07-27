@@ -5,14 +5,14 @@
 ##
 ## DESCRIPTION
 ## -----------------------------------------------------------------------------
-## Tests the lambda (task) for copy_to_glacier using unit tests.
+## Tests the lambda (task) for lambda_name using unit tests.
 ##
 ##
 ## USAGE
 ## -----------------------------------------------------------------------------
 ## bin/run_tests.sh
 ##
-## This must be called from the (root) lambda directory /tasks/copy_to_glacier
+## This must be called from the (root) lambda directory /tasks/lambda_name
 ## =============================================================================
 
 ## Set this for Debugging only
@@ -46,6 +46,7 @@ function check_rc () {
   fi
 }
 
+
 ## MAIN
 ## -----------------------------------------------------------------------------
 ## Create the virtual env. Remove it if it exists.
@@ -71,7 +72,7 @@ echo "INFO: Checking formatting and style of code ..."
 echo "INFO: Checking lint rules ..."
 flake8 \
     --max-line-length 99 \
-    copy_to_glacier.py test
+    lambda_name.py test
 check_rc $return_code "ERROR: Linting issues found."
 
 echo "INFO: Sorting imports ..."
@@ -82,15 +83,15 @@ isort \
     --use-parentheses \
     --force-grid-wrap 0 \
     -m 3 \
-    copy_to_glacier.py test
+    lambda_name.py test
 
 echo "INFO: Formatting with black ..."
-black copy_to_glacier.py test
+black lambda_name.py test
 
 
 ## Run code smell and security tests using bandit
 echo "INFO: Running code smell security tests ..."
-bandit -r copy_to_glacier.py test
+bandit -r lambda_name.py test
 let return_code=$?
 check_rc $return_code "ERROR: Potential security or code issues found."
 
@@ -106,7 +107,7 @@ check_rc $return_code "ERROR: Potential security issues third party libraries."
 echo "INFO: Running unit and coverage tests ..."
 
 # Currently just running unit tests until we fix/support large tests
-coverage run --source=copy_to_glacier -m pytest
+coverage run --source=lambda_name -m pytest
 let return_code=$?
 check_rc $return_code "ERROR: Unit tests encountered failures."
 
