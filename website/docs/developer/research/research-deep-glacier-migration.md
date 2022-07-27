@@ -8,17 +8,18 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 
 ## Overview
 
-The goal of this wikipage is to provide an initial design and recommendation for migrating a customer's ORCA Flexible Retrieval (formerly Glacier) archive to DEEP ARCHIVE storage class. Deep archive S3 storage type is the cheapest glacier storage type currently present in AWS S3. For archive data that does not require immediate access such as backup or disaster recovery use cases, choosing `Deep Archive Access` tier could be a wise choice.
+The goal of this research is to provide an initial design and recommendation for migrating a customer's ORCA Flexible Retrieval (formerly Glacier) archive to DEEP ARCHIVE storage class. Deep archive S3 storage type is the cheapest glacier storage type currently present in AWS S3. For archive data that does not require immediate access such as backup or disaster recovery use cases, choosing `Deep Archive Access` tier could be a wise choice.
 - Storage cost is ~$1/TB data per month. 
-- Objects in the Deep Archive Access tier can be moved to the Frequent Access tier within 48 hours. Once the object is in the Frequent Access tier, users can send a GET request to retrieve the object. Like Flexible retrieval, the restored file is only available in frequent access for a configured number of days. For more information, see this [documentation](See https://docs.amazonaws.cn/en_us/AmazonS3/latest/userguide/restoring-objects-retrieval-options.html
+- Objects in the Deep Archive Access tier can be restored to the Frequent Access tier within 12-48 hours depending on the recovery type. Once the object is in the Frequent Access tier, users can send a GET request to retrieve the object. Like Flexible retrieval, the restored file is only available in frequent access for a configured number of days. For more information on retrieving objects from Flexible and Deep Archive storage, see the [documentation](See https://docs.amazonaws.cn/en_us/AmazonS3/latest/userguide/restoring-objects-retrieval-options.html
 ).
 
 ### Assumptions
 
 - List of objects already exists in orca catalog and S3 bucket.
-- Users should be able to provide some information(filename) to retrieve objects possibly at the collection level.
+- Users should be able to provide some information(possibly a collection or a combination of collection and granuleId) to retrieve objects possibly at the collection level.
+- A serverless approach will be used utilizing several Python lambda functions, SNS/SQS and S3 bucket event notifications.
 
-### Initial Implementation Idea
+### Use Cases
 
 A user might want to 
 - convert all the holdings or holdings with a known key prefix to DEEP ARCHIVE.
@@ -59,6 +60,7 @@ S3 lifecycle rule will not work in this case.
 Migration should be a 2 step process- first retrieve the objects and then copy the objects to deep archive.
 
 - Retrieve all objects currently stored with Glacier Flexible Retrieval type using `Bulk Retrieval` which is the cheapest retrieval option. Bulk retrievals are typically completed within 5–12 hours. The prices are lowest among all retrieval rates - $0.025 per 1,000 requests.
+There should be an optional terraform variable that user will input while deploying. The input should be a list of granuleId/collectionId- if true, it will run a lambda to restore and migrate those relevant files.
 One option of bulk retrieval is to use python boto3 client for S3:
 
 ```python
@@ -94,9 +96,11 @@ Output:
 Also see existing ORCA [restore_object function](https://github.com/nasa/cumulus-orca/blob/develop/tasks/request_files/request_files.py#L548)
 Make sure the S3 bucket policy has permission for `s3:PutObject*` action otherwise user will see access denied error. See this [policy](https://github.com/nasa/cumulus-orca/blob/develop/website/docs/developer/deployment-guide/creating-orca-glacier-bucket.md#archive-bucket) for additional details.
 
-Once all files are restored from glacier, there should be some mechanism that will notify users that the retrieval process is complete. One approach could be to enable event notifications in bucket that will trigger either an SQS, SNS or lambda. This will require additional research since AWS notifies for each `s3:ObjectRestore:Completed` API call and not for a specific number of objects.
+Another option is to look into [S3 batch operations](https://docs.aws.amazon.com/AmazonS3/latest/userguide/batch-ops-initiate-restore-object.html). It can perform a single operation on lists of Amazon S3 objects and a single job can perform a specified operation on billions of objects containing exabytes of data.
 
-- After objects are restored, we can use a lambda function that will run after 12 hours and copy the restored objects to deep archive S3 storage using boto3 `copy_object` function as shown below. 
+For every file restored, the event notification configuration for `ObjectRestore:Completed` action in the glacier bucket will trigger another lambda function that will copy the restored object to deep archive storage. In addition, this lambda should also notify end user on the copy progress. Services like SNS/SQS could be useful to use in this case as well.
+
+The boto3 `copy_object` function can be used in the python lambda function as shown below. 
 
 :::important
 Note that there should be some confirmation that all requested objects are successfully restored before running this script.
@@ -129,6 +133,8 @@ copy succeeded for object test1.xml having E tag "66d8119b127d165f8bc66fa66e0e35
 {'ResponseMetadata': {'RequestId': 'SA312G5B2RRN5P0C', 'HostId': '/YIl4aUR+CAov4/pxzzd8oVORmYYsewTbwZfnVDkWRa+8g/epeQ7KEZGqSVgcx5LheMhU/dXMfw=', 'HTTPStatusCode': 200, 'HTTPHeaders': {'x-amz-id-2': '/YIl4aUR+CAov4/pxzzd8oVORmYYsewTbwZfnVDkWRa+8g/epeQ7KEZGqSVgcx5LheMhU/dXMfw=', 'x-amz-request-id': 'SA312G5B2RRN5P0C', 'date': 'Sun, 24 Jul 2022 18:13:33 GMT', 'x-amz-storage-class': 'DEEP_ARCHIVE', 'content-type': 'application/xml', 'server': 'AmazonS3', 'content-length': '234'}, 'RetryAttempts': 0}, 'CopyObjectResult': {'ETag': '"14694ab9e3089a7c29e0dc9add4a82ab"', 'LastModified': datetime.datetime(2022, 7, 24, 18, 13, 33, tzinfo=tzutc())}}
 copy succeeded for object test2.xml having E tag "14694ab9e3089a7c29e0dc9add4a82ab"
 ```
+
+S3 batch operation can also be used in this case to perform the copying. For additional information, see https://docs.aws.amazon.com/AmazonS3/latest/userguide/batch-ops-copy-object.html.
 - Once objects are copied successfully, the old objects in standard storage can be deleted using boto3 client `delete_object` API call per object or `delete_objects` which can delete upto 1000 objects with a single API call.
 
 ```python
@@ -155,13 +161,12 @@ Output:
 test2.xml deleted
 ```
 
-
 ### Initial architecture design for migrating specific ORCA holdings to deep archive
 
 The following is an initial architecture for ORCA deep archive migration. Note that this could possibly change during implementation phase.
 
 <MyImage
-    imageSource={useBaseUrl('img/ORCA-Deep-Archive-Migration-Architecture-Initial.svg')}
+    imageSource={useBaseUrl('img/Deep-Archive-Migration.svg')}
     imageAlt="System Context"
     zoomInPic={useBaseUrl('img/zoom-in.png')}
     zoomOutPic={useBaseUrl('img/zoom-out.png')}
@@ -171,135 +176,27 @@ The following is an initial architecture for ORCA deep archive migration. Note t
 <br />
 <br />
 <br />
-
-The corresponding step function workflow diagram is shown below.
 
 <MyImage
-    imageSource={useBaseUrl('img/stepfunction_graph_migration_deep_archive.svg')}
+    imageSource={useBaseUrl('img/ORCA-Deep-Archive-Migration-architecture.svg')}
     imageAlt="System Context"
     zoomInPic={useBaseUrl('img/zoom-in.png')}
     zoomOutPic={useBaseUrl('img/zoom-out.png')}
     resetPic={useBaseUrl('img/zoom-pan-reset.png')}
 />
-<br />
-<br />
-The workflow definition is given below:
 
-```json
-{
-  "StartAt": "Restore objects using bulk retrieval",
-  "States": {
-    "Restore objects using bulk retrieval": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::lambda:invoke",
-      "OutputPath": "$.Payload",
-      "Parameters": {
-        "Payload.$": "$"
-      },
-      "Retry": [
-        {
-          "ErrorEquals": [
-            "Lambda.ServiceException",
-            "Lambda.AWSLambdaException",
-            "Lambda.SdkClientException"
-          ],
-          "IntervalSeconds": 2,
-          "MaxAttempts": 6,
-          "BackoffRate": 2
-        }
-      ],
-      "Next": "Retrieval in progress"
-    },
-    "Retrieval in progress": {
-      "Type": "Parallel",
-      "Next": "copy objects to deep archive",
-      "Branches": [
-        {
-          "StartAt": "Wait 12 hours to complete bulk retrieval",
-          "States": {
-            "Wait 12 hours to complete bulk retrieval": {
-              "Type": "Wait",
-              "Seconds": 43200,
-              "Comment": "wait until 12 hours to finish bulk retrieval process",
-              "End": true
-            }
-          }
-        },
-        {
-          "StartAt": "Notify end user about successful retrieval",
-          "States": {
-            "Notify end user about successful retrieval": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::sqs:sendMessage",
-              "Parameters": {
-                "MessageBody.$": "$"
-              },
-              "End": true
-            }
-          }
-        }
-      ]
-    },
-    "copy objects to deep archive": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::lambda:invoke",
-      "OutputPath": "$.Payload",
-      "Parameters": {
-        "Payload.$": "$"
-      },
-      "Retry": [
-        {
-          "ErrorEquals": [
-            "Lambda.ServiceException",
-            "Lambda.AWSLambdaException",
-            "Lambda.SdkClientException"
-          ],
-          "IntervalSeconds": 2,
-          "MaxAttempts": 6,
-          "BackoffRate": 2
-        }
-      ],
-      "Next": "notify user on successful copy"
-    },
-    "notify user on successful copy": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::sqs:sendMessage",
-      "Parameters": {
-        "MessageBody.$": "$"
-      },
-      "Next": "Delete objects that have been copied over to deep archive"
-    },
-    "Delete objects that have been copied over to deep archive": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::lambda:invoke",
-      "OutputPath": "$.Payload",
-      "Parameters": {
-        "Payload.$": "$"
-      },
-      "Retry": [
-        {
-          "ErrorEquals": [
-            "Lambda.ServiceException",
-            "Lambda.AWSLambdaException",
-            "Lambda.SdkClientException"
-          ],
-          "IntervalSeconds": 2,
-          "MaxAttempts": 6,
-          "BackoffRate": 2
-        }
-      ],
-      "End": true
-    }
-  }
-}
-```
+<br />
+<br />
+<br />
+
 ### Cards created
 
-- ORCA-499 -Research how to notify end users on completion of specific object restore from glacier.
-- ORCA-500- Implement script for retrieving objects from glacier flexible retrieval.
-- ORCA-501- Implement script/lambda function for copying existing S3 objects to DEEP ARCHIVE storage
-- ORCA-502- Delete old objects that have been copied over to deep archive from S3.
-- ORCA-503- Update ORCA catalog records for files migrated to deep archive storage.
+- [Research how to notify end users on completion of specific object restore from glacier](https://bugs.earthdata.nasa.gov/browse/ORCA-499)
+- [Implement lambda function for retrieving objects from glacier flexible retrieval](https://bugs.earthdata.nasa.gov/browse/ORCA-500)
+- [Implement script/lambda function for copying existing S3 objects to DEEP ARCHIVE storage](https://bugs.earthdata.nasa.gov/browse/ORCA-501)
+- [Delete old objects that have been copied over to deep archive from S3](https://bugs.earthdata.nasa.gov/browse/ORCA-502)
+- [Update ORCA catalog records for files migrated to deep archive storage](https://bugs.earthdata.nasa.gov/browse/ORCA-503)
+- [Research task on S3 batch operations for copying objects](https://bugs.earthdata.nasa.gov/browse/ORCA-504)
 
 
 #### Sources
