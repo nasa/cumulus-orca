@@ -31,7 +31,7 @@ A user might want to
 This should be a manual step performed by the end user.
 
 The steps for performing the migration are as follows:
-1. Run the lifecycle configuration with trasition_days = 0 as shown in the terraform code example below.
+1. Run the lifecycle configuration with transition_days = 0 as shown in the terraform code example below.
 2. Wait 48 hours for all objects to migrate to deep archive.
 3. There are two approaches to this
   - run a temporary lambda function that updates the catalog status table for storage class to deep archive.
@@ -67,7 +67,7 @@ To migrate to a different storage class, change `storage_class` under transition
 ### Implementation idea for migrating specific ORCA holdings to deep archive.
 
 S3 lifecycle rule will not work in this case. 
-Migration should be a 2 step process- first retrieve the objects and then copy the objects to deep archive.
+Migration should be a two step process- first retrieve the objects and then copy the objects to deep archive.
 
 1. User inputs a list of granuleId/collectionId or a combination of both via Cumulus console or API call.
 2. This api should trigger a lambda function that queries the ORCA catalog and retrives the files via `Bulk Retrieval` and copies the objects to the glacier bucket as versioned object. Bulk retrievals are typically completed within 5–12 hours. The prices are lowest among all retrieval rates - $0.025 per 1,000 requests.
@@ -147,10 +147,10 @@ S3 batch operation can also be used in this case to perform the copying. For add
 
 ### Initial architecture design for migrating specific ORCA holdings to deep archive
 
-The following is an initial architecture for ORCA deep archive migration. Note that this could possibly change during implementation phase.
+The following is an initial workflow and architecture for ORCA deep archive migration. Note that this could possibly change during implementation phase.
 
 <MyImage
-    imageSource={useBaseUrl('img/Deep-Archive-Migration.svg')}
+    imageSource={useBaseUrl('img/Deep-Archive-Migration-workflow.svg')}
     imageAlt="System Context"
     zoomInPic={useBaseUrl('img/zoom-in.png')}
     zoomOutPic={useBaseUrl('img/zoom-out.png')}
@@ -175,12 +175,11 @@ The following is an initial architecture for ORCA deep archive migration. Note t
 
 ### Cards created
 
+- [Research task on S3 batch operations for copying objects](https://bugs.earthdata.nasa.gov/browse/ORCA-504)
 - [Research how to notify end users on completion of specific object restore from glacier](https://bugs.earthdata.nasa.gov/browse/ORCA-499)
 - [Implement lambda function for retrieving objects from glacier flexible retrieval](https://bugs.earthdata.nasa.gov/browse/ORCA-500)
-- [Implement script/lambda function for copying existing S3 objects to DEEP ARCHIVE storage](https://bugs.earthdata.nasa.gov/browse/ORCA-501)
-- [Delete old objects that have been copied over to deep archive from S3](https://bugs.earthdata.nasa.gov/browse/ORCA-502)
+- [Implement lambda function for copying existing S3 objects to DEEP ARCHIVE storage](https://bugs.earthdata.nasa.gov/browse/ORCA-501)
 - [Update ORCA catalog records for files migrated to deep archive storage](https://bugs.earthdata.nasa.gov/browse/ORCA-503)
-- [Research task on S3 batch operations for copying objects](https://bugs.earthdata.nasa.gov/browse/ORCA-504)
 
 
 #### Sources
