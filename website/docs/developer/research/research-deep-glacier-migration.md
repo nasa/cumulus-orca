@@ -18,6 +18,7 @@ The goal of this research is to provide an initial design and recommendation for
 - List of objects already exists in orca catalog and S3 bucket.
 - Users should be able to provide some information(possibly a collection or a combination of collection and granuleId) to retrieve objects possibly at the collection level.
 - A serverless approach will be used utilizing several Python lambda functions, SNS/SQS and S3 bucket event notifications.
+- The glacier bucket has versioning enabled.
 
 ### Use Cases
 
@@ -27,7 +28,18 @@ A user might want to
 
 ### Implementation idea for migrating all ORCA holdings to deep archive.
 
-- Use S3 lifecycle rule in this case possibly with a prefix option to migrate from glacier to deep archive.
+This should be a manual step performed by the end user.
+
+The steps for performing the migration are as follows:
+1. Run the lifecycle configuration with trasition_days = 0 as shown in the terraform code example below.
+2. Wait 48 hours for all objects to migrate to deep archive.
+3. There are two approaches to this
+  - run a temporary lambda function that updates the catalog status table for storage class to deep archive.
+  - (Recommended) Have a lifecycle rule applied to the glacier bucket that will trigger a lambda function for every `s3:LifecycleTransition` event in the bucket. This lambda will automatically update the ORCA catalog status table for storage class to deep archive.
+4. Validate internal reconciliation for mismatches in storage class.
+5. If no mismatch, disable/delete the lifecycle rules.
+
+
 The following rule will move all objects with under prefix `tmp/` to DEEP ARCHIVE.
 
 ```teraform
@@ -52,15 +64,17 @@ resource "aws_s3_bucket_lifecycle_configuration" "bucket-config" {
 To migrate to a different storage class, change `storage_class` under transition block to the desired class in the terraform code above.
 :::
 
-Once migration is complete, disable the lifecycle rule to prevent any new files from being automatically moved to deep archive.
-
 ### Implementation idea for migrating specific ORCA holdings to deep archive.
 
 S3 lifecycle rule will not work in this case. 
 Migration should be a 2 step process- first retrieve the objects and then copy the objects to deep archive.
 
-- Retrieve all objects currently stored with Glacier Flexible Retrieval type using `Bulk Retrieval` which is the cheapest retrieval option. Bulk retrievals are typically completed within 5–12 hours. The prices are lowest among all retrieval rates - $0.025 per 1,000 requests.
-There should be an optional terraform variable that user will input while deploying. The input should be a list of granuleId/collectionId- if true, it will run a lambda to restore and migrate those relevant files.
+1. User inputs a list of granuleId/collectionId or a combination of both via Cumulus console or API call.
+2. This api should trigger a lambda function that queries the ORCA catalog and retrives the files via `Bulk Retrieval` and copies the objects to the glacier bucket as versioned object. Bulk retrievals are typically completed within 5–12 hours. The prices are lowest among all retrieval rates - $0.025 per 1,000 requests.
+3. Once files are restored in the bucket, the bucket event notification for `ObjectRestore:Completed` action will trigger another lambda function that will copy the restored object to deep archive storage. In addition, this lambda should also notify end user on the copy progress as well as update the catalog status table for storage class. Services like SQS/SNS could be useful to track the migration progress. Note that the current existing restore workflow trigger should be disabled during the whole migration process to prevent triggering the `request_files` lambda and then re-enabled it migration is complete.
+Another option here is to update existing recovery lambdas to perform the above tasks instead of creating new lambda. Additional research is needed to choose the right option.
+
+
 One option of bulk retrieval is to use python boto3 client for S3:
 
 ```python
@@ -98,13 +112,7 @@ Make sure the S3 bucket policy has permission for `s3:PutObject*` action otherwi
 
 Another option is to look into [S3 batch operations](https://docs.aws.amazon.com/AmazonS3/latest/userguide/batch-ops-initiate-restore-object.html). It can perform a single operation on lists of Amazon S3 objects and a single job can perform a specified operation on billions of objects containing exabytes of data.
 
-For every file restored, the event notification configuration for `ObjectRestore:Completed` action in the glacier bucket will trigger another lambda function that will copy the restored object to deep archive storage. In addition, this lambda should also notify end user on the copy progress. Services like SNS/SQS could be useful to use in this case as well.
-
 The boto3 `copy_object` function can be used in the python lambda function as shown below. 
-
-:::important
-Note that there should be some confirmation that all requested objects are successfully restored before running this script.
-:::
 
 ```python
 import boto3
@@ -135,31 +143,7 @@ copy succeeded for object test2.xml having E tag "14694ab9e3089a7c29e0dc9add4a82
 ```
 
 S3 batch operation can also be used in this case to perform the copying. For additional information, see https://docs.aws.amazon.com/AmazonS3/latest/userguide/batch-ops-copy-object.html.
-- Once objects are copied successfully, the old objects in standard storage can be deleted using boto3 client `delete_object` API call per object or `delete_objects` which can delete upto 1000 objects with a single API call.
 
-```python
-import boto3
-
-s3 = boto3.client('s3')
-#this list should be provided by the user
-delete_objects = ['1.xml', '2.xml']
-bucket_name = 'orca-rhassan-sandbox-glacier'
-for delete_object in delete_objects:
-    try:
-        response = s3.delete_object(
-            Bucket= bucket_name,  #bucket name where the object is stored currently
-            Key=delete_object
-        )
-        print(response)
-        print(f"{delete_object} deleted")
-    except Exception as ex:
-        print(ex)
-```
-Output:
-```
-{'ResponseMetadata': {'RequestId': 'C38C978YGKEF6BCR', 'HostId': 'iPQXFX3m215jhR0giFh/3cmbbuqIjQejXO8zQIxGjEnDbwoA1Yb+ZLvPDB2xJ5UmpEACMzAVD6c=', 'HTTPStatusCode': 204, 'HTTPHeaders': {'x-amz-id-2': 'iPQXFX3m215jhR0giFh/3cmbbuqIjQejXO8zQIxGjEnDbwoA1Yb+ZLvPDB2xJ5UmpEACMzAVD6c=', 'x-amz-request-id': 'C38C978YGKEF6BCR', 'date': 'Sun, 24 Jul 2022 18:29:20 GMT', 'server': 'AmazonS3'}, 'RetryAttempts': 0}} test1.xml deleted {'ResponseMetadata': {'RequestId': 'C38CPZ61SV9DH9A8', 'HostId': 'FOU0+D9gnBM7rwI4a7eO3ZXxmxfdcKxYWb7DtwnN4hx0fgHDfYE5W99vPZxqBNqJEFmPcbuoMXQ=', 'HTTPStatusCode': 204, 'HTTPHeaders': {'x-amz-id-2': 'FOU0+D9gnBM7rwI4a7eO3ZXxmxfdcKxYWb7DtwnN4hx0fgHDfYE5W99vPZxqBNqJEFmPcbuoMXQ=', 'x-amz-request-id': 'C38CPZ61SV9DH9A8', 'date': 'Sun, 24 Jul 2022 18:29:20 GMT', 'server': 'AmazonS3'}, 'RetryAttempts': 0}}
-test2.xml deleted
-```
 
 ### Initial architecture design for migrating specific ORCA holdings to deep archive
 
@@ -178,7 +162,7 @@ The following is an initial architecture for ORCA deep archive migration. Note t
 <br />
 
 <MyImage
-    imageSource={useBaseUrl('img/ORCA-Deep-Archive-Migration-architecture.svg')}
+    imageSource={useBaseUrl('img/ORCA-Deep-Archive-Migration-Architecture.svg')}
     imageAlt="System Context"
     zoomInPic={useBaseUrl('img/zoom-in.png')}
     zoomOutPic={useBaseUrl('img/zoom-out.png')}
