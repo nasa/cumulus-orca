@@ -57,10 +57,7 @@ fi
 mkdir build
 let return_code=$?
 
-if [ $return_code -ne 0 ]; then
-  >&2 echo "ERROR: Failed to create build directory."
-  exit 1
-fi
+check_rc $return_code "ERROR: Failed to create build directory."
 
 ## Create the virtual env. Remove it if it already exists.
 echo "INFO: Creating virtual environment ..."
