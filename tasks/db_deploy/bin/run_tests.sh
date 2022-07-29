@@ -85,7 +85,7 @@ isort \
     *.py install migrations test
 
 echo "INFO: Formatting with black ..."
-black db_deploy.py install migrations test
+black *.py install migrations test
 
 
 ## Run code smell and security tests using bandit

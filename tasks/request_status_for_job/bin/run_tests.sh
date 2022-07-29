@@ -86,7 +86,7 @@ isort \
     *.py test
 
 echo "INFO: Formatting with black ..."
-black request_status_for_job.py test
+black *.py test
 
 
 ## Run code smell and security tests using bandit

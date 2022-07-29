@@ -86,7 +86,7 @@ isort \
     *.py test
 
 echo "INFO: Formatting with black ..."
-black extract_filepaths_for_granule.py test
+black *.py test
 
 
 ## Run code smell and security tests using bandit

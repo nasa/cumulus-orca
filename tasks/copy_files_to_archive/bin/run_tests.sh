@@ -86,7 +86,7 @@ isort \
     *.py test
 
 echo "INFO: Formatting with black ..."
-black copy_files_to_archive.py test
+black *.py test
 
 
 ## Run code smell and security tests using bandit

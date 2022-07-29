@@ -100,7 +100,7 @@ isort \
     *.py test
 
 echo "INFO: Formatting with black ..."
-black post_to_queue_and_trigger_step_function.py test
+black *.py test
 
 
 ## Run code smell and security tests using bandit

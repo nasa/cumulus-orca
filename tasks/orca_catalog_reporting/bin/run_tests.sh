@@ -86,7 +86,7 @@ isort \
     *.py test
 
 echo "INFO: Formatting with black ..."
-black orca_catalog_reporting.py test
+black *.py test
 
 
 ## Run code smell and security tests using bandit

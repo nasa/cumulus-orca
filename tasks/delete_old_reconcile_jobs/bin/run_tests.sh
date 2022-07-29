@@ -100,7 +100,7 @@ isort \
     *.py test
 
 echo "INFO: Formatting with black ..."
-black delete_old_reconcile_jobs.py test
+black *.py test
 
 
 ## Run code smell and security tests using bandit
