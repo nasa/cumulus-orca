@@ -67,6 +67,7 @@ let return_code=$?
 check_rc $return_code "ERROR: pip install encountered an error."
 
 ## Run the documentation command
+echo "INFO: Creating API documentation ..."
 pydoc-markdown -I . -m copy_to_glacier --render-toc > API.md
 let return_code=$?
 

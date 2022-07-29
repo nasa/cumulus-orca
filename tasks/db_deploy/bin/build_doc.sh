@@ -90,6 +90,7 @@ done
 
 echo "INFO: Creating API markdown file ..."
 ## Run the documentation command
+echo "INFO: Creating API documentation ..."
 pydoc-markdown -I . ${module_list} --render-toc > API.md
 let return_code=$?
 
