@@ -72,7 +72,8 @@ echo "INFO: Checking formatting and style of code ..."
 echo "INFO: Checking lint rules ..."
 flake8 \
     --max-line-length 99 \
-    orca_catalog_reporting.py test
+    *.py test
+let return_code=$?
 check_rc $return_code "ERROR: Linting issues found."
 
 echo "INFO: Sorting imports ..."

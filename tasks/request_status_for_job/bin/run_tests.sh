@@ -72,7 +72,7 @@ echo "INFO: Checking formatting and style of code ..."
 echo "INFO: Checking lint rules ..."
 flake8 \
     --max-line-length 99 \
-    request_status_for_job.py test
+    *.py test
 check_rc $return_code "ERROR: Linting issues found."
 
 echo "INFO: Sorting imports ..."

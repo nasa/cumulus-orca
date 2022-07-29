@@ -86,7 +86,7 @@ echo "INFO: Checking formatting and style of code ..."
 echo "INFO: Checking lint rules ..."
 flake8 \
     --max-line-length 99 \
-    post_to_queue_and_trigger_step_function.py test
+    *.py test
 check_rc $return_code "ERROR: Linting issues found."
 
 echo "INFO: Sorting imports ..."
