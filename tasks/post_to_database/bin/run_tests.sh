@@ -90,7 +90,7 @@ black *.py test
 
 ## Run code smell and security tests using bandit
 echo "INFO: Running code smell security tests ..."
-bandit -r post_to_database.py test
+bandit -r *.py test
 let return_code=$?
 check_rc $return_code "ERROR: Potential security or code issues found."
 

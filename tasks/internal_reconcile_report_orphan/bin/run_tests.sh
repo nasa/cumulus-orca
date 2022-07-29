@@ -91,7 +91,7 @@ black *.py test
 
 ## Run code smell and security tests using bandit
 echo "INFO: Running code smell security tests ..."
-bandit -r internal_reconcile_report_orphan.py test
+bandit -r *.py test
 let return_code=$?
 check_rc $return_code "ERROR: Potential security or code issues found."
 
@@ -115,6 +115,7 @@ check_rc $return_code "ERROR: Unit tests encountered failures."
 coverage report 
 let return_code=$?
 check_rc $return_code "ERROR: Unit tests coverage is less than 80%"
+
 
 ## Deactivate and remove the virtual env
 echo "INFO: Cleaning up the environment ..."

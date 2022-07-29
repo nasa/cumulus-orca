@@ -63,6 +63,7 @@ source venv/bin/activate
 pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org
 pip install -q -r requirements-dev.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
 let return_code=$?
+
 check_rc $return_code "ERROR: pip install encountered an error."
 
 
@@ -90,7 +91,7 @@ black *.py install migrations test
 
 ## Run code smell and security tests using bandit
 echo "INFO: Running code smell security checks ..."
-bandit -r db_deploy.py install migrations test
+bandit -r *.py install migrations test
 let return_code=$?
 check_rc $return_code "ERROR: Potential security or code issues found."
 
