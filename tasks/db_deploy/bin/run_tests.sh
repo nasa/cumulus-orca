@@ -82,14 +82,14 @@ isort \
     --use-parentheses \
     --force-grid-wrap 0 \
     -m 3 \
-    db_deploy.py install migrations test
+    *.py install migrations test
 
 echo "INFO: Formatting with black ..."
 black db_deploy.py install migrations test
 
-## Run code smell and security tests
-echo "INFO: Checking code smell and security of code ..."
-echo "INFO: Checking code smell ..."
+
+## Run code smell and security tests using bandit
+echo "INFO: Running code smell security checks ..."
 bandit -r db_deploy.py install migrations test
 let return_code=$?
 check_rc $return_code "ERROR: Potential security or code issues found."

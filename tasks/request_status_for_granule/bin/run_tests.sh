@@ -83,7 +83,7 @@ isort \
     --use-parentheses \
     --force-grid-wrap 0 \
     -m 3 \
-    request_status_for_granule.py test
+    *.py test
 
 echo "INFO: Formatting with black ..."
 black request_status_for_granule.py test

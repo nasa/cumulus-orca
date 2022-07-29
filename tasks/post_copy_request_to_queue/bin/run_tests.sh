@@ -82,7 +82,7 @@ isort \
     --use-parentheses \
     --force-grid-wrap 0 \
     -m 3 \
-    post_copy_request_to_queue.py test
+    *.py test
 
 echo "INFO: Formatting with black ..."
 black post_copy_request_to_queue.py test

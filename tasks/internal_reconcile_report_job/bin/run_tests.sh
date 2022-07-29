@@ -83,7 +83,7 @@ isort \
     --use-parentheses \
     --force-grid-wrap 0 \
     -m 3 \
-    internal_reconcile_report_job.py test
+    *.py test
 
 echo "INFO: Formatting with black ..."
 black internal_reconcile_report_job.py test

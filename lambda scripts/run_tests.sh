@@ -83,7 +83,7 @@ isort \
     --use-parentheses \
     --force-grid-wrap 0 \
     -m 3 \
-    lambda_name.py test
+    *.py test
 
 echo "INFO: Formatting with black ..."
 black lambda_name.py test

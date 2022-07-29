@@ -97,10 +97,24 @@ isort \
     --use-parentheses \
     --force-grid-wrap 0 \
     -m 3 \
-    perform_orca_reconcile.py test
+    *.py test
 
 echo "INFO: Formatting with black ..."
 black perform_orca_reconcile.py test
+
+
+## Run code smell and security tests using bandit
+echo "INFO: Running code smell security tests ..."
+bandit -r perform_orca_reconcile.py test
+let return_code=$?
+check_rc $return_code "ERROR: Potential security or code issues found."
+
+
+## Check code third party libraries for CVE issues
+echo "INFO: Running checks on third party libraries ..."
+safety check -r requirements.txt -r requirements-dev.txt
+let return_code=$?
+check_rc $return_code "ERROR: Potential security issues third party libraries."
 
 
 ## Run unit tests and check Coverage

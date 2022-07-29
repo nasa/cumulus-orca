@@ -74,7 +74,6 @@ flake8 \
     --max-line-length 99 \
     *.py test
 let return_code=$?
-check_rc $return_code "ERROR: Linting issues found."
 
 echo "INFO: Sorting imports ..."
 isort \
@@ -84,7 +83,7 @@ isort \
     --use-parentheses \
     --force-grid-wrap 0 \
     -m 3 \
-    orca_catalog_reporting.py test
+    *.py test
 
 echo "INFO: Formatting with black ..."
 black orca_catalog_reporting.py test

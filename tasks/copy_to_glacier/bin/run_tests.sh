@@ -82,7 +82,7 @@ isort \
     --use-parentheses \
     --force-grid-wrap 0 \
     -m 3 \
-    copy_to_glacier.py test
+    *.py test
 
 echo "INFO: Formatting with black ..."
 black copy_to_glacier.py test

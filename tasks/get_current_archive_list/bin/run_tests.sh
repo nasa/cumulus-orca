@@ -83,7 +83,7 @@ isort \
     --use-parentheses \
     --force-grid-wrap 0 \
     -m 3 \
-    get_current_archive_list.py test
+    *.py test
 
 echo "INFO: Formatting with black ..."
 black get_current_archive_list.py test

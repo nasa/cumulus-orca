@@ -83,7 +83,7 @@ isort \
     --use-parentheses \
     --force-grid-wrap 0 \
     -m 3 \
-    copy_files_to_archive.py test
+    *.py test
 
 echo "INFO: Formatting with black ..."
 black copy_files_to_archive.py test
