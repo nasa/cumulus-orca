@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" height="903px" preserveAspectRatio="none" style="width:2225px;height:903px;background:#FFFFFF;" version="1.1" viewBox="0 0 2225 903" width="2225px" zoomAndPan="magnify"><defs/><g><rect height="26.2969" id="_title" style="stroke:#00000000;stroke-width:1.0;fill:none;" width="365" x="929.25" y="10"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="355" x="934.25" y="27.9951">Deep Archive Collection Migration Workflow</text><rect fill="#FFFFFF" height="669.1875" style="stroke:#181818;stroke-width:1.0;" width="10" x="163" y="128.5938"/><rect fill="#FFFFFF" height="79.3984" style="stroke:#181818;stroke-width:1.0;" width="10" x="674" y="128.5938"/><rect fill="#FFFFFF" height="174.7969" style="stroke:#181818;stroke-width:1.0;" width="10" x="851" y="207.9922"/><rect fill="#FFFFFF" height="341.5938" style="stroke:#181818;stroke-width:1.0;" width="10" x="1220" y="207.9922"/><rect fill="#FFFFFF" height="225.0625" style="stroke:#181818;stroke-width:1.0;" width="10" x="1338" y="295.3906"/><rect height="140.7969" style="stroke:#000000;stroke-width:1.5;fill:none;" width="2034.5" x="9" y="564.5859"/><line style="stroke:#181818;stroke-width:0.5;fill:none;stroke-dasharray:5.0,5.0;" x1="168" x2="168" y1="118.5938" y2="822.7813"/><line style="stroke:#181818;stroke-width:0.5;fill:none;stroke-dasharray:5.0,5.0;" x1="679" x2="679" y1="118.5938" y2="822.7813"/><line style="stroke:#181818;stroke-width:0.5;fill:none;stroke-dasharray:5.0,5.0;" x1="855.5" x2="855.5" y1="118.5938" y2="822.7813"/><line style="stroke:#181818;stroke-width:0.5;fill:none;stroke-dasharray:5.0,5.0;" x1="1225" x2="1225" y1="118.5938" y2="822.7813"/><line style="stroke:#181818;stroke-width:0.5;fill:none;stroke-dasharray:5.0,5.0;" x1="1343" x2="1343" y1="118.5938" y2="822.7813"/><line style="stroke:#181818;stroke-width:0.5;fill:none;stroke-dasharray:5.0,5.0;" x1="1684.5" x2="1684.5" y1="118.5938" y2="822.7813"/><line style="stroke:#181818;stroke-width:0.5;fill:none;stroke-dasharray:5.0,5.0;" x1="1824.5" x2="1824.5" y1="118.5938" y2="822.7813"/><line style="stroke:#181818;stroke-width:0.5;fill:none;stroke-dasharray:5.0,5.0;" x1="1964.5" x2="1964.5" y1="118.5938" y2="822.7813"/><line style="stroke:#181818;stroke-width:0.5;fill:none;stroke-dasharray:5.0,5.0;" x1="2131.5" x2="2131.5" y1="118.5938" y2="822.7813"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="64" x="133" y="115.292">operator</text><ellipse cx="168" cy="50.7969" fill="#E2E2F0" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/><path d="M168,58.7969 L168,85.7969 M155,66.7969 L181,66.7969 M168,85.7969 L155,100.7969 M168,85.7969 L181,100.7969 " fill="none" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="64" x="133" y="834.7764">operator</text><ellipse cx="168" cy="846.5781" fill="#E2E2F0" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/><path d="M168,854.5781 L168,881.5781 M155,862.5781 L181,862.5781 M168,881.5781 L155,896.5781 M168,881.5781 L181,896.5781 " fill="none" style="stroke:#181818;stroke-width:0.5;"/><rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="134" x="612" y="87.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="120" x="619" y="107.292">Cumulus Console</text><rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="134" x="612" y="821.7813"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="120" x="619" y="841.7764">Cumulus Console</text><rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="121" x="795.5" y="87.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="107" x="802.5" y="107.292">Migration start</text><rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="121" x="795.5" y="821.7813"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="107" x="802.5" y="841.7764">Migration start</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="100" x="1172" y="115.292">ORCA Catalog</text><path d="M1207,66.2969 C1207,56.2969 1225,56.2969 1225,56.2969 C1225,56.2969 1243,56.2969 1243,66.2969 L1243,92.2969 C1243,102.2969 1225,102.2969 1225,102.2969 C1225,102.2969 1207,102.2969 1207,92.2969 L1207,66.2969 " fill="#E2E2F0" style="stroke:#181818;stroke-width:1.5;"/><path d="M1207,66.2969 C1207,76.2969 1225,76.2969 1225,76.2969 C1225,76.2969 1243,76.2969 1243,66.2969 " fill="none" style="stroke:#181818;stroke-width:1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="100" x="1172" y="834.7764">ORCA Catalog</text><path d="M1207,848.0781 C1207,838.0781 1225,838.0781 1225,838.0781 C1225,838.0781 1243,838.0781 1243,848.0781 L1243,874.0781 C1243,884.0781 1225,884.0781 1225,884.0781 C1225,884.0781 1207,884.0781 1207,874.0781 L1207,848.0781 " fill="#E2E2F0" style="stroke:#181818;stroke-width:1.5;"/><path d="M1207,848.0781 C1207,858.0781 1225,858.0781 1225,858.0781 C1225,858.0781 1243,858.0781 1243,848.0781 " fill="none" style="stroke:#181818;stroke-width:1.5;"/><rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="110" x="1288" y="87.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="96" x="1295" y="107.292">ORCA bucket</text><rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="110" x="1288" y="821.7813"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="96" x="1295" y="841.7764">ORCA bucket</text><path d="M1621.5,92.2969 L1748.5,92.2969 C1753.5,92.2969 1753.5,105.4453 1753.5,105.4453 C1753.5,105.4453 1753.5,118.5938 1748.5,118.5938 L1621.5,118.5938 C1616.5,118.5938 1616.5,105.4453 1616.5,105.4453 C1616.5,105.4453 1616.5,92.2969 1621.5,92.2969 " fill="#E2E2F0" style="stroke:#181818;stroke-width:0.5;"/><path d="M1748.5,92.2969 C1743.5,92.2969 1743.5,105.4453 1743.5,105.4453 C1743.5,118.5938 1748.5,118.5938 1748.5,118.5938 " fill="none" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="117" x="1621.5" y="110.292">migration queue</text><path d="M1621.5,821.7813 L1748.5,821.7813 C1753.5,821.7813 1753.5,834.9297 1753.5,834.9297 C1753.5,834.9297 1753.5,848.0781 1748.5,848.0781 L1621.5,848.0781 C1616.5,848.0781 1616.5,834.9297 1616.5,834.9297 C1616.5,834.9297 1616.5,821.7813 1621.5,821.7813 " fill="#E2E2F0" style="stroke:#181818;stroke-width:0.5;"/><path d="M1748.5,821.7813 C1743.5,821.7813 1743.5,834.9297 1743.5,834.9297 C1743.5,848.0781 1748.5,848.0781 1748.5,848.0781 " fill="none" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="117" x="1621.5" y="839.7764">migration queue</text><rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="123" x="1763.5" y="87.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="109" x="1770.5" y="107.292">Migration Copy</text><rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="123" x="1763.5" y="821.7813"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="109" x="1770.5" y="841.7764">Migration Copy</text><rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="137" x="1896.5" y="87.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="123" x="1903.5" y="107.292">Migration Report</text><rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="137" x="1896.5" y="821.7813"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="123" x="1903.5" y="841.7764">Migration Report</text><rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="176" x="2043.5" y="87.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="162" x="2050.5" y="107.292">Internal Reconciliation</text><rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="176" x="2043.5" y="821.7813"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="162" x="2050.5" y="841.7764">Internal Reconciliation</text><rect fill="#FFFFFF" height="669.1875" style="stroke:#181818;stroke-width:1.0;" width="10" x="163" y="128.5938"/><rect fill="#FFFFFF" height="79.3984" style="stroke:#181818;stroke-width:1.0;" width="10" x="674" y="128.5938"/><rect fill="#FFFFFF" height="174.7969" style="stroke:#181818;stroke-width:1.0;" width="10" x="851" y="207.9922"/><rect fill="#FFFFFF" height="341.5938" style="stroke:#181818;stroke-width:1.0;" width="10" x="1220" y="207.9922"/><rect fill="#FFFFFF" height="225.0625" style="stroke:#181818;stroke-width:1.0;" width="10" x="1338" y="295.3906"/><polygon fill="#008000" points="662,145.7266,672,149.7266,662,153.7266,666,149.7266" style="stroke:#008000;stroke-width:1.0;"/><line style="stroke:#008000;stroke-width:1.0;" x1="173" x2="668" y1="149.7266" y2="149.7266"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9" x="180" y="144.6606">1</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="319" x="193" y="144.6606">Configure ORCA for Deep Archive in the collection</text><polygon fill="#008000" points="662,174.8594,672,178.8594,662,182.8594,666,178.8594" style="stroke:#008000;stroke-width:1.0;"/><line style="stroke:#008000;stroke-width:1.0;" x1="173" x2="668" y1="178.8594" y2="178.8594"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9" x="180" y="173.7935">2</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="179" x="193" y="173.7935">End user initiating migration</text><polygon fill="#008000" points="839,203.9922,849,207.9922,839,211.9922,843,207.9922" style="stroke:#008000;stroke-width:1.0;"/><line style="stroke:#008000;stroke-width:1.0;" x1="679" x2="845" y1="207.9922" y2="207.9922"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="8" x="686" y="202.9263">3</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="136" x="698" y="202.9263">Calls with collectionId</text><polygon fill="#008000" points="1208,233.125,1218,237.125,1208,241.125,1212,237.125" style="stroke:#008000;stroke-width:1.0;"/><line style="stroke:#008000;stroke-width:1.0;" x1="861" x2="1214" y1="237.125" y2="237.125"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9" x="868" y="232.0591">4</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="283" x="881" y="232.0591">queries for all the files related to collectionId</text><polygon fill="#FF0000" points="872,262.2578,862,266.2578,872,270.2578,868,266.2578" style="stroke:#FF0000;stroke-width:1.0;"/><line style="stroke:#FF0000;stroke-width:1.0;" x1="866" x2="1219" y1="266.2578" y2="266.2578"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9" x="878" y="261.1919">5</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="176" x="891" y="261.1919">returns all the relevant files</text><polygon fill="#008000" points="1208,291.3906,1218,295.3906,1208,299.3906,1212,295.3906" style="stroke:#008000;stroke-width:1.0;"/><line style="stroke:#008000;stroke-width:1.0;" x1="861" x2="1214" y1="295.3906" y2="295.3906"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9" x="868" y="290.3247">6</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="322" x="881" y="290.3247">creates migration job records with pending status.</text><polygon fill="#008000" points="1326,320.5234,1336,324.5234,1326,328.5234,1330,324.5234" style="stroke:#008000;stroke-width:1.0;"/><line style="stroke:#008000;stroke-width:1.0;" x1="861" x2="1332" y1="324.5234" y2="324.5234"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9" x="868" y="319.4575">7</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="223" x="881" y="319.4575">performs bulk retrieval for the files</text><polygon fill="#FF0000" points="872,349.6563,862,353.6563,872,357.6563,868,353.6563" style="stroke:#FF0000;stroke-width:1.0;"/><line style="stroke:#FF0000;stroke-width:1.0;" x1="866" x2="1337" y1="353.6563" y2="353.6563"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9" x="878" y="348.5903">8</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="129" x="891" y="348.5903">retrieval status sent</text><polygon fill="#008000" points="1208,378.7891,1218,382.7891,1208,386.7891,1212,382.7891" style="stroke:#008000;stroke-width:1.0;"/><line style="stroke:#008000;stroke-width:1.0;" x1="856" x2="1214" y1="382.7891" y2="382.7891"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9" x="863" y="377.7231">9</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="209" x="876" y="377.7231">updates the migration job status</text><path d="M1274,395.7891 L1274,435.7891 L1411,435.7891 L1411,405.7891 L1401,395.7891 L1274,395.7891 " fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/><path d="M1401,395.7891 L1401,405.7891 L1411,405.7891 L1401,395.7891 " fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="87" x="1280" y="412.856">Bulk recovery</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="116" x="1280" y="427.9888">takes 12-24 hours</text><polygon fill="#008000" points="1673,458.1875,1683,462.1875,1673,466.1875,1677,462.1875" style="stroke:#008000;stroke-width:1.0;"/><line style="stroke:#008000;stroke-width:1.0;" x1="1348" x2="1679" y1="462.1875" y2="462.1875"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="19" x="1355" y="457.1216">10</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="290" x="1378" y="457.1216">notify message that files have been restored</text><polygon fill="#008000" points="1813,487.3203,1823,491.3203,1813,495.3203,1817,491.3203" style="stroke:#008000;stroke-width:1.0;"/><line style="stroke:#008000;stroke-width:1.0;" x1="1685" x2="1819" y1="491.3203" y2="491.3203"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18" x="1692" y="486.2544">11</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="49" x="1714" y="486.2544">triggers</text><polygon fill="#FF0000" points="1354,516.4531,1344,520.4531,1354,524.4531,1350,520.4531" style="stroke:#FF0000;stroke-width:1.0;"/><line style="stroke:#FF0000;stroke-width:1.0;" x1="1348" x2="1824" y1="520.4531" y2="520.4531"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18" x="1360" y="515.3872">12</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="226" x="1382" y="515.3872">copies files in deep archive storage</text><polygon fill="#FF0000" points="1236,545.5859,1226,549.5859,1236,553.5859,1232,549.5859" style="stroke:#FF0000;stroke-width:1.0;"/><line style="stroke:#FF0000;stroke-width:1.0;" x1="1230" x2="1824" y1="549.5859" y2="549.5859"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="17" x="1242" y="544.52">13</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="316" x="1263" y="544.52">update the file storage type and migration status</text><path d="M9,564.5859 L87,564.5859 L87,571.7188 L77,581.7188 L9,581.7188 L9,564.5859 " fill="#EEEEEE" style="stroke:#000000;stroke-width:1.5;"/><rect fill="none" height="140.7969" style="stroke:#000000;stroke-width:1.5;" width="2034.5" x="9" y="564.5859"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="33" x="24" y="577.6528">loop</text><polygon fill="#008000" points="1953,598.8516,1963,602.8516,1953,606.8516,1957,602.8516" style="stroke:#008000;stroke-width:1.0;"/><line style="stroke:#008000;stroke-width:1.0;" x1="173" x2="1959" y1="602.8516" y2="602.8516"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18" x="180" y="597.7856">14</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="163" x="202" y="597.7856">requests by passing jobId</text><polygon fill="#FF0000" points="184,627.9844,174,631.9844,184,635.9844,180,631.9844" style="stroke:#FF0000;stroke-width:1.0;"/><line style="stroke:#FF0000;stroke-width:1.0;" x1="178" x2="1964" y1="631.9844" y2="631.9844"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18" x="190" y="626.9185">15</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="178" x="212" y="626.9185">returns migration job status</text><path d="M19,644.9844 L19,699.9844 L316,699.9844 L316,654.9844 L306,644.9844 L19,644.9844 " fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/><path d="M306,644.9844 L306,654.9844 L316,654.9844 L306,644.9844 " fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="4" x="25" y="662.0513"> </text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="4" x="25" y="677.1841"> </text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="276" x="25" y="692.3169">Runs reports until job is in Completed state</text><polygon fill="#008000" points="2119.5,729.5156,2129.5,733.5156,2119.5,737.5156,2123.5,733.5156" style="stroke:#008000;stroke-width:1.0;"/><line style="stroke:#008000;stroke-width:1.0;" x1="173" x2="2125.5" y1="733.5156" y2="733.5156"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18" x="180" y="728.4497">16</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="167" x="202" y="728.4497">requests mismatch report</text><polygon fill="#FF0000" points="184,758.6484,174,762.6484,184,766.6484,180,762.6484" style="stroke:#FF0000;stroke-width:1.0;"/><line style="stroke:#FF0000;stroke-width:1.0;" x1="178" x2="2130.5" y1="762.6484" y2="762.6484"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18" x="190" y="757.5825">17</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="296" x="212" y="757.5825">returns mismatch data based on storage type</text><line style="stroke:#FF0000;stroke-width:1.0;" x1="173" x2="215" y1="796.7813" y2="796.7813"/><line style="stroke:#FF0000;stroke-width:1.0;" x1="215" x2="215" y1="796.7813" y2="809.7813"/><line style="stroke:#FF0000;stroke-width:1.0;" x1="168" x2="215" y1="809.7813" y2="809.7813"/><polygon fill="#FF0000" points="178,805.7813,168,809.7813,178,813.7813,174,809.7813" style="stroke:#FF0000;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18" x="180" y="791.7153">18</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="465" x="202" y="791.7153">analyzes mismatch reports for storage discrepencies and resolves them</text><!--MD5=[4d03d5bddc4bb8c17869791945271487]
+@startuml
+title "Deep Archive Collection Migration Workflow"
+ 
+actor operator
+participant "Cumulus Console" as cc
+participant "Migration start" as ms
+database "ORCA Catalog" as oc
+participant "ORCA bucket" as ob
+queue "migration queue" as mq
+participant "Migration Copy" as mc
+participant "Migration Report" as mr
+participant "Internal Reconciliation" as ir
+autonumber
+
+activate operator
+activate cc
+operator -[#green]> cc: Configure ORCA for Deep Archive in the collection
+operator -[#green]> cc: End user initiating migration
+cc-[#green]> ms: Calls with collectionId
+deactivate cc
+
+activate ms
+activate oc
+
+ms-[#green]> oc: queries for all the files related to collectionId
+oc-[#red]>ms: returns all the relevant files
+
+ms -[#green]> oc: creates migration job records with pending status.
+
+
+activate ob
+ms-[#green]> ob: performs bulk retrieval for the files
+ob -[#red]> ms: retrieval status sent
+
+ms -[#green]> oc: updates the migration job status
+
+deactivate ms
+note over ob
+Bulk recovery 
+takes 12-24 hours
+end note
+
+ob-[#green]> mq: notify message that files have been restored
+
+mq-[#green]> mc: triggers 
+
+mc -[#red]> ob: copies files in deep archive storage
+deactivate ob
+mc-[#red]> oc: update the file storage type and migration status
+deactivate oc
+loop
+
+operator -[#green]> mr: requests by passing jobId
+
+
+mr -[#red]> operator: returns migration job status
+note over operator
+
+
+Runs reports until job is in Completed state
+end note
+end
+
+operator-[#green]> ir: requests mismatch report
+
+ir-[#red]> operator: returns mismatch data based on storage type
+operator -[#red]> operator: analyzes mismatch reports for storage discrepencies and resolves them
+
+
+'
+deactivate operator
+@enduml
+
+@startuml
+title "Deep Archive Collection Migration Workflow"
+ 
+actor operator
+participant "Cumulus Console" as cc
+participant "Migration start" as ms
+database "ORCA Catalog" as oc
+participant "ORCA bucket" as ob
+queue "migration queue" as mq
+participant "Migration Copy" as mc
+participant "Migration Report" as mr
+participant "Internal Reconciliation" as ir
+autonumber
+
+activate operator
+activate cc
+operator -[#green]> cc: Configure ORCA for Deep Archive in the collection
+operator -[#green]> cc: End user initiating migration
+cc-[#green]> ms: Calls with collectionId
+deactivate cc
+
+activate ms
+activate oc
+
+ms-[#green]> oc: queries for all the files related to collectionId
+oc-[#red]>ms: returns all the relevant files
+
+ms -[#green]> oc: creates migration job records with pending status.
+
+
+activate ob
+ms-[#green]> ob: performs bulk retrieval for the files
+ob -[#red]> ms: retrieval status sent
+
+ms -[#green]> oc: updates the migration job status
+
+deactivate ms
+note over ob
+Bulk recovery 
+takes 12-24 hours
+end note
+
+ob-[#green]> mq: notify message that files have been restored
+
+mq-[#green]> mc: triggers 
+
+mc -[#red]> ob: copies files in deep archive storage
+deactivate ob
+mc-[#red]> oc: update the file storage type and migration status
+deactivate oc
+loop
+
+operator -[#green]> mr: requests by passing jobId
+
+
+mr -[#red]> operator: returns migration job status
+note over operator
+
+
+Runs reports until job is in Completed state
+end note
+end
+
+operator-[#green]> ir: requests mismatch report
+
+ir-[#red]> operator: returns mismatch data based on storage type
+operator -[#red]> operator: analyzes mismatch reports for storage discrepencies and resolves them
+
+
+deactivate operator
+@enduml
+
+PlantUML version 1.2022.7beta2(Unknown compile time)
+(GPL source distribution)
+Java Runtime: Java(TM) SE Runtime Environment
+JVM: Java HotSpot(TM) 64-Bit Server VM
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>
