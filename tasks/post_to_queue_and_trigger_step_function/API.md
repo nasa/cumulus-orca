@@ -5,6 +5,9 @@
   * [translate\_record\_body](#post_to_queue_and_trigger_step_function.translate_record_body)
   * [trigger\_step\_function](#post_to_queue_and_trigger_step_function.trigger_step_function)
   * [handler](#post_to_queue_and_trigger_step_function.handler)
+* [sqs\_library](#sqs_library)
+  * [retry\_error](#sqs_library.retry_error)
+  * [post\_to\_fifo\_queue](#sqs_library.post_to_fifo_queue)
 
 <a id="post_to_queue_and_trigger_step_function"></a>
 
@@ -85,4 +88,52 @@ sends it to another queue, then triggers the internal report step function.
   Environment Vars:
 - `TARGET_QUEUE_URL` _string_ - The URL of the SQS queue the job came from.
 - `Returns` - See output.json for details.
+
+<a id="sqs_library"></a>
+
+# sqs\_library
+
+Name: sqs_library.py
+Description: library for post_to_queue_and_trigger_step_function lambda function for posting to fifo SQS queue.
+Largely copied from copy_to_glacier
+
+<a id="sqs_library.retry_error"></a>
+
+#### retry\_error
+
+```python
+def retry_error(
+    max_retries: int = MAX_RETRIES,
+    backoff_in_seconds: int = INITIAL_BACKOFF_IN_SECONDS,
+    backoff_factor: int = BACKOFF_FACTOR
+) -> Callable[[Callable[[], RT]], Callable[[], RT]]
+```
+
+Decorator takes arguments to adjust number of retries and backoff strategy.
+
+**Arguments**:
+
+- `max_retries` _int_ - number of times to retry in case of failure.
+- `backoff_in_seconds` _int_ - Number of seconds to sleep the first time through.
+- `backoff_factor` _int_ - Value of the factor used for backoff.
+
+<a id="sqs_library.post_to_fifo_queue"></a>
+
+#### post\_to\_fifo\_queue
+
+```python
+@retry_error()
+def post_to_fifo_queue(queue_url: str, sqs_body: Dict[str, Any]) -> None
+```
+
+Posts information to the given SQS queue.
+
+**Arguments**:
+
+- `sqs_body` - A dictionary containing the objects that will be sent to SQS.
+- `queue_url` - The SQS queue URL defined by AWS.
+
+**Raises**:
+
+  None
 

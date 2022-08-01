@@ -68,7 +68,7 @@ check_rc $return_code "ERROR: pip install encountered an error."
 
 ## Run the documentation command
 echo "INFO: Creating API documentation ..."
-pydoc-markdown -I . -m post_to_queue_and_trigger_step_function --render-toc > API.md
+pydoc-markdown -I . -m post_to_queue_and_trigger_step_function -m sqs_library --render-toc > API.md
 let return_code=$?
 
 check_rc $return_code "ERROR: Failed to create API.md file."
