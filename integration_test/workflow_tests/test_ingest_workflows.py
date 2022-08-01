@@ -1,6 +1,7 @@
 import json
 import os
 import time
+import unittest
 import uuid
 from unittest import TestCase
 
@@ -8,6 +9,7 @@ import boto3
 from requests import Session
 
 import helpers
+import testtools
 
 
 class TestIngestWorkflows(TestCase):
@@ -23,6 +25,8 @@ class TestIngestWorkflows(TestCase):
     API_URL: str = None
 
     def setUp(self) -> None:
+        print("Running setUp for tests.")
+
         # Pull from environ
         # ---
         TestIngestWorkflows.storage_bucket_name = os.environ[
@@ -118,13 +122,9 @@ class TestIngestWorkflows(TestCase):
             input=json.dumps(copy_to_glacier_input, indent=4),
         )
 
-        print(f"Step function execution info: {execution_info}")
-
         step_function_results = helpers.get_state_machine_execution_results(
             execution_info["executionArn"]
         )
-        print(f"Step function results: {step_function_results}")
-        print(f"Step function output: {step_function_results['output']}")
 
         self.assertEqual("SUCCEEDED", step_function_results["status"])
         self.assertEqual(expected_output, json.loads(step_function_results["output"]))
