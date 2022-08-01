@@ -1,0 +1,50 @@
+@startuml
+skinparam maxMessageSize 200
+
+
+title "Deep Archive Collection Manual Migration Workflow"
+
+actor Operator as operator
+participant "Cumulus Console" as cc
+participant "ORCA Bucket" as ob
+
+
+queue "Migration Queue" as mq
+participant "Database Update Service" as dus
+database "ORCA Catalog" as oc
+participant "Internal Reconciliation" as ir
+autonumber
+activate operator
+
+operator-[#green]> cc: Configure ORCA for Deep Archive for all collections
+note over operator,cc
+Changing to Deep Archive for all collections
+can be done by redeploying Cumulus and 
+setting the orca_default_storage_class 
+to DEEP_ARCHIVE
+end note
+operator-[#green]> ob: Change bucket lifecycle policy by setting transition_days = 0 and DEEP ARCHIVE as storage type
+activate ob
+ob-[#red]> ob: Files transitioned to DEEP ARCHIVE storage
+
+note over ob
+Migration to DEEP_ARCHIVE
+can take up to 48 hours.
+end note
+
+ob-[#green]> mq: Migrated files trigger a s3:LifecycleTransition action which sends a message to the migration queue
+deactivate ob
+activate mq
+dus-[#green]> mq: Retrieves messages of transition files
+deactivate mq
+activate dus
+dus-[#green]> oc: Updates the storage type for transitioned files to DEEP ARCHIVE
+activate oc
+oc--[#red]> dus: Returns update confirmation
+deactivate oc
+deactivate dus
+operator-[#green]> ir: Request for internal reconciliation mismatch report
+activate ir
+ir--[#red]> operator: Returns mismatch report
+deactivate ir
+operator-[#red]> operator: Analyze mismatch report for storage discrepancies and resolves them

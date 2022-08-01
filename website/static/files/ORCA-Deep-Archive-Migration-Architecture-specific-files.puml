@@ -1,0 +1,59 @@
+@startuml "Manual Process"
+title "ORCA Deep Archive Migration Architecture for Specific Collections"
+!define C4Puml https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master
+!include C4Puml/C4_Container.puml
+!include C4Puml/C4_Context.puml
+
+!include C4Puml/C4_Component.puml
+
+!define AWSPuml https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/v11.1/dist
+!include AWSPuml/AWSCommon.puml
+!include AWSPuml/Storage/all.puml
+!include AWSPuml/Database/all.puml
+!include AWSPuml/ApplicationIntegration/all.puml
+!include AWSPuml/Compute/Lambda.puml
+!include AWSPuml/Containers/all.puml
+
+
+AddElementTag("postgres", $sprite=AuroraPostgreSQLInstance, $legendText="Aurora PostgreSQL Serverless Instance")
+AddElementTag("sqs", $sprite=SimpleQueueService, $legendText="AWS SQS Instance")
+AddElementTag("s3", $sprite=SimpleStorageServiceBucket, $legendText="AWS S3 Instance")
+AddElementTag("lambda", $sprite=Lambda, $legendText="AWS Lambda Instance")
+
+SHOW_PERSON_OUTLINE()
+HIDE_STEREOTYPE()
+
+
+
+
+
+
+Person(operator, "LP DAAC Operator", "Operator initiates complete migration of data from glacier to deep archive.")
+
+System_Ext(CumulusDashboard, "Cumulus Console", "Cumulus UI that allows the operator to initiate migration")
+
+
+'Component(s3, "ORCA Glacier Bucket", "AWS S3", "ORCA versioned bucket where objects are stored as Flexible Retrieval (Glacier)", $tags="s3")
+
+'ComponentQueue(MigrationQueue, "Migration Queue", "AWS SQS", "Contains LifecycleTransition messages for each object", $tags="sqs")
+
+'Component(StorageUpdateLambda, "Migration Storage Update Service", "Python/Lambda", "Updates the database with transition storage type value", $tags="lambda")
+
+
+'ContainerDb(ORCAcatalog, "ORCA Catalog", "Aurora PostgreSQL Serverless", "Stores ORCA catalog information.", $tags="postgres")
+
+
+'Rel_D(operator,s3,"Configures lifecycle policy to transition to Deep Archive", "AWS Console")
+
+'Rel_R(s3,MigrationQueue,"Sends LifecycleTransition transition messages to")
+
+'Rel_L(StorageUpdateLambda,MigrationQueue,"Reads transitioned object messages", "boto3")
+'Rel_D(StorageUpdateLambda,ORCAcatalog,"Updates the storage class table", "libpq")
+
+
+' Setup the legend
+SHOW_LEGEND()
+LAYOUT_AS_SKETCH()
+
+
+@enduml
