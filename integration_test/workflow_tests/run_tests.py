@@ -1,4 +1,3 @@
-import os
 import unittest
 
 import testtools
@@ -16,7 +15,8 @@ class TracingStreamResult(testtools.StreamResult):
 
 def run_tests():
     suite = unittest.TestLoader().loadTestsFromTestCase(test_ingest_workflows.TestIngestWorkflows)
-    concurrent_suite = testtools.ConcurrentStreamTestSuite(lambda: ((case, None) for case in suite))
+    concurrent_suite = \
+        testtools.ConcurrentStreamTestSuite(lambda: ((case, None) for case in suite))
     result = TracingStreamResult()  # testtools.StreamResult()
     result.startTestRun()
     concurrent_suite.run(result)

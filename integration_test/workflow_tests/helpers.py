@@ -7,10 +7,10 @@ from typing import Callable, TypeVar
 import boto3
 from requests import Session
 from requests.adapters import (
-    HTTPAdapter,
-    DEFAULT_POOLSIZE,
     DEFAULT_POOLBLOCK,
+    DEFAULT_POOLSIZE,
     DEFAULT_RETRIES,
+    HTTPAdapter,
 )
 
 MAX_RETRIES = 3  # number of times to retry.
@@ -68,7 +68,8 @@ def retry_error(
                             + random.uniform(0, 1)  # nosec
                         )
                         print(
-                            f"Encountered Error on attempt {total_retries}. Sleeping {backoff_time} seconds.",
+                            f"Encountered Error on attempt {total_retries}. "
+                            f"Sleeping {backoff_time} seconds.",
                         )
                         time.sleep(backoff_time)
                         total_retries += 1
@@ -105,15 +106,15 @@ def get_state_machine_execution_results(
 def post_to_api(session: Session, api_invoke_url, data, headers=...):
     result = session.post(api_invoke_url, data=data, headers=headers)
     if result.status_code == 504:
-        raise Exception(f"API Gateway '{api_invoke_url}' timed out.")  # Raise to allow retry logic to catch
+        # Raise to allow retry logic to catch
+        raise Exception(f"API Gateway '{api_invoke_url}' timed out.")
     return result
 
 
 class DNSResolverHTTPSAdapter(HTTPAdapter):
     """
     client-side code to support application-specific DNS for the purpose of checking certificates
-    CommonName and SubjectAltName. The keyword argument you need in those calls is "assert_hostname".
-    Here's how to set it with the requests library
+    CommonName and SubjectAltName.
     """
 
     def __init__(

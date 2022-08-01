@@ -1,7 +1,6 @@
 import json
 import os
 import time
-import unittest
 import uuid
 from unittest import TestCase
 
@@ -9,7 +8,6 @@ import boto3
 from requests import Session
 
 import helpers
-import testtools
 
 
 class TestIngestWorkflows(TestCase):
@@ -43,7 +41,8 @@ class TestIngestWorkflows(TestCase):
         TestIngestWorkflows.AWS_API_NAME = orca_api_deployment_invoke_url.replace(
             "https://", ""
         )
-        TestIngestWorkflows.API_URL = f"https://{TestIngestWorkflows.AWS_API_NAME}:{TestIngestWorkflows.API_LOCAL_PORT}/orca"
+        TestIngestWorkflows.API_URL = \
+            f"https://{TestIngestWorkflows.AWS_API_NAME}:{TestIngestWorkflows.API_LOCAL_PORT}/orca"
         TestIngestWorkflows.MY_SESSION = Session()
         TestIngestWorkflows.MY_SESSION.mount(
             TestIngestWorkflows.API_URL,
@@ -112,7 +111,8 @@ class TestIngestWorkflows(TestCase):
                 "collectionShortname": "{$.meta.collection.name}",
                 "collectionVersion": "{$.meta.collection.version}",
                 "orcaDefaultBucketOverride": "{$.meta.collection.meta.orcaDefaultBucketOverride}",
-                "orcaDefaultStorageClassOverride": "{$.meta.collection.meta.orcaDefaultStorageClassOverride}",
+                "orcaDefaultStorageClassOverride":
+                    "{$.meta.collection.meta.orcaDefaultStorageClassOverride}",
             },
             "exception": "None",
         }
