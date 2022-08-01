@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" height="711px" preserveAspectRatio="none" style="width:2227px;height:711px;background:#FFFFFF;" version="1.1" viewBox="0 0 2227 711" width="2227px" zoomAndPan="magnify"><defs/><g><rect height="26.2969" id="_title" style="stroke:#00000000;stroke-width:1.0;fill:none;" width="429" x="898" y="10"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="419" x="903" y="27.9951">Deep Archive Collection Manual Migration Workflow</text><rect fill="#FFFFFF" height="477.125" style="stroke:#181818;stroke-width:1.0;" width="10" x="163" y="128.5938"/><rect fill="#FFFFFF" height="58.2656" style="stroke:#181818;stroke-width:1.0;" width="10" x="1431" y="314.3906"/><rect height="125.6641" style="stroke:#000000;stroke-width:1.5;fill:none;" width="2036" x="9" y="387.6563"/><line style="stroke:#181818;stroke-width:0.5;fill:none;stroke-dasharray:5.0,5.0;" x1="168" x2="168" y1="118.5938" y2="630.7188"/><line style="stroke:#181818;stroke-width:0.5;fill:none;stroke-dasharray:5.0,5.0;" x1="679" x2="679" y1="118.5938" y2="630.7188"/><line style="stroke:#181818;stroke-width:0.5;fill:none;stroke-dasharray:5.0,5.0;" x1="870" x2="870" y1="118.5938" y2="630.7188"/><line style="stroke:#181818;stroke-width:0.5;fill:none;stroke-dasharray:5.0,5.0;" x1="1094" x2="1094" y1="118.5938" y2="630.7188"/><line style="stroke:#181818;stroke-width:0.5;fill:none;stroke-dasharray:5.0,5.0;" x1="1435.5" x2="1435.5" y1="118.5938" y2="630.7188"/><line style="stroke:#181818;stroke-width:0.5;fill:none;stroke-dasharray:5.0,5.0;" x1="1836" x2="1836" y1="118.5938" y2="630.7188"/><line style="stroke:#181818;stroke-width:0.5;fill:none;stroke-dasharray:5.0,5.0;" x1="1966" x2="1966" y1="118.5938" y2="630.7188"/><line style="stroke:#181818;stroke-width:0.5;fill:none;stroke-dasharray:5.0,5.0;" x1="2133" x2="2133" y1="118.5938" y2="630.7188"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="64" x="133" y="115.292">operator</text><ellipse cx="168" cy="50.7969" fill="#E2E2F0" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/><path d="M168,58.7969 L168,85.7969 M155,66.7969 L181,66.7969 M168,85.7969 L155,100.7969 M168,85.7969 L181,100.7969 " fill="none" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="64" x="133" y="642.7139">operator</text><ellipse cx="168" cy="654.5156" fill="#E2E2F0" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/><path d="M168,662.5156 L168,689.5156 M155,670.5156 L181,670.5156 M168,689.5156 L155,704.5156 M168,689.5156 L181,704.5156 " fill="none" style="stroke:#181818;stroke-width:0.5;"/><rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="252" x="553" y="87.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="238" x="560" y="107.292">Migration Lifecycle Configuration</text><rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="252" x="553" y="629.7188"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="238" x="560" y="649.7139">Migration Lifecycle Configuration</text><rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="110" x="815" y="87.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="96" x="822" y="107.292">ORCA bucket</text><rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="110" x="815" y="629.7188"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="96" x="822" y="649.7139">ORCA bucket</text><rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="256" x="966" y="87.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="242" x="973" y="107.292">Transition Lifecycle Configuration</text><rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="256" x="966" y="629.7188"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="242" x="973" y="649.7139">Transition Lifecycle Configuration</text><path d="M1372.5,92.2969 L1499.5,92.2969 C1504.5,92.2969 1504.5,105.4453 1504.5,105.4453 C1504.5,105.4453 1504.5,118.5938 1499.5,118.5938 L1372.5,118.5938 C1367.5,118.5938 1367.5,105.4453 1367.5,105.4453 C1367.5,105.4453 1367.5,92.2969 1372.5,92.2969 " fill="#E2E2F0" style="stroke:#181818;stroke-width:0.5;"/><path d="M1499.5,92.2969 C1494.5,92.2969 1494.5,105.4453 1494.5,105.4453 C1494.5,118.5938 1499.5,118.5938 1499.5,118.5938 " fill="none" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="117" x="1372.5" y="110.292">migration queue</text><path d="M1372.5,629.7188 L1499.5,629.7188 C1504.5,629.7188 1504.5,642.8672 1504.5,642.8672 C1504.5,642.8672 1504.5,656.0156 1499.5,656.0156 L1372.5,656.0156 C1367.5,656.0156 1367.5,642.8672 1367.5,642.8672 C1367.5,642.8672 1367.5,629.7188 1372.5,629.7188 " fill="#E2E2F0" style="stroke:#181818;stroke-width:0.5;"/><path d="M1499.5,629.7188 C1494.5,629.7188 1494.5,642.8672 1494.5,642.8672 C1494.5,656.0156 1499.5,656.0156 1499.5,656.0156 " fill="none" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="117" x="1372.5" y="647.7139">migration queue</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="98" x="1784" y="115.292">ORCA catalog</text><path d="M1818,66.2969 C1818,56.2969 1836,56.2969 1836,56.2969 C1836,56.2969 1854,56.2969 1854,66.2969 L1854,92.2969 C1854,102.2969 1836,102.2969 1836,102.2969 C1836,102.2969 1818,102.2969 1818,92.2969 L1818,66.2969 " fill="#E2E2F0" style="stroke:#181818;stroke-width:1.5;"/><path d="M1818,66.2969 C1818,76.2969 1836,76.2969 1836,76.2969 C1836,76.2969 1854,76.2969 1854,66.2969 " fill="none" style="stroke:#181818;stroke-width:1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="98" x="1784" y="642.7139">ORCA catalog</text><path d="M1818,656.0156 C1818,646.0156 1836,646.0156 1836,646.0156 C1836,646.0156 1854,646.0156 1854,656.0156 L1854,682.0156 C1854,692.0156 1836,692.0156 1836,692.0156 C1836,692.0156 1818,692.0156 1818,682.0156 L1818,656.0156 " fill="#E2E2F0" style="stroke:#181818;stroke-width:1.5;"/><path d="M1818,656.0156 C1818,666.0156 1836,666.0156 1836,666.0156 C1836,666.0156 1854,666.0156 1854,656.0156 " fill="none" style="stroke:#181818;stroke-width:1.5;"/><rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="137" x="1898" y="87.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="123" x="1905" y="107.292">Migration Report</text><rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="137" x="1898" y="629.7188"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="123" x="1905" y="649.7139">Migration Report</text><rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="176" x="2045" y="87.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="162" x="2052" y="107.292">Internal Reconciliation</text><rect fill="#E2E2F0" height="30.2969" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="176" x="2045" y="629.7188"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="162" x="2052" y="649.7139">Internal Reconciliation</text><rect fill="#FFFFFF" height="477.125" style="stroke:#181818;stroke-width:1.0;" width="10" x="163" y="128.5938"/><rect fill="#FFFFFF" height="58.2656" style="stroke:#181818;stroke-width:1.0;" width="10" x="1431" y="314.3906"/><polygon fill="#008000" points="667,145.7266,677,149.7266,667,153.7266,671,149.7266" style="stroke:#008000;stroke-width:1.0;"/><line style="stroke:#008000;stroke-width:1.0;" x1="173" x2="673" y1="149.7266" y2="149.7266"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9" x="180" y="144.6606">1</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="215" x="193" y="144.6606">Runs with transition days set to 0</text><path d="M515,162.7266 L515,187.7266 L842,187.7266 L842,172.7266 L832,162.7266 L515,162.7266 " fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/><path d="M832,162.7266 L832,172.7266 L842,172.7266 L832,162.7266 " fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="302" x="521" y="179.7935">Migration to deep archive takes up to 48 hours.</text><polygon fill="#008000" points="858,209.9922,868,213.9922,858,217.9922,862,213.9922" style="stroke:#008000;stroke-width:1.0;"/><line style="stroke:#008000;stroke-width:1.0;" x1="679" x2="864" y1="213.9922" y2="213.9922"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9" x="686" y="208.9263">2</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="127" x="699" y="208.9263">starts the migration</text><line style="stroke:#FF0000;stroke-width:1.0;" x1="870" x2="912" y1="243.125" y2="243.125"/><line style="stroke:#FF0000;stroke-width:1.0;" x1="912" x2="912" y1="243.125" y2="256.125"/><line style="stroke:#FF0000;stroke-width:1.0;" x1="871" x2="912" y1="256.125" y2="256.125"/><polygon fill="#FF0000" points="881,252.125,871,256.125,881,260.125,877,256.125" style="stroke:#FF0000;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="8" x="877" y="238.0591">3</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="198" x="889" y="238.0591">files are stored in deep archive</text><polygon fill="#008000" points="1082,281.2578,1092,285.2578,1082,289.2578,1086,285.2578" style="stroke:#008000;stroke-width:1.0;"/><line style="stroke:#008000;stroke-width:1.0;" x1="870" x2="1088" y1="285.2578" y2="285.2578"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9" x="877" y="280.1919">4</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="49" x="890" y="280.1919">triggers</text><polygon fill="#008000" points="1419,310.3906,1429,314.3906,1419,318.3906,1423,314.3906" style="stroke:#008000;stroke-width:1.0;"/><line style="stroke:#008000;stroke-width:1.0;" x1="1094" x2="1425" y1="314.3906" y2="314.3906"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9" x="1101" y="309.3247">5</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="305" x="1114" y="309.3247">triggers once files are migrated to deep archive</text><polygon fill="#008000" points="1824,339.5234,1834,343.5234,1824,347.5234,1828,343.5234" style="stroke:#008000;stroke-width:1.0;"/><line style="stroke:#008000;stroke-width:1.0;" x1="1441" x2="1830" y1="343.5234" y2="343.5234"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9" x="1448" y="338.4575">6</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="358" x="1461" y="338.4575">updates status table with storage class as deep archive</text><polygon fill="#FF0000" points="1447,368.6563,1437,372.6563,1447,376.6563,1443,372.6563" style="stroke:#FF0000;stroke-width:1.0;"/><line style="stroke:#FF0000;stroke-width:1.0;" x1="1441" x2="1835" y1="372.6563" y2="372.6563"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9" x="1453" y="367.5903">7</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="241" x="1466" y="367.5903">returns confirmation of status update</text><path d="M9,387.6563 L87,387.6563 L87,394.7891 L77,404.7891 L9,404.7891 L9,387.6563 " fill="#EEEEEE" style="stroke:#000000;stroke-width:1.5;"/><rect fill="none" height="125.6641" style="stroke:#000000;stroke-width:1.5;" width="2036" x="9" y="387.6563"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="33" x="24" y="400.7231">loop</text><polygon fill="#008000" points="1954.5,421.9219,1964.5,425.9219,1954.5,429.9219,1958.5,425.9219" style="stroke:#008000;stroke-width:1.0;"/><line style="stroke:#008000;stroke-width:1.0;" x1="173" x2="1960.5" y1="425.9219" y2="425.9219"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9" x="180" y="420.856">8</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="163" x="193" y="420.856">requests by passing jobId</text><polygon fill="#FF0000" points="184,451.0547,174,455.0547,184,459.0547,180,455.0547" style="stroke:#FF0000;stroke-width:1.0;"/><line style="stroke:#FF0000;stroke-width:1.0;" x1="178" x2="1965.5" y1="455.0547" y2="455.0547"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="9" x="190" y="449.9888">9</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="178" x="203" y="449.9888">returns migration job status</text><path d="M19,468.0547 L19,508.0547 L316,508.0547 L316,478.0547 L306,468.0547 L19,468.0547 " fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/><path d="M306,468.0547 L306,478.0547 L316,478.0547 L306,468.0547 " fill="#FEFFDD" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="4" x="25" y="485.1216"> </text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="276" x="25" y="500.2544">Runs reports until job is in Completed state</text><polygon fill="#008000" points="2121,537.4531,2131,541.4531,2121,545.4531,2125,541.4531" style="stroke:#008000;stroke-width:1.0;"/><line style="stroke:#008000;stroke-width:1.0;" x1="173" x2="2127" y1="541.4531" y2="541.4531"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="19" x="180" y="536.3872">10</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="167" x="203" y="536.3872">requests mismatch report</text><polygon fill="#FF0000" points="184,566.5859,174,570.5859,184,574.5859,180,570.5859" style="stroke:#FF0000;stroke-width:1.0;"/><line style="stroke:#FF0000;stroke-width:1.0;" x1="178" x2="2132" y1="570.5859" y2="570.5859"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18" x="190" y="565.52">11</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="296" x="212" y="565.52">returns mismatch data based on storage type</text><line style="stroke:#FF0000;stroke-width:1.0;" x1="173" x2="215" y1="604.7188" y2="604.7188"/><line style="stroke:#FF0000;stroke-width:1.0;" x1="215" x2="215" y1="604.7188" y2="617.7188"/><line style="stroke:#FF0000;stroke-width:1.0;" x1="168" x2="215" y1="617.7188" y2="617.7188"/><polygon fill="#FF0000" points="178,613.7188,168,617.7188,178,621.7188,174,617.7188" style="stroke:#FF0000;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="18" x="180" y="599.6528">12</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="465" x="202" y="599.6528">analyzes mismatch reports for storage discrepancies and resolves them</text><!--MD5=[dac7d6fe40d0a2f0c197feebca5976c7]
+@startuml
+title "Deep Archive Collection Manual Migration Workflow"
+ 
+actor operator
+participant "Migration Lifecycle Configuration" as mlc
+participant "ORCA bucket" as ob
+
+participant "Transition Lifecycle Configuration" as tlc
+
+queue "migration queue" as mq
+database "ORCA catalog" as oc
+participant "Migration Report" as mr
+participant "Internal Reconciliation" as ir
+autonumber
+
+activate operator
+
+operator-[#green]> mlc: Runs with transition days set to 0
+
+note over mlc
+Migration to deep archive takes up to 48 hours. 
+end note
+
+mlc-[#green]> ob: starts the migration
+
+ob-[#red]>ob: files are stored in deep archive
+
+ob-[#green]> tlc: triggers
+
+tlc-[#green]> mq: triggers once files are migrated to deep archive
+
+activate mq
+mq-[#green]> oc: updates status table with storage class as deep archive
+
+oc-[#red]> mq: returns confirmation of status update
+deactivate mq
+loop
+operator -[#green]> mr: requests by passing jobId
+mr -[#red]> operator: returns migration job status
+note over operator
+
+Runs reports until job is in Completed state
+end note
+
+end
+
+operator-[#green]> ir: requests mismatch report
+ir-[#red]> operator: returns mismatch data based on storage type
+operator -[#red]> operator: analyzes mismatch reports for storage discrepancies and resolves them
+
+'
+deactivate operator
+@enduml
+
+@startuml
+title "Deep Archive Collection Manual Migration Workflow"
+ 
+actor operator
+participant "Migration Lifecycle Configuration" as mlc
+participant "ORCA bucket" as ob
+
+participant "Transition Lifecycle Configuration" as tlc
+
+queue "migration queue" as mq
+database "ORCA catalog" as oc
+participant "Migration Report" as mr
+participant "Internal Reconciliation" as ir
+autonumber
+
+activate operator
+
+operator-[#green]> mlc: Runs with transition days set to 0
+
+note over mlc
+Migration to deep archive takes up to 48 hours. 
+end note
+
+mlc-[#green]> ob: starts the migration
+
+ob-[#red]>ob: files are stored in deep archive
+
+ob-[#green]> tlc: triggers
+
+tlc-[#green]> mq: triggers once files are migrated to deep archive
+
+activate mq
+mq-[#green]> oc: updates status table with storage class as deep archive
+
+oc-[#red]> mq: returns confirmation of status update
+deactivate mq
+loop
+operator -[#green]> mr: requests by passing jobId
+mr -[#red]> operator: returns migration job status
+note over operator
+
+Runs reports until job is in Completed state
+end note
+
+end
+
+operator-[#green]> ir: requests mismatch report
+ir-[#red]> operator: returns mismatch data based on storage type
+operator -[#red]> operator: analyzes mismatch reports for storage discrepancies and resolves them
+
+deactivate operator
+@enduml
+
+PlantUML version 1.2022.7beta2(Unknown compile time)
+(GPL source distribution)
+Java Runtime: Java(TM) SE Runtime Environment
+JVM: Java HotSpot(TM) 64-Bit Server VM
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>

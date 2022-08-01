@@ -39,6 +39,8 @@ The steps for performing the migration are as follows:
 4. Validate internal reconciliation for mismatches in storage class.
 5. If no mismatch, disable/delete the lifecycle rules.
 
+See architecture and workflow section below for details.
+
 
 The following rule will move all objects with under prefix `tmp/` to DEEP ARCHIVE.
 
@@ -74,6 +76,7 @@ Migration should be a two step process- first retrieve the objects and then copy
 3. Once files are restored in the bucket, the bucket event notification for `ObjectRestore:Completed` action will trigger another lambda function that will copy the restored object to deep archive storage. In addition, this lambda should also notify end user on the copy progress as well as update the catalog status table for storage class. Services like SQS/SNS could be useful to track the migration progress. Note that the current existing restore workflow trigger should be disabled during the whole migration process to prevent triggering the `request_files` lambda and then re-enabled it migration is complete.
 Another option here is to update existing recovery lambdas to perform the above tasks instead of creating new lambda. Additional research is needed to choose the right option.
 
+See architecture and workflow section below for details.
 
 One option of bulk retrieval is to use python boto3 client for S3:
 
@@ -147,10 +150,10 @@ S3 batch operation can also be used in this case to perform the copying. For add
 
 ### Initial architecture design for migrating specific ORCA holdings to deep archive
 
-The following is an initial workflow and architecture for ORCA deep archive migration. Note that this could possibly change during implementation phase.
+The following is an initial workflow and architecture for ORCA deep archive migration for specific files. Note that this could possibly change during implementation phase.
 
 <MyImage
-    imageSource={useBaseUrl('img/Deep-Archive-Migration-workflow.svg')}
+    imageSource={useBaseUrl('img/Deep-Archive-Migration-workflow-specific-files.svg')}
     imageAlt="System Context"
     zoomInPic={useBaseUrl('img/zoom-in.png')}
     zoomOutPic={useBaseUrl('img/zoom-out.png')}
@@ -162,7 +165,7 @@ The following is an initial workflow and architecture for ORCA deep archive migr
 <br />
 
 <MyImage
-    imageSource={useBaseUrl('img/ORCA-Deep-Archive-Migration-Architecture.svg')}
+    imageSource={useBaseUrl('img/ORCA-Deep-Archive-Migration-Architecture-specific-files.svg')}
     imageAlt="System Context"
     zoomInPic={useBaseUrl('img/zoom-in.png')}
     zoomOutPic={useBaseUrl('img/zoom-out.png')}
@@ -172,6 +175,37 @@ The following is an initial workflow and architecture for ORCA deep archive migr
 <br />
 <br />
 <br />
+
+
+### Initial architecture design for migrating all ORCA holdings to deep archive manually
+
+The following is an initial workflow and architecture for ORCA deep archive migration for all files in the bucket. Note that this could possibly change during implementation phase.
+
+<MyImage
+    imageSource={useBaseUrl('img/Deep-Archive-Migration-workflow-manual.svg')}
+    imageAlt="System Context"
+    zoomInPic={useBaseUrl('img/zoom-in.png')}
+    zoomOutPic={useBaseUrl('img/zoom-out.png')}
+    resetPic={useBaseUrl('img/zoom-pan-reset.png')}
+/>
+
+<br />
+<br />
+<br />
+
+<MyImage
+    imageSource={useBaseUrl('img/ORCA-Deep-Archive-Migration-Architecture-manual.svg')}
+    imageAlt="System Context"
+    zoomInPic={useBaseUrl('img/zoom-in.png')}
+    zoomOutPic={useBaseUrl('img/zoom-out.png')}
+    resetPic={useBaseUrl('img/zoom-pan-reset.png')}
+/>
+
+<br />
+<br />
+<br />
+
+
 
 ### Cards created
 
