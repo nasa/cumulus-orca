@@ -68,12 +68,6 @@ check_rc $return_code "ERROR: pip install encountered an error."
 
 ## Check code formatting and styling
 echo "INFO: Checking formatting and style of code ..."
-echo "INFO: Checking lint rules ..."
-flake8 \
-    --max-line-length 99 \
-    *.py test
-check_rc $return_code "ERROR: Linting issues found."
-
 echo "INFO: Sorting imports ..."
 isort \
     --trailing-comma \
@@ -84,8 +78,16 @@ isort \
     -m 3 \
     *.py test
 
+
 echo "INFO: Formatting with black ..."
 black *.py test
+
+
+echo "INFO: Checking lint rules ..."
+flake8 \
+    --max-line-length 99 \
+    *.py test
+check_rc $return_code "ERROR: Linting issues found."
 
 
 ## Run code smell and security tests using bandit
