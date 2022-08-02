@@ -12,40 +12,46 @@ title "ORCA Deep Archive Migration Architecture for Specific Collections"
 !include AWSPuml/ApplicationIntegration/all.puml
 !include AWSPuml/Compute/Lambda.puml
 !include AWSPuml/Containers/Fargate.puml
+!include AWSPuml/ApplicationIntegration/APIGateway.puml
 
 AddElementTag("postgres", $sprite=AuroraPostgreSQLInstance, $legendText="Aurora PostgreSQL Serverless Instance")
 AddElementTag("sqs", $sprite=SimpleQueueService, $legendText="AWS SQS Instance")
 AddElementTag("s3", $sprite=SimpleStorageServiceBucket, $legendText="AWS S3 Instance")
 AddElementTag("lambda", $sprite=Lambda, $legendText="AWS Lambda Instance")
 AddElementTag("fargate", $sprite=Fargate, $legendText="AWS Fargate")
+AddElementTag("APIGateway", $sprite=Fargate, $legendText="AWS API Gateway")
 SHOW_PERSON_OUTLINE()
 HIDE_STEREOTYPE()
 
 
 
-
-
-
 Person(operator, "LP DAAC Operator", "Operator initiates complete migration of data from glacier to deep archive.")
 System_Ext(CumulusDashboard, "Cumulus Console", "Cumulus UI that allows the operator to initiate migration")
-Component(RecoveryLambda, "File Recovery Service", "Python/Lambda/Fargate", "Performs Bulk retrieval of objects in the bucket and updates migration job status in ORCA catalog", $tags="fargate")
-Component(s3, "ORCA Glacier Bucket", "AWS S3", "ORCA versioned bucket where objects are stored as Flexible Retrieval (Glacier)", $tags="s3")
-Component(StorageUpdateLambda, "Migration Storage Update Service", "Python/Lambda", "Copies files to Deep Archive in the bucket and also updates the database with transition storage type value", $tags="lambda")
+Component(RecoveryLambda, "File Recovery Service", "Python/Lambda/Fargate", "Performs Bulk retrieval of objects in the bucket and creates and updates migration job status in ORCA catalog.", $tags="fargate")
+Component(s3, "ORCA Glacier Bucket", "AWS S3", "ORCA versioned bucket where objects are stored", $tags="s3")
+Component(StorageUpdateLambda, "Migration Storage Update Service", "Python/Lambda", "Copies files to Deep Archive in the bucket and also updates the database with DEEP ARCHIVE storage type value", $tags="lambda")
 ContainerDb(ORCAcatalog, "ORCA Catalog", "Aurora PostgreSQL Serverless", "Stores ORCA catalog information.", $tags="postgres")
-ComponentQueue(MigrationQueue, "Migration Queue", "AWS SQS", "Notify message that files have been restored are sent to queue", $tags="sqs")
+ComponentQueue(MigrationQueue, "Migration Queue", "AWS SQS", "Notify messages that files have been restored", $tags="sqs")
+ComponentQueue(DLQMigrationQueue, "Migration Dead Letter Queue", "AWS SQS", "Failed notify messages that need to be investigated", $tags="sqs")
+
 Component(MigrationReportLambda, "Migration Report Service", "Python/Lambda", "Creates the migration report for the operator", $tags="lambda")
+Component(orcaAPI, "ORCA API Endpoint", "AWS API Gateway", "Serves as an endpoint for the operator", $tags="APIGateway")
 
 
-Rel_R(operator,CumulusDashboard,"Initites migration by configuring ORCA for Deep Archive in the collection")
-Rel_R(CumulusDashboard,RecoveryLambda,"Calls with collectionId", "Cumulus API")
+Rel_L(operator,CumulusDashboard,"Configures collection storage types and initiates migration for collection")
+Rel_D(CumulusDashboard,RecoveryLambda,"Calls with collectionId", "Cumulus API")
 Rel_D(RecoveryLambda,s3,"Performs bulk retrieval of the files", "boto3")
-Rel_R(RecoveryLambda,ORCAcatalog,"Updates migration job status", "libpq")
-Rel_D(s3,MigrationQueue,"Notify message that files have been restored", "boto3")
-Rel_R(MigrationQueue,StorageUpdateLambda, "triggers", "S3 event notification")
-Rel_R(StorageUpdateLambda,s3, "Copies files to Deep Archive", "boto3")
+Rel_R(RecoveryLambda,ORCAcatalog,"Retrieves files to migrate and creates and updates migration job status", "libpq")
+Rel_D(s3,MigrationQueue,"Notify message that files have been restored")
+Rel_R(MigrationQueue,DLQMigrationQueue,"Failed messages sent to")
+
+Rel_R(StorageUpdateLambda, MigrationQueue, "Reads messages from", "boto3")
+Rel_L(StorageUpdateLambda,s3, "Copies files to Deep Archive", "boto3")
 Rel_R(StorageUpdateLambda,ORCAcatalog, "Updates the file storage type and migration status", "libpq")
-Rel_D(MigrationReportLambda,MigrationQueue, "Reads message for restored files", "boto3")
-Rel(operator, MigrationReportLambda, "Requests migration status", "AWS Console")
+Rel_D(MigrationReportLambda,ORCAcatalog, "Reads migration job status for restored files", "libpq")
+Rel_R(operator, orcaAPI, "Requests migration status via jobId", "https")
+
+Rel_D(orcaAPI, MigrationReportLambda, "Calls migration report service")
 
 
 ' Setup the legend
