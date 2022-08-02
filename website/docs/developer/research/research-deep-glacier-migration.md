@@ -8,7 +8,7 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 
 ## Overview
 
-The goal of this research is to provide an initial design and recommendation for migrating a customer's ORCA Flexible Retrieval (formerly Glacier) archive to DEEP ARCHIVE storage class. Deep archive S3 storage type is the cheapest glacier storage type currently present in AWS S3. For archive data that does not require immediate access such as backup or disaster recovery use cases, choosing `Deep Archive Access` tier could be a wise choice.
+The goal of this research is to provide an initial design and recommendation for migrating a customer's ORCA Flexible Retrieval (formerly Glacier) archive to Deep Archive storage class. Deep archive S3 storage type is the cheapest glacier storage type currently present in AWS S3. For archive data that does not require immediate access such as backup or disaster recovery use cases, choosing `Deep Archive Access` tier could be a wise choice.
 - Storage cost is ~$1/TB data per month. 
 - Objects in the Deep Archive Access tier can be restored to the Frequent Access tier within 12-48 hours depending on the recovery type. Once the object is in the Frequent Access tier, users can send a GET request to retrieve the object. Like Flexible retrieval, the restored file is only available in frequent access for a configured number of days. For more information on retrieving objects from Flexible and Deep Archive storage, see the [documentation](See https://docs.amazonaws.cn/en_us/AmazonS3/latest/userguide/restoring-objects-retrieval-options.html
 ).
@@ -22,11 +22,13 @@ The goal of this research is to provide an initial design and recommendation for
 
 ### Use Cases
 
-A user might want to 
-- convert all the holdings or holdings with a known key prefix to DEEP ARCHIVE.
-- convert specific collection or granules to DEEP ARCHIVE which might not have the same prefix.
+Based on the discussion with ORCA team, we came up with two use cases that the end user might be interested in:
+- Convert all the holdings or holdings with a known key prefix from Flexible Retrieval(formerly Glacier) to Deep Archive.
+- Convert specific collection or granules from Flexible Retrieval(formerly Glacier) to Deep Archive.
 
-### Implementation idea for migrating all ORCA holdings to deep archive.
+The details of each use cases and relevant architecture drawings can be found in the next sections.
+
+### Migrating all ORCA holdings to deep archive.
 
 This should be a manual step performed by the end user.
 
@@ -34,15 +36,40 @@ The steps for performing the migration are as follows:
 1. Run the lifecycle configuration with transition_days = 0 as shown in the terraform code example below.
 2. Wait 48 hours for all objects to migrate to deep archive.
 3. There are two approaches to this
-  - run a temporary lambda function that updates the catalog status table for storage class to deep archive.
-  - (Recommended) Have a lifecycle rule applied to the glacier bucket that will trigger a lambda function for every `s3:LifecycleTransition` event in the bucket. This lambda will automatically update the ORCA catalog status table for storage class to deep archive.
+    - run a temporary lambda function that updates the catalog status table for storage class to deep archive.
+    - (Recommended) Have a lifecycle rule applied to the glacier bucket that will trigger a lambda function for every `s3:LifecycleTransition` event in the bucket. This lambda will automatically update the ORCA catalog status table for storage class to deep archive.
 4. Validate internal reconciliation for mismatches in storage class.
 5. If no mismatch, disable/delete the lifecycle rules.
 
-See architecture and workflow section below for details.
+The following is an initial workflow and architecture drawing for ORCA deep archive migration for all files in the bucket. Note that this could possibly change during implementation phase.
+
+<MyImage
+    imageSource={useBaseUrl('img/Deep-Archive-Migration-workflow-manual.svg')}
+    imageAlt="System Context"
+    zoomInPic={useBaseUrl('img/zoom-in.png')}
+    zoomOutPic={useBaseUrl('img/zoom-out.png')}
+    resetPic={useBaseUrl('img/zoom-pan-reset.png')}
+/>
+
+<br />
+<br />
+<br />
+
+<MyImage
+    imageSource={useBaseUrl('img/ORCA-Deep-Archive-Migration-Architecture-manual.svg')}
+    imageAlt="System Context"
+    zoomInPic={useBaseUrl('img/zoom-in.png')}
+    zoomOutPic={useBaseUrl('img/zoom-out.png')}
+    resetPic={useBaseUrl('img/zoom-pan-reset.png')}
+/>
+
+<br />
+<br />
+<br />
 
 
-The following rule will move all objects with under prefix `tmp/` to DEEP ARCHIVE.
+
+The following S3 lifecycle rule will move all objects with under prefix `tmp/` to Deep Archive. For more information on S3 lifecycle policy, see this terraform [documentation](https://registry.terraform.io/providers/PixarV/ritt/latest/docs/resources/s3_bucket_lifecycle_configuration).
 
 ```teraform
 resource "aws_s3_bucket_lifecycle_configuration" "bucket-config" {
@@ -63,20 +90,46 @@ resource "aws_s3_bucket_lifecycle_configuration" "bucket-config" {
 
 ```
 :::tip
-To migrate to a different storage class, change `storage_class` under transition block to the desired class in the terraform code above.
+To migrate to a different storage class if needed, change `storage_class` under transition block to the desired class in the terraform code above.
 :::
 
-### Implementation idea for migrating specific ORCA holdings to deep archive.
+### Migrating specific ORCA holdings to deep archive.
 
 S3 lifecycle rule will not work in this case. 
 Migration should be a two step process- first retrieve the objects and then copy the objects to deep archive.
 
-1. User inputs a list of granuleId/collectionId or a combination of both via Cumulus console or API call.
-2. This api should trigger a lambda function, Fargate or even S3 batch operations that queries the ORCA catalog and retrives the files via `Bulk Retrieval` and copies the objects to the glacier bucket as versioned object. The technology used should depend upon the number of bulk requests made. Bulk retrievals are typically completed within 5–12 hours. The prices are lowest among all retrieval rates - $0.025 per 1,000 requests.
-3. Once files are restored in the bucket, the bucket event notification for `ObjectRestore:Completed` action will trigger another lambda function that will copy the restored object to deep archive storage. In addition, this lambda should also notify end user on the copy progress as well as update the catalog status table for storage class. Services like SQS/SNS could be useful to track the migration progress. Note that the current existing restore workflow trigger should be disabled during the whole migration process to prevent triggering the `request_files` lambda and then re-enabled it migration is complete.
+1. User inputs a list of granuleId/collectionId or a combination of both via Cumulus console/API call.
+2. This API should trigger a lambda function, Fargate or even S3 batch operations that queries the ORCA catalog and retrives the files via `Bulk Retrieval` and copies the objects to the glacier bucket as versioned object. In addition, it should also create and update the migration job status in the ORCA catalog. The technology used should depend upon the number of bulk requests made. If amount of bulk requests is large, then lambda function might throw timeout errors. In this case, S3 batch operations or Fargate could be a better alternative. Additional research is needed on this. 
+<br />
+Bulk retrievals are typically completed within 5–12 hours. The prices are lowest among all retrieval rates - $0.025 per 1,000 requests.
+3. Once files are restored in the bucket, the bucket event notification for `ObjectRestore:Completed` action will trigger a lambda function that will copy the restored object to deep archive storage. In addition, this lambda should also update the ORCA catalog with `Deep Archive` storage type value. Note that the current existing restore workflow trigger should be disabled during the whole migration process to prevent triggering the `request_files` lambda and then re-enabled it migration is complete.
 Another option here is to update existing recovery lambdas to perform the above tasks instead of creating new lambda. Additional research is needed to choose the right option.
 
-See architecture and workflow section below for details.
+The following is an initial workflow and architecture for ORCA deep archive migration for specific files. Note that this could possibly change during implementation phase.
+
+<MyImage
+    imageSource={useBaseUrl('img/Deep-Archive-Migration-workflow-specific-files.svg')}
+    imageAlt="System Context"
+    zoomInPic={useBaseUrl('img/zoom-in.png')}
+    zoomOutPic={useBaseUrl('img/zoom-out.png')}
+    resetPic={useBaseUrl('img/zoom-pan-reset.png')}
+/>
+
+<br />
+<br />
+<br />
+
+<MyImage
+    imageSource={useBaseUrl('img/ORCA-Deep-Archive-Migration-Architecture-specific-files.svg')}
+    imageAlt="System Context"
+    zoomInPic={useBaseUrl('img/zoom-in.png')}
+    zoomOutPic={useBaseUrl('img/zoom-out.png')}
+    resetPic={useBaseUrl('img/zoom-pan-reset.png')}
+/>
+
+<br />
+<br />
+<br />
 
 One option of bulk retrieval is to use python boto3 client for S3:
 
@@ -148,72 +201,18 @@ copy succeeded for object test2.xml having E tag "14694ab9e3089a7c29e0dc9add4a82
 S3 batch operation can also be used in this case to perform the copying. For additional information, see https://docs.aws.amazon.com/AmazonS3/latest/userguide/batch-ops-copy-object.html.
 
 
-### Initial architecture design for migrating specific ORCA holdings to deep archive
-
-The following is an initial workflow and architecture for ORCA deep archive migration for specific files. Note that this could possibly change during implementation phase.
-
-<MyImage
-    imageSource={useBaseUrl('img/Deep-Archive-Migration-workflow-specific-files.svg')}
-    imageAlt="System Context"
-    zoomInPic={useBaseUrl('img/zoom-in.png')}
-    zoomOutPic={useBaseUrl('img/zoom-out.png')}
-    resetPic={useBaseUrl('img/zoom-pan-reset.png')}
-/>
-
-<br />
-<br />
-<br />
-
-<MyImage
-    imageSource={useBaseUrl('img/ORCA-Deep-Archive-Migration-Architecture-specific-files.svg')}
-    imageAlt="System Context"
-    zoomInPic={useBaseUrl('img/zoom-in.png')}
-    zoomOutPic={useBaseUrl('img/zoom-out.png')}
-    resetPic={useBaseUrl('img/zoom-pan-reset.png')}
-/>
-
-<br />
-<br />
-<br />
-
-
-### Initial architecture design for migrating all ORCA holdings to deep archive manually
-
-The following is an initial workflow and architecture for ORCA deep archive migration for all files in the bucket. Note that this could possibly change during implementation phase.
-
-<MyImage
-    imageSource={useBaseUrl('img/Deep-Archive-Migration-workflow-manual.svg')}
-    imageAlt="System Context"
-    zoomInPic={useBaseUrl('img/zoom-in.png')}
-    zoomOutPic={useBaseUrl('img/zoom-out.png')}
-    resetPic={useBaseUrl('img/zoom-pan-reset.png')}
-/>
-
-<br />
-<br />
-<br />
-
-<MyImage
-    imageSource={useBaseUrl('img/ORCA-Deep-Archive-Migration-Architecture-manual.svg')}
-    imageAlt="System Context"
-    zoomInPic={useBaseUrl('img/zoom-in.png')}
-    zoomOutPic={useBaseUrl('img/zoom-out.png')}
-    resetPic={useBaseUrl('img/zoom-pan-reset.png')}
-/>
-
-<br />
-<br />
-<br />
-
-
-
 ### Cards created
 
-- [Research task on S3 batch operations for copying objects](https://bugs.earthdata.nasa.gov/browse/ORCA-504)
-- [Research how to notify end users on completion of specific object restore from glacier](https://bugs.earthdata.nasa.gov/browse/ORCA-499)
-- [Implement lambda function for retrieving objects from glacier flexible retrieval](https://bugs.earthdata.nasa.gov/browse/ORCA-500)
-- [Implement lambda function for copying existing S3 objects to DEEP ARCHIVE storage](https://bugs.earthdata.nasa.gov/browse/ORCA-501)
-- [Update ORCA catalog records for files migrated to deep archive storage](https://bugs.earthdata.nasa.gov/browse/ORCA-503)
+- [Update ORCA glacier bucket lifecycle rule to transition to Deep Archive](https://bugs.earthdata.nasa.gov/browse/ORCA-499)
+- [Implement S3 event notification in ORCA glacier bucket for s3:LifecycleTransition](https://bugs.earthdata.nasa.gov/browse/ORCA-500)
+- [Implement lambda function for updating ORCA catalog with Deep Archive storage value in the table](https://bugs.earthdata.nasa.gov/browse/ORCA-501)
+- [Research task on S3 batch operations for copying and retrieving objects from glacier bucket](https://bugs.earthdata.nasa.gov/browse/ORCA-502)
+- [Research task on choosing best option for File recovery and copy service in Deep Archive migration for specific collections](https://bugs.earthdata.nasa.gov/browse/ORCA-503)
+- [Implement File recovery service for deep archive](https://bugs.earthdata.nasa.gov/browse/ORCA-504)
+- [Implement lambda function or batch operation for copying files to deep archive in S3 and updating the catalog](https://bugs.earthdata.nasa.gov/browse/ORCA-506)
+- [Create SQS and dead letter queue for Deep Archive Migration for specific collections](https://bugs.earthdata.nasa.gov/browse/ORCA-507)
+- [Implement lambda function for creating migration report queue for Deep archive migration for specific collections](https://bugs.earthdata.nasa.gov/browse/ORCA-508)
+- [Create API gateway endpoint for migration report lambda for deep archive migration](https://bugs.earthdata.nasa.gov/browse/ORCA-509)
 
 
 #### Sources
@@ -224,3 +223,4 @@ The following is an initial workflow and architecture for ORCA deep archive migr
 - https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html?highlight=delete#S3.Client.delete_object
 - https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.restore_object
 - https://docs.aws.amazon.com/AmazonS3/latest/userguide/lifecycle-transition-general-considerations.html
+- https://github.com/awslabs/aws-icons-for-plantum
