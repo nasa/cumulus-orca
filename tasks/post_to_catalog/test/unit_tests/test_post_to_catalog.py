@@ -10,7 +10,7 @@ import random
 import unittest
 import uuid
 from datetime import datetime, timezone
-from unittest.mock import Mock, call, patch, MagicMock
+from unittest.mock import MagicMock, Mock, call, patch
 
 import fastjsonschema
 
@@ -100,7 +100,7 @@ class TestPostToDatabase(
                     "cumulusArchiveLocation": uuid.uuid4().__str__(),
                     "orcaArchiveLocation": uuid.uuid4().__str__(),
                     "keyPath": uuid.uuid4().__str__(),
-                    "sizeInBytes": random.randint(0, 10000),
+                    "sizeInBytes": random.randint(0, 10000),  # nosec
                     "hash": uuid.uuid4().__str__(),
                     "hashType": uuid.uuid4().__str__(),
                     "storageClass": "GLACIER",
@@ -113,7 +113,7 @@ class TestPostToDatabase(
                     "cumulusArchiveLocation": uuid.uuid4().__str__(),
                     "orcaArchiveLocation": uuid.uuid4().__str__(),
                     "keyPath": uuid.uuid4().__str__(),
-                    "sizeInBytes": random.randint(0, 10000),
+                    "sizeInBytes": random.randint(0, 10000),  # nosec
                     "hash": None,
                     "hashType": None,
                     "storageClass": "DEEP_ARCHIVE",
@@ -204,7 +204,7 @@ class TestPostToDatabase(
             "cumulusArchiveLocation": uuid.uuid4().__str__(),
             "orcaArchiveLocation": uuid.uuid4().__str__(),
             "keyPath": uuid.uuid4().__str__(),
-            "sizeInBytes": random.randint(0, 10000),
+            "sizeInBytes": random.randint(0, 10000),  # nosec
             "hash": uuid.uuid4().__str__(),
             "hashType": uuid.uuid4().__str__(),
             "storageClass": uuid.uuid4().__str__(),
@@ -217,7 +217,7 @@ class TestPostToDatabase(
             "cumulusArchiveLocation": uuid.uuid4().__str__(),
             "orcaArchiveLocation": uuid.uuid4().__str__(),
             "keyPath": uuid.uuid4().__str__(),
-            "sizeInBytes": random.randint(0, 10000),
+            "sizeInBytes": random.randint(0, 10000),  # nosec
             "hash": None,
             "hashType": None,
             "storageClass": uuid.uuid4().__str__(),
@@ -234,7 +234,7 @@ class TestPostToDatabase(
             "files": [file0, file1],
         }
 
-        internal_id = random.randint(0, 10000)
+        internal_id = random.randint(0, 10000)  # nosec
         mock_engine = Mock()
         mock_engine.begin.return_value = Mock()
         mock_connection = Mock()

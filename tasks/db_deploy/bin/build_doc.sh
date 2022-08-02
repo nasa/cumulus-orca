@@ -16,7 +16,7 @@
 ## =============================================================================
 
 ## Set this for Debugging only
-#set -x
+#set -ex
 
 ## Make sure we are calling the script the correct way.
 BASEDIR=$(dirname $0)
@@ -90,6 +90,7 @@ done
 
 echo "INFO: Creating API markdown file ..."
 ## Run the documentation command
+echo "INFO: Creating API documentation ..."
 pydoc-markdown -I . ${module_list} --render-toc > API.md
 let return_code=$?
 

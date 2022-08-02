@@ -66,15 +66,8 @@ let return_code=$?
 
 check_rc $return_code "ERROR: pip install encountered an error."
 
-
 ## Check code formatting and styling
 echo "INFO: Checking formatting and style of code ..."
-echo "INFO: Checking lint rules ..."
-flake8 \
-    --max-line-length 99 \
-    internal_reconcile_report_phantom.py test
-check_rc $return_code "ERROR: Linting issues found."
-
 echo "INFO: Sorting imports ..."
 isort \
     --trailing-comma \
@@ -83,15 +76,23 @@ isort \
     --use-parentheses \
     --force-grid-wrap 0 \
     -m 3 \
-    internal_reconcile_report_phantom.py test
+    *.py test
+
 
 echo "INFO: Formatting with black ..."
-black internal_reconcile_report_phantom.py test
+black *.py test
+
+
+echo "INFO: Checking lint rules ..."
+flake8 \
+    --max-line-length 99 \
+    *.py test
+check_rc $return_code "ERROR: Linting issues found."
 
 
 ## Run code smell and security tests using bandit
 echo "INFO: Running code smell security tests ..."
-bandit -r internal_reconcile_report_phantom.py test
+bandit -r *.py test
 let return_code=$?
 check_rc $return_code "ERROR: Potential security or code issues found."
 
@@ -115,6 +116,7 @@ check_rc $return_code "ERROR: Unit tests encountered failures."
 coverage report 
 let return_code=$?
 check_rc $return_code "ERROR: Unit tests coverage is less than 80%"
+
 
 ## Deactivate and remove the virtual env
 echo "INFO: Cleaning up the environment ..."

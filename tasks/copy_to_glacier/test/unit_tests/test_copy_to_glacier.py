@@ -3,16 +3,16 @@ import json
 import random
 import unittest
 import uuid
+from test.helpers import LambdaContextMock
+from test.unit_tests.ConfigCheck import ConfigCheck
 from unittest import TestCase
-from unittest.mock import MagicMock, Mock, call, patch, ANY
+from unittest.mock import ANY, MagicMock, Mock, call, patch
 
 import fastjsonschema as fastjsonschema
 from moto import mock_sqs
 
 import copy_to_glacier
 from copy_to_glacier import *
-from test.helpers import LambdaContextMock
-from test.unit_tests.ConfigCheck import ConfigCheck
 
 # Generating schema validators can take time, so do it once and reuse.
 with open("schemas/output.json", "r") as raw_schema:
@@ -112,7 +112,7 @@ class TestCopyToGlacierHandler(TestCase):
                 "granuleId": uuid.uuid4().__str__(),
                 "dataType": uuid.uuid4().__str__(),
                 "version": uuid.uuid4().__str__(),
-                "createdAt": random.randint(0, 628021800000),
+                "createdAt": random.randint(0, 628021800000),  # nosec
                 "files": [
                     {
                         copy_to_glacier.FILE_BUCKET_KEY: uuid.uuid4().__str__(),
@@ -436,7 +436,7 @@ class TestCopyToGlacierHandler(TestCase):
                     "granuleId": "MOD09GQ.A2017025.h21v00.006.2017034065109",
                     "dataType": "MOD09GQ",
                     "version": "006",
-                    "createdAt": random.randint(0, 628021800000),
+                    "createdAt": random.randint(0, 628021800000),  # nosec
                     "files": [
                         {
                             "path": "MOD09GQ/006",
@@ -456,7 +456,7 @@ class TestCopyToGlacierHandler(TestCase):
                     "granuleId": "MOD09GQ.A208885.h21v00.006.2017034065108",
                     "dataType": "MOD09GQ",
                     "version": "008",
-                    "createdAt": random.randint(0, 628021800000),
+                    "createdAt": random.randint(0, 628021800000),  # nosec
                     "files": [
                         {
                             "path": "MOD09GQ/006",
