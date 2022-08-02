@@ -6,7 +6,7 @@ Description:  Pulls entries from a queue and posts them to a DB.
 import json
 import os
 from datetime import datetime, timezone
-from typing import Any, List, Dict, Union
+from typing import Any, Dict, List, Union
 
 # noinspection SpellCheckingInspection
 import fastjsonschema as fastjsonschema

@@ -6,17 +6,16 @@ Description:  Pulls entries from a queue and posts them to a DB.
 import datetime
 import json
 import os
-from typing import Any, List, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 # noinspection SpellCheckingInspection
 import fastjsonschema as fastjsonschema
 from cumulus_logger import CumulusLogger
+from orca_shared.database import shared_db
+from orca_shared.recovery import shared_recovery
+from orca_shared.recovery.shared_recovery import OrcaStatus, RequestMethod
 from sqlalchemy import text
 from sqlalchemy.future import Engine
-
-from orca_shared.database import shared_db
-from orca_shared.recovery.shared_recovery import RequestMethod, OrcaStatus
-from orca_shared.recovery import shared_recovery
 
 LOGGER = CumulusLogger()
 # Generating schema validators can take time, so do it once and reuse.
@@ -315,7 +314,7 @@ def handler(event: Dict[str, List], context) -> None:
                 'messageAttributes' (Dict): A dict with the following keys defined in the functions that write to queue.
                     'RequestMethod' (str): Matches to a shared_recovery.RequestMethod.
         context: An object passed through by AWS. Used for tracking.
-    Environment Vars: 
+    Environment Vars:
         DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
         See shared_db.py's get_configuration for further details.
     """
@@ -325,9 +324,7 @@ def handler(event: Dict[str, List], context) -> None:
     try:
         db_connect_info_secret_arn = os.environ["DB_CONNECT_INFO_SECRET_ARN"]
     except KeyError as key_error:
-        LOGGER.error(
-            "DB_CONNECT_INFO_SECRET_ARN environment value not found."
-        )
+        LOGGER.error("DB_CONNECT_INFO_SECRET_ARN environment value not found.")
         raise
     db_connect_info = shared_db.get_configuration(db_connect_info_secret_arn)
 

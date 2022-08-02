@@ -17,7 +17,7 @@
 ## =============================================================================
 
 ## Set this for Debugging only
-#set -x
+#set -ex
 
 ## Make sure we are calling the script the correct way.
 BASEDIR=$(dirname $0)
@@ -67,16 +67,8 @@ let return_code=$?
 
 check_rc $return_code "ERROR: pip install encountered an error."
 
-
 ## Check code formatting and styling
 echo "INFO: Checking formatting and style of code ..."
-echo "INFO: Checking lint rules ..."
-flake8 \
-    --max-line-length 99 \
-    --extend-ignore E203 \
-    orca_shared
-check_rc $return_code "ERROR: Linting issues found."
-
 echo "INFO: Sorting imports ..."
 isort \
     --trailing-comma \
@@ -87,8 +79,17 @@ isort \
     -m 3 \
     orca_shared
 
+
 echo "INFO: Formatting with black ..."
 black orca_shared
+
+
+echo "INFO: Checking lint rules ..."
+flake8 \
+    --max-line-length 99 \
+    --extend-ignore E203 \
+    orca_shared
+check_rc $return_code "ERROR: Linting issues found."
 
 
 ## Run code smell and security tests using bandit

@@ -16,7 +16,7 @@
 ## =============================================================================
 
 ## Set this for Debugging only
-#set -x
+#set -ex
 
 ## Make sure we are calling the script the correct way.
 BASEDIR=$(dirname $0)
@@ -67,6 +67,7 @@ let return_code=$?
 check_rc $return_code "ERROR: pip install encountered an error."
 
 ## Run the documentation command
+echo "INFO: Creating API documentation ..."
 pydoc-markdown -I . -m internal_reconcile_report_phantom --render-toc > API.md
 let return_code=$?
 
