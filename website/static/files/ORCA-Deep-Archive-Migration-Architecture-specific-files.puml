@@ -1,9 +1,8 @@
-@startuml "Manual Process"
+@startuml
 title "ORCA Deep Archive Migration Architecture for Specific Collections"
 !define C4Puml https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master
 !include C4Puml/C4_Container.puml
 !include C4Puml/C4_Context.puml
-
 !include C4Puml/C4_Component.puml
 
 !define AWSPuml https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/v11.1/dist
@@ -12,14 +11,13 @@ title "ORCA Deep Archive Migration Architecture for Specific Collections"
 !include AWSPuml/Database/all.puml
 !include AWSPuml/ApplicationIntegration/all.puml
 !include AWSPuml/Compute/Lambda.puml
-!include AWSPuml/Containers/all.puml
-
+!include AWSPuml/Containers/Fargate.puml
 
 AddElementTag("postgres", $sprite=AuroraPostgreSQLInstance, $legendText="Aurora PostgreSQL Serverless Instance")
 AddElementTag("sqs", $sprite=SimpleQueueService, $legendText="AWS SQS Instance")
 AddElementTag("s3", $sprite=SimpleStorageServiceBucket, $legendText="AWS S3 Instance")
 AddElementTag("lambda", $sprite=Lambda, $legendText="AWS Lambda Instance")
-
+AddElementTag("fargate", $sprite=Fargate, $legendText="AWS Fargate")
 SHOW_PERSON_OUTLINE()
 HIDE_STEREOTYPE()
 
@@ -29,26 +27,25 @@ HIDE_STEREOTYPE()
 
 
 Person(operator, "LP DAAC Operator", "Operator initiates complete migration of data from glacier to deep archive.")
-
 System_Ext(CumulusDashboard, "Cumulus Console", "Cumulus UI that allows the operator to initiate migration")
+Component(RecoveryLambda, "File Recovery Service", "Python/Lambda/Fargate", "Performs Bulk retrieval of objects in the bucket and updates migration job status in ORCA catalog", $tags="fargate")
+Component(s3, "ORCA Glacier Bucket", "AWS S3", "ORCA versioned bucket where objects are stored as Flexible Retrieval (Glacier)", $tags="s3")
+Component(StorageUpdateLambda, "Migration Storage Update Service", "Python/Lambda", "Copies files to Deep Archive in the bucket and also updates the database with transition storage type value", $tags="lambda")
+ContainerDb(ORCAcatalog, "ORCA Catalog", "Aurora PostgreSQL Serverless", "Stores ORCA catalog information.", $tags="postgres")
+ComponentQueue(MigrationQueue, "Migration Queue", "AWS SQS", "Notify message that files have been restored are sent to queue", $tags="sqs")
+Component(MigrationReportLambda, "Migration Report Service", "Python/Lambda", "Creates the migration report for the operator", $tags="lambda")
 
 
-'Component(s3, "ORCA Glacier Bucket", "AWS S3", "ORCA versioned bucket where objects are stored as Flexible Retrieval (Glacier)", $tags="s3")
-
-'ComponentQueue(MigrationQueue, "Migration Queue", "AWS SQS", "Contains LifecycleTransition messages for each object", $tags="sqs")
-
-'Component(StorageUpdateLambda, "Migration Storage Update Service", "Python/Lambda", "Updates the database with transition storage type value", $tags="lambda")
-
-
-'ContainerDb(ORCAcatalog, "ORCA Catalog", "Aurora PostgreSQL Serverless", "Stores ORCA catalog information.", $tags="postgres")
-
-
-'Rel_D(operator,s3,"Configures lifecycle policy to transition to Deep Archive", "AWS Console")
-
-'Rel_R(s3,MigrationQueue,"Sends LifecycleTransition transition messages to")
-
-'Rel_L(StorageUpdateLambda,MigrationQueue,"Reads transitioned object messages", "boto3")
-'Rel_D(StorageUpdateLambda,ORCAcatalog,"Updates the storage class table", "libpq")
+Rel_R(operator,CumulusDashboard,"Initites migration by configuring ORCA for Deep Archive in the collection")
+Rel_R(CumulusDashboard,RecoveryLambda,"Calls with collectionId", "Cumulus API")
+Rel_D(RecoveryLambda,s3,"Performs bulk retrieval of the files", "boto3")
+Rel_R(RecoveryLambda,ORCAcatalog,"Updates migration job status", "libpq")
+Rel_D(s3,MigrationQueue,"Notify message that files have been restored", "boto3")
+Rel_R(MigrationQueue,StorageUpdateLambda, "triggers", "S3 event notification")
+Rel_R(StorageUpdateLambda,s3, "Copies files to Deep Archive", "boto3")
+Rel_R(StorageUpdateLambda,ORCAcatalog, "Updates the file storage type and migration status", "libpq")
+Rel_D(MigrationReportLambda,MigrationQueue, "Reads message for restored files", "boto3")
+Rel(operator, MigrationReportLambda, "Requests migration status", "AWS Console")
 
 
 ' Setup the legend
