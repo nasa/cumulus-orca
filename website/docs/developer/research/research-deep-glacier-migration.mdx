@@ -1,7 +1,7 @@
 ---
 id: research-deep-glacier-migration
 title: Deep Archive Storage Migration Research Notes
-description: Research notes on Deep Archive Migration.
+description: Research notes on deep archive migration.
 ---
 import MyImage from '@site/docs/templates/pan-zoom-image.mdx';
 import useBaseUrl from '@docusaurus/useBaseUrl';
@@ -16,7 +16,7 @@ The goal of this research is to provide an initial design and recommendation for
 ### Assumptions
 
 - List of objects already exists in orca catalog and S3 bucket.
-- Users should be able to provide some information(possibly a collection or a combination of collection and granuleId) to migrate objects possibly at the collection level.
+- Users should be able to provide some information(possibly a collection or a combination of collection and granuleId) to migrate objects.
 - A serverless approach will be used utilizing several Python lambda functions, SNS/SQS and S3 bucket event notifications.
 - The glacier bucket has versioning enabled.
 
@@ -105,12 +105,13 @@ The diagrams above are the initial thoughts for how a migration may be implement
 
 ### Migrating specific ORCA holdings to deep archive.
 
-It is expected in certain instances, a DAAC operator will not be able to use the manual approach because of configurations, key path groupings, data selectivity or other factors. In order to be more selective about the data that is migrated to DEEP ARCHIVE, the following solution is proposed. 
+It is expected in certain instances, a DAAC operator will not be able to use the manual approach because of configurations, key path groupings, data selectivity or other factors. In order to be more selective about the data that is migrated to DEEP ARCHIVE, the following solution is proposed.
+
 Generally speaking, the migration of data would be initiated by an operator through the Cumulus Console and two steps would occur. First, the data to be migrated would be recovered from the current Flexible Storage (Glacier) holdings. Second, the recovered data would be copied back to the ORCA bucket in the DEEP GLACIER storage class. The steps below go into a general flow of how the events would occur and the user interact during migration. 
 
 1. An operator updates the collection configuration to use the DEEP_ARCHIVE storage type for ORCA. See this [documentation](https://github.com/nasa/cumulus-orca/blob/develop/CHANGELOG.md#migration-notes) for additional details.
 2. User inputs a collecionId and optionally a list of granuleIds via Cumulus console batch execution screens and executes the migration recovery code. Note that PyLOT could also be used to perform this action.
-The migration recovery code queries the ORCA catalog and retrieves a list of files in ORCA that are associated with the passed parameters. Once the list of files is received, the code will use `Bulk Retrieval` to recover the files in the ORCA bucket. The code will also create and update a migration job to track the status of the migration. 
+3. The migration recovery code queries the ORCA catalog and retrieves a list of files in ORCA that are associated with the passed parameters. Once the list of files is received, the code will use `Bulk Retrieval` to recover the files in the ORCA bucket. The code will also create and update a migration job to track the status of the migration. 
 
 Potential implementation of the code could utilize lambda functions, a Docker based Fargate implementation or using AWS batch. The implementation should take into account the number of bulk requests expected to be made along with recovery capabilities and timeout limits. In the case of a Lambda, a timeout of 15 minutes may be too short to perform a large number of `Bulk Recovery` requests. Fargate or AWS Batch may provide a better option. Depending on use and performance, additional research may be needed on the implementation of this code. It is recommended that the initial implementation utilize Fargate and Docker.
 
@@ -139,20 +140,22 @@ for retrieve_object in retrieve_objects:
         print(f"{ex} for {retrieve_object}")
 
 ```
-The resultant output from the boto3 `restore_object` command can bee seen below:
+The resultant output from the boto3 `restore_object` command can bee seen below.
 ```
 {'ResponseMetadata': {'RequestId': '61ZWC27NHSFNMYJT', 'HostId': 'ItKZaYvn9rfi6ZVYmUjfZX24mKJlDZlciT9MaKK0aHiNuLWB3Pt8WSEMNt5yBK+5u+MJfzjFDfU=', 'HTTPStatusCode': 202, 'HTTPHeaders': {'x-amz-id-2': 'ItKZaYvn9rfi6ZVYmUjfZX24mKJlDZlciT9MaKK0aHiNuLWB3Pt8WSEMNt5yBK+5u+MJfzjFDfU=', 'x-amz-request-id': '61ZWC27NHSFNMYJT', 'date': 'Sun, 24 Jul 2022 18:01:33 GMT', 'server': 'AmazonS3', 'content-length': '0'}, 'RetryAttempts': 0}}
 {'ResponseMetadata': {'RequestId': 'PNN4XXA5SYTBBRKG', 'HostId': 'HgiIiqfb0hZPHgZml98VCyLLfD5LyQ8pSLpgGN6hwUUMtmcPZoo/ACbCL1rXz+pXZ4Ce2UEe34s=', 'HTTPStatusCode': 202, 'HTTPHeaders': {'x-amz-id-2': 'HgiIiqfb0hZPHgZml98VCyLLfD5LyQ8pSLpgGN6hwUUMtmcPZoo/ACbCL1rXz+pXZ4Ce2UEe34s=', 'x-amz-request-id': 'PNN4XXA5SYTBBRKG', 'date': 'Sun, 24 Jul 2022 18:01:34 GMT', 'server': 'AmazonS3', 'content-length': '0'}, 'RetryAttempts': 0}}
 ```
+For more information on using the restore functionality in Python, see the existing ORCA [restore_object function](https://github.com/nasa/cumulus-orca/blob/develop/tasks/request_files/request_files.py#L548).
+
 Another option is to look into [S3 batch operations](https://docs.aws.amazon.com/AmazonS3/latest/userguide/batch-ops-initiate-restore-object.html). It can perform a single operation on lists of Amazon S3 objects and a single job can perform a specified operation on billions of objects containing exabytes of data.
 
-3. Once bulk retrieval of the files is complete, typically 5 - 12 hours from the request time, the bucket event notification for `ObjectRestore:Completed` action will trigger code that will copy the restored object back to the ORCA bucket as a DEEP ARCHIVE storage type.  The code will then update the ORCA catalog storage type for the object to `Deep Archive` and the migration job status. Note that the current existing restore workflow trigger should be disabled during the whole migration process to prevent triggering the `post_copy_request_to_queue` lambda and then re-enabled when migration is complete.
-S3 batch operation can also be used in this case to perform the copying. For additional information, see https://docs.aws.amazon.com/AmazonS3/latest/userguide/batch-ops-copy-object.html.
+4. Once bulk retrieval of the files is complete, typically 5 - 12 hours from the request time, the bucket event notification for `ObjectRestore:Completed` action will trigger code that will copy the restored object back to the ORCA bucket as a DEEP ARCHIVE storage type.  The code will then update the ORCA catalog storage type for the object to `Deep Archive` and the migration job status. Note that the current existing restore workflow trigger should be disabled during the whole migration process to prevent triggering the `post_copy_request_to_queue` lambda and then re-enabled when migration is complete.
 
 Another option could be reusing the [ORCA recovery workflow](https://nasa.github.io/cumulus-orca/docs/about/architecture/architecture-recover-container) tasks and code to perform the migration. Additional research should be done prior to implementation of this use case to better validate the potential reuse of the recovery workflow for this task.
-Make sure the S3 bucket policy has permission for `s3:PutObject*` action otherwise user will see access denied error. See this [policy](https://github.com/nasa/cumulus-orca/blob/develop/website/docs/developer/deployment-guide/creating-orca-glacier-bucket.md#archive-bucket) for additional details.
 
+Additional items to consider when implementing this step are the bucket policy and the use of `boto3.copy_object`. Make sure the S3 bucket policy has permission for `s3:PutObject*` action otherwise user will see access denied error. See this [policy](https://github.com/nasa/cumulus-orca/blob/develop/website/docs/developer/deployment-guide/creating-orca-glacier-bucket.md#archive-bucket) for additional details.
 
+In addition to the options above, another option could be using S3 batch operation to perform the copying. For additional information, see https://docs.aws.amazon.com/AmazonS3/latest/userguide/batch-ops-copy-object.html.
 
 The boto3 `copy_object` function can be used in the python lambda function as shown below. 
 
@@ -176,15 +179,13 @@ for migrate_object in retrieve_objects:
     except Exception as ex:
         print(ex)
 ```
-Output:
+The resultant output from the boto3 `copy_object` command can bee seen below.
 ```
 {'ResponseMetadata': {'RequestId': 'EM3XDZ6BB7FJJ88W', 'HostId': '/HayQvl8E2cCsclvO0b4MQUHAJnf7exmJhCILDsXfCieuaJIrAt5ZD9ocOkaam6rQbgXt0qx18A=', 'HTTPStatusCode': 200, 'HTTPHeaders': {'x-amz-id-2': '/HayQvl8E2cCsclvO0b4MQUHAJnf7exmJhCILDsXfCieuaJIrAt5ZD9ocOkaam6rQbgXt0qx18A=', 'x-amz-request-id': 'EM3XDZ6BB7FJJ88W', 'date': 'Sun, 24 Jul 2022 18:13:32 GMT', 'x-amz-storage-class': 'DEEP_ARCHIVE', 'content-type': 'application/xml', 'server': 'AmazonS3', 'content-length': '234'}, 'RetryAttempts': 0}, 'CopyObjectResult': {'ETag': '"66d8119b127d165f8bc66fa66e0e35a6"', 'LastModified': datetime.datetime(2022, 7, 24, 18, 13, 32, tzinfo=tzutc())}}
 copy succeeded for object test1.xml having E tag "66d8119b127d165f8bc66fa66e0e35a6"
 {'ResponseMetadata': {'RequestId': 'SA312G5B2RRN5P0C', 'HostId': '/YIl4aUR+CAov4/pxzzd8oVORmYYsewTbwZfnVDkWRa+8g/epeQ7KEZGqSVgcx5LheMhU/dXMfw=', 'HTTPStatusCode': 200, 'HTTPHeaders': {'x-amz-id-2': '/YIl4aUR+CAov4/pxzzd8oVORmYYsewTbwZfnVDkWRa+8g/epeQ7KEZGqSVgcx5LheMhU/dXMfw=', 'x-amz-request-id': 'SA312G5B2RRN5P0C', 'date': 'Sun, 24 Jul 2022 18:13:33 GMT', 'x-amz-storage-class': 'DEEP_ARCHIVE', 'content-type': 'application/xml', 'server': 'AmazonS3', 'content-length': '234'}, 'RetryAttempts': 0}, 'CopyObjectResult': {'ETag': '"14694ab9e3089a7c29e0dc9add4a82ab"', 'LastModified': datetime.datetime(2022, 7, 24, 18, 13, 33, tzinfo=tzutc())}}
 copy succeeded for object test2.xml having E tag "14694ab9e3089a7c29e0dc9add4a82ab"
 ```
-4. Once files are restored in the bucket, the bucket event notification for `ObjectRestore:Completed` action will trigger a lambda function that will copy the restored object to deep archive storage. In addition, this lambda should also update the ORCA catalog with `Deep Archive` storage type value. Note that the current existing restore workflow trigger should be disabled during the whole migration process to prevent triggering the `request_files` lambda and then re-enabled it migration is complete.
-
 A detailed sequence diagram that goes into more depth on the steps and actions needed for migrating data to DEEP ARCHIVE is shown below. The sequence diagram uses the recommended steps and approaches called out above.
 
 <MyImage
@@ -199,6 +200,8 @@ A detailed sequence diagram that goes into more depth on the steps and actions n
 <br />
 <br />
 
+The following is a container level diagram of the proposed architecture for the collection/granuleId specific use case.
+
 <MyImage
     imageSource={useBaseUrl('img/ORCA-Deep-Archive-Migration-Architecture-specific-files.svg')}
     imageAlt="System Context"
@@ -211,7 +214,9 @@ A detailed sequence diagram that goes into more depth on the steps and actions n
 <br />
 <br />
 
-For more information on using the restore functionality in Python, see the existing ORCA [restore_object function](https://github.com/nasa/cumulus-orca/blob/develop/tasks/request_files/request_files.py#L548).
+:::note 
+The diagrams above are the initial thoughts for how a migration may be implemented. Changes to the workflow and architecture are likely as the migration is prototyped and validated.
+:::
 
 ### Cards created
 
