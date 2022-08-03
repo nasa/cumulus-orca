@@ -116,16 +116,21 @@ For testing purposes, you should use your feature branch in cumulus-orca github 
 `prototype-latest` does not fully use your specified branch. For example, `buckets.tf.template` and `dr-buckets.tf.template` are always pulled from develop.
 :::
 
-Make sure to use the `ORCA Deploy Plan` bamboo plan for deploying the resources. These are the ORCA buckets that are created in disaster recovery AWS account:
+You will use the `ORCA Deploy Plan` bamboo plan for deploying the resources. These are the ORCA buckets that will be created in the disaster recovery AWS account:
 
 - `<PREFIX>-orca-primary`
 - `<PREFIX>-orca-archive-worm`
 - `<PREFIX>-orca-reports`
 - `<PREFIX>-dr-tf-state` (for storing the terraform state file in DR account)
 
-For `Deploy buckets in DR account` stage in bamboo plan, add the values for `PREFIX`, `DR_AWS_ACCESS_KEY_ID` and `DR_AWS_SECRET_ACCESS_KEY` variables for the `Disaster Recovery` AWS account to deploy the buckets in DR account. Some of these buckets have cross-account IAM policies attached so that they can be accessed from the other cumulus sandbox.
+For the `Deploy DR ORCA Buckets` stage in bamboo plan, add the values for `PREFIX`, `DR_AWS_ACCESS_KEY_ID` and `DR_AWS_SECRET_ACCESS_KEY` variables for the `Disaster Recovery` AWS account to deploy the buckets in DR account. Some of these buckets have cross-account IAM policies attached so that they can be accessed from the other cumulus sandbox.
 
-The Cumulus and TF buckets as well as dynamoDB table in cumulus OU account are created automatically in bamboo `Deploy Dev Cumulus and ORCA Stack` stage. These are the buckets that need to be created in cumulus OU account:
+:::tip
+Hitting 'play' next to `Deploy DR ORCA buckets`, `Deploy Dev RDS Stack` and `Deploy Dev Cumulus and ORCA Stack` brings up a checkbox list to run multiple jobs at once. Note that none of the checkboxes should be checked.
+:::
+
+The Cumulus and TF buckets as well as dynamoDB table in cumulus OU account are created automatically in the `Deploy RDS cluster` and `Deploy Dev Cumulus and ORCA Stack` stages.
+These are the buckets that will be created in cumulus OU account:
 
 - `<PREFIX>-internal`
 - `<PREFIX>-level0`
@@ -134,7 +139,7 @@ The Cumulus and TF buckets as well as dynamoDB table in cumulus OU account are c
 - `<PREFIX>-protected`
 - `<PREFIX>-tf-state` (for storing the terraform state file in cumulus OU account)
 
-While running the `Deploy Dev RDS Stack` stage, replace the following variables with yours. This is because some variables are sensitive and some will vary depending upon the user running the pipeline. Hitting 'play' next to `Deploy DR ORCA buckets`, `Deploy Dev RDS Stack` and `Deploy Dev Cumulus and ORCA Stack` brings up a checkbox list to run multiple jobs at once. Note that none of the checkboxes should be checked.
+After hitting the play button on `Deploy Dev RDS Stack`, but before hitting `Run` in the popup, replace the following variables with yours. This is because some variables are sensitive and some will vary depending upon the user running the pipeline.
 
 - CUMULUS_AWS_ACCESS_KEY_ID
 - CUMULUS_AWS_SECRET_ACCESS_KEY
