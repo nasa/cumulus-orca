@@ -10,7 +10,7 @@ rm *.tf
 #clone cumulus orca template for deploying cumulus and orca
 git clone --branch $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION --single-branch https://git.earthdata.nasa.gov/scm/orca/cumulus-orca-deploy-template.git
 cd cumulus-orca-deploy-template
-echo "cloned $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION branch"
+echo "cloned Orca deployment template, branch $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION"
 
 
 #deploy data persistence tf module

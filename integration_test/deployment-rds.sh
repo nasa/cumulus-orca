@@ -8,7 +8,8 @@ export AWS_DEFAULT_REGION=$bamboo_CUMULUS_AWS_DEFAULT_REGION
 #remove old files from bamboo as they throw error
 rm *.tf
 #deploy the S3 buckets and dynamoDB table first
-git clone --branch develop --single-branch https://github.com/nasa/cumulus-orca.git && cd integration_test
+git clone --branch ${bamboo.planRepository.branchName} --single-branch https://github.com/nasa/cumulus-orca.git && cd integration_test
+echo "Cloned Orca, branch ${bamboo.planRepository.branchName}"
 #replace prefix with bamboo prefix variable
 sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' buckets.tf.template > buckets.tf
 
@@ -52,7 +53,7 @@ aws s3 cp terraform.tfstate s3://$bamboo_PREFIX-tf-state/buckets-tf/terraform.tf
 #clone cumulus orca template for deploying RDS cluster
 git clone --branch $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION --single-branch https://git.earthdata.nasa.gov/scm/orca/cumulus-orca-deploy-template.git
 cd cumulus-orca-deploy-template
-echo "cloned $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION branch"
+echo "cloned Cumulus, branch $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION"
 
 #deploy rds-cluster-tf module
 cd rds-cluster-tf

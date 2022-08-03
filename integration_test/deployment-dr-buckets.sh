@@ -13,7 +13,8 @@ export AWS_DEFAULT_REGION=$bamboo_AWS_DEFAULT_REGION
 
 #remove old files from bamboo as they throw error
 rm *.tf
-git clone --branch develop --single-branch https://github.com/nasa/cumulus-orca.git && cd integration_test
+git clone --branch ${bamboo.planRepository.branchName} --single-branch https://github.com/nasa/cumulus-orca.git && cd integration_test
+echo "Cloned Orca, branch ${bamboo.planRepository.branchName}"
 #replace prefix with bamboo prefix variable
 sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' dr-buckets.tf.template > dr-buckets.tf
 
