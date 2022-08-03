@@ -19,7 +19,7 @@ else
 fi
 
 terraform init -input=false
-echo "Deploying S3  buckets and dynamoDB table"
+echo "Deploying Cumulus S3 buckets and dynamoDB table"
 terraform apply \
   -auto-approve \
   -input=false
@@ -30,7 +30,7 @@ aws s3 cp terraform.tfstate s3://$bamboo_PREFIX-tf-state/buckets-tf/terraform.tf
 #clone cumulus orca template for deploying RDS cluster
 git clone --branch $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION --single-branch https://git.earthdata.nasa.gov/scm/orca/cumulus-orca-deploy-template.git
 cd cumulus-orca-deploy-template
-echo "checked out to $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION branch"
+echo "cloned $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION branch"
 
 #deploy rds-cluster-tf module
 cd rds-cluster-tf

@@ -317,7 +317,7 @@ Deploy DR ORCA buckets:
       scripts:
       - |-
         #!/bin/bash
-        bash integration_test/deploy-dr-buckets.sh
+        bash integration_test/deployment-dr-buckets.sh
          
 #job for deploying cumulus and orca
 Deploy RDS cluster:
