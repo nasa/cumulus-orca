@@ -16,15 +16,15 @@ The goal of this research is to provide an initial design and recommendation for
 ### Assumptions
 
 - List of objects already exists in orca catalog and S3 bucket.
-- Users should be able to provide some information(possibly a collection or a combination of collection and granuleId) to migrate objects.
+- Users should be able to provide some information (possibly a collection or a combination of collection and granuleId) to migrate objects.
 - A serverless approach will be used utilizing several Python lambda functions, SNS/SQS and S3 bucket event notifications.
 - The glacier bucket has versioning enabled.
 
 ### Use Cases
 
 Based on the discussion with ORCA team, we came up with two use cases that the end user might be interested in:
-- Convert all the holdings or holdings with a known key prefix from Flexible Retrieval(formerly Glacier) to Deep Archive.
-- Convert specific collection or granules from Flexible Retrieval(formerly Glacier) to Deep Archive.
+- Convert all the holdings or holdings with a known key prefix from Flexible Retrieval (formerly Glacier) to Deep Archive.
+- Convert specific collection or granules from Flexible Retrieval (formerly Glacier) to Deep Archive.
 
 The details of each use cases and relevant architecture drawings can be found in the next sections.
 
@@ -33,8 +33,8 @@ The details of each use cases and relevant architecture drawings can be found in
 The migrate all holdings use case assumes that the end user wants to migrate all ORCA holdings to the DEEP ARCHIVE storage type or specific collections of data that can be grouped together via a key path like `/ShortName/Version` within the ORCA bucket. The most efficient and cost effective approach to this use case would to have the operator perform the migration steps manually as outlined below.
 
 The steps for performing the migration are as follows:
-1. Configure ORCA default storage type or the collection level storage type overide to DEEP ARCHIVE and re-deploy ORCA if needed. See this [documentation](https://github.com/nasa/cumulus-orca/blob/develop/CHANGELOG.md#migration-notes) for additional details.
-2. Run the lifecycle configuration with transition_days = 0 as shown in the terraform code example below.
+1. Configure ORCA default storage type or the collection level storage type overide to DEEP ARCHIVE. See this [documentation](https://github.com/nasa/cumulus-orca/blob/develop/CHANGELOG.md#migration-notes) for additional details.
+2. From the AWS console, set the lifecycle configuration with transition_days = 0 as shown in the terraform code example below.
 :::note
 The following S3 lifecycle rule will move all objects with under prefix `tmp/` to Deep Archive. For more information on S3 lifecycle policy, see this terraform [documentation](https://registry.terraform.io/providers/PixarV/ritt/latest/docs/resources/s3_bucket_lifecycle_configuration).
 
@@ -67,7 +67,7 @@ To migrate to a different storage class if needed, change `storage_class` under 
 - Manually run a temporary lambda function that updates the catalog status table for storage class to DEEP ARCHIVE after a set amount of time (48+ hours).
 - Manually update the table column in the database using SQL.
 5. Validate internal reconciliation for mismatches in storage class.
-6. If no mismatch, disable/delete the lifecycle rules.
+6. If no mismatch, disable and revert back the changes to the lifecycle rules.
 
 A detailed sequence diagram that goes into more depth on the steps and actions needed for manually migrating data to DEEP ARCHIVE is shown below. The sequence diagram uses the recommended steps and approaches called out above.
 
@@ -105,9 +105,9 @@ The diagrams above are the initial thoughts for how a migration may be implement
 
 ### Migrating specific ORCA holdings to deep archive.
 
-It is expected in certain instances, a DAAC operator will not be able to use the manual approach because of configurations, key path groupings, data selectivity or other factors. In order to be more selective about the data that is migrated to DEEP ARCHIVE, the following solution is proposed.
+It is expected that in certain instances, a DAAC operator will not be able to use the manual approach because of configurations, key path groupings, data selectivity or other factors. In order to be more selective about the data that is migrated to DEEP ARCHIVE, the following solution is proposed.
 
-Generally speaking, the migration of data would be initiated by an operator through the Cumulus Console and two steps would occur. First, the data to be migrated would be recovered from the current Flexible Storage (Glacier) holdings. Second, the recovered data would be copied back to the ORCA bucket in the DEEP GLACIER storage class. The steps below go into a general flow of how the events would occur and the user interact during migration. 
+Generally speaking, the migration of data would be initiated by an operator through the Cumulus Console and two steps would occur. First, the data to be migrated would be restored from the current Flexible Storage (Glacier) holdings. Second, the recovered data would be copied back to the ORCA bucket in the DEEP GLACIER storage class. The steps below go into a general flow of how the events would occur and the user interact during migration. 
 
 1. An operator updates the collection configuration to use the DEEP_ARCHIVE storage type for ORCA. See this [documentation](https://github.com/nasa/cumulus-orca/blob/develop/CHANGELOG.md#migration-notes) for additional details.
 2. User inputs a collecionId and optionally a list of granuleIds via Cumulus console batch execution screens and executes the migration recovery code. Note that PyLOT could also be used to perform this action.
