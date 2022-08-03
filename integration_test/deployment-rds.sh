@@ -12,11 +12,33 @@ git clone --branch develop --single-branch https://github.com/nasa/cumulus-orca.
 #replace prefix with bamboo prefix variable
 sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' buckets.tf.template > buckets.tf
 
-if ! aws s3 cp s3://$bamboo_PREFIX-tf-state/buckets-tf/terraform.tfstate .;then
-    echo "terraform state file not present in S3. Creating the buckets and dynamoDB table..."
+if aws s3api head-bucket --bucket ${bamboo_PREFIX}-tf-state;then
+    echo "terraform state bucket already present. Using existing state file"
 else
-    echo "Terraform state file found in S3 bucket. Using S3 remote backend"
+    echo "terraform state bucket is not created. Creating ..."
+    aws s3api create-bucket --bucket ${bamboo_PREFIX}-tf-state  --region ${bamboo_AWS_DEFAULT_REGION} --create-bucket-configuration LocationConstraint=${bamboo_AWS_DEFAULT_REGION}
+    
+    aws s3api put-bucket-versioning \
+    --bucket ${bamboo_PREFIX}-tf-state \
+    --versioning-configuration Status=Enabled
+
+    aws dynamodb create-table \
+      --table-name ${bamboo_PREFIX}-tf-locks \
+      --attribute-definitions AttributeName=LockID,AttributeType=S \
+      --key-schema AttributeName=LockID,KeyType=HASH \
+      --billing-mode PAY_PER_REQUEST \
+      --region ${bamboo_AWS_DEFAULT_REGION}
 fi
+
+#configuring S3 backend
+echo "terraform {
+  backend \"s3\" {
+    bucket = \"${bamboo_PREFIX}-tf-state\"
+    region = \"${bamboo_AWS_DEFAULT_REGION}\"
+    key    = \"terraform.tfstate\"
+    dynamodb_table = \"${bamboo_PREFIX}-tf-locks\"
+  }
+}" >> terraform.tf
 
 terraform init -input=false
 echo "Deploying Cumulus S3 buckets and dynamoDB table"
@@ -45,7 +67,7 @@ terraform init \
   -input=false
 
 # Deploy drds-cluster-tf via terraform
-echo "Deploying rds-cluster-tf  module to $bamboo_DEPLOYMENT"
+echo "Deploying rds-cluster-tf module to $bamboo_DEPLOYMENT"
 terraform apply \
   -auto-approve \
   -input=false \

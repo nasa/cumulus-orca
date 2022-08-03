@@ -17,7 +17,9 @@ git clone --branch develop --single-branch https://github.com/nasa/cumulus-orca.
 #replace prefix with bamboo prefix variable
 sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' dr-buckets.tf.template > dr-buckets.tf
 
-if ! aws s3api head-bucket --bucket ${bamboo_PREFIX}-dr-tf-state;then
+if aws s3api head-bucket --bucket ${bamboo_PREFIX}-dr-tf-state;then
+    echo "terraform state bucket already present. Using existing state file"
+else
     echo "terraform state bucket is not created. Creating ..."
     aws s3api create-bucket --bucket ${bamboo_PREFIX}-dr-tf-state  --region ${bamboo_AWS_DEFAULT_REGION} --create-bucket-configuration LocationConstraint=${bamboo_AWS_DEFAULT_REGION}
     
@@ -31,8 +33,6 @@ if ! aws s3api head-bucket --bucket ${bamboo_PREFIX}-dr-tf-state;then
       --key-schema AttributeName=LockID,KeyType=HASH \
       --billing-mode PAY_PER_REQUEST \
       --region ${bamboo_AWS_DEFAULT_REGION}
-else
-    echo "terraform state bucket already present. Using existing state file"
 fi
 
 #configuring S3 backend
