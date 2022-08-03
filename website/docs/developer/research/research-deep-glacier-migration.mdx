@@ -151,11 +151,9 @@ Another option is to look into [S3 batch operations](https://docs.aws.amazon.com
 
 4. Once bulk retrieval of the files is complete, typically 5 - 12 hours from the request time, the bucket event notification for `ObjectRestore:Completed` action will trigger code that will copy the restored object back to the ORCA bucket as a DEEP ARCHIVE storage type.  The code will then update the ORCA catalog storage type for the object to `Deep Archive` and the migration job status. Note that the current existing restore workflow trigger should be disabled during the whole migration process to prevent triggering the `post_copy_request_to_queue` lambda and then re-enabled when migration is complete.
 
-Another option could be reusing the [ORCA recovery workflow](https://nasa.github.io/cumulus-orca/docs/about/architecture/architecture-recover-container) tasks and code to perform the migration. Additional research should be done prior to implementation of this use case to better validate the potential reuse of the recovery workflow for this task.
+Additional options to consider when doing restoration and copying of files include reusing the [ORCA recovery workflow](https://nasa.github.io/cumulus-orca/docs/about/architecture/architecture-recover-container) tasks and code to perform the migration or utilizing [S3 batch operations](https://docs.aws.amazon.com/AmazonS3/latest/userguide/batch-ops-copy-object.html.) for copying the data. Additional research should be done prior to final implementation of the use case to better validate these options.
 
 Additional items to consider when implementing this step are the bucket policy and the use of `boto3.copy_object`. Make sure the S3 bucket policy has permission for `s3:PutObject*` action otherwise user will see access denied error. See this [policy](https://github.com/nasa/cumulus-orca/blob/develop/website/docs/developer/deployment-guide/creating-orca-glacier-bucket.md#archive-bucket) for additional details.
-
-In addition to the options above, another option could be using S3 batch operation to perform the copying. For additional information, see https://docs.aws.amazon.com/AmazonS3/latest/userguide/batch-ops-copy-object.html.
 
 The boto3 `copy_object` function can be used in the python lambda function as shown below. 
 
@@ -186,6 +184,7 @@ copy succeeded for object test1.xml having E tag "66d8119b127d165f8bc66fa66e0e35
 {'ResponseMetadata': {'RequestId': 'SA312G5B2RRN5P0C', 'HostId': '/YIl4aUR+CAov4/pxzzd8oVORmYYsewTbwZfnVDkWRa+8g/epeQ7KEZGqSVgcx5LheMhU/dXMfw=', 'HTTPStatusCode': 200, 'HTTPHeaders': {'x-amz-id-2': '/YIl4aUR+CAov4/pxzzd8oVORmYYsewTbwZfnVDkWRa+8g/epeQ7KEZGqSVgcx5LheMhU/dXMfw=', 'x-amz-request-id': 'SA312G5B2RRN5P0C', 'date': 'Sun, 24 Jul 2022 18:13:33 GMT', 'x-amz-storage-class': 'DEEP_ARCHIVE', 'content-type': 'application/xml', 'server': 'AmazonS3', 'content-length': '234'}, 'RetryAttempts': 0}, 'CopyObjectResult': {'ETag': '"14694ab9e3089a7c29e0dc9add4a82ab"', 'LastModified': datetime.datetime(2022, 7, 24, 18, 13, 33, tzinfo=tzutc())}}
 copy succeeded for object test2.xml having E tag "14694ab9e3089a7c29e0dc9add4a82ab"
 ```
+
 A detailed sequence diagram that goes into more depth on the steps and actions needed for migrating data to DEEP ARCHIVE is shown below. The sequence diagram uses the recommended steps and approaches called out above.
 
 <MyImage
