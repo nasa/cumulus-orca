@@ -3,7 +3,7 @@ version: 2
 plan:
   project-key: ORCA
   key: RTR
-  name: rhassan-test-repo
+  name: rhassan-test-repository
 stages:
 #deploy RDS cluster for integration test
 #TODO ORCA-462: move to a different stage or even to a new plan for better maintenance.
