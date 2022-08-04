@@ -112,6 +112,14 @@ To delete a published tag to re-tag, follow these steps:
 
 For testing purposes, you should use your feature branch in cumulus-orca github repo and [`prototype-latest`](https://ci.earthdata.nasa.gov/browse/ORCA-PL) bamboo plan so that it does not affect the ORCA github `develop` branch. The `prototype-latest` bamboo plan is linked to `feature/ORCA-test-bamboo` github branch as the default branch under cumulus-orca repo. In addition, if changes are made to the bamboo spec file `bamboo.yaml` in this default branch, you have to manually import the bamboo spec by choosing `ORCA-test-branch` as the linked repo.
 
+
+:::warning
+You should reset `feature/ORCA-test-bamboo` before using it.
+1. Rename `feature/ORCA-test-bamboo` to `feature/ORCA-test-bamboo-old`
+1. Create a new branch based off of your branch named `feature/ORCA-test-bamboo`
+1. In the new branch's `bamboo.yaml`, in the `repositories` element, change `orca-develop` to `orca test branch`. In each `plan` element, change `OI` in `key` values to `Pl`
+:::
+
 :::warning
 `prototype-latest` does not fully use your specified branch. For example, `buckets.tf.template` and `dr-buckets.tf.template` are always pulled from develop.
 :::
