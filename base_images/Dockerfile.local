@@ -17,7 +17,7 @@ yum update -y
 # install Python 3, pip, CLI utilities, session manager and other tools
 RUN \
 yum install -y gcc git make openssl wget zip unzip tar python3-devel nodejs yarn python3-pip awscli session-manager-plugin.rpm procps parallel && \
-pip3 install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org pydoc-markdown bandit safety flake8 black isort
+pip3 install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org pydoc-markdown bandit safety flake8 black isort jq
 
 # Install and configure git-secrets
 RUN \
