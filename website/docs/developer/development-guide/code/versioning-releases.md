@@ -127,7 +127,7 @@ You should reset `feature/ORCA-test-bamboo` before using it.
 :::warning
 `prototype-latest` exposes an ordering issue where the release stage must be run before deployment/integration checks can be run.
 DO NOT RUN THE RELEASE STAGE FROM `PROTOTYPE-LATEST`
-Comment the release stage out in `bamboo.yaml`
+Comment the release stage out in `bamboo.yaml` at the top of the file, and under `stages:`. Note that indentation is not a reliable indicator of block length, so make sure that all release code, including `repositories`, `triggers`, and `branches`, are commented out.
 :::
 
 You will use the `ORCA Deploy Plan` bamboo plan for deploying the resources. These are the ORCA buckets that will be created in the disaster recovery AWS account:
