@@ -14,6 +14,7 @@ sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' buckets.tf.template > buckets.tf
 
 if ! aws s3api head-bucket --bucket ${bamboo_PREFIX}-tf-state;then
     echo "terraform state bucket is not created. Creating ..."
+    
     aws s3api create-bucket --bucket ${bamboo_PREFIX}-tf-state  --region ${bamboo_AWS_DEFAULT_REGION} --create-bucket-configuration LocationConstraint=${bamboo_AWS_DEFAULT_REGION}
     
     aws s3api put-bucket-versioning \
