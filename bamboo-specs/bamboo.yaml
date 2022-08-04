@@ -2,7 +2,7 @@
 version: 2
 plan:
   project-key: ORCA
-  key: PL
+  key: RTR
   name: rhassan-test-repo
 stages:
 #deploy RDS cluster for integration test
