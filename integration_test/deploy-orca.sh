@@ -35,18 +35,8 @@ if ! aws s3api head-bucket --bucket ${bamboo_PREFIX}-tf-state;then
     aws s3api create-bucket --bucket ${bamboo_PREFIX}-public  --region ${bamboo_AWS_DEFAULT_REGION} --create-bucket-configuration LocationConstraint=${bamboo_AWS_DEFAULT_REGION}
     
 else
-    echo "terraform state bucket already present. Using existing state file"
+    echo "terraform state bucket already present."
 fi
-
-#configuring S3 backend
-echo "terraform {
-  backend \"s3\" {
-    bucket = \"${bamboo_PREFIX}-tf-state\"
-    region = \"${bamboo_AWS_DEFAULT_REGION}\"
-    key    = \"terraform.tfstate\"
-    dynamodb_table = \"${bamboo_PREFIX}-tf-locks\"
-  }
-}" >> terraform.tf
 
 #clone cumulus orca template for deploying RDS cluster
 git clone --branch $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION --single-branch https://git.earthdata.nasa.gov/scm/orca/cumulus-orca-deploy-template.git
