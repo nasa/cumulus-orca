@@ -49,13 +49,6 @@ echo "terraform {
   }
 }" >> terraform.tf
 
-
-terraform init -input=false
-echo "Deploying S3  buckets and dynamoDB table"
-terraform apply \
-  -auto-approve \
-  -input=false
-
 #clone cumulus orca template for deploying RDS cluster
 git clone --branch $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION --single-branch https://git.earthdata.nasa.gov/scm/orca/cumulus-orca-deploy-template.git
 cd cumulus-orca-deploy-template
@@ -69,7 +62,7 @@ mv terraform.tfvars.example terraform.tfvars
 #replacing terraform.tf with proper values
 sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g; s/us-east-1/'"$bamboo_AWS_DEFAULT_REGION"'/g' terraform.tf.example > terraform.tf
 
-$AWS_ACCOUNT_ID=aws sts get-caller-identity | jq -r '.Account'
+AWS_ACCOUNT_ID=$(aws sts get-caller-identity | jq -r '.Account')
 # Initialize deployment
 terraform init \
   -input=false
