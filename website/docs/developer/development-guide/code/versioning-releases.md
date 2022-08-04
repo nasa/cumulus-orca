@@ -117,7 +117,7 @@ For testing purposes, you should use your feature branch in cumulus-orca github 
 You should reset `feature/ORCA-test-bamboo` before using it.
 1. Rename `feature/ORCA-test-bamboo` to `feature/ORCA-test-bamboo-old`
 1. Create a new branch based off of your branch named `feature/ORCA-test-bamboo`
-1. In the new branch's `bamboo.yaml`, in each `repositories` element, change `orca-develop` to `orca test branch`. In each `plan` element, change `OI` in `key` values to `Pl`
+1. In the new branch's `bamboo.yaml`, in each `repositories` element, change `orca-develop` to `orca test branch`. In each `plan` element, change `OI` in `key` values to `PL`
 :::
 
 :::warning
