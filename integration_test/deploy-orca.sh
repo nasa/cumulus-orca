@@ -1,8 +1,8 @@
 #!/bin/bash
 set -ex
 
-export CUMULUS_AWS_ACCESS_KEY_ID=$bamboo_CUMULUS_AWS_ACCESS_KEY_ID
-export CUMULUS_AWS_SECRET_ACCESS_KEY=$bamboo_CUMULUS_AWS_SECRET_ACCESS_KEY
+export AWS_ACCESS_KEY_ID=$bamboo_AWS_ACCESS_KEY_ID
+export AWS_SECRET_ACCESS_KEY=$bamboo_AWS_SECRET_ACCESS_KEY
 export AWS_DEFAULT_REGION=$bamboo_CUMULUS_AWS_DEFAULT_REGION
 
 #remove old files from bamboo as they throw error
@@ -91,4 +91,3 @@ terraform apply \
   -var "permissions_boundary_arn=arn:aws:iam::$bamboo_AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
 
 
-  
