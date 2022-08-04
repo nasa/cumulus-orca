@@ -61,7 +61,11 @@ mv terraform.tfvars.example terraform.tfvars
 #replacing terraform.tf with proper values
 sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g; s/us-east-1/'"$bamboo_AWS_DEFAULT_REGION"'/g' terraform.tf.example > terraform.tf
 
-AWS_ACCOUNT_ID=$(aws sts get-caller-identity | jq -r '.Account')
+# export AWS_ACCOUNT_ID=$(aws sts get-caller-identity | jq -r '.Account')
+# export VPC_ID=$(aws ec2 describe-vpcs | jq -r '.Vpcs | to_entries | .[] | .value.VpcId')
+# export AWS_SUBNET_ID1=$(aws ec2 describe-subnets --filters "Name=availability-zone,Values=us-west-2a"| jq -r '.Subnets | .[] | select (.Tags | .[] | .Value | contains ("Private application ")) | .SubnetId ')
+# export AWS_SUBNET_ID2=$(aws ec2 describe-subnets --filters "Name=availability-zone,Values=us-west-2b"| jq -r '.Subnets | .[] | select (.Tags | .[] | .Value | contains ("Private application ")) | .SubnetId ')
+
 # Initialize deployment
 terraform init \
   -input=false
@@ -82,6 +86,7 @@ terraform apply \
   -var "deletion_protection=false"\
   -var "provision_user_database=false"\
   -var "engine_version=$bamboo_RDS_ENGINE_VERSION" \
-  -var "permissions_boundary_arn=arn:aws:iam::$AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
+  -var "permissions_boundary_arn=arn:aws:iam::$bamboo_AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
 
+terraform output -json > ./infrastructure.json
 
