@@ -109,10 +109,9 @@ To delete a published tag to re-tag, follow these steps:
     git push -d origin vx.y.z
 ```
 
-## Deploying ORCA buckets, RDS cluster and Cumulus ORCA modules in bamboo
+## Deploying ORCA buckets, RDS cluster and Cumulus ORCA modules via bamboo
 
 For testing purposes, you should use your feature branch in cumulus-orca github repo and [`prototype-latest`](https://ci.earthdata.nasa.gov/browse/ORCA-PL) bamboo plan so that it does not affect the ORCA github `develop` branch. The `prototype-latest` bamboo plan is linked to `feature/ORCA-test-bamboo` github branch as the default branch under cumulus-orca repo. In addition, if changes are made to the bamboo spec file `bamboo.yaml` in this default branch, you have to manually import the bamboo spec by choosing `orca test branch` as the linked repo.
-
 
 :::warning
 You should reset `feature/ORCA-test-bamboo` before using it.
@@ -123,6 +122,12 @@ You should reset `feature/ORCA-test-bamboo` before using it.
 
 :::warning
 `prototype-latest` does not fully use your specified branch. For example, `buckets.tf.template` and `dr-buckets.tf.template` are always pulled from develop.
+:::
+
+:::warning
+`prototype-latest` exposes an ordering issue where the release stage must be run before deployment/integration checks can be run.
+DO NOT RUN THE RELEASE STAGE FROM `PROTOTYPE-LATEST`
+Comment the release stage out in `bamboo.yaml`
 :::
 
 You will use the `ORCA Deploy Plan` bamboo plan for deploying the resources. These are the ORCA buckets that will be created in the disaster recovery AWS account:
