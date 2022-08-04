@@ -44,14 +44,15 @@ triggered.
 If you created a new release branch in step one, you will need to create a new
 bamboo deployment plan.
 
-#### Creating a Bamboo deployment plan
+#### Creating a Bamboo deployment plan branch
 
-1. The deployment plan is already created in Bamboo using [Bamboo Specs](https://github.com/nasa/cumulus-orca/tree/develop/bamboo-specs). If you have updated the `bamboo.yaml` config file, you will need to import the updated spec file from Bamboo specs UI. Under `Specs` section, click on the `Set up Specs Repository`. On the `Project Type`, select `Build Project` and then `ORCA`. On the Specs repository, select the repository host as `orca-develop`. Note that choosing the wrong repository branch will cause issues in deployment. `ORCA repo` repository host is for `master` branch and `orca test branch` host is for `feature/ORCA-test-bamboo` branch used for testing and prototyping. Contact `Venku Jayanti` from CI/CD team for additional support.
+1. The deployment plan is already created in Bamboo using [Bamboo Specs](https://github.com/nasa/cumulus-orca/tree/develop/bamboo-specs).
+1. If you have updated the `bamboo.yaml` config file, you will need to import the updated spec file from Bamboo specs UI. Under `Specs` section, click on the `Set up Specs Repository`. On the `Project Type`, select `Build Project` and then `ORCA`. On the Specs repository, select the repository host as `orca-develop`. Note that choosing the wrong repository branch will cause issues in deployment. `ORCA repo` repository host is for `master` branch and `orca test branch` host is for `feature/ORCA-test-bamboo` branch used for testing and prototyping. Contact `Venku Jayanti` from CI/CD team for additional support.
    In the ORCA project (https://ci.earthdata.nasa.gov/browse/ORCA-OI), scroll to the top left of the page where it indicates `Plan branch`. From the `Plan branch` dropdown menu, select the release branch you created for the release which should be in the format `release-X.X.X`.
-2. Once inside the release branch page, scroll to the top right of the page and click `Actions`-> `Configure branch`.
-3. On the `Plan branch configuration` page, under `Plan branch configuration`, enable 'Change Trigger'. Set the 
+1. Once inside the release branch page, scroll to the top right of the page and click `Actions`-> `Configure branch`.
+1. On the `Plan branch configuration` page, under `Plan branch configuration`, enable 'Change Trigger'. Set the 
    Trigger type to manual, and this will prevent commits to the branch from triggering the build plan.
-4. Click on the `Variables` tab.
+1. Click on the `Variables` tab.
 Ensure that you are on your branch plan and not the master plan. Click on the `Choose from inherited variables` dropdown menu.
    except in special cases such as incompatible backport branches. Then add and set the following variables:
      * ORCA_VERSION: `<version number>`
@@ -61,11 +62,11 @@ Ensure that you are on your branch plan and not the master plan. Click on the `C
      * SECRET_GITHUB_USER: `<secret github user>`
    
    Contact ORCA team to know values of the three github variables.
-5. Run the branch using the 'Run' button in the top right.
+1. Run the branch using the 'Run' button in the top right.
 
 Bamboo will build and run unit tests against that tagged release.
 
-## Create a new ORCA release on github
+## Finalizing ORCA release on github
 
 The release is automated in Bamboo, but the step must be manually started. If
 you set the `RELEASE_FLAG` to `true` and the build steps passed, you will
