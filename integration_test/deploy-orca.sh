@@ -14,7 +14,7 @@ sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' buckets.tf.template > buckets.tf
 
 if ! aws s3api head-bucket --bucket ${bamboo_PREFIX}-tf-state;then
     echo "terraform state bucket is not created. Creating ..."
-    
+
     aws s3api create-bucket --bucket ${bamboo_PREFIX}-tf-state  --region ${bamboo_AWS_DEFAULT_REGION} --create-bucket-configuration LocationConstraint=${bamboo_AWS_DEFAULT_REGION}
     
     aws s3api put-bucket-versioning \
@@ -69,6 +69,7 @@ mv terraform.tfvars.example terraform.tfvars
 #replacing terraform.tf with proper values
 sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g; s/us-east-1/'"$bamboo_AWS_DEFAULT_REGION"'/g' terraform.tf.example > terraform.tf
 
+$AWS_ACCOUNT_ID=aws sts get-caller-identity | jq -r '.Account'
 # Initialize deployment
 terraform init \
   -input=false
@@ -89,6 +90,6 @@ terraform apply \
   -var "deletion_protection=false"\
   -var "provision_user_database=false"\
   -var "engine_version=$bamboo_RDS_ENGINE_VERSION" \
-  -var "permissions_boundary_arn=arn:aws:iam::$bamboo_AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
+  -var "permissions_boundary_arn=arn:aws:iam::$AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
 
 
