@@ -47,9 +47,6 @@ terraform apply \
   -auto-approve \
   -input=false
 
-#copy terraform state file to the created tf-state bucket
-aws s3 cp terraform.tfstate s3://$bamboo_PREFIX-tf-state/buckets-tf/terraform.tfstate
-
 #clone cumulus orca template for deploying RDS cluster
 git clone --branch $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION --single-branch https://git.earthdata.nasa.gov/scm/orca/cumulus-orca-deploy-template.git
 cd cumulus-orca-deploy-template
