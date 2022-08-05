@@ -224,7 +224,6 @@ After hitting the play button on `Deploy Dev Cumulus and ORCA Stack`, but before
 - VPC_ID
 - EARTHDATA_CLIENT_ID
 - EARTHDATA_CLIENT_PASSWORD
-# todo: $bamboo_CMR_OAUTH_PROVIDER
 - DB_ADMIN_PASSWORD
 - DB_USER_PASSWORD
 - DB_HOST_ENDPOINT

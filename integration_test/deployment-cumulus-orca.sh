@@ -71,7 +71,6 @@ terraform apply \
   -var "urs_client_password=$bamboo_EARTHDATA_CLIENT_PASSWORD" \
   -var "urs_url=https://uat.urs.earthdata.nasa.gov" \
   -var "api_users=[\"bhazuka\", \"andrew.dorn\", \"rizbi.hassan\", \"scott.saxon\"]" \
-  -var "cmr_oauth_provider=$bamboo_CMR_OAUTH_PROVIDER" \
   -var "key_name=$bamboo_PREFIX" \
   -var "prefix=$bamboo_PREFIX" \
   -var "permissions_boundary_arn=arn:aws:iam::$bamboo_AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY" \
