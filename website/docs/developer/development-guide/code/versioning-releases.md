@@ -134,14 +134,21 @@ DO NOT RUN THE RELEASE STAGE FROM `PROTOTYPE-LATEST`
 Comment the release stage out in `bamboo.yaml` at the top of the file, and under `stages:`. Note that indentation is not a reliable indicator of block length, so make sure that all release code, including `repositories`, `triggers`, and `branches`, are commented out.
 :::
 
-You will use the `ORCA Deploy Plan` bamboo plan for deploying the resources. These are the ORCA buckets that will be created in the disaster recovery AWS account:
+You will use the `ORCA Deploy Plan` bamboo plan for deploying the resources. 
+
+After hitting the play button on `Deploy DR ORCA Buckets` stage in bamboo plan, but before hitting `Run` in the popup, add the values for `PREFIX`, `DR_AWS_ACCESS_KEY_ID` and `DR_AWS_SECRET_ACCESS_KEY` variables for the `Disaster Recovery` AWS account to deploy the buckets to. Some of these buckets have cross-account IAM policies attached so that they can be accessed from the other cumulus sandbox.
+
+:::tip
+If you are targeting your personal feature branch, you may set these and future variables on the Plan Branch under `variables`.
+Otherwise, keep personalized/sensitive values out of the main build.
+:::
+
+These are the ORCA buckets that will be created in the disaster recovery AWS account:
 
 - `<PREFIX>-orca-primary`
 - `<PREFIX>-orca-archive-worm`
 - `<PREFIX>-orca-reports`
 - `<PREFIX>-dr-tf-state` (for storing the terraform state file in DR account)
-
-For the `Deploy DR ORCA Buckets` stage in bamboo plan, add the values for `PREFIX`, `DR_AWS_ACCESS_KEY_ID` and `DR_AWS_SECRET_ACCESS_KEY` variables for the `Disaster Recovery` AWS account to deploy the buckets in DR account. Some of these buckets have cross-account IAM policies attached so that they can be accessed from the other cumulus sandbox.
 
 :::tip
 Hitting 'play' next to `Deploy DR ORCA buckets`, `Deploy Dev RDS Stack` and `Deploy Dev Cumulus and ORCA Stack` brings up a checkbox list to run multiple jobs at once. Note that none of the checkboxes should be checked.
@@ -157,7 +164,7 @@ These are the buckets that will be created in cumulus OU account:
 - `<PREFIX>-protected`
 - `<PREFIX>-tf-state` (for storing the terraform state file in cumulus OU account)
 
-After hitting the play button on `Deploy Dev RDS Stack`, but before hitting `Run` in the popup, replace the following variables with yours. This is because some variables are sensitive and some will vary depending upon the user running the pipeline.
+After hitting the play button on `Deploy Dev RDS Stack`, but before hitting `Run` in the popup, replace the following variables with yours.
 
 - CUMULUS_AWS_ACCESS_KEY_ID
 - CUMULUS_AWS_SECRET_ACCESS_KEY
