@@ -136,7 +136,11 @@ Comment the release stage out in `bamboo.yaml` at the top of the file, and under
 
 You will use the `ORCA Deploy Plan` bamboo plan for deploying the resources. 
 
-After hitting the play button on `Deploy DR ORCA Buckets` stage in bamboo plan, but before hitting `Run` in the popup, add the values for `PREFIX`, `DR_AWS_ACCESS_KEY_ID` and `DR_AWS_SECRET_ACCESS_KEY` variables for the `Disaster Recovery` AWS account to deploy the buckets to. Some of these buckets have cross-account IAM policies attached so that they can be accessed from the other cumulus sandbox.
+After hitting the play button on `Deploy DR ORCA Buckets` stage in bamboo plan, but before hitting `Run` in the popup, replace the following variables with yours.
+
+- PREFIX
+- DR_AWS_ACCESS_KEY_ID
+- DR_AWS_SECRET_ACCESS_KEY
 
 :::tip
 If you are targeting your personal feature branch, you may set these and future variables on the Plan Branch under `variables`.
@@ -149,6 +153,8 @@ These are the ORCA buckets that will be created in the disaster recovery AWS acc
 - `<PREFIX>-orca-archive-worm`
 - `<PREFIX>-orca-reports`
 - `<PREFIX>-dr-tf-state` (for storing the terraform state file in DR account)
+
+Some of these buckets have cross-account IAM policies attached so that they can be accessed from the other cumulus sandbox.
 
 :::tip
 Hitting 'play' next to `Deploy DR ORCA buckets`, `Deploy Dev RDS Stack` and `Deploy Dev Cumulus and ORCA Stack` brings up a checkbox list to run multiple jobs at once. Note that none of the checkboxes should be checked.
@@ -169,9 +175,12 @@ After hitting the play button on `Deploy Dev RDS Stack`, but before hitting `Run
 - CUMULUS_AWS_ACCESS_KEY_ID
 - CUMULUS_AWS_SECRET_ACCESS_KEY
 - PREFIX
-- AWS_ACCOUNT_ID(for cumulus sandbox account)
+- AWS_ACCOUNT_ID (for cumulus sandbox account)
 - DB_ADMIN_PASSWORD
 - DB_USER_PASSWORD
+- AWS_SUBNET_ID1
+- AWS_SUBNET_ID2
+- VPC_ID
 
 Note that the above buckets can also be created manually if desired by the user. Make sure to use the proper AWS access keys for configuration before running the commands.
 
@@ -195,24 +204,34 @@ In addition to this, the dynamodb table and bucket version need to created as we
     --versioning-configuration Status=Enabled
 ```
 
-The EC2 key pair can be created using the AWS CLI. Make sure to save the generated private key for connecting to this instance later.
+Create an EC2 key pair can be created using the AWS CLI. Make sure to save the generated private key for connecting to this instance later.
 
 ```bash
-aws ec2 create-key-pair --key-name <PREFIX>
+aws ec2 create-key-pair --key-name <PREFIX> --query 'KeyMaterial' --output text > <PREFIX>.pem
 ```
 :::note
 Make sure your AWS is configured to use the cumulus sandbox account by using that account's AWS access keys before creating the EC2 key pair.
 :::
 
-For the `Deploy Dev Cumulus and ORCA Stack`  stage, add the following variables. 
+After hitting the play button on `Deploy Dev Cumulus and ORCA Stack`, but before hitting `Run` in the popup, replace the following variables with yours.
 
-- RDS_SECURITY_GROUP
-- RDS_USER_ACCESS_SECRET_ARN
-- DB_HOST_ENDPOINT
+- CUMULUS_AWS_ACCESS_KEY_ID
+- CUMULUS_AWS_SECRET_ACCESS_KEY
+- PREFIX
+- AWS_ACCOUNT_ID (for cumulus sandbox account)
+- AWS_SUBNET_ID1
+- AWS_SUBNET_ID2
+- VPC_ID
 - EARTHDATA_CLIENT_ID
 - EARTHDATA_CLIENT_PASSWORD
-- CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION
+# todo: $bamboo_CMR_OAUTH_PROVIDER
+- DB_ADMIN_PASSWORD
+- DB_USER_PASSWORD
+- DB_HOST_ENDPOINT
+- RDS_SECURITY_GROUP
+- RDS_USER_ACCESS_SECRET_ARN
+- CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION (optional)
 
-The RDS variables `RDS_SECURITY_GROUP`, `RDS_USER_ACCESS_SECRET_ARN` and `DB_HOST_ENDPOINT` can be found from output logs of the previous `Deploy Dev RDS Stack` stage. Note that a new earthdata application will need to be first created if using a new prefix for new deployment which will give the values for `EARTHDATA_CLIENT_ID` and `EARTHDATA_CLIENT_PASSWORD`. `CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION` is the branch you want to check out in the [deployment repo](https://git.earthdata.nasa.gov/projects/ORCA/repos/cumulus-orca-deploy-template/browse) such as `v11.1.1-v4.0.1`.
+The RDS variables `RDS_SECURITY_GROUP`, `RDS_USER_ACCESS_SECRET_ARN` and `DB_HOST_ENDPOINT` can be found from output logs of the previous `Deploy Dev RDS Stack` stage as `security_group_id`, `admin_db_login_secret_arn`, and `rds_endpoint` respectively. Note that a new earthdata application will need to be first created if using a new prefix for new deployment which will give the values for `EARTHDATA_CLIENT_ID` and `EARTHDATA_CLIENT_PASSWORD`. `CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION` is the branch you want to check out in the [deployment repo](https://git.earthdata.nasa.gov/projects/ORCA/repos/cumulus-orca-deploy-template/browse) such as `v11.1.1-v4.0.1`.
 
-Note that `RDS_USER_ACCESS_SECRET_ARN` value from the initial run should be recorded, as they may be hidden on future deployments. In addition, the jobs may need to be run multiple times to get past deployment errors if there is one. If an error is raised saying `Cloudwatch log groups already exist`, then manually delete all the cloudwatch log groups and corresponding lambdas having the same name as the log groups from the AWS console and retry running the job.
+Note that `admin_db_login_secret_arn` value from the initial run should be recorded, as they may be hidden on future deployments. In addition, the jobs may need to be run multiple times to get past deployment errors if there is one. If an error is raised saying `Cloudwatch log groups already exist`, then manually delete all the cloudwatch log groups and corresponding lambdas having the same name as the log groups from the AWS console and retry running the job.
