@@ -1,8 +1,8 @@
 #!/bin/bash
 set -ex
 
-export CUMULUS_AWS_ACCESS_KEY_ID=$bamboo_CUMULUS_AWS_ACCESS_KEY_ID
-export CUMULUS_AWS_SECRET_ACCESS_KEY=$bamboo_CUMULUS_AWS_SECRET_ACCESS_KEY
+export AWS_ACCESS_KEY_ID=$bamboo_CUMULUS_AWS_ACCESS_KEY_ID
+export AWS_SECRET_ACCESS_KEY=$bamboo_CUMULUS_AWS_SECRET_ACCESS_KEY
 export AWS_DEFAULT_REGION=$bamboo_CUMULUS_AWS_DEFAULT_REGION
 
 #remove old files from bamboo as they throw error
@@ -16,7 +16,7 @@ sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' buckets.tf.template > buckets.tf
 if aws s3api head-bucket --bucket ${bamboo_PREFIX}-tf-state;then
     echo "terraform state bucket already present. Using existing state file"
 else
-    echo "terraform state bucket is not created. Creating ..."
+    echo "Something went wrong when checking terraform state bucket. Creating ..."
     aws s3api create-bucket --bucket ${bamboo_PREFIX}-tf-state  --region ${bamboo_AWS_DEFAULT_REGION} --create-bucket-configuration LocationConstraint=${bamboo_AWS_DEFAULT_REGION}
     
     aws s3api put-bucket-versioning \
