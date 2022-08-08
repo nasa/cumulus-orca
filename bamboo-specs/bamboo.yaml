@@ -5,14 +5,39 @@ plan:
   key: RTR
   name: rhassan-test-repository
 stages:
+- Setup Env:
+    manual: false
+    final: false
+    jobs:
+    - Set Pending Github Status
 #deploy ORCA buckets, Cumulus and ORCA modules
 - Deploy Dev Cumulus and ORCA Stack:
     manual: true
-    final: true
+    final: false
     jobs:
     - Deploy cumulus and orca
         
-
+Set Pending Github Status:
+  key: SPGS
+  tasks:
+  - checkout:
+      force-clean-build: 'false'
+      description: Checkout Default Repository
+  - script:
+      interpreter: SHELL
+      scripts:
+      - |-   #used for better script formatting
+        set -ex
+        ./bin/set_status.sh pending ${bamboo.resultsUrl} "CI Running"
+      description: Set Pending Status
+  - script:
+      interpreter: SHELL
+      scripts:
+      - |-   #used for better script formatting
+        set -ex
+        ./bin/set_status.sh pending ${bamboo.resultsUrl} "CI Running"
+      description: Set Pending Status but again!
+      
 #job for deploying cumulus and orca
 Deploy cumulus and orca:
   key: DCO
