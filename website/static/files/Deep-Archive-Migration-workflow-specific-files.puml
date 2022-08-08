@@ -44,8 +44,9 @@ end note
 
 ob-[#green]> mq: Notify message that files have been restored sent to queue
 
+
 activate mq
-mr-[#green]> mq: Read messages that files have been restored
+mc-[#green]> mq: Read messages that files have been restored
 
 mc -[#red]> ob: Copies files to Deep Archive storage
 
@@ -55,8 +56,11 @@ deactivate oc
 loop
 
 operator -[#green]> mr: Requests migration job status by passing jobId
-
 activate mr
+mr -[#green]> oc: Queries for the jobid
+oc -[#red]> mr: Returns information relevant to the jobid
+
+
 
 mr -[#red]> operator: Returns migration job information
 deactivate mr
