@@ -80,12 +80,9 @@ terraform apply \
   -var "engine_version=$bamboo_RDS_ENGINE_VERSION" \
   -var "permissions_boundary_arn=arn:aws:iam::$AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
 
-cat terraform output -json >> infrastructure.json
-cp infrastructure.json s3://orcaintegration-tf-state/test
-
-export RDS_USER_ACCESS_SECRET_ARN=$(jq '.outputs["admin_db_login_secret_arn"].value' infrastructure.json)
-export DB_HOST_ENDPOINT=$(jq '.outputs["rds_endpoint"].value' infrastructure.json)
-export RDS_SECURITY_GROUP=$(jq '.outputs["security_group_id"].value' infrastructure.json)
+export RDS_USER_ACCESS_SECRET_ARN=$(terraform output admin_db_login_secret_arn)
+export DB_HOST_ENDPOINT=$(terraform output rds_endpoint)
+export RDS_SECURITY_GROUP=$(terraform output security_group_id)
 
 echo "-----------------------------"
 echo $RDS_USER_ACCESS_SECRET_ARN
@@ -116,7 +113,7 @@ terraform apply \
   -var "vpc_id=$VPC_ID" \
   -var "rds_user_access_secret_arn=$RDS_USER_ACCESS_SECRET_ARN" \
   -var "rds_security_group=$RDS_SECURITY_GROUP"\
-  -var "permissions_boundary_arn=arn:aws:iam::$bamboo_AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
+  -var "permissions_boundary_arn=arn:aws:iam::$AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
 
 # script for deploying cumulus-tf module
 cd ../cumulus-tf
