@@ -8,7 +8,7 @@ stages:
 #deploy ORCA buckets, Cumulus and ORCA modules
 - Deploy Dev Cumulus and ORCA Stack:
     manual: true
-    final: false
+    final: true
     jobs:
     - Deploy cumulus and orca
         
