@@ -1,79 +1,29 @@
 import json
-import os
 import time
 import uuid
 from unittest import TestCase
 
 import boto3
-from requests import Session
 
 import helpers
+from requests import Session
 
 
-class TestIngestWorkflows(TestCase):
-    API_LOCAL_HOST = "127.0.0.1"
-    API_LOCAL_PORT = "8000"
-
-    storage_bucket_name: str = None
-    aws_region: str = None
-    orca_copy_to_glacier_step_function_arn: str = None
-
-    MY_SESSION: Session = None
-    AWS_API_NAME: str = None
-    API_URL: str = None
-
-    def setUp(self) -> None:
-        print("Running setUp for tests.")
-
-        # Pull from environ
-        # ---
-        TestIngestWorkflows.storage_bucket_name = os.environ[
-            "bamboo_STORAGE_BUCKET_NAME"
-        ]
-        TestIngestWorkflows.aws_region = os.environ["bamboo_AWS_DEFAULT_REGION"]
-        orca_api_deployment_invoke_url = os.environ["orca_API_DEPLOYMENT_INVOKE_URL"]
-        TestIngestWorkflows.orca_copy_to_glacier_step_function_arn = os.environ[
-            "orca_COPY_TO_GLACIER_STEP_FUNCTION_ARN"
-        ]
-
-        # Set up Orca API resources
-        # ---
-        TestIngestWorkflows.AWS_API_NAME = orca_api_deployment_invoke_url.replace(
-            "https://", ""
-        )
-        TestIngestWorkflows.API_URL = \
-            f"https://{TestIngestWorkflows.AWS_API_NAME}:{TestIngestWorkflows.API_LOCAL_PORT}/orca"
-        TestIngestWorkflows.MY_SESSION = Session()
-        TestIngestWorkflows.MY_SESSION.mount(
-            TestIngestWorkflows.API_URL,
-            helpers.DNSResolverHTTPSAdapter(
-                TestIngestWorkflows.AWS_API_NAME, TestIngestWorkflows.API_LOCAL_HOST
-            ),
-        )
-
-    def test_catalog_provider_does_not_exist_returns_empty_granules_list(self):
-        """
-        Presently, we do not raise an error if the providerId is not present in our catalog.
-        """
-        catalog_output = helpers.post_to_api(
-            TestIngestWorkflows.MY_SESSION,
-            TestIngestWorkflows.API_URL + "/catalog/reconcile/",
-            data=json.dumps(
-                {
-                    "pageIndex": 0,
-                    "providerId": [uuid.uuid4().__str__()],
-                    "endTimestamp": int((time.time() + 5) * 1000),
-                }
-            ),
-            headers={"Host": TestIngestWorkflows.AWS_API_NAME},
-        )
-        self.assertEqual(200, catalog_output.status_code)
-        self.assertEqual({"granules": [], "anotherPage": False}, catalog_output.json())
-
-    def test_ingest_no_granules_passes(self):
+class TestNoGranules(TestCase):
+    def test_no_granules_passes(self):
         """
         If no granules are provided, should not store anything in DB.
         """
+        # Set up Orca API resources
+        # ---
+        my_session = Session()
+        my_session.mount(
+            helpers.api_url,
+            helpers.DNSResolverHTTPSAdapter(
+                helpers.aws_api_name, helpers.API_LOCAL_HOST
+            ),
+        )
+
         provider_id = uuid.uuid4().__str__()
         provider_name = uuid.uuid4().__str__()
 
@@ -118,7 +68,7 @@ class TestIngestWorkflows(TestCase):
         }
 
         execution_info = boto3.client("stepfunctions").start_execution(
-            stateMachineArn=TestIngestWorkflows.orca_copy_to_glacier_step_function_arn,
+            stateMachineArn=helpers.orca_copy_to_glacier_step_function_arn,
             input=json.dumps(copy_to_glacier_input, indent=4),
         )
 
@@ -130,8 +80,8 @@ class TestIngestWorkflows(TestCase):
         self.assertEqual(expected_output, json.loads(step_function_results["output"]))
 
         catalog_output = helpers.post_to_api(
-            TestIngestWorkflows.MY_SESSION,
-            TestIngestWorkflows.API_URL + "/catalog/reconcile/",
+            my_session,
+            helpers.api_url + "/catalog/reconcile/",
             data=json.dumps(
                 {
                     "pageIndex": 0,
@@ -139,7 +89,7 @@ class TestIngestWorkflows(TestCase):
                     "endTimestamp": int((time.time() + 5) * 1000),
                 }
             ),
-            headers={"Host": TestIngestWorkflows.AWS_API_NAME},
+            headers={"Host": helpers.aws_api_name},
         )
         self.assertEqual(200, catalog_output.status_code)
         self.assertEqual({"granules": [], "anotherPage": False}, catalog_output.json())

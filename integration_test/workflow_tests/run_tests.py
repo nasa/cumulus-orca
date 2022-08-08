@@ -2,7 +2,7 @@ import unittest
 
 import testtools
 
-import test_ingest_workflows
+import test_packages
 
 
 class TracingStreamResult(testtools.StreamResult):
@@ -14,7 +14,9 @@ class TracingStreamResult(testtools.StreamResult):
 
 
 def run_tests():
-    suite = unittest.TestLoader().loadTestsFromTestCase(test_ingest_workflows.TestIngestWorkflows)
+    # suite = unittest.TestLoader().loadTestsFromTestCase(test_packages.catalog.test_provider_does_not_exist.TestBlah)
+    # suite = unittest.TestLoader().loadTestsFromModule(test_packages.catalog.test_provider_does_not_exist)
+    suite = unittest.TestLoader().loadTestsFromModule(test_packages)
     concurrent_suite = \
         testtools.ConcurrentStreamTestSuite(lambda: ((case, None) for case in suite))
     result = TracingStreamResult()  # testtools.StreamResult()
@@ -22,7 +24,7 @@ def run_tests():
     concurrent_suite.run(result)
     result.stopTestRun()
 
-    print("Checking results...")
+    print(f"Checking results on {len(result.test_results)} tests...")
     failed_tests = []
     for test_name in result.test_results:
         if result.test_results[test_name] != 'success':
