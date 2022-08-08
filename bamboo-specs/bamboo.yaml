@@ -5,41 +5,13 @@ plan:
   key: RTR
   name: rhassan-test-repository
 stages:
-#deploy RDS cluster for integration test
-#TODO ORCA-462: move to a different stage or even to a new plan for better maintenance.
-- Deploy Dev RDS Stack:
-    manual: true
-    final: false
-    jobs:
-    - Deploy RDS cluster
-
-#deploy orca and cumulus for integration test
+#deploy ORCA buckets, Cumulus and ORCA modules
 - Deploy Dev Cumulus and ORCA Stack:
     manual: true
     final: false
     jobs:
     - Deploy cumulus and orca
-          
-#job for deploying cumulus and orca
-Deploy RDS cluster:
-  key: DRC
-  other:
-    clean-working-dir: true
-  docker:
-    image: maven.earthdata.nasa.gov/cumulus_orca
-    volumes:
-      ${bamboo.working.directory}: ${bamboo.working.directory}
-      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
-  tasks:
-  - checkout:
-      force-clean-build: 'true'
-      description: Checkout Default Repository
-  - script:
-      interpreter: SHELL
-      scripts:
-      - |-
-        #!/bin/bash
-        bash integration_test/deploy-orca.sh
+        
 
 #job for deploying cumulus and orca
 Deploy cumulus and orca:
@@ -62,7 +34,7 @@ Deploy cumulus and orca:
       scripts:
       - |-
         #!/bin/bash
-        bash integration_test/deployment-cumulus-orca.sh
+        bash integration_test/deploy-orca.sh
 variables:
   DEPLOYMENT: sandbox
   ORCA_VERSION: 4.0.3

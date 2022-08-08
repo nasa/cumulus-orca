@@ -4,12 +4,14 @@ export AWS_ACCESS_KEY_ID=$bamboo_AWS_ACCESS_KEY_ID
 export AWS_SECRET_ACCESS_KEY=$bamboo_AWS_SECRET_ACCESS_KEY
 export AWS_DEFAULT_REGION=$bamboo_AWS_DEFAULT_REGION
 
+which -a jq
+
 #remove old files from bamboo as they throw error
 rm *.tf
 #deploy the S3 buckets and dynamoDB table first
-git clone --branch develop --single-branch https://github.com/nasa/cumulus-orca.git && cd integration_test
-#replace prefix with bamboo prefix variable
-sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' buckets.tf.template > buckets.tf
+# git clone --branch develop --single-branch https://github.com/nasa/cumulus-orca.git && cd integration_test
+# #replace prefix with bamboo prefix variable
+# sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' buckets.tf.template > buckets.tf
 
 if ! aws s3api head-bucket --bucket ${bamboo_PREFIX}-tf-state;then
     echo "terraform state bucket is not created. Creating ..."
@@ -78,11 +80,9 @@ terraform apply \
   -var "engine_version=$bamboo_RDS_ENGINE_VERSION" \
   -var "permissions_boundary_arn=arn:aws:iam::$AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
 
-export RDS_USER_ACCESS_SECRET_ARN=jq '.outputs[].admin_db_login_secret_arn' terraform.tfstate
-export DB_HOST_ENDPOINT=jq '.outputs[].rds_endpoint' terraform.tfstate
-export RDS_SECURITY_GROUP=jq '.outputs[].security_group_id' terraform.tfstate
-
-
+export RDS_USER_ACCESS_SECRET_ARN=$(jq '.outputs["admin_db_login_secret_arn"].value' terraform.tfstate)
+export DB_HOST_ENDPOINT=$(jq '.outputs["rds_endpoint"].value' terraform.tfstate)
+export RDS_SECURITY_GROUP=$(jq '.outputs["security_group_id"].value' terraform.tfstate)
 
 echo "-----------------------------"
 echo $RDS_USER_ACCESS_SECRET_ARN
@@ -91,14 +91,8 @@ echo $RDS_SECURITY_GROUP
 
 # -------------------
 
-#clone cumulus orca template for deploying cumulus and orca
-git clone --branch $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION --single-branch https://git.earthdata.nasa.gov/scm/orca/cumulus-orca-deploy-template.git
-cd cumulus-orca-deploy-template
-echo "checked out to $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION branch"
-
-
 #deploy data persistence tf module
-cd data-persistence-tf
+cd ../data-persistence-tf
 mv terraform.tfvars.example terraform.tfvars
 #replacing terraform.tf with proper values
 sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g; s/us-east-1/'"$bamboo_AWS_DEFAULT_REGION"'/g' terraform.tf.example > terraform.tf
@@ -122,7 +116,7 @@ terraform apply \
   -var "permissions_boundary_arn=arn:aws:iam::$bamboo_AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
 
 # script for deploying cumulus-tf module
-cd ../../cumulus-orca-deploy-template/cumulus-tf
+cd ../cumulus-tf
 
 #replacing .tf files with proper values
 sed 's/PREFIX/'"$bamboo_PREFIX"'/g' terraform.tfvars.example > terraform.tfvars
@@ -157,7 +151,7 @@ terraform apply \
   -var "cmr_oauth_provider=$bamboo_CMR_OAUTH_PROVIDER" \
   -var "key_name=$bamboo_PREFIX" \
   -var "prefix=$bamboo_PREFIX" \
-  -var "permissions_boundary_arn=arn:aws:iam::$bamboo_AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY" \
+  -var "permissions_boundary_arn=arn:aws:iam::$AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY" \
   -var "db_user_password=$bamboo_DB_USER_PASSWORD" \
   -var "orca_default_bucket=$bamboo_PREFIX-orca-primary" \
   -var "db_admin_username=$bamboo_DB_ADMIN_USERNAME" \
