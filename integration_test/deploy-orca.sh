@@ -80,7 +80,7 @@ terraform apply \
   -var "engine_version=$bamboo_RDS_ENGINE_VERSION" \
   -var "permissions_boundary_arn=arn:aws:iam::$AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
 
-terraform output -json >> infrastructure.json
+cat terraform output -json >> infrastructure.json
 cp infrastructure.json s3://orcaintegration-tf-state/test
 
 export RDS_USER_ACCESS_SECRET_ARN=$(jq '.outputs["admin_db_login_secret_arn"].value' infrastructure.json)
