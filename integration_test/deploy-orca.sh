@@ -3,8 +3,7 @@ set -ex
 export AWS_ACCESS_KEY_ID=$bamboo_AWS_ACCESS_KEY_ID
 export AWS_SECRET_ACCESS_KEY=$bamboo_AWS_SECRET_ACCESS_KEY
 export AWS_DEFAULT_REGION=$bamboo_AWS_DEFAULT_REGION
-
-which -a jq
+/usr/local/bin/jq
 
 #remove old files from bamboo as they throw error
 rm *.tf
@@ -53,10 +52,10 @@ mv terraform.tfvars.example terraform.tfvars
 #replacing terraform.tf with proper values
 sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g; s/us-east-1/'"$bamboo_AWS_DEFAULT_REGION"'/g' terraform.tf.example > terraform.tf
 
-export AWS_ACCOUNT_ID=$(aws sts get-caller-identity | jq -r '.Account')
-export VPC_ID=$(aws ec2 describe-vpcs | jq -r '.Vpcs | to_entries | .[] | .value.VpcId')
-export AWS_SUBNET_ID1=$(aws ec2 describe-subnets --filters "Name=availability-zone,Values=us-west-2a"| jq -r '.Subnets | .[] | select (.Tags | .[] | .Value | contains ("Private application ")) | .SubnetId ')
-export AWS_SUBNET_ID2=$(aws ec2 describe-subnets --filters "Name=availability-zone,Values=us-west-2b"| jq -r '.Subnets | .[] | select (.Tags | .[] | .Value | contains ("Private application ")) | .SubnetId ')
+export AWS_ACCOUNT_ID=$(aws sts get-caller-identity | /usr/local/bin/jq -r '.Account')
+export VPC_ID=$(aws ec2 describe-vpcs | /usr/local/bin/jq -r '.Vpcs | to_entries | .[] | .value.VpcId')
+export AWS_SUBNET_ID1=$(aws ec2 describe-subnets --filters "Name=availability-zone,Values=us-west-2a"| /usr/local/bin/jq -r '.Subnets | .[] | select (.Tags | .[] | .Value | contains ("Private application ")) | .SubnetId ')
+export AWS_SUBNET_ID2=$(aws ec2 describe-subnets --filters "Name=availability-zone,Values=us-west-2b"| /usr/local/bin/jq -r '.Subnets | .[] | select (.Tags | .[] | .Value | contains ("Private application ")) | .SubnetId ')
 
 # Initialize deployment
 terraform init \
@@ -80,9 +79,9 @@ terraform apply \
   -var "engine_version=$bamboo_RDS_ENGINE_VERSION" \
   -var "permissions_boundary_arn=arn:aws:iam::$AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
 
-export RDS_USER_ACCESS_SECRET_ARN=$(jq '.outputs["admin_db_login_secret_arn"].value' terraform.tfstate)
-export DB_HOST_ENDPOINT=$(jq '.outputs["rds_endpoint"].value' terraform.tfstate)
-export RDS_SECURITY_GROUP=$(jq '.outputs["security_group_id"].value' terraform.tfstate)
+export RDS_USER_ACCESS_SECRET_ARN=$(/usr/local/bin/jq '.outputs["admin_db_login_secret_arn"].value' terraform.tfstate)
+export DB_HOST_ENDPOINT=$(/usr/local/bin/jq '.outputs["rds_endpoint"].value' terraform.tfstate)
+export RDS_SECURITY_GROUP=$(/usr/local/bin/jq '.outputs["security_group_id"].value' terraform.tfstate)
 
 echo "-----------------------------"
 echo $RDS_USER_ACCESS_SECRET_ARN
