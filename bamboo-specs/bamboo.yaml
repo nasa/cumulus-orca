@@ -53,7 +53,6 @@ variables:
   AWS_SUBNET_ID1: subnet-0d3416cbfaaf3508e
   AWS_SUBNET_ID2: subnet-0b7acca747c16c895
   VPC_ID: vpc-0c4932fcc4b86cff6
-  AWS_ACCOUNT_ID: REPLACE ME
   ROLE_BOUNDARY: NGAPShRoleBoundary
   CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION: release/v11.1.1-v4.0.1
   PREFIX: orcaintegration
