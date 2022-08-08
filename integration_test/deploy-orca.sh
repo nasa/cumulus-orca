@@ -80,9 +80,12 @@ terraform apply \
   -var "engine_version=$bamboo_RDS_ENGINE_VERSION" \
   -var "permissions_boundary_arn=arn:aws:iam::$AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
 
-export RDS_USER_ACCESS_SECRET_ARN=$(jq '.outputs["admin_db_login_secret_arn"].value' terraform.tfstate)
-export DB_HOST_ENDPOINT=$(jq '.outputs["rds_endpoint"].value' terraform.tfstate)
-export RDS_SECURITY_GROUP=$(jq '.outputs["security_group_id"].value' terraform.tfstate)
+terraform output -json >> infrastructure.json
+
+
+export RDS_USER_ACCESS_SECRET_ARN=$(jq '.outputs["admin_db_login_secret_arn"].value' infrastructure.json)
+export DB_HOST_ENDPOINT=$(jq '.outputs["rds_endpoint"].value' infrastructure.json)
+export RDS_SECURITY_GROUP=$(jq '.outputs["security_group_id"].value' infrastructure.json)
 
 echo "-----------------------------"
 echo $RDS_USER_ACCESS_SECRET_ARN
