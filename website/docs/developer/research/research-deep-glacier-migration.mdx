@@ -16,7 +16,7 @@ The goal of this research is to provide an initial design and recommendation for
 ### Assumptions
 
 - List of objects already exists in orca catalog and S3 bucket.
-- Users should be able to provide some information (possibly a collection or a combination of collection and granuleId) to migrate objects.
+- Users should be able to provide some information (possibly a collectionId) to migrate objects.
 - A serverless approach will be used utilizing several Python lambda functions, SNS/SQS and S3 bucket event notifications.
 - The glacier bucket has versioning enabled.
 
@@ -24,7 +24,7 @@ The goal of this research is to provide an initial design and recommendation for
 
 Based on the discussion with ORCA team, we came up with two use cases that the end user might be interested in:
 - Convert all the holdings or holdings with a known key prefix from Flexible Retrieval (formerly Glacier) to Deep Archive.
-- Convert specific collection or granules from Flexible Retrieval (formerly Glacier) to Deep Archive.
+- Convert specific collection from Flexible Retrieval (formerly Glacier) to Deep Archive.
 
 The details of each use cases and relevant architecture drawings can be found in the next sections.
 
@@ -199,7 +199,7 @@ A detailed sequence diagram that goes into more depth on the steps and actions n
 <br />
 <br />
 
-The following is a container level diagram of the proposed architecture for the collection/granuleId specific use case.
+The following is a container level diagram of the proposed architecture for the collection specific use case.
 
 <MyImage
     imageSource={useBaseUrl('img/ORCA-Deep-Archive-Migration-Architecture-specific-files.svg')}
