@@ -14,8 +14,6 @@ class TracingStreamResult(testtools.StreamResult):
 
 
 def run_tests():
-    # suite = unittest.TestLoader().loadTestsFromTestCase(test_packages.catalog.test_provider_does_not_exist.TestBlah)
-    # suite = unittest.TestLoader().loadTestsFromModule(test_packages.catalog.test_provider_does_not_exist)
     suite = unittest.TestLoader().loadTestsFromModule(test_packages)
     concurrent_suite = \
         testtools.ConcurrentStreamTestSuite(lambda: ((case, None) for case in suite))
