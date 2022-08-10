@@ -7,16 +7,18 @@ export AWS_DEFAULT_REGION=$bamboo_CUMULUS_AWS_DEFAULT_REGION
 #remove old files from bamboo as they throw error
 rm *.tf
 
-#deploy the S3 buckets and dynamoDB table first
-git clone --branch develop --single-branch https://github.com/nasa/cumulus-orca.git && cd integration_test
+git clone --branch ${bamboo_BRANCH_NAME} --single-branch https://github.com/nasa/cumulus-orca.git && cd integration_test
+echo "Cloned Orca, branch ${bamboo_BRANCH_NAME}"
 
 #replace prefix with bamboo prefix variable
 sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' buckets.tf.template > buckets.tf
 
-if ! aws s3api head-bucket --bucket ${bamboo_PREFIX}-tf-state;then
-    echo "terraform state bucket is not created. Creating ..."
+if aws s3api head-bucket --bucket ${bamboo_PREFIX}-tf-state;then
+    echo "terraform state bucket already present. Using existing state file"
+else
+    echo "Something went wrong when checking terraform state bucket. Creating ..."
     aws s3api create-bucket --bucket ${bamboo_PREFIX}-tf-state  --region ${bamboo_AWS_DEFAULT_REGION} --create-bucket-configuration LocationConstraint=${bamboo_AWS_DEFAULT_REGION}
-
+    
     aws s3api put-bucket-versioning \
     --bucket ${bamboo_PREFIX}-tf-state \
     --versioning-configuration Status=Enabled
@@ -27,8 +29,6 @@ if ! aws s3api head-bucket --bucket ${bamboo_PREFIX}-tf-state;then
       --key-schema AttributeName=LockID,KeyType=HASH \
       --billing-mode PAY_PER_REQUEST \
       --region ${bamboo_AWS_DEFAULT_REGION}
-else
-    echo "terraform state bucket already present. Using existing state file"
 fi
 
 #configuring S3 backend
@@ -50,7 +50,7 @@ terraform apply \
 #clone cumulus orca template for deploying RDS cluster
 git clone --branch $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION --single-branch https://git.earthdata.nasa.gov/scm/orca/cumulus-orca-deploy-template.git
 cd cumulus-orca-deploy-template
-echo "checked out to $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION branch"
+echo "cloned Cumulus, branch $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION"
 
 #deploy rds-cluster-tf module
 cd rds-cluster-tf

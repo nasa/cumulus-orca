@@ -310,7 +310,7 @@ Deploy DR ORCA buckets:
       scripts:
       - |-
         #!/bin/bash
-        bash integration_test/deploy-dr-buckets.sh
+        bash integration_test/deployment-dr-buckets.sh
          
 #job for deploying ORCA buckets, Cumulus and ORCA modules
 Deploy ORCA buckets and modules:
@@ -333,18 +333,18 @@ Deploy ORCA buckets and modules:
       scripts:
       - |-
         #!/bin/bash
-        bash integration_test/deploy-orca.sh
+        bash integration_test/deployment-orca.sh
 variables:
   DEPLOYMENT: sandbox
   ORCA_VERSION: 4.0.3
   AWS_DEFAULT_REGION: us-west-2
+  CUMULUS_AWS_DEFAULT_REGION: us-west-2
   CUMULUS_AWS_ACCESS_KEY_ID: REPLACE ME
   CUMULUS_AWS_SECRET_ACCESS_KEY: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
   DR_AWS_ACCESS_KEY_ID: REPLACE ME
   DR_AWS_SECRET_ACCESS_KEY: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
   RDS_ENGINE_VERSION: 10.18
   ROLE_BOUNDARY: NGAPShRoleBoundary
-  CMR_OAUTH_PROVIDER: earthdata
   CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION: release/v11.1.1-v4.0.1
   PREFIX: REPLACE ME
   DB_ADMIN_USERNAME: postgres
@@ -354,6 +354,8 @@ variables:
   CMR_USERNAME: username
   EARTHDATA_CLIENT_ID: REPLACE ME
   EARTHDATA_CLIENT_PASSWORD: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
+  BRANCH_NAME: ${bamboo.planRepository.branchName}
+  CMR_OAUTH_PROVIDER: earthdata
  
 repositories:
 - orca-develop: #this is created by CICD team from https://ci.earthdata.nasa.gov/. Contact ci/cd team with any issues.
