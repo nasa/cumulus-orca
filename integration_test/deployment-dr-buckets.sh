@@ -1,4 +1,6 @@
 #!/bin/bash
+set -ex
+
 # Negated REGEX that checks that the PREFIX is alpha numeric with no spaces and the optional use of an _
 if [[ ! ${bamboo_PREFIX} =~ ^[[:upper:][:lower:][:digit:]_]+$ ]]; then
     echo "FATAL: PREFIX variable value [${bamboo_PREFIX}] is invalid. Only alpha numeric values and _ are allowed."
@@ -11,12 +13,15 @@ export AWS_DEFAULT_REGION=$bamboo_AWS_DEFAULT_REGION
 
 #remove old files from bamboo as they throw error
 rm *.tf
-git clone --branch develop --single-branch https://github.com/nasa/cumulus-orca.git && cd integration_test
+git clone --branch ${bamboo_BRANCH_NAME} --single-branch https://github.com/nasa/cumulus-orca.git && cd integration_test
+echo "Cloned Orca, branch ${bamboo_BRANCH_NAME}"
 #replace prefix with bamboo prefix variable
 sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' dr-buckets.tf.template > dr-buckets.tf
 
-if ! aws s3api head-bucket --bucket ${bamboo_PREFIX}-dr-tf-state;then
-    echo "terraform state bucket is not created. Creating ..."
+if aws s3api head-bucket --bucket ${bamboo_PREFIX}-dr-tf-state;then
+    echo "terraform state bucket already present. Using existing state file"
+else
+    echo "Something went wrong when checking terraform state bucket. Creating ..."
     aws s3api create-bucket --bucket ${bamboo_PREFIX}-dr-tf-state  --region ${bamboo_AWS_DEFAULT_REGION} --create-bucket-configuration LocationConstraint=${bamboo_AWS_DEFAULT_REGION}
     
     aws s3api put-bucket-versioning \
@@ -29,8 +34,6 @@ if ! aws s3api head-bucket --bucket ${bamboo_PREFIX}-dr-tf-state;then
       --key-schema AttributeName=LockID,KeyType=HASH \
       --billing-mode PAY_PER_REQUEST \
       --region ${bamboo_AWS_DEFAULT_REGION}
-else
-    echo "terraform state bucket already present. Using existing state file"
 fi
 
 #configuring S3 backend
@@ -46,7 +49,7 @@ echo "terraform {
 #initialize terraform
 terraform init -input=false
 #deploy using terraform
-echo "Deploying S3  buckets in Disaaster Recovery account"
+echo "Deploying DR S3 buckets in Disaster Recovery account"
 terraform apply \
   -auto-approve \
   -input=false
