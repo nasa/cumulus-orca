@@ -284,19 +284,12 @@ stages:
     jobs:
     - Deploy DR ORCA buckets
 
-#deploy RDS cluster for integration test
-- Deploy Dev RDS Stack:
+#Deploy RDS, ORCA buckets, Cumulus and ORCA modules
+- Deploy ORCA Buckets and Cumulus/ORCA modules:
     manual: true
     final: false
     jobs:
-    - Deploy RDS cluster
-
-#deploy orca and cumulus for integration test
-- Deploy Dev Cumulus and ORCA Stack:
-    manual: true
-    final: false
-    jobs:
-    - Deploy cumulus and orca
+    - Deploy ORCA buckets and modules
 
 #job for deploying ORCA buckets in DR account
 Deploy DR ORCA buckets:
@@ -319,30 +312,9 @@ Deploy DR ORCA buckets:
         #!/bin/bash
         bash integration_test/deploy-dr-buckets.sh
          
-#job for deploying cumulus and orca
-Deploy RDS cluster:
-  key: DRC
-  other:
-    clean-working-dir: true
-  docker:
-    image: maven.earthdata.nasa.gov/cumulus_orca
-    volumes:
-      ${bamboo.working.directory}: ${bamboo.working.directory}
-      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
-  tasks:
-  - checkout:
-      force-clean-build: 'true'
-      description: Checkout Default Repository
-  - script:
-      interpreter: SHELL
-      scripts:
-      - |-
-        #!/bin/bash
-        bash integration_test/deployment-rds.sh
-
-#job for deploying cumulus and orca
-Deploy cumulus and orca:
-  key: DCO
+#job for deploying ORCA buckets, Cumulus and ORCA modules
+Deploy ORCA buckets and modules:
+  key: DOBM
   other:
     clean-working-dir: true
     # Some plugin configurations are not supported by YAML Specs
@@ -361,7 +333,7 @@ Deploy cumulus and orca:
       scripts:
       - |-
         #!/bin/bash
-        bash integration_test/deployment-cumulus-orca.sh
+        bash integration_test/deploy-orca.sh
 variables:
   DEPLOYMENT: sandbox
   ORCA_VERSION: 4.0.3
@@ -370,14 +342,9 @@ variables:
   CUMULUS_AWS_SECRET_ACCESS_KEY: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
   DR_AWS_ACCESS_KEY_ID: REPLACE ME
   DR_AWS_SECRET_ACCESS_KEY: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
-  RDS_SECURITY_GROUP: REPLACE ME
   RDS_ENGINE_VERSION: 10.18
-  RDS_USER_ACCESS_SECRET_ARN: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
-  AWS_SUBNET_ID1: REPLACE ME
-  AWS_SUBNET_ID2: REPLACE ME
-  VPC_ID: REPLACE ME
-  AWS_ACCOUNT_ID: REPLACE ME
   ROLE_BOUNDARY: NGAPShRoleBoundary
+  CMR_OAUTH_PROVIDER: earthdata
   CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION: release/v11.1.1-v4.0.1
   PREFIX: REPLACE ME
   DB_ADMIN_USERNAME: postgres
@@ -387,7 +354,6 @@ variables:
   CMR_USERNAME: username
   EARTHDATA_CLIENT_ID: REPLACE ME
   EARTHDATA_CLIENT_PASSWORD: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
-  DB_HOST_ENDPOINT: REPLACE ME
  
 repositories:
 - orca-develop: #this is created by CICD team from https://ci.earthdata.nasa.gov/. Contact ci/cd team with any issues.

@@ -121,7 +121,7 @@ Make sure to use the `ORCA Deploy Plan` bamboo plan for deploying the resources.
 
 For `Deploy buckets in DR account` stage in bamboo plan, add the values for `PREFIX`, `DR_AWS_ACCESS_KEY_ID` and `DR_AWS_SECRET_ACCESS_KEY` variables for the `Disaster Recovery` AWS account to deploy the buckets in DR account. Some of these buckets have cross-account IAM policies attached so that they can be accessed from the other cumulus sandbox.
 
-The Cumulus and TF buckets as well as dynamoDB table in cumulus OU account are created automatically in bamboo `Deploy Dev Cumulus and ORCA Stack` stage. These are the buckets that need to be created in cumulus OU account:
+The Cumulus and TF buckets as well as dynamoDB table in cumulus OU account are created automatically in bamboo `Deploy ORCA Buckets and Cumulus/ORCA modules` stage. These are the buckets that need to be created in cumulus OU account:
 
 - `<PREFIX>-internal`
 - `<PREFIX>-level0`
@@ -130,7 +130,7 @@ The Cumulus and TF buckets as well as dynamoDB table in cumulus OU account are c
 - `<PREFIX>-protected`
 - `<PREFIX>-tf-state` (for storing the terraform state file in cumulus OU account)
 
-While running the `Deploy Dev RDS Stack` stage, replace the following variables with yours. This is because some variables are sensitive and some will vary depending upon the user running the pipeline. Hitting 'play' next to `Deploy DR ORCA buckets`, `Deploy Dev RDS Stack` and `Deploy Dev Cumulus and ORCA Stack` brings up a checkbox list to run multiple jobs at once. Note that none of the checkboxes should be checked.
+While running the `Deploy ORCA Buckets and Cumulus/ORCA modules` stage, replace the following variables with yours. This is because some variables are sensitive and some will vary depending upon the user running the pipeline. Hitting 'play' next to `Deploy DR ORCA buckets`, `Deploy ORCA Buckets and Cumulus/ORCA modules` brings up a checkbox list to run multiple jobs at once. Note that none of the checkboxes should be checked.
 
 - CUMULUS_AWS_ACCESS_KEY_ID
 - CUMULUS_AWS_SECRET_ACCESS_KEY
@@ -138,6 +138,9 @@ While running the `Deploy Dev RDS Stack` stage, replace the following variables 
 - AWS_ACCOUNT_ID(for cumulus sandbox account)
 - DB_ADMIN_PASSWORD
 - DB_USER_PASSWORD
+- EARTHDATA_CLIENT_ID
+- EARTHDATA_CLIENT_PASSWORD
+- CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION
 
 Note that the above buckets can also be created manually if desired by the user. Make sure to use the proper AWS access keys for configuration before running the commands.
 
@@ -170,15 +173,6 @@ aws ec2 create-key-pair --key-name <PREFIX>
 Make sure your AWS is configured to use the cumulus sandbox account by using that account's AWS access keys before creating the EC2 key pair.
 :::
 
-For the `Deploy Dev Cumulus and ORCA Stack`  stage, add the following variables. 
+Note that a new earthdata application will need to be first created if using a new prefix for new deployment which will give the values for `EARTHDATA_CLIENT_ID` and `EARTHDATA_CLIENT_PASSWORD`. `CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION` is the branch you want to check out in the [deployment repo](https://git.earthdata.nasa.gov/projects/ORCA/repos/cumulus-orca-deploy-template/browse) such as `v11.1.1-v4.0.1`.
 
-- RDS_SECURITY_GROUP
-- RDS_USER_ACCESS_SECRET_ARN
-- DB_HOST_ENDPOINT
-- EARTHDATA_CLIENT_ID
-- EARTHDATA_CLIENT_PASSWORD
-- CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION
-
-The RDS variables `RDS_SECURITY_GROUP`, `RDS_USER_ACCESS_SECRET_ARN` and `DB_HOST_ENDPOINT` can be found from output logs of the previous `Deploy Dev RDS Stack` stage. Note that a new earthdata application will need to be first created if using a new prefix for new deployment which will give the values for `EARTHDATA_CLIENT_ID` and `EARTHDATA_CLIENT_PASSWORD`. `CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION` is the branch you want to check out in the [deployment repo](https://git.earthdata.nasa.gov/projects/ORCA/repos/cumulus-orca-deploy-template/browse) such as `v11.1.1-v4.0.1`.
-
-Note that `RDS_USER_ACCESS_SECRET_ARN` value from the initial run should be recorded, as they may be hidden on future deployments. In addition, the jobs may need to be run multiple times to get past deployment errors if there is one. If an error is raised saying `Cloudwatch log groups already exist`, then manually delete all the cloudwatch log groups and corresponding lambdas having the same name as the log groups from the AWS console and retry running the job.
+Note that the jobs may need to be run multiple times to get past deployment errors if there is one. If an error is raised saying `Cloudwatch log groups already exist`, then manually delete all the cloudwatch log groups and corresponding lambdas having the same name as the log groups from the AWS console and retry running the job.
