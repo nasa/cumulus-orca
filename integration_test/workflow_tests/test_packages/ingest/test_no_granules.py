@@ -6,7 +6,6 @@ from unittest import TestCase
 import boto3
 
 import helpers
-from requests import Session
 
 
 class TestNoGranules(TestCase):
@@ -16,13 +15,7 @@ class TestNoGranules(TestCase):
         """
         # Set up Orca API resources
         # ---
-        my_session = Session()
-        my_session.mount(
-            helpers.api_url,
-            helpers.DNSResolverHTTPSAdapter(
-                helpers.aws_api_name, helpers.API_LOCAL_HOST
-            ),
-        )
+        my_session = helpers.create_session()
 
         provider_id = uuid.uuid4().__str__()
         provider_name = uuid.uuid4().__str__()
@@ -61,8 +54,7 @@ class TestNoGranules(TestCase):
                 "collectionShortname": "{$.meta.collection.name}",
                 "collectionVersion": "{$.meta.collection.version}",
                 "orcaDefaultBucketOverride": "{$.meta.collection.meta.orcaDefaultBucketOverride}",
-                "orcaDefaultStorageClassOverride":
-                    "{$.meta.collection.meta.orcaDefaultStorageClassOverride}",
+                "orcaDefaultStorageClassOverride": "{$.meta.collection.meta.orcaDefaultStorageClassOverride}",
             },
             "exception": "None",
         }

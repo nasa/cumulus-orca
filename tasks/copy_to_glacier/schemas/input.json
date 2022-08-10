@@ -34,11 +34,11 @@
                   "type": "string",
                   "description": "S3 Key for archived file."
                 },
-                "hash": {
+                "checksum": {
                   "type": ["string", "null"],
                   "description": "Hash of the object from Cumulus"
                 },
-                "hashType": {
+                "checksumType": {
                   "type": ["string", "null"],
                   "description": "Hash type used to hash the object. Supplied by Cumulus."
                 }

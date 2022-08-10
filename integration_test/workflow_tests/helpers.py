@@ -3,7 +3,7 @@ import functools
 import os
 import random
 import time
-from typing import Callable, TypeVar
+from typing import Callable, Text, TypeVar, Union
 
 import boto3
 from requests import Session
@@ -21,14 +21,13 @@ API_LOCAL_PORT = "8000"
 # os.env keys
 # "https://s2jmh2r60k.execute-api.us-west-2.amazonaws.com"
 orca_api_deployment_invoke_url = os.environ["orca_API_DEPLOYMENT_INVOKE_URL"]
-orca_copy_to_glacier_step_function_arn = os.environ["orca_COPY_TO_GLACIER_STEP_FUNCTION_ARN"]
+orca_copy_to_glacier_step_function_arn = os.environ[
+    "orca_COPY_TO_GLACIER_STEP_FUNCTION_ARN"
+]
 
 # helpful pre-constructed values
-aws_api_name = orca_api_deployment_invoke_url.replace(
-    "https://", ""
-)
-api_url = \
-    f"https://{aws_api_name}:{API_LOCAL_PORT}/orca"
+aws_api_name = orca_api_deployment_invoke_url.replace("https://", "")
+api_url = f"https://{aws_api_name}:{API_LOCAL_PORT}/orca"
 
 MAX_RETRIES = 3  # number of times to retry.
 BACKOFF_FACTOR = 2  # Value of the factor used to backoff
@@ -39,9 +38,9 @@ RT = TypeVar("RT")  # return type
 # Retry decorator for function
 # todo: Lacks unit tests. Will likely eventually be part of shared lib ORCA-148.
 def retry_error(
-        max_retries: int = MAX_RETRIES,
-        backoff_in_seconds: int = INITIAL_BACKOFF_IN_SECONDS,
-        backoff_factor: int = BACKOFF_FACTOR,
+    max_retries: int = MAX_RETRIES,
+    backoff_in_seconds: int = INITIAL_BACKOFF_IN_SECONDS,
+    backoff_factor: int = BACKOFF_FACTOR,
 ) -> Callable[[Callable[[], RT]], Callable[[], RT]]:
     """
     Decorator takes arguments to adjust number of retries and backoff strategy.
@@ -81,8 +80,8 @@ def retry_error(
                     else:
                         # perform exponential delay
                         backoff_time = (
-                                backoff_in_seconds * backoff_factor ** total_retries
-                                + random.uniform(0, 1)  # nosec
+                            backoff_in_seconds * backoff_factor ** total_retries
+                            + random.uniform(0, 1)  # nosec
                         )
                         print(
                             f"Encountered Error on attempt {total_retries}. "
@@ -98,8 +97,17 @@ def retry_error(
     return decorator_retry_error
 
 
+def create_session() -> Session:
+    my_session = Session()
+    my_session.mount(
+        api_url,
+        DNSResolverHTTPSAdapter(aws_api_name, API_LOCAL_HOST),
+    )
+    return my_session
+
+
 def get_state_machine_execution_results(
-        execution_arn, retry_interval_seconds=5, maximum_duration_seconds=60
+    execution_arn, retry_interval_seconds=5, maximum_duration_seconds=60
 ):
     start = datetime.datetime.utcnow()
     while True:
@@ -112,7 +120,7 @@ def get_state_machine_execution_results(
             return execution_state
 
         if (
-                datetime.datetime.utcnow() - start
+            datetime.datetime.utcnow() - start
         ).total_seconds() > maximum_duration_seconds:
             raise TimeoutError()
 
@@ -120,7 +128,12 @@ def get_state_machine_execution_results(
 
 
 @retry_error()
-def post_to_api(session: Session, api_invoke_url, data, headers=...):
+def post_to_api(
+    session: Session,
+    api_invoke_url: Union[Text, bytes],
+    data,
+    headers: Union[Session.params, None] = ...,
+):
     result = session.post(api_invoke_url, data=data, headers=headers)
     if result.status_code == 504:
         # Raise to allow retry logic to catch
@@ -135,13 +148,13 @@ class DNSResolverHTTPSAdapter(HTTPAdapter):
     """
 
     def __init__(
-            self,
-            common_name,
-            host,
-            pool_connections=DEFAULT_POOLSIZE,
-            pool_maxsize=DEFAULT_POOLSIZE,
-            max_retries=DEFAULT_RETRIES,
-            pool_block=DEFAULT_POOLBLOCK,
+        self,
+        common_name,
+        host,
+        pool_connections=DEFAULT_POOLSIZE,
+        pool_maxsize=DEFAULT_POOLSIZE,
+        max_retries=DEFAULT_RETRIES,
+        pool_block=DEFAULT_POOLBLOCK,
     ):
         self.__common_name = common_name
         self.__host = host
@@ -159,7 +172,7 @@ class DNSResolverHTTPSAdapter(HTTPAdapter):
         )
 
     def init_poolmanager(
-            self, connections, maxsize, block=DEFAULT_POOLBLOCK, **pool_kwargs
+        self, connections, maxsize, block=DEFAULT_POOLBLOCK, **pool_kwargs
     ):
         pool_kwargs["assert_hostname"] = self.__common_name
         super(DNSResolverHTTPSAdapter, self).init_poolmanager(

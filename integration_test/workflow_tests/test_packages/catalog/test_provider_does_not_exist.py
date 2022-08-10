@@ -3,8 +3,6 @@ import time
 import uuid
 from unittest import TestCase
 
-from requests import Session
-
 import helpers
 
 
@@ -15,13 +13,7 @@ class TestProviderDoesNotExist(TestCase):
         """
         # Set up Orca API resources
         # ---
-        my_session = Session()
-        my_session.mount(
-            helpers.api_url,
-            helpers.DNSResolverHTTPSAdapter(
-                helpers.aws_api_name, helpers.API_LOCAL_HOST
-            ),
-        )
+        my_session = helpers.create_session()
 
         catalog_output = helpers.post_to_api(
             my_session,

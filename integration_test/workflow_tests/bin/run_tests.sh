@@ -77,10 +77,10 @@ isort \
     --use-parentheses \
     --force-grid-wrap 0 \
     -m 3 \
-    *.py test
+    *.py test_packages
 
 echo "INFO: Formatting with black ..."
-black *.py test
+black *.py test_packages
 
 
 echo "INFO: Checking lint rules ..."
@@ -93,7 +93,7 @@ check_rc $return_code "ERROR: Linting issues found."
 
 ## Run code smell and security tests using bandit
 echo "INFO: Running code smell security tests ..."
-bandit -r *.py test
+bandit -r *.py test_packages
 let return_code=$?
 check_rc $return_code "ERROR: Potential security or code issues found."
 
@@ -105,8 +105,8 @@ let return_code=$?
 check_rc $return_code "ERROR: Potential security issues third party libraries."
 
 
-## Run unit tests and check Coverage
-echo "INFO: Running unit and coverage tests ..."
+## Run tests
+echo "INFO: Running integration tests ..."
 
 python run_tests.py
 let return_code=$?
