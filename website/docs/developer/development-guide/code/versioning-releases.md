@@ -157,7 +157,7 @@ Hitting 'play' next to `Deploy DR ORCA buckets`, `Deploy Dev RDS Stack` and `Dep
 :::
 
 The Cumulus and TF buckets as well as dynamoDB table in cumulus OU account are created automatically in the Bamboo `Deploy ORCA Buckets and Cumulus/ORCA modules` stage. 
-These are the buckets will be created in cumulus OU account:
+These are the buckets that will be created in cumulus OU account:
 
 - `<PREFIX>-internal`
 - `<PREFIX>-level0`
