@@ -62,6 +62,7 @@ data "aws_iam_policy_document" "status_update_queue_policy" {
 resource "aws_sqs_queue" "internal_report_queue" {
   ## OPTIONAL
   name                        = "${var.prefix}-orca-internal-report-queue.fifo"
+  sqs_managed_sse_enabled     = true
   fifo_queue                  = true
   content_based_deduplication = true
   delay_seconds               = var.sqs_delay_time_seconds
@@ -130,6 +131,7 @@ resource "aws_cloudwatch_metric_alarm" "internal_report_deadletter_alarm" {
 # SNS topic needed for cloudwatch alarm
 resource "aws_sns_topic" "internal_report_dlq_alarm" {
   name = "internal_report_dlq_alarm_topic"
+  kms_master_key_id = "alias/aws/sns"
 }
 
 resource "aws_sns_topic_subscription" "internal_report_dlq_alarm_email" {
@@ -145,6 +147,7 @@ resource "aws_sns_topic_subscription" "internal_report_dlq_alarm_email" {
 resource "aws_sqs_queue" "metadata_queue" {
   ## OPTIONAL
   name                        = "${var.prefix}-orca-metadata-queue.fifo"
+  sqs_managed_sse_enabled     = true
   fifo_queue                  = true
   content_based_deduplication = true
   delay_seconds               = var.sqs_delay_time_seconds
@@ -160,6 +163,7 @@ resource "aws_sqs_queue" "metadata_queue" {
 resource "aws_sqs_queue" "s3_inventory_queue" {
   ## OPTIONAL
   name                        = "${var.prefix}-orca-s3-inventory-queue"
+  sqs_managed_sse_enabled     = true
   delay_seconds               = var.sqs_delay_time_seconds
   max_message_size            = var.sqs_maximum_message_size
   message_retention_seconds   = var.s3_inventory_queue_message_retention_time_seconds
@@ -235,6 +239,7 @@ resource "aws_cloudwatch_metric_alarm" "s3_inventory_deadletter_alarm" {
 # SNS topic needed for cloudwatch alarm
 resource "aws_sns_topic" "s3_inventory_dlq_alarm" {
   name = "s3_inventory_dlq_alarm_topic"
+  kms_master_key_id = "alias/aws/sns"
 }
 
 resource "aws_sns_topic_subscription" "s3_inventory_dlq_alarm_email" {
@@ -249,6 +254,7 @@ resource "aws_sns_topic_subscription" "s3_inventory_dlq_alarm_email" {
 resource "aws_sqs_queue" "staged_recovery_queue" {
   ## OPTIONAL
   name                       = "${var.prefix}-orca-staged-recovery-queue"
+  sqs_managed_sse_enabled    = true
   delay_seconds              = var.sqs_delay_time_seconds
   max_message_size           = var.sqs_maximum_message_size
   message_retention_seconds  = var.staged_recovery_queue_message_retention_time_seconds
@@ -314,7 +320,9 @@ resource "aws_cloudwatch_metric_alarm" "staged_recovery_deadletter_alarm" {
 
 # SNS topic needed for cloudwatch alarm
 resource "aws_sns_topic" "staged_recovery_dlq_alarm" {
-  name = "staged_recovery_dlq_alarm_topic"
+  name              = "staged_recovery_dlq_alarm_topic"
+  kms_master_key_id = "alias/aws/sns"
+
 }
 
 resource "aws_sns_topic_subscription" "staged_recovery_dlq_alarm_email" {
@@ -329,6 +337,7 @@ resource "aws_sns_topic_subscription" "staged_recovery_dlq_alarm_email" {
 resource "aws_sqs_queue" "status_update_queue" {
   ## OPTIONAL
   name                        = "${var.prefix}-orca-status-update-queue.fifo"
+  sqs_managed_sse_enabled     = true
   fifo_queue                  = true
   content_based_deduplication = true
   delay_seconds               = var.sqs_delay_time_seconds
@@ -397,6 +406,7 @@ resource "aws_cloudwatch_metric_alarm" "status_update_deadletter_alarm" {
 # SNS topic needed for cloudwatch alarm
 resource "aws_sns_topic" "status_update_dlq_alarm" {
   name = "status_update_dlq_alarm_topic"
+  kms_master_key_id = "alias/aws/sns"
 }
 
 resource "aws_sns_topic_subscription" "status_update_dlq_alarm_email" {
