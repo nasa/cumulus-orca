@@ -337,7 +337,6 @@ Deploy ORCA buckets and modules:
 variables:
   DEPLOYMENT: sandbox
   ORCA_VERSION: 4.0.3
-  AWS_DEFAULT_REGION: us-west-2
   CUMULUS_AWS_DEFAULT_REGION: us-west-2
   CUMULUS_AWS_ACCESS_KEY_ID: REPLACE ME
   CUMULUS_AWS_SECRET_ACCESS_KEY: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
@@ -350,8 +349,6 @@ variables:
   DB_ADMIN_USERNAME: postgres
   DB_ADMIN_PASSWORD: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
   DB_USER_PASSWORD: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
-  CMR_PASSWORD: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
-  CMR_USERNAME: username
   EARTHDATA_CLIENT_ID: REPLACE ME
   EARTHDATA_CLIENT_PASSWORD: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
   BRANCH_NAME: ${bamboo.planRepository.branchName}

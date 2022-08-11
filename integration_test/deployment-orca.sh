@@ -64,6 +64,7 @@ export AWS_ACCOUNT_ID=$(aws sts get-caller-identity | jq -r '.Account')
 export VPC_ID=$(aws ec2 describe-vpcs | jq -r '.Vpcs | to_entries | .[] | .value.VpcId')
 export AWS_SUBNET_ID1=$(aws ec2 describe-subnets --filters "Name=availability-zone,Values=us-west-2a"| jq -r '.Subnets | .[] | select (.Tags | .[] | .Value | contains ("Private application ")) | .SubnetId ')
 export AWS_SUBNET_ID2=$(aws ec2 describe-subnets --filters "Name=availability-zone,Values=us-west-2b"| jq -r '.Subnets | .[] | select (.Tags | .[] | .Value | contains ("Private application ")) | .SubnetId ')
+export AWS_SUBNET_ID3=$(aws ec2 describe-subnets --filters "Name=availability-zone,Values=us-west-2c"| jq -r '.Subnets | .[] | select (.Tags | .[] | .Value | contains ("Private application ")) | .SubnetId ')
 
 # Initialize deployment
 terraform init \
@@ -77,7 +78,7 @@ terraform apply \
   -var-file="terraform.tfvars" \
   -var "prefix=$bamboo_PREFIX" \
   -var "region=$bamboo_AWS_DEFAULT_REGION" \
-  -var "subnets=[\"$AWS_SUBNET_ID1\", \"$AWS_SUBNET_ID2\"]" \
+  -var "subnets=[\"$AWS_SUBNET_ID1\", \"$AWS_SUBNET_ID2\", \"$AWS_SUBNET_ID3\"]" \
   -var "db_admin_username=$bamboo_DB_ADMIN_USERNAME" \
   -var "db_admin_password=$bamboo_DB_ADMIN_PASSWORD" \
   -var "vpc_id=$VPC_ID" \
@@ -136,17 +137,12 @@ terraform apply \
   -lock=false \
   -input=false \
   -var-file="terraform.tfvars" \
-  -var "cmr_username=$bamboo_CMR_USERNAME" \
-  -var "cmr_password=$bamboo_CMR_PASSWORD" \
-  -var "cmr_client_id=cumulus-core-$bamboo_DEPLOYMENT" \
-  -var "cmr_provider=CUMULUS" \
-  -var "cmr_environment=UAT" \
   -var "data_persistence_remote_state_config={ region: \"$bamboo_AWS_DEFAULT_REGION\", bucket: \"$bamboo_PREFIX-tf-state\", key: \"$bamboo_PREFIX/data-persistence/terraform.tfstate\" }" \
   -var "region=$bamboo_AWS_DEFAULT_REGION" \
   -var "vpc_id=$VPC_ID" \
   -var "system_bucket=$bamboo_PREFIX-internal" \
-  -var "ecs_cluster_instance_subnet_ids=[\"$AWS_SUBNET_ID1\", \"$AWS_SUBNET_ID2\"]" \
-  -var "lambda_subnet_ids=[\"$AWS_SUBNET_ID1\", \"$AWS_SUBNET_ID2\"]" \
+  -var "ecs_cluster_instance_subnet_ids=[\"$AWS_SUBNET_ID1\", \"$AWS_SUBNET_ID2\", \"$AWS_SUBNET_ID3\"]" \
+  -var "lambda_subnet_ids=[\"$AWS_SUBNET_ID1\", \"$AWS_SUBNET_ID2\", \"$AWS_SUBNET_ID3\"]" \
   -var "urs_client_id=$bamboo_EARTHDATA_CLIENT_ID" \
   -var "urs_client_password=$bamboo_EARTHDATA_CLIENT_PASSWORD" \
   -var "urs_url=https://uat.urs.earthdata.nasa.gov" \
