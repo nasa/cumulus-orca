@@ -29,16 +29,17 @@ As tests are run in parallel, it is generally good practice to have one test-per
 ## Running Tests
 ### Running Locally
 1. [Deploy ORCA to AWS](https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/deployment).
-2. Set the following environment variables:
+2. Connect to the NASA vpn.
+3. Set the following environment variables:
    1. `orca_API_DEPLOYMENT_INVOKE_URL` Output from the ORCA TF module. ex: `https://0000000000.execute-api.us-west-2.amazonaws.com`
    2. `orca_COPY_TO_GLACIER_STEP_FUNCTION_ARN` ARN of the copy_to_glacier step function. ex: `arn:aws:states:us-west-2:000000000000:stateMachine:PREFIX-OrcaCopyToGlacierWorkflow`
-3. Run the following bash command, 
+4. Run the following bash command, 
    replacing `i-00000000000000000` with your ec2 instance name, 
    and `0000000000.execute-api.us-west-2.amazonaws.com` with your API Gateway identifier:
    ```shell
    aws ssm start-session --target i-00000000000000000 --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters '{"host":["0000000000.execute-api.us-west-2.amazonaws.com"],"portNumber":["443"], "localPortNumber":["8000"]}'
    ```
-4. In the root folder `workflow_tests`, run the following command:
+5. In the root folder `workflow_tests`, run the following command:
    ```shell
    bin/run_tests.sh
    ```
