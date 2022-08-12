@@ -17,7 +17,12 @@ class TracingStreamResult(testtools.StreamResult):
         self.test_results = {}
 
     def status(self, *args, **kwargs) -> None:
-        self.test_results[kwargs["test_id"]] = kwargs["test_status"]
+        test_id = kwargs["test_id"]
+        test_status = kwargs["test_status"]
+        if test_status == "failure":
+            logging.error(f"Test failed: {test_id}")
+
+        self.test_results[test_id] = kwargs[test_status]
 
 
 def run_tests() -> None:
@@ -38,7 +43,9 @@ def run_tests() -> None:
     logging.info(f"Checking results on {len(result.test_results)} tests...")
     failed_tests = []
     for test_name in result.test_results:
-        if result.test_results[test_name] != "success":
+        if result.test_results[test_name] == "success":
+            logging.info(f"{test_name} passed")
+        else:
             failed_tests.append(test_name)
 
     if any(failed_tests):
