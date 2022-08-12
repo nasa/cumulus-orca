@@ -1,5 +1,6 @@
 import datetime
 import functools
+import logging
 import os
 import random
 import time
@@ -73,7 +74,7 @@ def retry_error(
                 except Exception:
                     if total_retries == max_retries:
                         # Log it and re-raise if we maxed our retries + initial attempt
-                        print(
+                        logging.error(
                             f"Encountered Error {total_retries} times. Reached max retry limit."
                         )
                         raise
@@ -83,7 +84,7 @@ def retry_error(
                             backoff_in_seconds * backoff_factor ** total_retries
                             + random.uniform(0, 1)  # nosec
                         )
-                        print(
+                        logging.warning(
                             f"Encountered Error on attempt {total_retries}. "
                             f"Sleeping {backoff_time} seconds.",
                         )
@@ -112,7 +113,7 @@ def get_state_machine_execution_results(
     start = datetime.datetime.utcnow()
     while True:
         # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/stepfunctions.html#SFN.Client.describe_execution
-        print("Getting execution description...")
+        logging.debug("Getting execution description...")
         execution_state = boto3.client("stepfunctions").describe_execution(
             executionArn=execution_arn
         )

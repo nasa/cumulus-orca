@@ -1,3 +1,4 @@
+import logging
 import unittest
 
 import testtools
@@ -34,7 +35,7 @@ def run_tests() -> None:
     concurrent_suite.run(result)
     result.stopTestRun()
 
-    print(f"Checking results on {len(result.test_results)} tests...")
+    logging.info(f"Checking results on {len(result.test_results)} tests...")
     failed_tests = []
     for test_name in result.test_results:
         if result.test_results[test_name] != "success":
@@ -43,4 +44,4 @@ def run_tests() -> None:
     if any(failed_tests):
         raise Exception(f"Tests failed: {failed_tests}")
 
-    print("Tests passed.")
+    logging.info("Tests passed.")
