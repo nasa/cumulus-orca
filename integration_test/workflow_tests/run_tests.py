@@ -19,7 +19,7 @@ class TracingStreamResult(testtools.StreamResult):
     def status(self, *args, **kwargs) -> None:
         test_id = kwargs["test_id"]
         test_status = kwargs["test_status"]
-        if test_status == "failure":
+        if test_status == "fail":
             logging.error(f"Test failed: {test_id}")
 
         self.test_results[test_id] = kwargs["test_status"]
