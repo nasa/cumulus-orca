@@ -68,10 +68,16 @@ class TestNoGranules(TestCase):
             execution_info["executionArn"]
         )
 
-        self.assertEqual("SUCCEEDED", step_function_results["status"],
-                         "Error occurred while starting step function.")
-        self.assertEqual(expected_output, json.loads(step_function_results["output"]),
-                         "Expected step function output not returned.")
+        self.assertEqual(
+            "SUCCEEDED",
+            step_function_results["status"],
+            "Error occurred while starting step function.",
+        )
+        self.assertEqual(
+            expected_output,
+            json.loads(step_function_results["output"]),
+            "Expected step function output not returned.",
+        )
 
         catalog_output = helpers.post_to_api(
             my_session,
@@ -85,7 +91,11 @@ class TestNoGranules(TestCase):
             ),
             headers={"Host": helpers.aws_api_name},
         )
-        self.assertEqual(200, catalog_output.status_code,
-                         "Error occurred while contacting API.")
-        self.assertEqual({"granules": [], "anotherPage": False}, catalog_output.json(),
-                         "Expected empty granule list not returned.")
+        self.assertEqual(
+            200, catalog_output.status_code, "Error occurred while contacting API."
+        )
+        self.assertEqual(
+            {"granules": [], "anotherPage": False},
+            catalog_output.json(),
+            "Expected empty granule list not returned.",
+        )

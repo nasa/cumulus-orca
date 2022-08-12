@@ -22,7 +22,7 @@ class TracingStreamResult(testtools.StreamResult):
         if test_status == "failure":
             logging.error(f"Test failed: {test_id}")
 
-        self.test_results[test_id] = kwargs[test_status]
+        self.test_results[test_id] = kwargs["test_status"]
 
 
 def run_tests() -> None:
@@ -52,3 +52,7 @@ def run_tests() -> None:
         raise Exception(f"Tests failed: {failed_tests}")
 
     logging.info("Tests passed.")
+
+
+if __name__ == "__main__":
+    run_tests()

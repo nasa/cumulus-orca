@@ -27,7 +27,11 @@ class TestProviderDoesNotExist(TestCase):
             ),
             headers={"Host": helpers.aws_api_name},
         )
-        self.assertEqual(200, catalog_output.status_code,
-                         "Error occurred while contacting API.")
-        self.assertEqual({"granules": [], "anotherPage": False}, catalog_output.json(),
-                         "Expected empty granule list not returned.")
+        self.assertEqual(
+            200, catalog_output.status_code, "Error occurred while contacting API."
+        )
+        self.assertEqual(
+            {"granules": [], "anotherPage": False},
+            catalog_output.json(),
+            "Expected empty granule list not returned.",
+        )

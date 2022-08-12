@@ -133,7 +133,7 @@ def post_to_api(
     session: Session,
     api_invoke_url: Union[Text, bytes],
     data,
-    headers: Union[Session.params, None] = ...,
+    headers=...,
 ):
     result = session.post(api_invoke_url, data=data, headers=headers)
     if result.status_code == 504:
