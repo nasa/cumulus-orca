@@ -285,7 +285,7 @@ stages:
     - Deploy DR ORCA buckets
 
 #Deploy RDS, ORCA buckets, Cumulus and ORCA modules
-- Deploy ORCA Buckets and Cumulus/ORCA modules:
+- Deploy ORCA Buckets and Cumulus ORCA modules:
     manual: true
     final: false
     jobs:
