@@ -63,6 +63,8 @@ class TestInternalReconcileReportMismatch(
                     internal_reconcile_report_mismatch.MISMATCHES_S3_SIZE_IN_BYTES_KEY: random.randint(  # nosec
                         0, 999
                     ),
+                    internal_reconcile_report_mismatch.MISMATCHES_ORCA_STORAGE_CLASS_KEY: uuid.uuid4().__str__(),
+                    internal_reconcile_report_mismatch.MISMATCHES_S3_STORAGE_CLASS_KEY: uuid.uuid4().__str__(),
                     internal_reconcile_report_mismatch.MISMATCHES_DISCREPANCY_TYPE_KEY: uuid.uuid4().__str__(),
                     internal_reconcile_report_mismatch.MISMATCHES_COMMENT_KEY: None
                 }
@@ -164,6 +166,8 @@ class TestInternalReconcileReportMismatch(
                     internal_reconcile_report_mismatch.MISMATCHES_S3_SIZE_IN_BYTES_KEY: random.randint(  # nosec
                         0, 999
                     ),
+                    internal_reconcile_report_mismatch.MISMATCHES_ORCA_STORAGE_CLASS_KEY: uuid.uuid4().__str__(),
+                    internal_reconcile_report_mismatch.MISMATCHES_S3_STORAGE_CLASS_KEY: uuid.uuid4().__str__(),
                     internal_reconcile_report_mismatch.MISMATCHES_DISCREPANCY_TYPE_KEY: uuid.uuid4().__str__(),
                     internal_reconcile_report_mismatch.MISMATCHES_COMMENT_KEY: uuid.uuid4().__str__()
                 }
@@ -278,6 +282,8 @@ class TestInternalReconcileReportMismatch(
         s3_last_update = random.randint(0, 999999)  # nosec
         orca_size_in_bytes = random.randint(0, 999)  # nosec
         s3_size_in_bytes = random.randint(0, 999)  # nosec
+        orca_storage_class = uuid.uuid4().__str__()
+        s3_storage_class = uuid.uuid4().__str__()
         discrepancy_type = uuid.uuid4().__str__()
         comment = uuid.uuid4().__str__()
 
@@ -293,6 +299,8 @@ class TestInternalReconcileReportMismatch(
             "s3_last_update": s3_last_update,
             "orca_size_in_bytes": orca_size_in_bytes,
             "s3_size_in_bytes": s3_size_in_bytes,
+            "orca_storage_class": orca_storage_class,
+            "s3_storage_class": s3_storage_class,
             "discrepancy_type": discrepancy_type,
             "comment": comment
         }
@@ -339,6 +347,8 @@ class TestInternalReconcileReportMismatch(
                     internal_reconcile_report_mismatch.MISMATCHES_S3_LAST_UPDATE_KEY: s3_last_update,
                     internal_reconcile_report_mismatch.MISMATCHES_ORCA_SIZE_IN_BYTES_KEY: orca_size_in_bytes,
                     internal_reconcile_report_mismatch.MISMATCHES_S3_SIZE_IN_BYTES_KEY: s3_size_in_bytes,
+                    internal_reconcile_report_mismatch.MISMATCHES_ORCA_STORAGE_CLASS_KEY: orca_storage_class,
+                    internal_reconcile_report_mismatch.MISMATCHES_S3_STORAGE_CLASS_KEY: s3_storage_class,
                     internal_reconcile_report_mismatch.MISMATCHES_DISCREPANCY_TYPE_KEY: discrepancy_type,
                     internal_reconcile_report_mismatch.MISMATCHES_COMMENT_KEY: comment
                 }

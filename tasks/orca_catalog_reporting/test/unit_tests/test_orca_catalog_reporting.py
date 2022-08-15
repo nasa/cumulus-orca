@@ -8,7 +8,7 @@ import random
 import unittest
 import uuid
 from http import HTTPStatus
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
 import orca_catalog_reporting
 
@@ -34,12 +34,12 @@ class TestOrcaCatalogReportingUnit(
         Basic path with all information present.
         Should call task.
         """
-        page_index = random.randint(0, 999)
+        page_index = random.randint(0, 999)  # nosec
         provider_id = [uuid.uuid4().__str__(), uuid.uuid4().__str__()]
         collection_id = [uuid.uuid4().__str__(), uuid.uuid4().__str__()]
         granule_id = [uuid.uuid4().__str__(), uuid.uuid4().__str__()]
-        start_timestamp = random.randint(0, 628021800000)
-        end_timestamp = random.randint(0, 628021800000)
+        start_timestamp = random.randint(0, 628021800000)  # nosec
+        end_timestamp = random.randint(0, 628021800000)  # nosec
 
         event = {
             "pageIndex": page_index,
@@ -57,19 +57,20 @@ class TestOrcaCatalogReportingUnit(
                     "providerId": uuid.uuid4().__str__(),
                     "collectionId": uuid.uuid4().__str__(),
                     "id": uuid.uuid4().__str__(),
-                    "createdAt": random.randint(0, 628021800000),
+                    "createdAt": random.randint(0, 628021800000),  # nosec
                     "executionId": uuid.uuid4().__str__(),
-                    "ingestDate": random.randint(0, 628021800000),
-                    "lastUpdate": random.randint(0, 628021800000),
+                    "ingestDate": random.randint(0, 628021800000),  # nosec
+                    "lastUpdate": random.randint(0, 628021800000),  # nosec
                     "files": [
                         {
                             "name": uuid.uuid4().__str__(),
                             "cumulusArchiveLocation": uuid.uuid4().__str__(),
                             "orcaArchiveLocation": uuid.uuid4().__str__(),
                             "keyPath": uuid.uuid4().__str__(),
-                            "sizeBytes": random.randint(0, 999),
+                            "sizeBytes": random.randint(0, 999),  # nosec
                             "hash": uuid.uuid4().__str__(),
                             "hashType": uuid.uuid4().__str__(),
+                            "storageClass": uuid.uuid4().__str__(),
                             "version": uuid.uuid4().__str__(),
                         }
                     ],
@@ -108,8 +109,8 @@ class TestOrcaCatalogReportingUnit(
         """
         Most properties default to null.
         """
-        page_index = random.randint(0, 999)
-        end_timestamp = random.randint(0, 628021800000)
+        page_index = random.randint(0, 999)  # nosec
+        end_timestamp = random.randint(0, 628021800000)  # nosec
 
         event = {"pageIndex": page_index, "endTimestamp": end_timestamp}
         context = Mock()
@@ -149,8 +150,8 @@ class TestOrcaCatalogReportingUnit(
         provider_id = [uuid.uuid4().__str__(), uuid.uuid4().__str__()]
         collection_id = [uuid.uuid4().__str__(), uuid.uuid4().__str__()]
         granule_id = [uuid.uuid4().__str__(), uuid.uuid4().__str__()]
-        start_timestamp = random.randint(0, 628021800000)
-        end_timestamp = random.randint(0, 628021800000)
+        start_timestamp = random.randint(0, 628021800000)  # nosec
+        end_timestamp = random.randint(0, 628021800000)  # nosec
 
         event = {
             "pageIndex": None,
@@ -184,11 +185,11 @@ class TestOrcaCatalogReportingUnit(
         """
         end_timestamp should be required by schema.
         """
-        page_index = random.randint(0, 999)
+        page_index = random.randint(0, 999)  # nosec
         provider_id = [uuid.uuid4().__str__(), uuid.uuid4().__str__()]
         collection_id = [uuid.uuid4().__str__(), uuid.uuid4().__str__()]
         granule_id = [uuid.uuid4().__str__(), uuid.uuid4().__str__()]
-        start_timestamp = random.randint(0, 628021800000)
+        start_timestamp = random.randint(0, 628021800000)  # nosec
 
         event = {
             "pageIndex": page_index,
@@ -229,12 +230,12 @@ class TestOrcaCatalogReportingUnit(
         Output validity should be checked, and return an error code if invalid.
         """
         event = {
-            "pageIndex": random.randint(0, 999),
+            "pageIndex": random.randint(0, 999),  # nosec
             "providerId": [uuid.uuid4().__str__(), uuid.uuid4().__str__()],
             "collectionId": [uuid.uuid4().__str__(), uuid.uuid4().__str__()],
             "granuleId": [uuid.uuid4().__str__(), uuid.uuid4().__str__()],
-            "startTimestamp": random.randint(0, 628021800000),
-            "endTimestamp": random.randint(0, 628021800000),
+            "startTimestamp": random.randint(0, 628021800000),  # nosec
+            "endTimestamp": random.randint(0, 628021800000),  # nosec
         }
         context = Mock()
         mock_task.return_value = {
@@ -254,9 +255,10 @@ class TestOrcaCatalogReportingUnit(
                             "cumulusArchiveLocation": uuid.uuid4().__str__(),
                             "orcaArchiveLocation": uuid.uuid4().__str__(),
                             "keyPath": uuid.uuid4().__str__(),
-                            "sizeBytes": random.randint(0, 999),
+                            "sizeBytes": random.randint(0, 999),  # nosec
                             "hash": uuid.uuid4().__str__(),
                             "hashType": uuid.uuid4().__str__(),
+                            "storageClass": uuid.uuid4().__str__(),
                             "version": uuid.uuid4().__str__(),
                         }
                     ],
@@ -381,10 +383,10 @@ class TestOrcaCatalogReportingUnit(
         returned_provider_id = Mock()
         returned_collection_id = Mock()
         returned_granule_id = Mock()
-        returned_created_at = random.randint(0, 628021800000)
+        returned_created_at = random.randint(0, 628021800000)  # nosec
         returned_execution_id = Mock()
-        returned_ingest_time = random.randint(0, 628021800000)
-        returned_last_update = random.randint(0, 628021800000)
+        returned_ingest_time = random.randint(0, 628021800000)  # nosec
+        returned_last_update = random.randint(0, 628021800000)  # nosec
         returned_files = Mock()
 
         returned_row0 = {

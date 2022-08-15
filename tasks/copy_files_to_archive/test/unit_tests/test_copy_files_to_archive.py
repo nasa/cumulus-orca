@@ -7,14 +7,14 @@ import os
 import unittest
 import uuid
 from random import randint
+from test.unit_tests.ConfigCheck import ConfigCheck
 from unittest import TestCase, mock
-from unittest.mock import Mock, call, patch, MagicMock
+from unittest.mock import MagicMock, Mock, call, patch
 
 from botocore.exceptions import ClientError
 from s3transfer.constants import MB
 
 import copy_files_to_archive
-from test.unit_tests.ConfigCheck import ConfigCheck
 
 
 class TestCopyFilesToArchive(TestCase):
@@ -93,9 +93,9 @@ class TestCopyFilesToArchive(TestCase):
         """
         db_queue_url = uuid.uuid4().__str__()
         recovery_queue_url = uuid.uuid4().__str__()
-        max_retries = randint(2, 9999)
-        retry_sleep_secs = randint(0, 9999)
-        default_multipart_chunksize_mb = randint(1, 10000)
+        max_retries = randint(2, 9999)  # nosec
+        retry_sleep_secs = randint(0, 9999)  # nosec
+        default_multipart_chunksize_mb = randint(1, 10000)  # nosec
 
         file0_job_id = uuid.uuid4().__str__()
         file0_granule_id = uuid.uuid4().__str__()
@@ -104,7 +104,7 @@ class TestCopyFilesToArchive(TestCase):
         file0_source_key = uuid.uuid4().__str__()
         file0_target_bucket = uuid.uuid4().__str__()
         file0_target_key = uuid.uuid4().__str__()
-        file0_message_reciept = uuid.uuid4().__str__()
+        file0_message_receipt = uuid.uuid4().__str__()
 
         file1_job_id = uuid.uuid4().__str__()
         file1_granule_id = uuid.uuid4().__str__()
@@ -113,8 +113,8 @@ class TestCopyFilesToArchive(TestCase):
         file1_source_key = uuid.uuid4().__str__()
         file1_target_bucket = uuid.uuid4().__str__()
         file1_target_key = uuid.uuid4().__str__()
-        file1_multipart_chunksize_mb = randint(1, 10000)
-        file1_message_reciept = uuid.uuid4().__str__()
+        file1_multipart_chunksize_mb = randint(1, 10000)  # nosec
+        file1_message_receipt = uuid.uuid4().__str__()
 
         mock_records = [Mock()]
 
@@ -128,7 +128,7 @@ class TestCopyFilesToArchive(TestCase):
             copy_files_to_archive.INPUT_TARGET_BUCKET_KEY: file0_target_bucket,
             copy_files_to_archive.INPUT_TARGET_KEY_KEY: file0_target_key,
             copy_files_to_archive.INPUT_MULTIPART_CHUNKSIZE_MB_KEY: None,
-            copy_files_to_archive.FILE_MESSAGE_RECEIPT: file0_message_reciept,
+            copy_files_to_archive.FILE_MESSAGE_RECEIPT: file0_message_receipt,
         }
         file1 = {
             copy_files_to_archive.INPUT_JOB_ID_KEY: file1_job_id,
@@ -140,7 +140,7 @@ class TestCopyFilesToArchive(TestCase):
             copy_files_to_archive.INPUT_TARGET_BUCKET_KEY: file1_target_bucket,
             copy_files_to_archive.INPUT_TARGET_KEY_KEY: file1_target_key,
             copy_files_to_archive.INPUT_MULTIPART_CHUNKSIZE_MB_KEY: file1_multipart_chunksize_mb,
-            copy_files_to_archive.FILE_MESSAGE_RECEIPT: file1_message_reciept,
+            copy_files_to_archive.FILE_MESSAGE_RECEIPT: file1_message_receipt,
         }
         mock_get_files_from_records.return_value = [file0, file1]
         mock_copy_object.return_value = None
@@ -226,8 +226,8 @@ class TestCopyFilesToArchive(TestCase):
         """
         db_queue_url = uuid.uuid4().__str__()
         max_retries = 2
-        retry_sleep_secs = randint(0, 9999)
-        multipart_chunksize_mb = randint(1, 10000)
+        retry_sleep_secs = randint(0, 9999)  # nosec
+        multipart_chunksize_mb = randint(1, 10000)  # nosec
         received_message_queue_url = uuid.uuid4().__str__()
 
         file0_job_id = uuid.uuid4().__str__()
@@ -237,7 +237,7 @@ class TestCopyFilesToArchive(TestCase):
         file0_source_key = uuid.uuid4().__str__()
         file0_target_bucket = uuid.uuid4().__str__()
         file0_target_key = uuid.uuid4().__str__()
-        file0_message_reciept = uuid.uuid4().__str__()
+        file0_message_receipt = uuid.uuid4().__str__()
         error_message = uuid.uuid4().__str__()
 
         file1_job_id = uuid.uuid4().__str__()
@@ -247,7 +247,7 @@ class TestCopyFilesToArchive(TestCase):
         file1_source_key = uuid.uuid4().__str__()
         file1_target_bucket = uuid.uuid4().__str__()
         file1_target_key = uuid.uuid4().__str__()
-        file1_message_reciept = uuid.uuid4().__str__()
+        file1_message_receipt = uuid.uuid4().__str__()
 
         mock_records = [Mock()]
 
@@ -260,7 +260,7 @@ class TestCopyFilesToArchive(TestCase):
             copy_files_to_archive.INPUT_SOURCE_KEY_KEY: file0_source_key,
             copy_files_to_archive.INPUT_TARGET_BUCKET_KEY: file0_target_bucket,
             copy_files_to_archive.INPUT_TARGET_KEY_KEY: file0_target_key,
-            copy_files_to_archive.FILE_MESSAGE_RECEIPT: file0_message_reciept,
+            copy_files_to_archive.FILE_MESSAGE_RECEIPT: file0_message_receipt,
         }
         successful_file = {
             copy_files_to_archive.INPUT_JOB_ID_KEY: file1_job_id,
@@ -271,7 +271,7 @@ class TestCopyFilesToArchive(TestCase):
             copy_files_to_archive.INPUT_SOURCE_KEY_KEY: file1_source_key,
             copy_files_to_archive.INPUT_TARGET_BUCKET_KEY: file1_target_bucket,
             copy_files_to_archive.INPUT_TARGET_KEY_KEY: file1_target_key,
-            copy_files_to_archive.FILE_MESSAGE_RECEIPT: file1_message_reciept,
+            copy_files_to_archive.FILE_MESSAGE_RECEIPT: file1_message_receipt,
         }
         mock_get_files_from_records.return_value = [failed_file, successful_file]
         mock_copy_object.side_effect = [
@@ -371,7 +371,9 @@ class TestCopyFilesToArchive(TestCase):
             copy_files_to_archive.INPUT_TARGET_KEY_KEY: uuid.uuid4().__str__(),
             copy_files_to_archive.INPUT_TARGET_BUCKET_KEY: uuid.uuid4().__str__(),
             copy_files_to_archive.INPUT_SOURCE_BUCKET_KEY: uuid.uuid4().__str__(),
-            copy_files_to_archive.INPUT_MULTIPART_CHUNKSIZE_MB_KEY: randint(1, 10000),
+            copy_files_to_archive.INPUT_MULTIPART_CHUNKSIZE_MB_KEY: randint(  # nosec
+                1, 10000
+            ),
         }
         file1 = {
             copy_files_to_archive.INPUT_JOB_ID_KEY: uuid.uuid4().__str__(),
@@ -411,7 +413,7 @@ class TestCopyFilesToArchive(TestCase):
         src_bucket_name = uuid.uuid4().__str__()
         src_object_name = uuid.uuid4().__str__()
         dest_bucket_name = uuid.uuid4().__str__()
-        multipart_chunksize_mb = randint(1, 10000)
+        multipart_chunksize_mb = randint(1, 10000)  # nosec
         dest_object_name = uuid.uuid4().__str__()
 
         mock_s3_cli = Mock()
@@ -445,7 +447,7 @@ class TestCopyFilesToArchive(TestCase):
         src_bucket_name = uuid.uuid4().__str__()
         src_object_name = uuid.uuid4().__str__()
         dest_bucket_name = uuid.uuid4().__str__()
-        multipart_chunksize_mb = randint(1, 10000)
+        multipart_chunksize_mb = randint(1, 10000)  # nosec
         dest_object_name = uuid.uuid4().__str__()
         expected_result = uuid.uuid4().__str__()
 

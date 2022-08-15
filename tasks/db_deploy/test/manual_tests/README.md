@@ -15,8 +15,9 @@ It is recommended to run the tests in the following order.
 
 ## Initial Setup
 
-The initial setup goes over setting up a python virtual environment to test the
-code and a PostgreSQL database. All testing is done with Docker, and it is required
+The initial setup goes over setting up a python virtual environment 
+and a PostgreSQL database to test the code. 
+All testing is done with Docker, and it is required
 to have the latest Docker and Docker Compose application code installed.
 
 It is recommended to have three terminal windows up and available. The windows
@@ -29,7 +30,7 @@ In addition, a GUI based database explorer like Aqua Data Studio or pgAdmin is
 helpful for visually inspecting the database users, groups, schema, objects, and
 data.
 
-To setup the testing environment perform the following steps.
+To set up the testing environment perform the following steps.
 
 1. Copy the `env_template` file to a `.env` file and add values to environment
    variables within the new `.env` file.
@@ -179,6 +180,9 @@ To run the fresh install test, in your **python** window run the command
 {"message": "collections table created.", "timestamp": "2022-02-16T20:56:19.558049", "level": "info"}
 {"message": "Creating granules table ...", "timestamp": "2022-02-16T20:56:19.558192", "level": "debug"}
 {"message": "granules table created.", "timestamp": "2022-02-16T20:56:19.597460", "level": "info"}
+{"message": "Creating storage_class table ...", "timestamp": "2022-02-16T22:01:21.081917", "level": "debug"}
+{"message": "Populating storage_class table ...", "timestamp": "2022-02-16T22:01:21.081917", "level": "debug"}
+{"message": "storage_class table created.", "timestamp": "2022-02-16T22:01:21.081917", "level": "debug"}
 {"message": "Creating files table ...", "timestamp": "2022-02-16T20:56:19.597637", "level": "debug"}
 {"message": "files table created.", "timestamp": "2022-02-16T20:56:19.629592", "level": "info"}
 {"message": "Creating reconcile_status table ...", "timestamp": "2022-02-16T20:56:19.629741", "level": "debug"}
@@ -228,6 +232,7 @@ expressed in the logs.
 {"message": "providers table created.", "timestamp": "2022-02-16T20:56:19.541131", "level": "info"}
 {"message": "collections table created.", "timestamp": "2022-02-16T20:56:19.558049", "level": "info"}
 {"message": "granules table created.", "timestamp": "2022-02-16T20:56:19.597460", "level": "info"}
+{"message": "storage_class table created.", "timestamp": "2022-02-16T22:01:21.081917", "level": "debug"}
 {"message": "files table created.", "timestamp": "2022-02-16T20:56:19.629592", "level": "info"}
 {"message": "reconcile_status table created.", "timestamp": "2022-02-16T20:56:19.660336", "level": "info"}
 {"message": "reconcile_job table created.", "timestamp": "2022-02-16T20:56:19.684379", "level": "info"}
@@ -709,6 +714,19 @@ To run the migration test, in your **python** window run the command
 {"message": "reconcile_phantom_report table created.", "timestamp": "2022-02-16T22:01:21.425628", "level": "info"}
 {"message": "Populating the schema_versions table with data ...", "timestamp": "2022-02-16T22:01:21.425846", "level": "debug"}
 {"message": "Data added to the schema_versions table.", "timestamp": "2022-02-16T22:01:21.434793", "level": "info"}
+{"message": "Changing to the dbo role to create objects ...", "timestamp": "2022-02-16T22:01:21.081917", "level": "debug"}
+{"message": "Setting search path to the ORCA schema to create objects ...", "timestamp": "2022-02-16T22:01:21.081917", "level": "debug"}
+{"message": "Creating storage_class table ...", "timestamp": "2022-02-16T22:01:21.081917", "level": "debug"}
+{"message": "Populating storage_class table ...", "timestamp": "2022-02-16T22:01:21.081917", "level": "debug"}
+{"message": "storage_class table created.", "timestamp": "2022-02-16T22:01:21.081917", "level": "debug"}
+{"message": "Adding storage_class_id column to files table ...", "timestamp": "2022-02-16T22:01:21.081917", "level": "debug"}
+{"message": "storage_class_id column added.", "timestamp": "2022-02-16T22:01:21.081917", "level": "debug"}
+{"message": "Adding storage_class column to mismatches table ...", "timestamp": "2022-02-16T22:01:21.081917", "level": "debug"}
+{"message": "storage_class columns added.", "timestamp": "2022-02-16T22:01:21.081917", "level": "debug"}
+{"message": "Adding storage_class column to phantoms table ...", "timestamp": "2022-02-16T22:01:21.081917", "level": "debug"}
+{"message": "storage_class column added.", "timestamp": "2022-02-16T22:01:21.081917", "level": "debug"}
+{"message": "Populating the schema_versions table with data ...", "timestamp": "2022-02-16T22:01:21.425846", "level": "debug"}
+{"message": "Data added to the schema_versions table.", "timestamp": "2022-02-16T22:01:21.434793", "level": "info"}
 {"message": "Manual test complete.", "timestamp": "2022-02-16T22:01:21.439033", "level": "info"}
 ```
 
@@ -754,6 +772,11 @@ expressed in the logs.
 {"message": "reconcile_catalog_mismatch_report table created.", "timestamp": "2022-02-16T22:01:21.378214", "level": "info"}
 {"message": "reconcile_orphan_report table created.", "timestamp": "2022-02-16T22:01:21.396433", "level": "info"}
 {"message": "reconcile_phantom_report table created.", "timestamp": "2022-02-16T22:01:21.425628", "level": "info"}
+{"message": "Data added to the schema_versions table.", "timestamp": "2022-02-16T22:01:21.434793", "level": "info"}
+{"message": "storage_class table created.", "timestamp": "2022-02-16T22:01:21.081917", "level": "debug"}
+{"message": "storage_class_id column added.", "timestamp": "2022-02-16T22:01:21.081917", "level": "debug"}
+{"message": "storage_class columns added.", "timestamp": "2022-02-16T22:01:21.081917", "level": "debug"}
+{"message": "storage_class column added.", "timestamp": "2022-02-16T22:01:21.081917", "level": "debug"}
 {"message": "Data added to the schema_versions table.", "timestamp": "2022-02-16T22:01:21.434793", "level": "info"}
 ```
 
@@ -808,7 +831,7 @@ PostgreSQL *orca* database. Perform the checks below by going to the
     public      | postgres
    (4 rows)
    ```
-4. Verify the tables were created in the ORCA schema. It is assumed that the partition table in schema version 5 is named `orca_archive_location_test_bucket`
+4. Verify the tables were created in the ORCA schema. It is assumed that the partition table in schema version 5+ is named `orca_archive_location_test_bucket`
    ```bash
    orca=# \dt orca.*
 
@@ -832,6 +855,7 @@ PostgreSQL *orca* database. Perform the checks below by going to the
     orca   | recovery_job                              | table | orca_dbo
     orca   | recovery_status                           | table | orca_dbo
     orca   | schema_versions                           | table | orca_dbo
+    orca   | storage_class                             | table | orca_dbo
     (17 rows)
    ```
 5. Check that the partition table was created properly.

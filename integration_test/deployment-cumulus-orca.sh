@@ -1,14 +1,16 @@
 #!/bin/bash
 set -ex
 
-export AWS_ACCESS_KEY_ID=$bamboo_AWS_ACCESS_KEY_ID
-export AWS_SECRET_ACCESS_KEY=$bamboo_AWS_SECRET_ACCESS_KEY
+export AWS_ACCESS_KEY_ID=$bamboo_CUMULUS_AWS_ACCESS_KEY_ID
+export AWS_SECRET_ACCESS_KEY=$bamboo_CUMULUS_AWS_SECRET_ACCESS_KEY
 export AWS_DEFAULT_REGION=$bamboo_AWS_DEFAULT_REGION
 
+#remove old files from bamboo as they throw error
+rm *.tf
 #clone cumulus orca template for deploying cumulus and orca
 git clone --branch $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION --single-branch https://git.earthdata.nasa.gov/scm/orca/cumulus-orca-deploy-template.git
 cd cumulus-orca-deploy-template
-echo "checked out to $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION branch"
+echo "cloned Orca deployment template, branch $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION"
 
 
 #deploy data persistence tf module
@@ -25,7 +27,6 @@ terraform init \
 echo "Deploying Cumulus data-persistence module to $bamboo_DEPLOYMENT"
 terraform apply \
   -auto-approve \
-  -lock=false \
   -input=false \
   -var-file="terraform.tfvars" \
   -var "prefix=$bamboo_PREFIX" \
@@ -36,10 +37,9 @@ terraform apply \
   -var "rds_security_group=$bamboo_RDS_SECURITY_GROUP"\
   -var "permissions_boundary_arn=arn:aws:iam::$bamboo_AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
 
-# script for deploying cumulus-tf module
-cd ../../cumulus-orca-deploy-template/cumulus-tf
 
-CUMULUS_KEY="$bamboo_PREFIX/cumulus/terraform.tfstate"
+# script for deploying cumulus-tf module
+cd ../cumulus-tf
 
 #replacing .tf files with proper values
 sed 's/PREFIX/'"$bamboo_PREFIX"'/g' terraform.tfvars.example > terraform.tfvars

@@ -54,15 +54,6 @@ variable "db_connect_info_secret_arn" {
   description = "Secret ARN of the AWS secretsmanager secret for connecting to the database."
 }
 
-variable "orca_default_recovery_type" {
-  type        = string
-  description = "The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'."
-  validation {
-    condition     = contains(["Standard", "Bulk", "Expedited"], var.orca_default_recovery_type)
-    error_message = "Valid values are 'Standard'|'Bulk'|'Expedited'."
-  }
-}
-
 variable "orca_secretsmanager_s3_access_credentials_secret_arn" {
   type        = string
   description = "The Amazon Resource Name (ARN) of the s3 credentials secret."
@@ -120,6 +111,17 @@ variable "restore_object_role_arn" {
 
 
 ## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
+variable "orca_default_recovery_type" {
+  type        = string
+  description = "The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'."
+}
+
+
+variable "orca_default_storage_class" {
+  type           = string
+  description = "The class of storage to use when ingesting files. Can be overridden by collection config. Must match value in storage_class table."
+}
+
 
 variable "orca_delete_old_reconcile_jobs_frequency_cron" {
   type        = string

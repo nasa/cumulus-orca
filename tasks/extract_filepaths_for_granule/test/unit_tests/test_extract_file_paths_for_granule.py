@@ -3,15 +3,16 @@ Name: test_extract_filepaths_for_granule.py
 
 Description:  Unit tests for extract_file_paths_for_granule.py.
 """
-import unittest
 import json
-from cumulus_logger import CumulusLogger
+import unittest
 from test.helpers import create_handler_event, create_task_event
-import extract_filepaths_for_granule
+from unittest.mock import MagicMock, Mock, patch
 
 # noinspection PyPackageRequirements
 import fastjsonschema as fastjsonschema
-from unittest.mock import patch, MagicMock, Mock
+from cumulus_logger import CumulusLogger
+
+import extract_filepaths_for_granule
 
 # Generating schema validators can take time, so do it once and reuse.
 with open("schemas/input.json", "r") as raw_schema:

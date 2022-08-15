@@ -42,7 +42,7 @@ standards expected.
 
 1. **Create the migration directories.** Migrations in db_deploy are located
    under the `migrations` folder and follow a naming convention of
-   *migrate_versions_x_to_y* where x is the current version of the schema and y
+   *migrate_versions_X_to_Y* where X is the current version of the schema and Y
    is the new schema version. An identical folder should also be created under
    the `test/unit_tests/migrations` directory. An example can be seen below. Note
    that schema versions do not equate to ORCA application version and do not use
@@ -57,9 +57,9 @@ standards expected.
    `test_migrate_sql_vY.py` files in the test migration directory. An example can
    be seen below. The `migrate.py` file should include a function with the
    following naming convention and signature
-   `def migrate_versions_x_to_y(config: Dict[str, str], is_latest_version: bool, *args)`
+   `def migrate_versions_X_to_Y(config: Dict[str, str], is_latest_version: bool, *args)`
    this function should run the migration SQL in the proper order to perform a
-   migration from version x to version y. The `migrate_sql.py` file should have
+   migration from version X to version Y. The `migrate_sql.py` file should have
    the SQL needed to perform the migration. See previous versions for examples
    on how the SQL should be formatted and expressed in functions. The unit test
    files `test_migrate_vY.py` and `test_migrate_sql_vY.py` should contain unit
@@ -80,7 +80,7 @@ standards expected.
 
    def perform_migration(
     current_schema_version: int, config: Dict[str, str], orca_buckets: List[str]
-) -> None:
+   ) -> None:
        ...
 
        if current_schema_version == 4:

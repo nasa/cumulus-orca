@@ -40,6 +40,11 @@
     "orcaDefaultBucketOverride": {
       "type": ["string", "null"],
       "description": "Overrides the default bucket to copy to in os.environ['ORCA_DEFAULT_BUCKET']."
+    },
+    "orcaDefaultStorageClassOverride": {
+      "type": ["string", "null"],
+      "description": "The class of storage to use when ingesting files. Can be overridden by collection config. Must match value in storage_class table.",
+      "pattern": "^(GLACIER|DEEP_ARCHIVE)$"
     }
   },
   "required": [ "providerId", "executionId", "collectionShortname", "collectionVersion"]

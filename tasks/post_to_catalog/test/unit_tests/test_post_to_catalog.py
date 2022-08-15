@@ -10,7 +10,7 @@ import random
 import unittest
 import uuid
 from datetime import datetime, timezone
-from unittest.mock import Mock, call, patch, MagicMock
+from unittest.mock import MagicMock, Mock, call, patch
 
 import fastjsonschema
 
@@ -29,11 +29,9 @@ class TestPostToDatabase(
     @patch("cumulus_logger.CumulusLogger.setMetadata")
     @patch.dict(
         os.environ,
-        {
-            "DB_CONNECT_INFO_SECRET_ARN": "test"
-        },
+        {"DB_CONNECT_INFO_SECRET_ARN": "test"},
         clear=True,
-     )
+    )
     def test_handler_happy_path(
         self,
         mock_set_metadata: MagicMock,
@@ -102,9 +100,10 @@ class TestPostToDatabase(
                     "cumulusArchiveLocation": uuid.uuid4().__str__(),
                     "orcaArchiveLocation": uuid.uuid4().__str__(),
                     "keyPath": uuid.uuid4().__str__(),
-                    "sizeInBytes": random.randint(0, 10000),
+                    "sizeInBytes": random.randint(0, 10000),  # nosec
                     "hash": uuid.uuid4().__str__(),
                     "hashType": uuid.uuid4().__str__(),
+                    "storageClass": "GLACIER",
                     "version": uuid.uuid4().__str__(),
                     "ingestTime": datetime.now(timezone.utc).isoformat(),
                     "etag": uuid.uuid4().__str__(),
@@ -114,9 +113,10 @@ class TestPostToDatabase(
                     "cumulusArchiveLocation": uuid.uuid4().__str__(),
                     "orcaArchiveLocation": uuid.uuid4().__str__(),
                     "keyPath": uuid.uuid4().__str__(),
-                    "sizeInBytes": random.randint(0, 10000),
+                    "sizeInBytes": random.randint(0, 10000),  # nosec
                     "hash": None,
                     "hashType": None,
+                    "storageClass": "DEEP_ARCHIVE",
                     "version": uuid.uuid4().__str__(),
                     "ingestTime": datetime.now(timezone.utc).isoformat(),
                     "etag": "etag1",
@@ -204,9 +204,10 @@ class TestPostToDatabase(
             "cumulusArchiveLocation": uuid.uuid4().__str__(),
             "orcaArchiveLocation": uuid.uuid4().__str__(),
             "keyPath": uuid.uuid4().__str__(),
-            "sizeInBytes": random.randint(0, 10000),
+            "sizeInBytes": random.randint(0, 10000),  # nosec
             "hash": uuid.uuid4().__str__(),
             "hashType": uuid.uuid4().__str__(),
+            "storageClass": uuid.uuid4().__str__(),
             "version": uuid.uuid4().__str__(),
             "ingestTime": datetime.now(timezone.utc).isoformat(),
             "etag": uuid.uuid4().__str__(),
@@ -216,9 +217,10 @@ class TestPostToDatabase(
             "cumulusArchiveLocation": uuid.uuid4().__str__(),
             "orcaArchiveLocation": uuid.uuid4().__str__(),
             "keyPath": uuid.uuid4().__str__(),
-            "sizeInBytes": random.randint(0, 10000),
+            "sizeInBytes": random.randint(0, 10000),  # nosec
             "hash": None,
             "hashType": None,
+            "storageClass": uuid.uuid4().__str__(),
             "version": uuid.uuid4().__str__(),
             "ingestTime": datetime.now(timezone.utc).isoformat(),
             "etag": uuid.uuid4().__str__(),
@@ -232,7 +234,7 @@ class TestPostToDatabase(
             "files": [file0, file1],
         }
 
-        internal_id = random.randint(0, 10000)
+        internal_id = random.randint(0, 10000)  # nosec
         mock_engine = Mock()
         mock_engine.begin.return_value = Mock()
         mock_connection = Mock()
@@ -290,6 +292,7 @@ class TestPostToDatabase(
                             "size_in_bytes": file0["sizeInBytes"],
                             "hash": file0["hash"],
                             "hash_type": file0["hashType"],
+                            "storage_class": file0["storageClass"],
                             "version": file0["version"],
                             "ingest_time": file0["ingestTime"],
                             "etag": file0["etag"],
@@ -303,6 +306,7 @@ class TestPostToDatabase(
                             "size_in_bytes": file1["sizeInBytes"],
                             "hash": None,  # None is a valid value.
                             "hash_type": None,
+                            "storage_class": file1["storageClass"],
                             "version": file1["version"],
                             "ingest_time": file1["ingestTime"],
                             "etag": file1["etag"],

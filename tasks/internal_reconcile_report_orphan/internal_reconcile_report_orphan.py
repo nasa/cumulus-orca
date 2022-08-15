@@ -19,7 +19,7 @@ ORPHANS_KEY_PATH_KEY = "keyPath"
 ORPHANS_S3_ETAG_KEY = "s3Etag"
 ORPHANS_S3_LAST_UPDATE_KEY = "s3FileLastUpdate"
 ORPHANS_S3_SIZE_IN_BYTES_KEY = "s3SizeInBytes"
-ORPHANS_STORAGE_CLASS_KEY = "storageClass"
+ORPHANS_STORAGE_CLASS_KEY = "s3StorageClass"
 
 LOGGER = CumulusLogger()
 
@@ -108,7 +108,7 @@ def query_db(
         return orphans
 
 
-def get_orphans_sql() -> text:
+def get_orphans_sql() -> text:  # pragma: no cover
     """
     SQL for getting orphan report entries for a given job_id, page_size, and page_index.
     Formats datetimes in milliseconds since 1 January 1970 UTC.

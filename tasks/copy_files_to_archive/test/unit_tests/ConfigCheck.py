@@ -6,7 +6,9 @@ class ConfigCheck:
 
     bad_config = None
 
-    def check_multipart_chunksize(self, copy_source, destination_bucket, destination_key, ExtraArgs, Config):
+    def check_multipart_chunksize(
+        self, copy_source, destination_bucket, destination_key, ExtraArgs, Config
+    ):
         try:
             if Config.multipart_chunksize != self.multipart_chunksize:
                 self.bad_config = Config

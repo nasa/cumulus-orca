@@ -58,14 +58,14 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
         """
         for latest_version in [True, False]:
             with self.subTest(latest_version=latest_version):
-                # Setup the mock object that conn.execute is a part of in
+                # Set up the mock object that conn.execute is a part of in
                 # the connection with block
                 mock_conn_enter = mock_connection().connect().__enter__()
 
                 # Run the function
                 migrate.migrate_versions_3_to_4(self.config, latest_version)
 
-                # Check that all of the functions were called the correct
+                # Check that all the functions were called the correct
                 # number of times with the proper values
                 mock_connection.assert_any_call(
                     self.config, self.config["user_database"]
@@ -81,6 +81,7 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                     call("SET search_path TO orca, public;"),
                 ]
                 mock_text.assert_has_calls(text_calls, any_order=False)
+                self.assertEqual(len(text_calls), mock_text.call_count)
                 execution_order = [
                     call.execute(mock_text("SET ROLE orca_dbo;")),
                     call.execute(mock_text("SET search_path TO orca, public;")),
@@ -88,17 +89,20 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                     call.execute(mock_collections_table()),
                     call.execute(mock_granules_table()),
                     call.execute(mock_files_table()),
-                    call.commit(),
                 ]
                 # Validate logic switch and set the execution order
                 if latest_version:
-                    mock_schema_versions_data.assert_called_once()
+                    execution_order.append(call.execute(mock_schema_versions_data.return_value))
+                    mock_schema_versions_data.assert_called_once_with()
 
                 else:
                     mock_schema_versions_data.assert_not_called()
 
+                execution_order.append(call.commit())
+
                 # Check that items were called in the proper order
                 mock_conn_enter.assert_has_calls(execution_order, any_order=False)
+                self.assertEqual(len(execution_order), len(mock_conn_enter.method_calls))
 
                 # Reset the mocks for next loop
                 mock_connection.reset_mock()

@@ -38,6 +38,7 @@ module.exports = {
                 'developer/development-guide/code/integration-tests',
                 'developer/development-guide/code/postgres-tests',
                 'developer/development-guide/code/orca-logging',
+                'developer/development-guide/code/parallel-scripting',
             ],
             "Developing Documentation": [
                 'developer/development-guide/documentation/contrib-documentation-intro',
@@ -77,7 +78,8 @@ module.exports = {
       'developer/research/research-bamboo-integration-tests',
       'developer/research/research-lambda-container',
       'developer/research/research-pushing-docker-image',
-      'developer/research/research-s3-bucket-best-practices'
+      'developer/research/research-s3-bucket-best-practices',
+      'developer/research/research-deep-glacier-migration'
     ],
   },
   cookbook: {
@@ -95,6 +97,7 @@ module.exports = {
     ],
     "Configuration": [
       'operator/collection-configuration',
+      'operator/storage-classes',
     ],
   },
 };

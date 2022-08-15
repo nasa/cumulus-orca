@@ -11,7 +11,8 @@ import unittest
 import uuid
 from http import HTTPStatus
 from unittest import mock
-from unittest.mock import MagicMock, patch, Mock
+from unittest.mock import MagicMock, Mock, patch
+
 import fastjsonschema
 import sqlalchemy.exc
 
@@ -20,6 +21,7 @@ import request_status_for_granule
 # Generating schema validators can take time, so do it once and reuse.
 with open("schemas/output.json", "r") as raw_schema:
     _OUTPUT_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
+
 
 class TestRequestStatusForGranuleUnit(
     unittest.TestCase
@@ -34,11 +36,9 @@ class TestRequestStatusForGranuleUnit(
     @patch("cumulus_logger.CumulusLogger.setMetadata")
     @patch.dict(
         os.environ,
-        {
-            "DB_CONNECT_INFO_SECRET_ARN": "test"
-        },
+        {"DB_CONNECT_INFO_SECRET_ARN": "test"},
         clear=True,
-     )
+    )
     def test_handler_happy_path(
         self,
         mock_setMetadata: MagicMock,
@@ -71,11 +71,9 @@ class TestRequestStatusForGranuleUnit(
     @patch("orca_shared.database.shared_db.get_configuration")
     @patch.dict(
         os.environ,
-        {
-            "DB_CONNECT_INFO_SECRET_ARN": "test"
-        },
+        {"DB_CONNECT_INFO_SECRET_ARN": "test"},
         clear=True,
-     )
+    )
     def test_handler_async_operation_id_defaults_to_none(
         self, mock_get_dbconnect_info: MagicMock, mock_task: MagicMock
     ):
@@ -102,11 +100,9 @@ class TestRequestStatusForGranuleUnit(
     @patch("cumulus_logger.CumulusLogger.setMetadata")
     @patch.dict(
         os.environ,
-        {
-            "DB_CONNECT_INFO_SECRET_ARN": "test"
-        },
+        {"DB_CONNECT_INFO_SECRET_ARN": "test"},
         clear=True,
-     )
+    )
     def test_handler_missing_granule_id_returns_error_code(
         self,
         mock_setMetadata: MagicMock,
@@ -132,11 +128,9 @@ class TestRequestStatusForGranuleUnit(
     @patch("cumulus_logger.CumulusLogger.setMetadata")
     @patch.dict(
         os.environ,
-        {
-            "DB_CONNECT_INFO_SECRET_ARN": "test"
-        },
+        {"DB_CONNECT_INFO_SECRET_ARN": "test"},
         clear=True,
-     )
+    )
     def test_handler_database_error_returns_error_code(
         self,
         mock_setMetadata: MagicMock,
@@ -356,8 +350,8 @@ class TestRequestStatusForGranuleUnit(
         mock_connection.execute.return_value = copy.deepcopy(expected_result)
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
-        mock_engine.begin.return_value.__exit__ = (
-            Mock(return_value=False)
+        mock_engine.begin.return_value.__exit__ = Mock(
+            return_value=False
         )  # required for "with", but untestable.
 
         result = request_status_for_granule.get_most_recent_job_id_for_granule(
@@ -381,8 +375,12 @@ class TestRequestStatusForGranuleUnit(
         expected_result = {
             request_status_for_granule.OUTPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(),
             request_status_for_granule.OUTPUT_JOB_ID_KEY: uuid.uuid4().__str__(),
-            request_status_for_granule.OUTPUT_REQUEST_TIME_KEY: random.randint(0, 628021800000),
-            request_status_for_granule.OUTPUT_COMPLETION_TIME_KEY: random.randint(0, 628021800000),
+            request_status_for_granule.OUTPUT_REQUEST_TIME_KEY: random.randint(  # nosec
+                0, 628021800000
+            ),
+            request_status_for_granule.OUTPUT_COMPLETION_TIME_KEY: random.randint(  # nosec
+                0, 628021800000
+            ),
         }
 
         mock_engine = Mock()
@@ -391,8 +389,8 @@ class TestRequestStatusForGranuleUnit(
         mock_connection.execute.return_value = [copy.deepcopy(expected_result)]
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
-        mock_engine.begin.return_value.__exit__ = (
-            Mock(return_value=False)
+        mock_engine.begin.return_value.__exit__ = Mock(
+            return_value=False
         )  # required for "with", but untestable.
 
         result = request_status_for_granule.get_job_entry_for_granule(
@@ -434,8 +432,8 @@ class TestRequestStatusForGranuleUnit(
         mock_connection.execute.return_value = copy.deepcopy(expected_result)
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
-        mock_engine.begin.return_value.__exit__ = (
-            Mock(return_value=False)
+        mock_engine.begin.return_value.__exit__ = Mock(
+            return_value=False
         )  # required for "with", but untestable.
 
         result = request_status_for_granule.get_file_entries_for_granule_in_job(
@@ -455,23 +453,25 @@ class TestRequestStatusForGranuleUnit(
         self.assertEqual(expected_result, result)
 
     @patch("cumulus_logger.CumulusLogger.error")
-    def test_create_http_error_dict_happy_path(
-            self,
-            mock_error: MagicMock
-    ):
+    def test_create_http_error_dict_happy_path(self, mock_error: MagicMock):
         error_type = uuid.uuid4().__str__()
         http_status_code = random.randint(0, 9999)  # nosec
         request_id = uuid.uuid4().__str__()
         message = uuid.uuid4().__str__()
 
-        result = request_status_for_granule.create_http_error_dict(error_type, http_status_code, request_id, message)
+        result = request_status_for_granule.create_http_error_dict(
+            error_type, http_status_code, request_id, message
+        )
 
-        self.assertEqual({
-            "errorType": error_type,
-            "httpStatus": http_status_code,
-            "requestId": request_id,
-            "message": message,
-        }, result)
+        self.assertEqual(
+            {
+                "errorType": error_type,
+                "httpStatus": http_status_code,
+                "requestId": request_id,
+                "message": message,
+            },
+            result,
+        )
 
         mock_error.assert_called_once_with(message)
 
@@ -496,7 +496,9 @@ class TestRequestStatusForGranuleUnit(
                 {
                     request_status_for_granule.OUTPUT_GRANULE_ID_KEY: granule_id,
                     request_status_for_granule.OUTPUT_JOB_ID_KEY: job_id,
-                    request_status_for_granule.OUTPUT_REQUEST_TIME_KEY: random.randint(0, 628021800000),
+                    request_status_for_granule.OUTPUT_REQUEST_TIME_KEY: random.randint(  # nosec
+                        0, 628021800000
+                    ),
                     request_status_for_granule.OUTPUT_COMPLETION_TIME_KEY: None,
                 }
             ],
@@ -520,8 +522,8 @@ class TestRequestStatusForGranuleUnit(
         ]
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
-        mock_engine.begin.return_value.__exit__ = (
-            Mock(return_value=False)
+        mock_engine.begin.return_value.__exit__ = Mock(
+            return_value=False
         )  # required for "with", but untestable.
         mock_get_user_connection.return_value = mock_engine
 

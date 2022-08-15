@@ -1,6 +1,6 @@
 import os
 from http import HTTPStatus
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 
 from cumulus_logger import CumulusLogger
 from orca_shared.database import shared_db
@@ -99,7 +99,7 @@ def get_granule_status_entries_for_job(
     return rows
 
 
-def get_granule_status_entries_for_job_sql() -> text:
+def get_granule_status_entries_for_job_sql() -> text:  # pragma: no cover
     return text(
         f"""
                 SELECT
@@ -145,7 +145,7 @@ def get_status_totals_for_job(job_id: str, engine: Engine) -> Dict[str, int]:
     return totals
 
 
-def get_status_totals_for_job_sql() -> text:
+def get_status_totals_for_job_sql() -> text:  # pragma: no cover
     return text(
         f"""
                 with granule_status_count AS (
@@ -158,7 +158,7 @@ def get_status_totals_for_job_sql() -> text:
                 SELECT value
                     , coalesce(total, 0) as total
                 FROM recovery_status os
-                LEFT JOIN granule_status_count gsc ON (gsc.status_id = os.id)"""
+                LEFT JOIN granule_status_count gsc ON (gsc.status_id = os.id)"""  # nosec
     )
 
 
@@ -196,7 +196,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             asyncOperationId: The unique asyncOperationId of the recovery job.
         context: An object provided by AWS Lambda. Used for context tracking.
 
-    Environment Vars: 
+    Environment Vars:
         DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
         See shared_db.py's get_configuration for further details.
 
@@ -218,9 +218,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     try:
         db_connect_info_secret_arn = os.environ["DB_CONNECT_INFO_SECRET_ARN"]
     except KeyError as key_error:
-        LOGGER.error(
-            "DB_CONNECT_INFO_SECRET_ARN environment value not found."
-        )
+        LOGGER.error("DB_CONNECT_INFO_SECRET_ARN environment value not found.")
         raise
     try:
         LOGGER.setMetadata(event, context)

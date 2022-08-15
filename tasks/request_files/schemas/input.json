@@ -22,7 +22,7 @@
               "type": "object",
               "properties": {
                 "key": {
-                  "description": "Name of the file within the granule.  # TODO: It actually might be a path.",
+                  "description": "Key to the file within the granule.",
                   "type": "string"
                 },
                 "destBucket": {

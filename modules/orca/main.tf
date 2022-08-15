@@ -39,6 +39,7 @@ module "orca_lambdas" {
   ## OPTIONAL
   orca_delete_old_reconcile_jobs_frequency_cron = var.orca_delete_old_reconcile_jobs_frequency_cron
   orca_default_recovery_type                    = var.orca_default_recovery_type
+  orca_default_storage_class                    = var.orca_default_storage_class
   orca_ingest_lambda_memory_size                = var.orca_ingest_lambda_memory_size
   orca_ingest_lambda_timeout                    = var.orca_ingest_lambda_timeout
   orca_internal_reconciliation_expiration_days  = var.orca_internal_reconciliation_expiration_days

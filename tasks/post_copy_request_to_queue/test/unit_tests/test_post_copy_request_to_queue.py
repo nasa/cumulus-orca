@@ -3,22 +3,22 @@ Name: test_post_copy_request_to_queue.py
 Description: unit tests for post_copy_request_to_queue.py
 """
 import copy
+import os
 import random
 import time
 import uuid
 from unittest import TestCase, mock
-import os
-from unittest.mock import patch, MagicMock, Mock, call
+from unittest.mock import MagicMock, Mock, call, patch
 
 # noinspection PyPackageRequirements
 import boto3
 
 # noinspection PyPackageRequirements
 from moto import mock_sqs
+from orca_shared.recovery import shared_recovery
 
 import post_copy_request_to_queue
-from orca_shared.recovery import shared_recovery
-from post_copy_request_to_queue import handler, task, exponential_delay
+from post_copy_request_to_queue import exponential_delay, handler, task
 
 
 class TestPostCopyRequestToQueue(TestCase):
@@ -45,7 +45,9 @@ class TestPostCopyRequestToQueue(TestCase):
     def setUpQueues(self):
         self.mock_sqs.start()
         self.test_sqs = boto3.resource("sqs", region_name="us-west-2")
-        self.status_update_queue = self.test_sqs.create_queue(QueueName=uuid.uuid4().__str__())
+        self.status_update_queue = self.test_sqs.create_queue(
+            QueueName=uuid.uuid4().__str__()
+        )
         self.recovery_queue = self.test_sqs.create_queue(
             QueueName=uuid.uuid4().__str__()
         )
@@ -64,9 +66,9 @@ class TestPostCopyRequestToQueue(TestCase):
 
         db_queue_url = uuid.uuid4().__str__()
         recovery_queue_url = uuid.uuid4().__str__()
-        max_retries = random.randint(1, 100)
-        retry_sleep_secs = random.randint(0, 100)
-        retry_backoff = random.randint(0, 100)
+        max_retries = random.randint(1, 100)  # nosec
+        retry_sleep_secs = random.randint(0, 100)  # nosec
+        retry_backoff = random.randint(0, 100)  # nosec
         db_connect_info_secret_arn = uuid.uuid4().__str__()
 
         with patch.dict(
@@ -81,7 +83,9 @@ class TestPostCopyRequestToQueue(TestCase):
                 post_copy_request_to_queue.OS_ENVIRON_RETRY_BACKOFF_KEY: str(
                     retry_backoff
                 ),
-                post_copy_request_to_queue.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY: str(db_connect_info_secret_arn)
+                post_copy_request_to_queue.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY: str(
+                    db_connect_info_secret_arn
+                ),
             },
             clear=True,
         ):
@@ -94,7 +98,7 @@ class TestPostCopyRequestToQueue(TestCase):
             max_retries,
             retry_sleep_secs,
             retry_backoff,
-            db_connect_info_secret_arn
+            db_connect_info_secret_arn,
         )
 
     @patch("post_copy_request_to_queue.task")
@@ -129,15 +133,15 @@ class TestPostCopyRequestToQueue(TestCase):
                     post_copy_request_to_queue.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY: uuid.uuid4().__str__(),
                     post_copy_request_to_queue.OS_ENVIRON_RECOVERY_QUEUE_URL_KEY: uuid.uuid4().__str__(),
                     post_copy_request_to_queue.OS_ENVIRON_MAX_RETRIES_KEY: str(
-                        random.randint(0, 100)
+                        random.randint(0, 100)  # nosec
                     ),
                     post_copy_request_to_queue.OS_ENVIRON_RETRY_SLEEP_SECS_KEY: str(
-                        random.randint(0, 100)
+                        random.randint(0, 100)  # nosec
                     ),
                     post_copy_request_to_queue.OS_ENVIRON_RETRY_BACKOFF_KEY: str(
-                        random.randint(0, 100)
+                        random.randint(0, 100)  # nosec
                     ),
-                    post_copy_request_to_queue.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY: uuid.uuid4().__str__()
+                    post_copy_request_to_queue.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY: uuid.uuid4().__str__(),
                 },
                 clear=True,
             ):
@@ -284,9 +288,9 @@ class TestPostCopyRequestToQueue(TestCase):
 
         db_queue_url = uuid.uuid4().__str__()
         recovery_queue_url = uuid.uuid4().__str__()
-        max_retries = random.randint(1, 100)
-        retry_sleep_secs = random.randint(0, 100)
-        retry_backoff = random.randint(0, 100)
+        max_retries = random.randint(1, 100)  # nosec
+        retry_sleep_secs = random.randint(0, 100)  # nosec
+        retry_backoff = random.randint(0, 100)  # nosec
         db_connect_info_secret_arn = uuid.uuid4().__str__()
 
         with patch.dict(
@@ -301,8 +305,7 @@ class TestPostCopyRequestToQueue(TestCase):
                 post_copy_request_to_queue.OS_ENVIRON_RETRY_BACKOFF_KEY: str(
                     retry_backoff
                 ),
-                post_copy_request_to_queue.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY:
-                    db_connect_info_secret_arn
+                post_copy_request_to_queue.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY: db_connect_info_secret_arn,
             },
             clear=True,
         ):
@@ -331,23 +334,23 @@ class TestPostCopyRequestToQueue(TestCase):
         granule_id = uuid.uuid4().__str__()
         filename = uuid.uuid4().__str__()
         restore_destination = uuid.uuid4().__str__()
-        multipart_chunksize_mb = random.randint(1, 10000)
+        multipart_chunksize_mb = random.randint(1, 10000)  # nosec
         key_path = uuid.uuid4().__str__()
         bucket_name = uuid.uuid4().__str__()
         db_connect_info_secret_arn = uuid.uuid4().__str__()
 
-        row =           {
-                post_copy_request_to_queue.JOB_ID_KEY: job_id,
-                post_copy_request_to_queue.GRANULE_ID_KEY: granule_id,
-                post_copy_request_to_queue.FILENAME_KEY: filename,
-                post_copy_request_to_queue.RESTORE_DESTINATION_KEY: restore_destination,
-                post_copy_request_to_queue.MULTIPART_CHUNKSIZE_MB_KEY: str(
-                    multipart_chunksize_mb
-                ),
-                post_copy_request_to_queue.SOURCE_KEY_KEY: key_path,
-                post_copy_request_to_queue.TARGET_KEY_KEY: key_path,
-                post_copy_request_to_queue.SOURCE_BUCKET_KEY: bucket_name,
-            }
+        row = {
+            post_copy_request_to_queue.JOB_ID_KEY: job_id,
+            post_copy_request_to_queue.GRANULE_ID_KEY: granule_id,
+            post_copy_request_to_queue.FILENAME_KEY: filename,
+            post_copy_request_to_queue.RESTORE_DESTINATION_KEY: restore_destination,
+            post_copy_request_to_queue.MULTIPART_CHUNKSIZE_MB_KEY: str(
+                multipart_chunksize_mb
+            ),
+            post_copy_request_to_queue.SOURCE_KEY_KEY: key_path,
+            post_copy_request_to_queue.TARGET_KEY_KEY: key_path,
+            post_copy_request_to_queue.SOURCE_BUCKET_KEY: bucket_name,
+        }
         mock_query_db.return_value = [copy.deepcopy(row)]
 
         environment_args = [
@@ -356,13 +359,15 @@ class TestPostCopyRequestToQueue(TestCase):
             1,
             2,
             3,
-            db_connect_info_secret_arn
+            db_connect_info_secret_arn,
         ]
 
         # calling the task function
         task(key_path, bucket_name, *environment_args)
 
-        mock_query_db.assert_called_once_with(key_path, bucket_name, db_connect_info_secret_arn)
+        mock_query_db.assert_called_once_with(
+            key_path, bucket_name, db_connect_info_secret_arn
+        )
         mock_update_status_for_file.assert_called_once_with(
             job_id,
             granule_id,
@@ -372,7 +377,6 @@ class TestPostCopyRequestToQueue(TestCase):
             self.status_update_queue_url,
         )
         mock_post_entry_to_standard_queue.assert_called_once_with(
-
             row,
             self.recovery_queue_url,
         )
@@ -398,7 +402,7 @@ class TestPostCopyRequestToQueue(TestCase):
         granule_id = uuid.uuid4().__str__()
         filename = uuid.uuid4().__str__()
         restore_destination = uuid.uuid4().__str__()
-        multipart_chunksize_mb = random.randint(1, 10000)
+        multipart_chunksize_mb = random.randint(1, 10000)  # nosec
         key_path = uuid.uuid4().__str__()
         bucket_name = uuid.uuid4().__str__()
         db_connect_info_secret_arn = uuid.uuid4().__str__()
@@ -418,14 +422,14 @@ class TestPostCopyRequestToQueue(TestCase):
             post_copy_request_to_queue.SOURCE_BUCKET_KEY: bucket_name,
         }
         mock_query_db.return_value = [copy.deepcopy(row)]
-        max_retries = random.randint(2, 100)
+        max_retries = random.randint(2, 100)  # nosec
         environment_args = [
             self.status_update_queue_url,
             self.recovery_queue_url,
             max_retries,
             2,
             3,
-            db_connect_info_secret_arn
+            db_connect_info_secret_arn,
         ]
         # calling the task function
         message = "Error sending message to recovery_queue_url for {new_data}"
@@ -433,7 +437,9 @@ class TestPostCopyRequestToQueue(TestCase):
             task(key_path, bucket_name, *environment_args)
             # Check the message from the exception
         self.assertEqual(str.format(message, new_data=row), cm.exception.args[0])
-        mock_query_db.assert_called_once_with(key_path, bucket_name, db_connect_info_secret_arn)
+        mock_query_db.assert_called_once_with(
+            key_path, bucket_name, db_connect_info_secret_arn
+        )
         # verify the logging captured matches the expected message
         mock_LOGGER.critical.assert_called_once_with(message, new_data=str(row))
         mock_update_status_for_file.assert_called_once_with(
@@ -477,7 +483,7 @@ class TestPostCopyRequestToQueue(TestCase):
         granule_id = uuid.uuid4().__str__()
         filename = uuid.uuid4().__str__()
         restore_destination = uuid.uuid4().__str__()
-        multipart_chunksize_mb = random.randint(1, 10000)
+        multipart_chunksize_mb = random.randint(1, 10000)  # nosec
         key_path = uuid.uuid4().__str__()
         bucket_name = uuid.uuid4().__str__()
         db_connect_info_secret_arn = uuid.uuid4().__str__()
@@ -498,14 +504,14 @@ class TestPostCopyRequestToQueue(TestCase):
             post_copy_request_to_queue.SOURCE_BUCKET_KEY: bucket_name,
         }
         mock_query_db.return_value = [copy.deepcopy(row)]
-        max_retries = random.randint(2, 100)
+        max_retries = random.randint(2, 100)  # nosec
         environment_args = [
             self.status_update_queue_url,
             self.recovery_queue_url,
             max_retries,
             2,
             3,
-            db_connect_info_secret_arn
+            db_connect_info_secret_arn,
         ]
         # calling the task function
         # calling the task function
@@ -536,9 +542,9 @@ class TestPostCopyRequestToQueue(TestCase):
 
     @patch("time.sleep")
     def test_exponential_delay_happy_path(self, mock_sleep: MagicMock):
-        base_delay = random.randint(0, 10)
-        exponential_backoff = random.randint(0, 10)
-        random_addition = random.randint(0, 500)
+        base_delay = random.randint(0, 10)  # nosec
+        exponential_backoff = random.randint(0, 10)  # nosec
+        random_addition = random.randint(0, 500)  # nosec
 
         with patch("random.randint") as mock_randint:
             mock_randint.return_value = random_addition
@@ -585,12 +591,12 @@ class TestPostCopyRequestToQueue(TestCase):
         granule_id0 = uuid.uuid4().__str__()
         filename0 = uuid.uuid4().__str__()
         restore_destination0 = uuid.uuid4().__str__()
-        multipart_chunksize_mb0 = random.randint(0, 1000)
+        multipart_chunksize_mb0 = random.randint(0, 1000)  # nosec
         job_id1 = uuid.uuid4().__str__()
         granule_id1 = uuid.uuid4().__str__()
         filename1 = uuid.uuid4().__str__()
         restore_destination1 = uuid.uuid4().__str__()
-        multipart_chunksize_mb1 = random.randint(0, 1000)
+        multipart_chunksize_mb1 = random.randint(0, 1000)  # nosec
 
         mock_execute = Mock(
             return_value=[
@@ -620,7 +626,9 @@ class TestPostCopyRequestToQueue(TestCase):
         mock_engine.begin = Mock(return_value=mock_enter)
         mock_get_user_connection.return_value = mock_engine
 
-        result = post_copy_request_to_queue.query_db(key_path, bucket_name, db_connect_info_secret_arn)
+        result = post_copy_request_to_queue.query_db(
+            key_path, bucket_name, db_connect_info_secret_arn
+        )
 
         mock_get_configuration.assert_called_once_with(db_connect_info_secret_arn)
         mock_get_user_connection.assert_called_once_with(
@@ -686,7 +694,9 @@ class TestPostCopyRequestToQueue(TestCase):
         mock_get_user_connection.return_value = mock_engine
 
         with self.assertRaises(Exception) as cm:
-            post_copy_request_to_queue.query_db(key_path, bucket_name, db_connect_info_secret_arn)
+            post_copy_request_to_queue.query_db(
+                key_path, bucket_name, db_connect_info_secret_arn
+            )
 
         self.assertEqual(
             f"Unable to retrieve {key_path} metadata. Exception 'No metadata found for {key_path}' encountered.",
@@ -728,7 +738,9 @@ class TestPostCopyRequestToQueue(TestCase):
         mock_get_user_connection.return_value = mock_engine
 
         with self.assertRaises(Exception) as cm:
-            post_copy_request_to_queue.query_db(key_path, bucket_name, db_connect_info_secret_arn)
+            post_copy_request_to_queue.query_db(
+                key_path, bucket_name, db_connect_info_secret_arn
+            )
 
         self.assertEqual(
             f"Unable to retrieve {key_path} metadata. Exception '{error_string}' encountered.",
@@ -754,6 +766,6 @@ class TestPostCopyRequestToQueue(TestCase):
                 key_path = '{key_path}'
             AND
                 status_id = {shared_recovery.OrcaStatus.PENDING.value}
-        """,
+        """,  # nosec
             result.text,
         )

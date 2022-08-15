@@ -16,7 +16,7 @@
 ## =============================================================================
 
 ## Set this for Debugging only
-#set -x
+#set -ex
 
 ## Make sure we are calling the script the correct way.
 BASEDIR=$(dirname $0)
@@ -66,15 +66,8 @@ let return_code=$?
 
 check_rc $return_code "ERROR: pip install encountered an error."
 
-
 ## Check code formatting and styling
 echo "INFO: Checking formatting and style of code ..."
-echo "INFO: Checking lint rules ..."
-flake8 \
-    --max-line-length 99 \
-    get_current_archive_list.py test
-check_rc $return_code "ERROR: Linting issues found."
-
 echo "INFO: Sorting imports ..."
 isort \
     --trailing-comma \
@@ -83,15 +76,23 @@ isort \
     --use-parentheses \
     --force-grid-wrap 0 \
     -m 3 \
-    get_current_archive_list.py test
+    *.py test
+
 
 echo "INFO: Formatting with black ..."
-black get_current_archive_list.py test
+black *.py test
+
+
+echo "INFO: Checking lint rules ..."
+flake8 \
+    --max-line-length 99 \
+    *.py test
+check_rc $return_code "ERROR: Linting issues found."
 
 
 ## Run code smell and security tests using bandit
 echo "INFO: Running code smell security tests ..."
-bandit -r get_current_archive_list.py test
+bandit -r *.py test
 let return_code=$?
 check_rc $return_code "ERROR: Potential security or code issues found."
 

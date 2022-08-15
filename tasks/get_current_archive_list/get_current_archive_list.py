@@ -23,7 +23,6 @@ from orca_shared.reconciliation import (
 )
 from sqlalchemy import text
 from sqlalchemy.future import Engine
-from sqlalchemy.sql.elements import TextClause
 
 OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY = "INTERNAL_REPORT_QUEUE_URL"
 OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY = "S3_CREDENTIALS_SECRET_ARN"  # nosec
@@ -202,7 +201,7 @@ def create_job(
     return rows.fetchone()["id"]
 
 
-def create_job_sql() -> TextClause:
+def create_job_sql() -> text:  # pragma: no cover
     return text(
         """
         INSERT INTO reconcile_job
@@ -240,7 +239,7 @@ def truncate_s3_partition(orca_archive_location: str, engine: Engine) -> None:
         raise
 
 
-def truncate_s3_partition_sql(partition_name: str) -> TextClause:
+def truncate_s3_partition_sql(partition_name: str) -> text:
     # Quickly removes data from the partition
     return text(
         f"""
@@ -384,7 +383,7 @@ def generate_temporary_s3_column_list(manifest_file_schema: str) -> str:
 
 # https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PostgreSQL.S3Import.html
 # To make runnable, run 'CREATE EXTENSION IF NOT EXISTS aws_s3 CASCADE;'
-def create_temporary_table_sql(temporary_s3_column_list: str) -> TextClause:
+def create_temporary_table_sql(temporary_s3_column_list: str) -> text:
     """
     Creates a temporary table to store inventory data.
     Args:
@@ -400,7 +399,7 @@ def create_temporary_table_sql(temporary_s3_column_list: str) -> TextClause:
     )
 
 
-def trigger_csv_load_from_s3_sql() -> TextClause:
+def trigger_csv_load_from_s3_sql() -> text:  # pragma: no cover
     """
     SQL for telling postgres where/how to copy in the s3 inventory data.
     """
@@ -421,7 +420,7 @@ def trigger_csv_load_from_s3_sql() -> TextClause:
     )
 
 
-def translate_s3_import_to_partitioned_data_sql() -> TextClause:
+def translate_s3_import_to_partitioned_data_sql() -> text:  # pragma: no cover
     """
     SQL for translating between the temporary table and Orca table.
     """

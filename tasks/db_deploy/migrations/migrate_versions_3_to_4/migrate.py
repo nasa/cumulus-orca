@@ -53,14 +53,11 @@ def migrate_versions_3_to_4(config: Dict[str, str], is_latest_version: bool) -> 
         connection.execute(sql.files_table_sql())
         logger.info("files table created.")
 
-        # Commit if there is no issues
-        connection.commit()
-
         # If v4 is the latest version, update the schema_versions table.
         if is_latest_version:
             logger.debug("Populating the schema_versions table with data ...")
             connection.execute(sql.schema_versions_data_sql())
             logger.info("Data added to the schema_versions table.")
 
-        # Commit if there is no issues
+        # Commit if there are no issues
         connection.commit()

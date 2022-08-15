@@ -1,32 +1,28 @@
 """
 Name: orca_sql.py
 
-Description: All of the SQL used for creating and migrating the ORCA schema.
+Description: All the SQL used for creating and migrating the ORCA schema.
 """
 # Imports
-import re
-
-from orca_shared.database.shared_db import logger
 from sqlalchemy import text
-from sqlalchemy.sql.elements import TextClause
 
 
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating the Database
 # ----------------------------------------------------------------------------
-def commit_sql() -> TextClause:
+def commit_sql() -> text:  # pragma: no cover
     """
     SQL for a simple 'commit' to exit the current transaction.
     """
     return text("commit")
 
 
-def app_database_sql(db_name: str, admin_username: str) -> TextClause:
+def app_database_sql(db_name: str, admin_username: str) -> text:
     """
     Full SQL for creating the ORCA application database.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating database.
+        SQL for creating database.
     """
     return text(
         f"""
@@ -38,7 +34,7 @@ def app_database_sql(db_name: str, admin_username: str) -> TextClause:
     )
 
 
-def app_database_comment_sql(db_name: str) -> TextClause:
+def app_database_comment_sql(db_name: str) -> text:
     """
     SQL for adding a documentation comment to the database.
     Cannot be merged with DB creation due to SQLAlchemy limitations.
@@ -54,13 +50,13 @@ def app_database_comment_sql(db_name: str) -> TextClause:
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA schema, roles, and users
 # ----------------------------------------------------------------------------
-def dbo_role_sql(db_name: str, admin_username: str) -> TextClause:
+def dbo_role_sql(db_name: str, admin_username: str) -> text:
     """
     Full SQL for creating the ORCA dbo role that owns the ORCA schema and
     objects.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating orca_dbo role.
+        SQL for creating orca_dbo role.
     """
     return text(
         f"""
@@ -80,8 +76,8 @@ def dbo_role_sql(db_name: str, admin_username: str) -> TextClause:
             END IF;
 
             -- Grants
-            GRANT CONNECT ON DATABASE {db_name} TO orca_dbo;
-            GRANT CREATE ON DATABASE {db_name} TO orca_dbo;
+            GRANT CONNECT ON DATABASE "{db_name}" TO orca_dbo;
+            GRANT CREATE ON DATABASE "{db_name}" TO orca_dbo;
             GRANT orca_dbo TO "{admin_username}";
           END
         $$
@@ -89,13 +85,13 @@ def dbo_role_sql(db_name: str, admin_username: str) -> TextClause:
     )
 
 
-def app_role_sql(db_name: str) -> TextClause:
+def app_role_sql(db_name: str) -> text:
     """
     Full SQL for creating the ORCA application role that has all the privileges
     to interact with the ORCA schema.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating orca_app role.
+        SQL for creating orca_app role.
     """
     return text(
         f"""
@@ -115,21 +111,21 @@ def app_role_sql(db_name: str) -> TextClause:
           END IF;
 
           -- Add Grants
-          GRANT CONNECT ON DATABASE {db_name} TO orca_app;
+          GRANT CONNECT ON DATABASE "{db_name}" TO orca_app;
         END
         $$;
     """  # nosec
     )
 
 
-def orca_schema_sql() -> TextClause:
+def orca_schema_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the ORCA application schema that contains all the
     ORCA tables and objects. This SQL must be used after the dbo_role_sql and
     before the app_user_sql and ORCA objects.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating orca schema.
+        SQL for creating orca schema.
     """
     return text(
         """
@@ -140,10 +136,10 @@ def orca_schema_sql() -> TextClause:
         COMMENT ON SCHEMA orca
             IS 'Contains all the objects needed to operate the ORCA application';
 
-        -- GRANT the privelages needed
+        -- GRANT the privileges needed
         GRANT USAGE ON SCHEMA orca TO orca_app;
 
-        -- Setup Default Privelages for application user as a catch all
+        -- Setup Default Privileges for application user as a catch all
         ALTER DEFAULT PRIVILEGES FOR USER orca_dbo IN SCHEMA orca
           GRANT SELECT ON TABLES TO orca_app;
         ALTER DEFAULT PRIVILEGES FOR USER orca_dbo IN SCHEMA orca
@@ -170,46 +166,35 @@ def orca_schema_sql() -> TextClause:
     )
 
 
-def app_user_sql(user_name: str, user_password: str) -> TextClause:
+def app_user_sql(user_name: str) -> text:
     """
     Full SQL for creating the ORCA application database user. Must be created
     after the app_role_sql and orca_schema_sql.
 
     Args:
-        user_password (str): Password for the application user
+        user_name: Username for the application user
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating PREFIX_orcauser user.
+        SQL for creating PREFIX_orcauser user.
     """
-    if user_name is None or len(user_name) == 0:
-        logger.critical("Username must be non-empty.")
-        raise Exception("Username must be non-empty.")
-    if len(user_name) > 63:
-        logger.critical("Username must be less than 64 characters.")
-        raise Exception("Username must be less than 64 characters.")
-
-    if user_password is None or len(user_password) < 12:
-        logger.critical("User password must be at least 12 characters long.")
-        raise Exception("User password must be at least 12 characters long.")
-
     return text(
         f"""
         DO
         $$
         BEGIN
-            IF NOT EXISTS (SELECT 1 FROM pg_user WHERE usename = '{user_name}' ) THEN
-                -- Create {user_name}
+            IF NOT EXISTS (SELECT 1 FROM pg_user WHERE usename = :user_name ) THEN
+                -- Create user
                 CREATE ROLE "{user_name}"
                     LOGIN
                     INHERIT
-                    ENCRYPTED PASSWORD '{user_password}'
+                    ENCRYPTED PASSWORD :user_password
                     IN ROLE orca_app;
 
                 -- Add comment
                 COMMENT ON ROLE "{user_name}"
                     IS 'ORCA application user.';
 
-                RAISE NOTICE 'USER CREATED {user_name}.';
+                RAISE NOTICE 'USER CREATED "{user_name}".';
 
             END IF;
 
@@ -221,13 +206,13 @@ def app_user_sql(user_name: str, user_password: str) -> TextClause:
     )
 
 
-def create_extension() -> TextClause:
+def create_extension() -> text:  # pragma: no cover
     """
     Full SQL for creating the aws_s3 extension used for COPYING S3 reporting data
     from a CSV file in an AWS bucket into the database.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating extension for the database.
+        SQL for creating extension for the database.
     """
 
     return text(
@@ -241,12 +226,12 @@ def create_extension() -> TextClause:
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA general metadata tables
 # ----------------------------------------------------------------------------
-def schema_versions_table_sql() -> TextClause:
+def schema_versions_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the schema_versions table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating schema_versions table.
+        SQL for creating schema_versions table.
     """
     return text(
         """
@@ -282,13 +267,13 @@ def schema_versions_table_sql() -> TextClause:
     )
 
 
-def schema_versions_data_sql() -> TextClause:
+def schema_versions_data_sql() -> text:  # pragma: no cover
     """
     Data for the schema_versions table. Inserts the current schema
     version into the table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for populating schema_versions table.
+        SQL for populating schema_versions table.
     """
     return text(
         """
@@ -310,13 +295,13 @@ def schema_versions_data_sql() -> TextClause:
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA recovery tables
 # ----------------------------------------------------------------------------
-def recovery_status_table_sql() -> TextClause:
+def recovery_status_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the recovery_status table. This SQL must be run
     before any of the other recovery table sql.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating recovery_status table.
+        SQL for creating recovery_status table.
     """
     return text(
         """
@@ -343,13 +328,13 @@ def recovery_status_table_sql() -> TextClause:
     )
 
 
-def recovery_status_data_sql() -> TextClause:
+def recovery_status_data_sql() -> text:  # pragma: no cover
     """
     Data for the recovery_status table. Inserts the current status values into
     the table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for populating recovery_status table.
+        SQL for populating recovery_status table.
     """
     return text(
         """
@@ -366,14 +351,14 @@ def recovery_status_data_sql() -> TextClause:
     )
 
 
-def recovery_job_table_sql() -> TextClause:
+def recovery_job_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the recovery_job table. This SQL must be run
     before the other recovery_file table sql and after the recovery_status
     table sql to maintain key dependencies.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating recovery_job table.
+        SQL for creating recovery_job table.
     """
     return text(
         """
@@ -414,13 +399,13 @@ def recovery_job_table_sql() -> TextClause:
     )
 
 
-def recovery_file_table_sql() -> TextClause:
+def recovery_file_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the recovery_file table. This SQL must be run
     after the recovery_job table sql to maintain key dependencies.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating recovery_file table.
+        SQL for creating recovery_file table.
     """
     return text(
         """
@@ -481,12 +466,12 @@ def recovery_file_table_sql() -> TextClause:
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA inventory metadata tables
 # ----------------------------------------------------------------------------
-def providers_table_sql() -> TextClause:
+def providers_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the providers table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating providers table.
+        SQL for creating providers table.
     """
     return text(
         """
@@ -511,12 +496,12 @@ def providers_table_sql() -> TextClause:
     )
 
 
-def collections_table_sql() -> TextClause:
+def collections_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the collections table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating collections table.
+        SQL for creating collections table.
     """
     return text(
         """
@@ -544,12 +529,12 @@ def collections_table_sql() -> TextClause:
     )
 
 
-def granules_table_sql() -> TextClause:
+def granules_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the catalog granules table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating granules table.
+        SQL for creating granules table.
     """
     return text(
         """
@@ -600,12 +585,66 @@ def granules_table_sql() -> TextClause:
     )
 
 
-def files_table_sql() -> TextClause:
+def storage_class_table_sql() -> text:  # pragma: no cover
+    """
+    Full SQL for creating the storage_class table. This SQL must be run
+    before any of the other recovery table sql.
+
+    Returns:
+        (sqlalchemy.sql.element.TextClause): SQL for creating storage_class table.
+    """
+    return text(
+        """
+        -- Create table
+        CREATE TABLE IF NOT EXISTS storage_class
+        (
+          id    int2 NOT NULL
+        , value text NOT NULL
+        , CONSTRAINT PK_storage_class PRIMARY KEY(id)
+        , CONSTRAINT UNIQUE_storage_class_value UNIQUE (value)
+        );
+
+        -- Comments
+        COMMENT ON TABLE storage_class
+            IS 'Reference table for valid storage classes.';
+        COMMENT ON COLUMN storage_class.id
+            IS 'Storage Class ID';
+        COMMENT ON COLUMN storage_class.value
+            IS 'Human readable storage class';
+
+        -- Grants
+        GRANT SELECT ON storage_class TO orca_app;
+    """
+    )
+
+
+def storage_class_data_sql() -> text:  # pragma: no cover
+    """
+    Data for the storage_class table. Inserts the currently valid storage classes into
+    the table.
+
+    TODO: Research on Deep Glacier vs Deep Archive is limited.
+
+    Returns:
+        (sqlalchemy.sql.element.TextClause): SQL for populating storage_class table.
+    """
+    return text(
+        """
+        -- Upsert the data lookup rows for the table
+        INSERT INTO storage_class VALUES (1, 'GLACIER')
+            ON CONFLICT (id) DO NOTHING;
+        INSERT INTO storage_class VALUES (2, 'DEEP_ARCHIVE')
+            ON CONFLICT (id) DO NOTHING;
+    """
+    )
+
+
+def files_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the catalog files table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating files table.
+        SQL for creating files table.
     """
     return text(
         """
@@ -624,6 +663,7 @@ def files_table_sql() -> TextClause:
         , size_in_bytes             int8 NOT NULL
         , hash                      text NULL
         , hash_type                 text NULL
+        , storage_class_id          int2 NOT NULL
         , CONSTRAINT PK_files
             PRIMARY KEY (id)
         , CONSTRAINT FK_granule_file
@@ -632,6 +672,8 @@ def files_table_sql() -> TextClause:
             UNIQUE (orca_archive_location, key_path)
         , CONSTRAINT UNIQUE_cumulus_archive_location_key_path
             UNIQUE (cumulus_archive_location, key_path)
+        , CONSTRAINT FK_recovery_file_storage_class
+            FOREIGN KEY (storage_class_id) REFERENCES storage_class (id)
         );
 
         -- Comments
@@ -661,6 +703,8 @@ def files_table_sql() -> TextClause:
             IS 'Hash of the object from Cumulus';
         COMMENT ON COLUMN files.hash_type
             IS 'Hash type used to hash the object. Supplied by Cumulus.';
+        COMMENT ON COLUMN files.storage_class_id
+            IS 'Storage class of the file.';
         -- Grants
         GRANT SELECT, INSERT, UPDATE, DELETE ON files TO orca_app;
     """
@@ -670,12 +714,12 @@ def files_table_sql() -> TextClause:
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA internal reconciliation tables
 # ----------------------------------------------------------------------------
-def reconcile_status_table_sql() -> TextClause:
+def reconcile_status_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the reconcile_status table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_status table.
+        SQL for creating reconcile_status table.
     """
     return text(
         """
@@ -711,12 +755,12 @@ def reconcile_status_table_sql() -> TextClause:
     )
 
 
-def reconcile_job_table_sql() -> TextClause:
+def reconcile_job_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the reconcile_job table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_job table.
+        SQL for creating reconcile_job table.
     """
     return text(
         """
@@ -760,12 +804,12 @@ def reconcile_job_table_sql() -> TextClause:
     )
 
 
-def reconcile_s3_object_table_sql() -> TextClause:
+def reconcile_s3_object_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the reconcile_s3_object table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_s3_object table.
+        SQL for creating reconcile_s3_object table.
     """
     return text(
         """
@@ -806,7 +850,7 @@ def reconcile_s3_object_table_sql() -> TextClause:
     )
 
 
-def reconcile_s3_object_partition_sql(partition_name: str) -> TextClause:
+def reconcile_s3_object_partition_sql(partition_name: str) -> text:
     """
     Full SQL for creating the reconcile_s3_object partition table. Requires the
     user to pass the orca_archive_location value for the partition in the form
@@ -816,14 +860,8 @@ def reconcile_s3_object_partition_sql(partition_name: str) -> TextClause:
         partition_name(str): Name of the partition table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_s3_object partition table.
+        SQL for creating reconcile_s3_object partition table.
     """
-    try:
-        if not re.match("^[\w+]+$", partition_name):  # noqa: W605
-            raise ValueError(f"Table name {partition_name} is invalid.")
-    except TypeError:
-        raise ValueError("Table name must be a string and cannot be None.")
-
     return text(
         f"""
             -- Create orca_archive_location_:bucket_name
@@ -843,12 +881,12 @@ def reconcile_s3_object_partition_sql(partition_name: str) -> TextClause:
     )
 
 
-def reconcile_catalog_mismatch_report_table_sql() -> TextClause:
+def reconcile_catalog_mismatch_report_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the reconcile_catalog_mismatch_report table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_catalog_mismatch_report.
+        SQL for creating reconcile_catalog_mismatch_report.
     """
     return text(
         """
@@ -865,13 +903,17 @@ def reconcile_catalog_mismatch_report_table_sql() -> TextClause:
             , s3_etag                     text NOT NULL
             , orca_last_update            timestamp with time zone NOT NULL
             , s3_last_update              timestamp with time zone NOT NULL
-            , orca_size_in_bytes        int8 NOT NULL
+            , orca_size_in_bytes          int8 NOT NULL
             , s3_size_in_bytes            int8 NOT NULL
+            , orca_storage_class_id       int2 NOT NULL
+            , s3_storage_class            text NOT NULL
             , discrepancy_type            text NOT NULL
             , CONSTRAINT PK_reconcile_catalog_mismatch_report
                 PRIMARY KEY(job_id,collection_id,granule_id,key_path)
             , CONSTRAINT FK_reconcile_job_mismatch_report
                 FOREIGN KEY(job_id) REFERENCES reconcile_job(id)
+            , CONSTRAINT FK_mismatch_orca_storage_class
+                FOREIGN KEY (orca_storage_class_id) REFERENCES storage_class (id)
             );
 
             -- Comment
@@ -901,18 +943,22 @@ def reconcile_catalog_mismatch_report_table_sql() -> TextClause:
               IS 'Size in bytes of the object as reported in the ORCA catalog.';
             COMMENT ON COLUMN reconcile_catalog_mismatch_report.s3_size_in_bytes
               IS 'Size in bytes of the object as reported in the S3 bucket.';
+            COMMENT ON COLUMN reconcile_catalog_mismatch_report.orca_storage_class_id
+              IS 'Storage class of the file as reported in the ORCA catalog.';
+            COMMENT ON COLUMN reconcile_catalog_mismatch_report.s3_storage_class
+              IS 'Storage class of the file as reported in the S3 bucket.';
             COMMENT ON COLUMN reconcile_catalog_mismatch_report.discrepancy_type
               IS 'Type of discrepancy found during reconciliation.';
         """
     )
 
 
-def reconcile_orphan_report_table_sql() -> TextClause:
+def reconcile_orphan_report_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the reconcile_orphan_report table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_orphan_report table.
+        SQL for creating reconcile_orphan_report table.
     """
     return text(
         """
@@ -950,30 +996,33 @@ def reconcile_orphan_report_table_sql() -> TextClause:
     )
 
 
-def reconcile_phantom_report_table_sql() -> TextClause:
+def reconcile_phantom_report_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the reconcile_phantom_report table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating reconcile_phantom_report table.
+        SQL for creating reconcile_phantom_report table.
     """
     return text(
         """
             -- Create reconcile_phantom_report table
             CREATE TABLE IF NOT EXISTS reconcile_phantom_report
             (
-              job_id              int8 NOT NULL
-            , collection_id       text NOT NULL
-            , granule_id          text NOT NULL
-            , filename            text NOT NULL
-            , key_path            text NOT NULL
-            , orca_etag           text NOT NULL
-            , orca_last_update    timestamp with time zone NOT NULL
-            , orca_size           int8 NOT NULL
+              job_id                int8 NOT NULL
+            , collection_id         text NOT NULL
+            , granule_id            text NOT NULL
+            , filename              text NOT NULL
+            , key_path              text NOT NULL
+            , orca_etag             text NOT NULL
+            , orca_last_update      timestamp with time zone NOT NULL
+            , orca_size             int8 NOT NULL
+            , orca_storage_class_id int2 NOT NULL
             , CONSTRAINT PK_reconcile_phantom_report
                 PRIMARY KEY(job_id,collection_id,granule_id,key_path)
             , CONSTRAINT FK_reconcile_job_phantom_report
                 FOREIGN KEY(job_id) REFERENCES reconcile_job(id)
+            , CONSTRAINT FK_phantom_orca_storage_class
+                FOREIGN KEY (orca_storage_class_id) REFERENCES storage_class (id)
             );
             -- Comment
             COMMENT ON TABLE reconcile_phantom_report
@@ -994,5 +1043,7 @@ def reconcile_phantom_report_table_sql() -> TextClause:
               IS 'Last update of the object as reported in the ORCA catalog.';
             COMMENT ON COLUMN reconcile_phantom_report.orca_size
               IS 'Size in bytes of the object as reported in the ORCA catalog.';
+            COMMENT ON COLUMN reconcile_phantom_report.s3_storage_class_id
+              IS 'Storage class of the file as reported in the ORCA catalog.';
         """
     )

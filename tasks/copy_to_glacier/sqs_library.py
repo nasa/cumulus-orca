@@ -14,8 +14,8 @@ from typing import Any, Callable, Dict, TypeVar
 
 # Third party libraries
 import boto3
-from cumulus_logger import CumulusLogger
 import fastjsonschema
+from cumulus_logger import CumulusLogger
 
 # Set Cumulus LOGGER
 LOGGER = CumulusLogger(name="ORCA")

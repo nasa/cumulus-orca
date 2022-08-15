@@ -52,14 +52,14 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
         """
         for latest_version in [True, False]:
             with self.subTest(latest_version=latest_version):
-                # Setup the mock object that conn.execute is a part of in
+                # Set up the mock object that conn.execute is a part of in
                 # the connection with block
                 mock_conn_enter = mock_connection().connect().__enter__()
 
                 # Run the function
                 migrate.migrate_versions_2_to_3(self.config, latest_version)
 
-                # Check that all of the functions were called the correct
+                # Check that all the functions were called the correct
                 # number of times with the proper values
                 mock_connection.assert_any_call(
                     self.config, self.config["user_database"]
@@ -74,6 +74,7 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                     call("SET search_path TO orca, public;"),
                 ]
                 mock_text.assert_has_calls(text_calls, any_order=False)
+                self.assertEqual(len(text_calls), mock_text.call_count)
 
                 # Validate logic switch and set the execution order
                 if latest_version:
@@ -94,11 +95,12 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                         call.execute(mock_add_multipart_chunksize_sql()),
                         call.commit(),
                     ]
-
                 # Check that items were called in the proper order
                 mock_conn_enter.assert_has_calls(execution_order, any_order=False)
+                self.assertEqual(len(execution_order), len(mock_conn_enter.method_calls))
 
                 # Reset the mocks for next loop
+                mock_text.reset_mock()
                 mock_connection.reset_mock()
                 mock_add_multipart_chunksize_sql.reset_mock()
                 mock_schema_versions_data.reset_mock()

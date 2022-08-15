@@ -1,6 +1,6 @@
 import os
 from http import HTTPStatus
-from typing import Dict, Any, List, Union
+from typing import Any, Dict, List, Union
 
 from cumulus_logger import CumulusLogger
 from orca_shared.database import shared_db
@@ -110,7 +110,7 @@ def get_most_recent_job_id_for_granule(
     return row["job_id"]
 
 
-def get_most_recent_job_id_for_granule_sql() -> text:
+def get_most_recent_job_id_for_granule_sql() -> text:  # pragma: no cover
     return text(
         """
             SELECT
@@ -177,7 +177,7 @@ def get_job_entry_for_granule(
     }
 
 
-def get_job_entry_for_granule_sql() -> text:
+def get_job_entry_for_granule_sql() -> text:  # pragma: no cover
     return text(
         f"""
                 SELECT
@@ -240,7 +240,7 @@ def get_file_entries_for_granule_in_job(
     return rows
 
 
-def get_file_entries_for_granule_in_job_sql() -> text:
+def get_file_entries_for_granule_in_job_sql() -> text:  # pragma: no cover
     return text(
         f"""
             SELECT
@@ -319,9 +319,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     try:
         db_connect_info_secret_arn = os.environ["DB_CONNECT_INFO_SECRET_ARN"]
     except KeyError as key_error:
-        LOGGER.error(
-            "DB_CONNECT_INFO_SECRET_ARN environment value not found."
-        )
+        LOGGER.error("DB_CONNECT_INFO_SECRET_ARN environment value not found.")
         raise
 
     db_connect_info = shared_db.get_configuration(db_connect_info_secret_arn)

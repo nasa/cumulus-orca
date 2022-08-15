@@ -19,7 +19,6 @@ from orca_shared.database.shared_db import RT
 from orca_shared.reconciliation import OrcaStatus, update_job
 from sqlalchemy import text
 from sqlalchemy.future import Engine
-from sqlalchemy.sql.elements import TextClause
 
 OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY = "INTERNAL_REPORT_QUEUE_URL"
 
@@ -103,7 +102,7 @@ def generate_reports(job_id: int, orca_archive_location: str, engine: Engine) ->
         engine: The sqlalchemy engine to use for contacting the database.
     """
     try:
-        LOGGER.debug(f"Generating phantom reports for job id {job_id}.")
+        LOGGER.debug(f"Generating reports for job id {job_id}.")
         with engine.begin() as connection:
             LOGGER.debug(f"Generating phantom reports for job id {job_id}.")
             connection.execute(
@@ -128,7 +127,7 @@ def generate_reports(job_id: int, orca_archive_location: str, engine: Engine) ->
         raise
 
 
-def generate_phantom_reports_sql() -> TextClause:
+def generate_phantom_reports_sql() -> text:  # pragma: no cover
     """
     SQL for generating reports on files in the Orca catalog, but not S3.
     """
@@ -142,7 +141,9 @@ def generate_phantom_reports_sql() -> TextClause:
                     files.name, 
                     files.key_path, 
                     files.etag, 
-                    files.size_in_bytes
+                    files.size_in_bytes,
+                    files.storage_class_id
+                    
                 FROM
                     files
                 LEFT OUTER JOIN reconcile_s3_object USING 
@@ -163,7 +164,8 @@ def generate_phantom_reports_sql() -> TextClause:
                     etag, 
                     last_update, 
                     size_in_bytes, 
-                    cumulus_granule_id 
+                    cumulus_granule_id,
+                    storage_class_id
                 FROM 
                     phantom_files
                 INNER JOIN granules ON 
@@ -180,7 +182,8 @@ def generate_phantom_reports_sql() -> TextClause:
             key_path, 
             orca_etag, 
             orca_last_update, 
-            orca_size
+            orca_size,
+            orca_storage_class_id
         )
         SELECT 
             :job_id, 
@@ -190,13 +193,14 @@ def generate_phantom_reports_sql() -> TextClause:
             key_path, 
             etag, 
             last_update, 
-            size_in_bytes
+            size_in_bytes,
+            storage_class_id
         FROM 
             phantom_reports"""
     )
 
 
-def generate_orphan_reports_sql() -> TextClause:
+def generate_orphan_reports_sql() -> text:  # pragma: no cover
     """
     SQL for generating reports on files in S3, but not the Orca catalog.
     """
@@ -242,12 +246,11 @@ def generate_orphan_reports_sql() -> TextClause:
     )
 
 
-def generate_mismatch_reports_sql() -> TextClause:
+def generate_mismatch_reports_sql() -> text:  # pragma: no cover
     """
     SQL for retrieving mismatches between entries in S3 and the Orca catalog.
     """
     return text(
-        # todo: Probably have to remove orca_last_update from this. Could just remove the comparison. Could leave s3_last_update in if it helps.
         f"""
         INSERT INTO orca.reconcile_catalog_mismatch_report 
         (
@@ -263,6 +266,8 @@ def generate_mismatch_reports_sql() -> TextClause:
             s3_last_update, 
             orca_size_in_bytes, 
             s3_size_in_bytes, 
+            orca_storage_class_id,
+            s3_storage_class,
             discrepancy_type
         )
         SELECT
@@ -278,13 +283,23 @@ def generate_mismatch_reports_sql() -> TextClause:
             reconcile_s3_object.last_update AS s3_last_update,
             files.size_in_bytes AS orca_size_in_bytes, 
             reconcile_s3_object.size_in_bytes AS s3_size_in_bytes,
+            files.storage_class_id AS orca_storage_class_id,
+            reconcile_s3_object.storage_class AS s3_storage_class,
             CASE 
+                WHEN (files.etag != reconcile_s3_object.etag AND files.size_in_bytes != reconcile_s3_object.size_in_bytes AND storage_class.value != reconcile_s3_object.storage_class) 
+                    THEN 'etag, size_in_bytes, storage_class'
                 WHEN (files.etag != reconcile_s3_object.etag AND files.size_in_bytes != reconcile_s3_object.size_in_bytes) 
                     THEN 'etag, size_in_bytes'
+                WHEN files.etag != reconcile_s3_object.etag AND storage_class.value != reconcile_s3_object.storage_class
+                    THEN 'etag, storage_class'
+                WHEN files.size_in_bytes != reconcile_s3_object.size_in_bytes AND storage_class.value != reconcile_s3_object.storage_class
+                    THEN 'size_in_bytes, storage_class'
                 WHEN files.etag != reconcile_s3_object.etag 
                     THEN 'etag'
                 WHEN files.size_in_bytes != reconcile_s3_object.size_in_bytes 
                     THEN 'size_in_bytes'
+                WHEN storage_class.value != reconcile_s3_object.storage_class
+                    THEN 'storage_class'
                 ELSE 'UNKNOWN'
             END AS discrepancy_type
         FROM 
@@ -297,12 +312,17 @@ def generate_mismatch_reports_sql() -> TextClause:
         (
             files.granule_id=granules.id
         )
+        INNER JOIN storage_class ON
+        (
+            storage_class_id=storage_class.id
+        )
         WHERE
             reconcile_s3_object.orca_archive_location = :orca_archive_location
             AND
             (
                 files.etag != reconcile_s3_object.etag OR
-                files.size_in_bytes != reconcile_s3_object.size_in_bytes
+                files.size_in_bytes != reconcile_s3_object.size_in_bytes OR
+                storage_class.value != reconcile_s3_object.storage_class
             )"""  # nosec
     )
 
@@ -378,6 +398,7 @@ def remove_job_from_queue(internal_report_queue_url: str, message_receipt_handle
         message_receipt_handle: message_receipt_handle: The ReceiptHandle for the event in the queue.
     """
     aws_client_sqs = boto3.client("sqs")
+    LOGGER.debug(f"Deleting message '{message_receipt_handle}' from queue '{internal_report_queue_url}'")
     # Remove message from the queue we are listening to.
     aws_client_sqs.delete_message(
         QueueUrl=internal_report_queue_url,

@@ -3,20 +3,21 @@ import json
 import random
 import unittest
 import uuid
+from test.helpers import LambdaContextMock
+from test.unit_tests.ConfigCheck import ConfigCheck
 from unittest import TestCase
-from unittest.mock import MagicMock, Mock, call, patch, ANY
+from unittest.mock import ANY, MagicMock, Mock, call, patch
 
 import fastjsonschema as fastjsonschema
 from moto import mock_sqs
 
 import copy_to_glacier
 from copy_to_glacier import *
-from test.helpers import LambdaContextMock
-from test.unit_tests.ConfigCheck import ConfigCheck
 
 # Generating schema validators can take time, so do it once and reuse.
 with open("schemas/output.json", "r") as raw_schema:
     _OUTPUT_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
+
 
 class TestCopyToGlacierHandler(TestCase):
     """
@@ -111,7 +112,7 @@ class TestCopyToGlacierHandler(TestCase):
                 "granuleId": uuid.uuid4().__str__(),
                 "dataType": uuid.uuid4().__str__(),
                 "version": uuid.uuid4().__str__(),
-                "createdAt": random.randint(0, 628021800000),
+                "createdAt": random.randint(0, 628021800000),  # nosec
                 "files": [
                     {
                         copy_to_glacier.FILE_BUCKET_KEY: uuid.uuid4().__str__(),
@@ -178,7 +179,9 @@ class TestCopyToGlacierHandler(TestCase):
         )
         self.assertEqual(not_excluded_flag, False)
 
-    @patch("copy_to_glacier.get_default_glacier_bucket_name")
+    # todo: patch copy_granules_between_buckets here and elsewhere.
+    @patch("copy_to_glacier.get_storage_class")
+    @patch("copy_to_glacier.get_destination_bucket_name")
     @patch("copy_to_glacier.sqs_library.post_to_metadata_queue")
     @patch.dict(
         os.environ,
@@ -192,7 +195,8 @@ class TestCopyToGlacierHandler(TestCase):
     def test_task_happy_path(
         self,
         mock_post_to_queue: MagicMock,
-        mock_get_default_glacier_bucket_name: MagicMock,
+        mock_get_destination_bucket_name: MagicMock,
+        mock_get_storage_class: MagicMock,
     ):
         """
         Basic path with buckets present.
@@ -242,7 +246,8 @@ class TestCopyToGlacierHandler(TestCase):
 
         result = task(copy.deepcopy(event), None)
 
-        mock_get_default_glacier_bucket_name.assert_called_once_with(config)
+        mock_get_destination_bucket_name.assert_called_once_with(config)
+        mock_get_storage_class.assert_called_once_with(config)
 
         _OUTPUT_VALIDATE(result)
 
@@ -258,10 +263,10 @@ class TestCopyToGlacierHandler(TestCase):
             copy_calls.append(
                 call(
                     {"Bucket": source_bucket_names[i], "Key": source_keys[i]},
-                    mock_get_default_glacier_bucket_name.return_value,
+                    mock_get_destination_bucket_name.return_value,
                     source_keys[i],
                     ExtraArgs={
-                        "StorageClass": "GLACIER",
+                        "StorageClass": mock_get_storage_class.return_value,
                         "MetadataDirective": "COPY",
                         "ContentType": content_type,
                         "ACL": "bucket-owner-full-control",
@@ -295,7 +300,7 @@ class TestCopyToGlacierHandler(TestCase):
                         "cumulusArchiveLocation": event["input"]["granules"][0][
                             "files"
                         ][0]["bucket"],
-                        "orcaArchiveLocation": mock_get_default_glacier_bucket_name.return_value,
+                        "orcaArchiveLocation": mock_get_destination_bucket_name.return_value,
                         "keyPath": event["input"]["granules"][0]["files"][0][
                             copy_to_glacier.FILE_FILEPATH_KEY
                         ],
@@ -312,12 +317,13 @@ class TestCopyToGlacierHandler(TestCase):
                         "hashType": event["input"]["granules"][0]["files"][0][
                             copy_to_glacier.FILE_HASH_TYPE_KEY
                         ],
+                        "storageClass": mock_get_storage_class.return_value,
                     },
                     {
                         "cumulusArchiveLocation": event["input"]["granules"][0][
                             "files"
                         ][1]["bucket"],
-                        "orcaArchiveLocation": mock_get_default_glacier_bucket_name.return_value,
+                        "orcaArchiveLocation": mock_get_destination_bucket_name.return_value,
                         "keyPath": event["input"]["granules"][0]["files"][1][
                             copy_to_glacier.FILE_FILEPATH_KEY
                         ],
@@ -334,12 +340,13 @@ class TestCopyToGlacierHandler(TestCase):
                         "hashType": event["input"]["granules"][0]["files"][1][
                             copy_to_glacier.FILE_HASH_TYPE_KEY
                         ],
+                        "storageClass": mock_get_storage_class.return_value,
                     },
                     {
                         "cumulusArchiveLocation": event["input"]["granules"][0][
                             "files"
                         ][2]["bucket"],
-                        "orcaArchiveLocation": mock_get_default_glacier_bucket_name.return_value,
+                        "orcaArchiveLocation": mock_get_destination_bucket_name.return_value,
                         "keyPath": event["input"]["granules"][0]["files"][2][
                             copy_to_glacier.FILE_FILEPATH_KEY
                         ],
@@ -356,12 +363,13 @@ class TestCopyToGlacierHandler(TestCase):
                         "hashType": event["input"]["granules"][0]["files"][2][
                             copy_to_glacier.FILE_HASH_TYPE_KEY
                         ],
+                        "storageClass": mock_get_storage_class.return_value,
                     },
                     {
                         "cumulusArchiveLocation": event["input"]["granules"][0][
                             "files"
                         ][3]["bucket"],
-                        "orcaArchiveLocation": mock_get_default_glacier_bucket_name.return_value,
+                        "orcaArchiveLocation": mock_get_destination_bucket_name.return_value,
                         "keyPath": event["input"]["granules"][0]["files"][3][
                             copy_to_glacier.FILE_FILEPATH_KEY
                         ],
@@ -378,6 +386,7 @@ class TestCopyToGlacierHandler(TestCase):
                         "hashType": event["input"]["granules"][0]["files"][3][
                             copy_to_glacier.FILE_HASH_TYPE_KEY
                         ],
+                        "storageClass": mock_get_storage_class.return_value,
                     },
                 ],
             },
@@ -400,7 +409,8 @@ class TestCopyToGlacierHandler(TestCase):
         self.assertEqual(expected_granules, result["granules"])
         self.assertIsNone(config_check.bad_config)
 
-    @patch("copy_to_glacier.get_default_glacier_bucket_name")
+    @patch("copy_to_glacier.get_storage_class")
+    @patch("copy_to_glacier.get_destination_bucket_name")
     @patch("copy_to_glacier.sqs_library.post_to_metadata_queue")
     @patch.dict(
         os.environ,
@@ -414,7 +424,8 @@ class TestCopyToGlacierHandler(TestCase):
     def test_task_happy_path_multiple_granules(
         self,
         mock_post_to_queue: MagicMock,
-        mock_get_default_glacier_bucket_name: MagicMock,
+        mock_get_destination_bucket_name: MagicMock,
+        mock_get_storage_class: MagicMock,
     ):
         """
         Happy path for multiple granules in input.
@@ -425,7 +436,7 @@ class TestCopyToGlacierHandler(TestCase):
                     "granuleId": "MOD09GQ.A2017025.h21v00.006.2017034065109",
                     "dataType": "MOD09GQ",
                     "version": "006",
-                    "createdAt": random.randint(0, 628021800000),
+                    "createdAt": random.randint(0, 628021800000),  # nosec
                     "files": [
                         {
                             "path": "MOD09GQ/006",
@@ -445,7 +456,7 @@ class TestCopyToGlacierHandler(TestCase):
                     "granuleId": "MOD09GQ.A208885.h21v00.006.2017034065108",
                     "dataType": "MOD09GQ",
                     "version": "008",
-                    "createdAt": random.randint(0, 628021800000),
+                    "createdAt": random.randint(0, 628021800000),  # nosec
                     "files": [
                         {
                             "path": "MOD09GQ/006",
@@ -505,7 +516,8 @@ class TestCopyToGlacierHandler(TestCase):
 
         result = task(event, None)
 
-        mock_get_default_glacier_bucket_name.assert_called_once_with(config)
+        mock_get_destination_bucket_name.assert_called_once_with(config)
+        mock_get_storage_class.assert_called_once_with(config)
 
         _OUTPUT_VALIDATE(result)
 
@@ -521,10 +533,10 @@ class TestCopyToGlacierHandler(TestCase):
             copy_calls.append(
                 call(
                     {"Bucket": source_bucket_names[i], "Key": source_keys[i]},
-                    mock_get_default_glacier_bucket_name.return_value,
+                    mock_get_destination_bucket_name.return_value,
                     source_keys[i],
                     ExtraArgs={
-                        "StorageClass": "GLACIER",
+                        "StorageClass": mock_get_storage_class.return_value,
                         "MetadataDirective": "COPY",
                         "ContentType": content_type,
                         "ACL": "bucket-owner-full-control",
@@ -541,7 +553,8 @@ class TestCopyToGlacierHandler(TestCase):
         self.assertEqual(s3_cli.list_object_versions.call_count, 2)
         self.assertEqual(multiple_event_granules["granules"], result["granules"])
 
-    @patch("copy_to_glacier.get_default_glacier_bucket_name")
+    @patch("copy_to_glacier.get_storage_class")
+    @patch("copy_to_glacier.get_destination_bucket_name")
     @patch("copy_to_glacier.sqs_library.post_to_metadata_queue")
     @patch.dict(
         os.environ,
@@ -555,7 +568,8 @@ class TestCopyToGlacierHandler(TestCase):
     def test_task_overridden_multipart_chunksize(
         self,
         mock_post_to_queue: MagicMock,
-        mock_get_default_glacier_bucket_name: MagicMock,
+        mock_get_destination_bucket_name: MagicMock,
+        mock_get_storage_class: MagicMock,
     ):
         """
         If the collection has a different multipart chunksize, it should override the default.
@@ -605,7 +619,8 @@ class TestCopyToGlacierHandler(TestCase):
 
         result = task(copy.deepcopy(event), None)
 
-        mock_get_default_glacier_bucket_name.assert_called_once_with(config)
+        mock_get_destination_bucket_name.assert_called_once_with(config)
+        mock_get_storage_class.assert_called_once_with(config)
 
         _OUTPUT_VALIDATE(result)
 
@@ -621,10 +636,10 @@ class TestCopyToGlacierHandler(TestCase):
             copy_calls.append(
                 call(
                     {"Bucket": source_bucket_names[i], "Key": source_keys[i]},
-                    mock_get_default_glacier_bucket_name.return_value,
+                    mock_get_destination_bucket_name.return_value,
                     source_keys[i],
                     ExtraArgs={
-                        "StorageClass": "GLACIER",
+                        "StorageClass": mock_get_storage_class.return_value,
                         "MetadataDirective": "COPY",
                         "ContentType": content_type,
                         "ACL": "bucket-owner-full-control",
@@ -648,14 +663,17 @@ class TestCopyToGlacierHandler(TestCase):
         self.assertEqual(expected_granules, result["granules"])
         self.assertIsNone(config_check.bad_config)
 
-    @patch("copy_to_glacier.get_default_glacier_bucket_name")
+    @patch("copy_to_glacier.get_storage_class")
+    @patch("copy_to_glacier.get_destination_bucket_name")
     @patch.dict(
         os.environ,
         {"DEFAULT_MULTIPART_CHUNKSIZE_MB": "4", "METADATA_DB_QUEUE_URL": "test"},
         clear=True,
     )
     def test_task_empty_granules_list(
-        self, mock_get_default_glacier_bucket_name: MagicMock
+        self,
+        mock_get_destination_bucket_name: MagicMock,
+        mock_get_storage_class: MagicMock,
     ):
         """
         Basic path with buckets present.
@@ -679,7 +697,8 @@ class TestCopyToGlacierHandler(TestCase):
 
         result = task(copy.deepcopy(event), None)
 
-        mock_get_default_glacier_bucket_name.assert_called_once_with(config)
+        mock_get_destination_bucket_name.assert_called_once_with(config)
+        mock_get_storage_class.assert_called_once_with(config)
 
         _OUTPUT_VALIDATE(result)
 
@@ -692,47 +711,97 @@ class TestCopyToGlacierHandler(TestCase):
 
     @patch.dict(
         os.environ,
-        {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__()},
+        {copy_to_glacier.OS_ENVIRON_ORCA_DEFAULT_BUCKET_KEY: uuid.uuid4().__str__()},
         clear=True,
     )
-    def test_get_default_glacier_bucket_name_returns_override_if_present(self):
+    def test_get_destination_bucket_name_returns_override_if_present(self):
         bucket = Mock()
-        result = copy_to_glacier.get_default_glacier_bucket_name(
+        result = copy_to_glacier.get_destination_bucket_name(
             {copy_to_glacier.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: bucket}
         )
         self.assertEqual(bucket, result)
 
     @patch.dict(
         os.environ,
-        {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__()},
+        {copy_to_glacier.OS_ENVIRON_ORCA_DEFAULT_BUCKET_KEY: uuid.uuid4().__str__()},
         clear=True,
     )
-    def test_get_default_glacier_bucket_name_returns_default_bucket_if_none_override(
+    def test_get_destination_bucket_name_returns_default_if_override_is_null(
         self,
     ):
-        bucket = os.environ["ORCA_DEFAULT_BUCKET"]
-        result = copy_to_glacier.get_default_glacier_bucket_name(
+        bucket = os.environ[copy_to_glacier.OS_ENVIRON_ORCA_DEFAULT_BUCKET_KEY]
+        result = copy_to_glacier.get_destination_bucket_name(
             {copy_to_glacier.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: None}
         )
         self.assertEqual(bucket, result)
-
-    def test_no_bucket_raises_error(self):
-        with self.assertRaises(KeyError) as cm:
-            copy_to_glacier.get_default_glacier_bucket_name(
-                {copy_to_glacier.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: None}
-            )
 
     @patch.dict(
         os.environ,
-        {"ORCA_DEFAULT_BUCKET": uuid.uuid4().__str__()},
+        {copy_to_glacier.OS_ENVIRON_ORCA_DEFAULT_BUCKET_KEY: uuid.uuid4().__str__()},
         clear=True,
     )
-    def test_get_default_glacier_bucket_name_returns_env_bucket_if_no_other(self):
-        bucket = os.environ["ORCA_DEFAULT_BUCKET"]
-        result = copy_to_glacier.get_default_glacier_bucket_name(
-            {copy_to_glacier.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: None}
-        )
+    def test_get_destination_bucket_name_returns_default_if_override_not_given(self):
+        bucket = os.environ[copy_to_glacier.OS_ENVIRON_ORCA_DEFAULT_BUCKET_KEY]
+        result = copy_to_glacier.get_destination_bucket_name({})
         self.assertEqual(bucket, result)
+
+    def test_get_destination_bucket_name_no_result_raises_error(self):
+        with self.assertRaises(KeyError) as cm:
+            copy_to_glacier.get_destination_bucket_name(
+                {copy_to_glacier.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: None}
+            )
+        self.assertEqual(
+            f"'{copy_to_glacier.OS_ENVIRON_ORCA_DEFAULT_BUCKET_KEY} environment variable is not set.'",
+            str(cm.exception),
+        )
+
+    @patch.dict(
+        os.environ,
+        {copy_to_glacier.OS_ENVIRON_DEFAULT_STORAGE_CLASS_KEY: uuid.uuid4().__str__()},
+        clear=True,
+    )
+    def test_get_storage_class_returns_override_if_present(self):
+        storage_class = Mock()
+        result = copy_to_glacier.get_storage_class(
+            {
+                copy_to_glacier.CONFIG_ORCA_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY: storage_class
+            }
+        )
+        self.assertEqual(storage_class, result)
+
+    @patch.dict(
+        os.environ,
+        {copy_to_glacier.OS_ENVIRON_DEFAULT_STORAGE_CLASS_KEY: uuid.uuid4().__str__()},
+        clear=True,
+    )
+    def test_get_storage_class_returns_default_if_override_is_null(
+        self,
+    ):
+        storage_class = os.environ[copy_to_glacier.OS_ENVIRON_DEFAULT_STORAGE_CLASS_KEY]
+        result = copy_to_glacier.get_storage_class(
+            {copy_to_glacier.CONFIG_ORCA_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY: None}
+        )
+        self.assertEqual(storage_class, result)
+
+    @patch.dict(
+        os.environ,
+        {copy_to_glacier.OS_ENVIRON_DEFAULT_STORAGE_CLASS_KEY: uuid.uuid4().__str__()},
+        clear=True,
+    )
+    def test_get_storage_class_returns_default_if_override_not_given(self):
+        storage_class = os.environ[copy_to_glacier.OS_ENVIRON_DEFAULT_STORAGE_CLASS_KEY]
+        result = copy_to_glacier.get_storage_class({})
+        self.assertEqual(storage_class, result)
+
+    def test_get_storage_class_no_result_raises_error(self):
+        with self.assertRaises(KeyError) as cm:
+            copy_to_glacier.get_storage_class(
+                {copy_to_glacier.CONFIG_ORCA_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY: None}
+            )
+        self.assertEqual(
+            f"'{copy_to_glacier.OS_ENVIRON_DEFAULT_STORAGE_CLASS_KEY} environment variable is not set.'",
+            str(cm.exception),
+        )
 
     @patch("time.sleep")
     @patch.dict(os.environ, {"AWS_REGION": "us-west-2"}, clear=True)
@@ -762,6 +831,7 @@ class TestCopyToGlacierHandler(TestCase):
                         "sizeInBytes": 100934568723,
                         "hash": "ACFH325128030192834127347",
                         "hashType": "SHA-256",
+                        "storageClass": "DEEP_ARCHIVE",
                         "version": "VXCDEG902",
                         "ingestTime": "2019-07-17T17:36:38.494918+00:00",
                         "etag": "YXC432BGT789",
@@ -784,9 +854,7 @@ class TestCopyToGlacierHandler(TestCase):
     # todo: since sleep is not called in function under test, this violates good unit test practices. Fix in ORCA-406
     @patch("time.sleep")
     @patch.dict(os.environ, {"AWS_REGION": "us-west-2"}, clear=True)
-    def test_post_to_metadata_queue_retry_failures(
-        self, mock_sleep: MagicMock
-    ):
+    def test_post_to_metadata_queue_retry_failures(self, mock_sleep: MagicMock):
         """
         Produces a failure and checks if retries are performed in the SQS library.
         """
@@ -812,6 +880,7 @@ class TestCopyToGlacierHandler(TestCase):
                         "sizeInBytes": 100934568723,
                         "hash": "ACFH325128030192834127347",
                         "hashType": "SHA-256",
+                        "storageClass": "DEEP_ARCHIVE",
                         "version": "VXCDEG902",
                         "ingestTime": "2019-07-17T17:36:38.494918+00:00",
                         "etag": "YXC432BGT789",
@@ -828,7 +897,9 @@ class TestCopyToGlacierHandler(TestCase):
             )
         self.assertEqual(
             "An error occurred (AWS.SimpleQueueService.NonExistentQueue) when calling the SendMessage operation: The "
-            "specified queue does not exist for this wsdl version.", str(cm.exception))
+            "specified queue does not exist for this wsdl version.",
+            str(cm.exception),
+        )
         self.assertEqual(3, mock_sleep.call_count)
 
 
