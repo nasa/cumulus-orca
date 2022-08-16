@@ -319,7 +319,7 @@ Deploy DR ORCA buckets:
       - |-
         #!/bin/bash
         bash integration_test/input-validation.sh
-        bash integration_test/shared/setup-dr-buckets.sh
+        . ./integration_test/shared/setup-dr-buckets.sh
         bash integration_test/deployment-dr-buckets.sh
          
 #job for deploying ORCA buckets, Cumulus and ORCA modules
@@ -343,7 +343,7 @@ Deploy ORCA buckets and modules:
       scripts:
       - |-
         #!/bin/bash
-        bash integration_test/shared/setup-orca.sh
+        . ./integration_test/shared/setup-orca.sh
         bash integration_test/deployment-orca.sh
 
 # Job for cleaning up ORCA buckets, Cumulus, and ORCA modules
@@ -365,7 +365,7 @@ Clean up ORCA buckets and modules:
       scripts:
       - |-
         #!/bin/bash
-        bash integration_test/shared/setup-dr-buckets.sh
+        . ./integration_test/shared/setup-dr-buckets.sh
         bash integration_test/cleanup-dr-buckets.sh
 
 # Job for cleaning up ORCA buckets, Cumulus, and ORCA modules
@@ -389,7 +389,7 @@ Clean up DR ORCA buckets:
       scripts:
       - |-
         #!/bin/bash
-        bash integration_test/shared/setup-orca.sh
+        . ./integration_test/shared/setup-orca.sh
         bash integration_test/cleanup/cleanup-orca.sh
 
 variables:
