@@ -8,6 +8,44 @@ While [unit tests](./unit-tests.md) cover individual functions, this does not co
 Consideration should be given to how the components of a large system interact, and how the layers fit together.
 These tests run realistic scenarios against a full system via scripts run in Bamboo.
 
+- [File Structure](#structure)
+- [Running Tests](#running)
+
+<a name="structure"></a>
+## File Structure
+Tests are grouped into modules under the `test_packages` folder.
+When adding a test group:
+1. Create a new directory under `test_packages`, named appropriately for your new group.
+2. Copy the `__init__.py` from another group into your group.
+3. Modify the `workflow_tests/__init__.py`, adding your new group to the list of imports.
+4. You may now begin adding test files to your new directory.
+   Note that each filename should begin with the `test` prefix, and should contain a class of the format `class TestDescriptiveName(TestCase):`
+
+:::note
+As tests are run in parallel, it is generally good practice to have one test-per-file, to avoid any shared setup.
+:::
+
+<a name="running"></a>
+## Running Tests
+### Running Locally
+1. [Deploy ORCA to AWS](https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/deployment).
+2. Connect to the NASA vpn.
+3. Set the following environment variables:
+   1. `orca_API_DEPLOYMENT_INVOKE_URL` Output from the ORCA TF module. ex: `https://0000000000.execute-api.us-west-2.amazonaws.com`
+   2. `orca_COPY_TO_GLACIER_STEP_FUNCTION_ARN` ARN of the copy_to_glacier step function. ex: `arn:aws:states:us-west-2:000000000000:stateMachine:PREFIX-OrcaCopyToGlacierWorkflow`
+4. Run the following bash command, 
+   replacing `i-00000000000000000` with your ec2 instance name, 
+   and `0000000000.execute-api.us-west-2.amazonaws.com` with your API Gateway identifier:
+   ```shell
+   aws ssm start-session --target i-00000000000000000 --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters '{"host":["0000000000.execute-api.us-west-2.amazonaws.com"],"portNumber":["443"], "localPortNumber":["8000"]}'
+   ```
+5. In the root folder `workflow_tests`, run the following command:
+   ```shell
+   bin/run_tests.sh
+   ```
+### Running in Bamboo
+[Not yet developed.](https://bugs.earthdata.nasa.gov/browse/ORCA-96)
+
 ## Test Assumptions
 
 These are suggestions for rules and setup procedures for integration tests.
