@@ -283,13 +283,21 @@ stages:
     final: false
     jobs:
     - Deploy DR ORCA buckets
-
-#Deploy RDS, ORCA buckets, Cumulus and ORCA modules
 - Deploy ORCA Buckets and Cumulus ORCA modules:
     manual: true
     final: false
     jobs:
     - Deploy ORCA buckets and modules
+- Clean up ORCA buckets and modules:
+    manual: true
+    final: false
+    jobs:
+    - Clean up ORCA buckets and modules
+- Clean up DR ORCA buckets:
+    manual: true
+    final: false
+    jobs:
+    - Clean up DR ORCA buckets
 
 #job for deploying ORCA buckets in DR account
 Deploy DR ORCA buckets:
