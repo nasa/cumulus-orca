@@ -1,6 +1,7 @@
 #!/bin/bash
 # Sets up TF files in a consistent manner.
 set -ex
+cwd=$(pwd)
 
 export AWS_ACCESS_KEY_ID=$bamboo_DR_AWS_ACCESS_KEY_ID
 export AWS_SECRET_ACCESS_KEY=$bamboo_DR_AWS_SECRET_ACCESS_KEY
@@ -24,3 +25,5 @@ echo "terraform {
     dynamodb_table = \"${bamboo_PREFIX}-dr-tf-locks\"
   }
 }" >> terraform.tf
+
+cd "${cwd}"

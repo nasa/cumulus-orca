@@ -1,6 +1,7 @@
 #!/bin/bash
 # Sets up TF files in a consistent manner.
 set -ex
+cwd=$(pwd)
 
 export AWS_ACCESS_KEY_ID=$bamboo_CUMULUS_AWS_ACCESS_KEY_ID
 export AWS_SECRET_ACCESS_KEY=$bamboo_CUMULUS_AWS_SECRET_ACCESS_KEY
@@ -54,3 +55,5 @@ cd ../cumulus-tf
 #replacing .tf files with proper values
 sed 's/PREFIX/'"$bamboo_PREFIX"'/g' terraform.tfvars.example > terraform.tfvars
 sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g; s/us-east-1/'"$bamboo_AWS_DEFAULT_REGION"'/g' terraform.tf.example > terraform.tf
+
+cd "${cwd}"
