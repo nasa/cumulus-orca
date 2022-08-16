@@ -366,7 +366,7 @@ Clean up ORCA buckets and modules:
       - |-
         #!/bin/bash
         . ./integration_test/shared/setup-dr-buckets.sh
-        bash integration_test/cleanup-dr-buckets.sh
+        bash integration_test/cleanup/cleanup-dr-buckets.sh
 
 # Job for cleaning up ORCA buckets, Cumulus, and ORCA modules
 Clean up DR ORCA buckets:
