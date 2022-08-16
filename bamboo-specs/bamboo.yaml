@@ -340,7 +340,7 @@ Deploy ORCA buckets and modules:
 
 # Job for cleaning up ORCA buckets, Cumulus, and ORCA modules
 Clean up ORCA buckets and modules:
-  ey: CDROB
+  key: CDROB
   other:
     clean-working-dir: true
   docker:
