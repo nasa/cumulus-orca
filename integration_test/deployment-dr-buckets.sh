@@ -19,6 +19,8 @@ else
       --region ${bamboo_AWS_DEFAULT_REGION}
 fi
 
+cd integration_test
+
 #initialize terraform
 terraform init -input=false
 #deploy using terraform
