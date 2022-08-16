@@ -98,7 +98,8 @@ data "aws_iam_policy_document" "restore_object_role_policy_document" {
   }
   statement {
     actions = [
-      "kms:Decrypt"
+      "kms:Decrypt",
+      "kms:DescribeKey"
     ]
     resources = [
       "arn:aws:kms:::key/CMK"
