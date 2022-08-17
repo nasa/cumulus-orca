@@ -61,7 +61,7 @@ sed 's/PREFIX/'"$bamboo_PREFIX"'/g' terraform.tfvars.example > terraform.tfvars
 sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g; s/us-east-1/'"$bamboo_AWS_DEFAULT_REGION"'/g' terraform.tf.example > terraform.tf
 terraform init -input=false
 
-cd ..
+cd ../..
 # Remove all prevent_destroy properties
 for f in $(find cumulus-orca-deploy-template -name '*.tf');
 do
