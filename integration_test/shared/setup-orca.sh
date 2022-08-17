@@ -32,6 +32,14 @@ cd ..
 git clone --branch $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION --single-branch https://git.earthdata.nasa.gov/scm/orca/cumulus-orca-deploy-template.git
 echo "cloned Cumulus, branch $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION"
 
+# Remove all prevent_destroy properties
+for f in $(find cumulus-orca-deploy-template -name '*.tf');
+do
+    echo "Removing prevent_destroy from $f ..."
+    sed 's/prevent_destroy = true/prevent_destroy = false/g' $f > temp
+    mv temp $f
+done;
+
 #rds-cluster-tf module
 cd cumulus-orca-deploy-template/rds-cluster-tf
 echo "inside rds-cluster-tf"
