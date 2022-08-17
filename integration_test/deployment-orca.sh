@@ -21,7 +21,6 @@ fi
 
 cd integration_test
 
-terraform init -input=false
 echo "Deploying Cumulus S3 buckets and dynamoDB table"
 terraform apply \
   -auto-approve \
@@ -33,10 +32,6 @@ cd cumulus-orca-deploy-template
 
 #deploy rds-cluster-tf module
 cd rds-cluster-tf
-
-# Initialize Terraform
-terraform init \
-  -input=false
 
 # Deploy rds-cluster-tf via terraform
 echo "Deploying rds-cluster-tf  module to $bamboo_DEPLOYMENT"
@@ -65,10 +60,6 @@ export RDS_SECURITY_GROUP=$(terraform output security_group_id)
 #deploy data persistence tf module
 cd ../data-persistence-tf
 
-# Initialize deployment
-terraform init \
-  -input=false
-
 # Deploy data-persistence via terraform
 echo "Deploying Cumulus data-persistence module to $bamboo_DEPLOYMENT"
 terraform apply \
@@ -86,10 +77,6 @@ terraform apply \
 
 # script for deploying cumulus-tf module
 cd ../cumulus-tf
-
-# Initialize deployment
-terraform init \
-  -input=false
 
 # Deploy cumulus-tf via terraform
 echo "Deploying Cumulus tf module to $bamboo_DEPLOYMENT"

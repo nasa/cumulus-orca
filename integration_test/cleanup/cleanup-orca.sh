@@ -4,9 +4,6 @@
 set -ex
 
 cd cumulus-orca-deploy-template/cumulus-tf
-# Initialize deployment
-terraform init \
-  -input=false
 
 # Destroy cumulus-tf via terraform
 echo "Deploying Cumulus tf module to $bamboo_DEPLOYMENT"
@@ -38,9 +35,6 @@ terraform destroy \
 cd ../..
 
 cd cumulus-orca-deploy-template/data-persistence-tf
-# Initialize deployment
-terraform init \
-  -input=false
 
 # Destroy data-persistence via terraform
 echo "Deploying Cumulus data-persistence module to $bamboo_DEPLOYMENT"
@@ -58,9 +52,6 @@ terraform destroy \
 cd ../..
 
 cd cumulus-orca-deploy-template/rds-cluster-tf
-# Initialize Terraform
-terraform init \
-  -input=false
 
 # Destroy rds-cluster-tf via terraform
 echo "Deploying rds-cluster-tf  module to $bamboo_DEPLOYMENT"
@@ -83,8 +74,6 @@ terraform destroy \
 # todo: Do we need the exports from deployment-orca.sh?
 cd ../..
 cd integration_test
-
-terraform init -input=false
 echo "Destroying Cumulus S3 buckets and dynamoDB table"
 terraform destroy \
   -auto-approve \
