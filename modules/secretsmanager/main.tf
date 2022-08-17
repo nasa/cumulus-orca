@@ -84,7 +84,7 @@ data "aws_iam_policy_document" "orca_kms_key_policy" {
 
     principals {
       type        = "AWS"
-      identifiers = local.iam_users
+      identifiers = local.iam_users 
     }
   }
   statement {
