@@ -34,7 +34,7 @@ cd cumulus-orca-deploy-template
 cd rds-cluster-tf
 
 # Deploy rds-cluster-tf via terraform
-echo "Deploying rds-cluster-tf  module to $bamboo_DEPLOYMENT"
+echo "Deploying rds-cluster-tf module to $bamboo_DEPLOYMENT"
 terraform apply \
   -auto-approve \
   -input=false \

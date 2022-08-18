@@ -6,7 +6,7 @@ set -ex
 cd cumulus-orca-deploy-template/cumulus-tf
 
 # Destroy cumulus-tf via terraform
-echo "Deploying Cumulus tf module to $bamboo_DEPLOYMENT"
+echo "Destroying Cumulus tf module in $bamboo_DEPLOYMENT"
 terraform destroy \
   -auto-approve \
   -lock=false \
@@ -37,7 +37,7 @@ cd ../..
 cd cumulus-orca-deploy-template/data-persistence-tf
 
 # Destroy data-persistence via terraform
-echo "Deploying Cumulus data-persistence module to $bamboo_DEPLOYMENT"
+echo "Destroying Cumulus data-persistence module in $bamboo_DEPLOYMENT"
 terraform destroy \
   -auto-approve \
   -input=false \
@@ -54,7 +54,7 @@ cd ../..
 cd cumulus-orca-deploy-template/rds-cluster-tf
 
 # Destroy rds-cluster-tf via terraform
-echo "Deploying rds-cluster-tf  module to $bamboo_DEPLOYMENT"
+echo "Destroying rds-cluster-tf module in $bamboo_DEPLOYMENT"
 terraform destroy \
   -auto-approve \
   -input=false \
