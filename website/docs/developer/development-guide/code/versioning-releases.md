@@ -166,6 +166,10 @@ These are the buckets that will be created in cumulus OU account:
 - `<PREFIX>-protected`
 - `<PREFIX>-tf-state` (for storing the terraform state file in cumulus OU account)
 
+:::tip
+The `*-tf-state` buckets and dynamoDB tables will not be automatically removed by cleanup scripts.
+Once you are done with your testing, and you have verified that cleanup is actually successful, manually delete these resources.
+:::
 
 After hitting the play button on `Deploy ORCA Buckets and Cumulus/ORCA modules`, but before hitting `Run` in the popup, replace the following variables with yours.
 
@@ -178,7 +182,7 @@ After hitting the play button on `Deploy ORCA Buckets and Cumulus/ORCA modules`,
 - EARTHDATA_CLIENT_PASSWORD
 - CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION
 
-This is because some variables are sensitive and some will vary depending upon the user running the pipeline. Hitting 'play' next to `Deploy DR ORCA buckets`, `Deploy ORCA Buckets and Cumulus/ORCA modules` brings up a checkbox list to run multiple jobs at once. Note that none of the checkboxes should be checked.
+This is because some variables are sensitive and some will vary depending upon the user running the pipeline. Hitting 'play' next to any of the deployment and cleanup stages brings up a checkbox list to run multiple jobs at once. Note that none of the checkboxes should be checked.
 
 The above buckets can also be created manually if desired by the user. Make sure to use the proper AWS access keys for configuration before running the commands.
 
@@ -186,7 +190,7 @@ The bucket can be created using the following CLI command:
 ```bash
 aws s3api create-bucket --bucket <BUCKET_NAME>  --region us-west-2 --create-bucket-configuration LocationConstraint=us-west-2
 ```
-In addition to this, the dynamodb table and bucket version need to created as well.
+The dynamodb table and bucket versioning can be created manually as well.
 ```bash
    aws dynamodb create-table \
       --table-name <PREFIX>-tf-locks \
@@ -202,7 +206,7 @@ In addition to this, the dynamodb table and bucket version need to created as we
     --versioning-configuration Status=Enabled
 ```
 
-Create an EC2 key pair can be created using the AWS CLI. Make sure to save the generated private key for connecting to this instance later.
+An EC2 key pair can be created using the AWS CLI. Make sure to save the generated private key for connecting to this instance later.
 
 ```bash
 aws ec2 create-key-pair --key-name <PREFIX> --query 'KeyMaterial' --output text > <PREFIX>.pem
