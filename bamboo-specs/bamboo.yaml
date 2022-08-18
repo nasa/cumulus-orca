@@ -337,7 +337,6 @@ Deploy ORCA buckets and modules:
   - checkout:
       force-clean-build: 'true'
       description: Checkout Default Repository
-
   - script:
       interpreter: SHELL
       scripts:
