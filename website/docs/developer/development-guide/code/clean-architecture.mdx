@@ -1,0 +1,77 @@
+---
+id: clean-architecture
+title:  Clean Architecture
+description: Overview of Clean Architecture for ORCA
+---
+
+Our definition of Clean Architecture, including images used in this file, 
+come from the [Clean Coder blog](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html).
+
+<img alt="Clean Architecture Overview" src={useBaseUrl('img/CleanArchitecture.jpg')} />
+
+While the broad strokes remain the same as the Clean Coder definitions, this document will tie into our current architecture for realistic examples.
+
+### Broad Strokes
+- Layers in Clean Architecture are ordered such that outer layers are dependent on inner layers.
+  - The opposite should never be the case, or at least as little as possible.
+  - The ideal state is that if an element in an outer layer changes it should change none of the layers within it.
+- The closer you get to the innermost layer, the closer you are to the raw business logic that acts on raw data. 
+- The number and labels of layers are not important, and are simply used as shorthand for the types of resources present at deeper/higher levels.
+
+## Layers
+### Reasons for Layers
+- Isolating layers reduces the chance for changes to that layer to affect other layers.
+  For example, if the Database code is isolated from the business logic, then changes to database technology will not require rewriting business logic.
+- Allows development and testing of individual components without an understanding of the tech stack beyond that component.
+
+
+<a name="frameworks-and-drivers"></a>
+### "Frameworks and Drivers" Layer
+- The outermost layer, often components external to the central product.
+- May change based on changes from inner layers.
+
+#### Orca Examples
+- API Gateway
+- Postgres Database
+- S3 Buckets
+- SQS Queues
+- Lambda API
+
+
+<a name="interface"></a>
+### "Interface Adapters" Layer
+- Best viewed as a sub-section of the ("Frameworks and Drivers" layer)[#frameworks-and-drivers].
+  - Changes to the database change this layer as well, which would otherwise contradict the dependency chain of Clean Architecture.
+- Translates data between the forms required for the external components above it, and the internal components beneath it.
+  - All technical details from the above layer should be stripped before handing down to the lower layer.
+- Receives calls from the layer above it and/or the layer beneath it.
+
+#### Orca Examples
+- Centralized code for contacting the Postgres Database
+- Centralized code for posting events to SQS Queues
+- Pulling relevant information out of parameters passed to Lambda `handler` functions before calling additional logic
+
+
+<a name="use-cases"></a>
+### "Use Cases" Layer
+- The business logic of the application, often analogous to user stories.
+- May call higher or lower components as needed, though neither should need to know the details of the other.
+
+#### Orca Examples
+- Step Functions
+- Can be spread over multiple components, such as the approach of (file recovery)[./recovery-workflow].
+
+
+<a name="entities"></a>
+### "Entities" Layer
+- Simple, reusable objects and functions.
+- Can only communicate with the (Use Cases layer)[#use-cases].
+
+#### Orca Examples
+- Shared helper libraries without external dependencies
+- Central Lambda code
+
+## Additional Thoughts
+Orca does currently have some architecture that does not follow these principles.
+Database code is mixed into some of our lambdas, and the Postgres return structure in particular is used frequently rather than reformatting to avoid entanglement.
+We hope to clean some of this up, and to use these aforementioned practices going forward.

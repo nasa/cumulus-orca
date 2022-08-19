@@ -32,6 +32,7 @@ module.exports = {
                 'developer/development-guide/code/contrib-code-intro',
                 'developer/development-guide/code/setup-dev-env',
                 'developer/development-guide/code/best-practices',
+                'developer/development-guid/code/clean-architecture',
                 'developer/development-guide/code/versioning-releases',
                 'developer/development-guide/code/linting',
                 'developer/development-guide/code/unit-tests',
