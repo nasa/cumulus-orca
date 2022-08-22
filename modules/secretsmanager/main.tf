@@ -4,8 +4,6 @@
 ## SECRET MANAGER DATA LOOKUPS
 ## =============================================================================
 
-data "aws_iam_users" "orca_users" {}
-
 data "aws_caller_identity" "current_account" {}
 
 data "aws_region" "current_region" {}
@@ -13,7 +11,6 @@ data "aws_region" "current_region" {}
 
 ## Local Variables
 locals {
-  iam_users    = data.aws_iam_users.orca_users.arns
   account_id   = data.aws_caller_identity.current_account.account_id
   region       = data.aws_region.current_region.name
   kms_arn    = "arn:aws:kms:${local.region}:${local.account_id}:key/*"
@@ -84,7 +81,7 @@ data "aws_iam_policy_document" "orca_kms_key_policy" {
 
     principals {
       type        = "AWS"
-      identifiers = local.iam_users 
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current_account.account_id}:root"]
     }
   }
   statement {
@@ -92,7 +89,7 @@ data "aws_iam_policy_document" "orca_kms_key_policy" {
     # work with NGAP to restrict actions
     actions = [
       "kms:Decrypt",
-      "kms:DescribeKey"
+      "kms:DescribeKey" #requested by Cumulus
     ]
 
     resources = [local.kms_arn]
