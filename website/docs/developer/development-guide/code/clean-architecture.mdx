@@ -73,6 +73,12 @@ While the broad strokes remain the same as the Clean Coder definitions, this doc
 - Individual Lambda functions
 
 ## Additional Thoughts
-Orca does currently have some architecture that does not follow these principles.
-Database code is mixed into some of our lambdas, and the Postgres return structure in particular is used frequently rather than reformatting to avoid entanglement.
-We hope to clean some of this up, and to use these aforementioned practices going forward.
+- Categorization of some resources are blurred.
+  - I have attempted to place each resource type type in its highest possible layer to encourage viewing that type's availability as mutable.
+  - StepFunctions are analogous to user stories, but are AWS reliant components and require a translation layer.
+  - The Lambda API (parameters for the handler) are dictated by AWS.
+    Lambdas also contain business logic, and should therefore contain their own translation layer between API and business logic.
+
+- Orca does currently have some architecture that does not follow these principles.
+  - Database code is mixed into some of our lambdas, and the Postgres return structure in particular is used frequently rather than reformatting to avoid entanglement.
+  - We hope to clean some of this up, and to use these aforementioned practices going forward.
