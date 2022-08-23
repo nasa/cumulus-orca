@@ -36,7 +36,7 @@ resource "aws_lambda_function" "copy_to_glacier" {
   filename         = "${path.module}/../../tasks/copy_to_glacier/copy_to_glacier.zip"
   handler          = "copy_to_glacier.handler"
   memory_size      = var.orca_ingest_lambda_memory_size
-  runtime          = "python3.7"
+  runtime          = "python3.9"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/copy_to_glacier/copy_to_glacier.zip")
   tags             = var.tags
   timeout          = var.orca_ingest_lambda_timeout
@@ -72,7 +72,7 @@ resource "aws_lambda_function" "delete_old_reconcile_jobs" {
   filename         = "${path.module}/../../tasks/delete_old_reconcile_jobs/delete_old_reconcile_jobs.zip"
   handler          = "delete_old_reconcile_jobs.handler"
   memory_size      = var.orca_reconciliation_lambda_memory_size
-  runtime          = "python3.7"
+  runtime          = "python3.9"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/delete_old_reconcile_jobs/delete_old_reconcile_jobs.zip")
   tags             = var.tags
   timeout          = var.orca_reconciliation_lambda_timeout
@@ -130,7 +130,7 @@ resource "aws_lambda_function" "get_current_archive_list" {
   filename         = "${path.module}/../../tasks/get_current_archive_list/get_current_archive_list.zip"
   handler          = "get_current_archive_list.handler"
   memory_size      = var.orca_reconciliation_lambda_memory_size
-  runtime          = "python3.7"
+  runtime          = "python3.9"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/get_current_archive_list/get_current_archive_list.zip")
   tags             = var.tags
   timeout          = var.orca_reconciliation_lambda_timeout
@@ -159,7 +159,7 @@ resource "aws_lambda_function" "perform_orca_reconcile" {
   filename         = "${path.module}/../../tasks/perform_orca_reconcile/perform_orca_reconcile.zip"
   handler          = "perform_orca_reconcile.handler"
   memory_size      = var.orca_reconciliation_lambda_memory_size
-  runtime          = "python3.7"
+  runtime          = "python3.9"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/perform_orca_reconcile/perform_orca_reconcile.zip")
   tags             = var.tags
   timeout          = var.orca_reconciliation_lambda_timeout
@@ -189,7 +189,7 @@ resource "aws_lambda_function" "internal_reconcile_report_job" {
   filename         = "${path.module}/../../tasks/internal_reconcile_report_job/internal_reconcile_report_job.zip"
   handler          = "internal_reconcile_report_job.handler"
   memory_size      = var.orca_reconciliation_lambda_memory_size
-  runtime          = "python3.7"
+  runtime          = "python3.9"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/internal_reconcile_report_job/internal_reconcile_report_job.zip")
   tags             = var.tags
   timeout          = var.orca_reconciliation_lambda_timeout
@@ -218,7 +218,7 @@ resource "aws_lambda_function" "internal_reconcile_report_mismatch" {
   filename         = "${path.module}/../../tasks/internal_reconcile_report_mismatch/internal_reconcile_report_mismatch.zip"
   handler          = "internal_reconcile_report_mismatch.handler"
   memory_size      = var.orca_reconciliation_lambda_memory_size
-  runtime          = "python3.7"
+  runtime          = "python3.9"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/internal_reconcile_report_mismatch/internal_reconcile_report_mismatch.zip")
   tags             = var.tags
   timeout          = var.orca_reconciliation_lambda_timeout
@@ -247,7 +247,7 @@ resource "aws_lambda_function" "internal_reconcile_report_orphan" {
   filename         = "${path.module}/../../tasks/internal_reconcile_report_orphan/internal_reconcile_report_orphan.zip"
   handler          = "internal_reconcile_report_orphan.handler"
   memory_size      = var.orca_reconciliation_lambda_memory_size
-  runtime          = "python3.7"
+  runtime          = "python3.9"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/internal_reconcile_report_orphan/internal_reconcile_report_orphan.zip")
   tags             = var.tags
   timeout          = var.orca_reconciliation_lambda_timeout
@@ -276,7 +276,7 @@ resource "aws_lambda_function" "internal_reconcile_report_phantom" {
   filename         = "${path.module}/../../tasks/internal_reconcile_report_phantom/internal_reconcile_report_phantom.zip"
   handler          = "internal_reconcile_report_phantom.handler"
   memory_size      = var.orca_reconciliation_lambda_memory_size
-  runtime          = "python3.7"
+  runtime          = "python3.9"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/internal_reconcile_report_phantom/internal_reconcile_report_phantom.zip")
   tags             = var.tags
   timeout          = var.orca_reconciliation_lambda_timeout
@@ -309,7 +309,7 @@ resource "aws_lambda_function" "extract_filepaths_for_granule" {
   filename         = "${path.module}/../../tasks/extract_filepaths_for_granule/extract_filepaths_for_granule.zip"
   handler          = "extract_filepaths_for_granule.handler"
   memory_size      = var.orca_recovery_lambda_memory_size
-  runtime          = "python3.7"
+  runtime          = "python3.9"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/extract_filepaths_for_granule/extract_filepaths_for_granule.zip")
   tags             = var.tags
   timeout          = var.orca_recovery_lambda_timeout
@@ -392,7 +392,7 @@ resource "aws_lambda_function" "request_files" {
   filename         = "${path.module}/../../tasks/request_files/request_files.zip"
   handler          = "request_files.handler"
   memory_size      = var.orca_recovery_lambda_memory_size
-  runtime          = "python3.7"
+  runtime          = "python3.9"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/request_files/request_files.zip")
   tags             = var.tags
   timeout          = var.orca_recovery_lambda_timeout
@@ -427,7 +427,7 @@ resource "aws_lambda_function" "copy_files_to_archive" {
   filename         = "${path.module}/../../tasks/copy_files_to_archive/copy_files_to_archive.zip"
   handler          = "copy_files_to_archive.handler"
   memory_size      = var.orca_recovery_lambda_memory_size
-  runtime          = "python3.7"
+  runtime          = "python3.9"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/copy_files_to_archive/copy_files_to_archive.zip")
   tags             = var.tags
   timeout          = var.orca_recovery_lambda_timeout
@@ -479,7 +479,7 @@ resource "aws_lambda_function" "post_to_database" {
   filename         = "${path.module}/../../tasks/post_to_database/post_to_database.zip"
   handler          = "post_to_database.handler"
   memory_size      = var.orca_recovery_lambda_memory_size
-  runtime          = "python3.7"
+  runtime          = "python3.9"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/post_to_database/post_to_database.zip")
   tags             = var.tags
   timeout          = var.orca_recovery_lambda_timeout
@@ -527,7 +527,7 @@ resource "aws_lambda_function" "request_status_for_granule" {
   filename         = "${path.module}/../../tasks/request_status_for_granule/request_status_for_granule.zip"
   handler          = "request_status_for_granule.handler"
   memory_size      = var.orca_recovery_lambda_memory_size
-  runtime          = "python3.7"
+  runtime          = "python3.9"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/request_status_for_granule/request_status_for_granule.zip")
   tags             = var.tags
   timeout          = var.orca_recovery_lambda_timeout
@@ -557,7 +557,7 @@ resource "aws_lambda_function" "request_status_for_job" {
   filename         = "${path.module}/../../tasks/request_status_for_job/request_status_for_job.zip"
   handler          = "request_status_for_job.handler"
   memory_size      = var.orca_recovery_lambda_memory_size
-  runtime          = "python3.7"
+  runtime          = "python3.9"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/request_status_for_job/request_status_for_job.zip")
   tags             = var.tags
   timeout          = var.orca_recovery_lambda_timeout
@@ -585,7 +585,7 @@ resource "aws_lambda_function" "post_copy_request_to_queue" {
   filename         = "${path.module}/../../tasks/post_copy_request_to_queue/post_copy_request_to_queue.zip"
   handler          = "post_copy_request_to_queue.handler"
   memory_size      = var.orca_recovery_lambda_memory_size
-  runtime          = "python3.7"
+  runtime          = "python3.9"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/post_copy_request_to_queue/post_copy_request_to_queue.zip")
   tags             = var.tags
   timeout          = var.orca_recovery_lambda_timeout
@@ -647,7 +647,7 @@ resource "aws_lambda_function" "orca_catalog_reporting" {
   filename         = "${path.module}/../../tasks/orca_catalog_reporting/orca_catalog_reporting.zip"
   handler          = "orca_catalog_reporting.handler"
   memory_size      = var.orca_ingest_lambda_memory_size
-  runtime          = "python3.7"
+  runtime          = "python3.9"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/orca_catalog_reporting/orca_catalog_reporting.zip")
   tags             = var.tags
   timeout          = var.orca_ingest_lambda_timeout
@@ -677,7 +677,7 @@ resource "aws_lambda_function" "post_to_catalog" {
   filename         = "${path.module}/../../tasks/post_to_catalog/post_to_catalog.zip"
   handler          = "post_to_catalog.handler"
   memory_size      = var.orca_recovery_lambda_memory_size
-  runtime          = "python3.7"
+  runtime          = "python3.9"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/post_to_catalog/post_to_catalog.zip")
   tags             = var.tags
   timeout          = 300 # Gives plenty of time for Serverless spinup.
@@ -735,7 +735,7 @@ resource "aws_lambda_function" "db_deploy" {
   filename         = "${path.module}/../../tasks/db_deploy/db_deploy.zip"
   handler          = "db_deploy.handler"
   memory_size      = var.orca_recovery_lambda_memory_size
-  runtime          = "python3.7"
+  runtime          = "python3.9"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/db_deploy/db_deploy.zip")
   tags             = var.tags
   timeout          = var.orca_recovery_lambda_timeout
