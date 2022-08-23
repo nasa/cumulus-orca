@@ -156,7 +156,7 @@ Some of these buckets have cross-account IAM policies attached so that they can 
 Hitting 'play' next to `Deploy DR ORCA buckets`, `Deploy Dev RDS Stack` and `Deploy Dev Cumulus and ORCA Stack` brings up a checkbox list to run multiple jobs at once. Note that none of the checkboxes should be checked.
 :::
 
-The Cumulus and TF buckets as well as dynamoDB table in cumulus OU account are created automatically in the Bamboo `Deploy ORCA Buckets and Cumulus/ORCA modules` stage. 
+The Cumulus and TF buckets as well as dynamoDB table in cumulus OU account are created automatically in the Bamboo `Deploy Cumulus buckets and Cumulus and Orca modules` stage. 
 These are the buckets that will be created in cumulus OU account:
 
 - `<PREFIX>-internal`
@@ -171,7 +171,7 @@ The `*-tf-state` buckets and dynamoDB tables will not be automatically removed b
 Once you are done with your testing, and you have verified that cleanup is actually successful, manually delete these resources.
 :::
 
-After hitting the play button on `Deploy ORCA Buckets and Cumulus/ORCA modules`, but before hitting `Run` in the popup, replace the following variables with yours.
+After hitting the play button on `Deploy Cumulus buckets and Cumulus and Orca modules`, but before hitting `Run` in the popup, replace the following variables with yours.
 
 - CUMULUS_AWS_ACCESS_KEY_ID
 - CUMULUS_AWS_SECRET_ACCESS_KEY
