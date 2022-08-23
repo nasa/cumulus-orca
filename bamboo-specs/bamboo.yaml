@@ -283,11 +283,11 @@ stages:
     final: false
     jobs:
     - Deploy DR ORCA buckets
-- Deploy ORCA Buckets and Cumulus ORCA modules:
+- Deploy Cumulus buckets and Cumulus and Orca modules:
     manual: true
     final: false
     jobs:
-    - Deploy ORCA buckets and modules
+    - Deploy Cumulus buckets and Cumulus and Orca modules
 - Clean up ORCA buckets and modules:
     manual: true
     final: false
@@ -323,7 +323,7 @@ Deploy DR ORCA buckets:
         bash integration_test/deployment-dr-buckets.sh
          
 #job for deploying ORCA buckets, Cumulus and ORCA modules
-Deploy ORCA buckets and modules:
+Deploy Cumulus buckets and Cumulus and Orca modules:
   key: DOBM
   other:
     clean-working-dir: true
