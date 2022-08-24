@@ -79,10 +79,6 @@ echo $bamboo_GITHUB_EMAIL
 
 echo "---------end-----------"
 
-# We need to set some git config here so deploy doesn't complain when the commit occurs.
-git config --global user.email "$bamboo_GITHUB_EMAIL"
-git config --global user.name "$bamboo_GITHUB_USER"
-
 
 ## MAIN
 ## -----------------------------------------------------------------------------
@@ -92,6 +88,11 @@ check_rc "cd website"
 
 # Install Node.js and the proper packages
 check_rc "npm install"
+
+npm --version
+
+git config --global user.email $bamboo_GITHUB_EMAIL
+git config --global user.name $bamboo_GITHUB_USER
 
 check_rc "npm run deploy"
 
