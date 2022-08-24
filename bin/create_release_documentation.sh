@@ -17,8 +17,6 @@
 ## bamboo_SECRET_GITHUB_EMAIL (string) - GitHub user email performing the commit
 ##                                       for the application documentation.
 ##
-## bamboo_SECRET_GITHUB_TOKEN (string) - GitHub Secret Token needed to access
-##                                       the cumulus-orca repo.
 ##
 ## bamboo_SECRET_GITHUB_USER (string) - GitHub user performing the commit for the
 ##                                      application documentation.
@@ -70,19 +68,17 @@ function check_rc () {
 ## Run the deployment See: https://docusaurus.io/docs/deployment
 # Set the environment variables
 export DEPLOYMENT_BRANCH=gh-pages
-export GIT_USER=$bamboo_GITHUB_USER
-export GIT_PASS=$bamboo_GITHUB_TOKEN
 
 echo "---------start-----------"
-echo $GIT_USER
-echo $GIT_PASS
+
+echo $bamboo_GITHUB_USER
 echo $bamboo_GITHUB_EMAIL
 
 echo "---------end-----------"
 
 # We need to set some git config here so deploy doesn't complain when the commit occurs.
 git config --global user.email "$bamboo_GITHUB_EMAIL"
-git config --global user.name "$GIT_USER"
+git config --global user.name "$bamboo_GITHUB_USER"
 
 
 
