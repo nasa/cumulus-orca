@@ -137,9 +137,9 @@ Python snyk:
 
         #cat > scan.sh <<EOF
         #!/bin/bash
-        #python3.7 -m venv snyk-test
+        #python3.9 -m venv snyk-test
         #source snyk-test/bin/activate
-        #update-alternatives --install /tmp/snyk-test/bin/python  python /usr/local/bin/python3.7 1
+        #update-alternatives --install /tmp/snyk-test/bin/python  python /usr/local/bin/python3.9 1
         #pip install -r pip_requirements.txt
         #snyk test --json --package-manager=pip --file=data/mask_fill_pip_requirements.txt > pip_report.json
         #snyk-to-html -i pip_report.json -o pip_results.html
