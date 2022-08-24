@@ -14,7 +14,7 @@ stages:
     manual: true
     final: false
     jobs:
-    - Release ORCA Code
+    - Release ORCA Documentation
 #deploy ORCA buckets, Cumulus and ORCA modules
 # - Deploy Dev Cumulus and ORCA Stack:
 #     manual: true
@@ -70,7 +70,7 @@ Release ORCA Documentation:
         fi
         bin/create_release_documentation.sh
       description: Run documentation release script
-      
+
 # #job for deploying cumulus and orca
 # Deploy cumulus and orca:
 #   key: DCO
