@@ -68,7 +68,7 @@ Release ORCA Documentation:
           echo "ERROR: create_release_documentation.sh script does not exist!"
           exit 1
         fi
-        bin/create_release_documentation.sh
+        bash bin/create_release_documentation.sh
       description: Run documentation release script
 
 # #job for deploying cumulus and orca
