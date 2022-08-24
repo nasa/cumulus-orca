@@ -97,7 +97,7 @@ check_rc "cd website"
 check_rc "npm install"
 
 
-# check_rc "npm run deploy"
+check_rc "npm run deploy"
 
 cd ..
 
