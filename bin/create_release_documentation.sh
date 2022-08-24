@@ -67,15 +67,6 @@ function check_rc () {
 }
 
 
-## MAIN
-## -----------------------------------------------------------------------------
-## Release the Documentation
-# Go to the documentation directory
-check_rc "cd website"
-
-# Install Node.js and the proper packages
-check_rc "npm install"
-
 ## Run the deployment See: https://docusaurus.io/docs/deployment
 # Set the environment variables
 export DEPLOYMENT_BRANCH=gh-pages
@@ -86,7 +77,18 @@ export GIT_PASS=$bamboo_SECRET_GITHUB_TOKEN
 git config --global user.email "$bamboo_SECRET_GITHUB_EMAIL"
 git config --global user.name "$GIT_USER"
 
-check_rc "npm run deploy"
+
+## MAIN
+## -----------------------------------------------------------------------------
+## Release the Documentation
+# Go to the documentation directory
+check_rc "cd website"
+
+# Install Node.js and the proper packages
+check_rc "npm install"
+
+
+# check_rc "npm run deploy"
 
 cd ..
 

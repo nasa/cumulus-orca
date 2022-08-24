@@ -10,12 +10,17 @@ stages:
     final: false
     jobs:
     - Set Pending Github Status
-#deploy ORCA buckets, Cumulus and ORCA modules
-- Deploy Dev Cumulus and ORCA Stack:
+- Release Stage:
     manual: true
     final: false
     jobs:
-    - Deploy cumulus and orca
+    - Release ORCA Code
+#deploy ORCA buckets, Cumulus and ORCA modules
+# - Deploy Dev Cumulus and ORCA Stack:
+#     manual: true
+#     final: false
+#     jobs:
+#     - Deploy cumulus and orca
         
 Set Pending Github Status:
   key: SPGS
@@ -38,12 +43,10 @@ Set Pending Github Status:
         ./bin/set_status.sh pending ${bamboo.resultsUrl} "CI Running"
       description: Set Pending Status but again!
       
-#job for deploying cumulus and orca
-Deploy cumulus and orca:
-  key: DCO
-  other:
-    clean-working-dir: true
-    # Some plugin configurations are not supported by YAML Specs
+
+Release ORCA Documentation:
+  key: ROD
+  description: Releases ORCA Documentation to nasa.github.io/cumulus-orca
   docker:
     image: maven.earthdata.nasa.gov/cumulus_orca
     volumes:
@@ -52,14 +55,44 @@ Deploy cumulus and orca:
   tasks:
   - checkout:
       force-clean-build: 'true'
+      path: source
       description: Checkout Default Repository
-
   - script:
       interpreter: SHELL
       scripts:
       - |-
         #!/bin/bash
-        bash integration_test/deploy-orca.sh
+        cd source
+        set -ex
+        if [ ! -f "bin/create_release_documentation.sh" ]; then
+          echo "ERROR: create_release_documentation.sh script does not exist!"
+          exit 1
+        fi
+        bin/create_release_documentation.sh
+      description: Run documentation release script
+      
+# #job for deploying cumulus and orca
+# Deploy cumulus and orca:
+#   key: DCO
+#   other:
+#     clean-working-dir: true
+#     # Some plugin configurations are not supported by YAML Specs
+#   docker:
+#     image: maven.earthdata.nasa.gov/cumulus_orca
+#     volumes:
+#       ${bamboo.working.directory}: ${bamboo.working.directory}
+#       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+#   tasks:
+#   - checkout:
+#       force-clean-build: 'true'
+#       description: Checkout Default Repository
+
+#   - script:
+#       interpreter: SHELL
+#       scripts:
+#       - |-
+#         #!/bin/bash
+#         bash integration_test/deploy-orca.sh
 variables:
   DEPLOYMENT: sandbox
   ORCA_VERSION: 4.0.3
