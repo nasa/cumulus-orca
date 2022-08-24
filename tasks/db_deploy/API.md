@@ -34,6 +34,8 @@
   * [providers\_table\_sql](#install/orca_sql.providers_table_sql)
   * [collections\_table\_sql](#install/orca_sql.collections_table_sql)
   * [granules\_table\_sql](#install/orca_sql.granules_table_sql)
+  * [storage\_class\_table\_sql](#install/orca_sql.storage_class_table_sql)
+  * [storage\_class\_data\_sql](#install/orca_sql.storage_class_data_sql)
   * [files\_table\_sql](#install/orca_sql.files_table_sql)
   * [reconcile\_status\_table\_sql](#install/orca_sql.reconcile_status_table_sql)
   * [reconcile\_job\_table\_sql](#install/orca_sql.reconcile_job_table_sql)
@@ -90,6 +92,13 @@
   * [reconcile\_catalog\_mismatch\_report\_table\_sql](#migrations/migrate_versions_4_to_5/migrate_sql.reconcile_catalog_mismatch_report_table_sql)
   * [reconcile\_orphan\_report\_table\_sql](#migrations/migrate_versions_4_to_5/migrate_sql.reconcile_orphan_report_table_sql)
   * [reconcile\_phantom\_report\_table\_sql](#migrations/migrate_versions_4_to_5/migrate_sql.reconcile_phantom_report_table_sql)
+* [migrations/migrate\_versions\_5\_to\_6/migrate](#migrations/migrate_versions_5_to_6/migrate)
+  * [migrate\_versions\_5\_to\_6](#migrations/migrate_versions_5_to_6/migrate.migrate_versions_5_to_6)
+* [migrations/migrate\_versions\_5\_to\_6/migrate\_sql](#migrations/migrate_versions_5_to_6/migrate_sql)
+  * [schema\_versions\_data\_sql](#migrations/migrate_versions_5_to_6/migrate_sql.schema_versions_data_sql)
+  * [storage\_class\_table\_sql](#migrations/migrate_versions_5_to_6/migrate_sql.storage_class_table_sql)
+  * [storage\_class\_data\_sql](#migrations/migrate_versions_5_to_6/migrate_sql.storage_class_data_sql)
+  * [add\_files\_storage\_class\_id\_column\_sql](#migrations/migrate_versions_5_to_6/migrate_sql.add_files_storage_class_id_column_sql)
 
 <a name="db_deploy"></a>
 # db\_deploy
@@ -137,8 +146,8 @@ schema.
 
 **Arguments**:
 
-- `config` _Dict_ - Dictionary of connection information.
-- `orca_buckets` - List[str]): List of ORCA buckets needed to create partitioned tables.
+- `config` - Dictionary of connection information.
+- `orca_buckets` - List of ORCA buckets needed to create partitioned tables.
   
 
 **Raises**:
@@ -234,12 +243,12 @@ create_fresh_orca_install(config: Dict[str, str], orca_buckets: List[str]) -> No
 ```
 
 This task will create the ORCA roles, users, schema, and tables needed
-by the ORCA application as a fresh install.
+by the ORCA application as a fresh installation.
 
 **Arguments**:
 
-- `config` _Dict_ - Dictionary with database connection information
-- `orca_buckets` - List[str]): List of ORCA buckets needed to create
+- `config` - Dictionary with database connection information
+- `orca_buckets` - List of ORCA buckets needed to create
   partitioned tables for reporting.
   
 
@@ -380,8 +389,8 @@ Creates the ORCA internal reconciliation tables in the proper order.
 
 **Arguments**:
 
-- `connection` _sqlalchemy.future.Connection_ - Database connection.
-- `orca_buckets` - List[str]): List of ORCA buckets needed to create
+- `connection` - Database connection.
+- `orca_buckets` - List of ORCA buckets needed to create
   partitioned tables for reporting.
   
 
@@ -394,13 +403,13 @@ Creates the ORCA internal reconciliation tables in the proper order.
 
 Name: orca_sql.py
 
-Description: All of the SQL used for creating and migrating the ORCA schema.
+Description: All the SQL used for creating and migrating the ORCA schema.
 
 <a name="install/orca_sql.commit_sql"></a>
 #### commit\_sql
 
 ```python
-commit_sql() -> TextClause
+commit_sql() -> text
 ```
 
 SQL for a simple 'commit' to exit the current transaction.
@@ -409,7 +418,7 @@ SQL for a simple 'commit' to exit the current transaction.
 #### app\_database\_sql
 
 ```python
-app_database_sql(db_name: str, admin_username: str) -> TextClause
+app_database_sql(db_name: str, admin_username: str) -> text
 ```
 
 Full SQL for creating the ORCA application database.
@@ -422,7 +431,7 @@ Full SQL for creating the ORCA application database.
 #### app\_database\_comment\_sql
 
 ```python
-app_database_comment_sql(db_name: str) -> TextClause
+app_database_comment_sql(db_name: str) -> text
 ```
 
 SQL for adding a documentation comment to the database.
@@ -432,7 +441,7 @@ Cannot be merged with DB creation due to SQLAlchemy limitations.
 #### dbo\_role\_sql
 
 ```python
-dbo_role_sql(db_name: str, admin_username: str) -> TextClause
+dbo_role_sql(db_name: str, admin_username: str) -> text
 ```
 
 Full SQL for creating the ORCA dbo role that owns the ORCA schema and
@@ -446,7 +455,7 @@ objects.
 #### app\_role\_sql
 
 ```python
-app_role_sql(db_name: str) -> TextClause
+app_role_sql(db_name: str) -> text
 ```
 
 Full SQL for creating the ORCA application role that has all the privileges
@@ -460,7 +469,7 @@ to interact with the ORCA schema.
 #### orca\_schema\_sql
 
 ```python
-orca_schema_sql() -> TextClause
+orca_schema_sql() -> text
 ```
 
 Full SQL for creating the ORCA application schema that contains all the
@@ -475,7 +484,7 @@ before the app_user_sql and ORCA objects.
 #### app\_user\_sql
 
 ```python
-app_user_sql(user_name: str, user_password: str) -> TextClause
+app_user_sql(user_name: str) -> text
 ```
 
 Full SQL for creating the ORCA application database user. Must be created
@@ -483,7 +492,7 @@ after the app_role_sql and orca_schema_sql.
 
 **Arguments**:
 
-- `user_password` _str_ - Password for the application user
+- `user_name` - Username for the application user
   
 
 **Returns**:
@@ -494,7 +503,7 @@ after the app_role_sql and orca_schema_sql.
 #### create\_extension
 
 ```python
-create_extension() -> TextClause
+create_extension() -> text
 ```
 
 Full SQL for creating the aws_s3 extension used for COPYING S3 reporting data
@@ -508,7 +517,7 @@ from a CSV file in an AWS bucket into the database.
 #### schema\_versions\_table\_sql
 
 ```python
-schema_versions_table_sql() -> TextClause
+schema_versions_table_sql() -> text
 ```
 
 Full SQL for creating the schema_versions table.
@@ -521,7 +530,7 @@ Full SQL for creating the schema_versions table.
 #### schema\_versions\_data\_sql
 
 ```python
-schema_versions_data_sql() -> TextClause
+schema_versions_data_sql() -> text
 ```
 
 Data for the schema_versions table. Inserts the current schema
@@ -535,7 +544,7 @@ version into the table.
 #### recovery\_status\_table\_sql
 
 ```python
-recovery_status_table_sql() -> TextClause
+recovery_status_table_sql() -> text
 ```
 
 Full SQL for creating the recovery_status table. This SQL must be run
@@ -549,7 +558,7 @@ before any of the other recovery table sql.
 #### recovery\_status\_data\_sql
 
 ```python
-recovery_status_data_sql() -> TextClause
+recovery_status_data_sql() -> text
 ```
 
 Data for the recovery_status table. Inserts the current status values into
@@ -563,7 +572,7 @@ the table.
 #### recovery\_job\_table\_sql
 
 ```python
-recovery_job_table_sql() -> TextClause
+recovery_job_table_sql() -> text
 ```
 
 Full SQL for creating the recovery_job table. This SQL must be run
@@ -578,7 +587,7 @@ table sql to maintain key dependencies.
 #### recovery\_file\_table\_sql
 
 ```python
-recovery_file_table_sql() -> TextClause
+recovery_file_table_sql() -> text
 ```
 
 Full SQL for creating the recovery_file table. This SQL must be run
@@ -592,7 +601,7 @@ after the recovery_job table sql to maintain key dependencies.
 #### providers\_table\_sql
 
 ```python
-providers_table_sql() -> TextClause
+providers_table_sql() -> text
 ```
 
 Full SQL for creating the providers table.
@@ -605,7 +614,7 @@ Full SQL for creating the providers table.
 #### collections\_table\_sql
 
 ```python
-collections_table_sql() -> TextClause
+collections_table_sql() -> text
 ```
 
 Full SQL for creating the collections table.
@@ -618,7 +627,7 @@ Full SQL for creating the collections table.
 #### granules\_table\_sql
 
 ```python
-granules_table_sql() -> TextClause
+granules_table_sql() -> text
 ```
 
 Full SQL for creating the catalog granules table.
@@ -627,11 +636,41 @@ Full SQL for creating the catalog granules table.
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for creating granules table.
 
+<a name="install/orca_sql.storage_class_table_sql"></a>
+#### storage\_class\_table\_sql
+
+```python
+storage_class_table_sql() -> text
+```
+
+Full SQL for creating the storage_class table. This SQL must be run
+before any of the other recovery table sql.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for creating storage_class table.
+
+<a name="install/orca_sql.storage_class_data_sql"></a>
+#### storage\_class\_data\_sql
+
+```python
+storage_class_data_sql() -> text
+```
+
+Data for the storage_class table. Inserts the currently valid storage classes into
+the table.
+
+TODO: Research on Deep Glacier vs Deep Archive is limited.
+
+**Returns**:
+
+- `(sqlalchemy.sql.element.TextClause)` - SQL for populating storage_class table.
+
 <a name="install/orca_sql.files_table_sql"></a>
 #### files\_table\_sql
 
 ```python
-files_table_sql() -> TextClause
+files_table_sql() -> text
 ```
 
 Full SQL for creating the catalog files table.
@@ -644,7 +683,7 @@ Full SQL for creating the catalog files table.
 #### reconcile\_status\_table\_sql
 
 ```python
-reconcile_status_table_sql() -> TextClause
+reconcile_status_table_sql() -> text
 ```
 
 Full SQL for creating the reconcile_status table.
@@ -657,7 +696,7 @@ Full SQL for creating the reconcile_status table.
 #### reconcile\_job\_table\_sql
 
 ```python
-reconcile_job_table_sql() -> TextClause
+reconcile_job_table_sql() -> text
 ```
 
 Full SQL for creating the reconcile_job table.
@@ -670,7 +709,7 @@ Full SQL for creating the reconcile_job table.
 #### reconcile\_s3\_object\_table\_sql
 
 ```python
-reconcile_s3_object_table_sql() -> TextClause
+reconcile_s3_object_table_sql() -> text
 ```
 
 Full SQL for creating the reconcile_s3_object table.
@@ -683,7 +722,7 @@ Full SQL for creating the reconcile_s3_object table.
 #### reconcile\_s3\_object\_partition\_sql
 
 ```python
-reconcile_s3_object_partition_sql(partition_name: str) -> TextClause
+reconcile_s3_object_partition_sql(partition_name: str) -> text
 ```
 
 Full SQL for creating the reconcile_s3_object partition table. Requires the
@@ -703,7 +742,7 @@ of `{"bucket_name": value}` when executing the SQL via the driver.
 #### reconcile\_catalog\_mismatch\_report\_table\_sql
 
 ```python
-reconcile_catalog_mismatch_report_table_sql() -> TextClause
+reconcile_catalog_mismatch_report_table_sql() -> text
 ```
 
 Full SQL for creating the reconcile_catalog_mismatch_report table.
@@ -716,7 +755,7 @@ Full SQL for creating the reconcile_catalog_mismatch_report table.
 #### reconcile\_orphan\_report\_table\_sql
 
 ```python
-reconcile_orphan_report_table_sql() -> TextClause
+reconcile_orphan_report_table_sql() -> text
 ```
 
 Full SQL for creating the reconcile_orphan_report table.
@@ -729,7 +768,7 @@ Full SQL for creating the reconcile_orphan_report table.
 #### reconcile\_phantom\_report\_table\_sql
 
 ```python
-reconcile_phantom_report_table_sql() -> TextClause
+reconcile_phantom_report_table_sql() -> text
 ```
 
 Full SQL for creating the reconcile_phantom_report table.
@@ -757,9 +796,9 @@ migrations to run.
 
 **Arguments**:
 
-- `current_schema_version` _int_ - Current version of the ORCA schema
-- `config` _Dict_ - Dictionary containing database connection information
-- `orca_buckets` - List[str]): List of ORCA bucket names used to create partition tables for v5.
+- `current_schema_version` - Current version of the ORCA schema
+- `config` - Dictionary containing database connection information
+- `orca_buckets` - List of ORCA bucket names used to create partition tables for v5.
   
 
 **Returns**:
@@ -798,13 +837,13 @@ the ORCA schema.
 
 Name: orca_sql_v2.py
 
-Description: All of the SQL used for creating and migrating the ORCA schema to version 2.
+Description: All the SQL used for creating and migrating the ORCA schema to version 2.
 
 <a name="migrations/migrate_versions_1_to_2/migrate_sql.dbo_role_sql"></a>
 #### dbo\_role\_sql
 
 ```python
-dbo_role_sql(db_name: str, admin_username: str) -> TextClause
+dbo_role_sql(db_name: str, admin_username: str) -> text
 ```
 
 Full SQL for creating the ORCA dbo role that owns the ORCA schema and
@@ -818,7 +857,7 @@ objects.
 #### app\_role\_sql
 
 ```python
-app_role_sql(db_name: str) -> TextClause
+app_role_sql(db_name: str) -> text
 ```
 
 Full SQL for creating the ORCA application role that has all the privileges
@@ -832,7 +871,7 @@ to interact with the ORCA schema.
 #### orca\_schema\_sql
 
 ```python
-orca_schema_sql() -> TextClause
+orca_schema_sql() -> text
 ```
 
 Full SQL for creating the ORCA application schema that contains all the
@@ -847,7 +886,7 @@ before the app_user_sql and ORCA objects.
 #### app\_user\_sql
 
 ```python
-app_user_sql(user_name: str, user_password: str) -> TextClause
+app_user_sql(user_name: str) -> text
 ```
 
 Full SQL for creating the ORCA application database user. Must be created
@@ -855,7 +894,7 @@ after the app_role_sql and orca_schema_sql.
 
 **Arguments**:
 
-- `user_password` _str_ - Password for the application user
+- `user_name` - Username for the application user
   
 
 **Returns**:
@@ -866,7 +905,7 @@ after the app_role_sql and orca_schema_sql.
 #### schema\_versions\_table\_sql
 
 ```python
-schema_versions_table_sql() -> TextClause
+schema_versions_table_sql() -> text
 ```
 
 Full SQL for creating the schema_versions table.
@@ -879,7 +918,7 @@ Full SQL for creating the schema_versions table.
 #### schema\_versions\_data\_sql
 
 ```python
-schema_versions_data_sql() -> TextClause
+schema_versions_data_sql() -> text
 ```
 
 Data for the schema_versions table. Inserts the current schema
@@ -893,7 +932,7 @@ version into the table.
 #### recovery\_status\_table\_sql
 
 ```python
-recovery_status_table_sql() -> TextClause
+recovery_status_table_sql() -> text
 ```
 
 Full SQL for creating the recovery_status table. This SQL must be run
@@ -907,7 +946,7 @@ before any of the other recovery table sql.
 #### recovery\_status\_data\_sql
 
 ```python
-recovery_status_data_sql() -> TextClause
+recovery_status_data_sql() -> text
 ```
 
 Data for the recovery_status table. Inserts the current status values into
@@ -921,7 +960,7 @@ the table.
 #### recovery\_job\_table\_sql
 
 ```python
-recovery_job_table_sql() -> TextClause
+recovery_job_table_sql() -> text
 ```
 
 Full SQL for creating the recovery_job table. This SQL must be run
@@ -936,7 +975,7 @@ table sql to maintain key dependencies.
 #### recovery\_file\_table\_sql
 
 ```python
-recovery_file_table_sql() -> TextClause
+recovery_file_table_sql() -> text
 ```
 
 Full SQL for creating the recovery_file table. This SQL must be run
@@ -950,7 +989,7 @@ after the recovery_job table sql to maintain key dependencies.
 #### migrate\_recovery\_job\_data\_sql
 
 ```python
-migrate_recovery_job_data_sql() -> TextClause
+migrate_recovery_job_data_sql() -> text
 ```
 
 SQL that migrates data from the old dr.request_status table to the new
@@ -964,7 +1003,7 @@ orca.recovery_job table.
 #### migrate\_recovery\_file\_data\_sql
 
 ```python
-migrate_recovery_file_data_sql() -> TextClause
+migrate_recovery_file_data_sql() -> text
 ```
 
 SQL that migrates data from the old dr.request_status table to the new
@@ -978,7 +1017,7 @@ orca.recovery_file table.
 #### drop\_request\_status\_table\_sql
 
 ```python
-drop_request_status_table_sql() -> TextClause
+drop_request_status_table_sql() -> text
 ```
 
 SQL that removes the dr.request_status table.
@@ -991,7 +1030,7 @@ SQL that removes the dr.request_status table.
 #### drop\_dr\_schema\_sql
 
 ```python
-drop_dr_schema_sql() -> TextClause
+drop_dr_schema_sql() -> text
 ```
 
 SQL that removes the dr schema.
@@ -1004,7 +1043,7 @@ SQL that removes the dr schema.
 #### drop\_druser\_user\_sql
 
 ```python
-drop_druser_user_sql() -> TextClause
+drop_druser_user_sql() -> text
 ```
 
 SQL that removes the druser user.
@@ -1017,7 +1056,7 @@ SQL that removes the druser user.
 #### drop\_dbo\_user\_sql
 
 ```python
-drop_dbo_user_sql(db_name: str) -> TextClause
+drop_dbo_user_sql(db_name: str) -> text
 ```
 
 SQL that removes the dbo user.
@@ -1030,7 +1069,7 @@ SQL that removes the dbo user.
 #### drop\_dr\_role\_sql
 
 ```python
-drop_dr_role_sql(db_name: str) -> TextClause
+drop_dr_role_sql(db_name: str) -> text
 ```
 
 SQL that removes the dr_role role.
@@ -1043,7 +1082,7 @@ SQL that removes the dr_role role.
 #### drop\_drdbo\_role\_sql
 
 ```python
-drop_drdbo_role_sql(db_name: str) -> TextClause
+drop_drdbo_role_sql(db_name: str) -> text
 ```
 
 SQL that removes the drdbo_role role.
@@ -1086,7 +1125,7 @@ Description: All of the SQL used for creating and migrating the ORCA schema to v
 #### add\_multipart\_chunksize\_sql
 
 ```python
-add_multipart_chunksize_sql() -> TextClause
+add_multipart_chunksize_sql() -> text
 ```
 
 SQL that adds the multipart_chunksize_mb column to recovery_file.
@@ -1097,7 +1136,7 @@ Returns: SQL for adding multipart_chunksize_mb.
 #### schema\_versions\_data\_sql
 
 ```python
-schema_versions_data_sql() -> TextClause
+schema_versions_data_sql() -> text
 ```
 
 Data for the schema_versions table. Inserts the current schema
@@ -1144,7 +1183,7 @@ Description: All of the SQL used for creating and migrating the ORCA schema to v
 #### providers\_table\_sql
 
 ```python
-providers_table_sql() -> TextClause
+providers_table_sql() -> text
 ```
 
 Full SQL for creating the providers table.
@@ -1157,7 +1196,7 @@ Full SQL for creating the providers table.
 #### collections\_table\_sql
 
 ```python
-collections_table_sql() -> TextClause
+collections_table_sql() -> text
 ```
 
 Full SQL for creating the collections table.
@@ -1170,7 +1209,7 @@ Full SQL for creating the collections table.
 #### granules\_table\_sql
 
 ```python
-granules_table_sql() -> TextClause
+granules_table_sql() -> text
 ```
 
 Full SQL for creating the catalog granules table.
@@ -1183,7 +1222,7 @@ Full SQL for creating the catalog granules table.
 #### files\_table\_sql
 
 ```python
-files_table_sql() -> TextClause
+files_table_sql() -> text
 ```
 
 Full SQL for creating the catalog files table.
@@ -1196,7 +1235,7 @@ Full SQL for creating the catalog files table.
 #### schema\_versions\_data\_sql
 
 ```python
-schema_versions_data_sql() -> TextClause
+schema_versions_data_sql() -> text
 ```
 
 Data for the schema_versions table. Inserts the current schema
@@ -1247,13 +1286,13 @@ following tables:
 
 Name: migrate_sql.py
 
-Description: All of the SQL used for creating and migrating the ORCA schema to version 5.
+Description: All the SQL used for creating and migrating the ORCA schema to version 5.
 
 <a name="migrations/migrate_versions_4_to_5/migrate_sql.schema_versions_data_sql"></a>
 #### schema\_versions\_data\_sql
 
 ```python
-schema_versions_data_sql() -> TextClause
+schema_versions_data_sql() -> text
 ```
 
 Data for the schema_versions table. Inserts the current schema
@@ -1267,7 +1306,7 @@ version into the table.
 #### create\_extension
 
 ```python
-create_extension() -> TextClause
+create_extension() -> text
 ```
 
 Full SQL for creating the aws_s3 extension used for COPYING S3 reporting data
@@ -1281,7 +1320,7 @@ from a CSV file in an AWS bucket into the database.
 #### reconcile\_status\_table\_sql
 
 ```python
-reconcile_status_table_sql() -> TextClause
+reconcile_status_table_sql() -> text
 ```
 
 Full SQL for creating the reconcile_status table.
@@ -1294,7 +1333,7 @@ Full SQL for creating the reconcile_status table.
 #### reconcile\_job\_table\_sql
 
 ```python
-reconcile_job_table_sql() -> TextClause
+reconcile_job_table_sql() -> text
 ```
 
 Full SQL for creating the reconcile_job table.
@@ -1307,7 +1346,7 @@ Full SQL for creating the reconcile_job table.
 #### reconcile\_s3\_object\_table\_sql
 
 ```python
-reconcile_s3_object_table_sql() -> TextClause
+reconcile_s3_object_table_sql() -> text
 ```
 
 Full SQL for creating the reconcile_s3_object table.
@@ -1320,7 +1359,7 @@ Full SQL for creating the reconcile_s3_object table.
 #### reconcile\_s3\_object\_partition\_sql
 
 ```python
-reconcile_s3_object_partition_sql(partition_name: str) -> TextClause
+reconcile_s3_object_partition_sql(partition_name: str) -> text
 ```
 
 Full SQL for creating the reconcile_s3_object partition table. Requires the
@@ -1340,7 +1379,7 @@ of `{"bucket_name": value}` when executing the SQL via the driver.
 #### reconcile\_catalog\_mismatch\_report\_table\_sql
 
 ```python
-reconcile_catalog_mismatch_report_table_sql() -> TextClause
+reconcile_catalog_mismatch_report_table_sql() -> text
 ```
 
 Full SQL for creating the reconcile_catalog_mismatch_report table.
@@ -1353,7 +1392,7 @@ Full SQL for creating the reconcile_catalog_mismatch_report table.
 #### reconcile\_orphan\_report\_table\_sql
 
 ```python
-reconcile_orphan_report_table_sql() -> TextClause
+reconcile_orphan_report_table_sql() -> text
 ```
 
 Full SQL for creating the reconcile_orphan_report table.
@@ -1366,7 +1405,7 @@ Full SQL for creating the reconcile_orphan_report table.
 #### reconcile\_phantom\_report\_table\_sql
 
 ```python
-reconcile_phantom_report_table_sql() -> TextClause
+reconcile_phantom_report_table_sql() -> text
 ```
 
 Full SQL for creating the reconcile_phantom_report table.
@@ -1374,4 +1413,92 @@ Full SQL for creating the reconcile_phantom_report table.
 **Returns**:
 
 - `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_phantom_report table.
+
+<a name="migrations/migrate_versions_5_to_6/migrate"></a>
+# migrations/migrate\_versions\_5\_to\_6/migrate
+
+Name: migrate.py
+
+Description: Migrates the ORCA schema from version 4 to version 5.
+
+<a name="migrations/migrate_versions_5_to_6/migrate.migrate_versions_5_to_6"></a>
+#### migrate\_versions\_5\_to\_6
+
+```python
+migrate_versions_5_to_6(config: Dict[str, str], is_latest_version: bool) -> None
+```
+
+Performs the migration of the ORCA schema from version 5 to version 6 of
+the ORCA schema. This includes adding the
+following tables:
+- storage_class
+and adding the following columns
+- files/storage_class_id    default 1 (GLACIER)
+
+**Arguments**:
+
+- `config` - Connection information for the database.
+- `is_latest_version` - Flag to determine if version 5 is the latest
+  schema version.
+
+**Returns**:
+
+  None
+
+<a name="migrations/migrate_versions_5_to_6/migrate_sql"></a>
+# migrations/migrate\_versions\_5\_to\_6/migrate\_sql
+
+Name: migrate_sql.py
+
+Description: All the SQL used for creating and migrating the ORCA schema to version 5.
+
+<a name="migrations/migrate_versions_5_to_6/migrate_sql.schema_versions_data_sql"></a>
+#### schema\_versions\_data\_sql
+
+```python
+schema_versions_data_sql() -> text
+```
+
+Data for the schema_versions table. Inserts the current schema
+version into the table.
+
+Returns: SQL for populating schema_versions table.
+
+<a name="migrations/migrate_versions_5_to_6/migrate_sql.storage_class_table_sql"></a>
+#### storage\_class\_table\_sql
+
+```python
+storage_class_table_sql() -> text
+```
+
+Full SQL for creating the storage_class table. This SQL must be run
+before any of the other recovery table sql.
+
+Returns: SQL for creating storage_class table.
+
+<a name="migrations/migrate_versions_5_to_6/migrate_sql.storage_class_data_sql"></a>
+#### storage\_class\_data\_sql
+
+```python
+storage_class_data_sql() -> text
+```
+
+Data for the storage_class table. Inserts the currently valid storage classes into
+the table.
+
+TODO: Research on Deep Glacier vs Deep Archive is limited.
+
+Returns: SQL for populating storage_class table.
+
+<a name="migrations/migrate_versions_5_to_6/migrate_sql.add_files_storage_class_id_column_sql"></a>
+#### add\_files\_storage\_class\_id\_column\_sql
+
+```python
+add_files_storage_class_id_column_sql() -> text
+```
+
+SQL for adding the storage_class_id column to the files table.
+New cells will contain '1', the id for GLACIER.
+
+Returns: SQL for adding the column.
 

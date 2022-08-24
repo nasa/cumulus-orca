@@ -69,6 +69,7 @@
                 "sizeBytes",
                 "hash",
                 "hashType",
+                "storageClass",
                 "version"
               ],
               "properties": {
@@ -104,6 +105,10 @@
                     "string",
                     "null"
                   ]
+                },
+                "storageClass": {
+                  "description": "The class of storage containing the file.",
+                  "type": "string"
                 },
                 "version": {
                   "description": "AWS provided version of the file.",

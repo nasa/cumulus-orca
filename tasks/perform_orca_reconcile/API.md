@@ -64,7 +64,7 @@ Generates and posts phantom, orphan, and mismatch reports within the same transa
 #### generate\_phantom\_reports\_sql
 
 ```python
-def generate_phantom_reports_sql() -> TextClause
+def generate_phantom_reports_sql() -> text
 ```
 
 SQL for generating reports on files in the Orca catalog, but not S3.
@@ -74,7 +74,7 @@ SQL for generating reports on files in the Orca catalog, but not S3.
 #### generate\_orphan\_reports\_sql
 
 ```python
-def generate_orphan_reports_sql() -> TextClause
+def generate_orphan_reports_sql() -> text
 ```
 
 SQL for generating reports on files in S3, but not the Orca catalog.
@@ -84,7 +84,7 @@ SQL for generating reports on files in S3, but not the Orca catalog.
 #### generate\_mismatch\_reports\_sql
 
 ```python
-def generate_mismatch_reports_sql() -> TextClause
+def generate_mismatch_reports_sql() -> text
 ```
 
 SQL for retrieving mismatches between entries in S3 and the Orca catalog.
@@ -130,7 +130,7 @@ Removes the completed job from the queue, preventing it from going to the dead-l
 #### handler
 
 ```python
-def handler(event: Dict[str, Dict[str, Union[str, int]]],
+def handler(event: Dict[str, Dict[str, Dict[str, Union[str, int]]]],
             context) -> Dict[str, Any]
 ```
 
@@ -145,3 +145,4 @@ Lambda handler. Receives a list of s3 events from an SQS queue, and loads the s3
 - `DB_CONNECT_INFO_SECRET_ARN` _string_ - Secret ARN of the AWS secretsmanager secret for connecting to the database.
   See shared_db.py's get_configuration for further details.
 - `Returns` - See output.json for details.
+

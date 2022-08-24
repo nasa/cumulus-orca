@@ -20,9 +20,7 @@ class TestDbDeployFunctions(unittest.TestCase):
     @patch("db_deploy.task")
     @patch.dict(
         os.environ,
-        {
-            "DB_CONNECT_INFO_SECRET_ARN": "test"
-        },
+        {"DB_CONNECT_INFO_SECRET_ARN": "test"},
         clear=True,
     )
     def test_handler_happy_path(
@@ -58,11 +56,9 @@ class TestDbDeployFunctions(unittest.TestCase):
     @patch("db_deploy.task")
     @patch.dict(
         os.environ,
-        {
-            "DB_CONNECT_INFO_SECRET_ARN": "test"
-        },
+        {"DB_CONNECT_INFO_SECRET_ARN": "test"},
         clear=True,
-     )
+    )
     def test_handler_bad_input(
         self, mock_task: MagicMock, mock_get_configuration: MagicMock
     ):
@@ -224,7 +220,7 @@ class TestDbDeployFunctions(unittest.TestCase):
         """
         mock_db_exists.return_value = True
         mock_schema_exists.return_value = True
-        mock_migration_version.return_value = 5
+        mock_migration_version.return_value = db_deploy.LATEST_ORCA_SCHEMA_VERSION
         message = "Current ORCA schema version detected. No migration needed!"
         config = {
             "admin_database": "admin_db",

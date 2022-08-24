@@ -1,5 +1,5 @@
 ---
-id: research-s3-practices
+id: research-s3-bucket-best-practices
 title: S3 Future Direction/Best Practices
 description: Research notes on S3 best practices and some directions to take development.
 ---
@@ -82,6 +82,7 @@ There are two modes of Object Lock:
 - Compliance
   The lock must be removed before data can be deleted, and users must have special permissions to remove the lock.
   Locks have no expiration.
+
 I recommend Governance mode so as to allow a global Object Lock policy; with Compliance, we would need to be able to remove the lock to delete files, so a global policy is not possible.
 With a default policy of `Governance` mode and an arbitrarily long `Retention period`, data will be protected from accidental deletion by general users.
 

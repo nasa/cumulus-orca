@@ -23,7 +23,6 @@ from orca_shared.reconciliation import (
 )
 from sqlalchemy import text
 from sqlalchemy.future import Engine
-from sqlalchemy.sql.elements import TextClause
 
 OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY = "INTERNAL_REPORT_QUEUE_URL"
 OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY = "S3_CREDENTIALS_SECRET_ARN"  # nosec
@@ -202,7 +201,7 @@ def create_job(
     return rows.fetchone()["id"]
 
 
-def create_job_sql() -> TextClause:
+def create_job_sql() -> text:  # pragma: no cover
     return text(
         """
         INSERT INTO reconcile_job
@@ -240,7 +239,7 @@ def truncate_s3_partition(orca_archive_location: str, engine: Engine) -> None:
         raise
 
 
-def truncate_s3_partition_sql(partition_name: str) -> TextClause:
+def truncate_s3_partition_sql(partition_name: str) -> text:
     # Quickly removes data from the partition
     return text(
         f"""
@@ -356,7 +355,8 @@ def generate_temporary_s3_column_list(manifest_file_schema: str) -> str:
 
     Returns: A string representing SQL columns to create.
         Columns required for import but unused by orca will be filled in with `junk` values.
-        For example, 'orca_archive_location text, key_path text, size_in_bytes bigint, last_update timestamptz, etag text, storage_class text, junk7 text, junk8 text, junk9 text, junk10 text, junk11 text, junk12 text, junk13 text, junk14 text'
+        For example, 'orca_archive_location text, key_path text, size_in_bytes bigint, last_update timestamptz, etag text,
+        storage_class text, junk7 text, junk8 text, junk9 text, junk10 text, junk11 text, junk12 text, junk13 text'
 
     """
     # Keys indicate columns in the s3 inventory csv. Values indicate the corresponding column in orca.reconcile_s3_object
@@ -383,7 +383,7 @@ def generate_temporary_s3_column_list(manifest_file_schema: str) -> str:
 
 # https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PostgreSQL.S3Import.html
 # To make runnable, run 'CREATE EXTENSION IF NOT EXISTS aws_s3 CASCADE;'
-def create_temporary_table_sql(temporary_s3_column_list: str) -> TextClause:
+def create_temporary_table_sql(temporary_s3_column_list: str) -> text:
     """
     Creates a temporary table to store inventory data.
     Args:
@@ -399,7 +399,7 @@ def create_temporary_table_sql(temporary_s3_column_list: str) -> TextClause:
     )
 
 
-def trigger_csv_load_from_s3_sql() -> TextClause:
+def trigger_csv_load_from_s3_sql() -> text:  # pragma: no cover
     """
     SQL for telling postgres where/how to copy in the s3 inventory data.
     """
@@ -408,7 +408,7 @@ def trigger_csv_load_from_s3_sql() -> TextClause:
         SELECT aws_s3.table_import_from_s3(
             's3_import',
             '',
-            '(format csv)',
+            '(format csv, FORCE_NULL(size_in_bytes))',
             :report_bucket_name,
             :csv_key_path,
             :report_bucket_region,
@@ -420,14 +420,21 @@ def trigger_csv_load_from_s3_sql() -> TextClause:
     )
 
 
-def translate_s3_import_to_partitioned_data_sql() -> TextClause:
+def translate_s3_import_to_partitioned_data_sql() -> text:  # pragma: no cover
     """
     SQL for translating between the temporary table and Orca table.
     """
     return text(
         f"""
         INSERT INTO orca.reconcile_s3_object (job_id, orca_archive_location, key_path, etag, last_update, size_in_bytes, storage_class, delete_marker)
-            SELECT :job_id, orca_archive_location, key_path, etag, last_update, size_in_bytes, storage_class, delete_marker
+            SELECT 
+            :job_id, 
+            orca_archive_location, 
+            key_path, 
+            CONCAT('"', etag, '"') as etag, /* copy_to_glacier's AWS call presently wraps this in quotes. Seems like a bug, but is shown on https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.list_object_versions */
+            last_update, 
+            COALESCE(size_in_bytes, 0), 
+            storage_class, delete_marker
             FROM s3_import
             WHERE is_latest = TRUE
         """  # nosec
@@ -509,7 +516,8 @@ def get_message_from_queue(
         message["ReceiptHandle"],
     )
 
-def check_env_variable(env_name: str)->str:
+
+def check_env_variable(env_name: str) -> str:
     """
     Checks for the lambda environment variable.
 
@@ -528,6 +536,7 @@ def check_env_variable(env_name: str)->str:
 
     return env_value 
 
+
 def handler(event: Dict[str, List], context) -> Dict[str, Any]:
     """
     Lambda handler. Receives a list of s3 events from an SQS queue, and loads the s3 inventory specified into postgres.
@@ -545,8 +554,9 @@ def handler(event: Dict[str, List], context) -> Dict[str, Any]:
     """
     LOGGER.setMetadata(event, context)
 
-    #getting the env variables
-    s3_access_key, s3_secret_key = get_s3_credentials_from_secrets_manager(check_env_variable(OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY))
+    # getting the env variables
+    s3_access_key, s3_secret_key = get_s3_credentials_from_secrets_manager(
+        check_env_variable(OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY))
     db_connect_info = shared_db.get_configuration(check_env_variable(OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY))
     message_data = get_message_from_queue(check_env_variable(OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY))
 

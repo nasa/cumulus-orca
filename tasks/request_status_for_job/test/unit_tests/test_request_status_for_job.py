@@ -11,7 +11,8 @@ import unittest
 import uuid
 from http import HTTPStatus
 from unittest import mock
-from unittest.mock import patch, MagicMock, Mock
+from unittest.mock import MagicMock, Mock, patch
+
 import fastjsonschema as fastjsonschema
 import sqlalchemy
 
@@ -20,6 +21,7 @@ import request_status_for_job
 # Generating schema validators can take time, so do it once and reuse.
 with open("schemas/output.json", "r") as raw_schema:
     _OUTPUT_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
+
 
 class TestRequestStatusForJobUnit(
     unittest.TestCase
@@ -34,11 +36,9 @@ class TestRequestStatusForJobUnit(
     @patch("cumulus_logger.CumulusLogger.setMetadata")
     @patch.dict(
         os.environ,
-        {
-            "DB_CONNECT_INFO_SECRET_ARN": "test"
-        },
+        {"DB_CONNECT_INFO_SECRET_ARN": "test"},
         clear=True,
-     )
+    )
     def test_handler_happy_path(
         self,
         mock_setMetadata: MagicMock,
@@ -65,11 +65,9 @@ class TestRequestStatusForJobUnit(
     @patch("cumulus_logger.CumulusLogger.setMetadata")
     @patch.dict(
         os.environ,
-        {
-            "DB_CONNECT_INFO_SECRET_ARN": "test"
-        },
+        {"DB_CONNECT_INFO_SECRET_ARN": "test"},
         clear=True,
-     )
+    )
     def test_handler_missing_job_id_returns_error_code(
         self, mock_setMetadata: MagicMock, mock_get_dbconnect_info: MagicMock
     ):
@@ -88,11 +86,9 @@ class TestRequestStatusForJobUnit(
     @patch("cumulus_logger.CumulusLogger.setMetadata")
     @patch.dict(
         os.environ,
-        {
-            "DB_CONNECT_INFO_SECRET_ARN": "test"
-        },
+        {"DB_CONNECT_INFO_SECRET_ARN": "test"},
         clear=True,
-     )
+    )
     def test_handler_database_error_returns_error_code(
         self,
         mock_setMetadata: MagicMock,
@@ -184,8 +180,14 @@ class TestRequestStatusForJobUnit(
         job_id = uuid.uuid4().__str__()
 
         expected_result = [
-            { request_status_for_job.OUTPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(), request_status_for_job.OUTPUT_STATUS_KEY: uuid.uuid4().__str__()},
-            { request_status_for_job.OUTPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(), request_status_for_job.OUTPUT_STATUS_KEY: uuid.uuid4().__str__()},
+            {
+                request_status_for_job.OUTPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(),
+                request_status_for_job.OUTPUT_STATUS_KEY: uuid.uuid4().__str__(),
+            },
+            {
+                request_status_for_job.OUTPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(),
+                request_status_for_job.OUTPUT_STATUS_KEY: uuid.uuid4().__str__(),
+            },
         ]
         mock_engine = Mock()
         mock_engine.begin.return_value = Mock()
@@ -193,8 +195,8 @@ class TestRequestStatusForJobUnit(
         mock_connection.execute.return_value = copy.deepcopy(expected_result)
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
-        mock_engine.begin.return_value.__exit__ = (
-            Mock(return_value=False)
+        mock_engine.begin.return_value.__exit__ = Mock(
+            return_value=False
         )  # required for "with", but untestable.
 
         result = request_status_for_job.get_granule_status_entries_for_job(
@@ -225,8 +227,8 @@ class TestRequestStatusForJobUnit(
         mock_connection.execute.return_value = copy.deepcopy(expected_result)
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
-        mock_engine.begin.return_value.__exit__ = (
-            Mock(return_value=False)
+        mock_engine.begin.return_value.__exit__ = Mock(
+            return_value=False
         )  # required for "with", but untestable.
 
         result = request_status_for_job.get_status_totals_for_job(job_id, mock_engine)
@@ -249,23 +251,25 @@ class TestRequestStatusForJobUnit(
         self.fail("Error not raised.")
 
     @patch("cumulus_logger.CumulusLogger.error")
-    def test_create_http_error_dict_happy_path(
-            self,
-            mock_error: MagicMock
-    ):
+    def test_create_http_error_dict_happy_path(self, mock_error: MagicMock):
         error_type = uuid.uuid4().__str__()
         http_status_code = random.randint(0, 9999)  # nosec
         request_id = uuid.uuid4().__str__()
         message = uuid.uuid4().__str__()
 
-        result = request_status_for_job.create_http_error_dict(error_type, http_status_code, request_id, message)
+        result = request_status_for_job.create_http_error_dict(
+            error_type, http_status_code, request_id, message
+        )
 
-        self.assertEqual({
-            "errorType": error_type,
-            "httpStatus": http_status_code,
-            "requestId": request_id,
-            "message": message,
-        }, result)
+        self.assertEqual(
+            {
+                "errorType": error_type,
+                "httpStatus": http_status_code,
+                "requestId": request_id,
+                "message": message,
+            },
+            result,
+        )
 
         mock_error.assert_called_once_with(message)
 
@@ -305,8 +309,8 @@ class TestRequestStatusForJobUnit(
         ]
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
-        mock_engine.begin.return_value.__exit__ = (
-            Mock(return_value=False)
+        mock_engine.begin.return_value.__exit__ = Mock(
+            return_value=False
         )  # required for "with", but untestable.
         mock_get_user_connection.return_value = mock_engine
 

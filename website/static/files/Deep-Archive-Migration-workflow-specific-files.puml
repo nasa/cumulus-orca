@@ -1,0 +1,83 @@
+@startuml
+
+title "Deep Archive Collection Migration Workflow"
+
+actor operator
+participant "Cumulus Console" as cc
+participant "Migration Recovery" as ms
+database "ORCA Catalog" as oc
+participant "ORCA Bucket" as ob
+queue "Migration Queue" as mq
+participant "Migration Copy" as mc
+participant "Migration Report" as mr
+participant "Internal Reconciliation" as ir
+autonumber
+
+activate operator
+
+operator -[#green]> cc: Configure ORCA for Deep Archive in the collection
+activate cc
+operator -[#green]> cc: End user initiating migration
+cc-[#green]> ms: Calls with collectionId
+deactivate cc
+
+activate ms
+
+
+ms-[#green]> oc: Queries for all the files related to collectionId
+activate oc
+oc-[#red]>ms: Returns all the relevant files
+
+ms -[#green]> oc: Creates migration job records with pending status.
+
+ms-[#green]> ob: Performs bulk retrieval for the files
+activate ob
+ob -[#red]> ms: Retrieval status sent
+
+ms -[#green]> oc: Updates the migration job status
+
+deactivate ms
+note over ob
+Bulk recovery 
+takes 12-24 hours
+end note
+
+ob-[#green]> mq: Notify message that files have been restored sent to queue
+
+
+activate mq
+mc-[#green]> mq: Read messages that files have been restored
+
+mc -[#red]> ob: Copies files to Deep Archive storage
+
+deactivate ob
+mc-[#red]> oc: Update the file storage type and migration status in the database
+deactivate oc
+loop
+
+operator -[#green]> mr: Requests migration job status by passing jobId
+activate mr
+mr -[#green]> oc: Queries for the jobid
+oc -[#red]> mr: Returns information relevant to the jobid
+
+
+
+mr -[#red]> operator: Returns migration job information
+deactivate mr
+note over operator
+
+
+Runs reports until job is in completed state
+end note
+end
+
+operator-[#green]> ir: Requests internal reconciliation mismatch report
+activate ir
+ir-[#red]> operator: Returns mismatch data based on storage type
+deactivate ir
+operator -[#red]> operator: Analyzes mismatch reports for storage discrepencies and resolves them
+
+
+'
+deactivate operator
+@enduml

@@ -3,12 +3,11 @@ Name: migrate.py
 
 Description: Migrates the ORCA schema from version 4 to version 5.
 """
+import re
 from typing import Dict, List
 
+import orca_shared
 from orca_shared.database.shared_db import get_admin_connection, logger
-from orca_shared.reconciliation.shared_reconciliation import (
-    get_partition_name_from_bucket_name,
-)
 
 import migrations.migrate_versions_4_to_5.migrate_sql as sql
 
@@ -71,7 +70,8 @@ def migrate_versions_4_to_5(
 
         # Create partitioned tables for the reconcile_s3_object table
         for bucket_name in orca_buckets:
-            _partition_name = get_partition_name_from_bucket_name(bucket_name)
+            _partition_name = orca_shared.reconciliation.shared_reconciliation.get_partition_name_from_bucket_name(bucket_name)
+
             logger.debug(
                 f"Creating partition table {_partition_name} for reconcile_s3_object ..."
             )
@@ -104,5 +104,5 @@ def migrate_versions_4_to_5(
             connection.execute(sql.schema_versions_data_sql())
             logger.info("Data added to the schema_versions table.")
 
-        # Commit if there is no issues
+        # Commit if there are no issues
         connection.commit()

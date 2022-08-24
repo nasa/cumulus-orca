@@ -1,64 +1,69 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/internal_reconcile_report_phantom/schemas/output.json",
-    "title": "internal_reconcile_report_phantom Lambda Output",
-    "description": "The output for the internal_reconcile_report_phantom Lambda.",
-    "type": "object",
-    "required": [
-      "jobId",
-      "anotherPage",
-      "phantoms"
-    ],
-    "properties": {
-        "jobId": {
-            "type": "integer",
-            "description": "The unique ID of the reconciliation job."
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/internal_reconcile_report_phantom/schemas/output.json",
+  "title": "internal_reconcile_report_phantom Lambda Output",
+  "description": "The output for the internal_reconcile_report_phantom Lambda.",
+  "type": "object",
+  "required": [
+    "jobId",
+    "anotherPage",
+    "phantoms"
+  ],
+  "properties": {
+    "jobId": {
+      "type": "integer",
+      "description": "The unique ID of the reconciliation job."
+    },
+    "anotherPage": {
+      "description": "Indicates if more results can be retrieved on another page.",
+      "type": "boolean"
+    },
+    "phantoms": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "collectionId",
+          "granuleId",
+          "filename",
+          "keyPath",
+          "orcaEtag",
+          "orcaGranuleLastUpdate",
+          "orcaSizeInBytes",
+          "orcaStorageClass"
+        ],
+        "properties": {
+          "collectionId": {
+            "type": "string",
+            "description": "Cumulus Collection ID value from the ORCA catalog."
           },
-        "anotherPage": {
-          "description": "Indicates if more results can be retrieved on another page.",
-          "type": "boolean"
-        },
-        "phantoms": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "required": [
-              "collectionId",
-              "granuleId",
-              "filename",
-              "keyPath",
-              "orcaEtag",
-              "orcaLastUpdate",
-              "orcaSize"
-            ],
-          "properties": {
-            "collectionId": {
-              "type": "string",
-              "description": "Cumulus Collection ID value from the ORCA catalog."
-            },
-            "granuleId": {
-                "type": "string",
-                "description": "Cumulus granuleID value from the ORCA catalog."
-              }, 
-            "filename": {
-                "type": "string",
-                "description": "Filename of the object from the ORCA catalog."
-              },
-            "keyPath": {
-                "type": "string",
-                "description": "key path and filename of the object in the ORCA catalog."
-              },
-            "orcaEtag": {
-                "type": "string",
-                "description": "etag of the object as reported in the ORCA catalog."
-              },
-            "orcaLastUpdate": {
-              "type": "integer",
-              "description": "The time, in milliseconds since 1 January 1970 UTC, of last update of the object as reported in the ORCA catalog."
-            },
-            "orcaSize": {
-              "type": "integer",
-              "description": "Size in bytes of the object as reported in the ORCA catalog."
+          "granuleId": {
+            "type": "string",
+            "description": "Cumulus granuleID value from the ORCA catalog."
+          },
+          "filename": {
+            "type": "string",
+            "description": "Filename of the object from the ORCA catalog."
+          },
+          "keyPath": {
+            "type": "string",
+            "description": "key path and filename of the object in the ORCA catalog."
+          },
+          "orcaEtag": {
+            "type": "string",
+            "description": "etag of the object as reported in the ORCA catalog."
+          },
+          "orcaGranuleLastUpdate": {
+            "type": "integer",
+            "description": "The time, in milliseconds since 1 January 1970 UTC, of last update of the object as reported in the ORCA catalog."
+          },
+          "orcaSizeInBytes": {
+            "type": "integer",
+            "description": "Size in bytes of the object as reported in the ORCA catalog."
+          },
+          "orcaStorageClass": {
+            "type": "string",
+            "description": "AWS storage class the object is in the Orca catalog."
           }
         }
       }

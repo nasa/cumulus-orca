@@ -47,7 +47,7 @@ function check_rc () {
 
 ## MAIN
 ## -----------------------------------------------------------------------------
-## Create the build director. Remove it if it exists.
+## Create the build directory. Remove it if it exists.
 echo "INFO: Creating build directory ..."
 if [ -d build ]; then
     rm -rf build
@@ -56,10 +56,7 @@ fi
 mkdir build
 let return_code=$?
 
-if [ $return_code -ne 0 ]; then
-  >&2 echo "ERROR: Failed to create build directory."
-  exit 1
-fi
+check_rc $return_code "ERROR: Failed to create build directory."
 
 ## Create the virtual env. Remove it if it already exists.
 echo "INFO: Creating virtual environment ..."
@@ -110,8 +107,8 @@ check_rc $return_code "ERROR: Failed to copy lambda files to build directory."
 mkdir -p build/schemas
 let return_code=$?
 check_rc $return_code "ERROR: Unable to create build/schemas directory."
-echo "INFO: Creating the Lambda package ..."
-cp schemas/*.json build/schemas/
+echo "INFO: Copying schema files ..."
+cp -r schemas/ build/schemas/
 let return_code=$?
 
 check_rc $return_code "ERROR: Failed to copy schema files to build directory."

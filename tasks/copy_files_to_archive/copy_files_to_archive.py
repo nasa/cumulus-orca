@@ -6,19 +6,18 @@ to another s3 bucket.
 import json
 import os
 import time
-from typing import Any, List, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 # noinspection PyPackageRequirements
 import boto3
 import fastjsonschema
-from boto3.s3.transfer import TransferConfig, MB
+from boto3.s3.transfer import MB, TransferConfig
 from botocore.client import BaseClient
 from botocore.exceptions import ClientError
+from cumulus_logger import CumulusLogger
 
 # noinspection PyPackageRequirements
 from orca_shared.recovery import shared_recovery
-from cumulus_logger import CumulusLogger
-
 
 OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY = "STATUS_UPDATE_QUEUE_URL"
 
@@ -273,9 +272,13 @@ def handler(
         retry_sleep_secs = 30
 
     try:
-        status_update_queue_url = str(os.environ[OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY])
+        status_update_queue_url = str(
+            os.environ[OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY]
+        )
     except KeyError as key_error:
-        LOGGER.error(f"{OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY} environment value not found.")
+        LOGGER.error(
+            f"{OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY} environment value not found."
+        )
         raise key_error
 
     try:

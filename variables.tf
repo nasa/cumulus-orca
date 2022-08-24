@@ -89,16 +89,6 @@ variable "orca_default_bucket" {
   description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
 }
 
-variable "orca_default_recovery_type" {
-  type        = string
-  description = "The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'."
-  default     = "Standard"
-  validation {
-    condition     = contains(["Standard", "Bulk", "Expedited"], var.orca_default_recovery_type)
-    error_message = "Valid values are 'Standard'|'Bulk'|'Expedited'."
-  }
-}
-
 variable "orca_reports_bucket_name" {
   type        = string
   description = "The name of the bucket to store s3 inventory reports."
@@ -161,6 +151,28 @@ variable "metadata_queue_message_retention_time_seconds" {
   type        = number
   description = "The number of seconds metadata-queue fifo SQS retains a message in seconds. Maximum value is 14 days."
   default     = 777600 #9 days
+}
+
+
+variable "orca_default_recovery_type" {
+  type        = string
+  description = "The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'."
+  default     = "Standard"
+  validation {
+    condition     = contains(["Standard", "Bulk", "Expedited"], var.orca_default_recovery_type)
+    error_message = "Valid values are 'Standard'|'Bulk'|'Expedited'."
+  }
+}
+
+
+variable "orca_default_storage_class" {
+  type           = string
+  description = "The class of storage to use when ingesting files. Can be overridden by collection config. Must match value in storage_class table."
+  default        = "GLACIER"
+  validation {
+    condition     = contains(["GLACIER", "DEEP_ARCHIVE"], var.orca_default_storage_class)
+    error_message = "Valid values are 'GLACIER'|'DEEP_ARCHIVE'."
+  }
 }
 
 

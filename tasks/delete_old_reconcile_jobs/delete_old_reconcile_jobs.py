@@ -12,7 +12,6 @@ from cumulus_logger import CumulusLogger
 from orca_shared.database import shared_db
 from sqlalchemy import text
 from sqlalchemy.future import Engine
-from sqlalchemy.sql.elements import TextClause
 
 OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN = "DB_CONNECT_INFO_SECRET_ARN"  # nosec
 OS_ENVIRON_INTERNAL_RECONCILIATION_EXPIRATION_DAYS = (
@@ -108,7 +107,7 @@ def delete_jobs_older_than_x_days(
         raise
 
 
-def delete_catalog_mismatches_older_than_x_days_sql() -> TextClause:
+def delete_catalog_mismatches_older_than_x_days_sql() -> text:  # pragma: no cover
     """
     SQL for deleting from reconcile_catalog_mismatch_report entries older than a certain date.
     """
@@ -129,7 +128,7 @@ def delete_catalog_mismatches_older_than_x_days_sql() -> TextClause:
     )
 
 
-def delete_catalog_orphans_older_than_x_days_sql() -> TextClause:
+def delete_catalog_orphans_older_than_x_days_sql() -> text:  # pragma: no cover
     """
     SQL for deleting from reconcile_orphan_report entries older than a certain date.
     """
@@ -150,7 +149,7 @@ def delete_catalog_orphans_older_than_x_days_sql() -> TextClause:
     )
 
 
-def delete_catalog_phantoms_older_than_x_days_sql() -> TextClause:
+def delete_catalog_phantoms_older_than_x_days_sql() -> text:  # pragma: no cover
     """
     SQL for deleting from reconcile_phantom_report entries older than a certain date.
     """
@@ -171,7 +170,7 @@ def delete_catalog_phantoms_older_than_x_days_sql() -> TextClause:
     )
 
 
-def delete_catalog_s3_objects_older_than_x_days_sql() -> TextClause:
+def delete_catalog_s3_objects_older_than_x_days_sql() -> text:  # pragma: no cover
     """
     SQL for deleting from reconcile_s3_object entries older than a certain date.
     """
@@ -192,7 +191,7 @@ def delete_catalog_s3_objects_older_than_x_days_sql() -> TextClause:
     )
 
 
-def delete_jobs_older_than_x_days_sql() -> TextClause:
+def delete_jobs_older_than_x_days_sql() -> text:  # pragma: no cover
     """
     SQL for deleting from reconcile_job entries older than a certain date.
     """

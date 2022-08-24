@@ -16,7 +16,7 @@
 ## =============================================================================
 
 ## Set this for Debugging only
-#set -x
+#set -ex
 
 ## Make sure we are calling the script the correct way.
 BASEDIR=$(dirname $0)
@@ -67,7 +67,8 @@ let return_code=$?
 check_rc $return_code "ERROR: pip install encountered an error."
 
 ## Run the documentation command
-pydoc-markdown -I . -m post_to_queue_and_trigger_step_function --render-toc > API.md
+echo "INFO: Creating API documentation ..."
+pydoc-markdown -I . -m post_to_queue_and_trigger_step_function -m sqs_library --render-toc > API.md
 let return_code=$?
 
 check_rc $return_code "ERROR: Failed to create API.md file."

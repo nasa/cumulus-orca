@@ -5,19 +5,18 @@ Description: All of the SQL used for creating and migrating the ORCA schema to v
 """
 # Imports
 from sqlalchemy import text
-from sqlalchemy.sql.elements import TextClause
 
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA inventory metadata tables
 # ----------------------------------------------------------------------------
 
 
-def providers_table_sql() -> TextClause:
+def providers_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the providers table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating providers table.
+        SQL for creating providers table.
     """
     return text(
         """
@@ -42,12 +41,12 @@ def providers_table_sql() -> TextClause:
     )
 
 
-def collections_table_sql() -> TextClause:
+def collections_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the collections table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating collections table.
+        SQL for creating collections table.
     """
     return text(
         """
@@ -75,12 +74,12 @@ def collections_table_sql() -> TextClause:
     )
 
 
-def granules_table_sql() -> TextClause:
+def granules_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the catalog granules table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating granules table.
+        SQL for creating granules table.
     """
     return text(
         """
@@ -122,7 +121,7 @@ def granules_table_sql() -> TextClause:
         COMMENT ON COLUMN granules.ingest_time
             IS 'Date and time the granule was originally ingested into ORCA.';
         COMMENT ON COLUMN granules.cumulus_create_time
-            IS 'Date and time data was originally ingested into Cumulus';
+            IS 'createdAt time from Cumulus';
         COMMENT ON COLUMN granules.last_update
             IS 'Last time the data for the granule was updated.';
         -- Grants
@@ -131,12 +130,12 @@ def granules_table_sql() -> TextClause:
     )
 
 
-def files_table_sql() -> TextClause:
+def files_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the catalog files table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating files table.
+        SQL for creating files table.
     """
     return text(
         """
@@ -198,13 +197,13 @@ def files_table_sql() -> TextClause:
     )
 
 
-def schema_versions_data_sql() -> TextClause:
+def schema_versions_data_sql() -> text:  # pragma: no cover
     """
     Data for the schema_versions table. Inserts the current schema
     version into the table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for populating schema_versions table.
+        SQL for populating schema_versions table.
     """
     return text(
         """

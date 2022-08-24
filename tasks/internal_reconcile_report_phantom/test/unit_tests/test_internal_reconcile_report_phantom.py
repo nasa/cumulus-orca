@@ -52,6 +52,7 @@ class TestInternalReconcileReportPhantom(
                     internal_reconcile_report_phantom.PHANTOMS_ORCA_SIZE_KEY: random.randint(  # nosec
                         0, 999
                     ),
+                    internal_reconcile_report_phantom.PHANTOMS_ORCA_STORAGE_CLASS_KEY: uuid.uuid4().__str__(),
                 }
             ],
         }
@@ -143,6 +144,7 @@ class TestInternalReconcileReportPhantom(
                     internal_reconcile_report_phantom.PHANTOMS_ORCA_SIZE_KEY: random.randint(  # nosec
                         0, 999
                     ),
+                    internal_reconcile_report_phantom.PHANTOMS_ORCA_STORAGE_CLASS_KEY: uuid.uuid4().__str__(),
                 }
             ],
         }
@@ -251,6 +253,7 @@ class TestInternalReconcileReportPhantom(
         orca_etag = uuid.uuid4().__str__()
         orca_last_update = random.randint(0, 999999)  # nosec
         orca_size = random.randint(0, 999)  # nosec
+        orca_storage_class = uuid.uuid4().__str__()
 
         returned_row0 = {
             "collection_id": collection_id,
@@ -260,6 +263,7 @@ class TestInternalReconcileReportPhantom(
             "orca_etag": orca_etag,
             "orca_last_update": orca_last_update,
             "orca_size": orca_size,
+            "orca_storage_class": orca_storage_class,
         }
         mock_execute = Mock(return_value=[returned_row0])
         mock_connection = Mock()
@@ -300,6 +304,7 @@ class TestInternalReconcileReportPhantom(
                     internal_reconcile_report_phantom.PHANTOMS_ORCA_ETAG_KEY: orca_etag,
                     internal_reconcile_report_phantom.PHANTOMS_ORCA_LAST_UPDATE_KEY: orca_last_update,
                     internal_reconcile_report_phantom.PHANTOMS_ORCA_SIZE_KEY: orca_size,
+                    internal_reconcile_report_phantom.PHANTOMS_ORCA_STORAGE_CLASS_KEY: orca_storage_class,
                 }
             ],
             result,

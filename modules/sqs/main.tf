@@ -62,6 +62,7 @@ data "aws_iam_policy_document" "status_update_queue_policy" {
 resource "aws_sqs_queue" "internal_report_queue" {
   ## OPTIONAL
   name                        = "${var.prefix}-orca-internal-report-queue.fifo"
+  sqs_managed_sse_enabled     = true
   fifo_queue                  = true
   content_based_deduplication = true
   delay_seconds               = var.sqs_delay_time_seconds
@@ -130,6 +131,7 @@ resource "aws_cloudwatch_metric_alarm" "internal_report_deadletter_alarm" {
 # SNS topic needed for cloudwatch alarm
 resource "aws_sns_topic" "internal_report_dlq_alarm" {
   name = "internal_report_dlq_alarm_topic"
+  kms_master_key_id = "alias/aws/sns"
 }
 
 resource "aws_sns_topic_subscription" "internal_report_dlq_alarm_email" {
@@ -145,6 +147,7 @@ resource "aws_sns_topic_subscription" "internal_report_dlq_alarm_email" {
 resource "aws_sqs_queue" "metadata_queue" {
   ## OPTIONAL
   name                        = "${var.prefix}-orca-metadata-queue.fifo"
+  sqs_managed_sse_enabled     = true
   fifo_queue                  = true
   content_based_deduplication = true
   delay_seconds               = var.sqs_delay_time_seconds
@@ -160,6 +163,7 @@ resource "aws_sqs_queue" "metadata_queue" {
 resource "aws_sqs_queue" "s3_inventory_queue" {
   ## OPTIONAL
   name                        = "${var.prefix}-orca-s3-inventory-queue"
+  sqs_managed_sse_enabled     = true
   delay_seconds               = var.sqs_delay_time_seconds
   max_message_size            = var.sqs_maximum_message_size
   message_retention_seconds   = var.s3_inventory_queue_message_retention_time_seconds
@@ -235,6 +239,7 @@ resource "aws_cloudwatch_metric_alarm" "s3_inventory_deadletter_alarm" {
 # SNS topic needed for cloudwatch alarm
 resource "aws_sns_topic" "s3_inventory_dlq_alarm" {
   name = "s3_inventory_dlq_alarm_topic"
+  kms_master_key_id = "alias/aws/sns"
 }
 
 resource "aws_sns_topic_subscription" "s3_inventory_dlq_alarm_email" {
@@ -249,6 +254,7 @@ resource "aws_sns_topic_subscription" "s3_inventory_dlq_alarm_email" {
 resource "aws_sqs_queue" "staged_recovery_queue" {
   ## OPTIONAL
   name                       = "${var.prefix}-orca-staged-recovery-queue"
+  sqs_managed_sse_enabled    = true
   delay_seconds              = var.sqs_delay_time_seconds
   max_message_size           = var.sqs_maximum_message_size
   message_retention_seconds  = var.staged_recovery_queue_message_retention_time_seconds
@@ -314,7 +320,9 @@ resource "aws_cloudwatch_metric_alarm" "staged_recovery_deadletter_alarm" {
 
 # SNS topic needed for cloudwatch alarm
 resource "aws_sns_topic" "staged_recovery_dlq_alarm" {
-  name = "staged_recovery_dlq_alarm_topic"
+  name              = "staged_recovery_dlq_alarm_topic"
+  kms_master_key_id = "alias/aws/sns"
+
 }
 
 resource "aws_sns_topic_subscription" "staged_recovery_dlq_alarm_email" {
@@ -329,6 +337,7 @@ resource "aws_sns_topic_subscription" "staged_recovery_dlq_alarm_email" {
 resource "aws_sqs_queue" "status_update_queue" {
   ## OPTIONAL
   name                        = "${var.prefix}-orca-status-update-queue.fifo"
+  sqs_managed_sse_enabled     = true
   fifo_queue                  = true
   content_based_deduplication = true
   delay_seconds               = var.sqs_delay_time_seconds
@@ -337,4 +346,72 @@ resource "aws_sqs_queue" "status_update_queue" {
   tags                        = var.tags
   policy                      = data.aws_iam_policy_document.status_update_queue_policy.json
   visibility_timeout_seconds  = 900 # Set arbitrarily large.
+  depends_on = [
+    aws_sqs_queue.status_update_dlq
+  ]
+  redrive_policy = jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.status_update_dlq.arn,
+    maxReceiveCount     = 3 #number of times a consumer tries receiving a message from the queue without deleting it before being moved to DLQ.
+  })
+}
+
+# Dead-letter queue
+resource "aws_sqs_queue" "status_update_dlq" {
+  name                       = "${var.prefix}-orca-status_update-deadletter-queue.fifo"
+  fifo_queue                 = true
+  delay_seconds              = var.sqs_delay_time_seconds
+  max_message_size           = var.sqs_maximum_message_size
+  tags                       = var.tags
+}
+
+resource "aws_sqs_queue_policy" "status_update_deadletter_queue_policy" {
+  queue_url = aws_sqs_queue.status_update_dlq.id
+  policy    = data.aws_iam_policy_document.status_update_deadletter_queue_policy_document.json
+}
+
+data "aws_iam_policy_document" "status_update_deadletter_queue_policy_document" {
+  statement {
+    effect    = "Allow"
+    resources = [aws_sqs_queue.status_update_dlq.arn]
+    actions = [
+      "sqs:ChangeMessageVisibility",
+      "sqs:DeleteMessage",
+      "sqs:GetQueueAttributes",
+      "sqs:GetQueueUrl",
+      "sqs:ListQueueTags",
+      "sqs:ReceiveMessage",
+      "sqs:SendMessage",
+    ]
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "status_update_deadletter_alarm" {
+  alarm_name          = "${aws_sqs_queue.status_update_dlq.name}-not-empty-alarm"
+  alarm_description   = "Items are on the ${aws_sqs_queue.status_update_dlq.name} queue"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "ApproximateNumberOfMessagesVisible"
+  namespace           = "AWS/SQS"
+  period              = 300 #In seconds. Valid values for period are 1, 5, 10, 30, or any multiple of 60. 
+  statistic           = "Sum"
+  threshold           = 1 #alarm will be triggered if number of messages in the DLQ equals to this threshold.
+  treat_missing_data  = "notBreaching"
+  alarm_actions       = [aws_sns_topic.status_update_dlq_alarm.arn]
+  tags                = var.tags
+  dimensions = {
+    "QueueName" = aws_sqs_queue.status_update_dlq.name
+  }
+}
+
+# SNS topic needed for cloudwatch alarm
+resource "aws_sns_topic" "status_update_dlq_alarm" {
+  name = "status_update_dlq_alarm_topic"
+  kms_master_key_id = "alias/aws/sns"
+}
+
+resource "aws_sns_topic_subscription" "status_update_dlq_alarm_email" {
+  depends_on = [aws_sns_topic.status_update_dlq_alarm]
+  topic_arn  = aws_sns_topic.status_update_dlq_alarm.arn
+  protocol   = "email"
+  endpoint   = var.dlq_subscription_email   #todo: ORCA-365
 }

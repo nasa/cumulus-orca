@@ -23,10 +23,12 @@ MISMATCHES_KEY_PATH_KEY = "keyPath"
 MISMATCHES_CUMULUS_ARCHIVE_LOCATION_KEY = "cumulusArchiveLocation"
 MISMATCHES_ORCA_ETAG_KEY = "orcaEtag"
 MISMATCHES_S3_ETAG_KEY = "s3Etag"
-MISMATCHES_ORCA_LAST_UPDATE_KEY = "orcaLastUpdate"
-MISMATCHES_S3_LAST_UPDATE_KEY = "s3LastUpdate"
+MISMATCHES_ORCA_LAST_UPDATE_KEY = "orcaGranuleLastUpdate"
+MISMATCHES_S3_LAST_UPDATE_KEY = "s3FileLastUpdate"
 MISMATCHES_ORCA_SIZE_IN_BYTES_KEY = "orcaSizeInBytes"
 MISMATCHES_S3_SIZE_IN_BYTES_KEY = "s3SizeInBytes"
+MISMATCHES_ORCA_STORAGE_CLASS_KEY = "orcaStorageClass"
+MISMATCHES_S3_STORAGE_CLASS_KEY = "s3StorageClass"
 MISMATCHES_DISCREPANCY_TYPE_KEY = "discrepancyType"
 MISMATCHES_COMMENT_KEY = "comment"
 
@@ -119,6 +121,8 @@ def query_db(
                     MISMATCHES_S3_LAST_UPDATE_KEY: sql_result["s3_last_update"],
                     MISMATCHES_ORCA_SIZE_IN_BYTES_KEY: sql_result["orca_size_in_bytes"],
                     MISMATCHES_S3_SIZE_IN_BYTES_KEY: sql_result["s3_size_in_bytes"],
+                    MISMATCHES_ORCA_STORAGE_CLASS_KEY: sql_result["orca_storage_class"],
+                    MISMATCHES_S3_STORAGE_CLASS_KEY: sql_result["s3_storage_class"],
                     MISMATCHES_DISCREPANCY_TYPE_KEY: sql_result["discrepancy_type"],
                     MISMATCHES_COMMENT_KEY: sql_result["comment"]
                 }
@@ -126,7 +130,7 @@ def query_db(
         return mismatches
 
 
-def get_mismatches_sql() -> text:
+def get_mismatches_sql() -> text:  # pragma: no cover
     """
     SQL for getting mismatch report entries for a given job_id, page_size, and page_index.
     Formats datetimes in milliseconds since 1 January 1970 UTC.
@@ -145,6 +149,8 @@ SELECT
     (EXTRACT(EPOCH FROM date_trunc('milliseconds', s3_last_update) AT TIME ZONE 'UTC') * 1000)::bigint as s3_last_update,
     orca_size_in_bytes,
     s3_size_in_bytes,
+    storage_class.value AS orca_storage_class,
+    s3_storage_class,
     discrepancy_type,
     CASE
         WHEN (reconcile_job.inventory_creation_time <= orca_last_update)
@@ -156,6 +162,10 @@ SELECT
     INNER JOIN reconcile_job ON
     (
         reconcile_job.id = reconcile_catalog_mismatch_report.job_id
+    )
+    INNER JOIN storage_class ON
+    (
+        orca_storage_class_id=storage_class.id
     )
     WHERE job_id = :job_id
     ORDER BY collection_id, granule_id, filename

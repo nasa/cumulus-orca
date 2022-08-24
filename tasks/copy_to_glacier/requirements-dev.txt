@@ -5,3 +5,10 @@ coverage==5.3
 fastjsonschema==2.15.0
 moto[sqs]==2.0.6
 
+## Additional validation libraries
+## ---------------------------------------------------------------------------
+bandit==1.7.0
+safety==1.10.3
+flake8==4.0.1
+black==21.12b0
+isort==5.10.1

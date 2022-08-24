@@ -1,23 +1,22 @@
 """
 Name: orca_sql_v2.py
 
-Description: All of the SQL used for creating and migrating the ORCA schema to version 2.
+Description: All the SQL used for creating and migrating the ORCA schema to version 2.
 """
 from orca_shared.database.shared_db import logger
 from sqlalchemy import text
-from sqlalchemy.sql.elements import TextClause
 
 
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA schema, roles, and users
 # ----------------------------------------------------------------------------
-def dbo_role_sql(db_name: str, admin_username: str) -> TextClause:
+def dbo_role_sql(db_name: str, admin_username: str) -> text:
     """
     Full SQL for creating the ORCA dbo role that owns the ORCA schema and
     objects.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating orca_dbo role.
+        SQL for creating orca_dbo role.
     """
     return text(
         f"""
@@ -37,22 +36,22 @@ def dbo_role_sql(db_name: str, admin_username: str) -> TextClause:
             END IF;
 
             -- Grants
-            GRANT CONNECT ON DATABASE {db_name} TO orca_dbo;
-            GRANT CREATE ON DATABASE {db_name} TO orca_dbo;
-            GRANT orca_dbo TO {admin_username};
+            GRANT CONNECT ON DATABASE "{db_name}" TO orca_dbo;
+            GRANT CREATE ON DATABASE "{db_name}" TO orca_dbo;
+            GRANT orca_dbo TO "{admin_username}";
           END
         $$
     """  # nosec
     )
 
 
-def app_role_sql(db_name: str) -> TextClause:
+def app_role_sql(db_name: str) -> text:
     """
     Full SQL for creating the ORCA application role that has all the privileges
     to interact with the ORCA schema.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating orca_app role.
+        SQL for creating orca_app role.
     """
     return text(
         f"""
@@ -72,21 +71,21 @@ def app_role_sql(db_name: str) -> TextClause:
           END IF;
 
           -- Add Grants
-          GRANT CONNECT ON DATABASE {db_name} TO orca_app;
+          GRANT CONNECT ON DATABASE "{db_name}" TO orca_app;
         END
         $$;
     """  # nosec
     )
 
 
-def orca_schema_sql() -> TextClause:
+def orca_schema_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the ORCA application schema that contains all the
     ORCA tables and objects. This SQL must be used after the dbo_role_sql and
     before the app_user_sql and ORCA objects.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating orca schema.
+        SQL for creating orca schema.
     """
     return text(
         """
@@ -97,10 +96,10 @@ def orca_schema_sql() -> TextClause:
         COMMENT ON SCHEMA orca
             IS 'Contains all the objects needed to operate the ORCA application';
 
-        -- GRANT the privelages needed
+        -- GRANT the privileges needed
         GRANT USAGE ON SCHEMA orca TO orca_app;
 
-        -- Setup Default Privelages for application user as a catch all
+        -- Setup Default Privileges for application user as a catch all
         ALTER DEFAULT PRIVILEGES FOR USER orca_dbo IN SCHEMA orca
           GRANT SELECT ON TABLES TO orca_app;
         ALTER DEFAULT PRIVILEGES FOR USER orca_dbo IN SCHEMA orca
@@ -127,51 +126,40 @@ def orca_schema_sql() -> TextClause:
     )
 
 
-def app_user_sql(user_name: str, user_password: str) -> TextClause:
+def app_user_sql(user_name: str) -> text:
     """
     Full SQL for creating the ORCA application database user. Must be created
     after the app_role_sql and orca_schema_sql.
 
     Args:
-        user_password (str): Password for the application user
+        user_name: Username for the application user
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating PREFIX_orcauser user.
+        SQL for creating PREFIX_orcauser user.
     """
-    if user_name is None or len(user_name) == 0:
-        logger.critical("Username must be non-empty.")
-        raise Exception("Username must be non-empty.")
-    if len(user_name) > 63:
-        logger.critical("Username must be less than 64 characters.")
-        raise Exception("Username must be less than 64 characters.")
-
-    if user_password is None or len(user_password) < 12:
-        logger.critical("User password must be at least 12 characters long.")
-        raise Exception("User password must be at least 12 characters long.")
-
     return text(
         f"""
         DO
         $$
         BEGIN
-            IF NOT EXISTS (SELECT 1 FROM pg_user WHERE usename = '{user_name}' ) THEN
-                -- Create {user_name}
-                CREATE ROLE {user_name}
+            IF NOT EXISTS (SELECT 1 FROM pg_user WHERE usename = :user_name ) THEN
+                -- Create user
+                CREATE ROLE "{user_name}"
                     LOGIN
                     INHERIT
-                    ENCRYPTED PASSWORD '{user_password}'
+                    ENCRYPTED PASSWORD :user_password
                     IN ROLE orca_app;
 
                 -- Add comment
-                COMMENT ON ROLE {user_name}
+                COMMENT ON ROLE "{user_name}"
                     IS 'ORCA application user.';
 
-                RAISE NOTICE 'USER CREATED {user_name}.';
+                RAISE NOTICE 'USER CREATED "{user_name}".';
 
             END IF;
 
             -- Alter the roles search path so on login it has what it needs for a path
-            ALTER ROLE {user_name} SET search_path = orca, public;
+            ALTER ROLE "{user_name}" SET search_path = orca, public;
         END
         $$;
     """  # nosec
@@ -181,12 +169,12 @@ def app_user_sql(user_name: str, user_password: str) -> TextClause:
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA general metadata tables
 # ----------------------------------------------------------------------------
-def schema_versions_table_sql() -> TextClause:
+def schema_versions_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the schema_versions table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating schema_versions table.
+        SQL for creating schema_versions table.
     """
     return text(
         """
@@ -222,13 +210,13 @@ def schema_versions_table_sql() -> TextClause:
     )
 
 
-def schema_versions_data_sql() -> TextClause:
+def schema_versions_data_sql() -> text:  # pragma: no cover
     """
     Data for the schema_versions table. Inserts the current schema
     version into the table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for populating schema_versions table.
+        SQL for populating schema_versions table.
     """
     return text(
         """
@@ -249,13 +237,13 @@ def schema_versions_data_sql() -> TextClause:
 # ----------------------------------------------------------------------------
 # ORCA SQL used for creating ORCA recovery tables
 # ----------------------------------------------------------------------------
-def recovery_status_table_sql() -> TextClause:
+def recovery_status_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the recovery_status table. This SQL must be run
     before any of the other recovery table sql.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating recovery_status table.
+        SQL for creating recovery_status table.
     """
     return text(
         """
@@ -282,13 +270,13 @@ def recovery_status_table_sql() -> TextClause:
     )
 
 
-def recovery_status_data_sql() -> TextClause:
+def recovery_status_data_sql() -> text:  # pragma: no cover
     """
     Data for the recovery_status table. Inserts the current status values into
     the table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for populating recovery_status table.
+        SQL for populating recovery_status table.
     """
     return text(
         """
@@ -305,14 +293,14 @@ def recovery_status_data_sql() -> TextClause:
     )
 
 
-def recovery_job_table_sql() -> TextClause:
+def recovery_job_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the recovery_job table. This SQL must be run
     before the other recovery_file table sql and after the recovery_status
     table sql to maintain key dependencies.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating recovery_job table.
+        SQL for creating recovery_job table.
     """
     return text(
         """
@@ -351,13 +339,13 @@ def recovery_job_table_sql() -> TextClause:
     )
 
 
-def recovery_file_table_sql() -> TextClause:
+def recovery_file_table_sql() -> text:  # pragma: no cover
     """
     Full SQL for creating the recovery_file table. This SQL must be run
     after the recovery_job table sql to maintain key dependencies.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for creating recovery_file table.
+        SQL for creating recovery_file table.
     """
     return text(
         """
@@ -418,13 +406,13 @@ def recovery_file_table_sql() -> TextClause:
 # ----------------------------------------------------------------------------
 # ORCA SQL used for migration of schema
 # ----------------------------------------------------------------------------
-def migrate_recovery_job_data_sql() -> TextClause:
+def migrate_recovery_job_data_sql() -> text:  # pragma: no cover
     """
     SQL that migrates data from the old dr.request_status table to the new
     orca.recovery_job table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for populating recovery_job table.
+        SQL for populating recovery_job table.
     """
     return text(
         """
@@ -461,13 +449,13 @@ def migrate_recovery_job_data_sql() -> TextClause:
     )
 
 
-def migrate_recovery_file_data_sql() -> TextClause:
+def migrate_recovery_file_data_sql() -> text:  # pragma: no cover
     """
     SQL that migrates data from the old dr.request_status table to the new
     orca.recovery_file table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for populating recovery_file table.
+        SQL for populating recovery_file table.
     """
     return text(
         """
@@ -507,12 +495,12 @@ def migrate_recovery_file_data_sql() -> TextClause:
     )
 
 
-def drop_request_status_table_sql() -> TextClause:
+def drop_request_status_table_sql() -> text:  # pragma: no cover
     """
     SQL that removes the dr.request_status table.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for dropping request_status table.
+        SQL for dropping request_status table.
     """
     return text(
         """
@@ -521,12 +509,12 @@ def drop_request_status_table_sql() -> TextClause:
     )
 
 
-def drop_dr_schema_sql() -> TextClause:
+def drop_dr_schema_sql() -> text:  # pragma: no cover
     """
     SQL that removes the dr schema.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for dropping dr schema.
+        SQL for dropping dr schema.
     """
     return text(
         """
@@ -535,12 +523,12 @@ def drop_dr_schema_sql() -> TextClause:
     )
 
 
-def drop_druser_user_sql() -> TextClause:
+def drop_druser_user_sql() -> text:  # pragma: no cover
     """
     SQL that removes the druser user.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for dropping druser user.
+        SQL for dropping druser user.
     """
     return text(
         """
@@ -550,47 +538,47 @@ def drop_druser_user_sql() -> TextClause:
 
 
 # todo: rebuild API.md
-def drop_dbo_user_sql(db_name: str) -> TextClause:
+def drop_dbo_user_sql(db_name: str) -> text:
     """
     SQL that removes the dbo user.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for dropping dbo user.
+        SQL for dropping dbo user.
     """
     return text(
         f"""
-        REVOKE CONNECT ON DATABASE {db_name} FROM dbo;
+        REVOKE CONNECT ON DATABASE "{db_name}" FROM dbo;
         DROP USER IF EXISTS dbo;
     """
     )
 
 
-def drop_dr_role_sql(db_name: str) -> TextClause:
+def drop_dr_role_sql(db_name: str) -> text:
     """
     SQL that removes the dr_role role.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for dropping dr_role role.
+        SQL for dropping dr_role role.
     """
     return text(
         f"""
-        REVOKE CONNECT ON DATABASE {db_name} FROM GROUP dr_role;
+        REVOKE CONNECT ON DATABASE "{db_name}" FROM GROUP dr_role;
         DROP ROLE IF EXISTS dr_role;
     """
     )
 
 
-def drop_drdbo_role_sql(db_name: str) -> TextClause:
+def drop_drdbo_role_sql(db_name: str) -> text:
     """
     SQL that removes the drdbo_role role.
 
     Returns:
-        (sqlalchemy.sql.element.TextClause): SQL for dropping drdbo_role role.
+        SQL for dropping drdbo_role role.
     f"""
     return text(
         f"""
-        REVOKE CONNECT ON DATABASE {db_name} FROM GROUP drdbo_role;
-        REVOKE CREATE ON DATABASE {db_name} FROM GROUP drdbo_role;
+        REVOKE CONNECT ON DATABASE "{db_name}" FROM GROUP drdbo_role;
+        REVOKE CREATE ON DATABASE "{db_name}" FROM GROUP drdbo_role;
         DROP ROLE IF EXISTS drdbo_role;
     """
     )

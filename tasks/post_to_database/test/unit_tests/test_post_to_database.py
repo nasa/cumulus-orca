@@ -9,13 +9,13 @@ import os
 import random
 import unittest
 import uuid
-from unittest.mock import Mock, call, patch, MagicMock
+from unittest.mock import MagicMock, Mock, call, patch
 
 from fastjsonschema import JsonSchemaValueException
+from orca_shared.recovery import shared_recovery
+from orca_shared.recovery.shared_recovery import OrcaStatus
 
 import post_to_database
-from orca_shared.recovery.shared_recovery import OrcaStatus
-from orca_shared.recovery import shared_recovery
 
 
 class TestPostToDatabase(
@@ -30,11 +30,9 @@ class TestPostToDatabase(
     @patch("cumulus_logger.CumulusLogger.setMetadata")
     @patch.dict(
         os.environ,
-        {
-            "DB_CONNECT_INFO_SECRET_ARN": "test"
-        },
+        {"DB_CONNECT_INFO_SECRET_ARN": "test"},
         clear=True,
-     )
+    )
     def test_handler_happy_path(
         self,
         mock_set_metadata: MagicMock,
@@ -86,8 +84,12 @@ class TestPostToDatabase(
                 shared_recovery.REQUEST_TIME_KEY: datetime.datetime.now(
                     datetime.timezone.utc
                 ).isoformat(),
-                shared_recovery.LAST_UPDATE_KEY: datetime.datetime.now(datetime.timezone.utc).isoformat(),
-                shared_recovery.MULTIPART_CHUNKSIZE_KEY: random.randint(1, 10000),
+                shared_recovery.LAST_UPDATE_KEY: datetime.datetime.now(
+                    datetime.timezone.utc
+                ).isoformat(),
+                shared_recovery.MULTIPART_CHUNKSIZE_KEY: random.randint(  # nosec
+                    1, 10000
+                ),
             }
         ]
 
@@ -213,7 +215,10 @@ class TestPostToDatabase(
         """
         Missing completion time and error_message are fine.
         """
-        expected_defaults = {shared_recovery.COMPLETION_TIME_KEY: None, shared_recovery.ERROR_MESSAGE_KEY: None}
+        expected_defaults = {
+            shared_recovery.COMPLETION_TIME_KEY: None,
+            shared_recovery.ERROR_MESSAGE_KEY: None,
+        }
 
         job_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
@@ -288,14 +293,14 @@ class TestPostToDatabase(
         restore_destination0 = uuid.uuid4().__str__()
         request_time0 = uuid.uuid4().__str__()
         last_update0 = uuid.uuid4().__str__()
-        multipart_chunksize_mb0 = random.randint(1, 10000)
+        multipart_chunksize_mb0 = random.randint(1, 10000)  # nosec
         filename1 = uuid.uuid4().__str__()
         key_path1 = uuid.uuid4().__str__()
         restore_destination1 = uuid.uuid4().__str__()
         request_time1 = uuid.uuid4().__str__()
         last_update1 = uuid.uuid4().__str__()
         error_message1 = uuid.uuid4().__str__()
-        multipart_chunksize_mb1 = random.randint(1, 10000)
+        multipart_chunksize_mb1 = random.randint(1, 10000)  # nosec
         completion_time1 = datetime.datetime.utcnow().isoformat()
         files = [
             {
@@ -401,7 +406,7 @@ class TestPostToDatabase(
         last_update0 = uuid.uuid4().__str__()
         error_message0 = uuid.uuid4().__str__()
         completion_time0 = datetime.datetime.utcnow().isoformat()
-        multipart_chunksize_mb0 = random.randint(1, 10000)
+        multipart_chunksize_mb0 = random.randint(1, 10000)  # nosec
         filename1 = uuid.uuid4().__str__()
         key_path1 = uuid.uuid4().__str__()
         restore_destination1 = uuid.uuid4().__str__()
@@ -409,7 +414,7 @@ class TestPostToDatabase(
         last_update1 = uuid.uuid4().__str__()
         error_message1 = uuid.uuid4().__str__()
         completion_time1 = datetime.datetime.utcnow().isoformat()
-        multipart_chunksize_mb1 = random.randint(1, 10000)
+        multipart_chunksize_mb1 = random.randint(1, 10000)  # nosec
         # using a third item to make sure that all branches of file loop are hit
         filename2 = uuid.uuid4().__str__()
         key_path2 = uuid.uuid4().__str__()
@@ -418,7 +423,7 @@ class TestPostToDatabase(
         last_update2 = uuid.uuid4().__str__()
         error_message2 = uuid.uuid4().__str__()
         completion_time2 = datetime.datetime.utcnow().isoformat()
-        multipart_chunksize_mb2 = random.randint(1, 10000)
+        multipart_chunksize_mb2 = random.randint(1, 10000)  # nosec
         files = [
             {
                 shared_recovery.STATUS_ID_KEY: OrcaStatus.FAILED.value,
@@ -559,7 +564,9 @@ class TestPostToDatabase(
                     shared_recovery.LAST_UPDATE_KEY: last_update0,
                     shared_recovery.ERROR_MESSAGE_KEY: error_message0,
                     shared_recovery.COMPLETION_TIME_KEY: completion_time0,
-                    shared_recovery.MULTIPART_CHUNKSIZE_KEY: random.randint(1, 10000),
+                    shared_recovery.MULTIPART_CHUNKSIZE_KEY: random.randint(  # nosec
+                        1, 10000
+                    ),
                 }
             ]
 
@@ -567,7 +574,10 @@ class TestPostToDatabase(
                 post_to_database.create_status_for_job_and_files(
                     job_id, granule_id, request_time, archive_destination, files, Mock()
                 )
-            self.assertEqual(f"Status ID '{status.value}' not allowed for new status.", str(cm.exception))
+            self.assertEqual(
+                f"Status ID '{status.value}' not allowed for new status.",
+                str(cm.exception),
+            )
 
     @patch("post_to_database.update_file_sql")
     @patch("post_to_database.update_job_sql")

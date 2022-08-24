@@ -30,10 +30,12 @@
           "cumulusArchiveLocation",
           "orcaEtag",
           "s3Etag",
-          "orcaLastUpdate",
-          "s3LastUpdate",
+          "orcaGranuleLastUpdate",
+          "s3FileLastUpdate",
           "orcaSizeInBytes",
           "s3SizeInBytes",
+          "orcaStorageClass",
+          "s3StorageClass",
           "discrepancyType",
           "comment"
         ],
@@ -66,11 +68,11 @@
             "type": "string",
             "description": "etag of the object as reported in the S3 bucket"
           },
-          "orcaLastUpdate": {
+          "orcaGranuleLastUpdate": {
             "type": "integer",
             "description": "The time, in milliseconds since 1 January 1970 UTC, that information was updated in the ORCA catalog."
           },
-          "s3LastUpdate": {
+          "s3FileLastUpdate": {
             "type": "integer",
             "description": "The time, in milliseconds since 1 January 1970 UTC, that information was updated in the S3 bucket."
           },
@@ -81,6 +83,14 @@
           "s3SizeInBytes": {
             "type": "integer",
             "description": "Size in bytes of the object as reported in the S3 bucket."
+          },
+          "orcaStorageClass": {
+            "type": "string",
+            "description": "AWS storage class the object is in the Orca catalog."
+          },
+          "s3StorageClass": {
+            "type": "string",
+            "description": "AWS storage class the object is in the S3 bucket."
           },
           "discrepancyType": {
             "type": "string",

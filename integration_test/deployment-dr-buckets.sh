@@ -1,0 +1,55 @@
+#!/bin/bash
+set -ex
+
+# Negated REGEX that checks that the PREFIX is alpha numeric with no spaces and the optional use of an _
+if [[ ! ${bamboo_PREFIX} =~ ^[[:upper:][:lower:][:digit:]_]+$ ]]; then
+    echo "FATAL: PREFIX variable value [${bamboo_PREFIX}] is invalid. Only alpha numeric values and _ are allowed."
+    exit 1
+fi
+
+export AWS_ACCESS_KEY_ID=$bamboo_DR_AWS_ACCESS_KEY_ID
+export AWS_SECRET_ACCESS_KEY=$bamboo_DR_AWS_SECRET_ACCESS_KEY
+export AWS_DEFAULT_REGION=$bamboo_AWS_DEFAULT_REGION
+
+#remove old files from bamboo as they throw error
+rm *.tf
+git clone --branch ${bamboo_BRANCH_NAME} --single-branch https://github.com/nasa/cumulus-orca.git && cd integration_test
+echo "Cloned Orca, branch ${bamboo_BRANCH_NAME}"
+#replace prefix with bamboo prefix variable
+sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' dr-buckets.tf.template > dr-buckets.tf
+
+if aws s3api head-bucket --bucket ${bamboo_PREFIX}-dr-tf-state;then
+    echo "terraform state bucket already present. Using existing state file"
+else
+    echo "Something went wrong when checking terraform state bucket. Creating ..."
+    aws s3api create-bucket --bucket ${bamboo_PREFIX}-dr-tf-state  --region ${bamboo_AWS_DEFAULT_REGION} --create-bucket-configuration LocationConstraint=${bamboo_AWS_DEFAULT_REGION}
+    
+    aws s3api put-bucket-versioning \
+    --bucket ${bamboo_PREFIX}-dr-tf-state \
+    --versioning-configuration Status=Enabled
+
+    aws dynamodb create-table \
+      --table-name ${bamboo_PREFIX}-dr-tf-locks \
+      --attribute-definitions AttributeName=LockID,AttributeType=S \
+      --key-schema AttributeName=LockID,KeyType=HASH \
+      --billing-mode PAY_PER_REQUEST \
+      --region ${bamboo_AWS_DEFAULT_REGION}
+fi
+
+#configuring S3 backend
+echo "terraform {
+  backend \"s3\" {
+    bucket = \"${bamboo_PREFIX}-dr-tf-state\"
+    region = \"${bamboo_AWS_DEFAULT_REGION}\"
+    key    = \"terraform.tfstate\"
+    dynamodb_table = \"${bamboo_PREFIX}-dr-tf-locks\"
+  }
+}" >> terraform.tf
+
+#initialize terraform
+terraform init -input=false
+#deploy using terraform
+echo "Deploying DR S3 buckets in Disaster Recovery account"
+terraform apply \
+  -auto-approve \
+  -input=false

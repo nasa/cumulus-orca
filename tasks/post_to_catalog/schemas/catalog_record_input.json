@@ -77,7 +77,7 @@
         },
         "cumulusCreateTime": {
           "type": "string",
-          "description": "Date and time data was originally ingested into Cumulus",
+          "description": "createdAt time from Cumulus",
           "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?\\+00:00$"
         },
         "ingestTime": {
@@ -104,6 +104,7 @@
                 "sizeInBytes",
                 "hash",
                 "hashType",
+                "storageClass",
                 "version",
                 "ingestTime",
                 "etag"
@@ -136,6 +137,11 @@
                 "hashType": {
                   "type": ["string", "null"],
                   "description": "Hash type used to hash the object. Supplied by Cumulus."
+                },
+                "storageClass": {
+                  "type": "string",
+                  "description": "The class of storage containing the file. Must match value in storage_class table.",
+                  "pattern": "^(GLACIER|DEEP_ARCHIVE)$"
                 },
                 "version": {
                   "type": "string",

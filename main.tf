@@ -1,6 +1,6 @@
 ## Local Variables
 locals {
-  db_name = var.db_name != null ? var.db_name : replace("${var.prefix}_orca", "-", "_")
+  db_name = lower(var.db_name != null ? var.db_name : replace("${var.prefix}_orca", "-", "_"))
   db_user_name = replace("${var.prefix}_orcauser", "-", "_")
   tags = merge(var.tags, { Deployment = var.prefix }, { team = "ORCA", application = "ORCA" })
 }
@@ -47,6 +47,7 @@ module "orca" {
   internal_report_queue_message_retention_time_seconds = var.internal_report_queue_message_retention_time_seconds
   metadata_queue_message_retention_time_seconds        = var.metadata_queue_message_retention_time_seconds
   orca_default_recovery_type                           = var.orca_default_recovery_type
+  orca_default_storage_class                           = var.orca_default_storage_class
   orca_delete_old_reconcile_jobs_frequency_cron        = var.orca_delete_old_reconcile_jobs_frequency_cron
   orca_ingest_lambda_memory_size                       = var.orca_ingest_lambda_memory_size
   orca_ingest_lambda_timeout                           = var.orca_ingest_lambda_timeout
