@@ -70,18 +70,18 @@ function check_rc () {
 ## Run the deployment See: https://docusaurus.io/docs/deployment
 # Set the environment variables
 export DEPLOYMENT_BRANCH=gh-pages
-export GIT_USER=$bamboo_SECRET_GITHUB_USER
-export GIT_PASS=$bamboo_SECRET_GITHUB_TOKEN
+export GIT_USER=$bamboo_GITHUB_USER
+export GIT_PASS=$bamboo_GITHUB_TOKEN
 
 echo "---------start-----------"
 echo $GIT_USER
 echo $GIT_PASS
-echo $bamboo_SECRET_GITHUB_EMAIL
+echo $bamboo_GITHUB_EMAIL
 
 echo "---------end-----------"
 
 # We need to set some git config here so deploy doesn't complain when the commit occurs.
-git config --global user.email "$bamboo_SECRET_GITHUB_EMAIL"
+git config --global user.email "$bamboo_GITHUB_EMAIL"
 git config --global user.name "$GIT_USER"
 
 
