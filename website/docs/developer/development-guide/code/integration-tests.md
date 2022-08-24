@@ -26,8 +26,11 @@ As tests are run in parallel, it is generally good practice to have one test-per
 :::
 
 <a name="running"></a>
+
 ## Running Tests
+
 ### Running Locally
+
 1. [Deploy ORCA to AWS](https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/deployment).
 2. Connect to the NASA vpn.
 3. Set the following environment variables:
@@ -36,7 +39,9 @@ As tests are run in parallel, it is generally good practice to have one test-per
 4. Run the following bash command, 
    replacing `i-00000000000000000` with your ec2 instance name, 
    and `0000000000.execute-api.us-west-2.amazonaws.com` with your API Gateway identifier:
+
    ```shell
+   
    aws ssm start-session --target i-00000000000000000 --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters '{"host":["0000000000.execute-api.us-west-2.amazonaws.com"],"portNumber":["443"], "localPortNumber":["8000"]}'
    ```
 5. In the root folder `workflow_tests`, run the following command:
