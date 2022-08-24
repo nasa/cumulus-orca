@@ -77,8 +77,8 @@ echo $bamboo_GITHUB_EMAIL
 echo "---------end-----------"
 
 # We need to set some git config here so deploy doesn't complain when the commit occurs.
-git config --global user.email "$bamboo_GITHUB_EMAIL"
-git config --global user.name "$bamboo_GITHUB_USER"
+git config user.email "$bamboo_GITHUB_EMAIL"
+git config user.name "$bamboo_GITHUB_USER"
 
 
 
