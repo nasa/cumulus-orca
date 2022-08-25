@@ -45,7 +45,7 @@ While the broad strokes remain the same as the Clean Coder definitions, this doc
 <a name="interface"></a>
 
 ### "Interface Adapters" Layer
-- Best viewed as a sub-section of the ("Frameworks and Drivers" layer)[#frameworks-and-drivers].
+- Best viewed as a sub-section of the ["Frameworks and Drivers" layer](#frameworks-and-drivers).
   - Changes to the database change this layer as well, which would otherwise contradict the dependency chain of Clean Architecture.
 - Translates data between the forms required for the external components above it, and the internal components beneath it.
   - All technical details from the above layer should be stripped before handing down to the lower layer.
@@ -72,7 +72,7 @@ While the broad strokes remain the same as the Clean Coder definitions, this doc
 
 ### "Entities" Layer
 - Simple, reusable objects and functions.
-- Can only communicate with the (Use Cases layer)[#use-cases].
+- Can only communicate with the [Use Cases layer](#use-cases).
 
 #### Orca Examples
 - Shared helper libraries without external dependencies
