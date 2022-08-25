@@ -4,6 +4,8 @@ title:  Clean Architecture
 description: Overview of Clean Architecture for ORCA
 ---
 
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
 Our definition of Clean Architecture, including images used in this file, 
 come from the [Clean Coder blog](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html).
 
@@ -26,6 +28,7 @@ While the broad strokes remain the same as the Clean Coder definitions, this doc
 
 
 <a name="frameworks-and-drivers"></a>
+
 ### "Frameworks and Drivers" Layer
 - The outermost layer, often components external to the central product.
 - May change based on changes from inner layers.
@@ -40,6 +43,7 @@ While the broad strokes remain the same as the Clean Coder definitions, this doc
 
 
 <a name="interface"></a>
+
 ### "Interface Adapters" Layer
 - Best viewed as a sub-section of the ("Frameworks and Drivers" layer)[#frameworks-and-drivers].
   - Changes to the database change this layer as well, which would otherwise contradict the dependency chain of Clean Architecture.
@@ -54,6 +58,7 @@ While the broad strokes remain the same as the Clean Coder definitions, this doc
 
 
 <a name="use-cases"></a>
+
 ### "Use Cases" Layer
 - The business logic of the application, often analogous to user stories.
   - Larger features and flows may consist of several Use Cases chained together by SQS Queues or Step Functions.
@@ -64,6 +69,7 @@ While the broad strokes remain the same as the Clean Coder definitions, this doc
 
 
 <a name="entities"></a>
+
 ### "Entities" Layer
 - Simple, reusable objects and functions.
 - Can only communicate with the (Use Cases layer)[#use-cases].
