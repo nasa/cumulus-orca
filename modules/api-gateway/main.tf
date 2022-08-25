@@ -1,6 +1,6 @@
 # Local Variables
 locals {
-  region = data.aws_region.current_region.name
+  region          = data.aws_region.current_region.name
   vpc_endpoint_id = var.vpc_endpoint_id != null ? var.vpc_endpoint_id : data.aws_vpc_endpoint.vpc_endpoint_id.id
 }
 
@@ -16,7 +16,7 @@ resource "aws_api_gateway_rest_api" "orca_api" {
   name        = "${var.prefix}_orca_api"
   description = "API for internal reconciliation, catalog reporting, request_status_for_job and request_status_for_file lambda functions"
   endpoint_configuration {
-    types = ["PRIVATE"]
+    types            = ["PRIVATE"]
     vpc_endpoint_ids = [local.vpc_endpoint_id]
   }
 }
@@ -68,11 +68,10 @@ resource "aws_api_gateway_resource" "orca_catalog_reporting_api_resource_catalog
 }
 
 resource "aws_api_gateway_method" "orca_catalog_reporting_api_method" {
-  rest_api_id = aws_api_gateway_rest_api.orca_api.id
-  resource_id = aws_api_gateway_resource.orca_catalog_reporting_api_resource_catalog_reconcile.id
-  http_method = "POST"
-  # todo: Make sure this is locked down against external access.
-  authorization = "NONE"
+  rest_api_id   = aws_api_gateway_rest_api.orca_api.id
+  resource_id   = aws_api_gateway_resource.orca_catalog_reporting_api_resource_catalog_reconcile.id
+  http_method   = "POST"
+  authorization = "AWS_IAM"
 }
 
 resource "aws_api_gateway_integration" "orca_catalog_reporting_api_integration" {
@@ -133,11 +132,10 @@ resource "aws_api_gateway_resource" "request_status_for_granule_api_resource_rec
 }
 
 resource "aws_api_gateway_method" "request_status_for_granule_api_method" {
-  rest_api_id = aws_api_gateway_rest_api.orca_api.id
-  resource_id = aws_api_gateway_resource.request_status_for_granule_api_resource_recovery_granules.id
-  http_method = "POST"
-  # todo: Make sure this is locked down against external access.
-  authorization = "NONE"
+  rest_api_id   = aws_api_gateway_rest_api.orca_api.id
+  resource_id   = aws_api_gateway_resource.request_status_for_granule_api_resource_recovery_granules.id
+  http_method   = "POST"
+  authorization = "AWS_IAM"
 }
 
 resource "aws_api_gateway_integration" "request_status_for_granule_api_integration" {
@@ -192,11 +190,10 @@ resource "aws_api_gateway_resource" "request_status_for_job_api_resource_recover
 }
 
 resource "aws_api_gateway_method" "request_status_for_job_api_method" {
-  rest_api_id = aws_api_gateway_rest_api.orca_api.id
-  resource_id = aws_api_gateway_resource.request_status_for_job_api_resource_recovery_jobs.id
-  http_method = "POST"
-  # todo: Make sure this is locked down against external access.
-  authorization = "NONE"
+  rest_api_id   = aws_api_gateway_rest_api.orca_api.id
+  resource_id   = aws_api_gateway_resource.request_status_for_job_api_resource_recovery_jobs.id
+  http_method   = "POST"
+  authorization = "AWS_IAM"
 }
 
 resource "aws_api_gateway_integration" "request_status_for_job_api_integration" {
@@ -298,11 +295,10 @@ resource "aws_api_gateway_resource" "orca_internal_reconciliation_jobs_job_jobid
 # ----------------------## API resource for creating the methods and response for internal_reconcile_report_job lambda-----------------------------------------------------
 
 resource "aws_api_gateway_method" "internal_reconcile_report_job_api_method" {
-  rest_api_id = aws_api_gateway_rest_api.orca_api.id
-  resource_id = aws_api_gateway_resource.orca_internal_reconciliation_jobs_api_resource.id
-  http_method = "POST"
-  # todo: Make sure this is locked down against external access.
-  authorization = "NONE"
+  rest_api_id   = aws_api_gateway_rest_api.orca_api.id
+  resource_id   = aws_api_gateway_resource.orca_internal_reconciliation_jobs_api_resource.id
+  http_method   = "POST"
+  authorization = "AWS_IAM"
 }
 
 resource "aws_api_gateway_integration" "internal_reconcile_report_job_api_integration" {
@@ -360,11 +356,10 @@ resource "aws_api_gateway_resource" "orca_internal_reconcile_report_orphans_api_
 }
 
 resource "aws_api_gateway_method" "internal_reconcile_report_orphan_api_method" {
-  rest_api_id = aws_api_gateway_rest_api.orca_api.id
-  resource_id = aws_api_gateway_resource.orca_internal_reconcile_report_orphans_api_resource.id
-  http_method = "POST"
-  # todo: Make sure this is locked down against external access.
-  authorization = "NONE"
+  rest_api_id   = aws_api_gateway_rest_api.orca_api.id
+  resource_id   = aws_api_gateway_resource.orca_internal_reconcile_report_orphans_api_resource.id
+  http_method   = "POST"
+  authorization = "AWS_IAM"
 }
 
 resource "aws_api_gateway_integration" "internal_reconcile_report_orphan_api_integration" {
@@ -422,11 +417,10 @@ resource "aws_api_gateway_resource" "orca_internal_reconcile_report_phantom_api_
 }
 
 resource "aws_api_gateway_method" "internal_reconcile_report_phantom_api_method" {
-  rest_api_id = aws_api_gateway_rest_api.orca_api.id
-  resource_id = aws_api_gateway_resource.orca_internal_reconcile_report_phantom_api_resource.id
-  http_method = "POST"
-  # todo: Make sure this is locked down against external access.
-  authorization = "NONE"
+  rest_api_id   = aws_api_gateway_rest_api.orca_api.id
+  resource_id   = aws_api_gateway_resource.orca_internal_reconcile_report_phantom_api_resource.id
+  http_method   = "POST"
+  authorization = "AWS_IAM"
 }
 
 resource "aws_api_gateway_integration" "internal_reconcile_report_phantom_api_integration" {
@@ -483,11 +477,10 @@ resource "aws_api_gateway_resource" "orca_internal_reconcile_report_mismatch_api
 }
 
 resource "aws_api_gateway_method" "internal_reconcile_report_mismatch_api_method" {
-  rest_api_id = aws_api_gateway_rest_api.orca_api.id
-  resource_id = aws_api_gateway_resource.orca_internal_reconcile_report_mismatch_api_resource.id
-  http_method = "POST"
-  # todo: Make sure this is locked down against external access.
-  authorization = "NONE"
+  rest_api_id   = aws_api_gateway_rest_api.orca_api.id
+  resource_id   = aws_api_gateway_resource.orca_internal_reconcile_report_mismatch_api_resource.id
+  http_method   = "POST"
+  authorization = "AWS_IAM"
 }
 
 resource "aws_api_gateway_integration" "internal_reconcile_report_mismatch_api_integration" {
@@ -538,12 +531,12 @@ resource "aws_lambda_permission" "internal_reconcile_report_mismatch_api_permiss
 resource "aws_api_gateway_deployment" "orca_api_deployment" {
   rest_api_id = aws_api_gateway_rest_api.orca_api.id
   stage_name  = var.api_gateway_stage_name
-  depends_on  = [
-    aws_api_gateway_integration.orca_catalog_reporting_api_integration, 
+  depends_on = [
+    aws_api_gateway_integration.orca_catalog_reporting_api_integration,
     aws_api_gateway_integration.request_status_for_job_api_integration,
-    aws_api_gateway_integration.request_status_for_granule_api_integration, 
+    aws_api_gateway_integration.request_status_for_granule_api_integration,
     aws_api_gateway_integration.internal_reconcile_report_job_api_integration,
     aws_api_gateway_integration.internal_reconcile_report_orphan_api_integration,
-    aws_api_gateway_integration.internal_reconcile_report_phantom_api_integration, 
-    aws_api_gateway_integration.internal_reconcile_report_mismatch_api_integration]
+    aws_api_gateway_integration.internal_reconcile_report_phantom_api_integration,
+  aws_api_gateway_integration.internal_reconcile_report_mismatch_api_integration]
 }
