@@ -12,7 +12,9 @@ These tests run realistic scenarios against a full system via scripts run in Bam
 - [Running Tests](#running)
 
 <a name="structure"></a>
+
 ## File Structure
+
 Tests are grouped into modules under the `test_packages` folder.
 When adding a test group:
 1. Create a new directory under `test_packages`, named appropriately for your new group.
@@ -27,8 +29,12 @@ As tests are run in parallel, it is generally good practice to have one test-per
 
 <a name="running"></a>
 
+<<<<<<< HEAD
 
 ## Running Tests  (test)
+=======
+## Running Tests
+>>>>>>> develop
 
 ### Running Locally
 
@@ -45,6 +51,7 @@ As tests are run in parallel, it is generally good practice to have one test-per
    
    aws ssm start-session --target i-00000000000000000 --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters '{"host":["0000000000.execute-api.us-west-2.amazonaws.com"],"portNumber":["443"], "localPortNumber":["8000"]}'
    ```
+
 5. In the root folder `workflow_tests`, run the following command:
    ```shell
    bin/run_tests.sh

@@ -8,7 +8,7 @@ The module `extract_filepaths_for_granule` is deployed as a lambda function that
 
 ## Build
 
-The following steps assume you are using a version of Python compliant with 3.7.
+The following steps assume you are using a version of Python compliant with 3.9.
 
 ```
 cd tasks\extract_filepaths_for_granule
@@ -54,7 +54,7 @@ resource "aws_lambda_function" "extract_filepaths_for_granule" {
   filename         = "${path.module}/../../tasks/extract_filepaths_for_granule/extract_filepaths_for_granule.zip"
   handler          = "extract_filepaths_for_granule.handler"
   memory_size      = var.orca_recovery_lambda_memory_size
-  runtime          = "python3.7"
+  runtime          = "python3.9"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/extract_filepaths_for_granule/extract_filepaths_for_granule.zip")
   tags             = local.tags
   timeout          = var.orca_recovery_lambda_timeout

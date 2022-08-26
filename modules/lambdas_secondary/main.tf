@@ -14,7 +14,7 @@ resource "aws_lambda_function" "post_to_queue_and_trigger_step_function" {
   filename         = "${path.module}/../../tasks/post_to_queue_and_trigger_step_function/post_to_queue_and_trigger_step_function.zip"
   handler          = "post_to_queue_and_trigger_step_function.handler"
   memory_size      = var.orca_reconciliation_lambda_memory_size
-  runtime          = "python3.7"
+  runtime          = "python3.9"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/post_to_queue_and_trigger_step_function/post_to_queue_and_trigger_step_function.zip")
   tags             = var.tags
   timeout          = var.orca_reconciliation_lambda_timeout
