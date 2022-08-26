@@ -85,8 +85,8 @@ export GIT_PASS=$bamboo_GITHUB_TOKEN
 
 
 # We need to set some git config here so deploy doesn't complain when the commit occurs.
-git config --local user.email "$bamboo_GITHUB_EMAIL"
-git config --local user.name "$GIT_USER"
+git config --global user.email "$bamboo_GITHUB_EMAIL"
+git config --global user.name "$GIT_USER"
 less ~/.gitconfig
 chown -R $(whoami) ~/.gitconfig
 # ---------verifying the variables are exported for testing----------
