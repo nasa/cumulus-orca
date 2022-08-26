@@ -117,7 +117,6 @@ check_rc $return_code "ERROR: Failed to copy lambda files to build directory."
 
 echo "INFO: Creating the Lambda package ..."
 ## Create the zip archive
-echo "INFO: Creating zip archive ..."
 cd build
 zip -qr ../db_deploy.zip .
 let return_code=$?

@@ -110,7 +110,6 @@ let return_code=$?
 check_rc $return_code "ERROR: Failed to copy lambda files to build directory."
 
 ## Create the zip archive
-echo "INFO: Creating zip archive ..."
 cd build
 zip -qr ../delete_old_reconcile_jobs.zip .
 let return_code=$?
