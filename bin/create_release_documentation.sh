@@ -79,7 +79,7 @@ check_rc "npm install"
 ## Run the deployment See: https://docusaurus.io/docs/deployment
 # Set the environment variables
 export DEPLOYMENT_BRANCH=gh-pages
-export GIT_USER=$bamboo_GITHUB_USER
+export GIT_USER=bhazuka
 export GIT_PASS=$bamboo_GITHUB_TOKEN
 
 
