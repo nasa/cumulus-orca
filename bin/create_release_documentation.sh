@@ -84,8 +84,7 @@ export GIT_PASS=$bamboo_GITHUB_TOKEN
 
 cd ~/
 ls -al
-su 
-chown -R $(whoami) .config
+sudo chown -R $(whoami) .config
 
 # We need to set some git config here so deploy doesn't complain when the commit occurs.
 git config --global user.email "$bamboo_GITHUB_EMAIL"
