@@ -245,7 +245,7 @@ resource "aws_lambda_function" "internal_reconcile_report_orphan" {
   ## OPTIONAL
   description      = "Receives job id and page index from end user and returns reporting information of files that have records in the S3 bucket but are missing from ORCA catalog."
   filename         = "${path.module}/../../tasks/internal_reconcile_report_orphan/internal_reconcile_report_orphan.zip"
-  handler          = "internal_reconcile_report_orphan.handler"
+  handler          = "adapter_aws.handler"
   memory_size      = var.orca_reconciliation_lambda_memory_size
   runtime          = "python3.9"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/internal_reconcile_report_orphan/internal_reconcile_report_orphan.zip")

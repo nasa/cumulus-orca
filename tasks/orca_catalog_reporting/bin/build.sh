@@ -117,6 +117,7 @@ let return_code=$?
 check_rc $return_code "ERROR: Failed to copy schema files to build directory."
 
 ## Create the zip archive
+echo "INFO: Creating zip archive ..."
 cd build
 zip -qr ../orca_catalog_reporting.zip .
 let return_code=$?
