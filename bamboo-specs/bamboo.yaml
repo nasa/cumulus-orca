@@ -68,7 +68,7 @@ Release ORCA Documentation:
           echo "ERROR: create_release_documentation.sh script does not exist!"
           exit 1
         fi
-        bash bin/create_release_documentation.sh
+        bin/create_release_documentation.sh
       description: Run documentation release script
 
 # #job for deploying cumulus and orca
@@ -100,7 +100,7 @@ variables:
   REPORT_BUILD_STATUS: 'true'
   GITHUB_EMAIL: BAMSCRT@0@0@HYUkicwfEqt17JZaZuGYmtmRHrnDySiT+kQkBQa7/Rg7IQgl1lUvbncMUu0Wx2k1ayHojNkh2TdOlF0kJ5tw6Q== #encrypted
   GITHUB_TOKEN: BAMSCRT@0@0@nPxyXQXMyE6zm3B1oI8Goma78s0H1fJD4vHy6+dpBQJpjDI2ekbcvCAOI8AyjYiILPhqi2w4fT0fx9MFVXxz2JPTp5uPNzG3GM/8XSUgvYo= #encrypted
-  GITHUB_USER: bhazuka
+  GITHUB_USER: BAMSCRT@0@0@VkGOQemUQPEvmBYT3dDRgw== #encrypted
   AWS_DEFAULT_REGION: us-west-2
   AWS_ACCOUNT_ID: BAMSCRT@0@0@fFtitNITDsAjJqK2ZXjhnBZ96z2775QLzGR1Xz557gSl8HxxBaTD3Fbmp+HUbpfx
   AWS_ACCESS_KEY_ID: REPLACE ME
