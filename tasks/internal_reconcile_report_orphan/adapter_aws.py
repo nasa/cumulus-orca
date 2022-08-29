@@ -119,13 +119,13 @@ def handler(
         db_connect_info = shared_db.get_configuration(
             check_env_variable(OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY)
         )
-        engine = shared_db.get_user_connection(db_connect_info)
-        database_adapter = AdapterDatabase(engine)
+
+        adapter_database = AdapterDatabase(db_connect_info)
 
         orphans, another_page = internal_reconcile_report_orphan.task(
             event[INPUT_JOB_ID_KEY],
             event[INPUT_PAGE_INDEX_KEY],
-            database_adapter,
+            adapter_database,
             LOGGER
         )
         result = {

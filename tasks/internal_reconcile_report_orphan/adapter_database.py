@@ -1,11 +1,11 @@
 import logging
 from typing import List, Tuple
 
-from orca_shared.database.shared_db import retry_operational_error
+from orca_shared.database.shared_db import retry_operational_error, get_user_connection
 from sqlalchemy import text
 from sqlalchemy.future import Engine
 
-from internal_reconcile_report_orphan import OrphanRecord
+from entities import OrphanRecord
 
 
 def get_orphans_sql() -> text:  # pragma: no cover
@@ -30,15 +30,20 @@ SELECT
 
 
 class AdapterDatabase:
-    engine = None
+    _engine: Engine = None
 
-    def __init__(self, engine: Engine):
-        self.engine = engine
+    def __init__(self, db_connect_info):
+        """
+        Args:
+            db_connect_info: See shared_db.py's get_configuration for further details.
+        """
+        engine = get_user_connection(db_connect_info)
+        self._engine = engine
 
     @retry_operational_error()
     def query_db(
             self,
-            job_id: str,
+            job_id: int,
             page_index: int,
             page_size: int,
             logger: logging.Logger
@@ -58,7 +63,7 @@ class AdapterDatabase:
                 A bool indicating if there are further pages to retrieve.
             """
         logger.info(f"Retrieving page '{page_index}' of reports for job '{job_id}'")
-        with self.engine.begin() as connection:
+        with self._engine.begin() as connection:
             sql_results = connection.execute(
                 get_orphans_sql(),
                 [
