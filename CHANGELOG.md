@@ -15,6 +15,27 @@ and includes an additional section for migration notes.
 
 
 ## [Unreleased]
+### Changed
+- *ORCA-290* Moved ORCA `excludeFileTypes` configuration out of the meta area into the larger collection area under a new key `orca` and renamed `excludeFileTypes` to `OrcaExcludedFileRegEx`.
+
+### Migration Notes
+
+- Adjust workflows/step functions for `OrcaCopyToGlacierWorkflow`.
+  - `excludeFileTypes` argument in `task_config` is now `OrcaExcludedFileRegEx`.
+  - `OrcaExcludedFileRegEx` key is now under a new key `orca`. See example below:
+```
+"task_config": {
+  "OrcaExcludedFileRegEx": "{$.meta.collection.orca.OrcaExcludedFileRegEx}"
+}
+```
+- Adjust workflows/step functions for `OrcaRecoveryWorkflow`.
+  - `excludeFileTypes` argument in `task_config` is now `OrcaExcludedFileRegEx`.
+  - `OrcaExcludedFileRegEx` key is now under a new key `orca`. See example below:
+```
+"task_config": {
+  "OrcaExcludedFileRegEx": "{$.meta.collection.orca.OrcaExcludedFileRegEx}"
+}
+```
 
 [5.1.0]
 ### Changed

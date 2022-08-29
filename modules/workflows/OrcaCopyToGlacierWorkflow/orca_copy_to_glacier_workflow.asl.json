@@ -7,7 +7,7 @@
         "cma": {
           "event.$": "$",
           "task_config": {
-            "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
+            "OrcaExcludedFileRegEx": "{$.meta.collection.orca.OrcaExcludedFileRegEx}",
             "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
             "providerId": "{$.meta.provider.id}",
             "providerName": "{$.meta.provider.name}",

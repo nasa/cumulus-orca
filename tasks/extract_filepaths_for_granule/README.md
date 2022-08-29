@@ -139,7 +139,7 @@ The lambda handler event excepts a dictionary having a list of granules as input
             "bucket":"public"
          }
       ],
-      "excludeFileTypes":[
+      "OrcaExcludedFileRegEx":[
          ".cmr"
       ]
    }

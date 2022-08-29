@@ -48,6 +48,9 @@
          "granuleId":"^goesrplt_avng_.*(\\.gz|\\.hdr|clip)$",
          "granuleIdExtraction":"^((goesrplt_avng_).*)",
          "sampleFileName":"goesrplt_avng_20170323t184858.tar.gz",
+         "orca":{
+            "OrcaExcludedFileRegEx": [".xml", ".cmr", ".cmr.xml"]
+         },
          "files":[
             {
                "bucket":"public",
@@ -67,8 +70,7 @@
                   "module":"ascii"
                }
             ],
-            "granuleRecoveryWorkflow":"DrRecoveryWorkflow",
-            "exclude_file_type": [".xml", ".cmr", ".cmr.xml"]
+            "granuleRecoveryWorkflow":"DrRecoveryWorkflow"
          }
       }
    }
