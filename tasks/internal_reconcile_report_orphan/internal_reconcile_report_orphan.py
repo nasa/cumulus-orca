@@ -1,9 +1,19 @@
+import dataclasses
 import logging
 from typing import Tuple, List
 
-from adapter_database import AdapterDatabase, OrphanRecord
+from adapter_database import AdapterDatabase
 
 PAGE_SIZE = 100
+
+
+@dataclasses.dataclass
+class OrphanRecord:
+    key_path: str
+    etag: str
+    last_update: int
+    size_in_bytes: int
+    storage_class: str
 
 
 def task(

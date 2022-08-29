@@ -11,6 +11,9 @@ from orca_shared.database import shared_db
 import internal_reconcile_report_orphan
 from adapter_database import AdapterDatabase
 
+INPUT_JOB_ID_KEY = "jobId"
+INPUT_PAGE_INDEX_KEY = "pageIndex"
+
 OUTPUT_JOB_ID_KEY = "jobId"
 OUTPUT_ANOTHER_PAGE_KEY = "anotherPage"
 OUTPUT_ORPHANS_KEY = "orphans"
@@ -120,13 +123,13 @@ def handler(
         database_adapter = AdapterDatabase(engine)
 
         orphans, another_page = internal_reconcile_report_orphan.task(
-            event["jobId"],
-            event["pageIndex"],
+            event[INPUT_JOB_ID_KEY],
+            event[INPUT_PAGE_INDEX_KEY],
             database_adapter,
             LOGGER
         )
         result = {
-            OUTPUT_JOB_ID_KEY: event["jobId"],
+            OUTPUT_JOB_ID_KEY: event[INPUT_JOB_ID_KEY],
             OUTPUT_ORPHANS_KEY: [{
                 ORPHANS_KEY_PATH_KEY: orphan.key_path,
                 ORPHANS_S3_ETAG_KEY: orphan.etag,

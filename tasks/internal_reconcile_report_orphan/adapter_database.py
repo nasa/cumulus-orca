@@ -1,10 +1,11 @@
-import dataclasses
 import logging
 from typing import List, Tuple
 
 from orca_shared.database.shared_db import retry_operational_error
 from sqlalchemy import text
 from sqlalchemy.future import Engine
+
+from internal_reconcile_report_orphan import OrphanRecord
 
 
 def get_orphans_sql() -> text:  # pragma: no cover
@@ -26,15 +27,6 @@ SELECT
     OFFSET :page_index*:page_size
     LIMIT :page_size+1"""
     )
-
-
-@dataclasses.dataclass
-class OrphanRecord:
-    key_path: str
-    etag: str
-    last_update: int
-    size_in_bytes: int
-    storage_class: str
 
 
 class AdapterDatabase:
