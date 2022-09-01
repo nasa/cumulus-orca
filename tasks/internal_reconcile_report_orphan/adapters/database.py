@@ -1,11 +1,10 @@
 import logging
-from typing import List, Tuple
 
 from orca_shared.database.shared_db import retry_operational_error, get_user_connection
 from sqlalchemy import text
 from sqlalchemy.future import Engine
 
-from entities import OrphanRecord
+from entities.orphan import OrphanRecordPage, OrphanRecord
 
 
 def get_orphans_sql() -> text:  # pragma: no cover
@@ -47,7 +46,7 @@ class AdapterDatabase:
             page_index: int,
             page_size: int,
             logger: logging.Logger
-    ) -> Tuple[List[OrphanRecord], bool]:
+    ) -> OrphanRecordPage:
         # noinspection GrazieInspection
         """
             Gets orphans for the given job/page, up to PAGE_SIZE + 1 results.
@@ -86,5 +85,4 @@ class AdapterDatabase:
                 )
 
             # we get one extra for anotherPage calculation.
-            return orphans[0:page_size], \
-                   len(orphans) > page_size
+            return OrphanRecordPage(orphans[0:page_size], len(orphans) > page_size)

@@ -1,8 +1,7 @@
 import logging
-from typing import Tuple, List
 
-from adapter_database import AdapterDatabase
-from entities import OrphanRecord
+from adapters.database import AdapterDatabase
+from entities.orphan import OrphanRecordPage
 
 PAGE_SIZE = 100
 
@@ -12,7 +11,7 @@ def task(
         page_index: int,
         adapter_database: AdapterDatabase,
         logger: logging.Logger
-) -> Tuple[List[OrphanRecord], bool]:
+) -> OrphanRecordPage:
     """
     Args:
         job_id: The unique ID of job/report.
@@ -24,10 +23,9 @@ def task(
         A list containing orphan records.
         A bool indicating if there are further pages to retrieve.
     """
-    orphans, another_page = adapter_database.query_db(
+    return adapter_database.query_db(
         job_id,
         page_index,
         PAGE_SIZE,
         logger
     )
-    return orphans, another_page

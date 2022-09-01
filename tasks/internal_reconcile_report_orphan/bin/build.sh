@@ -59,6 +59,16 @@ let return_code=$?
 
 check_rc $return_code "ERROR: Failed to create build directory."
 
+mkdir build/adapters
+let return_code=$?
+
+check_rc $return_code "ERROR: Failed to create adapters directory."
+
+mkdir build/entities
+let return_code=$?
+
+check_rc $return_code "ERROR: Failed to create entities directory."
+
 ## Create the virtual env. Remove it if it already exists.
 echo "INFO: Creating virtual environment ..."
 if [ -d venv ]; then
@@ -103,23 +113,33 @@ check_rc $return_code "ERROR: Unable to install psycopg2."
 
 
 ## Copy the lambda files to build
-echo "INFO: Creating the Lambda package ..."
+echo "INFO: Copying base Python files ..."
 cp *.py build/
 let return_code=$?
 
-check_rc $return_code "ERROR: Failed to copy lambda files to build directory."
+check_rc $return_code "ERROR: Failed to copy base Python files to build directory."
+
+echo "INFO: Copying adapter Python files ..."
+find ./adapters -name '*.py' | xargs cp -t build/adapters/
+let return_code=$?
+
+check_rc $return_code "ERROR: Failed to copy adapter files to build directory."
+
+echo "INFO: Copying entity Python files ..."
+find ./entities -name '*.py' | xargs cp -t build/entities/
+let return_code=$?
+
+check_rc $return_code "ERROR: Failed to copy entities files to build directory."
 
 ## Copy the schema files to build
-mkdir -p build/schemas
-let return_code=$?
-check_rc $return_code "ERROR: Unable to create build/schemas directory."
 echo "INFO: Copying schema files ..."
-cp -r schemas/ build/schemas/
+cp -r schemas/ build/
 let return_code=$?
 
 check_rc $return_code "ERROR: Failed to copy schema files to build directory."
 
 ## Create the zip archive
+echo "INFO: Creating zip archive ..."
 cd build
 zip -qr ../internal_reconcile_report_orphan.zip .
 let return_code=$?

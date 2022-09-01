@@ -9,7 +9,7 @@ from fastjsonschema import JsonSchemaException
 from orca_shared.database import shared_db
 
 import internal_reconcile_report_orphan
-from adapter_database import AdapterDatabase
+from adapters.database import AdapterDatabase
 
 INPUT_JOB_ID_KEY = "jobId"
 INPUT_PAGE_INDEX_KEY = "pageIndex"
@@ -27,6 +27,7 @@ LOGGER = CumulusLogger()
 
 # Generating schema validators can take time, so do it once and reuse.
 try:
+    temp = os.getcwd()
     with open("schemas/input.json", "r") as raw_schema:
         input_schema = json.loads(raw_schema.read())
         _VALIDATE_INPUT = fastjsonschema.compile(input_schema)
@@ -122,7 +123,7 @@ def handler(
 
         adapter_database = AdapterDatabase(db_connect_info)
 
-        orphans, another_page = internal_reconcile_report_orphan.task(
+        orphan_record_page = internal_reconcile_report_orphan.task(
             event[INPUT_JOB_ID_KEY],
             event[INPUT_PAGE_INDEX_KEY],
             adapter_database,
@@ -136,8 +137,8 @@ def handler(
                 ORPHANS_S3_LAST_UPDATE_KEY: orphan.last_update,
                 ORPHANS_S3_SIZE_IN_BYTES_KEY: orphan.size_in_bytes,
                 ORPHANS_STORAGE_CLASS_KEY: orphan.storage_class,
-            } for orphan in orphans],
-            OUTPUT_ANOTHER_PAGE_KEY: another_page,
+            } for orphan in orphan_record_page.orphans],
+            OUTPUT_ANOTHER_PAGE_KEY: orphan_record_page.another_page,
         }
 
         _VALIDATE_OUTPUT(result)

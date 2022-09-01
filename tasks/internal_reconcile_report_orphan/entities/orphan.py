@@ -1,4 +1,5 @@
 import dataclasses
+from typing import List
 
 
 @dataclasses.dataclass
@@ -8,3 +9,9 @@ class OrphanRecord:
     last_update: int
     size_in_bytes: int
     storage_class: str
+
+
+@dataclasses.dataclass
+class OrphanRecordPage:
+    orphans: List[OrphanRecord]
+    another_page: bool
