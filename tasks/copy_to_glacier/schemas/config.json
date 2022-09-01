@@ -5,9 +5,9 @@
   "description": "The config for the copy_to_glacier Lambda.",
   "type": "object",
   "properties": {
-    "OrcaExcludedFileRegEx": {
+    "orcaExcludedFileRegEx": {
       "type": ["array", "null"],
-      "description": "A list of file extensions to ignore when copying files.",
+      "description": "A list of file extensions to ignore when copying files in the form of regular expressions '^.*{file_type}$'",
       "items": {
         "type": "string",
         "pattern": "\\..+"

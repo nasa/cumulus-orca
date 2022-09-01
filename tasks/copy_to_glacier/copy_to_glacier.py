@@ -20,7 +20,7 @@ OS_ENVIRON_DEFAULT_STORAGE_CLASS_KEY = "DEFAULT_STORAGE_CLASS"
 OS_ENVIRON_ORCA_DEFAULT_BUCKET_KEY = "ORCA_DEFAULT_BUCKET"
 
 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = "s3MultipartChunksizeMb"
-CONFIG_ORCA_EXCLUDED_FILE_REGEX_KEY = "OrcaExcludedFileRegEx"
+CONFIG_ORCA_EXCLUDED_FILE_REGEX_KEY = "orcaExcludedFileRegEx"
 CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY = "orcaDefaultBucketOverride"
 CONFIG_ORCA_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY = "orcaDefaultStorageClassOverride"
 # Set Cumulus LOGGER
@@ -34,7 +34,7 @@ FILE_HASH_TYPE_KEY = "checksumType"
 
 def should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> bool:
     """
-    Tests whether file is included in {OrcaExcludedFileRegEx} from copy to glacier.
+    Tests whether file is included in {orcaExcludedFileRegEx} from copy to glacier.
     Args:
         file_key: The key of the file within the s3 bucket.
         exclude_file_types: List of extensions to exclude in the backup.

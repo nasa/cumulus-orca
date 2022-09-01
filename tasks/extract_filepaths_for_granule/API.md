@@ -86,7 +86,7 @@ def should_exclude_files_type(file_key: str,
                               exclude_file_types: List[str]) -> bool
 ```
 
-Tests whether or not file is included in {OrcaExcludedFileRegEx} from copy to glacier.
+Tests whether or not file is included in {orcaExcludedFileRegEx} from copy to glacier.
 
 **Arguments**:
 

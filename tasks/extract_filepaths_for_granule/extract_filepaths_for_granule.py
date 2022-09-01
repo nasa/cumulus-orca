@@ -13,7 +13,7 @@ from run_cumulus_task import run_cumulus_task
 # instantiate Cumulus logger
 LOGGER = CumulusLogger(name="ORCA")
 
-CONFIG_ORCA_EXCLUDED_FILE_REGEX_KEY = "OrcaExcludedFileRegEx"
+CONFIG_ORCA_EXCLUDED_FILE_REGEX_KEY = "orcaExcludedFileRegEx"
 CONFIG_FILE_BUCKETS_KEY = "fileBucketMaps"
 
 OUTPUT_DESTINATION_BUCKET_KEY = "destBucket"
@@ -72,7 +72,7 @@ def task(event, context):  # pylint: disable-msg=unused-argument
                 level = "event['input']['granules'][]['files']"
                 file_name = afile["fileName"]
                 LOGGER.debug(f"Validating file {file_name}")
-                # filtering OrcaExcludedFileRegEx
+                # filtering orcaExcludedFileRegEx
                 if not should_exclude_files_type(file_name, exclude_file_types):
                     LOGGER.debug(f"File {file_name} will be restored")
                     file_key = afile["key"]
@@ -146,7 +146,7 @@ def get_regex_buckets(event):
 
 def should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> bool:
     """
-    Tests whether or not file is included in {OrcaExcludedFileRegEx} from copy to glacier.
+    Tests whether or not file is included in {orcaExcludedFileRegEx} from copy to glacier.
     Args:
         file_key: The key of the file within the s3 bucket.
         exclude_file_types: List of extensions to exclude in the backup.

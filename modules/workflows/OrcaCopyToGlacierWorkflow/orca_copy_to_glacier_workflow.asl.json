@@ -7,15 +7,15 @@
         "cma": {
           "event.$": "$",
           "task_config": {
-            "OrcaExcludedFileRegEx": "{$.meta.collection.orca.OrcaExcludedFileRegEx}",
+            "orcaExcludedFileRegEx": "{$.meta.collection.meta.orca.orcaExcludedFileRegEx}",
             "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
             "providerId": "{$.meta.provider.id}",
             "providerName": "{$.meta.provider.name}",
             "executionId": "{$.cumulus_meta.execution_name}",
             "collectionShortname": "{$.meta.collection.name}",
             "collectionVersion": "{$.meta.collection.version}",
-            "orcaDefaultBucketOverride": "{$.meta.collection.meta.orcaDefaultBucketOverride}",
-            "orcaDefaultStorageClassOverride": "{$.meta.collection.meta.orcaDefaultStorageClassOverride}"
+            "orcaDefaultBucketOverride": "{$.meta.collection.meta.orca.orcaDefaultBucketOverride}",
+            "orcaDefaultStorageClassOverride": "{$.meta.collection.meta.orca.orcaDefaultStorageClassOverride}"
           }
         }
       },
