@@ -23,18 +23,30 @@ and includes an additional section for migration notes.
 - Adjust workflows/step functions for `OrcaCopyToGlacierWorkflow`.
   - `excludeFileTypes` argument in `task_config` is now `orcaExcludedFileRegEx`.
   - `orcaExcludedFileRegEx`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` keys are now under a new key `orca`. See example below:
-```
+```json
 "task_config": {
   "orcaExcludedFileRegEx": "{$.meta.collection.meta.orca.orcaExcludedFileRegEx}",
   "orcaDefaultBucketOverride": "{$.meta.collection.meta.orca.orcaDefaultBucketOverride}",
   "orcaDefaultStorageClassOverride": "{$.meta.collection.meta.orca.orcaDefaultStorageClassOverride}"
 }
 ```
+```json
+"collection": {
+    "meta":{
+        "orca": {
+          "orcaDefaultStorageClassOverride": "DEEP_ARCHIVE",
+          "orcaExcludedFileRegEx": [".xml"],
+          "orcaDefaultBucketOverride": "orca-bucket"
+      }
+  }
+}
+
+```
 - Adjust workflows/step functions for `OrcaRecoveryWorkflow`.
   - `excludeFileTypes` argument in `task_config` is now `orcaExcludedFileRegEx`.
   - `orcaExcludedFileRegEx`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` keys are now under a new key `orca`. See the above example.
 
-[5.1.0]
+## [5.1.0]
 ### Changed
 - *ORCA-359* Updated Python version from 3.7 to 3.9.
 - *ORCA-478* Updated bucket policy documentation for deep glacier bucket in DR account so that the users now can only upload objects with storage type as either `GLACIER` or `DEEP_ARCHIVE`.
