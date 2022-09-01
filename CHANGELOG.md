@@ -21,21 +21,18 @@ and includes an additional section for migration notes.
 ### Migration Notes
 
 - Adjust workflows/step functions for `OrcaCopyToGlacierWorkflow`.
-  - `excludeFileTypes` argument in `task_config` is now `OrcaExcludedFileRegEx`.
-  - `OrcaExcludedFileRegEx` key is now under a new key `orca`. See example below:
+  - `excludeFileTypes` argument in `task_config` is now `orcaExcludedFileRegEx`.
+  - `orcaExcludedFileRegEx`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` keys are now under a new key `orca`. See example below:
 ```
 "task_config": {
-  "OrcaExcludedFileRegEx": "{$.meta.collection.orca.OrcaExcludedFileRegEx}"
+  "orcaExcludedFileRegEx": "{$.meta.collection.meta.orca.orcaExcludedFileRegEx}",
+  "orcaDefaultBucketOverride": "{$.meta.collection.meta.orca.orcaDefaultBucketOverride}",
+  "orcaDefaultStorageClassOverride": "{$.meta.collection.meta.orca.orcaDefaultStorageClassOverride}"
 }
 ```
 - Adjust workflows/step functions for `OrcaRecoveryWorkflow`.
-  - `excludeFileTypes` argument in `task_config` is now `OrcaExcludedFileRegEx`.
-  - `OrcaExcludedFileRegEx` key is now under a new key `orca`. See example below:
-```
-"task_config": {
-  "OrcaExcludedFileRegEx": "{$.meta.collection.orca.OrcaExcludedFileRegEx}"
-}
-```
+  - `excludeFileTypes` argument in `task_config` is now `orcaExcludedFileRegEx`.
+  - `orcaExcludedFileRegEx`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` keys are now under a new key `orca`. See the above example.
 
 [5.1.0]
 ### Changed
