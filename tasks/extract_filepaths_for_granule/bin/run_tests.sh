@@ -90,7 +90,7 @@ flake8 \
 check_rc $return_code "ERROR: Linting issues found."
 
 
-# Run code smell and security tests using bandit
+## Run code smell and security tests using bandit
 echo "INFO: Running code smell security tests ..."
 bandit -r *.py test
 let return_code=$?
