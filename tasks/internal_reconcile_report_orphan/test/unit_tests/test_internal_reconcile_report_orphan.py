@@ -9,7 +9,7 @@ import uuid
 from http import HTTPStatus
 from unittest.mock import MagicMock, Mock, patch
 
-import internal_reconcile_report_orphan
+from use_cases import orphans
 
 
 class TestInternalReconcileReportOrphan(
@@ -226,8 +226,8 @@ class TestInternalReconcileReportOrphan(
                 internal_reconcile_report_orphan.OUTPUT_JOB_ID_KEY: job_id,
                 internal_reconcile_report_orphan.OUTPUT_ANOTHER_PAGE_KEY: True,
                 internal_reconcile_report_orphan.OUTPUT_ORPHANS_KEY: orphans[
-                    0 : internal_reconcile_report_orphan.PAGE_SIZE
-                ],
+                                                                     0: internal_reconcile_report_orphan.PAGE_SIZE
+                                                                     ],
             },
             result,
         )

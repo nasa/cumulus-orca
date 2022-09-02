@@ -1,10 +1,24 @@
+import dataclasses
 import logging
 
-from orca_shared.database.shared_db import retry_operational_error, get_user_connection
+from orca_shared.database import shared_db
 from sqlalchemy import text
 from sqlalchemy.future import Engine
 
-from entities.orphan import OrphanRecordPage, OrphanRecord
+from entities.orphan import OrphanRecordFilter, OrphanRecordPage, OrphanRecord
+from use_cases.adapter_interfaces.database import DatabaseInterface
+
+
+@dataclasses.dataclass  # todo: Replace the loosely-defined dictionary in orca_shared.database with this.
+class PostgresConnectionInfo:
+    admin_database_name: str
+    admin_username: str
+    admin_password: str
+    user_username: str
+    user_password: str
+    user_database_name: str
+    host: str
+    port: str
 
 
 def get_orphans_sql() -> text:  # pragma: no cover
@@ -28,23 +42,30 @@ SELECT
     )
 
 
-class AdapterDatabase:
+class AdapterDatabase(DatabaseInterface):
     _engine: Engine = None
 
-    def __init__(self, db_connect_info):
+    def __init__(self, db_connect_info: PostgresConnectionInfo):
         """
         Args:
             db_connect_info: See shared_db.py's get_configuration for further details.
         """
-        engine = get_user_connection(db_connect_info)
+        engine = shared_db.get_user_connection({
+            "admin_database": db_connect_info.admin_database_name,
+            "admin_username": db_connect_info.admin_username,
+            "admin_password": db_connect_info.admin_password,
+            "user_username": db_connect_info.user_username,
+            "user_password": db_connect_info.user_password,
+            "user_database": db_connect_info.user_database_name,
+            "host": db_connect_info.host,
+            "port": db_connect_info.port,
+        })
         self._engine = engine
 
-    @retry_operational_error()
-    def query_db(
+    @shared_db.retry_operational_error()
+    def get_orphans_page(
             self,
-            job_id: int,
-            page_index: int,
-            page_size: int,
+            orphan_record_filter: OrphanRecordFilter,
             logger: logging.Logger
     ) -> OrphanRecordPage:
         # noinspection GrazieInspection
@@ -52,24 +73,23 @@ class AdapterDatabase:
             Gets orphans for the given job/page, up to PAGE_SIZE + 1 results.
 
             Args:
-                job_id: The unique ID of job/report.
-                page_index: The 0-based index of the results page to return.
-                page_size: The maximum number of results to return.
+                orphan_record_filter: The filter designating which orphans to return.
                 logger: The logger to use.
 
             Returns:
                 A list containing orphan records.
                 A bool indicating if there are further pages to retrieve.
             """
-        logger.info(f"Retrieving page '{page_index}' of reports for job '{job_id}'")
+        logger.info(f"Retrieving page '{orphan_record_filter.page_index}' "
+                    f"of reports for job '{orphan_record_filter.job_id}'")
         with self._engine.begin() as connection:
             sql_results = connection.execute(
                 get_orphans_sql(),
                 [
                     {
-                        "job_id": job_id,
-                        "page_index": page_index,
-                        "page_size": page_size,
+                        "job_id": orphan_record_filter.job_id,
+                        "page_index": orphan_record_filter.page_index,
+                        "page_size": orphan_record_filter.page_size,
                     }
                 ],
             )
@@ -85,4 +105,4 @@ class AdapterDatabase:
                 )
 
             # we get one extra for anotherPage calculation.
-            return OrphanRecordPage(orphans[0:page_size], len(orphans) > page_size)
+            return OrphanRecordPage(orphans[0:orphan_record_filter.page_size], len(orphans) > orphan_record_filter.page_size)

@@ -12,6 +12,13 @@ class OrphanRecord:
 
 
 @dataclasses.dataclass
+class OrphanRecordFilter:
+    job_id: str
+    page_index: int
+    page_size: int
+
+
+@dataclasses.dataclass
 class OrphanRecordPage:
     orphans: List[OrphanRecord]
     another_page: bool

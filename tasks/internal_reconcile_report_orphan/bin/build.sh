@@ -56,17 +56,18 @@ fi
 
 mkdir build
 let return_code=$?
-
 check_rc $return_code "ERROR: Failed to create build directory."
 
 mkdir build/adapters
 let return_code=$?
-
 check_rc $return_code "ERROR: Failed to create adapters directory."
+
+mkdir build/use_cases
+let return_code=$?
+check_rc $return_code "ERROR: Failed to create use_cases directory."
 
 mkdir build/entities
 let return_code=$?
-
 check_rc $return_code "ERROR: Failed to create entities directory."
 
 ## Create the virtual env. Remove it if it already exists.
@@ -83,7 +84,6 @@ source venv/bin/activate
 pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org
 pip install -q -t build -r requirements.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
 let return_code=$?
-
 check_rc $return_code "ERROR: pip install encountered an error."
 
 # Install the aws-lambda psycopg2 libraries
@@ -116,26 +116,27 @@ check_rc $return_code "ERROR: Unable to install psycopg2."
 echo "INFO: Copying base Python files ..."
 cp *.py build/
 let return_code=$?
-
 check_rc $return_code "ERROR: Failed to copy base Python files to build directory."
 
 echo "INFO: Copying adapter Python files ..."
-find ./adapters -name '*.py' | xargs cp -t build/adapters/
+find ./adapters -name '*.py' | xargs cp --parents -t build/adapters/
 let return_code=$?
-
 check_rc $return_code "ERROR: Failed to copy adapter files to build directory."
 
-echo "INFO: Copying entity Python files ..."
-find ./entities -name '*.py' | xargs cp -t build/entities/
+echo "INFO: Copying use-case Python files ..."
+find ./use_cases -name '*.py' | xargs cp --parents -t build/use_cases/
 let return_code=$?
+check_rc $return_code "ERROR: Failed to copy use-case files to build directory."
 
+echo "INFO: Copying entity Python files ..."
+find ./entities -name '*.py' | xargs cp --parents -t build/entities/
+let return_code=$?
 check_rc $return_code "ERROR: Failed to copy entities files to build directory."
 
 ## Copy the schema files to build
 echo "INFO: Copying schema files ..."
 cp -r schemas/ build/
 let return_code=$?
-
 check_rc $return_code "ERROR: Failed to copy schema files to build directory."
 
 ## Create the zip archive
@@ -143,9 +144,8 @@ echo "INFO: Creating zip archive ..."
 cd build
 zip -qr ../internal_reconcile_report_orphan.zip .
 let return_code=$?
-cd -
-
 check_rc $return_code "ERROR: Failed to create zip archive."
+cd -
 
 ## Perform cleanup
 echo "INFO: Cleaning up build ..."
