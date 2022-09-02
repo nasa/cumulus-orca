@@ -69,7 +69,7 @@
             ],
             "granuleRecoveryWorkflow":"DrRecoveryWorkflow",
             "orca":{
-               "OrcaExcludedFileRegEx": [".xml", ".cmr", ".cmr.xml"]
+               "orcaExcludedFileRegEx": [".xml", ".cmr", ".cmr.xml"]
             }
          }
       }

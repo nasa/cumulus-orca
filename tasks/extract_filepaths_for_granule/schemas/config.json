@@ -60,7 +60,7 @@
       },
       "orcaExcludedFileRegEx": {
         "type": ["array", "null"],
-        "description": "A list of file extensions to ignore when copying files in the form of regular expressions '^.*{file_type}$'",
+        "description": "A list of file extensions to ignore when copying files.",
         "items": {
           "type": "string",
           "pattern": "\\..+"

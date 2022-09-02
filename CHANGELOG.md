@@ -16,7 +16,7 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 ### Changed
-- *ORCA-290* Moved ORCA `excludeFileTypes` configuration out of the meta area into the larger collection area under a new key `orca` and renamed `excludeFileTypes` to `OrcaExcludedFileRegEx`.
+- *ORCA-290* Renamed `excludeFileTypes` to `orcaExcludedFileRegEx`. In addition, ORCA configuration variables `orcaExcludedFileRegEx`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` are now under a new key `orca` under `meta` key.  
 
 ### Migration Notes
 
