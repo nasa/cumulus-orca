@@ -13,7 +13,7 @@ from run_cumulus_task import run_cumulus_task
 # instantiate Cumulus logger
 LOGGER = CumulusLogger(name="ORCA")
 
-CONFIG_ORCA_EXCLUDED_FILE_EXTENSIONS = "orcaExcludedFileExtensions"
+CONFIG_ORCA_EXCLUDED_FILE_EXTENSIONS_KEY = "orcaExcludedFileExtensions"
 CONFIG_FILE_BUCKETS_KEY = "fileBucketMaps"
 
 OUTPUT_DESTINATION_BUCKET_KEY = "destBucket"
@@ -43,16 +43,16 @@ def task(event, context):  # pylint: disable-msg=unused-argument
     LOGGER.debug("event: {event}", event=event)
     try:
         config = event["config"]
-        exclude_file_types = config.get(CONFIG_ORCA_EXCLUDED_FILE_EXTENSIONS, None)
+        exclude_file_types = config.get(CONFIG_ORCA_EXCLUDED_FILE_EXTENSIONS_KEY, None)
         if exclude_file_types is None:
             exclude_file_types = []
         if len(exclude_file_types) == 0:
             LOGGER.debug(
-                f"The configuration list {CONFIG_ORCA_EXCLUDED_FILE_EXTENSIONS} is empty."
+                f"The configuration list {CONFIG_ORCA_EXCLUDED_FILE_EXTENSIONS_KEY} is empty."
             )
         else:
             LOGGER.debug(
-                f"The configuration {CONFIG_ORCA_EXCLUDED_FILE_EXTENSIONS} list {exclude_file_types} was found."
+                f"The configuration {CONFIG_ORCA_EXCLUDED_FILE_EXTENSIONS_KEY} list {exclude_file_types} was found."
             )
     except KeyError as ke:
         message = "Key {key} is missing from the event configuration: {config}"

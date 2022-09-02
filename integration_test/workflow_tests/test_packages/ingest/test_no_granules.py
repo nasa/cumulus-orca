@@ -54,7 +54,7 @@ class TestNoGranules(TestCase):
                 },
                 "cumulus_meta": {"execution_name": execution_id},
                 "task_config": {
-                    "orcaExcludedFileRegEx": "{$.meta.collection.meta.orca.orcaExcludedFileRegEx}",
+                    "orcaExcludedFileExtensions": "{$.meta.collection.meta.orca.orcaExcludedFileExtensions}",
                     "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
                     "providerId": "{$.meta.provider.id}",
                     "providerName": "{$.meta.provider.name}",

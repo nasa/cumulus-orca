@@ -16,7 +16,10 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 ### Changed
-- *ORCA-290* Renamed `excludeFileTypes` to `orcaExcludedFileExtensions`. In addition, ORCA configuration variables `orcaExcludedFileExtensions`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` are now under a new key `orca` under `meta` key.  
+- *ORCA-290* Renamed `excludeFileTypes` to `orcaExcludedFileExtensions`. In addition, ORCA configuration variables `orcaExcludedFileExtensions`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` are now under a new key `orca` under `meta` key.
+- *ORCA-290* Adjusted workflows/step functions for `OrcaRecoveryWorkflow`.
+  - `excludeFileTypes` argument in `task_config` is now `orcaExcludedFileExtensions`.
+  - `orcaExcludedFileExtensions`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` keys are now under a new key `orca`. See the above example under `Migration Notes`.
 
 ### Migration Notes
 
@@ -42,9 +45,6 @@ and includes an additional section for migration notes.
 }
 
 ```
-- Adjust workflows/step functions for `OrcaRecoveryWorkflow`.
-  - `excludeFileTypes` argument in `task_config` is now `orcaExcludedFileExtensions`.
-  - `orcaExcludedFileExtensions`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` keys are now under a new key `orca`. See the above example.
 
 ## [5.1.0]
 ### Changed

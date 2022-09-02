@@ -127,7 +127,7 @@ class TestCopyToGlacierHandler(TestCase):
         handler_input_event = {
             "payload": {"granules": granules},
             "task_config": {
-                CONFIG_ORCA_EXCLUDED_FILE_EXTENSIONS: [".png"],
+                CONFIG_ORCA_EXCLUDED_FILE_EXTENSIONS_KEY: [".png"],
                 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: 15,
                 "providerId": uuid.uuid4().__str__(),
                 "providerName": uuid.uuid4().__str__(),
