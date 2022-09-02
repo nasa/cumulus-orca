@@ -419,7 +419,7 @@ the ingest workflow.
         "executionId": "{$.cumulus_meta.execution_name}",
         "collectionShortname": "{$.meta.collection.name}",
         "collectionVersion": "{$.meta.collection.version}",
-        "orcaDefaultBucketOverride": "{$.meta.collection.meta.orcaDefaultBucketOverride}"
+        "DefaultBucketOverride": "{$.meta.collection.meta.DefaultBucketOverride}"
       }
     }
   }
@@ -618,7 +618,7 @@ Optionally, you can exclude files by adding values to an
 `excludeFileTypes` variable as seen below.
 In addition, when dealing with large files, the `s3MultipartChunksizeMb` variable can also be set to override the
 default setting set during ORCA installation.
-If the file should be stored in a [storage class](../../operator/storage-classes.md) other than the default set in `orca_default_storage_class` during installation, specify it using `orcaDefaultStorageClassOverride`.
+If the file should be stored in a [storage class](../../operator/storage-classes.md) other than the default set in `orca_default_storage_class` during installation, specify it using `DefaultStorageClassOverride`.
 For more information, see the documentation on the
 [`copy_to_glacier` task](https://github.com/nasa/cumulus-orca/tree/master/tasks/copy_to_glacier).
 
@@ -637,9 +637,9 @@ For more information, see the documentation on the
     "granuleRecoveryWorkflow": "OrcaRecoveryWorkflow",
     "excludeFileTypes": [".cmr", ".xml", ".met"],
     "s3MultipartChunksizeMb": 400,
-    "orcaDefaultBucketOverride": "prod_orca_worm",
-    "orcaDefaultRecoveryTypeOverride": "Standard",
-    "orcaDefaultStorageClassOverride": "DEEP_ARCHIVE"
+    "DefaultBucketOverride": "prod_orca_worm",
+    "DefaultRecoveryTypeOverride": "Standard",
+    "DefaultStorageClassOverride": "DEEP_ARCHIVE"
   },
   ...
 }

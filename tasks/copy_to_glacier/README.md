@@ -9,13 +9,13 @@ The `copy_to_glacier` module is meant to be deployed as a lambda function that t
 
 ## Exclude files by extension.
 
-You are able to specify a list of file types (extensions) that you'd like to exclude from the backup/copy_to_glacier functionality. This is done on a per-collection basis, configured in the Cumulus collection configuration under the `orca` key in the `orcaExcludedFileExtensions` variable of a Cumulus collection configuration:
+You are able to specify a list of file types (extensions) that you'd like to exclude from the backup/copy_to_glacier functionality. This is done on a per-collection basis, configured in the Cumulus collection configuration under the `orca` key in the `ExcludedFileExtensions` variable of a Cumulus collection configuration:
 
 ```json
       "collection":{
         "meta": {
             "orca":{
-                "orcaExcludedFileExtensions": [".xml", ".cmr", ".cmr.xml"]
+                "ExcludedFileExtensions": [".xml", ".cmr", ".cmr.xml"]
             }
         }
 
@@ -224,12 +224,12 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_glaci
 ## Configuration
 
 As part of the [Cumulus Message Adapter configuration](https://nasa.github.io/cumulus/docs/workflows/input_output#cma-configuration) 
-for `copy_to_glacier`, the `orcaExcludedFileExtensions`, `s3MultipartChunksizeMb`, `providerId`, `executionId`, `collectionShortname`, `collectionVersion` and `orcaDefaultBucketOverride` keys must be present under the 
+for `copy_to_glacier`, the `ExcludedFileExtensions`, `s3MultipartChunksizeMb`, `providerId`, `executionId`, `collectionShortname`, `collectionVersion` and `DefaultBucketOverride` keys must be present under the 
 `task_config` object as seen below. Per the [config schema](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/config.json), 
 the values of the keys are used the following ways. The `provider` key should contain an `id` key that returns the provider id from Cumulus. The `cumulus_meta` key should contain an `execution_name` key that returns the step function execution ID from AWS. 
 The `collection` key value should contain a `name` key and a `version` key that return the required collection shortname and collection version from Cumulus respectively.
-The `collection` key value should also contain a `meta` key that includes an `orca` key having an optional `orcaExcludedFileExtensions` key that is used to determine file patterns that should not be 
-sent to ORCA. In addition, the `orca` key also contains optional `orcaDefaultBucketOverride` key that overrides the `ORCA_DEFAULT_BUCKET` set on deployment and optional `orcaDefaultStorageClassOverride` key that overrides the storage class to use when storing files in Orca. The optional `s3MultipartChunksizeMb` is used to override the default setting for the lambda s3 copy maximum multipart chunk size value when copying large files to ORCA.
+The `collection` key value should also contain a `meta` key that includes an `orca` key having an optional `ExcludedFileExtensions` key that is used to determine file patterns that should not be 
+sent to ORCA. In addition, the `orca` key also contains optional `DefaultBucketOverride` key that overrides the `ORCA_DEFAULT_BUCKET` set on deployment and optional `DefaultStorageClassOverride` key that overrides the storage class to use when storing files in Orca. The optional `s3MultipartChunksizeMb` is used to override the default setting for the lambda s3 copy maximum multipart chunk size value when copying large files to ORCA.
 These settings can often be derived from the collection configuration in Cumulus as seen below:
 
 ```
@@ -240,14 +240,14 @@ These settings can often be derived from the collection configuration in Cumulus
         "cma": {
           "event.$": "$",
           "task_config": {
-            "s3MultipartChunksizeMb": "{$.meta.collection.meta.orca.s3MultipartChunksizeMb}",
-            "orcaExcludedFileExtensions": "{$.meta.collection.meta.orca.orcaExcludedFileExtensions}",
+            "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
+            "ExcludedFileExtensions": "{$.meta.collection.meta.orca.ExcludedFileExtensions}",
             "providerId": "{$.meta.provider.id}",
             "providerName": "{$.meta.provider.name}",
             "executionId": "{$.cumulus_meta.execution_name}",
             "collectionShortname": "{$.meta.collection.name}",
             "collectionVersion": "{$.meta.collection.version}",
-            "orcaDefaultBucketOverride": "{$.meta.collection.meta.orca.orcaDefaultBucketOverride}"
+            "DefaultBucketOverride": "{$.meta.collection.meta.orca.DefaultBucketOverride}"
           }
         }
       },

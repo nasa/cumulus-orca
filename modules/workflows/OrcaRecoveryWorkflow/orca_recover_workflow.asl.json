@@ -13,7 +13,7 @@
           "task_config": {
             "buckets": "{$.meta.buckets}",
             "fileBucketMaps": "{$.meta.collection.files}",
-            "orcaExcludedFileExtensions": "{$.meta.collection.meta.orca.orcaExcludedFileExtensions}"
+            "ExcludedFileExtensions": "{$.meta.collection.meta.orca.ExcludedFileExtensions}"
           }
         }
       },
@@ -52,8 +52,8 @@
           "task_config": {
             "asyncOperationId": "{$.cumulus_meta.asyncOperationId}",
             "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
-            "orcaDefaultBucketOverride": "{$.meta.collection.meta.orca.orcaDefaultBucketOverride}",
-            "orcaDefaultRecoveryTypeOverride": "{$.meta.collection.meta.orca.orcaDefaultRecoveryTypeOverride}"
+            "DefaultBucketOverride": "{$.meta.collection.meta.orca.DefaultBucketOverride}",
+            "DefaultRecoveryTypeOverride": "{$.meta.collection.meta.orca.DefaultRecoveryTypeOverride}"
           }
         }
       },

@@ -2,8 +2,8 @@
   "task_config": {
     "asyncOperationId": "{$.cumulus_meta.asyncOperationId}",
     "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
-    "orcaDefaultBucketOverride": "{$.meta.collection.meta.orcaDefaultBucketOverride}",
-    "orcaDefaultRecoveryTypeOverride": "{$.meta.collection.meta.orcaDefaultRecoveryTypeOverride}"
+    "DefaultBucketOverride": "{$.meta.collection.meta.DefaultBucketOverride}",
+    "DefaultRecoveryTypeOverride": "{$.meta.collection.meta.DefaultRecoveryTypeOverride}"
   },
   "cumulus_meta": {
     "task": "request_files",
@@ -15,7 +15,7 @@
     "collection": {
       "meta": {
         "granuleRecoveryWorkflow": "OrcaRecoveryWorkflow",
-        "orcaDefaultBucketOverride": "lp-sndbx-cumulus-orca",
+        "DefaultBucketOverride": "lp-sndbx-cumulus-orca",
         "s3MultipartChunksizeMb": 750
       }
     }

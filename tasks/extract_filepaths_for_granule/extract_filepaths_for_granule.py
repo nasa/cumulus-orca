@@ -13,7 +13,7 @@ from run_cumulus_task import run_cumulus_task
 # instantiate Cumulus logger
 LOGGER = CumulusLogger(name="ORCA")
 
-CONFIG_ORCA_EXCLUDED_FILE_EXTENSIONS_KEY = "orcaExcludedFileExtensions"
+CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY = "ExcludedFileExtensions"
 CONFIG_FILE_BUCKETS_KEY = "fileBucketMaps"
 
 OUTPUT_DESTINATION_BUCKET_KEY = "destBucket"
@@ -43,16 +43,16 @@ def task(event, context):  # pylint: disable-msg=unused-argument
     LOGGER.debug("event: {event}", event=event)
     try:
         config = event["config"]
-        exclude_file_types = config.get(CONFIG_ORCA_EXCLUDED_FILE_EXTENSIONS_KEY, None)
+        exclude_file_types = config.get(CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY, None)
         if exclude_file_types is None:
             exclude_file_types = []
         if len(exclude_file_types) == 0:
             LOGGER.debug(
-                f"The configuration list {CONFIG_ORCA_EXCLUDED_FILE_EXTENSIONS_KEY} is empty."
+                f"The configuration list {CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY} is empty."
             )
         else:
             LOGGER.debug(
-                f"The configuration {CONFIG_ORCA_EXCLUDED_FILE_EXTENSIONS_KEY} list {exclude_file_types} was found."
+                f"The configuration {CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY} list {exclude_file_types} was found."
             )
     except KeyError as ke:
         message = "Key {key} is missing from the event configuration: {config}"
@@ -72,7 +72,7 @@ def task(event, context):  # pylint: disable-msg=unused-argument
                 level = "event['input']['granules'][]['files']"
                 file_name = afile["fileName"]
                 LOGGER.debug(f"Validating file {file_name}")
-                # filtering orcaExcludedFileExtensions
+                # filtering ExcludedFileExtensions
                 if not should_exclude_files_type(file_name, exclude_file_types):
                     LOGGER.debug(f"File {file_name} will be restored")
                     file_key = afile["key"]
@@ -146,7 +146,7 @@ def get_regex_buckets(event):
 
 def should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> bool:
     """
-    Tests whether or not file is included in {orcaExcludedFileExtensions} from copy to glacier.
+    Tests whether or not file is included in {ExcludedFileExtensions} from copy to glacier.
     Args:
         file_key: The key of the file within the s3 bucket.
         exclude_file_types: List of extensions to exclude in the backup.

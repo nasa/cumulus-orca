@@ -20,9 +20,9 @@ OS_ENVIRON_DEFAULT_STORAGE_CLASS_KEY = "DEFAULT_STORAGE_CLASS"
 OS_ENVIRON_ORCA_DEFAULT_BUCKET_KEY = "ORCA_DEFAULT_BUCKET"
 
 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = "s3MultipartChunksizeMb"
-CONFIG_ORCA_EXCLUDED_FILE_EXTENSIONS_KEY = "orcaExcludedFileExtensions"
-CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY = "orcaDefaultBucketOverride"
-CONFIG_ORCA_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY = "orcaDefaultStorageClassOverride"
+CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY = "ExcludedFileExtensions"
+CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY = "DefaultBucketOverride"
+CONFIG_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY = "DefaultStorageClassOverride"
 # Set Cumulus LOGGER
 LOGGER = CumulusLogger()
 
@@ -34,7 +34,7 @@ FILE_HASH_TYPE_KEY = "checksumType"
 
 def should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> bool:
     """
-    Tests whether file is included in {orcaExcludedFileExtensions} from copy to glacier.
+    Tests whether file is included in {ExcludedFileExtensions} from copy to glacier.
     Args:
         file_key: The key of the file within the s3 bucket.
         exclude_file_types: List of extensions to exclude in the backup.
@@ -141,7 +141,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     granules_list = event_input["granules"]
     config = event["config"]
 
-    exclude_file_types = config.get(CONFIG_ORCA_EXCLUDED_FILE_EXTENSIONS_KEY, None)
+    exclude_file_types = config.get(CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY, None)
     if exclude_file_types is None:
         exclude_file_types = []
 
@@ -207,9 +207,9 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
             if should_exclude_files_type(file_filepath, exclude_file_types):
                 LOGGER.info(
                     "Excluding {file_filepath} from glacier backup "
-                    "because of collection configured {CONFIG_ORCA_EXCLUDED_FILE_EXTENSIONS_KEY}.",
+                    "because of collection configured {CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY}.",
                     file_filepath=file_filepath,
-                    CONFIG_ORCA_EXCLUDED_FILE_EXTENSIONS_KEY=CONFIG_ORCA_EXCLUDED_FILE_EXTENSIONS_KEY,
+                    CONFIG_ORCA_EXCLUDED_FILE_EXTENSIONS_KEY=CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY,
                 )
                 continue
             result = copy_granule_between_buckets(
@@ -261,10 +261,10 @@ def get_destination_bucket_name(config: Dict[str, Any]) -> str:
         The name of the bucket to use.
     """
     try:
-        destination_bucket = config[CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY]
+        destination_bucket = config[CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY]
     except KeyError:
         LOGGER.warning(
-            f"{CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY} is not set. "
+            f"{CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY} is not set. "
             f"Using {OS_ENVIRON_ORCA_DEFAULT_BUCKET_KEY} environment value."
         )
         destination_bucket = None
@@ -306,10 +306,10 @@ def get_storage_class(config: Dict[str, Any]) -> str:
     """
     try:
         # run_cumulus_task checked config against config.json, so the number of values this can be is limited.
-        storage_class = config[CONFIG_ORCA_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY]
+        storage_class = config[CONFIG_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY]
     except KeyError:
         LOGGER.warning(
-            f"{CONFIG_ORCA_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY} is not set. "
+            f"{CONFIG_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY} is not set. "
             f"Using {OS_ENVIRON_DEFAULT_STORAGE_CLASS_KEY} environment value."
         )
         storage_class = None

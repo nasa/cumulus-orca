@@ -58,7 +58,7 @@
           }
         ]
       },
-      "orcaExcludedFileExtensions": {
+      "ExcludedFileExtensions": {
         "type": ["array", "null"],
         "description": "A list of file extensions to ignore when copying files.",
         "items": {
