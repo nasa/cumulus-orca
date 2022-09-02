@@ -93,7 +93,7 @@ if it fails, waiting {retry_sleep_secs} between each attempt.
   Note that because we are using CumulusMessageAdapter, this may not directly correspond to Lambda input.
 - `event` - A dict with the following keys:
 - `'config'` _dict_ - A dict with the following keys:
-- `'DefaultBucketOverride'` _str_ - The name of the glacier bucket from which the files
+- `'defaultBucketOverride'` _str_ - The name of the glacier bucket from which the files
   will be restored.
 - `'asyncOperationId'` _str_ - The unique identifier used for tracking requests.
 - `'input'` _dict_ - A dict with the following keys:

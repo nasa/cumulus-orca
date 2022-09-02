@@ -5,7 +5,7 @@
   "description": "The config for the copy_to_glacier Lambda.",
   "type": "object",
   "properties": {
-    "ExcludedFileExtensions": {
+    "excludedFileExtensions": {
       "type": ["array", "null"],
       "description": "A list of file extensions to ignore when copying files.",
       "items": {
@@ -37,11 +37,11 @@
       "type": "string",
       "description": "Collection version from Cumulus."
     },
-    "DefaultBucketOverride": {
+    "defaultBucketOverride": {
       "type": ["string", "null"],
       "description": "Overrides the default bucket to copy to in os.environ['ORCA_DEFAULT_BUCKET']."
     },
-    "DefaultStorageClassOverride": {
+    "defaultStorageClassOverride": {
       "type": ["string", "null"],
       "description": "The class of storage to use when ingesting files. Can be overridden by collection config. Must match value in storage_class table.",
       "pattern": "^(GLACIER|DEEP_ARCHIVE)$"

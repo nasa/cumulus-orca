@@ -36,8 +36,8 @@ OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY = "ORCA_DEFAULT_BUCKET"
 EVENT_CONFIG_KEY = "config"
 EVENT_INPUT_KEY = "input"
 
-CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY = "DefaultBucketOverride"
-CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY = "DefaultRecoveryTypeOverride"
+CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY = "defaultBucketOverride"
+CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY = "defaultRecoveryTypeOverride"
 
 INPUT_GRANULES_KEY = "granules"
 
@@ -228,7 +228,7 @@ def inner_task(
             Note that because we are using CumulusMessageAdapter, this may not directly correspond to Lambda input.
             event: A dict with the following keys:
                 'config' (dict): A dict with the following keys:
-                    'DefaultBucketOverride' (str): The name of the glacier bucket from which the files
+                    'defaultBucketOverride' (str): The name of the glacier bucket from which the files
                     will be restored.
                     'asyncOperationId' (str): The unique identifier used for tracking requests.
                 'input' (dict): A dict with the following keys:

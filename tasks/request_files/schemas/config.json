@@ -13,11 +13,11 @@
       "description": "Overrides default_multipart_chunksize from TF.",
       "type": ["number", "null"]
     },
-    "DefaultBucketOverride": {
+    "defaultBucketOverride": {
       "type": ["string", "null"],
       "description": "Overrides the default bucket to copy to in os.environ['ORCA_DEFAULT_BUCKET']."
     },
-    "DefaultRecoveryTypeOverride": {
+    "defaultRecoveryTypeOverride": {
       "type": ["string", "null"],
       "description": "Overrides the default restore type in os.environ['DEFAULT_RECOVERY_TYPE']."
     }

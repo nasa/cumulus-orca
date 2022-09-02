@@ -16,30 +16,30 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 ### Changed
-- *ORCA-290* Renamed `excludeFileTypes`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` to `ExcludedFileExtensions`, `DefaultBucketOverride` and  `DefaultStorageClassOverride` respectively. In addition, ORCA configuration variables `ExcludedFileExtensions`, `DefaultBucketOverride` and `DefaultStorageClassOverride` are now under a new key `orca` under `meta` key.
+- *ORCA-290* Renamed `excludeFileTypes`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` to `excludedFileExtensions`, `defaultBucketOverride` and  `defaultStorageClassOverride` respectively. In addition, ORCA configuration variables `excludedFileExtensions`, `defaultBucketOverride` and `defaultStorageClassOverride` are now under a new key `orca` under `meta` key.
 - *ORCA-290* Adjusted workflows/step functions for `OrcaRecoveryWorkflow`.
-  - `excludeFileTypes`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` arguments in `task_config` are now `ExcludedFileExtensions`, `DefaultBucketOverride` and  `DefaultStorageClassOverride` respectively.
-  - `ExcludedFileExtensions`, `DefaultBucketOverride` and `DefaultStorageClassOverride` keys are now under a new key `orca`. See the above example under `Migration Notes`.
+  - `excludeFileTypes`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` arguments in `task_config` are now `excludedFileExtensions`, `defaultBucketOverride` and  `defaultStorageClassOverride` respectively.
+  - `excludedFileExtensions`, `defaultBucketOverride` and `defaultStorageClassOverride` keys are now under a new key `orca`. See the above example under `Migration Notes`.
 
 ### Migration Notes
 
 - Adjust workflows/step functions for `OrcaCopyToGlacierWorkflow`.
-  -  `excludeFileTypes`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` arguments in `task_config` are now `ExcludedFileExtensions`, `DefaultBucketOverride` and  `DefaultStorageClassOverride` respectively.
-  - `ExcludedFileExtensions`, `DefaultBucketOverride` and `DefaultStorageClassOverride` keys are now under a new key `orca`. See example below:
+  -  `excludeFileTypes`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` arguments in `task_config` are now `excludedFileExtensions`, `defaultBucketOverride` and  `defaultStorageClassOverride` respectively.
+  - `excludedFileExtensions`, `defaultBucketOverride` and `defaultStorageClassOverride` keys are now under a new key `orca`. See example below:
 ```json
 "task_config": {
-  "ExcludedFileExtensions": "{$.meta.collection.meta.orca.ExcludedFileExtensions}",
-  "DefaultBucketOverride": "{$.meta.collection.meta.orca.DefaultBucketOverride}",
-  "DefaultStorageClassOverride": "{$.meta.collection.meta.orca.DefaultStorageClassOverride}"
+  "excludedFileExtensions": "{$.meta.collection.meta.orca.excludedFileExtensions}",
+  "defaultBucketOverride": "{$.meta.collection.meta.orca.defaultBucketOverride}",
+  "defaultStorageClassOverride": "{$.meta.collection.meta.orca.defaultStorageClassOverride}"
 }
 ```
 ```json
 "collection": {
     "meta":{
         "orca": {
-          "DefaultStorageClassOverride": "DEEP_ARCHIVE",
-          "ExcludedFileExtensions": [".xml"],
-          "DefaultBucketOverride": "orca-bucket"
+          "defaultStorageClassOverride": "DEEP_ARCHIVE",
+          "excludedFileExtensions": [".xml"],
+          "defaultBucketOverride": "orca-bucket"
       }
   }
 }

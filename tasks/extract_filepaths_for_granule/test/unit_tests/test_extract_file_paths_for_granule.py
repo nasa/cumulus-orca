@@ -303,7 +303,7 @@ class TestExtractFilePaths(unittest.TestCase):
     def test_exclude_file_type(self):
         """
         Tests the exclude file type filtering. The .cmr filetype will be excluded and not show up in the output since the "extract_filepaths_for_granule/test/unit_tests/testevents/task_event.json" includes
-        "ExcludedFileExtensions": [".cmr"]
+        "excludedFileExtensions": [".cmr"]
         """
         self.task_input_event["input"]["granules"] = [
             {

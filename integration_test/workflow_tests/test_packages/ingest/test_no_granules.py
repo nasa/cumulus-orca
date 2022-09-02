@@ -54,15 +54,15 @@ class TestNoGranules(TestCase):
                 },
                 "cumulus_meta": {"execution_name": execution_id},
                 "task_config": {
-                    "ExcludedFileExtensions": "{$.meta.collection.meta.orca.ExcludedFileExtensions}",
+                    "excludedFileExtensions": "{$.meta.collection.meta.orca.excludedFileExtensions}",
                     "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
                     "providerId": "{$.meta.provider.id}",
                     "providerName": "{$.meta.provider.name}",
                     "executionId": "{$.cumulus_meta.execution_name}",
                     "collectionShortname": "{$.meta.collection.name}",
                     "collectionVersion": "{$.meta.collection.version}",
-                    "DefaultBucketOverride": "{$.meta.collection.meta.orca.DefaultBucketOverride}",
-                    "DefaultStorageClassOverride": "{$.meta.collection.meta.orca.DefaultStorageClassOverride}",
+                    "defaultBucketOverride": "{$.meta.collection.meta.orca.defaultBucketOverride}",
+                    "defaultStorageClassOverride": "{$.meta.collection.meta.orca.defaultStorageClassOverride}",
                 },
                 "exception": "None",
             }
