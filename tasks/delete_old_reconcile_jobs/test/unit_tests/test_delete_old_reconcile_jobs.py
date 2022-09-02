@@ -2,15 +2,12 @@
 Name: test_delete_old_reconcile_jobs.py
 Description:  Unit tests for test_delete_old_reconcile_jobs.py.
 """
-import copy
 import datetime
 import os
 import random
 import unittest
 import uuid
 from unittest.mock import MagicMock, Mock, call, patch
-
-from orca_shared.reconciliation import OrcaStatus
 
 import delete_old_reconcile_jobs
 

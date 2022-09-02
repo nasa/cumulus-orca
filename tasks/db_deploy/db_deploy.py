@@ -31,15 +31,16 @@ def handler(
     """
     Lambda handler for db_deploy. The handler generates the database connection
     configuration information, sets logging handler information and calls the
-    Lambda task function. See the `shared_db.get_configuration(db_connect_info_secret_arn)` function for
-    information on the needed environment variables and parameter store names
+    Lambda task function. See the `shared_db.get_configuration(db_connect_info_secret_arn)`
+    function for information on the needed environment variables and parameter store names
     required by this Lambda.
 
     Args:
         event (Dict): Event dictionary passed by AWS.
         context (object): An object required by AWS Lambda.
     Environment Vars:
-        DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
+        DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret
+        for connecting to the database.
         See shared_db.py's get_configuration for further details.
 
     Raises:
@@ -51,7 +52,7 @@ def handler(
     # get the secret ARN from the env variable
     try:
         db_connect_info_secret_arn = os.environ["DB_CONNECT_INFO_SECRET_ARN"]
-    except KeyError as key_error:
+    except KeyError:
         logger.error("DB_CONNECT_INFO_SECRET_ARN environment value not found.")
         raise
 
