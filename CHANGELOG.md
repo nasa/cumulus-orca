@@ -16,16 +16,16 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 ### Changed
-- *ORCA-290* Renamed `excludeFileTypes` to `orcaExcludedFileRegEx`. In addition, ORCA configuration variables `orcaExcludedFileRegEx`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` are now under a new key `orca` under `meta` key.  
+- *ORCA-290* Renamed `excludeFileTypes` to `orcaExcludedFileExtensions`. In addition, ORCA configuration variables `orcaExcludedFileExtensions`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` are now under a new key `orca` under `meta` key.  
 
 ### Migration Notes
 
 - Adjust workflows/step functions for `OrcaCopyToGlacierWorkflow`.
-  - `excludeFileTypes` argument in `task_config` is now `orcaExcludedFileRegEx`.
-  - `orcaExcludedFileRegEx`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` keys are now under a new key `orca`. See example below:
+  - `excludeFileTypes` argument in `task_config` is now `orcaExcludedFileExtensions`.
+  - `orcaExcludedFileExtensions`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` keys are now under a new key `orca`. See example below:
 ```json
 "task_config": {
-  "orcaExcludedFileRegEx": "{$.meta.collection.meta.orca.orcaExcludedFileRegEx}",
+  "orcaExcludedFileExtensions": "{$.meta.collection.meta.orca.orcaExcludedFileExtensions}",
   "orcaDefaultBucketOverride": "{$.meta.collection.meta.orca.orcaDefaultBucketOverride}",
   "orcaDefaultStorageClassOverride": "{$.meta.collection.meta.orca.orcaDefaultStorageClassOverride}"
 }
@@ -35,7 +35,7 @@ and includes an additional section for migration notes.
     "meta":{
         "orca": {
           "orcaDefaultStorageClassOverride": "DEEP_ARCHIVE",
-          "orcaExcludedFileRegEx": [".xml"],
+          "orcaExcludedFileExtensions": [".xml"],
           "orcaDefaultBucketOverride": "orca-bucket"
       }
   }
@@ -43,8 +43,8 @@ and includes an additional section for migration notes.
 
 ```
 - Adjust workflows/step functions for `OrcaRecoveryWorkflow`.
-  - `excludeFileTypes` argument in `task_config` is now `orcaExcludedFileRegEx`.
-  - `orcaExcludedFileRegEx`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` keys are now under a new key `orca`. See the above example.
+  - `excludeFileTypes` argument in `task_config` is now `orcaExcludedFileExtensions`.
+  - `orcaExcludedFileExtensions`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` keys are now under a new key `orca`. See the above example.
 
 ## [5.1.0]
 ### Changed

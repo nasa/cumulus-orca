@@ -55,7 +55,7 @@
           "private": {"name": "sndbx-cumulus-private", "type": "private"},
           "public": {"name": "sndbx-cumulus-public", "type": "public"}},
       
-        "orcaExcludedFileRegEx": [
+        "orcaExcludedFileExtensions": [
         ".cmr"
       ]
     }

@@ -20,7 +20,7 @@ OS_ENVIRON_DEFAULT_STORAGE_CLASS_KEY = "DEFAULT_STORAGE_CLASS"
 OS_ENVIRON_ORCA_DEFAULT_BUCKET_KEY = "ORCA_DEFAULT_BUCKET"
 
 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = "s3MultipartChunksizeMb"
-CONFIG_ORCA_EXCLUDED_FILE_REGEX_KEY = "orcaExcludedFileRegEx"
+CONFIG_ORCA_EXCLUDED_FILE_EXTENSIONS = "orcaExcludedFileExtensions"
 CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY = "orcaDefaultBucketOverride"
 CONFIG_ORCA_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY = "orcaDefaultStorageClassOverride"
 # Set Cumulus LOGGER
@@ -34,7 +34,7 @@ FILE_HASH_TYPE_KEY = "checksumType"
 
 def should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> bool:
     """
-    Tests whether file is included in {orcaExcludedFileRegEx} from copy to glacier.
+    Tests whether file is included in {orcaExcludedFileExtensions} from copy to glacier.
     Args:
         file_key: The key of the file within the s3 bucket.
         exclude_file_types: List of extensions to exclude in the backup.
@@ -141,7 +141,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     granules_list = event_input["granules"]
     config = event["config"]
 
-    exclude_file_types = config.get(CONFIG_ORCA_EXCLUDED_FILE_REGEX_KEY, None)
+    exclude_file_types = config.get(CONFIG_ORCA_EXCLUDED_FILE_EXTENSIONS, None)
     if exclude_file_types is None:
         exclude_file_types = []
 
@@ -207,9 +207,9 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
             if should_exclude_files_type(file_filepath, exclude_file_types):
                 LOGGER.info(
                     "Excluding {file_filepath} from glacier backup "
-                    "because of collection configured {CONFIG_ORCA_EXCLUDED_FILE_REGEX_KEY}.",
+                    "because of collection configured {CONFIG_ORCA_EXCLUDED_FILE_EXTENSIONS}.",
                     file_filepath=file_filepath,
-                    CONFIG_ORCA_EXCLUDED_FILE_REGEX_KEY=CONFIG_ORCA_EXCLUDED_FILE_REGEX_KEY,
+                    CONFIG_ORCA_EXCLUDED_FILE_EXTENSIONS=CONFIG_ORCA_EXCLUDED_FILE_EXTENSIONS,
                 )
                 continue
             result = copy_granule_between_buckets(

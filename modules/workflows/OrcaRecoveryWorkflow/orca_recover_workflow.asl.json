@@ -13,7 +13,7 @@
           "task_config": {
             "buckets": "{$.meta.buckets}",
             "fileBucketMaps": "{$.meta.collection.files}",
-            "orcaExcludedFileRegEx": "{$.meta.collection.meta.orca.orcaExcludedFileRegEx}"
+            "orcaExcludedFileExtensions": "{$.meta.collection.meta.orca.orcaExcludedFileExtensions}"
           }
         }
       },
