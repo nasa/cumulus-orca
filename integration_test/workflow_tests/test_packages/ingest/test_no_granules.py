@@ -1,7 +1,7 @@
 import json
+import logging
 import time
 import uuid
-import logging
 from unittest import TestCase
 
 import boto3
@@ -31,7 +31,10 @@ class TestNoGranules(TestCase):
             copy_to_glacier_input = {
                 "payload": {"granules": []},
                 "meta": {
-                    "collection": {"name": collection_name, "version": collection_version},
+                    "collection": {
+                        "name": collection_name,
+                        "version": collection_version,
+                    },
                     "provider": {
                         "id": provider_id,
                         "name": provider_name,
@@ -43,20 +46,23 @@ class TestNoGranules(TestCase):
             expected_output = {
                 "payload": {"granules": [], "copied_to_glacier": []},
                 "meta": {
-                    "collection": {"name": collection_name, "version": collection_version},
+                    "collection": {
+                        "name": collection_name,
+                        "version": collection_version,
+                    },
                     "provider": {"id": provider_id, "name": provider_name},
                 },
                 "cumulus_meta": {"execution_name": execution_id},
                 "task_config": {
-                    "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
+                    "excludedFileExtensions": "{$.meta.collection.meta.orca.excludedFileExtensions}",
                     "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
                     "providerId": "{$.meta.provider.id}",
                     "providerName": "{$.meta.provider.name}",
                     "executionId": "{$.cumulus_meta.execution_name}",
                     "collectionShortname": "{$.meta.collection.name}",
                     "collectionVersion": "{$.meta.collection.version}",
-                    "orcaDefaultBucketOverride": "{$.meta.collection.meta.orcaDefaultBucketOverride}",
-                    "orcaDefaultStorageClassOverride": "{$.meta.collection.meta.orcaDefaultStorageClassOverride}",
+                    "defaultBucketOverride": "{$.meta.collection.meta.orca.defaultBucketOverride}",
+                    "defaultStorageClassOverride": "{$.meta.collection.meta.orca.defaultStorageClassOverride}",
                 },
                 "exception": "None",
             }

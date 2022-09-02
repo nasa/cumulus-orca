@@ -15,8 +15,38 @@ and includes an additional section for migration notes.
 
 
 ## [Unreleased]
+### Changed
+- *ORCA-290* Renamed `excludeFileTypes`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` to `excludedFileExtensions`, `defaultBucketOverride` and  `defaultStorageClassOverride` respectively. In addition, ORCA configuration variables `excludedFileExtensions`, `defaultBucketOverride` and `defaultStorageClassOverride` are now under `collection.meta.orca`.
+- *ORCA-290* Adjusted workflows/step functions for `OrcaRecoveryWorkflow`.
+  - `excludeFileTypes`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` arguments in `task_config` are now `excludedFileExtensions`, `defaultBucketOverride` and  `defaultStorageClassOverride` respectively.
+  - `excludedFileExtensions`, `defaultBucketOverride` and `defaultStorageClassOverride` keys are now under `collection.meta.orca`. See the example below under `Migration Notes`.
 
-[5.1.0]
+### Migration Notes
+
+- Adjust workflows/step functions for `OrcaCopyToGlacierWorkflow`.
+  -  `excludeFileTypes`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` arguments in `task_config` are now `excludedFileExtensions`, `defaultBucketOverride` and  `defaultStorageClassOverride` respectively.
+  - `excludedFileExtensions`, `defaultBucketOverride` and `defaultStorageClassOverride` keys are now under a new key `orca`. See example below:
+```json
+"task_config": {
+  "excludedFileExtensions": "{$.meta.collection.meta.orca.excludedFileExtensions}",
+  "defaultBucketOverride": "{$.meta.collection.meta.orca.defaultBucketOverride}",
+  "defaultStorageClassOverride": "{$.meta.collection.meta.orca.defaultStorageClassOverride}"
+}
+```
+```json
+"collection": {
+    "meta":{
+        "orca": {
+          "defaultStorageClassOverride": "DEEP_ARCHIVE",
+          "excludedFileExtensions": [".xml"],
+          "defaultBucketOverride": "orca-bucket"
+      }
+  }
+}
+
+```
+
+## [5.1.0]
 ### Changed
 - *ORCA-359* Updated Python version from 3.7 to 3.9.
 - *ORCA-478* Updated bucket policy documentation for deep glacier bucket in DR account so that the users now can only upload objects with storage type as either `GLACIER` or `DEEP_ARCHIVE`.

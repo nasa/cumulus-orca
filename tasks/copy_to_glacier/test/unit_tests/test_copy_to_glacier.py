@@ -140,7 +140,7 @@ class TestCopyToGlacierHandler(TestCase):
         handler_input_event = {
             "payload": {"granules": granules},
             "task_config": {
-                CONFIG_EXCLUDE_FILE_TYPES_KEY: [".png"],
+                CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY: [".png"],
                 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: 15,
                 "providerId": uuid.uuid4().__str__(),
                 "providerName": uuid.uuid4().__str__(),
@@ -740,7 +740,7 @@ class TestCopyToGlacierHandler(TestCase):
     def test_get_destination_bucket_name_returns_override_if_present(self):
         bucket = Mock()
         result = copy_to_glacier.get_destination_bucket_name(
-            {copy_to_glacier.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: bucket}
+            {copy_to_glacier.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: bucket}
         )
         self.assertEqual(bucket, result)
 
@@ -754,7 +754,7 @@ class TestCopyToGlacierHandler(TestCase):
     ):
         bucket = os.environ[copy_to_glacier.OS_ENVIRON_ORCA_DEFAULT_BUCKET_KEY]
         result = copy_to_glacier.get_destination_bucket_name(
-            {copy_to_glacier.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: None}
+            {copy_to_glacier.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: None}
         )
         self.assertEqual(bucket, result)
 
@@ -771,7 +771,7 @@ class TestCopyToGlacierHandler(TestCase):
     def test_get_destination_bucket_name_no_result_raises_error(self):
         with self.assertRaises(KeyError) as cm:
             copy_to_glacier.get_destination_bucket_name(
-                {copy_to_glacier.CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY: None}
+                {copy_to_glacier.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: None}
             )
         self.assertEqual(
             f"'{copy_to_glacier.OS_ENVIRON_ORCA_DEFAULT_BUCKET_KEY} "
@@ -787,7 +787,7 @@ class TestCopyToGlacierHandler(TestCase):
         storage_class = Mock()
         result = copy_to_glacier.get_storage_class(
             {
-                copy_to_glacier.CONFIG_ORCA_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY: storage_class
+                copy_to_glacier.CONFIG_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY: storage_class
             }
         )
         self.assertEqual(storage_class, result)
@@ -802,7 +802,7 @@ class TestCopyToGlacierHandler(TestCase):
     ):
         storage_class = os.environ[copy_to_glacier.OS_ENVIRON_DEFAULT_STORAGE_CLASS_KEY]
         result = copy_to_glacier.get_storage_class(
-            {copy_to_glacier.CONFIG_ORCA_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY: None}
+            {copy_to_glacier.CONFIG_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY: None}
         )
         self.assertEqual(storage_class, result)
 
@@ -819,7 +819,7 @@ class TestCopyToGlacierHandler(TestCase):
     def test_get_storage_class_no_result_raises_error(self):
         with self.assertRaises(KeyError) as cm:
             copy_to_glacier.get_storage_class(
-                {copy_to_glacier.CONFIG_ORCA_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY: None}
+                {copy_to_glacier.CONFIG_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY: None}
             )
         self.assertEqual(
             f"'{copy_to_glacier.OS_ENVIRON_DEFAULT_STORAGE_CLASS_KEY} "
