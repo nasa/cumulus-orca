@@ -34,7 +34,7 @@ FILE_HASH_TYPE_KEY = "checksumType"
 
 def should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> bool:
     """
-    Tests whether file is included in {ExcludedFileExtensions} from copy to glacier.
+    Tests whether file is included in {excludedFileExtensions} from copy to glacier.
     Args:
         file_key: The key of the file within the s3 bucket.
         exclude_file_types: List of extensions to exclude in the backup.
