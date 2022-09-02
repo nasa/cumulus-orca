@@ -9,7 +9,7 @@ The `copy_to_glacier` module is meant to be deployed as a lambda function that t
 
 ## Exclude files by extension.
 
-You are able to specify a list of file types (extensions) that you'd like to exclude from the backup/copy_to_glacier functionality. This is done on a per-collection basis, configured in the Cumulus collection configuration under the `meta.orca` key in the `excludedFileExtensions` variable:
+You are able to specify a list of file types (extensions) that you'd like to exclude from the backup/copy_to_glacier functionality. This is done on a per-collection basis, configured in the Cumulus collection configuration under the `meta.orca.excludedFileExtensions` key:
 
 ```json
       "collection":{
