@@ -109,9 +109,6 @@ class TestPostToQueueAndTriggerStepFunction(
         """
         If the input record is in a bad format, raise an error.
         """
-        aws_region = uuid.uuid4().__str__()
-        object_key = uuid.uuid4().__str__()
-
         s3_record0 = {
             "awsRegion": uuid.uuid4().__str__(),
             "s3": {
@@ -125,14 +122,15 @@ class TestPostToQueueAndTriggerStepFunction(
                 Mock(),
             )
         self.assertEqual(
-            f"data.Records[0].s3 must contain ['bucket', 'object'] properties",
+            "data.Records[0].s3 must contain ['bucket', 'object'] properties",
             str(cm.exception),
         )
         mock_sleep.assert_not_called()
 
     def test_translate_record_body_happy_path(self):
         """
-        Translates the input SQS record body to a simplified format accepted by get_current_archive_list
+        Translates the input SQS record body to a simplified format
+        accepted by get_current_archive_list
         """
         aws_region = uuid.uuid4().__str__()
         bucket_name = uuid.uuid4().__str__()
@@ -150,9 +148,12 @@ class TestPostToQueueAndTriggerStepFunction(
 
         self.assertEqual(
             {
-                post_to_queue_and_trigger_step_function.OUTPUT_REPORT_BUCKET_REGION_KEY: aws_region,
-                post_to_queue_and_trigger_step_function.OUTPUT_REPORT_BUCKET_NAME_KEY: bucket_name,
-                post_to_queue_and_trigger_step_function.OUTPUT_MANIFEST_KEY_KEY: object_key,
+                post_to_queue_and_trigger_step_function.OUTPUT_REPORT_BUCKET_REGION_KEY:
+                    aws_region,
+                post_to_queue_and_trigger_step_function.OUTPUT_REPORT_BUCKET_NAME_KEY:
+                    bucket_name,
+                post_to_queue_and_trigger_step_function.OUTPUT_MANIFEST_KEY_KEY:
+                    object_key,
             },
             result,
         )
@@ -191,8 +192,10 @@ class TestPostToQueueAndTriggerStepFunction(
         with patch.dict(
             os.environ,
             {
-                post_to_queue_and_trigger_step_function.OS_ENVIRON_TARGET_QUEUE_URL_KEY: target_queue_url,
-                post_to_queue_and_trigger_step_function.OS_ENVIRON_STEP_FUNCTION_ARN_KEY: step_function_arn,
+                post_to_queue_and_trigger_step_function.OS_ENVIRON_TARGET_QUEUE_URL_KEY:
+                    target_queue_url,
+                post_to_queue_and_trigger_step_function.OS_ENVIRON_STEP_FUNCTION_ARN_KEY:
+                    step_function_arn,
             },
         ):
             post_to_queue_and_trigger_step_function.handler(
@@ -219,8 +222,10 @@ class TestPostToQueueAndTriggerStepFunction(
             with patch.dict(
                 os.environ,
                 {
-                    post_to_queue_and_trigger_step_function.OS_ENVIRON_TARGET_QUEUE_URL_KEY: target_queue_url,
-                    post_to_queue_and_trigger_step_function.OS_ENVIRON_STEP_FUNCTION_ARN_KEY: step_function_arn,
+                    post_to_queue_and_trigger_step_function.OS_ENVIRON_TARGET_QUEUE_URL_KEY:
+                        target_queue_url,
+                    post_to_queue_and_trigger_step_function.OS_ENVIRON_STEP_FUNCTION_ARN_KEY:
+                        step_function_arn,
                 },
             ):
                 post_to_queue_and_trigger_step_function.handler(
@@ -251,8 +256,10 @@ class TestPostToQueueAndTriggerStepFunction(
             with patch.dict(
                 os.environ,
                 {
-                    post_to_queue_and_trigger_step_function.OS_ENVIRON_TARGET_QUEUE_URL_KEY: target_queue_url,
-                    post_to_queue_and_trigger_step_function.OS_ENVIRON_STEP_FUNCTION_ARN_KEY: step_function_arn,
+                    post_to_queue_and_trigger_step_function.OS_ENVIRON_TARGET_QUEUE_URL_KEY:
+                        target_queue_url,
+                    post_to_queue_and_trigger_step_function.OS_ENVIRON_STEP_FUNCTION_ARN_KEY:
+                        step_function_arn,
                 },
             ):
                 with self.subTest(key):
@@ -279,8 +286,10 @@ class TestPostToQueueAndTriggerStepFunction(
             with patch.dict(
                 os.environ,
                 {
-                    post_to_queue_and_trigger_step_function.OS_ENVIRON_TARGET_QUEUE_URL_KEY: target_queue_url,
-                    post_to_queue_and_trigger_step_function.OS_ENVIRON_STEP_FUNCTION_ARN_KEY: step_function_arn,
+                    post_to_queue_and_trigger_step_function.OS_ENVIRON_TARGET_QUEUE_URL_KEY:
+                        target_queue_url,
+                    post_to_queue_and_trigger_step_function.OS_ENVIRON_STEP_FUNCTION_ARN_KEY:
+                        step_function_arn,
                 },
             ):
                 post_to_queue_and_trigger_step_function.handler(
@@ -336,12 +345,16 @@ class TestPostToQueueAndTriggerStepFunction(
     @patch.dict(os.environ, {"AWS_DEFAULT_REGION": "us-east-2"}, clear=True)
     def test_post_to_fifo_queue_happy_path(self, mock_sleep: MagicMock):
         """
-        SQS library happy path. Checks that the message sent to SQS is same as the message received from SQS.
+        SQS library happy path. Checks that the message sent to SQS
+        is same as the message received from SQS.
         """
         sqs_body = {
-            post_to_queue_and_trigger_step_function.OUTPUT_REPORT_BUCKET_REGION_KEY: uuid.uuid4().__str__(),
-            post_to_queue_and_trigger_step_function.OUTPUT_MANIFEST_KEY_KEY: uuid.uuid4().__str__(),
-            post_to_queue_and_trigger_step_function.OUTPUT_REPORT_BUCKET_NAME_KEY: uuid.uuid4().__str__(),
+            post_to_queue_and_trigger_step_function.OUTPUT_REPORT_BUCKET_REGION_KEY:
+                uuid.uuid4().__str__(),
+            post_to_queue_and_trigger_step_function.OUTPUT_MANIFEST_KEY_KEY:
+                uuid.uuid4().__str__(),
+            post_to_queue_and_trigger_step_function.OUTPUT_REPORT_BUCKET_NAME_KEY:
+                uuid.uuid4().__str__(),
         }
         # Send values to the function
         sqs_library.post_to_fifo_queue(
@@ -355,7 +368,8 @@ class TestPostToQueueAndTriggerStepFunction(
         # Testing required fields
         self.assertEqual(queue_output_body, sqs_body)
 
-    # todo: since sleep is not called in function under test, this violates good unit test practices. Fix in ORCA-406
+    # Todo: since sleep is not called in function under test,
+    # this violates good unit test practices. Fix in ORCA-406
     @patch("time.sleep")
     @patch.dict(os.environ, {"AWS_DEFAULT_REGION": "us-east-2"}, clear=True)
     def test_post_to_fifo_queue_retry_failures(self, mock_sleep: MagicMock):
@@ -363,9 +377,12 @@ class TestPostToQueueAndTriggerStepFunction(
         Produces a failure and checks if retries are performed in the SQS library.
         """
         sqs_body = {
-            post_to_queue_and_trigger_step_function.OUTPUT_REPORT_BUCKET_REGION_KEY: uuid.uuid4().__str__(),
-            post_to_queue_and_trigger_step_function.OUTPUT_MANIFEST_KEY_KEY: uuid.uuid4().__str__(),
-            post_to_queue_and_trigger_step_function.OUTPUT_REPORT_BUCKET_NAME_KEY: uuid.uuid4().__str__(),
+            post_to_queue_and_trigger_step_function.OUTPUT_REPORT_BUCKET_REGION_KEY:
+                uuid.uuid4().__str__(),
+            post_to_queue_and_trigger_step_function.OUTPUT_MANIFEST_KEY_KEY:
+                uuid.uuid4().__str__(),
+            post_to_queue_and_trigger_step_function.OUTPUT_REPORT_BUCKET_NAME_KEY:
+                uuid.uuid4().__str__(),
         }
         # url is intentionally set wrong so send_message will fail.
         # Send values to the function
@@ -375,7 +392,8 @@ class TestPostToQueueAndTriggerStepFunction(
                 sqs_body,
             )
         self.assertEqual(
-            "An error occurred (AWS.SimpleQueueService.NonExistentQueue) when calling the SendMessage operation: The "
+            "An error occurred (AWS.SimpleQueueService.NonExistentQueue) "
+            "when calling the SendMessage operation: The "
             "specified queue does not exist for this wsdl version.",
             str(cm.exception),
         )

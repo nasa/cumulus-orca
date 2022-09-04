@@ -137,9 +137,12 @@ class TestRequestStatusForJobUnit(
 
         self.assertEqual(
             {
-                request_status_for_job.OUTPUT_JOB_ID_KEY: job_id,
-                request_status_for_job.OUTPUT_JOB_STATUS_TOTALS_KEY: mock_get_status_totals_for_job.return_value,
-                request_status_for_job.OUTPUT_GRANULES_KEY: mock_get_granule_status_entries_for_job.return_value,
+                request_status_for_job.OUTPUT_JOB_ID_KEY:
+                    job_id,
+                request_status_for_job.OUTPUT_JOB_STATUS_TOTALS_KEY:
+                    mock_get_status_totals_for_job.return_value,
+                request_status_for_job.OUTPUT_GRANULES_KEY:
+                    mock_get_granule_status_entries_for_job.return_value,
             },
             result,
         )
@@ -318,6 +321,6 @@ class TestRequestStatusForJobUnit(
 
         mock_get_user_connection.assert_called_once_with(db_connect_info)
         with open("schemas/output.json", "r") as raw_schema:
-            schema = json.loads(raw_schema.read())
+            json.loads(raw_schema.read())
 
         _OUTPUT_VALIDATE(result)

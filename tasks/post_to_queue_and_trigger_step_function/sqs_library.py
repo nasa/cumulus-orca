@@ -1,7 +1,7 @@
 """
 Name: sqs_library.py
-Description: library for post_to_queue_and_trigger_step_function lambda function for posting to fifo SQS queue.
-Largely copied from copy_to_glacier
+Description: library for post_to_queue_and_trigger_step_function lambda
+function for posting to fifo SQS queue. Largely copied from copy_to_glacier
 """
 # todo: Move to shared lib ORCA-406
 # Standard libraries
@@ -84,7 +84,8 @@ def retry_error(
                             + random.uniform(0, 1)  # nosec
                         )
                         LOGGER.error(
-                            f"Encountered Error on attempt {total_retries}. Sleeping {backoff_time} seconds.",
+                            f"Encountered Error on attempt {total_retries}. "
+                            f"Sleeping {backoff_time} seconds.",
                         )
                         time.sleep(backoff_time)
                         total_retries += 1

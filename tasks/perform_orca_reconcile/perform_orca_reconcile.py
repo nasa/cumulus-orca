@@ -2,7 +2,8 @@
 Name: perform_orca_reconcile.py
 
 Description: Compares entries in reconcile_s3_objects to the Orca catalog,
-writing differences to reconcile_catalog_mismatch_report, reconcile_orphan_report, and reconcile_phantom_report.
+writing differences to reconcile_catalog_mismatch_report,
+reconcile_orphan_report, and reconcile_phantom_report.
 """
 import functools
 import json
@@ -49,7 +50,8 @@ def task(
     db_connect_info: Dict,
 ) -> Dict[str, Any]:
     """
-    Reads the record to find the location of manifest.json, then uses that information to spawn of business logic
+    Reads the record to find the location of manifest.json,
+    then uses that information to spawn of business logic
     for pulling manifest's data into sql.
     Args:
         job_id: The id of the job containing s3 inventory info.
@@ -106,19 +108,22 @@ def generate_reports(job_id: int, orca_archive_location: str, engine: Engine) ->
         with engine.begin() as connection:
             LOGGER.debug(f"Generating phantom reports for job id {job_id}.")
             connection.execute(
-                # populate reconcile_phantom_report with files in orca.files but NOT reconcile_s3_object
+                # populate reconcile_phantom_report with files in orca.files
+                # but NOT reconcile_s3_object
                 generate_phantom_reports_sql(),
                 [{"job_id": job_id, "orca_archive_location": orca_archive_location}],
             )
             LOGGER.debug(f"Generating orphan reports for job id {job_id}.")
             connection.execute(
-                # populate reconcile_orphan_report with files in reconcile_s3_object but NOT orca.files
+                # populate reconcile_orphan_report with files in reconcile_s3_object
+                # but NOT orca.files
                 generate_orphan_reports_sql(),
                 [{"job_id": job_id, "orca_archive_location": orca_archive_location}],
             )
             LOGGER.debug(f"Generating mismatch reports for job id {job_id}.")
             connection.execute(
-                # populate reconcile_orphan_report with files in reconcile_s3_object and orca.files but with differences.
+                # populate reconcile_orphan_report with files in reconcile_s3_object and orca.files
+                # but with differences.
                 generate_mismatch_reports_sql(),
                 [{"job_id": job_id, "orca_archive_location": orca_archive_location}],
             )
@@ -133,20 +138,20 @@ def generate_phantom_reports_sql() -> text:  # pragma: no cover
     """
     return text(
         """
-        WITH 
-            phantom_files AS 
+        WITH
+            phantom_files AS
             (
-                SELECT 
-                    files.granule_id, 
-                    files.name, 
-                    files.key_path, 
-                    files.etag, 
+                SELECT
+                    files.granule_id,
+                    files.name,
+                    files.key_path,
+                    files.etag,
                     files.size_in_bytes,
                     files.storage_class_id
-                    
+
                 FROM
                     files
-                LEFT OUTER JOIN reconcile_s3_object USING 
+                LEFT OUTER JOIN reconcile_s3_object USING
                 (
                     orca_archive_location, key_path
                 )
@@ -154,48 +159,48 @@ def generate_phantom_reports_sql() -> text:  # pragma: no cover
                     files.orca_archive_location = :orca_archive_location AND
                     reconcile_s3_object.key_path IS NULL
             ),
-            phantom_reports AS 
+            phantom_reports AS
             (
-                SELECT 
-                    granule_id, 
-                    collection_id, 
-                    name, 
-                    key_path, 
-                    etag, 
-                    last_update, 
-                    size_in_bytes, 
+                SELECT
+                    granule_id,
+                    collection_id,
+                    name,
+                    key_path,
+                    etag,
+                    last_update,
+                    size_in_bytes,
                     cumulus_granule_id,
                     storage_class_id
-                FROM 
+                FROM
                     phantom_files
-                INNER JOIN granules ON 
+                INNER JOIN granules ON
                 (
                     phantom_files.granule_id=granules.id
                 )
             )
-        INSERT INTO reconcile_phantom_report 
+        INSERT INTO reconcile_phantom_report
         (
-            job_id, 
-            collection_id, 
-            granule_id, 
-            filename, 
-            key_path, 
-            orca_etag, 
-            orca_last_update, 
+            job_id,
+            collection_id,
+            granule_id,
+            filename,
+            key_path,
+            orca_etag,
+            orca_last_update,
             orca_size,
             orca_storage_class_id
         )
-        SELECT 
-            :job_id, 
-            collection_id, 
-            cumulus_granule_id, 
-            name, 
-            key_path, 
-            etag, 
-            last_update, 
+        SELECT
+            :job_id,
+            collection_id,
+            cumulus_granule_id,
+            name,
+            key_path,
+            etag,
+            last_update,
             size_in_bytes,
             storage_class_id
-        FROM 
+        FROM
             phantom_reports"""
     )
 
@@ -206,18 +211,18 @@ def generate_orphan_reports_sql() -> text:  # pragma: no cover
     """
     return text(
         f"""
-        WITH 
-            orphan_reports AS 
+        WITH
+            orphan_reports AS
             (
-                SELECT 
-                    reconcile_s3_object.key_path, 
-                    reconcile_s3_object.etag, 
+                SELECT
+                    reconcile_s3_object.key_path,
+                    reconcile_s3_object.etag,
                     reconcile_s3_object.last_update,
-                    reconcile_s3_object.size_in_bytes, 
+                    reconcile_s3_object.size_in_bytes,
                     reconcile_s3_object.storage_class
                 FROM
                     reconcile_s3_object
-                LEFT OUTER JOIN files USING 
+                LEFT OUTER JOIN files USING
                 (
                     orca_archive_location, key_path
                 )
@@ -225,24 +230,24 @@ def generate_orphan_reports_sql() -> text:  # pragma: no cover
                     reconcile_s3_object.orca_archive_location = :orca_archive_location AND
                     files.key_path IS NULL
             )
-        INSERT INTO reconcile_orphan_report 
+        INSERT INTO reconcile_orphan_report
         (
-            job_id, 
-            key_path, 
-            etag, 
-            last_update, 
-            size_in_bytes, 
+            job_id,
+            key_path,
+            etag,
+            last_update,
+            size_in_bytes,
             storage_class
         )
-            SELECT 
-                :job_id, 
-                key_path, 
-                etag, 
-                last_update, 
-                size_in_bytes, 
+            SELECT
+                :job_id,
+                key_path,
+                etag,
+                last_update,
+                size_in_bytes,
                 storage_class
-            FROM 
-                orphan_reports"""  # nosec
+            FROM
+                orphan_reports"""  # nosec  # noqa
     )
 
 
@@ -252,63 +257,68 @@ def generate_mismatch_reports_sql() -> text:  # pragma: no cover
     """
     return text(
         f"""
-        INSERT INTO orca.reconcile_catalog_mismatch_report 
+        INSERT INTO orca.reconcile_catalog_mismatch_report
         (
-            job_id, 
-            collection_id, 
-            granule_id, 
-            filename, 
-            key_path, 
-            cumulus_archive_location, 
-            orca_etag, 
+            job_id,
+            collection_id,
+            granule_id,
+            filename,
+            key_path,
+            cumulus_archive_location,
+            orca_etag,
             s3_etag,
-            orca_last_update, 
-            s3_last_update, 
-            orca_size_in_bytes, 
-            s3_size_in_bytes, 
+            orca_last_update,
+            s3_last_update,
+            orca_size_in_bytes,
+            s3_size_in_bytes,
             orca_storage_class_id,
             s3_storage_class,
             discrepancy_type
         )
         SELECT
             :job_id,
-            granules.collection_id, 
-            granules.cumulus_granule_id AS granule_id, 
-            files.name AS filename, 
+            granules.collection_id,
+            granules.cumulus_granule_id AS granule_id,
+            files.name AS filename,
             files.key_path,
-            files.cumulus_archive_location, 
-            files.etag AS orca_etag, 
+            files.cumulus_archive_location,
+            files.etag AS orca_etag,
             reconcile_s3_object.etag AS s3_etag,
             granules.last_update AS orca_last_update,
             reconcile_s3_object.last_update AS s3_last_update,
-            files.size_in_bytes AS orca_size_in_bytes, 
+            files.size_in_bytes AS orca_size_in_bytes,
             reconcile_s3_object.size_in_bytes AS s3_size_in_bytes,
             files.storage_class_id AS orca_storage_class_id,
             reconcile_s3_object.storage_class AS s3_storage_class,
-            CASE 
-                WHEN (files.etag != reconcile_s3_object.etag AND files.size_in_bytes != reconcile_s3_object.size_in_bytes AND storage_class.value != reconcile_s3_object.storage_class) 
+            CASE
+                WHEN (files.etag != reconcile_s3_object.etag AND
+                    files.size_in_bytes != reconcile_s3_object.size_in_bytes AND
+                    storage_class.value != reconcile_s3_object.storage_class)
                     THEN 'etag, size_in_bytes, storage_class'
-                WHEN (files.etag != reconcile_s3_object.etag AND files.size_in_bytes != reconcile_s3_object.size_in_bytes) 
+                WHEN (files.etag != reconcile_s3_object.etag AND
+                    files.size_in_bytes != reconcile_s3_object.size_in_bytes)
                     THEN 'etag, size_in_bytes'
-                WHEN files.etag != reconcile_s3_object.etag AND storage_class.value != reconcile_s3_object.storage_class
+                WHEN files.etag != reconcile_s3_object.etag AND
+                    storage_class.value != reconcile_s3_object.storage_class
                     THEN 'etag, storage_class'
-                WHEN files.size_in_bytes != reconcile_s3_object.size_in_bytes AND storage_class.value != reconcile_s3_object.storage_class
+                WHEN files.size_in_bytes != reconcile_s3_object.size_in_bytes AND
+                    storage_class.value != reconcile_s3_object.storage_class
                     THEN 'size_in_bytes, storage_class'
-                WHEN files.etag != reconcile_s3_object.etag 
+                WHEN files.etag != reconcile_s3_object.etag
                     THEN 'etag'
-                WHEN files.size_in_bytes != reconcile_s3_object.size_in_bytes 
+                WHEN files.size_in_bytes != reconcile_s3_object.size_in_bytes
                     THEN 'size_in_bytes'
                 WHEN storage_class.value != reconcile_s3_object.storage_class
                     THEN 'storage_class'
                 ELSE 'UNKNOWN'
             END AS discrepancy_type
-        FROM 
+        FROM
             reconcile_s3_object
-        INNER JOIN files USING 
+        INNER JOIN files USING
         (
             orca_archive_location, key_path
         )
-        INNER JOIN granules ON 
+        INNER JOIN granules ON
         (
             files.granule_id=granules.id
         )
@@ -323,7 +333,7 @@ def generate_mismatch_reports_sql() -> text:  # pragma: no cover
                 files.etag != reconcile_s3_object.etag OR
                 files.size_in_bytes != reconcile_s3_object.size_in_bytes OR
                 storage_class.value != reconcile_s3_object.storage_class
-            )"""  # nosec
+            )"""  # nosec   # noqa
     )
 
 
@@ -395,10 +405,11 @@ def remove_job_from_queue(internal_report_queue_url: str, message_receipt_handle
 
     Args:
         internal_report_queue_url: The url of the queue containing the message.
-        message_receipt_handle: message_receipt_handle: The ReceiptHandle for the event in the queue.
+        message_receipt_handle: The ReceiptHandle for the event in the queue.
     """
     aws_client_sqs = boto3.client("sqs")
-    LOGGER.debug(f"Deleting message '{message_receipt_handle}' from queue '{internal_report_queue_url}'")
+    LOGGER.debug(
+        f"Deleting message '{message_receipt_handle}' from queue '{internal_report_queue_url}'")
     # Remove message from the queue we are listening to.
     aws_client_sqs.delete_message(
         QueueUrl=internal_report_queue_url,
@@ -410,13 +421,16 @@ def handler(
     event: Dict[str, Dict[str, Dict[str, Union[str, int]]]], context
 ) -> Dict[str, Any]:
     """
-    Lambda handler. Receives a list of s3 events from an SQS queue, and loads the s3 inventory specified into postgres.
+    Lambda handler. Receives a list of s3 events from an SQS queue,
+    and loads the s3 inventory specified into postgres.
     Args:
         event: See input.json for details.
         context: An object passed through by AWS. Used for tracking.
     Environment Vars:
-        INTERNAL_REPORT_QUEUE_URL (string): The URL of the SQS queue the job came from.
-        DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
+        INTERNAL_REPORT_QUEUE_URL (string):
+            The URL of the SQS queue the job came from.
+        DB_CONNECT_INFO_SECRET_ARN (string):
+            Secret ARN of the AWS secretsmanager secret for connecting to the database.
         See shared_db.py's get_configuration for further details.
     Returns: See output.json for details.
     """
@@ -438,7 +452,7 @@ def handler(
         db_connect_info_secret_arn = os.environ["DB_CONNECT_INFO_SECRET_ARN"]
     except KeyError as key_error:
         LOGGER.error("DB_CONNECT_INFO_SECRET_ARN environment value not found.")
-        raise
+        raise key_error
 
     inner_event = event[INPUT_EVENT_KEY]
     job_id = inner_event[EVENT_JOB_ID_KEY]

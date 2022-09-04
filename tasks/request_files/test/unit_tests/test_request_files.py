@@ -90,8 +90,10 @@ class TestRequestFiles(unittest.TestCase):
         mock_inner_task.assert_called_once_with(
             {
                 request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: mock_get_default_glacier_bucket_name.return_value,
-                    request_files.CONFIG_JOB_ID_KEY: job_id,
+                    request_files.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY:
+                        mock_get_default_glacier_bucket_name.return_value,
+                    request_files.CONFIG_JOB_ID_KEY:
+                        job_id,
                 },
             },
             max_retries,
@@ -141,8 +143,10 @@ class TestRequestFiles(unittest.TestCase):
         mock_inner_task.assert_called_once_with(
             {
                 request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: mock_get_default_glacier_bucket_name.return_value,
-                    request_files.CONFIG_JOB_ID_KEY: job_id,
+                    request_files.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY:
+                        mock_get_default_glacier_bucket_name.return_value,
+                    request_files.CONFIG_JOB_ID_KEY:
+                        job_id,
                 },
             },
             request_files.DEFAULT_MAX_REQUEST_RETRIES,
@@ -192,8 +196,10 @@ class TestRequestFiles(unittest.TestCase):
         mock_inner_task.assert_called_once_with(
             {
                 request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: mock_get_default_glacier_bucket_name.return_value,
-                    request_files.CONFIG_JOB_ID_KEY: job_id,
+                    request_files.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY:
+                        mock_get_default_glacier_bucket_name.return_value,
+                    request_files.CONFIG_JOB_ID_KEY:
+                        job_id,
                 },
             },
             max_retries,
@@ -243,8 +249,10 @@ class TestRequestFiles(unittest.TestCase):
         mock_inner_task.assert_called_once_with(
             {
                 request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: mock_get_default_glacier_bucket_name.return_value,
-                    request_files.CONFIG_JOB_ID_KEY: job_id,
+                    request_files.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY:
+                        mock_get_default_glacier_bucket_name.return_value,
+                    request_files.CONFIG_JOB_ID_KEY:
+                        job_id,
                 },
             },
             max_retries,
@@ -299,8 +307,10 @@ class TestRequestFiles(unittest.TestCase):
         mock_inner_task.assert_called_once_with(
             {
                 request_files.EVENT_CONFIG_KEY: {
-                    request_files.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: mock_get_default_glacier_bucket_name.return_value,
-                    request_files.CONFIG_JOB_ID_KEY: job_id.__str__(),
+                    request_files.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY:
+                        mock_get_default_glacier_bucket_name.return_value,
+                    request_files.CONFIG_JOB_ID_KEY:
+                        job_id.__str__(),
                 },
             },
             max_retries,
@@ -430,14 +440,22 @@ class TestRequestFiles(unittest.TestCase):
                     glacier_bucket,
                     [
                         {
-                            request_files.FILE_PROCESSED_KEY: False,  # This value is changed by process_granule.
-                            shared_recovery.FILENAME_KEY: file_key_0,
-                            shared_recovery.KEY_PATH_KEY: file_key_0,
-                            shared_recovery.RESTORE_DESTINATION_KEY: file_dest_bucket_0,
-                            shared_recovery.MULTIPART_CHUNKSIZE_KEY: collection_multipart_chunksize_mb,
-                            shared_recovery.STATUS_ID_KEY: OrcaStatus.PENDING.value,
-                            shared_recovery.REQUEST_TIME_KEY: mock.ANY,
-                            shared_recovery.LAST_UPDATE_KEY: mock.ANY,
+                            request_files.FILE_PROCESSED_KEY:
+                                False,  # This value is changed by process_granule.
+                            shared_recovery.FILENAME_KEY:
+                                file_key_0,
+                            shared_recovery.KEY_PATH_KEY:
+                                file_key_0,
+                            shared_recovery.RESTORE_DESTINATION_KEY:
+                                file_dest_bucket_0,
+                            shared_recovery.MULTIPART_CHUNKSIZE_KEY:
+                                collection_multipart_chunksize_mb,
+                            shared_recovery.STATUS_ID_KEY:
+                                OrcaStatus.PENDING.value,
+                            shared_recovery.REQUEST_TIME_KEY:
+                                mock.ANY,
+                            shared_recovery.LAST_UPDATE_KEY:
+                                mock.ANY,
                         }
                     ],
                     db_queue_url,
@@ -448,14 +466,22 @@ class TestRequestFiles(unittest.TestCase):
                     glacier_bucket,
                     [
                         {
-                            request_files.FILE_PROCESSED_KEY: False,  # This value is changed by process_granule.
-                            shared_recovery.FILENAME_KEY: file_key_1,
-                            shared_recovery.KEY_PATH_KEY: file_key_1,
-                            shared_recovery.RESTORE_DESTINATION_KEY: file_dest_bucket_1,
-                            shared_recovery.MULTIPART_CHUNKSIZE_KEY: collection_multipart_chunksize_mb,
-                            shared_recovery.STATUS_ID_KEY: OrcaStatus.PENDING.value,
-                            shared_recovery.REQUEST_TIME_KEY: mock.ANY,
-                            shared_recovery.LAST_UPDATE_KEY: mock.ANY,
+                            request_files.FILE_PROCESSED_KEY:
+                                False,  # This value is changed by process_granule.
+                            shared_recovery.FILENAME_KEY:
+                                file_key_1,
+                            shared_recovery.KEY_PATH_KEY:
+                                file_key_1,
+                            shared_recovery.RESTORE_DESTINATION_KEY:
+                                file_dest_bucket_1,
+                            shared_recovery.MULTIPART_CHUNKSIZE_KEY:
+                                collection_multipart_chunksize_mb,
+                            shared_recovery.STATUS_ID_KEY:
+                                OrcaStatus.PENDING.value,
+                            shared_recovery.REQUEST_TIME_KEY:
+                                mock.ANY,
+                            shared_recovery.LAST_UPDATE_KEY:
+                                mock.ANY,
                         }
                     ],
                     db_queue_url,
@@ -513,8 +539,8 @@ class TestRequestFiles(unittest.TestCase):
         mock_create_status_for_job: MagicMock,
     ):
         """
-        If the recovery type is 'Expedited', then files found with storage class 'DEEP_ARCHIVE' cannot be recovered.
-        Should mark file as processed, and move on.
+        If the recovery type is 'Expedited', then files found with storage class
+        'DEEP_ARCHIVE' cannot be recovered. Should mark file as processed, and move on.
         """
         glacier_bucket = uuid.uuid4().__str__()
         collection_multipart_chunksize_mb = random.randint(1, 10000)  # nosec
@@ -627,16 +653,26 @@ class TestRequestFiles(unittest.TestCase):
                     glacier_bucket,
                     [
                         {
-                            request_files.FILE_PROCESSED_KEY: True,
-                            shared_recovery.FILENAME_KEY: file_key_0,
-                            shared_recovery.KEY_PATH_KEY: file_key_0,
-                            shared_recovery.RESTORE_DESTINATION_KEY: file_dest_bucket_0,
-                            shared_recovery.MULTIPART_CHUNKSIZE_KEY: collection_multipart_chunksize_mb,
-                            shared_recovery.STATUS_ID_KEY: OrcaStatus.FAILED.value,
-                            shared_recovery.REQUEST_TIME_KEY: mock.ANY,
-                            shared_recovery.LAST_UPDATE_KEY: mock.ANY,
-                            shared_recovery.ERROR_MESSAGE_KEY: file_0_error_message,
-                            shared_recovery.COMPLETION_TIME_KEY: mock.ANY,
+                            request_files.FILE_PROCESSED_KEY:
+                                True,
+                            shared_recovery.FILENAME_KEY:
+                                file_key_0,
+                            shared_recovery.KEY_PATH_KEY:
+                                file_key_0,
+                            shared_recovery.RESTORE_DESTINATION_KEY:
+                                file_dest_bucket_0,
+                            shared_recovery.MULTIPART_CHUNKSIZE_KEY:
+                                collection_multipart_chunksize_mb,
+                            shared_recovery.STATUS_ID_KEY:
+                                OrcaStatus.FAILED.value,
+                            shared_recovery.REQUEST_TIME_KEY:
+                                mock.ANY,
+                            shared_recovery.LAST_UPDATE_KEY:
+                                mock.ANY,
+                            shared_recovery.ERROR_MESSAGE_KEY:
+                                file_0_error_message,
+                            shared_recovery.COMPLETION_TIME_KEY:
+                                mock.ANY,
                         }
                     ],
                     db_queue_url,
@@ -647,14 +683,22 @@ class TestRequestFiles(unittest.TestCase):
                     glacier_bucket,
                     [
                         {
-                            request_files.FILE_PROCESSED_KEY: False,  # This value is changed by process_granule.
-                            shared_recovery.FILENAME_KEY: file_key_1,
-                            shared_recovery.KEY_PATH_KEY: file_key_1,
-                            shared_recovery.RESTORE_DESTINATION_KEY: file_dest_bucket_1,
-                            shared_recovery.MULTIPART_CHUNKSIZE_KEY: collection_multipart_chunksize_mb,
-                            shared_recovery.STATUS_ID_KEY: OrcaStatus.PENDING.value,
-                            shared_recovery.REQUEST_TIME_KEY: mock.ANY,
-                            shared_recovery.LAST_UPDATE_KEY: mock.ANY,
+                            request_files.FILE_PROCESSED_KEY:
+                                False,  # This value is changed by process_granule.
+                            shared_recovery.FILENAME_KEY:
+                                file_key_1,
+                            shared_recovery.KEY_PATH_KEY:
+                                file_key_1,
+                            shared_recovery.RESTORE_DESTINATION_KEY:
+                                file_dest_bucket_1,
+                            shared_recovery.MULTIPART_CHUNKSIZE_KEY:
+                                collection_multipart_chunksize_mb,
+                            shared_recovery.STATUS_ID_KEY:
+                                OrcaStatus.PENDING.value,
+                            shared_recovery.REQUEST_TIME_KEY:
+                                mock.ANY,
+                            shared_recovery.LAST_UPDATE_KEY:
+                                mock.ANY,
                         }
                     ],
                     db_queue_url,
@@ -795,14 +839,13 @@ class TestRequestFiles(unittest.TestCase):
         retry_sleep_secs = randint(0, 99)  # nosec
         recovery_type = uuid.uuid4().__str__()
         restore_expire_days = randint(0, 99)  # nosec
-        mock_s3_cli = mock_boto3_client("s3")
 
         mock_get_s3_object_information.return_value = {"StorageClass": "DEEP_ARCHIVE"}
 
         mock_create_status_for_job.side_effect = Exception("mock insert failed error")
 
         with self.assertRaises(Exception) as cm:
-            result = request_files.inner_task(
+            result = request_files.inner_task(  # noqa
                 event,
                 max_retries,
                 retry_sleep_secs,
@@ -823,15 +866,22 @@ class TestRequestFiles(unittest.TestCase):
                     glacier_bucket,
                     [
                         {
-                            request_files.FILE_PROCESSED_KEY: False,
-                            # This value is changed by process_granule.
-                            shared_recovery.FILENAME_KEY: file_key_0,
-                            shared_recovery.KEY_PATH_KEY: file_key_0,
-                            shared_recovery.RESTORE_DESTINATION_KEY: file_dest_bucket_0,
-                            shared_recovery.MULTIPART_CHUNKSIZE_KEY: collection_multipart_chunksize_mb,
-                            shared_recovery.STATUS_ID_KEY: OrcaStatus.PENDING.value,
-                            shared_recovery.REQUEST_TIME_KEY: mock.ANY,
-                            shared_recovery.LAST_UPDATE_KEY: mock.ANY,
+                            request_files.FILE_PROCESSED_KEY:
+                            False,  # This value is changed by process_granule.
+                            shared_recovery.FILENAME_KEY:
+                            file_key_0,
+                            shared_recovery.KEY_PATH_KEY:
+                            file_key_0,
+                            shared_recovery.RESTORE_DESTINATION_KEY:
+                            file_dest_bucket_0,
+                            shared_recovery.MULTIPART_CHUNKSIZE_KEY:
+                                collection_multipart_chunksize_mb,
+                            shared_recovery.STATUS_ID_KEY:
+                                OrcaStatus.PENDING.value,
+                            shared_recovery.REQUEST_TIME_KEY:
+                                mock.ANY,
+                            shared_recovery.LAST_UPDATE_KEY:
+                                mock.ANY,
                         }
                     ],
                     db_queue_url,
@@ -919,16 +969,26 @@ class TestRequestFiles(unittest.TestCase):
             request_files.FILE_MULTIPART_CHUNKSIZE_MB_KEY: collection_multipart_chunksize_mb,
         }
         expected_missing_file_output = {
-            request_files.FILE_PROCESSED_KEY: True,
-            request_files.FILE_FILENAME_KEY: missing_file_key,
-            request_files.FILE_KEY_PATH_KEY: missing_file_key,
-            request_files.FILE_RESTORE_DESTINATION_KEY: missing_file_dest_bucket,
-            request_files.FILE_MULTIPART_CHUNKSIZE_MB_KEY: collection_multipart_chunksize_mb,
-            request_files.FILE_STATUS_ID_KEY: OrcaStatus.FAILED.value,
-            request_files.FILE_REQUEST_TIME_KEY: mock.ANY,
-            request_files.FILE_LAST_UPDATE_KEY: mock.ANY,
-            request_files.FILE_ERROR_MESSAGE_KEY: f"'{missing_file_key}' does not exist in '{glacier_bucket}' bucket",
-            request_files.FILE_COMPLETION_TIME_KEY: mock.ANY,
+            request_files.FILE_PROCESSED_KEY:
+                True,
+            request_files.FILE_FILENAME_KEY:
+                missing_file_key,
+            request_files.FILE_KEY_PATH_KEY:
+                missing_file_key,
+            request_files.FILE_RESTORE_DESTINATION_KEY:
+                missing_file_dest_bucket,
+            request_files.FILE_MULTIPART_CHUNKSIZE_MB_KEY:
+                collection_multipart_chunksize_mb,
+            request_files.FILE_STATUS_ID_KEY:
+                OrcaStatus.FAILED.value,
+            request_files.FILE_REQUEST_TIME_KEY:
+                mock.ANY,
+            request_files.FILE_LAST_UPDATE_KEY:
+                mock.ANY,
+            request_files.FILE_ERROR_MESSAGE_KEY:
+                f"'{missing_file_key}' does not exist in '{glacier_bucket}' bucket",
+            request_files.FILE_COMPLETION_TIME_KEY:
+                mock.ANY,
         }
 
         expected_input_granule_files = [
@@ -993,36 +1053,62 @@ class TestRequestFiles(unittest.TestCase):
             # Compare to orca_shared to verify schema.
             [
                 {
-                    request_files.FILE_PROCESSED_KEY: False,  # This value is changed by process_granule.
-                    shared_recovery.FILENAME_KEY: file_key_0,
-                    shared_recovery.KEY_PATH_KEY: file_key_0,
-                    shared_recovery.RESTORE_DESTINATION_KEY: file_dest_bucket_0,
-                    shared_recovery.MULTIPART_CHUNKSIZE_KEY: collection_multipart_chunksize_mb,
-                    shared_recovery.STATUS_ID_KEY: OrcaStatus.PENDING.value,
-                    shared_recovery.REQUEST_TIME_KEY: mock.ANY,
-                    shared_recovery.LAST_UPDATE_KEY: mock.ANY,
+                    request_files.FILE_PROCESSED_KEY:
+                        False,  # This value is changed by process_granule.
+                    shared_recovery.FILENAME_KEY:
+                        file_key_0,
+                    shared_recovery.KEY_PATH_KEY:
+                        file_key_0,
+                    shared_recovery.RESTORE_DESTINATION_KEY:
+                        file_dest_bucket_0,
+                    shared_recovery.MULTIPART_CHUNKSIZE_KEY:
+                        collection_multipart_chunksize_mb,
+                    shared_recovery.STATUS_ID_KEY:
+                        OrcaStatus.PENDING.value,
+                    shared_recovery.REQUEST_TIME_KEY:
+                        mock.ANY,
+                    shared_recovery.LAST_UPDATE_KEY:
+                        mock.ANY,
                 },
                 {
-                    request_files.FILE_PROCESSED_KEY: True,  # Set to `True` when not found.
-                    shared_recovery.FILENAME_KEY: missing_file_key,
-                    shared_recovery.KEY_PATH_KEY: missing_file_key,
-                    shared_recovery.RESTORE_DESTINATION_KEY: missing_file_dest_bucket,
-                    shared_recovery.MULTIPART_CHUNKSIZE_KEY: collection_multipart_chunksize_mb,
-                    shared_recovery.STATUS_ID_KEY: OrcaStatus.FAILED.value,
-                    shared_recovery.REQUEST_TIME_KEY: mock.ANY,
-                    shared_recovery.LAST_UPDATE_KEY: mock.ANY,
-                    shared_recovery.ERROR_MESSAGE_KEY: f"'{missing_file_key}' does not exist in '{glacier_bucket}' bucket",
-                    shared_recovery.COMPLETION_TIME_KEY: mock.ANY,
+                    request_files.FILE_PROCESSED_KEY:
+                        True,  # Set to `True` when not found.
+                    shared_recovery.FILENAME_KEY:
+                        missing_file_key,
+                    shared_recovery.KEY_PATH_KEY:
+                        missing_file_key,
+                    shared_recovery.RESTORE_DESTINATION_KEY:
+                        missing_file_dest_bucket,
+                    shared_recovery.MULTIPART_CHUNKSIZE_KEY:
+                        collection_multipart_chunksize_mb,
+                    shared_recovery.STATUS_ID_KEY:
+                        OrcaStatus.FAILED.value,
+                    shared_recovery.REQUEST_TIME_KEY:
+                        mock.ANY,
+                    shared_recovery.LAST_UPDATE_KEY:
+                        mock.ANY,
+                    shared_recovery.ERROR_MESSAGE_KEY:
+                        f"'{missing_file_key}' does not exist in '{glacier_bucket}' bucket",
+                    shared_recovery.COMPLETION_TIME_KEY:
+                        mock.ANY,
                 },
                 {
-                    request_files.FILE_PROCESSED_KEY: False,  # This value is changed by process_granule.
-                    shared_recovery.FILENAME_KEY: file_key_1,
-                    shared_recovery.KEY_PATH_KEY: file_key_1,
-                    shared_recovery.RESTORE_DESTINATION_KEY: file_dest_bucket_1,
-                    shared_recovery.MULTIPART_CHUNKSIZE_KEY: collection_multipart_chunksize_mb,
-                    shared_recovery.STATUS_ID_KEY: OrcaStatus.PENDING.value,
-                    shared_recovery.REQUEST_TIME_KEY: mock.ANY,
-                    shared_recovery.LAST_UPDATE_KEY: mock.ANY,
+                    request_files.FILE_PROCESSED_KEY:
+                        False,  # This value is changed by process_granule.
+                    shared_recovery.FILENAME_KEY:
+                        file_key_1,
+                    shared_recovery.KEY_PATH_KEY:
+                        file_key_1,
+                    shared_recovery.RESTORE_DESTINATION_KEY:
+                        file_dest_bucket_1,
+                    shared_recovery.MULTIPART_CHUNKSIZE_KEY:
+                        collection_multipart_chunksize_mb,
+                    shared_recovery.STATUS_ID_KEY:
+                        OrcaStatus.PENDING.value,
+                    shared_recovery.REQUEST_TIME_KEY:
+                        mock.ANY,
+                    shared_recovery.LAST_UPDATE_KEY:
+                        mock.ANY,
                 },
             ],
             db_queue_url,
@@ -1140,12 +1226,14 @@ class TestRequestFiles(unittest.TestCase):
         with self.assertRaises(ValueError) as ve:
             request_files.get_glacier_recovery_type(config)
         self.assertEqual(
-            f"Invalid restore type value in configuration {request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} key.",
+            f"Invalid restore type value in configuration "
+            f"{request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} key.",
             ve.exception.args[0],
         )
         mock_logger_error.assert_called_once_with(
-            f"Invalid restore type value of '{config[request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY]}' "
-            f"found in the configuration {request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} key."
+            f"Invalid restore type value of "
+            f"'{config[request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY]}' found in the "
+            f"configuration {request_files.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} key."
         )
 
     @patch.dict(
@@ -1179,11 +1267,13 @@ class TestRequestFiles(unittest.TestCase):
         with self.assertRaises(ValueError) as ve:
             request_files.get_glacier_recovery_type(config)
         self.assertEqual(
-            f"Invalid restore type value in environment variable {request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY}",
+            f"Invalid restore type value in environment variable "
+            f"{request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY}",
             ve.exception.args[0],
         )
         mock_logger_error.assert_called_once_with(
-            f"Invalid restore type value of '{os.environ[request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY]}' "
+            f"Invalid restore type value of "
+            f"'{os.environ[request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY]}' "
             f"found in environment variable {request_files.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY}."
         )
 
@@ -1457,10 +1547,12 @@ class TestRequestFiles(unittest.TestCase):
         mock_logger_error.assert_has_calls(
             [
                 call(
-                    f"Failed to restore '{file_name_0}' from '{glacier_bucket}'. Encountered error '{str(expected_error)}'."
+                    f"Failed to restore '{file_name_0}' from "
+                    f"'{glacier_bucket}'. Encountered error '{str(expected_error)}'."
                 ),
                 call(
-                    f"One or more files failed to be requested from '{glacier_bucket}'. GRANULE: {json.dumps(granule)}",
+                    f"One or more files failed to be requested from "
+                    f"'{glacier_bucket}'. GRANULE: {json.dumps(granule)}",
                 ),
             ]
         )
@@ -1477,7 +1569,8 @@ class TestRequestFiles(unittest.TestCase):
         mock_update_status_for_file: MagicMock,
     ):
         """
-        If a file expended all attempts for recovery, and posting to status DB expended all attempts, raise error.
+        If a file expended all attempts for recovery, and posting to
+        status DB expended all attempts, raise error.
         """
         mock_s3 = Mock()
         max_retries = randint(3, 20)  # nosec
@@ -1586,10 +1679,12 @@ class TestRequestFiles(unittest.TestCase):
         mock_logger_error.assert_has_calls(
             [
                 call(
-                    f"Failed to restore '{file_name_0}' from '{glacier_bucket}'. Encountered error '{str(expected_error)}'."
+                    f"Failed to restore '{file_name_0}' from "
+                    f"'{glacier_bucket}'. Encountered error '{str(expected_error)}'."
                 ),
                 call(
-                    f"Ran into error posting to SQS {max_retries + 1} time(s) with exception '{str(expected_status_error)}'"
+                    f"Ran into error posting to SQS {max_retries + 1} time(s) "
+                    f"with exception '{str(expected_status_error)}'"
                 ),
             ],
             any_order=True,
@@ -1704,8 +1799,8 @@ class TestRequestFiles(unittest.TestCase):
     @patch("cumulus_logger.CumulusLogger.info")
     def test_restore_object_200_returned_raises(self, mock_logger_info: MagicMock):
         """
-        A 200 indicates that the file is already restored, and thus cannot presently be restored again.
-        Should be raised.
+        A 200 indicates that the file is already restored,  and thus cannot
+        presently be restored again. Should be raised.
         """
         glacier_bucket = uuid.uuid4().__str__()
         key = uuid.uuid4().__str__()
