@@ -5,7 +5,6 @@ import uuid
 from unittest import TestCase
 
 import boto3
-
 import helpers
 
 
@@ -54,15 +53,24 @@ class TestNoGranules(TestCase):
                 },
                 "cumulus_meta": {"execution_name": execution_id},
                 "task_config": {
-                    "excludedFileExtensions": "{$.meta.collection.meta.orca.excludedFileExtensions}",
-                    "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
-                    "providerId": "{$.meta.provider.id}",
-                    "providerName": "{$.meta.provider.name}",
-                    "executionId": "{$.cumulus_meta.execution_name}",
-                    "collectionShortname": "{$.meta.collection.name}",
-                    "collectionVersion": "{$.meta.collection.version}",
-                    "defaultBucketOverride": "{$.meta.collection.meta.orca.defaultBucketOverride}",
-                    "defaultStorageClassOverride": "{$.meta.collection.meta.orca.defaultStorageClassOverride}",
+                    "excludedFileExtensions":
+                        "{$.meta.collection.meta.orca.excludedFileExtensions}",
+                    "s3MultipartChunksizeMb":
+                        "{$.meta.collection.meta.s3MultipartChunksizeMb}",
+                    "providerId":
+                        "{$.meta.provider.id}",
+                    "providerName":
+                        "{$.meta.provider.name}",
+                    "executionId":
+                        "{$.cumulus_meta.execution_name}",
+                    "collectionShortname":
+                        "{$.meta.collection.name}",
+                    "collectionVersion":
+                        "{$.meta.collection.version}",
+                    "defaultBucketOverride":
+                        "{$.meta.collection.meta.orca.defaultBucketOverride}",
+                    "defaultStorageClassOverride":
+                        "{$.meta.collection.meta.orca.defaultStorageClassOverride}",
                 },
                 "exception": "None",
             }
