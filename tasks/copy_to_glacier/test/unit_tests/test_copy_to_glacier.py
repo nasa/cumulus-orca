@@ -17,7 +17,7 @@ from moto import mock_sqs
 import copy_to_glacier
 import sqs_library
 from copy_to_glacier import (
-    CONFIG_EXCLUDE_FILE_TYPES_KEY,
+    CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY,
     CONFIG_MULTIPART_CHUNKSIZE_MB_KEY,
     should_exclude_files_type,
     task,
