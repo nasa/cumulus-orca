@@ -120,7 +120,7 @@ Resulting Cloudwatch message:
 ## Recommendation
 - As the [Python CumulusLogger](https://github.com/nasa/cumulus-message-adapter-python#logging-with-cumuluslogger) is tied to Cumulus, 
   it is recommended that we decouple from it.
-  - Any references to deployed layer should removed from Terraform.
+  - Any references to deployed layer should be removed from Terraform, including deployed layer and Step Function configuration.
   - Schema validation checks should be added to calling function.
   - References to run_cumulus_task should be replaced with manual transformation of inputs into non-architecture-specific formats.
   - `copy_to_glacier` S3 requirements could be accomplished with a helper Lambda developed initially by us and maintained by Cumulus that handles the S3 retrieval 
