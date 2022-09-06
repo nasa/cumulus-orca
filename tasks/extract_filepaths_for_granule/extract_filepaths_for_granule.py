@@ -52,7 +52,8 @@ def task(event, context):  # pylint: disable-msg=unused-argument
             )
         else:
             LOGGER.debug(
-                f"The configuration {CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY} list {exclude_file_types} was found."
+                f"The configuration {CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY} "
+                f"list {exclude_file_types} was found."
             )
     except KeyError as ke:
         message = "Key {key} is missing from the event configuration: {config}"
@@ -157,7 +158,8 @@ def should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> b
         # Returns the first instance in the string that matches .ext or None if no match was found.
         if re.search(f"^.*{file_type}$", file_key) is not None:
             LOGGER.warn(
-                f"The file {file_key} will not be restored because it matches the excluded file type {file_type}."
+                f"The file {file_key} will not be restored "
+                f"because it matches the excluded file type {file_type}."
             )
             return True
     return False

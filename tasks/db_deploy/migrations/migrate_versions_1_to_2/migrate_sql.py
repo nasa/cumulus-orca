@@ -3,7 +3,6 @@ Name: orca_sql_v2.py
 
 Description: All the SQL used for creating and migrating the ORCA schema to version 2.
 """
-from orca_shared.database.shared_db import logger
 from sqlalchemy import text
 
 

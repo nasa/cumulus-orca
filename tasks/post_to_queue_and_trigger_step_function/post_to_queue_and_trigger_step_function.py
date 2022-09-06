@@ -1,8 +1,9 @@
 """
 Name: post_to_queue_and_trigger_step_function.py
 
-Description: Receives an events from an SQS queue, translates to get_current_archive_list's input format,
-sends it to another queue, then triggers the internal report step function.
+Description: Receives an events from an SQS queue,translates to
+get_current_archive_list's input format, sends it to another queue,
+then triggers the internal report step function.
 """
 import json
 import os

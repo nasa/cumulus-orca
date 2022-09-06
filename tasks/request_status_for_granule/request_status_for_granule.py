@@ -35,7 +35,8 @@ def task(
         job_id: An optional additional filter to get a specific job's entry.
     Returns: See output.json
 
-        Will also return a dict from create_http_error_dict with error NOT_FOUND if job/granule could not be found.
+        Will also return a dict from create_http_error_dict with error
+        NOT_FOUND if job/granule could not be found.
     """
     if granule_id is None or len(granule_id) == 0:
         raise ValueError("granule_id must be set to a non-empty value.")
@@ -183,8 +184,10 @@ def get_job_entry_for_granule_sql() -> text:  # pragma: no cover
                 SELECT
                     granule_id as "{OUTPUT_GRANULE_ID_KEY}",
                     job_id as "{OUTPUT_JOB_ID_KEY}",
-                    (EXTRACT(EPOCH FROM date_trunc('milliseconds', request_time) AT TIME ZONE 'UTC') * 1000)::bigint as "{OUTPUT_REQUEST_TIME_KEY}",
-                    (EXTRACT(EPOCH FROM date_trunc('milliseconds', completion_time) AT TIME ZONE 'UTC') * 1000)::bigint as "{OUTPUT_COMPLETION_TIME_KEY}"
+                    (EXTRACT(EPOCH FROM date_trunc('milliseconds', request_time)
+                    AT TIME ZONE 'UTC') * 1000)::bigint as "{OUTPUT_REQUEST_TIME_KEY}",
+                    (EXTRACT(EPOCH FROM date_trunc('milliseconds', completion_time)
+                    AT TIME ZONE 'UTC') * 1000)::bigint as "{OUTPUT_COMPLETION_TIME_KEY}"
                 FROM
                     recovery_job
                 WHERE
@@ -207,8 +210,10 @@ def get_file_entries_for_granule_in_job(
     Returns: A Dict with the following keys:
         'file_name' (str): The name and extension of the file.
         'restore_destination' (str): The name of the glacier bucket the file is being copied to.
-        'status' (str): The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.
-        'error_message' (str): If the restoration of the file errored, the error will be stored here. Otherwise, None.
+        'status' (str): The status of the restoration of the file.
+            May be 'pending', 'staged', 'success', or 'failed'.
+        'error_message' (str): If the restoration of the file errored,
+            the error will be stored here. Otherwise, None.
     """
     try:
         with engine.begin() as connection:
@@ -295,30 +300,36 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         context: An object provided by AWS Lambda. Used for context tracking.
 
     Environment Vars:
-        DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
+        DB_CONNECT_INFO_SECRET_ARN (string):
+            Secret ARN of the AWS secretsmanager secret for connecting to the database.
         See shared_db.py's get_configuration for further details.
 
     Returns: A Dict with the following keys:
         'granule_id' (str): The unique ID of the granule to retrieve status for.
         'asyncOperationId' (str): The unique ID of the asyncOperation.
-        'files' (List): Description and status of the files within the given granule. List of Dicts with keys:
-            'file_name' (str): The name and extension of the file.
-            'restore_destination' (str): The name of the glacier bucket the file is being copied to.
-            'status' (str): The status of the restoration of the file.
-                May be 'pending', 'staged', 'success', or 'failed'.
-            'error_message' (str, Optional): If the restoration of the file errored, the error will be stored here.
-        'request_time' (DateTime): The time, in UTC isoformat, when the request to restore the granule was initiated.
-        'completion_time' (DateTime, Optional):
-            The time, in UTC isoformat, when all granule_files were no longer 'pending'/'staged'.
+        'files' (List): Description and status of the files within the given granule.
+            List of Dicts with keys:
+                'file_name' (str): The name and extension of the file.
+                'restore_destination' (str): The name of the glacier bucket
+                    the file is being copied to.
+                'status' (str): The status of the restoration of the file.
+                    May be 'pending', 'staged', 'success', or 'failed'.
+                'error_message' (str, Optional): If the restoration of the file errored,
+                    the error will be stored here.
+        'request_time' (DateTime): The time, in UTC isoformat,
+            when the request to restore the granule was initiated.
+        'completion_time' (DateTime, Optional): The time, in UTC isoformat,
+            when all granule_files were no longer 'pending'/'staged'.
 
         Or, if an error occurs, see create_http_error_dict
-            400 if granule_id is missing. 500 if an error occurs when querying the database, 404 if not found.
+            400 if granule_id is missing.
+            500 if an error occurs when querying the database, 404 if not found.
     """
 
     # get the secret ARN from the env variable
     try:
         db_connect_info_secret_arn = os.environ["DB_CONNECT_INFO_SECRET_ARN"]
-    except KeyError as key_error:
+    except KeyError:
         LOGGER.error("DB_CONNECT_INFO_SECRET_ARN environment value not found.")
         raise
 

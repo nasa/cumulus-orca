@@ -7,7 +7,7 @@ import os
 import random
 import time
 import uuid
-from unittest import TestCase, mock
+from unittest import TestCase
 from unittest.mock import MagicMock, Mock, call, patch
 
 # noinspection PyPackageRequirements
@@ -130,18 +130,18 @@ class TestPostCopyRequestToQueue(TestCase):
             with patch.dict(
                 os.environ,
                 {
-                    post_copy_request_to_queue.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY: uuid.uuid4().__str__(),
-                    post_copy_request_to_queue.OS_ENVIRON_RECOVERY_QUEUE_URL_KEY: uuid.uuid4().__str__(),
-                    post_copy_request_to_queue.OS_ENVIRON_MAX_RETRIES_KEY: str(
-                        random.randint(0, 100)  # nosec
-                    ),
-                    post_copy_request_to_queue.OS_ENVIRON_RETRY_SLEEP_SECS_KEY: str(
-                        random.randint(0, 100)  # nosec
-                    ),
-                    post_copy_request_to_queue.OS_ENVIRON_RETRY_BACKOFF_KEY: str(
-                        random.randint(0, 100)  # nosec
-                    ),
-                    post_copy_request_to_queue.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY: uuid.uuid4().__str__(),
+                    post_copy_request_to_queue.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY:
+                        uuid.uuid4().__str__(),
+                    post_copy_request_to_queue.OS_ENVIRON_RECOVERY_QUEUE_URL_KEY:
+                        uuid.uuid4().__str__(),
+                    post_copy_request_to_queue.OS_ENVIRON_MAX_RETRIES_KEY:
+                        str(random.randint(0, 100)),  # nosec
+                    post_copy_request_to_queue.OS_ENVIRON_RETRY_SLEEP_SECS_KEY:
+                        str(random.randint(0, 100)),  # nosec
+                    post_copy_request_to_queue.OS_ENVIRON_RETRY_BACKOFF_KEY:
+                        str(random.randint(0, 100)),  # nosec
+                    post_copy_request_to_queue.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY:
+                        uuid.uuid4().__str__(),
                 },
                 clear=True,
             ):
@@ -152,11 +152,16 @@ class TestPostCopyRequestToQueue(TestCase):
     @patch.dict(
         os.environ,
         {
-            post_copy_request_to_queue.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY: "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
-            post_copy_request_to_queue.OS_ENVIRON_RECOVERY_QUEUE_URL_KEY: "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
-            post_copy_request_to_queue.OS_ENVIRON_MAX_RETRIES_KEY: "1",
-            post_copy_request_to_queue.OS_ENVIRON_RETRY_SLEEP_SECS_KEY: "2",
-            post_copy_request_to_queue.OS_ENVIRON_RETRY_BACKOFF_KEY: "3",
+            post_copy_request_to_queue.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY:
+                "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
+            post_copy_request_to_queue.OS_ENVIRON_RECOVERY_QUEUE_URL_KEY:
+                "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
+            post_copy_request_to_queue.OS_ENVIRON_MAX_RETRIES_KEY:
+                "1",
+            post_copy_request_to_queue.OS_ENVIRON_RETRY_SLEEP_SECS_KEY:
+                "2",
+            post_copy_request_to_queue.OS_ENVIRON_RETRY_BACKOFF_KEY:
+                "3",
         },
         clear=True,
     )
@@ -206,11 +211,16 @@ class TestPostCopyRequestToQueue(TestCase):
     @patch.dict(
         os.environ,
         {
-            post_copy_request_to_queue.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY: "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
-            post_copy_request_to_queue.OS_ENVIRON_RECOVERY_QUEUE_URL_KEY: "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
-            post_copy_request_to_queue.OS_ENVIRON_MAX_RETRIES_KEY: "1",
-            post_copy_request_to_queue.OS_ENVIRON_RETRY_SLEEP_SECS_KEY: "2",
-            post_copy_request_to_queue.OS_ENVIRON_RETRY_BACKOFF_KEY: "3",
+            post_copy_request_to_queue.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY:
+                "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
+            post_copy_request_to_queue.OS_ENVIRON_RECOVERY_QUEUE_URL_KEY:
+                "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
+            post_copy_request_to_queue.OS_ENVIRON_MAX_RETRIES_KEY:
+                "1",
+            post_copy_request_to_queue.OS_ENVIRON_RETRY_SLEEP_SECS_KEY:
+                "2",
+            post_copy_request_to_queue.OS_ENVIRON_RETRY_BACKOFF_KEY:
+                "3",
         },
         clear=True,
     )
@@ -296,16 +306,18 @@ class TestPostCopyRequestToQueue(TestCase):
         with patch.dict(
             os.environ,
             {
-                post_copy_request_to_queue.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY: db_queue_url,
-                post_copy_request_to_queue.OS_ENVIRON_RECOVERY_QUEUE_URL_KEY: recovery_queue_url,
-                post_copy_request_to_queue.OS_ENVIRON_MAX_RETRIES_KEY: str(max_retries),
-                post_copy_request_to_queue.OS_ENVIRON_RETRY_SLEEP_SECS_KEY: str(
-                    retry_sleep_secs
-                ),
-                post_copy_request_to_queue.OS_ENVIRON_RETRY_BACKOFF_KEY: str(
-                    retry_backoff
-                ),
-                post_copy_request_to_queue.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY: db_connect_info_secret_arn,
+                post_copy_request_to_queue.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY:
+                    db_queue_url,
+                post_copy_request_to_queue.OS_ENVIRON_RECOVERY_QUEUE_URL_KEY:
+                    recovery_queue_url,
+                post_copy_request_to_queue.OS_ENVIRON_MAX_RETRIES_KEY:
+                    str(max_retries),
+                post_copy_request_to_queue.OS_ENVIRON_RETRY_SLEEP_SECS_KEY:
+                str(retry_sleep_secs),
+                post_copy_request_to_queue.OS_ENVIRON_RETRY_BACKOFF_KEY:
+                    str(retry_backoff),
+                post_copy_request_to_queue.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY:
+                    db_connect_info_secret_arn,
             },
             clear=True,
         ):
@@ -699,7 +711,8 @@ class TestPostCopyRequestToQueue(TestCase):
             )
 
         self.assertEqual(
-            f"Unable to retrieve {key_path} metadata. Exception 'No metadata found for {key_path}' encountered.",
+            f"Unable to retrieve {key_path} metadata. "
+            f"Exception 'No metadata found for {key_path}' encountered.",
             str(cm.exception),
         )
         mock_get_configuration.assert_called_once_with(db_connect_info_secret_arn)

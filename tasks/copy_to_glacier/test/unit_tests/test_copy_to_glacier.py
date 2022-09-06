@@ -1,5 +1,6 @@
 import copy
 import json
+import os
 import random
 import unittest
 import uuid
@@ -8,11 +9,19 @@ from test.unit_tests.ConfigCheck import ConfigCheck
 from unittest import TestCase
 from unittest.mock import ANY, MagicMock, Mock, call, patch
 
+import boto3
 import fastjsonschema as fastjsonschema
+from boto3.s3.transfer import MB
 from moto import mock_sqs
 
 import copy_to_glacier
-from copy_to_glacier import *
+import sqs_library
+from copy_to_glacier import (
+    CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY,
+    CONFIG_MULTIPART_CHUNKSIZE_MB_KEY,
+    should_exclude_files_type,
+    task,
+)
 
 # Generating schema validators can take time, so do it once and reuse.
 with open("schemas/output.json", "r") as raw_schema:
@@ -48,7 +57,8 @@ class TestCopyToGlacierHandler(TestCase):
                         copy_to_glacier.FILE_BUCKET_KEY: "orca-sandbox-protected",
                         "url_path": "MOD09GQ/006/",
                         "type": "",
-                        copy_to_glacier.FILE_FILEPATH_KEY: "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+                        copy_to_glacier.FILE_FILEPATH_KEY:
+                            "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
                         "duplicate_found": True,
                         "checksumType": "md5",
                         "checksum": "bogus_checksum_value",
@@ -60,7 +70,8 @@ class TestCopyToGlacierHandler(TestCase):
                         copy_to_glacier.FILE_BUCKET_KEY: "orca-sandbox-private",
                         "url_path": "MOD09GQ/006",
                         "type": "",
-                        copy_to_glacier.FILE_FILEPATH_KEY: "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+                        copy_to_glacier.FILE_FILEPATH_KEY:
+                            "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
                         "duplicate_found": True,
                         "checksumType": "md5",
                         "checksum": "bogus_checksum_value",
@@ -72,7 +83,8 @@ class TestCopyToGlacierHandler(TestCase):
                         copy_to_glacier.FILE_BUCKET_KEY: "orca-sandbox-public",
                         "url_path": "MOD09GQ/006",
                         "type": "",
-                        copy_to_glacier.FILE_FILEPATH_KEY: "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+                        copy_to_glacier.FILE_FILEPATH_KEY:
+                            "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
                         "duplicate_found": True,
                         "checksumType": "md5",
                         "checksum": "bogus_checksum_value",
@@ -80,7 +92,8 @@ class TestCopyToGlacierHandler(TestCase):
                     {
                         copy_to_glacier.FILE_BUCKET_KEY: "orca-sandbox-private",
                         "type": "metadata",
-                        copy_to_glacier.FILE_FILEPATH_KEY: "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+                        copy_to_glacier.FILE_FILEPATH_KEY:
+                            "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
                         "url_path": "MOD09GQ/006",
                         "checksumType": "md5",
                         "checksum": "bogus_checksum_value",
@@ -213,7 +226,8 @@ class TestCopyToGlacierHandler(TestCase):
 
         config_check = ConfigCheck(4 * MB)
 
-        # todo: use 'side_effect' to verify args. It is safer, as current method does not deep-copy args
+        # todo: use 'side_effect' to verify args.
+        # It is safer, as current method does not deep-copy args
         boto3.client = Mock()
         s3_cli = boto3.client("s3")
         s3_cli.copy = Mock(return_value=None)
@@ -271,7 +285,8 @@ class TestCopyToGlacierHandler(TestCase):
                         "ContentType": content_type,
                         "ACL": "bucket-owner-full-control",
                     },
-                    Config=unittest.mock.ANY,  # Checked by ConfigCheck. Equality checkers do not work.
+                    Config=unittest.mock.ANY,  # Checked by ConfigCheck.
+                                               # Equality checkers do not work.
                 )
             )
 
@@ -401,7 +416,8 @@ class TestCopyToGlacierHandler(TestCase):
         self.assertEqual(s3_cli.list_object_versions.call_count, 4)
 
         expected_copied_file_urls = [
-            f"s3://{file[copy_to_glacier.FILE_BUCKET_KEY]}/{file[copy_to_glacier.FILE_FILEPATH_KEY]}"
+            f"s3://{file[copy_to_glacier.FILE_BUCKET_KEY]}/"
+            f"{file[copy_to_glacier.FILE_FILEPATH_KEY]}"
             for file in self.event_granules["granules"][0]["files"]
         ]
         self.assertEqual(expected_copied_file_urls, result["copied_to_glacier"])
@@ -445,7 +461,8 @@ class TestCopyToGlacierHandler(TestCase):
                             copy_to_glacier.FILE_BUCKET_KEY: "orca-sandbox-protected",
                             "url_path": "MOD09GQ/006/",
                             "type": "",
-                            copy_to_glacier.FILE_FILEPATH_KEY: "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+                            copy_to_glacier.FILE_FILEPATH_KEY:
+                                "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
                             "duplicate_found": True,
                             copy_to_glacier.FILE_HASH_TYPE_KEY: "md5",
                             copy_to_glacier.FILE_HASH_KEY: "bogus_checksum_value",
@@ -465,7 +482,8 @@ class TestCopyToGlacierHandler(TestCase):
                             copy_to_glacier.FILE_BUCKET_KEY: "orca-sandbox-protected",
                             "url_path": "MOD09GQ/006/",
                             "type": "",
-                            copy_to_glacier.FILE_FILEPATH_KEY: "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065108.hdf",
+                            copy_to_glacier.FILE_FILEPATH_KEY:
+                                "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065108.hdf",
                             "duplicate_found": True,
                             copy_to_glacier.FILE_HASH_TYPE_KEY: "md5",
                             copy_to_glacier.FILE_HASH_KEY: "bogus_checksum_value",
@@ -541,7 +559,8 @@ class TestCopyToGlacierHandler(TestCase):
                         "ContentType": content_type,
                         "ACL": "bucket-owner-full-control",
                     },
-                    Config=unittest.mock.ANY,  # Checked by ConfigCheck. Equality checkers do not work.
+                    Config=unittest.mock.ANY,  # Checked by ConfigCheck.
+                                               # Equality checkers do not work.
                 )
             )
 
@@ -587,7 +606,8 @@ class TestCopyToGlacierHandler(TestCase):
 
         config_check = ConfigCheck(overridden_multipart_chunksize_mb * MB)
 
-        # todo: use 'side_effect' to verify args. It is safer, as current method does not deep-copy args
+        # todo: use 'side_effect' to verify args.
+        # It is safer, as current method does not deep-copy args
         boto3.client = Mock()
         s3_cli = boto3.client("s3")
         s3_cli.copy = Mock(return_value=None)
@@ -644,7 +664,8 @@ class TestCopyToGlacierHandler(TestCase):
                         "ContentType": content_type,
                         "ACL": "bucket-owner-full-control",
                     },
-                    Config=unittest.mock.ANY,  # Checked by ConfigCheck. Equality checkers do not work.
+                    Config=unittest.mock.ANY,  # Checked by ConfigCheck.
+                                               # Equality checkers do not work.
                 )
             )
 
@@ -655,7 +676,8 @@ class TestCopyToGlacierHandler(TestCase):
         self.assertEqual(s3_cli.copy.call_count, 4)
         self.assertEqual(s3_cli.list_object_versions.call_count, 4)
         expected_copied_file_urls = [
-            f"s3://{file[copy_to_glacier.FILE_BUCKET_KEY]}/{file[copy_to_glacier.FILE_FILEPATH_KEY]}"
+            f"s3://{file[copy_to_glacier.FILE_BUCKET_KEY]}/"
+            f"{file[copy_to_glacier.FILE_FILEPATH_KEY]}"
             for file in self.event_granules["granules"][0]["files"]
         ]
         self.assertEqual(expected_copied_file_urls, result["copied_to_glacier"])
@@ -678,7 +700,8 @@ class TestCopyToGlacierHandler(TestCase):
         """
         Basic path with buckets present.
         """
-        # todo: use 'side_effect' to verify args. It is safer, as current method does not deep-copy args
+        # todo: use 'side_effect' to verify args.
+        # It is safer, as current method does not deep-copy args
         boto3.client = Mock()
         s3_cli = boto3.client("s3")
         s3_cli.copy = Mock()
@@ -751,8 +774,8 @@ class TestCopyToGlacierHandler(TestCase):
                 {copy_to_glacier.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: None}
             )
         self.assertEqual(
-            f"'{copy_to_glacier.OS_ENVIRON_ORCA_DEFAULT_BUCKET_KEY} environment variable is not set.'",
-            str(cm.exception),
+            f"'{copy_to_glacier.OS_ENVIRON_ORCA_DEFAULT_BUCKET_KEY} "
+            f"environment variable is not set.'", str(cm.exception),
         )
 
     @patch.dict(
@@ -799,7 +822,8 @@ class TestCopyToGlacierHandler(TestCase):
                 {copy_to_glacier.CONFIG_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY: None}
             )
         self.assertEqual(
-            f"'{copy_to_glacier.OS_ENVIRON_DEFAULT_STORAGE_CLASS_KEY} environment variable is not set.'",
+            f"'{copy_to_glacier.OS_ENVIRON_DEFAULT_STORAGE_CLASS_KEY} "
+            f"environment variable is not set.'",
             str(cm.exception),
         )
 
@@ -807,7 +831,8 @@ class TestCopyToGlacierHandler(TestCase):
     @patch.dict(os.environ, {"AWS_REGION": "us-west-2"}, clear=True)
     def test_post_to_metadata_queue_happy_path(self, mock_sleep: MagicMock):
         """
-        SQS library happy path. Checks that the message sent to SQS is same as the message received from SQS.
+        SQS library happy path. Checks that the message sent to SQS
+        is same as the message received from SQS.
         """
         sqs_body = {
             "provider": {"providerId": "1234", "name": "LPCUmumulus"},
@@ -851,7 +876,8 @@ class TestCopyToGlacierHandler(TestCase):
         # Testing required fields
         self.assertEqual(queue_output_body, sqs_body)
 
-    # todo: since sleep is not called in function under test, this violates good unit test practices. Fix in ORCA-406
+    # Todo: since sleep is not called in function under test,
+    # this violates good unit test practices. Fix in ORCA-406
     @patch("time.sleep")
     @patch.dict(os.environ, {"AWS_REGION": "us-west-2"}, clear=True)
     def test_post_to_metadata_queue_retry_failures(self, mock_sleep: MagicMock):
@@ -859,7 +885,9 @@ class TestCopyToGlacierHandler(TestCase):
         Produces a failure and checks if retries are performed in the SQS library.
         """
         sqs_body = {
-            "provider": {"providerId": "1234", "name": "LPCUmumulus"},
+            "provider": {
+                "providerId": "1234", "name": "LPCUmumulus"
+                },
             "collection": {
                 "collectionId": "MOD14A1__061",
                 "shortname": "MOD14A1",
@@ -896,14 +924,14 @@ class TestCopyToGlacierHandler(TestCase):
                 "dummy",
             )
         self.assertEqual(
-            "An error occurred (AWS.SimpleQueueService.NonExistentQueue) when calling the SendMessage operation: The "
-            "specified queue does not exist for this wsdl version.",
+            "An error occurred (AWS.SimpleQueueService.NonExistentQueue) when calling the "
+            "SendMessage operation: The specified queue does not exist for this wsdl version.",
             str(cm.exception),
         )
         self.assertEqual(3, mock_sleep.call_count)
 
 
-##TODO: Write tests to validate file name regex exclusion
+# TODO: Write tests to validate file name regex exclusion
 
 # todo: switch this to large test
 #    def test_5_task(self):

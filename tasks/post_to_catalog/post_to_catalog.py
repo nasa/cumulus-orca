@@ -5,7 +5,6 @@ Description:  Pulls entries from a queue and posts them to a DB.
 """
 import json
 import os
-from datetime import datetime, timezone
 from typing import Any, Dict, List, Union
 
 # noinspection SpellCheckingInspection
@@ -202,11 +201,13 @@ def create_granule_sql() -> text:  # pragma: no cover
     return text(
         """
     INSERT INTO granules
-        (provider_id, collection_id, cumulus_granule_id, execution_id, ingest_time, cumulus_create_time, last_update)
+        (provider_id, collection_id, cumulus_granule_id,
+        execution_id, ingest_time, cumulus_create_time, last_update)
     VALUES
-        (:provider_id, :collection_id, :cumulus_granule_id, :execution_id, :ingest_time, :cumulus_create_time, :last_update)
+        (:provider_id, :collection_id, :cumulus_granule_id,
+        :execution_id, :ingest_time, :cumulus_create_time, :last_update)
     ON CONFLICT (collection_id, cumulus_granule_id) DO UPDATE
-        SET 
+        SET
             provider_id=:provider_id, execution_id=:execution_id, last_update=:last_update
     RETURNING id"""
     )
@@ -217,22 +218,24 @@ def create_file_sql() -> text:  # pragma: no cover
     return text(
         """
     INSERT INTO files
-        (granule_id, name, orca_archive_location, cumulus_archive_location, key_path, ingest_time, etag, 
+        (granule_id, name, orca_archive_location,
+        cumulus_archive_location, key_path, ingest_time, etag,
         version, size_in_bytes, hash, hash_type, storage_class_id)
     SELECT
-        :granule_id, :name, :orca_archive_location, :cumulus_archive_location, :key_path, :ingest_time, :etag, 
+        :granule_id, :name, :orca_archive_location,
+        :cumulus_archive_location, :key_path, :ingest_time, :etag,
         :version, :size_in_bytes, :hash, :hash_type, storage_class.id
     FROM
         storage_class WHERE storage_class.value=:storage_class
     ON CONFLICT (cumulus_archive_location, key_path) DO UPDATE
         SET
         name=EXCLUDED.name,
-        orca_archive_location=EXCLUDED.orca_archive_location, 
+        orca_archive_location=EXCLUDED.orca_archive_location,
         ingest_time=EXCLUDED.ingest_time,
         etag=EXCLUDED.etag,
         version=EXCLUDED.version,
         size_in_bytes=EXCLUDED.size_in_bytes,
-        hash=EXCLUDED.hash, 
+        hash=EXCLUDED.hash,
         hash_type=EXCLUDED.hash_type,
         storage_class_id=EXCLUDED.storage_class_id"""
     )
@@ -242,7 +245,8 @@ def create_file_sql() -> text:  # pragma: no cover
 
 def handler(event: Dict[str, List], context) -> None:
     """
-    Lambda handler. Receives a list of queue entries from an SQS queue, and posts them to a database.
+    Lambda handler. Receives a list of queue entries from an SQS queue,
+    and posts them to a database.
 
     Args:
         event: A dict with the following keys:
@@ -253,7 +257,8 @@ def handler(event: Dict[str, List], context) -> None:
                     See catalog_record_input in schemas for details.
         context: An object passed through by AWS. Used for tracking.
     Environment Vars:
-        DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
+        DB_CONNECT_INFO_SECRET_ARN (string):
+            Secret ARN of the AWS secretsmanager secret for connecting to the database.
         See shared_db.py's get_configuration for further details.
     """
     LOGGER.setMetadata(event, context)
@@ -261,7 +266,7 @@ def handler(event: Dict[str, List], context) -> None:
     # get the secret ARN from the env variable
     try:
         db_connect_info_secret_arn = os.environ["DB_CONNECT_INFO_SECRET_ARN"]
-    except KeyError as key_error:
+    except KeyError:
         LOGGER.error("DB_CONNECT_INFO_SECRET_ARN environment value not found.")
         raise
     db_connect_info = shared_db.get_configuration(db_connect_info_secret_arn)

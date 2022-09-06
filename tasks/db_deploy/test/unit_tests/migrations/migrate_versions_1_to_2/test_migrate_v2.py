@@ -105,7 +105,9 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 )
 
                 # First commit block
-                # todo: here and elsewhere, checks are not sufficient. assert_called_once should never be used, and all assert_has_calls should be followed by a check on the call count.
+                # todo: here and elsewhere, checks are not sufficient.
+                # assert_called_once should never be used, and all assert_has_calls
+                # should be followed by a check on the call count.
                 mock_dbo_role_sql.assert_called_once_with(
                     self.config["user_database"], self.config["admin_username"]
                 )

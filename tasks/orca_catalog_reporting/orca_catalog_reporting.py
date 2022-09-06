@@ -125,29 +125,36 @@ SELECT
     *
     FROM
     (
-    SELECT 
+    SELECT
         *
         FROM
         (
-            SELECT 
+            SELECT
                 granules.id,
                 granules.provider_id,
-                granules.collection_id, 
-                granules.cumulus_granule_id, 
-                (EXTRACT(EPOCH FROM date_trunc('milliseconds', granules.cumulus_create_time) AT TIME ZONE 'UTC') * 1000)::bigint as cumulus_create_time, 
-                granules.execution_id, 
-                (EXTRACT(EPOCH FROM date_trunc('milliseconds', granules.ingest_time) AT TIME ZONE 'UTC') * 1000)::bigint as ingest_time, 
-                (EXTRACT(EPOCH FROM date_trunc('milliseconds', granules.last_update) AT TIME ZONE 'UTC') * 1000)::bigint as last_update
+                granules.collection_id,
+                granules.cumulus_granule_id,
+                (EXTRACT(EPOCH FROM date_trunc('milliseconds', granules.cumulus_create_time)
+                 AT TIME ZONE 'UTC') * 1000)::bigint as cumulus_create_time,
+                granules.execution_id,
+                (EXTRACT(EPOCH FROM date_trunc('milliseconds', granules.ingest_time)
+                 AT TIME ZONE 'UTC') * 1000)::bigint as ingest_time,
+                (EXTRACT(EPOCH FROM date_trunc('milliseconds', granules.last_update)
+                 AT TIME ZONE 'UTC') * 1000)::bigint as last_update
             FROM
             (SELECT DISTINCT
                 granules.cumulus_granule_id
             FROM granules
-            WHERE 
-                (:provider_id is null or provider_id=ANY(:provider_id)) and 
-                (:collection_id is null or collection_id=ANY(:collection_id)) and 
-                (:granule_id is null or cumulus_granule_id=ANY(:granule_id)) and 
-                (:start_timestamp is null or (EXTRACT(EPOCH FROM date_trunc('milliseconds', cumulus_create_time) AT TIME ZONE 'UTC') * 1000)::bigint>=:start_timestamp) and 
-                (:end_timestamp is null or (EXTRACT(EPOCH FROM date_trunc('milliseconds', cumulus_create_time) AT TIME ZONE 'UTC') * 1000)::bigint<:end_timestamp)
+            WHERE
+                (:provider_id is null or provider_id=ANY(:provider_id)) and
+                (:collection_id is null or collection_id=ANY(:collection_id)) and
+                (:granule_id is null or cumulus_granule_id=ANY(:granule_id)) and
+                (:start_timestamp is null or (EXTRACT(EPOCH
+                FROM date_trunc('milliseconds', cumulus_create_time)
+                AT TIME ZONE 'UTC') * 1000)::bigint>=:start_timestamp) and
+                (:end_timestamp is null or (EXTRACT(EPOCH
+                FROM date_trunc('milliseconds', cumulus_create_time)
+                AT TIME ZONE 'UTC') * 1000)::bigint<:end_timestamp)
             ) as granule_ids
             JOIN
                 granules ON granule_ids.cumulus_granule_id = granules.cumulus_granule_id
@@ -160,8 +167,8 @@ LEFT JOIN LATERAL
     (SELECT COALESCE(json_agg(files), '[]'::json) as files
     FROM (
     SELECT json_build_object(
-        'name', files.name, 
-        'cumulusArchiveLocation', files.cumulus_archive_location, 
+        'name', files.name,
+        'cumulusArchiveLocation', files.cumulus_archive_location,
         'orcaArchiveLocation', files.orca_archive_location,
         'keyPath', files.key_path,
         'sizeBytes', files.size_in_bytes,
@@ -215,13 +222,15 @@ def handler(
         context: An object provided by AWS Lambda. Used for context tracking.
 
     Environment Vars:
-        DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
+        DB_CONNECT_INFO_SECRET_ARN (string):
+            Secret ARN of the AWS secretsmanager secret for connecting to the database.
         See shared_db.py's get_configuration for further details.
 
     Returns:
         See schemas/output.json
         Or, if an error occurs, see create_http_error_dict
-            400 if input does not match schemas/input.json. 500 if an error occurs when querying the database.
+            400 if input does not match schemas/input.json.
+            500 if an error occurs when querying the database.
     """
     try:
         LOGGER.setMetadata(event, context)
@@ -238,7 +247,7 @@ def handler(
         # get the secret ARN from the env variable
         try:
             db_connect_info_secret_arn = os.environ["DB_CONNECT_INFO_SECRET_ARN"]
-        except KeyError as key_error:
+        except KeyError:
             LOGGER.error("DB_CONNECT_INFO_SECRET_ARN environment value not found.")
             raise
 

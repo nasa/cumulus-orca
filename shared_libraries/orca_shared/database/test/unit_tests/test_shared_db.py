@@ -44,7 +44,7 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
                 "user_username":"user"
             }
         """
-        secret_name = "orcatest-orca-db-login-secret" #nosec
+        secret_name = "orcatest-orca-db-login-secret"  # nosec
         self.test_sm.create_secret(
             Name=secret_name, SecretString=self.secretstring
         )
@@ -83,7 +83,7 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
         """
         Validate an error is thrown if AWS_REGION is not set.
         """
-        
+
         error_message = "Runtime environment variable AWS_REGION is not set."
         with self.assertRaises(Exception) as cm:
             shared_db.get_configuration(self.db_connect_info_secret_arn)
