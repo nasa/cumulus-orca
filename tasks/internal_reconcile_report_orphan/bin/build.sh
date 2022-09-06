@@ -58,18 +58,6 @@ mkdir build
 let return_code=$?
 check_rc $return_code "ERROR: Failed to create build directory."
 
-mkdir build/adapters
-let return_code=$?
-check_rc $return_code "ERROR: Failed to create adapters directory."
-
-mkdir build/use_cases
-let return_code=$?
-check_rc $return_code "ERROR: Failed to create use_cases directory."
-
-mkdir build/entities
-let return_code=$?
-check_rc $return_code "ERROR: Failed to create entities directory."
-
 ## Create the virtual env. Remove it if it already exists.
 echo "INFO: Creating virtual environment ..."
 if [ -d venv ]; then
@@ -119,17 +107,17 @@ let return_code=$?
 check_rc $return_code "ERROR: Failed to copy base Python files to build directory."
 
 echo "INFO: Copying adapter Python files ..."
-find ./adapters -name '*.py' | xargs cp --parents -t build/adapters/
+find ./adapters -name '*.py' | xargs cp --parents -t build/
 let return_code=$?
 check_rc $return_code "ERROR: Failed to copy adapter files to build directory."
 
 echo "INFO: Copying use-case Python files ..."
-find ./use_cases -name '*.py' | xargs cp --parents -t build/use_cases/
+find ./use_cases -name '*.py' | xargs cp --parents -t build/
 let return_code=$?
 check_rc $return_code "ERROR: Failed to copy use-case files to build directory."
 
 echo "INFO: Copying entity Python files ..."
-find ./entities -name '*.py' | xargs cp --parents -t build/entities/
+find ./entities -name '*.py' | xargs cp --parents -t build/
 let return_code=$?
 check_rc $return_code "ERROR: Failed to copy entities files to build directory."
 
