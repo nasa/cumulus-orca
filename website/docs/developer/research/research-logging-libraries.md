@@ -6,12 +6,14 @@ description: Research notes on some potential logging libraries.
 
 ## Preconditions
 - As ORCA runs in AWS, logger should tie into AWS structures.
-- Presently, ORCA uses the Python CumulusLogger.
+- Presently, ORCA uses the [Python CumulusLogger](https://github.com/nasa/cumulus-message-adapter-python#logging-with-cumuluslogger).
+- Presently, many ORCA tasks use `run_cumulus_task`, a related component of the Python CumulusLogger.
 
 ## CumulusLogger
 - Developed by Cumulus for interactions with AWS and [CMA input/output](https://nasa.github.io/cumulus/docs/workflows/input_output).
 - Adds some useful AWS context, though it is all redundant with information already stored in our CloudWatch logs, as long as we have one log-group per lambda.
 - Tied to CMA-specific features such as [S3 storage of inputs](https://nasa.github.io/cumulus/docs/workflows/input_output#replaceconfig-cumulus-remote-message).
+  - `run_cumulus_task` handles pulling in S3 events.
 - Tied to CMA-specific [input/output](https://nasa.github.io/cumulus/docs/workflows/input_output#cma-inputoutput), which varies based on whether the running environment is AWS or Local.
 - Maintained by/for Cumulus, which has caused conflicts with our development.
 - Does not implement standard logging interface, requiring knowledge of the CumulusLogger-specific functions.
@@ -116,6 +118,13 @@ Resulting Cloudwatch message:
 ```
 
 ## Recommendation
+- As the [Python CumulusLogger](https://github.com/nasa/cumulus-message-adapter-python#logging-with-cumuluslogger) is tied to Cumulus, 
+  it is recommended that we decouple from it.
+  - Any references to deployed layer should removed from Terraform.
+  - Schema validation checks should be added to calling function.
+  - References to run_cumulus_task should be replaced with manual transformation of inputs into non-architecture-specific formats.
+  - `copy_to_glacier` S3 requirements could be accomplished with a helper Lambda developed initially by us and maintained by Cumulus that handles the S3 retrieval 
+    and passes the result along to `copy_to_glacier`.
 - Given the standardized implementation and features of Powertools, it is a good pick for replacing the CumulusLogger in Orca code.
 - Recommend installing via Pip install as opposed to AWS Layer.
   [Documentation indicates](https://awslabs.github.io/aws-lambda-powertools-python/latest/core/logger/#removing-additional-keys) that there can be "unintended side effects if you use Layers" with certain features.
@@ -139,4 +148,3 @@ Resulting Cloudwatch message:
   }
   ```
 - Powertools also contains a [Tracing library](https://awslabs.github.io/aws-lambda-powertools-python/latest/core/tracer/) which could be helpful in debugging. Presently untested.
-- `copy_to_glacier` S3 requirements could be accomplished with a helper Lambda developed initially by us and maintained by Cumulus that handles the S3 retrieval and passes the result along to `copy_to_glacier`.
