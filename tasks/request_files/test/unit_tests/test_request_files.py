@@ -845,7 +845,7 @@ class TestRequestFiles(unittest.TestCase):
         mock_create_status_for_job.side_effect = Exception("mock insert failed error")
 
         with self.assertRaises(Exception) as cm:
-            result = request_files.inner_task(  # noqa
+            request_files.inner_task(
                 event,
                 max_retries,
                 retry_sleep_secs,

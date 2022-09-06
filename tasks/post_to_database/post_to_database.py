@@ -90,7 +90,9 @@ def send_record_to_database(record: Dict[str, Any], engine: Engine) -> None:
         raise error
 
 
-@shared_db.retry_operational_error()
+@shared_db.retry_operational_error(
+     # Retry all files due to transactional behavior of engine.begin
+     )
 def create_status_for_job_and_files(
     job_id: str,
     granule_id: str,
@@ -182,7 +184,9 @@ def create_status_for_job_and_files(
         raise
 
 
-@shared_db.retry_operational_error()
+@shared_db.retry_operational_error(
+     # Retry all files due to transactional behavior of engine.begin
+     )
 def update_status_for_file(
     job_id: str,
     granule_id: str,

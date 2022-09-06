@@ -450,9 +450,9 @@ def handler(
     # get the secret ARN from the env variable
     try:
         db_connect_info_secret_arn = os.environ["DB_CONNECT_INFO_SECRET_ARN"]
-    except KeyError as key_error:
+    except KeyError:
         LOGGER.error("DB_CONNECT_INFO_SECRET_ARN environment value not found.")
-        raise key_error
+        raise
 
     inner_event = event[INPUT_EVENT_KEY]
     job_id = inner_event[EVENT_JOB_ID_KEY]

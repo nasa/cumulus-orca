@@ -186,21 +186,11 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     copied_file_urls = []
 
     # initiate empty SQS body dict
-    sqs_body = {
-        "provider": {}, "collection": {}, "granule": {}
-        }
-    sqs_body["provider"]["name"] = config.get(
-                                        "providerName", None
-                                        )
-    sqs_body["provider"]["providerId"] = config[
-                                            "providerId"
-                                            ]
-    sqs_body["collection"]["shortname"] = config[
-                                            "collectionShortname"
-                                            ]
-    sqs_body["collection"]["version"] = config[
-                                            "collectionVersion"
-                                            ]
+    sqs_body = {"provider": {}, "collection": {}, "granule": {}}
+    sqs_body["provider"]["name"] = config.get("providerName", None)
+    sqs_body["provider"]["providerId"] = config["providerId"]
+    sqs_body["collection"]["shortname"] = config["collectionShortname"]
+    sqs_body["collection"]["version"] = config["collectionVersion"]
     # Cumulus currently creates collectionId by concatenating
     # shortname + ___ + version
     # See https://github.com/nasa/cumulus-dashboard/blob/

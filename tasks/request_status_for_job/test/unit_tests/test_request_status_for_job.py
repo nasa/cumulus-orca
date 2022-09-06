@@ -320,7 +320,7 @@ class TestRequestStatusForJobUnit(
         result = request_status_for_job.task(job_id, db_connect_info, request_id)
 
         mock_get_user_connection.assert_called_once_with(db_connect_info)
-        with open("schemas/output.json", "r") as raw_schema:
-            json.loads(raw_schema.read())
+        # with open("schemas/output.json", "r") as raw_schema:  # Todo: ORCA-519
+        #     schema = json.loads(raw_schema.read())
 
         _OUTPUT_VALIDATE(result)

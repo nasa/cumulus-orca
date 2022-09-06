@@ -230,9 +230,8 @@ class TestInternalReconcileReportJob(
         self.assertEqual(
             {
                 internal_reconcile_report_job.OUTPUT_ANOTHER_PAGE_KEY: True,
-                internal_reconcile_report_job.OUTPUT_JOBS_KEY: jobs[
-                    0: internal_reconcile_report_job.PAGE_SIZE
-                ],
+                internal_reconcile_report_job.OUTPUT_JOBS_KEY:
+                    jobs[0: internal_reconcile_report_job.PAGE_SIZE],
             },
             result,
         )
