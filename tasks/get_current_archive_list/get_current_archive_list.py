@@ -438,9 +438,15 @@ def translate_s3_import_to_partitioned_data_sql() -> text:  # pragma: no cover
     """
     return text(
         f"""
-        INSERT INTO orca.reconcile_s3_object (job_id, orca_archive_location, key_path,
-                                                etag, last_update, size_in_bytes,
-                                                storage_class, delete_marker)
+        INSERT INTO orca.reconcile_s3_object (
+                job_id,
+                orca_archive_location,
+                key_path,
+                etag,
+                last_update,
+                size_in_bytes,
+                storage_class,
+                delete_marker)
             SELECT
             :job_id,
             orca_archive_location,

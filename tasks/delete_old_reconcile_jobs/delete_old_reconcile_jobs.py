@@ -31,7 +31,7 @@ def task(
 
     Args:
         internal_reconciliation_expiration_days:
-        Only reports updated before this many days ago will be deleted.
+            Only reports updated before this many days ago will be deleted.
         db_connect_info: See shared_db.py's get_configuration for further details.
     """
 

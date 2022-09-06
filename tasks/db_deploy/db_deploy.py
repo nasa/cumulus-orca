@@ -39,7 +39,8 @@ def handler(
         event (Dict): Event dictionary passed by AWS.
         context (object): An object required by AWS Lambda.
     Environment Vars:
-        DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret
+        DB_CONNECT_INFO_SECRET_ARN (string):
+            Secret ARN of the AWS secretsmanager secret
         for connecting to the database.
         See shared_db.py's get_configuration for further details.
 
