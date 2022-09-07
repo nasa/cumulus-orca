@@ -9,8 +9,6 @@ import uuid
 from http import HTTPStatus
 from unittest.mock import MagicMock, Mock, patch
 
-from use_cases import orphans
-
 
 class TestInternalReconcileReportOrphan(
     unittest.TestCase

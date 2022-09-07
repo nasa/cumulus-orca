@@ -1,12 +1,12 @@
 import logging
 
-from use_cases.adapter_interfaces.database import DatabaseInterface
-from entities.orphan import OrphanRecordPage, OrphanRecordFilter
+from src.use_cases.adapter_interfaces.data_repository import DataRepositoryAdapterInterface
+from src.entities.orphan import OrphanRecordPage, OrphanRecordFilter
 
 
 def task(
         orphan_record_filter: OrphanRecordFilter,
-        adapter_database: DatabaseInterface,
+        adapter_database: DataRepositoryAdapterInterface,
         logger: logging.Logger
 ) -> OrphanRecordPage:
     """

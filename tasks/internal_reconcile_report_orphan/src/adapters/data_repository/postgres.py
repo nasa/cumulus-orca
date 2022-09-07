@@ -5,8 +5,8 @@ from orca_shared.database import shared_db
 from sqlalchemy import text
 from sqlalchemy.future import Engine
 
-from entities.orphan import OrphanRecordFilter, OrphanRecordPage, OrphanRecord
-from use_cases.adapter_interfaces.database import DatabaseInterface
+from src.entities.orphan import OrphanRecordFilter, OrphanRecordPage, OrphanRecord
+from src.use_cases.adapter_interfaces.data_repository import DataRepositoryAdapterInterface
 
 
 @dataclasses.dataclass  # todo: Replace the loosely-defined dictionary in orca_shared.database with this.
@@ -21,28 +21,7 @@ class PostgresConnectionInfo:
     port: str
 
 
-def get_orphans_sql() -> text:  # pragma: no cover
-    """
-    SQL for getting orphan report entries for a given job_id, page_size, and page_index.
-    Formats datetimes in milliseconds since 1 January 1970 UTC.
-    """
-    return text(
-        """
-SELECT
-    key_path,
-    etag,
-    (EXTRACT(EPOCH FROM date_trunc('milliseconds', last_update) AT TIME ZONE 'UTC') * 1000)::bigint as last_update,
-    size_in_bytes,
-    storage_class
-    FROM reconcile_orphan_report
-    WHERE job_id = :job_id
-    ORDER BY key_path, etag
-    OFFSET :page_index*:page_size
-    LIMIT :page_size+1"""
-    )
-
-
-class AdapterDatabase(DatabaseInterface):
+class DataRepositoryAdapterPostgres(DataRepositoryAdapterInterface):
     _engine: Engine = None
 
     def __init__(self, db_connect_info: PostgresConnectionInfo):
@@ -66,7 +45,7 @@ class AdapterDatabase(DatabaseInterface):
     def get_orphans_page(
             self,
             orphan_record_filter: OrphanRecordFilter,
-            logger: logging.Logger
+            logger: logging.Logger  # todo: @bhazuka has expressed a desire to not pass loggers via parameters
     ) -> OrphanRecordPage:
         # noinspection GrazieInspection
         """
@@ -84,7 +63,7 @@ class AdapterDatabase(DatabaseInterface):
                     f"of reports for job '{orphan_record_filter.job_id}'")
         with self._engine.begin() as connection:
             sql_results = connection.execute(
-                get_orphans_sql(),
+                self.get_orphans_sql(),
                 [
                     {
                         "job_id": orphan_record_filter.job_id,
@@ -105,4 +84,28 @@ class AdapterDatabase(DatabaseInterface):
                 )
 
             # we get one extra for anotherPage calculation.
-            return OrphanRecordPage(orphans[0:orphan_record_filter.page_size], len(orphans) > orphan_record_filter.page_size)
+            return OrphanRecordPage(
+                orphans=orphans[0:orphan_record_filter.page_size],
+                another_page=len(orphans) > orphan_record_filter.page_size
+            )
+
+    @staticmethod
+    def get_orphans_sql() -> text:  # pragma: no cover
+        """
+        SQL for getting orphan report entries for a given job_id, page_size, and page_index.
+        Formats datetimes in milliseconds since 1 January 1970 UTC.
+        """
+        return text(
+            """
+    SELECT
+        key_path,
+        etag,
+        (EXTRACT(EPOCH FROM date_trunc('milliseconds', last_update) AT TIME ZONE 'UTC') * 1000)::bigint as last_update,
+        size_in_bytes,
+        storage_class
+        FROM reconcile_orphan_report
+        WHERE job_id = :job_id
+        ORDER BY key_path, etag
+        OFFSET :page_index*:page_size
+        LIMIT :page_size+1"""
+        )

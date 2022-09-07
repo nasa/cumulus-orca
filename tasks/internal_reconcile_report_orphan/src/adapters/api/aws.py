@@ -8,10 +8,9 @@ from cumulus_logger import CumulusLogger
 from fastjsonschema import JsonSchemaException
 from orca_shared.database import shared_db
 
-import adapters
-import use_cases.orphans
-from adapters.database.postgres import AdapterDatabase
-from entities.orphan import OrphanRecordFilter
+import src.use_cases.get_orphans_page
+from src.adapters.data_repository.postgres import DataRepositoryAdapterPostgres
+from src.entities.orphan import OrphanRecordFilter
 
 INPUT_JOB_ID_KEY = "jobId"
 INPUT_PAGE_INDEX_KEY = "pageIndex"
@@ -124,7 +123,7 @@ def handler(
         db_connect_info = shared_db.get_configuration(
             check_env_variable(OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY)
         )
-        db_connect_info = adapters.database.postgres.PostgresConnectionInfo(
+        db_connect_info = src.adapters.database.postgres.PostgresConnectionInfo(
             admin_database_name=db_connect_info["admin_database"],
             admin_username=db_connect_info["admin_username"],
             admin_password=db_connect_info["admin_password"],
@@ -135,12 +134,12 @@ def handler(
             port=db_connect_info["port"],
         )
 
-        adapter_database = AdapterDatabase(db_connect_info)
+        adapter_database = DataRepositoryAdapterPostgres(db_connect_info)
 
         orphan_record_filter = OrphanRecordFilter(job_id=event[INPUT_JOB_ID_KEY],
                                                   page_index=event[INPUT_PAGE_INDEX_KEY],
                                                   page_size=PAGE_SIZE)
-        orphan_record_page = use_cases.orphans.task(
+        orphan_record_page = src.use_cases.orphans.task(
             orphan_record_filter,
             adapter_database,
             LOGGER

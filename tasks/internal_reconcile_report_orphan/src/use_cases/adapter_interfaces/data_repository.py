@@ -1,9 +1,9 @@
 import logging
 
-from entities.orphan import OrphanRecordFilter, OrphanRecordPage
+from src.entities.orphan import OrphanRecordFilter, OrphanRecordPage
 
 
-class DatabaseInterface:
+class DataRepositoryAdapterInterface:
     """
     Generic storage class with method that needs to be implemented by database adapter.
     """

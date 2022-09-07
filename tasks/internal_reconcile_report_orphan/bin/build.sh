@@ -101,25 +101,10 @@ check_rc $return_code "ERROR: Unable to install psycopg2."
 
 
 ## Copy the lambda files to build
-echo "INFO: Copying base Python files ..."
-cp *.py build/
-let return_code=$?
-check_rc $return_code "ERROR: Failed to copy base Python files to build directory."
-
-echo "INFO: Copying adapter Python files ..."
-find ./adapters -name '*.py' | xargs cp --parents -t build/
+echo "INFO: Copying src Python files ..."
+find ./src -name '*.py' | xargs cp --parents -t build/
 let return_code=$?
 check_rc $return_code "ERROR: Failed to copy adapter files to build directory."
-
-echo "INFO: Copying use-case Python files ..."
-find ./use_cases -name '*.py' | xargs cp --parents -t build/
-let return_code=$?
-check_rc $return_code "ERROR: Failed to copy use-case files to build directory."
-
-echo "INFO: Copying entity Python files ..."
-find ./entities -name '*.py' | xargs cp --parents -t build/
-let return_code=$?
-check_rc $return_code "ERROR: Failed to copy entities files to build directory."
 
 ## Copy the schema files to build
 echo "INFO: Copying schema files ..."
