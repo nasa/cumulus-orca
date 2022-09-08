@@ -1,8 +1,10 @@
 import logging
+from abc import abstractmethod
 
+import sqlalchemy
 from orca_shared.database import shared_db
-from orca_shared.database.use_cases import create_engine
 from sqlalchemy import text
+from sqlalchemy.engine import make_url
 from sqlalchemy.future import Engine
 
 from src.entities.orphan import OrphanRecordFilter, OrphanRecordPage, OrphanRecord
@@ -10,15 +12,13 @@ from src.use_cases.adapter_interfaces.storage import OrphansPageStorageInterface
 
 
 class StorageAdapterRDBMS(OrphansPageStorageInterface):
-    _engine: Engine = None
-
     def __init__(self, connection_uri: str):
         """
         Args:
             connection_uri: The URI connection string.
         """
-        engine = create_engine(connection_uri)
-        self._engine = engine
+        connection_url = make_url(connection_uri)
+        self._engine = sqlalchemy.engine.create.create_engine(connection_url, future=True)
 
     @shared_db.retry_operational_error()
     def get_orphans_page(
@@ -69,6 +69,14 @@ class StorageAdapterRDBMS(OrphansPageStorageInterface):
             )
 
     @staticmethod
+    @abstractmethod
+    def get_orphans_sql() -> text:
+        # abstract to allow other sql formats
+        raise NotImplemented()
+
+
+class StorageAdapterPostgres(StorageAdapterRDBMS):
+    @staticmethod
     def get_orphans_sql() -> text:  # pragma: no cover
         """
         SQL for getting orphan report entries for a given job_id, page_size, and page_index.
@@ -88,3 +96,5 @@ class StorageAdapterRDBMS(OrphansPageStorageInterface):
         OFFSET :page_index*:page_size
         LIMIT :page_size+1"""
         )
+
+    _engine: Engine = None

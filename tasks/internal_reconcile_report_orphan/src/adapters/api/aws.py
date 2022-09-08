@@ -10,7 +10,7 @@ from orca_shared.database.adapters.api import get_configuration
 from orca_shared.database.use_cases import create_user_uri
 
 import src.use_cases.get_orphans_page
-from src.adapters.storage.rdbms import StorageAdapterRDBMS
+from src.adapters.storage.rdbms import StorageAdapterRDBMS, StorageAdapterPostgres
 from src.entities.orphan import OrphanRecordFilter
 
 INPUT_JOB_ID_KEY = "jobId"
@@ -126,14 +126,14 @@ def handler(
             LOGGER
         )
 
-        adapter_database = StorageAdapterRDBMS(create_user_uri(db_connect_info, LOGGER))
+        storage_adapter = StorageAdapterPostgres(create_user_uri(db_connect_info, LOGGER))
 
         orphan_record_filter = OrphanRecordFilter(job_id=event[INPUT_JOB_ID_KEY],
                                                   page_index=event[INPUT_PAGE_INDEX_KEY],
                                                   page_size=PAGE_SIZE)
         orphan_record_page = src.use_cases.get_orphans_page.task(
             orphan_record_filter,
-            adapter_database,
+            storage_adapter,
             LOGGER
         )
         result = {
