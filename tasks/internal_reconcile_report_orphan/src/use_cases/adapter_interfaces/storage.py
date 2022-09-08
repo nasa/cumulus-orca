@@ -3,7 +3,7 @@ import logging
 from src.entities.orphan import OrphanRecordFilter, OrphanRecordPage
 
 
-class DataRepositoryAdapterInterface:
+class OrphansPageStorageInterface:
     """
     Generic storage class with method that needs to be implemented by database adapter.
     """

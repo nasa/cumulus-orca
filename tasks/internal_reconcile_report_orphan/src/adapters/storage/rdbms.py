@@ -1,44 +1,23 @@
-import dataclasses
 import logging
 
 from orca_shared.database import shared_db
+from orca_shared.database.use_cases import create_engine
 from sqlalchemy import text
 from sqlalchemy.future import Engine
 
 from src.entities.orphan import OrphanRecordFilter, OrphanRecordPage, OrphanRecord
-from src.use_cases.adapter_interfaces.data_repository import DataRepositoryAdapterInterface
+from src.use_cases.adapter_interfaces.storage import OrphansPageStorageInterface
 
 
-@dataclasses.dataclass  # todo: Replace the loosely-defined dictionary in orca_shared.database with this.
-class PostgresConnectionInfo:
-    admin_database_name: str
-    admin_username: str
-    admin_password: str
-    user_username: str
-    user_password: str
-    user_database_name: str
-    host: str
-    port: str
-
-
-class DataRepositoryAdapterPostgres(DataRepositoryAdapterInterface):
+class StorageAdapterRDBMS(OrphansPageStorageInterface):
     _engine: Engine = None
 
-    def __init__(self, db_connect_info: PostgresConnectionInfo):
+    def __init__(self, connection_uri: str):
         """
         Args:
-            db_connect_info: See shared_db.py's get_configuration for further details.
+            connection_uri: The URI connection string.
         """
-        engine = shared_db.get_user_connection({
-            "admin_database": db_connect_info.admin_database_name,
-            "admin_username": db_connect_info.admin_username,
-            "admin_password": db_connect_info.admin_password,
-            "user_username": db_connect_info.user_username,
-            "user_password": db_connect_info.user_password,
-            "user_database": db_connect_info.user_database_name,
-            "host": db_connect_info.host,
-            "port": db_connect_info.port,
-        })
+        engine = create_engine(connection_uri)
         self._engine = engine
 
     @shared_db.retry_operational_error()

@@ -104,7 +104,7 @@ check_rc $return_code "ERROR: Unable to install psycopg2."
 echo "INFO: Copying src Python files ..."
 find ./src -name '*.py' | xargs cp --parents -t build/
 let return_code=$?
-check_rc $return_code "ERROR: Failed to copy adapter files to build directory."
+check_rc $return_code "ERROR: Failed to copy src files to build directory."
 
 ## Copy the schema files to build
 echo "INFO: Copying schema files ..."

@@ -6,10 +6,11 @@ from typing import Dict, Union, Any, List
 import fastjsonschema as fastjsonschema
 from cumulus_logger import CumulusLogger
 from fastjsonschema import JsonSchemaException
-from orca_shared.database import shared_db
+from orca_shared.database.adapters.api import get_configuration
+from orca_shared.database.use_cases import create_user_uri
 
 import src.use_cases.get_orphans_page
-from src.adapters.data_repository.postgres import DataRepositoryAdapterPostgres
+from src.adapters.storage.rdbms import StorageAdapterRDBMS
 from src.entities.orphan import OrphanRecordFilter
 
 INPUT_JOB_ID_KEY = "jobId"
@@ -120,26 +121,17 @@ def handler(
                 json_schema_exception.__str__(),
             )
 
-        db_connect_info = shared_db.get_configuration(
-            check_env_variable(OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY)
-        )
-        db_connect_info = src.adapters.database.postgres.PostgresConnectionInfo(
-            admin_database_name=db_connect_info["admin_database"],
-            admin_username=db_connect_info["admin_username"],
-            admin_password=db_connect_info["admin_password"],
-            user_username=db_connect_info["user_username"],
-            user_password=db_connect_info["user_password"],
-            user_database_name=db_connect_info["user_database"],
-            host=db_connect_info["host"],
-            port=db_connect_info["port"],
+        db_connect_info = get_configuration(
+            check_env_variable(OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY),
+            LOGGER
         )
 
-        adapter_database = DataRepositoryAdapterPostgres(db_connect_info)
+        adapter_database = StorageAdapterRDBMS(create_user_uri(db_connect_info, LOGGER))
 
         orphan_record_filter = OrphanRecordFilter(job_id=event[INPUT_JOB_ID_KEY],
                                                   page_index=event[INPUT_PAGE_INDEX_KEY],
                                                   page_size=PAGE_SIZE)
-        orphan_record_page = src.use_cases.orphans.task(
+        orphan_record_page = src.use_cases.get_orphans_page.task(
             orphan_record_filter,
             adapter_database,
             LOGGER

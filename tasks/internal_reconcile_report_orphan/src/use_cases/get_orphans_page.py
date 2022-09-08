@@ -1,25 +1,25 @@
 import logging
 
-from src.use_cases.adapter_interfaces.data_repository import DataRepositoryAdapterInterface
+from src.use_cases.adapter_interfaces.storage import OrphansPageStorageInterface
 from src.entities.orphan import OrphanRecordPage, OrphanRecordFilter
 
 
 def task(
         orphan_record_filter: OrphanRecordFilter,
-        adapter_database: DataRepositoryAdapterInterface,
+        orphans_page_storage: OrphansPageStorageInterface,
         logger: logging.Logger
 ) -> OrphanRecordPage:
     """
     Args:
         orphan_record_filter: The filter designating which orphans to return.
-        adapter_database: The helper class for interacting with the DB.
+        orphans_page_storage: The helper class for getting the page from the DB.
         logger: The logger to use.
 
     Returns:
         A list containing orphan records.
         A bool indicating if there are further pages to retrieve.
     """
-    return adapter_database.get_orphans_page(
+    return orphans_page_storage.get_orphans_page(
         orphan_record_filter,
         logger
     )
