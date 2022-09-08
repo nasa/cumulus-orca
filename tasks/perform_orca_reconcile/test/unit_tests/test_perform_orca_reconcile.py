@@ -313,7 +313,8 @@ class TestPerformOrcaReconcile(
         with patch.dict(
             os.environ,
             {
-                perform_orca_reconcile.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY: internal_report_queue_url
+                perform_orca_reconcile.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY:
+                    internal_report_queue_url
             },
         ):
             result = perform_orca_reconcile.handler(event, mock_context)
@@ -369,7 +370,8 @@ class TestPerformOrcaReconcile(
         with patch.dict(
             os.environ,
             {
-                perform_orca_reconcile.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY: internal_report_queue_url
+                perform_orca_reconcile.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY:
+                    internal_report_queue_url
             },
         ):
             with self.assertRaises(Exception) as cm:
@@ -426,7 +428,8 @@ class TestPerformOrcaReconcile(
         with patch.dict(
             os.environ,
             {
-                perform_orca_reconcile.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY: internal_report_queue_url
+                perform_orca_reconcile.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY:
+                    internal_report_queue_url
             },
         ):
             with self.assertRaises(Exception) as cm:

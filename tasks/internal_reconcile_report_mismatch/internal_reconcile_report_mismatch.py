@@ -110,21 +110,36 @@ def query_db(
         for sql_result in sql_results:
             mismatches.append(
                 {
-                    MISMATCHES_COLLECTION_ID_KEY: sql_result["collection_id"],
-                    MISMATCHES_GRANULE_ID_KEY: sql_result["granule_id"],
-                    MISMATCHES_FILENAME_KEY: sql_result["filename"],
-                    MISMATCHES_KEY_PATH_KEY: sql_result["key_path"],
-                    MISMATCHES_CUMULUS_ARCHIVE_LOCATION_KEY: sql_result["cumulus_archive_location"],
-                    MISMATCHES_ORCA_ETAG_KEY: sql_result["orca_etag"],
-                    MISMATCHES_S3_ETAG_KEY: sql_result["s3_etag"],
-                    MISMATCHES_ORCA_LAST_UPDATE_KEY: sql_result["orca_last_update"],
-                    MISMATCHES_S3_LAST_UPDATE_KEY: sql_result["s3_last_update"],
-                    MISMATCHES_ORCA_SIZE_IN_BYTES_KEY: sql_result["orca_size_in_bytes"],
-                    MISMATCHES_S3_SIZE_IN_BYTES_KEY: sql_result["s3_size_in_bytes"],
-                    MISMATCHES_ORCA_STORAGE_CLASS_KEY: sql_result["orca_storage_class"],
-                    MISMATCHES_S3_STORAGE_CLASS_KEY: sql_result["s3_storage_class"],
-                    MISMATCHES_DISCREPANCY_TYPE_KEY: sql_result["discrepancy_type"],
-                    MISMATCHES_COMMENT_KEY: sql_result["comment"]
+                    MISMATCHES_COLLECTION_ID_KEY:
+                        sql_result["collection_id"],
+                    MISMATCHES_GRANULE_ID_KEY:
+                        sql_result["granule_id"],
+                    MISMATCHES_FILENAME_KEY:
+                        sql_result["filename"],
+                    MISMATCHES_KEY_PATH_KEY:
+                        sql_result["key_path"],
+                    MISMATCHES_CUMULUS_ARCHIVE_LOCATION_KEY:
+                        sql_result["cumulus_archive_location"],
+                    MISMATCHES_ORCA_ETAG_KEY:
+                        sql_result["orca_etag"],
+                    MISMATCHES_S3_ETAG_KEY:
+                        sql_result["s3_etag"],
+                    MISMATCHES_ORCA_LAST_UPDATE_KEY:
+                        sql_result["orca_last_update"],
+                    MISMATCHES_S3_LAST_UPDATE_KEY:
+                        sql_result["s3_last_update"],
+                    MISMATCHES_ORCA_SIZE_IN_BYTES_KEY:
+                        sql_result["orca_size_in_bytes"],
+                    MISMATCHES_S3_SIZE_IN_BYTES_KEY:
+                        sql_result["s3_size_in_bytes"],
+                    MISMATCHES_ORCA_STORAGE_CLASS_KEY:
+                        sql_result["orca_storage_class"],
+                    MISMATCHES_S3_STORAGE_CLASS_KEY:
+                        sql_result["s3_storage_class"],
+                    MISMATCHES_DISCREPANCY_TYPE_KEY:
+                        sql_result["discrepancy_type"],
+                    MISMATCHES_COMMENT_KEY:
+                        sql_result["comment"]
                 }
             )
         return mismatches
@@ -138,15 +153,17 @@ def get_mismatches_sql() -> text:  # pragma: no cover
     return text(
         """
 SELECT
-    collection_id, 
-    granule_id, 
-    filename, 
-    key_path, 
+    collection_id,
+    granule_id,
+    filename,
+    key_path,
     cumulus_archive_location,
-    orca_etag, 
+    orca_etag,
     s3_etag,
-    (EXTRACT(EPOCH FROM date_trunc('milliseconds', orca_last_update) AT TIME ZONE 'UTC') * 1000)::bigint as orca_last_update,
-    (EXTRACT(EPOCH FROM date_trunc('milliseconds', s3_last_update) AT TIME ZONE 'UTC') * 1000)::bigint as s3_last_update,
+    (EXTRACT(EPOCH FROM date_trunc('milliseconds', orca_last_update)
+     AT TIME ZONE 'UTC') * 1000)::bigint as orca_last_update,
+    (EXTRACT(EPOCH FROM date_trunc('milliseconds', s3_last_update)
+     AT TIME ZONE 'UTC') * 1000)::bigint as s3_last_update,
     orca_size_in_bytes,
     s3_size_in_bytes,
     storage_class.value AS orca_storage_class,
@@ -228,13 +245,15 @@ def handler(
         context: An object provided by AWS Lambda. Used for context tracking.
 
     Environment Vars:
-        DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
+        DB_CONNECT_INFO_SECRET_ARN (string):
+            Secret ARN of the AWS secretsmanager secret for connecting to the database.
         See shared_db.py's get_configuration for further details.
 
     Returns:
         See schemas/output.json
         Or, if an error occurs, see create_http_error_dict
-            400 if input does not match schemas/input.json. 500 if an error occurs when querying the database.
+            400 if input does not match schemas/input.json.
+            500 if an error occurs when querying the database.
     """
     try:
         LOGGER.setMetadata(event, context)

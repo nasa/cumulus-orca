@@ -98,15 +98,15 @@ def add_files_storage_class_id_column_sql() -> text:  # pragma: no cover
         ADD COLUMN IF NOT EXISTS storage_class_id int2 NOT NULL default 1;
         COMMENT ON COLUMN files.storage_class_id
             IS 'Storage class of the file.';
-        
+
         -- Remove the default now that new cells are populated.
         ALTER TABLE files
         ALTER COLUMN storage_class_id DROP DEFAULT;
-        
+
         -- Drop the FK constraint since ADD CONSTRAINT IF NOT EXISTS isn't an option
         ALTER TABLE files
             DROP CONSTRAINT IF EXISTS FK_recovery_file_storage_class;
-        
+
         -- Add the FK constraint
         ALTER TABLE files
         ADD CONSTRAINT FK_recovery_file_storage_class
@@ -117,7 +117,8 @@ def add_files_storage_class_id_column_sql() -> text:  # pragma: no cover
 
 def add_mismatch_storage_class_columns_sql() -> text:  # pragma: no cover
     """
-    SQL for adding the orca_storage_class_id and s3_storage_class columns to the reconcile_catalog_mismatch_report table.
+    SQL for adding the orca_storage_class_id and s3_storage_class columns
+    to the reconcile_catalog_mismatch_report table.
     New cells will contain '1', the id for GLACIER.
 
     Returns: SQL for adding the column.
@@ -137,11 +138,11 @@ def add_mismatch_storage_class_columns_sql() -> text:  # pragma: no cover
         ALTER TABLE reconcile_catalog_mismatch_report
         ALTER COLUMN orca_storage_class_id DROP DEFAULT,
         ALTER COLUMN s3_storage_class DROP DEFAULT;
-        
+
         -- Drop the FK constraint since ADD CONSTRAINT IF NOT EXISTS isn't an option
         ALTER TABLE reconcile_catalog_mismatch_report
             DROP CONSTRAINT IF EXISTS FK_mismatch_orca_storage_class;
-        
+
         -- Add the FK constraint
         ALTER TABLE reconcile_catalog_mismatch_report
         ADD CONSTRAINT FK_mismatch_orca_storage_class
@@ -168,11 +169,11 @@ def add_phantom_storage_class_column_sql() -> text:  # pragma: no cover
         -- Remove the default now that new cells are populated.
         ALTER TABLE reconcile_phantom_report
         ALTER COLUMN orca_storage_class_id DROP DEFAULT;
-        
+
         -- Drop the FK constraint since ADD CONSTRAINT IF NOT EXISTS isn't an option
         ALTER TABLE reconcile_phantom_report
             DROP CONSTRAINT IF EXISTS FK_phantom_orca_storage_class;
-        
+
         -- Add the FK constraint
         ALTER TABLE reconcile_phantom_report
         ADD CONSTRAINT FK_phantom_orca_storage_class

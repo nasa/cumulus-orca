@@ -412,14 +412,14 @@ the ingest workflow.
     "cma":{
       "event.$":"$",
       "task_config": {
-        "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
+        "excludedFileExtensions": "{$.meta.collection.meta.orca.excludedFileExtensions}",
         "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
         "providerId": "{$.meta.provider.id}",
         "providerName": "{$.meta.provider.name}",
         "executionId": "{$.cumulus_meta.execution_name}",
         "collectionShortname": "{$.meta.collection.name}",
         "collectionVersion": "{$.meta.collection.version}",
-        "orcaDefaultBucketOverride": "{$.meta.collection.meta.orcaDefaultBucketOverride}"
+        "defaultBucketOverride": "{$.meta.collection.meta.orca.defaultBucketOverride}"
       }
     }
   }
@@ -615,10 +615,10 @@ To configure a collection to enable ORCA, add the line
 as seen below.
 
 Optionally, you can exclude files by adding values to an
-`excludeFileTypes` variable as seen below.
+`excludedFileExtensions` variable as seen below.
 In addition, when dealing with large files, the `s3MultipartChunksizeMb` variable can also be set to override the
 default setting set during ORCA installation.
-If the file should be stored in a [storage class](../../operator/storage-classes.md) other than the default set in `orca_default_storage_class` during installation, specify it using `orcaDefaultStorageClassOverride`.
+If the file should be stored in a [storage class](../../operator/storage-classes.md) other than the default set in `orca_default_storage_class` during installation, specify it using `defaultStorageClassOverride`.
 For more information, see the documentation on the
 [`copy_to_glacier` task](https://github.com/nasa/cumulus-orca/tree/master/tasks/copy_to_glacier).
 
@@ -635,11 +635,11 @@ For more information, see the documentation on the
   "provider_path": "L0A_HR_RAW/",
   "meta": {
     "granuleRecoveryWorkflow": "OrcaRecoveryWorkflow",
-    "excludeFileTypes": [".cmr", ".xml", ".met"],
+    "excludedFileExtensions": [".cmr", ".xml", ".met"],
     "s3MultipartChunksizeMb": 400,
-    "orcaDefaultBucketOverride": "prod_orca_worm",
-    "orcaDefaultRecoveryTypeOverride": "Standard",
-    "orcaDefaultStorageClassOverride": "DEEP_ARCHIVE"
+    "defaultBucketOverride": "prod_orca_worm",
+    "defaultRecoveryTypeOverride": "Standard",
+    "defaultStorageClassOverride": "DEEP_ARCHIVE"
   },
   ...
 }

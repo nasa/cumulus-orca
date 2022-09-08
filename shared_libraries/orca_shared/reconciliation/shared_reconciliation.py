@@ -22,7 +22,8 @@ LOGGER = logging.Logger("ORCA")
 class OrcaStatus(Enum):
     """
     An enumeration.
-    Defines the status value used in the ORCA Reconciliation database for use by the reconciliation functions.
+    Defines the status value used in the ORCA Reconciliation database
+    for use by the reconciliation functions.
     """
 
     GETTING_S3_LIST = 1

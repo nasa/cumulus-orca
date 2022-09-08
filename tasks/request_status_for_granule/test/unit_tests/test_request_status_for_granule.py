@@ -505,18 +505,24 @@ class TestRequestStatusForGranuleUnit(
             # files
             [
                 {
-                    request_status_for_granule.OUTPUT_FILENAME_KEY: uuid.uuid4().__str__()
-                    + ".ext",
-                    request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY: uuid.uuid4().__str__(),
-                    request_status_for_granule.OUTPUT_STATUS_KEY: "failed",
-                    request_status_for_granule.OUTPUT_ERROR_MESSAGE_KEY: "some error message",
+                    request_status_for_granule.OUTPUT_FILENAME_KEY:
+                        uuid.uuid4().__str__() + ".ext",
+                    request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY:
+                        uuid.uuid4().__str__(),
+                    request_status_for_granule.OUTPUT_STATUS_KEY:
+                        "failed",
+                    request_status_for_granule.OUTPUT_ERROR_MESSAGE_KEY:
+                        "some error message",
                 },
                 {
-                    request_status_for_granule.OUTPUT_FILENAME_KEY: uuid.uuid4().__str__()
-                    + ".ext",
-                    request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY: uuid.uuid4().__str__(),
-                    request_status_for_granule.OUTPUT_STATUS_KEY: "staged",
-                    request_status_for_granule.OUTPUT_ERROR_MESSAGE_KEY: None,
+                    request_status_for_granule.OUTPUT_FILENAME_KEY:
+                        uuid.uuid4().__str__() + ".ext",
+                    request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY:
+                        uuid.uuid4().__str__(),
+                    request_status_for_granule.OUTPUT_STATUS_KEY:
+                        "staged",
+                    request_status_for_granule.OUTPUT_ERROR_MESSAGE_KEY:
+                        None,
                 },
             ],
         ]

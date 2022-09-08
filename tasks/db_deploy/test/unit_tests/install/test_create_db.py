@@ -154,7 +154,8 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         mock_extension_sql.assert_called_once()
 
         # Check SQL called in proper order
-        # todo: here and elsewhere, checks are not sufficient. assert_called_once should never be used, and all assert_has_calls should be followed by a check on the call count.
+        # todo: here and elsewhere, checks are not sufficient.assert_called_once should
+        # never be used, and all assert_has_calls should be followed by a check on the call count.
         self.mock_connection.assert_has_calls(
             [
                 call.execute(mock_dbo_role_sql()),

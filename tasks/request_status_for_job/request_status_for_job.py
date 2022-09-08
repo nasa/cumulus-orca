@@ -37,10 +37,11 @@ def task(job_id: str, db_connect_info: Dict, request_id: str) -> Dict[str, Any]:
                 'granule_id' (str)
                 'status' (str): pending|staged|success|failed
 
-        Will also return a dict from create_http_error_dict with error NOT_FOUND if job could not be found.
+        Will also return a dict from create_http_error_dict with
+        error NOT_FOUND if job could not be found.
     """
     if job_id is None or len(job_id) == 0:
-        raise ValueError(f"job_id must be set to a non-empty value.")
+        raise ValueError("job_id must be set to a non-empty value.")
 
     engine = shared_db.get_user_connection(db_connect_info)
 
@@ -158,7 +159,7 @@ def get_status_totals_for_job_sql() -> text:  # pragma: no cover
                 SELECT value
                     , coalesce(total, 0) as total
                 FROM recovery_status os
-                LEFT JOIN granule_status_count gsc ON (gsc.status_id = os.id)"""  # nosec
+                LEFT JOIN granule_status_count gsc ON (gsc.status_id = os.id)"""  # nosec   # noqa
     )
 
 
@@ -197,19 +198,24 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         context: An object provided by AWS Lambda. Used for context tracking.
 
     Environment Vars:
-        DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
+        DB_CONNECT_INFO_SECRET_ARN (string):
+            Secret ARN of the AWS secretsmanager secret for connecting to the database.
         See shared_db.py's get_configuration for further details.
 
     Returns: A Dict with the following keys:
         asyncOperationId (str): The unique ID of the asyncOperation.
-        job_status_totals (Dict[str, int]): Sums of how many granules are in each particular restoration status.
-            pending (int): The number of granules that still need to be copied.
-            staged (int): Currently unimplemented.
-            success (int): The number of granules that have been successfully copied.
-            failed (int): The number of granules that did not copy and will not copy due to an error.
-        granules (Array[Dict]): An array of Dicts representing each granule being copied as part of the job.
-            granule_id (str): The unique ID of the granule.
-            status (str): The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.
+        job_status_totals (Dict[str, int]): Sums of how many granules are in each
+            particular restoration status.
+                pending (int): The number of granules that still need to be copied.
+                staged (int): Currently unimplemented.
+                success (int): The number of granules that have been successfully copied.
+                failed (int): The number of granules that did not copy
+                              and will not copy due to an error.
+        granules (Array[Dict]): An array of Dicts representing each granule
+            being copied as part of the job.
+                granule_id (str): The unique ID of the granule.
+                status (str): The status of the restoration of the file.
+                    May be 'pending', 'staged', 'success', or 'failed'.
 
         Or, if an error occurs, see create_http_error_dict
             400 if asyncOperationId is missing. 500 if an error occurs when querying the database.
@@ -217,7 +223,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     # get the secret ARN from the env variable
     try:
         db_connect_info_secret_arn = os.environ["DB_CONNECT_INFO_SECRET_ARN"]
-    except KeyError as key_error:
+    except KeyError:
         LOGGER.error("DB_CONNECT_INFO_SECRET_ARN environment value not found.")
         raise
     try:

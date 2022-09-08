@@ -39,19 +39,26 @@ class TestInternalReconcileReportJob(
             internal_reconcile_report_job.OUTPUT_ANOTHER_PAGE_KEY: False,
             internal_reconcile_report_job.OUTPUT_JOBS_KEY: [
                 {
-                    internal_reconcile_report_job.JOBS_ID_KEY: random.randint(0, 999),  # nosec
-                    internal_reconcile_report_job.JOBS_ORCA_ARCHIVE_LOCATION_KEY: uuid.uuid4().__str__(),
-                    internal_reconcile_report_job.JOBS_STATUS_KEY: "generating reports",
-                    internal_reconcile_report_job.JOBS_INVENTORY_CREATION_TIME_KEY: random.randint(0, 999),  # nosec
-                    internal_reconcile_report_job.JOBS_LAST_UPDATE_KEY: random.randint(  # nosec
-                        0, 999
-                    ),
-                    internal_reconcile_report_job.JOBS_ERROR_MESSAGE_KEY: uuid.uuid4().__str__(),
+                    internal_reconcile_report_job.JOBS_ID_KEY:
+                        random.randint(0, 999),  # nosec
+                    internal_reconcile_report_job.JOBS_ORCA_ARCHIVE_LOCATION_KEY:
+                        uuid.uuid4().__str__(),
+                    internal_reconcile_report_job.JOBS_STATUS_KEY:
+                        "generating reports",
+                    internal_reconcile_report_job.JOBS_INVENTORY_CREATION_TIME_KEY:
+                        random.randint(0, 999),  # nosec
+                    internal_reconcile_report_job.JOBS_LAST_UPDATE_KEY:
+                        random.randint(0, 999),  # nosec
+                    internal_reconcile_report_job.JOBS_ERROR_MESSAGE_KEY:
+                        uuid.uuid4().__str__(),
                     internal_reconcile_report_job.JOBS_REPORT_TOTALS_KEY: {
-                        internal_reconcile_report_job.REPORT_TOTALS_ORPHAN_KEY: random.randint(0, 999),  # nosec
-                        internal_reconcile_report_job.REPORT_TOTALS_PHANTOM_KEY: random.randint(0, 999),  # nosec
-                        internal_reconcile_report_job.REPORT_TOTALS_CATALOG_MISMATCH_KEY: random.randint(0, 999)  # nosec
-                    }
+                        internal_reconcile_report_job.REPORT_TOTALS_ORPHAN_KEY:
+                            random.randint(0, 999),  # nosec
+                        internal_reconcile_report_job.REPORT_TOTALS_PHANTOM_KEY:
+                            random.randint(0, 999),  # nosec
+                        internal_reconcile_report_job.REPORT_TOTALS_CATALOG_MISMATCH_KEY:
+                            random.randint(0, 999)  # nosec
+                        }
                 }
             ],
         }
@@ -125,18 +132,23 @@ class TestInternalReconcileReportJob(
             internal_reconcile_report_job.OUTPUT_ANOTHER_PAGE_KEY: False,
             internal_reconcile_report_job.OUTPUT_JOBS_KEY: [
                 {
-                    internal_reconcile_report_job.JOBS_ID_KEY: random.randint(0, 999),  # nosec
-                    internal_reconcile_report_job.JOBS_ORCA_ARCHIVE_LOCATION_KEY: uuid.uuid4().__str__(),
-                    internal_reconcile_report_job.JOBS_STATUS_KEY: "generating reports",
-                    internal_reconcile_report_job.JOBS_INVENTORY_CREATION_TIME_KEY: random.randint(0, 999),  # nosec
-                    internal_reconcile_report_job.JOBS_LAST_UPDATE_KEY: random.randint(  # nosec
-                        0, 999
-                    ),
+                    internal_reconcile_report_job.JOBS_ID_KEY:
+                        random.randint(0, 999),  # nosec
+                    internal_reconcile_report_job.JOBS_ORCA_ARCHIVE_LOCATION_KEY:
+                        uuid.uuid4().__str__(),
+                    internal_reconcile_report_job.JOBS_STATUS_KEY:
+                        "generating reports",
+                    internal_reconcile_report_job.JOBS_INVENTORY_CREATION_TIME_KEY:
+                        random.randint(0, 999),  # nosec
+                    internal_reconcile_report_job.JOBS_LAST_UPDATE_KEY:
+                        random.randint(0, 999),  # nosec
                     internal_reconcile_report_job.JOBS_ERROR_MESSAGE_KEY: None,
                     internal_reconcile_report_job.JOBS_REPORT_TOTALS_KEY: {
-                        internal_reconcile_report_job.REPORT_TOTALS_PHANTOM_KEY: random.randint(0, 999),  # nosec
-                        internal_reconcile_report_job.REPORT_TOTALS_CATALOG_MISMATCH_KEY: random.randint(0, 999)  # nosec
-                    }
+                        internal_reconcile_report_job.REPORT_TOTALS_PHANTOM_KEY:
+                            random.randint(0, 999),  # nosec
+                        internal_reconcile_report_job.REPORT_TOTALS_CATALOG_MISMATCH_KEY:
+                            random.randint(0, 999)  # nosec
+                        }
                 }
             ],
         }
@@ -146,7 +158,8 @@ class TestInternalReconcileReportJob(
             "InternalServerError",
             HTTPStatus.INTERNAL_SERVER_ERROR,
             context.aws_request_id,
-            f"data.{internal_reconcile_report_job.OUTPUT_JOBS_KEY}[0].{internal_reconcile_report_job.JOBS_REPORT_TOTALS_KEY} "
+            f"data.{internal_reconcile_report_job.OUTPUT_JOBS_KEY}[0]."
+            f"{internal_reconcile_report_job.JOBS_REPORT_TOTALS_KEY} "
             f"must contain ['{internal_reconcile_report_job.REPORT_TOTALS_ORPHAN_KEY}', "
             f"'{internal_reconcile_report_job.REPORT_TOTALS_PHANTOM_KEY}', "
             f"'{internal_reconcile_report_job.REPORT_TOTALS_CATALOG_MISMATCH_KEY}'] properties",
@@ -217,9 +230,8 @@ class TestInternalReconcileReportJob(
         self.assertEqual(
             {
                 internal_reconcile_report_job.OUTPUT_ANOTHER_PAGE_KEY: True,
-                internal_reconcile_report_job.OUTPUT_JOBS_KEY: jobs[
-                                                               0: internal_reconcile_report_job.PAGE_SIZE
-                                                               ],
+                internal_reconcile_report_job.OUTPUT_JOBS_KEY:
+                    jobs[0: internal_reconcile_report_job.PAGE_SIZE],
             },
             result,
         )
@@ -282,16 +294,25 @@ class TestInternalReconcileReportJob(
         self.assertEqual(
             [
                 {
-                    internal_reconcile_report_job.JOBS_ID_KEY: job_id,
-                    internal_reconcile_report_job.JOBS_ORCA_ARCHIVE_LOCATION_KEY: orca_archive_location,
-                    internal_reconcile_report_job.JOBS_STATUS_KEY: status,
-                    internal_reconcile_report_job.JOBS_INVENTORY_CREATION_TIME_KEY: inventory_creation_time,
-                    internal_reconcile_report_job.JOBS_LAST_UPDATE_KEY: last_update_time,
-                    internal_reconcile_report_job.JOBS_ERROR_MESSAGE_KEY: error_message,
+                    internal_reconcile_report_job.JOBS_ID_KEY:
+                        job_id,
+                    internal_reconcile_report_job.JOBS_ORCA_ARCHIVE_LOCATION_KEY:
+                        orca_archive_location,
+                    internal_reconcile_report_job.JOBS_STATUS_KEY:
+                        status,
+                    internal_reconcile_report_job.JOBS_INVENTORY_CREATION_TIME_KEY:
+                        inventory_creation_time,
+                    internal_reconcile_report_job.JOBS_LAST_UPDATE_KEY:
+                        last_update_time,
+                    internal_reconcile_report_job.JOBS_ERROR_MESSAGE_KEY:
+                        error_message,
                     internal_reconcile_report_job.JOBS_REPORT_TOTALS_KEY: {
-                        internal_reconcile_report_job.REPORT_TOTALS_ORPHAN_KEY: orphan_count,
-                        internal_reconcile_report_job.REPORT_TOTALS_PHANTOM_KEY: phantom_count,
-                        internal_reconcile_report_job.REPORT_TOTALS_CATALOG_MISMATCH_KEY: catalog_mismatch_count
+                        internal_reconcile_report_job.REPORT_TOTALS_ORPHAN_KEY:
+                            orphan_count,
+                        internal_reconcile_report_job.REPORT_TOTALS_PHANTOM_KEY:
+                            phantom_count,
+                        internal_reconcile_report_job.REPORT_TOTALS_CATALOG_MISMATCH_KEY:
+                            catalog_mismatch_count
                     }
                 }
             ],
@@ -347,7 +368,8 @@ class TestInternalReconcileReportJob(
         request_id = uuid.uuid4().__str__()
         message = uuid.uuid4().__str__()
 
-        result = internal_reconcile_report_job.create_http_error_dict(error_type, http_status_code, request_id, message)
+        result = internal_reconcile_report_job.create_http_error_dict(
+            error_type, http_status_code, request_id, message)
 
         self.assertEqual({
             "errorType": error_type,

@@ -13,4 +13,4 @@ class ConfigCheck:
             if Config.multipart_chunksize != self.multipart_chunksize:
                 self.bad_config = Config
         except Exception as ex:
-            bad_config = ex
+            self.bad_config = ex
