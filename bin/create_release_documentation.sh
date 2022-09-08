@@ -83,8 +83,8 @@ export GIT_USER=$bamboo_SECRET_GITHUB_USER
 export GIT_PASS=$bamboo_SECRET_GITHUB_TOKEN
 
 # We need to set some git config here so deploy doesn't complain when the commit occurs.
-git config --local user.email "$bamboo_SECRET_GITHUB_EMAIL"
-git config --local user.name "$GIT_USER"
+git config --global user.email "$bamboo_SECRET_GITHUB_EMAIL"
+git config --global user.name "$GIT_USER"
 
 # Output config values for troubleshooting
 echo "USER EMAIL = `git config --get user.email`"
