@@ -4,10 +4,13 @@ import os
 
 import boto3
 
-from orca_shared.database.entities.postgres_connection_info import PostgresConnectionInfo
+from orca_shared.database.entities.postgres_connection_info import (
+    PostgresConnectionInfo,
+)
 
 
-def get_configuration(db_connect_info_secret_arn: str, logger: logging.Logger) -> PostgresConnectionInfo:
+def get_configuration(db_connect_info_secret_arn: str, logger: logging.Logger) \
+        -> PostgresConnectionInfo:
     """
     Create a dictionary of configuration values based on environment variables
     and secret information items needed to create ORCA database connections.
