@@ -75,10 +75,10 @@ class TestAWS(unittest.TestCase):
         mock_error.assert_called_once_with(message)
 
     # noinspection PyPep8Naming
-    @patch("src.adapters.storage.rdbms.StorageAdapterPostgres")
-    @patch("src.use_cases.get_orphans_page.task")
-    @patch("orca_shared.database.use_cases.create_postgres_connection_uri.create_user_uri")
-    @patch("orca_shared.database.adapters.api.aws.get_configuration")
+    @patch("src.adapters.api.aws.StorageAdapterPostgres")
+    @patch("src.adapters.api.aws.get_orphans_page.task")
+    @patch("src.adapters.api.aws.create_user_uri")
+    @patch("src.adapters.api.aws.get_configuration")
     @patch("src.adapters.api.aws.check_env_variable")
     @patch("cumulus_logger.CumulusLogger.setMetadata")
     def test_handler_happy_path(
@@ -176,8 +176,8 @@ class TestAWS(unittest.TestCase):
 
     # noinspection PyPep8Naming
     @patch("src.adapters.api.aws.create_http_error_dict")
-    @patch("src.adapters.storage.rdbms.StorageAdapterPostgres")
-    @patch("src.use_cases.get_orphans_page.task")
+    @patch("src.adapters.api.aws.StorageAdapterPostgres")
+    @patch("src.adapters.api.aws.get_orphans_page.task")
     @patch("cumulus_logger.CumulusLogger.setMetadata")
     def test_handler_missing_page_index_returns_error(
         self,
@@ -210,10 +210,10 @@ class TestAWS(unittest.TestCase):
 
     # noinspection PyPep8Naming
     @patch("src.adapters.api.aws.create_http_error_dict")
-    @patch("src.adapters.storage.rdbms.StorageAdapterPostgres")
-    @patch("src.use_cases.get_orphans_page.task")
-    @patch("orca_shared.database.use_cases.create_postgres_connection_uri.create_user_uri")
-    @patch("orca_shared.database.adapters.api.aws.get_configuration")
+    @patch("src.adapters.api.aws.StorageAdapterPostgres")
+    @patch("src.adapters.api.aws.get_orphans_page.task")
+    @patch("src.adapters.api.aws.create_user_uri")
+    @patch("src.adapters.api.aws.get_configuration")
     @patch("src.adapters.api.aws.check_env_variable")
     @patch("cumulus_logger.CumulusLogger.setMetadata")
     def test_handler_bad_output_raises_error(

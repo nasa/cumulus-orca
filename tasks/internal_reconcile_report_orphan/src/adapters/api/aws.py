@@ -13,6 +13,7 @@ from orca_shared.database.use_cases import create_user_uri
 import src.use_cases.get_orphans_page
 from src.adapters.storage.rdbms import StorageAdapterPostgres
 from src.entities.orphan import OrphanRecordFilter
+from src.use_cases import get_orphans_page
 
 INPUT_JOB_ID_KEY = "jobId"
 INPUT_PAGE_INDEX_KEY = "pageIndex"
@@ -117,27 +118,27 @@ def handler(
         try:
             _VALIDATE_INPUT(event)
         except JsonSchemaException as json_schema_exception:
-            return src.adapters.api.aws.create_http_error_dict(
+            return create_http_error_dict(
                 "BadRequest",
                 HTTPStatus.BAD_REQUEST,
                 context.aws_request_id,
                 json_schema_exception.__str__(),
             )
 
-        db_connect_info = orca_shared.database.adapters.api.aws.get_configuration(
+        db_connect_info = get_configuration(
             check_env_variable(OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY),
             LOGGER
         )
 
-        storage_adapter = src.adapters.storage.rdbms.StorageAdapterPostgres(
-            orca_shared.database.use_cases.create_postgres_connection_uri.create_user_uri(
+        storage_adapter = StorageAdapterPostgres(
+            create_user_uri(
                 db_connect_info, LOGGER))
 
         orphan_record_filter = \
             OrphanRecordFilter(job_id=event[INPUT_JOB_ID_KEY],
                                page_index=event[INPUT_PAGE_INDEX_KEY],
                                page_size=PAGE_SIZE)
-        orphan_record_page = src.use_cases.get_orphans_page.task(
+        orphan_record_page = get_orphans_page.task(
             orphan_record_filter,
             storage_adapter,
             LOGGER
@@ -158,7 +159,7 @@ def handler(
 
         return result
     except Exception as error:
-        return src.adapters.api.aws.create_http_error_dict(
+        return create_http_error_dict(
             "InternalServerError",
             HTTPStatus.INTERNAL_SERVER_ERROR,
             context.aws_request_id,

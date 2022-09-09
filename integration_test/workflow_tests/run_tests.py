@@ -31,6 +31,7 @@ def run_tests() -> None:
     Raises:
         Exception: Thrown once processing of all tests concludes if any test failed.
     """
+    logging.getLogger().setLevel(logging.INFO)
     suite = unittest.TestLoader().loadTestsFromModule(test_packages)
     concurrent_suite = testtools.ConcurrentStreamTestSuite(
         lambda: ((case, None) for case in suite)
