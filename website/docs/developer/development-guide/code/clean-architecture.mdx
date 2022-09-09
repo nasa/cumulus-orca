@@ -51,10 +51,16 @@ While the broad strokes remain the same as the Clean Coder definitions, this doc
   - All technical details from the above layer should be stripped before handing down to the lower layer.
 - Receives calls from the layer above it and/or the layer beneath it.
 
-#### Orca Examples
+#### Resource Examples
 - Centralized code for contacting the Postgres Database
 - Centralized code for posting events to SQS Queues
 - Pulling relevant information out of parameters passed to Lambda `handler` functions before calling additional logic
+
+#### Code Examples
+- [Storage adapter `rdbms.py`](https://github.com/nasa/cumulus-orca/blob/master/tasks/internal_reconcile_report_orphan/src/adapters/storage/rdbms.py)
+  - Provides access to database without requiring knowledge of database outside of constructor.
+  - Implements single-purpose interface to allow future features to use different storage adapters as needed.
+  - Allows additional layer between RDBMS database technologies by isolating technology-specific SQL to abstract methods.
 
 
 <a name="use-cases"></a>
@@ -64,9 +70,13 @@ While the broad strokes remain the same as the Clean Coder definitions, this doc
   - Larger features and flows may consist of several Use Cases chained together by SQS Queues or Step Functions.
 - May call higher or lower components as needed, though neither should need to know the details of the other.
 
-#### Orca Examples
+#### Resource Examples
 - `task` functions in Lambdas that perform a series of operations.
 
+#### Code Examples
+- [Use case `get_orphans_page.py`](https://github.com/nasa/cumulus-orca/blob/master/tasks/internal_reconcile_report_orphan/src/use_cases/get_orphans_page.py)
+  - Performs the underlying flow of getting results from the database adapter, and passing them out to the caller.
+  - Accepts adapters for specific purposes.
 
 <a name="entities"></a>
 
@@ -74,9 +84,14 @@ While the broad strokes remain the same as the Clean Coder definitions, this doc
 - Simple, reusable objects and functions.
 - Can only communicate with the [Use Cases layer](#use-cases).
 
-#### Orca Examples
+#### Resource Examples
 - Shared helper libraries without external dependencies
 - Individual Lambda functions
+
+#### Code Examples
+- [Entity `orphan.py`](https://github.com/nasa/cumulus-orca/blob/master/tasks/internal_reconcile_report_orphan/src/entities/orphan.py)
+  - Simple data classes.
+  - Standardizes information transfer between classes without the need for dictionary keys.
 
 ## Additional Thoughts
 - Categorization of some resources are blurred.

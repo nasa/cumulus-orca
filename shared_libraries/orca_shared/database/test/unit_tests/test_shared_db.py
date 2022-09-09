@@ -38,7 +38,7 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
                 "admin_password":"admin123",
                 "admin_username":"admin",
                 "host":"aws.postgresrds.host",
-                "port":5432,
+                "port":"5432",
                 "user_database":"user_db",
                 "user_password":"user123",
                 "user_username":"user"
@@ -127,7 +127,7 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
         """
         root_db_call = {
             "host": "aws.postgresrds.host",
-            "port": 5432,
+            "port": "5432",
             "database": "admin_db",
             "username": "admin",
             "password": "admin123",
@@ -135,7 +135,7 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
 
         user_db_call = {
             "host": "aws.postgresrds.host",
-            "port": 5432,
+            "port": "5432",
             "database": "orca",
             "username": "admin",
             "password": "admin123",
@@ -163,7 +163,7 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
         """
         user_db_call = {
             "host": "aws.postgresrds.host",
-            "port": 5432,
+            "port": "5432",
             "database": "user_db",
             "username": "user",
             "password": "user123",
@@ -188,7 +188,7 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
         """
         user_db_call = {
             "host": "aws.postgresrds.host",
-            "port": 5432,
+            "port": "5432",
             "database": "user_db",
             "username": "user",
             "password": "user123",
