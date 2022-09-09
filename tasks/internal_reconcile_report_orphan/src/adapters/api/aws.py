@@ -7,8 +7,11 @@ import fastjsonschema as fastjsonschema
 import orca_shared
 from cumulus_logger import CumulusLogger
 from fastjsonschema import JsonSchemaException
+from orca_shared.database.adapters.api import get_configuration
+from orca_shared.database.use_cases import create_user_uri
 
 import src.use_cases.get_orphans_page
+from src.adapters.storage.rdbms import StorageAdapterPostgres
 from src.entities.orphan import OrphanRecordFilter
 
 INPUT_JOB_ID_KEY = "jobId"
@@ -114,7 +117,7 @@ def handler(
         try:
             _VALIDATE_INPUT(event)
         except JsonSchemaException as json_schema_exception:
-            return create_http_error_dict(
+            return src.adapters.api.aws.create_http_error_dict(
                 "BadRequest",
                 HTTPStatus.BAD_REQUEST,
                 context.aws_request_id,
@@ -155,7 +158,7 @@ def handler(
 
         return result
     except Exception as error:
-        return create_http_error_dict(
+        return src.adapters.api.aws.create_http_error_dict(
             "InternalServerError",
             HTTPStatus.INTERNAL_SERVER_ERROR,
             context.aws_request_id,

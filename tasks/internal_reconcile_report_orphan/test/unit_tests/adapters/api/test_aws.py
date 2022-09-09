@@ -235,7 +235,7 @@ class TestAWS(unittest.TestCase):
 
         key_path0 = uuid.uuid4().__str__()
         etag0 = uuid.uuid4().__str__()
-        last_update0 = uuid.uuid4().__str__()
+        last_update0 = random.randint(0, 99999).__str__()
         size_in_bytes0 = random.randint(0, 999)  # nosec
         storage_class0 = 'GLACIER'
 
