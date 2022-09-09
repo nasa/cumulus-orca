@@ -4,13 +4,11 @@ from http import HTTPStatus
 from typing import Dict, Union, Any, List
 
 import fastjsonschema as fastjsonschema
-import orca_shared
 from cumulus_logger import CumulusLogger
 from fastjsonschema import JsonSchemaException
 from orca_shared.database.adapters.api import get_configuration
 from orca_shared.database.use_cases import create_user_uri
 
-import src.use_cases.get_orphans_page
 from src.adapters.storage.rdbms import StorageAdapterPostgres
 from src.entities.orphan import OrphanRecordFilter
 from src.use_cases import get_orphans_page
