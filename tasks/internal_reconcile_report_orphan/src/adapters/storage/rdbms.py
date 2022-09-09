@@ -4,8 +4,6 @@ from abc import abstractmethod
 import sqlalchemy
 from orca_shared.database import shared_db
 from sqlalchemy import text
-from sqlalchemy.engine import make_url
-from sqlalchemy.future import Engine
 
 from src.entities.orphan import OrphanRecordFilter, OrphanRecordPage, OrphanRecord
 from src.use_cases.adapter_interfaces.storage import OrphansPageStorageInterface
@@ -17,14 +15,15 @@ class StorageAdapterRDBMS(OrphansPageStorageInterface):
         Args:
             connection_uri: The URI connection string.
         """
-        connection_url = make_url(connection_uri)
+        connection_url = sqlalchemy.engine.make_url(connection_uri)
         self._engine = sqlalchemy.engine.create.create_engine(connection_url, future=True)
 
     @shared_db.retry_operational_error()
     def get_orphans_page(
             self,
             orphan_record_filter: OrphanRecordFilter,
-            logger: logging.Logger  # todo: @bhazuka has expressed a desire to not pass loggers via parameters
+            # todo: @bhazuka has expressed a desire to not pass loggers via parameters
+            logger: logging.Logger
     ) -> OrphanRecordPage:
         # noinspection GrazieInspection
         """
@@ -55,11 +54,11 @@ class StorageAdapterRDBMS(OrphansPageStorageInterface):
             orphans = []
             for sql_result in sql_results:
                 orphans.append(
-                    OrphanRecord(sql_result["key_path"],
-                                 sql_result["etag"],
-                                 sql_result["last_update"],
-                                 sql_result["size_in_bytes"],
-                                 sql_result["storage_class"], )
+                    OrphanRecord(key_path=sql_result["key_path"],
+                                 etag=sql_result["etag"],
+                                 last_update=sql_result["last_update"],
+                                 size_in_bytes=sql_result["size_in_bytes"],
+                                 storage_class=sql_result["storage_class"], )
                 )
 
             # we get one extra for anotherPage calculation.
@@ -72,7 +71,7 @@ class StorageAdapterRDBMS(OrphansPageStorageInterface):
     @abstractmethod
     def get_orphans_sql() -> text:
         # abstract to allow other sql formats
-        raise NotImplemented()
+        raise NotImplementedError()
 
 
 class StorageAdapterPostgres(StorageAdapterRDBMS):
@@ -87,7 +86,8 @@ class StorageAdapterPostgres(StorageAdapterRDBMS):
     SELECT
         key_path,
         etag,
-        (EXTRACT(EPOCH FROM date_trunc('milliseconds', last_update) AT TIME ZONE 'UTC') * 1000)::bigint as last_update,
+        (EXTRACT(EPOCH FROM date_trunc('milliseconds', last_update)
+         AT TIME ZONE 'UTC') * 1000)::bigint as last_update,
         size_in_bytes,
         storage_class
         FROM reconcile_orphan_report
@@ -96,5 +96,3 @@ class StorageAdapterPostgres(StorageAdapterRDBMS):
         OFFSET :page_index*:page_size
         LIMIT :page_size+1"""
         )
-
-    _engine: Engine = None

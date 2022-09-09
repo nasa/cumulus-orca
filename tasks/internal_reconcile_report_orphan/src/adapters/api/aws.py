@@ -4,13 +4,11 @@ from http import HTTPStatus
 from typing import Dict, Union, Any, List
 
 import fastjsonschema as fastjsonschema
+import orca_shared
 from cumulus_logger import CumulusLogger
 from fastjsonschema import JsonSchemaException
-from orca_shared.database.adapters.api import get_configuration
-from orca_shared.database.use_cases import create_user_uri
 
 import src.use_cases.get_orphans_page
-from src.adapters.storage.rdbms import StorageAdapterRDBMS, StorageAdapterPostgres
 from src.entities.orphan import OrphanRecordFilter
 
 INPUT_JOB_ID_KEY = "jobId"
@@ -100,13 +98,15 @@ def handler(
         context: An object provided by AWS Lambda. Used for context tracking.
 
     Environment Vars:
-        DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
-        See shared_db.py's get_configuration for further details.
+        DB_CONNECT_INFO_SECRET_ARN (string):
+            Secret ARN of the AWS secretsmanager secret for connecting to the database.
+            See shared_db.py's get_configuration for further details.
 
     Returns:
         See schemas/output.json
         Or, if an error occurs, see create_http_error_dict
-            400 if input does not match schemas/input.json. 500 if an error occurs when querying the database.
+            400 if input does not match schemas/input.json.
+            500 if an error occurs when querying the database.
     """
     try:
         LOGGER.setMetadata(event, context)
@@ -121,16 +121,19 @@ def handler(
                 json_schema_exception.__str__(),
             )
 
-        db_connect_info = get_configuration(
+        db_connect_info = orca_shared.database.adapters.api.aws.get_configuration(
             check_env_variable(OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY),
             LOGGER
         )
 
-        storage_adapter = StorageAdapterPostgres(create_user_uri(db_connect_info, LOGGER))
+        storage_adapter = src.adapters.storage.rdbms.StorageAdapterPostgres(
+            orca_shared.database.use_cases.create_postgres_connection_uri.create_user_uri(
+                db_connect_info, LOGGER))
 
-        orphan_record_filter = OrphanRecordFilter(job_id=event[INPUT_JOB_ID_KEY],
-                                                  page_index=event[INPUT_PAGE_INDEX_KEY],
-                                                  page_size=PAGE_SIZE)
+        orphan_record_filter = \
+            OrphanRecordFilter(job_id=event[INPUT_JOB_ID_KEY],
+                               page_index=event[INPUT_PAGE_INDEX_KEY],
+                               page_size=PAGE_SIZE)
         orphan_record_page = src.use_cases.get_orphans_page.task(
             orphan_record_filter,
             storage_adapter,

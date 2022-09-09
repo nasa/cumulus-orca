@@ -13,7 +13,7 @@ class OrphanRecord:
 
 @dataclasses.dataclass
 class OrphanRecordFilter:
-    job_id: str
+    job_id: int
     page_index: int
     page_size: int
 
