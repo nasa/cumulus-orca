@@ -39,7 +39,8 @@ def task(job_id: str, db_connect_info: Dict,
   'granule_id' (str)
 - `'status'` _str_ - pending|staged|success|failed
   
-  Will also return a dict from create_http_error_dict with error NOT_FOUND if job could not be found.
+  Will also return a dict from create_http_error_dict with
+  error NOT_FOUND if job could not be found.
 
 <a id="request_status_for_job.get_granule_status_entries_for_job"></a>
 
@@ -127,19 +128,24 @@ Entry point for the request_status_for_job Lambda.
 - `context` - An object provided by AWS Lambda. Used for context tracking.
   
   Environment Vars:
-- `DB_CONNECT_INFO_SECRET_ARN` _string_ - Secret ARN of the AWS secretsmanager secret for connecting to the database.
+  DB_CONNECT_INFO_SECRET_ARN (string):
+  Secret ARN of the AWS secretsmanager secret for connecting to the database.
   See shared_db.py's get_configuration for further details.
   
 - `Returns` - A Dict with the following keys:
 - `asyncOperationId` _str_ - The unique ID of the asyncOperation.
-- `job_status_totals` _Dict[str, int]_ - Sums of how many granules are in each particular restoration status.
+- `job_status_totals` _Dict[str, int]_ - Sums of how many granules are in each
+  particular restoration status.
 - `pending` _int_ - The number of granules that still need to be copied.
 - `staged` _int_ - Currently unimplemented.
 - `success` _int_ - The number of granules that have been successfully copied.
-- `failed` _int_ - The number of granules that did not copy and will not copy due to an error.
-- `granules` _Array[Dict]_ - An array of Dicts representing each granule being copied as part of the job.
+- `failed` _int_ - The number of granules that did not copy
+  and will not copy due to an error.
+- `granules` _Array[Dict]_ - An array of Dicts representing each granule
+  being copied as part of the job.
 - `granule_id` _str_ - The unique ID of the granule.
-- `status` _str_ - The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.
+- `status` _str_ - The status of the restoration of the file.
+  May be 'pending', 'staged', 'success', or 'failed'.
   
   Or, if an error occurs, see create_http_error_dict
   400 if asyncOperationId is missing. 500 if an error occurs when querying the database.

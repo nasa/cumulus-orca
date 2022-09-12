@@ -1,8 +1,11 @@
+import json
 import os
 from http import HTTPStatus
 from typing import Any, Dict, List
 
+import fastjsonschema
 from cumulus_logger import CumulusLogger
+from fastjsonschema import JsonSchemaException
 from orca_shared.database import shared_db
 from sqlalchemy import text
 from sqlalchemy.future import Engine
@@ -14,6 +17,12 @@ OUTPUT_JOB_STATUS_TOTALS_KEY = "jobStatusTotals"
 OUTPUT_GRANULES_KEY = "granules"
 OUTPUT_STATUS_KEY = "status"
 OUTPUT_GRANULE_ID_KEY = "granuleId"
+
+with open("schemas/input.json", "r") as raw_schema:
+    _VALIDATE_INPUT = fastjsonschema.compile(json.loads(raw_schema.read()))
+
+with open("schemas/output.json", "r") as raw_schema:
+    _VALIDATE_OUTPUT = fastjsonschema.compile(json.loads(raw_schema.read()))
 
 LOGGER = CumulusLogger()
 
@@ -147,7 +156,7 @@ def get_status_totals_for_job(job_id: str, engine: Engine) -> Dict[str, int]:
 
 
 def get_status_totals_for_job_sql() -> text:  # pragma: no cover
-    return text(
+    return text(  # nosec
         f"""
                 with granule_status_count AS (
                     SELECT status_id
@@ -226,8 +235,19 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     except KeyError:
         LOGGER.error("DB_CONNECT_INFO_SECRET_ARN environment value not found.")
         raise
+
     try:
         LOGGER.setMetadata(event, context)
+
+        try:
+            _VALIDATE_INPUT(event)
+        except JsonSchemaException as json_schema_exception:
+            return create_http_error_dict(
+                "BadRequest",
+                HTTPStatus.BAD_REQUEST,
+                context.aws_request_id,
+                json_schema_exception.__str__(),
+            )
 
         job_id = event.get(INPUT_JOB_ID_KEY, None)
         if job_id is None or len(job_id) == 0:
@@ -238,7 +258,11 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 f"{INPUT_JOB_ID_KEY} must be set to a non-empty value.",
             )
         db_connect_info = shared_db.get_configuration(db_connect_info_secret_arn)
-        return task(job_id, db_connect_info, context.aws_request_id)
+        result = task(job_id, db_connect_info, context.aws_request_id)
+
+        _VALIDATE_OUTPUT(result)
+
+        return result
     except Exception as error:
         return create_http_error_dict(
             "InternalServerError",

@@ -4,7 +4,6 @@ Name: test_request_status_for_job_unit.py
 Description:  Unit tests for request_status_for_job.py.
 """
 import copy
-import json
 import os
 import random
 import unittest
@@ -13,14 +12,9 @@ from http import HTTPStatus
 from unittest import mock
 from unittest.mock import MagicMock, Mock, patch
 
-import fastjsonschema as fastjsonschema
-import sqlalchemy
+from sqlalchemy.exc import OperationalError
 
 import request_status_for_job
-
-# Generating schema validators can take time, so do it once and reuse.
-with open("schemas/output.json", "r") as raw_schema:
-    _OUTPUT_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
 
 
 class TestRequestStatusForJobUnit(
@@ -49,9 +43,26 @@ class TestRequestStatusForJobUnit(
         Basic path with all information present.
         """
         job_id = uuid.uuid4().__str__()
+        mock_task.return_value = {
+            request_status_for_job.OUTPUT_JOB_ID_KEY: job_id,
+            request_status_for_job.OUTPUT_GRANULES_KEY: [
+                {
+                    request_status_for_job.OUTPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(),
+                    request_status_for_job.OUTPUT_STATUS_KEY: "staged"
+                }
+            ],
+            request_status_for_job.OUTPUT_JOB_STATUS_TOTALS_KEY:
+                {
+                    "pending": random.randint(0, 15),  # nosec
+                    "staged": random.randint(0, 15),  # nosec
+                    "success": random.randint(0, 15),  # nosec
+                    "failed": random.randint(0, 15)  # nosec
+                }
+        }
 
         event = {request_status_for_job.INPUT_JOB_ID_KEY: job_id}
         context = Mock()
+
         result = request_status_for_job.handler(event, context)
 
         mock_setMetadata.assert_called_once_with(event, context)
@@ -60,7 +71,8 @@ class TestRequestStatusForJobUnit(
         )
         self.assertEqual(mock_task.return_value, result)
 
-    # noinspection PyPep8Naming
+    # noinspection PyPep8Naming,PyUnusedLocal
+    @patch("request_status_for_job.create_http_error_dict")
     @patch("orca_shared.database.shared_db.get_configuration")
     @patch("cumulus_logger.CumulusLogger.setMetadata")
     @patch.dict(
@@ -69,17 +81,26 @@ class TestRequestStatusForJobUnit(
         clear=True,
     )
     def test_handler_missing_job_id_returns_error_code(
-        self, mock_setMetadata: MagicMock, mock_get_dbconnect_info: MagicMock
+        self, mock_setMetadata: MagicMock, mock_get_dbconnect_info: MagicMock,
+        mock_create_http_error_dict: MagicMock,
     ):
         """
         If job_id is not present, should return an error dictionary.
         """
         event = {}
         context = Mock()
-        result = request_status_for_job.handler(event, context)
-        self.assertEqual(HTTPStatus.BAD_REQUEST, result["httpStatus"])
 
-    # noinspection PyPep8Naming
+        result = request_status_for_job.handler(event, context)
+
+        mock_create_http_error_dict.assert_called_once_with(
+            "BadRequest",
+            HTTPStatus.BAD_REQUEST,
+            context.aws_request_id,
+            f"data must contain ['{request_status_for_job.OUTPUT_JOB_ID_KEY}'] properties")
+        self.assertEqual(mock_create_http_error_dict.return_value, result)
+
+    # noinspection PyPep8Naming,PyUnusedLocal
+    @patch("request_status_for_job.create_http_error_dict")
     @patch("cumulus_logger.CumulusLogger.error")
     @patch("request_status_for_job.task")
     @patch("orca_shared.database.shared_db.get_configuration")
@@ -95,6 +116,7 @@ class TestRequestStatusForJobUnit(
         mock_get_dbconnect_info: MagicMock,
         mock_task: MagicMock,
         mock_cumulus_logger_error: MagicMock,
+        mock_create_http_error_dict: MagicMock,
     ):
         """
         If database error is raised, it should be caught and returned in a dictionary.
@@ -103,9 +125,71 @@ class TestRequestStatusForJobUnit(
 
         event = {request_status_for_job.INPUT_JOB_ID_KEY: job_id}
         context = Mock()
-        mock_task.side_effect = sqlalchemy.exc.OperationalError
+        error = OperationalError(Mock(), Mock(), Mock())
+        mock_task.side_effect = error
+
         result = request_status_for_job.handler(event, context)
-        self.assertEqual(HTTPStatus.INTERNAL_SERVER_ERROR, result["httpStatus"])
+
+        mock_create_http_error_dict.assert_called_once_with(
+            "InternalServerError",
+            HTTPStatus.INTERNAL_SERVER_ERROR,
+            context.aws_request_id,
+            str(error))
+        self.assertEqual(mock_create_http_error_dict.return_value, result)
+
+    # noinspection PyPep8Naming
+    @patch("request_status_for_job.create_http_error_dict")
+    @patch("request_status_for_job.task")
+    @patch("orca_shared.database.shared_db.get_configuration")
+    @patch("cumulus_logger.CumulusLogger.setMetadata")
+    @patch.dict(
+        os.environ,
+        {"DB_CONNECT_INFO_SECRET_ARN": "test"},
+        clear=True,
+    )
+    def test_handler_invalid_output_raises_error(
+        self,
+        mock_setMetadata: MagicMock,
+        mock_get_dbconnect_info: MagicMock,
+        mock_task: MagicMock,
+        mock_create_http_error_dict: MagicMock,
+    ):
+        """
+        If output is in invalid format, raise error.
+        """
+        job_id = uuid.uuid4().__str__()
+        mock_task.return_value = {
+            request_status_for_job.OUTPUT_JOB_ID_KEY: job_id,
+            request_status_for_job.OUTPUT_GRANULES_KEY: [
+                {
+                    request_status_for_job.OUTPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(),
+                    request_status_for_job.OUTPUT_STATUS_KEY: "staged"
+                }
+            ],
+            request_status_for_job.OUTPUT_JOB_STATUS_TOTALS_KEY:
+                {
+                    "pending": random.randint(0, 15),  # nosec
+                    "staged": random.randint(0, 15),  # nosec
+                    "success": random.randint(0, 15),  # nosec
+                }
+        }
+
+        event = {request_status_for_job.INPUT_JOB_ID_KEY: job_id}
+        context = Mock()
+
+        result = request_status_for_job.handler(event, context)
+
+        mock_setMetadata.assert_called_once_with(event, context)
+        mock_task.assert_called_once_with(
+            job_id, mock_get_dbconnect_info.return_value, context.aws_request_id
+        )
+        mock_create_http_error_dict.assert_called_once_with(
+            "InternalServerError",
+            HTTPStatus.INTERNAL_SERVER_ERROR,
+            context.aws_request_id,
+            f"data.{request_status_for_job.OUTPUT_JOB_STATUS_TOTALS_KEY} "
+            f"must contain ['pending', 'staged', 'success', 'failed'] properties")
+        self.assertEqual(mock_create_http_error_dict.return_value, result)
 
     @patch("orca_shared.database.shared_db.get_user_connection")
     @patch("request_status_for_job.get_granule_status_entries_for_job")
@@ -248,6 +332,7 @@ class TestRequestStatusForJobUnit(
         Raises error if async_operation_id is None.
         """
         try:
+            # noinspection PyTypeChecker
             request_status_for_job.task(None, Mock(), Mock())
         except ValueError:
             return
@@ -290,15 +375,17 @@ class TestRequestStatusForJobUnit(
         mock_engine = Mock()
         mock_engine.begin.return_value = Mock()
         mock_connection = Mock()
+        granule_id_0 = uuid.uuid4().__str__()
+        granule_id_1 = uuid.uuid4().__str__()
         mock_connection.execute.side_effect = [
             # granules
             [
                 {
-                    request_status_for_job.OUTPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(),
+                    request_status_for_job.OUTPUT_GRANULE_ID_KEY: granule_id_0,
                     request_status_for_job.OUTPUT_STATUS_KEY: "success",
                 },
                 {
-                    request_status_for_job.OUTPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(),
+                    request_status_for_job.OUTPUT_GRANULE_ID_KEY: granule_id_1,
                     request_status_for_job.OUTPUT_STATUS_KEY: "pending",
                 },
             ],
@@ -318,7 +405,21 @@ class TestRequestStatusForJobUnit(
         mock_get_user_connection.return_value = mock_engine
 
         result = request_status_for_job.task(job_id, db_connect_info, request_id)
+        self.assertEqual({
+            request_status_for_job.OUTPUT_JOB_ID_KEY: job_id,
+            request_status_for_job.OUTPUT_GRANULES_KEY: [
+                {
+                    request_status_for_job.OUTPUT_GRANULE_ID_KEY: granule_id_0,
+                    request_status_for_job.OUTPUT_STATUS_KEY: "success",
+                },
+                {
+                    request_status_for_job.OUTPUT_GRANULE_ID_KEY: granule_id_1,
+                    request_status_for_job.OUTPUT_STATUS_KEY: "pending",
+                }
+            ],
+            request_status_for_job.OUTPUT_JOB_STATUS_TOTALS_KEY: {
+                "failed": 1000, "pending": 5, "staged": 0, "success": 2
+            }
+        }, result)
 
         mock_get_user_connection.assert_called_once_with(db_connect_info)
-
-        _OUTPUT_VALIDATE(result)
