@@ -1,8 +1,11 @@
+import json
 import os
 from http import HTTPStatus
 from typing import Any, Dict, List, Union
 
+import fastjsonschema
 from cumulus_logger import CumulusLogger
+from fastjsonschema import JsonSchemaException
 from orca_shared.database import shared_db
 from sqlalchemy import text
 from sqlalchemy.future import Engine
@@ -19,6 +22,12 @@ OUTPUT_STATUS_KEY = "status"
 OUTPUT_ERROR_MESSAGE_KEY = "errorMessage"
 OUTPUT_REQUEST_TIME_KEY = "requestTime"
 OUTPUT_COMPLETION_TIME_KEY = "completionTime"
+
+with open("schemas/input.json", "r") as raw_schema:
+    _VALIDATE_INPUT = fastjsonschema.compile(json.loads(raw_schema.read()))
+
+with open("schemas/output.json", "r") as raw_schema:
+    _VALIDATE_OUTPUT = fastjsonschema.compile(json.loads(raw_schema.read()))
 
 LOGGER = CumulusLogger()
 
@@ -323,7 +332,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
 
         Or, if an error occurs, see create_http_error_dict
             400 if granule_id is missing.
-            500 if an error occurs when querying the database, 404 if not found.
+            400 if input.json schema is not matched. 500 if an error occurs when querying the database. 404 if not found.
     """
 
     # get the secret ARN from the env variable
@@ -338,6 +347,16 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     try:
         LOGGER.setMetadata(event, context)
 
+        try:
+            _VALIDATE_INPUT(event)
+        except JsonSchemaException as json_schema_exception:
+            return create_http_error_dict(
+                "BadRequest",
+                HTTPStatus.BAD_REQUEST,
+                context.aws_request_id,
+                json_schema_exception.__str__(),
+            )
+
         granule_id = event.get(INPUT_GRANULE_ID_KEY, None)
         if granule_id is None or len(granule_id) == 0:
             return create_http_error_dict(
@@ -346,13 +365,16 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 context.aws_request_id,
                 f"{INPUT_GRANULE_ID_KEY} must be set to a non-empty value.",
             )
-
-        return task(
+        result = task(
             granule_id,
             db_connect_info,
             context.aws_request_id,
             event.get(INPUT_JOB_ID_KEY, None),
         )
+
+        _VALIDATE_OUTPUT(result)
+
+        return result
     except Exception as error:
         return create_http_error_dict(
             "InternalServerError",

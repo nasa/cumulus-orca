@@ -160,7 +160,7 @@ The following table lists the fields in the output:
 | requestTime        | `int`       | The time, in milliseconds since 1 January 1970 UTC, when the request to restore the granule was initiated.|
 | completionTime     | `int`       | The time, in milliseconds since 1 January 1970 UTC, when all granule_files were in an end state.    |
 
-The API returns status code 200 on success, 400 if `granuleId` is missing, 500 if an error occurs when querying the database and 404 if not found.
+The API returns status code 200 on success, 400 if input is in incorrect format, 500 if an error occurs when querying the database and 404 if not found.
 
 ## Recovery jobs API
 The `recovery/jobs` API call returns detailed status for a particular recovery job.
@@ -213,7 +213,7 @@ The following table lists the fields in the output:
 | granuleId           | `str`       | The unique ID of the granule retrieved.                                                             |
 | status              | `str`       | The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.      |
 
-The API returns status code 200 on success, 400 if `asyncOperationId` is missing, 500 if an error occurs when querying the database and 404 if not found.
+The API returns status code 200 on success, 400 if input is in incorrect format, 500 if an error occurs when querying the database, and 404 if not found.
 
 ## Internal Reconcile report jobs API
 The `orca/datamanagement/reconciliation/internal/jobs` API call receives page index from end user and returns available internal reconciliation jobs from the Orca database.

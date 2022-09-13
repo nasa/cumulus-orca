@@ -4,7 +4,6 @@ Name: test_request_status_for_granule_unit.py
 Description:  Unit tests for request_status_for_granule.py.
 """
 import copy
-import json
 import os
 import random
 import unittest
@@ -13,14 +12,9 @@ from http import HTTPStatus
 from unittest import mock
 from unittest.mock import MagicMock, Mock, patch
 
-import fastjsonschema
-import sqlalchemy.exc
+from sqlalchemy.exc import OperationalError
 
 import request_status_for_granule
-
-# Generating schema validators can take time, so do it once and reuse.
-with open("schemas/output.json", "r") as raw_schema:
-    _OUTPUT_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
 
 
 class TestRequestStatusForGranuleUnit(
@@ -50,12 +44,29 @@ class TestRequestStatusForGranuleUnit(
         """
         granule_id = uuid.uuid4().__str__()
         async_operation_id = uuid.uuid4().__str__()
+        mock_task.return_value = {
+            request_status_for_granule.OUTPUT_GRANULE_ID_KEY: granule_id,
+            request_status_for_granule.OUTPUT_JOB_ID_KEY: async_operation_id,
+            request_status_for_granule.OUTPUT_FILES_KEY: [
+                {
+                    request_status_for_granule.OUTPUT_FILENAME_KEY:
+                        uuid.uuid4().__str__(),  # nosec
+                    request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY:
+                        uuid.uuid4().__str__(),  # nosec
+                    request_status_for_granule.OUTPUT_STATUS_KEY:
+                        "staged",
+                }
+            ],
+            request_status_for_granule.OUTPUT_REQUEST_TIME_KEY:
+                random.randint(0, 9999999),  # nosec
+        }
 
         event = {
             request_status_for_granule.INPUT_GRANULE_ID_KEY: granule_id,
             request_status_for_granule.INPUT_JOB_ID_KEY: async_operation_id,
         }
         context = Mock()
+
         result = request_status_for_granule.handler(event, context)
 
         mock_setMetadata.assert_called_once_with(event, context)
@@ -84,6 +95,23 @@ class TestRequestStatusForGranuleUnit(
 
         event = {request_status_for_granule.INPUT_GRANULE_ID_KEY: granule_id}
         context = Mock()
+        mock_task.return_value = {
+            request_status_for_granule.OUTPUT_GRANULE_ID_KEY: granule_id,
+            request_status_for_granule.OUTPUT_JOB_ID_KEY: uuid.uuid4().__str__(),  # nosec
+            request_status_for_granule.OUTPUT_FILES_KEY: [
+                {
+                    request_status_for_granule.OUTPUT_FILENAME_KEY:
+                        uuid.uuid4().__str__(),  # nosec
+                    request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY:
+                        uuid.uuid4().__str__(),  # nosec
+                    request_status_for_granule.OUTPUT_STATUS_KEY:
+                        "staged",
+                }
+            ],
+            request_status_for_granule.OUTPUT_REQUEST_TIME_KEY:
+                random.randint(0, 9999999),  # nosec
+        }
+
         result = request_status_for_granule.handler(event, context)
 
         mock_task.assert_called_once_with(
@@ -95,6 +123,7 @@ class TestRequestStatusForGranuleUnit(
         self.assertEqual(mock_task.return_value, result)
 
     # noinspection PyPep8Naming
+    @patch("request_status_for_granule.create_http_error_dict")
     @patch("cumulus_logger.CumulusLogger.error")
     @patch("orca_shared.database.shared_db.get_configuration")
     @patch("cumulus_logger.CumulusLogger.setMetadata")
@@ -108,6 +137,7 @@ class TestRequestStatusForGranuleUnit(
         mock_setMetadata: MagicMock,
         mock_get_dbconnect_info: MagicMock,
         mock_cumulus_logger_error,
+        mock_create_http_error_dict: MagicMock,
     ):
         """
         If granule_id is missing, error dictionary should be returned.
@@ -119,9 +149,15 @@ class TestRequestStatusForGranuleUnit(
         context.aws_request_id = Mock()
 
         result = request_status_for_granule.handler(event, context)
-        self.assertEqual(HTTPStatus.BAD_REQUEST, result["httpStatus"])
+        mock_create_http_error_dict.assert_called_once_with(
+            "BadRequest",
+            HTTPStatus.BAD_REQUEST,
+            context.aws_request_id,
+            f"data must contain ['{request_status_for_granule.OUTPUT_GRANULE_ID_KEY}'] properties")
+        self.assertEqual(mock_create_http_error_dict.return_value, result)
 
     # noinspection PyPep8Naming
+    @patch("request_status_for_granule.create_http_error_dict")
     @patch("cumulus_logger.CumulusLogger.error")
     @patch("request_status_for_granule.task")
     @patch("orca_shared.database.shared_db.get_configuration")
@@ -137,6 +173,7 @@ class TestRequestStatusForGranuleUnit(
         mock_get_dbconnect_info: MagicMock,
         mock_task: MagicMock,
         mock_cumulus_logger_error: MagicMock,
+        mock_create_http_error_dict: MagicMock,
     ):
         """
         If database error is raised, it should be caught and returned in a dictionary.
@@ -149,17 +186,88 @@ class TestRequestStatusForGranuleUnit(
             request_status_for_granule.INPUT_GRANULE_ID_KEY: granule_id,
         }
         context = Mock()
-        mock_task.side_effect = sqlalchemy.exc.OperationalError
+        exception = OperationalError(Mock(), Mock(), Mock())
+        mock_task.side_effect = exception
 
         result = request_status_for_granule.handler(event, context)
-        self.assertEqual(HTTPStatus.INTERNAL_SERVER_ERROR, result["httpStatus"])
+
+        mock_create_http_error_dict.assert_called_once_with(
+            "InternalServerError",
+            HTTPStatus.INTERNAL_SERVER_ERROR,
+            context.aws_request_id,
+            str(exception))
+        self.assertEqual(mock_create_http_error_dict.return_value, result)
+
+    # noinspection PyPep8Naming
+    @patch("request_status_for_granule.create_http_error_dict")
+    @patch("orca_shared.database.shared_db.get_configuration")
+    @patch("request_status_for_granule.task")
+    @patch("cumulus_logger.CumulusLogger.setMetadata")
+    @patch.dict(
+        os.environ,
+        {"DB_CONNECT_INFO_SECRET_ARN": "test"},
+        clear=True,
+    )
+    def test_handler_invalid_output_raises_error(
+        self,
+        mock_setMetadata: MagicMock,
+        mock_task: MagicMock,
+        mock_get_dbconnect_info: MagicMock,
+        mock_create_http_error_dict: MagicMock,
+    ):
+        """
+        If output is in invalid format, raise error.
+        """
+        granule_id = uuid.uuid4().__str__()
+        async_operation_id = uuid.uuid4().__str__()
+        mock_task.return_value = {
+            request_status_for_granule.OUTPUT_GRANULE_ID_KEY: granule_id,
+            request_status_for_granule.OUTPUT_JOB_ID_KEY: async_operation_id,
+            request_status_for_granule.OUTPUT_FILES_KEY: [
+                {
+                    request_status_for_granule.OUTPUT_FILENAME_KEY:
+                        uuid.uuid4().__str__(),  # nosec
+                    request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY:
+                        uuid.uuid4().__str__(),  # nosec
+                    request_status_for_granule.OUTPUT_STATUS_KEY:
+                        "apples",
+                }
+            ],
+            request_status_for_granule.OUTPUT_REQUEST_TIME_KEY:
+                random.randint(0, 9999999),  # nosec
+        }
+
+        event = {
+            request_status_for_granule.INPUT_GRANULE_ID_KEY: granule_id,
+            request_status_for_granule.INPUT_JOB_ID_KEY: async_operation_id,
+        }
+        context = Mock()
+
+        result = request_status_for_granule.handler(event, context)
+
+        mock_setMetadata.assert_called_once_with(event, context)
+        mock_task.assert_called_once_with(
+            granule_id,
+            mock_get_dbconnect_info.return_value,
+            context.aws_request_id,
+            async_operation_id,
+        )
+        mock_create_http_error_dict.assert_called_once_with(
+            "InternalServerError",
+            HTTPStatus.INTERNAL_SERVER_ERROR,
+            context.aws_request_id,
+            f"data.{request_status_for_granule.OUTPUT_FILES_KEY}[0]."
+            f"{request_status_for_granule.OUTPUT_STATUS_KEY} "
+            f"must match pattern ^(pending|success|failed|staged)$")
+        self.assertEqual(mock_create_http_error_dict.return_value, result)
 
     def test_task_granule_id_cannot_be_none(self):
         """
         Raises error if granule_id is None.
         """
         try:
-            request_status_for_granule.task(None, uuid.uuid4().__str__(), Mock())
+            # noinspection PyTypeChecker
+            request_status_for_granule.task(None, Mock(), Mock())
         except ValueError:
             return
         self.fail("Error not raised.")
@@ -484,6 +592,17 @@ class TestRequestStatusForGranuleUnit(
         granule_id = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
         request_id = uuid.uuid4().__str__()
+        request_time = random.randint(0, 628021800000)  # nosec
+
+        filename_0 = uuid.uuid4().__str__() + ".ext"
+        restore_destination_0 = uuid.uuid4().__str__()
+        status_0 = "failed"
+        error_0 = uuid.uuid4().__str__()  # nosec
+
+        filename_1 = uuid.uuid4().__str__() + ".ext"
+        restore_destination_1 = uuid.uuid4().__str__()
+        status_1 = "staged"
+        error_1 = None
 
         db_connect_info = Mock()
 
@@ -496,9 +615,7 @@ class TestRequestStatusForGranuleUnit(
                 {
                     request_status_for_granule.OUTPUT_GRANULE_ID_KEY: granule_id,
                     request_status_for_granule.OUTPUT_JOB_ID_KEY: job_id,
-                    request_status_for_granule.OUTPUT_REQUEST_TIME_KEY: random.randint(  # nosec
-                        0, 628021800000
-                    ),
+                    request_status_for_granule.OUTPUT_REQUEST_TIME_KEY: request_time,
                     request_status_for_granule.OUTPUT_COMPLETION_TIME_KEY: None,
                 }
             ],
@@ -506,23 +623,23 @@ class TestRequestStatusForGranuleUnit(
             [
                 {
                     request_status_for_granule.OUTPUT_FILENAME_KEY:
-                        uuid.uuid4().__str__() + ".ext",
+                        filename_0,
                     request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY:
-                        uuid.uuid4().__str__(),
+                        restore_destination_0,
                     request_status_for_granule.OUTPUT_STATUS_KEY:
-                        "failed",
+                        status_0,
                     request_status_for_granule.OUTPUT_ERROR_MESSAGE_KEY:
-                        "some error message",
+                        error_0,
                 },
                 {
                     request_status_for_granule.OUTPUT_FILENAME_KEY:
-                        uuid.uuid4().__str__() + ".ext",
+                        filename_1,
                     request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY:
-                        uuid.uuid4().__str__(),
+                        restore_destination_1,
                     request_status_for_granule.OUTPUT_STATUS_KEY:
-                        "staged",
+                        status_1,
                     request_status_for_granule.OUTPUT_ERROR_MESSAGE_KEY:
-                        None,
+                        error_1,
                 },
             ],
         ]
@@ -537,5 +654,27 @@ class TestRequestStatusForGranuleUnit(
             granule_id, db_connect_info, request_id, job_id
         )
 
+        self.assertEqual(
+            {
+                request_status_for_granule.OUTPUT_GRANULE_ID_KEY: granule_id,
+                request_status_for_granule.OUTPUT_JOB_ID_KEY: job_id,
+                request_status_for_granule.OUTPUT_FILES_KEY: [
+                    {
+                        request_status_for_granule.OUTPUT_FILENAME_KEY: filename_0,
+                        request_status_for_granule.OUTPUT_ERROR_MESSAGE_KEY: error_0,
+                        request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY:
+                            restore_destination_0,
+                        request_status_for_granule.OUTPUT_STATUS_KEY: status_0,
+                    },
+                    {
+                        request_status_for_granule.OUTPUT_FILENAME_KEY: filename_1,
+                        request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY:
+                            restore_destination_1,
+                        request_status_for_granule.OUTPUT_STATUS_KEY: status_1,
+                    }
+                ],
+                request_status_for_granule.OUTPUT_REQUEST_TIME_KEY: request_time,
+            },
+            result)
+
         mock_get_user_connection.assert_called_once_with(db_connect_info)
-        _OUTPUT_VALIDATE(result)

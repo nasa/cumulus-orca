@@ -20,6 +20,8 @@ and includes an additional section for migration notes.
 - *ORCA-290* Adjusted workflows/step functions for `OrcaRecoveryWorkflow`.
   - `excludeFileTypes`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` arguments in `task_config` are now `excludedFileExtensions`, `defaultBucketOverride` and  `defaultStorageClassOverride` respectively.
   - `excludedFileExtensions`, `defaultBucketOverride` and `defaultStorageClassOverride` keys are now under `collection.meta.orca`. See the example below under `Migration Notes`.
+- *ORCA-519* Enforced schema checks in `request_status_for_granule` and `request_status_for_job`.
+  Both lambdas will return proper HTTP error codes for bad inputs of internal server errors.
 
 ### Migration Notes
 
