@@ -148,5 +148,5 @@ Entry point for the request_status_for_job Lambda.
   May be 'pending', 'staged', 'success', or 'failed'.
   
   Or, if an error occurs, see create_http_error_dict
-  400 if asyncOperationId is missing. 500 if an error occurs when querying the database.
+  400 if input.json schema is not matched. 500 if an error occurs when querying the database.
 
