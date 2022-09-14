@@ -27,7 +27,8 @@ and includes an additional section for migration notes.
 
 ### Migration Notes
 
-- Adjust workflows/step functions for `OrcaCopyToGlacierWorkflow`.
+- Adjust workflow/step-function usage for new key paths.
+  - Affects `OrcaCopyToGlacierWorkflow` and `OrcaRecoveryWorkflow`.
   -  `excludeFileTypes`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` arguments in `task_config` are now `excludedFileExtensions`, `defaultBucketOverride` and  `defaultStorageClassOverride` respectively.
   - `excludedFileExtensions`, `defaultBucketOverride` and `defaultStorageClassOverride` keys are now under a new key `orca`. See example below:
 ```json
