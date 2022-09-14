@@ -223,10 +223,8 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
             file_hash_type = file.get(FILE_HASH_TYPE_KEY, None)
             if should_exclude_files_type(file_filepath, exclude_file_types):
                 LOGGER.info(
-                    "Excluding {file_filepath} from glacier backup "
-                    "because of collection configured {CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY}.",
-                    file_filepath=file_filepath,
-                    CONFIG_ORCA_EXCLUDED_FILE_EXTENSIONS_KEY=CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY,
+                    f"Excluding {file_filepath} from glacier backup "
+                    f"because of collection configured {CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY}."
                 )
                 continue
             result = copy_granule_between_buckets(
@@ -245,13 +243,11 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
             result["hashType"] = file_hash_type
             copied_file_urls.append(file_source_uri)
             LOGGER.info(
-                "Copied {file_filepath} into glacier storage bucket {default_bucket}.",
-                file_filepath=file_filepath,
-                default_bucket=destination_bucket,
+                f"Copied {file_filepath} into glacier storage bucket {destination_bucket}."
             )
             # Add file record to metadata SQS message
             LOGGER.debug(
-                "Adding the files dictionary to the SQS body {result}.", result=result
+                "Adding the files dictionary to the SQS body. {result}.", result=result
             )
             sqs_body["granule"]["files"].append(result)
         # post to metadata SQS for each granule
