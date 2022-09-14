@@ -174,5 +174,7 @@ Entry point for the request_status_for_granule Lambda.
   
   Or, if an error occurs, see create_http_error_dict
   400 if granule_id is missing.
-  400 if input.json schema is not matched. 500 if an error occurs when querying the database. 404 if not found.
+  400 if input.json schema is not matched.
+  500 if an error occurs when querying the database.
+  404 if not found.
 
