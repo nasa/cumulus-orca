@@ -13,8 +13,9 @@ and includes an additional section for migration notes.
 - *Fixed* - Any bug fixes.
 - *Security* - Vulnerabilities fixes and changes.
 
-
 ## [Unreleased]
+
+## [6.0.0]
 ### Changed
 - *ORCA-290* Renamed `excludeFileTypes`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` to `excludedFileExtensions`, `defaultBucketOverride` and  `defaultStorageClassOverride` respectively. In addition, ORCA configuration variables `excludedFileExtensions`, `defaultBucketOverride` and `defaultStorageClassOverride` are now under `collection.meta.orca`.
 - *ORCA-290* Adjusted workflows/step functions for `OrcaRecoveryWorkflow`.
@@ -22,6 +23,7 @@ and includes an additional section for migration notes.
   - `excludedFileExtensions`, `defaultBucketOverride` and `defaultStorageClassOverride` keys are now under `collection.meta.orca`. See the example below under `Migration Notes`.
 - *ORCA-519* Enforced schema checks in `request_status_for_granule` and `request_status_for_job`.
   Both lambdas will return proper HTTP error codes for bad inputs of internal server errors.
+- *ORCA-320* Requests to API Gateway now use IAM permissions, restricting anonymous access.
 
 ### Migration Notes
 
