@@ -16,15 +16,13 @@
 #### task
 
 ```python
-def task(job_id: str, db_connect_info: Dict,
-         request_id: str) -> Dict[str, Any]
+def task(job_id: str, db_connect_info: Dict) -> Dict[str, Any]
 ```
 
 **Arguments**:
 
 - `job_id` - The unique asyncOperationId of the recovery job.
 - `db_connect_info` - The database.py defined db_connect_info.
-- `request_id` - An ID provided by AWS Lambda. Used for context tracking.
 
 **Returns**:
 
@@ -38,9 +36,6 @@ def task(job_id: str, db_connect_info: Dict,
 - `'granules'` _List_ - A list of dicts with the following keys:
   'granule_id' (str)
 - `'status'` _str_ - pending|staged|success|failed
-  
-  Will also return a dict from create_http_error_dict with
-  error NOT_FOUND if job could not be found.
 
 <a id="request_status_for_job.get_granule_status_entries_for_job"></a>
 
@@ -149,5 +144,6 @@ Entry point for the request_status_for_job Lambda.
   
   Or, if an error occurs, see create_http_error_dict
   400 if input.json schema is not matched.
+  404 if no status found.
   500 if an error occurs when querying the database.
 

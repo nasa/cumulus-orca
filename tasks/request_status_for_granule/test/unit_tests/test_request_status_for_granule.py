@@ -73,7 +73,6 @@ class TestRequestStatusForGranuleUnit(
         mock_task.assert_called_once_with(
             granule_id,
             mock_get_dbconnect_info.return_value,
-            context.aws_request_id,
             async_operation_id,
         )
         self.assertEqual(mock_task.return_value, result)
@@ -117,7 +116,6 @@ class TestRequestStatusForGranuleUnit(
         mock_task.assert_called_once_with(
             granule_id,
             mock_get_dbconnect_info.return_value,
-            context.aws_request_id,
             None,
         )
         self.assertEqual(mock_task.return_value, result)
@@ -167,7 +165,7 @@ class TestRequestStatusForGranuleUnit(
         {"DB_CONNECT_INFO_SECRET_ARN": "test"},
         clear=True,
     )
-    def test_handler_database_error_returns_error_code(
+    def test_handler_exception_returns_proper_error_code(
         self,
         mock_setMetadata: MagicMock,
         mock_get_dbconnect_info: MagicMock,
@@ -176,7 +174,7 @@ class TestRequestStatusForGranuleUnit(
         mock_create_http_error_dict: MagicMock,
     ):
         """
-        If database error is raised, it should be caught and returned in a dictionary.
+        If error is raised, it should be caught and returned in a dictionary.
         """
         async_operation_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
@@ -186,17 +184,56 @@ class TestRequestStatusForGranuleUnit(
             request_status_for_granule.INPUT_GRANULE_ID_KEY: granule_id,
         }
         context = Mock()
-        exception = OperationalError(Mock(), Mock(), Mock())
-        mock_task.side_effect = exception
 
-        result = request_status_for_granule.handler(event, context)
+        database_exception = OperationalError(Mock(), Mock(), Mock())
+        exceptions_and_results = [
+            (
+                database_exception,
+                mock.call(
+                    "InternalServerError",
+                    HTTPStatus.INTERNAL_SERVER_ERROR,
+                    context.aws_request_id,
+                    str(database_exception)
+                )
+            ),
+            (
+                request_status_for_granule.JobGranuleCombinationNotFoundException(
+                    async_operation_id, granule_id),
+                mock.call(
+                    "NotFound",
+                    HTTPStatus.NOT_FOUND,
+                    context.aws_request_id,
+                    f"No job found for granule id '{granule_id}' "
+                    f"and job id '{async_operation_id}'."
+                )
+            ),
+            (
+                request_status_for_granule.JobNotFoundException(
+                    granule_id),
+                mock.call(
+                    "NotFound",
+                    HTTPStatus.NOT_FOUND,
+                    context.aws_request_id,
+                    f"No job for granule id '{granule_id}'.",
+                )
+            ),
+        ]
 
-        mock_create_http_error_dict.assert_called_once_with(
-            "InternalServerError",
-            HTTPStatus.INTERNAL_SERVER_ERROR,
-            context.aws_request_id,
-            str(exception))
-        self.assertEqual(mock_create_http_error_dict.return_value, result)
+        for exception_and_result in exceptions_and_results:
+            with self.subTest(exception_and_result=exception_and_result):
+                mock_task.side_effect = exception_and_result[0]
+
+                result = request_status_for_granule.handler(event, context)
+                # assert_called_once_with does not accept a `call` parameter.
+                # Split into two checks.
+                mock_create_http_error_dict.assert_has_calls(
+                    [exception_and_result[1]]
+                )
+                self.assertEqual(1, mock_create_http_error_dict.call_count)
+                self.assertEqual(mock_create_http_error_dict.return_value, result)
+
+                mock_create_http_error_dict.reset_mock()
+                mock_task.reset_mock()
 
     # noinspection PyPep8Naming
     @patch("request_status_for_granule.create_http_error_dict")
@@ -249,7 +286,6 @@ class TestRequestStatusForGranuleUnit(
         mock_task.assert_called_once_with(
             granule_id,
             mock_get_dbconnect_info.return_value,
-            context.aws_request_id,
             async_operation_id,
         )
         mock_create_http_error_dict.assert_called_once_with(
@@ -286,7 +322,6 @@ class TestRequestStatusForGranuleUnit(
         """
         granule_id = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
-        request_id = uuid.uuid4().__str__()
 
         db_connect_info = Mock()
 
@@ -306,7 +341,7 @@ class TestRequestStatusForGranuleUnit(
         )
 
         result = request_status_for_granule.task(
-            granule_id, db_connect_info, request_id, job_id
+            granule_id, db_connect_info, job_id
         )
 
         mock_get_file_entries_for_granule_in_job.assert_called_once_with(
@@ -317,6 +352,7 @@ class TestRequestStatusForGranuleUnit(
         )
 
         expected = job_entry
+        # noinspection PyTypeChecker
         expected[request_status_for_granule.OUTPUT_FILES_KEY] = file_entries
         mock_get_user_connection.assert_called_once_with(db_connect_info)
         self.assertEqual(expected, result)
@@ -337,7 +373,6 @@ class TestRequestStatusForGranuleUnit(
         """
         granule_id = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
-        request_id = uuid.uuid4().__str__()
 
         db_connect_info = Mock()
 
@@ -355,7 +390,7 @@ class TestRequestStatusForGranuleUnit(
         )
 
         result = request_status_for_granule.task(
-            granule_id, db_connect_info, request_id, None
+            granule_id, db_connect_info, None
         )
 
         mock_get_most_recent_job_id_for_granule.assert_called_once_with(
@@ -370,6 +405,7 @@ class TestRequestStatusForGranuleUnit(
 
         expected = job_entry
         del expected[request_status_for_granule.OUTPUT_COMPLETION_TIME_KEY]
+        # noinspection PyTypeChecker
         expected[request_status_for_granule.OUTPUT_FILES_KEY] = [
             {},
         ]
@@ -377,71 +413,62 @@ class TestRequestStatusForGranuleUnit(
         self.assertEqual(expected, result)
 
     @patch("orca_shared.database.shared_db.get_user_connection")
-    @patch("request_status_for_granule.create_http_error_dict")
     @patch("request_status_for_granule.get_most_recent_job_id_for_granule")
-    def test_task_no_job_id_job_not_found_returns_error(
+    def test_task_no_job_id_job_not_found_raises_error(
         self,
         mock_get_most_recent_job_id_for_granule: MagicMock,
-        mock_create_http_error_dict: MagicMock,
         mock_get_user_connection: MagicMock,
     ):
         """
-        If job_id is not given, and no valid job id is found, return 404.
+        If job_id is not given, and no valid job id is found, raise error.
         """
         granule_id = uuid.uuid4().__str__()
-        request_id = uuid.uuid4().__str__()
 
         db_connect_info = Mock()
 
         mock_get_most_recent_job_id_for_granule.return_value = None
 
-        result = request_status_for_granule.task(
-            granule_id, db_connect_info, request_id, None
-        )
+        with self.assertRaises(request_status_for_granule.JobNotFoundException) as cm:
+            request_status_for_granule.task(
+                granule_id, db_connect_info, None
+            )
+        self.assertEqual(granule_id, cm.exception.granule_id)
 
         mock_get_most_recent_job_id_for_granule.assert_called_once_with(
             granule_id, mock_get_user_connection.return_value
         )
-
-        mock_create_http_error_dict.assert_called_once_with(
-            "NotFound", HTTPStatus.NOT_FOUND, request_id, mock.ANY
-        )
         mock_get_user_connection.assert_called_once_with(db_connect_info)
-        self.assertEqual(mock_create_http_error_dict.return_value, result)
 
     @patch("orca_shared.database.shared_db.get_user_connection")
-    @patch("request_status_for_granule.create_http_error_dict")
     @patch("request_status_for_granule.get_job_entry_for_granule")
-    def test_task_job_for_granule_and_job_id_not_found_returns_error(
+    def test_task_job_for_granule_and_job_id_not_found_raises_error(
         self,
         mock_get_job_entry_for_granule: MagicMock,
-        mock_create_http_error_dict: MagicMock,
         mock_get_user_connection: MagicMock,
     ):
         """
-        If the job_id+granule_id does not point to an entry, return 404.
+        If the job_id+granule_id does not point to an entry, raise error.
         """
         granule_id = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
-        request_id = uuid.uuid4().__str__()
 
         db_connect_info = Mock()
 
         mock_get_job_entry_for_granule.return_value = None
 
-        result = request_status_for_granule.task(
-            granule_id, db_connect_info, request_id, job_id
-        )
+        with self.assertRaises(request_status_for_granule.JobGranuleCombinationNotFoundException) \
+                as cm:
+            request_status_for_granule.task(
+                granule_id, db_connect_info, job_id
+            )
+        self.assertEqual(granule_id, cm.exception.granule_id)
+        self.assertEqual(job_id, cm.exception.job_id)
 
         mock_get_job_entry_for_granule.assert_called_once_with(
             granule_id, job_id, mock_get_user_connection.return_value
         )
 
-        mock_create_http_error_dict.assert_called_once_with(
-            "NotFound", HTTPStatus.NOT_FOUND, request_id, mock.ANY
-        )
         mock_get_user_connection.assert_called_once_with(db_connect_info)
-        self.assertEqual(mock_create_http_error_dict.return_value, result)
 
     @patch("request_status_for_granule.get_most_recent_job_id_for_granule_sql")
     def test_get_most_recent_job_id_for_granule_happy_path(self, mock_sql: MagicMock):
@@ -585,13 +612,12 @@ class TestRequestStatusForGranuleUnit(
 
     # Multi-Function Tests:
     @patch("orca_shared.database.shared_db.get_user_connection")
-    def test_task_output_json_schema(self, mock_get_user_connection: MagicMock):
+    def test_handler_output_json_schema(self, mock_get_user_connection: MagicMock):
         """
         Checks a realistic output against the output.json.
         """
         granule_id = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
-        request_id = uuid.uuid4().__str__()
         request_time = random.randint(0, 628021800000)  # nosec
 
         filename_0 = uuid.uuid4().__str__() + ".ext"
@@ -651,7 +677,7 @@ class TestRequestStatusForGranuleUnit(
         mock_get_user_connection.return_value = mock_engine
 
         result = request_status_for_granule.task(
-            granule_id, db_connect_info, request_id, job_id
+            granule_id, db_connect_info, job_id
         )
 
         self.assertEqual(

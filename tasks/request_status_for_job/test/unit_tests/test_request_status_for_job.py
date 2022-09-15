@@ -67,7 +67,7 @@ class TestRequestStatusForJobUnit(
 
         mock_setMetadata.assert_called_once_with(event, context)
         mock_task.assert_called_once_with(
-            job_id, mock_get_dbconnect_info.return_value, context.aws_request_id
+            job_id, mock_get_dbconnect_info.return_value
         )
         self.assertEqual(mock_task.return_value, result)
 
@@ -110,7 +110,7 @@ class TestRequestStatusForJobUnit(
         {"DB_CONNECT_INFO_SECRET_ARN": "test"},
         clear=True,
     )
-    def test_handler_database_error_returns_error_code(
+    def test_handler_exception_returns_proper_error_code(
         self,
         mock_setMetadata: MagicMock,
         mock_get_dbconnect_info: MagicMock,
@@ -119,23 +119,50 @@ class TestRequestStatusForJobUnit(
         mock_create_http_error_dict: MagicMock,
     ):
         """
-        If database error is raised, it should be caught and returned in a dictionary.
+        If error is raised, it should be caught and returned in a dictionary.
         """
         job_id = uuid.uuid4().__str__()
 
         event = {request_status_for_job.INPUT_JOB_ID_KEY: job_id}
         context = Mock()
-        error = OperationalError(Mock(), Mock(), Mock())
-        mock_task.side_effect = error
+        database_exception = OperationalError(Mock(), Mock(), Mock())
+        exceptions_and_results = [
+            (
+                database_exception,
+                mock.call(
+                    "InternalServerError",
+                    HTTPStatus.INTERNAL_SERVER_ERROR,
+                    context.aws_request_id,
+                    str(database_exception)
+                )
+            ),
+            (
+                request_status_for_job.StatusNotFoundException(
+                    job_id),
+                mock.call(
+                    "NotFound",
+                    HTTPStatus.NOT_FOUND,
+                    context.aws_request_id,
+                    f"No granules found for job id '{job_id}'."
+                )
+            ),
+        ]
 
-        result = request_status_for_job.handler(event, context)
+        for exception_and_result in exceptions_and_results:
+            with self.subTest(exception_and_result=exception_and_result):
+                mock_task.side_effect = exception_and_result[0]
 
-        mock_create_http_error_dict.assert_called_once_with(
-            "InternalServerError",
-            HTTPStatus.INTERNAL_SERVER_ERROR,
-            context.aws_request_id,
-            str(error))
-        self.assertEqual(mock_create_http_error_dict.return_value, result)
+                result = request_status_for_job.handler(event, context)
+                # assert_called_once_with does not accept a `call` parameter.
+                # Split into two checks.
+                mock_create_http_error_dict.assert_has_calls(
+                    [exception_and_result[1]]
+                )
+                self.assertEqual(1, mock_create_http_error_dict.call_count)
+                self.assertEqual(mock_create_http_error_dict.return_value, result)
+
+                mock_create_http_error_dict.reset_mock()
+                mock_task.reset_mock()
 
     # noinspection PyPep8Naming
     @patch("request_status_for_job.create_http_error_dict")
@@ -181,7 +208,7 @@ class TestRequestStatusForJobUnit(
 
         mock_setMetadata.assert_called_once_with(event, context)
         mock_task.assert_called_once_with(
-            job_id, mock_get_dbconnect_info.return_value, context.aws_request_id
+            job_id, mock_get_dbconnect_info.return_value,
         )
         mock_create_http_error_dict.assert_called_once_with(
             "InternalServerError",
@@ -205,11 +232,10 @@ class TestRequestStatusForJobUnit(
         """
         job_id = uuid.uuid4().__str__()
         db_connect_info = Mock()
-        request_id = uuid.uuid4().__str__()
 
         mock_get_granule_status_entries_for_job.return_value = [Mock()]
 
-        result = request_status_for_job.task(job_id, db_connect_info, request_id)
+        result = request_status_for_job.task(job_id, db_connect_info)
 
         mock_get_user_connection.assert_called_once_with(db_connect_info)
         mock_get_granule_status_entries_for_job.assert_called_once_with(
@@ -232,32 +258,26 @@ class TestRequestStatusForJobUnit(
         )
 
     @patch("orca_shared.database.shared_db.get_user_connection")
-    @patch("request_status_for_job.create_http_error_dict")
     @patch("request_status_for_job.get_granule_status_entries_for_job")
-    def test_task_no_granules_found_for_job_returns_error(
+    def test_task_no_granules_found_for_job_raises_error(
         self,
         mock_get_granule_status_entries_for_job: MagicMock,
-        mock_create_http_error_dict: MagicMock,
         mock_get_user_connection: MagicMock,
     ):
         """
-        If no recovery_job entries exist for the given job_id, return 404.
+        If no recovery_job entries exist for the given job_id, raise error.
         """
         job_id = uuid.uuid4().__str__()
         db_connect_info = Mock()
-        request_id = uuid.uuid4().__str__()
 
-        result = request_status_for_job.task(job_id, db_connect_info, request_id)
+        with self.assertRaises(request_status_for_job.StatusNotFoundException) as cm:
+            request_status_for_job.task(job_id, db_connect_info)
+        self.assertEqual(job_id, cm.exception.job_id)
 
         mock_get_user_connection.assert_called_once_with(db_connect_info)
         mock_get_granule_status_entries_for_job.assert_called_once_with(
             job_id, mock_get_user_connection.return_value
         )
-        mock_create_http_error_dict.assert_called_once_with(
-            "NotFound", HTTPStatus.NOT_FOUND, request_id, mock.ANY
-        )
-
-        self.assertEqual(mock_create_http_error_dict.return_value, result)
 
     @patch("request_status_for_job.get_granule_status_entries_for_job_sql")
     def test_get_granule_status_entries_for_job_happy_path(self, mock_sql: MagicMock):
@@ -333,7 +353,7 @@ class TestRequestStatusForJobUnit(
         """
         try:
             # noinspection PyTypeChecker
-            request_status_for_job.task(None, Mock(), Mock())
+            request_status_for_job.task(None, Mock())
         except ValueError:
             return
         self.fail("Error not raised.")
@@ -368,7 +388,6 @@ class TestRequestStatusForJobUnit(
         Checks a realistic output against the output.json.
         """
         job_id = uuid.uuid4().__str__()
-        request_id = uuid.uuid4().__str__()
 
         db_connect_info = Mock()
 
@@ -404,7 +423,7 @@ class TestRequestStatusForJobUnit(
         )  # required for "with", but untestable.
         mock_get_user_connection.return_value = mock_engine
 
-        result = request_status_for_job.task(job_id, db_connect_info, request_id)
+        result = request_status_for_job.task(job_id, db_connect_info)
         self.assertEqual({
             request_status_for_job.OUTPUT_JOB_ID_KEY: job_id,
             request_status_for_job.OUTPUT_GRANULES_KEY: [

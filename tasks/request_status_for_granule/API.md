@@ -19,7 +19,6 @@
 ```python
 def task(granule_id: str,
          db_connect_info: Dict,
-         request_id: str,
          job_id: str = None) -> Dict[str, Any]
 ```
 
@@ -27,12 +26,8 @@ def task(granule_id: str,
 
 - `granule_id` - The unique ID of the granule to retrieve status for.
 - `db_connect_info` - The {database}.py defined db_connect_info.
-- `request_id` - An ID provided by AWS Lambda. Used for context tracking.
 - `job_id` - An optional additional filter to get a specific job's entry.
 - `Returns` - See output.json
-  
-  Will also return a dict from create_http_error_dict with error
-  NOT_FOUND if job/granule could not be found.
 
 <a id="request_status_for_granule.get_most_recent_job_id_for_granule"></a>
 
@@ -103,7 +98,7 @@ Gets the individual status entries for the files for the given job+granule.
 - `'restore_destination'` _str_ - The name of the glacier bucket the file is being copied to.
 - `'status'` _str_ - The status of the restoration of the file.
   May be 'pending', 'staged', 'success', or 'failed'.
-- `'error_message'` _str_ - If the restoration of the file errored,
+- `'error_message'` _str_ - If the restoration of the file failed,
   the error will be stored here. Otherwise, None.
 
 <a id="request_status_for_granule.create_http_error_dict"></a>
