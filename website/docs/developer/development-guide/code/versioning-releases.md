@@ -82,13 +82,11 @@ the release process is complete.
 
 **Merge the base branch back into develop and master**
 
-If this is the latest version, you need to merge the version update changes back into develop, then synchronize develop and master.
+If this is the latest version, you need to merge the version update changes back into master, then synchronize master and develop.
 
-1. Create a PR to merge the release branch into develop.
+1. Create a PR to merge the release branch into master.
+1. Once complete, create a PR to merge master into develop.
    This should only contain changes from the release process.
-1. Once complete, create a PR to merge develop into master.
-1. Finally, merge master into develop.
-   There should be no difference, but this is a failsafe to make sure that master remains at the top of the hierarchy.
 
 :::note Note: 
 
