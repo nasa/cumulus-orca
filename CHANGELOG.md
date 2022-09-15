@@ -26,34 +26,34 @@ and includes an additional section for migration notes.
   Additionally, corrected error in [API Reference](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api) 
   where the `error` status for these lambdas was incorrectly listed as `failed`.
 - *ORCA-320* Requests to API Gateway now use IAM permissions, restricting anonymous access.
+- *ORCA-496* Mitigated SQS security issue. All SQS queues now use default encryption.
 
 ### Migration Notes
 
-- Adjust usage of `copy_to_glacier` for new keys.
-  - `excludeFileTypes`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` arguments are now `excludedFileExtensions`, `defaultBucketOverride`
-- Adjust workflow/step-function integration for new key paths.
-  - Affects `OrcaCopyToGlacierWorkflow` and `OrcaRecoveryWorkflow`.
-  -  `excludeFileTypes`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` arguments in `task_config` are now `excludedFileExtensions`, `defaultBucketOverride` and  `defaultStorageClassOverride` respectively.
+- Adjust usage of `copy_to_glacier` in your step functions for new keys.
+  - `excludeFileTypes`, `orcaDefaultBucketOverride`, and `orcaDefaultStorageClassOverride` arguments are now `excludedFileExtensions`, `defaultBucketOverride`, and `defaultStorageClassOverride` and are under a new key `orca`.
+    See example below:
+    ```json
+    "task_config": {
+      "excludedFileExtensions": "{$.meta.collection.meta.orca.excludedFileExtensions}",
+      "defaultBucketOverride": "{$.meta.collection.meta.orca.defaultBucketOverride}",
+      "defaultStorageClassOverride": "{$.meta.collection.meta.orca.defaultStorageClassOverride}"
+    }
+    ```
+- Adjust Cumulus collection configuration integration for new `orca` key paths.
+  -  `excludeFileTypes`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` arguments are now `excludedFileExtensions`, `defaultBucketOverride` and  `defaultStorageClassOverride` respectively.
   - `excludedFileExtensions`, `defaultBucketOverride` and `defaultStorageClassOverride` keys are now under a new key `orca`. See example below:
-```json
-"task_config": {
-  "excludedFileExtensions": "{$.meta.collection.meta.orca.excludedFileExtensions}",
-  "defaultBucketOverride": "{$.meta.collection.meta.orca.defaultBucketOverride}",
-  "defaultStorageClassOverride": "{$.meta.collection.meta.orca.defaultStorageClassOverride}"
-}
-```
-```json
-"collection": {
-    "meta":{
-        "orca": {
-          "defaultStorageClassOverride": "DEEP_ARCHIVE",
-          "excludedFileExtensions": [".xml"],
-          "defaultBucketOverride": "orca-bucket"
+    ```json
+      "collection": {
+          "meta":{
+              "orca": {
+                "defaultStorageClassOverride": "DEEP_ARCHIVE",
+                "excludedFileExtensions": [".xml"],
+                "defaultBucketOverride": "orca-bucket"
+            }
+        }
       }
-  }
-}
-
-```
+      ```
 
 ## [5.1.0]
 ### Changed
