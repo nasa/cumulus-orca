@@ -218,8 +218,8 @@ def get_file_entries_for_granule_in_job(
         'file_name' (str): The name and extension of the file.
         'restore_destination' (str): The name of the glacier bucket the file is being copied to.
         'status' (str): The status of the restoration of the file.
-            May be 'pending', 'staged', 'success', or 'failed'.
-        'error_message' (str): If the restoration of the file failed,
+            May be 'pending', 'staged', 'success', or 'error'.
+        'error_message' (str): If the restoration of the file error,
             the error will be stored here. Otherwise, None.
     """
     try:
@@ -320,7 +320,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'restore_destination' (str): The name of the glacier bucket
                     the file is being copied to.
                 'status' (str): The status of the restoration of the file.
-                    May be 'pending', 'staged', 'success', or 'failed'.
+                    May be 'pending', 'staged', 'success', or 'error'.
                 'error_message' (str, Optional): If the restoration of the file errored,
                     the error will be stored here.
         'request_time' (DateTime): The time, in UTC isoformat,

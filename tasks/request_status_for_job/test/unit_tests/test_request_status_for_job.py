@@ -56,7 +56,7 @@ class TestRequestStatusForJobUnit(
                     "pending": random.randint(0, 15),  # nosec
                     "staged": random.randint(0, 15),  # nosec
                     "success": random.randint(0, 15),  # nosec
-                    "failed": random.randint(0, 15)  # nosec
+                    "error": random.randint(0, 15)  # nosec
                 }
         }
 
@@ -215,7 +215,7 @@ class TestRequestStatusForJobUnit(
             HTTPStatus.INTERNAL_SERVER_ERROR,
             context.aws_request_id,
             f"data.{request_status_for_job.OUTPUT_JOB_STATUS_TOTALS_KEY} "
-            f"must contain ['pending', 'staged', 'success', 'failed'] properties")
+            f"must contain ['pending', 'staged', 'success', 'error'] properties")
         self.assertEqual(mock_create_http_error_dict.return_value, result)
 
     @patch("orca_shared.database.shared_db.get_user_connection")
@@ -413,7 +413,7 @@ class TestRequestStatusForJobUnit(
                 {"value": "pending", "total": 5},
                 {"value": "success", "total": 2},
                 {"value": "staged", "total": 0},
-                {"value": "failed", "total": 1000},
+                {"value": "error", "total": 1000},
             ],
         ]
         mock_engine.begin.return_value.__enter__ = Mock()
@@ -437,7 +437,7 @@ class TestRequestStatusForJobUnit(
                 }
             ],
             request_status_for_job.OUTPUT_JOB_STATUS_TOTALS_KEY: {
-                "failed": 1000, "pending": 5, "staged": 0, "success": 2
+                "error": 1000, "pending": 5, "staged": 0, "success": 2
             }
         }, result)
 

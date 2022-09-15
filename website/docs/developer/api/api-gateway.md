@@ -131,7 +131,7 @@ An example of the API output is shown below:
     },
     {
       "fileName": "f2.pdf",
-      "status": "failed",
+      "status": "error",
       "error_message": "Access Denied"
     },
     {
@@ -154,7 +154,7 @@ The following table lists the fields in the output:
 | asyncOperationId   | `str`       | The unique ID of the asyncOperation.                                                                |
 | files              | `Array[Object]`| Description and status of the files within the given granule.                                    |
 | fileName           | `str`       | The name and extension of the file.                                                                 |
-| status             | `str`       | The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.      |
+| status             | `str`       | The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'error'.       |
 | errorMessage       | `str`       | If the restoration of the file showed error, the error will be stored here.                         |
 | restoreDestination | `str`       | The name of the glacier bucket the granule is being copied to.                                      |
 | requestTime        | `int`       | The time, in milliseconds since 1 January 1970 UTC, when the request to restore the granule was initiated.|
@@ -189,12 +189,13 @@ An example of the API output is shown below:
   "jobStatusTotals": {
     "pending": 1,
     "success": 1,
-    "failed": 1
+    "error": 0,
+    "staged": 0
   },
   "granules": [
     {
       "granuleId": "6c8d0c8b-4f9a-4d87-ab7c-480b185a0250",
-      "status": "failed"
+      "status": "error"
     },
     {
       "granuleId": "b5681dc1-48ba-4dc3-877d-1b5ad97e8276",
@@ -208,10 +209,10 @@ The following table lists the fields in the output:
 | Name                | Data Type   |                           Description                                                               |
 | --------------------| ----------- | ----------------------------------------------------------------------------------------------------|
 | asyncOperationId    | `str`       | The unique ID of the asyncOperation.                                                                |
-| jobStatusTotals     | `Object`    | Sum of how many granules are in each particular restoration status ('pending', 'staged', 'success', or 'failed'). |
-| granules            | `Array[Object]` | An array representing each granule being copied as part of the job.                                 |
+| jobStatusTotals     | `Object`    | Sum of how many granules are in each particular restoration status ('pending', 'staged', 'success', or 'error'). |
+| granules            | `Array[Object]` | An array representing each granule being copied as part of the job.                             |
 | granuleId           | `str`       | The unique ID of the granule retrieved.                                                             |
-| status              | `str`       | The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.      |
+| status              | `str`       | The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'error'.       |
 
 The API returns status code 200 on success, 400 if input is in incorrect format, 500 if an error occurs when querying the database, and 404 if not found.
 

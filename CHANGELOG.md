@@ -23,6 +23,8 @@ and includes an additional section for migration notes.
   - `excludedFileExtensions`, `defaultBucketOverride` and `defaultStorageClassOverride` keys are now under `collection.meta.orca`. See the example below under `Migration Notes`.
 - *ORCA-519* Enforced schema checks in `request_status_for_granule` and `request_status_for_job`.
   Both lambdas will return proper HTTP error codes for bad inputs of internal server errors.
+  Additionally, corrected error in [API Reference](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api) 
+  where the `error` status for these lambdas was incorrectly listed as `failed`.
 - *ORCA-320* Requests to API Gateway now use IAM permissions, restricting anonymous access.
 
 ### Migration Notes

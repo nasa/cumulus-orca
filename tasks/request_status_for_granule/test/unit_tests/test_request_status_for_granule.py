@@ -294,7 +294,7 @@ class TestRequestStatusForGranuleUnit(
             context.aws_request_id,
             f"data.{request_status_for_granule.OUTPUT_FILES_KEY}[0]."
             f"{request_status_for_granule.OUTPUT_STATUS_KEY} "
-            f"must match pattern ^(pending|success|failed|staged)$")
+            f"must match pattern ^(pending|success|error|staged)$")
         self.assertEqual(mock_create_http_error_dict.return_value, result)
 
     def test_task_granule_id_cannot_be_none(self):
@@ -622,7 +622,7 @@ class TestRequestStatusForGranuleUnit(
 
         filename_0 = uuid.uuid4().__str__() + ".ext"
         restore_destination_0 = uuid.uuid4().__str__()
-        status_0 = "failed"
+        status_0 = "error"
         error_0 = uuid.uuid4().__str__()  # nosec
 
         filename_1 = uuid.uuid4().__str__() + ".ext"

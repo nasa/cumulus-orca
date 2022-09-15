@@ -97,8 +97,8 @@ Gets the individual status entries for the files for the given job+granule.
 - `'file_name'` _str_ - The name and extension of the file.
 - `'restore_destination'` _str_ - The name of the glacier bucket the file is being copied to.
 - `'status'` _str_ - The status of the restoration of the file.
-  May be 'pending', 'staged', 'success', or 'failed'.
-- `'error_message'` _str_ - If the restoration of the file failed,
+  May be 'pending', 'staged', 'success', or 'error'.
+- `'error_message'` _str_ - If the restoration of the file error,
   the error will be stored here. Otherwise, None.
 
 <a id="request_status_for_granule.create_http_error_dict"></a>
@@ -159,7 +159,7 @@ Entry point for the request_status_for_granule Lambda.
 - `'restore_destination'` _str_ - The name of the glacier bucket
   the file is being copied to.
 - `'status'` _str_ - The status of the restoration of the file.
-  May be 'pending', 'staged', 'success', or 'failed'.
+  May be 'pending', 'staged', 'success', or 'error'.
 - `'error_message'` _str, Optional_ - If the restoration of the file errored,
   the error will be stored here.
 - `'request_time'` _DateTime_ - The time, in UTC isoformat,
