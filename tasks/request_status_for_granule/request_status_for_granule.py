@@ -219,7 +219,7 @@ def get_file_entries_for_granule_in_job(
         'restore_destination' (str): The name of the glacier bucket the file is being copied to.
         'status' (str): The status of the restoration of the file.
             May be 'pending', 'staged', 'success', or 'error'.
-        'error_message' (str): If the restoration of the file error,
+        'error_message' (str): If the restoration of the file errored,
             the error will be stored here. Otherwise, None.
     """
     try:
