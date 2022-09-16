@@ -4,8 +4,6 @@ title:  ORCA Versioning and Releases
 description: Provides information to developers on semantic versioning and the release process.
 ---
 
-Much of this documentation is also found at [Cumulus](https://github.com/nasa/cumulus/blob/master/docs/development/release.md).
-
 ## Versioning
 
 The ORCA team uses semantic versioning. More information about semantic
@@ -84,11 +82,11 @@ the release process is complete.
 
 **Merge the base branch back into develop and master**
 
-Finally, you need to merge the version update changes back into develop and 
-master.
+If this is the latest version, you need to merge the version update changes back into master, then synchronize master and develop.
 
-If this is the latest version, create the PRs to merge the release branch 
-into develop and master. 
+1. Create a PR to merge the release branch into master.
+1. Once complete, create a PR to merge master into develop.
+   This should only contain changes from the release process.
 
 :::note Note: 
 

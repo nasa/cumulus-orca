@@ -28,9 +28,9 @@
 						"type": "string"
 					},
 					"status": {
-						"description": "The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.",
+						"description": "The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'error'.",
 						"type": "string",
-						"pattern": "^(pending|success|failed|staged)$"
+						"pattern": "^(pending|success|error|staged)$"
 					},
 					"errorMessage": {
 						"description": "If the restoration of the file errored, the error will be stored here.",

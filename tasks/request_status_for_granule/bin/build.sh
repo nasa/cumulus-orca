@@ -110,6 +110,13 @@ let return_code=$?
 
 check_rc $return_code "ERROR: Failed to copy lambda files to build directory."
 
+## Copy the schema files to build
+echo "INFO: Copying schema files ..."
+cp -r schemas/ build/
+let return_code=$?
+
+check_rc $return_code "ERROR: Failed to copy schema files to build directory."
+
 ## Create the zip archive
 echo "INFO: Creating zip archive ..."
 cd build

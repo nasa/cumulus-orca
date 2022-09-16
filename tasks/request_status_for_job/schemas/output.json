@@ -28,13 +28,13 @@
 					"type": "number",
 					"minimum": 0
 				},
-				"failed": {
+				"error": {
 					"description": "The number of granules that did not copy and will not copy due to an error.",
 					"type": "number",
 					"minimum": 0
 				}
 			},
-			"required": [ "pending", "staged", "success", "failed" ]
+			"required": [ "pending", "staged", "success", "error" ]
 		},
 		"granules": {
 			"description": "An array representing each granule being copied as part of the job.",
@@ -48,9 +48,9 @@
 						"type": "string"
 					},
 					"status": {
-						"description": "The status of the restoration of the granule. May be 'pending', 'staged', 'success', or 'failed'.",
+						"description": "The status of the restoration of the granule. May be 'pending', 'staged', 'success', or 'error'.",
 						"type": "string",
-						"pattern": "^(pending|success|failed|staged)$"
+						"pattern": "^(pending|success|error|staged)$"
 					}
 				},
 				"required": [ "granuleId", "status" ]

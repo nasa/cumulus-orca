@@ -23,6 +23,18 @@ OUTPUT_ERROR_MESSAGE_KEY = "errorMessage"
 OUTPUT_REQUEST_TIME_KEY = "requestTime"
 OUTPUT_COMPLETION_TIME_KEY = "completionTime"
 
+
+class JobNotFoundException(Exception):
+    def __init__(self, granule_id: str):
+        self.granule_id = granule_id
+
+
+class JobGranuleCombinationNotFoundException(Exception):
+    def __init__(self, job_id: str, granule_id: str):
+        self.job_id = job_id
+        self.granule_id = granule_id
+
+
 with open("schemas/input.json", "r") as raw_schema:
     _VALIDATE_INPUT = fastjsonschema.compile(json.loads(raw_schema.read()))
 
@@ -33,19 +45,15 @@ LOGGER = CumulusLogger()
 
 
 def task(
-    granule_id: str, db_connect_info: Dict, request_id: str, job_id: str = None
+    granule_id: str, db_connect_info: Dict, job_id: str = None
 ) -> Dict[str, Any]:
     # noinspection SpellCheckingInspection
     """
     Args:
         granule_id: The unique ID of the granule to retrieve status for.
         db_connect_info: The {database}.py defined db_connect_info.
-        request_id: An ID provided by AWS Lambda. Used for context tracking.
         job_id: An optional additional filter to get a specific job's entry.
     Returns: See output.json
-
-        Will also return a dict from create_http_error_dict with error
-        NOT_FOUND if job/granule could not be found.
     """
     if granule_id is None or len(granule_id) == 0:
         raise ValueError("granule_id must be set to a non-empty value.")
@@ -55,21 +63,11 @@ def task(
     if job_id is None or len(job_id) == 0:
         job_id = get_most_recent_job_id_for_granule(granule_id, engine)
         if job_id is None:
-            return create_http_error_dict(
-                "NotFound",
-                HTTPStatus.NOT_FOUND,
-                request_id,
-                f"No job for granule id '{granule_id}'.",
-            )
+            raise JobNotFoundException(granule_id)
 
     job_entry = get_job_entry_for_granule(granule_id, job_id, engine)
     if job_entry is None:
-        return create_http_error_dict(
-            "NotFound",
-            HTTPStatus.NOT_FOUND,
-            request_id,
-            f"No job found for granule id '{granule_id}' and job id '{job_id}'.",
-        )
+        raise JobGranuleCombinationNotFoundException(job_id, granule_id)
 
     if job_entry[OUTPUT_COMPLETION_TIME_KEY] is None:
         del job_entry[OUTPUT_COMPLETION_TIME_KEY]
@@ -220,7 +218,7 @@ def get_file_entries_for_granule_in_job(
         'file_name' (str): The name and extension of the file.
         'restore_destination' (str): The name of the archive bucket the file is being copied to.
         'status' (str): The status of the restoration of the file.
-            May be 'pending', 'staged', 'success', or 'failed'.
+            May be 'pending', 'staged', 'success', or 'error'.
         'error_message' (str): If the restoration of the file errored,
             the error will be stored here. Otherwise, None.
     """
@@ -322,7 +320,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'restore_destination' (str): The name of the archive bucket
                     the file is being copied to.
                 'status' (str): The status of the restoration of the file.
-                    May be 'pending', 'staged', 'success', or 'failed'.
+                    May be 'pending', 'staged', 'success', or 'error'.
                 'error_message' (str, Optional): If the restoration of the file errored,
                     the error will be stored here.
         'request_time' (DateTime): The time, in UTC isoformat,
@@ -332,7 +330,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
 
         Or, if an error occurs, see create_http_error_dict
             400 if granule_id is missing.
-            400 if input.json schema is not matched. 500 if an error occurs when querying the database. 404 if not found.
+            400 if input.json schema is not matched.
+            500 if an error occurs when querying the database.
+            404 if not found.
     """
 
     # get the secret ARN from the env variable
@@ -368,13 +368,26 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         result = task(
             granule_id,
             db_connect_info,
-            context.aws_request_id,
             event.get(INPUT_JOB_ID_KEY, None),
         )
 
         _VALIDATE_OUTPUT(result)
 
         return result
+    except JobNotFoundException as error:
+        return create_http_error_dict(
+            "NotFound",
+            HTTPStatus.NOT_FOUND,
+            context.aws_request_id,
+            f"No job for granule id '{error.granule_id}'.",
+        )
+    except JobGranuleCombinationNotFoundException as error:
+        return create_http_error_dict(
+            "NotFound",
+            HTTPStatus.NOT_FOUND,
+            context.aws_request_id,
+            f"No job found for granule id '{error.granule_id}' and job id '{error.job_id}'.",
+        )
     except Exception as error:
         return create_http_error_dict(
             "InternalServerError",
