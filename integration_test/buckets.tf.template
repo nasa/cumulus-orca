@@ -38,3 +38,14 @@ resource "aws_s3_bucket" "protected" {
     Application = "ORCA"
   }
 }
+resource "aws_s3_bucket_lifecycle_configuration" "level0-lifecycle-rule" {
+  bucket = aws_s3_bucket.level0.id
+  rule {
+    id = "move all objects to glacier"
+    status = "Enabled"
+    transition {
+      days          = 0
+      storage_class = "GLACIER"
+    }
+  }
+}
