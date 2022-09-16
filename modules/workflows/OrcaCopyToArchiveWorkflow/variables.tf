@@ -34,7 +34,7 @@ variable "tags" {
 
 ## Variables unique to ORCA
 ## REQUIRED
-variable "orca_lambda_copy_to_glacier_arn" {
+variable "orca_lambda_copy_to_archive_arn" {
   type        = string
-  description = "AWS ARN for the copy_to_glacier lambda."
+  description = "AWS ARN for the copy_to_archive lambda."
 }

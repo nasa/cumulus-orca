@@ -5,9 +5,9 @@
 ## =============================================================================
 # Ingest Lambdas
 # ------------------------------------------------------------------------------
-output "orca_lambda_copy_to_glacier_arn" {
-  description = "AWS ARN of the ORCA copy_to_glacier lambda."
-  value       = module.orca.orca_lambda_copy_to_glacier_arn
+output "orca_lambda_copy_to_archive_arn" {
+  description = "AWS ARN of the ORCA copy_to_archive lambda."
+  value       = module.orca.orca_lambda_copy_to_archive_arn
 }
 
 

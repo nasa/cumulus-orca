@@ -38,9 +38,9 @@ variable "orca_default_bucket" {
   description = "Default ORCA S3 Archive bucket to use if no overrides exist."
 }
 
-variable "orca_lambda_copy_to_glacier_arn" {
+variable "orca_lambda_copy_to_archive_arn" {
   type        = string
-  description = "AWS ARN for the copy_to_glacier lambda."
+  description = "AWS ARN for the copy_to_archive lambda."
 }
 
 variable "orca_lambda_extract_filepaths_for_granule_arn" {
