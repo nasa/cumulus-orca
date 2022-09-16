@@ -32,6 +32,7 @@ module.exports = {
                 'developer/development-guide/code/contrib-code-intro',
                 'developer/development-guide/code/setup-dev-env',
                 'developer/development-guide/code/best-practices',
+                'developer/development-guide/code/clean-architecture',
                 'developer/development-guide/code/versioning-releases',
                 'developer/development-guide/code/linting',
                 'developer/development-guide/code/unit-tests',
@@ -79,7 +80,8 @@ module.exports = {
       'developer/research/research-lambda-container',
       'developer/research/research-pushing-docker-image',
       'developer/research/research-s3-bucket-best-practices',
-      'developer/research/research-deep-glacier-migration'
+      'developer/research/research-deep-glacier-migration',
+      'developer/research/research-logging-libraries'
     ],
   },
   cookbook: {

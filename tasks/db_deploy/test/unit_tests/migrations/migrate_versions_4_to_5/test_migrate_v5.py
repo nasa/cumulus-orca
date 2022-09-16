@@ -5,8 +5,7 @@ Description: Runs unit tests for the migrations/migrate_versions_4_to_5/migrate.
 """
 
 import unittest
-import uuid
-from unittest.mock import MagicMock, Mock, call, patch
+from unittest.mock import MagicMock, call, patch
 
 from migrations.migrate_versions_4_to_5 import migrate
 
@@ -126,8 +125,8 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                     call.execute(mock_reconcile_s3_object_table()),
                     call.execute(
                         mock_reconcile_s3_object_partition_table(
-                            f"reconcile_s3_object_{self.orca_buckets[0]}"  # Left hard-coded for backwards compatibility
-                        ),
+                            f"reconcile_s3_object_{self.orca_buckets[0]}"
+                        ),  # Left hard-coded for backwards compatibility
                         {"bucket_name": self.orca_buckets[0]},
                     ),
                     call.execute(

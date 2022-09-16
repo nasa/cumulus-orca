@@ -203,7 +203,8 @@ def copy_object(
     # Copy the object
     try:
         LOGGER.debug(
-            f"Copying {src_object_name} to {dest_bucket_name} with chunk size of {multipart_chunksize_mb}MB."
+            f"Copying {src_object_name} to {dest_bucket_name} "
+            f" with chunk size of {multipart_chunksize_mb}MB."
         )
         s3_cli.copy(
             copy_source,
@@ -212,7 +213,8 @@ def copy_object(
             ExtraArgs={
                 # 'StorageClass': 'GLACIER',
                 # 'MetadataDirective': 'COPY',
-                # 'ContentType': s3_cli.head_object(Bucket=src_bucket_name, Key=src_object_name)['ContentType'],
+                # 'ContentType': s3_cli.head_object(Bucket=src_bucket_name,
+                #  Key=src_object_name)['ContentType'],
                 # 'ACL': 'bucket-owner-full-control'
                 # Sets the x-amz-acl URI Request Parameter. Needed for cross-OU copies.
             },

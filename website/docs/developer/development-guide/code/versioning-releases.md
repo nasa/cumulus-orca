@@ -4,8 +4,6 @@ title:  ORCA Versioning and Releases
 description: Provides information to developers on semantic versioning and the release process.
 ---
 
-Much of this documentation is also found at [Cumulus](https://github.com/nasa/cumulus/blob/master/docs/development/release.md).
-
 ## Versioning
 
 The ORCA team uses semantic versioning. More information about semantic
@@ -84,11 +82,11 @@ the release process is complete.
 
 **Merge the base branch back into develop and master**
 
-Finally, you need to merge the version update changes back into develop and 
-master.
+If this is the latest version, you need to merge the version update changes back into master, then synchronize master and develop.
 
-If this is the latest version, create the PRs to merge the release branch 
-into develop and master. 
+1. Create a PR to merge the release branch into master.
+1. Once complete, create a PR to merge master into develop.
+   This should only contain changes from the release process.
 
 :::note Note: 
 
@@ -118,7 +116,7 @@ You should reset `feature/ORCA-test-bamboo` before using it.
 1. Rename `feature/ORCA-test-bamboo` to `feature/ORCA-test-bamboo-old`
 1. Create a new branch based off of your branch named `feature/ORCA-test-bamboo`
 1. In the new branch's `bamboo.yaml`:
-   Delete all but one of the plans.
+   Delete all but one of the plans and the `ORCA-ODP` plan.
    Change plan's `name` to `prototype-latest`.
    In each `repositories` element, change `orca-develop` to `orca test branch`.
    In each `plan` element, change `OI`/`ODP` in `key` values to `PL`
@@ -156,7 +154,7 @@ Some of these buckets have cross-account IAM policies attached so that they can 
 Hitting 'play' next to `Deploy DR ORCA buckets`, `Deploy Dev RDS Stack` and `Deploy Dev Cumulus and ORCA Stack` brings up a checkbox list to run multiple jobs at once. Note that none of the checkboxes should be checked.
 :::
 
-The Cumulus and TF buckets as well as dynamoDB table in cumulus OU account are created automatically in the `Deploy RDS cluster` and `Deploy Dev Cumulus and ORCA Stack` stages.
+The Cumulus and TF buckets as well as dynamoDB table in cumulus OU account are created automatically in the Bamboo `Deploy Cumulus buckets and Cumulus and Orca modules` stage. 
 These are the buckets that will be created in cumulus OU account:
 
 - `<PREFIX>-internal`
@@ -166,25 +164,31 @@ These are the buckets that will be created in cumulus OU account:
 - `<PREFIX>-protected`
 - `<PREFIX>-tf-state` (for storing the terraform state file in cumulus OU account)
 
-After hitting the play button on `Deploy Dev RDS Stack`, but before hitting `Run` in the popup, replace the following variables with yours.
+:::tip
+The `*-tf-state` buckets and dynamoDB tables will not be automatically removed by cleanup scripts.
+Once you are done with your testing, and you have verified that cleanup is actually successful, manually delete these resources.
+:::
+
+After hitting the play button on `Deploy Cumulus buckets and Cumulus and Orca modules`, but before hitting `Run` in the popup, replace the following variables with yours.
 
 - CUMULUS_AWS_ACCESS_KEY_ID
 - CUMULUS_AWS_SECRET_ACCESS_KEY
 - PREFIX
-- AWS_ACCOUNT_ID (for cumulus sandbox account)
 - DB_ADMIN_PASSWORD
 - DB_USER_PASSWORD
-- AWS_SUBNET_ID1
-- AWS_SUBNET_ID2
-- VPC_ID
+- EARTHDATA_CLIENT_ID
+- EARTHDATA_CLIENT_PASSWORD
+- CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION
 
-Note that the above buckets can also be created manually if desired by the user. Make sure to use the proper AWS access keys for configuration before running the commands.
+This is because some variables are sensitive and some will vary depending upon the user running the pipeline. Hitting 'play' next to any of the deployment and cleanup stages brings up a checkbox list to run multiple jobs at once. Note that none of the checkboxes should be checked.
+
+The above buckets can also be created manually if desired by the user. Make sure to use the proper AWS access keys for configuration before running the commands.
 
 The bucket can be created using the following CLI command:
 ```bash
 aws s3api create-bucket --bucket <BUCKET_NAME>  --region us-west-2 --create-bucket-configuration LocationConstraint=us-west-2
 ```
-In addition to this, the dynamodb table and bucket version need to created as well.
+The dynamodb table and bucket versioning can be created manually as well.
 ```bash
    aws dynamodb create-table \
       --table-name <PREFIX>-tf-locks \
@@ -200,7 +204,7 @@ In addition to this, the dynamodb table and bucket version need to created as we
     --versioning-configuration Status=Enabled
 ```
 
-Create an EC2 key pair can be created using the AWS CLI. Make sure to save the generated private key for connecting to this instance later.
+An EC2 key pair can be created using the AWS CLI. Make sure to save the generated private key for connecting to this instance later.
 
 ```bash
 aws ec2 create-key-pair --key-name <PREFIX> --query 'KeyMaterial' --output text > <PREFIX>.pem
@@ -209,24 +213,11 @@ aws ec2 create-key-pair --key-name <PREFIX> --query 'KeyMaterial' --output text 
 Make sure your AWS is configured to use the cumulus sandbox account by using that account's AWS access keys before creating the EC2 key pair.
 :::
 
-After hitting the play button on `Deploy Dev Cumulus and ORCA Stack`, but before hitting `Run` in the popup, replace the following variables with yours.
+A new earthdata application will need to be created if not done previously which will give the values for `EARTHDATA_CLIENT_ID` and `EARTHDATA_CLIENT_PASSWORD`. If you already have the application, use the existing values. `CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION` is the branch you want to check out in the [deployment repo](https://git.earthdata.nasa.gov/projects/ORCA/repos/cumulus-orca-deploy-template/browse) such as `v11.1.1-v4.0.1`.
 
-- CUMULUS_AWS_ACCESS_KEY_ID
-- CUMULUS_AWS_SECRET_ACCESS_KEY
-- PREFIX
-- AWS_ACCOUNT_ID (for cumulus sandbox account)
-- AWS_SUBNET_ID1
-- AWS_SUBNET_ID2
-- VPC_ID
-- EARTHDATA_CLIENT_ID
-- EARTHDATA_CLIENT_PASSWORD
-- DB_ADMIN_PASSWORD
-- DB_USER_PASSWORD
-- DB_HOST_ENDPOINT
-- RDS_SECURITY_GROUP
-- RDS_USER_ACCESS_SECRET_ARN
-- CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION (optional)
+Note that the jobs may need to be run multiple times to get past deployment errors if there is one. If an error is raised saying `Cloudwatch log groups already exist`, then manually delete all the cloudwatch log groups and corresponding lambdas having the same name as the log groups from the AWS console and retry running the job.
 
-The RDS variables `RDS_SECURITY_GROUP`, `RDS_USER_ACCESS_SECRET_ARN` and `DB_HOST_ENDPOINT` can be found from output logs of the previous `Deploy Dev RDS Stack` stage as `security_group_id`, `admin_db_login_secret_arn`, and `rds_endpoint` respectively. Note that a new earthdata application will need to be first created if using a new prefix for new deployment which will give the values for `EARTHDATA_CLIENT_ID` and `EARTHDATA_CLIENT_PASSWORD`. `CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION` is the branch you want to check out in the [deployment repo](https://git.earthdata.nasa.gov/projects/ORCA/repos/cumulus-orca-deploy-template/browse) such as `v11.1.1-v4.0.1`.
-
-Note that `admin_db_login_secret_arn` value from the initial run should be recorded, as they may be hidden on future deployments. In addition, the jobs may need to be run multiple times to get past deployment errors if there is one. If an error is raised saying `Cloudwatch log groups already exist`, then manually delete all the cloudwatch log groups and corresponding lambdas having the same name as the log groups from the AWS console and retry running the job.
+`Clean up ORCA buckets and modules` and `Clean up DR ORCA buckets` can be run in sequence to remove most of the resources created by the deployment stages.
+State buckets and lock tables will be left intact to aid in any cleanup issues/debugging.
+Additionally, Cumulus's RDS module will automatically create a final-snapshot `PREFIX-cumulus-rds-serverless-default-cluster-final-snapshot` that must be manually deleted.
+To verify cleanup, check the stage logs for errors, and [check the AWS environment for additional resources](https://docs.aws.amazon.com/ARG/latest/userguide/find-resources-to-tag.html) with the tag `Deployment=PREFIX`.

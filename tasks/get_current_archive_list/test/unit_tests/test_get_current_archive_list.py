@@ -104,7 +104,8 @@ class TestGetCurrentArchiveList(
         self.assertEqual(
             {
                 get_current_archive_list.OUTPUT_JOB_ID_KEY: mock_job_id,
-                get_current_archive_list.OUTPUT_ORCA_ARCHIVE_LOCATION_KEY: mock_orca_archive_location,
+                get_current_archive_list.OUTPUT_ORCA_ARCHIVE_LOCATION_KEY:
+                    mock_orca_archive_location,
             },
             result,
         )
@@ -762,10 +763,12 @@ class TestGetCurrentArchiveList(
         Must add extra columns for extra columns.
         """
         result = get_current_archive_list.generate_temporary_s3_column_list(
-            "IsDeleteMarker,StorageClass, blah, Size, Key, IsLatest,Extra, Bucket,LastModifiedDate,ETag"
+            "IsDeleteMarker,StorageClass, blah, Size, Key, "
+            "IsLatest,Extra, Bucket,LastModifiedDate,ETag"
         )
         self.assertEqual(
-            "delete_marker bool, storage_class text, junk2 text, size_in_bytes bigint, key_path text, is_latest bool, "
+            "delete_marker bool, storage_class text, junk2 text, "
+            "size_in_bytes bigint, key_path text, is_latest bool, "
             "junk6 text, orca_archive_location text, last_update timestamptz, etag text",
             result,
         )
@@ -966,10 +969,12 @@ class TestGetCurrentArchiveList(
         mock_manifest_key_path = Mock()
         receipt_handle = uuid.uuid4().__str__()
         expected_result = {
-            get_current_archive_list.OUTPUT_JOB_ID_KEY: random.randint(  # nosec
-                0, 1000
-            ),
-            get_current_archive_list.OUTPUT_ORCA_ARCHIVE_LOCATION_KEY: uuid.uuid4().__str__(),  # nosec
+            get_current_archive_list.OUTPUT_JOB_ID_KEY:
+                random.randint(  # nosec
+                    0, 1000
+                ),
+            get_current_archive_list.OUTPUT_ORCA_ARCHIVE_LOCATION_KEY:
+                uuid.uuid4().__str__(),  # nosec
         }
         mock_task.return_value = copy.deepcopy(expected_result)
         expected_result[
@@ -997,18 +1002,27 @@ class TestGetCurrentArchiveList(
         with patch.dict(
             os.environ,
             {
-                get_current_archive_list.OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY: mock_s3_credentials_secret_arn,
-                get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY: report_queue_url,
-                get_current_archive_list.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY: mock_db_connect_info_secret_arn,
+                get_current_archive_list.OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY:
+                    mock_s3_credentials_secret_arn,
+                get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY:
+                    report_queue_url,
+                get_current_archive_list.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY:
+                    mock_db_connect_info_secret_arn,
 
             },
         ):
             result = get_current_archive_list.handler(event, mock_context)
 
         mock_LOGGER.setMetadata.assert_called_once_with(event, mock_context)
-        mock_get_s3_credentials_from_secrets_manager.assert_called_once_with(mock_check_env_variable(get_current_archive_list.OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY))
-        mock_get_configuration.assert_called_once_with(mock_check_env_variable(get_current_archive_list.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY))
-        mock_get_message_from_queue.assert_called_once_with(mock_check_env_variable(get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY))
+        mock_get_s3_credentials_from_secrets_manager.assert_called_once_with(
+            mock_check_env_variable(
+                get_current_archive_list.OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY))
+        mock_get_configuration.assert_called_once_with(
+            mock_check_env_variable(
+                get_current_archive_list.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY))
+        mock_get_message_from_queue.assert_called_once_with(
+            mock_check_env_variable(
+                get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY))
         mock_task.assert_called_once_with(
             mock_report_bucket_aws_region,
             mock_report_bucket_name,
@@ -1074,14 +1088,18 @@ class TestGetCurrentArchiveList(
             with patch.dict(
                 os.environ,
                 {
-                    get_current_archive_list.OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY: mock_s3_credentials_secret_arn,
-                    get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY: report_queue_url,
+                    get_current_archive_list.OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY:
+                    mock_s3_credentials_secret_arn,
+                    get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY:
+                    report_queue_url,
                 },
             ):
                 get_current_archive_list.handler(event, mock_context)
 
         mock_LOGGER.setMetadata.assert_called_once_with(event, mock_context)
-        mock_get_message_from_queue.assert_called_once_with(mock_check_env_variable(get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY))
+        mock_get_message_from_queue.assert_called_once_with(
+            mock_check_env_variable(
+                get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY))
         mock_task.assert_called_once_with(
             mock_report_bucket_aws_region,
             mock_report_bucket_name,
@@ -1095,7 +1113,7 @@ class TestGetCurrentArchiveList(
             f"'{get_current_archive_list.OUTPUT_ORCA_ARCHIVE_LOCATION_KEY}'] properties",
             str(cm.exception),
         )
-    
+
     @patch.dict(
         os.environ,
         {

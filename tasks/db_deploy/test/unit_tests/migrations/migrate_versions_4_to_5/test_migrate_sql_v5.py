@@ -51,4 +51,3 @@ class TestOrcaSqlLogic(unittest.TestCase):
         # Check that the partition_name is in the SQL and the type is text
         self.assertIn(partition_name, partition_sql.text)
         self.assertEqual(type(partition_sql), TextClause)
-

@@ -125,8 +125,11 @@ class TestExtractFilePaths(unittest.TestCase):
                     "path": "jk2-IngestGranuleSuccess-1558420117156-test-data/files",
                     "size": 1098034,
                     "type": "data",
-                    "url_path": "{cmrMetadata.Granule.Collection.ShortName}___{cmrMetadata.Granule.Collection.VersionId}/{extractYear(cmrMetadata.Granule.Temporal.RangeDateTime.BeginningDateTime)}/{substring(file.name, "
-                    "0, 3)}",
+                    "url_path": "{cmrMetadata.Granule.Collection.ShortName}___"
+                                "{cmrMetadata.Granule.Collection.VersionId}/"
+                                "{extractYear(cmrMetadata.Granule.Temporal."
+                                "RangeDateTime.BeginningDateTime)}/"
+                                "{substring(file.name, 0, 3)}",
                 },
                 {
                     "bucket": "cumulus-test-sandbox-private",
@@ -136,16 +139,19 @@ class TestExtractFilePaths(unittest.TestCase):
                     "path": "jk2-IngestGranuleSuccess-1558420117156-test-data/files",
                     "size": 21708,
                     "type": "metadata",
-                    "url_path": "{cmrMetadata.Granule.Collection.ShortName}___{cmrMetadata.Granule.Collection.VersionId}/{substring(file.name, "
-                    "0, 3)}",
+                    "url_path": "{cmrMetadata.Granule.Collection.ShortName}___"
+                                "{cmrMetadata.Granule.Collection.VersionId}/"
+                                "{substring(file.name, 0, 3)}",
                 },
                 {
                     "bucket": "cumulus-test-sandbox-protected-2",
-                    "source": "s3://cumulus-test-sandbox-protected-2/MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.json",
+                    "source": "s3://cumulus-test-sandbox-protected-2/MOD09GQ___"
+                              "006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.json",
                     "key": "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.json",
                     "fileName": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.json",
                     "type": "metadata",
-                    "url_path": "{cmrMetadata.Granule.Collection.ShortName}___{cmrMetadata.Granule.Collection.VersionId}/{substring(file.name, "
+                    "url_path": "{cmrMetadata.Granule.Collection.ShortName}___"
+                                "{cmrMetadata.Granule.Collection.VersionId}/{substring(file.name, "
                     "0, 3)}",
                 },
             ],
@@ -269,7 +275,8 @@ class TestExtractFilePaths(unittest.TestCase):
                 "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
                 "files": [
                     {
-                        "key": "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
+                        "key": "MOD09GQ___006/MOD/MOD09GQ.A0219114."
+                               "N5aUCG.006.0656338553321.cmr.xml",
                         "bucket": "cumulus-test-sandbox-protected-2",
                         "fileName": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
                     }
@@ -283,13 +290,17 @@ class TestExtractFilePaths(unittest.TestCase):
                         {
                             "bucket": "cumulus-test-sandbox-protected-2",
                             "fileName": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
-                            "key": "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
+                            "key": "MOD09GQ___006/MOD/MOD09GQ.A0219114."
+                                   "N5aUCG.006.0656338553321.cmr.xml",
                         }
                     ],
                     "keys": [
                         {
-                            extract_filepaths_for_granule.OUTPUT_KEY_KEY: "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
-                            extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY: "sndbx-cumulus-protected",
+                            extract_filepaths_for_granule.OUTPUT_KEY_KEY:
+                                "MOD09GQ___006/MOD/MOD09GQ."
+                                "A0219114.N5aUCG.006.0656338553321.cmr.xml",
+                            extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY:
+                                "sndbx-cumulus-protected",
                         }
                     ],
                     "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
@@ -302,8 +313,10 @@ class TestExtractFilePaths(unittest.TestCase):
 
     def test_exclude_file_type(self):
         """
-        Tests the exclude file type filtering. The .cmr filetype will be excluded and not show up in the output since the "extract_filepaths_for_granule/test/unit_tests/testevents/task_event.json" includes
-        "excludeFileTypes": [".cmr"]
+        Tests the exclude file type filtering. The .cmr filetype will be excluded and
+        not show up in the output since the
+        "extract_filepaths_for_granule/test/unit_tests/testevents/task_event.json" includes
+        "excludedFileExtensions": [".cmr"]
         """
         self.task_input_event["input"]["granules"] = [
             {
@@ -322,9 +335,12 @@ class TestExtractFilePaths(unittest.TestCase):
                 {
                     "files": [
                         {
-                            "bucket": "cumulus-test-sandbox-protected-2",
-                            "fileName": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr",
-                            "key": "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr",
+                            "bucket":
+                                "cumulus-test-sandbox-protected-2",
+                            "fileName":
+                                "MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr",
+                            "key":
+                                "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr",
                         }
                     ],
                     "keys": [],  # this will be empty since the filetpye is .cmr
@@ -370,8 +386,10 @@ class TestExtractFilePaths(unittest.TestCase):
                 {
                     "keys": [
                         {
-                            extract_filepaths_for_granule.OUTPUT_KEY_KEY: "MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
-                            extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY: "sndbx-cumulus-protected",
+                            extract_filepaths_for_granule.OUTPUT_KEY_KEY:
+                                "MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
+                            extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY:
+                                "sndbx-cumulus-protected",
                         }
                     ],
                     "files": [
@@ -386,18 +404,24 @@ class TestExtractFilePaths(unittest.TestCase):
                 {
                     "keys": [
                         {
-                            extract_filepaths_for_granule.OUTPUT_KEY_KEY: "MOD/MOD09GQ.A0219115.N5aUCG.006.0656338553321.cmr.xml",
-                            extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY: "sndbx-cumulus-protected",
+                            extract_filepaths_for_granule.OUTPUT_KEY_KEY:
+                                "MOD/MOD09GQ.A0219115.N5aUCG.006.0656338553321.cmr.xml",
+                            extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY:
+                                "sndbx-cumulus-protected",
                         }
                     ],
                     "files": [
                         {
-                            "bucket": "cumulus-test-sandbox-protected-2",
-                            "fileName": "MOD09GQ.A0219115.N5aUCG.006.0656338553321.cmr.xml",
-                            "key": "MOD/MOD09GQ.A0219115.N5aUCG.006.0656338553321.cmr.xml",
+                            "bucket":
+                                "cumulus-test-sandbox-protected-2",
+                            "fileName":
+                                "MOD09GQ.A0219115.N5aUCG.006.0656338553321.cmr.xml",
+                            "key":
+                                "MOD/MOD09GQ.A0219115.N5aUCG.006.0656338553321.cmr.xml",
                         }
                     ],
-                    "granuleId": "MOD09GQ.A0219115.N5aUCG.006.0656338553321",
+                    "granuleId":
+                        "MOD09GQ.A0219115.N5aUCG.006.0656338553321",
                 },
             ]
         }
@@ -424,7 +448,8 @@ class TestExtractFilePaths(unittest.TestCase):
 
     def test_task_input_schema_return_error(self):
         """
-        Test that having no granules["files"]["fileName"], ["key"], and ["bucket"] give an error in input schema.
+        Test that having no granules["files"]["fileName"], ["key"],
+        and ["bucket"] give an error in input schema.
         """
         input_event = {
             "granules": [

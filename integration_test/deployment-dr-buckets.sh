@@ -1,23 +1,6 @@
 #!/bin/bash
 set -ex
 
-# Negated REGEX that checks that the PREFIX is alpha numeric with no spaces and the optional use of an _
-if [[ ! ${bamboo_PREFIX} =~ ^[[:upper:][:lower:][:digit:]_]+$ ]]; then
-    echo "FATAL: PREFIX variable value [${bamboo_PREFIX}] is invalid. Only alpha numeric values and _ are allowed."
-    exit 1
-fi
-
-export AWS_ACCESS_KEY_ID=$bamboo_DR_AWS_ACCESS_KEY_ID
-export AWS_SECRET_ACCESS_KEY=$bamboo_DR_AWS_SECRET_ACCESS_KEY
-export AWS_DEFAULT_REGION=$bamboo_AWS_DEFAULT_REGION
-
-#remove old files from bamboo as they throw error
-rm *.tf
-git clone --branch ${bamboo_BRANCH_NAME} --single-branch https://github.com/nasa/cumulus-orca.git && cd integration_test
-echo "Cloned Orca, branch ${bamboo_BRANCH_NAME}"
-#replace prefix with bamboo prefix variable
-sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' dr-buckets.tf.template > dr-buckets.tf
-
 if aws s3api head-bucket --bucket ${bamboo_PREFIX}-dr-tf-state;then
     echo "terraform state bucket already present. Using existing state file"
 else
@@ -36,15 +19,7 @@ else
       --region ${bamboo_AWS_DEFAULT_REGION}
 fi
 
-#configuring S3 backend
-echo "terraform {
-  backend \"s3\" {
-    bucket = \"${bamboo_PREFIX}-dr-tf-state\"
-    region = \"${bamboo_AWS_DEFAULT_REGION}\"
-    key    = \"terraform.tfstate\"
-    dynamodb_table = \"${bamboo_PREFIX}-dr-tf-locks\"
-  }
-}" >> terraform.tf
+cd integration_test
 
 #initialize terraform
 terraform init -input=false

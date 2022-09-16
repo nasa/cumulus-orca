@@ -1,7 +1,7 @@
 """
 Name: sqs_library.py
-Description: library for post_to_queue_and_trigger_step_function lambda function for posting to fifo SQS queue.
-Largely copied from copy_to_glacier
+Description: library for post_to_queue_and_trigger_step_function lambda
+function for posting to fifo SQS queue. Largely copied from copy_to_glacier
 """
 # todo: Move to shared lib ORCA-406
 # Standard libraries
@@ -74,8 +74,7 @@ def retry_error(
                     if total_retries == max_retries:
                         # Log it and re-raise if we maxed our retries + initial attempt
                         LOGGER.error(
-                            "Encountered Error {total_attempts} times. Reached max retry limit.",
-                            total_attempts=total_retries,
+                            f"Encountered Error {total_retries} times. Reached max retry limit."
                         )
                         raise
                     else:
@@ -85,10 +84,8 @@ def retry_error(
                             + random.uniform(0, 1)  # nosec
                         )
                         LOGGER.error(
-                            "Encountered Error on attempt {total_attempts}. "
-                            "Sleeping {backoff_time} seconds.",
-                            total_attempts=total_retries,
-                            backoff_time=backoff_time,
+                            f"Encountered Error on attempt {total_retries}. "
+                            f"Sleeping {backoff_time} seconds.",
                         )
                         time.sleep(backoff_time)
                         total_retries += 1

@@ -53,7 +53,8 @@ def send_record_to_database(record: Dict[str, Any], engine: Engine) -> None:
                 Contains key/value pairs of column names and values for those columns.
                 Must match one of the schemas.
             'messageAttributes' (dict): Contains the following keys:
-                'RequestMethod' (str): 'post' or 'put', depending on if row should be created or updated respectively.
+                'RequestMethod' (str): 'post' or 'put',
+                    depending on if row should be created or updated respectively.
         engine: The sqlalchemy engine to use for contacting the database.
     """
     values = json.loads(record["body"])
@@ -89,7 +90,9 @@ def send_record_to_database(record: Dict[str, Any], engine: Engine) -> None:
         raise error
 
 
-@shared_db.retry_operational_error()
+@shared_db.retry_operational_error(
+     # Retry all files due to transactional behavior of engine.begin
+     )
 def create_status_for_job_and_files(
     job_id: str,
     granule_id: str,
@@ -181,7 +184,9 @@ def create_status_for_job_and_files(
         raise
 
 
-@shared_db.retry_operational_error()  # Retry all files due to transactional behavior of engine.begin
+@shared_db.retry_operational_error(
+     # Retry all files due to transactional behavior of engine.begin
+     )
 def update_status_for_file(
     job_id: str,
     granule_id: str,
@@ -193,7 +198,8 @@ def update_status_for_file(
     engine: Engine,
 ) -> None:
     """
-    Updates a given file's status entry, modifying the job if all files for that job have advanced in status.
+    Updates a given file's status entry, modifying the job if all files
+    for that job have advanced in status.
 
     Args:
         job_id: The unique identifier used for tracking requests.
@@ -218,7 +224,8 @@ def update_status_for_file(
     job_parameters = {"job_id": job_id, "granule_id": granule_id}
     try:
         LOGGER.debug(
-            f"Updating status for recovery record job_id {job_id} granule_id {granule_id} and file {filename}."
+            f"Updating status for recovery record job_id {job_id} "
+            f"granule_id {granule_id} and file {filename}."
         )
         with engine.begin() as connection:
             connection.execute(update_file_sql(), file_parameters)
@@ -237,9 +244,11 @@ def create_job_sql() -> text:  # pragma: no cover
     return text(
         """
         INSERT INTO recovery_job
-            ("job_id", "granule_id", "status_id", "request_time", "completion_time", "archive_destination")
+            ("job_id", "granule_id", "status_id", "request_time",
+            "completion_time", "archive_destination")
         VALUES
-            (:job_id, :granule_id, :status_id, :request_time, :completion_time, :archive_destination)"""
+            (:job_id, :granule_id, :status_id, :request_time,
+            :completion_time, :archive_destination)"""
     )
 
 
@@ -247,10 +256,13 @@ def create_file_sql() -> text:  # pragma: no cover
     return text(
         """
         INSERT INTO recovery_file
-            ("job_id", "granule_id", "filename", "key_path", "restore_destination", "multipart_chunksize_mb", 
-            "status_id", "error_message", "request_time", "last_update", "completion_time")
+            ("job_id", "granule_id", "filename", "key_path",
+            "restore_destination", "multipart_chunksize_mb",
+            "status_id", "error_message", "request_time",
+            "last_update", "completion_time")
         VALUES
-            (:job_id, :granule_id, :filename, :key_path, :restore_destination, :multipart_chunksize_mb, :status_id, 
+            (:job_id, :granule_id, :filename, :key_path,
+            :restore_destination, :multipart_chunksize_mb, :status_id,
             :error_message, :request_time, :last_update, :completion_time)"""
     )
 
@@ -301,7 +313,8 @@ def update_job_sql() -> text:  # pragma: no cover
 
 def handler(event: Dict[str, List], context) -> None:
     """
-    Lambda handler. Receives a list of queue entries from an SQS queue, and posts them to a database.
+    Lambda handler. Receives a list of queue entries from an SQS queue,
+    and posts them to a database.
 
     Args:
         event: A dict with the following keys:
@@ -311,11 +324,13 @@ def handler(event: Dict[str, List], context) -> None:
                 'body' (str): A json string representing a dict.
                     See files in schemas for details.
                 'attributes' (Dict)
-                'messageAttributes' (Dict): A dict with the following keys defined in the functions that write to queue.
+                'messageAttributes' (Dict): A dict with the following keys
+                    defined in the functions that write to queue.
                     'RequestMethod' (str): Matches to a shared_recovery.RequestMethod.
         context: An object passed through by AWS. Used for tracking.
     Environment Vars:
-        DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
+        DB_CONNECT_INFO_SECRET_ARN (string):
+            Secret ARN of the AWS secretsmanager secret for connecting to the database.
         See shared_db.py's get_configuration for further details.
     """
     LOGGER.setMetadata(event, context)
@@ -323,7 +338,7 @@ def handler(event: Dict[str, List], context) -> None:
     # get the secret ARN from the env variable
     try:
         db_connect_info_secret_arn = os.environ["DB_CONNECT_INFO_SECRET_ARN"]
-    except KeyError as key_error:
+    except KeyError:
         LOGGER.error("DB_CONNECT_INFO_SECRET_ARN environment value not found.")
         raise
     db_connect_info = shared_db.get_configuration(db_connect_info_secret_arn)

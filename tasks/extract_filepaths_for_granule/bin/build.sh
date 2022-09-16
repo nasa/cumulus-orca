@@ -84,15 +84,13 @@ let return_code=$?
 check_rc $return_code "ERROR: Failed to copy lambda files to build directory."
 
 ## Copy the schema files to build
-mkdir -p build/schemas
-let return_code=$?
-check_rc $return_code "ERROR: Unable to create build/schemas directory."
 echo "INFO:  Copying the input, output and config schemas..."
-cp -r schemas/ build/schemas/
+cp -r schemas/ build/
 let return_code=$?
 
 check_rc $return_code "ERROR: Failed to copy schema files to build directory."
 ## Create the zip archive
+echo "INFO: Creating zip archive ..."
 cd build
 zip -qr ../extract_filepaths_for_granule.zip .
 let return_code=$?

@@ -86,6 +86,7 @@ echo "INFO: Checking lint rules ..."
 flake8 \
     --max-line-length 99 \
     *.py test
+let return_code=$?
 check_rc $return_code "ERROR: Linting issues found."
 
 

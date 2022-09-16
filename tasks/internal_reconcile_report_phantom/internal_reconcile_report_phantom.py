@@ -124,12 +124,13 @@ def get_phantoms_sql() -> text:  # pragma: no cover
     return text(
         """
 SELECT
-    collection_id, 
-    granule_id, 
-    filename, 
-    key_path, 
-    orca_etag, 
-    (EXTRACT(EPOCH FROM date_trunc('milliseconds', orca_last_update) AT TIME ZONE 'UTC') * 1000)::bigint as orca_last_update,
+    collection_id,
+    granule_id,
+    filename,
+    key_path,
+    orca_etag,
+    (EXTRACT(EPOCH FROM date_trunc('milliseconds', orca_last_update)
+     AT TIME ZONE 'UTC') * 1000)::bigint as orca_last_update,
     orca_size,
     storage_class.value as orca_storage_class
     FROM reconcile_phantom_report
@@ -198,13 +199,15 @@ def handler(
         context: An object provided by AWS Lambda. Used for context tracking.
 
     Environment Vars:
-        DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
+        DB_CONNECT_INFO_SECRET_ARN (string):
+            Secret ARN of the AWS secretsmanager secret for connecting to the database.
         See shared_db.py's get_configuration for further details.
 
     Returns:
         See schemas/output.json
         Or, if an error occurs, see create_http_error_dict
-            400 if input does not match schemas/input.json. 500 if an error occurs when querying the database.
+            400 if input does not match schemas/input.json.
+            500 if an error occurs when querying the database.
     """
     try:
         LOGGER.setMetadata(event, context)

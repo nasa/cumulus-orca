@@ -7,7 +7,6 @@ Description: Runs unit tests for the migrations/migrate_db.py library.
 import unittest
 from unittest.mock import MagicMock, patch
 
-from db_deploy import LATEST_ORCA_SCHEMA_VERSION
 from migrations import migrate_db
 
 

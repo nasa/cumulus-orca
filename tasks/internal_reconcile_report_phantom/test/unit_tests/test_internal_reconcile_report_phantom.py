@@ -41,18 +41,22 @@ class TestInternalReconcileReportPhantom(
             internal_reconcile_report_phantom.OUTPUT_ANOTHER_PAGE_KEY: False,
             internal_reconcile_report_phantom.OUTPUT_PHANTOMS_KEY: [
                 {
-                    internal_reconcile_report_phantom.PHANTOMS_COLLECTION_ID_KEY: uuid.uuid4().__str__(),
-                    internal_reconcile_report_phantom.PHANTOMS_GRANULE_ID_KEY: uuid.uuid4().__str__(),
-                    internal_reconcile_report_phantom.PHANTOMS_FILENAME_KEY: uuid.uuid4().__str__(),
-                    internal_reconcile_report_phantom.PHANTOMS_KEY_PATH_KEY: uuid.uuid4().__str__(),
-                    internal_reconcile_report_phantom.PHANTOMS_ORCA_ETAG_KEY: uuid.uuid4().__str__(),
-                    internal_reconcile_report_phantom.PHANTOMS_ORCA_LAST_UPDATE_KEY: random.randint(  # nosec
-                        0, 999
-                    ),
-                    internal_reconcile_report_phantom.PHANTOMS_ORCA_SIZE_KEY: random.randint(  # nosec
-                        0, 999
-                    ),
-                    internal_reconcile_report_phantom.PHANTOMS_ORCA_STORAGE_CLASS_KEY: uuid.uuid4().__str__(),
+                    internal_reconcile_report_phantom.PHANTOMS_COLLECTION_ID_KEY:
+                        uuid.uuid4().__str__(),
+                    internal_reconcile_report_phantom.PHANTOMS_GRANULE_ID_KEY:
+                        uuid.uuid4().__str__(),
+                    internal_reconcile_report_phantom.PHANTOMS_FILENAME_KEY:
+                        uuid.uuid4().__str__(),
+                    internal_reconcile_report_phantom.PHANTOMS_KEY_PATH_KEY:
+                        uuid.uuid4().__str__(),
+                    internal_reconcile_report_phantom.PHANTOMS_ORCA_ETAG_KEY:
+                        uuid.uuid4().__str__(),
+                    internal_reconcile_report_phantom.PHANTOMS_ORCA_LAST_UPDATE_KEY:
+                        random.randint(0, 999),  # nosec
+                    internal_reconcile_report_phantom.PHANTOMS_ORCA_SIZE_KEY:
+                        random.randint(0, 999),  # nosec
+                    internal_reconcile_report_phantom.PHANTOMS_ORCA_STORAGE_CLASS_KEY:
+                        uuid.uuid4().__str__(),
                 }
             ],
         }
@@ -127,26 +131,30 @@ class TestInternalReconcileReportPhantom(
         }
         context = Mock()
         mock_task.return_value = {
-            internal_reconcile_report_phantom.OUTPUT_JOB_ID_KEY: random.randint(  # nosec
-                0, 999
-            ),
-            internal_reconcile_report_phantom.OUTPUT_ANOTHER_PAGE_KEY: False,
+            internal_reconcile_report_phantom.OUTPUT_JOB_ID_KEY:
+                random.randint(0, 999),  # nosec
+            internal_reconcile_report_phantom.OUTPUT_ANOTHER_PAGE_KEY:
+                False,
             internal_reconcile_report_phantom.OUTPUT_PHANTOMS_KEY: [
                 {
-                    internal_reconcile_report_phantom.PHANTOMS_COLLECTION_ID_KEY: uuid.uuid4().__str__(),
-                    internal_reconcile_report_phantom.PHANTOMS_GRANULE_ID_KEY: uuid.uuid4().__str__(),
-                    internal_reconcile_report_phantom.PHANTOMS_FILENAME_KEY: uuid.uuid4().__str__(),
-                    internal_reconcile_report_phantom.PHANTOMS_KEY_PATH_KEY: uuid.uuid4().__str__(),
-                    internal_reconcile_report_phantom.PHANTOMS_ORCA_ETAG_KEY: uuid.uuid4().__str__(),
-                    internal_reconcile_report_phantom.PHANTOMS_ORCA_LAST_UPDATE_KEY: random.randint(  # nosec
-                        0, 999
-                    ).__str__(),
-                    internal_reconcile_report_phantom.PHANTOMS_ORCA_SIZE_KEY: random.randint(  # nosec
-                        0, 999
-                    ),
-                    internal_reconcile_report_phantom.PHANTOMS_ORCA_STORAGE_CLASS_KEY: uuid.uuid4().__str__(),
+                    internal_reconcile_report_phantom.PHANTOMS_COLLECTION_ID_KEY:
+                        uuid.uuid4().__str__(),
+                    internal_reconcile_report_phantom.PHANTOMS_GRANULE_ID_KEY:
+                        uuid.uuid4().__str__(),
+                    internal_reconcile_report_phantom.PHANTOMS_FILENAME_KEY:
+                        uuid.uuid4().__str__(),
+                    internal_reconcile_report_phantom.PHANTOMS_KEY_PATH_KEY:
+                        uuid.uuid4().__str__(),
+                    internal_reconcile_report_phantom.PHANTOMS_ORCA_ETAG_KEY:
+                        uuid.uuid4().__str__(),
+                    internal_reconcile_report_phantom.PHANTOMS_ORCA_LAST_UPDATE_KEY:
+                        random.randint(0, 999).__str__(),  # nosec
+                    internal_reconcile_report_phantom.PHANTOMS_ORCA_SIZE_KEY:
+                        random.randint(0, 999),  # nosec
+                    internal_reconcile_report_phantom.PHANTOMS_ORCA_STORAGE_CLASS_KEY:
+                        uuid.uuid4().__str__(),
                 }
-            ],
+                ],
         }
 
         result = internal_reconcile_report_phantom.handler(event, context)
@@ -232,7 +240,7 @@ class TestInternalReconcileReportPhantom(
                 internal_reconcile_report_phantom.OUTPUT_JOB_ID_KEY: job_id,
                 internal_reconcile_report_phantom.OUTPUT_ANOTHER_PAGE_KEY: True,
                 internal_reconcile_report_phantom.OUTPUT_PHANTOMS_KEY: phantoms[
-                    0 : internal_reconcile_report_phantom.PAGE_SIZE
+                    0: internal_reconcile_report_phantom.PAGE_SIZE
                 ],
             },
             result,
@@ -297,14 +305,22 @@ class TestInternalReconcileReportPhantom(
         self.assertEqual(
             [
                 {
-                    internal_reconcile_report_phantom.PHANTOMS_COLLECTION_ID_KEY: collection_id,
-                    internal_reconcile_report_phantom.PHANTOMS_GRANULE_ID_KEY: granule_id,
-                    internal_reconcile_report_phantom.PHANTOMS_FILENAME_KEY: filename,
-                    internal_reconcile_report_phantom.PHANTOMS_KEY_PATH_KEY: key_path,
-                    internal_reconcile_report_phantom.PHANTOMS_ORCA_ETAG_KEY: orca_etag,
-                    internal_reconcile_report_phantom.PHANTOMS_ORCA_LAST_UPDATE_KEY: orca_last_update,
-                    internal_reconcile_report_phantom.PHANTOMS_ORCA_SIZE_KEY: orca_size,
-                    internal_reconcile_report_phantom.PHANTOMS_ORCA_STORAGE_CLASS_KEY: orca_storage_class,
+                    internal_reconcile_report_phantom.PHANTOMS_COLLECTION_ID_KEY:
+                        collection_id,
+                    internal_reconcile_report_phantom.PHANTOMS_GRANULE_ID_KEY:
+                        granule_id,
+                    internal_reconcile_report_phantom.PHANTOMS_FILENAME_KEY:
+                        filename,
+                    internal_reconcile_report_phantom.PHANTOMS_KEY_PATH_KEY:
+                        key_path,
+                    internal_reconcile_report_phantom.PHANTOMS_ORCA_ETAG_KEY:
+                        orca_etag,
+                    internal_reconcile_report_phantom.PHANTOMS_ORCA_LAST_UPDATE_KEY:
+                        orca_last_update,
+                    internal_reconcile_report_phantom.PHANTOMS_ORCA_SIZE_KEY:
+                        orca_size,
+                    internal_reconcile_report_phantom.PHANTOMS_ORCA_STORAGE_CLASS_KEY:
+                        orca_storage_class,
                 }
             ],
             result,
@@ -362,7 +378,8 @@ class TestInternalReconcileReportPhantom(
         request_id = uuid.uuid4().__str__()
         message = uuid.uuid4().__str__()
 
-        result = internal_reconcile_report_phantom.create_http_error_dict(error_type, http_status_code, request_id, message)
+        result = internal_reconcile_report_phantom.create_http_error_dict(
+                        error_type, http_status_code, request_id, message)
 
         self.assertEqual({
             "errorType": error_type,
