@@ -113,6 +113,8 @@ A Cumulus execution refers to a single execution of a (Cumulus) Workflow.
 [Amazon S3 Glacier](https://aws.amazon.com/glacier/) is a secure,
 durable, and extremely low-cost [cloud storage service](https://docs.aws.amazon.com/amazonglacier/latest/dev/introduction.html) 
 for data archiving and long-term backup.
+ORCA supports the [S3 Glacier Flexible Retrieval](https://docs.aws.amazon.com/amazonglacier/latest/dev/introduction.html) variant,
+and these documents will use the terms interchangeably.
 See [Storage Class documentation](../../operator/storage-classes.md) for more details.
 
 ### Granule

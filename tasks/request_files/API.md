@@ -15,7 +15,7 @@
 # request\_files
 
 Name: request_files.py
-Description:  Lambda function that makes a restore request to archive for each input file.
+Description:  Lambda function that makes a restore request to the archive for each input file.
 
 <a id="request_files.RestoreRequestError"></a>
 
