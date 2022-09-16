@@ -18,6 +18,12 @@ OUTPUT_GRANULES_KEY = "granules"
 OUTPUT_STATUS_KEY = "status"
 OUTPUT_GRANULE_ID_KEY = "granuleId"
 
+
+class StatusNotFoundException(Exception):
+    def __init__(self, job_id):
+        self.job_id = job_id
+
+
 with open("schemas/input.json", "r") as raw_schema:
     _VALIDATE_INPUT = fastjsonschema.compile(json.loads(raw_schema.read()))
 
@@ -27,13 +33,12 @@ with open("schemas/output.json", "r") as raw_schema:
 LOGGER = CumulusLogger()
 
 
-def task(job_id: str, db_connect_info: Dict, request_id: str) -> Dict[str, Any]:
+def task(job_id: str, db_connect_info: Dict) -> Dict[str, Any]:
     """
 
     Args:
         job_id: The unique asyncOperationId of the recovery job.
         db_connect_info: The database.py defined db_connect_info.
-        request_id: An ID provided by AWS Lambda. Used for context tracking.
     Returns:
         A dictionary with the following keys:
             'asyncOperationId' (str): The job_id.
@@ -45,9 +50,6 @@ def task(job_id: str, db_connect_info: Dict, request_id: str) -> Dict[str, Any]:
             'granules' (List): A list of dicts with the following keys:
                 'granule_id' (str)
                 'status' (str): pending|staged|success|failed
-
-        Will also return a dict from create_http_error_dict with
-        error NOT_FOUND if job could not be found.
     """
     if job_id is None or len(job_id) == 0:
         raise ValueError("job_id must be set to a non-empty value.")
@@ -56,12 +58,7 @@ def task(job_id: str, db_connect_info: Dict, request_id: str) -> Dict[str, Any]:
 
     status_entries = get_granule_status_entries_for_job(job_id, engine)
     if len(status_entries) == 0:
-        return create_http_error_dict(
-            "NotFound",
-            HTTPStatus.NOT_FOUND,
-            request_id,
-            f"No granules found for job id '{job_id}'.",
-        )
+        raise StatusNotFoundException(job_id)
 
     status_totals = get_status_totals_for_job(job_id, engine)
     return {
@@ -227,7 +224,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     May be 'pending', 'staged', 'success', or 'failed'.
 
         Or, if an error occurs, see create_http_error_dict
-            400 if input.json schema is not matched. 500 if an error occurs when querying the database.
+            400 if input.json schema is not matched.
+            404 if no status found.
+            500 if an error occurs when querying the database.
     """
     # get the secret ARN from the env variable
     try:
@@ -258,11 +257,18 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 f"{INPUT_JOB_ID_KEY} must be set to a non-empty value.",
             )
         db_connect_info = shared_db.get_configuration(db_connect_info_secret_arn)
-        result = task(job_id, db_connect_info, context.aws_request_id)
+        result = task(job_id, db_connect_info)
 
         _VALIDATE_OUTPUT(result)
 
         return result
+    except StatusNotFoundException as error:
+        return create_http_error_dict(
+            "NotFound",
+            HTTPStatus.NOT_FOUND,
+            context.aws_request_id,
+            f"No granules found for job id '{error.job_id}'.",
+        )
     except Exception as error:
         return create_http_error_dict(
             "InternalServerError",
