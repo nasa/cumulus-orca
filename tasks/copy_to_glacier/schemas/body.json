@@ -86,11 +86,11 @@
                 },
                 "cumulusArchiveLocation": {
                   "type": "string",
-                  "description": "Cumulus S3 bucket where the file is stored in."
+                  "description": "Cumulus bucket the file is stored in."
                 },
                 "orcaArchiveLocation": {
                   "type": "string",
-                  "description": "ORCA S3 Archive bucket that the file object is stored in"
+                  "description": "Archive bucket the file is stored in."
                 },
                 "keyPath": {
                   "type": "string",
@@ -115,7 +115,7 @@
                 },
                 "version": {
                   "type": "string",
-                  "description": "Latest version of the file in the S3 Archive bucket"
+                  "description": "Latest version of the file in the archive bucket"
                 },
                 "ingestTime": {
                   "type": "string",
@@ -124,7 +124,7 @@
                 },
                 "etag": {
                   "type": "string",
-                  "description": "etag of the file object in the AWS S3 Archive bucket."
+                  "description": "etag of the file object in the archive bucket."
                 }
               },
               "required": [

@@ -46,7 +46,7 @@ variable "default_multipart_chunksize_mb" {
 ## REQUIRED
 variable "orca_default_bucket" {
   type        = string
-  description = "Default ORCA S3 Archive bucket to use if no overrides exist."
+  description = "Default archive bucket to use if no overrides exist."
 }
 
 variable "db_connect_info_secret_arn" {
@@ -167,7 +167,7 @@ variable "orca_recovery_buckets" {
 
 variable "orca_recovery_complete_filter_prefix" {
   type        = string
-  description = "Specifies object key name prefix by the Archive Bucket trigger."
+  description = "Specifies object key name prefix by the archive bucket trigger."
 }
 
 

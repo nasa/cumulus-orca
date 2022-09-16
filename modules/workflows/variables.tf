@@ -35,7 +35,7 @@ variable "tags" {
 ## REQUIRED
 variable "orca_default_bucket" {
   type        = string
-  description = "Default ORCA S3 Archive bucket to use if no overrides exist."
+  description = "Default archive bucket to use if no overrides exist."
 }
 
 variable "orca_lambda_copy_to_glacier_arn" {
