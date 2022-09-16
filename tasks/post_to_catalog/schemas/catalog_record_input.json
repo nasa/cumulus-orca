@@ -120,7 +120,7 @@
                 },
                 "orcaArchiveLocation": {
                   "type": "string",
-                  "description": "ORCA S3 Glacier bucket that the file object is stored in"
+                  "description": "ORCA S3 archive bucket that the file object is stored in"
                 },
                 "keyPath": {
                   "type": "string",
@@ -145,7 +145,7 @@
                 },
                 "version": {
                   "type": "string",
-                  "description": "Latest version of the file in the S3 Glacier bucket"
+                  "description": "Latest version of the file in the S3 archive bucket"
                 },
                 "ingestTime": {
                   "type": "string",
@@ -154,7 +154,7 @@
                 },
                 "etag": {
                   "type": "string",
-                  "description": "etag of the file object in the AWS S3 Glacier bucket."
+                  "description": "etag of the file object in the AWS S3 archive bucket."
                 }
               }
             }

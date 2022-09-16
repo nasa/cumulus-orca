@@ -174,7 +174,7 @@ def files_table_sql() -> text:  # pragma: no cover
          COMMENT ON COLUMN files.name
             IS 'Name of the file including extension';
          COMMENT ON COLUMN files.orca_archive_location
-            IS 'ORCA S3 Glacier bucket that the file object is stored in';
+            IS 'ORCA S3 Archive bucket that the file object is stored in';
          COMMENT ON COLUMN files.cumulus_archive_location
             IS 'Cumulus S3 bucket where the file is thought to be stored.';
          COMMENT ON COLUMN files.key_path
@@ -182,9 +182,9 @@ def files_table_sql() -> text:  # pragma: no cover
         COMMENT ON COLUMN files.ingest_time
             IS 'Date and time the file was ingested into ORCA';
         COMMENT ON COLUMN files.etag
-            IS 'etag of the file object in the AWS S3 Glacier bucket.';
+            IS 'etag of the file object in the AWS S3 Archive bucket.';
         COMMENT ON COLUMN files.version
-            IS 'Latest version of the file in the S3 Glacier bucket';
+            IS 'Latest version of the file in the S3 Archive bucket';
         COMMENT ON COLUMN files.size_in_bytes
             IS 'Size of the object in bytes';
         COMMENT ON COLUMN files.hash

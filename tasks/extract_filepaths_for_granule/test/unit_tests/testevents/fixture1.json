@@ -60,9 +60,9 @@
       "version": "1",
       "meta": {
         "response-endpoint": "arn:aws:sns:us-west-2:065089468788:providerResponseSNS",
-        "glacierBucket": "podaac-sndbx-cumulus-glacier",
+        "archiveBucket": "podaac-sndbx-cumulus-archive",
         "granuleRecoveryWorkflow": "DrRecoveryWorkflow",
-        "glacier-bucket": "podaac-sndbx-cumulus-glacier"
+        "archive-bucket": "podaac-sndbx-cumulus-archive"
       },
       "updatedAt": 1561752645046,
       "duplicateHandling": "replace",
@@ -80,9 +80,9 @@
       "createdAt": 1561749167968
     },
     "buckets": {
-      "glacier": {
+      "archive": {
         "type": "private",
-        "name": "podaac-sndbx-cumulus-glacier"
+        "name": "podaac-sndbx-cumulus-archive"
       },
       "private": {
         "type": "private",
@@ -222,7 +222,7 @@
       }
     },
     "RequestFiles": {
-      "glacier-bucket": "{{$.meta.collection.meta.glacier-bucket}}"
+      "archive-bucket": "{{$.meta.collection.meta.archive-bucket}}"
     },
     "WorkflowFailed": {},
     "ExtractFilepaths": {

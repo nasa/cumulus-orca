@@ -28,12 +28,7 @@ with open("schemas/output.json", "r") as raw_schema:
     _OUTPUT_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
 
 
-class TestCopyToGlacierHandler(TestCase):
-    """
-    Test copy to glacier handler
-    This will test if the function of test copy to glacier work as expected
-    """
-
+class TestCopyToGlacier(TestCase):
     # Create the mock for SQS unit tests
     mock_sqs = mock_sqs()
 

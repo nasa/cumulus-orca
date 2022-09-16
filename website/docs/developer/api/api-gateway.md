@@ -85,7 +85,7 @@ The following table lists the fields in the output:
 | files                  | `Array[Object]`| Description and status of the files within the given granule.                                    |
 | name                   | `str`       | The name and extension of the file.                                                                 |
 | cumulusArchiveLocation | `str`       | Cumulus bucket the file resides in.                                                                 |
-| orcaArchiveLocation    | `str`       | ORCA S3 Glacier bucket the file resides in.                                                         |
+| orcaArchiveLocation    | `str`       | ORCA S3 archive bucket the file resides in.                                                         |
 | keyPath                | `str`       | S3 path to the file including the file name and extension, but not the bucket.                      |
 | sizeBytes              | `str`       | Size in bytes of the file. From Cumulus ingest.                                                     |
 | hash                   | `str`       | Checksum hash of the file provided by Cumulus.                                                      |
@@ -156,7 +156,7 @@ The following table lists the fields in the output:
 | fileName           | `str`       | The name and extension of the file.                                                                 |
 | status             | `str`       | The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'failed'.      |
 | errorMessage       | `str`       | If the restoration of the file showed error, the error will be stored here.                         |
-| restoreDestination | `str`       | The name of the glacier bucket the granule is being copied to.                                      |
+| restoreDestination | `str`       | The name of the archive bucket the granule is being copied to.                                      |
 | requestTime        | `int`       | The time, in milliseconds since 1 January 1970 UTC, when the request to restore the granule was initiated.|
 | completionTime     | `int`       | The time, in milliseconds since 1 January 1970 UTC, when all granule_files were in an end state.    |
 
@@ -276,13 +276,13 @@ The following table lists the fields in the output:
 | anotherPage           | `bool`          | Indicates if more results can be retrieved on another page.                                                   |
 | jobs                  | `Array[Object]` | The jobs on the page.                                                                                         |
 | id                    | `int`           | The unique ID of the reconciliation job.                                                                      |
-| orcaArchiveLocation   | `str`           | ORCA S3 Glacier bucket the reconciliation targets.                                                            |           
+| orcaArchiveLocation   | `str`           | ORCA S3 archive bucket the reconciliation targets.                                                            |           
 | status                | `str`           | Current status of the job. `getting S3 list`, `staged`, `generating reports`, `error`, or `success`           |
 | inventoryCreationTime | `int`           | The time, in milliseconds since 1 January 1970 UTC, of inventory report initiation time from the s3 manifest. |
 | lastUpdate            | `int`           | The time, in milliseconds since 1 January 1970 UTC, when status was last updated.                             |
 | errorMessage          | `str` or `null` | Critical error the job ran into that prevented it from finishing.                                             |
 | reportTotals          | `Object`        | The number of error reports of each type.                                                                     |
-| orphan                | `int`           | Number of files that have records in the S3 glacier bucket but are missing in the ORCA catalog.               |
+| orphan                | `int`           | Number of files that have records in the S3 archive bucket but are missing in the ORCA catalog.               |
 | phantom               | `int`           | Number of files that have records in the ORCA catalog but are missing from S3 bucket.                         |
 | catalogMismatch       | `int`           | Number of files that are missing from ORCA S3 bucket or have different metadata values than what is expected. |
 
@@ -292,7 +292,7 @@ The API returns status code 200 on success, 400 if `jobId` or `pageIndex` are mi
 
 
 ## Internal Reconcile report orphan API
-The `orca/datamanagement/reconciliation/internal/jobs/job/{jobid}/orphans` API call receives job id and page index from end user and returns reporting information of files that have records in the S3 glacier bucket but are missing in the ORCA catalog from the internal reconciliation job. Note that `{jobid}` is optional.
+The `orca/datamanagement/reconciliation/internal/jobs/job/{jobid}/orphans` API call receives job id and page index from end user and returns reporting information of files that have records in the S3 archive bucket but are missing in the ORCA catalog from the internal reconciliation job. Note that `{jobid}` is optional.
 Internal reconcile report orphan API input invoke URL example: `https://example.execute-api.us-west-2.amazonaws.com/orca/datamanagement/reconciliation/internal/jobs/job/{jobid}/orphans`
 
 ### Internal Reconcile report orphan API input
@@ -324,7 +324,7 @@ An example of the API output is shown below:
       "s3Etag": "d41d8cd98f00b204e9800998ecf8427",
       "s3FileLastUpdate": 1654878716000,
       "s3SizeInBytes": 6543277389,
-      "s3StorageClass": "glacier"
+      "s3StorageClass": "GLACIER"
     }
   ]
 }

@@ -24,7 +24,7 @@
 						"type": "string"
 					},
 					"restoreDestination": {
-						"description": "The name of the glacier bucket the granule is being copied to.",
+						"description": "The name of the archive bucket the granule is being copied to.",
 						"type": "string"
 					},
 					"status": {

@@ -32,9 +32,9 @@
             "type":"public",
             "name":"ghrcsbxw-public"
          },
-         "glacier":{
+         "archive":{
             "type":"private",
-            "name":"ghrcsbxw-glacier"
+            "name":"ghrcsbxw-archive"
          }
       },
       "collection":{

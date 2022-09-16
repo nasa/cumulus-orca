@@ -23,7 +23,7 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
     copy and paste the same value to the execution name field above the input field.
     The restore may take up to 5 hours.
 Use the AWS CLI to check status of restore request:
-ex> (podr) λ aws s3api head-object --bucket podaac-sndbx-cumulus-glacier --key L0A_RAD_RAW_product_0001-of-0020.iso.xml
+ex> (podr) λ aws s3api head-object --bucket podaac-sndbx-cumulus-archive --key L0A_RAD_RAW_product_0001-of-0020.iso.xml
 ```
 
 ## Input/Output Schemas and Examples

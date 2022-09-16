@@ -17,12 +17,11 @@ to view the instructions for setting up your ORCA deployment environment.
 ORCA maintains a cloud ready backup of science and 
 ancillary data in an S3-IA bucket and utilizes AWS 
 bucket transition policies to store the data in S3 
-Glacier for the long term. The ORCA archive bucket can 
+archive for the long term. The ORCA archive bucket can 
 live in any NGAP Organizational Unit (OU).
 
-Visit [Creating the Glacier Bucket](creating-orca-glacier-bucket.md)
-to view the instructions for setting up a Glacier 
-bucket.
+Visit [Creating the Archive Bucket](creating-orca-archive-bucket.md)
+to view the instructions for setting up an archive bucket.
 
 :::important
 Prior to deploying ORCA with Cumulus, the ORCA archive bucket must be

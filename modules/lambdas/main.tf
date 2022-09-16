@@ -25,14 +25,14 @@ module "lambda_security_group" {
 # Ingest Lambdas Definitions and Resources
 # =============================================================================
 
-# copy_to_glacier - Copies files to the ORCA S3 Glacier bucket
+# copy_to_glacier - Copies files to the ORCA S3 Archive bucket
 resource "aws_lambda_function" "copy_to_glacier" {
   ## REQUIRED
   function_name = "${var.prefix}_copy_to_glacier"
   role          = var.restore_object_role_arn
 
   ## OPTIONAL
-  description      = "ORCA archiving lambda used to copy data to an ORCA S3 glacier bucket."
+  description      = "ORCA archiving lambda used to copy data to an ORCA S3 archive bucket."
   filename         = "${path.module}/../../tasks/copy_to_glacier/copy_to_glacier.zip"
   handler          = "copy_to_glacier.handler"
   memory_size      = var.orca_ingest_lambda_memory_size
@@ -380,7 +380,7 @@ resource "aws_iam_role_policy" "extract_filepaths_for_granule_policy" {
 }
 
 
-# request_files - Requests files from ORCA S3 Glacier
+# request_files - Requests files from ORCA S3 Archive
 # ==============================================================================
 resource "aws_lambda_function" "request_files" {
   ## REQUIRED
@@ -388,7 +388,7 @@ resource "aws_lambda_function" "request_files" {
   role          = var.restore_object_role_arn
 
   ## OPTIONAL
-  description      = "Submits a restore request for all archived files in a granule to the ORCA S3 Glacier bucket."
+  description      = "Submits a restore request for all archived files in a granule to the ORCA S3 Archive bucket."
   filename         = "${path.module}/../../tasks/request_files/request_files.zip"
   handler          = "request_files.handler"
   memory_size      = var.orca_recovery_lambda_memory_size
@@ -415,7 +415,7 @@ resource "aws_lambda_function" "request_files" {
 }
 
 
-# copy_files_to_archive - Copies files from ORCA S3 Glacier to destination bucket
+# copy_files_to_archive - Copies files from ORCA S3 Archive to destination bucket
 # ==============================================================================
 resource "aws_lambda_function" "copy_files_to_archive" {
   ## REQUIRED

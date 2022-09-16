@@ -15,7 +15,7 @@
 # request\_files
 
 Name: request_files.py
-Description:  Lambda function that makes a restore request from glacier for each input file.
+Description:  Lambda function that makes a restore request to archive for each input file.
 
 <a id="request_files.RestoreRequestError"></a>
 
@@ -64,7 +64,7 @@ then calls inner_task.
 def get_glacier_recovery_type(config: Dict[str, Any]) -> str
 ```
 
-Returns the glacier recovery type from either config or environment variable.
+Returns the archive recovery type from either config or environment variable.
 Must be either 'Bulk', 'Expedited', or 'Standard'.
 
 **Arguments**:
@@ -93,7 +93,7 @@ if it fails, waiting {retry_sleep_secs} between each attempt.
   Note that because we are using CumulusMessageAdapter, this may not directly correspond to Lambda input.
 - `event` - A dict with the following keys:
 - `'config'` _dict_ - A dict with the following keys:
-- `'defaultBucketOverride'` _str_ - The name of the glacier bucket from which the files
+- `'defaultBucketOverride'` _str_ - The name of the archive bucket from which the files
   will be restored.
 - `'asyncOperationId'` _str_ - The unique identifier used for tracking requests.
 - `'input'` _dict_ - A dict with the following keys:

@@ -154,7 +154,7 @@ The `copy_to_glacier` lambda function expects that the input payload has a `gran
   }
 }
 ```
-From the json file, the `filepath` shows the current S3 location of files that need to be copied over to glacier ORCA S3 bucket such as `"filename": "s3://orca-sandbox-protected/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf"`.
+From the json file, the `filepath` shows the current S3 location of files that need to be copied over to ORCA Archive S3 bucket such as `"filename": "s3://orca-sandbox-protected/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf"`.
 **Note:** We suggest that the `copy_to_glacier` task be placed any time after the `MoveGranulesStep`. It will propagate the input `granules` object as output, so it can be used as the last task in the workflow.
 See the schema [input file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/input.json) for more information.
 
@@ -162,7 +162,7 @@ See the schema [input file](https://github.com/nasa/cumulus-orca/blob/master/tas
 ## Output
 
 The `copy_to_glacier` lambda will, as the name suggests, copy a file from its current source destination. The destination location is defined as 
-`${glacier_bucket}/${filepath}`, where `${glacier_bucket}` is pulled from the environment variable `ORCA_DEFAULT_BUCKET` and `${filepath}` is pulled from the Cumulus granule object input.
+`${archive_bucket}/${filepath}`, where `${archive_bucket}` is pulled from the environment variable `ORCA_DEFAULT_BUCKET` and `${filepath}` is pulled from the Cumulus granule object input.
 
 The output of this lambda is a dictionary with a `granules` and `copied_to_glacier` attributes.  See the schema [output file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/output.json) for more information. Below is an example of the output:
 
@@ -235,7 +235,7 @@ These settings can often be derived from the collection configuration in Cumulus
 ```
 {
   "States": {
-    "CopyToGlacier": {
+    "CopyToArchive": {
       "Parameters": {
         "cma": {
           "event.$": "$",

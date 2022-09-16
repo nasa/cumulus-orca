@@ -623,8 +623,6 @@ def storage_class_data_sql() -> text:  # pragma: no cover
     Data for the storage_class table. Inserts the currently valid storage classes into
     the table.
 
-    TODO: Research on Deep Glacier vs Deep Archive is limited.
-
     Returns:
         (sqlalchemy.sql.element.TextClause): SQL for populating storage_class table.
     """
@@ -686,7 +684,7 @@ def files_table_sql() -> text:  # pragma: no cover
          COMMENT ON COLUMN files.name
             IS 'Name of the file including extension';
          COMMENT ON COLUMN files.orca_archive_location
-            IS 'ORCA S3 Glacier bucket that the file object is stored in';
+            IS 'ORCA S3 Archive bucket that the file object is stored in';
          COMMENT ON COLUMN files.cumulus_archive_location
             IS 'Cumulus S3 bucket where the file is thought to be stored.';
          COMMENT ON COLUMN files.key_path
@@ -694,9 +692,9 @@ def files_table_sql() -> text:  # pragma: no cover
         COMMENT ON COLUMN files.ingest_time
             IS 'Date and time the file was ingested into ORCA';
         COMMENT ON COLUMN files.etag
-            IS 'etag of the file object in the AWS S3 Glacier bucket.';
+            IS 'etag of the file object in the AWS S3 Archive bucket.';
         COMMENT ON COLUMN files.version
-            IS 'Latest version of the file in the S3 Glacier bucket';
+            IS 'Latest version of the file in the S3 Archive bucket';
         COMMENT ON COLUMN files.size_in_bytes
             IS 'Size of the object in bytes';
         COMMENT ON COLUMN files.hash
@@ -787,7 +785,7 @@ def reconcile_job_table_sql() -> text:  # pragma: no cover
         COMMENT ON COLUMN reconcile_job.id
           IS 'Job ID unique to each internal reconciliation job.';
         COMMENT ON COLUMN reconcile_job.orca_archive_location
-          IS 'ORCA S3 Glacier bucket the reconciliation targets.';
+          IS 'ORCA S3 Archive bucket the reconciliation targets.';
         COMMENT ON COLUMN reconcile_job.status_id
           IS 'Current status of the job.';
         COMMENT ON COLUMN reconcile_job.inventory_creation_time
@@ -833,7 +831,7 @@ def reconcile_s3_object_table_sql() -> text:  # pragma: no cover
             COMMENT ON COLUMN reconcile_s3_object.job_id
               IS 'Job the S3 listing is a part of for the comparison.';
             COMMENT ON COLUMN reconcile_s3_object.orca_archive_location
-              IS 'ORCA S3 Glacier bucket name where the file is stored.';
+              IS 'ORCA S3 Archive bucket name where the file is stored.';
             COMMENT ON COLUMN reconcile_s3_object.key_path
               IS 'Full path and file name of the object in the S3 bucket.';
             COMMENT ON COLUMN reconcile_s3_object.etag
@@ -979,7 +977,7 @@ def reconcile_orphan_report_table_sql() -> text:  # pragma: no cover
 
             -- Comment
             COMMENT ON TABLE reconcile_orphan_report
-              IS 'Identifies objects in the ORCA S3 Glacier bucket that are not in the catalog.';
+              IS 'Identifies objects in the ORCA S3 Archive bucket that are not in the catalog.';
             COMMENT ON COLUMN reconcile_orphan_report.job_id
               IS 'Associates the orphaned file to a internal reconciliation job.';
             COMMENT ON COLUMN reconcile_orphan_report.key_path

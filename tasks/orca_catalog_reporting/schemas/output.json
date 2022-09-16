@@ -82,7 +82,7 @@
                   "type": "string"
                 },
                 "orcaArchiveLocation": {
-                  "description": "ORCA S3 Glacier bucket the file resides in.",
+                  "description": "ORCA S3 archive bucket the file resides in.",
                   "type": "string"
                 },
                 "keyPath": {
