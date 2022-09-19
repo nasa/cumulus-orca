@@ -1,12 +1,12 @@
-[![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/copy_files_to_archive/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/copy_files_to_archive/requirements.txt)
+[![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/copy_from_archive/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/copy_from_archive/requirements.txt)
 
-**Lambda function copy_files_to_archive **
+**Lambda function copy_from_archive **
 
 Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/development-guide/code/contrib-code-intro) for information on environment setup and testing.
 
 - [Deployment](#deployment)
   * [Deployment Validation](#deployment-validation)
-- [pydoc copy_files_to_archive](#pydoc-copy-files)
+- [pydoc copy_from_archive](#pydoc-copy-files)
 
 <a name="deployment"></a>
 ## Deployment
@@ -23,5 +23,5 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
 
 ```
 <a name="pydoc-copy-files"></a>
-## pydoc copy_files_to_archive
+## pydoc copy_from_archive
 [See the API documentation for more details.](API.md)

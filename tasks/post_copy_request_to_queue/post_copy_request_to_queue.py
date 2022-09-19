@@ -184,7 +184,7 @@ def query_db(
             Secret ARN of the secretsmanager secret to connect to the DB.
     Returns:
         A list of dict containing the following keys, matching the input
-        format from copy_files_to_archive:
+        format from copy_from_archive:
             "jobId" (str):
             "granuleId"(str):
             "filename" (str):
@@ -198,7 +198,7 @@ def query_db(
     """
 
     # Query the database and get the needed metadata to send to the SQS Queue
-    # for the copy_files_to_archive lambda and to update the status in the
+    # for the copy_from_archive lambda and to update the status in the
     # database.
     try:
         LOGGER.debug("Getting database connection information.")
@@ -216,7 +216,7 @@ def query_db(
             # PENDING
             for row in connection.execute(get_metadata_sql(key_path)):
                 # Create dictionary for with the info needed for the
-                # copy_files_to_archive lambda
+                # copy_from_archive lambda
                 row_dict = {
                     JOB_ID_KEY:
                         row[0],

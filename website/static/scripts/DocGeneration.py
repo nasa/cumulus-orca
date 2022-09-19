@@ -15,7 +15,7 @@ class TaskInfo:
 os.chdir('..')
 repo_dir = os.getcwd()
 tasks = [
-    TaskInfo("copy_files_to_archive", "copy_files_to_archive.py"),
+    TaskInfo("copy_from_archive", "copy_from_archive.py"),
     TaskInfo("copy_to_archive", "handler.py"),
     TaskInfo("db_deploy", "db_deploy.py"),
     TaskInfo("extract_filepaths_for_granule", "extract_filepaths_for_granule.py"),

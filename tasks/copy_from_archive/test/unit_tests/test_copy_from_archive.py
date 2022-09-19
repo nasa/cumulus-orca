@@ -1,6 +1,6 @@
 """
-Name: test_copy_files_to_archive.py
-Description:  Unit tests for copy_files_to_archive.py.
+Name: test_copy_from_archive.py
+Description:  Unit tests for copy_from_archive.py.
 """
 import json
 import os
@@ -14,12 +14,12 @@ from unittest.mock import MagicMock, Mock, call, patch
 from botocore.exceptions import ClientError
 from s3transfer.constants import MB
 
-import copy_files_to_archive
+import copy_from_archive
 
 
-class TestCopyFilesToArchive(TestCase):
+class TestCopyFromArchive(TestCase):
     """
-    Test copy_files_to_archive functionality and business logic.
+    Test copy_from_archive functionality and business logic.
     """
 
     @patch.dict(
@@ -27,14 +27,14 @@ class TestCopyFilesToArchive(TestCase):
         {
             "COPY_RETRIES": "703",
             "COPY_RETRY_SLEEP_SECS": "108.5",
-            copy_files_to_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY: "something.blah",
+            copy_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY: "something.blah",
             "DEFAULT_MULTIPART_CHUNKSIZE_MB": "42",
             "RECOVERY_QUEUE_URL": "something_else.blah",
         },
         clear=True,
     )
-    @patch("copy_files_to_archive.LOGGER")
-    @patch("copy_files_to_archive.task")
+    @patch("copy_from_archive.LOGGER")
+    @patch("copy_from_archive.task")
     def test_handler_happy_path(
         self,
         mock_task: MagicMock,
@@ -43,7 +43,7 @@ class TestCopyFilesToArchive(TestCase):
         records = [Mock()]
         event = {"Records": records}
 
-        copy_files_to_archive.handler(event, Mock())
+        copy_from_archive.handler(event, Mock())
 
         mock_task.assert_called_with(
             records, 703, 108.5, "something.blah", 42, "something_else.blah"
@@ -52,14 +52,14 @@ class TestCopyFilesToArchive(TestCase):
     @patch.dict(
         os.environ,
         {
-            copy_files_to_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY: "something.else",
+            copy_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY: "something.else",
             "DEFAULT_MULTIPART_CHUNKSIZE_MB": "42",
             "RECOVERY_QUEUE_URL": "someother.queue",
         },
         clear=True,
     )
-    @patch("copy_files_to_archive.LOGGER")
-    @patch("copy_files_to_archive.task")
+    @patch("copy_from_archive.LOGGER")
+    @patch("copy_from_archive.task")
     def test_handler_uses_default_retry_settings(
         self, mock_task: MagicMock, mock_logger: MagicMock
     ):
@@ -69,16 +69,16 @@ class TestCopyFilesToArchive(TestCase):
         records = [Mock()]
         event = {"Records": records}
 
-        copy_files_to_archive.handler(event, Mock())
+        copy_from_archive.handler(event, Mock())
 
         mock_task.assert_called_with(
             records, 2, 30, "something.else", 42, "someother.queue"
         )
 
     @patch("time.sleep")
-    @patch("copy_files_to_archive.shared_recovery.update_status_for_file")
-    @patch("copy_files_to_archive.copy_object")
-    @patch("copy_files_to_archive.get_files_from_records")
+    @patch("copy_from_archive.shared_recovery.update_status_for_file")
+    @patch("copy_from_archive.copy_object")
+    @patch("copy_from_archive.get_files_from_records")
     @patch("boto3.client")
     def test_task_happy_path(
         self,
@@ -119,33 +119,33 @@ class TestCopyFilesToArchive(TestCase):
         mock_records = [Mock()]
 
         file0 = {
-            copy_files_to_archive.INPUT_JOB_ID_KEY: file0_job_id,
-            copy_files_to_archive.INPUT_GRANULE_ID_KEY: file0_granule_id,
-            copy_files_to_archive.INPUT_FILENAME_KEY: file0_input_filename,
-            copy_files_to_archive.FILE_SUCCESS_KEY: False,
-            copy_files_to_archive.INPUT_SOURCE_BUCKET_KEY: file0_source_bucket,
-            copy_files_to_archive.INPUT_SOURCE_KEY_KEY: file0_source_key,
-            copy_files_to_archive.INPUT_TARGET_BUCKET_KEY: file0_target_bucket,
-            copy_files_to_archive.INPUT_TARGET_KEY_KEY: file0_target_key,
-            copy_files_to_archive.INPUT_MULTIPART_CHUNKSIZE_MB_KEY: None,
-            copy_files_to_archive.FILE_MESSAGE_RECEIPT: file0_message_receipt,
+            copy_from_archive.INPUT_JOB_ID_KEY: file0_job_id,
+            copy_from_archive.INPUT_GRANULE_ID_KEY: file0_granule_id,
+            copy_from_archive.INPUT_FILENAME_KEY: file0_input_filename,
+            copy_from_archive.FILE_SUCCESS_KEY: False,
+            copy_from_archive.INPUT_SOURCE_BUCKET_KEY: file0_source_bucket,
+            copy_from_archive.INPUT_SOURCE_KEY_KEY: file0_source_key,
+            copy_from_archive.INPUT_TARGET_BUCKET_KEY: file0_target_bucket,
+            copy_from_archive.INPUT_TARGET_KEY_KEY: file0_target_key,
+            copy_from_archive.INPUT_MULTIPART_CHUNKSIZE_MB_KEY: None,
+            copy_from_archive.FILE_MESSAGE_RECEIPT: file0_message_receipt,
         }
         file1 = {
-            copy_files_to_archive.INPUT_JOB_ID_KEY: file1_job_id,
-            copy_files_to_archive.INPUT_GRANULE_ID_KEY: file1_granule_id,
-            copy_files_to_archive.INPUT_FILENAME_KEY: file1_input_filename,
-            copy_files_to_archive.FILE_SUCCESS_KEY: False,
-            copy_files_to_archive.INPUT_SOURCE_BUCKET_KEY: file1_source_bucket,
-            copy_files_to_archive.INPUT_SOURCE_KEY_KEY: file1_source_key,
-            copy_files_to_archive.INPUT_TARGET_BUCKET_KEY: file1_target_bucket,
-            copy_files_to_archive.INPUT_TARGET_KEY_KEY: file1_target_key,
-            copy_files_to_archive.INPUT_MULTIPART_CHUNKSIZE_MB_KEY: file1_multipart_chunksize_mb,
-            copy_files_to_archive.FILE_MESSAGE_RECEIPT: file1_message_receipt,
+            copy_from_archive.INPUT_JOB_ID_KEY: file1_job_id,
+            copy_from_archive.INPUT_GRANULE_ID_KEY: file1_granule_id,
+            copy_from_archive.INPUT_FILENAME_KEY: file1_input_filename,
+            copy_from_archive.FILE_SUCCESS_KEY: False,
+            copy_from_archive.INPUT_SOURCE_BUCKET_KEY: file1_source_bucket,
+            copy_from_archive.INPUT_SOURCE_KEY_KEY: file1_source_key,
+            copy_from_archive.INPUT_TARGET_BUCKET_KEY: file1_target_bucket,
+            copy_from_archive.INPUT_TARGET_KEY_KEY: file1_target_key,
+            copy_from_archive.INPUT_MULTIPART_CHUNKSIZE_MB_KEY: file1_multipart_chunksize_mb,
+            copy_from_archive.FILE_MESSAGE_RECEIPT: file1_message_receipt,
         }
         mock_get_files_from_records.return_value = [file0, file1]
         mock_copy_object.return_value = None
 
-        copy_files_to_archive.task(
+        copy_from_archive.task(
             mock_records,
             max_retries,
             retry_sleep_secs,
@@ -188,7 +188,7 @@ class TestCopyFilesToArchive(TestCase):
                     file0_job_id,
                     file0_granule_id,
                     file0_input_filename,
-                    copy_files_to_archive.shared_recovery.OrcaStatus.SUCCESS,
+                    copy_from_archive.shared_recovery.OrcaStatus.SUCCESS,
                     None,
                     db_queue_url,
                 ),
@@ -196,7 +196,7 @@ class TestCopyFilesToArchive(TestCase):
                     file1_job_id,
                     file1_granule_id,
                     file1_input_filename,
-                    copy_files_to_archive.shared_recovery.OrcaStatus.SUCCESS,
+                    copy_from_archive.shared_recovery.OrcaStatus.SUCCESS,
                     None,
                     db_queue_url,
                 ),
@@ -205,11 +205,11 @@ class TestCopyFilesToArchive(TestCase):
         self.assertEqual(2, mock_update_status_for_file.call_count)
         mock_sleep.assert_not_called()
 
-    @patch("copy_files_to_archive.LOGGER")
+    @patch("copy_from_archive.LOGGER")
     @patch("time.sleep")
-    @patch("copy_files_to_archive.shared_recovery.update_status_for_file")
-    @patch("copy_files_to_archive.copy_object")
-    @patch("copy_files_to_archive.get_files_from_records")
+    @patch("copy_from_archive.shared_recovery.update_status_for_file")
+    @patch("copy_from_archive.copy_object")
+    @patch("copy_from_archive.get_files_from_records")
     @patch("boto3.client")
     def test_task_retries_failed_files_up_to_retry_limit(
         self,
@@ -252,26 +252,26 @@ class TestCopyFilesToArchive(TestCase):
         mock_records = [Mock()]
 
         failed_file = {
-            copy_files_to_archive.INPUT_JOB_ID_KEY: file0_job_id,
-            copy_files_to_archive.INPUT_GRANULE_ID_KEY: file0_granule_id,
-            copy_files_to_archive.INPUT_FILENAME_KEY: file0_input_filename,
-            copy_files_to_archive.FILE_SUCCESS_KEY: False,
-            copy_files_to_archive.INPUT_SOURCE_BUCKET_KEY: file0_source_bucket,
-            copy_files_to_archive.INPUT_SOURCE_KEY_KEY: file0_source_key,
-            copy_files_to_archive.INPUT_TARGET_BUCKET_KEY: file0_target_bucket,
-            copy_files_to_archive.INPUT_TARGET_KEY_KEY: file0_target_key,
-            copy_files_to_archive.FILE_MESSAGE_RECEIPT: file0_message_receipt,
+            copy_from_archive.INPUT_JOB_ID_KEY: file0_job_id,
+            copy_from_archive.INPUT_GRANULE_ID_KEY: file0_granule_id,
+            copy_from_archive.INPUT_FILENAME_KEY: file0_input_filename,
+            copy_from_archive.FILE_SUCCESS_KEY: False,
+            copy_from_archive.INPUT_SOURCE_BUCKET_KEY: file0_source_bucket,
+            copy_from_archive.INPUT_SOURCE_KEY_KEY: file0_source_key,
+            copy_from_archive.INPUT_TARGET_BUCKET_KEY: file0_target_bucket,
+            copy_from_archive.INPUT_TARGET_KEY_KEY: file0_target_key,
+            copy_from_archive.FILE_MESSAGE_RECEIPT: file0_message_receipt,
         }
         successful_file = {
-            copy_files_to_archive.INPUT_JOB_ID_KEY: file1_job_id,
-            copy_files_to_archive.INPUT_GRANULE_ID_KEY: file1_granule_id,
-            copy_files_to_archive.INPUT_FILENAME_KEY: file1_input_filename,
-            copy_files_to_archive.FILE_SUCCESS_KEY: False,
-            copy_files_to_archive.INPUT_SOURCE_BUCKET_KEY: file1_source_bucket,
-            copy_files_to_archive.INPUT_SOURCE_KEY_KEY: file1_source_key,
-            copy_files_to_archive.INPUT_TARGET_BUCKET_KEY: file1_target_bucket,
-            copy_files_to_archive.INPUT_TARGET_KEY_KEY: file1_target_key,
-            copy_files_to_archive.FILE_MESSAGE_RECEIPT: file1_message_receipt,
+            copy_from_archive.INPUT_JOB_ID_KEY: file1_job_id,
+            copy_from_archive.INPUT_GRANULE_ID_KEY: file1_granule_id,
+            copy_from_archive.INPUT_FILENAME_KEY: file1_input_filename,
+            copy_from_archive.FILE_SUCCESS_KEY: False,
+            copy_from_archive.INPUT_SOURCE_BUCKET_KEY: file1_source_bucket,
+            copy_from_archive.INPUT_SOURCE_KEY_KEY: file1_source_key,
+            copy_from_archive.INPUT_TARGET_BUCKET_KEY: file1_target_bucket,
+            copy_from_archive.INPUT_TARGET_KEY_KEY: file1_target_key,
+            copy_from_archive.FILE_MESSAGE_RECEIPT: file1_message_receipt,
         }
         mock_get_files_from_records.return_value = [failed_file, successful_file]
         mock_copy_object.side_effect = [
@@ -282,7 +282,7 @@ class TestCopyFilesToArchive(TestCase):
         ]
 
         try:
-            copy_files_to_archive.task(
+            copy_from_archive.task(
                 mock_records,
                 max_retries,
                 retry_sleep_secs,
@@ -290,7 +290,7 @@ class TestCopyFilesToArchive(TestCase):
                 multipart_chunksize_mb,
                 received_message_queue_url,
             )
-        except copy_files_to_archive.CopyRequestError:
+        except copy_from_archive.CopyRequestError:
             mock_get_files_from_records.assert_called_once_with(mock_records)
             mock_boto3_client.assert_has_calls(
                 [
@@ -333,7 +333,7 @@ class TestCopyFilesToArchive(TestCase):
                         file1_job_id,
                         file1_granule_id,
                         file1_input_filename,
-                        copy_files_to_archive.shared_recovery.OrcaStatus.SUCCESS,
+                        copy_from_archive.shared_recovery.OrcaStatus.SUCCESS,
                         None,
                         db_queue_url,
                     ),
@@ -341,7 +341,7 @@ class TestCopyFilesToArchive(TestCase):
                         file0_job_id,
                         file0_granule_id,
                         file0_input_filename,
-                        copy_files_to_archive.shared_recovery.OrcaStatus.FAILED,
+                        copy_from_archive.shared_recovery.OrcaStatus.FAILED,
                         error_message,
                         db_queue_url,
                     ),
@@ -355,7 +355,7 @@ class TestCopyFilesToArchive(TestCase):
             return
         self.fail("Error not raised.")
 
-    @patch("copy_files_to_archive.LOGGER")
+    @patch("copy_from_archive.LOGGER")
     def test_get_files_from_records_adds_success_key(
         self,
         mock_logger: MagicMock,
@@ -364,48 +364,48 @@ class TestCopyFilesToArchive(TestCase):
         Function should transform json into file dict, and add 'success' key.
         """
         file0 = {
-            copy_files_to_archive.INPUT_JOB_ID_KEY: uuid.uuid4().__str__(),
-            copy_files_to_archive.INPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(),
-            copy_files_to_archive.INPUT_FILENAME_KEY: uuid.uuid4().__str__(),
-            copy_files_to_archive.INPUT_SOURCE_KEY_KEY: uuid.uuid4().__str__(),
-            copy_files_to_archive.INPUT_TARGET_KEY_KEY: uuid.uuid4().__str__(),
-            copy_files_to_archive.INPUT_TARGET_BUCKET_KEY: uuid.uuid4().__str__(),
-            copy_files_to_archive.INPUT_SOURCE_BUCKET_KEY: uuid.uuid4().__str__(),
-            copy_files_to_archive.INPUT_MULTIPART_CHUNKSIZE_MB_KEY: randint(  # nosec
+            copy_from_archive.INPUT_JOB_ID_KEY: uuid.uuid4().__str__(),
+            copy_from_archive.INPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(),
+            copy_from_archive.INPUT_FILENAME_KEY: uuid.uuid4().__str__(),
+            copy_from_archive.INPUT_SOURCE_KEY_KEY: uuid.uuid4().__str__(),
+            copy_from_archive.INPUT_TARGET_KEY_KEY: uuid.uuid4().__str__(),
+            copy_from_archive.INPUT_TARGET_BUCKET_KEY: uuid.uuid4().__str__(),
+            copy_from_archive.INPUT_SOURCE_BUCKET_KEY: uuid.uuid4().__str__(),
+            copy_from_archive.INPUT_MULTIPART_CHUNKSIZE_MB_KEY: randint(  # nosec
                 1, 10000
             ),
         }
         file1 = {
-            copy_files_to_archive.INPUT_JOB_ID_KEY: uuid.uuid4().__str__(),
-            copy_files_to_archive.INPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(),
-            copy_files_to_archive.INPUT_FILENAME_KEY: uuid.uuid4().__str__(),
-            copy_files_to_archive.INPUT_SOURCE_KEY_KEY: uuid.uuid4().__str__(),
-            copy_files_to_archive.INPUT_TARGET_KEY_KEY: uuid.uuid4().__str__(),
-            copy_files_to_archive.INPUT_TARGET_BUCKET_KEY: uuid.uuid4().__str__(),
-            copy_files_to_archive.INPUT_SOURCE_BUCKET_KEY: uuid.uuid4().__str__(),
-            copy_files_to_archive.INPUT_MULTIPART_CHUNKSIZE_MB_KEY: None,
+            copy_from_archive.INPUT_JOB_ID_KEY: uuid.uuid4().__str__(),
+            copy_from_archive.INPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(),
+            copy_from_archive.INPUT_FILENAME_KEY: uuid.uuid4().__str__(),
+            copy_from_archive.INPUT_SOURCE_KEY_KEY: uuid.uuid4().__str__(),
+            copy_from_archive.INPUT_TARGET_KEY_KEY: uuid.uuid4().__str__(),
+            copy_from_archive.INPUT_TARGET_BUCKET_KEY: uuid.uuid4().__str__(),
+            copy_from_archive.INPUT_SOURCE_BUCKET_KEY: uuid.uuid4().__str__(),
+            copy_from_archive.INPUT_MULTIPART_CHUNKSIZE_MB_KEY: None,
         }
 
         return_message_id_0 = uuid.uuid4().__str__()
         return_message_id_1 = uuid.uuid4().__str__()
 
-        result = copy_files_to_archive.get_files_from_records(
+        result = copy_from_archive.get_files_from_records(
             [
                 {
-                    copy_files_to_archive.FILE_MESSAGE_RECEIPT: return_message_id_0,
+                    copy_from_archive.FILE_MESSAGE_RECEIPT: return_message_id_0,
                     "body": json.dumps(file0.copy(), indent=4),
                 },
                 {
-                    copy_files_to_archive.FILE_MESSAGE_RECEIPT: return_message_id_1,
+                    copy_from_archive.FILE_MESSAGE_RECEIPT: return_message_id_1,
                     "body": json.dumps(file1.copy(), indent=4),
                 },
             ]
         )
 
-        file0[copy_files_to_archive.FILE_SUCCESS_KEY] = False
-        file0[copy_files_to_archive.FILE_MESSAGE_RECEIPT] = return_message_id_0
-        file1[copy_files_to_archive.FILE_SUCCESS_KEY] = False
-        file1[copy_files_to_archive.FILE_MESSAGE_RECEIPT] = return_message_id_1
+        file0[copy_from_archive.FILE_SUCCESS_KEY] = False
+        file0[copy_from_archive.FILE_MESSAGE_RECEIPT] = return_message_id_0
+        file1[copy_from_archive.FILE_SUCCESS_KEY] = False
+        file1[copy_from_archive.FILE_MESSAGE_RECEIPT] = return_message_id_1
 
         self.assertEqual([file0, file1], result)
 
@@ -421,7 +421,7 @@ class TestCopyFilesToArchive(TestCase):
         mock_s3_cli.copy = Mock(return_value=None)
         mock_s3_cli.copy.side_effect = config_check.check_multipart_chunksize
 
-        result = copy_files_to_archive.copy_object(
+        result = copy_from_archive.copy_object(
             mock_s3_cli,
             src_bucket_name,
             src_object_name,
@@ -457,7 +457,7 @@ class TestCopyFilesToArchive(TestCase):
         error.__str__.return_value = expected_result
         mock_s3_cli.copy.side_effect = error
 
-        result = copy_files_to_archive.copy_object(
+        result = copy_from_archive.copy_object(
             mock_s3_cli,
             src_bucket_name,
             src_object_name,

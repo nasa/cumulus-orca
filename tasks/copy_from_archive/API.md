@@ -1,21 +1,21 @@
 # Table of Contents
 
-* [copy\_files\_to\_archive](#copy_files_to_archive)
-  * [CopyRequestError](#copy_files_to_archive.CopyRequestError)
-  * [task](#copy_files_to_archive.task)
-  * [get\_files\_from\_records](#copy_files_to_archive.get_files_from_records)
-  * [copy\_object](#copy_files_to_archive.copy_object)
-  * [handler](#copy_files_to_archive.handler)
+* [copy\_from\_archive](#copy_from_archive)
+  * [CopyRequestError](#copy_from_archive.CopyRequestError)
+  * [task](#copy_from_archive.task)
+  * [get\_files\_from\_records](#copy_from_archive.get_files_from_records)
+  * [copy\_object](#copy_from_archive.copy_object)
+  * [handler](#copy_from_archive.handler)
 
-<a id="copy_files_to_archive"></a>
+<a id="copy_from_archive"></a>
 
-# copy\_files\_to\_archive
+# copy\_from\_archive
 
-Name: copy_files_to_archive.py
+Name: copy_from_archive.py
 Description:  Lambda function that copies files from one s3 bucket
 to another s3 bucket.
 
-<a id="copy_files_to_archive.CopyRequestError"></a>
+<a id="copy_from_archive.CopyRequestError"></a>
 
 ## CopyRequestError Objects
 
@@ -25,7 +25,7 @@ class CopyRequestError(Exception)
 
 Exception to be raised if the copy request fails for any of the files.
 
-<a id="copy_files_to_archive.task"></a>
+<a id="copy_from_archive.task"></a>
 
 #### task
 
@@ -54,7 +54,7 @@ between each attempt.
 
 - `CopyRequestError` - Thrown if there are errors with the input records or the copy failed.
 
-<a id="copy_files_to_archive.get_files_from_records"></a>
+<a id="copy_from_archive.get_files_from_records"></a>
 
 #### get\_files\_from\_records
 
@@ -73,7 +73,7 @@ Parses the input records and returns the files to be restored.
 
   records, parsed into Dicts, with the additional KVP 'success' = False
 
-<a id="copy_files_to_archive.copy_object"></a>
+<a id="copy_from_archive.copy_object"></a>
 
 #### copy\_object
 
@@ -103,7 +103,7 @@ Copy an Amazon S3 bucket object
 
   None if object was copied, otherwise contains error message.
 
-<a id="copy_files_to_archive.handler"></a>
+<a id="copy_from_archive.handler"></a>
 
 #### handler
 

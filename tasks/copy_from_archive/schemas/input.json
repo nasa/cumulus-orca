@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_files_to_archive/schemas/input.json",
-  "title": "copy_files_to_archive Lambda Input",
-  "description": "The input for the copy_files_to_archive Lambda.",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_from_archive/schemas/input.json",
+  "title": "copy_from_archive Lambda Input",
+  "description": "The input for the copy_from_archive Lambda.",
   "type": "object",
   "properties": {
     "Records": {
