@@ -7,7 +7,7 @@ description: Provides developer information for ORCA code deployment with Cumulu
 :::important
 
 Prior to following this document, make sure that your [deployment environment](setting-up-deployment-environment.mdx)
-is setup and an [ORCA archive glacier bucket](creating-orca-glacier-bucket.md) is
+is setup and an [ORCA archive bucket](creating-orca-archive-bucket.md) is
 created.
 
 :::
@@ -195,7 +195,7 @@ variable "dlq_subscription_email" {
 
 variable "orca_default_bucket" {
   type        = string
-  description = "Default ORCA S3 Glacier bucket to use."
+  description = "Default archive bucket to use."
 }
 
 variable "orca_reports_bucket_name" {
@@ -235,7 +235,7 @@ provides additional information on variables that can be set for the ORCA applic
 ## ORCA application database user password.
 db_user_password = "my-super-secret-orca-application-user-password"
 
-## Default ORCA S3 Glacier bucket to use
+## Default archive bucket to use
 orca_default_bucket = "orca-archive-primary"
 
 ## The name of the bucket to store s3 inventory reports.
@@ -257,12 +257,12 @@ dlq_subscription_email = "test@email.com"
 Below describes the type of value expected for each variable.
 
 * `db_user_password` (string) - the password for the application user.
-* `orca_default_bucket` (string) - default S3 glacier bucket to use for ORCA data.
+* `orca_default_bucket` (string) - default S3 archive bucket to use for ORCA data.
 * `db_admin_password` (string) - password for the admin user.
 * `db_host_endpoint`(string) - Database host endpoint to connect to.
 * `db_user_password` (string) - the password for the application user.
 * `dlq_subscription_email`(string) - "The email to notify users when messages are received in dead letter SQS queue due to restore failure. Sends one email until the dead letter queue is emptied."
-* `orca_default_bucket` (string) - Default S3 glacier bucket to use for ORCA data.
+* `orca_default_bucket` (string) - Default S3 archive bucket to use for ORCA data.
 * `orca_reports_bucket_name` (string) - The name of the bucket to store s3 inventory reports.
 * `rds_security_group_id`(string) - Cumulus' RDS Security Group's ID. Output as `security_group_id` from the rds-cluster deployment.
 
@@ -322,15 +322,15 @@ module "cumulus" {
 
 ## Define the ORCA Workflows
 
-The ORCA Ingest Workflows follows each step listed below. Adding the Move
-Granule Step and Add the Copy To Glacier Step are detailed in their respective
+The ORCA Ingest Workflows follows each step listed below. Adding the 
+MoveGranuleStep and the CopyToArchive Step are detailed in their respective
 sections.
 
 **ORCA Ingest Workflow**
   SyncGranule
   FilesToGranuleStep
   MoveGranuleStep
-  CopyToGlacier
+  CopyToArchive
 
 ### Add the Move Granule Step to an Ingest Workflow
 
@@ -392,11 +392,11 @@ the ingest workflow.
 ```
 
 
-### Add the Copy To Glacier Step to an Ingest Workflow
+### Add the CopyToArchive Step to an Ingest Workflow
 
 Navigate to `cumulus-tf/ingest_granule_workflow.tf` then add the following step
 anywhere after the MoveGranuleStep step being sure to change the MoveGranuleStep's
-`"Next"` parameter equal to "CopyToGlacier".
+`"Next"` parameter equal to "CopyToArchive".
 
 :::important
 
@@ -407,7 +407,7 @@ the ingest workflow.
 
 
 ```json
-"CopyToGlacier":{
+"CopyToArchive":{
   "Parameters":{
     "cma":{
       "event.$":"$",
@@ -504,7 +504,7 @@ file. The variables must be set with proper values for your environment in the
 | `db_host_endpoint`         | Database host endpoint to connect to.                    | "aws.postgresrds.host"                                      |
 | `db_user_password`         | Password for RDS database user authentication            | "My_Sup3rS3cr3tuserPassw0rd"                                |
 | `dlq_subscription_email`   | The email to notify users when messages are received in dead letter SQS queue | "test@email.com"                      |
-| `orca_default_bucket`      | Default ORCA S3 Glacier bucket to use.                   | "PREFIX-orca-primary"                                       |
+| `orca_default_bucket`      | Default archive bucket to use.                           | "PREFIX-orca-primary"                                       |
 | `orca_reports_bucket_name` | The Name of the bucket to store s3 inventory reports.    | "PREFIX-orca-reports"                          |
 | `rds_security_group_id`    | Cumulus' RDS Security Group's ID.                        | "sg-01234567890123456"                                      |
 | `s3_access_key`            | Access key for communicating with Orca S3 buckets.       |                                                             |
@@ -551,7 +551,7 @@ variables is shown in the table below.
 | `orca_reconciliation_lambda_memory_size`              | number        | Amount of memory in MB the ORCA reconciliation lambda can use at runtime.                                                      | 128 |
 | `orca_reconciliation_lambda_timeout`                  | number        | Timeout in number of seconds for ORCA reconciliation lambdas.                                                                  | 720 |
 | `orca_recovery_buckets`                               | List (string) | List of bucket names that ORCA has permissions to restore data to. Default is all in the `buckets` map.                        | [] |
-| `orca_recovery_complete_filter_prefix`                | string        | Specifies object key name prefix by the Glacier Bucket trigger.                                                                | "" |
+| `orca_recovery_complete_filter_prefix`                | string        | Specifies object key name prefix by the archive Bucket trigger.                                                                | "" |
 | `orca_recovery_expiration_days`                       | number        | Number of days a recovered file will remain available for copy.                                                                | 5 |
 | `orca_recovery_lambda_memory_size`                    | number        | Amount of memory in MB the ORCA recovery lambda can use at runtime.                                                            | 128 |
 | `orca_recovery_lambda_timeout`                        | number        | Timeout in number of seconds for ORCA recovery lambdas.                                                                        | 720 |

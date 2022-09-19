@@ -12,7 +12,7 @@ At a high level, the following steps should be used to manually ingest data into
 ORCA.
 
 1. Use the Cumulus Dashboard Granule Bulk Operations functionality to run the
-   **OrcaCopyToGlacierWorkflow** step function against the granules that need to
+   **OrcaCopyToArchiveWorkflow** step function against the granules that need to
    be ingested into ORCA.
 2. Monitor the execution status of the job and workflows.
 
@@ -49,12 +49,12 @@ to restore data in ORCA.
 4. Fill out the details in the **Bulk Operations** form utilizing any of the bulk
    operations methods to provide the list of granules to act upon.
    :::important Workflow Name
-    Make sure that the workflow name value is set to **OrcaCopyToGlacierWorkflow**
+    Make sure that the workflow name value is set to **OrcaCopyToArchiveWorkflow**
     as seen below in the figure.
 
     ```json
     {
-      "WorkflowName": "OrcaCopyToGlacierWorkflow",
+      "WorkflowName": "OrcaCopyToArchiveWorkflow",
       "index": "",
       "query": "",
       "ids": [],
@@ -80,7 +80,7 @@ to restore data in ORCA.
 
 ## Monitor Executions and Job Status
 
-Monitoring the Bulk Granule Operations Job and *OrcaCopyToGlacierWorkflow*
+Monitoring the Bulk Granule Operations Job and *OrcaCopyToArchiveWorkflow*
 workflow can be done through the *Operations* and *Executions* tabs. The Job ID
 obtained from step 5 in the [Submit Granules to be Restored in ORCA](#submit-granules-to-be-restored-in-orca)
 section above will be needed for monitoring.  The sections below go into more details.
@@ -104,7 +104,7 @@ submitted in the example used in the above figures.
 
 Using the obtained Job ID (*asyncOperationsId*), the executions can be filtered.
 The page will provide the operator with information on each specific execution of the
-*OrcaCopyToGlacierWorkflow* workflow. There is one execution per granule. The
+*OrcaCopyToArchiveWorkflow* workflow. There is one execution per granule. The
 execution can be drilled down further to look at failures and logs. Figure 7
 below shows the status of executions based on a Job ID.
 

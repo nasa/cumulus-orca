@@ -1,17 +1,16 @@
 ---
 id: deployment-s3-bucket
-title: Creating the Glacier Bucket
+title: Creating the Archive Bucket
 description: Provides developer with information on archive storage solutions.
 ---
 
-ORCA maintains a cloud ready backup of science and ancillary data in an
-[S3-IA](https://aws.amazon.com/s3/storage-classes/#Infrequent_access)
-bucket and utilizes [AWS bucket transition policies](https://docs.aws.amazon.com/AmazonS3/latest/dev/lifecycle-transition-general-considerations.html)
-to store the data in [S3 Glacier](../../about/introduction/glossary.md#glacier-storage)
+ORCA maintains a cloud ready backup of science and ancillary data 
+in one of various [storage classes](../../operator/storage-classes.md) 
+in [S3](https://aws.amazon.com/s3/)
 for the long term. The ORCA archive bucket can live in any NGAP Organizational
 Unit (OU).
 
-:::important ORCA S3 Glacier Bucket OU Placement
+:::important Archive Bucket OU Placement
 
 Best practice is to place the ORCA archive bucket in your Disaster Recovery OU.
 This is done to better separate the costs associated with the cloud ready backup
@@ -40,7 +39,7 @@ aws s3api create-bucket \
     --create-bucket-configuration "LocationConstraint=us-west-2"
 ```
 
-- **\[orca bucket name\]** - This is the name of your bucket. Example: `sandbox-orca-glacier-archive` and `sandbox-orca-reports`
+- **\[orca bucket name\]** - This is the name of your bucket. Example: `sandbox-orca-archive` and `sandbox-orca-reports`
 - **\[AWS OU profile\]** - This is the AWS profile name to use to connect to the proper OU where the bucket will be created.
 
 :::note
@@ -122,7 +121,7 @@ an example of a justification.
 This is the name of the ORCA archive bucket created in the Disaster Recover OU.
 Below is an example name of an ORCA archive bucket and ORCA report bucket.
 
-> sandbox-orca-glacier-archive
+> sandbox-orca-archive
 > sandbox-orca-reports
 
 #### Policy:
@@ -156,8 +155,8 @@ modifications, which will be detailed below.
             "s3:ListBucketVersions"
          ],
          "Resource":[
-            "arn:aws:s3:::sandbox-orca-glacier-archive",
-            "arn:aws:s3:::sandbox-orca-glacier-archive/*"
+            "arn:aws:s3:::sandbox-orca-archive",
+            "arn:aws:s3:::sandbox-orca-archive/*"
          ]
       },
       {
@@ -168,7 +167,7 @@ modifications, which will be detailed below.
          },
          "Action":"s3:PutObject*",
          "Resource":[
-            "arn:aws:s3:::sandbox-orca-glacier-archive/*"
+            "arn:aws:s3:::sandbox-orca-archive/*"
          ],
          "Condition":{
             "StringEquals":{
@@ -204,7 +203,7 @@ aws sts get-caller-identity
 Replace the number in `arn:aws:iam::012345678912:root` with the value of your account number.
 
 The Resource value is the bucket and bucket paths that the Cumulus application
-can access. Replace `sandbox-orca-glacier-archive` with the name
+can access. Replace `sandbox-orca-archive` with the name
 of the Orca archive bucket created in the previous section.
 
 ##### Reports Bucket:
@@ -231,25 +230,25 @@ modifications, which will be detailed below.
         "s3:PutBucketNotification"
       ],
       "Resource": [
-        "arn:aws:s3:::sandbox-orca-glacier-archive",
-        "arn:aws:s3:::sandbox-orca-glacier-archive/*"
+        "arn:aws:s3:::sandbox-orca-archive",
+        "arn:aws:s3:::sandbox-orca-archive/*"
       ]
     },
     {
-      "Sid": "Inventory-sandbox-orca-glacier-archive",
+      "Sid": "Inventory-sandbox-orca-archive",
       "Effect": "Allow",
       "Principal": {
         "Service": "s3.amazonaws.com"
       },
       "Action": "s3:PutObject",
-      "Resource": "arn:aws:s3:::sandbox-orca-glacier-archive/*",
+      "Resource": "arn:aws:s3:::sandbox-orca-archive/*",
       "Condition": {
         "StringEquals": {
       	  "s3:x-amz-acl": "bucket-owner-full-control",
       	  "aws:SourceAccount": "000000000000"
         },
       	"ArnLike": {
-      	  "aws:SourceArn": "arn:aws:s3:::sandbox-orca-glacier-archive"
+      	  "aws:SourceArn": "arn:aws:s3:::sandbox-orca-archive"
       	}
       }
     }
@@ -266,5 +265,5 @@ See the Archive Bucket instructions for assistance getting this value.
 Replace the number `000000000000` with your DR account number.
 
 The Resource value is the bucket and bucket paths that the Cumulus application
-can access. Replace `sandbox-orca-glacier-archive` with the name
+can access. Replace `sandbox-orca-archive` with the name
 of the Orca archive bucket created in the previous section.

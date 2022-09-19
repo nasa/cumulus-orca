@@ -147,7 +147,7 @@ def get_regex_buckets(event):
 
 def should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> bool:
     """
-    Tests whether or not file is included in {excludedFileExtensions} from copy to glacier.
+    Tests whether or not file is included in {excludedFileExtensions} from copy_to_glacier.
     Args:
         file_key: The key of the file within the s3 bucket.
         exclude_file_types: List of extensions to exclude in the backup.

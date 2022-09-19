@@ -80,7 +80,7 @@ module.exports = {
       'developer/research/research-lambda-container',
       'developer/research/research-pushing-docker-image',
       'developer/research/research-s3-bucket-best-practices',
-      'developer/research/research-deep-glacier-migration',
+      'developer/research/research-deep-archive-migration',
       'developer/research/research-logging-libraries'
     ],
   },

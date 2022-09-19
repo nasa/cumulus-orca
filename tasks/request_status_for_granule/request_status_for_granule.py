@@ -216,7 +216,7 @@ def get_file_entries_for_granule_in_job(
 
     Returns: A Dict with the following keys:
         'file_name' (str): The name and extension of the file.
-        'restore_destination' (str): The name of the glacier bucket the file is being copied to.
+        'restore_destination' (str): The name of the archive bucket the file is being copied to.
         'status' (str): The status of the restoration of the file.
             May be 'pending', 'staged', 'success', or 'error'.
         'error_message' (str): If the restoration of the file errored,
@@ -317,7 +317,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         'files' (List): Description and status of the files within the given granule.
             List of Dicts with keys:
                 'file_name' (str): The name and extension of the file.
-                'restore_destination' (str): The name of the glacier bucket
+                'restore_destination' (str): The name of the archive bucket
                     the file is being copied to.
                 'status' (str): The status of the restoration of the file.
                     May be 'pending', 'staged', 'success', or 'error'.

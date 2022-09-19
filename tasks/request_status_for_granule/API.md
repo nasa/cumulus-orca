@@ -95,7 +95,7 @@ Gets the individual status entries for the files for the given job+granule.
   
 - `Returns` - A Dict with the following keys:
 - `'file_name'` _str_ - The name and extension of the file.
-- `'restore_destination'` _str_ - The name of the glacier bucket the file is being copied to.
+- `'restore_destination'` _str_ - The name of the archive bucket the file is being copied to.
 - `'status'` _str_ - The status of the restoration of the file.
   May be 'pending', 'staged', 'success', or 'error'.
 - `'error_message'` _str_ - If the restoration of the file errored,
@@ -156,7 +156,7 @@ Entry point for the request_status_for_granule Lambda.
 - `'files'` _List_ - Description and status of the files within the given granule.
   List of Dicts with keys:
 - `'file_name'` _str_ - The name and extension of the file.
-- `'restore_destination'` _str_ - The name of the glacier bucket
+- `'restore_destination'` _str_ - The name of the archive bucket
   the file is being copied to.
 - `'status'` _str_ - The status of the restoration of the file.
   May be 'pending', 'staged', 'success', or 'error'.
