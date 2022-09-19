@@ -14,6 +14,15 @@ and includes an additional section for migration notes.
 - *Security* - Vulnerabilities fixes and changes.
 
 ## [Unreleased]
+### Changed
+- *ORCA-537* Renamed lambda `copy_to_glacier` to `copy_to_archive`.
+  Output of lambda and Terraform updated to match. See Migration Notes below.
+
+### Migration Notes
+- If utilizing the `copied_to_glacier` [output property](https://github.com/nasa/cumulus-orca/blob/15e5868f2d1eead88fb5cc8f2e055a18ba0f1264/tasks/copy_to_glacier/schemas/output.json#L47) of `copy_to_glacier`, 
+  rename to new key `copied_to_archive`.
+- If utilizing the `orca_lambda_copy_to_archive_arn` [output of Terraform](https://github.com/nasa/cumulus-orca/blob/15e5868f2d1eead88fb5cc8f2e055a18ba0f1264/outputs.tf#L8), likely as a means of pulling the lambda into your workflows, 
+  rename to new key `orca_lambda_copy_to_archive_arn`
 
 ## [6.0.0]
 ### Changed
