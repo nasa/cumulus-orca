@@ -331,7 +331,7 @@ PostgreSQL *orca* database. Perform the checks below by going to the
            Column         |           Type           | Collation | Nullable | Default | Storage  | Stats target |                                         Description
    -----------------------+--------------------------+-----------+----------+---------+----------+--------------+----------------------------------------------------------------------------------------------
     job_id                | bigint                   |           | not null |         | plain    |              | Job the S3 listing is a part of for the comparison.
-    orca_archive_location | text                     |           | not null |         | extended |              | ORCA S3 Archive bucket name where the file is stored.
+    orca_archive_location | text                     |           | not null |         | extended |              | Archive bucket name where the file is stored.
     key_path              | text                     |           | not null |         | extended |              | Full path and file name of the object in the S3 bucket.
     etag                  | text                     |           | not null |         | extended |              | AWS etag value from the s3 inventory report.
     last_update           | timestamp with time zone |           | not null |         | plain    |              | AWS Last Update from the s3 inventory report.
@@ -867,7 +867,7 @@ PostgreSQL *orca* database. Perform the checks below by going to the
            Column         |           Type           | Collation | Nullable | Default | Storage  | Stats target |                                         Description
    -----------------------+--------------------------+-----------+----------+---------+----------+--------------+----------------------------------------------------------------------------------------------
     job_id                | bigint                   |           | not null |         | plain    |              | Job the S3 listing is a part of for the comparison.
-    orca_archive_location | text                     |           | not null |         | extended |              | ORCA S3 Archive bucket name where the file is stored.
+    orca_archive_location | text                     |           | not null |         | extended |              | Archive bucket name where the file is stored.
     key_path              | text                     |           | not null |         | extended |              | Full path and file name of the object in the S3 bucket.
     etag                  | text                     |           | not null |         | extended |              | AWS etag value from the s3 inventory report.
     last_update           | timestamp with time zone |           | not null |         | plain    |              | AWS Last Update from the s3 inventory report.

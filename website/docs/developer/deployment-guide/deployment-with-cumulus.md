@@ -195,7 +195,7 @@ variable "dlq_subscription_email" {
 
 variable "orca_default_bucket" {
   type        = string
-  description = "Default ORCA S3 archive bucket to use."
+  description = "Default archive bucket to use."
 }
 
 variable "orca_reports_bucket_name" {
@@ -235,7 +235,7 @@ provides additional information on variables that can be set for the ORCA applic
 ## ORCA application database user password.
 db_user_password = "my-super-secret-orca-application-user-password"
 
-## Default ORCA S3 archive bucket to use
+## Default archive bucket to use
 orca_default_bucket = "orca-archive-primary"
 
 ## The name of the bucket to store s3 inventory reports.
@@ -504,7 +504,7 @@ file. The variables must be set with proper values for your environment in the
 | `db_host_endpoint`         | Database host endpoint to connect to.                    | "aws.postgresrds.host"                                      |
 | `db_user_password`         | Password for RDS database user authentication            | "My_Sup3rS3cr3tuserPassw0rd"                                |
 | `dlq_subscription_email`   | The email to notify users when messages are received in dead letter SQS queue | "test@email.com"                      |
-| `orca_default_bucket`      | Default ORCA S3 archive bucket to use.                   | "PREFIX-orca-primary"                                       |
+| `orca_default_bucket`      | Default archive bucket to use.                           | "PREFIX-orca-primary"                                       |
 | `orca_reports_bucket_name` | The Name of the bucket to store s3 inventory reports.    | "PREFIX-orca-reports"                          |
 | `rds_security_group_id`    | Cumulus' RDS Security Group's ID.                        | "sg-01234567890123456"                                      |
 | `s3_access_key`            | Access key for communicating with Orca S3 buckets.       |                                                             |

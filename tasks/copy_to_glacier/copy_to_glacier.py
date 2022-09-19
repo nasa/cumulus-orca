@@ -70,20 +70,20 @@ def copy_granule_between_buckets(
         A dictionary containing all the file metadata needed
         for reconciliation with Cumulus with the following keys:
                 "cumulusArchiveLocation" (str):
-                    Cumulus S3 bucket where the file is stored in.
+                    Cumulus bucket the file is stored in.
                 "orcaArchiveLocation" (str):
-                    ORCA S3 Archive bucket that the file object is stored in.
+                    ORCA archive bucket the file object is stored in.
                 "keyPath" (str):
                     Full AWS key path including file name of the file
                     where the file resides in ORCA.
                 "sizeInBytes" (str):
                     Size of the object in bytes
                 "version" (str):
-                    Latest version of the file in the S3 Archive bucket
+                    Latest version of the file in the archive bucket
                 "ingestTime" (str):
                     Date and time the file was originally ingested into ORCA.
                 "etag" (str):
-                    etag of the file object in the AWS S3 Archive bucket.
+                    etag of the file object in the archive bucket.
     """
     s3 = boto3.client("s3")
     copy_source = {"Bucket": source_bucket_name, "Key": source_key}
@@ -135,7 +135,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
 
         Environment Variables:
             ORCA_DEFAULT_BUCKET (string, required):
-                Name of the default ORCA S3 Archive bucket.
+                Name of the default archive bucket.
                 Overridden by bucket specified in config.
             DEFAULT_MULTIPART_CHUNKSIZE_MB (int, optional):
                 The default maximum size of chunks to use when copying.
@@ -263,9 +263,9 @@ def get_destination_bucket_name(config: Dict[str, Any]) -> str:
     otherwise the default.
 
     Environment Vars:
-        ORCA_DEFAULT_BUCKET (str): Name of the default S3 Archive
-                                             ORCA bucket files should be
-                                             archived to.
+        ORCA_DEFAULT_BUCKET (str): Name of the default archive
+                                   bucket files should be
+                                   archived to.
 
     Args:
         config: See schemas/config.json for more information.
@@ -365,7 +365,7 @@ def handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any:
             Must match value in storage_class table.
         ORCA_DEFAULT_BUCKET (str):
             Name of the default
-            ORCA Archive S3 bucket that files should be archived to.
+            archive bucket that files should be archived to.
         METADATA_DB_QUEUE_URL (string, required): SQS URL of the metadata queue.
 
     Args:

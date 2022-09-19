@@ -29,6 +29,9 @@ with open("schemas/output.json", "r") as raw_schema:
 
 
 class TestCopyToGlacier(TestCase):
+    """
+    Test copy_to_glacier functionality and business logic.
+    """
     # Create the mock for SQS unit tests
     mock_sqs = mock_sqs()
 

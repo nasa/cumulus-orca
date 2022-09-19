@@ -154,7 +154,7 @@ The `copy_to_glacier` lambda function expects that the input payload has a `gran
   }
 }
 ```
-From the json file, the `filepath` shows the current S3 location of files that need to be copied over to ORCA Archive S3 bucket such as `"filename": "s3://orca-sandbox-protected/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf"`.
+From the json file, the `filepath` shows the current S3 location of files that need to be copied over to archive bucket such as `"filename": "s3://orca-sandbox-protected/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf"`.
 **Note:** We suggest that the `copy_to_glacier` task be placed any time after the `MoveGranulesStep`. It will propagate the input `granules` object as output, so it can be used as the last task in the workflow.
 See the schema [input file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/input.json) for more information.
 

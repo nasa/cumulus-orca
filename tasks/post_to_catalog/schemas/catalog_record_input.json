@@ -120,7 +120,7 @@
                 },
                 "orcaArchiveLocation": {
                   "type": "string",
-                  "description": "ORCA S3 archive bucket that the file object is stored in"
+                  "description": "Archive bucket that the file object is stored in"
                 },
                 "keyPath": {
                   "type": "string",

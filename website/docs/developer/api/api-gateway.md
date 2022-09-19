@@ -85,7 +85,7 @@ The following table lists the fields in the output:
 | files                  | `Array[Object]`| Description and status of the files within the given granule.                                    |
 | name                   | `str`       | The name and extension of the file.                                                                 |
 | cumulusArchiveLocation | `str`       | Cumulus bucket the file resides in.                                                                 |
-| orcaArchiveLocation    | `str`       | ORCA S3 archive bucket the file resides in.                                                         |
+| orcaArchiveLocation    | `str`       | Archive bucket the file resides in.                                                                 |
 | keyPath                | `str`       | S3 path to the file including the file name and extension, but not the bucket.                      |
 | sizeBytes              | `str`       | Size in bytes of the file. From Cumulus ingest.                                                     |
 | hash                   | `str`       | Checksum hash of the file provided by Cumulus.                                                      |
@@ -277,7 +277,7 @@ The following table lists the fields in the output:
 | anotherPage           | `bool`          | Indicates if more results can be retrieved on another page.                                                   |
 | jobs                  | `Array[Object]` | The jobs on the page.                                                                                         |
 | id                    | `int`           | The unique ID of the reconciliation job.                                                                      |
-| orcaArchiveLocation   | `str`           | ORCA S3 archive bucket the reconciliation targets.                                                            |           
+| orcaArchiveLocation   | `str`           | Archive bucket the reconciliation targets.                                                                    |           
 | status                | `str`           | Current status of the job. `getting S3 list`, `staged`, `generating reports`, `error`, or `success`           |
 | inventoryCreationTime | `int`           | The time, in milliseconds since 1 January 1970 UTC, of inventory report initiation time from the s3 manifest. |
 | lastUpdate            | `int`           | The time, in milliseconds since 1 January 1970 UTC, when status was last updated.                             |

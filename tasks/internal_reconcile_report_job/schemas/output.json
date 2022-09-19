@@ -33,7 +33,7 @@
           },
           "orcaArchiveLocation": {
             "type": "string",
-            "description": "ORCA S3 archive bucket the reconciliation targets."
+            "description": "Archive bucket the reconciliation targets."
           },
           "status": {
             "type": "string",

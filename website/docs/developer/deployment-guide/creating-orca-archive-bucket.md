@@ -10,7 +10,7 @@ in [S3](https://aws.amazon.com/s3/)
 for the long term. The ORCA archive bucket can live in any NGAP Organizational
 Unit (OU).
 
-:::important ORCA S3 Archive Bucket OU Placement
+:::important Archive Bucket OU Placement
 
 Best practice is to place the ORCA archive bucket in your Disaster Recovery OU.
 This is done to better separate the costs associated with the cloud ready backup
