@@ -5,7 +5,7 @@ tasks/request_status/.vscode/.ropeproject/objectdb
 tasks/copy_files_to_archive/.vscode/.ropeproject/config.py
 tasks/copy_files_to_archive/.vscode/.ropeproject/objectdb
 tasks/copy_files_to_archive/htmlcov/
-tasks/copy_to_glacier/htmlcov/
+tasks/copy_to_archive/htmlcov/
 tasks/package/
 shared_libraries/orca_shared.egg-info/
 private_config.json

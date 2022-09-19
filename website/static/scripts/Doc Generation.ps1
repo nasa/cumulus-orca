@@ -2,7 +2,7 @@
 $repoDir = Get-Location
 $tasks = 
 [TaskInfo]::new("copy_files_to_archive", "copy_files_to_archive.py"),
-[TaskInfo]::new("copy_to_glacier", "handler.py"),
+[TaskInfo]::new("copy_to_archive", "handler.py"),
 [TaskInfo]::new("db_deploy", "db_deploy.py"),
 [TaskInfo]::new("extract_filepaths_for_granule", "extract_filepaths_for_granule.py"),
 [TaskInfo]::new("request_files", "request_files.py"),

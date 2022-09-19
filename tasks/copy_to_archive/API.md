@@ -1,26 +1,26 @@
 # Table of Contents
 
-* [copy\_to\_glacier](#copy_to_glacier)
-  * [should\_exclude\_files\_type](#copy_to_glacier.should_exclude_files_type)
-  * [copy\_granule\_between\_buckets](#copy_to_glacier.copy_granule_between_buckets)
-  * [task](#copy_to_glacier.task)
-  * [get\_destination\_bucket\_name](#copy_to_glacier.get_destination_bucket_name)
-  * [get\_storage\_class](#copy_to_glacier.get_storage_class)
-  * [handler](#copy_to_glacier.handler)
+* [copy\_to\_archive](#copy_to_archive)
+  * [should\_exclude\_files\_type](#copy_to_archive.should_exclude_files_type)
+  * [copy\_granule\_between\_buckets](#copy_to_archive.copy_granule_between_buckets)
+  * [task](#copy_to_archive.task)
+  * [get\_destination\_bucket\_name](#copy_to_archive.get_destination_bucket_name)
+  * [get\_storage\_class](#copy_to_archive.get_storage_class)
+  * [handler](#copy_to_archive.handler)
 * [sqs\_library](#sqs_library)
   * [retry\_error](#sqs_library.retry_error)
   * [get\_aws\_region](#sqs_library.get_aws_region)
   * [post\_to\_metadata\_queue](#sqs_library.post_to_metadata_queue)
 
-<a id="copy_to_glacier"></a>
+<a id="copy_to_archive"></a>
 
-# copy\_to\_glacier
+# copy\_to\_archive
 
-Name: copy_to_glacier.py
+Name: copy_to_archive.py
 Description: Lambda function that takes a Cumulus message, extracts a list of files,
-and copies those files from their current storage location into a staging/glacier location.
+and copies those files from their current storage location into a staging/archive location.
 
-<a id="copy_to_glacier.should_exclude_files_type"></a>
+<a id="copy_to_archive.should_exclude_files_type"></a>
 
 #### should\_exclude\_files\_type
 
@@ -29,7 +29,7 @@ def should_exclude_files_type(file_key: str,
                               exclude_file_types: List[str]) -> bool
 ```
 
-Tests whether file is included in {excludedFileExtensions} from copy to glacier.
+Tests whether file is included in {excludedFileExtensions}.
 
 **Arguments**:
 
@@ -40,7 +40,7 @@ Tests whether file is included in {excludedFileExtensions} from copy to glacier.
 
   True if file should be excluded from copy, False otherwise.
 
-<a id="copy_to_glacier.copy_granule_between_buckets"></a>
+<a id="copy_to_archive.copy_granule_between_buckets"></a>
 
 #### copy\_granule\_between\_buckets
 
@@ -65,16 +65,25 @@ Also queries the destination_bucket to get additional metadata file info.
 
 **Returns**:
 
-  A dictionary containing all the file metadata needed for reconciliation with Cumulus with the following keys:
-- `"cumulusArchiveLocation"` _str_ - Cumulus S3 bucket where the file is stored in.
-- `"orcaArchiveLocation"` _str_ - ORCA S3 Glacier bucket that the file object is stored in
-- `"keyPath"` _str_ - Full AWS key path including file name of the file where the file resides in ORCA.
-- `"sizeInBytes"` _str_ - Size of the object in bytes
-- `"version"` _str_ - Latest version of the file in the S3 Glacier bucket
-- `"ingestTime"` _str_ - Date and time the file was originally ingested into ORCA.
-- `"etag"` _str_ - etag of the file object in the AWS S3 Glacier bucket.
+  A dictionary containing all the file metadata needed
+  for reconciliation with Cumulus with the following keys:
+  "cumulusArchiveLocation" (str):
+  Cumulus bucket the file is stored in.
+  "orcaArchiveLocation" (str):
+  ORCA archive bucket the file object is stored in.
+  "keyPath" (str):
+  Full AWS key path including file name of the file
+  where the file resides in ORCA.
+  "sizeInBytes" (str):
+  Size of the object in bytes
+  "version" (str):
+  Latest version of the file in the archive bucket
+  "ingestTime" (str):
+  Date and time the file was originally ingested into ORCA.
+  "etag" (str):
+  etag of the file object in the archive bucket.
 
-<a id="copy_to_glacier.task"></a>
+<a id="copy_to_archive.task"></a>
 
 #### task
 
@@ -84,14 +93,17 @@ def task(event: Dict[str, Union[List[str], Dict]],
 ```
 
 Copies the files in {event}['input']
-to the ORCA glacier bucket defined in ORCA_DEFAULT_BUCKET.
+to the ORCA archive bucket defined in ORCA_DEFAULT_BUCKET.
 
 Environment Variables:
-ORCA_DEFAULT_BUCKET (string, required): Name of the default ORCA S3 Glacier bucket.
+ORCA_DEFAULT_BUCKET (string, required):
+Name of the default archive bucket.
 Overridden by bucket specified in config.
-DEFAULT_MULTIPART_CHUNKSIZE_MB (int, optional): The default maximum size of chunks to use when copying.
+DEFAULT_MULTIPART_CHUNKSIZE_MB (int, optional):
+The default maximum size of chunks to use when copying.
 Can be overridden by collection config.
-METADATA_DB_QUEUE_URL (string, required): SQS URL of the metadata queue.
+METADATA_DB_QUEUE_URL (string, required):
+SQS URL of the metadata queue.
 
 **Arguments**:
 
@@ -103,7 +115,7 @@ METADATA_DB_QUEUE_URL (string, required): SQS URL of the metadata queue.
 
   A dict representing input and copied files. See schemas/output.json for more information.
 
-<a id="copy_to_glacier.get_destination_bucket_name"></a>
+<a id="copy_to_archive.get_destination_bucket_name"></a>
 
 #### get\_destination\_bucket\_name
 
@@ -116,8 +128,8 @@ Uses the collection value in config if present,
 otherwise the default.
 
 Environment Vars:
-ORCA_DEFAULT_BUCKET (str): Name of the default S3 Glacier
-ORCA bucket files should be
+ORCA_DEFAULT_BUCKET (str): Name of the default archive
+bucket files should be
 archived to.
 
 **Arguments**:
@@ -129,7 +141,7 @@ archived to.
 
   The name of the bucket to use.
 
-<a id="copy_to_glacier.get_storage_class"></a>
+<a id="copy_to_archive.get_storage_class"></a>
 
 #### get\_storage\_class
 
@@ -142,7 +154,8 @@ Uses the collection value in config if present,
 otherwise the default.
 
 Environment Vars:
-DEFAULT_STORAGE_CLASS (str): The class of storage to use when ingesting files.
+DEFAULT_STORAGE_CLASS (str):
+The class of storage to use when ingesting files.
 Can be overridden by collection config.
 Must match value in storage_class table.
 
@@ -155,7 +168,7 @@ Must match value in storage_class table.
 
   The name of the storage class to use.
 
-<a id="copy_to_glacier.handler"></a>
+<a id="copy_to_archive.handler"></a>
 
 #### handler
 
@@ -169,14 +182,16 @@ to the default ORCA bucket. Environment variables must be set to
 provide a default ORCA bucket to store the files in.
 
 Environment Vars:
-DEFAULT_MULTIPART_CHUNKSIZE_MB (int): The default maximum size of chunks to use when copying.
+DEFAULT_MULTIPART_CHUNKSIZE_MB (int):
+The default maximum size of chunks to use when copying.
 Can be overridden by collection config.
-DEFAULT_STORAGE_CLASS (str): The class of storage to use when ingesting files.
+DEFAULT_STORAGE_CLASS (str):
+The class of storage to use when ingesting files.
 Can be overridden by collection config.
 Must match value in storage_class table.
-ORCA_DEFAULT_BUCKET (str): Name of the default S3 Glacier
-ORCA bucket files should be
-archived to.
+ORCA_DEFAULT_BUCKET (str):
+Name of the default
+archive bucket that files should be archived to.
 METADATA_DB_QUEUE_URL (string, required): SQS URL of the metadata queue.
 
 **Arguments**:
@@ -197,7 +212,7 @@ METADATA_DB_QUEUE_URL (string, required): SQS URL of the metadata queue.
 # sqs\_library
 
 Name: sqs_library.py
-Description: library for copy_to_glacier lambda function for posting to metadata SQS queue.
+Description: library for copy_to_archive lambda function for posting to metadata SQS queue.
 
 <a id="sqs_library.retry_error"></a>
 

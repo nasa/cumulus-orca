@@ -86,7 +86,7 @@ def should_exclude_files_type(file_key: str,
                               exclude_file_types: List[str]) -> bool
 ```
 
-Tests whether or not file is included in {excludedFileExtensions} from copy_to_glacier.
+Tests whether or not file is included in {excludedFileExtensions} from copy_to_archive.
 
 **Arguments**:
 

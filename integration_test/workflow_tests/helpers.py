@@ -22,8 +22,8 @@ API_LOCAL_PORT = "8000"
 # os.env keys
 # "https://s2jmh2r60k.execute-api.us-west-2.amazonaws.com"
 orca_api_deployment_invoke_url = os.environ["orca_API_DEPLOYMENT_INVOKE_URL"]
-orca_copy_to_glacier_step_function_arn = os.environ[
-    "orca_COPY_TO_GLACIER_STEP_FUNCTION_ARN"
+orca_copy_to_archive_step_function_arn = os.environ[
+    "orca_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN"
 ]
 
 # helpful pre-constructed values

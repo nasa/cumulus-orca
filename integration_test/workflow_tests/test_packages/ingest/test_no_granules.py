@@ -28,7 +28,7 @@ class TestNoGranules(TestCase):
             execution_id = uuid.uuid4().__str__()
 
             # note that this does not cover all available properties
-            copy_to_glacier_input = {
+            copy_to_archive_input = {
                 "payload": {"granules": []},
                 "meta": {
                     "collection": {
@@ -44,7 +44,7 @@ class TestNoGranules(TestCase):
             }
 
             expected_output = {
-                "payload": {"granules": [], "copied_to_glacier": []},
+                "payload": {"granules": [], "copied_to_archive": []},
                 "meta": {
                     "collection": {
                         "name": collection_name,
@@ -77,8 +77,8 @@ class TestNoGranules(TestCase):
             }
 
             execution_info = boto3.client("stepfunctions").start_execution(
-                stateMachineArn=helpers.orca_copy_to_glacier_step_function_arn,
-                input=json.dumps(copy_to_glacier_input, indent=4),
+                stateMachineArn=helpers.orca_copy_to_archive_step_function_arn,
+                input=json.dumps(copy_to_archive_input, indent=4),
             )
 
             step_function_results = helpers.get_state_machine_execution_results(

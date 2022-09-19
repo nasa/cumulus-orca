@@ -202,7 +202,7 @@ A [Jira task](https://bugs.earthdata.nasa.gov/browse/ORCA-369) has been created 
 ## ACL Rule Replacement
 
 Due to AWS suggesting that they will deprecate ACL rules, we should research a replacement for current ACL functionality.
-Presently ACL is used primarily to allow ORCA full ownership over files uploaded to S3, via the addition of `"ACL": "bucket-owner-full-control"` when uploading via `copy_to_glacier`.
+Presently ACL is used primarily to allow ORCA full ownership over files uploaded to S3, via the addition of `"ACL": "bucket-owner-full-control"` when uploading via `copy_to_archive`.
 Buckets with ACL rules disabled default to objects being owned by the bucket, so this may be a clean switch.
 Additional research and testing should be conducted.
 A [Jira task](https://bugs.earthdata.nasa.gov/browse/ORCA-450) has been created to implement this switch.

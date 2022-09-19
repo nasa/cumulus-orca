@@ -142,7 +142,7 @@ resource "aws_sns_topic_subscription" "internal_report_dlq_alarm_email" {
 }
 
 
-## metadata_queue - copy_to_glacier writes to this database update queue.
+## metadata_queue - copy_to_archive writes to this database update queue.
 ## ==============================================================================
 resource "aws_sqs_queue" "metadata_queue" {
   ## OPTIONAL

@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/config.json",
-  "title": "copy_to_glacier Lambda Config",
-  "description": "The config for the copy_to_glacier Lambda.",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_archive/schemas/config.json",
+  "title": "copy_to_archive Lambda Config",
+  "description": "The config for the copy_to_archive Lambda.",
   "type": "object",
   "properties": {
     "excludedFileExtensions": {

@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/body.json",
-  "title": "copy_to_glacier SQS body schema",
-  "description": "Schema for metadata SQS body for copy_to_glacier lambda",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_archive/schemas/body.json",
+  "title": "copy_to_archive SQS body schema",
+  "description": "Schema for metadata SQS body for copy_to_archive lambda",
   "type": "object",
   "properties": {
     "provider": {

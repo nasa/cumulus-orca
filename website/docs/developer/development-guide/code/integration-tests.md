@@ -36,7 +36,7 @@ As tests are run in parallel, it is generally good practice to have one test-per
 2. Connect to the NASA vpn.
 3. Set the following environment variables:
    1. `orca_API_DEPLOYMENT_INVOKE_URL` Output from the ORCA TF module. ex: `https://0000000000.execute-api.us-west-2.amazonaws.com`
-   2. `orca_COPY_TO_GLACIER_STEP_FUNCTION_ARN` ARN of the copy_to_glacier step function. ex: `arn:aws:states:us-west-2:000000000000:stateMachine:PREFIX-OrcaCopyToGlacierWorkflow`
+   2. `orca_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN` ARN of the copy_to_archive step function. ex: `arn:aws:states:us-west-2:000000000000:stateMachine:PREFIX-OrcaCopyToArchiveWorkflow`
 4. Run the following bash command, 
    replacing `i-00000000000000000` with your ec2 instance name, 
    and `0000000000.execute-api.us-west-2.amazonaws.com` with your API Gateway identifier:
@@ -159,7 +159,7 @@ This is a list of tests that should be created for existing Orca architecture. T
      Make sure that Glacier data is less than 24 hours old.
      If older, data will be moved out of `recovered` and `pre-archival` states, and ingest will incur additional costs and time penalties, possibly beyond timeout limits.
      :::
-  1. Call the OrcaCopyToGlacierWorkflow to ingest the granules to Orca.
+  1. Call the OrcaCopyToArchiveWorkflow to ingest the granules to Orca.
      :::tip
      Make sure to cover excludedFileExtensions being set, being unset, and excluding/allowing proper files in either case.
      May require additional tests.
