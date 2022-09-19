@@ -15,8 +15,10 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 ### Changed
-- *ORCA-537* Renamed lambda `copy_to_glacier` to `copy_to_archive`.
-  Output of lambda and Terraform updated to match. See Migration Notes below.
+- *ORCA-537*
+  - Renamed step-function `CopyToGlacierWorkflow` to `CopyToArchiveWorkflow`.
+  - Renamed lambda `copy_to_glacier` to `copy_to_archive`.
+    Output of lambda and Terraform updated to match. See Migration Notes below.
 
 ### Migration Notes
 - If utilizing the `copied_to_glacier` [output property](https://github.com/nasa/cumulus-orca/blob/15e5868f2d1eead88fb5cc8f2e055a18ba0f1264/tasks/copy_to_glacier/schemas/output.json#L47) of `copy_to_glacier`, 
