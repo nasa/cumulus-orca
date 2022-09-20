@@ -4,7 +4,7 @@
   "title": "copy_to_archive Lambda Output",
   "description": "The output for the copy_to_archive Lambda.",
   "type": "object",
-  "required": ["granules", "copied_to_archive"],
+  "required": ["granules", "copied_to_orca"],
   "properties": {
     "granules": {
       "description": "The 'granules' property from the input.",
@@ -44,7 +44,7 @@
         }
       }
     },
-    "copied_to_archive": {
+    "copied_to_orca": {
       "description": "Source URI of the file from origin s3 bucket.",
       "type": "array",
       "items": {
