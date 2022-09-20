@@ -382,7 +382,7 @@ variable "s3_secret_key" {
   - rds_security_group_id (Requires a value. Set in terraform.tfvars to the Security Group ID of your RDS Database's Security Group. Output from Cumulus' RDS module as `security_group_id`)
   - vpc_endpoint_id
 - Adjust workflows/step functions for `extract_filepaths`.
-  - `file-buckets` argument in `task_config` is now `fileBucketsMaps`.
+  - `file-buckets` argument in `task_config` is now `fileBucketMaps`.
 - Adjust workflows/step functions for `copy_to_glacier`. 
   - `multipart_chunksize_mb` argument in `task_config` is now the Cumulus standard of `s3MultipartChunksizeMb`. See example below.
   - `copy_to_glacier` has new requirements for writing to the orca catalog. See example below. Required properties are `providerId`, `executionId`, `collectionShortname`, and `collectionVersion`. See example below.
