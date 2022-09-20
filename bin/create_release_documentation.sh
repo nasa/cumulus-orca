@@ -86,10 +86,6 @@ export GIT_PASS=$bamboo_SECRET_GITHUB_TOKEN
 git config --global user.email "$bamboo_SECRET_GITHUB_EMAIL"
 git config --global user.name "$GIT_USER"
 
-# Output config values for troubleshooting
-echo "USER EMAIL = `git config --get user.email`"
-echo "USER NAME = `git config --get user.name`"
-
 check_rc "npm run deploy"
 
 cd ..
