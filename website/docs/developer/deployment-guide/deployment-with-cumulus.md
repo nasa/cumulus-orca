@@ -546,7 +546,7 @@ variables is shown in the table below.
 | `orca_default_storage_class`                          | string        | The [class of storage](../../operator/storage-classes.md) to use when ingesting files. Can be overridden by collection config. | "GLACIER" |
 | `orca_delete_old_reconcile_jobs_frequency_cron`       | string        | Frequency cron for running the delete_old_reconcile_jobs lambda.                                                               | "cron(0 0 ? * SUN *)" |
 | `orca_ingest_lambda_memory_size`                      | number        | Amount of memory in MB the ORCA copy_to_archive lambda can use at runtime.                                                     | 2240 |
-| `orca_ingest_lambda_timeout`                          | number        | Timeout in number of seconds for ORCA copy_to_archivelambda.                                                                  | 600 |
+| `orca_ingest_lambda_timeout`                          | number        | Timeout in number of seconds for ORCA copy_to_archive lambda.                                                                  | 600 |
 | `orca_internal_reconciliation_expiration_days`        | number        | Only reports updated before this many days ago will be deleted.                                                                | 30 |
 | `orca_reconciliation_lambda_memory_size`              | number        | Amount of memory in MB the ORCA reconciliation lambda can use at runtime.                                                      | 128 |
 | `orca_reconciliation_lambda_timeout`                  | number        | Timeout in number of seconds for ORCA reconciliation lambdas.                                                                  | 720 |
