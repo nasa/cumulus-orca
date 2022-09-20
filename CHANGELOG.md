@@ -17,7 +17,7 @@ and includes an additional section for migration notes.
 ### Changed
 - *ORCA-537*
   - Renamed step-function `OrcaCopyToGlacierWorkflow` to `OrcaCopyToArchiveWorkflow`.
-  - Renamed lambda `copy_to_glacier` to `copy_to_archive`.
+  - Renamed lambda `copy_to_glacier` to `copy_to_archive`, or `PREFIX_copy_to_orca` if looking at the name in AWS.
     Output of lambda and Terraform updated to match. See Migration Notes below.
 
 ### Migration Notes

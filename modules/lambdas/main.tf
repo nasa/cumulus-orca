@@ -28,7 +28,7 @@ module "lambda_security_group" {
 # copy_to_archive - Copies files to the archive bucket
 resource "aws_lambda_function" "copy_to_archive" {
   ## REQUIRED
-  function_name = "${var.prefix}_copy_to_archive"
+  function_name = "${var.prefix}_copy_to_orca"  # Since this is currently public-facing, emphasize that this is an ORCA resource.
   role          = var.restore_object_role_arn
 
   ## OPTIONAL
