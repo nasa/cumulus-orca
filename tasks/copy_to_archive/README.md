@@ -164,7 +164,7 @@ See the schema [input file](https://github.com/nasa/cumulus-orca/blob/master/tas
 The `copy_to_archive` lambda will, as the name suggests, copy a file from its current source destination. The destination location is defined as 
 `${archive_bucket}/${filepath}`, where `${archive_bucket}` is pulled from the environment variable `ORCA_DEFAULT_BUCKET` and `${filepath}` is pulled from the Cumulus granule object input.
 
-The output of this lambda is a dictionary with a `granules` and `copied_to_archive` attributes.  See the schema [output file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_archive/schemas/output.json) for more information. Below is an example of the output:
+The output of this lambda is a dictionary with a `granules` and `copied_to_orca` attributes.  See the schema [output file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_archive/schemas/output.json) for more information. Below is an example of the output:
 
 ```json
 {
@@ -212,7 +212,7 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_archi
       "sync_granule_duration": 1676
     }
   ],
-	"copied_to_archive": [
+	"copied_to_orca": [
       "s3://orca-sandbox-protected/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
       "s3://orca-sandbox-private/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf.met",
       "s3://orca-sandbox-public/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109_ndvi.jpg",

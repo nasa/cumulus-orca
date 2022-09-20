@@ -165,7 +165,7 @@ class TestCopyToArchive(TestCase):
                     ],
                 }
             ],
-            "copied_to_archive": [uuid.uuid4().__str__()],
+            "copied_to_orca": [uuid.uuid4().__str__()],
         }
 
         result = copy_to_archive.handler(handler_input_event, handler_input_context)
@@ -418,7 +418,7 @@ class TestCopyToArchive(TestCase):
             f"{file[copy_to_archive.FILE_FILEPATH_KEY]}"
             for file in self.event_granules["granules"][0]["files"]
         ]
-        self.assertEqual(expected_copied_file_urls, result["copied_to_archive"])
+        self.assertEqual(expected_copied_file_urls, result["copied_to_orca"])
         expected_granules = copy.deepcopy(event["input"]["granules"])
         self.assertEqual(expected_granules, result["granules"])
         self.assertIsNone(config_check.bad_config)
@@ -678,7 +678,7 @@ class TestCopyToArchive(TestCase):
             f"{file[copy_to_archive.FILE_FILEPATH_KEY]}"
             for file in self.event_granules["granules"][0]["files"]
         ]
-        self.assertEqual(expected_copied_file_urls, result["copied_to_archive"])
+        self.assertEqual(expected_copied_file_urls, result["copied_to_orca"])
         expected_granules = copy.deepcopy(event["input"]["granules"])
         self.assertEqual(expected_granules, result["granules"])
         self.assertIsNone(config_check.bad_config)

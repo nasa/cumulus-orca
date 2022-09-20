@@ -44,7 +44,7 @@ class TestNoGranules(TestCase):
             }
 
             expected_output = {
-                "payload": {"granules": [], "copied_to_archive": []},
+                "payload": {"granules": [], "copied_to_orca": []},
                 "meta": {
                     "collection": {
                         "name": collection_name,
