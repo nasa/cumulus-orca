@@ -1,7 +1,8 @@
 """
 Name: get_current_archive_list.py
 
-Description: Receives a list of s3 events from an SQS queue, and loads the s3 inventory specified into postgres.
+Description: Receives a list of s3 events from an SQS queue,
+and loads the s3 inventory specified into postgres.
 """
 import json
 import os
@@ -67,15 +68,18 @@ def task(
     db_connect_info: Dict,
 ) -> Dict[str, Any]:
     """
-    Reads the record to find the location of manifest.json, then uses that information to spawn of business logic
+    Reads the record to find the location of manifest.json,
+    then uses that information to spawn of business logic
     for pulling manifest's data into sql.
 
     Args:
         report_bucket_region: The region the report bucket resides in.
         report_bucket_name: The name of the report bucket.
         manifest_key: The key/path to the manifest within the report bucket.
-        s3_access_key: The access key that, when paired with s3_secret_key, allows postgres to access s3.
-        s3_secret_key: The secret key that, when paired with s3_access_key, allows postgres to access s3.
+        s3_access_key: The access key that, when paired with s3_secret_key,
+        allows postgres to access s3.
+        s3_secret_key: The secret key that, when paired with s3_access_key,
+        allows postgres to access s3.
         db_connect_info: See shared_db.py's get_configuration for further details.
 
     Returns: See output.json for details.
@@ -87,7 +91,8 @@ def task(
         LOGGER.error(f"Illegal file '{filename}'. Must be 'manifest.json'")
         raise Exception(f"Illegal file '{filename}'. Must be 'manifest.json'")
 
-    # See https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage-inventory-location.html for json example.
+    # See https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage-inventory-location.html
+    # for json example.
     manifest = get_manifest(
         manifest_key,
         report_bucket_name,
@@ -176,7 +181,7 @@ def create_job(
     Returns: The auto-incremented job_id from the database.
     """
     try:
-        LOGGER.debug(f"Creating status for job.")
+        LOGGER.debug("Creating status for job.")
         with engine.begin() as connection:
             # Within this transaction import the csv and update the job status
             now = datetime.now(timezone.utc)
@@ -205,10 +210,12 @@ def create_job_sql() -> text:  # pragma: no cover
     return text(
         """
         INSERT INTO reconcile_job
-            ("orca_archive_location", "inventory_creation_time", "status_id", "start_time", "last_update", "end_time", 
+            ("orca_archive_location", "inventory_creation_time",
+            "status_id", "start_time", "last_update", "end_time",
             "error_message")
         VALUES
-            (:orca_archive_location, :inventory_creation_time, :status_id, :start_time, :last_update, :end_time, 
+            (:orca_archive_location, :inventory_creation_time,
+            :status_id, :start_time, :last_update, :end_time,
             :error_message)
         RETURNING
             id"""
@@ -260,12 +267,14 @@ def update_job_with_s3_inventory_in_postgres(
     engine: Engine,
 ) -> None:
     """
-    Constructs a temporary table capable of holding full data from s3 inventory report, triggers load into that table,
-        then moves that data into the proper partition.
+    Constructs a temporary table capable of holding full data from s3 inventory report,
+    triggers load into that table, then moves that data into the proper partition.
 
     Args:
-        s3_access_key: The access key that, when paired with s3_secret_key, allows postgres to access s3.
-        s3_secret_key: The secret key that, when paired with s3_access_key, allows postgres to access s3.
+        s3_access_key: The access key that, when paired with s3_secret_key,
+        allows postgres to access s3.
+        s3_secret_key: The secret key that, when paired with s3_access_key,
+        allows postgres to access s3.
         report_bucket_name: The name of the bucket the csv is located in.
         report_bucket_region: The name of the region the report bucket resides in.
         csv_key_paths: The paths of the csvs within the report bucket.
@@ -351,15 +360,18 @@ def generate_temporary_s3_column_list(manifest_file_schema: str) -> str:
     Creates a list of columns that matches the order of columns in the manifest.
     Columns used by our database are given standardized names.
     Args:
-        manifest_file_schema: An ordered CSV representing columns in the CSV the manifest points to.
+        manifest_file_schema: An ordered CSV representing columns
+        in the CSV the manifest points to.
 
     Returns: A string representing SQL columns to create.
         Columns required for import but unused by orca will be filled in with `junk` values.
-        For example, 'orca_archive_location text, key_path text, size_in_bytes bigint, last_update timestamptz, etag text,
-        storage_class text, junk7 text, junk8 text, junk9 text, junk10 text, junk11 text, junk12 text, junk13 text'
+        For example, 'orca_archive_location text, key_path text, size_in_bytes bigint,
+        last_update timestamptz, etag text,storage_class text, junk7 text, junk8 text,
+        junk9 text, junk10 text, junk11 text, junk12 text, junk13 text'
 
     """
-    # Keys indicate columns in the s3 inventory csv. Values indicate the corresponding column in orca.reconcile_s3_object
+    # Keys indicate columns in the s3 inventory csv.
+    # Values indicate the corresponding column in orca.reconcile_s3_object
     column_mappings = {
         "Bucket": "orca_archive_location text",
         "Key": "key_path text",
@@ -426,18 +438,29 @@ def translate_s3_import_to_partitioned_data_sql() -> text:  # pragma: no cover
     """
     return text(
         f"""
-        INSERT INTO orca.reconcile_s3_object (job_id, orca_archive_location, key_path, etag, last_update, size_in_bytes, storage_class, delete_marker)
-            SELECT 
-            :job_id, 
-            orca_archive_location, 
-            key_path, 
-            CONCAT('"', etag, '"') as etag, /* copy_to_glacier's AWS call presently wraps this in quotes. Seems like a bug, but is shown on https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.list_object_versions */
-            last_update, 
-            COALESCE(size_in_bytes, 0), 
+        INSERT INTO orca.reconcile_s3_object (
+                job_id,
+                orca_archive_location,
+                key_path,
+                etag,
+                last_update,
+                size_in_bytes,
+                storage_class,
+                delete_marker)
+            SELECT
+            :job_id,
+            orca_archive_location,
+            key_path,
+            CONCAT('"', etag, '"') as etag, /* copy_to_glacier's AWS call presently
+                wraps this in quotes. Seems like a bug, but is shown on
+                https://boto3.amazonaws.com/v1/documentation/api/latest/
+                reference/services/s3.html#S3.Client.list_object_versions */
+            last_update,
+            COALESCE(size_in_bytes, 0),
             storage_class, delete_marker
             FROM s3_import
             WHERE is_latest = TRUE
-        """  # nosec
+        """  # nosec    # noqa
     )
 
 
@@ -534,21 +557,25 @@ def check_env_variable(env_name: str) -> str:
         LOGGER.error(f"{env_name} environment value not found.")
         raise
 
-    return env_value 
+    return env_value
 
 
 def handler(event: Dict[str, List], context) -> Dict[str, Any]:
     """
-    Lambda handler. Receives a list of s3 events from an SQS queue, and loads the s3 inventory specified into postgres.
+    Lambda handler. Receives a list of s3 events from an SQS queue,
+    and loads the s3 inventory specified into postgres.
 
     Args:
         event: Unused. Data is pulled in by contacting INTERNAL_REPORT_QUEUE_URL
         context: An object passed through by AWS. Used for tracking.
     Environment Vars:
-        INTERNAL_REPORT_QUEUE_URL (string): The URL of the SQS queue the job came from.
-        S3_CREDENTIALS_SECRET_ARN (string): The ARN of the secret containing s3 credentials.
-        DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
-        See shared_db.py's get_configuration for further details.
+        INTERNAL_REPORT_QUEUE_URL (string):
+            The URL of the SQS queue the job came from.
+        S3_CREDENTIALS_SECRET_ARN (string):
+            The ARN of the secret containing s3 credentials.
+        DB_CONNECT_INFO_SECRET_ARN (string):
+            Secret ARN of the AWS secretsmanager secret for connecting to the database.
+            See shared_db.py's get_configuration for further details.
 
     Returns: See output.json for details.
     """
@@ -557,8 +584,10 @@ def handler(event: Dict[str, List], context) -> Dict[str, Any]:
     # getting the env variables
     s3_access_key, s3_secret_key = get_s3_credentials_from_secrets_manager(
         check_env_variable(OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY))
-    db_connect_info = shared_db.get_configuration(check_env_variable(OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY))
-    message_data = get_message_from_queue(check_env_variable(OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY))
+    db_connect_info = shared_db.get_configuration(
+        check_env_variable(OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY))
+    message_data = get_message_from_queue(
+        check_env_variable(OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY))
 
     result = task(
         message_data.report_bucket_region,

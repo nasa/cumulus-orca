@@ -15,12 +15,26 @@
   * [get\_partition\_name\_from\_bucket\_name](#orca_shared.reconciliation.shared_reconciliation.get_partition_name_from_bucket_name)
   * [update\_job](#orca_shared.reconciliation.shared_reconciliation.update_job)
   * [internal\_update\_job](#orca_shared.reconciliation.shared_reconciliation.internal_update_job)
+* [orca\_shared.database.test.unit\_tests.adapters](#orca_shared.database.test.unit_tests.adapters)
+* [orca\_shared.database.test.unit\_tests.adapters.api.test\_aws](#orca_shared.database.test.unit_tests.adapters.api.test_aws)
+  * [TestAWS](#orca_shared.database.test.unit_tests.adapters.api.test_aws.TestAWS)
+    * [setUp](#orca_shared.database.test.unit_tests.adapters.api.test_aws.TestAWS.setUp)
+    * [test\_get\_configuration\_happy\_path](#orca_shared.database.test.unit_tests.adapters.api.test_aws.TestAWS.test_get_configuration_happy_path)
+    * [test\_get\_configuration\_no\_aws\_region](#orca_shared.database.test.unit_tests.adapters.api.test_aws.TestAWS.test_get_configuration_no_aws_region)
+    * [test\_get\_configuration\_bad\_secret](#orca_shared.database.test.unit_tests.adapters.api.test_aws.TestAWS.test_get_configuration_bad_secret)
+* [orca\_shared.database.test.unit\_tests.adapters.api](#orca_shared.database.test.unit_tests.adapters.api)
+* [orca\_shared.database.test.unit\_tests.use\_cases](#orca_shared.database.test.unit_tests.use_cases)
+* [orca\_shared.database.test.unit\_tests.use\_cases.test\_create\_postgres\_connection\_uri](#orca_shared.database.test.unit_tests.use_cases.test_create_postgres_connection_uri)
+  * [TestCreatePostgresConnectionUri](#orca_shared.database.test.unit_tests.use_cases.test_create_postgres_connection_uri.TestCreatePostgresConnectionUri)
+    * [test\_create\_user\_uri\_happy\_path](#orca_shared.database.test.unit_tests.use_cases.test_create_postgres_connection_uri.TestCreatePostgresConnectionUri.test_create_user_uri_happy_path)
+    * [test\_create\_admin\_uri\_happy\_path](#orca_shared.database.test.unit_tests.use_cases.test_create_postgres_connection_uri.TestCreatePostgresConnectionUri.test_create_admin_uri_happy_path)
+    * [test\_create\_admin\_uri\_overwrite\_database](#orca_shared.database.test.unit_tests.use_cases.test_create_postgres_connection_uri.TestCreatePostgresConnectionUri.test_create_admin_uri_overwrite_database)
+    * [test\_\_create\_connection\_uri\_happy\_path](#orca_shared.database.test.unit_tests.use_cases.test_create_postgres_connection_uri.TestCreatePostgresConnectionUri.test__create_connection_uri_happy_path)
 * [orca\_shared.database.test.unit\_tests.test\_shared\_db](#orca_shared.database.test.unit_tests.test_shared_db)
   * [TestSharedDatabaseLibraries](#orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries)
     * [setUp](#orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.setUp)
     * [tearDown](#orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.tearDown)
     * [test\_get\_configuration\_happy\_path](#orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.test_get_configuration_happy_path)
-    * [test\_get\_configuration\_no\_prefix](#orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.test_get_configuration_no_prefix)
     * [test\_get\_configuration\_no\_aws\_region](#orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.test_get_configuration_no_aws_region)
     * [test\_get\_configuration\_bad\_secret](#orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.test_get_configuration_bad_secret)
     * [test\_get\_admin\_connection\_database\_values](#orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.test_get_admin_connection_database_values)
@@ -34,7 +48,16 @@
   * [get\_user\_connection](#orca_shared.database.shared_db.get_user_connection)
   * [retry\_operational\_error](#orca_shared.database.shared_db.retry_operational_error)
 * [orca\_shared.database](#orca_shared.database)
-* [orca\_shared.database.test](#orca_shared.database.test)
+* [orca\_shared.database.adapters](#orca_shared.database.adapters)
+* [orca\_shared.database.adapters.api](#orca_shared.database.adapters.api)
+* [orca\_shared.database.adapters.api.aws](#orca_shared.database.adapters.api.aws)
+  * [get\_configuration](#orca_shared.database.adapters.api.aws.get_configuration)
+* [orca\_shared.database.use\_cases.create\_postgres\_connection\_uri](#orca_shared.database.use_cases.create_postgres_connection_uri)
+  * [create\_user\_uri](#orca_shared.database.use_cases.create_postgres_connection_uri.create_user_uri)
+  * [create\_admin\_uri](#orca_shared.database.use_cases.create_postgres_connection_uri.create_admin_uri)
+* [orca\_shared.database.use\_cases](#orca_shared.database.use_cases)
+* [orca\_shared.database.entities.postgres\_connection\_info](#orca_shared.database.entities.postgres_connection_info)
+* [orca\_shared.database.entities](#orca_shared.database.entities)
 * [orca\_shared.recovery.test.unit\_tests.test\_shared\_recovery](#orca_shared.recovery.test.unit_tests.test_shared_recovery)
   * [TestSharedRecoveryLibraries](#orca_shared.recovery.test.unit_tests.test_shared_recovery.TestSharedRecoveryLibraries)
     * [setUp](#orca_shared.recovery.test.unit_tests.test_shared_recovery.TestSharedRecoveryLibraries.setUp)
@@ -165,7 +188,8 @@ class OrcaStatus(Enum)
 ```
 
 An enumeration.
-Defines the status value used in the ORCA Reconciliation database for use by the reconciliation functions.
+Defines the status value used in the ORCA Reconciliation database
+for use by the reconciliation functions.
 
 <a id="orca_shared.reconciliation.shared_reconciliation.get_partition_name_from_bucket_name"></a>
 
@@ -221,6 +245,151 @@ Updates the status entry for a job.
 - `error_message` - The error to post to the job, if any.
 - `engine` - The sqlalchemy engine to use for contacting the database.
 
+<a id="orca_shared.database.test.unit_tests.adapters"></a>
+
+# orca\_shared.database.test.unit\_tests.adapters
+
+<a id="orca_shared.database.test.unit_tests.adapters.api.test_aws"></a>
+
+# orca\_shared.database.test.unit\_tests.adapters.api.test\_aws
+
+<a id="orca_shared.database.test.unit_tests.adapters.api.test_aws.TestAWS"></a>
+
+## TestAWS Objects
+
+```python
+class TestAWS(unittest.TestCase)
+```
+
+<a id="orca_shared.database.test.unit_tests.adapters.api.test_aws.TestAWS.setUp"></a>
+
+#### setUp
+
+```python
+def setUp()
+```
+
+Perform initial setup for test.
+
+<a id="orca_shared.database.test.unit_tests.adapters.api.test_aws.TestAWS.test_get_configuration_happy_path"></a>
+
+#### test\_get\_configuration\_happy\_path
+
+```python
+@patch.dict(
+    os.environ,
+    {
+        "AWS_REGION": "us-west-2",
+    },
+    clear=True,
+)
+def test_get_configuration_happy_path()
+```
+
+Get secret value and return data class.
+
+<a id="orca_shared.database.test.unit_tests.adapters.api.test_aws.TestAWS.test_get_configuration_no_aws_region"></a>
+
+#### test\_get\_configuration\_no\_aws\_region
+
+```python
+@patch.dict(
+    os.environ,
+    {},
+    clear=True,
+)
+def test_get_configuration_no_aws_region()
+```
+
+Validate an error is thrown if AWS_REGION is not set.
+
+<a id="orca_shared.database.test.unit_tests.adapters.api.test_aws.TestAWS.test_get_configuration_bad_secret"></a>
+
+#### test\_get\_configuration\_bad\_secret
+
+```python
+@patch.dict(
+    os.environ,
+    {
+        "AWS_REGION": "us-west-2",
+    },
+    clear=True,
+)
+def test_get_configuration_bad_secret()
+```
+
+Validates a secret is thrown if a secretsmanager ID is invalid.
+
+<a id="orca_shared.database.test.unit_tests.adapters.api"></a>
+
+# orca\_shared.database.test.unit\_tests.adapters.api
+
+<a id="orca_shared.database.test.unit_tests.use_cases"></a>
+
+# orca\_shared.database.test.unit\_tests.use\_cases
+
+<a id="orca_shared.database.test.unit_tests.use_cases.test_create_postgres_connection_uri"></a>
+
+# orca\_shared.database.test.unit\_tests.use\_cases.test\_create\_postgres\_connection\_uri
+
+<a id="orca_shared.database.test.unit_tests.use_cases.test_create_postgres_connection_uri.TestCreatePostgresConnectionUri"></a>
+
+## TestCreatePostgresConnectionUri Objects
+
+```python
+class TestCreatePostgresConnectionUri(unittest.TestCase)
+```
+
+<a id="orca_shared.database.test.unit_tests.use_cases.test_create_postgres_connection_uri.TestCreatePostgresConnectionUri.test_create_user_uri_happy_path"></a>
+
+#### test\_create\_user\_uri\_happy\_path
+
+```python
+@patch(
+    "orca_shared.database.use_cases.create_postgres_connection_uri._create_connection_uri"
+)
+def test_create_user_uri_happy_path(mock_create_connection_uri: MagicMock)
+```
+
+With no optional properties, return admin database uri.
+
+<a id="orca_shared.database.test.unit_tests.use_cases.test_create_postgres_connection_uri.TestCreatePostgresConnectionUri.test_create_admin_uri_happy_path"></a>
+
+#### test\_create\_admin\_uri\_happy\_path
+
+```python
+@patch(
+    "orca_shared.database.use_cases.create_postgres_connection_uri._create_connection_uri"
+)
+def test_create_admin_uri_happy_path(mock_create_connection_uri: MagicMock)
+```
+
+With no optional properties, return admin database uri.
+
+<a id="orca_shared.database.test.unit_tests.use_cases.test_create_postgres_connection_uri.TestCreatePostgresConnectionUri.test_create_admin_uri_overwrite_database"></a>
+
+#### test\_create\_admin\_uri\_overwrite\_database
+
+```python
+@patch(
+    "orca_shared.database.use_cases.create_postgres_connection_uri._create_connection_uri"
+)
+def test_create_admin_uri_overwrite_database(
+        mock_create_connection_uri: MagicMock)
+```
+
+If database name parameter added, use it.
+
+<a id="orca_shared.database.test.unit_tests.use_cases.test_create_postgres_connection_uri.TestCreatePostgresConnectionUri.test__create_connection_uri_happy_path"></a>
+
+#### test\_\_create\_connection\_uri\_happy\_path
+
+```python
+def test__create_connection_uri_happy_path()
+```
+
+Basic happy path.
+
 <a id="orca_shared.database.test.unit_tests.test_shared_db"></a>
 
 # orca\_shared.database.test.unit\_tests.test\_shared\_db
@@ -267,7 +436,6 @@ Perform tear down actions
 @patch.dict(
     os.environ,
     {
-        "PREFIX": "orcatest",
         "AWS_REGION": "us-west-2",
     },
     clear=True,
@@ -277,16 +445,6 @@ def test_get_configuration_happy_path()
 
 Testing the rainbows and bunnies path of this call.
 
-<a id="orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.test_get_configuration_no_prefix"></a>
-
-#### test\_get\_configuration\_no\_prefix
-
-```python
-def test_get_configuration_no_prefix()
-```
-
-Validate an error is thrown if PREFIX is not set.
-
 <a id="orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.test_get_configuration_no_aws_region"></a>
 
 #### test\_get\_configuration\_no\_aws\_region
@@ -294,9 +452,7 @@ Validate an error is thrown if PREFIX is not set.
 ```python
 @patch.dict(
     os.environ,
-    {
-        "PREFIX": "orcatest",
-    },
+    {},
     clear=True,
 )
 def test_get_configuration_no_aws_region()
@@ -312,7 +468,6 @@ Validate an error is thrown if AWS_REGION is not set.
 @patch.dict(
     os.environ,
     {
-        "PREFIX": "orcatest",
         "AWS_REGION": "us-west-2",
     },
     clear=True,
@@ -330,7 +485,6 @@ Validates a secret is thrown if a secretsmanager ID is invalid.
 @patch.dict(
     os.environ,
     {
-        "PREFIX": "orcatest",
         "AWS_REGION": "us-west-2",
     },
     clear=True,
@@ -349,7 +503,6 @@ Tests the function to make sure the correct database value is passed.
 @patch.dict(
     os.environ,
     {
-        "PREFIX": "orcatest",
         "AWS_REGION": "us-west-2",
     },
     clear=True,
@@ -368,7 +521,6 @@ Tests the function to make sure the correct database value is passed.
 @patch.dict(
     os.environ,
     {
-        "PREFIX": "orcatest",
         "AWS_REGION": "us-west-2",
     },
     clear=True,
@@ -416,16 +568,16 @@ Description: Shared library for database objects needed by the various libraries
 #### get\_configuration
 
 ```python
+@deprecated
 def get_configuration(db_connect_info_secret_arn: str) -> Dict[str, str]
 ```
 
 Create a dictionary of configuration values based on environment variables
-information and other items needed to create the database.
+and secret information items needed to create ORCA database connections.
 
 
 ```
 Environment Variables:
-    PREFIX (str): Deployment prefix used to pull the proper AWS secret.
     AWS_REGION (str): AWS reserved runtime variable used to set boto3 client region.
 ```
 
@@ -449,6 +601,7 @@ Environment Variables:
 #### get\_admin\_connection
 
 ```python
+@deprecated
 def get_admin_connection(config: Dict[str, str],
                          database: str = None) -> Engine
 ```
@@ -468,6 +621,7 @@ Creates a connection engine to a database as a superuser.
 #### get\_user\_connection
 
 ```python
+@deprecated
 def get_user_connection(config: Dict[str, str]) -> Engine
 ```
 
@@ -505,9 +659,112 @@ Decorator takes arguments to adjust number of retries and backoff strategy.
 
 # orca\_shared.database
 
-<a id="orca_shared.database.test"></a>
+<a id="orca_shared.database.adapters"></a>
 
-# orca\_shared.database.test
+# orca\_shared.database.adapters
+
+<a id="orca_shared.database.adapters.api"></a>
+
+# orca\_shared.database.adapters.api
+
+<a id="orca_shared.database.adapters.api.aws"></a>
+
+# orca\_shared.database.adapters.api.aws
+
+<a id="orca_shared.database.adapters.api.aws.get_configuration"></a>
+
+#### get\_configuration
+
+```python
+def get_configuration(db_connect_info_secret_arn: str,
+                      logger: logging.Logger) -> PostgresConnectionInfo
+```
+
+Create a dictionary of configuration values based on environment variables
+and secret information items needed to create ORCA database connections.
+
+
+```
+Environment Variables:
+    AWS_REGION (str): AWS reserved runtime variable used to set boto3 client region.
+```
+
+**Arguments**:
+
+- `db_connect_info_secret_arn` - The secret ARN of the secret in AWS secretsmanager.
+- `logger` - The logger to use.
+  
+
+**Returns**:
+
+- `Configuration` _Dict_ - Dictionary with all the configuration information.
+  The schema for the output is available [here](schemas/output.json).
+  
+
+**Raises**:
+
+- `Exception` _Exception_ - When variables or secrets are not available.
+
+<a id="orca_shared.database.use_cases.create_postgres_connection_uri"></a>
+
+# orca\_shared.database.use\_cases.create\_postgres\_connection\_uri
+
+<a id="orca_shared.database.use_cases.create_postgres_connection_uri.create_user_uri"></a>
+
+#### create\_user\_uri
+
+```python
+def create_user_uri(db_connect_info: PostgresConnectionInfo,
+                    logger: logging.Logger) -> str
+```
+
+Creates a connection URI for application database as the application
+database user.
+
+**Arguments**:
+
+- `db_connect_info` - Configuration containing connection information.
+- `logger` - The logger to use.
+  
+
+**Returns**:
+
+  URI for connecting to the database.
+
+<a id="orca_shared.database.use_cases.create_postgres_connection_uri.create_admin_uri"></a>
+
+#### create\_admin\_uri
+
+```python
+def create_admin_uri(db_connect_info: PostgresConnectionInfo,
+                     logger: logging.Logger,
+                     database_name_overwrite: str = None) -> str
+```
+
+Creates a connection URI for a database as a superuser.
+
+**Arguments**:
+
+- `db_connect_info` - Configuration containing connection information.
+- `logger` - The logger to use.
+- `database_name_overwrite` - Database to connect to. Defaults to admin_database.
+  
+
+**Returns**:
+
+  URI for connecting to the database.
+
+<a id="orca_shared.database.use_cases"></a>
+
+# orca\_shared.database.use\_cases
+
+<a id="orca_shared.database.entities.postgres_connection_info"></a>
+
+# orca\_shared.database.entities.postgres\_connection\_info
+
+<a id="orca_shared.database.entities"></a>
+
+# orca\_shared.database.entities
 
 <a id="orca_shared.recovery.test.unit_tests.test_shared_recovery"></a>
 

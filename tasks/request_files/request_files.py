@@ -36,8 +36,8 @@ OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY = "ORCA_DEFAULT_BUCKET"
 EVENT_CONFIG_KEY = "config"
 EVENT_INPUT_KEY = "input"
 
-CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY = "orcaDefaultBucketOverride"
-CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY = "orcaDefaultRecoveryTypeOverride"
+CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY = "defaultBucketOverride"
+CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY = "defaultRecoveryTypeOverride"
 
 INPUT_GRANULES_KEY = "granules"
 
@@ -80,7 +80,8 @@ def task(
     Pulls information from os.environ, utilizing defaults if needed,
     then calls inner_task.
         Args:
-            Note that because we are using CumulusMessageAdapter, this may not directly correspond to Lambda input.
+            Note that because we are using CumulusMessageAdapter,
+            this may not directly correspond to Lambda input.
             event: A dict with the following keys:
                 'config' (dict): See schemas/config.json for details.
                 'input' (dict): See schemas/input.json for details.
@@ -117,7 +118,7 @@ def task(
 
     # Use the default glacier bucket if none is specified for the collection or otherwise given.
     event[EVENT_CONFIG_KEY][
-        CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY
+        CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY
     ] = get_default_glacier_bucket_name(
         event[EVENT_CONFIG_KEY]
     )  # todo: pass this in as parameter instead of adjusting config dictionary.
@@ -177,7 +178,8 @@ def get_glacier_recovery_type(config: Dict[str, Any]) -> str:
                 f"found in the configuration {CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} key."
             )
             raise ValueError(
-                f"Invalid restore type value in configuration {CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} key."
+                f"Invalid restore type value in configuration "
+                f"{CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} key."
             )
 
     # Look for default from TF
@@ -195,7 +197,8 @@ def get_glacier_recovery_type(config: Dict[str, Any]) -> str:
                     f"found in environment variable {OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY}."
                 )
                 raise ValueError(
-                    f"Invalid restore type value in environment variable {OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY}"
+                    f"Invalid restore type value in environment variable "
+                    f"{OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY}"
                 )
 
     return recovery_type
@@ -203,11 +206,11 @@ def get_glacier_recovery_type(config: Dict[str, Any]) -> str:
 
 def get_default_glacier_bucket_name(config: Dict[str, Any]) -> str:
     try:
-        default_bucket = config[CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY]
+        default_bucket = config[CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY]
         if default_bucket is not None:
             return default_bucket
     except KeyError:
-        LOGGER.warn(f"{CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY} is not set.")
+        LOGGER.warn(f"{CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY} is not set.")
     return str(os.environ[OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY])
 
 
@@ -225,11 +228,12 @@ def inner_task(
     for {exp_days} days before they expire. A restore request will be tried up to {retries} times
     if it fails, waiting {retry_sleep_secs} between each attempt.
         Args:
-            Note that because we are using CumulusMessageAdapter, this may not directly correspond to Lambda input.
+            Note that because we are using CumulusMessageAdapter,
+            this may not directly correspond to Lambda input.
             event: A dict with the following keys:
                 'config' (dict): A dict with the following keys:
-                    'orcaDefaultBucketOverride' (str): The name of the glacier bucket from which the files
-                    will be restored.
+                    'defaultBucketOverride' (str): The name of the glacier bucket
+                        from which the files will be restored.
                     'asyncOperationId' (str): The unique identifier used for tracking requests.
                 'input' (dict): A dict with the following keys:
                     'granules' (list(dict)): A list of dicts with the following keys:
@@ -240,9 +244,10 @@ def inner_task(
                                 to after the restore completes.
             max_retries: The maximum number of retries for network operations.
             retry_sleep_secs: The number of time to sleep between retries.
-            recovery_type: The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
-            restore_expire_days: The number of days the restored file will be accessible in the S3 bucket before it
-                expires.
+            recovery_type: The Tier for the restore request.
+                Valid values are 'Standard'|'Bulk'|'Expedited'.
+            restore_expire_days: The number of days the restored file will be accessible
+                in the S3 bucket before it expires.
             status_update_queue_url: The URL of the SQS queue to post status to.
         Returns:
             See schemas/output.json
@@ -252,11 +257,12 @@ def inner_task(
     # Get the glacier bucket from the event
     try:
         glacier_bucket = event[EVENT_CONFIG_KEY][
-            CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY
+            CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY
         ]
     except KeyError:
         raise RestoreRequestError(
-            f"request: {event} does not contain a config value for {CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY}"
+            f"request: {event} does not contain a config value "
+            f"for {CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY}"
         )
 
     # Get the collection's multipart_chunksize from the event.
@@ -277,7 +283,6 @@ def inner_task(
 
     # Setup additional information and formatting for the event granule files
     # Setup initial array for the granules processed
-    copied_granules = []
     for granule in granules:
         # Initialize the granule copy, file array, and timestamp variables
         files = []
@@ -392,16 +397,19 @@ def process_granule(
             'granuleId' (str): The id of the granule being restored.
             'recover_files' (list(dict)): A list of dicts with the following keys:
                 'keyPath' (str): Key to the file within the granule.
-                'success' (bool): Should enter this method set to False. Modified to 'True' by method end.
+                'success' (bool): Should enter this method set to False.
+                    Modified to 'True' by method end.
                 'errorMessage' (str): Will be modified if error occurs.
 
 
         glacier_bucket: The S3 glacier bucket name.
         restore_expire_days:
-            The number of days the restored file will be accessible in the S3 bucket before it expires.
+            The number of days the restored file will be accessible in the S3 bucket
+            before it expires.
         max_retries: The number of attempts to retry a restore_request that failed to submit.
         retry_sleep_secs: The number of seconds to sleep between retry attempts.
-        recovery_type: The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
+        recovery_type: The Tier for the restore request. Valid values are
+            'Standard'|'Bulk'|'Expedited'.
         job_id: The unique identifier used for tracking requests.
         status_update_queue_url: The URL of the SQS queue to post status to.
 
@@ -415,7 +423,8 @@ def process_granule(
         for a_file in granule[GRANULE_RECOVER_FILES_KEY]:
             # Only restore files we have not restored or have not successfully been restored
             if not a_file[FILE_PROCESSED_KEY]:
-                LOGGER.debug(f"Attempting to restore object at key '{a_file[FILE_KEY_PATH_KEY]}'...")
+                LOGGER.debug(f"Attempting to restore object at key "
+                             f"'{a_file[FILE_KEY_PATH_KEY]}'...")
                 try:
                     restore_object(
                         s3,
@@ -431,9 +440,10 @@ def process_granule(
                     a_file[FILE_PROCESSED_KEY] = True
 
                 except ClientError as err:
-                    # Set the message for logging and populate the file's error message information.
+                    # Set the message for logging and populate file's error message info.
                     LOGGER.error(
-                        f"Failed to restore '{a_file[FILE_KEY_PATH_KEY]}' from '{glacier_bucket}'. "
+                        f"Failed to restore '{a_file[FILE_KEY_PATH_KEY]}' "
+                        f"from '{glacier_bucket}'. "
                         f"Encountered error '{err}'."
                     )
                     a_file[FILE_ERROR_MESSAGE_KEY] = str(err)
@@ -485,7 +495,8 @@ def process_granule(
                     break
                 except Exception as ex:
                     LOGGER.error(
-                        f"Ran into error posting to SQS {attempt + 1} time(s) with exception '{ex}'"
+                        f"Ran into error posting to SQS {attempt + 1} "
+                        f"time(s) with exception '{ex}'"
                     )
                     # todo: Use backoff code. ORCA-201
                     time.sleep(retry_sleep_secs)
@@ -503,13 +514,16 @@ def process_granule(
 
     # If this is reached, that means there is no entry in the db for file's status.
     if any_error:
-        LOGGER.error(f"One or more files failed to be requested from '{glacier_bucket}'. GRANULE: {json.dumps(granule)}")
+        LOGGER.error(f"One or more files failed to be requested "
+                     f"from '{glacier_bucket}'. GRANULE: {json.dumps(granule)}")
         raise RestoreRequestError(
             f"One or more files failed to be requested from '{glacier_bucket}'."
         )
 
 
-def get_s3_object_information(s3_cli: BaseClient, glacier_bucket: str, file_key: str) -> Optional[Dict[str, Any]]:
+def get_s3_object_information(
+        s3_cli: BaseClient, glacier_bucket: str, file_key: str
+                            ) -> Optional[Dict[str, Any]]:
     """Perform a head request to get information about a file in S3.
     Args:
         s3_cli: An instance of boto3 s3 client
@@ -534,7 +548,8 @@ def get_s3_object_information(s3_cli: BaseClient, glacier_bucket: str, file_key:
         ):  # todo: Unit tests say 'Not Found', some online docs say 'NoSuchKey'
             return None
         raise
-        # todo: Online docs suggest we could catch 'S3.Client.exceptions.NoSuchKey instead of deconstructing ClientError
+        # todo: Online docs suggest we could catch
+        # 'S3.Client.exceptions.NoSuchKey instead of deconstructing ClientError
 
 
 def restore_object(
@@ -551,11 +566,13 @@ def restore_object(
     Args:
         s3_cli: An instance of boto3 s3 client.
         key: The key of the Glacier object being restored.
-        days: How many days the restored file will be accessible in the S3 bucket before it expires.
+        days: How many days the restored file will be accessible in the
+            S3 bucket before it expires.
         db_glacier_bucket_key: The S3 bucket name.
         attempt: The attempt number for logging purposes.
         job_id: The unique id of the job. Used for logging.
-        recovery_type: Glacier Tier. Valid values are 'Standard'|'Bulk'|'Expedited'. Defaults to 'Standard'.
+        recovery_type: Glacier Tier. Valid values are
+            'Standard'|'Bulk'|'Expedited'. Defaults to 'Standard'.
     Raises:
         ClientError: Raises ClientErrors from restore_object, or if the file is already restored.
     """
@@ -570,7 +587,8 @@ def restore_object(
             {
                 "Error": {
                     "Code": "HTTPStatus: 200",
-                    "Message": f"File '{key}' in bucket '{db_glacier_bucket_key}' has already been recovered.",
+                    "Message": f"File '{key}' in bucket "
+                    f"'{db_glacier_bucket_key}' has already been recovered.",
                 }
             },
             "restore_object",
@@ -600,7 +618,8 @@ def handler(event: Dict[str, Any], context):  # pylint: disable-msg=unused-argum
                 to sleep between retry attempts.
             RESTORE_RECOVERY_TYPE (str, optional, default = 'Standard'): the Tier
                 for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
-            CUMULUS_MESSAGE_ADAPTER_DISABLED (str): If set to 'true', CumulusMessageAdapter does not modify input.
+            CUMULUS_MESSAGE_ADAPTER_DISABLED (str): If set to 'true',
+                CumulusMessageAdapter does not modify input.
             STATUS_UPDATE_QUEUE_URL
                 The URL of the SQS queue to post status to.
             ORCA_DEFAULT_BUCKET
@@ -613,9 +632,9 @@ def handler(event: Dict[str, Any], context):  # pylint: disable-msg=unused-argum
                 Combine with knowledge of CumulusMessageAdapter for other properties.
         Raises:
             RestoreRequestError: An error occurred calling restore_object for one or more files.
-            The same dict that is returned for a successful granule restore, will be included in the
-            message, with 'success' = False for the files for which the restore request failed to
-            submit.
+            The same dict that is returned for a successful granule restore,
+            will be included in the message, with 'success' = False for
+            the files for which the restore request failed to submit.
     """
     LOGGER.setMetadata(event, context)
     return run_cumulus_task(task, event, context)

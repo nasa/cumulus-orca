@@ -18,7 +18,7 @@
             "type": "string"
         },
         "user_username": {
-            "description": "Application non-privelaged database user name used for URL connection string.",
+            "description": "Application non-privileged database user name used for URL connection string.",
             "type": "string"
         },
         "user_password": {

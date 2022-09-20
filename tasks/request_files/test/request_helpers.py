@@ -25,4 +25,5 @@ class LambdaContextMock:  # pylint: disable-msg=too-few-public-methods
     def __init__(self):
         self.function_name = "request_files"
         self.function_version = 1
-        self.invoked_function_arn = "arn:aws:lambda:us-west-2:065089468788:function:request_files:1"
+        self.invoked_function_arn = "arn:aws:lambda:us-west-2:065089468788:\
+            function:request_files:1"

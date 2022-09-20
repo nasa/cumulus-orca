@@ -38,13 +38,13 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
                 "admin_password":"admin123",
                 "admin_username":"admin",
                 "host":"aws.postgresrds.host",
-                "port":5432,
+                "port":"5432",
                 "user_database":"user_db",
                 "user_password":"user123",
                 "user_username":"user"
             }
         """
-        secret_name = "orcatest-orca-db-login-secret" #nosec
+        secret_name = "orcatest-orca-db-login-secret"  # nosec
         self.test_sm.create_secret(
             Name=secret_name, SecretString=self.secretstring
         )
@@ -83,7 +83,7 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
         """
         Validate an error is thrown if AWS_REGION is not set.
         """
-        
+
         error_message = "Runtime environment variable AWS_REGION is not set."
         with self.assertRaises(Exception) as cm:
             shared_db.get_configuration(self.db_connect_info_secret_arn)
@@ -127,7 +127,7 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
         """
         root_db_call = {
             "host": "aws.postgresrds.host",
-            "port": 5432,
+            "port": "5432",
             "database": "admin_db",
             "username": "admin",
             "password": "admin123",
@@ -135,7 +135,7 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
 
         user_db_call = {
             "host": "aws.postgresrds.host",
-            "port": 5432,
+            "port": "5432",
             "database": "orca",
             "username": "admin",
             "password": "admin123",
@@ -163,7 +163,7 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
         """
         user_db_call = {
             "host": "aws.postgresrds.host",
-            "port": 5432,
+            "port": "5432",
             "database": "user_db",
             "username": "user",
             "password": "user123",
@@ -188,7 +188,7 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
         """
         user_db_call = {
             "host": "aws.postgresrds.host",
-            "port": 5432,
+            "port": "5432",
             "database": "user_db",
             "username": "user",
             "password": "user123",

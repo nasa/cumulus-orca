@@ -1,5 +1,5 @@
 ---
-id: research-deep-glacier-migration
+id: research-deep-archive-migration
 title: Deep Archive Storage Migration Research Notes
 description: Research notes on deep archive migration.
 ---
@@ -18,7 +18,7 @@ The goal of this research is to provide an initial design and recommendation for
 - List of objects already exists in orca catalog and S3 bucket.
 - Users should be able to provide some information (possibly a collectionId) to migrate objects.
 - A serverless approach will be used utilizing several Python lambda functions, SNS/SQS and S3 bucket event notifications.
-- The glacier bucket has versioning enabled.
+- The archive bucket has versioning enabled.
 
 ### Use Cases
 
@@ -63,7 +63,7 @@ To migrate to a different storage class if needed, change `storage_class` under 
 
 3. Wait 48 hours for all objects to migrate to deep archive.
 4. Update the storage type in the ORCA Catalog to the value of DEEP ARCHIVE. Below are three approaches that can accomplish this.
-- (Recommended) Have a lifecycle rule applied to the glacier bucket that will trigger a lambda function for every `s3:LifecycleTransition` event in the bucket. This lambda will automatically update the ORCA catalog status table for storage class to DEEP ARCHIVE at the object level.
+- (Recommended) Have a lifecycle rule applied to the archive bucket that will trigger a lambda function for every `s3:LifecycleTransition` event in the bucket. This lambda will automatically update the ORCA catalog status table for storage class to DEEP ARCHIVE at the object level.
 - Manually run a temporary lambda function that updates the catalog status table for storage class to DEEP ARCHIVE after a set amount of time (48+ hours).
 - Manually update the table column in the database using SQL.
 5. Validate internal reconciliation for mismatches in storage class.
@@ -105,9 +105,13 @@ The diagrams above are the initial thoughts for how a migration may be implement
 
 ### Migrating specific ORCA holdings to deep archive.
 
-It is expected that in certain instances, a DAAC operator will not be able to use the manual approach because of configurations, key path groupings, data selectivity or other factors. In order to be more selective about the data that is migrated to DEEP ARCHIVE, the following solution is proposed.
+It is expected that in certain instances, a DAAC operator will not be able to use the manual approach because of configurations, key path groupings, data selectivity or other factors. 
+In order to be more selective about the data that is migrated to DEEP ARCHIVE, the following solution is proposed.
 
-Generally speaking, the migration of data would be initiated by an operator through the Cumulus Console and two steps would occur. First, the data to be migrated would be restored from the current Flexible Storage (Glacier) holdings. Second, the recovered data would be copied back to the ORCA bucket in the DEEP GLACIER storage class. The steps below go into a general flow of how the events would occur and the user interact during migration. 
+Generally speaking, the migration of data would be initiated by an operator through the Cumulus Console and two steps would occur. 
+First, the data to be migrated would be restored from the current Flexible Storage (Glacier) holdings. 
+Second, the recovered data would be copied back to the ORCA bucket in the DEEP GLACIER storage class. 
+The steps below go into a general flow of how the events would occur and the user interact during migration. 
 
 1. An operator updates the collection configuration to use the DEEP_ARCHIVE storage type for ORCA. See this [documentation](https://github.com/nasa/cumulus-orca/blob/develop/CHANGELOG.md#migration-notes) for additional details.
 2. User inputs a collecionId via Cumulus console batch execution screens and executes the migration recovery code. Note that PyLOT could also be used to perform this action.
@@ -153,7 +157,7 @@ Another option is to look into [S3 batch operations](https://docs.aws.amazon.com
 
 Additional options to consider when doing restoration and copying of files include reusing the [ORCA recovery workflow](https://nasa.github.io/cumulus-orca/docs/about/architecture/architecture-recover-container) tasks and code to perform the migration or utilizing [S3 batch operations](https://docs.aws.amazon.com/AmazonS3/latest/userguide/batch-ops-copy-object.html.) for copying the data. Additional research should be done prior to final implementation of the use case to better validate these options.
 
-Additional items to consider when implementing this step are the bucket policy and the use of `boto3.copy_object`. Make sure the S3 bucket policy has permission for `s3:PutObject*` action otherwise user will see access denied error. See this [policy](https://github.com/nasa/cumulus-orca/blob/develop/website/docs/developer/deployment-guide/creating-orca-glacier-bucket.md#archive-bucket) for additional details.
+Additional items to consider when implementing this step are the bucket policy and the use of `boto3.copy_object`. Make sure the S3 bucket policy has permission for `s3:PutObject*` action otherwise user will see access denied error. See this [policy](https://github.com/nasa/cumulus-orca/blob/develop/website/docs/developer/deployment-guide/creating-orca-archive-bucket.md#archive-bucket) for additional details.
 
 The boto3 `copy_object` function can be used in the python lambda function as shown below. 
 
@@ -219,10 +223,10 @@ The diagrams above are the initial thoughts for how a migration may be implement
 
 ### Cards created
 
-- [Update ORCA glacier bucket lifecycle rule to transition to Deep Archive](https://bugs.earthdata.nasa.gov/browse/ORCA-499)
-- [Implement S3 event notification in ORCA glacier bucket for s3:LifecycleTransition](https://bugs.earthdata.nasa.gov/browse/ORCA-500)
+- [Update ORCA archive bucket lifecycle rule to transition to Deep Archive](https://bugs.earthdata.nasa.gov/browse/ORCA-499)
+- [Implement S3 event notification in ORCA archive bucket for s3:LifecycleTransition](https://bugs.earthdata.nasa.gov/browse/ORCA-500)
 - [Implement lambda function for updating ORCA catalog with Deep Archive storage value in the table](https://bugs.earthdata.nasa.gov/browse/ORCA-501)
-- [Research task on S3 batch operations for copying and retrieving objects from glacier bucket](https://bugs.earthdata.nasa.gov/browse/ORCA-502)
+- [Research task on S3 batch operations for copying and retrieving objects from archive bucket](https://bugs.earthdata.nasa.gov/browse/ORCA-502)
 - [Research task on choosing best option for File recovery and copy service in Deep Archive migration for specific collections](https://bugs.earthdata.nasa.gov/browse/ORCA-503)
 - [Implement File recovery service for deep archive](https://bugs.earthdata.nasa.gov/browse/ORCA-504)
 - [Implement lambda function or batch operation for copying files to deep archive in S3 and updating the catalog](https://bugs.earthdata.nasa.gov/browse/ORCA-506)

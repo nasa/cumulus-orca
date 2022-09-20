@@ -129,7 +129,7 @@ def reconcile_job_table_sql() -> text:  # pragma: no cover
         COMMENT ON COLUMN reconcile_job.id
           IS 'Job ID unique to each internal reconciliation job.';
         COMMENT ON COLUMN reconcile_job.orca_archive_location
-          IS 'ORCA S3 Glacier bucket the reconciliation targets.';
+          IS 'Archive bucket the reconciliation targets.';
         COMMENT ON COLUMN reconcile_job.status_id IS
           'Current status of the job.';
         COMMENT ON COLUMN reconcile_job.inventory_creation_time
@@ -175,7 +175,7 @@ def reconcile_s3_object_table_sql() -> text:  # pragma: no cover
             COMMENT ON COLUMN reconcile_s3_object.job_id
               IS 'Job the S3 listing is a part of for the comparison.';
             COMMENT ON COLUMN reconcile_s3_object.orca_archive_location
-              IS 'ORCA S3 Glacier bucket name where the file is stored.';
+              IS 'Archive bucket name where the file is stored.';
             COMMENT ON COLUMN reconcile_s3_object.key_path
               IS 'Full path and file name of the object in the S3 bucket.';
             COMMENT ON COLUMN reconcile_s3_object.etag
@@ -313,7 +313,7 @@ def reconcile_orphan_report_table_sql() -> text:  # pragma: no cover
 
             -- Comment
             COMMENT ON TABLE reconcile_orphan_report
-              IS 'Identifies objects in the ORCA S3 Glacier bucket that are not in the catalog.';
+              IS 'Identifies objects in the archive bucket that are not in the catalog.';
             COMMENT ON COLUMN reconcile_orphan_report.job_id
               IS 'Associates the orphaned file to a internal reconciliation job.';
             COMMENT ON COLUMN reconcile_orphan_report.key_path

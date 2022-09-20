@@ -10,7 +10,7 @@ description: ORCA Team Listing
 | Product Owner  | Bradley Hazuka | [@bhazuka](https://github.com/bhazuka)         |
 | Scrum Master   | Scott Saxon    | [@Quarriers89](https://github.com/Quarriers89) |
 | Lead Developer | Andrew Dorn    | [@AndrewDorn](https://github.com/AndrewDorn)   |
-| Developer      | Rizbi Hassan   | [@rizbih](https://github.com/rizbih)           |
+| Developer      | Rizbi Hassan   | [@rizbihassan](https://github.com/rizbihassan) |
 
 
 ## ORCA Primary Contributors

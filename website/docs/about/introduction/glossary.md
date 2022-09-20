@@ -81,6 +81,9 @@ queues/etc to allow for processing of failed messages.
 For more on DLQs, see the [Amazon Documentation](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html)
 and the [Cumulus DLQ feature page](https://nasa.github.io/cumulus/docs/features/dead_letter_queues).
 
+### Deep Archive Storage
+[Amazon S3 Deep Archive](https://aws.amazon.com/s3/storage-classes/#____) is Comparable to [Amazon S3 Glacier](#glacier-storage) but with a lower cost in exchange for slower retrieval time.
+See [Storage Class documentation](../../operator/storage-classes.md) for more details.
 
 ## E
 ### Elastic Container Service (ECS)
@@ -110,6 +113,9 @@ A Cumulus execution refers to a single execution of a (Cumulus) Workflow.
 [Amazon S3 Glacier](https://aws.amazon.com/glacier/) is a secure,
 durable, and extremely low-cost [cloud storage service](https://docs.aws.amazon.com/amazonglacier/latest/dev/introduction.html) 
 for data archiving and long-term backup.
+ORCA supports the [S3 Glacier Flexible Retrieval](https://docs.aws.amazon.com/amazonglacier/latest/dev/introduction.html) variant,
+and these documents will use the terms interchangeably.
+See [Storage Class documentation](../../operator/storage-classes.md) for more details.
 
 ### Granule
 A granule is the smallest aggregation of data that can be independently

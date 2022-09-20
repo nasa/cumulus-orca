@@ -92,7 +92,8 @@ def task(
             except Exception as ex:
                 # Can't use f"" because of '{}' bug in CumulusLogger.
                 LOGGER.error(
-                    "Ran into error posting to SQS {status_update_queue_url} {attempt} time(s) with exception {ex}",
+                    "Ran into error posting to SQS {status_update_queue_url} {attempt} "
+                    f"time(s) with exception {ex}",
                     status_update_queue_url=status_update_queue_url,
                     attempt=attempt + 1,
                     ex=str(ex),
@@ -119,7 +120,8 @@ def task(
             except Exception as ex:
                 # Can't use f"" because of '{}' bug in CumulusLogger.
                 LOGGER.error(
-                    "Ran into error posting to SQS {recovery_queue_url} {attempt} time(s) with exception {ex}",
+                    "Ran into error posting to SQS {recovery_queue_url} {attempt} "
+                    f"time(s) with exception {ex}",
                     recovery_queue_url=recovery_queue_url,
                     attempt=attempt + 1,
                     ex=str(ex),
@@ -141,8 +143,10 @@ def exponential_delay(base_delay: int, exponential_backoff: int = 2) -> int:
     """
     Exponential delay function. This function is used for retries during failure.
     Args:
-        base_delay: Number of seconds to wait between recovery failure retries.
-        exponential_backoff: The multiplier by which the retry interval increases during each attempt.
+        base_delay:
+            Number of seconds to wait between recovery failure retries.
+        exponential_backoff:
+            The multiplier by which the retry interval increases during each attempt.
     Returns:
         An integer which is multiplication of base_delay and exponential_backoff.
     Raises:
@@ -168,15 +172,19 @@ def query_db(
     key_path: str, bucket_name: str, db_connect_info_secret_arn: str
 ) -> List[Dict[str, str]]:
     """
-    Connect and query the recover_file status table return needed metadata for posting to the recovery status SQS Queue.
+    Connect and query the recover_file status table return needed
+    metadata for posting to the recovery status SQS Queue.
 
     Args:
         key_path:
            Full AWS key path including file name of the file where the file resides.
-        bucket_name: Name of the source S3 bucket.
-        db_connect_info_secret_arn: Secret ARN of the secretsmanager secret to connect to the DB.
+        bucket_name:
+            Name of the source S3 bucket.
+        db_connect_info_secret_arn:
+            Secret ARN of the secretsmanager secret to connect to the DB.
     Returns:
-        A list of dict containing the following keys, matching the input format from copy_files_to_archive:
+        A list of dict containing the following keys, matching the input
+        format from copy_files_to_archive:
             "jobId" (str):
             "granuleId"(str):
             "filename" (str):
@@ -210,14 +218,22 @@ def query_db(
                 # Create dictionary for with the info needed for the
                 # copy_files_to_archive lambda
                 row_dict = {
-                    JOB_ID_KEY: row[0],
-                    GRANULE_ID_KEY: row[1],
-                    FILENAME_KEY: row[2],
-                    RESTORE_DESTINATION_KEY: row[3],
-                    MULTIPART_CHUNKSIZE_MB_KEY: row[4],
-                    SOURCE_KEY_KEY: key_path,
-                    TARGET_KEY_KEY: key_path,  # todo add a card to configure targetKey in the future
-                    SOURCE_BUCKET_KEY: bucket_name,  # todo add to database and retrieve. ORCA-351
+                    JOB_ID_KEY:
+                        row[0],
+                    GRANULE_ID_KEY:
+                        row[1],
+                    FILENAME_KEY:
+                        row[2],
+                    RESTORE_DESTINATION_KEY:
+                        row[3],
+                    MULTIPART_CHUNKSIZE_MB_KEY:
+                        row[4],
+                    SOURCE_KEY_KEY:
+                        key_path,
+                    TARGET_KEY_KEY:
+                        key_path,  # todo add a card to configure targetKey in the future
+                    SOURCE_BUCKET_KEY:
+                        bucket_name,  # todo add to database and retrieve. ORCA-351
                 }
                 rows.append(row_dict)
 
@@ -265,12 +281,18 @@ def handler(event: Dict[str, Any], context) -> None:
     and send message to SQS.
 
     Environment Vars:
-        RECOVERY_QUEUE_URL (string): the SQS URL for staged_recovery_queue
-        DB_QUEUE_URL (string): the SQS URL for status-update-queue
-        MAX_RETRIES (string): Number of times the code will retry in case of failure.
-        RETRY_SLEEP_SECS (string): Number of seconds to wait between recovery failure retries.
-        RETRY_BACKOFF (string): The multiplier by which the retry interval increases during each attempt.
-        DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
+        RECOVERY_QUEUE_URL (string):
+            the SQS URL for staged_recovery_queue
+        DB_QUEUE_URL (string):
+            the SQS URL for status-update-queue
+        MAX_RETRIES (string):
+            Number of times the code will retry in case of failure.
+        RETRY_SLEEP_SECS (string):
+            Number of seconds to wait between recovery failure retries.
+        RETRY_BACKOFF (string):
+            The multiplier by which the retry interval increases during each attempt.
+        DB_CONNECT_INFO_SECRET_ARN (string):
+            Secret ARN of the AWS secretsmanager secret for connecting to the database.
     Args:
         event:
             A dictionary from the S3 bucket. See schemas/input.json for more information.
@@ -278,7 +300,8 @@ def handler(event: Dict[str, Any], context) -> None:
     Returns:
         None
     Raises:
-        Exception: If unable to retrieve the SQS URLs or exponential retry fields from env variables.
+        Exception: If unable to retrieve the SQS URLs or
+            exponential retry fields from env variables.
     """
     LOGGER.setMetadata(event, context)
 
@@ -306,7 +329,7 @@ def handler(event: Dict[str, Any], context) -> None:
         ]:
             try:
                 env_var_value = int(env_var_value)
-            except ValueError as _:
+            except ValueError:
                 error = ValueError(f"{var} must be set to an integer.")
                 LOGGER.critical(error)
                 raise error

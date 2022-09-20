@@ -32,9 +32,9 @@
             "type":"public",
             "name":"ghrcsbxw-public"
          },
-         "glacier":{
+         "archive":{
             "type":"private",
-            "name":"ghrcsbxw-glacier"
+            "name":"ghrcsbxw-archive"
          }
       },
       "collection":{
@@ -68,7 +68,9 @@
                }
             ],
             "granuleRecoveryWorkflow":"DrRecoveryWorkflow",
-            "exclude_file_type": [".xml", ".cmr", ".cmr.xml"]
+            "orca":{
+               "excludedFileExtensions": [".xml", ".cmr", ".cmr.xml"]
+            }
          }
       }
    }

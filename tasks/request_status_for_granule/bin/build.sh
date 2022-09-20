@@ -88,6 +88,9 @@ if [ ! -d "../package" ]; then
     check_rc $return_code "ERROR: Unable to create tasks/package directory."
 fi
 
+if [ ! -d "../package/awslambda-psycopg2/psycopg2-3.9" ]; then
+  rm -d -f -r "../package/awslambda-psycopg2"
+fi
 if [ ! -d "../package/awslambda-psycopg2" ]; then
     ## TODO: This should be pulling based on a release version instead of latest
     git clone https://github.com/jkehler/awslambda-psycopg2.git ../package/awslambda-psycopg2
@@ -95,7 +98,7 @@ if [ ! -d "../package/awslambda-psycopg2" ]; then
     check_rc $return_code "ERROR: Unable to retrieve awslambda-psycopg2 code."
 fi
 
-cp ../package/awslambda-psycopg2/psycopg2-3.7/* build/psycopg2/
+cp ../package/awslambda-psycopg2/psycopg2-3.9/* build/psycopg2/
 let return_code=$?
 check_rc $return_code "ERROR: Unable to install psycopg2."
 
@@ -107,7 +110,15 @@ let return_code=$?
 
 check_rc $return_code "ERROR: Failed to copy lambda files to build directory."
 
+## Copy the schema files to build
+echo "INFO: Copying schema files ..."
+cp -r schemas/ build/
+let return_code=$?
+
+check_rc $return_code "ERROR: Failed to copy schema files to build directory."
+
 ## Create the zip archive
+echo "INFO: Creating zip archive ..."
 cd build
 zip -qr ../request_status_for_granule.zip .
 let return_code=$?

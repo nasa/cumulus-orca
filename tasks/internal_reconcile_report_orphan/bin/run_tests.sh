@@ -86,13 +86,14 @@ black *.py test
 echo "INFO: Checking lint rules ..."
 flake8 \
     --max-line-length 99 \
-    *.py test
+    src test
+let return_code=$?
 check_rc $return_code "ERROR: Linting issues found."
 
 
 ## Run code smell and security tests using bandit
 echo "INFO: Running code smell security tests ..."
-bandit -r *.py test
+bandit -r src test
 let return_code=$?
 check_rc $return_code "ERROR: Potential security or code issues found."
 
@@ -108,7 +109,7 @@ check_rc $return_code "ERROR: Potential security issues third party libraries."
 echo "INFO: Running unit and coverage tests ..."
 
 # Currently just running unit tests until we fix/support large tests
-coverage run --source internal_reconcile_report_orphan -m pytest
+coverage run --source src -m pytest
 let return_code=$?
 check_rc $return_code "ERROR: Unit tests encountered failures."
 

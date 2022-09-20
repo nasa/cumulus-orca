@@ -9,15 +9,16 @@ The `copy_to_glacier` module is meant to be deployed as a lambda function that t
 
 ## Exclude files by extension.
 
-You are able to specify a list of file types (extensions) that you'd like to exclude from the backup/copy_to_glacier functionality. This is done on a per-collection basis, configured in the `meta` variable of a Cumulus collection configuration:
+You are able to specify a list of file types (extensions) that you'd like to exclude from the backup/copy_to_glacier functionality. This is done on a per-collection basis, configured in the Cumulus collection configuration under the `meta.orca.excludedFileExtensions` key:
 
 ```json
-{
-  ...
-  "meta": {
-    "excludeFileTypes": [".cmr", ".xml", ".cmr.xml"]
-  }
-}
+      "collection":{
+        "meta": {
+            "orca":{
+                "excludedFileExtensions": [".xml", ".cmr", ".cmr.xml"]
+            }
+        }
+
 ```
 
 Note that this must be done for _each_ collection configured. If this list is empty or not included in the meta configuration, the `copy_to_glacier` function will include files with all extensions in the backup.
@@ -153,7 +154,7 @@ The `copy_to_glacier` lambda function expects that the input payload has a `gran
   }
 }
 ```
-From the json file, the `filepath` shows the current S3 location of files that need to be copied over to glacier ORCA S3 bucket such as `"filename": "s3://orca-sandbox-protected/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf"`.
+From the json file, the `filepath` shows the current S3 location of files that need to be copied over to archive bucket such as `"filename": "s3://orca-sandbox-protected/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf"`.
 **Note:** We suggest that the `copy_to_glacier` task be placed any time after the `MoveGranulesStep`. It will propagate the input `granules` object as output, so it can be used as the last task in the workflow.
 See the schema [input file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/input.json) for more information.
 
@@ -161,7 +162,7 @@ See the schema [input file](https://github.com/nasa/cumulus-orca/blob/master/tas
 ## Output
 
 The `copy_to_glacier` lambda will, as the name suggests, copy a file from its current source destination. The destination location is defined as 
-`${glacier_bucket}/${filepath}`, where `${glacier_bucket}` is pulled from the environment variable `ORCA_DEFAULT_BUCKET` and `${filepath}` is pulled from the Cumulus granule object input.
+`${archive_bucket}/${filepath}`, where `${archive_bucket}` is pulled from the environment variable `ORCA_DEFAULT_BUCKET` and `${filepath}` is pulled from the Cumulus granule object input.
 
 The output of this lambda is a dictionary with a `granules` and `copied_to_glacier` attributes.  See the schema [output file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/output.json) for more information. Below is an example of the output:
 
@@ -223,32 +224,30 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_glaci
 ## Configuration
 
 As part of the [Cumulus Message Adapter configuration](https://nasa.github.io/cumulus/docs/workflows/input_output#cma-configuration) 
-for `copy_to_glacier`, the `excludeFileTypes`, `s3MultipartChunksizeMb`, `providerId`, `executionId`, `collectionShortname`, `collectionVersion` and `orcaDefaultBucketOverride` keys must be present under the 
+for `copy_to_glacier`, the `excludedFileExtensions`, `s3MultipartChunksizeMb`, `providerId`, `executionId`, `collectionShortname`, `collectionVersion` and `defaultBucketOverride` keys must be present under the 
 `task_config` object as seen below. Per the [config schema](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/config.json), 
 the values of the keys are used the following ways. The `provider` key should contain an `id` key that returns the provider id from Cumulus. The `cumulus_meta` key should contain an `execution_name` key that returns the step function execution ID from AWS. 
 The `collection` key value should contain a `name` key and a `version` key that return the required collection shortname and collection version from Cumulus respectively.
-The `collection` key value should also contain a meta object with an optional `excludeFileTypes` key that is used to determine file patterns that should not be 
-sent to ORCA. The optional `s3MultipartChunksizeMb` is used to override the default setting for the lambda 
-s3 copy maximum multipart chunk size value when copying large files to ORCA.
-The optional `orcaDefaultBucketOverride` overrides the `ORCA_DEFAULT_BUCKET` set on deployment.
+The `collection` key value should also contain a `meta` key that includes an `orca` key having an optional `excludedFileExtensions` key that is used to determine file patterns that should not be 
+sent to ORCA. In addition, the `orca` key also contains optional `defaultBucketOverride` key that overrides the `ORCA_DEFAULT_BUCKET` set on deployment and optional `defaultStorageClassOverride` key that overrides the storage class to use when storing files in Orca. The optional `s3MultipartChunksizeMb` is used to override the default setting for the lambda s3 copy maximum multipart chunk size value when copying large files to ORCA.
 These settings can often be derived from the collection configuration in Cumulus as seen below:
 
 ```
 {
   "States": {
-    "CopyToGlacier": {
+    "CopyToArchive": {
       "Parameters": {
         "cma": {
           "event.$": "$",
           "task_config": {
             "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
-            "excludeFileTypes": "{$.meta.collection.meta.excludeFileTypes}",
+            "excludedFileExtensions": "{$.meta.collection.meta.orca.excludedFileExtensions}",
             "providerId": "{$.meta.provider.id}",
             "providerName": "{$.meta.provider.name}",
             "executionId": "{$.cumulus_meta.execution_name}",
             "collectionShortname": "{$.meta.collection.name}",
             "collectionVersion": "{$.meta.collection.version}",
-            "orcaDefaultBucketOverride": "{$.meta.collection.meta.orcaDefaultBucketOverride}"
+            "defaultBucketOverride": "{$.meta.collection.meta.orca.defaultBucketOverride}"
           }
         }
       },

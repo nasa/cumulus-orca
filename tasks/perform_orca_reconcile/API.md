@@ -35,7 +35,7 @@ for pulling manifest's data into sql.
 **Arguments**:
 
 - `job_id` - The id of the job containing s3 inventory info.
-- `orca_archive_location` - The name of the glacier bucket the job targets.
+- `orca_archive_location` - The name of the archive bucket the job targets.
 - `internal_report_queue_url` - The url of the queue containing the message.
 - `message_receipt_handle` - The ReceiptHandle for the event in the queue.
 - `db_connect_info` - See shared_db.py's get_configuration for further details.

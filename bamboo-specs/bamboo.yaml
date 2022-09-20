@@ -137,9 +137,9 @@ Python snyk:
 
         #cat > scan.sh <<EOF
         #!/bin/bash
-        #python3.7 -m venv snyk-test
+        #python3.9 -m venv snyk-test
         #source snyk-test/bin/activate
-        #update-alternatives --install /tmp/snyk-test/bin/python  python /usr/local/bin/python3.7 1
+        #update-alternatives --install /tmp/snyk-test/bin/python  python /usr/local/bin/python3.9 1
         #pip install -r pip_requirements.txt
         #snyk test --json --package-manager=pip --file=data/mask_fill_pip_requirements.txt > pip_report.json
         #snyk-to-html -i pip_report.json -o pip_results.html
@@ -283,20 +283,21 @@ stages:
     final: false
     jobs:
     - Deploy DR ORCA buckets
-
-#deploy RDS cluster for integration test
-- Deploy Dev RDS Stack:
+- Deploy Cumulus buckets and Cumulus and Orca modules:
     manual: true
     final: false
     jobs:
-    - Deploy RDS cluster
-
-#deploy orca and cumulus for integration test
-- Deploy Dev Cumulus and ORCA Stack:
+    - Deploy Cumulus buckets and Cumulus and Orca modules
+- Clean up ORCA buckets and modules:
     manual: true
     final: false
     jobs:
-    - Deploy cumulus and orca
+    - Clean up ORCA buckets and modules
+- Clean up DR ORCA buckets:
+    manual: true
+    final: false
+    jobs:
+    - Clean up DR ORCA buckets
 
 #job for deploying ORCA buckets in DR account
 Deploy DR ORCA buckets:
@@ -317,11 +318,36 @@ Deploy DR ORCA buckets:
       scripts:
       - |-
         #!/bin/bash
+        bash integration_test/input-validation.sh
+        . ./integration_test/shared/setup-dr-buckets.sh
         bash integration_test/deployment-dr-buckets.sh
          
-#job for deploying cumulus and orca
-Deploy RDS cluster:
-  key: DRC
+#job for deploying ORCA buckets, Cumulus and ORCA modules
+Deploy Cumulus buckets and Cumulus and Orca modules:
+  key: DOBM
+  other:
+    clean-working-dir: true
+    # Some plugin configurations are not supported by YAML Specs
+  docker:
+    image: maven.earthdata.nasa.gov/cumulus_orca
+    volumes:
+      ${bamboo.working.directory}: ${bamboo.working.directory}
+      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+  tasks:
+  - checkout:
+      force-clean-build: 'true'
+      description: Checkout Default Repository
+  - script:
+      interpreter: SHELL
+      scripts:
+      - |-
+        #!/bin/bash
+        . ./integration_test/shared/setup-orca.sh
+        bash integration_test/deployment-orca.sh
+
+# Job for cleaning up ORCA buckets, Cumulus, and ORCA modules
+Clean up ORCA buckets and modules:
+  key: CDROB
   other:
     clean-working-dir: true
   docker:
@@ -338,11 +364,12 @@ Deploy RDS cluster:
       scripts:
       - |-
         #!/bin/bash
-        bash integration_test/deployment-rds.sh
+        . ./integration_test/shared/setup-orca.sh
+        bash integration_test/cleanup/cleanup-orca.sh
 
-#job for deploying cumulus and orca
-Deploy cumulus and orca:
-  key: DCO
+# Job for cleaning up ORCA buckets, Cumulus, and ORCA modules
+Clean up DR ORCA buckets:
+  key: COBM
   other:
     clean-working-dir: true
     # Some plugin configurations are not supported by YAML Specs
@@ -361,7 +388,9 @@ Deploy cumulus and orca:
       scripts:
       - |-
         #!/bin/bash
-        bash integration_test/deployment-cumulus-orca.sh
+        . ./integration_test/shared/setup-dr-buckets.sh
+        bash integration_test/cleanup/cleanup-dr-buckets.sh
+
 variables:
   DEPLOYMENT: sandbox
   ORCA_VERSION: 4.0.3
@@ -371,24 +400,15 @@ variables:
   CUMULUS_AWS_SECRET_ACCESS_KEY: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
   DR_AWS_ACCESS_KEY_ID: REPLACE ME
   DR_AWS_SECRET_ACCESS_KEY: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
-  RDS_SECURITY_GROUP: REPLACE ME
   RDS_ENGINE_VERSION: 10.18
-  RDS_USER_ACCESS_SECRET_ARN: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
-  AWS_SUBNET_ID1: REPLACE ME
-  AWS_SUBNET_ID2: REPLACE ME
-  VPC_ID: REPLACE ME
-  AWS_ACCOUNT_ID: REPLACE ME
   ROLE_BOUNDARY: NGAPShRoleBoundary
   CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION: release/v11.1.1-v4.0.1
   PREFIX: REPLACE ME
   DB_ADMIN_USERNAME: postgres
   DB_ADMIN_PASSWORD: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
   DB_USER_PASSWORD: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
-  CMR_PASSWORD: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
-  CMR_USERNAME: username
   EARTHDATA_CLIENT_ID: REPLACE ME
   EARTHDATA_CLIENT_PASSWORD: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
-  DB_HOST_ENDPOINT: REPLACE ME
   BRANCH_NAME: ${bamboo.planRepository.branchName}
   CMR_OAUTH_PROVIDER: earthdata
  

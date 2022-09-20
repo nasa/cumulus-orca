@@ -119,17 +119,20 @@ def get_jobs_sql() -> text:  # pragma: no cover
     """
     return text(
         """
-SELECT 
+SELECT
     reconcile_job.id,
     orca_archive_location,
     reconcile_status.value as status,
-    (EXTRACT(EPOCH FROM date_trunc('milliseconds', inventory_creation_time) AT TIME ZONE 'UTC') * 1000)::bigint as inventory_creation_time,
-    (EXTRACT(EPOCH FROM date_trunc('milliseconds', reconcile_job.last_update) AT TIME ZONE 'UTC') * 1000)::bigint as last_update,
+    (EXTRACT(EPOCH FROM date_trunc('milliseconds', inventory_creation_time)
+     AT TIME ZONE 'UTC') * 1000)::bigint as inventory_creation_time,
+    (EXTRACT(EPOCH FROM date_trunc('milliseconds', reconcile_job.last_update)
+     AT TIME ZONE 'UTC') * 1000)::bigint as last_update,
     error_message,
     (SELECT COUNT(*) FROM reconcile_orphan_report WHERE job_id=reconcile_job.id) AS orphan_count,
     (SELECT COUNT(*) FROM reconcile_phantom_report WHERE job_id=reconcile_job.id) AS phantom_count,
-    (SELECT COUNT(*) FROM reconcile_catalog_mismatch_report WHERE job_id=reconcile_job.id) AS catalog_mismatch_count
-FROM 
+    (SELECT COUNT(*) FROM reconcile_catalog_mismatch_report
+     WHERE job_id=reconcile_job.id) AS catalog_mismatch_count
+FROM
     reconcile_job
 JOIN
     reconcile_status ON status_id=reconcile_status.id
@@ -194,13 +197,15 @@ def handler(
         context: An object provided by AWS Lambda. Used for context tracking.
 
     Environment Vars:
-        DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
+        DB_CONNECT_INFO_SECRET_ARN (string):
+            Secret ARN of the AWS secretsmanager secret for connecting to the database.
         See shared_db.py's get_configuration for further details.
 
     Returns:
         See schemas/output.json
         Or, if an error occurs, see create_http_error_dict
-            400 if input does not match schemas/input.json. 500 if an error occurs when querying the database.
+            400 if input does not match schemas/input.json.
+            500 if an error occurs when querying the database.
     """
     try:
         LOGGER.setMetadata(event, context)
