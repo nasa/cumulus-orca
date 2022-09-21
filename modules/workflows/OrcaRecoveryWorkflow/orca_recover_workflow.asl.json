@@ -40,9 +40,9 @@
           "Next": "WorkflowFailed"
         }
       ],
-      "Next": "RequestFiles"
+      "Next": "RequestFromArchive"
     },
-    "RequestFiles": {
+    "RequestFromArchive": {
       "Parameters": {
         "cma": {
           "event.$": "$",
@@ -58,7 +58,7 @@
         }
       },
       "Type": "Task",
-      "Resource": "${orca_lambda_request_files_arn}",
+      "Resource": "${orca_lambda_request_from_archive_arn}",
       "Retry": [
         {
           "ErrorEquals": [

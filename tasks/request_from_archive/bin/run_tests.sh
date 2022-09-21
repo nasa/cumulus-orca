@@ -5,14 +5,14 @@
 ##
 ## DESCRIPTION
 ## -----------------------------------------------------------------------------
-## Tests the lambda (task) for request_files using unit tests.
+## Tests the lambda (task) for request_from_archive using unit tests.
 ##
 ##
 ## USAGE
 ## -----------------------------------------------------------------------------
 ## bin/run_tests.sh
 ##
-## This must be called from the (root) lambda directory /tasks/request_files
+## This must be called from the (root) lambda directory /tasks/request_from_archive
 ## =============================================================================
 
 ## Set this for Debugging only
@@ -109,7 +109,7 @@ check_rc $return_code "ERROR: Potential security issues third party libraries."
 echo "INFO: Running unit and coverage tests ..."
 
 # Currently just running unit tests until we fix/support large tests
-coverage run --source request_files -m pytest
+coverage run --source request_from_archive -m pytest
 let return_code=$?
 check_rc $return_code "ERROR: Unit tests encountered failures."
 

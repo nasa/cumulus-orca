@@ -136,7 +136,7 @@
     "ExtractFilepaths": {
       "fileBucketMaps": "{{$.meta.collection.files}}"
     },
-    "RequestFiles": {
+    "RequestFromArchive": {
       "archive-bucket": "{{$.meta.collection.meta.archive-bucket}}"
     },
     "StopStatus": {

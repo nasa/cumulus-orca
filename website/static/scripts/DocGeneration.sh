@@ -5,7 +5,7 @@ tasks=("copy_from_archive" "copy_from_archive.py"
         #"copy_to_archive" "handler.py"
         #"db_deploy" "db_deploy.py"
         #"extract_filepaths_for_granule" "extract_filepaths_for_granule.py"
-        #"request_files" "request_files.py"
+        #"request_from_archive" "request_from_archive.py"
         #"request_status" "request_status.py"
         )
 

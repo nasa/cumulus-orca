@@ -1,5 +1,5 @@
-tasks/request_files/.pytest_cache/
-tasks/request_files/dev_test/test_requests_postgres_lisa.py
+tasks/request_from_archive/.pytest_cache/
+tasks/request_from_archive/dev_test/test_requests_postgres_lisa.py
 tasks/request_status/.vscode/.ropeproject/config.py
 tasks/request_status/.vscode/.ropeproject/objectdb
 tasks/copy_from_archive/.vscode/.ropeproject/config.py
@@ -21,7 +21,7 @@ dist/
 __pycache__/
 .coverage
 .vscode/
-tasks/request_files/test/private_config.json
+tasks/request_from_archive/test/private_config.json
 .env
 **/.DS_Store
 **/temp_scripted_test.*

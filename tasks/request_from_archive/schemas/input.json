@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/request_files/schemas/input.json",
-  "title": "request_files Lambda Input",
-  "description": "The input for the request_files Lambda.",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/request_from_archive/schemas/input.json",
+  "title": "request_from_archive Lambda Input",
+  "description": "The input for the request_from_archive Lambda.",
   "type": "object",
   "properties": {
     "granules": {

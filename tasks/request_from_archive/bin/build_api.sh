@@ -5,14 +5,14 @@
 ##
 ## DESCRIPTION
 ## -----------------------------------------------------------------------------
-## Builds the request_files API documentation.
+## Builds the request_from_archive API documentation.
 ##
 ##
 ## USAGE
 ## -----------------------------------------------------------------------------
 ## bin/build_api.sh
 ##
-## This must be called from the (root) lambda directory /tasks/request_files
+## This must be called from the (root) lambda directory /tasks/request_from_archive
 ## =============================================================================
 
 ## Set this for Debugging only
@@ -21,7 +21,7 @@
 ## Make sure we are calling the script the correct way.
 BASEDIR=$(dirname $0)
 if [ "$BASEDIR" != "bin" ]; then
-  >&2 echo "ERROR: This script must be called from the root directory of request_files [bin/build.sh]."
+  >&2 echo "ERROR: This script must be called from the root directory of request_from_archive [bin/build.sh]."
   exit 1
 fi
 
@@ -68,7 +68,7 @@ check_rc $return_code "ERROR: pip install encountered an error."
 
 ## Run the documentation command
 echo "INFO: Creating API documentation ..."
-pydoc-markdown -I . -m request_files --render-toc > API.md
+pydoc-markdown -I . -m request_from_archive --render-toc > API.md
 let return_code=$?
 
 check_rc $return_code "ERROR: Failed to create API.md file."

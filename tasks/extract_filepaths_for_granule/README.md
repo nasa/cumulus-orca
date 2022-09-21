@@ -42,7 +42,7 @@ Use the `extract_filepaths_for_granule.zip` file from build step to deploy the l
 The `modules/lambdas/main.tf` shows an example of deploying this lambda through Terraform.
 
 ```
-# extract_filepaths_for_granule - Translates input for request_files lambda
+# extract_filepaths_for_granule - Translates input for request_from_archive lambda
 # ==============================================================================
 resource "aws_lambda_function" "extract_filepaths_for_granule" {
   ## REQUIRED
@@ -50,7 +50,7 @@ resource "aws_lambda_function" "extract_filepaths_for_granule" {
   role          = module.restore_object_arn.restore_object_role_arn
 
   ## OPTIONAL
-  description      = "Extracts bucket info and granules filepath from the CMA for ORCA request_files lambda."
+  description      = "Extracts bucket info and granules filepath from the CMA for ORCA request_from_archive lambda."
   filename         = "${path.module}/../../tasks/extract_filepaths_for_granule/extract_filepaths_for_granule.zip"
   handler          = "extract_filepaths_for_granule.handler"
   memory_size      = var.orca_recovery_lambda_memory_size
