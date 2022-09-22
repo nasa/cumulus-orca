@@ -8,6 +8,7 @@ module.exports = {
   favicon: 'img/favicon.ico',
   organizationName: 'nasa', // Usually your GitHub org/user name.
   projectName: 'cumulus-orca', // Usually your repo name.
+  trailingSlash: false,
   themeConfig: {
     navbar: {
       title: 'Operational Recovery Cloud Archive (ORCA)',
