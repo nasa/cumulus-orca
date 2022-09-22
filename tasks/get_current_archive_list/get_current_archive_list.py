@@ -451,7 +451,7 @@ def translate_s3_import_to_partitioned_data_sql() -> text:  # pragma: no cover
             :job_id,
             orca_archive_location,
             key_path,
-            CONCAT('"', etag, '"') as etag, /* copy_to_glacier's AWS call presently
+            CONCAT('"', etag, '"') as etag, /* copy_to_archive's AWS call presently
                 wraps this in quotes. Seems like a bug, but is shown on
                 https://boto3.amazonaws.com/v1/documentation/api/latest/
                 reference/services/s3.html#S3.Client.list_object_versions */

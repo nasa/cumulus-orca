@@ -109,7 +109,7 @@ module "orca_workflows" {
   ## --------------------------
   ## REQUIRED
   orca_default_bucket                           = var.orca_default_bucket
-  orca_lambda_copy_to_glacier_arn               = module.orca_lambdas.copy_to_glacier_arn
+  orca_lambda_copy_to_archive_arn               = module.orca_lambdas.copy_to_archive_arn
   orca_lambda_extract_filepaths_for_granule_arn = module.orca_lambdas.extract_filepaths_for_granule_arn
   orca_lambda_get_current_archive_list_arn      = module.orca_lambdas.get_current_archive_list_arn
   orca_lambda_perform_orca_reconcile_arn        = module.orca_lambdas.perform_orca_reconcile_arn

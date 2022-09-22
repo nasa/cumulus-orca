@@ -425,7 +425,7 @@ the ingest workflow.
   }
 },
   "Type":"Task",
-  "Resource":"module.orca.orca_lambda_copy_to_glacier_arn",
+  "Resource":"module.orca.orca_lambda_copy_to_archive_arn",
   "Catch":[
     {
       "ErrorEquals":[
@@ -448,7 +448,7 @@ the ingest workflow.
   "Next":"WorkflowSucceeded"
 },
 ```
-See the copy_to_glacier json schema [configuration file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/config.json), [input file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/input.json)  and [output file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/output.json) for more information.
+See the copy_to_archive json schema [configuration file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_archive/schemas/config.json), [input file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_archive/schemas/input.json)  and [output file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_archive/schemas/output.json) for more information.
 
 ### Modify the Recovery Workflow (*OPTIONAL*)
 
@@ -545,8 +545,8 @@ variables is shown in the table below.
 | `orca_default_recovery_type`                          | string        | The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'                                               | "Standard" |
 | `orca_default_storage_class`                          | string        | The [class of storage](../../operator/storage-classes.md) to use when ingesting files. Can be overridden by collection config. | "GLACIER" |
 | `orca_delete_old_reconcile_jobs_frequency_cron`       | string        | Frequency cron for running the delete_old_reconcile_jobs lambda.                                                               | "cron(0 0 ? * SUN *)" |
-| `orca_ingest_lambda_memory_size`                      | number        | Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime.                                                     | 2240 |
-| `orca_ingest_lambda_timeout`                          | number        | Timeout in number of seconds for ORCA copy_to_glacier lambda.                                                                  | 600 |
+| `orca_ingest_lambda_memory_size`                      | number        | Amount of memory in MB the ORCA copy_to_archive lambda can use at runtime.                                                     | 2240 |
+| `orca_ingest_lambda_timeout`                          | number        | Timeout in number of seconds for ORCA copy_to_archive lambda.                                                                  | 600 |
 | `orca_internal_reconciliation_expiration_days`        | number        | Only reports updated before this many days ago will be deleted.                                                                | 30 |
 | `orca_reconciliation_lambda_memory_size`              | number        | Amount of memory in MB the ORCA reconciliation lambda can use at runtime.                                                      | 128 |
 | `orca_reconciliation_lambda_timeout`                  | number        | Timeout in number of seconds for ORCA reconciliation lambdas.                                                                  | 720 |
@@ -574,7 +574,7 @@ accessed using terraform dot syntax in the format of `module.orca.variable_name`
 | Output Variable                                         | Description                                             |
 | --------------------------------------------------------|---------------------------------------------------------|
 | `orca_api_deployment_invoke_url`                        | The URL to invoke the ORCA Cumulus reconciliation API gateway. Excludes the resource path |
-| `orca_lambda_copy_to_glacier_arn`                       | AWS ARN of the ORCA copy_to_glacier lambda. |
+| `orca_lambda_copy_to_archive_arn`                       | AWS ARN of the ORCA copy_to_archive lambda. |
 | `orca_lambda_extract_filepaths_for_granule_arn`         | AWS ARN of the ORCA extract_filepaths_for_granule lambda. |
 | `orca_lambda_orca_catalog_reporting_arn`                | AWS ARN of the ORCA orca_catalog_reporting lambda. |
 | `orca_lambda_request_files_arn`                         | AWS ARN of the ORCA request_files lambda. |
@@ -620,7 +620,7 @@ In addition, when dealing with large files, the `s3MultipartChunksizeMb` variabl
 default setting set during ORCA installation.
 If the file should be stored in a [storage class](../../operator/storage-classes.md) other than the default set in `orca_default_storage_class` during installation, specify it using `defaultStorageClassOverride`.
 For more information, see the documentation on the
-[`copy_to_glacier` task](https://github.com/nasa/cumulus-orca/tree/master/tasks/copy_to_glacier).
+[`copy_to_archive` task](https://github.com/nasa/cumulus-orca/tree/master/tasks/copy_to_archive).
 
 ```json
 {

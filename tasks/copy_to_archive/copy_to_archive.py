@@ -1,5 +1,5 @@
 """
-Name: copy_to_glacier.py
+Name: copy_to_archive.py
 Description: Lambda function that takes a Cumulus message, extracts a list of files,
 and copies those files from their current storage location into a staging/archive location.
 """
@@ -253,7 +253,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
         # post to metadata SQS for each granule
         sqs_library.post_to_metadata_queue(sqs_body, metadata_queue_url)
 
-    return {"granules": granules_list, "copied_to_glacier": copied_file_urls}
+    return {"granules": granules_list, "copied_to_orca": copied_file_urls}  # Using "copied_to_orca" instead of "copied_to_archive" until we decouple from Cumulus.
 
 
 def get_destination_bucket_name(config: Dict[str, Any]) -> str:

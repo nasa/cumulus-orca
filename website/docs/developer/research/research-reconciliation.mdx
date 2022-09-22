@@ -268,8 +268,8 @@ what the underlying architecture may look like to perform the tasks.
 ### Automated Cumulus Ingest Workflow
 
 The conventional way of populating the objects with metadata would be through
-the normal Cumulus ingest workflow that contains ORCA's `copy_to_glacier` lambda.
-The `copy_to_glacier` lambda would need to be modified to take or pull additional
+the normal Cumulus ingest workflow that contains ORCA's `copy_to_archive` lambda.
+The `copy_to_archive` lambda would need to be modified to take or pull additional
 metadata needed to associate a granule's files to Cumulus, like `providerId`, 
 `collectionId`, `granuleId`, and various other file metadata information. The
 additional collected metadata would sent to a queue to be written to the ORCA
@@ -277,9 +277,9 @@ catalog. The body sent to the queue would have enough information for another
 ORCA lambda to write and/or update the records for the various objects in the ORCA
 catalog.
 
-Note that this new database write lambda or the `copy_to_glacier` lambda may need
+Note that this new database write lambda or the `copy_to_archive` lambda may need
 to make some additional queries to the S3 ORCA bucket to pull information like
-version and other values. Looking at the original `copy_to_glacier`, `s3.copy`
+version and other values. Looking at the original `copy_to_archive`, `s3.copy`
 is used to copy data to the ORCA archive. Based on initial research located
 [here](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.copy),
 the `s3.copy` command does not return any information. See the test performed
@@ -301,7 +301,7 @@ s3_client = boto3.resource('s3')
 
 # Get a source and destination to copy
 copy_source = {"Bucket": "orca-sandbox-s3-provider", "Key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065111.hdf"}
-copy_destination = "orca-sandbox-glacier"
+copy_destination = "orca-sandbox-archive"
 
 # perform the copy command
 copy_command = s3_client.meta.client.copy(copy_source, copy_destination, copy_source["Key"])
@@ -326,7 +326,7 @@ s3_client = boto3.resource('s3')
 
 # Get a source and destination to copy
 copy_source = {"Bucket": "orca-sandbox-s3-provider", "Key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065111.hdf"}
-copy_destination = "orca-sandbox-glacier"
+copy_destination = "orca-sandbox-archive"
 
 # Get the versioning information
 file_versions = s3_client.meta.client.list_object_versions(Bucket=copy_destination, Prefix=copy_source["Key"] )
@@ -371,7 +371,7 @@ we may encounter. Reference information on multipart copy is provided below.
 ### Manually Run ORCA Ingest Workflows
 
 When manually running a workflow to ingest data into ORCA, it is assumed that the
-same modified `copy_to_glacier` lambda used in an automated workflow would be used
+same modified `copy_to_archive` lambda used in an automated workflow would be used
 in the manual workflow. This would mean the translation lambda used to pass the
 proper information from the Cumulus Dashboard call to the `copy_to_archive` lambda
 would need to retrieve and provide information similar to the information that
@@ -382,7 +382,7 @@ worked during PI 21.2 contain information related to this type of workflow and
 translation lambda. See the list below.
 
 - [Understanding the Cumulus Dashboard Workflow Call Output](https://bugs.earthdata.nasa.gov/browse/ORCA-173)
-- [Creating a Translate Lambda for Cumulus Dashboard Inputs for copy_to_glacier](https://bugs.earthdata.nasa.gov/browse/ORCA-175)
+- [Creating a Translate Lambda for Cumulus Dashboard Inputs for copy_to_archive](https://bugs.earthdata.nasa.gov/browse/ORCA-175)
 - [Creating a Workflow for Ingesting Missing Files Into ORCA](https://bugs.earthdata.nasa.gov/browse/ORCA-182)
 
 Work related to reconciliation will likely require modifications to the translation
@@ -581,7 +581,7 @@ import boto3
 
 # Set the variables
 s3_client = boto3.resource('s3')
-copy_destination = "orca-sandbox-glacier"
+copy_destination = "orca-sandbox-archive"
 
 # Get the listing
 files = s3_client.meta.client.list_objects_v2(Bucket=copy_destination)
@@ -689,7 +689,7 @@ items for managing jobs.
 | Attribute Name          | Data Type    | Description                                            | Notable Items   |
 | ----------------------- | ------------ | ------------------------------------------------------ | --------------- |
 | id                      | `int2`       | Unique Job ID.                                         | Primary Key     |
-| orca_archive_location   | `string`     | ORCA S3 Glacier bucket the reconciliation targets.     | Location in S3. |
+| orca_archive_location   | `string`     | ORCA S3 Archive bucket the reconciliation targets.     | Location in S3. |
 | status_id               | `int8`       | Current status of the job.                             | Generally reflect the stages of reconciliation. |
 | inventory_creation_time | `timestamptz`| Inventory report initiation time from the s3 manifest. | Cannot be NULL  |
 | start_time              | `timestamptz`| Start time of the job.                                 | Cannot be NULL  |
@@ -706,7 +706,7 @@ comparison.
 | Attribute Name        | Data Type | Description                                 | Notable Items   |
 | --------------------- | --------- | ------------------------------------------- | --------------- |
 | job_id                | `int8`    | Reconcile job the listing is a part of.     | Many to one relationship with the jobs table. |
-| orca_archive_location | `string`  | ORCA S3 Glacier bucket the file resides in. | Location in S3. |
+| orca_archive_location | `string`  | ORCA S3 Archive bucket the file resides in. | Location in S3. |
 | key_path              | `string`  | Key key value from S3 listing.              | Should be able to match to the key_path in the ORCA catalog *File* metadata object. Must be unique. |
 | etag                  | `string`  | ETag key value from S3 listing.             | Should be able to match to the orca_etag value in the ORCA catalog *File* metadata object. |
 | last_update           | `timestamptz` | LastModified key value from the S3 listing. | Should be able to match the last_update value in the ORCA catalog *File* metadata object. |

@@ -131,13 +131,13 @@ variable "orca_delete_old_reconcile_jobs_frequency_cron" {
 
 variable "orca_ingest_lambda_memory_size" {
   type        = number
-  description = "Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime."
+  description = "Amount of memory in MB the ORCA copy_to_archive lambda can use at runtime."
 }
 
 
 variable "orca_ingest_lambda_timeout" {
   type        = number
-  description = "Timeout in number of seconds for ORCA copy_to_glacier lambda."
+  description = "Timeout in number of seconds for ORCA copy_to_archive lambda."
 }
 
 

@@ -1,15 +1,15 @@
-[![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/copy_to_glacier/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/copy_to_glacier/requirements.txt)
+[![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/copy_to_archive/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/copy_to_archive/requirements.txt)
 
 Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/development-guide/code/contrib-code-intro) for information on environment setup and testing.
 
 ## Description
 
-The `copy_to_glacier` module is meant to be deployed as a lambda function that takes a Cumulus message, extracts a list of files, and copies those files from their current storage location into a staging/glacier ORCA S3 bucket. It also sends additional metadata attributes to metadata SQS queue needed for Cumulus reconciliation.
+The `copy_to_archive` module is meant to be deployed as a lambda function that takes a Cumulus message, extracts a list of files, and copies those files from their current storage location into an ORCA archive bucket. It also sends additional metadata attributes to metadata SQS queue needed for Cumulus reconciliation.
 
 
 ## Exclude files by extension.
 
-You are able to specify a list of file types (extensions) that you'd like to exclude from the backup/copy_to_glacier functionality. This is done on a per-collection basis, configured in the Cumulus collection configuration under the `meta.orca.excludedFileExtensions` key:
+You are able to specify a list of file types (extensions) that you'd like to exclude from the backup/copy_to_archive functionality. This is done on a per-collection basis, configured in the Cumulus collection configuration under the `meta.orca.excludedFileExtensions` key:
 
 ```json
       "collection":{
@@ -21,13 +21,13 @@ You are able to specify a list of file types (extensions) that you'd like to exc
 
 ```
 
-Note that this must be done for _each_ collection configured. If this list is empty or not included in the meta configuration, the `copy_to_glacier` function will include files with all extensions in the backup.
+Note that this must be done for _each_ collection configured. If this list is empty or not included in the meta configuration, the `copy_to_archive` function will include files with all extensions in the backup.
 
 
 ## Build
 
-To build the **copy_to_glacier** lambda, run the `bin/build.sh` script from the
-`tasks/copy_to_glacier` directory in a docker
+To build the **copy_to_archive** lambda, run the `bin/build.sh` script from the
+`tasks/copy_to_archive` directory in a docker
 container. The following shows setting up a container to run the script.
 
 ```bash
@@ -46,16 +46,16 @@ bash-4.2# yum install python3-devel
 bash-4.2# cd /data
 
 # Go to the task
-bash-4.2# cd tasks/copy_to_glacier/
+bash-4.2# cd tasks/copy_to_archive/
 
 # Run the tests
 bash-4.2# bin/build.sh
 ```
 
-### Testing copy_to_glacier
+### Testing copy_to_archive
 
-To run unit tests for **copy_to_glacier**, run the `bin/run_tests.sh` script from the
-`tasks/copy_to_glacier` directory. Ideally, the tests should be run in a docker
+To run unit tests for **copy_to_archive**, run the `bin/run_tests.sh` script from the
+`tasks/copy_to_archive` directory. Ideally, the tests should be run in a docker
 container. The following shows setting up a container to run the tests.
 
 ```bash
@@ -74,7 +74,7 @@ bash-4.2# yum install python3-devel
 bash-4.2# cd /data
 
 # Go to the task
-bash-4.2# cd tasks/copy_to_glacier/
+bash-4.2# cd tasks/copy_to_archive/
 
 # Run the tests
 bash-4.2# bin/run_tests.sh
@@ -85,13 +85,13 @@ in the cumulus-orca base of the repo.
 
 ## Deployment
 
-The `copy_to_glacier` lambda function can be deployed using terraform using the example shown in  `"aws_lambda_function" "copy_to_glacier"` resource block of `modules/lambdas/main.tf` file.
+The `copy_to_archive` lambda function can be deployed using terraform using the example shown in  `"aws_lambda_function" "copy_to_archive"` resource block of `modules/lambdas/main.tf` file.
 
 ## Input
 
 The `handler` function `handler(event, context)` expects input as a Cumulus Message. Event is passed from the AWS step function workflow. The actual format of that input may change over time, so we use the [cumulus-message-adapter](https://github.com/nasa/cumulus-message-adapter) package (check `requirements.txt`), which Cumulus develops and updates, to parse the input.
 
-The `copy_to_glacier` lambda function expects that the input payload has a `granules` object, similar to the output of `MoveGranulesStep`:
+The `copy_to_archive` lambda function expects that the input payload has a `granules` object, similar to the output of `MoveGranulesStep`:
 
 ```json
 {
@@ -155,16 +155,16 @@ The `copy_to_glacier` lambda function expects that the input payload has a `gran
 }
 ```
 From the json file, the `filepath` shows the current S3 location of files that need to be copied over to archive bucket such as `"filename": "s3://orca-sandbox-protected/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf"`.
-**Note:** We suggest that the `copy_to_glacier` task be placed any time after the `MoveGranulesStep`. It will propagate the input `granules` object as output, so it can be used as the last task in the workflow.
-See the schema [input file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/input.json) for more information.
+**Note:** We suggest that the `copy_to_archive` task be placed any time after the `MoveGranulesStep`. It will propagate the input `granules` object as output, so it can be used as the last task in the workflow.
+See the schema [input file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_archive/schemas/input.json) for more information.
 
 
 ## Output
 
-The `copy_to_glacier` lambda will, as the name suggests, copy a file from its current source destination. The destination location is defined as 
+The `copy_to_archive` lambda will, as the name suggests, copy a file from its current source destination. The destination location is defined as 
 `${archive_bucket}/${filepath}`, where `${archive_bucket}` is pulled from the environment variable `ORCA_DEFAULT_BUCKET` and `${filepath}` is pulled from the Cumulus granule object input.
 
-The output of this lambda is a dictionary with a `granules` and `copied_to_glacier` attributes.  See the schema [output file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/output.json) for more information. Below is an example of the output:
+The output of this lambda is a dictionary with a `granules` and `copied_to_orca` attributes.  See the schema [output file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_archive/schemas/output.json) for more information. Below is an example of the output:
 
 ```json
 {
@@ -212,7 +212,7 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_glaci
       "sync_granule_duration": 1676
     }
   ],
-	"copied_to_glacier": [
+	"copied_to_orca": [
       "s3://orca-sandbox-protected/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
       "s3://orca-sandbox-private/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf.met",
       "s3://orca-sandbox-public/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109_ndvi.jpg",
@@ -224,8 +224,8 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_glaci
 ## Configuration
 
 As part of the [Cumulus Message Adapter configuration](https://nasa.github.io/cumulus/docs/workflows/input_output#cma-configuration) 
-for `copy_to_glacier`, the `excludedFileExtensions`, `s3MultipartChunksizeMb`, `providerId`, `executionId`, `collectionShortname`, `collectionVersion` and `defaultBucketOverride` keys must be present under the 
-`task_config` object as seen below. Per the [config schema](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/config.json), 
+for `copy_to_archive`, the `excludedFileExtensions`, `s3MultipartChunksizeMb`, `providerId`, `executionId`, `collectionShortname`, `collectionVersion` and `defaultBucketOverride` keys must be present under the 
+`task_config` object as seen below. Per the [config schema](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_archive/schemas/config.json), 
 the values of the keys are used the following ways. The `provider` key should contain an `id` key that returns the provider id from Cumulus. The `cumulus_meta` key should contain an `execution_name` key that returns the step function execution ID from AWS. 
 The `collection` key value should contain a `name` key and a `version` key that return the required collection shortname and collection version from Cumulus respectively.
 The `collection` key value should also contain a `meta` key that includes an `orca` key having an optional `excludedFileExtensions` key that is used to determine file patterns that should not be 
@@ -252,7 +252,7 @@ These settings can often be derived from the collection configuration in Cumulus
         }
       },
       "Type": "Task",
-      "Resource": "${orca_lambda_copy_to_glacier_arn}",
+      "Resource": "${orca_lambda_copy_to_archive_arn}",
       "Retry": [
         {
           "ErrorEquals": [
@@ -278,7 +278,7 @@ These settings can often be derived from the collection configuration in Cumulus
   }
 }
 ```
-See the schema [configuration file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/config.json) for more information.
+See the schema [configuration file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_archive/schemas/config.json) for more information.
 
 ## Metadata SQS body configuration
 
@@ -318,7 +318,7 @@ An example of a message is shown below:
       },
   }
 ```
-Note that the `hash` and `hashType` are optional fields. See the SQS message schema [configuration file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_glacier/schemas/body.json) for more information.
+Note that the `hash` and `hashType` are optional fields. See the SQS message schema [configuration file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_archive/schemas/body.json) for more information.
 
-## pydoc copy_to_glacier
+## pydoc copy_to_archive
 [See the API documentation for more details.](API.md)

@@ -25,19 +25,19 @@ module "lambda_security_group" {
 # Ingest Lambdas Definitions and Resources
 # =============================================================================
 
-# copy_to_glacier - Copies files to the archive bucket
-resource "aws_lambda_function" "copy_to_glacier" {
+# copy_to_archive - Copies files to the archive bucket
+resource "aws_lambda_function" "copy_to_archive" {
   ## REQUIRED
-  function_name = "${var.prefix}_copy_to_glacier"
+  function_name = "${var.prefix}_copy_to_orca"  # Since this is currently public-facing, emphasize that this is an ORCA resource.
   role          = var.restore_object_role_arn
 
   ## OPTIONAL
   description      = "ORCA archiving lambda used to copy data to an archive bucket."
-  filename         = "${path.module}/../../tasks/copy_to_glacier/copy_to_glacier.zip"
-  handler          = "copy_to_glacier.handler"
+  filename         = "${path.module}/../../tasks/copy_to_archive/copy_to_archive.zip"
+  handler          = "copy_to_archive.handler"
   memory_size      = var.orca_ingest_lambda_memory_size
   runtime          = "python3.9"
-  source_code_hash = filebase64sha256("${path.module}/../../tasks/copy_to_glacier/copy_to_glacier.zip")
+  source_code_hash = filebase64sha256("${path.module}/../../tasks/copy_to_archive/copy_to_archive.zip")
   tags             = var.tags
   timeout          = var.orca_ingest_lambda_timeout
 

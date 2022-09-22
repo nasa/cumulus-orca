@@ -1,8 +1,8 @@
 {
-  "Comment": "On-Demand execution of copy_to_glacier.",
-  "StartAt": "CopyToGlacier",
+  "Comment": "On-Demand execution of copy_to_archive.",
+  "StartAt": "CopyToArchive",
   "States": {
-    "CopyToGlacier": {
+    "CopyToArchive": {
       "Parameters": {
         "cma": {
           "event.$": "$",
@@ -20,7 +20,7 @@
         }
       },
       "Type": "Task",
-      "Resource": "${orca_lambda_copy_to_glacier_arn}",
+      "Resource": "${orca_lambda_copy_to_archive_arn}",
       "Retry": [
         {
           "ErrorEquals": [

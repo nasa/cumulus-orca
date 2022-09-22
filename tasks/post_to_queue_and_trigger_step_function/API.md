@@ -95,7 +95,7 @@ sends it to another queue, then triggers the internal report step function.
 
 Name: sqs_library.py
 Description: library for post_to_queue_and_trigger_step_function lambda function for posting to fifo SQS queue.
-Largely copied from copy_to_glacier
+Largely copied from copy_to_archive
 
 <a id="sqs_library.retry_error"></a>
 

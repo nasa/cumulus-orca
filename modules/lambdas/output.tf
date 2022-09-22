@@ -9,9 +9,9 @@ output "vpc_postgres_ingress_all_egress_id" {
 ## =============================================================================
 # Ingest Lambdas
 # ------------------------------------------------------------------------------
-output "copy_to_glacier_arn" {
-  description = "AWS ARN for the copy_to_glacier lambda."
-  value       = aws_lambda_function.copy_to_glacier.arn
+output "copy_to_archive_arn" {
+  description = "AWS ARN for the copy_to_archive lambda."
+  value       = aws_lambda_function.copy_to_archive.arn
 }
 
 output "orca_catalog_reporting_arn" {

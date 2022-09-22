@@ -5,14 +5,14 @@
 ##
 ## DESCRIPTION
 ## -----------------------------------------------------------------------------
-## Builds the copy_to_glacier API documentation.
+## Builds the copy_to_archive API documentation.
 ##
 ##
 ## USAGE
 ## -----------------------------------------------------------------------------
 ## bin/build_api.sh
 ##
-## This must be called from the (root) lambda directory /tasks/copy_to_glacier
+## This must be called from the (root) lambda directory /tasks/copy_to_archive
 ## =============================================================================
 
 ## Set this for Debugging only
@@ -21,7 +21,7 @@
 ## Make sure we are calling the script the correct way.
 BASEDIR=$(dirname $0)
 if [ "$BASEDIR" != "bin" ]; then
-  >&2 echo "ERROR: This script must be called from the root directory copy_to_glacier [bin/build_api.sh]."
+  >&2 echo "ERROR: This script must be called from the root directory copy_to_archive [bin/build_api.sh]."
   exit 1
 fi
 
@@ -68,7 +68,7 @@ check_rc $return_code "ERROR: pip install encountered an error."
 
 ## Run the documentation command
 echo "INFO: Creating API documentation ..."
-pydoc-markdown -I . -m copy_to_glacier -m sqs_library --render-toc > API.md
+pydoc-markdown -I . -m copy_to_archive -m sqs_library --render-toc > API.md
 let return_code=$?
 
 check_rc $return_code "ERROR: Failed to create API.md file."
