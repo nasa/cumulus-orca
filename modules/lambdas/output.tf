@@ -65,9 +65,9 @@ output "request_files_arn" {
 }
 
 
-output "copy_files_to_archive_arn" {
-  description = "AWS ARN for the copy_files_to_archive lambda."
-  value       = aws_lambda_function.copy_files_to_archive.arn
+output "copy_from_archive_arn" {
+  description = "AWS ARN for the copy_from_archive lambda."
+  value       = aws_lambda_function.copy_from_archive.arn
 }
 
 output "request_status_for_granule_arn" {

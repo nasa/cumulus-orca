@@ -96,7 +96,7 @@ Connect and query the recover_file status table return needed metadata for posti
 
 **Returns**:
 
-  A list of dict containing the following keys, matching the input format from copy_files_to_archive:
+  A list of dict containing the following keys, matching the input format from copy_from_archive:
   "jobId" (str):
   "granuleId"(str):
   "filename" (str):

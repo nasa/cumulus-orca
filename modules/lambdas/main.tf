@@ -415,20 +415,20 @@ resource "aws_lambda_function" "request_files" {
 }
 
 
-# copy_files_to_archive - Copies files from archive to destination bucket
+# copy_from_archive - Copies files from archive to destination bucket
 # ==============================================================================
-resource "aws_lambda_function" "copy_files_to_archive" {
+resource "aws_lambda_function" "copy_from_archive" {
   ## REQUIRED
-  function_name = "${var.prefix}_copy_files_to_archive"
+  function_name = "${var.prefix}_copy_from_archive"
   role          = var.restore_object_role_arn
 
   ## OPTIONAL
   description      = "Copies a restored file to the archive"
-  filename         = "${path.module}/../../tasks/copy_files_to_archive/copy_files_to_archive.zip"
-  handler          = "copy_files_to_archive.handler"
+  filename         = "${path.module}/../../tasks/copy_from_archive/copy_from_archive.zip"
+  handler          = "copy_from_archive.handler"
   memory_size      = var.orca_recovery_lambda_memory_size
   runtime          = "python3.9"
-  source_code_hash = filebase64sha256("${path.module}/../../tasks/copy_files_to_archive/copy_files_to_archive.zip")
+  source_code_hash = filebase64sha256("${path.module}/../../tasks/copy_from_archive/copy_from_archive.zip")
   tags             = var.tags
   timeout          = var.orca_recovery_lambda_timeout
 
@@ -448,18 +448,18 @@ resource "aws_lambda_function" "copy_files_to_archive" {
   }
 }
 
-# Additional resources needed by copy_files_to_archive
+# Additional resources needed by copy_from_archive
 # ------------------------------------------------------------------------------
-resource "aws_lambda_event_source_mapping" "copy_files_to_archive_event_source_mapping" {
+resource "aws_lambda_event_source_mapping" "copy_from_archive_event_source_mapping" {
   event_source_arn = var.orca_sqs_staged_recovery_queue_arn
-  function_name    = aws_lambda_function.copy_files_to_archive.arn
+  function_name    = aws_lambda_function.copy_from_archive.arn
 }
 
 # Permissions to allow SQS trigger to invoke lambda
-resource "aws_lambda_permission" "copy_files_to_archive_allow_sqs_trigger" {
+resource "aws_lambda_permission" "copy_from_archive_allow_sqs_trigger" {
   ## REQUIRED
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.copy_files_to_archive.function_name
+  function_name = aws_lambda_function.copy_from_archive.function_name
   principal     = "sqs.amazonaws.com"
 
   ## OPTIONAL
@@ -574,14 +574,14 @@ resource "aws_lambda_function" "request_status_for_job" {
   }
 }
 
-# post_copy_request_to_queue - Posts to two queues for notifying copy_files_to_archive lambda and updating the DB."
+# post_copy_request_to_queue - Posts to two queues for notifying copy_from_archive lambda and updating the DB."
 # ==============================================================================
 resource "aws_lambda_function" "post_copy_request_to_queue" {
   ## REQUIRED
   function_name = "${var.prefix}_post_copy_request_to_queue"
   role          = var.restore_object_role_arn
   ## OPTIONAL
-  description      = "Posts to two queues for notifying copy_files_to_archive lambda and updating the DB."
+  description      = "Posts to two queues for notifying copy_from_archive lambda and updating the DB."
   filename         = "${path.module}/../../tasks/post_copy_request_to_queue/post_copy_request_to_queue.zip"
   handler          = "post_copy_request_to_queue.handler"
   memory_size      = var.orca_recovery_lambda_memory_size

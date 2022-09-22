@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_files_to_archive/schemas/sub_schemas/body.json",
-  "title": "copy_files_to_archive Lambda Input['Records']['body']",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_from_archive/schemas/sub_schemas/body.json",
+  "title": "copy_from_archive Lambda Input['Records']['body']",
   "description": "A dict created by converting a string.",
   "type": "object",
   "properties": {

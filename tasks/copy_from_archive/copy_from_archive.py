@@ -1,5 +1,5 @@
 """
-Name: copy_files_to_archive.py
+Name: copy_from_archive.py
 Description:  Lambda function that copies files from one s3 bucket
 to another s3 bucket.
 """

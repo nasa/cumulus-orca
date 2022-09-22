@@ -456,8 +456,7 @@ It is not recommended to modify the ORCA Recovery Workflow. The workflow JSON
 file is located in the `modules/workflows/OrcaRecoveryWorkflow` of the repository.
 The workflow file name is `orca_recover_workflow.asl.json`. To change the
 behavior of the workflow, it is recommended to modify or replace the
-`copy_files_to_archive` lambda.
-
+`copy_from_archive` lambda.
 
 ### Workflow Failures
 
@@ -578,7 +577,7 @@ accessed using terraform dot syntax in the format of `module.orca.variable_name`
 | `orca_lambda_extract_filepaths_for_granule_arn`         | AWS ARN of the ORCA extract_filepaths_for_granule lambda. |
 | `orca_lambda_orca_catalog_reporting_arn`                | AWS ARN of the ORCA orca_catalog_reporting lambda. |
 | `orca_lambda_request_files_arn`                         | AWS ARN of the ORCA request_files lambda. |
-| `orca_lambda_copy_files_to_archive_arn`                 | AWS ARN of the ORCA copy_files_to_archive lambda. |
+| `orca_lambda_copy_from_archive_arn`                     | AWS ARN of the ORCA copy_from_archive lambda. |
 | `orca_lambda_request_status_for_granule_arn`            | AWS ARN of the ORCA request_status_for_granule lambda. |
 | `orca_lambda_request_status_for_job_arn`                | AWS ARN of the ORCA request_status_for_job lambda. |
 | `orca_lambda_post_copy_request_to_queue_arn`            | AWS ARN of the ORCA post_copy_request_to_queue lambda. |

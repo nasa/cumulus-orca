@@ -19,6 +19,9 @@ and includes an additional section for migration notes.
   - Renamed step-function `OrcaCopyToGlacierWorkflow` to `OrcaCopyToArchiveWorkflow`.
   - Renamed lambda `PREFIX_copy_to_glacier` to `PREFIX_copy_to_orca`. Renamed ORCA repository internal task from `copy_to_glacier` to `copy_to_archive`.
     Output of lambda and Terraform updated to match. See Migration Notes below.
+- *ORCA-540*
+  - Renamed lambda `copy_files_to_archive` to `copy_from_archive`.
+  - Output of Terraform updated to match. Unlikely to affect any integrations.
 
 ### Migration Notes
 - If utilizing the `copied_to_glacier` [output property](https://github.com/nasa/cumulus-orca/blob/15e5868f2d1eead88fb5cc8f2e055a18ba0f1264/tasks/copy_to_glacier/schemas/output.json#L47) of `copy_to_glacier`, 
@@ -379,7 +382,7 @@ variable "s3_secret_key" {
   - rds_security_group_id (Requires a value. Set in terraform.tfvars to the Security Group ID of your RDS Database's Security Group. Output from Cumulus' RDS module as `security_group_id`)
   - vpc_endpoint_id
 - Adjust workflows/step functions for `extract_filepaths`.
-  - `file-buckets` argument in `task_config` is now `fileBucketsMaps`.
+  - `file-buckets` argument in `task_config` is now `fileBucketMaps`.
 - Adjust workflows/step functions for `copy_to_glacier`. 
   - `multipart_chunksize_mb` argument in `task_config` is now the Cumulus standard of `s3MultipartChunksizeMb`. See example below.
   - `copy_to_glacier` has new requirements for writing to the orca catalog. See example below. Required properties are `providerId`, `executionId`, `collectionShortname`, and `collectionVersion`. See example below.

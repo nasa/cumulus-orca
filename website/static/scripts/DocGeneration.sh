@@ -1,7 +1,7 @@
 #!/bin/sh
 cd ..
 repoDir=${PWD}
-tasks=("copy_files_to_archive" "copy_files_to_archive.py"
+tasks=("copy_from_archive" "copy_from_archive.py"
         #"copy_to_archive" "handler.py"
         #"db_deploy" "db_deploy.py"
         #"extract_filepaths_for_granule" "extract_filepaths_for_granule.py"

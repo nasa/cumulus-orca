@@ -249,7 +249,7 @@ resource "aws_sns_topic_subscription" "s3_inventory_dlq_alarm_email" {
   endpoint   = var.dlq_subscription_email   #todo: ORCA-365
 }
 
-## staged-recovery-queue - copy_files_to_archive lambda reads from this queue to get what it needs to copy next
+## staged-recovery-queue - copy_from_archive lambda reads from this queue to get what it needs to copy next
 ## ====================================================================================================
 resource "aws_sqs_queue" "staged_recovery_queue" {
   ## OPTIONAL
@@ -332,7 +332,7 @@ resource "aws_sns_topic_subscription" "staged_recovery_dlq_alarm_email" {
   endpoint   = var.dlq_subscription_email   #todo: ORCA-365
 }
 
-## status_update_queue - copy_files_to_archive lambda writes to this database status update queue.
+## status_update_queue - copy_from_archive lambda writes to this database status update queue.
 ## ===============================================================================================================================
 resource "aws_sqs_queue" "status_update_queue" {
   ## OPTIONAL
