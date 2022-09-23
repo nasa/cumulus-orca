@@ -167,48 +167,34 @@ def get_archive_recovery_type(config: Dict[str, Any]) -> str:
 
     # Look for config override
     recovery_type = config.get(CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY, None)
-    if recovery_type is not None:  # either return or raise error.
-        if recovery_type in VALID_RESTORE_TYPES:
+    if recovery_type is not None:
+        LOGGER.info(
+            f"Using restore type of {recovery_type} "
+            f"found in the configuration {CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} key."
+        )
+    else:
+        # Look for default from TF
+        recovery_type = os.getenv(OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY, None)
+        if recovery_type is not None:
             LOGGER.info(
                 f"Using restore type of {recovery_type} "
-                f"found in the configuration {CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} key."
+                f"found in the environment {OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY} key."
             )
-            return recovery_type
         else:
-            LOGGER.error(
-                f"Invalid restore type value of '{recovery_type}' "
-                f"found in the configuration {CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} key."
-            )
-            raise ValueError(
-                f"Invalid restore type value in configuration "
-                f"{CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} key."
+            recovery_type = "Standard"
+            LOGGER.info(
+                f"Using restore type of {recovery_type} "
+                f"due to lack of overrides."
             )
 
-    # Look for default from TF
-    recovery_type = os.getenv(OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY, None)
-    if recovery_type is None:
-        recovery_type = "Standard"
-        LOGGER.info(
-            f"Using restore type of {recovery_type} "
-            f"due to lack of overrides."
-        )
-        return recovery_type
-
-    if recovery_type in VALID_RESTORE_TYPES:
-        LOGGER.info(
-            f"Using restore type of {recovery_type} "
-            f"found in environment variable {OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY}."
-        )
-        return recovery_type
-    else:
+    if recovery_type not in VALID_RESTORE_TYPES:
         LOGGER.error(
-            f"Invalid restore type value of '{recovery_type}' "
-            f"found in environment variable {OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY}."
+            f"Invalid restore type value of '{recovery_type}'."
         )
         raise ValueError(
-            f"Invalid restore type value in environment variable "
-            f"{OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY}"
+            f"Invalid restore type value of '{recovery_type}'."
         )
+    return recovery_type
 
 
 def get_default_archive_bucket_name(config: Dict[str, Any]) -> str:

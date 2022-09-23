@@ -1249,19 +1249,17 @@ class TestRequestFromArchive(unittest.TestCase):
         """
         Raises ValueError if invalid config value.
         """
-        config = {request_from_archive.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: "Nope"}
+        recovery_type = uuid.uuid4().__str__()  # nosec
+        config = {request_from_archive.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: recovery_type}
         with self.assertRaises(ValueError) as ve:
             request_from_archive.get_archive_recovery_type(config)
         self.assertEqual(
-            f"Invalid restore type value in configuration "
-            f"{request_from_archive.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} key.",
+            f"Invalid restore type value of '{recovery_type}'.",
             ve.exception.args[0],
         )
         mock_logger_error.assert_called_once_with(
             f"Invalid restore type value of "
-            f"'{config[request_from_archive.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY]}' found in "
-            f"the configuration {request_from_archive.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} "
-            f"key."
+            f"'{config[request_from_archive.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY]}'."
         )
 
     @patch.dict(
@@ -1295,15 +1293,13 @@ class TestRequestFromArchive(unittest.TestCase):
         with self.assertRaises(ValueError) as ve:
             request_from_archive.get_archive_recovery_type(config)
         self.assertEqual(
-            f"Invalid restore type value in environment variable "
-            f"{request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY}",
+            f"Invalid restore type value of "
+            f"'{os.environ[request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY]}'.",
             ve.exception.args[0],
         )
         mock_logger_error.assert_called_once_with(
             f"Invalid restore type value of "
-            f"'{os.environ[request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY]}' "
-            f"found in environment variable "
-            f"{request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY}."
+            f"'{os.environ[request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY]}'."
         )
 
     @patch("time.sleep")
