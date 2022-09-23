@@ -1,6 +1,6 @@
 """
 Name: request_from_archive.py
-Description:  Lambda function that makes a restore request from glacier for each input file.
+Description:  Lambda function that makes a restore request from archive bucket for each input file.
 """
 import json
 import os
@@ -31,7 +31,7 @@ OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY = "RESTORE_REQUEST_RETRIES"
 OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY = "RESTORE_RETRY_SLEEP_SECS"
 OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY = "DEFAULT_RECOVERY_TYPE"
 OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY = "STATUS_UPDATE_QUEUE_URL"
-OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY = "ORCA_DEFAULT_BUCKET"
+OS_ENVIRON_ORCA_DEFAULT_ARCHIVE_BUCKET_KEY = "ORCA_DEFAULT_BUCKET"
 
 EVENT_CONFIG_KEY = "config"
 EVENT_INPUT_KEY = "input"
@@ -116,14 +116,14 @@ def task(
     # Get QUEUE URL
     status_update_queue_url = str(os.environ[OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY])
 
-    # Use the default glacier bucket if none is specified for the collection or otherwise given.
+    # Use the default archive bucket if none is specified for the collection or otherwise given.
     event[EVENT_CONFIG_KEY][
         CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY
-    ] = get_default_glacier_bucket_name(
+    ] = get_default_archive_bucket_name(
         event[EVENT_CONFIG_KEY]
     )  # todo: pass this in as parameter instead of adjusting config dictionary.
 
-    # Get number of days to keep before it sinks back down into glacier from S3
+    # Get number of days to keep before it sinks back down into inactive storage
     try:
         exp_days = int(os.environ[OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY])
     except KeyError:
@@ -140,8 +140,8 @@ def task(
             f"No bulk job_id sent. Generated value"
             f" {event[EVENT_CONFIG_KEY][CONFIG_JOB_ID_KEY]} for job_id."
         )
-    # get the glacier recovery type
-    recovery_type = get_glacier_recovery_type(event["config"])
+    # get the archive recovery type
+    recovery_type = get_archive_recovery_type(event["config"])
 
     # Call the inner task to perform the work of restoring
     return inner_task(  # todo: Split 'event' into relevant properties.
@@ -154,10 +154,11 @@ def task(
     )
 
 
-def get_glacier_recovery_type(config: Dict[str, Any]) -> str:
+def get_archive_recovery_type(config: Dict[str, Any]) -> str:
     """
-    Returns the glacier recovery type from either config or environment variable.
+    Returns the archive recovery type from either config or environment variable.
     Must be either 'Bulk', 'Expedited', or 'Standard'.
+    Defaults to 'Standard' if none found.
     Args:
         config: The config dictionary from lambda event.
 
@@ -166,12 +167,13 @@ def get_glacier_recovery_type(config: Dict[str, Any]) -> str:
 
     # Look for config override
     recovery_type = config.get(CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY, None)
-    if recovery_type is not None:
+    if recovery_type is not None:  # either return or raise error.
         if recovery_type in VALID_RESTORE_TYPES:
             LOGGER.info(
                 f"Using restore type of {recovery_type} "
                 f"found in the configuration {CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} key."
             )
+            return recovery_type
         else:
             LOGGER.error(
                 f"Invalid restore type value of '{recovery_type}' "
@@ -183,35 +185,40 @@ def get_glacier_recovery_type(config: Dict[str, Any]) -> str:
             )
 
     # Look for default from TF
+    recovery_type = os.getenv(OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY, None)
     if recovery_type is None:
-        recovery_type = os.getenv(OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY, None)
-        if recovery_type is not None:
-            if recovery_type in VALID_RESTORE_TYPES:
-                LOGGER.info(
-                    f"Using restore type of {recovery_type} "
-                    f"found in environment variable {OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY}."
-                )
-            else:
-                LOGGER.error(
-                    f"Invalid restore type value of '{recovery_type}' "
-                    f"found in environment variable {OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY}."
-                )
-                raise ValueError(
-                    f"Invalid restore type value in environment variable "
-                    f"{OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY}"
-                )
+        recovery_type = "Standard"
+        LOGGER.info(
+            f"Using restore type of {recovery_type} "
+            f"due to lack of overrides."
+        )
+        return recovery_type
 
-    return recovery_type
+    if recovery_type in VALID_RESTORE_TYPES:
+        LOGGER.info(
+            f"Using restore type of {recovery_type} "
+            f"found in environment variable {OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY}."
+        )
+        return recovery_type
+    else:
+        LOGGER.error(
+            f"Invalid restore type value of '{recovery_type}' "
+            f"found in environment variable {OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY}."
+        )
+        raise ValueError(
+            f"Invalid restore type value in environment variable "
+            f"{OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY}"
+        )
 
 
-def get_default_glacier_bucket_name(config: Dict[str, Any]) -> str:
+def get_default_archive_bucket_name(config: Dict[str, Any]) -> str:
     try:
         default_bucket = config[CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY]
         if default_bucket is not None:
             return default_bucket
     except KeyError:
         LOGGER.warn(f"{CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY} is not set.")
-    return str(os.environ[OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY])
+    return str(os.environ[OS_ENVIRON_ORCA_DEFAULT_ARCHIVE_BUCKET_KEY])
 
 
 def inner_task(
@@ -232,7 +239,7 @@ def inner_task(
             this may not directly correspond to Lambda input.
             event: A dict with the following keys:
                 'config' (dict): A dict with the following keys:
-                    'defaultBucketOverride' (str): The name of the glacier bucket
+                    'defaultBucketOverride' (str): The name of the archive bucket
                         from which the files will be restored.
                     'asyncOperationId' (str): The unique identifier used for tracking requests.
                 'input' (dict): A dict with the following keys:
@@ -254,9 +261,9 @@ def inner_task(
         Raises:
             RestoreRequestError: Thrown if there are errors with the input request.
     """
-    # Get the glacier bucket from the event
+    # Get the archive bucket from the event
     try:
-        glacier_bucket = event[EVENT_CONFIG_KEY][
+        archive_bucket = event[EVENT_CONFIG_KEY][
             CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY
         ]
     except KeyError:
@@ -291,7 +298,7 @@ def inner_task(
         for keys in granule[GRANULE_KEYS_KEY]:
             # Get the file key (path/filename)
             file_key = keys[FILE_KEY_KEY]
-            # get the glacier bucket the file resides in
+            # get the destination bucket for the file
             destination_bucket_name = keys[FILE_DEST_BUCKET_KEY]
 
             # Set the initial pending state for the file.
@@ -305,10 +312,10 @@ def inner_task(
                 FILE_REQUEST_TIME_KEY: time_stamp,
                 FILE_LAST_UPDATE_KEY: time_stamp,
             }
-            file_info = get_s3_object_information(s3, glacier_bucket, file_key)
+            file_info = get_s3_object_information(s3, archive_bucket, file_key)
             if file_info is not None:
                 if file_info["StorageClass"] == "DEEP_ARCHIVE" and recovery_type == "Expedited":
-                    message = f"File '{file_key}' from bucket '{glacier_bucket}' " \
+                    message = f"File '{file_key}' from bucket '{archive_bucket}' " \
                               f"is in storage class '{file_info['StorageClass']}' " \
                               f"which is incompatible with recovery type '{recovery_type}'"
                     LOGGER.error(message)
@@ -321,7 +328,7 @@ def inner_task(
                         f"Added {file_key} to the list of files we'll attempt to recover."
                     )
             else:
-                message = f"'{file_key}' does not exist in '{glacier_bucket}' bucket"
+                message = f"'{file_key}' does not exist in '{archive_bucket}' bucket"
                 LOGGER.error(message)
                 a_file[FILE_PROCESSED_KEY] = True
                 a_file[FILE_STATUS_ID_KEY] = shared_recovery.OrcaStatus.FAILED.value
@@ -341,7 +348,7 @@ def inner_task(
         for retry in range(max_retries + 1):
             try:
                 shared_recovery.create_status_for_job(
-                    job_id, granule_id, glacier_bucket, files, status_update_queue_url
+                    job_id, granule_id, archive_bucket, files, status_update_queue_url
                 )
                 break
             except Exception as ex:
@@ -356,12 +363,12 @@ def inner_task(
             LOGGER.critical(message, exec_info=True)
             raise Exception(message)
 
-        # Process the granules by restoring them from glacier and updating the
+        # Process the granules by initiating restoration from archive and updating the
         # database with any failure information.
         process_granule(
             s3,
             granule,
-            glacier_bucket,
+            archive_bucket,
             restore_expire_days,
             max_retries,
             retry_sleep_secs,
@@ -382,7 +389,7 @@ def inner_task(
 def process_granule(
     s3: BaseClient,
     granule: Dict[str, Union[str, List[Dict]]],
-    glacier_bucket: str,
+    archive_bucket_name: str,
     restore_expire_days: int,
     max_retries: int,
     retry_sleep_secs: float,
@@ -402,7 +409,7 @@ def process_granule(
                 'errorMessage' (str): Will be modified if error occurs.
 
 
-        glacier_bucket: The S3 glacier bucket name.
+        archive_bucket_name: The S3 archive bucket name.
         restore_expire_days:
             The number of days the restored file will be accessible in the S3 bucket
             before it expires.
@@ -430,7 +437,7 @@ def process_granule(
                         s3,
                         a_file[FILE_KEY_PATH_KEY],
                         restore_expire_days,
-                        glacier_bucket,
+                        archive_bucket_name,
                         attempt,
                         job_id,
                         recovery_type,
@@ -443,7 +450,7 @@ def process_granule(
                     # Set the message for logging and populate file's error message info.
                     LOGGER.error(
                         f"Failed to restore '{a_file[FILE_KEY_PATH_KEY]}' "
-                        f"from '{glacier_bucket}'. "
+                        f"from '{archive_bucket_name}'. "
                         f"Encountered error '{err}'."
                     )
                     a_file[FILE_ERROR_MESSAGE_KEY] = str(err)
@@ -515,29 +522,30 @@ def process_granule(
     # If this is reached, that means there is no entry in the db for file's status.
     if any_error:
         LOGGER.error(f"One or more files failed to be requested "
-                     f"from '{glacier_bucket}'. GRANULE: {json.dumps(granule)}")
+                     f"from '{archive_bucket_name}'. GRANULE: {json.dumps(granule)}")
         raise RestoreRequestError(
-            f"One or more files failed to be requested from '{glacier_bucket}'."
+            f"One or more files failed to be requested from '{archive_bucket_name}'."
         )
 
 
 def get_s3_object_information(
-        s3_cli: BaseClient, glacier_bucket: str, file_key: str
+        s3_cli: BaseClient, archive_bucket_name: str, file_key: str
                             ) -> Optional[Dict[str, Any]]:
     """Perform a head request to get information about a file in S3.
     Args:
         s3_cli: An instance of boto3 s3 client
-        glacier_bucket: The S3 bucket name
-        file_key: The key of the Glacier object
+        archive_bucket_name: The S3 bucket name
+        file_key: The key of the archived object
     Returns:
         None if the object does not exist.
         Otherwise, the dictionary specified in
-        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.head_object
+        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3
+        .Client.head_object
     """
     try:
         # head_object will fail with a thrown 404 if the object doesn't exist
         # todo: The above case was not covered, and should be considered untested.
-        file_info = s3_cli.head_object(Bucket=glacier_bucket, Key=file_key)
+        file_info = s3_cli.head_object(Bucket=archive_bucket_name, Key=file_key)
         return file_info
     except ClientError as err:
         LOGGER.error(err)
@@ -556,30 +564,30 @@ def restore_object(
     s3_cli: BaseClient,
     key: str,
     days: int,
-    db_glacier_bucket_key: str,
+    db_archive_bucket_key: str,
     attempt: int,
     job_id: str,
-    recovery_type: str = "Standard",
+    recovery_type: str,
 ) -> None:
     # noinspection SpellCheckingInspection
-    """Restore an archived S3 Glacier object in an Amazon S3 bucket.
+    """Restore an archived S3 object in an Amazon S3 bucket.
     Args:
         s3_cli: An instance of boto3 s3 client.
-        key: The key of the Glacier object being restored.
+        key: The key of the archived object being restored.
         days: How many days the restored file will be accessible in the
             S3 bucket before it expires.
-        db_glacier_bucket_key: The S3 bucket name.
+        db_archive_bucket_key: The S3 bucket name.
         attempt: The attempt number for logging purposes.
         job_id: The unique id of the job. Used for logging.
-        recovery_type: Glacier Tier. Valid values are
-            'Standard'|'Bulk'|'Expedited'. Defaults to 'Standard'.
+        recovery_type: Valid values are
+            'Standard'|'Bulk'|'Expedited'.
     Raises:
         ClientError: Raises ClientErrors from restore_object, or if the file is already restored.
     """
     request = {"Days": days, "GlacierJobParameters": {"Tier": recovery_type}}
     # Submit the request
     restore_result = s3_cli.restore_object(
-        Bucket=db_glacier_bucket_key, Key=key, RestoreRequest=request
+        Bucket=db_archive_bucket_key, Key=key, RestoreRequest=request
     )  # Allow ClientErrors to bubble up.
     if restore_result["ResponseMetadata"]["HTTPStatusCode"] == 200:
         # Will have a non-error path after https://bugs.earthdata.nasa.gov/browse/ORCA-336
@@ -588,20 +596,20 @@ def restore_object(
                 "Error": {
                     "Code": "HTTPStatus: 200",
                     "Message": f"File '{key}' in bucket "
-                    f"'{db_glacier_bucket_key}' has already been recovered.",
+                    f"'{db_archive_bucket_key}' has already been recovered.",
                 }
             },
             "restore_object",
         )
 
     LOGGER.info(
-        f"Restore {key} from {db_glacier_bucket_key} "
+        f"Restore {key} from {db_archive_bucket_key} "
         f"attempt {attempt} successful. Job ID: {job_id}"
     )
 
 
 def handler(event: Dict[str, Any], context):  # pylint: disable-msg=unused-argument
-    """Lambda handler. Initiates a restore_object request from glacier for each file of a granule.
+    """Lambda handler. Initiates a restore_object request from archive for each file of a granule.
     Note that this function is set up to accept a list of granules, (because Cumulus sends a list),
     but at this time, only 1 granule will be accepted.
     This is due to the error handling. If the restore request for any file for a

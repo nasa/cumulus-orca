@@ -2,7 +2,7 @@
 
 **Lambda function internal_reconcile_report_orphan **
 
-Receives job id and page index from end user and returns reporting information of files that have records in the S3 glacier bucket but are missing in the ORCA catalog from the internal reconciliation job.
+Receives job id and page index from end user and returns reporting information of files that have records in the archive bucket but are missing in the ORCA catalog from the internal reconciliation job.
 
 Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/development-guide/code/contrib-code-intro) for information on environment setup and testing.
 
@@ -38,7 +38,7 @@ Fully defined json schemas written in the schema of https://json-schema.org/ can
       "s3Etag": "d41d8cd98f00b204e9800998ecf8427",
       "s3FileLastUpdate": "2020-01-01T23:00:00Z",
       "s3SizeInBytes": 6543277389,
-      "storageClass": "glacier"
+      "storageClass": "GLACIER"
     }
   ]
 }

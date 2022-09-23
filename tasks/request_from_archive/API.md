@@ -3,7 +3,7 @@
 * [request\_from\_archive](#request_from_archive)
   * [RestoreRequestError](#request_from_archive.RestoreRequestError)
   * [task](#request_from_archive.task)
-  * [get\_glacier\_recovery\_type](#request_from_archive.get_glacier_recovery_type)
+  * [get\_archive\_recovery\_type](#request_from_archive.get_archive_recovery_type)
   * [inner\_task](#request_from_archive.inner_task)
   * [process\_granule](#request_from_archive.process_granule)
   * [get\_s3\_object\_information](#request_from_archive.get_s3_object_information)
@@ -15,7 +15,7 @@
 # request\_from\_archive
 
 Name: request_from_archive.py
-Description:  Lambda function that makes a restore request from glacier for each input file.
+Description:  Lambda function that makes a restore request from archive bucket for each input file.
 
 <a id="request_from_archive.RestoreRequestError"></a>
 
@@ -57,16 +57,17 @@ then calls inner_task.
 
 - `RestoreRequestError` - Thrown if there are errors with the input request.
 
-<a id="request_from_archive.get_glacier_recovery_type"></a>
+<a id="request_from_archive.get_archive_recovery_type"></a>
 
-#### get\_glacier\_recovery\_type
+#### get\_archive\_recovery\_type
 
 ```python
-def get_glacier_recovery_type(config: Dict[str, Any]) -> str
+def get_archive_recovery_type(config: Dict[str, Any]) -> str
 ```
 
-Returns the glacier recovery type from either config or environment variable.
+Returns the archive recovery type from either config or environment variable.
 Must be either 'Bulk', 'Expedited', or 'Standard'.
+Defaults to 'Standard' if none found.
 
 **Arguments**:
 
@@ -95,7 +96,7 @@ if it fails, waiting {retry_sleep_secs} between each attempt.
   this may not directly correspond to Lambda input.
 - `event` - A dict with the following keys:
 - `'config'` _dict_ - A dict with the following keys:
-- `'defaultBucketOverride'` _str_ - The name of the glacier bucket
+- `'defaultBucketOverride'` _str_ - The name of the archive bucket
   from which the files will be restored.
 - `'asyncOperationId'` _str_ - The unique identifier used for tracking requests.
 - `'input'` _dict_ - A dict with the following keys:
@@ -127,7 +128,7 @@ if it fails, waiting {retry_sleep_secs} between each attempt.
 
 ```python
 def process_granule(s3: BaseClient, granule: Dict[str, Union[str, List[Dict]]],
-                    glacier_bucket: str, restore_expire_days: int,
+                    archive_bucket_name: str, restore_expire_days: int,
                     max_retries: int, retry_sleep_secs: float,
                     recovery_type: str, job_id: str,
                     status_update_queue_url: str) -> None
@@ -147,7 +148,7 @@ Call restore_object for the files in the granule_list. Modifies granule for outp
 - `'errorMessage'` _str_ - Will be modified if error occurs.
   
   
-- `glacier_bucket` - The S3 glacier bucket name.
+- `archive_bucket_name` - The S3 archive bucket name.
   restore_expire_days:
   The number of days the restored file will be accessible in the S3 bucket
   before it expires.
@@ -165,7 +166,7 @@ Call restore_object for the files in the granule_list. Modifies granule for outp
 #### get\_s3\_object\_information
 
 ```python
-def get_s3_object_information(s3_cli: BaseClient, glacier_bucket: str,
+def get_s3_object_information(s3_cli: BaseClient, archive_bucket_name: str,
                               file_key: str) -> Optional[Dict[str, Any]]
 ```
 
@@ -174,42 +175,39 @@ Perform a head request to get information about a file in S3.
 **Arguments**:
 
 - `s3_cli` - An instance of boto3 s3 client
-- `glacier_bucket` - The S3 bucket name
-- `file_key` - The key of the Glacier object
+- `archive_bucket_name` - The S3 bucket name
+- `file_key` - The key of the archived object
 
 **Returns**:
 
   None if the object does not exist.
   Otherwise, the dictionary specified in
-  https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.head_object
+  https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3
+  .Client.head_object
 
 <a id="request_from_archive.restore_object"></a>
 
 #### restore\_object
 
 ```python
-def restore_object(s3_cli: BaseClient,
-                   key: str,
-                   days: int,
-                   db_glacier_bucket_key: str,
-                   attempt: int,
-                   job_id: str,
-                   recovery_type: str = "Standard") -> None
+def restore_object(s3_cli: BaseClient, key: str, days: int,
+                   db_archive_bucket_key: str, attempt: int, job_id: str,
+                   recovery_type: str) -> None
 ```
 
-Restore an archived S3 Glacier object in an Amazon S3 bucket.
+Restore an archived S3 object in an Amazon S3 bucket.
 
 **Arguments**:
 
 - `s3_cli` - An instance of boto3 s3 client.
-- `key` - The key of the Glacier object being restored.
+- `key` - The key of the archived object being restored.
 - `days` - How many days the restored file will be accessible in the
   S3 bucket before it expires.
-- `db_glacier_bucket_key` - The S3 bucket name.
+- `db_archive_bucket_key` - The S3 bucket name.
 - `attempt` - The attempt number for logging purposes.
 - `job_id` - The unique id of the job. Used for logging.
-- `recovery_type` - Glacier Tier. Valid values are
-  'Standard'|'Bulk'|'Expedited'. Defaults to 'Standard'.
+- `recovery_type` - Valid values are
+  'Standard'|'Bulk'|'Expedited'.
 
 **Raises**:
 
@@ -223,7 +221,7 @@ Restore an archived S3 Glacier object in an Amazon S3 bucket.
 def handler(event: Dict[str, Any], context)
 ```
 
-Lambda handler. Initiates a restore_object request from glacier for each file of a granule.
+Lambda handler. Initiates a restore_object request from archive for each file of a granule.
 Note that this function is set up to accept a list of granules, (because Cumulus sends a list),
 but at this time, only 1 granule will be accepted.
 This is due to the error handling. If the restore request for any file for a
