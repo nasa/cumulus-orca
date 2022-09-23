@@ -82,15 +82,15 @@ Error: Error putting S3 notification configuration: AccessDenied: Access Denied
 
 :::
 
-### Filling out the form
+### Via NGAP form
 
-First, create a NASD ticket for cross account bucket access. This is a turn key
-request to NGAP. The link to create a ticket is available
-[here](https://bugs.earthdata.nasa.gov/servicedesk/customer/portal/7/create/80).
+If your accounts are both within EDC, you may skip to [the primary method](#via-aws-gui).
+Otherwise, create a NASD ticket for cross account bucket access.
+This is a turn key request to NGAP. The link to create a ticket is available
+[here](https://bugs.earthdata.nasa.gov/servicedesk/customer/portal/7/create/85).
 
-Next, fill out the form. The sections below provide information on the data needed
+The sections below provide information on the data needed
 for each of the fields and where to look for information.
-
 
 #### Project Name
 
@@ -100,12 +100,10 @@ account and is usually in the format of \[project name\]-app-\[application name\
 For example, an ORCA disaster recovery OU project name may look like the following
 orca-app-dr-sandbox-1234.
 
-
 #### Account Type:
 
 This is the OU environment the bucket resides in. Typical values for this field
 are Sandbox, SIT, UAT, and Production.
-
 
 #### Business Justification:
 
@@ -119,7 +117,6 @@ an example of a justification.
 > seamlessly perform these functions and provide operators with the capability to
 > test and verify disaster recovery scenarios.
 
-
 #### Bucket Names(s):
 
 This is the name of the ORCA archive bucket created in the Disaster Recover OU.
@@ -132,6 +129,14 @@ Below is an example name of an ORCA archive bucket and ORCA report bucket.
 
 The policy section is the JSON policy requested for the ORCA archive bucket in
 the Disaster Recovery OU.
+See [the section below](#via-aws-gui) for policy document examples.
+
+### Via AWS GUI
+
+For each of the buckets listed below
+go to AWS, open the bucket in question, click "Permissions", 
+then under "Bucket policy" click "Edit".
+The policy given, once modified, can be pasted into this form.
 
 ##### Archive Bucket:
 
@@ -140,13 +145,13 @@ modifications, which will be detailed below.
 
 ```json
 {
-   "Version":"2012-10-17",
-   "Statement":[
+   "Version": "2012-10-17",
+   "Statement": [
       {
-         "Sid":"Cross Account Access",
-         "Effect":"Allow",
-         "Principal":{
-            "AWS":"arn:aws:iam::012345678912:root"
+         "Sid": "Cross Account Access",
+         "Effect": "Allow",
+         "Principal": {
+            "AWS": "arn:aws:iam::012345678912:root"
          },
          "Action":[
             "s3:GetObject*",
@@ -158,25 +163,25 @@ modifications, which will be detailed below.
             "s3:PutInventoryConfiguration",
             "s3:ListBucketVersions"
          ],
-         "Resource":[
+         "Resource": [
             "arn:aws:s3:::PREFIX-orca-archive",
             "arn:aws:s3:::PREFIX-orca-archive/*"
          ]
       },
       {
-         "Sid":"Cross Account Write Access",
-         "Effect":"Allow",
-         "Principal":{
-            "AWS":"arn:aws:iam::012345678912:root"
+         "Sid": "Cross Account Write Access",
+         "Effect": "Allow",
+         "Principal": {
+            "AWS": "arn:aws:iam::012345678912:root"
          },
-         "Action":"s3:PutObject*",
-         "Resource":[
+         "Action": "s3:PutObject*",
+         "Resource": [
             "arn:aws:s3:::PREFIX-orca-archive/*"
          ],
-         "Condition":{
-            "StringEquals":{
-               "s3:x-amz-acl":"bucket-owner-full-control",
-               "s3:x-amz-storage-class":[
+         "Condition": {
+            "StringEquals": {
+               "s3:x-amz-acl": "bucket-owner-full-control",
+               "s3:x-amz-storage-class": [
                   "GLACIER",
                   "DEEP_ARCHIVE"
                ]
