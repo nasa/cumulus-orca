@@ -42,18 +42,18 @@ class TestRequestFromArchive(unittest.TestCase):
         os.environ.pop(request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY, None)
         os.environ.pop(request_from_archive.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY, None)
         os.environ.pop(request_from_archive.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY, None)
-        os.environ.pop(request_from_archive.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY, None)
+        os.environ.pop(request_from_archive.OS_ENVIRON_ORCA_DEFAULT_ARCHIVE_BUCKET_KEY, None)
         os.environ.pop(request_from_archive.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY, None)
         os.environ.pop(request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY, None)
 
-    @patch("request_from_archive.get_default_glacier_bucket_name")
+    @patch("request_from_archive.get_default_archive_bucket_name")
     @patch("request_from_archive.inner_task")
-    @patch("request_from_archive.get_glacier_recovery_type")
+    @patch("request_from_archive.get_archive_recovery_type")
     def test_task_happy_path(
         self,
-        mock_get_glacier_recovery_type: MagicMock,
+        mock_get_archive_recovery_type: MagicMock,
         mock_inner_task: MagicMock,
-        mock_get_default_glacier_bucket_name: MagicMock,
+        mock_get_default_archive_bucket_name: MagicMock,
     ):
         """
         All variables present and valid.
@@ -85,32 +85,32 @@ class TestRequestFromArchive(unittest.TestCase):
 
         request_from_archive.task(mock_event, None)
 
-        mock_get_default_glacier_bucket_name.assert_called_once_with(config)
-        mock_get_glacier_recovery_type.assert_called_once_with(config)
+        mock_get_default_archive_bucket_name.assert_called_once_with(config)
+        mock_get_archive_recovery_type.assert_called_once_with(config)
         mock_inner_task.assert_called_once_with(
             {
                 request_from_archive.EVENT_CONFIG_KEY: {
                     request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY:
-                        mock_get_default_glacier_bucket_name.return_value,
+                        mock_get_default_archive_bucket_name.return_value,
                     request_from_archive.CONFIG_JOB_ID_KEY:
                         job_id,
                 },
             },
             max_retries,
             retry_sleep_secs,
-            mock_get_glacier_recovery_type(config),
+            mock_get_archive_recovery_type(config),
             exp_days,
             db_queue_url,
         )
 
-    @patch("request_from_archive.get_default_glacier_bucket_name")
+    @patch("request_from_archive.get_default_archive_bucket_name")
     @patch("request_from_archive.inner_task")
-    @patch("request_from_archive.get_glacier_recovery_type")
+    @patch("request_from_archive.get_archive_recovery_type")
     def test_task_default_for_missing_max_retries(
         self,
-        mock_get_glacier_recovery_type: MagicMock,
+        mock_get_archive_recovery_type: MagicMock,
         mock_inner_task: MagicMock,
-        mock_get_default_glacier_bucket_name: MagicMock,
+        mock_get_default_archive_bucket_name: MagicMock,
     ):
         """
         If max_retries missing, use default.
@@ -138,32 +138,32 @@ class TestRequestFromArchive(unittest.TestCase):
 
         request_from_archive.task(mock_event, None)
 
-        mock_get_default_glacier_bucket_name.assert_called_once_with(config)
-        mock_get_glacier_recovery_type.assert_called_once_with(config)
+        mock_get_default_archive_bucket_name.assert_called_once_with(config)
+        mock_get_archive_recovery_type.assert_called_once_with(config)
         mock_inner_task.assert_called_once_with(
             {
                 request_from_archive.EVENT_CONFIG_KEY: {
                     request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY:
-                        mock_get_default_glacier_bucket_name.return_value,
+                        mock_get_default_archive_bucket_name.return_value,
                     request_from_archive.CONFIG_JOB_ID_KEY:
                         job_id,
                 },
             },
             request_from_archive.DEFAULT_MAX_REQUEST_RETRIES,
             retry_sleep_secs,
-            mock_get_glacier_recovery_type(config),
+            mock_get_archive_recovery_type(config),
             exp_days,
             db_queue_url,
         )
 
-    @patch("request_from_archive.get_default_glacier_bucket_name")
+    @patch("request_from_archive.get_default_archive_bucket_name")
     @patch("request_from_archive.inner_task")
-    @patch("request_from_archive.get_glacier_recovery_type")
+    @patch("request_from_archive.get_archive_recovery_type")
     def test_task_default_for_missing_sleep_secs(
         self,
-        mock_get_glacier_recovery_type: MagicMock,
+        mock_get_archive_recovery_type: MagicMock,
         mock_inner_task: MagicMock,
-        mock_get_default_glacier_bucket_name: MagicMock,
+        mock_get_default_archive_bucket_name: MagicMock,
     ):
         """
         If sleep_secs missing, use default.
@@ -191,32 +191,32 @@ class TestRequestFromArchive(unittest.TestCase):
 
         request_from_archive.task(mock_event, None)
 
-        mock_get_default_glacier_bucket_name.assert_called_once_with(config)
-        mock_get_glacier_recovery_type.assert_called_once_with(config)
+        mock_get_default_archive_bucket_name.assert_called_once_with(config)
+        mock_get_archive_recovery_type.assert_called_once_with(config)
         mock_inner_task.assert_called_once_with(
             {
                 request_from_archive.EVENT_CONFIG_KEY: {
                     request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY:
-                        mock_get_default_glacier_bucket_name.return_value,
+                        mock_get_default_archive_bucket_name.return_value,
                     request_from_archive.CONFIG_JOB_ID_KEY:
                         job_id,
                 },
             },
             max_retries,
             request_from_archive.DEFAULT_RESTORE_RETRY_SLEEP_SECS,
-            mock_get_glacier_recovery_type(config),
+            mock_get_archive_recovery_type(config),
             exp_days,
             db_queue_url,
         )
 
-    @patch("request_from_archive.get_default_glacier_bucket_name")
+    @patch("request_from_archive.get_default_archive_bucket_name")
     @patch("request_from_archive.inner_task")
-    @patch("request_from_archive.get_glacier_recovery_type")
+    @patch("request_from_archive.get_archive_recovery_type")
     def test_task_default_for_missing_exp_days(
         self,
-        mock_get_glacier_recovery_type: MagicMock,
+        mock_get_archive_recovery_type: MagicMock,
         mock_inner_task: MagicMock,
-        mock_get_default_glacier_bucket_name: MagicMock,
+        mock_get_default_archive_bucket_name: MagicMock,
     ):
         """
         Uses default missing_exp_days if needed.
@@ -244,32 +244,32 @@ class TestRequestFromArchive(unittest.TestCase):
 
         request_from_archive.task(mock_event, None)
 
-        mock_get_default_glacier_bucket_name.assert_called_once_with(config)
-        mock_get_glacier_recovery_type.assert_called_once_with(config)
+        mock_get_default_archive_bucket_name.assert_called_once_with(config)
+        mock_get_archive_recovery_type.assert_called_once_with(config)
         mock_inner_task.assert_called_once_with(
             {
                 request_from_archive.EVENT_CONFIG_KEY: {
                     request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY:
-                        mock_get_default_glacier_bucket_name.return_value,
+                        mock_get_default_archive_bucket_name.return_value,
                     request_from_archive.CONFIG_JOB_ID_KEY:
                         job_id,
                 },
             },
             max_retries,
             retry_sleep_secs,
-            mock_get_glacier_recovery_type(config),
+            mock_get_archive_recovery_type(config),
             request_from_archive.DEFAULT_RESTORE_EXPIRE_DAYS,
             db_queue_url,
         )
 
-    @patch("request_from_archive.get_default_glacier_bucket_name")
+    @patch("request_from_archive.get_default_archive_bucket_name")
     @patch("request_from_archive.inner_task")
-    @patch("request_from_archive.get_glacier_recovery_type")
+    @patch("request_from_archive.get_archive_recovery_type")
     def test_task_job_id_missing_generates(
         self,
-        mock_get_glacier_recovery_type: MagicMock,
+        mock_get_archive_recovery_type: MagicMock,
         mock_inner_task: MagicMock,
-        mock_get_default_glacier_bucket_name: MagicMock,
+        mock_get_default_archive_bucket_name: MagicMock,
     ):
         """
         If job_id missing, generates a new one.
@@ -302,20 +302,20 @@ class TestRequestFromArchive(unittest.TestCase):
         with patch.object(uuid, "uuid4", return_value=job_id):
             request_from_archive.task(mock_event, None)
 
-        mock_get_default_glacier_bucket_name.assert_called_once_with(config)
-        mock_get_glacier_recovery_type.assert_called_once_with(config)
+        mock_get_default_archive_bucket_name.assert_called_once_with(config)
+        mock_get_archive_recovery_type.assert_called_once_with(config)
         mock_inner_task.assert_called_once_with(
             {
                 request_from_archive.EVENT_CONFIG_KEY: {
                     request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY:
-                        mock_get_default_glacier_bucket_name.return_value,
+                        mock_get_default_archive_bucket_name.return_value,
                     request_from_archive.CONFIG_JOB_ID_KEY:
                         job_id.__str__(),
                 },
             },
             max_retries,
             retry_sleep_secs,
-            mock_get_glacier_recovery_type(config),
+            mock_get_archive_recovery_type(config),
             exp_days,
             db_queue_url,
         )
@@ -337,7 +337,7 @@ class TestRequestFromArchive(unittest.TestCase):
         """
         Basic path with multiple granules.
         """
-        glacier_bucket = uuid.uuid4().__str__()
+        archive_bucket_name = uuid.uuid4().__str__()
         collection_multipart_chunksize_mb = random.randint(1, 10000)  # nosec
         file_key_0 = uuid.uuid4().__str__()
         file_key_1 = uuid.uuid4().__str__()
@@ -408,7 +408,7 @@ class TestRequestFromArchive(unittest.TestCase):
 
         event = {
             request_from_archive.EVENT_CONFIG_KEY: {
-                request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: glacier_bucket,
+                request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: archive_bucket_name,
                 request_from_archive.CONFIG_JOB_ID_KEY: job_id,
                 request_from_archive.CONFIG_MULTIPART_CHUNKSIZE_MB_KEY:
                     collection_multipart_chunksize_mb,
@@ -440,7 +440,7 @@ class TestRequestFromArchive(unittest.TestCase):
                 call(
                     job_id,
                     granule_id0,
-                    glacier_bucket,
+                    archive_bucket_name,
                     [
                         {
                             request_from_archive.FILE_PROCESSED_KEY:
@@ -466,7 +466,7 @@ class TestRequestFromArchive(unittest.TestCase):
                 call(
                     job_id,
                     granule_id1,
-                    glacier_bucket,
+                    archive_bucket_name,
                     [
                         {
                             request_from_archive.FILE_PROCESSED_KEY:
@@ -497,7 +497,7 @@ class TestRequestFromArchive(unittest.TestCase):
                 call(
                     mock_s3_cli,
                     expected_input_granule0,
-                    glacier_bucket,
+                    archive_bucket_name,
                     restore_expire_days,
                     max_retries,
                     retry_sleep_secs,
@@ -508,7 +508,7 @@ class TestRequestFromArchive(unittest.TestCase):
                 call(
                     mock_s3_cli,
                     expected_input_granule1,
-                    glacier_bucket,
+                    archive_bucket_name,
                     restore_expire_days,
                     max_retries,
                     retry_sleep_secs,
@@ -545,7 +545,7 @@ class TestRequestFromArchive(unittest.TestCase):
         If the recovery type is 'Expedited', then files found with storage class
         'DEEP_ARCHIVE' cannot be recovered. Should mark file as processed, and move on.
         """
-        glacier_bucket = uuid.uuid4().__str__()
+        archive_bucket_name = uuid.uuid4().__str__()
         collection_multipart_chunksize_mb = random.randint(1, 10000)  # nosec
         file_key_0 = uuid.uuid4().__str__()
         file_key_1 = uuid.uuid4().__str__()
@@ -559,7 +559,7 @@ class TestRequestFromArchive(unittest.TestCase):
             request_from_archive.FILE_KEY_KEY: file_key_0,
             request_from_archive.FILE_DEST_BUCKET_KEY: file_dest_bucket_0,
         }
-        file_0_error_message = f"File '{file_key_0}' from bucket '{glacier_bucket}' " \
+        file_0_error_message = f"File '{file_key_0}' from bucket '{archive_bucket_name}' " \
                                f"is in storage class 'DEEP_ARCHIVE' " \
                                f"which is incompatible with recovery type 'Expedited'"
         expected_file0_output = {
@@ -621,7 +621,7 @@ class TestRequestFromArchive(unittest.TestCase):
 
         event = {
             request_from_archive.EVENT_CONFIG_KEY: {
-                request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: glacier_bucket,
+                request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: archive_bucket_name,
                 request_from_archive.CONFIG_JOB_ID_KEY: job_id,
                 request_from_archive.CONFIG_MULTIPART_CHUNKSIZE_MB_KEY:
                     collection_multipart_chunksize_mb,
@@ -656,7 +656,7 @@ class TestRequestFromArchive(unittest.TestCase):
                 call(
                     job_id,
                     granule_id0,
-                    glacier_bucket,
+                    archive_bucket_name,
                     [
                         {
                             request_from_archive.FILE_PROCESSED_KEY:
@@ -686,7 +686,7 @@ class TestRequestFromArchive(unittest.TestCase):
                 call(
                     job_id,
                     granule_id1,
-                    glacier_bucket,
+                    archive_bucket_name,
                     [
                         {
                             request_from_archive.FILE_PROCESSED_KEY:
@@ -717,7 +717,7 @@ class TestRequestFromArchive(unittest.TestCase):
                 call(
                     mock_s3_cli,
                     expected_input_granule0,
-                    glacier_bucket,
+                    archive_bucket_name,
                     restore_expire_days,
                     max_retries,
                     retry_sleep_secs,
@@ -728,7 +728,7 @@ class TestRequestFromArchive(unittest.TestCase):
                 call(
                     mock_s3_cli,
                     expected_input_granule1,
-                    glacier_bucket,
+                    archive_bucket_name,
                     restore_expire_days,
                     max_retries,
                     retry_sleep_secs,
@@ -764,7 +764,7 @@ class TestRequestFromArchive(unittest.TestCase):
         """
         If posting to status DB Queue fails, raise error.
         """
-        glacier_bucket = uuid.uuid4().__str__()
+        archive_bucket_name = uuid.uuid4().__str__()
         collection_multipart_chunksize_mb = random.randint(1, 10000)  # nosec
         file_key_0 = uuid.uuid4().__str__()
         file_key_1 = uuid.uuid4().__str__()
@@ -834,7 +834,7 @@ class TestRequestFromArchive(unittest.TestCase):
 
         event = {
             request_from_archive.EVENT_CONFIG_KEY: {
-                request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: glacier_bucket,
+                request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: archive_bucket_name,
                 request_from_archive.CONFIG_JOB_ID_KEY: job_id,
                 request_from_archive.CONFIG_MULTIPART_CHUNKSIZE_MB_KEY:
                     collection_multipart_chunksize_mb,
@@ -871,7 +871,7 @@ class TestRequestFromArchive(unittest.TestCase):
                 call(
                     job_id,
                     granule_id0,
-                    glacier_bucket,
+                    archive_bucket_name,
                     [
                         {
                             request_from_archive.FILE_PROCESSED_KEY:
@@ -900,7 +900,7 @@ class TestRequestFromArchive(unittest.TestCase):
         self.assertEqual(max_retries + 1, mock_create_status_for_job.call_count)
         self.assertEqual(0, mock_process_granule.call_count)
 
-    def test_inner_task_missing_glacier_bucket_raises(self):
+    def test_inner_task_missing_archive_bucket_name_raises(self):
         try:
             request_from_archive.inner_task(
                 {request_from_archive.EVENT_CONFIG_KEY: dict()},
@@ -931,7 +931,7 @@ class TestRequestFromArchive(unittest.TestCase):
         """
         A return of None from get_s3_object_information should ignore the file and continue.
         """
-        glacier_bucket = uuid.uuid4().__str__()
+        archive_bucket_name = uuid.uuid4().__str__()
         collection_multipart_chunksize_mb = random.randint(1, 10000)  # nosec
         file_key_0 = uuid.uuid4().__str__()
         file_key_1 = uuid.uuid4().__str__()
@@ -997,7 +997,7 @@ class TestRequestFromArchive(unittest.TestCase):
             request_from_archive.FILE_LAST_UPDATE_KEY:
                 mock.ANY,
             request_from_archive.FILE_ERROR_MESSAGE_KEY:
-                f"'{missing_file_key}' does not exist in '{glacier_bucket}' bucket",
+                f"'{missing_file_key}' does not exist in '{archive_bucket_name}' bucket",
             request_from_archive.FILE_COMPLETION_TIME_KEY:
                 mock.ANY,
         }
@@ -1021,7 +1021,7 @@ class TestRequestFromArchive(unittest.TestCase):
         ] = expected_input_granule_files
         event = {
             request_from_archive.EVENT_CONFIG_KEY: {
-                request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: glacier_bucket,
+                request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: archive_bucket_name,
                 request_from_archive.CONFIG_JOB_ID_KEY: job_id,
                 request_from_archive.CONFIG_MULTIPART_CHUNKSIZE_MB_KEY:
                     collection_multipart_chunksize_mb,
@@ -1038,7 +1038,7 @@ class TestRequestFromArchive(unittest.TestCase):
 
         # noinspection PyUnusedLocal
         def get_s3_object_information_return_func(
-            input_s3_cli, input_glacier_bucket, input_file_key
+            input_s3_cli, input_archive_bucket_name, input_file_key
         ):
             if input_file_key in [file_key_0, file_key_1]:
                 return {"StorageClass": "DEEP_ARCHIVE"}
@@ -1061,7 +1061,7 @@ class TestRequestFromArchive(unittest.TestCase):
         mock_create_status_for_job.assert_called_once_with(
             job_id,
             granule_id,
-            glacier_bucket,
+            archive_bucket_name,
             # Compare to orca_shared to verify schema.
             [
                 {
@@ -1100,7 +1100,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     shared_recovery.LAST_UPDATE_KEY:
                         mock.ANY,
                     shared_recovery.ERROR_MESSAGE_KEY:
-                        f"'{missing_file_key}' does not exist in '{glacier_bucket}' bucket",
+                        f"'{missing_file_key}' does not exist in '{archive_bucket_name}' bucket",
                     shared_recovery.COMPLETION_TIME_KEY:
                         mock.ANY,
                 },
@@ -1128,7 +1128,7 @@ class TestRequestFromArchive(unittest.TestCase):
         mock_process_granule.assert_called_once_with(
             mock_s3_cli,
             expected_input_granule,
-            glacier_bucket,
+            archive_bucket_name,
             restore_expire_days,
             max_retries,
             retry_sleep_secs,
@@ -1147,13 +1147,13 @@ class TestRequestFromArchive(unittest.TestCase):
     @patch.dict(
         os.environ,
         {
-            request_from_archive.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY: uuid.uuid4().__str__()
+            request_from_archive.OS_ENVIRON_ORCA_DEFAULT_ARCHIVE_BUCKET_KEY: uuid.uuid4().__str__()
         },
         clear=True,
     )
-    def test_get_default_glacier_bucket_name_returns_override_if_present(self):
+    def test_get_default_archive_bucket_name_returns_override_if_present(self):
         bucket = Mock()
-        result = request_from_archive.get_default_glacier_bucket_name(
+        result = request_from_archive.get_default_archive_bucket_name(
             {request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: bucket}
         )
         self.assertEqual(bucket, result)
@@ -1161,29 +1161,29 @@ class TestRequestFromArchive(unittest.TestCase):
     @patch.dict(
         os.environ,
         {
-            request_from_archive.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY: uuid.uuid4().__str__()
+            request_from_archive.OS_ENVIRON_ORCA_DEFAULT_ARCHIVE_BUCKET_KEY: uuid.uuid4().__str__()
         },
         clear=True,
     )
-    def test_get_default_glacier_bucket_name_returns_default_bucket_if_no_override(
+    def test_get_default_archive_bucket_name_returns_default_bucket_if_no_override(
         self,
     ):
-        bucket = os.environ[request_from_archive.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY]
-        result = request_from_archive.get_default_glacier_bucket_name({})
+        bucket = os.environ[request_from_archive.OS_ENVIRON_ORCA_DEFAULT_ARCHIVE_BUCKET_KEY]
+        result = request_from_archive.get_default_archive_bucket_name({})
         self.assertEqual(bucket, result)
 
     @patch.dict(
         os.environ,
         {
-            request_from_archive.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY: uuid.uuid4().__str__()
+            request_from_archive.OS_ENVIRON_ORCA_DEFAULT_ARCHIVE_BUCKET_KEY: uuid.uuid4().__str__()
         },
         clear=True,
     )
-    def test_get_default_glacier_bucket_name_returns_default_bucket_if_none_override(
+    def test_get_default_archive_bucket_name_returns_default_bucket_if_none_override(
         self,
     ):
-        bucket = os.environ[request_from_archive.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY]
-        result = request_from_archive.get_default_glacier_bucket_name(
+        bucket = os.environ[request_from_archive.OS_ENVIRON_ORCA_DEFAULT_ARCHIVE_BUCKET_KEY]
+        result = request_from_archive.get_default_archive_bucket_name(
             {
                 request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: None,
             }
@@ -1193,60 +1193,40 @@ class TestRequestFromArchive(unittest.TestCase):
     @patch.dict(
         os.environ,
         {
-            request_from_archive.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY: uuid.uuid4().__str__()
+            request_from_archive.OS_ENVIRON_ORCA_DEFAULT_ARCHIVE_BUCKET_KEY: uuid.uuid4().__str__()
         },
         clear=True,
     )
-    def test_get_default_glacier_bucket_name_returns_env_bucket_if_no_other(self):
-        bucket = os.environ[request_from_archive.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY]
-        result = request_from_archive.get_default_glacier_bucket_name(
+    def test_get_default_archive_bucket_name_returns_env_bucket_if_no_other(self):
+        bucket = os.environ[request_from_archive.OS_ENVIRON_ORCA_DEFAULT_ARCHIVE_BUCKET_KEY]
+        result = request_from_archive.get_default_archive_bucket_name(
             {request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: None}
         )
         self.assertEqual(bucket, result)
 
-    def test_get_default_glacier_bucket_name_no_bucket_raises_error(self):
-        os.environ.pop(request_from_archive.OS_ENVIRON_ORCA_DEFAULT_GLACIER_BUCKET_KEY, None)
+    def test_get_default_archive_bucket_name_no_bucket_raises_error(self):
+        os.environ.pop(request_from_archive.OS_ENVIRON_ORCA_DEFAULT_ARCHIVE_BUCKET_KEY, None)
         with self.assertRaises(KeyError) as cm:
-            request_from_archive.get_default_glacier_bucket_name(
+            request_from_archive.get_default_archive_bucket_name(
                 {request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: None}
             )
         self.assertEqual("'ORCA_DEFAULT_BUCKET'", str(cm.exception))
 
     @patch.dict(
         os.environ,
-        {request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY: "Bulk"},
+        {},
         clear=True,
     )
-    def test_get_glacier_recovery_type_valid_config_overrides(self):
+    def test_get_archive_recovery_no_value_raises_error(self):
         """
-        Returns the value in config if valid, overriding other values.
+        If no values are present, raise KeyError
         """
-        config = {request_from_archive.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: "Standard"}
-        result = request_from_archive.get_glacier_recovery_type(config)
+        config = {request_from_archive.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: None}
+        with self.assertRaises(KeyError) as ve:
+            request_from_archive.get_archive_recovery_type(config)
         self.assertEqual(
-            result, config[request_from_archive.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY]
-        )
-
-    @patch("cumulus_logger.CumulusLogger.error")
-    def test_get_glacier_recovery_type_invalid_config_raises_valueerror(
-        self, mock_logger_error: MagicMock
-    ):
-        """
-        Raises ValueError if invalid config value.
-        """
-        config = {request_from_archive.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: "Nope"}
-        with self.assertRaises(ValueError) as ve:
-            request_from_archive.get_glacier_recovery_type(config)
-        self.assertEqual(
-            f"Invalid restore type value in configuration "
-            f"{request_from_archive.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} key.",
+            f"Recovery type not set.",
             ve.exception.args[0],
-        )
-        mock_logger_error.assert_called_once_with(
-            f"Invalid restore type value of "
-            f"'{config[request_from_archive.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY]}' found in "
-            f"the configuration {request_from_archive.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY} "
-            f"key."
         )
 
     @patch.dict(
@@ -1254,12 +1234,47 @@ class TestRequestFromArchive(unittest.TestCase):
         {request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY: "Bulk"},
         clear=True,
     )
-    def test_get_glacier_recovery_type_env_variable_valid(self):
+    def test_get_archive_recovery_type_valid_config_overrides(self):
+        """
+        Returns the value in config if valid, overriding other values.
+        """
+        config = {request_from_archive.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: "Bulk"}
+        result = request_from_archive.get_archive_recovery_type(config)
+        self.assertEqual(
+            result, config[request_from_archive.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY]
+        )
+
+    @patch("cumulus_logger.CumulusLogger.error")
+    def test_get_archive_recovery_type_invalid_config_raises_valueerror(
+        self, mock_logger_error: MagicMock
+    ):
+        """
+        Raises ValueError if invalid config value.
+        """
+        recovery_type = uuid.uuid4().__str__()  # nosec
+        config = {request_from_archive.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: recovery_type}
+        with self.assertRaises(ValueError) as ve:
+            request_from_archive.get_archive_recovery_type(config)
+        self.assertEqual(
+            f"Invalid restore type value of '{recovery_type}'.",
+            ve.exception.args[0],
+        )
+        mock_logger_error.assert_called_once_with(
+            f"Invalid restore type value of "
+            f"'{config[request_from_archive.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY]}'."
+        )
+
+    @patch.dict(
+        os.environ,
+        {request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY: "Bulk"},
+        clear=True,
+    )
+    def test_get_archive_recovery_type_env_variable_valid(self):
         """
         Returns the value in env variable if valid and config is None.
         """
         config = {request_from_archive.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: None}
-        result = request_from_archive.get_glacier_recovery_type(config)
+        result = request_from_archive.get_archive_recovery_type(config)
         self.assertEqual(
             result, os.environ[request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY]
         )
@@ -1270,7 +1285,7 @@ class TestRequestFromArchive(unittest.TestCase):
         {request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY: "Nope"},
         clear=True,
     )
-    def test_get_glacier_recovery_type_env_variable_invalid_raises_valueerror(
+    def test_get_archive_recovery_type_env_variable_invalid_raises_valueerror(
         self, mock_logger_error: MagicMock
     ):
         """
@@ -1278,17 +1293,15 @@ class TestRequestFromArchive(unittest.TestCase):
         """
         config = {request_from_archive.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: None}
         with self.assertRaises(ValueError) as ve:
-            request_from_archive.get_glacier_recovery_type(config)
+            request_from_archive.get_archive_recovery_type(config)
         self.assertEqual(
-            f"Invalid restore type value in environment variable "
-            f"{request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY}",
+            f"Invalid restore type value of "
+            f"'{os.environ[request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY]}'.",
             ve.exception.args[0],
         )
         mock_logger_error.assert_called_once_with(
             f"Invalid restore type value of "
-            f"'{os.environ[request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY]}' "
-            f"found in environment variable "
-            f"{request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY}."
+            f"'{os.environ[request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY]}'."
         )
 
     @patch("time.sleep")
@@ -1298,7 +1311,7 @@ class TestRequestFromArchive(unittest.TestCase):
     ):
         mock_s3 = Mock()
         max_retries = randint(10, 999)  # nosec
-        glacier_bucket = uuid.uuid4().__str__()
+        archive_bucket_name = uuid.uuid4().__str__()
         retry_sleep_secs = randint(0, 99)  # nosec
         recovery_type = uuid.uuid4().__str__()
         restore_expire_days = randint(0, 99)  # nosec
@@ -1333,7 +1346,7 @@ class TestRequestFromArchive(unittest.TestCase):
         request_from_archive.process_granule(
             mock_s3,
             granule,
-            glacier_bucket,
+            archive_bucket_name,
             restore_expire_days,
             max_retries,
             retry_sleep_secs,
@@ -1359,7 +1372,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     mock_s3,
                     file_name_0,
                     restore_expire_days,
-                    glacier_bucket,
+                    archive_bucket_name,
                     1,
                     job_id,
                     recovery_type,
@@ -1368,7 +1381,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     mock_s3,
                     file_name_1,
                     restore_expire_days,
-                    glacier_bucket,
+                    archive_bucket_name,
                     1,
                     job_id,
                     recovery_type,
@@ -1385,7 +1398,7 @@ class TestRequestFromArchive(unittest.TestCase):
     ):
         mock_s3 = Mock()
         max_retries = 5
-        glacier_bucket = uuid.uuid4().__str__()
+        archive_bucket_name = uuid.uuid4().__str__()
         retry_sleep_secs = randint(0, 99)  # nosec
         recovery_type = uuid.uuid4().__str__()
         restore_expire_days = randint(0, 99)  # nosec
@@ -1413,7 +1426,7 @@ class TestRequestFromArchive(unittest.TestCase):
         request_from_archive.process_granule(
             mock_s3,
             granule,
-            glacier_bucket,
+            archive_bucket_name,
             restore_expire_days,
             max_retries,
             retry_sleep_secs,
@@ -1433,7 +1446,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     mock_s3,
                     file_name_0,
                     restore_expire_days,
-                    glacier_bucket,
+                    archive_bucket_name,
                     1,
                     job_id,
                     recovery_type,
@@ -1442,7 +1455,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     mock_s3,
                     file_name_0,
                     restore_expire_days,
-                    glacier_bucket,
+                    archive_bucket_name,
                     2,
                     job_id,
                     recovery_type,
@@ -1466,7 +1479,7 @@ class TestRequestFromArchive(unittest.TestCase):
     ):
         mock_s3 = Mock()
         max_retries = randint(3, 20)  # nosec
-        glacier_bucket = uuid.uuid4().__str__()
+        archive_bucket_name = uuid.uuid4().__str__()
         retry_sleep_secs = randint(0, 99)  # nosec
         recovery_type = uuid.uuid4().__str__()
         restore_expire_days = randint(0, 99)  # nosec
@@ -1496,7 +1509,7 @@ class TestRequestFromArchive(unittest.TestCase):
             request_from_archive.process_granule(
                 mock_s3,
                 granule,
-                glacier_bucket,
+                archive_bucket_name,
                 restore_expire_days,
                 max_retries,
                 retry_sleep_secs,
@@ -1508,7 +1521,7 @@ class TestRequestFromArchive(unittest.TestCase):
         # except request_from_archive.RestoreRequestError:
         except request_from_archive.RestoreRequestError as caught_error:
             self.assertEqual(
-                f"One or more files failed to be requested from '{glacier_bucket}'.",
+                f"One or more files failed to be requested from '{archive_bucket_name}'.",
                 str(caught_error),
             )
         self.assertFalse(
@@ -1523,7 +1536,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     mock_s3,
                     file_name_0,
                     restore_expire_days,
-                    glacier_bucket,
+                    archive_bucket_name,
                     1,
                     job_id,
                     recovery_type,
@@ -1532,7 +1545,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     mock_s3,
                     file_name_0,
                     restore_expire_days,
-                    glacier_bucket,
+                    archive_bucket_name,
                     2,
                     job_id,
                     recovery_type,
@@ -1541,7 +1554,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     mock_s3,
                     file_name_0,
                     restore_expire_days,
-                    glacier_bucket,
+                    archive_bucket_name,
                     3,
                     job_id,
                     recovery_type,
@@ -1562,11 +1575,11 @@ class TestRequestFromArchive(unittest.TestCase):
             [
                 call(
                     f"Failed to restore '{file_name_0}' from "
-                    f"'{glacier_bucket}'. Encountered error '{str(expected_error)}'."
+                    f"'{archive_bucket_name}'. Encountered error '{str(expected_error)}'."
                 ),
                 call(
                     f"One or more files failed to be requested from "
-                    f"'{glacier_bucket}'. GRANULE: {json.dumps(granule)}",
+                    f"'{archive_bucket_name}'. GRANULE: {json.dumps(granule)}",
                 ),
             ]
         )
@@ -1588,7 +1601,7 @@ class TestRequestFromArchive(unittest.TestCase):
         """
         mock_s3 = Mock()
         max_retries = randint(3, 20)  # nosec
-        glacier_bucket = uuid.uuid4().__str__()
+        archive_bucket_name = uuid.uuid4().__str__()
         retry_sleep_secs = randint(0, 99)  # nosec
         recovery_type = uuid.uuid4().__str__()
         restore_expire_days = randint(0, 99)  # nosec
@@ -1621,7 +1634,7 @@ class TestRequestFromArchive(unittest.TestCase):
             request_from_archive.process_granule(
                 mock_s3,
                 granule,
-                glacier_bucket,
+                archive_bucket_name,
                 restore_expire_days,
                 max_retries,
                 retry_sleep_secs,
@@ -1648,7 +1661,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     mock_s3,
                     file_name_0,
                     restore_expire_days,
-                    glacier_bucket,
+                    archive_bucket_name,
                     1,
                     job_id,
                     recovery_type,
@@ -1657,7 +1670,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     mock_s3,
                     file_name_0,
                     restore_expire_days,
-                    glacier_bucket,
+                    archive_bucket_name,
                     2,
                     job_id,
                     recovery_type,
@@ -1666,7 +1679,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     mock_s3,
                     file_name_0,
                     restore_expire_days,
-                    glacier_bucket,
+                    archive_bucket_name,
                     3,
                     job_id,
                     recovery_type,
@@ -1694,7 +1707,7 @@ class TestRequestFromArchive(unittest.TestCase):
             [
                 call(
                     f"Failed to restore '{file_name_0}' from "
-                    f"'{glacier_bucket}'. Encountered error '{str(expected_error)}'."
+                    f"'{archive_bucket_name}'. Encountered error '{str(expected_error)}'."
                 ),
                 call(
                     f"Ran into error posting to SQS {max_retries + 1} time(s) "
@@ -1707,11 +1720,11 @@ class TestRequestFromArchive(unittest.TestCase):
     def test_get_s3_object_information_happy_path(self):
         mock_s3_cli = Mock()
         mock_s3_cli.head_object.side_effect = None
-        glacier_bucket = uuid.uuid4().__str__()
+        archive_bucket_name = uuid.uuid4().__str__()
         file_key = uuid.uuid4().__str__()
 
         result = request_from_archive.get_s3_object_information(
-            mock_s3_cli, glacier_bucket, file_key
+            mock_s3_cli, archive_bucket_name, file_key
         )
         self.assertEqual(mock_s3_cli.head_object.return_value, result)
 
@@ -1721,12 +1734,12 @@ class TestRequestFromArchive(unittest.TestCase):
         )
         mock_s3_cli = Mock()
         mock_s3_cli.head_object.side_effect = expected_error
-        glacier_bucket = uuid.uuid4().__str__()
+        archive_bucket_name = uuid.uuid4().__str__()
         file_key = uuid.uuid4().__str__()
 
         try:
             request_from_archive.get_s3_object_information(
-                mock_s3_cli, glacier_bucket, file_key
+                mock_s3_cli, archive_bucket_name, file_key
             )
             self.fail("Error not raised.")
         except ClientError as err:
@@ -1738,16 +1751,16 @@ class TestRequestFromArchive(unittest.TestCase):
         )
         mock_s3_cli = Mock()
         mock_s3_cli.head_object.side_effect = expected_error
-        glacier_bucket = uuid.uuid4().__str__()
+        archive_bucket_name = uuid.uuid4().__str__()
         file_key = uuid.uuid4().__str__()
 
         result = request_from_archive.get_s3_object_information(
-            mock_s3_cli, glacier_bucket, file_key
+            mock_s3_cli, archive_bucket_name, file_key
         )
         self.assertIsNone(result)
 
     def test_restore_object_happy_path(self):
-        glacier_bucket = uuid.uuid4().__str__()
+        archive_bucket_name = uuid.uuid4().__str__()
         key = uuid.uuid4().__str__()
         restore_expire_days = randint(0, 99)  # nosec
         recovery_type = uuid.uuid4().__str__()
@@ -1760,14 +1773,14 @@ class TestRequestFromArchive(unittest.TestCase):
             mock_s3_cli,
             key,
             restore_expire_days,
-            glacier_bucket,
+            archive_bucket_name,
             randint(0, 99),  # nosec
             uuid.uuid4().__str__(),
             recovery_type,
         )
 
         mock_s3_cli.restore_object.assert_called_once_with(
-            Bucket=glacier_bucket,
+            Bucket=archive_bucket_name,
             Key=key,
             RestoreRequest={
                 "Days": restore_expire_days,
@@ -1779,7 +1792,7 @@ class TestRequestFromArchive(unittest.TestCase):
     @patch("cumulus_logger.CumulusLogger.info")
     def test_restore_object_client_error_raises(self, mock_logger_info: MagicMock):
         job_id = uuid.uuid4().__str__()
-        glacier_bucket = uuid.uuid4().__str__()
+        archive_bucket_name = uuid.uuid4().__str__()
         key = uuid.uuid4().__str__()
         restore_expire_days = randint(0, 99)  # nosec
         recovery_type = uuid.uuid4().__str__()
@@ -1792,7 +1805,7 @@ class TestRequestFromArchive(unittest.TestCase):
                 mock_s3_cli,
                 key,
                 restore_expire_days,
-                glacier_bucket,
+                archive_bucket_name,
                 1,
                 job_id,
                 recovery_type,
@@ -1801,7 +1814,7 @@ class TestRequestFromArchive(unittest.TestCase):
         except ClientError as error:
             self.assertEqual(expected_error, error)
             mock_s3_cli.restore_object.assert_called_once_with(
-                Bucket=glacier_bucket,
+                Bucket=archive_bucket_name,
                 Key=key,
                 RestoreRequest={
                     "Days": restore_expire_days,
@@ -1816,7 +1829,7 @@ class TestRequestFromArchive(unittest.TestCase):
         A 200 indicates that the file is already restored,  and thus cannot
         presently be restored again. Should be raised.
         """
-        glacier_bucket = uuid.uuid4().__str__()
+        archive_bucket_name = uuid.uuid4().__str__()
         key = uuid.uuid4().__str__()
         restore_expire_days = randint(0, 99)  # nosec
         recovery_type = uuid.uuid4().__str__()
@@ -1830,14 +1843,14 @@ class TestRequestFromArchive(unittest.TestCase):
                 mock_s3_cli,
                 key,
                 restore_expire_days,
-                glacier_bucket,
+                archive_bucket_name,
                 2,
                 uuid.uuid4().__str__(),
                 recovery_type,
             )
         self.assertEqual(
             f"An error occurred (HTTPStatus: 200) when calling the restore_object operation: "
-            f"File '{key}' in bucket '{glacier_bucket}' has already been recovered.",
+            f"File '{key}' in bucket '{archive_bucket_name}' has already been recovered.",
             str(context.exception),
         )
 
@@ -1941,7 +1954,7 @@ class TestRequestFromArchive(unittest.TestCase):
             },
             "task_config": {
                 request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY:
-                    "my-dr-fake-glacier-bucket",
+                    "my-dr-fake-archive-bucket",
                 request_from_archive.CONFIG_JOB_ID_KEY: job_id,
                 request_from_archive.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: "Standard",
             },
@@ -1962,36 +1975,36 @@ class TestRequestFromArchive(unittest.TestCase):
 
         mock_boto3_client.assert_has_calls([call("s3")])
         mock_s3_cli.head_object.assert_any_call(
-            Bucket="my-dr-fake-glacier-bucket", Key=file0
+            Bucket="my-dr-fake-archive-bucket", Key=file0
         )
         mock_s3_cli.head_object.assert_any_call(
-            Bucket="my-dr-fake-glacier-bucket", Key=file1
+            Bucket="my-dr-fake-archive-bucket", Key=file1
         )
         mock_s3_cli.head_object.assert_any_call(
-            Bucket="my-dr-fake-glacier-bucket", Key=file2
+            Bucket="my-dr-fake-archive-bucket", Key=file2
         )
         mock_s3_cli.head_object.assert_any_call(
-            Bucket="my-dr-fake-glacier-bucket", Key=file3
+            Bucket="my-dr-fake-archive-bucket", Key=file3
         )
         restore_req_exp = {"Days": 5, "GlacierJobParameters": {"Tier": "Standard"}}
 
         mock_s3_cli.restore_object.assert_any_call(
-            Bucket="my-dr-fake-glacier-bucket",
+            Bucket="my-dr-fake-archive-bucket",
             Key=file0,
             RestoreRequest=restore_req_exp,
         )
         mock_s3_cli.restore_object.assert_any_call(
-            Bucket="my-dr-fake-glacier-bucket",
+            Bucket="my-dr-fake-archive-bucket",
             Key=file1,
             RestoreRequest=restore_req_exp,
         )
         mock_s3_cli.restore_object.assert_any_call(
-            Bucket="my-dr-fake-glacier-bucket",
+            Bucket="my-dr-fake-archive-bucket",
             Key=file2,
             RestoreRequest=restore_req_exp,
         )
         mock_s3_cli.restore_object.assert_called_with(
-            Bucket="my-dr-fake-glacier-bucket",
+            Bucket="my-dr-fake-archive-bucket",
             Key=file3,
             RestoreRequest=restore_req_exp,
         )
