@@ -1217,14 +1217,16 @@ class TestRequestFromArchive(unittest.TestCase):
         {},
         clear=True,
     )
-    def test_get_archive_recovery_no_value_defaults_to_standard(self):
+    def test_get_archive_recovery_no_value_raises_error(self):
         """
-        If no values are present, return "Standard"
+        If no values are present, raise KeyError
         """
         config = {request_from_archive.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: None}
-        result = request_from_archive.get_archive_recovery_type(config)
+        with self.assertRaises(KeyError) as ve:
+            request_from_archive.get_archive_recovery_type(config)
         self.assertEqual(
-            "Standard", result
+            f"Recovery type not set.",
+            ve.exception.args[0],
         )
 
     @patch.dict(

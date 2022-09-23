@@ -67,13 +67,16 @@ def get_archive_recovery_type(config: Dict[str, Any]) -> str
 
 Returns the archive recovery type from either config or environment variable.
 Must be either 'Bulk', 'Expedited', or 'Standard'.
-Defaults to 'Standard' if none found.
 
 **Arguments**:
 
 - `config` - The config dictionary from lambda event.
   
-- `Raises` - ValueError if recovery type value is invalid.
+
+**Raises**:
+
+  KeyError if recovery type is not set.
+  ValueError if recovery type value is invalid.
 
 <a id="request_from_archive.inner_task"></a>
 

@@ -158,11 +158,12 @@ def get_archive_recovery_type(config: Dict[str, Any]) -> str:
     """
     Returns the archive recovery type from either config or environment variable.
     Must be either 'Bulk', 'Expedited', or 'Standard'.
-    Defaults to 'Standard' if none found.
     Args:
         config: The config dictionary from lambda event.
 
-    Raises: ValueError if recovery type value is invalid.
+    Raises:
+        KeyError if recovery type is not set.
+        ValueError if recovery type value is invalid.
     """
 
     # Look for config override
@@ -181,11 +182,7 @@ def get_archive_recovery_type(config: Dict[str, Any]) -> str:
                 f"found in the environment {OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY} key."
             )
         else:
-            recovery_type = "Standard"
-            LOGGER.info(
-                f"Using restore type of {recovery_type} "
-                f"due to lack of overrides."
-            )
+            raise KeyError("Recovery type not set.")
 
     if recovery_type not in VALID_RESTORE_TYPES:
         LOGGER.error(
