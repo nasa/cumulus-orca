@@ -297,7 +297,7 @@ resource "aws_lambda_function" "internal_reconcile_report_phantom" {
 ## Recovery Lambdas Definitions and Resources
 ## =============================================================================
 
-# extract_filepaths_for_granule - Translates input for request_files lambda
+# extract_filepaths_for_granule - Translates input for request_from_archive lambda
 # ==============================================================================
 resource "aws_lambda_function" "extract_filepaths_for_granule" {
   ## REQUIRED
@@ -305,7 +305,7 @@ resource "aws_lambda_function" "extract_filepaths_for_granule" {
   role		= aws_iam_role.extract_filepaths_for_granule_iam_role.arn
 
   ## OPTIONAL
-  description      = "Extracts bucket info and granules filepath from the CMA for ORCA request_files lambda."
+  description      = "Extracts bucket info and granules filepath from the CMA for ORCA request_from_archive lambda."
   filename         = "${path.module}/../../tasks/extract_filepaths_for_granule/extract_filepaths_for_granule.zip"
   handler          = "extract_filepaths_for_granule.handler"
   memory_size      = var.orca_recovery_lambda_memory_size
@@ -380,20 +380,20 @@ resource "aws_iam_role_policy" "extract_filepaths_for_granule_policy" {
 }
 
 
-# request_files - Requests files from archive
+# request_from_archive - Requests files from archive
 # ==============================================================================
-resource "aws_lambda_function" "request_files" {
+resource "aws_lambda_function" "request_from_archive" {
   ## REQUIRED
-  function_name = "${var.prefix}_request_files"
+  function_name = "${var.prefix}_request_from_archive"
   role          = var.restore_object_role_arn
 
   ## OPTIONAL
   description      = "Submits a restore request for all archived files in a granule to the archive bucket."
-  filename         = "${path.module}/../../tasks/request_files/request_files.zip"
-  handler          = "request_files.handler"
+  filename         = "${path.module}/../../tasks/request_from_archive/request_from_archive.zip"
+  handler          = "request_from_archive.handler"
   memory_size      = var.orca_recovery_lambda_memory_size
   runtime          = "python3.9"
-  source_code_hash = filebase64sha256("${path.module}/../../tasks/request_files/request_files.zip")
+  source_code_hash = filebase64sha256("${path.module}/../../tasks/request_from_archive/request_from_archive.zip")
   tags             = var.tags
   timeout          = var.orca_recovery_lambda_timeout
 

@@ -1,13 +1,13 @@
-[![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/request_files/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/request_files/requirements.txt)
+[![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/request_from_archive/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/request_from_archive/requirements.txt)
 
 Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/development-guide/code/contrib-code-intro) for information on environment setup and testing.
 
-**Lambda function request_files**
+**Lambda function request_from_archive**
 
 - [Deployment](#deployment)
   * [Deployment Validation](#deployment-validation)
 - [Input/Output Schemas](#input-output-schemas)
-- [pydoc request_files](#pydoc-request-files)
+- [pydoc request_from_archive](#pydoc)
 
 ## Deployment
 ```
@@ -73,6 +73,6 @@ Fully defined json schemas written in the schema of https://json-schema.org/ can
 }
 ```
 
-<a name="pydoc-request-files"></a>
-## pydoc request_files
+<a name="pydoc"></a>
+## pydoc request_from_archive
 [See the API documentation for more details.](API.md)

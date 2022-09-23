@@ -46,7 +46,7 @@ variable "orca_lambda_extract_filepaths_for_granule_arn" {
 }
 
 
-variable "orca_lambda_request_files_arn" {
+variable "orca_lambda_request_from_archive_arn" {
   type        = string
-  description = "AWS ARN of the ORCA request_files lambda."
+  description = "AWS ARN of the ORCA request_from_archive lambda."
 }

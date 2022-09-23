@@ -22,6 +22,9 @@ and includes an additional section for migration notes.
 - *ORCA-540*
   - Renamed lambda `copy_files_to_archive` to `copy_from_archive`.
   - Output of Terraform updated to match. Unlikely to affect any integrations.
+- *ORCA-539*
+  - Renamed lambda `request_files` to `request_from_archive`.
+  - Output of Terraform updated to match. Unlikely to affect any integrations.
 
 ### Migration Notes
 - If utilizing the `copied_to_glacier` [output property](https://github.com/nasa/cumulus-orca/blob/15e5868f2d1eead88fb5cc8f2e055a18ba0f1264/tasks/copy_to_glacier/schemas/output.json#L47) of `copy_to_glacier`, 

@@ -6,7 +6,7 @@
     "defaultRecoveryTypeOverride": "{$.meta.collection.meta.defaultRecoveryTypeOverride}"
   },
   "cumulus_meta": {
-    "task": "request_files",
+    "task": "request_from_archive",
     "message_source": "local",
     "id": "id-123456"
   },

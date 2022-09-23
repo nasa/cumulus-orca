@@ -1,23 +1,23 @@
 # Table of Contents
 
-* [request\_files](#request_files)
-  * [RestoreRequestError](#request_files.RestoreRequestError)
-  * [task](#request_files.task)
-  * [get\_glacier\_recovery\_type](#request_files.get_glacier_recovery_type)
-  * [inner\_task](#request_files.inner_task)
-  * [process\_granule](#request_files.process_granule)
-  * [get\_s3\_object\_information](#request_files.get_s3_object_information)
-  * [restore\_object](#request_files.restore_object)
-  * [handler](#request_files.handler)
+* [request\_from\_archive](#request_from_archive)
+  * [RestoreRequestError](#request_from_archive.RestoreRequestError)
+  * [task](#request_from_archive.task)
+  * [get\_glacier\_recovery\_type](#request_from_archive.get_glacier_recovery_type)
+  * [inner\_task](#request_from_archive.inner_task)
+  * [process\_granule](#request_from_archive.process_granule)
+  * [get\_s3\_object\_information](#request_from_archive.get_s3_object_information)
+  * [restore\_object](#request_from_archive.restore_object)
+  * [handler](#request_from_archive.handler)
 
-<a id="request_files"></a>
+<a id="request_from_archive"></a>
 
-# request\_files
+# request\_from\_archive
 
-Name: request_files.py
-Description:  Lambda function that makes a restore request to the archive for each input file.
+Name: request_from_archive.py
+Description:  Lambda function that makes a restore request from glacier for each input file.
 
-<a id="request_files.RestoreRequestError"></a>
+<a id="request_from_archive.RestoreRequestError"></a>
 
 ## RestoreRequestError Objects
 
@@ -27,7 +27,7 @@ class RestoreRequestError(Exception)
 
 Exception to be raised if the restore request fails submission for any of the files.
 
-<a id="request_files.task"></a>
+<a id="request_from_archive.task"></a>
 
 #### task
 
@@ -40,7 +40,8 @@ then calls inner_task.
 
 **Arguments**:
 
-  Note that because we are using CumulusMessageAdapter, this may not directly correspond to Lambda input.
+  Note that because we are using CumulusMessageAdapter,
+  this may not directly correspond to Lambda input.
 - `event` - A dict with the following keys:
 - `'config'` _dict_ - See schemas/config.json for details.
 - `'input'` _dict_ - See schemas/input.json for details.
@@ -56,7 +57,7 @@ then calls inner_task.
 
 - `RestoreRequestError` - Thrown if there are errors with the input request.
 
-<a id="request_files.get_glacier_recovery_type"></a>
+<a id="request_from_archive.get_glacier_recovery_type"></a>
 
 #### get\_glacier\_recovery\_type
 
@@ -64,7 +65,7 @@ then calls inner_task.
 def get_glacier_recovery_type(config: Dict[str, Any]) -> str
 ```
 
-Returns the archive recovery type from either config or environment variable.
+Returns the glacier recovery type from either config or environment variable.
 Must be either 'Bulk', 'Expedited', or 'Standard'.
 
 **Arguments**:
@@ -73,7 +74,7 @@ Must be either 'Bulk', 'Expedited', or 'Standard'.
   
 - `Raises` - ValueError if recovery type value is invalid.
 
-<a id="request_files.inner_task"></a>
+<a id="request_from_archive.inner_task"></a>
 
 #### inner\_task
 
@@ -90,11 +91,12 @@ if it fails, waiting {retry_sleep_secs} between each attempt.
 
 **Arguments**:
 
-  Note that because we are using CumulusMessageAdapter, this may not directly correspond to Lambda input.
+  Note that because we are using CumulusMessageAdapter,
+  this may not directly correspond to Lambda input.
 - `event` - A dict with the following keys:
 - `'config'` _dict_ - A dict with the following keys:
-- `'defaultBucketOverride'` _str_ - The name of the archive bucket from which the files
-  will be restored.
+- `'defaultBucketOverride'` _str_ - The name of the glacier bucket
+  from which the files will be restored.
 - `'asyncOperationId'` _str_ - The unique identifier used for tracking requests.
 - `'input'` _dict_ - A dict with the following keys:
   'granules' (list(dict)): A list of dicts with the following keys:
@@ -105,9 +107,10 @@ if it fails, waiting {retry_sleep_secs} between each attempt.
   to after the restore completes.
 - `max_retries` - The maximum number of retries for network operations.
 - `retry_sleep_secs` - The number of time to sleep between retries.
-- `recovery_type` - The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
-- `restore_expire_days` - The number of days the restored file will be accessible in the S3 bucket before it
-  expires.
+- `recovery_type` - The Tier for the restore request.
+  Valid values are 'Standard'|'Bulk'|'Expedited'.
+- `restore_expire_days` - The number of days the restored file will be accessible
+  in the S3 bucket before it expires.
 - `status_update_queue_url` - The URL of the SQS queue to post status to.
 
 **Returns**:
@@ -118,7 +121,7 @@ if it fails, waiting {retry_sleep_secs} between each attempt.
 
 - `RestoreRequestError` - Thrown if there are errors with the input request.
 
-<a id="request_files.process_granule"></a>
+<a id="request_from_archive.process_granule"></a>
 
 #### process\_granule
 
@@ -139,22 +142,25 @@ Call restore_object for the files in the granule_list. Modifies granule for outp
 - `'granuleId'` _str_ - The id of the granule being restored.
   'recover_files' (list(dict)): A list of dicts with the following keys:
 - `'keyPath'` _str_ - Key to the file within the granule.
-- `'success'` _bool_ - Should enter this method set to False. Modified to 'True' by method end.
+- `'success'` _bool_ - Should enter this method set to False.
+  Modified to 'True' by method end.
 - `'errorMessage'` _str_ - Will be modified if error occurs.
   
   
 - `glacier_bucket` - The S3 glacier bucket name.
   restore_expire_days:
-  The number of days the restored file will be accessible in the S3 bucket before it expires.
+  The number of days the restored file will be accessible in the S3 bucket
+  before it expires.
 - `max_retries` - The number of attempts to retry a restore_request that failed to submit.
 - `retry_sleep_secs` - The number of seconds to sleep between retry attempts.
-- `recovery_type` - The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
+- `recovery_type` - The Tier for the restore request. Valid values are
+  'Standard'|'Bulk'|'Expedited'.
 - `job_id` - The unique identifier used for tracking requests.
 - `status_update_queue_url` - The URL of the SQS queue to post status to.
   
 - `Raises` - RestoreRequestError if any file restore could not be initiated.
 
-<a id="request_files.get_s3_object_information"></a>
+<a id="request_from_archive.get_s3_object_information"></a>
 
 #### get\_s3\_object\_information
 
@@ -177,7 +183,7 @@ Perform a head request to get information about a file in S3.
   Otherwise, the dictionary specified in
   https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.head_object
 
-<a id="request_files.restore_object"></a>
+<a id="request_from_archive.restore_object"></a>
 
 #### restore\_object
 
@@ -197,17 +203,19 @@ Restore an archived S3 Glacier object in an Amazon S3 bucket.
 
 - `s3_cli` - An instance of boto3 s3 client.
 - `key` - The key of the Glacier object being restored.
-- `days` - How many days the restored file will be accessible in the S3 bucket before it expires.
+- `days` - How many days the restored file will be accessible in the
+  S3 bucket before it expires.
 - `db_glacier_bucket_key` - The S3 bucket name.
 - `attempt` - The attempt number for logging purposes.
 - `job_id` - The unique id of the job. Used for logging.
-- `recovery_type` - Glacier Tier. Valid values are 'Standard'|'Bulk'|'Expedited'. Defaults to 'Standard'.
+- `recovery_type` - Glacier Tier. Valid values are
+  'Standard'|'Bulk'|'Expedited'. Defaults to 'Standard'.
 
 **Raises**:
 
 - `ClientError` - Raises ClientErrors from restore_object, or if the file is already restored.
 
-<a id="request_files.handler"></a>
+<a id="request_from_archive.handler"></a>
 
 #### handler
 
@@ -232,7 +240,8 @@ RESTORE_RETRY_SLEEP_SECS (int, optional, default = 0): The number of seconds
 to sleep between retry attempts.
 RESTORE_RECOVERY_TYPE (str, optional, default = 'Standard'): the Tier
 for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
-CUMULUS_MESSAGE_ADAPTER_DISABLED (str): If set to 'true', CumulusMessageAdapter does not modify input.
+CUMULUS_MESSAGE_ADAPTER_DISABLED (str): If set to 'true',
+CumulusMessageAdapter does not modify input.
 STATUS_UPDATE_QUEUE_URL
 The URL of the SQS queue to post status to.
 ORCA_DEFAULT_BUCKET
@@ -251,7 +260,7 @@ The bucket to use if destBucket is not set.
 **Raises**:
 
 - `RestoreRequestError` - An error occurred calling restore_object for one or more files.
-  The same dict that is returned for a successful granule restore, will be included in the
-  message, with 'success' = False for the files for which the restore request failed to
-  submit.
+  The same dict that is returned for a successful granule restore,
+  will be included in the message, with 'success' = False for
+  the files for which the restore request failed to submit.
 

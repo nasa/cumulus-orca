@@ -19,7 +19,7 @@ tasks = [
     TaskInfo("copy_to_archive", "handler.py"),
     TaskInfo("db_deploy", "db_deploy.py"),
     TaskInfo("extract_filepaths_for_granule", "extract_filepaths_for_granule.py"),
-    TaskInfo("request_files", "request_files.py"),
+    TaskInfo("request_from_archive", "request_from_archive.py"),
     TaskInfo("request_status", "request_status.py")
 ]
 

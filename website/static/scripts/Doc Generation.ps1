@@ -5,7 +5,7 @@ $tasks =
 [TaskInfo]::new("copy_to_archive", "handler.py"),
 [TaskInfo]::new("db_deploy", "db_deploy.py"),
 [TaskInfo]::new("extract_filepaths_for_granule", "extract_filepaths_for_granule.py"),
-[TaskInfo]::new("request_files", "request_files.py"),
+[TaskInfo]::new("request_from_archive", "request_from_archive.py"),
 [TaskInfo]::new("request_status", "request_status.py")
 
 foreach ($task in $tasks){

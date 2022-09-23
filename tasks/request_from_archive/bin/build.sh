@@ -5,14 +5,14 @@
 ##
 ## DESCRIPTION
 ## -----------------------------------------------------------------------------
-## Builds the lambda (task) zip file for request_files.
+## Builds the lambda (task) zip file for request_from_archive.
 ##
 ##
 ## USAGE
 ## -----------------------------------------------------------------------------
 ## bin/build.sh
 ##
-## This must be called from the (root) lambda directory /tasks/request_files
+## This must be called from the (root) lambda directory /tasks/request_from_archive
 ## =============================================================================
 
 ## Set this for Debugging only
@@ -119,7 +119,7 @@ check_rc $return_code "ERROR: Failed to copy schema files to build directory."
 ## Create the zip archive
 echo "INFO: Creating zip archive ..."
 cd build
-zip -qr ../request_files.zip .
+zip -qr ../request_from_archive.zip .
 let return_code=$?
 cd -
 

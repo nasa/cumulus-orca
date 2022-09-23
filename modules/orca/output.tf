@@ -20,9 +20,9 @@ output "orca_lambda_extract_filepaths_for_granule_arn" {
 }
 
 
-output "orca_lambda_request_files_arn" {
-  description = "AWS ARN of the ORCA request_files lambda."
-  value       = module.orca_lambdas.request_files_arn
+output "orca_lambda_request_from_archive_arn" {
+  description = "AWS ARN of the ORCA request_from_archive lambda."
+  value       = module.orca_lambdas.request_from_archive_arn
 }
 
 

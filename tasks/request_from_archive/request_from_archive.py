@@ -1,5 +1,5 @@
 """
-Name: request_files.py
+Name: request_from_archive.py
 Description:  Lambda function that makes a restore request from glacier for each input file.
 """
 import json

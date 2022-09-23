@@ -58,7 +58,7 @@ variable "orca_lambda_perform_orca_reconcile_arn" {
   description = "AWS ARN of the ORCA orca_perform_orca_reconcile lambda"
 }
 
-variable "orca_lambda_request_files_arn" {
+variable "orca_lambda_request_from_archive_arn" {
   type        = string
-  description = "AWS ARN of the ORCA request_files lambda."
+  description = "AWS ARN of the ORCA request_from_archive lambda."
 }
