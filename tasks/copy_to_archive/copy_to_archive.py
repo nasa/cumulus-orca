@@ -253,7 +253,8 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
         # post to metadata SQS for each granule
         sqs_library.post_to_metadata_queue(sqs_body, metadata_queue_url)
 
-    return {"granules": granules_list, "copied_to_orca": copied_file_urls}  # Using "copied_to_orca" instead of "copied_to_archive" until we decouple from Cumulus.
+    # Using "copied_to_orca" instead of "copied_to_archive" until we decouple from Cumulus.
+    return {"granules": granules_list, "copied_to_orca": copied_file_urls}
 
 
 def get_destination_bucket_name(config: Dict[str, Any]) -> str:
