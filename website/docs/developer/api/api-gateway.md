@@ -8,6 +8,14 @@ description: ORCA API reference for developers that provides API documentation a
 
 The purpose of this page is to give developers information on how to use the ORCA API and explain the expected inputs, outputs and paths. The API can be used to get metadata information about a granule, recovery job or to get information on internal reconciliation reports and accepts and responds with JSON payloads at various HTTPS endpoints. All ORCA APIs use the `POST` method.
 
+:::warning
+If an [Aurora Serverless](https://aws.amazon.com/rds/aurora/serverless/) database is used for data-storage,
+and it has not been accessed in some time,
+then it may take 30-40 seconds for the database to become available.
+As AWS [limits](https://docs.aws.amazon.com/apigateway/latest/developerguide/limits.html#http-api-quotas)
+API invocations to 30 seconds, with no option of increase, this can cause API invocations to result in HTTP error code 504.
+Integrators should include appropriate handling/retry code.
+:::
 
 ## Catalog reporting API
 
