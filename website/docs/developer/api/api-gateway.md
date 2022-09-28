@@ -6,7 +6,9 @@ description: ORCA API reference for developers that provides API documentation a
 
 ## Overview
 
-The purpose of this page is to give developers information on how to use the ORCA API and explain the expected inputs, outputs and paths. The API can be used to get metadata information about a granule, recovery job or to get information on internal reconciliation reports and accepts and responds with JSON payloads at various HTTPS endpoints. All ORCA APIs use the `POST` method.
+The purpose of this page is to give developers information on how to use the ORCA API and explain the expected inputs, outputs and paths. The API can be used to get metadata information about a granule, recovery job or to get information on internal reconciliation reports and accepts and responds with JSON payloads at various HTTPS endpoints.
+All ORCA APIs use the `POST` method.
+All API endpoints use AWS IAM authorization.
 
 :::warning
 If an [Aurora Serverless](https://aws.amazon.com/rds/aurora/serverless/) database is used for data-storage,

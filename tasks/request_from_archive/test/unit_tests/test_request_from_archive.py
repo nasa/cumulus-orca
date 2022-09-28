@@ -1225,7 +1225,7 @@ class TestRequestFromArchive(unittest.TestCase):
         with self.assertRaises(KeyError) as ve:
             request_from_archive.get_archive_recovery_type(config)
         self.assertEqual(
-            f"Recovery type not set.",
+            "Recovery type not set.",
             ve.exception.args[0],
         )
 
