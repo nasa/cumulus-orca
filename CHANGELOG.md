@@ -25,9 +25,11 @@ and includes an additional section for migration notes.
 - *ORCA-539*
   - Renamed lambda `request_files` to `request_from_archive`.
   - Output of Terraform updated to match. Unlikely to affect any integrations.
-- *ORCA-534* `extract_filepaths_for_granule` now raises a descriptive error when no destination bucket (`destBucket`) is found in `fileBucketMaps` for a given file.
+- *ORCA-534*
+  - `extract_filepaths_for_granule` now raises a descriptive error when no destination bucket (`destBucket`) is found in `fileBucketMaps` for a given file.
   Previously was a general `JsonSchemaException`.
   Now is a `ExtractFilePathsError` with a description of which file could not be placed.
+  - `extract_filepaths_for_granule` now takes the first match in `fileBucketMaps` instead of the last.
 
 ### Migration Notes
 - If utilizing the `copied_to_glacier` [output property](https://github.com/nasa/cumulus-orca/blob/15e5868f2d1eead88fb5cc8f2e055a18ba0f1264/tasks/copy_to_glacier/schemas/output.json#L47) of `copy_to_glacier`, 
