@@ -311,6 +311,31 @@ class TestExtractFilePaths(unittest.TestCase):
         result = extract_filepaths_for_granule.task(self.task_input_event, context)
         self.assertEqual(exp_result, result)
 
+    @patch("cumulus_logger.CumulusLogger.debug")
+    def test_task_no_matching_regex_raises_error(self, mock_debug: MagicMock):
+        """
+        If no destination bucket can be determined, raise a descriptive error.
+        """
+        self.task_input_event["input"]["granules"] = [
+            {
+                "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
+                "files": [
+                    {
+                        "key": "MOD09GQ___006/MOD/MOD09GQ.A0219114."
+                               "N5aUCG.006.0656338553321.cmr.blah",
+                        "bucket": "cumulus-test-sandbox-protected-2",
+                        "fileName": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.blah",
+                    }
+                ],
+            }
+        ]
+        context = Mock()
+        with self.assertRaises(extract_filepaths_for_granule.ExtractFilePathsError) as cm:
+            extract_filepaths_for_granule.task(self.task_input_event, context)
+        self.assertEqual("No matching regex for "
+                         "'MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.blah'",
+                         str(cm.exception))
+
     def test_exclude_file_type(self):
         """
         Tests the exclude file type filtering. The .cmr filetype will be excluded and
