@@ -57,7 +57,7 @@ This task will parse the input, removing the granuleId and file keys for a granu
 #### get\_regex\_buckets
 
 ```python
-def get_regex_buckets(event)
+def get_regex_buckets(event) -> Dict[str, str]
 ```
 
 Gets a dict of regular expressions and the corresponding archive bucket for files

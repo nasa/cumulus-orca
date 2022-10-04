@@ -5,7 +5,7 @@ Description:  Extracts the keys (filepaths) for a granule's files from a Cumulus
 """
 
 import re
-from typing import List
+from typing import List, Dict
 
 from cumulus_logger import CumulusLogger
 from run_cumulus_task import run_cumulus_task
@@ -78,20 +78,23 @@ def task(event, context):  # pylint: disable-msg=unused-argument
                     LOGGER.debug(f"File {file_name} will be restored")
                     file_key = afile["key"]
                     LOGGER.debug(f"Retrieving information for {file_key}")
-                    dest_bucket = None
-                    for key in regex_buckets:
-                        pattern = re.compile(key)
-                        if pattern.match(file_name):
-                            dest_bucket = regex_buckets[key]
-                            LOGGER.debug(
-                                "Found retrieval destination {dest_bucket} for {file}",
-                                dest_bucket=dest_bucket,
-                                file=file_name,
-                            )
+                    matching_regex = next(
+                        filter(lambda key: re.compile(key).match(file_name), regex_buckets),
+                        None
+                    )
+                    if matching_regex is None:
+                        raise ExtractFilePathsError(f"No matching regex for '{file_key}'")
+                    destination_bucket = regex_buckets[matching_regex]
+                    LOGGER.debug(
+                        "Found retrieval destination {destination_bucket} for {file}",
+                        destination_bucket=destination_bucket,
+                        file=file_name,
+                    )
+
                     files.append(
                         {
                             OUTPUT_KEY_KEY: file_key,
-                            OUTPUT_DESTINATION_BUCKET_KEY: dest_bucket,
+                            OUTPUT_DESTINATION_BUCKET_KEY: destination_bucket,
                         }
                     )
             gran["keys"] = files
@@ -102,7 +105,7 @@ def task(event, context):  # pylint: disable-msg=unused-argument
     return result
 
 
-def get_regex_buckets(event):
+def get_regex_buckets(event) -> Dict[str, str]:
     """
     Gets a dict of regular expressions and the corresponding archive bucket for files
     matching the regex.
