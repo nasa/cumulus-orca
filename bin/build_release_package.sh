@@ -33,23 +33,7 @@ if [ "$BASEDIR" != "bin" ]; then
 fi
 
 
-## FUNCTIONS
-## -----------------------------------------------------------------------------
-function check_rc () {
-  ## Checks the return code of call and if not equal to 0, emits an error and
-  ## exits the script with a failure.
-  COMMAND=$1
-
-  echo "INFO: Running '$COMMAND' ..."
-
-  $COMMAND
-  let RC=$?
-
-  if [ $RC -ne 0 ]; then
-      >&2 echo "ERROR: '$COMMAND' failed with a return code of [$RC]!"
-      exit 1
-  fi
-}
+source bin/check_returncode.sh
 
 
 ## MAIN
@@ -57,31 +41,31 @@ function check_rc () {
 
 # Remove the dist directory if it exists.
 if [ -d dist ]; then
-    check_rc "rm -rf dist"
+    run_and_check_returncode "rm -rf dist"
 fi
 
 ## Remove the build directory if it exists.
 if [ -d build ]; then
-    check_rc "rm -rf build"
+    run_and_check_returncode "rm -rf build"
 fi
 
 ## Create the build directory
-check_rc "mkdir -p build/tasks"
+run_and_check_returncode "mkdir -p build/tasks"
 
 
 ## Copy the static items that do not need to be built
 # Terraform Module
-check_rc "cp -r modules build"
-check_rc "cp *.tf build"
+run_and_check_returncode "cp -r modules build"
+run_and_check_returncode "cp *.tf build"
 
 # Documentation
-check_rc "cp README.md build"
-check_rc "cp LICENSE.txt build"
+run_and_check_returncode "cp README.md build"
+run_and_check_returncode "cp LICENSE.txt build"
 
 
 ## Build the Lambdas and copy the zip file to the build directory
 # Create the lambda zips
-check_rc "bin/build_tasks.sh"
+run_and_check_returncode "bin/build_tasks.sh"
 
 # Crawl through the zip files
 ##TODO: Do this a better way. Limit it to the task directory for zips
@@ -91,26 +75,21 @@ do
   filename=$(basename $package)
   base="${filename%.*}"
   destination="build/tasks/$base/"
-  check_rc "mkdir -p $destination"
-  check_rc "cp -p $package $destination"
+  run_and_check_returncode "mkdir -p $destination"
+  run_and_check_returncode "cp -p $package $destination"
 done
 
 
 ## Create the distribution package
-check_rc "mkdir dist"
+run_and_check_returncode "mkdir dist"
 
 # Enter the build directory so the files that are zipped exist at the root level
 echo "INFO: Creating distribution ..."
-cd build
+run_and_check_returncode "cd build"
 ##TODO: Possibly send normal output to /dev/null and only capture error output
 zip -qr "../dist/cumulus-orca-terraform.zip" .
 let ZIP_RC=$?
-cd -
-
-if [ $ZIP_RC -ne 0 ]; then
-    echo "ERROR: 'zip -r ../dist/cumulus-orca-terraform.zip' command failed with error code [$ZIP_RC]"
-    exit 1
-fi
+check_returncode $ZIP_RC "ERROR: 'zip -r ../dist/cumulus-orca-terraform.zip' command failed with error code [$ZIP_RC]"
 
 ## Validate that this build and release should occur
 ## Validate that the release flag is set
@@ -123,4 +102,6 @@ fi
 
 # Create the GitHub release
 echo "INFO: Creating GitHub release ..."
-check_rc "bin/create_release.sh"
+run_and_check_returncode "bin/create_release.sh"
+
+exit 0

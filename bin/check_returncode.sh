@@ -13,4 +13,20 @@ function check_returncode () {
   fi
 }
 
-check_returncode $1 $2
+function run_and_check_returncode () {
+  ## Checks the return code of call and if not equal to 0, emits an error and
+  ## exits the script with a failure.
+  ##
+  ## Args:
+  ##   $1 - The command to run.
+  COMMAND=$1
+
+  echo "INFO: Running '$COMMAND' ..."
+
+  $COMMAND
+  RC=$?
+  check_returncode $RC "ERROR: '$COMMAND' failed with a return code of [$RC]!"
+}
+
+# run_and_check_returncode "mkdir blah"
+# check_returncode $1 $2

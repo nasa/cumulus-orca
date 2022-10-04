@@ -27,24 +27,7 @@ if [ "$BASEDIR" != "bin" ]; then
 fi
 
 
-## FUNCTIONS
-## -----------------------------------------------------------------------------
-function check_rc () {
-  ## Checks the return code of call and if not equal to 0, emits an error and
-  ## exits the script with a failure.
-  ##
-  ## Args:
-  ##   $1 - Return Code from command
-  ##   $2 - Error message if failure occurs.
-
-  let RC=$1
-  MESSAGE=$2
-
-  if [ $RC -ne 0 ]; then
-      >&2 echo "$MESSAGE"
-      exit 1
-  fi
-}
+source ../bin/check_returncode.sh
 
 
 ## MAIN
@@ -63,9 +46,7 @@ trap 'deactivate' EXIT
 ## Install the requirements
 pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org
 pip install -q -r requirements.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
-let return_code=$?
-
-check_rc $return_code "ERROR: pip install encountered an error."
+check_returncode $? "ERROR: pip install encountered an error."
 
 ## Check code formatting and styling
 echo "INFO: Checking formatting and style of code ..."
@@ -89,22 +70,19 @@ flake8 \
     --max-line-length 99 \
     --extend-ignore E203 \
     orca_shared
-let return_code=$?
-check_rc $return_code "ERROR: Linting issues found."
+check_returncode $? "ERROR: Linting issues found."
 
 
 ## Run code smell and security tests using bandit
 echo "INFO: Running code smell security tests ..."
 bandit -r orca_shared
-let return_code=$?
-check_rc $return_code "ERROR: Potential security or code issues found."
+check_returncode $? "ERROR: Potential security or code issues found."
 
 
 ## Check code third party libraries for CVE issues
 echo "INFO: Running checks on third party libraries ..."
 safety check -r requirements.txt
-let return_code=$?
-check_rc $return_code "ERROR: Potential security issues third party libraries."
+check_returncode $? "ERROR: Potential security issues third party libraries."
 
 
 ## Run unit tests and check Coverage
@@ -118,13 +96,11 @@ echo "INFO: Running unit and coverage tests ..."
 export AWS_REGION="us-west-2"
 
 coverage run --source=orca_shared -m pytest
-let return_code=$?
-check_rc $return_code "ERROR: Unit tests encountered failures."
+check_returncode $? "ERROR: Unit tests encountered failures."
 
 # Unit tests expected to cover minimum of 80%.
 coverage report --fail-under=80
-let return_code=$?
-check_rc $return_code "ERROR: Unit tests coverage is less than 80%"
+check_returncode $? "ERROR: Unit tests coverage is less than 80%"
 
 
 ## Deactivate and remove the virtual env

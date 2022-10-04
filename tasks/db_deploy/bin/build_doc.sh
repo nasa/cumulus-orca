@@ -26,24 +26,7 @@ if [ "$BASEDIR" != "bin" ]; then
 fi
 
 
-## FUNCTIONS
-## -----------------------------------------------------------------------------
-function check_rc () {
-  ## Checks the return code of call and if not equal to 0, emits an error and
-  ## exits the script with a failure.
-  ##
-  ## Args:
-  ##   $1 - Return Code from command
-  ##   $2 - Error message if failure occurs.
-
-  let RC=$1
-  MESSAGE=$2
-
-  if [ $RC -ne 0 ]; then
-      >&2 echo "$MESSAGE"
-      exit 1
-  fi
-}
+source ../../bin/check_returncode.sh
 
 
 ## MAIN
@@ -62,9 +45,7 @@ trap 'deactivate' EXIT
 ## Install the requirements
 pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org
 pip install -q pydoc-markdown==3.10.1 --trusted-host pypi.org --trusted-host files.pythonhosted.org
-let return_code=$?
-
-check_rc $return_code "ERROR: pip install encountered an error."
+check_returncode $? "ERROR: pip install encountered an error."
 
 ## Get the modules we want to document
 file_list=$(find . \
@@ -92,9 +73,7 @@ echo "INFO: Creating API markdown file ..."
 ## Run the documentation command
 echo "INFO: Creating API documentation ..."
 pydoc-markdown -I . ${module_list} --render-toc > API.md
-let return_code=$?
-
-check_rc $return_code "ERROR: Failed to create API.md file."
+check_returncode $? "ERROR: Failed to create API.md file."
 
 ## Perform cleanup
 echo "INFO: Cleaning up environment ..."
