@@ -41,7 +41,6 @@ function check_rc () {
 
   if [ $RC -ne 0 ]; then
       >&2 echo "$MESSAGE"
-      deactivate
       exit 1
   fi
 }
@@ -69,6 +68,7 @@ fi
 
 python3 -m venv venv
 source venv/bin/activate
+trap 'deactivate' EXIT
 
 ## Install the requirements
 pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org
@@ -127,7 +127,6 @@ check_rc $return_code "ERROR: Failed to create zip archive."
 
 ## Perform cleanup
 echo "INFO: Cleaning up build ..."
-deactivate
 rm -rf build
 
 exit 0

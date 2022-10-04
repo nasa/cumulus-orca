@@ -186,7 +186,7 @@ def get_job_entry_for_granule(
 
 
 def get_job_entry_for_granule_sql() -> text:  # pragma: no cover
-    return text(
+    return text(  # nosec
         f"""
                 SELECT
                     granule_id as "{OUTPUT_GRANULE_ID_KEY}",
@@ -253,7 +253,7 @@ def get_file_entries_for_granule_in_job(
 
 
 def get_file_entries_for_granule_in_job_sql() -> text:  # pragma: no cover
-    return text(
+    return text(  # nosec
         f"""
             SELECT
                 recovery_file.filename AS "{OUTPUT_FILENAME_KEY}",

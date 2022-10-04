@@ -24,7 +24,7 @@ def app_database_sql(db_name: str, admin_username: str) -> text:
     Returns:
         SQL for creating database.
     """
-    return text(
+    return text(  # nosec
         f"""
         CREATE DATABASE {db_name}
             OWNER "{admin_username}"
@@ -39,7 +39,7 @@ def app_database_comment_sql(db_name: str) -> text:
     SQL for adding a documentation comment to the database.
     Cannot be merged with DB creation due to SQLAlchemy limitations.
     """
-    return text(
+    return text(  # nosec
         f"""
         COMMENT ON DATABASE {db_name}
             IS 'Operational Recovery Cloud Archive (ORCA) database.'
@@ -58,7 +58,7 @@ def dbo_role_sql(db_name: str, admin_username: str) -> text:
     Returns:
         SQL for creating orca_dbo role.
     """
-    return text(
+    return text(  # nosec
         f"""
         DO
         $$
@@ -93,7 +93,7 @@ def app_role_sql(db_name: str) -> text:
     Returns:
         SQL for creating orca_app role.
     """
-    return text(
+    return text(  # nosec
         f"""
         DO
         $$
@@ -177,7 +177,7 @@ def app_user_sql(user_name: str) -> text:
     Returns:
         SQL for creating PREFIX_orcauser user.
     """
-    return text(
+    return text(  # nosec
         f"""
         DO
         $$
@@ -860,7 +860,7 @@ def reconcile_s3_object_partition_sql(partition_name: str) -> text:
     Returns:
         SQL for creating reconcile_s3_object partition table.
     """
-    return text(
+    return text(  # nosec
         f"""
             -- Create orca_archive_location_:bucket_name
             CREATE TABLE {partition_name} PARTITION OF reconcile_s3_object

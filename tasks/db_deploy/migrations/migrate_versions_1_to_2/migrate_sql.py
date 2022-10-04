@@ -17,7 +17,7 @@ def dbo_role_sql(db_name: str, admin_username: str) -> text:
     Returns:
         SQL for creating orca_dbo role.
     """
-    return text(
+    return text(  # nosec
         f"""
         DO
         $$
@@ -52,7 +52,7 @@ def app_role_sql(db_name: str) -> text:
     Returns:
         SQL for creating orca_app role.
     """
-    return text(
+    return text(  # nosec
         f"""
         DO
         $$
@@ -136,7 +136,7 @@ def app_user_sql(user_name: str) -> text:
     Returns:
         SQL for creating PREFIX_orcauser user.
     """
-    return text(
+    return text(  # nosec
         f"""
         DO
         $$
@@ -544,7 +544,7 @@ def drop_dbo_user_sql(db_name: str) -> text:
     Returns:
         SQL for dropping dbo user.
     """
-    return text(
+    return text(  # nosec
         f"""
         REVOKE CONNECT ON DATABASE "{db_name}" FROM dbo;
         DROP USER IF EXISTS dbo;
@@ -559,7 +559,7 @@ def drop_dr_role_sql(db_name: str) -> text:
     Returns:
         SQL for dropping dr_role role.
     """
-    return text(
+    return text(  # nosec
         f"""
         REVOKE CONNECT ON DATABASE "{db_name}" FROM GROUP dr_role;
         DROP ROLE IF EXISTS dr_role;
@@ -573,8 +573,8 @@ def drop_drdbo_role_sql(db_name: str) -> text:
 
     Returns:
         SQL for dropping drdbo_role role.
-    f"""
-    return text(
+    """
+    return text(  # nosec
         f"""
         REVOKE CONNECT ON DATABASE "{db_name}" FROM GROUP drdbo_role;
         REVOKE CREATE ON DATABASE "{db_name}" FROM GROUP drdbo_role;
