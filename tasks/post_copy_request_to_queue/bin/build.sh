@@ -55,9 +55,7 @@ mkdir -p build/psycopg2
 ##TODO: Adjust build scripts to put shared packages needed under a task/build/packages directory.
 ##      and copy the packages from there.
 if [ ! -d "../package" ]; then
-    mkdir -p ../package
-    let return_code=$?
-    check_returncode $return_code "ERROR: Unable to create tasks/package directory."
+    run_and_check_returncode "mkdir -p ../package"
 fi
 
 if [ ! -d "../package/awslambda-psycopg2/psycopg2-3.9" ]; then
@@ -65,9 +63,7 @@ if [ ! -d "../package/awslambda-psycopg2/psycopg2-3.9" ]; then
 fi
 if [ ! -d "../package/awslambda-psycopg2" ]; then
     ## TODO: This should be pulling based on a release version instead of latest
-    git clone https://github.com/jkehler/awslambda-psycopg2.git ../package/awslambda-psycopg2
-    let return_code=$?
-    check_returncode $return_code "ERROR: Unable to retrieve awslambda-psycopg2 code."
+    run_and_check_returncode "git clone https://github.com/jkehler/awslambda-psycopg2.git ../package/awslambda-psycopg2"
 fi
 
 cp ../package/awslambda-psycopg2/psycopg2-3.9/* build/psycopg2/
@@ -84,13 +80,9 @@ cp -r schemas/ build/
 check_returncode $? "ERROR: Failed to copy schema files to build directory."
 
 ## Create the zip archive
-echo "INFO: Creating zip archive ..."
 cd build
-zip -qr ../post_copy_request_to_queue.zip .
-let return_code=$?
-cd -
-
-check_returncode $return_code "ERROR: Failed to create zip archive."
+trap 'cd -' EXIT
+run_and_check_returncode "../post_copy_request_to_queue"
 
 ## Perform cleanup
 echo "INFO: Cleaning up build ..."

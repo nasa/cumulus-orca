@@ -59,13 +59,9 @@ echo "INFO:  Copying the input, output and config schemas..."
 cp -r schemas/ build/
 check_returncode $? "ERROR: Failed to copy schema files to build directory."
 ## Create the zip archive
-echo "INFO: Creating zip archive ..."
 cd build
-zip -qr ../extract_filepaths_for_granule.zip .
-let return_code=$?
-cd -
-
-check_returncode $return_code "ERROR: Failed to create zip archive."
+trap 'cd -' EXIT
+run_and_check_returncode "../extract_filepaths_for_granule"
 
 ## Perform cleanup
 echo "INFO: Cleaning up build ..."

@@ -60,13 +60,9 @@ cp -r schemas/ build/
 check_returncode $? "ERROR: Failed to copy schema files to build directory."
 
 ## Create the zip archive
-echo "INFO: Creating zip archive ..."
 cd build
-zip -qr ../copy_to_archive.zip .
-let return_code=$?
-cd -
-
-check_returncode $return_code "ERROR: Failed to create zip archive."
+trap 'cd -' EXIT
+run_and_check_returncode "../copy_to_archive"
 
 ## Perform cleanup
 echo "INFO: Cleaning up build ..."
