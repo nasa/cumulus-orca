@@ -83,7 +83,7 @@ check_returncode $? "ERROR: Failed to copy schema files to build directory."
 ## Create the zip archive
 cd build
 trap 'cd -' EXIT
-run_and_check_returncode "../post_to_queue_and_trigger_step_function"
+run_and_check_returncode "zip -qr ../post_to_queue_and_trigger_step_function.zip ."
 
 ## Perform cleanup
 echo "INFO: Cleaning up build ..."

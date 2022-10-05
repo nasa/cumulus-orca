@@ -78,7 +78,7 @@ check_returncode $? "ERROR: Failed to copy lambda files to build directory."
 ## Create the zip archive
 cd build
 trap 'cd -' EXIT
-run_and_check_returncode "../delete_old_reconcile_jobs"
+run_and_check_returncode "zip -qr ../delete_old_reconcile_jobs.zip ."
 
 ## Perform cleanup
 echo "INFO: Cleaning up build ..."

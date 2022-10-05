@@ -86,7 +86,7 @@ echo "INFO: Creating the Lambda package ..."
 ## Create the zip archive
 cd build
 trap 'cd -' EXIT
-run_and_check_returncode "../db_deploy"
+run_and_check_returncode "zip -qr ../db_deploy.zip ."
 
 ## Perform cleanup
 echo "INFO: Cleaning up build ..."

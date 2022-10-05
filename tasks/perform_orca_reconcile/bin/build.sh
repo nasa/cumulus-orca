@@ -83,7 +83,7 @@ check_returncode $? "ERROR: Failed to copy schema files to build directory."
 ## Create the zip archive
 cd build
 trap 'cd -' EXIT
-run_and_check_returncode "../perform_orca_reconcile"
+run_and_check_returncode "zip -qr ../perform_orca_reconcile.zip ."
 
 ## Perform cleanup
 echo "INFO: Cleaning up build ..."
