@@ -27,7 +27,7 @@ if [ "$BASEDIR" != "bin" ]; then
 fi
 
 
-source ../bin/check_returncode.sh
+source ../bin/common/check_returncode.sh
 
 
 ## MAIN

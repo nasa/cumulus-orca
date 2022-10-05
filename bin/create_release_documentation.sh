@@ -48,7 +48,7 @@ if [[ ! $bamboo_RELEASE_FLAG == true ]]; then
 fi
 
 
-source bin/check_returncode.sh
+source bin/common/check_returncode.sh
 
 
 ## MAIN

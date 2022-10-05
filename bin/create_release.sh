@@ -35,7 +35,7 @@ if [ "$BASEDIR" != "bin" ]; then
 fi
 
 
-source bin/check_returncode.sh
+source bin/common/check_returncode.sh
 
 
 ## Validate that the release flag is set
