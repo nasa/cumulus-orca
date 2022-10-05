@@ -2,11 +2,8 @@
 #TODO This needs to be better organized
 set -e
 
-rm -rf venv
-python3 -m venv venv
-source venv/bin/activate
-trap 'deactivate' EXIT
-pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org
+source bin/common/check_returncode.sh
+
 echo "pwd `pwd`"
 
 echo "Pulling awslambda-psycopg2 in preparation for build"

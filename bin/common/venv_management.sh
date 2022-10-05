@@ -10,12 +10,9 @@ function create_and_activate_venv () {
   fi
   
   run_and_check_returncode "python3 -m venv venv"
-  source venv/bin/activate
+  run_and_check_returncode "source venv/bin/activate"
 
-  run_and_check_returncode "pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org"
   echo "INFO: Virtual environment ready."
-
-  return 0
 }
 
 function deactivate_and_delete_venv () {
@@ -24,6 +21,4 @@ function deactivate_and_delete_venv () {
   echo "INFO: Cleaning up virtual environment ..."
   run_and_check_returncode "rm -rf venv"
   find . -type d -name "__pycache__" -exec rm -rf {} +
-
-  return 0
 }

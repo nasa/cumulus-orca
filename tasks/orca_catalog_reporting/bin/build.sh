@@ -25,6 +25,7 @@ if [ "$BASEDIR" != "bin" ]; then
 fi
 
 source ../../bin/common/check_returncode.sh
+source ../../bin/common/venv_management.sh
 
 
 ## MAIN
@@ -38,16 +39,9 @@ fi
 mkdir build
 check_returncode $? "ERROR: Failed to create build directory."
 
-## Create the virtual env. Remove it if it already exists.
-echo "INFO: Creating virtual environment ..."
-if [ -d venv ]; then
-  rm -rf venv
-  find . -type d -name "__pycache__" -exec rm -rf {} +
-fi
-
-python3 -m venv venv
-source venv/bin/activate
-trap 'deactivate' EXIT
+run_and_check_returncode "create_and_activate_venv"
+trap 'deactivate_and_delete_venv' EXIT
+run_and_check_returncode "pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org"
 
 ## Install the requirements
 pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org

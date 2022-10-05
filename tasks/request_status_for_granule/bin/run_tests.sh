@@ -27,20 +27,14 @@ fi
 
 
 source ../../bin/common/check_returncode.sh
+source ../../bin/common/venv_management.sh
 
 
 ## MAIN
 ## -----------------------------------------------------------------------------
-## Create the virtual env. Remove it if it exists.
-echo "INFO: Creating virtual environment ..."
-if [ -d venv ]; then
-  rm -rf venv
-  find . -type d -name "__pycache__" -exec rm -rf {} +
-fi
-
-python3 -m venv venv
-source venv/bin/activate
-trap 'deactivate' EXIT
+run_and_check_returncode "create_and_activate_venv"
+trap 'deactivate_and_delete_venv' EXIT
+run_and_check_returncode "pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org"
 
 ## Install the requirements
 pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org
@@ -94,9 +88,3 @@ check_returncode $? "ERROR: Unit tests encountered failures."
 # Unit tests expected to cover minimum of 80%.
 coverage report --fail-under=80
 check_returncode $? "ERROR: Unit tests coverage is less than 80%"
-
-
-## Deactivate and remove the virtual env
-echo "INFO: Cleaning up the environment ..."
-rm -rf venv
-find . -type d -name "__pycache__" -exec rm -rf {} +
