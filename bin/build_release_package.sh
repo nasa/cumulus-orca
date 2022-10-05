@@ -103,5 +103,3 @@ fi
 # Create the GitHub release
 echo "INFO: Creating GitHub release ..."
 run_and_check_returncode "bin/create_release.sh"
-
-exit 0

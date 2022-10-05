@@ -71,5 +71,3 @@ curl \
 check_returncode $? "Error during curl command."
 
 cd ..
-
-exit 0

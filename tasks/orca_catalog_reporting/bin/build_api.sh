@@ -56,5 +56,3 @@ check_returncode $? "ERROR: Failed to create API.md file."
 echo "INFO: Cleaning up environment ..."
 rm -rf venv
 find . -type d -name "__pycache__" -exec rm -rf {} +
-
-exit 0

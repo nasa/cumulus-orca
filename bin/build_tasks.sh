@@ -51,4 +51,3 @@ then
 else
   echo "All builds succeeded."
 fi
-exit 0

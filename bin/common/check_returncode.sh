@@ -27,6 +27,3 @@ function run_and_check_returncode () {
   RC=$?
   check_returncode $RC "ERROR: '$COMMAND' failed with a return code of [$RC]!"
 }
-
-# run_and_check_returncode "mkdir blah"
-# check_returncode $1 $2

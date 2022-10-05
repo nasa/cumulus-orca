@@ -104,5 +104,3 @@ check_returncode $return_code "ERROR: Failed to create zip archive."
 echo "INFO: Cleaning up build ..."
 rm -rf build
 
-exit 0
-

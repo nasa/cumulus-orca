@@ -74,5 +74,3 @@ run_and_check_returncode "npm run deploy"
 
 cd ..
 
-exit 0
-

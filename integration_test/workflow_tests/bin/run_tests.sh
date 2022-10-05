@@ -94,5 +94,3 @@ check_returncode $? "ERROR: Unit tests encountered failures."
 echo "INFO: Cleaning up the environment ..."
 rm -rf venv
 find . -type d -name "__pycache__" -exec rm -rf {} +
-
-exit 0

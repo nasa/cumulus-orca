@@ -122,5 +122,3 @@ find . -type d -name "__pycache__" -exec rm -rf {} +
 
 # Remove the shared library
 rm -rf orca_shared
-
-exit 0

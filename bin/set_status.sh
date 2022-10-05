@@ -11,5 +11,3 @@ if [[ $bamboo_REPORT_BUILD_STATUS == true ]]; then
    -X POST\
    https://api.github.com/repos/nasa/cumulus-orca/statuses/$GIT_SHA
 fi
-
-exit 0

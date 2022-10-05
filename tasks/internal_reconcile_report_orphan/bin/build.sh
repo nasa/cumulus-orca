@@ -100,5 +100,3 @@ cd -
 ## Perform cleanup
 echo "INFO: Cleaning up build ..."
 rm -rf build
-
-exit 0
