@@ -89,6 +89,7 @@ data "aws_iam_policy_document" "orca_kms_key_policy" {
     # work with NGAP to restrict actions
     actions = [
       "kms:Decrypt",
+      "kms:DescribeKey" #requested by Cumulus
     ]
 
     resources = [local.kms_arn]
