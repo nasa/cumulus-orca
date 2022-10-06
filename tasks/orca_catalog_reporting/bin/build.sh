@@ -36,15 +36,14 @@ if [ -d build ]; then
     rm -rf build
 fi
 
-mkdir build
-check_returncode $? "ERROR: Failed to create build directory."
+run_and_check_returncode "mkdir build"
+trap 'rm -rf build' EXIT
 
 run_and_check_returncode "create_and_activate_venv"
 trap 'deactivate_and_delete_venv' EXIT
 run_and_check_returncode "pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org"
 
 ## Install the requirements
-pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org
 pip install -q -t build -r requirements.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
 check_returncode $? "ERROR: pip install encountered an error."
 
@@ -81,7 +80,3 @@ check_returncode $? "ERROR: Failed to copy schema files to build directory."
 cd build
 trap 'cd -' EXIT
 run_and_check_returncode "zip -qr ../orca_catalog_reporting.zip ."
-
-## Perform cleanup
-echo "INFO: Cleaning up build ..."
-rm -rf build

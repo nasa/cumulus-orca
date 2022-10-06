@@ -37,8 +37,8 @@ if [ -d build ]; then
     rm -rf build
 fi
 
-mkdir build
-check_returncode $? "ERROR: Failed to create build directory."
+run_and_check_returncode "mkdir build"
+trap 'rm -rf build' EXIT
 
 run_and_check_returncode "create_and_activate_venv"
 trap 'deactivate_and_delete_venv' EXIT
@@ -83,7 +83,3 @@ check_returncode $? "ERROR: Failed to copy schema files to build directory."
 cd build
 trap 'cd -' EXIT
 run_and_check_returncode "zip -qr ../internal_reconcile_report_orphan.zip ."
-
-## Perform cleanup
-echo "INFO: Cleaning up build ..."
-rm -rf build
