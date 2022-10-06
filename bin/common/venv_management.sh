@@ -1,3 +1,4 @@
+# Be sure to source check_returncode.sh when using this library.
 function create_and_activate_venv () {
   ## Removes any pre-existing virtual environment if present.
   ## Then creates a virtual environment and activates it, and sources in its scripts.
