@@ -32,7 +32,7 @@ source ../../bin/common/venv_management.sh
 ## MAIN
 ## -----------------------------------------------------------------------------
 run_and_check_returncode "create_and_activate_venv"
-trap 'deactivate_and_delete_venv' EXIT
+trap 'deactivate_and_delete_venv;rm -rf build;' EXIT
 run_and_check_returncode "pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org"
 
 ## Install the requirements

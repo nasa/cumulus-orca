@@ -41,7 +41,7 @@ run_and_check_returncode "mkdir build"
 trap 'rm -rf build' EXIT
 
 run_and_check_returncode "create_and_activate_venv"
-trap 'deactivate_and_delete_venv' EXIT
+trap 'deactivate_and_delete_venv;rm -rf build;' EXIT
 run_and_check_returncode "pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org"
 
 ## Install the requirements
@@ -81,6 +81,6 @@ check_returncode $? "ERROR: Failed to copy schema files to build directory."
 
 ## Create the zip archive
 cd build
-trap 'cd -' EXIT
+trap 'cd -;deactivate_and_delete_venv;rm -rf build;' EXIT
 run_and_check_returncode "zip -qr ../get_current_archive_list.zip ."
 
