@@ -1,3 +1,4 @@
+import typing
 from typing import Annotated
 
 # noinspection PyPackageRequirements
@@ -11,16 +12,16 @@ from src.adapters.graphql.resolvers.echo import get_echo
 
 
 @type
-class Query:  # todo: Rename
+class Queries:  # todo: Rename
 
     @field(
         description="""Echos the given word back as a check of basic GraphQL functionality.""")
-    def getEcho(  # todo: Does this need to be cased this way?
+    def get_echo(
         self,
-        word: Annotated[str,
+        word: Annotated[typing.Optional[str],  # `Optional` marks it as 'optional'...
                         argument(
                             description="""The word to echo back."""
                         )
-                        ] = None,
+                        ] = None,  # Default value actually MAKES it optional
     ) -> EdgeStrawberryType[EchoStrawberryType]:
         return graphql.resolvers.echo.get_echo(word)

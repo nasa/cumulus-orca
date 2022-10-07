@@ -6,7 +6,7 @@ from strawberry.extensions import AddValidationRules
 from graphql.validation import NoSchemaIntrospectionCustomRule
 
 from src.adapters.graphql import graphql_settings
-from src.adapters.graphql.schemas.queries import Query
+from src.adapters.graphql.schemas.queries import Queries
 # from server.adapters.api.graphql.schemas.mutations import Mutation
 # from server.adapters.api.graphql.schemas.subscriptions import Subscription
 
@@ -16,7 +16,7 @@ def get_schema() -> Schema:
     Returns a strawberry library Schema object used for exposing the API.
     """
     return Schema(
-        Query,
+        Queries,
         # mutation=Mutation,
         # subscription=Subscription,
         # config=

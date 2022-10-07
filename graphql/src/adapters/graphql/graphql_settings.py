@@ -1,11 +1,7 @@
-import os
-
-from pydantic import BaseSettings
-
 from src.adapters.uvicorn import uvicorn_settings
 
 
-class GraphQLSettings(BaseSettings):
+class GraphQLSettings:
     """
     GraphQL Settings used by the GraphQL adapter.
     The settings are set by the environment and
