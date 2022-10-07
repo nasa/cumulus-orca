@@ -1,8 +1,8 @@
 import uuid
 
+import src.entities.echo
 from src import entities
 from src.entities.common import Edge
-from src.entities.echo import Echo as EchoEntity  # todo: Use a better naming scheme so this isn't an issue.
 from src.use_cases.edge_cursor import EdgeCursor
 
 
@@ -13,15 +13,19 @@ class Echo:
     @staticmethod
     def _create_cursor(echo: entities.echo.Echo) -> str:
         """
+        Creates a filter for the cursor based on the record information
+        and the original filter used to obtain the information.
+
+        Args:
+            echo: The element to create a cursor for.
+
+        Returns:
+            A cursor that will always point to the given element.
         """
-        # Create the filter for the cursor based on the record information
-        # and the original filter used to obtain the information.
         return EdgeCursor.encode_cursor(**{"word": echo.word})
 
     def get_echo(self, word: str) -> Edge:
         if word is None:
             word = uuid.uuid4().__str__()
-        # todo: This constructor has no type hints, or even name hints. Find an alternative.
-        result = EchoEntity(word=word, length=len(word), echo=(word[::-1]))
-        # todo: This constructor has no type hints, or even name hints. Find an alternative.
+        result = entities.echo.Echo(word=word, length=len(word), echo=(word[::-1]))
         return Edge(node=result, cursor=self._create_cursor(result))

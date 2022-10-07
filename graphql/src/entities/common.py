@@ -1,12 +1,9 @@
 from dataclasses import dataclass
 from typing import Generic, TypeVar
 
-import strawberry  # todo: Pull out to adapter layer
-
 GenericType = TypeVar("GenericType")
 
 
-@strawberry.type
 @dataclass
 class Edge(Generic[GenericType]):
     """
