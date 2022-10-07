@@ -5,8 +5,10 @@ from strawberry import type, field, argument
 
 from src.adapters import graphql
 from src.adapters.graphql import resolvers
+from src.adapters.graphql.dataTypes.echo import EchoStrawberryType
 from src.adapters.graphql.resolvers.echo import get_echo
-from src.adapters.graphql.dataTypes.echo import EchoEdgeStrawberryType
+from src.entities.common import Edge
+from src.entities.echo import Echo
 
 
 @type
@@ -21,5 +23,5 @@ class Query:  # todo: Rename
                             description="""The word to echo back."""
                         )
                         ] = None,
-    ) -> EchoEdgeStrawberryType:
+    ) -> Edge[EchoStrawberryType]:
         return graphql.resolvers.echo.get_echo(word)

@@ -1,11 +1,14 @@
+from dataclasses import dataclass
 from typing import Generic, TypeVar
 
-from pydantic import BaseModel
+import strawberry  # todo: Pull out to adapter layer
 
 GenericType = TypeVar("GenericType")
 
 
-class Edge(BaseModel, Generic[GenericType]):
+@strawberry.type
+@dataclass
+class Edge(Generic[GenericType]):
     """
     An edge contains additional information of the relationship. In this case
     the calculated cursor value for the node record.

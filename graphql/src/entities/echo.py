@@ -1,8 +1,8 @@
-from pydantic import BaseModel
+from dataclasses import dataclass
 
 
-class Echo(BaseModel):
+@dataclass
+class Echo:
     word: str
     length: int
     echo: str
-
