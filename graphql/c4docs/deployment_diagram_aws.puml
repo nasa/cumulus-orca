@@ -1,0 +1,45 @@
+
+@startuml Deploy
+' Include C4 Diagrams
+!define C4Puml https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master
+!include C4Puml/C4_Deployment.puml
+
+' Include AWS Sprites
+!define AWSPuml https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/v11.1/dist
+!include AWSPuml/AWSCommon.puml
+!include AWSPuml/Containers/all.puml
+!include AWSPuml/Database/all.puml
+!include AWSPuml/ApplicationIntegration/all.puml
+
+' Include Logos'
+!include <logos/docker>
+!include <logos/python>
+!include <logos/postgresql>
+
+size 500*500
+
+title AWS Deployment Diagram
+
+Person(enduser, "API Clients", "Retrieve and write critical information from the ORCA DB.")
+
+Deployment_Node(apigw, "ORCA API Gateway", "API Gateway", $sprite="APIGateway")
+
+Deployment_Node(ecs, "ORCA ECS Cluster", "ECS Fargate", $sprite="ElasticContainerService"){
+    Deployment_Node(service, "ORCA GraphQL Service", "ECS Service", $sprite="ElasticContainerServiceService"){
+        Deployment_Node(task, "GraphQL Task", "ECS Task", $sprite="ElasticContainerServiceTask"){
+            Deployment_Node(docker, "GraphQL Container", "Docker", $sprite="docker"){
+                Container(gql, "GraphQL Prototype", "Python", "GraphQL prototype application", $sprite="python")
+            }
+        }
+    }
+}
+
+Deployment_Node(aurora, "ORCA Aurora Instance", "Aurora PostgreSQL Serverless", $sprite="AuroraPostgreSQLInstanceAlternate"){
+    ContainerDb(orcadb, "ORCA Database", "PostgreSQL", "Contains ORCA tracking and metadata records.", $sprite="postgresql")
+}
+
+Rel_R(enduser, apigw, "Sends requests to", "https")
+Rel_R(apigw, service, "Forwards to", "https")
+Rel_R(gql, orcadb, "Interacts with", "pglibc")
+
+@enduml
