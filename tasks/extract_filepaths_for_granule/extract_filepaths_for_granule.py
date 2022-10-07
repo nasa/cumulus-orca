@@ -5,7 +5,7 @@ Description:  Extracts the keys (filepaths) for a granule's files from a Cumulus
 """
 
 import re
-from typing import List, Dict
+from typing import Dict, List
 
 from cumulus_logger import CumulusLogger
 from run_cumulus_task import run_cumulus_task

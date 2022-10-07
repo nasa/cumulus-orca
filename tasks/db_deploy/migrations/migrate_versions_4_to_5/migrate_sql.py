@@ -204,7 +204,7 @@ def reconcile_s3_object_partition_sql(partition_name: str) -> text:
     Returns:
         SQL for creating reconcile_s3_object partition table.
     """
-    return text(
+    return text(  # nosec
         f"""
             -- Create orca_archive_location_:bucket_name
             CREATE TABLE {partition_name} PARTITION OF reconcile_s3_object

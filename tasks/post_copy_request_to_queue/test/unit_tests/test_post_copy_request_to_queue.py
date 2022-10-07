@@ -769,7 +769,7 @@ class TestPostCopyRequestToQueue(TestCase):
     def test_get_metadata_sql_happy_path(self):
         key_path = uuid.uuid4().__str__()
         result = post_copy_request_to_queue.get_metadata_sql(key_path)
-        self.assertEqual(
+        self.assertEqual(  # nosec
             f"""
             SELECT
                 job_id, granule_id, filename, restore_destination, multipart_chunksize_mb
