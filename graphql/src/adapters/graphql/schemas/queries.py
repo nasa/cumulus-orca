@@ -20,6 +20,6 @@ class Query:  # todo: Rename
                         argument(
                             description="""The word to echo back."""
                         )
-                        ] = None,  # todo: remove default if able
+                        ] = None,
     ) -> EchoEdgeStrawberryType:
         return graphql.resolvers.echo.get_echo(word)

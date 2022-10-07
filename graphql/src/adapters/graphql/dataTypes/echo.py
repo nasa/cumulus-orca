@@ -1,6 +1,5 @@
 # noinspection PyPackageRequirements
 import strawberry
-from pydantic import BaseModel
 
 from src.entities.common import Edge
 from src.entities.echo import Echo

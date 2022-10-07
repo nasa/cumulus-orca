@@ -1,3 +1,5 @@
+import uuid
+
 from src import entities
 from src.entities.common import Edge
 from src.entities.echo import Echo as EchoEntity  # todo: Use a better naming scheme so this isn't an issue.
@@ -17,6 +19,8 @@ class Echo:
         return EdgeCursor.encode_cursor(**{"word": echo.word})
 
     def get_echo(self, word: str) -> Edge:
+        if word is None:
+            word = uuid.uuid4().__str__()
         # todo: This constructor has no type hints, or even name hints. Find an alternative.
         result = EchoEntity(word=word, length=len(word), echo=(word[::-1]))
         # todo: This constructor has no type hints, or even name hints. Find an alternative.
