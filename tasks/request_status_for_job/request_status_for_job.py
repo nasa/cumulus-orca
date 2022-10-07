@@ -107,7 +107,7 @@ def get_granule_status_entries_for_job(
 
 
 def get_granule_status_entries_for_job_sql() -> text:  # pragma: no cover
-    return text(
+    return text(  # nosec
         f"""
                 SELECT
                     granule_id as "{OUTPUT_GRANULE_ID_KEY}",
@@ -154,7 +154,7 @@ def get_status_totals_for_job(job_id: str, engine: Engine) -> Dict[str, int]:
 
 def get_status_totals_for_job_sql() -> text:  # pragma: no cover
     return text(  # nosec
-        f"""
+        """
                 with granule_status_count AS (
                     SELECT status_id
                         , count(*) as total
@@ -165,7 +165,7 @@ def get_status_totals_for_job_sql() -> text:  # pragma: no cover
                 SELECT value
                     , coalesce(total, 0) as total
                 FROM recovery_status os
-                LEFT JOIN granule_status_count gsc ON (gsc.status_id = os.id)"""  # nosec   # noqa
+                LEFT JOIN granule_status_count gsc ON (gsc.status_id = os.id)"""  # noqa
     )
 
 

@@ -248,7 +248,7 @@ def truncate_s3_partition(orca_archive_location: str, engine: Engine) -> None:
 
 def truncate_s3_partition_sql(partition_name: str) -> text:
     # Quickly removes data from the partition
-    return text(
+    return text(  # nosec
         f"""
         TRUNCATE TABLE orca.{partition_name}
         """
@@ -402,7 +402,7 @@ def create_temporary_table_sql(temporary_s3_column_list: str) -> text:
         temporary_s3_column_list: The list of columns that need to be created to store csv data.
             Be very careful to avoid injection.
     """
-    return text(
+    return text(  # nosec
         f"""
         CREATE TEMPORARY TABLE s3_import(
             {temporary_s3_column_list}
@@ -437,7 +437,7 @@ def translate_s3_import_to_partitioned_data_sql() -> text:  # pragma: no cover
     SQL for translating between the temporary table and Orca table.
     """
     return text(
-        f"""
+        """
         INSERT INTO orca.reconcile_s3_object (
                 job_id,
                 orca_archive_location,

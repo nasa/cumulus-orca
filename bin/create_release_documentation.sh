@@ -48,33 +48,17 @@ if [[ ! $bamboo_RELEASE_FLAG == true ]]; then
 fi
 
 
-## FUNCTIONS
-## -----------------------------------------------------------------------------
-function check_rc () {
-  ## Checks the return code of call and if not equal to 0, emits an error and
-  ## exits the script with a failure.
-  COMMAND=$1
-
-  echo "INFO: Running '$COMMAND' ..."
-
-  $COMMAND
-  let RC=$?
-
-  if [ $RC -ne 0 ]; then
-      >&2 echo "ERROR: '$COMMAND' failed with a return code of [ $RC ]!"
-      exit 1
-  fi
-}
+source bin/common/check_returncode.sh
 
 
 ## MAIN
 ## -----------------------------------------------------------------------------
 ## Release the Documentation
 # Go to the documentation directory
-check_rc "cd website"
+run_and_check_returncode "cd website"
 
 # Install Node.js and the proper packages
-check_rc "npm install"
+run_and_check_returncode "npm install"
 
 ## Run the deployment See: https://docusaurus.io/docs/deployment
 # Set the environment variables
@@ -86,9 +70,7 @@ export GIT_PASS=$bamboo_SECRET_GITHUB_TOKEN
 git config --global user.email "$bamboo_SECRET_GITHUB_EMAIL"
 git config --global user.name "$GIT_USER"
 
-check_rc "npm run deploy"
+run_and_check_returncode "npm run deploy"
 
 cd ..
-
-exit 0
 

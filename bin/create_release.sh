@@ -34,6 +34,10 @@ if [ "$BASEDIR" != "bin" ]; then
   exit 1
 fi
 
+
+source bin/common/check_returncode.sh
+
+
 ## Validate that the release flag is set
 if [[ ! $bamboo_RELEASE_FLAG == true ]]; then
   >&2 echo "WARN: Skipping Release ORCA code step, PUBLISH_FLAG is [ $bamboo_RELEASE_FLAG ]"
@@ -64,5 +68,6 @@ curl \
     --data-binary "@cumulus-orca-terraform.zip" \
     -H "Content-type: application/octet-stream" \
     $RELEASE_URL/assets?name=cumulus-orca-terraform.zip
+check_returncode $? "Error during curl command."
 
 cd ..
