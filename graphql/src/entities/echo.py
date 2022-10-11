@@ -1,7 +1,9 @@
+import dataclasses
+
 import pydantic
 
 
-@pydantic.dataclasses.dataclass
+@dataclasses.dataclass
 class Echo(pydantic.BaseModel):
     # IMPORTANT: Whenever properties are added/removed/modified/renamed, update constructor.
     word: str
