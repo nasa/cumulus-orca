@@ -5,7 +5,9 @@ import os
 
 
 class UvicornSettings:
-    """Common settings used by the framework."""
+    """
+    Common settings used by the framework.
+    """
     HOST: str = os.environ.get("HOST", "0.0.0.0")
     PORT: int = int(os.environ.get("PORT", "5000"))
     # todo: change key
