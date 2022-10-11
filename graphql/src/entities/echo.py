@@ -2,11 +2,10 @@ import dataclasses
 from enum import Enum
 
 import pydantic
-import strawberry
 
 
-@strawberry.enum  # todo: Pull out
 class WordTypeEnum(str, Enum):
+    # Whenever this class changes, update WordTypeEnumStrawberryType
     palindrome = 'palindrome'
     chaos = 'chaos'
 
