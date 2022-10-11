@@ -1,6 +1,14 @@
 import dataclasses
+from enum import Enum
 
 import pydantic
+import strawberry
+
+
+@strawberry.enum  # todo: Pull out
+class WordTypeEnum(str, Enum):
+    palindrome = 'palindrome'
+    chaos = 'chaos'
 
 
 @dataclasses.dataclass
@@ -9,8 +17,9 @@ class Echo(pydantic.BaseModel):
     word: str
     length: int
     echo: str
+    word_type: WordTypeEnum
 
     # Overriding constructor to give us type/name hints for Pydantic class.
-    def __init__(self, word: str, length: int, echo: str):
+    def __init__(self, word: str, length: int, echo: str, word_type: WordTypeEnum):
         # This call to __init__ will NOT automatically update when performing renames.
-        super().__init__(word=word, length=length, echo=echo)
+        super().__init__(word=word, length=length, echo=echo, word_type=word_type)

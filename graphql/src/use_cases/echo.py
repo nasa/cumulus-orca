@@ -27,5 +27,9 @@ class Echo:
     def get_echo(self, word: str) -> Edge:
         if word is None:
             word = uuid.uuid4().__str__()
-        result = entities.echo.Echo(word=word, length=len(word), echo=(word[::-1]))
+        echo = (word[::-1])
+        result = entities.echo.Echo(word=word, length=len(word), echo=echo,
+                                    word_type=src.entities.echo.WordTypeEnum.palindrome
+                                    if word == echo else
+                                    src.entities.echo.WordTypeEnum.chaos)
         return Edge(node=result, cursor=self._create_cursor(result))
