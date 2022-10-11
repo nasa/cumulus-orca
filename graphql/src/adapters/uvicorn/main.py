@@ -9,13 +9,6 @@ from src.adapters import fastapi
 from src.adapters.fastapi.fastapi import create_fastapi_app
 from src.adapters.uvicorn import uvicorn_settings
 
-# todo: What are these comments?
-# Get the adapters
-
-# storage
-
-# api
-
 application = adapters.fastapi.fastapi.create_fastapi_app()
 
 if __name__ == "__main__":

@@ -12,7 +12,7 @@ from src.adapters.graphql.resolvers.echo import get_echo
 
 
 @type
-class Queries:  # todo: Rename
+class Queries:
 
     @field(
         description="""Echos the given word back as a check of basic GraphQL functionality.""")

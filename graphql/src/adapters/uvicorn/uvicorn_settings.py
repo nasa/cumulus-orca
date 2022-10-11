@@ -1,16 +1,13 @@
 import os
+from pydantic import BaseSettings
 
 
-# todo: Can we just pass these into main.py?
-
-
-class UvicornSettings:
+class UvicornSettings(BaseSettings):
     """
     Common settings used by the framework.
     """
-    HOST: str = os.environ.get("HOST", "0.0.0.0")
-    PORT: int = int(os.environ.get("PORT", "5000"))
-    # todo: change key
+    HOST: str = "0.0.0.0"
+    PORT: int = 5000
     DEV: bool = True if os.environ.get("ORCA_ENV", "development") == "development" else False
 
 
