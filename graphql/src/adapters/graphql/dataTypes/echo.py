@@ -1,6 +1,6 @@
-# noinspection PyPackageRequirements
 from enum import Enum
 
+# noinspection PyPackageRequirements
 import strawberry
 
 from src.entities.echo import Echo
@@ -8,7 +8,7 @@ from src.entities.echo import Echo
 
 # todo: While it technically breaks CleanArchitecture,
 #  I wonder if we wouldn't be fine placing these decorators on the base class
-#  given that they don't change behavior.
+#  given that they don't change coding behavior.
 
 
 @strawberry.enum

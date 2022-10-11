@@ -3,12 +3,13 @@ import uuid
 import src.entities.echo
 from src import entities
 from src.entities.common import Edge
+from src.use_cases.adapter_interfaces.word_generation import WordGenerationInterface
 from src.use_cases.edge_cursor import EdgeCursor
 
 
 class Echo:
-    def __init__(self):
-        pass
+    def __init__(self, word_generation: WordGenerationInterface):
+        self.word_generator = word_generation
 
     @staticmethod
     def _create_cursor(echo: entities.echo.Echo) -> str:
@@ -26,7 +27,7 @@ class Echo:
 
     def get_echo(self, word: str) -> Edge:
         if word is None:
-            word = uuid.uuid4().__str__()
+            word = self.word_generator.get_random_word()
         echo = (word[::-1])
         result = entities.echo.Echo(word=word, length=len(word), echo=echo,
                                     word_type=src.entities.echo.WordTypeEnum.palindrome
