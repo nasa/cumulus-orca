@@ -8,13 +8,14 @@ import os
 import time
 from typing import Any, Dict, List, Optional, Union
 
+import aws_lambda_powertools
+
 # noinspection PyPackageRequirements
 import boto3
 import fastjsonschema
 from boto3.s3.transfer import MB, TransferConfig
 from botocore.client import BaseClient
 from botocore.exceptions import ClientError
-from cumulus_logger import CumulusLogger
 
 # noinspection PyPackageRequirements
 from orca_shared.recovery import shared_recovery
@@ -36,7 +37,8 @@ INPUT_TARGET_BUCKET_KEY = "restoreDestination"
 INPUT_SOURCE_BUCKET_KEY = "sourceBucket"
 INPUT_MULTIPART_CHUNKSIZE_MB_KEY = "s3MultipartChunksizeMb"
 
-LOGGER = CumulusLogger()
+LOGGER = aws_lambda_powertools.Logger()
+
 # Generating schema validators can take time, so do it once and reuse.
 try:
     with open("schemas/input.json", "r") as raw_schema:
@@ -222,7 +224,7 @@ def copy_object(
         )
         LOGGER.debug(f"Object {src_object_name} copied.")
     except ClientError as ex:
-        LOGGER.error("Client error: {ex}", ex=ex)
+        LOGGER.error("Client error: {ex}")
         return ex.__str__()
     return None
 
