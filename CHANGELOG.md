@@ -37,6 +37,10 @@ and includes an additional section for migration notes.
 - If utilizing the `orca_lambda_copy_to_glacier_arn` [output of Terraform](https://github.com/nasa/cumulus-orca/blob/15e5868f2d1eead88fb5cc8f2e055a18ba0f1264/outputs.tf#L8), likely as a means of pulling the lambda into your workflows, 
   rename to new key `orca_lambda_copy_to_archive_arn`
 
+## [6.0.1]
+### Changed
+- *ORCA-566* Shortened S3 inventory report name due to length limitation causing errors when a user's naming schema is long.
+
 ## [6.0.0]
 ### Changed
 - *ORCA-290* Renamed `excludeFileTypes`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` to `excludedFileExtensions`, `defaultBucketOverride` and  `defaultStorageClassOverride` respectively. In addition, ORCA configuration variables `excludedFileExtensions`, `defaultBucketOverride` and `defaultStorageClassOverride` are now under `collection.meta.orca`.
