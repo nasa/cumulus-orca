@@ -40,8 +40,11 @@ aws s3api create-bucket \
     --create-bucket-configuration "LocationConstraint=us-west-2"
 ```
 
-- **\[orca bucket name\]** - This is the name of your bucket. Example: `sandbox-orca-glacier-archive` and `sandbox-orca-reports`
 - **\[AWS OU profile\]** - This is the AWS profile name to use to connect to the proper OU where the bucket will be created.
+- **\[orca bucket name\]** - This is the name of your bucket. Example: `PREFIX-orca-archive` and `PREFIX-orca-reports`
+  :::note
+  Due to limits on report names, the maximum length of a non-report bucket's name is 54 characters.
+  :::
 
 :::note
 
@@ -79,15 +82,15 @@ Error: Error putting S3 notification configuration: AccessDenied: Access Denied
 
 :::
 
-### Filling out the form
+### Via NGAP form
 
-First, create a NASD ticket for cross account bucket access. This is a turn key
-request to NGAP. The link to create a ticket is available
-[here](https://bugs.earthdata.nasa.gov/servicedesk/customer/portal/7/create/80).
+If your accounts are both within EDC, you may skip to [the primary method](#via-aws-gui).
+Otherwise, create a NASD ticket for cross account bucket access.
+This is a turn key request to NGAP. The link to create a ticket is available
+[here](https://bugs.earthdata.nasa.gov/servicedesk/customer/portal/7/create/85).
 
-Next, fill out the form. The sections below provide information on the data needed
+The sections below provide information on the data needed
 for each of the fields and where to look for information.
-
 
 #### Project Name
 
@@ -97,12 +100,10 @@ account and is usually in the format of \[project name\]-app-\[application name\
 For example, an ORCA disaster recovery OU project name may look like the following
 orca-app-dr-sandbox-1234.
 
-
 #### Account Type:
 
 This is the OU environment the bucket resides in. Typical values for this field
 are Sandbox, SIT, UAT, and Production.
-
 
 #### Business Justification:
 
@@ -116,19 +117,26 @@ an example of a justification.
 > seamlessly perform these functions and provide operators with the capability to
 > test and verify disaster recovery scenarios.
 
-
 #### Bucket Names(s):
 
 This is the name of the ORCA archive bucket created in the Disaster Recover OU.
 Below is an example name of an ORCA archive bucket and ORCA report bucket.
 
-> sandbox-orca-glacier-archive
-> sandbox-orca-reports
+> PREFIX-orca-archive
+> PREFIX-orca-reports
 
 #### Policy:
 
 The policy section is the JSON policy requested for the ORCA archive bucket in
 the Disaster Recovery OU.
+See [the section below](#via-aws-gui) for policy document examples.
+
+### Via AWS GUI
+
+For each of the buckets listed below
+go to AWS, open the bucket in question, click "Permissions", 
+then under "Bucket policy" click "Edit".
+The policy given, once modified, can be pasted into this form.
 
 ##### Archive Bucket:
 
@@ -137,13 +145,13 @@ modifications, which will be detailed below.
 
 ```json
 {
-   "Version":"2012-10-17",
-   "Statement":[
+   "Version": "2012-10-17",
+   "Statement": [
       {
-         "Sid":"Cross Account Access",
-         "Effect":"Allow",
-         "Principal":{
-            "AWS":"arn:aws:iam::012345678912:root"
+         "Sid": "Cross Account Access",
+         "Effect": "Allow",
+         "Principal": {
+            "AWS": "arn:aws:iam::012345678912:root"
          },
          "Action":[
             "s3:GetObject*",
@@ -155,25 +163,25 @@ modifications, which will be detailed below.
             "s3:PutInventoryConfiguration",
             "s3:ListBucketVersions"
          ],
-         "Resource":[
-            "arn:aws:s3:::sandbox-orca-glacier-archive",
-            "arn:aws:s3:::sandbox-orca-glacier-archive/*"
+         "Resource": [
+            "arn:aws:s3:::PREFIX-orca-archive",
+            "arn:aws:s3:::PREFIX-orca-archive/*"
          ]
       },
       {
-         "Sid":"Cross Account Write Access",
-         "Effect":"Allow",
-         "Principal":{
-            "AWS":"arn:aws:iam::012345678912:root"
+         "Sid": "Cross Account Write Access",
+         "Effect": "Allow",
+         "Principal": {
+            "AWS": "arn:aws:iam::012345678912:root"
          },
-         "Action":"s3:PutObject*",
-         "Resource":[
-            "arn:aws:s3:::sandbox-orca-glacier-archive/*"
+         "Action": "s3:PutObject*",
+         "Resource": [
+            "arn:aws:s3:::PREFIX-orca-archive/*"
          ],
-         "Condition":{
-            "StringEquals":{
-               "s3:x-amz-acl":"bucket-owner-full-control",
-               "s3:x-amz-storage-class":[
+         "Condition": {
+            "StringEquals": {
+               "s3:x-amz-acl": "bucket-owner-full-control",
+               "s3:x-amz-storage-class": [
                   "GLACIER",
                   "DEEP_ARCHIVE"
                ]
@@ -204,7 +212,7 @@ aws sts get-caller-identity
 Replace the number in `arn:aws:iam::012345678912:root` with the value of your account number.
 
 The Resource value is the bucket and bucket paths that the Cumulus application
-can access. Replace `sandbox-orca-glacier-archive` with the name
+can access. Replace `PREFIX-orca-archive` with the name
 of the Orca archive bucket created in the previous section.
 
 ##### Reports Bucket:
@@ -231,25 +239,25 @@ modifications, which will be detailed below.
         "s3:PutBucketNotification"
       ],
       "Resource": [
-        "arn:aws:s3:::sandbox-orca-glacier-archive",
-        "arn:aws:s3:::sandbox-orca-glacier-archive/*"
+        "arn:aws:s3:::PREFIX-orca-reports",
+        "arn:aws:s3:::PREFIX-orca-reports/*"
       ]
     },
     {
-      "Sid": "Inventory-sandbox-orca-glacier-archive",
+      "Sid": "Inventory-PREFIX-orca-reports",
       "Effect": "Allow",
       "Principal": {
         "Service": "s3.amazonaws.com"
       },
       "Action": "s3:PutObject",
-      "Resource": "arn:aws:s3:::sandbox-orca-glacier-archive/*",
+      "Resource": "arn:aws:s3:::PREFIX-orca-reports/*",
       "Condition": {
         "StringEquals": {
       	  "s3:x-amz-acl": "bucket-owner-full-control",
       	  "aws:SourceAccount": "000000000000"
         },
       	"ArnLike": {
-      	  "aws:SourceArn": "arn:aws:s3:::sandbox-orca-glacier-archive"
+      	  "aws:SourceArn": "arn:aws:s3:::PREFIX-orca-reports"
       	}
       }
     }
@@ -257,7 +265,7 @@ modifications, which will be detailed below.
 }
 ```
 The Principal value is the AWS root user for your Cumulus application that will
-access the ORCA archive bucket.
+access the ORCA reports bucket.
 See the Archive Bucket instructions for assistance getting this value.
 
 Replace the number in `arn:aws:iam::012345678912:root` with the value of your account number.
@@ -266,5 +274,5 @@ See the Archive Bucket instructions for assistance getting this value.
 Replace the number `000000000000` with your DR account number.
 
 The Resource value is the bucket and bucket paths that the Cumulus application
-can access. Replace `sandbox-orca-glacier-archive` with the name
-of the Orca archive bucket created in the previous section.
+can access. Replace `PREFIX-orca-reports` with the name
+of the Orca reports bucket created in the previous section.
