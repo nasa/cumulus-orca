@@ -63,7 +63,7 @@ resource "aws_s3_bucket_inventory" "inventory-report" {
   for_each = toset(local.orca_bucket_names)
 
   bucket = each.key
-  name   = "${var.prefix}-${each.key}-inventory-report"
+  name   = "${each.key}-inventory"
 
   included_object_versions = "All"
   optional_fields = ["Size", "LastModifiedDate", "StorageClass", "ETag"]
