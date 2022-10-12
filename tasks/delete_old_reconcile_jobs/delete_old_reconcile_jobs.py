@@ -8,7 +8,8 @@ import time
 from datetime import datetime, timedelta, timezone
 from typing import Dict, Union
 
-from cumulus_logger import CumulusLogger
+from aws_lambda_powertools import Logger
+from aws_lambda_powertools.utilities.typing import LambdaContext  # noqa
 from orca_shared.database import shared_db
 from sqlalchemy import text
 from sqlalchemy.future import Engine
@@ -18,7 +19,8 @@ OS_ENVIRON_INTERNAL_RECONCILIATION_EXPIRATION_DAYS = (
     "INTERNAL_RECONCILIATION_EXPIRATION_DAYS"
 )
 
-LOGGER = CumulusLogger(name="ORCA")
+# Set AWS powertools logger
+LOGGER = Logger()
 
 
 def task(
@@ -213,6 +215,7 @@ def delete_jobs_older_than_x_days_sql() -> text:  # pragma: no cover
     )
 
 
+@LOGGER.inject_lambda_context(log_event=True)
 def handler(event: Dict[str, Dict[str, Dict[str, Union[str, int]]]], context) -> None:
     """
     Lambda handler. Deletes old internal reconciliation reports, reducing DB size.
@@ -226,8 +229,6 @@ def handler(event: Dict[str, Dict[str, Dict[str, Union[str, int]]]], context) ->
         INTERNAL_RECONCILIATION_EXPIRATION_DAYS (int):
             Only reports updated before this many days ago will be deleted.
     """
-    LOGGER.setMetadata(event, context)
-
     # get the secret ARN from the env variable
     try:
         db_connect_info_secret_arn = os.environ[OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN]

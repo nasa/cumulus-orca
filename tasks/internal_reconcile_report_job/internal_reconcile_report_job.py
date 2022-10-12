@@ -4,7 +4,8 @@ from http import HTTPStatus
 from typing import Any, Dict, List, Union
 
 import fastjsonschema as fastjsonschema
-from cumulus_logger import CumulusLogger
+from aws_lambda_powertools import Logger
+from aws_lambda_powertools.utilities.typing import LambdaContext  # noqa
 from fastjsonschema import JsonSchemaException
 from orca_shared.database import shared_db
 from orca_shared.database.shared_db import retry_operational_error
@@ -25,7 +26,8 @@ REPORT_TOTALS_ORPHAN_KEY = "orphan"
 REPORT_TOTALS_PHANTOM_KEY = "phantom"
 REPORT_TOTALS_CATALOG_MISMATCH_KEY = "catalogMismatch"
 
-LOGGER = CumulusLogger()
+# Set AWS powertools logger
+LOGGER = Logger()
 
 PAGE_SIZE = 100
 
@@ -187,6 +189,7 @@ def check_env_variable(env_name: str) -> str:
     return env_value
 
 
+@LOGGER.inject_lambda_context(log_event=True)
 def handler(
         event: Dict[str, Union[str, int]], context: Any
 ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
@@ -208,8 +211,6 @@ def handler(
             500 if an error occurs when querying the database.
     """
     try:
-        LOGGER.setMetadata(event, context)
-
         try:
             _VALIDATE_INPUT(event)
         except JsonSchemaException as json_schema_exception:

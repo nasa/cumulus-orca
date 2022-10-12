@@ -8,10 +8,12 @@ import re
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Union
 
-# Third party libraries
 import boto3
+
+# Third party libraries
+from aws_lambda_powertools import Logger
+from aws_lambda_powertools.utilities.typing import LambdaContext  # noqa
 from boto3.s3.transfer import MB, TransferConfig
-from cumulus_logger import CumulusLogger
 from run_cumulus_task import run_cumulus_task
 
 import sqs_library
@@ -23,8 +25,9 @@ CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = "s3MultipartChunksizeMb"
 CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY = "excludedFileExtensions"
 CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY = "defaultBucketOverride"
 CONFIG_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY = "defaultStorageClassOverride"
-# Set Cumulus LOGGER
-LOGGER = CumulusLogger()
+
+# Set AWS powertools logger
+LOGGER = Logger()
 
 FILE_BUCKET_KEY = "bucket"
 FILE_FILEPATH_KEY = "key"
@@ -350,6 +353,7 @@ def get_storage_class(config: Dict[str, Any]) -> str:
 
 
 # handler that is provided to aws lambda
+@LOGGER.inject_lambda_context(log_event=True)
 def handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any:
     """Lambda handler. Runs a cumulus task that
     Copies the files in {event}['input']

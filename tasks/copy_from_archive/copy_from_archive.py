@@ -8,11 +8,12 @@ import os
 import time
 from typing import Any, Dict, List, Optional, Union
 
-import aws_lambda_powertools
-
-# noinspection PyPackageRequirements
 import boto3
 import fastjsonschema
+
+# noinspection PyPackageRequirements
+from aws_lambda_powertools import Logger
+from aws_lambda_powertools.utilities.typing import LambdaContext  # noqa
 from boto3.s3.transfer import MB, TransferConfig
 from botocore.client import BaseClient
 from botocore.exceptions import ClientError
@@ -37,7 +38,8 @@ INPUT_TARGET_BUCKET_KEY = "restoreDestination"
 INPUT_SOURCE_BUCKET_KEY = "sourceBucket"
 INPUT_MULTIPART_CHUNKSIZE_MB_KEY = "s3MultipartChunksizeMb"
 
-LOGGER = aws_lambda_powertools.Logger()
+# Set AWS powertools logger
+LOGGER = Logger()
 
 # Generating schema validators can take time, so do it once and reuse.
 try:
@@ -230,6 +232,7 @@ def copy_object(
 
 
 # noinspection PyUnusedLocal
+@LOGGER.inject_lambda_context(log_event=True)
 def handler(
     event: Dict[str, Any], context: object
 ) -> None:  # pylint: disable-msg=unused-argument
@@ -258,7 +261,6 @@ def handler(
         The same dict that is returned for a successful copy will be included in the
         message, with 'success' = False for the files for which the copy failed.
     """
-    LOGGER.setMetadata(event, context)
     _INPUT_VALIDATE(event)
 
     try:

@@ -6,12 +6,12 @@ Description:  Extracts the keys (filepaths) for a granule's files from a Cumulus
 
 import re
 from typing import Dict, List
-
-from cumulus_logger import CumulusLogger
+from aws_lambda_powertools import Logger
+from aws_lambda_powertools.utilities.typing import LambdaContext  # noqa
 from run_cumulus_task import run_cumulus_task
 
-# instantiate Cumulus logger
-LOGGER = CumulusLogger(name="ORCA")
+# Set AWS powertools logger
+LOGGER = Logger()
 
 CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY = "excludedFileExtensions"
 CONFIG_FILE_BUCKETS_KEY = "fileBucketMaps"
@@ -167,7 +167,7 @@ def should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> b
             return True
     return False
 
-
+@LOGGER.inject_lambda_context(log_event=True)
 def handler(event, context):  # pylint: disable-msg=unused-argument
     """Lambda handler. Extracts the key's for a granule from an input dict.
 

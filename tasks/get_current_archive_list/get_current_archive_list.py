@@ -15,7 +15,7 @@ from typing import Any, Dict, List
 import boto3
 import fastjsonschema as fastjsonschema
 import orca_shared.reconciliation.shared_reconciliation
-from cumulus_logger import CumulusLogger
+from aws_lambda_powertools import Logger
 from orca_shared.database import shared_db
 from orca_shared.reconciliation import (
     OrcaStatus,
@@ -47,7 +47,9 @@ OUTPUT_JOB_ID_KEY = "jobId"
 OUTPUT_ORCA_ARCHIVE_LOCATION_KEY = "orcaArchiveLocation"
 OUTPUT_RECEIPT_HANDLE_KEY = "messageReceiptHandle"
 
-LOGGER = CumulusLogger(name="ORCA")
+# Set AWS powertools logger
+LOGGER = Logger()
+
 # Generating schema validators can take time, so do it once and reuse.
 try:
     with open("schemas/input.json", "r") as raw_schema:
