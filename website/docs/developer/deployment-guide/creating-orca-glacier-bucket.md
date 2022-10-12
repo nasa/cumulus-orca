@@ -40,8 +40,11 @@ aws s3api create-bucket \
     --create-bucket-configuration "LocationConstraint=us-west-2"
 ```
 
-- **\[orca bucket name\]** - This is the name of your bucket. Example: `PREFIX-orca-archive` and `PREFIX-orca-reports`
 - **\[AWS OU profile\]** - This is the AWS profile name to use to connect to the proper OU where the bucket will be created.
+- **\[orca bucket name\]** - This is the name of your bucket. Example: `PREFIX-orca-archive` and `PREFIX-orca-reports`
+  :::note
+  Due to limits on report names, the maximum length of a non-report bucket's name is 54 characters.
+  :::
 
 :::note
 
