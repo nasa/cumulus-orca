@@ -3,10 +3,10 @@ Name: create_db.py
 
 Description: Creates the current version on the ORCA database.
 """
-from typing import Dict, List
+from typing import List
 
 from orca_shared.database.entities import PostgresConnectionInfo
-from orca_shared.database.shared_db import get_admin_connection, logger
+from orca_shared.database.shared_db import logger
 from orca_shared.database.use_cases import create_admin_uri
 from orca_shared.reconciliation.shared_reconciliation import (
     get_partition_name_from_bucket_name,

@@ -9,12 +9,9 @@ from typing import Any, Dict, List
 
 from orca_shared.database.adapters.api import get_configuration
 from orca_shared.database.entities import PostgresConnectionInfo
-from orca_shared.database.shared_db import (
-    logger,
-    retry_operational_error, get_admin_connection,
-)
+from orca_shared.database.shared_db import logger, retry_operational_error
 from orca_shared.database.use_cases import create_admin_uri
-from sqlalchemy import text, create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.future import Connection
 
 from install.create_db import create_database, create_fresh_orca_install
