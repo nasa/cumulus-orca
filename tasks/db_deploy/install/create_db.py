@@ -5,22 +5,25 @@ Description: Creates the current version on the ORCA database.
 """
 from typing import Dict, List
 
+from orca_shared.database.entities import PostgresConnectionInfo
 from orca_shared.database.shared_db import get_admin_connection, logger
+from orca_shared.database.use_cases import create_admin_uri
 from orca_shared.reconciliation.shared_reconciliation import (
     get_partition_name_from_bucket_name,
 )
+from sqlalchemy import create_engine
 from sqlalchemy.future import Connection
 
 import install.orca_sql as sql
 
 
-def create_fresh_orca_install(config: Dict[str, str], orca_buckets: List[str]) -> None:
+def create_fresh_orca_install(config: PostgresConnectionInfo, orca_buckets: List[str]) -> None:
     """
     This task will create the ORCA roles, users, schema, and tables needed
     by the ORCA application as a fresh installation.
 
     Args:
-        config: Dictionary with database connection information
+        config: Database connection information
         orca_buckets: List of ORCA buckets needed to create
                                   partitioned tables for reporting.
 
@@ -30,7 +33,8 @@ def create_fresh_orca_install(config: Dict[str, str], orca_buckets: List[str]) -
     # Assume the database has been created at this point. Connect to the ORCA
     # database as a superuser and create the roles, users,  schema, and
     # objects.
-    admin_app_connection = get_admin_connection(config, config["user_database"])
+    admin_app_connection = \
+        create_engine(create_admin_uri(config, logger, config.user_database_name), future=True)
 
     with admin_app_connection.connect() as conn:
         # Create the roles, schema and user
@@ -57,12 +61,12 @@ def create_fresh_orca_install(config: Dict[str, str], orca_buckets: List[str]) -
         conn.commit()
 
 
-def create_database(config: Dict[str, str]) -> None:
+def create_database(config: PostgresConnectionInfo) -> None:
     """
     Creates the orca database
     """
     # Create the connection as an admin
-    postgres_admin_engine = get_admin_connection(config)
+    postgres_admin_engine = create_engine(create_admin_uri(config, logger), future=True)
     # Connect as admin user to the postgres database
     with postgres_admin_engine.connect() as connection:
         # Code to create the database
@@ -96,17 +100,6 @@ def create_app_schema_role_users(
     Returns:
         None
     """
-    if app_username is None or len(app_username) == 0:
-        logger.critical("Username must be non-empty.")
-        raise Exception("Username must be non-empty.")
-    if len(app_username) > 63:
-        logger.critical("Username must be less than 64 characters.")
-        raise Exception("Username must be less than 64 characters.")
-
-    if app_password is None or len(app_password) < 12:
-        logger.critical("User password must be at least 12 characters long.")
-        raise Exception("User password must be at least 12 characters long.")
-
     # Create the roles first since they are needed by schema and users
     logger.debug("Creating the ORCA dbo role ...")
     connection.execute(sql.dbo_role_sql(db_name, admin_username))

@@ -3,16 +3,19 @@ Name: migrate.py
 
 Description: Migrates the ORCA schema from version 4 to version 5.
 """
-from typing import Dict, List
+from typing import List
 
 import orca_shared
-from orca_shared.database.shared_db import get_admin_connection, logger
+from orca_shared.database.entities import PostgresConnectionInfo
+from orca_shared.database.shared_db import logger
+from orca_shared.database.use_cases import create_admin_uri
+from sqlalchemy import create_engine
 
 import migrations.migrate_versions_4_to_5.migrate_sql as sql
 
 
 def migrate_versions_4_to_5(
-    config: Dict[str, str], is_latest_version: bool, orca_buckets: List[str]
+    config: PostgresConnectionInfo, is_latest_version: bool, orca_buckets: List[str]
 ) -> None:
     """
     Performs the migration of the ORCA schema from version 4 to version 5 of
@@ -26,18 +29,17 @@ def migrate_versions_4_to_5(
     - reconcile_orphan_report
 
     Args:
-        config (Dict): Connection information for the database.
-        is_latest_version (bool): Flag to determine if version 5 is the latest
-                                  schema version.
-        orca_buckets: List[str]): List of ORCA buckets names needed to create
-                                  partition tables for v5.
+        config: Connection information for the database.
+        is_latest_version: Flag to determine if version 5 is the latest schema version.
+        orca_buckets: List of ORCA buckets names needed to create partition tables for v5.
     Returns:
         None
     """
     # Get the admin engine to the app database
-    admin_app_connection = get_admin_connection(config, config["user_database"])
+    user_admin_engine = \
+        create_engine(create_admin_uri(config, logger, config.user_database_name), future=True)
 
-    with admin_app_connection.connect() as connection:
+    with user_admin_engine.connect() as connection:
 
         # Create extension for the database as the admin user
         logger.debug("Creating extension aws_s3 ...")

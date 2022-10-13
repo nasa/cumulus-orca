@@ -7,13 +7,14 @@ Description: Performs database installation and migration for the ORCA schema.
 import os
 from typing import Any, Dict, List
 
+from orca_shared.database.adapters.api import get_configuration
+from orca_shared.database.entities import PostgresConnectionInfo
 from orca_shared.database.shared_db import (
-    get_admin_connection,
-    get_configuration,
     logger,
-    retry_operational_error,
+    retry_operational_error, get_admin_connection,
 )
-from sqlalchemy import text
+from orca_shared.database.use_cases import create_admin_uri
+from sqlalchemy import text, create_engine
 from sqlalchemy.future import Connection
 
 from install.create_db import create_database, create_fresh_orca_install
@@ -68,7 +69,7 @@ def handler(
     return task(config, orca_buckets)
 
 
-def task(config: Dict[str, str], orca_buckets: List[str]) -> None:
+def task(config: PostgresConnectionInfo, orca_buckets: List[str]) -> None:
     """
     Checks for the ORCA database and throws an error if it does not exist.
     Determines if a fresh install or a migration is needed for the ORCA
@@ -82,15 +83,16 @@ def task(config: Dict[str, str], orca_buckets: List[str]) -> None:
         Exception: If database does not exist.
     """
     # Create the engines
-    postgres_admin_engine = get_admin_connection(config)
-    user_admin_engine = get_admin_connection(config, config["user_database"])
+    postgres_admin_engine = create_engine(create_admin_uri(config, logger), future=True)
+    user_admin_engine = \
+        create_engine(create_admin_uri(config, logger, config.user_database_name), future=True)
 
     # Connect as admin user to the postgres database
     with postgres_admin_engine.connect() as connection:
         # Check if database exists. If not, start from scratch.
-        if not app_db_exists(connection, config["user_database"]):
+        if not app_db_exists(connection, config.user_database_name):
             logger.info(
-                f"The ORCA database {config['user_database']} does not exist, "
+                f"The ORCA database {config.user_database_name} does not exist, "
                 "or the server could not be connected to."
             )
             create_database(config)

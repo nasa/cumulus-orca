@@ -3,14 +3,16 @@ Name: migrate.py
 
 Description: Migrates the ORCA schema from version 5 to version 6.
 """
-from typing import Dict
 
-from orca_shared.database.shared_db import get_admin_connection, logger
+from orca_shared.database.entities import PostgresConnectionInfo
+from orca_shared.database.shared_db import logger
+from orca_shared.database.use_cases import create_admin_uri
+from sqlalchemy import create_engine
 
 import migrations.migrate_versions_5_to_6.migrate_sql as sql
 
 
-def migrate_versions_5_to_6(config: Dict[str, str], is_latest_version: bool) -> None:
+def migrate_versions_5_to_6(config: PostgresConnectionInfo, is_latest_version: bool) -> None:
     """
     Performs the migration of the ORCA schema from version 5 to version 6 of
     the ORCA schema. This includes adding the
@@ -27,9 +29,10 @@ def migrate_versions_5_to_6(config: Dict[str, str], is_latest_version: bool) -> 
         None
     """
     # Get the admin engine to the app database
-    admin_app_connection = get_admin_connection(config, config["user_database"])
+    user_admin_engine = \
+        create_engine(create_admin_uri(config, logger, config.user_database_name), future=True)
 
-    with admin_app_connection.connect() as connection:
+    with user_admin_engine.connect() as connection:
 
         # Change to DBO role and set search path
         logger.debug("Changing to the dbo role to create objects ...")
