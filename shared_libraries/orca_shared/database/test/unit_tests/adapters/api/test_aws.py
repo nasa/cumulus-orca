@@ -1,6 +1,6 @@
 import os
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch, MagicMock
 
 import boto3
 from moto import mock_secretsmanager
@@ -46,13 +46,18 @@ class TestAWS(unittest.TestCase):
         },
         clear=True,
     )
-    def test_get_configuration_happy_path(self):
+    @patch("orca_shared.database.adapters.api.aws.validate_config")
+    def test_get_configuration_happy_path(
+        self,
+        mock_validate_config: MagicMock,
+    ):
         """
         Get secret value and return data class.
         """
+        mock_logger = Mock()
+        testing_config = aws.get_configuration(self.db_connect_info_secret_arn, mock_logger)
 
-        testing_config = aws.get_configuration(self.db_connect_info_secret_arn, logger=Mock())
-
+        mock_validate_config.assert_called_once_with(testing_config, mock_logger)
         self.assertEqual(PostgresConnectionInfo(  # nosec
             admin_database_name="admin_db",
             admin_password="admin123",
