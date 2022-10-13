@@ -6,6 +6,7 @@ Description:  Extracts the keys (filepaths) for a granule's files from a Cumulus
 
 import re
 from typing import Dict, List, Union
+
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
 from run_cumulus_task import run_cumulus_task
@@ -40,7 +41,7 @@ def task(event, context):  # pylint: disable-msg=unused-argument
         Raises:
             ExtractFilePathsError: An error occurred parsing the input.
     """
-    LOGGER.debug("event: {event}", event=event)
+    LOGGER.debug(f"event: {event}")
     try:
         config = event["config"]
         exclude_file_types = config.get(CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY, None)
@@ -56,9 +57,9 @@ def task(event, context):  # pylint: disable-msg=unused-argument
                 f"list {exclude_file_types} was found."
             )
     except KeyError as ke:
-        message = "Key {key} is missing from the event configuration: {config}"
-        LOGGER.error(message, key=ke, config=config)
-        raise KeyError(message.format(key=ke, config=config))
+        message = f"Key {ke} is missing from the event configuration: {config}"
+        LOGGER.error(message)
+        raise KeyError(message)
     result = {}
     try:
         regex_buckets = get_regex_buckets(event)
@@ -86,9 +87,7 @@ def task(event, context):  # pylint: disable-msg=unused-argument
                         raise ExtractFilePathsError(f"No matching regex for '{file_key}'")
                     destination_bucket = regex_buckets[matching_regex]
                     LOGGER.debug(
-                        "Found retrieval destination {destination_bucket} for {file}",
-                        destination_bucket=destination_bucket,
-                        file=file_name,
+                        f"Found retrieval destination {destination_bucket} for {file_name}"
                     )
 
                     files.append(
@@ -169,7 +168,8 @@ def should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> b
 
 
 @LOGGER.inject_lambda_context(log_event=True)
-def handler(event: Dict[str, Union[str, int]], context: LambdaContext):  # pylint: disable-msg=unused-argument
+def handler(event: Dict[str, Union[str, int]],
+            context: LambdaContext):  # pylint: disable-msg=unused-argument
     """Lambda handler. Extracts the key's for a granule from an input dict.
 
     Args:
