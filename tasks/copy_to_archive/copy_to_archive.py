@@ -12,7 +12,7 @@ import boto3
 
 # Third party libraries
 from aws_lambda_powertools import Logger
-from aws_lambda_powertools.utilities.typing import LambdaContext  # noqa
+from aws_lambda_powertools.utilities.typing import LambdaContext
 from boto3.s3.transfer import MB, TransferConfig
 from run_cumulus_task import run_cumulus_task
 
@@ -354,7 +354,7 @@ def get_storage_class(config: Dict[str, Any]) -> str:
 
 # handler that is provided to aws lambda
 @LOGGER.inject_lambda_context(log_event=True)
-def handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any:
+def handler(event: Dict[str, Union[List[str], Dict]], context: LambdaContext) -> Any:
     """Lambda handler. Runs a cumulus task that
     Copies the files in {event}['input']
     to the default ORCA bucket. Environment variables must be set to
@@ -378,7 +378,8 @@ def handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any:
             See schemas/input.json and schemas/config.json for more information.
 
 
-        context: An object required by AWS Lambda. Unused.
+        context: This object provides information about the lambda invocation, function,
+            and execution env.
 
     Returns:
         The result of the cumulus task. See schemas/output.json for more information.

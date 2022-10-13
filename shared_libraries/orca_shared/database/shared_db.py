@@ -12,14 +12,15 @@ import time
 from typing import Any, Callable, Dict, TypeVar
 
 import boto3
-from cumulus_logger import CumulusLogger
+from aws_lambda_powertools import Logger
 from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.future import Engine
 
-# instantiate CumulusLogger
-logger = CumulusLogger(name="ORCA")
+# Set AWS powertools logger
+logger = Logger()
+
 MAX_RETRIES = 3  # number of times to retry.
 BACKOFF_FACTOR = 2  # Value of the factor used to backoff
 INITIAL_BACKOFF_IN_SECONDS = 1  # Number of seconds to sleep the first time through.
@@ -72,7 +73,7 @@ def get_configuration(db_connect_info_secret_arn: str) -> Dict[str, str]:
             "Successfully retrieved db login info for both user and admin as a dictionary."
         )
     except Exception:
-        logger.critical("Failed to retrieve secret.", exc_info=True)
+        logger.critical("Failed to retrieve secret.")
         raise Exception("Failed to retrieve secret manager value.")
 
     # return the config dict
@@ -188,8 +189,7 @@ def retry_operational_error(
                     if total_retries == max_retries:
                         # Log it and re-raise if we maxed our retries + initial attempt
                         logger.error(
-                            "Encountered Errors {total_attempts} times. Reached max retry limit.",
-                            total_attempts=total_retries,
+                            f"Encountered Errors {total_retries} times. Reached max retry limit.",
                         )
                         raise
                     else:
@@ -199,15 +199,13 @@ def retry_operational_error(
                             + random.uniform(0, 1)  # nosec
                         )
                         logger.error(
-                            "Encountered OperationalError on attempt {total_attempts}. "
-                            "Sleeping {backoff_time} seconds.",
-                            total_attempts=total_retries,
-                            backoff_time=backoff_time,
+                            f"Encountered OperationalError on attempt {total_retries}. "
+                            f"Sleeping {backoff_time} seconds.",
                         )
                         time.sleep(backoff_time)
                         total_retries += 1
                 except Exception as ex:
-                    logger.error("Encountered a non-retriable error: {ex}", ex=ex)
+                    logger.error(f"Encountered a non-retriable error: {ex}")
                     raise ex
 
         # Return our wrapper

@@ -1,15 +1,15 @@
 import json
-import logging
 import os
 
 import boto3
+from aws_lambda_powertools import Logger
 
 from orca_shared.database.entities.postgres_connection_info import (
     PostgresConnectionInfo,
 )
 
 
-def get_configuration(db_connect_info_secret_arn: str, logger: logging.Logger) \
+def get_configuration(db_connect_info_secret_arn: str, logger: Logger()) \
         -> PostgresConnectionInfo:
     """
     Create a dictionary of configuration values based on environment variables
@@ -57,7 +57,7 @@ def get_configuration(db_connect_info_secret_arn: str, logger: logging.Logger) \
             "Successfully retrieved db login info for both user and admin as a dictionary."
         )
     except Exception:
-        logger.critical("Failed to retrieve secret.", exc_info=True)
+        logger.critical("Failed to retrieve secret.")
         raise Exception("Failed to retrieve secret manager value.")
 
     # return the config dict

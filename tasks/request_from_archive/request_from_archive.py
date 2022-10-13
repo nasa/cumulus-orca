@@ -11,6 +11,8 @@ from typing import Any, Dict, List, Optional, Union
 
 # noinspection PyPackageRequirements
 import boto3
+from aws_lambda_powertools import Logger
+from aws_lambda_powertools.utilities.typing import LambdaContext
 
 # noinspection PyPackageRequirements
 from botocore.client import BaseClient
@@ -63,7 +65,8 @@ FILE_FILENAME_KEY = "filename"
 FILE_LAST_UPDATE_KEY = "lastUpdate"
 FILE_MULTIPART_CHUNKSIZE_MB_KEY = "s3MultipartChunksizeMb"
 
-LOGGER = shared_recovery.LOGGER
+# Set AWS powertools logger
+LOGGER = Logger()
 
 
 class RestoreRequestError(Exception):
@@ -343,7 +346,7 @@ def inner_task(
                 continue
         else:
             message = f"Unable to send message to QUEUE '{status_update_queue_url}'"
-            LOGGER.critical(message, exec_info=True)
+            LOGGER.critical(message)
             raise Exception(message)
 
         # Process the granules by initiating restoration from archive and updating the
@@ -469,8 +472,7 @@ def process_granule(
             # send message to DB SQS
             # post to DB-queue. Retry using exponential delay if it fails
             LOGGER.debug(
-                "Sending status update information for {filename} to the QUEUE",
-                filename=a_file[FILE_FILENAME_KEY],
+                f"Sending status update information for {a_file[FILE_FILENAME_KEY]} to the QUEUE",
             )
             for attempt in range(max_retries + 1):
                 try:
@@ -493,7 +495,7 @@ def process_granule(
                     continue
             else:
                 message = f"Unable to send message to QUEUE '{status_update_queue_url}'"
-                LOGGER.critical(message, exec_info=True)
+                LOGGER.critical(message)
                 raise Exception(message)
 
         # Append updated file information to the file array
@@ -591,7 +593,8 @@ def restore_object(
     )
 
 
-def handler(event: Dict[str, Any], context):  # pylint: disable-msg=unused-argument
+@LOGGER.inject_lambda_context(log_event=True)
+def handler(event: Dict[str, Any], context: LambdaContext):  # pylint: disable-msg=unused-argument
     """Lambda handler. Initiates a restore_object request from archive for each file of a granule.
     Note that this function is set up to accept a list of granules, (because Cumulus sends a list),
     but at this time, only 1 granule will be accepted.
@@ -617,7 +620,8 @@ def handler(event: Dict[str, Any], context):  # pylint: disable-msg=unused-argum
                 The bucket to use if destBucket is not set.
         Args:
             event: See schemas/input.json and combine with knowledge of CumulusMessageAdapter.
-            context: An object required by AWS Lambda. Unused.
+            context: This object provides information about the lambda invocation, function,
+                and execution env.
         Returns:
             A dict with the value at 'payload' matching schemas/output.json
                 Combine with knowledge of CumulusMessageAdapter for other properties.
@@ -627,5 +631,4 @@ def handler(event: Dict[str, Any], context):  # pylint: disable-msg=unused-argum
             will be included in the message, with 'success' = False for
             the files for which the restore request failed to submit.
     """
-    LOGGER.setMetadata(event, context)
     return run_cumulus_task(task, event, context)

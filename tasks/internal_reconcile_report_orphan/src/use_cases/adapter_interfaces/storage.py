@@ -1,4 +1,4 @@
-import logging
+from aws_lambda_powertools import Logger
 
 from src.entities.orphan import OrphanRecordFilter, OrphanRecordPage
 
@@ -10,5 +10,5 @@ class OrphansPageStorageInterface:
 
     def get_orphans_page(self,
                          orphan_record_filter: OrphanRecordFilter,
-                         logger: logging.Logger
+                         logger: Logger()
                          ) -> OrphanRecordPage: ...

@@ -9,7 +9,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Dict, Union
 
 from aws_lambda_powertools import Logger
-from aws_lambda_powertools.utilities.typing import LambdaContext  # noqa
+from aws_lambda_powertools.utilities.typing import LambdaContext
 from orca_shared.database import shared_db
 from sqlalchemy import text
 from sqlalchemy.future import Engine
@@ -216,12 +216,14 @@ def delete_jobs_older_than_x_days_sql() -> text:  # pragma: no cover
 
 
 @LOGGER.inject_lambda_context(log_event=True)
-def handler(event: Dict[str, Dict[str, Dict[str, Union[str, int]]]], context) -> None:
+def handler(event: Dict[str, Dict[str, Dict[str, Union[str, int]]]],
+            context: LambdaContext) -> None:
     """
     Lambda handler. Deletes old internal reconciliation reports, reducing DB size.
     Args:
         event: An object passed through by AWS. Unused.
-        context: An object passed through by AWS. Used for tracking.
+        context: This object provides information about the lambda invocation, function,
+            and execution env.
     Environment Vars:
         DB_CONNECT_INFO_SECRET_ARN (string):
             Secret ARN of the AWS secretsmanager secret for connecting to the database.

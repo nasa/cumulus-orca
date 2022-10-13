@@ -6,7 +6,7 @@ Description:  Unit tests for db_deploy.py.
 import os
 import unittest
 import uuid
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import db_deploy
 
@@ -34,6 +34,7 @@ class TestDbDeployFunctions(unittest.TestCase):
         # Set values for the test
         # todo: Switch to randomized values generated per-test.
         event = {"orcaBuckets": ["orca_worm", "orca_versioned", "orca_special"]}
+        context = Mock()
         config = {
             "admin_database": "admin_db",
             "admin_password": "admin123",
@@ -47,7 +48,7 @@ class TestDbDeployFunctions(unittest.TestCase):
         mock_get_configuration.return_value = config
 
         # Run the function
-        db_deploy.handler(event, {})
+        db_deploy.handler(event, context)
 
         # Check tests
         mock_task.assert_called_with(config, event["orcaBuckets"])
@@ -72,6 +73,7 @@ class TestDbDeployFunctions(unittest.TestCase):
             {"orcaBuckets": "abcds"},
             {},
         ]
+        context = Mock()
         config = {
             "admin_database": "admin_db",
             "admin_password": "admin123",
@@ -88,7 +90,7 @@ class TestDbDeployFunctions(unittest.TestCase):
         for event in events:
             with self.subTest(event=event):
                 with self.assertRaises(ValueError) as ve:
-                    db_deploy.handler(event, {})
+                    db_deploy.handler(event, context)
 
                 value_error_message = str(ve.exception)
                 self.assertEqual(
@@ -202,7 +204,7 @@ class TestDbDeployFunctions(unittest.TestCase):
         mock_perform_migration.assert_called_with(1, config, orca_buckets)
 
     @patch("db_deploy.get_admin_connection")
-    @patch("db_deploy.logger.info")
+    @patch("db_deploy.LOGGER.info")
     @patch("db_deploy.get_migration_version")
     @patch("db_deploy.app_schema_exists")
     @patch("db_deploy.app_db_exists")

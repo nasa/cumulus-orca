@@ -5,13 +5,17 @@ Description: Creates the current version on the ORCA database.
 """
 from typing import Dict, List
 
-from orca_shared.database.shared_db import get_admin_connection, logger
+from aws_lambda_powertools import Logger
+from orca_shared.database.shared_db import get_admin_connection
 from orca_shared.reconciliation.shared_reconciliation import (
     get_partition_name_from_bucket_name,
 )
 from sqlalchemy.future import Connection
 
 import install.orca_sql as sql
+
+# Set AWS powertools logger
+logger = Logger()
 
 
 def create_fresh_orca_install(config: Dict[str, str], orca_buckets: List[str]) -> None:

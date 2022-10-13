@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Union
 
 import fastjsonschema as fastjsonschema
 from aws_lambda_powertools import Logger
-from aws_lambda_powertools.utilities.typing import LambdaContext  # noqa
+from aws_lambda_powertools.utilities.typing import LambdaContext
 from fastjsonschema import JsonSchemaException
 from orca_shared.database import shared_db
 from orca_shared.database.shared_db import retry_operational_error
@@ -239,14 +239,14 @@ def check_env_variable(env_name: str) -> str:
 
 @LOGGER.inject_lambda_context(log_event=True)
 def handler(
-        event: Dict[str, Union[str, int]], context: Any
+        event: Dict[str, Union[str, int]], context: LambdaContext
 ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
     """
     Entry point for the internal_reconcile_report_mismatch Lambda.
     Args:
         event: See schemas/input.json
-        context: An object provided by AWS Lambda. Used for context tracking.
-
+        context: This object provides information about the lambda invocation, function,
+            and execution env.
     Environment Vars:
         DB_CONNECT_INFO_SECRET_ARN (string):
             Secret ARN of the AWS secretsmanager secret for connecting to the database.

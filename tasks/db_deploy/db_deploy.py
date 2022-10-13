@@ -3,14 +3,16 @@ Name: db_deploy.py
 
 Description: Performs database installation and migration for the ORCA schema.
 """
-# Imports
 import os
+
+# Imports
 from typing import Any, Dict, List
 
+from aws_lambda_powertools import Logger
+from aws_lambda_powertools.utilities.typing import LambdaContext
 from orca_shared.database.shared_db import (
     get_admin_connection,
     get_configuration,
-    logger,
     retry_operational_error,
 )
 from sqlalchemy import text
@@ -24,9 +26,13 @@ from migrations.migrate_db import perform_migration
 LATEST_ORCA_SCHEMA_VERSION = 6
 MAX_RETRIES = 3
 
+# Set AWS powertools logger
+LOGGER = Logger()
 
+
+@LOGGER.inject_lambda_context(log_event=True)
 def handler(
-    event: Dict[str, Any], context: object
+    event: Dict[str, Any], context: LambdaContext
 ) -> None:  # pylint: disable-msg=unused-argument
     """
     Lambda handler for db_deploy. The handler generates the database connection
@@ -37,7 +43,8 @@ def handler(
 
     Args:
         event (Dict): Event dictionary passed by AWS.
-        context (object): An object required by AWS Lambda.
+        context: This object provides information about the lambda invocation, function,
+            and execution env.
     Environment Vars:
         DB_CONNECT_INFO_SECRET_ARN (string):
             Secret ARN of the AWS secretsmanager secret
@@ -47,14 +54,11 @@ def handler(
     Raises:
         Exception: If environment or secrets are unavailable.
     """
-    # Set the logging
-    logger.setMetadata(event, context)
-
     # get the secret ARN from the env variable
     try:
         db_connect_info_secret_arn = os.environ["DB_CONNECT_INFO_SECRET_ARN"]
     except KeyError:
-        logger.error("DB_CONNECT_INFO_SECRET_ARN environment value not found.")
+        LOGGER.error("DB_CONNECT_INFO_SECRET_ARN environment value not found.")
         raise
 
     # Get the secrets needed for database connections
@@ -89,7 +93,7 @@ def task(config: Dict[str, str], orca_buckets: List[str]) -> None:
     with postgres_admin_engine.connect() as connection:
         # Check if database exists. If not, start from scratch.
         if not app_db_exists(connection, config["user_database"]):
-            logger.info(
+            LOGGER.info(
                 f"The ORCA database {config['user_database']} does not exist, "
                 "or the server could not be connected to."
             )
@@ -103,7 +107,7 @@ def task(config: Dict[str, str], orca_buckets: List[str]) -> None:
         # Determine if we need a fresh install or need a migration based on if
         # the orca schemas exist or not.
         if app_schema_exists(connection):
-            logger.debug("ORCA schema exists. Checking for schema versions.")
+            LOGGER.debug("ORCA schema exists. Checking for schema versions.")
             # Determine if  a migration is needed.
             current_version = get_migration_version(connection)
 
@@ -111,18 +115,18 @@ def task(config: Dict[str, str], orca_buckets: List[str]) -> None:
             # then nothing to do we are caught up.
             if current_version == LATEST_ORCA_SCHEMA_VERSION:
                 # Nothing to do. Log it and exit
-                logger.info(
+                LOGGER.info(
                     "Current ORCA schema version detected. No migration needed!"
                 )
             else:
                 # Run the migration
-                logger.info("Performing migration of the ORCA schema.")
+                LOGGER.info("Performing migration of the ORCA schema.")
                 perform_migration(current_version, config, orca_buckets)
 
         else:
             # If we got here, the DB existed, but was not correctly populated for whatever reason.
             # Run a fresh install
-            logger.info("Performing full install of ORCA schema.")
+            LOGGER.info("Performing full install of ORCA schema.")
             create_fresh_orca_install(config, orca_buckets)
 
 
@@ -218,12 +222,12 @@ def app_version_table_exists(connection: Connection) -> bool:
     """
     )
 
-    logger.debug("Checking for schema_versions table.")
+    LOGGER.debug("Checking for schema_versions table.")
     results = connection.execute(check_versions_table_sql)
     for row in results.fetchall():
         table_exists = row[0]
 
-    logger.debug(f"schema_versions table exists {table_exists}")
+    LOGGER.debug(f"schema_versions table exists {table_exists}")
 
     return table_exists
 
@@ -255,7 +259,7 @@ def get_migration_version(connection: Connection) -> int:
 
     # If table exists get the latest version from the table
     if app_version_table_exists(connection):
-        logger.debug("Getting current schema version from table.")
+        LOGGER.debug("Getting current schema version from table.")
         results = connection.execute(orca_schema_version_sql)
         for row in results.fetchall():
             schema_version = row[0]

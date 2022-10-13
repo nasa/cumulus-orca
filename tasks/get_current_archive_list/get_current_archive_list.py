@@ -16,6 +16,7 @@ import boto3
 import fastjsonschema as fastjsonschema
 import orca_shared.reconciliation.shared_reconciliation
 from aws_lambda_powertools import Logger
+from aws_lambda_powertools.utilities.typing import LambdaContext
 from orca_shared.database import shared_db
 from orca_shared.reconciliation import (
     OrcaStatus,
@@ -562,14 +563,16 @@ def check_env_variable(env_name: str) -> str:
     return env_value
 
 
-def handler(event: Dict[str, List], context) -> Dict[str, Any]:
+@LOGGER.inject_lambda_context(log_event=True)
+def handler(event: Dict[str, List], context: LambdaContext) -> Dict[str, Any]:
     """
     Lambda handler. Receives a list of s3 events from an SQS queue,
     and loads the s3 inventory specified into postgres.
 
     Args:
         event: Unused. Data is pulled in by contacting INTERNAL_REPORT_QUEUE_URL
-        context: An object passed through by AWS. Used for tracking.
+        context: This object provides information about the lambda invocation, function,
+            and execution env.
     Environment Vars:
         INTERNAL_REPORT_QUEUE_URL (string):
             The URL of the SQS queue the job came from.
@@ -581,7 +584,6 @@ def handler(event: Dict[str, List], context) -> Dict[str, Any]:
 
     Returns: See output.json for details.
     """
-    LOGGER.setMetadata(event, context)
 
     # getting the env variables
     s3_access_key, s3_secret_key = get_s3_credentials_from_secrets_manager(

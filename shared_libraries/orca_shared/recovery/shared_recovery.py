@@ -13,10 +13,10 @@ from typing import Any, Dict, List, Optional
 
 # Third party libraries
 import boto3
-from cumulus_logger import CumulusLogger
+from aws_lambda_powertools import Logger
 
-# Set Cumulus LOGGER
-LOGGER = CumulusLogger(name="ORCA")
+# Set AWS powertools logger
+LOGGER = Logger()
 
 
 class RequestMethod(Enum):
@@ -110,8 +110,8 @@ def create_status_for_job(
         FILES_KEY: files,
     }
 
-    message = "Sending the following data to queue: {new_data}"
-    LOGGER.debug(message, new_data=new_data)
+    message = f"Sending the following data to queue: {new_data}"
+    LOGGER.debug(message)
 
     post_entry_to_fifo_queue(new_data, RequestMethod.NEW_JOB, db_queue_url)
 
@@ -153,8 +153,8 @@ def update_status_for_file(
                 raise ValueError("Error message is required.")
             new_data[ERROR_MESSAGE_KEY] = error_message
 
-    message = "Sending the following data to queue: {new_data}"
-    LOGGER.debug(message, new_data=new_data)
+    message = f"Sending the following data to queue: {new_data}"
+    LOGGER.debug(message)
 
     post_entry_to_fifo_queue(new_data, RequestMethod.UPDATE_FILE, db_queue_url)
 
@@ -178,7 +178,7 @@ def post_entry_to_fifo_queue(
     # TODO: pass AWS region value to function. SHOULD be gotten from environment
     # higher up. Setting this to us-west-2 initially since that is where
     # EOSDIS runs from normally. SEE ORCA-203 https://bugs.earthdata.nasa.ov/browse/ORCA-203
-    LOGGER.debug("Creating SQS resource for {db_queue_url}", db_queue_url=db_queue_url)
+    LOGGER.debug(f"Creating SQS resource for {db_queue_url}")
     mysqs_resource = boto3.resource("sqs", region_name=get_aws_region())
     mysqs = mysqs_resource.Queue(db_queue_url)
 
@@ -203,7 +203,7 @@ def post_entry_to_fifo_queue(
         },
         MessageBody=body,
     )
-    LOGGER.debug("SQS Message Response: {response}", response=json.dumps(response))
+    LOGGER.debug(f"SQS Message Response: {json.dumps(response)}")
 
     # Make sure we didn't have an error sending message
     return_status = response["ResponseMetadata"]["HTTPStatusCode"]
@@ -237,8 +237,7 @@ def post_entry_to_standard_queue(
     # higher up. Setting this to us-west-2 initially since that is where
     # EOSDIS runs from normally. SEE ORCA-203 https://bugs.earthdata.nasa.ov/browse/ORCA-203
     LOGGER.debug(
-        "Creating SQS resource for {recovery_queue_url}",
-        recovery_queue_url=recovery_queue_url,
+        f"Creating SQS resource for {recovery_queue_url}"
     )
     mysqs_resource = boto3.resource("sqs", region_name=get_aws_region())
     mysqs = mysqs_resource.Queue(recovery_queue_url)
@@ -250,7 +249,7 @@ def post_entry_to_standard_queue(
         QueueUrl=recovery_queue_url,
         MessageBody=body,
     )
-    LOGGER.debug("SQS Message Response: {response}", response=json.dumps(response))
+    LOGGER.debug(f"SQS Message Response: {json.dumps(response)}")
 
     # Make sure we didn't have an error sending message
     return_status = response["ResponseMetadata"]["HTTPStatusCode"]

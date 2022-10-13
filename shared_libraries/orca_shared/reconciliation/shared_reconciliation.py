@@ -3,12 +3,13 @@ Name: shared_reconciliation.py
 Description: Shared library that combines common functions and classes needed for
              reconciliation operations.
 """
-import logging
 from datetime import datetime, timezone
 
 # Standard libraries
 from enum import Enum
 from typing import Optional
+
+from aws_lambda_powertools import Logger
 
 # Third party libraries
 from sqlalchemy import text
@@ -16,7 +17,8 @@ from sqlalchemy.future import Engine
 
 from orca_shared.database import shared_db
 
-LOGGER = logging.Logger("ORCA")
+# Set AWS powertools logger
+LOGGER = Logger()
 
 
 class OrcaStatus(Enum):

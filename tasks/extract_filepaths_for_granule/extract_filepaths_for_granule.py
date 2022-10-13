@@ -5,9 +5,9 @@ Description:  Extracts the keys (filepaths) for a granule's files from a Cumulus
 """
 
 import re
-from typing import Dict, List
+from typing import Dict, List, Union
 from aws_lambda_powertools import Logger
-from aws_lambda_powertools.utilities.typing import LambdaContext  # noqa
+from aws_lambda_powertools.utilities.typing import LambdaContext
 from run_cumulus_task import run_cumulus_task
 
 # Set AWS powertools logger
@@ -167,8 +167,9 @@ def should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> b
             return True
     return False
 
+
 @LOGGER.inject_lambda_context(log_event=True)
-def handler(event, context):  # pylint: disable-msg=unused-argument
+def handler(event: Dict[str, Union[str, int]], context: LambdaContext):  # pylint: disable-msg=unused-argument
     """Lambda handler. Extracts the key's for a granule from an input dict.
 
     Args:
@@ -200,7 +201,8 @@ def handler(event, context):  # pylint: disable-msg=unused-argument
                         }
                         }
 
-        context (Object): None
+        context: This object provides information about the lambda invocation, function,
+            and execution env.
 
     Returns:
         dict: A dict with the following keys:
@@ -217,6 +219,5 @@ def handler(event, context):  # pylint: disable-msg=unused-argument
     Raises:
         ExtractFilePathsError: An error occurred parsing the input.
     """
-    LOGGER.setMetadata(event, context)
     result = run_cumulus_task(task, event, context)
     return result

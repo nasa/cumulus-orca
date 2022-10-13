@@ -13,7 +13,7 @@ import fastjsonschema
 
 # noinspection PyPackageRequirements
 from aws_lambda_powertools import Logger
-from aws_lambda_powertools.utilities.typing import LambdaContext  # noqa
+from aws_lambda_powertools.utilities.typing import LambdaContext
 from boto3.s3.transfer import MB, TransferConfig
 from botocore.client import BaseClient
 from botocore.exceptions import ClientError
@@ -234,7 +234,7 @@ def copy_object(
 # noinspection PyUnusedLocal
 @LOGGER.inject_lambda_context(log_event=True)
 def handler(
-    event: Dict[str, Any], context: object
+    event: Dict[str, Any], context: LambdaContext
 ) -> None:  # pylint: disable-msg=unused-argument
     """Lambda handler. Copies a file from its temporary s3 bucket to the s3 archive.
     If the copy for a file in the request fails, the lambda
@@ -255,7 +255,8 @@ def handler(
     Args:
         event:
             A dict from the SQS queue. See schemas/input.json for more information.
-        context: An object required by AWS Lambda. Unused.
+        context: This object provides information about the lambda invocation, function,
+            and execution env.
     Raises:
         CopyRequestError: An error occurred calling copy for one or more files.
         The same dict that is returned for a successful copy will be included in the
