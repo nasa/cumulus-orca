@@ -48,6 +48,6 @@ def validate_postgres_name(name: str, context: str, logger: logging.Logger) -> N
     # noinspection RegExpSimplifiable
     if not re.compile("^[a-zA-Z][a-zA-Z0-9_]*$").match(name):
         msg = f"{context} must start with an English letter " \
-              f"and contain only English letters, numbers, or underscores."
+              "and contain only English letters, numbers, or underscores."
         logger.critical(msg)
         raise Exception(msg)

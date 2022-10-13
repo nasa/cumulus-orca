@@ -1,6 +1,6 @@
 import os
 import unittest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
 import boto3
 from moto import mock_secretsmanager

@@ -32,7 +32,7 @@ def migrate_versions_1_to_2(config: PostgresConnectionInfo, is_latest_version: b
     if config["user_password"] is None or len(config["user_password"]) < 12:
         logger.critical("User password must be at least 12 characters long.")
         raise Exception("User password must be at least 12 characters long.")
-    
+
     # Get the admin engine to the app database
     user_admin_engine = \
         create_engine(create_admin_uri(config, logger, config.user_database_name), future=True)
