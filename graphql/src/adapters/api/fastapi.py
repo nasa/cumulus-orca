@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.adapters.fastapi.graphql_app import graphql_app
+from src.adapters.api.graphql_app import graphql_app
 
 
 def create_fastapi_app():

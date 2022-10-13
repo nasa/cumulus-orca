@@ -5,11 +5,11 @@ Description: Main entrypoint script for the application.
 import uvicorn
 
 from src import adapters
-from src.adapters import fastapi
-from src.adapters.fastapi.fastapi import create_fastapi_app
-from src.adapters.uvicorn import uvicorn_settings
+from src.adapters import api
+from src.adapters.api.fastapi import create_fastapi_app
+from src.adapters.frontend import uvicorn_settings
 
-application = adapters.fastapi.fastapi.create_fastapi_app()
+application = adapters.api.fastapi.create_fastapi_app()
 
 if __name__ == "__main__":
     uvicorn.run("main:application",

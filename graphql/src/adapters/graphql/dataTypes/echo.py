@@ -12,7 +12,7 @@ from src.entities.echo import Echo
 
 
 @strawberry.enum
-class WordTypeEnumStrawberryType(str, Enum):
+class WordTypeEnumStrawberryType(Enum):
     # Whenever this class changes, update WordTypeEnum
     palindrome = 'palindrome'
     chaos = 'chaos'
