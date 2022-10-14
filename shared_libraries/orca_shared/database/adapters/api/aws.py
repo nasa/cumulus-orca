@@ -8,8 +8,11 @@ from orca_shared.database.entities.postgres_connection_info import (
     PostgresConnectionInfo,
 )
 
+# Set AWS powertools logger
+Logger = Logger()
 
-def get_configuration(db_connect_info_secret_arn: str, logger: Logger()) \
+
+def get_configuration(db_connect_info_secret_arn: str, logger: Logger) \
         -> PostgresConnectionInfo:
     """
     Create a dictionary of configuration values based on environment variables
