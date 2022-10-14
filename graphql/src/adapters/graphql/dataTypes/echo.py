@@ -3,12 +3,9 @@ from enum import Enum
 # noinspection PyPackageRequirements
 import strawberry
 
+from src.adapters.graphql.dataTypes.common import EdgeStrawberryType, \
+    InternalServerErrorStrawberryType
 from src.entities.echo import Echo
-
-
-# todo: While it technically breaks CleanArchitecture,
-#  I wonder if we wouldn't be fine placing these decorators on the base class
-#  given that they don't change coding behavior.
 
 
 @strawberry.enum
@@ -22,3 +19,9 @@ class WordTypeEnumStrawberryType(Enum):
 class EchoStrawberryType(Echo):
     word_type: WordTypeEnumStrawberryType  # override type to help FastAPI out.
     pass
+
+
+GetEchoStrawberryResponse = strawberry.union(
+    "GetEchoResponse",
+    [EdgeStrawberryType, InternalServerErrorStrawberryType]
+)

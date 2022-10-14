@@ -25,7 +25,7 @@ class Echo:
         """
         return EdgeCursor.encode_cursor(**{"word": echo.word})
 
-    def get_echo(self, word: str) -> Edge:
+    def get_echo(self, word: str) -> Edge[entities.echo.Echo]:
         if word is None:
             word = self.word_generator.get_random_word()
         echo = (word[::-1])
