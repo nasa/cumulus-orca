@@ -6,8 +6,7 @@ from strawberry import type, field, argument
 
 from src.adapters import graphql
 from src.adapters.graphql import resolvers
-from src.adapters.graphql.dataTypes.common import EdgeStrawberryType
-from src.adapters.graphql.dataTypes.echo import EchoStrawberryType
+from src.adapters.graphql.dataTypes.echo import GetEchoStrawberryResponse
 from src.adapters.graphql.resolvers.echo import get_echo
 
 
@@ -23,5 +22,5 @@ class Queries:
                             description="""The word to echo back."""
                         )
                         ] = None,  # Default value actually MAKES it optional
-    ) -> EdgeStrawberryType[EchoStrawberryType]:
+    ) -> GetEchoStrawberryResponse:
         return graphql.resolvers.echo.get_echo(word)

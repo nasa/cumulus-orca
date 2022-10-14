@@ -1,11 +1,14 @@
 from src import use_cases
 from src.adapters.graphql import initialized_adapters
-from src.adapters.graphql.dataTypes.common import EdgeStrawberryType
-from src.adapters.graphql.dataTypes.echo import EchoStrawberryType
+from src.adapters.graphql.dataTypes.common import InternalServerErrorStrawberryType
+from src.adapters.graphql.dataTypes.echo import GetEchoStrawberryResponse
 from src.use_cases.echo import Echo
 
 
-def get_echo(word: str) -> EdgeStrawberryType[EchoStrawberryType]:
+def get_echo(word: str) -> GetEchoStrawberryResponse:
     # Acts as a translation layer to make Strawberry accept non-strawberry data classes.
     # noinspection PyTypeChecker
-    return use_cases.echo.Echo(initialized_adapters.word_generation).get_echo(word)
+    try:
+        return use_cases.echo.Echo(initialized_adapters.word_generation).get_echo(word)
+    except Exception as ex:
+        return InternalServerErrorStrawberryType(str(ex))  # todo: Adding additional error types complicates integration to an alarming degree. Inheritance will be required.

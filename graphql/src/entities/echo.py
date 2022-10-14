@@ -2,14 +2,17 @@ import dataclasses
 from enum import Enum
 
 import pydantic
+import strawberry
 
 
+@strawberry.enum
 class WordTypeEnum(str, Enum):
     # Whenever this class changes, update WordTypeEnumStrawberryType
     palindrome = 'palindrome'
     chaos = 'chaos'
 
 
+@strawberry.type
 @dataclasses.dataclass
 class Echo(pydantic.BaseModel):
     # IMPORTANT: Whenever properties are added/removed/modified/renamed, update constructor.
