@@ -1,3 +1,4 @@
+import traceback
 # noinspection PyPackageRequirements
 import strawberry
 from abc import abstractmethod
@@ -7,8 +8,7 @@ class ErrorStrawberryType:
     """
     A basic error type to encourage inheritance and a consistent `message` property.
     """
-    @property
-    @abstractmethod
+    # todo: Better abstraction? Might not be doable. In that case, maybe just remove.
     def message(self) -> str:
         ...
 
@@ -20,6 +20,6 @@ class InternalServerErrorStrawberryType(ErrorStrawberryType):
     exception_message: str
     stack_trace: str
 
-    def __init__(self, exception_message: str, stack_trace: str):
-        self.exception_message = exception_message
-        self.stack_trace = stack_trace
+    def __init__(self, ex: Exception):
+        self.exception_message = str(ex)
+        self.stack_trace = traceback.format_exc()

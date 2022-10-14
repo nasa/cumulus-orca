@@ -1,3 +1,4 @@
+import random
 import uuid
 
 import src.entities.echo
@@ -5,6 +6,7 @@ from src import entities
 from src.entities.common import Edge
 from src.use_cases.adapter_interfaces.word_generation import WordGenerationInterface
 from src.use_cases.edge_cursor import EdgeCursor
+from src.entities.echo import BoringWordException
 
 
 class Echo:
@@ -26,8 +28,15 @@ class Echo:
         return EdgeCursor.encode_cursor(**{"word": echo.word})
 
     def get_echo(self, word: str) -> Edge[entities.echo.Echo]:
-        if word is None:
+        if word is None or word is "":
             word = self.word_generator.get_random_word()
+
+        if random.randint(0, 10) == 5:
+            raise Exception("Whoops, random error.")
+
+        if word == len(word) * word[0]:
+            raise BoringWordException(word)
+
         echo = (word[::-1])
         result = entities.echo.Echo(word=word, length=len(word), echo=echo,
                                     word_type=src.entities.echo.WordTypeEnum.palindrome

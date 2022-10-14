@@ -25,3 +25,8 @@ class Echo(pydantic.BaseModel):
     def __init__(self, word: str, length: int, echo: str, word_type: WordTypeEnum):
         # This call to __init__ will NOT automatically update when performing renames.
         super().__init__(word=word, length=length, echo=echo, word_type=word_type)
+
+
+class BoringWordException(Exception):
+    def __init__(self, word: str):
+        self.word = word
