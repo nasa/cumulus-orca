@@ -7,7 +7,7 @@ import uvicorn
 from src import adapters
 from src.adapters import api
 from src.adapters.api.fastapi import create_fastapi_app
-from src.adapters.frontend import uvicorn_settings
+from src.adapters.webserver import uvicorn_settings
 
 application = adapters.api.fastapi.create_fastapi_app()
 

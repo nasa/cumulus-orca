@@ -1,4 +1,4 @@
-from src.adapters.frontend import uvicorn_settings
+from src.adapters.webserver import uvicorn_settings
 
 
 class GraphQLSettings:
