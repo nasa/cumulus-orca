@@ -1,3 +1,5 @@
+import traceback
+
 from src import use_cases
 from src.adapters.graphql import initialized_adapters
 from src.adapters.graphql.dataTypes.common import InternalServerErrorStrawberryType
@@ -11,4 +13,4 @@ def get_echo(word: str) -> GetEchoStrawberryResponse:
     try:
         return use_cases.echo.Echo(initialized_adapters.word_generation).get_echo(word)
     except Exception as ex:
-        return InternalServerErrorStrawberryType(str(ex))  # todo: Adding additional error types complicates integration to an alarming degree. Inheritance will be required.
+        return InternalServerErrorStrawberryType(str(ex), traceback.format_exc())
