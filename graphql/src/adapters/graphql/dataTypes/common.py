@@ -3,7 +3,7 @@ import strawberry
 
 
 @strawberry.type
-class InternalServerErrorStrawberryType(Exception):
+class InternalServerErrorStrawberryType:
     message: str
 
     def __init__(self, message: str):
