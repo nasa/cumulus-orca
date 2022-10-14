@@ -1,17 +1,14 @@
+import logging
 from typing import Any
 
-from aws_lambda_powertools import Logger
 from sqlalchemy.engine import URL
 
 from orca_shared.database.entities.postgres_connection_info import (
     PostgresConnectionInfo,
 )
 
-# Set AWS powertools logger
-Logger = Logger()
 
-
-def create_user_uri(db_connect_info: PostgresConnectionInfo, logger: Logger) -> str:
+def create_user_uri(db_connect_info: PostgresConnectionInfo, logger: logging.Logger) -> str:
     """
     Creates a connection URI for application database as the application
     database user.
@@ -35,7 +32,7 @@ def create_user_uri(db_connect_info: PostgresConnectionInfo, logger: Logger) -> 
     )
 
 
-def create_admin_uri(db_connect_info: PostgresConnectionInfo, logger: Logger,
+def create_admin_uri(db_connect_info: PostgresConnectionInfo, logger: logging.Logger,
                      database_name_overwrite: str = None) -> str:
     """
     Creates a connection URI for a database as a superuser.
@@ -66,7 +63,7 @@ def create_admin_uri(db_connect_info: PostgresConnectionInfo, logger: Logger,
     )
 
 
-def _create_connection_uri(logger: Logger, **kwargs: Any) -> str:
+def _create_connection_uri(logger: logging.Logger, **kwargs: Any) -> str:
     """
     Base function for creating a connection URI for a database.
 

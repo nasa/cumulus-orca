@@ -1,15 +1,12 @@
-from aws_lambda_powertools import Logger
 from abc import abstractmethod
 
+import logging
 import sqlalchemy
 from orca_shared.database import shared_db
 from sqlalchemy import text
 
 from src.entities.orphan import OrphanRecordFilter, OrphanRecordPage, OrphanRecord
 from src.use_cases.adapter_interfaces.storage import OrphansPageStorageInterface
-
-# Set AWS powertools logger
-LOGGER = Logger()
 
 
 class StorageAdapterRDBMS(OrphansPageStorageInterface):
@@ -26,7 +23,7 @@ class StorageAdapterRDBMS(OrphansPageStorageInterface):
             self,
             orphan_record_filter: OrphanRecordFilter,
             # todo: @bhazuka has expressed a desire to not pass loggers via parameters
-            logger: LOGGER
+            logger: logging.Logger
     ) -> OrphanRecordPage:
         # noinspection GrazieInspection
         """

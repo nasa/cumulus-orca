@@ -1,16 +1,13 @@
-from aws_lambda_powertools import Logger
+import logging
 
 from src.use_cases.adapter_interfaces.storage import OrphansPageStorageInterface
 from src.entities.orphan import OrphanRecordPage, OrphanRecordFilter
-
-# Set AWS powertools logger
-Logger = Logger()
 
 
 def task(
         orphan_record_filter: OrphanRecordFilter,
         orphans_page_storage: OrphansPageStorageInterface,
-        logger: Logger
+        logger: logging.Logger
 ) -> OrphanRecordPage:
     """
     Args:
