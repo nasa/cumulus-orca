@@ -7,6 +7,8 @@ Description: Runs unit tests for the migrations/migrate_versions_5_to_6/migrate.
 import unittest
 from unittest.mock import MagicMock, call, patch
 
+from orca_shared.database.entities import PostgresConnectionInfo
+
 from migrations.migrate_versions_5_to_6 import migrate
 
 
@@ -19,16 +21,13 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
         """
         Set up test.
         """
-        self.config = {
-            "admin_database": "admin_db",
-            "admin_password": "admin123",
-            "admin_username": "admin",
-            "host": "aws.postgresrds.host",
-            "port": 5432,
-            "user_database": "user_db",
-            "user_password": "user123456789",
-            "user_username": "user",
-        }
+        # todo: Use randomized values on a per-test basis.
+        self.config = PostgresConnectionInfo(  # nosec
+            admin_database_name="admin_db",
+            admin_username="admin", admin_password="admin123",
+            user_username="user56789012", user_password="pass56789012",
+            user_database_name="user_db", host="aws.postgresrds.host", port="5432"
+        )
 
     def tearDown(self):
         """
@@ -45,12 +44,14 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
     )
     @patch("migrations.migrate_versions_5_to_6.migrate.sql.storage_class_data_sql")
     @patch("migrations.migrate_versions_5_to_6.migrate.sql.storage_class_table_sql")
-    @patch("migrations.migrate_versions_5_to_6.migrate.get_admin_connection")
+    @patch("migrations.migrate_versions_5_to_6.migrate.create_engine")
+    @patch("migrations.migrate_versions_5_to_6.migrate.create_admin_uri")
     @patch("migrations.migrate_versions_5_to_6.migrate.sql.text")
     def test_migrate_versions_5_to_6_happy_path(
         self,
         mock_text: MagicMock,
-        mock_connection: MagicMock,
+        mock_create_admin_uri: MagicMock,
+        mock_create_engine: MagicMock,
         mock_storage_class_table_sql: MagicMock,
         mock_storage_class_data_sql: MagicMock,
         mock_add_files_storage_class_id_column_sql: MagicMock,
@@ -65,15 +66,18 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
             with self.subTest(latest_version=latest_version):
                 # Set up the mock object that conn.execute is a part of in
                 # the connection with block
-                mock_conn_enter = mock_connection().connect().__enter__()
+                mock_conn_enter = mock_create_engine().connect().__enter__()
 
                 # Run the function
                 migrate.migrate_versions_5_to_6(self.config, latest_version)
 
                 # Check that all the functions were called the correct
                 # number of times with the proper values
-                mock_connection.assert_any_call(
-                    self.config, self.config["user_database"]
+                mock_create_admin_uri.assert_called_once_with(
+                    self.config, migrate.logger, self.config.user_database_name
+                )
+                mock_create_engine.assert_any_call(
+                    mock_create_admin_uri.return_value, future=True
                 )
                 mock_storage_class_table_sql.assert_called_once_with()
                 mock_storage_class_data_sql.assert_called_once_with()
@@ -118,7 +122,8 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 )
 
                 # Reset the mocks for next loop
-                mock_connection.reset_mock()
+                mock_create_admin_uri.reset_mock()
+                mock_create_engine.reset_mock()
                 mock_storage_class_table_sql.reset_mock()
                 mock_storage_class_data_sql.reset_mock()
                 mock_add_files_storage_class_id_column_sql.reset_mock()

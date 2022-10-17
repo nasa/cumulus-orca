@@ -22,14 +22,14 @@ def migrate_versions_1_to_2(config: PostgresConnectionInfo, is_latest_version: b
     Returns:
         None
     """
-    if config["user_username"] is None or len(config["user_username"]) == 0:
+    if config.user_username is None or len(config.user_username) == 0:
         logger.critical("Username must be non-empty.")
         raise Exception("Username must be non-empty.")
-    if len(config["user_username"]) > 63:
+    if len(config.user_username) > 63:
         logger.critical("Username must be less than 64 characters.")
         raise Exception("Username must be less than 64 characters.")
 
-    if config["user_password"] is None or len(config["user_password"]) < 12:
+    if config.user_password is None or len(config.user_password) < 12:
         logger.critical("User password must be at least 12 characters long.")
         raise Exception("User password must be at least 12 characters long.")
 
