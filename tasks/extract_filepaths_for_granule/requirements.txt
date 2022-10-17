@@ -1,2 +1,2 @@
 aws_lambda_powertools==1.31.0
-cumulus-message-adapter-python==2.0.1
+cumulus-process==0.8.0
