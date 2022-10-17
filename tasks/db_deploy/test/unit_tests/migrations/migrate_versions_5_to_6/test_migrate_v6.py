@@ -64,10 +64,6 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
         """
         for latest_version in [True, False]:
             with self.subTest(latest_version=latest_version):
-                # Set up the mock object that conn.execute is a part of in
-                # the connection with block
-                mock_conn_enter = mock_create_engine().connect().__enter__()
-
                 # Run the function
                 migrate.migrate_versions_5_to_6(self.config, latest_version)
 
@@ -76,7 +72,7 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 mock_create_admin_uri.assert_called_once_with(
                     self.config, migrate.logger, self.config.user_database_name
                 )
-                mock_create_engine.assert_any_call(
+                mock_create_engine.assert_called_once_with(
                     mock_create_admin_uri.return_value, future=True
                 )
                 mock_storage_class_table_sql.assert_called_once_with()
@@ -116,6 +112,7 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 execution_order.append(call.commit())
 
                 # Check that items were called in the proper order
+                mock_conn_enter = mock_create_engine().connect().__enter__()
                 mock_conn_enter.assert_has_calls(execution_order, any_order=False)
                 self.assertEqual(
                     len(execution_order), len(mock_conn_enter.method_calls)

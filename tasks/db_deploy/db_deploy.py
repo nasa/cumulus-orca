@@ -79,10 +79,8 @@ def task(config: PostgresConnectionInfo, orca_buckets: List[str]) -> None:
     Raises:
         Exception: If database does not exist.
     """
-    # Create the engines
+    # Create the engine
     postgres_admin_engine = create_engine(create_admin_uri(config, logger), future=True)
-    user_admin_engine = \
-        create_engine(create_admin_uri(config, logger, config.user_database_name), future=True)
 
     # Connect as admin user to the postgres database
     with postgres_admin_engine.connect() as connection:
@@ -96,6 +94,10 @@ def task(config: PostgresConnectionInfo, orca_buckets: List[str]) -> None:
             create_fresh_orca_install(config, orca_buckets)
 
             return
+
+    # Create the engine
+    user_admin_engine = \
+        create_engine(create_admin_uri(config, logger, config.user_database_name), future=True)
 
     # Connect as admin user to config["user_database"] database.
     with user_admin_engine.connect() as connection:
