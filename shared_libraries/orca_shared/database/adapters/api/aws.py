@@ -57,7 +57,7 @@ def get_configuration(db_connect_info_secret_arn: str, logger: logging.Logger) \
             "Successfully retrieved db login info for both user and admin as a dictionary."
         )
     except Exception:
-        logger.exception("Failed to retrieve secret.")
+        logger.critical("Failed to retrieve secret.", exc_info=True)
         raise Exception("Failed to retrieve secret manager value.")
 
     # return the config dict
