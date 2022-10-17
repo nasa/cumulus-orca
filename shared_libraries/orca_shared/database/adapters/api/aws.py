@@ -9,7 +9,7 @@ from orca_shared.database.entities.postgres_connection_info import (
 )
 
 
-def get_configuration(db_connect_info_secret_arn: str, LOGGER: logging.Logger) \
+def get_configuration(db_connect_info_secret_arn: str, logger: logging.Logger) \
         -> PostgresConnectionInfo:
     """
     Create a dictionary of configuration values based on environment variables
@@ -22,7 +22,7 @@ def get_configuration(db_connect_info_secret_arn: str, LOGGER: logging.Logger) \
 
     Args:
         db_connect_info_secret_arn: The secret ARN of the secret in AWS secretsmanager.
-        LOGGER: The logger to use.
+        logger: The logger to use.
 
     Returns:
         Configuration (Dict): Dictionary with all the configuration information.
@@ -33,19 +33,19 @@ def get_configuration(db_connect_info_secret_arn: str, LOGGER: logging.Logger) \
     """
 
     # Get the AWS_REGION defined runtime environment reserved variable
-    LOGGER.debug("Getting environment variable AWS_REGION value.")
+    logger.debug("Getting environment variable AWS_REGION value.")
     aws_region = os.getenv("AWS_REGION", None)
 
     if aws_region is None or len(aws_region) == 0:
         message = "Runtime environment variable AWS_REGION is not set."
-        LOGGER.critical(message)
+        logger.critical(message)
         raise Exception(message)
 
     try:
-        LOGGER.debug("Creating secretsmanager resource.")
+        logger.debug("Creating secretsmanager resource.")
         secretsmanager = boto3.client("secretsmanager", region_name=aws_region)
 
-        LOGGER.debug(
+        logger.debug(
             "Retrieving db login info for both user and admin as a dictionary."
         )
         db_connect_info = json.loads(
@@ -53,11 +53,11 @@ def get_configuration(db_connect_info_secret_arn: str, LOGGER: logging.Logger) \
                 "SecretString"
             ]
         )
-        LOGGER.debug(
+        logger.debug(
             "Successfully retrieved db login info for both user and admin as a dictionary."
         )
     except Exception:
-        LOGGER.critical("Failed to retrieve secret.")
+        logger.exception("Failed to retrieve secret.")
         raise Exception("Failed to retrieve secret manager value.")
 
     # return the config dict

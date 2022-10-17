@@ -8,9 +8,9 @@ Description: Performs database installation and migration for the ORCA schema.
 import os
 from typing import Any, Dict, List
 
-from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
 from orca_shared.database.shared_db import (
+    LOGGER,
     get_admin_connection,
     get_configuration,
     retry_operational_error,
@@ -25,9 +25,6 @@ from migrations.migrate_db import perform_migration
 # Latest version of the ORCA schema.
 LATEST_ORCA_SCHEMA_VERSION = 6
 MAX_RETRIES = 3
-
-# Set AWS powertools logger
-LOGGER = Logger()
 
 
 def handler(

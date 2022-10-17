@@ -51,7 +51,7 @@ class TestAWS(unittest.TestCase):
         Get secret value and return data class.
         """
 
-        testing_config = aws.get_configuration(self.db_connect_info_secret_arn, LOGGER=Mock())
+        testing_config = aws.get_configuration(self.db_connect_info_secret_arn, logger=Mock())
 
         self.assertEqual(PostgresConnectionInfo(  # nosec
             admin_database_name="admin_db",
@@ -77,7 +77,7 @@ class TestAWS(unittest.TestCase):
 
         error_message = "Runtime environment variable AWS_REGION is not set."
         with self.assertRaises(Exception) as cm:
-            aws.get_configuration(self.db_connect_info_secret_arn, LOGGER=Mock())
+            aws.get_configuration(self.db_connect_info_secret_arn, logger=Mock())
         self.assertEqual(str(cm.exception), error_message)
 
     @patch.dict(
@@ -98,5 +98,5 @@ class TestAWS(unittest.TestCase):
 
         # Run the test
         with self.assertRaises(Exception) as cm:
-            aws.get_configuration(self.db_connect_info_secret_arn, LOGGER=Mock())
+            aws.get_configuration(self.db_connect_info_secret_arn, logger=Mock())
         self.assertEqual(str(cm.exception), message)

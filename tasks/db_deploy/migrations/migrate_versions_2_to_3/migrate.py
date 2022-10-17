@@ -5,13 +5,9 @@ Description: Migrates the ORCA schema from version 2 to version 3.
 """
 from typing import Dict
 
-from aws_lambda_powertools import Logger
-from orca_shared.database.shared_db import get_admin_connection
+from orca_shared.database.shared_db import LOGGER, get_admin_connection
 
 import migrations.migrate_versions_2_to_3.migrate_sql as sql
-
-# Set AWS powertools logger
-LOGGER = Logger()
 
 
 def migrate_versions_2_to_3(config: Dict[str, str], is_latest_version: bool) -> None:

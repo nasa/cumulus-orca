@@ -25,7 +25,7 @@ class TestCreatePostgresConnectionUri(unittest.TestCase):
         user_password = uuid.uuid4().__str__()  # nosec
         host = uuid.uuid4().__str__()  # nosec
         port = random.randint(0, 99999).__str__()  # nosec
-        LOGGER = Mock()
+        logger = Mock()
 
         result = create_user_uri(PostgresConnectionInfo(
             admin_database_name=uuid.uuid4().__str__(),  # nosec
@@ -36,8 +36,8 @@ class TestCreatePostgresConnectionUri(unittest.TestCase):
             user_database_name=user_database_name,  # nosec
             host=host,
             port=port
-        ), LOGGER=LOGGER)
-        mock_create_connection_uri.assert_called_once_with(LOGGER=LOGGER,
+        ), logger=logger)
+        mock_create_connection_uri.assert_called_once_with(logger=logger,
                                                            host=host,
                                                            port=port,
                                                            database=user_database_name,
@@ -58,7 +58,7 @@ class TestCreatePostgresConnectionUri(unittest.TestCase):
         admin_password = uuid.uuid4().__str__()  # nosec
         host = uuid.uuid4().__str__()  # nosec
         port = random.randint(0, 99999).__str__()  # nosec
-        LOGGER = Mock()
+        logger = Mock()
 
         result = create_admin_uri(PostgresConnectionInfo(
             admin_database_name=admin_database_name,
@@ -69,8 +69,8 @@ class TestCreatePostgresConnectionUri(unittest.TestCase):
             user_database_name=uuid.uuid4().__str__(),  # nosec
             host=host,
             port=port
-        ), LOGGER=LOGGER)
-        mock_create_connection_uri.assert_called_once_with(LOGGER=LOGGER,
+        ), logger=logger)
+        mock_create_connection_uri.assert_called_once_with(logger=logger,
                                                            host=host,
                                                            port=port,
                                                            database=admin_database_name,
@@ -91,7 +91,7 @@ class TestCreatePostgresConnectionUri(unittest.TestCase):
         admin_password = uuid.uuid4().__str__()  # nosec
         host = uuid.uuid4().__str__()  # nosec
         port = random.randint(0, 99999).__str__()  # nosec
-        LOGGER = Mock()
+        logger = Mock()
 
         result = create_admin_uri(PostgresConnectionInfo(
             admin_database_name=uuid.uuid4().__str__(),  # nosec
@@ -102,8 +102,8 @@ class TestCreatePostgresConnectionUri(unittest.TestCase):
             user_database_name=uuid.uuid4().__str__(),  # nosec
             host=host,
             port=port
-        ), LOGGER=LOGGER, database_name_overwrite=admin_database_name)
-        mock_create_connection_uri.assert_called_once_with(LOGGER=LOGGER,
+        ), logger=logger, database_name_overwrite=admin_database_name)
+        mock_create_connection_uri.assert_called_once_with(logger=logger,
                                                            host=host,
                                                            port=port,
                                                            database=admin_database_name,
@@ -115,14 +115,14 @@ class TestCreatePostgresConnectionUri(unittest.TestCase):
         """
         Basic happy path.
         """
-        LOGGER = Mock()
+        logger = Mock()
         host = uuid.uuid4().__str__()  # nosec
         port = random.randint(0, 99999)  # nosec
         database_name = uuid.uuid4().__str__()  # nosec
         username = uuid.uuid4().__str__()  # nosec
         password = uuid.uuid4().__str__()  # nosec
 
-        result = _create_connection_uri(LOGGER=LOGGER,
+        result = _create_connection_uri(logger=logger,
                                         host=host,
                                         port=port,
                                         database=database_name,
