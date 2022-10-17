@@ -40,10 +40,10 @@ def create_fresh_orca_install(config: PostgresConnectionInfo, orca_buckets: List
         # Create the roles, schema and user
         create_app_schema_role_users(
             conn,
-            config["user_username"],
-            config["user_password"],
-            config["user_database"],
-            config["admin_username"],
+            config.user_username,
+            config.user_password,
+            config.user_database_name,
+            config.admin_username,
         )
 
         # Change to DBO role and set search path
@@ -74,9 +74,9 @@ def create_database(config: PostgresConnectionInfo) -> None:
             sql.commit_sql()
         )  # exit the default transaction to allow database creation.
         connection.execute(
-            sql.app_database_sql(config["user_database"], config["admin_username"])
+            sql.app_database_sql(config.user_database_name, config.admin_username)
         )
-        connection.execute(sql.app_database_comment_sql(config["user_database"]))
+        connection.execute(sql.app_database_comment_sql(config.user_database_name))
         logger.info("Database created.")
 
 
