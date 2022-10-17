@@ -65,7 +65,7 @@ def __init__(connection_uri: str)
 
 ```python
 @shared_db.retry_operational_error()
-def get_orphans_page(orphan_record_filter: OrphanRecordFilter, logger: logging.Logger) -> OrphanRecordPage
+def get_orphans_page(orphan_record_filter: OrphanRecordFilter, LOGGER: logging.Logger) -> OrphanRecordPage
 ```
 
 Gets orphans for the given job/page, up to PAGE_SIZE + 1 results.
@@ -73,7 +73,7 @@ Gets orphans for the given job/page, up to PAGE_SIZE + 1 results.
 **Arguments**:
 
 - `orphan_record_filter` - The filter designating which orphans to return.
-- `logger` - The logger to use.
+- `LOGGER` - The logger to use.
   
 
 **Returns**:
@@ -188,14 +188,14 @@ Entry point for the internal_reconcile_report_orphan Lambda.
 #### task
 
 ```python
-def task(orphan_record_filter: OrphanRecordFilter, orphans_page_storage: OrphansPageStorageInterface, logger: logging.Logger) -> OrphanRecordPage
+def task(orphan_record_filter: OrphanRecordFilter, orphans_page_storage: OrphansPageStorageInterface, LOGGER: logging.Logger) -> OrphanRecordPage
 ```
 
 **Arguments**:
 
 - `orphan_record_filter` - The filter designating which orphans to return.
 - `orphans_page_storage` - The helper class for getting the page from the DB.
-- `logger` - The logger to use.
+- `LOGGER` - The logger to use.
   
 
 **Returns**:

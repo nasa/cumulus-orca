@@ -215,7 +215,6 @@ def delete_jobs_older_than_x_days_sql() -> text:  # pragma: no cover
     )
 
 
-@LOGGER.inject_lambda_context(log_event=True)
 def handler(event: Dict[str, Dict[str, Dict[str, Union[str, int]]]],
             context: LambdaContext) -> None:
     """

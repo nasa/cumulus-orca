@@ -3,9 +3,9 @@ Name: db_deploy.py
 
 Description: Performs database installation and migration for the ORCA schema.
 """
-import os
 
 # Imports
+import os
 from typing import Any, Dict, List
 
 from aws_lambda_powertools import Logger
@@ -30,7 +30,6 @@ MAX_RETRIES = 3
 LOGGER = Logger()
 
 
-@LOGGER.inject_lambda_context(log_event=True)
 def handler(
     event: Dict[str, Any], context: LambdaContext
 ) -> None:  # pylint: disable-msg=unused-argument

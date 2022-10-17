@@ -15,7 +15,7 @@ from typing import Any, Dict, List, Optional
 import boto3
 from aws_lambda_powertools import Logger
 
-# Set AWS powertools logger
+# Set AWS powertools
 LOGGER = Logger()
 
 

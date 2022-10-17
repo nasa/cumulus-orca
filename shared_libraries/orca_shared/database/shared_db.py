@@ -19,7 +19,7 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy.future import Engine
 
 # Set AWS powertools logger
-logger = Logger()
+LOGGER = Logger()
 
 MAX_RETRIES = 3  # number of times to retry.
 BACKOFF_FACTOR = 2  # Value of the factor used to backoff
@@ -49,19 +49,19 @@ def get_configuration(db_connect_info_secret_arn: str) -> Dict[str, str]:
     """
 
     # Get the AWS_REGION defined runtime environment reserved variable
-    logger.debug("Getting environment variable AWS_REGION value.")
+    LOGGER.debug("Getting environment variable AWS_REGION value.")
     aws_region = os.getenv("AWS_REGION", None)
 
     if aws_region is None or len(aws_region) == 0:
         message = "Runtime environment variable AWS_REGION is not set."
-        logger.critical(message)
+        LOGGER.critical(message)
         raise Exception(message)
 
     try:
-        logger.debug("Creating secretsmanager resource.")
+        LOGGER.debug("Creating secretsmanager resource.")
         secretsmanager = boto3.client("secretsmanager", region_name=aws_region)
 
-        logger.debug(
+        LOGGER.debug(
             "Retrieving db login info for both user and admin as a dictionary."
         )
         config = json.loads(
@@ -69,11 +69,11 @@ def get_configuration(db_connect_info_secret_arn: str) -> Dict[str, str]:
                 "SecretString"
             ]
         )
-        logger.debug(
+        LOGGER.debug(
             "Successfully retrieved db login info for both user and admin as a dictionary."
         )
     except Exception:
-        logger.critical("Failed to retrieve secret.")
+        LOGGER.critical("Failed to retrieve secret.")
         raise Exception("Failed to retrieve secret manager value.")
 
     # return the config dict
@@ -94,7 +94,7 @@ def _create_connection(**kwargs: Any) -> Engine:
     Returns
         Engine (sqlalchemy.future.Engine): engine object for creating database connections.
     """
-    logger.debug("Creating URL object to connect to the database.")
+    LOGGER.debug("Creating URL object to connect to the database.")
     connection_url = URL.create(drivername="postgresql", **kwargs)
     return create_engine(connection_url, future=True)
 
@@ -116,8 +116,8 @@ def get_admin_connection(config: Dict[str, str], database: str = None) -> Engine
     else:
         admin_database = database
 
-    logger.debug("Creating admin user connection object.")
-    logger.debug(f"Database set to {admin_database} for the connection.")
+    LOGGER.debug("Creating admin user connection object.")
+    LOGGER.debug(f"Database set to {admin_database} for the connection.")
     connection = _create_connection(
         host=config["host"],
         port=config["port"],
@@ -141,7 +141,7 @@ def get_user_connection(config: Dict[str, str]) -> Engine:
         Engine (sqlalchemy.future.Engine): engine object for creating database connections.
     """
 
-    logger.debug("Creating application user connection object.")
+    LOGGER.debug("Creating application user connection object.")
     connection = _create_connection(
         host=config["host"],
         port=config["port"],
@@ -188,7 +188,7 @@ def retry_operational_error(
                 except OperationalError:
                     if total_retries == max_retries:
                         # Log it and re-raise if we maxed our retries + initial attempt
-                        logger.error(
+                        LOGGER.error(
                             f"Encountered Errors {total_retries} times. Reached max retry limit.",
                         )
                         raise
@@ -198,14 +198,14 @@ def retry_operational_error(
                             backoff_in_seconds * backoff_factor ** total_retries
                             + random.uniform(0, 1)  # nosec
                         )
-                        logger.error(
+                        LOGGER.error(
                             f"Encountered OperationalError on attempt {total_retries}. "
                             f"Sleeping {backoff_time} seconds.",
                         )
                         time.sleep(backoff_time)
                         total_retries += 1
                 except Exception as ex:
-                    logger.error(f"Encountered a non-retriable error: {ex}")
+                    LOGGER.error(f"Encountered a non-retriable error: {ex}")
                     raise ex
 
         # Return our wrapper

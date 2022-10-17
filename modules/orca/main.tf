@@ -53,6 +53,7 @@ module "orca_lambdas" {
   orca_recovery_retry_limit                     = var.orca_recovery_retry_limit
   orca_recovery_retry_interval                  = var.orca_recovery_retry_interval
   orca_recovery_retry_backoff                   = var.orca_recovery_retry_backoff
+
 }
 
 ## orca_lambdas_secondary - lambdas module that is dependent on resources that presently are created after most lambdas
@@ -86,6 +87,8 @@ module "orca_lambdas_secondary" {
   orca_reconciliation_lambda_memory_size = var.orca_reconciliation_lambda_memory_size
   orca_reconciliation_lambda_timeout     = var.orca_reconciliation_lambda_timeout
   s3_report_frequency                    = var.s3_report_frequency
+  powertools_service_name                = var.powertools_service_name
+  log_level                              = var.log_level
 }
 
 

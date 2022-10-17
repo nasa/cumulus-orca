@@ -8,22 +8,22 @@ from orca_shared.database.entities.postgres_connection_info import (
 )
 
 
-def create_user_uri(db_connect_info: PostgresConnectionInfo, logger: logging.Logger) -> str:
+def create_user_uri(db_connect_info: PostgresConnectionInfo, LOGGER: logging.Logger) -> str:
     """
     Creates a connection URI for application database as the application
     database user.
 
     Args:
         db_connect_info: Configuration containing connection information.
-        logger: The logger to use.
+        LOGGER: The logger to use.
 
     Returns:
         URI for connecting to the database.
     """
 
-    logger.debug("Creating application user connection object.")
+    LOGGER.debug("Creating application user connection object.")
     return _create_connection_uri(
-        logger=logger,
+        LOGGER=LOGGER,
         host=db_connect_info.host,
         port=db_connect_info.port,
         database=db_connect_info.user_database_name,
@@ -32,14 +32,14 @@ def create_user_uri(db_connect_info: PostgresConnectionInfo, logger: logging.Log
     )
 
 
-def create_admin_uri(db_connect_info: PostgresConnectionInfo, logger: logging.Logger,
+def create_admin_uri(db_connect_info: PostgresConnectionInfo, LOGGER: logging.Logger,
                      database_name_overwrite: str = None) -> str:
     """
     Creates a connection URI for a database as a superuser.
 
     Args:
         db_connect_info: Configuration containing connection information.
-        logger: The logger to use.
+        LOGGER: The logger to use.
         database_name_overwrite: Database to connect to. Defaults to admin_database.
 
     Returns:
@@ -51,10 +51,10 @@ def create_admin_uri(db_connect_info: PostgresConnectionInfo, logger: logging.Lo
     else:
         admin_database = database_name_overwrite
 
-    logger.debug("Creating admin user connection object.")
-    logger.debug(f"Database set to {admin_database} for the connection.")
+    LOGGER.debug("Creating admin user connection object.")
+    LOGGER.debug(f"Database set to {admin_database} for the connection.")
     return _create_connection_uri(
-        logger=logger,
+        LOGGER=LOGGER,
         host=db_connect_info.host,
         port=db_connect_info.port,
         database=admin_database,
@@ -63,12 +63,12 @@ def create_admin_uri(db_connect_info: PostgresConnectionInfo, logger: logging.Lo
     )
 
 
-def _create_connection_uri(logger: logging.Logger, **kwargs: Any) -> str:
+def _create_connection_uri(LOGGER: logging.Logger, **kwargs: Any) -> str:
     """
     Base function for creating a connection URI for a database.
 
     Args:
-        logger: The logger to use.
+        LOGGER: The logger to use.
         host (str): Database host to connect to
         port (str): Database port to connect to
         database (str): Database name to connect to
@@ -78,5 +78,5 @@ def _create_connection_uri(logger: logging.Logger, **kwargs: Any) -> str:
     Returns:
         URI for connecting to the database.
     """
-    logger.debug("Creating URL object to connect to the database.")
+    LOGGER.debug("Creating URL object to connect to the database.")
     return URL.create(drivername="postgresql", **kwargs).__str__()

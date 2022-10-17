@@ -102,7 +102,7 @@ Tests whether or not file is included in {excludedFileExtensions} from copy_to_a
 #### handler
 
 ```python
-def handler(event, context)
+def handler(event: Dict[str, Union[str, int]], context: LambdaContext)
 ```
 
 Lambda handler. Extracts the key's for a granule from an input dict.
@@ -137,7 +137,8 @@ Lambda handler. Extracts the key's for a granule from an input dict.
   }
   }
   
-- `context` _Object_ - None
+- `context` - This object provides information about the lambda invocation, function,
+  and execution env.
   
 
 **Returns**:

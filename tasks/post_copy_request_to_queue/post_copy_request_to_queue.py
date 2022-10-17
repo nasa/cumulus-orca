@@ -263,7 +263,6 @@ def get_metadata_sql(key_path: str) -> text:
     )
 
 
-@LOGGER.inject_lambda_context(log_event=True)
 def handler(event: Dict[str, Any], context: LambdaContext) -> None:
     """
     Lambda handler. This lambda calls the task function to perform db queries

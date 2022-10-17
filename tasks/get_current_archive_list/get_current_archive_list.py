@@ -563,7 +563,6 @@ def check_env_variable(env_name: str) -> str:
     return env_value
 
 
-@LOGGER.inject_lambda_context(log_event=True)
 def handler(event: Dict[str, List], context: LambdaContext) -> Dict[str, Any]:
     """
     Lambda handler. Receives a list of s3 events from an SQS queue,

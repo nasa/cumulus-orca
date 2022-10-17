@@ -23,7 +23,7 @@ class StorageAdapterRDBMS(OrphansPageStorageInterface):
             self,
             orphan_record_filter: OrphanRecordFilter,
             # todo: @bhazuka has expressed a desire to not pass loggers via parameters
-            logger: logging.Logger
+            LOGGER: logging.Logger
     ) -> OrphanRecordPage:
         # noinspection GrazieInspection
         """
@@ -31,13 +31,13 @@ class StorageAdapterRDBMS(OrphansPageStorageInterface):
 
             Args:
                 orphan_record_filter: The filter designating which orphans to return.
-                logger: The logger to use.
+                LOGGER: The logger to use.
 
             Returns:
                 A list containing orphan records.
                 A bool indicating if there are further pages to retrieve.
             """
-        logger.info(f"Retrieving page '{orphan_record_filter.page_index}' "
+        LOGGER.info(f"Retrieving page '{orphan_record_filter.page_index}' "
                     f"of reports for job '{orphan_record_filter.job_id}'")
         with self._engine.begin() as connection:
             sql_results = connection.execute(

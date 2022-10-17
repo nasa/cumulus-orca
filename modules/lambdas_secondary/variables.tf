@@ -80,3 +80,10 @@ variable "s3_report_frequency" {
   description = "How often to generate s3 reports for internal reconciliation."
 }
 
+
+# Set to Default value of "INFO"
+variable "log_level" {
+  type        = string
+  description = "Sets the verbose of powertools logger"
+  default     = "INFO"
+}

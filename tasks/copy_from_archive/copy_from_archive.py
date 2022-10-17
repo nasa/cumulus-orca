@@ -232,7 +232,6 @@ def copy_object(
 
 
 # noinspection PyUnusedLocal
-@LOGGER.inject_lambda_context(log_event=True)
 def handler(
     event: Dict[str, Any], context: LambdaContext
 ) -> None:  # pylint: disable-msg=unused-argument
@@ -302,7 +301,7 @@ def handler(
         LOGGER.error("RECOVERY_QUEUE_URL environment value not found.")
         raise key_error
 
-    LOGGER.debug("event: {event}", event=event)
+    LOGGER.debug(f"event: {event}")
     records = event["Records"]
 
     task(

@@ -297,7 +297,6 @@ def create_http_error_dict(
     }
 
 
-@LOGGER.inject_lambda_context(log_event=True)
 def handler(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any]:
     # noinspection SpellCheckingInspection
     """

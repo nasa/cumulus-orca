@@ -353,7 +353,6 @@ def get_storage_class(config: Dict[str, Any]) -> str:
 
 
 # handler that is provided to aws lambda
-@LOGGER.inject_lambda_context(log_event=True)
 def handler(event: Dict[str, Union[List[str], Dict]], context: LambdaContext) -> Any:
     """Lambda handler. Runs a cumulus task that
     Copies the files in {event}['input']

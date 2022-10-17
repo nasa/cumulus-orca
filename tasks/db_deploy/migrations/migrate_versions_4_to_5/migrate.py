@@ -12,7 +12,7 @@ from orca_shared.database.shared_db import get_admin_connection
 import migrations.migrate_versions_4_to_5.migrate_sql as sql
 
 # Set AWS powertools logger
-logger = Logger()
+LOGGER = Logger()
 
 
 def migrate_versions_4_to_5(
@@ -44,69 +44,69 @@ def migrate_versions_4_to_5(
     with admin_app_connection.connect() as connection:
 
         # Create extension for the database as the admin user
-        logger.debug("Creating extension aws_s3 ...")
+        LOGGER.debug("Creating extension aws_s3 ...")
         connection.execute(sql.create_extension())
-        logger.info("extension aws_s3 created.")
+        LOGGER.info("extension aws_s3 created.")
 
         # Change to DBO role and set search path
-        logger.debug("Changing to the dbo role to create objects ...")
+        LOGGER.debug("Changing to the dbo role to create objects ...")
         connection.execute(sql.text("SET ROLE orca_dbo;"))
 
         # Set the search path
-        logger.debug("Setting search path to the ORCA schema to create objects ...")
+        LOGGER.debug("Setting search path to the ORCA schema to create objects ...")
         connection.execute(sql.text("SET search_path TO orca, public;"))
 
         # Create reconcile_status table
-        logger.debug("Creating reconcile_status table ...")
+        LOGGER.debug("Creating reconcile_status table ...")
         connection.execute(sql.reconcile_status_table_sql())
-        logger.info("reconcile_status table created.")
+        LOGGER.info("reconcile_status table created.")
 
         # Create reconcile_job table
-        logger.debug("Creating reconcile_job table ...")
+        LOGGER.debug("Creating reconcile_job table ...")
         connection.execute(sql.reconcile_job_table_sql())
-        logger.info("reconcile_job table created.")
+        LOGGER.info("reconcile_job table created.")
 
         # Create reconcile_s3_object table
-        logger.debug("Creating reconcile_s3_object table ...")
+        LOGGER.debug("Creating reconcile_s3_object table ...")
         connection.execute(sql.reconcile_s3_object_table_sql())
-        logger.info("reconcile_s3_object table created.")
+        LOGGER.info("reconcile_s3_object table created.")
 
         # Create partitioned tables for the reconcile_s3_object table
         for bucket_name in orca_buckets:
             _partition_name = orca_shared.reconciliation.shared_reconciliation. \
                                 get_partition_name_from_bucket_name(bucket_name)
 
-            logger.debug(
+            LOGGER.debug(
                 f"Creating partition table {_partition_name} for reconcile_s3_object ..."
             )
             connection.execute(
                 sql.reconcile_s3_object_partition_sql(_partition_name),
                 {"bucket_name": bucket_name},
             )
-            logger.info(
+            LOGGER.info(
                 f"Partition table {_partition_name} for reconcile_s3_object created."
             )
 
         # Create reconcile_catalog_mismatch_report table
-        logger.debug("Creating reconcile_catalog_mismatch_report table ...")
+        LOGGER.debug("Creating reconcile_catalog_mismatch_report table ...")
         connection.execute(sql.reconcile_catalog_mismatch_report_table_sql())
-        logger.info("reconcile_catalog_mismatch_report table created.")
+        LOGGER.info("reconcile_catalog_mismatch_report table created.")
 
         # Create reconcile_orphan_report table
-        logger.debug("Creating reconcile_orphan_report table ...")
+        LOGGER.debug("Creating reconcile_orphan_report table ...")
         connection.execute(sql.reconcile_orphan_report_table_sql())
-        logger.info("reconcile_orphan_report table created.")
+        LOGGER.info("reconcile_orphan_report table created.")
 
         # Create reconcile_phantom_report table
-        logger.debug("Creating reconcile_phantom_report table ...")
+        LOGGER.debug("Creating reconcile_phantom_report table ...")
         connection.execute(sql.reconcile_phantom_report_table_sql())
-        logger.info("reconcile_phantom_report table created.")
+        LOGGER.info("reconcile_phantom_report table created.")
 
         # If v5 is the latest version, update the schema_versions table.
         if is_latest_version:
-            logger.debug("Populating the schema_versions table with data ...")
+            LOGGER.debug("Populating the schema_versions table with data ...")
             connection.execute(sql.schema_versions_data_sql())
-            logger.info("Data added to the schema_versions table.")
+            LOGGER.info("Data added to the schema_versions table.")
 
         # Commit if there are no issues
         connection.commit()
