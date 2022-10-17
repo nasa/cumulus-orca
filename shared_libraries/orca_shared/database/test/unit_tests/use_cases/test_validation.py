@@ -2,9 +2,13 @@ import unittest
 from unittest.mock import MagicMock, Mock, call, patch
 
 from orca_shared.database.entities import PostgresConnectionInfo
+
 # noinspection PyProtectedMember
-from orca_shared.database.use_cases.validation import validate_config, _validate_password, \
-    validate_postgres_name
+from orca_shared.database.use_cases.validation import (
+    _validate_password,
+    validate_config,
+    validate_postgres_name,
+)
 
 
 class TestCreatePostgresConnectionUri(unittest.TestCase):
@@ -55,7 +59,7 @@ class TestCreatePostgresConnectionUri(unittest.TestCase):
         """
         A password of length 12 should be sufficient.
         """
-        password = "123456789012"
+        password = "123456789012"  # nosec
         context = Mock()
         logger = Mock()
         _validate_password(password, context, logger)
@@ -104,10 +108,7 @@ class TestCreatePostgresConnectionUri(unittest.TestCase):
         """
         A name of length > 63 should be rejected.
         """
-        password = "12345678901234567890" \
-                   "12345678901234567890" \
-                   "12345678901234567890" \
-                   "1234"
+        password = "1234567890123456789012345678901234567890123456789012345678901234"  # nosec
         context = Mock()
         logger = Mock()
         with self.assertRaises(Exception) as cm:
