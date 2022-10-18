@@ -15,6 +15,10 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 
+## [6.0.2]
+### Changed
+- *ORCA-570* Fixed an error that could prevent deployment of the database on fresh installations.
+
 ## [6.0.1]
 ### Changed
 - *ORCA-566* Shortened S3 inventory report name due to length limitation causing errors when a user's naming schema is long.
