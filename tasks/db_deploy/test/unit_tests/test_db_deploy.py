@@ -48,6 +48,7 @@ class TestDbDeployFunctions(unittest.TestCase):
         db_deploy.handler(event, {})
 
         # Check tests
+        mock_get_configuration.assert_called_once_with("test", db_deploy.logger)
         mock_task.assert_called_with(config, event["orcaBuckets"])
 
     @patch("db_deploy.get_configuration")

@@ -56,7 +56,7 @@ def handler(
         raise
 
     # Get the secrets needed for database connections
-    config = get_configuration(db_connect_info_secret_arn)
+    config = get_configuration(db_connect_info_secret_arn, logger)
 
     # Get the ORCA bucket list
     orca_buckets = event.get("orcaBuckets", None)
