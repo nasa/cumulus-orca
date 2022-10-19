@@ -6,7 +6,7 @@ import strawberry
 GenericType = TypeVar("GenericType")
 
 
-@strawberry.type
+@strawberry.type  # Not strictly clean, but alternative is duplicating classes in graphql adapter.
 @dataclass
 class Edge(Generic[GenericType]):
     """
