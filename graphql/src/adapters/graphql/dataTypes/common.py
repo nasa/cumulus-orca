@@ -8,7 +8,8 @@ class ErrorStrawberryType:
     """
     A basic error type to encourage inheritance and a consistent `message` property.
     """
-    # todo: Better abstraction? Might not be doable. In that case, maybe just remove.
+    @property
+    @abstractmethod
     def message(self) -> str:
         ...
 
