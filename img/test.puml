@@ -1,0 +1,15 @@
+@startuml
+
+title "Deep Archive Collection Migration Workflow"
+
+actor operator
+participant "Cumulus Console" as cc
+participant "Migration Recovery" as ms
+database "ORCA Catalog" as oc
+participant "ORCA Bucket" as ob
+queue "Migration Queue" as mq
+participant "Migration Copy" as mc
+participant "Migration Report" as mr
+participant "Internal Reconciliation" as ir
+
+@enduml
