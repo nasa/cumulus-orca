@@ -1,6 +1,6 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/internal_reconcile_report_orphan/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/internal_reconcile_report_orphan/requirements.txt)
 
-**Lambda function internal_reconcile_report_orphan **
+**Lambda function internal_reconcile_report_orphan**
 
 Receives job id and page index from end user and returns reporting information of files that have records in the archive bucket but are missing in the ORCA catalog from the internal reconciliation job.
 

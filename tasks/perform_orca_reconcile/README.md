@@ -1,6 +1,6 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/perform_orca_reconcile/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/perform_orca_reconcile/requirements.txt)
 
-**Lambda function perform_orca_reconcile **
+**Lambda function perform_orca_reconcile**
 
 Compares entries in reconcile_s3_objects to the Orca catalog,
 writing differences to reconcile_catalog_mismatch_report, reconcile_orphan_report, and reconcile_phantom_report.

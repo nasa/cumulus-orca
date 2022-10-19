@@ -1,6 +1,6 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/delete_old_reconcile_jobs/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/delete_old_reconcile_jobs/requirements.txt)
 
-**Lambda function delete_old_reconcile_jobs **
+**Lambda function delete_old_reconcile_jobs**
 
 Description: Deletes old internal reconciliation reports, reducing DB size.
 

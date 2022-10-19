@@ -1,6 +1,6 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/post_to_queue_and_trigger_step_function/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/post_to_queue_and_trigger_step_function/requirements.txt)
 
-**Lambda function post_to_queue_and_trigger_step_function **
+**Lambda function post_to_queue_and_trigger_step_function**
 
 Receives an events from an SQS queue, translates to get_current_archive_list's input format,
 sends it to another queue, then triggers the internal report step function.

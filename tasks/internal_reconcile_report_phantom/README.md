@@ -1,6 +1,6 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/internal_reconcile_report_phantom/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/internal_reconcile_report_phantom/requirements.txt)
 
-**Lambda function internal_reconcile_report_phantom **
+**Lambda function internal_reconcile_report_phantom**
 
 Receives job id and page index from end user and returns reporting information of files that have records in the ORCA catalog but are missing from S3 bucket.
 
