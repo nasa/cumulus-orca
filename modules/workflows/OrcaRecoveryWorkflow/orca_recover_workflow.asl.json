@@ -5,16 +5,11 @@
   "States": {
     "ExtractFilepaths": {
       "Parameters": {
-        "cma": {
-          "event.$": "$",
-          "ReplaceConfig": {
-            "FullMessage": true
-          },
-          "task_config": {
-            "buckets": "{$.meta.buckets}",
-            "fileBucketMaps": "{$.meta.collection.files}",
-            "excludedFileExtensions": "{$.meta.collection.meta.orca.excludedFileExtensions}"
-          }
+        "event.$": "$",
+        "task_config": {
+          "buckets": "{$.meta.buckets}",
+          "fileBucketMaps": "{$.meta.collection.files}",
+          "excludedFileExtensions": "{$.meta.collection.meta.orca.excludedFileExtensions}"
         }
       },
       "Type": "Task",
@@ -44,17 +39,12 @@
     },
     "RequestFromArchive": {
       "Parameters": {
-        "cma": {
-          "event.$": "$",
-          "ReplaceConfig": {
-            "FullMessage": true
-          },
-          "task_config": {
-            "asyncOperationId": "{$.cumulus_meta.asyncOperationId}",
-            "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
-            "defaultBucketOverride": "{$.meta.collection.meta.orca.defaultBucketOverride}",
-            "defaultRecoveryTypeOverride": "{$.meta.collection.meta.orca.defaultRecoveryTypeOverride}"
-          }
+        "event.$": "$",
+        "task_config": {
+          "asyncOperationId": "{$.cumulus_meta.asyncOperationId}",
+          "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
+          "defaultBucketOverride": "{$.meta.collection.meta.orca.defaultBucketOverride}",
+          "defaultRecoveryTypeOverride": "{$.meta.collection.meta.orca.defaultRecoveryTypeOverride}"
         }
       },
       "Type": "Task",
